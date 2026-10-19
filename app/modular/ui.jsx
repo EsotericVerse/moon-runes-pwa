@@ -13,12 +13,12 @@ import {HomeBlock} from '../loc/home-block-model';
 // Shared display stays light: mount the editor only on pages that need it.
 const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks'),{loading:()=>null});
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
-import HeroCornerIdentity from '../loc/HeroCornerIdentity';
 
 // One visual header contract. On the LOC feature pages this same visible
 // header is wrapped by the existing ScopeEditableBlocks editor; elsewhere it
 // remains a read-only projection of exactly the same LOC records.
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
+  const sign=HomeBlock.heroExtraFor(scopeId);
   return <>
     {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
     <div className="home-title-row">
@@ -28,7 +28,8 @@ function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=fa
     {description?(rich
       ?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:description}}/>
       :<div className="scope-hero-description">{description}</div>):null}
-    <HeroCornerIdentity scopeId={scopeId}/>
+    {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
+      role="img" aria-label={sign.label}>{sign.text}</span>:null}
   </>;
 }
 

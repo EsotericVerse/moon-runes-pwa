@@ -3,24 +3,20 @@ import {HomeBlock} from '../app/loc/home-block-model.js';
 
 const failures=[];
 const expectedExtra=[
-  {scopeId:'loc',scopeKind:'group',extraSign:'codex',key:'codex',label:'LOC 圓環中心實心點標誌',text:''},
-  {scopeId:'lo3rwang',scopeKind:'scope',extraSign:'anchor',key:'anchor',label:'光之定錨點',text:'光之定錨點'},
-  {scopeId:'lrunes',scopeKind:'scope',extraSign:'moon',key:'moon',label:'玄韻家黃色圓點標誌',text:''}
+  {scopeId:'loc',key:'codex',label:'LOC 圓環中心實心點標誌',text:''},
+  {scopeId:'lo3rwang',key:'anchor',label:'光之定錨點',text:'光之定錨點'},
+  {scopeId:'lrunes',key:'moon',label:'玄韻家黃色圓點標誌',text:''}
 ];
-for(const {scopeId,scopeKind,extraSign,key,label,text} of expectedExtra){
-  const sign=HomeBlock.heroExtraFor({scopeId,scopeKind,extraSign});
+for(const {scopeId,key,label,text} of expectedExtra){
+  const sign=HomeBlock.heroExtraFor(scopeId);
   if(!sign||sign.key!==key||sign.label!==label||sign.text!==text)
-    failures.push('Public Extra Sign contract mismatch: '+scopeId);
+    failures.push('Fixed Extra Sign contract mismatch: '+scopeId);
 }
-for(const candidate of [
-  {scopeId:'loc',scopeKind:'scope',extraSign:'codex'},
-  {scopeId:'lo3rwang',scopeKind:'scope',extraSign:'moon'},
-  {scopeId:'lrunes',scopeKind:'group',extraSign:'moon'},
-  {scopeId:'anotherscope',scopeKind:'scope',extraSign:'anchor'},
-  {scopeId:'lo3rwang',scopeKind:'scope',extraSign:''}
-]){
-  if(HomeBlock.heroExtraFor(candidate)!==null)failures.push('Unregistered/mismatched Scope must not receive protected Extra Sign');
+for(const candidate of ['admin','anotherscope','','LOC','lunarunes']){
+  if(HomeBlock.heroExtraFor(candidate)!==null)failures.push('Other Scopes must never receive a fixed Extra Sign');
 }
+if(HomeBlock.heroExtraFor({scopeId:'loc',extraSign:'moon'})!==null)
+  failures.push('DB-style input cannot override a fixed Extra Sign');
 
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');

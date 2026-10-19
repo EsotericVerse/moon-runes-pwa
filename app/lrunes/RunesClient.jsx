@@ -3,7 +3,7 @@ import useNativeNavigation from '../modular/use-native-navigation';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
-import HeroCornerIdentity from '../loc/HeroCornerIdentity';
+import {HomeBlock} from '../loc/home-block-model';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 
@@ -13,6 +13,7 @@ const RUNE_HERO_ORDERS=[1];
 // LunaRunes is a special-case homepage: only the Hero copy is editable.
 // Draw routes, draw buttons, game, intro, and reading guidance remain fixed UI.
 function renderRuneHero(slot,native){
+  const sign=HomeBlock.heroExtraFor('lrunes');
   const eyebrow=slot.stored?slot.eyebrow:'';
   const title=slot.stored?slot.title:'';
   const subtitle=slot.stored?slot.subtitle:'';
@@ -28,7 +29,8 @@ function renderRuneHero(slot,native){
       decoding="async"
     />
     <div className="runes-home-hero-overlay" aria-hidden="true"/>
-    <HeroCornerIdentity scopeId="lrunes"/>
+    {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
+      role="img" aria-label={sign.label}>{sign.text}</span>:null}
     <div className="runes-home-hero-copy">
       {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
       <div className="home-title-row">

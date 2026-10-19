@@ -12,7 +12,9 @@ const files={
   css:read('app/globals.css'),
   extraCss:read('app/styles/extra.css'),
   extra:read('app/loc/home-block-model.js'),
-  identity:read('app/loc/HeroCornerIdentity.jsx')
+  home:read('app/loc/LocHomeBlockDisplay.jsx'),
+  feature:read('app/modular/ui.jsx'),
+  runes:read('app/lrunes/RunesClient.jsx')
 };
 const checks=[
   ['Static Scope identity excludes duplicate Domain/Directory declarations',
@@ -56,24 +58,25 @@ const checks=[
     files.library.includes('copyRune66KeywordClass(scopeId)')&&
     files.library.includes('onClick={copyRune66}')&&
     !files.admin.includes('onClick={copyRune66}')],
-  ['Public Extra Sign reads registered key without checking live user sessions',
-    files.scopeData.includes("columns:'scope_id,display_name,scope_kind,extra_sign")&&
-    files.scopeData.includes("extra_sign:String(row.extra_sign||'').trim()||null")&&
-    files.identity.includes('registryRow?.extra_sign')&&
-    files.identity.includes('heroExtraFor(')&&
-    !files.identity.includes('useAccount')&&!files.identity.includes('account.email')&&
-    !files.extra.includes('account')&&!files.extra.includes('user.email')],
+  ['Extra Signs are hardcoded by Scope ID in common code; no editable source or separate JSX',
+    files.extra.includes('const FIXED_HERO_SIGNS=Object.freeze(')&&
+    files.extra.includes('return FIXED_HERO_SIGNS[String(scopeId||\'\')]||null')&&
+    ['loc','lo3rwang','lrunes'].every(id=>files.extra.includes(id+':Object.freeze('))&&
+    [files.home,files.feature,files.runes].every(source=>
+      source.includes('HomeBlock.heroExtraFor(')&&source.includes('home-hero-identity')&&
+      !source.includes('HeroCornerIdentity'))&&
+    !files.extra.includes('extraSign')&&!files.extra.includes('scopeKind')],
   ['Scope IP Sign styles are isolated and LOC uses ring plus solid dot',
     files.css.includes('@import "./styles/extra.css";')&&
     files.extraCss.includes('.home-hero-identity--codex::before')&&
     files.extraCss.includes('.home-hero-identity--codex::after')&&
     files.extra.includes("label:'LOC 圓環中心實心點標誌',text:''")&&
     !read('app/styles/uiux.css').includes('.home-hero-identity--codex')],
-  ['Extra Sign reads registered Scope data, never an untrusted account claim',
-    files.scopeData.includes("columns:'scope_id,display_name,scope_kind,extra_sign")&&
-    files.identity.includes('registryRow?.extra_sign')&&
-    !files.identity.includes('useAccount')&&
-    !files.identity.includes('account.email')],
+  ['Fixed Extra Sign display is independent of account claims or Registry keys',
+    ![files.home,files.feature,files.runes].some(source=>
+      source.includes('registryRow?.extra_sign')||source.includes('account.email'))&&
+    !files.extra.includes('registryRow')&&
+    files.home.includes('const sign=hero?HomeBlock.heroExtraFor(scopeId):null')],
   ['Domain creation rejects repeated DNS labels immediately',
     files.registry.includes('duplicateDomainLabelError')&&
     files.admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}')&&

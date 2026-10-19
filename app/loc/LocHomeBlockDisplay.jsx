@@ -1,7 +1,6 @@
 'use client';
 
 import {SITE_IMAGES} from '../site-images';
-import HeroCornerIdentity from './HeroCornerIdentity';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import {HomeBlock} from './home-block-model';
 
@@ -65,6 +64,7 @@ function RichHtml({html,className='',stripImage=false}){
 
 function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
+  const sign=hero?HomeBlock.heroExtraFor(scopeId):null;
   const image=resolveHomeImage(slot,scopeId);
   const children=HomeBlock.visibleEntities(slot).filter(entity=>entity.title||
     BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
@@ -93,7 +93,8 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
       style={{'--loc-home-media-max':image.width+'px'}}>
       <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
     </article>):null}
-    {hero?<HeroCornerIdentity scopeId={scopeId}/>:null}
+    {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
+      role="img" aria-label={sign.label}>{sign.text}</span>:null}
   </>;
 }
 
