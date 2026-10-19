@@ -426,7 +426,7 @@ export async function selectMediaCrossTagRows(scope,{startDate='',endDate=''}={}
     });
     if(offset===0)total=Number.isFinite(Number(page.count))?Number(page.count):page.rows.length;
     source=page.dataSource||source;
-    for(const row of page.rows)if(String(row.meta_tags||'').trim())rows.push(row);
+    rows.push(...page.rows);
     if(!page.rows.length)break;
     offset+=page.rows.length;
   }
