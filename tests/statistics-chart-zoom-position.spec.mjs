@@ -31,3 +31,22 @@ test('LOC +/- is on the right side of the plot, not in options toolbar',async({p
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(2);
 });
+
+test('LOC statistics show charts first and render detailed rows only when requested',async({page})=>{
+  await page.goto('/statics/',{waitUntil:'domcontentloaded'});
+  const chart=page.locator('#loc-stat-zoom-in').locator('xpath=ancestor::*[contains(@class,"scope-stat-chart-frame")]').first();
+  const details=page.locator('.scope-stat-details').first();
+  await expect(chart).toBeVisible({timeout:25_000});
+  await expect(details.locator('summary')).toBeVisible();
+  await expect(details.locator('.scope-ranking')).toHaveCount(0);
+  const order=await page.evaluate(()=>{
+    const chart=document.querySelector('.scope-stat-chart-frame');
+    const details=document.querySelector('.scope-stat-details');
+    return chart&&details&&Boolean(chart.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(order).toBe(true);
+  await details.locator('summary').click();
+  await expect(details.locator('.scope-ranking')).toBeVisible();
+  await details.locator('summary').click();
+  await expect(details.locator('.scope-ranking')).toHaveCount(0);
+});
