@@ -87,4 +87,12 @@ test('mobile daily rune calendar dates meet comfortable touch target height',asy
   expect(rect.height).toBeGreaterThanOrEqual(44);
   await dates.first().tap();
   await expect(dates.first()).toHaveAttribute('aria-pressed','true');
+  const nextMonth=page.getByRole('button',{name:'下個月'});
+  const nextRect=await nextMonth.boundingBox();
+  expect(nextRect.height).toBeGreaterThanOrEqual(44);
+  expect(nextRect.width).toBeGreaterThanOrEqual(44);
+  const heading=page.locator('.scope-daily-calendar-nav h2');
+  const previousLabel=await heading.textContent();
+  await nextMonth.tap();
+  await expect(heading).not.toHaveText(previousLabel);
 });
