@@ -77,3 +77,14 @@ test('footer keeps data source metadata on demand and failover warnings visible'
   await expect(disclosure.locator('.scope-data-source-values')).toBeVisible();
   await expect(disclosure.locator('.scope-data-source-values>span')).toHaveCount(3);
 });
+
+test('mobile daily rune calendar dates meet comfortable touch target height',async({page,isMobile})=>{
+  test.skip(!isMobile,'Mobile touch target contract');
+  await page.goto('/lrunes/daily/log/',{waitUntil:'domcontentloaded'});
+  const dates=page.locator('.daily-log-calendar .scope-daily-calendar-cell');
+  await expect(dates.first()).toBeVisible();
+  const rect=await dates.first().boundingBox();
+  expect(rect.height).toBeGreaterThanOrEqual(44);
+  await dates.first().tap();
+  await expect(dates.first()).toHaveAttribute('aria-pressed','true');
+});
