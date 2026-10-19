@@ -2,7 +2,6 @@
 
 import {WorkSummaryCard} from './ui';
 import BlockNoteEditor from '../loc/BlockNoteEditor';
-import ArticleBodyEditor from '../loc/ArticleBodyEditor';
 import {UI_COPY} from '../i18n/ui-copy';
 import {blocksToPlainText} from '../loc/blocknote-content.mjs';
 import UiText,{useUiText} from '../i18n/UiText';
@@ -17,7 +16,7 @@ export function ArticleInlineEditor({draft,onChange,showHidden=false,attributeFi
   const resolvedAttributeTitle=attributeTitle||t('uiExtra.searchUI.attributeTitle');
   return <div className="scope-editor scope-search-article-editor">
     {showBodyEditor?<div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
-      <ArticleBodyEditor
+      <BlockNoteEditor
         editorKey={'article:'+String(draft.editorKey||'')}
         content={draft.bodyHtml??draft.bodyBlocks}
         onBlocksChange={blocks=>onChange(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
