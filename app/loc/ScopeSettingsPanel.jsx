@@ -8,7 +8,7 @@ import {THEME_SLOTS} from '../modular/theme-registry';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
-import ArticleBodyEditor from './ArticleBodyEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 
 const EMPTY={
   display_name:'',
@@ -112,13 +112,13 @@ export default function ScopeSettingsPanel({scopeId}){
 
       <label className="scope-management-wide-field">
         <span><UiText id="uiExtra.scopeSettings.searchIntro"/></span>
-        <ArticleBodyEditor editorKey={'scope-intro:'+scopeId} content={draft.search_intro||''}
+        <BlockNoteEditor editorKey={'scope-intro:'+scopeId} content={draft.search_intro||''}
           canInsertImage={false} onPlainTextChange={value=>change('search_intro',value)}/>
       </label>
 
       <label className="scope-management-wide-field">
         <span><UiText id="uiExtra.scopeSettings.searchAliases"/></span>
-        <ArticleBodyEditor editorKey={'scope-aliases:'+scopeId} content={aliases}
+        <BlockNoteEditor editorKey={'scope-aliases:'+scopeId} content={aliases}
           canInsertImage={false} onPlainTextChange={setAliases}/>
       </label>
 
