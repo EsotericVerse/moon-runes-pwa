@@ -123,7 +123,7 @@ if(!failures.length){
      !sourceEditor.includes('silver.scope_source_subcategories')||
      !statistics.includes('source_custom')||
      !statistics.includes('<ScopeCustomSourceCategories')||
-     !crossMember.includes("scope_source_subcategories")||
+     !crossMember.includes("sharing.scopeSources")||
      !ownIntersection.includes("scope_source_subcategories")||
      !crossMember.includes("availableMemberMeasures")||
      !ownIntersection.includes("kind:'group'")){
@@ -155,7 +155,7 @@ if(!failures.length){
      !crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
      !crossMember.includes("metric.startsWith('daily')")||
      !crossMember.includes("?person==='lrunes':allowedMemberMetric(person,metric,sharing)")||
-     !crossMember.includes("const scope=available.find(item=>item.id===id)?.scope")||
+     !crossMember.includes("preloadedSources.get(id)")||
      !crossMember.includes("{!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>")||
      crossMember.includes('canOfferMemberCrossStatistics(')||
      !statisticsMultiChart.includes('if(!hasTime&&!categories.length)return []')||
@@ -291,7 +291,7 @@ if(!failures.length){
   for(const token of [
     "const effectiveCategoryKey=selectedGroup?.category_key||'';",
     "effectiveCategoryKey||'all'",
-    "enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)",
+    "enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)",
     "styleFilter==='rune66'?<section className='scope-culture-style-filter'>",
     'l.loadingPeriodWorks',
     'onClick={periodWorksPage.reload}'
@@ -320,6 +320,23 @@ if(!failures.length){
   const search=read('app/modular/features/Search.jsx');
   const scopeGroupOverview=read('app/loc/ScopeGroupOverview.jsx');
   const cultureQuery=read('app/loc/culture-query.js');
+  // Database-read budget: one corpus read per source, with derived views
+  // computed from the returned metadata rather than repeated SELECTs.
+  const cultureSnapshot=cultureQuery.split('export async function selectScopePeriodSourceSnapshot(')[1]?.split('export async function selectScopePeriodWorkIndex(')[0]||'';
+  const searchProviders=galaxy.split('function genericScopeProviders(')[1]?.split('function normalizeSearch(')[0]||'';
+  if((cultureSnapshot.match(/selectAllRows\\(scope\\.(?:galaxy|galaxyMedia),/g)||[]).length!==2||
+     /selectSourceCatalog\\(|selectSourceDaily\\(|selectCategoryCounts\\(/.test(cultureSnapshot))
+    failures.push('Culture source snapshots must read Galaxy and Media just once each');
+  if(!culture.includes('enabled:worksOpen')||!culture.includes("onToggle={event=>setWorksOpen(event.currentTarget.open)}"))
+    failures.push('Culture work detail SELECTs must wait for explicit list expansion');
+  if(!statistics.includes('preloadedSources={preloadedSources}')||
+     !crossMember.includes('preloadedSources.get(id)')||
+     crossMember.includes('selectScopeSourceBreakdownRows(')||
+     !ownIntersection.includes('sharedCatalog||localCatalog'))
+    failures.push('Statistics intersection must reuse already fetched source rows and taxonomy');
+  if(!searchProviders.includes("const textColumns=['uid','title','createtime'")||
+     searchProviders.includes("const textColumns=['uid','title','content'"))
+    failures.push('Search provider result pages must not SELECT complete article bodies');
   const queryContract=read('app/loc/db-contract.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','DB_QUERY_TEXT_BATCH_SIZE=1000','queryBatchSize(columns'])if(!queryContract.includes(token))failures.push('Shared metadata/text query limit contract missing '+token);
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
