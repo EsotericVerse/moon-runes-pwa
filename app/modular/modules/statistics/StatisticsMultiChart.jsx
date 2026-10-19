@@ -2,6 +2,8 @@
 
 import {useMemo} from 'react';
 import {UI_COPY} from '../../../i18n/ui-copy';
+import {availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color} from './statistics-time-zoom.mjs';
+export {STAT_VISUAL_TYPES,availableStatisticChartTypes} from './statistics-time-zoom.mjs';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {useUiText} from '../../../i18n/UiText';
 import {
@@ -11,94 +13,8 @@ import {
   ResponsiveContainer,Scatter,ScatterChart,Tooltip,Treemap,XAxis,YAxis
 } from 'recharts';
 
-// Chart types are capabilities, not ten interchangeable skins for one number.
-export const STAT_VISUAL_TYPES=Object.freeze([
-  'line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'
-].map(type=>Object.freeze([type,'uiExtra.chartTypes.'+type])));
-const COLORS=['#7562cf','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f'];
 const TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const GRID='var(--loc-line)',TEXT='var(--loc-text)',DAY=86400000;
-const number=value=>Math.max(0,Number(value)||0);
-const color=i=>COLORS[i%COLORS.length];
-
-function nonemptySeries(rows=[],series=[]){
-  return (Array.isArray(series)?series:[]).filter(s=>s?.key&&rows.some(row=>number(row[s.key])>0)).slice(0,8);
-}
-function normalizeDistribution(distribution=[],rows=[],series=[]){
-  const supplied=(Array.isArray(distribution)?distribution:[])
-    .map(item=>({name:String(item.name||item.term||''),key:item.key??item.name??item.term,value:number(item.value??item.item_count)}))
-    .filter(item=>item.name&&item.value>0);
-  if(supplied.length)return supplied;
-  return series.map(s=>({name:s.label||s.key,value:rows.reduce((n,row)=>n+number(row[s.key]),0)}))
-    .filter(item=>item.value>0);
-}
-function totalValue(row,series,totalKey=''){
-  return totalKey?number(row?.[totalKey]):series.reduce((n,s)=>n+number(row?.[s.key]),0);
-}
-function movingAverage(rows,series,totalKey){
-  return rows.map((row,i)=>({
-    ...row,
-    __stat_total:totalValue(row,series,totalKey),
-    __stat_average:rows.slice(Math.max(0,i-2),i+1).reduce((n,r)=>n+totalValue(r,series,totalKey),0)/(Math.min(i+1,3))
-  }));
-}
-function scatterPair(rows,series){
-  for(let a=0;a<series.length;a++)for(let b=a+1;b<series.length;b++){
-    const left=series[a],right=series[b];
-    const x=rows.map(row=>number(row[left.key])),y=rows.map(row=>number(row[right.key]));
-    if(rows.length>=3&&new Set(x).size>1&&new Set(y).size>1&&rows.some(row=>number(row[left.key])&&number(row[right.key]))){
-      return {x:left,y:right,data:rows.map(row=>({x:number(row[left.key]),y:number(row[right.key]),period:row.period}))};
-    }
-  }
-  return null;
-}
-function radarPeriodComparison(rows,series){
-  if(rows.length<2||series.length<3)return null;
-  const mid=Math.ceil(rows.length/2);
-  const first=rows.slice(0,mid),last=rows.slice(mid);
-  const firstTotal=first.reduce((n,row)=>n+totalValue(row,series),0);
-  const lastTotal=last.reduce((n,row)=>n+totalValue(row,series),0);
-  if(!firstTotal||!lastTotal)return null;
-  const data=series.map(s=>{
-    const early=first.reduce((n,row)=>n+number(row[s.key]),0)*100/firstTotal;
-    const late=last.reduce((n,row)=>n+number(row[s.key]),0)*100/lastTotal;
-    return {name:s.label||s.key,early,late};
-  });
-  if(!data.some(row=>Math.abs(row.early-row.late)>=.5))return null;
-  return data;
-}
-function activePeriodCoverage(rows,series){
-  if(rows.length<3||series.length<2)return null;
-  const result=series.map((s,i)=>({
-    name:s.label||s.key,
-    value:100*rows.filter(row=>number(row[s.key])>0).length/rows.length,
-    fill:color(i)
-  }));
-  if(new Set(result.map(item=>Math.round(item.value*10))).size<2)return null;
-  return result;
-}
-export function availableStatisticChartTypes({rows=[],series=[],distribution=[],totalKey=''}={}){
-  const time=Array.isArray(rows)?rows:[];
-  const fields=nonemptySeries(time,series);
-  const categories=normalizeDistribution(distribution,time,fields);
-  const hasTime=time.length>0&&(fields.length>0||(totalKey&&time.some(row=>number(row[totalKey])>0)));
-  if(!hasTime&&!categories.length)return [];
-  const hasMix=categories.length>=2;
-  const compare=fields.length>=2;
-  const usable=type=>{
-    if(type==='line')return hasTime||hasMix;
-    if(type==='bar')return hasTime||categories.length>0;
-    if(type==='area')return hasTime&&time.length>=2;
-    if(type==='pie'||type==='treemap')return hasMix;
-    if(type==='stacked')return compare&&time.length>=2;
-    if(type==='composed')return time.length>=3&&new Set(time.map(row=>totalValue(row,fields,totalKey))).size>1;
-    if(type==='scatter')return Boolean(scatterPair(time,fields));
-    if(type==='radar')return Boolean(radarPeriodComparison(time,fields));
-    if(type==='radial')return Boolean(activePeriodCoverage(time,fields));
-    return false;
-  };
-  return STAT_VISUAL_TYPES.filter(([type])=>usable(type));
-}
 
 // Display-only compression: one marked gap, never an invented zero-count data point.
 export function foldEmptyTimeBuckets(rows=[],series=[],units={}){
