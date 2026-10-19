@@ -556,35 +556,45 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
 
   const includeGalaxy=!sourceName||rawSources.length>0;
   const includeMedia=!sourceName||rawMedia.length>0;
-  const [galaxyCount,mediaCount,galaxyResult,mediaResult]=await Promise.all([
-    includeGalaxy?selectCount(scope.galaxy,{idColumn:'uid',filters:galaxyFilters}):Promise.resolve(0),
-    includeMedia?selectCount(scope.galaxyMedia,{idColumn:'media_id',filters:mediaFilters}):Promise.resolve(0),
+  // The first bounded page can return exact counts with its own SELECT.
+  // Keep both totals in the cursor so subsequent pages never repeat COUNTs.
+  const hasCursorCounts=Number.isSafeInteger(cursor?.galaxyCount)&&Number.isSafeInteger(cursor?.mediaCount);
+  const [galaxyResult,mediaResult]=await Promise.all([
     includeGalaxy?selectRows(scope.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
       orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
       limit:pageSize,
       offset:galaxyOffset,
-      maxLimit:pageSize
-    }).then(page=>page.rows):Promise.resolve([]),
+      maxLimit:pageSize,
+      count:hasCursorCounts?null:'exact'
+    }):Promise.resolve({rows:[],count:0}),
     includeMedia?selectRows(scope.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
       orders:[{column:'createtime',ascending:true},{column:'media_id',ascending:true}],
       limit:pageSize,
       offset:mediaOffset,
-      maxLimit:pageSize
-    }).then(page=>page.rows):Promise.resolve([])
+      maxLimit:pageSize,
+      count:hasCursorCounts?null:'exact'
+    }):Promise.resolve({rows:[],count:0})
+  ]);
+  // Fall back only if a provider does not return the requested exact count.
+  const [galaxyCount,mediaCount]=await Promise.all([
+    !includeGalaxy?0:hasCursorCounts?cursor.galaxyCount:
+      (galaxyResult.count??selectCount(scope.galaxy,{idColumn:'uid',filters:galaxyFilters})),
+    !includeMedia?0:hasCursorCounts?cursor.mediaCount:
+      (mediaResult.count??selectCount(scope.galaxyMedia,{idColumn:'media_id',filters:mediaFilters}))
   ]);
 
-  const galaxyRows=(galaxyResult||[]).map(row=>({
+  const galaxyRows=(galaxyResult.rows||[]).map(row=>({
     key:'galaxy:'+row.uid,
     entry_type:'work',
     entry_id:String(row.uid||''),
     uid:String(row.uid||''),
     createtime:row.createtime
   })).filter(row=>row.entry_id);
-  const mediaRows=(mediaResult||[]).map(row=>({
+  const mediaRows=(mediaResult.rows||[]).map(row=>({
     key:'media:'+row.media_id,
     entry_type:'media_metadata',
     entry_id:String(row.media_id||''),
@@ -615,7 +625,9 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     totalCount:Number(galaxyCount||0)+Number(mediaCount||0),
     nextCursor:{
       galaxyOffset:galaxyOffset+galaxyIndex,
-      mediaOffset:mediaOffset+mediaIndex
+      mediaOffset:mediaOffset+mediaIndex,
+      galaxyCount:Number(galaxyCount)||0,
+      mediaCount:Number(mediaCount)||0
     }
   };
 }
