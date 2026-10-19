@@ -77,3 +77,19 @@ test('footer keeps data source metadata on demand and failover warnings visible'
   await expect(disclosure.locator('.scope-data-source-values')).toBeVisible();
   await expect(disclosure.locator('.scope-data-source-values>span')).toHaveCount(3);
 });
+
+test('daily rune trend is distinct from calendar and reachable without typing a URL',async({page})=>{
+  await page.goto('/lrunes/daily/trend/',{waitUntil:'domcontentloaded'});
+  await expect(page.getByRole('heading',{name:'每日符文趨勢',level:1})).toBeVisible();
+  await expect(page.locator('.daily-log-calendar')).toHaveCount(0);
+  const analysisMode=page.locator('.scope-stat-controls select').first();
+  await expect(analysisMode).toBeVisible();
+  await expect(analysisMode.locator('option[value="direction"]')).toHaveCount(1);
+
+  await page.goto('/lrunes/daily/log/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.daily-log-calendar')).toBeVisible();
+  await expect(page.getByRole('link',{name:'查看每日符文趨勢'})).toBeVisible();
+
+  await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
+  await expect(page.getByRole('link',{name:'每日符文趨勢'})).toBeVisible();
+});
