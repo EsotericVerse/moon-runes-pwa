@@ -13,7 +13,7 @@ import {useAccount} from '../use-account';
 import {SQL_ENGINE_OPTIONS} from '../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../providers/database-link.mjs';
 import {AdminSourceCategories} from '../SourceCategoryEditor';
-import BlockNoteEditor from '../BlockNoteEditor';
+import BlockNoteEditor,{ObjectEditor} from '../BlockNoteEditor';
 import {
   deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
@@ -481,11 +481,12 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       </div>:null}
       {current.scope_id!=='loc'?<label><span><UiText id="uiExtra.adminView.parentGroup"/></span><select className="admin-native-select" value={String(current.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}><FieldText text={option.label}/></option>)}</select></label>:null}
       {current.scope_kind==='scope'?<label className="scope-setting-toggle"><input type="checkbox" checked={current.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> <UiText id="uiExtra.adminView.publiclyEnabled"/></label>:null}
-      <div className="scope-tabs admin-edit-actions">
-        <button type="button" className="loc-button primary" onClick={saveRegistryAndConfig}><UiText id="uiExtra.adminView.save"/></button>
-        <button type="button" className="loc-button" onClick={cancelEdit}><UiText id="uiExtra.adminView.cancel"/></button>
-        {current.scope_kind==='scope'?<button type="button" className="loc-button scope-danger-button" disabled={routeLocked} onClick={()=>onDeleteNode?.(current.scope_id)}><UiText id="uiExtra.adminView.delete"/></button>:null}
-      </div>
+      <ObjectEditor mode="actions" actionClassName="scope-tabs admin-edit-actions" actions={[
+        {key:'save',primary:true,onClick:saveRegistryAndConfig,label:<UiText id="uiExtra.adminView.save"/>},
+        {key:'cancel',onClick:cancelEdit,label:<UiText id="uiExtra.adminView.cancel"/>},
+        ...(current.scope_kind==='scope'?[{key:'delete',danger:true,disabled:routeLocked,
+          onClick:()=>onDeleteNode?.(current.scope_id),label:<UiText id="uiExtra.adminView.delete"/>}]:[])
+      ]}/>
     </>}
 
     {selected.scope_kind==='scope'&&!editing?<details className="admin-node-mapping">
