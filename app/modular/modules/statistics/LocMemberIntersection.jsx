@@ -1,5 +1,5 @@
 'use client';
-import FieldText from '../../../i18n/FieldText';
+import UiText,{useUiText} from '../../../i18n/UiText';
 
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -25,6 +25,7 @@ export default function LocMemberIntersection({
   onLaneCountChange,onChoicesChange,onGraphChange,
   zoomLevel=0,onZoomLevelChange,zoomRange={}
 }){
+  const t=useUiText();
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
   const rangeKey=startDate+'|'+endDate;
@@ -91,7 +92,7 @@ export default function LocMemberIntersection({
     ...lane,
     metric:measures.some(item=>item.id===lane.metric)&&allows(lane.person,lane.metric)
       ?lane.metric:(lane.person==='lrunes'?'daily':'total'),
-    label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||'全部作品')
+    label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||t('uiExtra.statisticsView.memberCrossAllWorks'))
   }));
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
     from:startDate,to:endDate,unit,
@@ -110,27 +111,27 @@ export default function LocMemberIntersection({
     data-stat-cross-range={rangeKey}
     data-stat-cross-resolved-range={hasCurrentData?fetched.data.rangeKey:''}
     aria-busy={fetched.isPending||fetched.isFetching||!hasCurrentData}>
-    <h2><FieldText text="所屬人員交互統計"/></h2>
+    <h2><UiText id="uiExtra.statisticsView.memberCrossTitle"/></h2>
     <div className="scope-stat-controls">
-      <label><span><FieldText text="比較組數"/></span>
+      <label><span><UiText id="uiExtra.statisticsView.memberCrossLanes"/></span>
         <select className="scope-select" value={laneCount} onChange={e=>{onLaneCountChange?.(Number(e.target.value));onChoicesChange?.([]);}}>
-          {[2,3,4].map(n=><option key={n} value={n}>{n} 組</option>)}
+          {[2,3,4].map(n=><option key={n} value={n}>{n}<UiText id="uiExtra.statisticsView.memberCrossGroupUnit"/></option>)}
         </select>
       </label>
-      <label><span>圖形</span>
+      <label><span><UiText id="uiExtra.statisticsView.memberCrossChart"/></span>
         <select className="scope-select" value={chosenChart} onChange={e=>onGraphChange?.(e.target.value)}>
-          {charts.map(([value,label])=><option value={value} key={value}>{label}</option>)}
+          {charts.map(([value,label])=><option value={value} key={value}>{t(label)}</option>)}
         </select>
       </label>
     </div>
     <div className="scope-stat-controls">
       {lanes.map((lane,index)=><div className="scope-inline-card" key={index}>
-        <label>所屬人員 {index+1}
+        <label><UiText id="uiExtra.statisticsView.memberCrossPerson"/> {index+1}
           <select className="scope-select" value={lane.person} onChange={e=>update(index,{person:e.target.value,metric:e.target.value==='lrunes'?'daily':'total'})}>
             {available.map(member=><option key={member.id} value={member.id}>{member.label}</option>)}
           </select>
         </label>
-        <label>比較項目
+        <label><UiText id="uiExtra.statisticsView.memberCrossMetric"/>
           <select className="scope-select" value={adjusted[index].metric} onChange={e=>update(index,{metric:e.target.value})}>
             {measures.filter(item=>(!item.id.startsWith('daily')||lane.person==='lrunes')&&
             allows(lane.person,item.id)).map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
@@ -138,8 +139,8 @@ export default function LocMemberIntersection({
         </label>
       </div>)}
     </div>
-    {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||'讀取失敗')}</p>:null}
-    {fetched.isPending||fetched.isFetching?<p className="scope-status" role="status">正在更新交會統計…</p>:null}
+    {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||t('uiExtra.statisticsView.memberCrossLoadError'))}</p>:null}
+    {fetched.isPending||fetched.isFetching?<p className="scope-status" role="status"><UiText id="uiExtra.statisticsView.memberCrossUpdate"/></p>:null}
     {!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={zoomRange} idPrefix="loc-member-stat">
         <StatisticsMultiChart type={chosenChart} rows={calculated.rows} series={calculated.series}
@@ -147,11 +148,11 @@ export default function LocMemberIntersection({
       </StatisticsChartFrame>
       <StatisticsDetails>{()=><>
       <div className="scope-ranking">
-        <div><strong>共同活躍日</strong><span>{calculated.commonDays.toLocaleString()} 天</span></div>
-        <div><strong>活躍日總數</strong><span>{calculated.unionDays.toLocaleString()} 天</span></div>
-        <div><strong>交會比例</strong><span>{calculated.unionDays?(calculated.commonDays/calculated.unionDays*100).toFixed(1):'0'}%</span></div>
+        <div><strong><UiText id="uiExtra.statisticsView.memberCrossCommonDays"/></strong><span>{calculated.commonDays.toLocaleString()}<UiText id="uiExtra.statisticsView.memberCrossDayUnit"/></span></div>
+        <div><strong><UiText id="uiExtra.statisticsView.memberCrossUnionDays"/></strong><span>{calculated.unionDays.toLocaleString()}<UiText id="uiExtra.statisticsView.memberCrossDayUnit"/></span></div>
+        <div><strong><UiText id="uiExtra.statisticsView.memberCrossRatio"/></strong><span>{calculated.unionDays?(calculated.commonDays/calculated.unionDays*100).toFixed(1):'0'}%</span></div>
         {calculated.totals.map((row,index)=><div key={index}>
-          <strong>{row.name}</strong><span>{row.value.toLocaleString()} 筆 · {row.activeDays} 天</span>
+          <strong>{row.name}</strong><span>{t('uiExtra.statisticsView.memberCrossRecordDays',{count:row.value.toLocaleString(),days:row.activeDays})}</span>
         </div>)}
       </div>
       </>}</StatisticsDetails>
