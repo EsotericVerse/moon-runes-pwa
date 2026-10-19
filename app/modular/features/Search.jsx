@@ -26,7 +26,6 @@ import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayT
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
-import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
 const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
@@ -79,7 +78,7 @@ function isoOrNull(value,t){
 function parseGroupListsText(value,t){
   try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
 }
-function galaxyDraftFromRow(row={},fallbackTitle=''){
+function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
@@ -110,7 +109,7 @@ function galaxyDraftFromRow(row={},fallbackTitle=''){
   };
 }
 
-function mediaDraftFromRow(row={},fallbackTitle=''){
+function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     media_id:String(row.media_id||''), title:String(row.title||''),
     galaxy_link:String(row.galaxy_link||'').trim(),
@@ -575,7 +574,8 @@ export default function Search(){
       if(id!==searchId.current)return;
       if(!row)throw new Error(UI_COPY.search.notFound);
       const item=toResult({...row,scope_id:scopeId,__table:scopeData.galaxyMedia},'Galaxy Media',scopeId);
-      setResults([item]);setEditingKey(item.key);setEditDraft(mediaDraftFromRow(row,item.title));
+      const {plainTextToBlocks}=await import('../../loc/blocknote-content.mjs');
+      setResults([item]);setEditingKey(item.key);setEditDraft(mediaDraftFromRow(row,item.title,plainTextToBlocks));
     }catch(exception){if(id===searchId.current)setError(String(exception?.message||exception||UI_COPY.search.editLoadFailed))}
   }
 
@@ -641,9 +641,10 @@ export default function Search(){
         {authenticated:result.resourceType==='galaxy'&&canManageSearchScope(account,result.scopeId)}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
+      const {plainTextToBlocks}=await import('../../loc/blocknote-content.mjs');
       setEditDraft(result.resourceType==='galaxy'
-        ?galaxyDraftFromRow(fullRow,result.title)
-        :mediaDraftFromRow(fullRow,result.title));
+        ?galaxyDraftFromRow(fullRow,result.title,plainTextToBlocks)
+        :mediaDraftFromRow(fullRow,result.title,plainTextToBlocks));
     }catch(exception){
       setEditingKey('');
       setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
@@ -654,6 +655,7 @@ export default function Search(){
     setEditBusy(true);setEditError('');
     try{
       const isGalaxy=result.resourceType==='galaxy';
+      const {blocksToPlainText}=isGalaxy?await import('../../loc/blocknote-content.mjs'):{blocksToPlainText:null};
       const body=isGalaxy?requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks)):'';
       const nextTitle=isGalaxy?resolveGalaxyTitle(editDraft.title,blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks)):nullableText(editDraft.title);
       const titleChanged=editDraft.title!==editDraft.originalTitle;
