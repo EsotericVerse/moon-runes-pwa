@@ -387,7 +387,7 @@
   white-space:normal;
   text-overflow:clip;
   overflow-wrap:anywhere;
-  word-break:normal!important;
+  word-break:normal;
 }
 .loc-home-block--image-top,
 .loc-home-block--image-bottom{
