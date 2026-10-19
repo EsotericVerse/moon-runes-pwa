@@ -7,6 +7,7 @@ import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
 import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {
@@ -17,7 +18,7 @@ import {
 } from '../../loc/culture-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
-import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
+const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
@@ -29,13 +30,13 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import Article from '../Article';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
-import CultureTimelineEditor from './CultureTimelineEditor';
+const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
-import {LrunesDailyCulturePanel} from '../../lrunes/DailyRuneAnalytics';
-import LocItemConfluence from './LocItemConfluence';
+const LrunesDailyCulturePanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyCulturePanel),{loading:()=>null});
+const LocItemConfluence=dynamic(()=>import('./LocItemConfluence'),{loading:()=>null});
 
 function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));

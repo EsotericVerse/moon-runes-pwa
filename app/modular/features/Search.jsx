@@ -6,6 +6,7 @@ import {useUiCopy} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useQuery} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
 
@@ -25,8 +26,8 @@ import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} fro
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
-import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
-import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
+const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
+const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
 import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 

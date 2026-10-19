@@ -6,6 +6,7 @@ import {useUiCopy} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 
 import {useMemo,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -27,13 +28,13 @@ import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
 import {scopeHref} from '../scope-registry';
-import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
+const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyStatisticsPanel),{loading:()=>null});
 import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/StatisticsMultiChart';
-import ScopeSelfIntersection from '../modules/statistics/ScopeSelfIntersection';
-import LocMemberIntersection from '../modules/statistics/LocMemberIntersection';
-import ScopeGroupOverview from '../../loc/ScopeGroupOverview';
-import {ScopeCustomSourceCategories} from '../../loc/SourceCategoryEditor';
-import ScopeGroupStatisticsSharing from '../../loc/ScopeGroupStatisticsSharing';
+const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
+const LocMemberIntersection=dynamic(()=>import('../modules/statistics/LocMemberIntersection'),{loading:()=>null});
+const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
+const ScopeCustomSourceCategories=dynamic(()=>import('../../loc/SourceCategoryEditor').then(m=>m.ScopeCustomSourceCategories),{loading:()=>null});
+const ScopeGroupStatisticsSharing=dynamic(()=>import('../../loc/ScopeGroupStatisticsSharing'),{loading:()=>null});
 import {selectCrossScopeSharing} from '../../loc/statistics-group-sharing-query.mjs';
 import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../loc/statistics-group-sharing.mjs';
 import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
