@@ -6,7 +6,6 @@ import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
-import {selectRows} from '../../../loc/db-query.mjs';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
@@ -32,7 +31,7 @@ function canonicalBucket(day,unit){
   }
   return {key:day,from:day,to:day};
 }
-export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange}){
+export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
   const {locale,copy}=useUiLocale();
   const l=copy.uiExtra.selfIntersection;
   const [numberOfLanes,setNumberOfLanes]=useState(2);
@@ -49,10 +48,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     staleTime:5*60_000
   });
   const rows=query.data||[];
-  const catalog=useQuery({
+  const localCatalog=useQuery({
     queryKey:['own-scope-source-catalog',scope?.id],
-    enabled:valid,
+    enabled:valid&&!sharedCatalog,
     queryFn:async()=>{
+      const {selectRows}=await import('../../../loc/db-query.mjs');
       const [c,a,p]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
@@ -63,6 +63,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     },
     staleTime:5*60_000
   });
+  const catalog=sharedCatalog||localCatalog;
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
     const scopeSources=catalog.data?.scopeSources||[];
