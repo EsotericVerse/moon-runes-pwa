@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {translateUiField} from '../app/i18n/ui-functional-copy.mjs';
-import {uiCopy,normalizeUiLocale,UI_LOCALE_OPTIONS} from '../app/i18n/ui-copy.js';
+import {translateUiField,uiCopy,normalizeUiLocale,UI_LOCALE_OPTIONS} from '../app/i18n/ui-copy.js';
 for(const [source,expected] of [['主要資料庫','Primary database'],['次要資料庫','Backup database'],['運作模式','Routing mode'],['儲存設定','Save settings'],['全部項目','All items'],['檢視時期範圍','Period range']])assert.equal(translateUiField('en',source),expected);
 assert.equal(translateUiField('zh-Hant','主要資料庫'),'主要資料庫');
 assert.equal(translateUiField('zh-Hans','主要資料庫'),'主数据库');

@@ -2,9 +2,8 @@
 import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
-import {UI_COPY} from '../../i18n/ui-copy';
+import {translateUiField,UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
-import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';

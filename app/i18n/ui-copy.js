@@ -42,6 +42,14 @@ export function normalizeUiLocale(locale){
   return UI_DICTIONARIES[value]?value:UI_LOCALE;
 }
 
+// One authoritative dictionary for both key-based UI copy and authored
+// interface labels that still use legacy field names.
+export function translateUiField(locale,text){
+  const value=String(text??'');
+  const translated=UI_DICTIONARIES[locale]?.fields?.[value];
+  return translated||(locale==='ja'?UI_DICTIONARIES.en.fields[value]:null)||value;
+}
+
 export function uiCopy(locale=UI_LOCALE){
   return UI_DICTIONARIES[normalizeUiLocale(locale)];
 }

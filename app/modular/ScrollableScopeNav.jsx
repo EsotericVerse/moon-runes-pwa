@@ -1,6 +1,6 @@
 'use client';
 import {useUiLocale} from '../i18n/ui-locale';
-import {translateUiField} from '../i18n/ui-functional-copy.mjs';
+import {translateUiField} from '../i18n/ui-copy';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
 

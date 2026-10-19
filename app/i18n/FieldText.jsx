@@ -1,7 +1,7 @@
 'use client';
 
 import {useUiLocale} from './ui-locale';
-import {translateUiField} from './ui-functional-copy.mjs';
+import {translateUiField} from './ui-copy';
 
 export default function FieldText({text}){
   const {locale}=useUiLocale();

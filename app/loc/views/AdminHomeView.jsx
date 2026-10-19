@@ -2,9 +2,8 @@
 import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
-import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
+import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
-import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';

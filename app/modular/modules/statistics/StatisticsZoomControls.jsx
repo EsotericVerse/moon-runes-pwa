@@ -1,6 +1,6 @@
 'use client';
 import {useUiLocale} from '../../../i18n/ui-locale';
-import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
+import {translateUiField} from '../../../i18n/ui-copy';
 
 // Chart-side zoom only: no time-unit menu or date-picker. Range is read-only
 // via accessible button titles. The default is the latest year.

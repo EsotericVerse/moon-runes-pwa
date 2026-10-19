@@ -1,7 +1,7 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
 import {useUiLocale} from '../../../i18n/ui-locale';
-import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
+import {translateUiField} from '../../../i18n/ui-copy';
 
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
