@@ -593,21 +593,25 @@ function ScopeGroupStatistics(){
   const densityQuery=useQuery({
     queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|'),JSON.stringify(policy.data?.permissions||[])],
     queryFn:async()=>{
-      const output=await Promise.all(scopes.map(async scope=>
-        sharedScopeDensity(await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate}),scope.id,policy.data)
-      ));
-      return output.flat();
+      return Promise.all(scopes.map(async scope=>{
+        const rows=await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate});
+        return {scopeId:scope.id,rows,density:sharedScopeDensity(rows,scope.id,policy.data)};
+      }));
     },
     enabled:Boolean(policy.data&&scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
+  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>entry.density),[densityQuery.data]);
+  const preloadedSources=useMemo(()=>densityQuery.data
+    ?new Map(densityQuery.data.map(entry=>[entry.scopeId,entry.rows]))
+    :null,[densityQuery.data]);
   const overallTotal=useMemo(
-    ()=>(densityQuery.data||[]).reduce((sum,row)=>sum+(Number(row.item_count)||0),0),
-    [densityQuery.data]
+    ()=>densityRows.reduce((sum,row)=>sum+(Number(row.item_count)||0),0),
+    [densityRows]
   );
   const totals=useMemo(()=>{
     const map=new Map(scopeIds.map(id=>[id,0]));
-    for(const row of densityQuery.data||[]){
+    for(const row of densityRows){
       const id=String(row.scope_id||'').trim();
       if(!map.has(id))continue;
       map.set(id,(map.get(id)||0)+(Number(row.item_count)||0));
@@ -616,7 +620,7 @@ function ScopeGroupStatistics(){
       const total=map.get(id)||0;
       return {scope_id:id,total,ratio:overallTotal>0?(total/overallTotal)*100:0};
     });
-  },[densityQuery.data,scopeIds,overallTotal]);
+  },[densityRows,scopeIds,overallTotal]);
   const trendData=useMemo(()=>{
     if(!startDate||!rangeEndDate)return [];
     const bucketUnit=bucket;
@@ -629,7 +633,7 @@ function ScopeGroupStatistics(){
       for(const id of scopeIds)row[id]=0;
       buckets.set(bucket.key,row);
     }
-    for(const sourceRow of densityQuery.data||[]){
+    for(const sourceRow of densityRows){
       const bucket=trendBucket(sourceRow.day,bucketUnit);
       if(!bucket)continue;
       const row=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,total:0};
@@ -641,7 +645,7 @@ function ScopeGroupStatistics(){
       buckets.set(bucket.key,row);
     }
     return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort));
-  },[densityQuery.data,startDate,rangeEndDate,scopeIds,bucket]);
+  },[densityRows,startDate,rangeEndDate,scopeIds,bucket]);
   const distributionData=totals.map(row=>({term:row.scope_id,value:row.total}));
   // Even when displaying a combined total, its composition is the real
   // set of child Scopes. A single 100% "LOC total" pie is not analytics.
@@ -697,7 +701,7 @@ function ScopeGroupStatistics(){
     </>}</StatisticsDetails>
     <LocMemberIntersection key={startDate+'|'+rangeEndDate}
       scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
-      unit={bucket} sharing={policy.data||{}}
+      unit={bucket} sharing={policy.data||{}} preloadedSources={preloadedSources}
       laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
       choices={memberChoices} onChoicesChange={setMemberChoices}
       graph={memberGraph} onGraphChange={setMemberGraph}
