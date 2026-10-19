@@ -1,7 +1,7 @@
 'use client';
 
-import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {selectRows} from './db-query.mjs';
+
+import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
 import {dbPublicClient} from './db-client.mjs';
 
 // Public page copy reads only Title_TW and Desc_TW through a least-privilege RPC.

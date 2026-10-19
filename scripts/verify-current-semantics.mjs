@@ -21,7 +21,7 @@ const required=[
   'app/loc/db-query.mjs',
   'app/modular/feature-data-state.js',
   'app/AppShell.jsx',
-  'app/loc/query-contract.mjs',
+  'app/loc/db-query.mjs',
   'app/loc/ScopeGroupOverview.jsx',
   'app/loc/culture-query.js'
 ];
@@ -320,7 +320,7 @@ if(!failures.length){
   const search=read('app/modular/features/Search.jsx');
   const scopeGroupOverview=read('app/loc/ScopeGroupOverview.jsx');
   const cultureQuery=read('app/loc/culture-query.js');
-  const queryContract=read('app/loc/query-contract.mjs');
+  const queryContract=read('app/loc/db-query.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','DB_QUERY_TEXT_BATCH_SIZE=1000','queryBatchSize(columns'])if(!queryContract.includes(token))failures.push('Shared metadata/text query limit contract missing '+token);
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');

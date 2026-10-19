@@ -1,11 +1,11 @@
 'use client';
 
-import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
+
 
 import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
 import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
-import {selectCount,selectRows} from './db-query.mjs';
+import {DB_QUERY_BATCH_SIZE,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
 

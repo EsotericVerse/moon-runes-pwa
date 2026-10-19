@@ -1,14 +1,14 @@
 'use client';
 import {useUiCopy} from '../../i18n/ui-locale';
 
-import {DB_QUERY_BATCH_SIZE} from '../../loc/query-contract.mjs';
+
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAccount} from '../../loc/use-account';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
-import {selectRows} from '../../loc/db-query.mjs';
+import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import BlockNoteEditor from '../../loc/BlockNoteEditor';
 
 
