@@ -51,6 +51,7 @@ if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.m
 
 // Suno's authoring and style classification depend on BlockNote but file/ZIP
 // import must not download them until the user opens Suno Import.
+const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
 const sunoPanelSource=readFileSync(resolve(root,'app/loc/SunoImportPanel.jsx'),'utf8');
 if(!importPanelSource.includes("const SunoImport=dynamic(()=>import('./SunoImportPanel')")||
    !importPanelSource.includes('sunoOpen?<SunoImport')||
@@ -62,7 +63,7 @@ if(!importPanelSource.includes("const SunoImport=dynamic(()=>import('./SunoImpor
   failures.push('Suno and BlockNote must be separately downloaded only for an active authoring session');
 
 // Prevent parser capabilities from returning to the initial import-panel bundle.
-const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
+
 for(const moduleName of ['universal-file-import.mjs','private-archive-universal.mjs']){
   if(importPanelSource.includes("from './"+moduleName+"'"))
     failures.push('Import panel eagerly loads parser: '+moduleName);
