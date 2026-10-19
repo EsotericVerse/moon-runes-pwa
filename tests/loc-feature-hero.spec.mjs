@@ -271,3 +271,13 @@ test('LOC and Author feature Hero text is vertically centered in its artwork fra
   await page.goto('/lrunes/culture/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('header.scope-feature-hero--artwork')).not.toHaveCSS('display','flex');
 });
+
+test('Search does not show an empty title-only suggestions card to visitors',async({page})=>{
+  await page.goto('/search/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.scope-search-form')).toBeVisible({timeout:25_000});
+  const emptyCards=await page.locator('.scope-search-reference-block:not(.is-editing)').evaluateAll(cards=>cards.filter(card=>
+    ![...card.querySelectorAll('.scope-block-subtitle,.scope-rich-surface,.scope-block-entity-grid article')]
+      .some(item=>item.textContent.trim().length>0)
+  ).length);
+  expect(emptyCards).toBe(0);
+});
