@@ -10,7 +10,8 @@ import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 
-import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
+// Defer Galaxy's data/query engine until the selected statistics mode needs it.
+const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 
@@ -33,7 +34,6 @@ const LocMemberIntersection=dynamic(()=>import('../modules/statistics/LocMemberI
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
 const ScopeCustomSourceCategories=dynamic(()=>import('../../loc/SourceCategoryEditor').then(m=>m.ScopeCustomSourceCategories),{loading:()=>null});
 const ScopeGroupStatisticsSharing=dynamic(()=>import('../../loc/ScopeGroupStatisticsSharing'),{loading:()=>null});
-import {selectCrossScopeSharing} from '../../loc/statistics-group-sharing-query.mjs';
 import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../loc/statistics-group-sharing.mjs';
 import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
 import StatisticsDetails from '../modules/statistics/StatisticsDetails';
@@ -267,6 +267,7 @@ function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevel
     setWorksLoading(true);setWorksError('');
     if(!append)setWorks([]);
     try{
+      const {selectMediaCrossPairWorks}=await loadGalaxyStatistics();
       const page=await selectMediaCrossPairWorks(scope,pair,{
         startDate:range.startDate,endDate:range.endDate,offset,limit:10
       });
@@ -392,7 +393,10 @@ function ScopeGroupStatistics(){
   });
   const policy=useQuery({
     queryKey:['cross-statistics-sharing'],
-    queryFn:selectCrossScopeSharing,
+    queryFn:async()=>{
+      const {selectCrossScopeSharing}=await import('../../loc/statistics-group-sharing-query.mjs');
+      return selectCrossScopeSharing();
+    },
     staleTime:0,refetchOnMount:'always',refetchOnWindowFocus:true
   });
   const scopes=useMemo(()=>(scopesQuery.data||[]).filter(scope=>
@@ -404,6 +408,7 @@ function ScopeGroupStatistics(){
     queryKey:['statistics-history-start','loc',scopesQuery.data?.map(row=>row.id).join('|')],
     enabled:scopesQuery.isSuccess,
     queryFn:async()=>{
+      const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
       const starts=await Promise.all([
         ...(scopesQuery.data||[]).map(selectFirstScopeStatisticsDate),
         selectFirstDailyRuneDate()
@@ -418,6 +423,7 @@ function ScopeGroupStatistics(){
   const densityQuery=useQuery({
     queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|'),JSON.stringify(policy.data?.permissions||[])],
     queryFn:async()=>{
+      const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics();
       return Promise.all(scopes.map(async scope=>{
         const rows=await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate});
         return {scopeId:scope.id,rows,density:sharedScopeDensity(rows,scope.id,policy.data)};
@@ -566,20 +572,29 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const earliest=useQuery({
     queryKey:['statistics-history-start',scopeId],
     enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
-    queryFn:()=>selectFirstScopeStatisticsDate(targetScopes[0]),
+    queryFn:async()=>{
+      const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
+      return selectFirstScopeStatisticsDate(targetScopes[0]);
+    },
     staleTime:5*60_000
   });
   const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,earliest.data||''),
     [zoomLevel,queryEndDate,earliest.data]);
   const mediaQuery=useQuery({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
-    queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
+    queryFn:async()=>{
+      const {selectMediaStatisticsFacetRows}=await loadGalaxyStatistics();
+      return selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange);
+    },
     enabled:mediaDimension&&rankingType!=='media_style'&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const crossTagQuery=useQuery({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
-    queryFn:()=>selectMediaCrossTagRows(targetScopes[0],queryRange),
+    queryFn:async()=>{
+      const {selectMediaCrossTagRows}=await loadGalaxyStatistics();
+      return selectMediaCrossTagRows(targetScopes[0],queryRange);
+    },
     enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
@@ -609,7 +624,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const sourceRows=useQuery({
     queryKey:['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],
-    queryFn:()=>selectScopeSourceBreakdownRows(targetScopes[0],queryRange),
+    queryFn:async()=>{
+      const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics();
+      return selectScopeSourceBreakdownRows(targetScopes[0],queryRange);
+    },
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });

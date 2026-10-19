@@ -49,6 +49,16 @@ if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.m
    !statisticsSource.includes("enabled:!isLrunesDaily&&!mediaDimension"))
   failures.push('Statistics source model must be loaded only in an active source mode');
 
+// Galaxy query capability is not part of daily Rune statistics or other
+// unrelated rankings; it is downloaded by the active query / chart interaction.
+if(statisticsSource.includes("from '../../loc/galaxy-query'")||
+   !statisticsSource.includes("const loadGalaxyStatistics=()=>import('../../loc/galaxy-query')")||
+   !statisticsSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
+   !statisticsSource.includes("const {selectMediaCrossTagRows}=await loadGalaxyStatistics()")||
+   !statisticsSource.includes("const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics()")||
+   !statisticsSource.includes("await import('../../loc/statistics-group-sharing-query.mjs')"))
+  failures.push('Statistics Galaxy and group-sharing engines must be loaded on the active query or interaction');
+
 // Suno's authoring and style classification depend on BlockNote but file/ZIP
 // import must not download them until the user opens Suno Import.
 const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
