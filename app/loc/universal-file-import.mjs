@@ -2,7 +2,7 @@
 // LOC owns only the existing import row contract and source-preserving field mapping.
 import {importRowsFromJson} from './import-batch.mjs';
 
-export const UNIVERSAL_IMPORT_ACCEPT='.zip,.json,.csv,.tsv,.xlsx,.ods,.docx,.pptx,.pdf,.odt,.odp,.odg,.rtf,.md,.html,.htm,.epub,.tex';
+export {UNIVERSAL_IMPORT_ACCEPT} from './import-batch.mjs';
 const TABLE_FORMATS=new Set(['csv','tsv','xlsx','ods']);
 const DOCUMENT_FORMATS=new Set(['docx','pptx','pdf','odt','odp','odg','rtf','md','html','htm','epub','tex']);
 const MAX_DOCUMENT_BYTES=128*1024*1024;

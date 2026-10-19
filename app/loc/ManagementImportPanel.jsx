@@ -7,9 +7,7 @@ import {useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
-import {IMPORT_FIELD_ALIASES,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
-import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file-import.mjs';
-import {ARCHIVE_MAX_BYTES,detectZipArchiveSource} from './private-archive-universal.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 import BlockNoteEditor from './BlockNoteEditor';
@@ -253,12 +251,14 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     if(isZip){setBusy(true);setStatus(t('uiExtra.importUI.zipInspecting'));}
     try{
       if(isZip){
+        const {detectZipArchiveSource}=await import('./private-archive-universal.mjs');
         const result=await detectZipArchiveSource(file);
         setArchiveDetection(result);
         setSource(result.sources.length===1?result.sources[0]:'');
         setStatus(t('uiExtra.importUI.zipInspected',{count:result.filesSeen}));
         return;
       }
+      const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
       const list=await parseUniversalImportFile(file,{recordPath:format.recordPath});
       const prepared=list.map(row=>({
         raw:row,

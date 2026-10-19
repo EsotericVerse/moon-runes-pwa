@@ -41,6 +41,15 @@ walk(resolve(root,'app'),path=>{
 });
 
 
+// Prevent parser capabilities from returning to the initial import-panel bundle.
+const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
+for(const moduleName of ['universal-file-import.mjs','private-archive-universal.mjs']){
+  if(importPanelSource.includes("from './"+moduleName+"'"))
+    failures.push('Import panel eagerly loads parser: '+moduleName);
+  if(!importPanelSource.includes("await import('./"+moduleName+"')"))
+    failures.push('Import panel missing on-demand parser: '+moduleName);
+}
+
 for(const path of [
   'app/lrunes/RunesClient.jsx',
   'app/lrunes/RuneDrawClient.jsx',

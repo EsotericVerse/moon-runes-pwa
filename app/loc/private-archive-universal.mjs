@@ -2,6 +2,8 @@
 // Never uploads contents. zip.js-like mature primitives: fflate for ZIP; @streamparser/json for JSON.
 // Unsupported formats are explicitly accounted for; no speculative field coercion.
 import {Unzip,UnzipInflate,UnzipPassThrough} from 'fflate';
+import {ARCHIVE_MAX_BYTES} from './import-batch.mjs';
+export {ARCHIVE_MAX_BYTES};
 import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
@@ -10,7 +12,6 @@ import {canonicalArchiveText} from './archive-record-identity.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
-export const ARCHIVE_MAX_BYTES=512*1024*1024;
 const MAX_EXTRACTED=30*1024*1024;
 const MAX_FILES=20000,MAX_TEXT_DOCUMENT=8*1024*1024;
 const MAX_STRUCTURED_DOCUMENT=10_000_000;
