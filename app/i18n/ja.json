@@ -1024,6 +1024,7 @@
       "textOnly": "この領域ではテキストのみ編集できます。",
       "oneImage": "テキスト枠には画像を 1 枚だけ設定できます。余分な画像を削除してください。",
       "invalidImage": "画像には有効な http:// または https:// URL が必要です。",
+      "emptyContent": "テキスト枠に内容がないため、保存しませんでした。",
       "saved": "保存しました。",
       "saveFailedPrefix": "保存に失敗：",
       "unknown": "不明なエラー",

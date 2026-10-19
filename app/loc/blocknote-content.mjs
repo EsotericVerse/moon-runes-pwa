@@ -51,6 +51,46 @@ export function blocksToPlainText(value){
   return out.join('\n').trim();
 }
 
+// A shared presence predicate for BlockNote documents and stored rich HTML.
+// It determines whether content exists; it never edits or forbids HTML.
+const PLACEHOLDER_GLYPHS=/[\uFFFC\u200B-\u200D\uFEFF]/gu;
+const MEDIA_TYPES=new Set(['image','video','audio','file','embed']);
+const visibleText=value=>String(value??'').replace(PLACEHOLDER_GLYPHS,'').trim();
+function blocksHaveContent(blocks){
+  return (Array.isArray(blocks)?blocks:[]).some(block=>
+    Boolean(block&&(
+      visibleText(textFromInline(block.content))||
+      (MEDIA_TYPES.has(block.type)&&visibleText(block.props?.url||block.props?.src))||
+      blocksHaveContent(block.children)
+    ))
+  );
+}
+export function hasBlockNoteContent(value){
+  const normalized=normalizeBlocks(value);
+  if(Array.isArray(normalized))return blocksHaveContent(normalized);
+  const html=String(normalized?.html||'');
+  if(!html.trim())return false;
+  // This path handles legacy/stored HTML. No HTML is rewritten or removed.
+  if(typeof DOMParser!=='undefined'){
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    doc.querySelectorAll('script,style,template').forEach(node=>node.remove());
+    return Boolean(visibleText(doc.body.textContent)||
+      doc.body.querySelector('img[src],video[src],audio[src],iframe[src],embed[src],source[src],object[data],svg,canvas'));
+  }
+  // Node regression fallback; browsers use their native HTML parser above.
+  const text=html.replace(/<!--[\s\S]*?-->/g,'')
+    .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'')
+    .replace(/<[^>]*>/g,' ').replace(/&(?:nbsp|#0*160|#x0*a0);/gi,' ');
+  return Boolean(visibleText(text)||
+    /<(?:img|video|audio|iframe|embed|source)\b[^>]*\bsrc\s*=|<object\b[^>]*\bdata\s*=|<(?:svg|canvas)\b/i.test(html));
+}
+export function hasBlockNoteFrameContent(frame){
+  return Boolean(visibleText(frame?.eyebrow)||visibleText(frame?.title)||
+    hasBlockNoteContent(frame?.subtitle)||hasBlockNoteContent(frame?.text)||
+    (Array.isArray(frame?.entities)&&frame.entities.some(entity=>
+      visibleText(entity?.title)||hasBlockNoteContent(entity?.text))));
+}
+
 // Normalize legacy HTML and ProseMirror object-only paragraphs using the same
 // shared BlockNote document conversion module.
 const objectOnlyText=/^(?=[\s\uFFFC]*\uFFFC)[\s\uFFFC]+$/u;
@@ -157,7 +197,7 @@ export function stripHeroImageTag(value=''){
 /** One pure BlockNote document model, with composable text and image capabilities. */
 export const BlockNoteContent=Object.freeze({
   text:Object.freeze({plainTextToBlocks,looksLikeMarkdown,normalizeBlocks,blocksToPlainText,
-    canonicalBlockNoteBlocks,canonicalBlockNoteHtml}),
+    canonicalBlockNoteBlocks,canonicalBlockNoteHtml,hasBlockNoteContent,hasBlockNoteFrameContent}),
   image:Object.freeze({normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,
     countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag})
 });

@@ -11,7 +11,7 @@ import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRow
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 import BlockNoteEditor from './BlockNoteEditor';
-import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
+import {blocksToPlainText,hasBlockNoteContent,plainTextToBlocks} from './blocknote-content.mjs';
 
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -684,8 +684,8 @@ function SunoImport({scopeId}){
       if(!title)throw new Error(t('uiExtra.importUI.sunoTitleRequired'));
       if(!metaTags)throw new Error(t('uiExtra.importUI.sunoTagsRequired'));
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
-      const lyricsUid=lyrics?createUid8():null;
-      const styleUid=lyricsUid&&stylePrompt?createUid8():null;
+      const lyricsUid=hasBlockNoteContent(lyrics)?createUid8():null;
+      const styleUid=lyricsUid&&hasBlockNoteContent(stylePrompt)?createUid8():null;
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
       const scopeData=account.scopeDataFor(scopeId);
       if(!scopeData)throw new Error(t('uiExtra.importUI.scopeUnresolved'));

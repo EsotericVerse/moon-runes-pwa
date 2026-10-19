@@ -637,7 +637,7 @@ export default function Culture(){
     try{
       if(!scopeData)throw new Error(l.sourceUnresolved);
       const {blocksToPlainText}=await import('../../loc/blocknote-content.mjs');
-      const content=requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks));
+      const content=await requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks));
       const plainBody=blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks);
       await updateRows(scopeData.galaxy,{
         title:resolveGalaxyTitle(editDraft.title,plainBody),

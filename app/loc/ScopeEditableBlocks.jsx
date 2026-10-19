@@ -247,6 +247,7 @@ export default function ScopeEditableBlocks({
     if(!draft)return;
     setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
     try{
+      if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft))throw new Error(t('uiExtra.editBlocks.emptyContent'));
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
       if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
@@ -359,7 +360,7 @@ export default function ScopeEditableBlocks({
     {slots.map(slot=>{
       const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
       const movableIndex=movableSlots.findIndex(item=>item.uid===slot.uid);
-      const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
+      const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
       // A Search suggestion needs an actual clickable term, not just its
       // section heading. Editors always retain their block and edit action.

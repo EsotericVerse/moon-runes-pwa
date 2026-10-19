@@ -1024,6 +1024,7 @@
       "textOnly": "此文字區僅允許編輯文字。",
       "oneImage": "每個文字框架最多只能有一張圖片，請先移除多餘圖片。",
       "invalidImage": "圖片必須是有效的 http:// 或 https:// 網址。",
+      "emptyContent": "文字框沒有實際內容，未儲存。",
       "saved": "已儲存。",
       "saveFailedPrefix": "儲存失敗：",
       "unknown": "未知錯誤",

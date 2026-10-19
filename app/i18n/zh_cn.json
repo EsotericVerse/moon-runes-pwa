@@ -1024,6 +1024,7 @@
       "textOnly": "此文本区仅允许编辑文字。",
       "oneImage": "每个文本框架最多只能有一张图片，请删除多余图片。",
       "invalidImage": "图片必须是有效的 http:// 或 https:// 网址。",
+      "emptyContent": "文本框没有实际内容，未保存。",
       "saved": "已保存。",
       "saveFailedPrefix": "保存失败：",
       "unknown": "未知错误",

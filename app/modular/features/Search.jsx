@@ -657,7 +657,7 @@ export default function Search(){
     try{
       const isGalaxy=result.resourceType==='galaxy';
       const {blocksToPlainText}=isGalaxy?await import('../../loc/blocknote-content.mjs'):{blocksToPlainText:null};
-      const body=isGalaxy?requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks)):'';
+      const body=isGalaxy?await requireGalaxyContent(editDraft.bodyHtml??blocksToPlainText(editDraft.bodyBlocks)):'';
       const nextTitle=isGalaxy?resolveGalaxyTitle(editDraft.title,blocksToPlainText(editDraft.bodyHtml??editDraft.bodyBlocks)):nullableText(editDraft.title);
       const titleChanged=editDraft.title!==editDraft.originalTitle;
       let contentPatch;

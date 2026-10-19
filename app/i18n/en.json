@@ -1024,6 +1024,7 @@
       "textOnly": "This text area only accepts text.",
       "oneImage": "Only one image is allowed per text frame. Remove extra images.",
       "invalidImage": "Image must be a valid http:// or https:// URL.",
+      "emptyContent": "The text frame is empty; nothing was saved.",
       "saved": "Saved.",
       "saveFailedPrefix": "Save failed: ",
       "unknown": "Unknown error",

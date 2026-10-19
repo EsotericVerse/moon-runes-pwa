@@ -31,7 +31,7 @@ export default function ManagementArticlePublisher({scopeId}){
     event?.preventDefault?.();
     setBusy(true);setStatus('');
     try{
-      const content=requireGalaxyContent(draft.bodyHtml||blocksToPlainText(draft.bodyBlocks));
+      const content=await requireGalaxyContent(draft.bodyHtml||blocksToPlainText(draft.bodyBlocks));
       if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
       const uid=createUid8();

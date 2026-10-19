@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml,BlockNoteContent} from '../app/loc/blocknote-content.mjs';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml,hasBlockNoteContent,hasBlockNoteFrameContent,BlockNoteContent} from '../app/loc/blocknote-content.mjs';
+import {requireGalaxyContent} from '../app/loc/content-policy.js';
 const {normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag}=BlockNoteContent.image;
 
 const glyph='\uFFFC';
@@ -70,4 +71,21 @@ assert.equal(frameImageCount({...imageFrame,text:'<img src="https://example.com/
 assert.equal(stripHeroImageTag('<p>Hello</p><p><img src="https://example.com/art.png"></p>'),'<p>Hello</p>',
   'Hero artwork must be rendered once by its frame, not a second inline image');
 
-console.log('[blocknote-serialization] empty paragraph count, bold, links, media, nested blocks and HTML round-trip guards passed');
+for(const empty of ['', '   ', '\n\t', '<p><br></p>', '<p> &nbsp; </p>', '<div><p>　</p></div>', '<!-- comment -->']){
+  assert.equal(hasBlockNoteContent(empty),false,'empty editor content: '+empty);
+}
+assert.equal(hasBlockNoteContent([{type:'paragraph',content:[]}]),false);
+assert.equal(hasBlockNoteContent([{type:'paragraph',content:[{type:'text',text:'\uFFFC'}]}]),false);
+assert.equal(hasBlockNoteContent([{type:'paragraph',content:[{type:'text',text:'內容',styles:{bold:true}}]}]),true);
+assert.equal(hasBlockNoteContent([{type:'paragraph',content:[],children:[{type:'paragraph',content:'子項目'}]}]),true);
+assert.equal(hasBlockNoteContent([{type:'image',props:{url:'https://example.com/pic.png'},content:[]}]),true);
+assert.equal(hasBlockNoteContent('<p><strong>保留格式</strong></p>'),true);
+assert.equal(hasBlockNoteContent('<p><img src="https://example.com/pic.png"></p>'),true);
+assert.equal(hasBlockNoteContent('<p>&lt;b&gt;字面 HTML 標籤&lt;/b&gt;</p>'),true);
+assert.equal(hasBlockNoteFrameContent({title:'　',subtitle:'<p><br></p>',text:'',entities:[{title:'',text:'<p> </p>'}]}),false);
+assert.equal(hasBlockNoteFrameContent({title:'標題',text:'<p><br></p>'}),true);
+assert.equal(hasBlockNoteFrameContent({entities:[{title:'',text:'<img src="https://example.com/a.png">'}]}),true);
+await assert.rejects(()=>requireGalaxyContent('<p><br></p>'),/必須有正文/);
+await assert.rejects(()=>requireGalaxyContent('\n'),/必須有正文/);
+assert.equal(await requireGalaxyContent('<p><strong>作品</strong></p>'),'<p><strong>作品</strong></p>');
+console.log('[blocknote-serialization] empty content, rich HTML/media and save guards passed');
