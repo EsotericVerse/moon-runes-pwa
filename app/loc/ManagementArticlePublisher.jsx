@@ -8,7 +8,7 @@ import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import ArticleBodyEditor from './ArticleBodyEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const blank=()=>({
@@ -72,7 +72,7 @@ export default function ManagementArticlePublisher({scopeId}){
           placeholder={t('uiExtra.publisher.addTitle')}
           aria-label={t('uiExtra.publisher.articleTitle')}
         />
-        <ArticleBodyEditor
+        <BlockNoteEditor
           editorKey={'publisher:'+scopeId+':'+draft.editorKey}
           content={draft.bodyBlocks}
           onBlocksChange={blocks=>change('bodyBlocks',blocks)}
