@@ -336,7 +336,8 @@ test('search reference section uses existing editable page=search BlockNote cont
   const source=fs.readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
   assert.ok(source.includes('scope-search-filter-panel'));
   assert.ok(source.includes('selectCultureTimeRows('));
-  assert.ok(source.includes('import ScopeEditableBlocks'));
+  assert.ok(source.includes("dynamic(()=>import('../../loc/ScopeEditableBlocks')"),'Search reference editor must load when Search needs it');
+  assert.ok(!/^import ScopeEditableBlocks/m.test(source),'Do not eagerly bundle the editor in Search');
   assert.ok(source.includes('page="search"'));
   assert.ok(source.includes('scopeId={scopeId}'));
   assert.ok(!source.includes('scopeId="loc"'),'Do not share LOC Search block across independent Scope pages');
