@@ -18,7 +18,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 
-import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
+
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -814,7 +814,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   }),[queryRange.startDate,queryRange.endDate]);
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
-    queryFn:()=>selectRune66Classification({scopeId,...styleRange}),
+    queryFn:async()=>{
+      const {selectRune66Classification}=await import('../../loc/rune66-keyword-analysis');
+      return selectRune66Classification({scopeId,...styleRange});
+    },
     enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
     staleTime:5*60_000
   });
