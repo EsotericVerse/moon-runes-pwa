@@ -426,7 +426,9 @@ test('Search uses a single BlockNote edit draft, with Galaxy metadata below the 
   assert.ok(objectEditor.includes("kind==='boolean'"));
   assert.ok(objectEditor.includes("kind==='array'||kind==='multiline'"));
   assert.ok(shared.includes('onClickCapture={onClickCapture}'));
-  assert.ok(shared.includes('onSave}>{editBusy?'));
+  assert.ok(shared.includes('onClick:onSave'));
+  assert.ok(shared.includes('<ObjectEditor mode="actions"'));
+  assert.ok(objectEditor.includes("if(mode==='actions')return actionBar;"));
 });
 
 test('Homepage and article click-to-edit ignore existing links and visualization targets',async()=>{
