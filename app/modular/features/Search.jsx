@@ -20,7 +20,7 @@ import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../f
 import {featureDataErrorMessage} from '../feature-data-state';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
-import {selectCultureTimeRows} from '../../loc/culture-query';
+
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
@@ -381,6 +381,8 @@ export default function Search(){
     queryKey:['search-period-options',periodScope?.id],
     enabled:advancedOpen&&advancedTab==='time'&&!aggregateScopes&&Boolean(periodScope?.time),
     queryFn:async()=>{
+      // The Culture/Time query module is needed only when advanced time filtering opens.
+      const {selectCultureTimeRows}=await import('../../loc/culture-query');
       const rows=await selectCultureTimeRows(periodScope,periodScope?.birthday);
       return rows.filter(row=>row.entry_type==='period'&&row.start_date)
         .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
