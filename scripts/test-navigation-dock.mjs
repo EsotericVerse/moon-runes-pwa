@@ -201,7 +201,7 @@ test('website governance authorizes its own Scope while native Settings manage r
   assert.match(governance,/navigationHref\(scopeId,'governance\/manage',native\)/);
   assert.match(legacy,/href="\/settings\/\?section=account"/);
   assert.match(legacy,/if\(!account\.user\)/);
-  assert.match(legacy,/account\.canManageScopeSync\('loc'\)/);
+  assert.match(legacy,/canManageHere=account\.canManageScopeSync\(routeScopeId\)/);
   assert.doesNotMatch(legacy,/account\.signIn\(/);
   assert.match(settings,/managedScopes/);
   assert.match(settings,/account.canManageScopeSync\(item.id\)/);
