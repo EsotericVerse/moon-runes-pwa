@@ -86,16 +86,16 @@ test.describe('LunaRunes tabletop UI',()=>{
   });
 
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
-    const unnecessaryCountRequests=[];
+    const unnecessaryCountRequests=[],gameSelectRequests=[];
     page.on('request',request=>{
-      if(request.method()!=='HEAD')return;
-      const url=request.url();
-      if(url.includes('/rest/v1/game?')||url.includes('/rest/v1/runes?'))unnecessaryCountRequests.push(url);
+      const method=request.method(),url=request.url();
+      if(!url.includes('/rest/v1/game?')&&!url.includes('/rest/v1/runes?'))return;
+      if(method==='HEAD')unnecessaryCountRequests.push(url);
+      if(method==='GET')gameSelectRequests.push(url);
     });
     await page.goto('/game/',{waitUntil:'domcontentloaded'});
     await expect(page.getByRole('heading',{name:'月之符文'})).toBeVisible({timeout:15_000});
     await expect(page.getByText('66 枚符文',{exact:true})).toBeVisible({timeout:15_000});
-    expect(unnecessaryCountRequests,'Game and Rune facts must come from counted SELECTs, not separate HEAD COUNT probes').toEqual([]);
     await page.getByRole('button',{name:'開始遊戲'}).click();
     await expect(page.getByText(/玩家 A 起手設定/)).toBeVisible();
     let cards=page.locator('.lrg-player.active .lrg-card');
@@ -110,6 +110,9 @@ test.describe('LunaRunes tabletop UI',()=>{
     await page.getByRole('button',{name:/確認棄牌/}).click();
     await expect(page.getByText(/EVENT/)).toBeVisible();
     await expect(page.getByText(/第 1 回合/).first()).toBeVisible();
+    expect(gameSelectRequests.length,'The game must have loaded its real SQL dataset before counting queries').toBeGreaterThanOrEqual(7);
+    expect(unnecessaryCountRequests,'Game and Rune facts must come from counted SELECTs, not separate HEAD COUNT probes').toEqual([]);
+    console.log('[game-sql-audit]',JSON.stringify({dataSelects:gameSelectRequests.length,extraHeadCounts:unnecessaryCountRequests.length}));
 
     const players=page.locator('.lrg-player');
     await expect(players).toHaveCount(2);
