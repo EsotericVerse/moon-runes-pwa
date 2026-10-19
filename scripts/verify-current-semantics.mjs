@@ -324,8 +324,8 @@ if(!failures.length){
   // computed from the returned metadata rather than repeated SELECTs.
   const cultureSnapshot=cultureQuery.split('export async function selectScopePeriodSourceSnapshot(')[1]?.split('export async function selectScopePeriodWorkIndex(')[0]||'';
   const searchProviders=galaxy.split('function genericScopeProviders(')[1]?.split('function normalizeSearch(')[0]||'';
-  if((cultureSnapshot.match(/selectAllRows\\(scope\\.(?:galaxy|galaxyMedia),/g)||[]).length!==2||
-     /selectSourceCatalog\\(|selectSourceDaily\\(|selectCategoryCounts\\(/.test(cultureSnapshot))
+  if((cultureSnapshot.match(/selectAllRows\(scope\.(?:galaxy|galaxyMedia),/g)||[]).length!==2||
+     /selectSourceCatalog\(|selectSourceDaily\(|selectCategoryCounts\(/.test(cultureSnapshot))
     failures.push('Culture source snapshots must read Galaxy and Media just once each');
   if(!culture.includes('enabled:worksOpen')||!culture.includes("onToggle={event=>setWorksOpen(event.currentTarget.open)}"))
     failures.push('Culture work detail SELECTs must wait for explicit list expansion');
