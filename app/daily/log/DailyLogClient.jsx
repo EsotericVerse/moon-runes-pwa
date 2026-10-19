@@ -279,7 +279,8 @@ export default function DailyLogClient({embedded=false}={}){
     }finally{setSaving(false);}
   }
 
-  return <section className={'loc-view'+(!embedded?' daily-rune-log-view':'')}>
+  const Root=embedded?'section':'main';
+  return <Root className={'loc-view'+(!embedded?' daily-rune-log-view':'')}>
     {!embedded?<ContextReturnNav scopeId="lrunes" label="回符文首頁"/>:null}
     {!embedded?<header className="loc-hero loc-hero-feature">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
@@ -389,5 +390,5 @@ export default function DailyLogClient({embedded=false}={}){
     {canViewDetails&&loading?<p className="loc-status" aria-live="polite">讀取每日符文紀錄…</p>:null}
     {canViewDetails&&!loading&&!error&&!rows.length?<article className="loc-card">目前沒有每日符文紀錄。</article>:null}
     {canViewDetails&&selectedDate&&!selectedRows.length?<article className="loc-card" aria-live="polite">這一天沒有每日符文紀錄。</article>:null}
-  </section>;
+  </Root>;
 }
