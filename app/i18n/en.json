@@ -1225,7 +1225,8 @@
     },
     "dataSourceStatus": {
       "primary": "Primary data",
-      "backup": "Backup data"
+      "backup": "Backup data",
+      "detailsTitle": "Data source details"
     },
     "selfIntersection": {
       "readingSources": "Loading sources…",
