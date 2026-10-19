@@ -371,16 +371,16 @@ export default function ScopeEditableBlocks({
         onClick={!active&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
       >
         {active?<>
-          <div className="scope-inline-editbar">
-            <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')}</button>
-            {slot.stored&&movableSlots.length>1?<>
-              <button type="button" className="loc-button" disabled={busy||movableIndex<=0} onClick={()=>moveBlock(-1)}><UiText id="uiExtra.editBlocks.moveUp"/></button>
-              <button type="button" className="loc-button" disabled={busy||movableIndex>=movableSlots.length-1} onClick={()=>moveBlock(1)}><UiText id="uiExtra.editBlocks.moveDown"/></button>
-            </>:null}
-            {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}><UiText id="uiExtra.editBlocks.remove"/></button>:null}
-            <button type="button" className="loc-button" disabled={busy} onClick={cancel}><UiText id="uiExtra.editBlocks.cancel"/></button>
-            {message?<span className={'scope-inline-save-status'+(message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
-          </div>
+          <ObjectEditor mode="actions" actionClassName="scope-inline-editbar" actions={[
+            {key:'save',primary:true,disabled:busy,onClick:save,label:busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')},
+            ...(slot.stored&&movableSlots.length>1?[
+              {key:'up',disabled:busy||movableIndex<=0,onClick:()=>moveBlock(-1),label:<UiText id="uiExtra.editBlocks.moveUp"/>},
+              {key:'down',disabled:busy||movableIndex>=movableSlots.length-1,onClick:()=>moveBlock(1),label:<UiText id="uiExtra.editBlocks.moveDown"/>}
+            ]:[]),
+            ...(allowDelete?[{key:'delete',danger:true,disabled:busy,onClick:remove,label:<UiText id="uiExtra.editBlocks.remove"/>}]:[]),
+            {key:'cancel',disabled:busy,onClick:cancel,label:<UiText id="uiExtra.editBlocks.cancel"/>}
+          ]} status={message}
+            statusClassName={message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?'scope-error':''}/>
           <ObjectEditor mode="scope" fields={[
             ...(editEyebrow?[{
               key:'eyebrow',label:<UiText id="uiExtra.editBlocks.englishEyebrow"/>,
