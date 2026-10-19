@@ -9,7 +9,7 @@ import {ScopeFeatureToggles} from '../modular/ui';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
-import BlockNoteEditor from './BlockNoteEditor';
+import {ObjectEditor} from './BlockNoteEditor';
 
 const EMPTY={
   display_name:'',
@@ -111,17 +111,14 @@ export default function ScopeSettingsPanel({scopeId}){
         </label>
       </div>
 
-      <label className="scope-management-wide-field">
-        <span><UiText id="uiExtra.scopeSettings.searchIntro"/></span>
-        <BlockNoteEditor editorKey={'scope-intro:'+scopeId} content={draft.search_intro||''}
-          canInsertImage={false} onPlainTextChange={value=>change('search_intro',value)}/>
-      </label>
-
-      <label className="scope-management-wide-field">
-        <span><UiText id="uiExtra.scopeSettings.searchAliases"/></span>
-        <BlockNoteEditor editorKey={'scope-aliases:'+scopeId} content={aliases}
-          canInsertImage={false} onPlainTextChange={setAliases}/>
-      </label>
+      <ObjectEditor mode="fields" fields={[
+        {key:'search_intro',kind:'rich',label:<UiText id="uiExtra.scopeSettings.searchIntro"/>,
+          editorKey:'scope-intro:'+scopeId,content:draft.search_intro||'',canInsertImage:false,
+          onPlainTextChange:value=>change('search_intro',value)},
+        {key:'search_aliases',kind:'rich',label:<UiText id="uiExtra.scopeSettings.searchAliases"/>,
+          editorKey:'scope-aliases:'+scopeId,content:aliases,canInsertImage:false,
+          onPlainTextChange:setAliases}
+      ]}/>
 
       <fieldset className="scope-management-wide-field">
         <legend><UiText id="uiExtra.scopeSettings.publicFeatures"/></legend>

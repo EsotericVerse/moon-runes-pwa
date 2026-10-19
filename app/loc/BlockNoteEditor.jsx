@@ -76,28 +76,31 @@ export function ObjectEditor({
       role={statusRole} aria-live={statusRole==='status'?'polite':undefined}>{status}</span>:null}
   </div>:null;
   if(mode==='actions')return actionBar;
-  if(mode==='scope'){
-    return <div className="scope-editor scope-page-editor">
-      {actionBar}
-      {fields.map(field=>{
-        if(field.kind==='node')return <div key={field.key}>{field.node}</div>;
-        if(field.kind==='rich')return <div key={field.key} className="scope-management-wide-field">
-          <span>{field.label}</span>
-          <BlockNoteEditor editorKey={field.editorKey} content={field.content}
-            onBlocksChange={field.onBlocksChange} onHtmlChange={field.onHtmlChange}
-            onPlainTextChange={field.onPlainTextChange} canInsertImage={field.canInsertImage!==false}/>
-        </div>;
-        return <label key={field.key} className="scope-management-wide-field">
-          <span>{field.label}</span>
-          <input className="scope-search-input" value={field.value??''}
-            onChange={event=>field.onChange?.(event.target.value)} disabled={field.disabled===true}/>
-        </label>;
-      })}
+  const renderFields=()=>fields.map(field=>{
+    if(field.kind==='node')return <div key={field.key}>{field.node}</div>;
+    if(field.kind==='rich')return <div key={field.key} className="scope-management-wide-field">
+      <span>{field.label}</span>
+      <BlockNoteEditor editorKey={field.editorKey} content={field.content}
+        onBlocksChange={field.onBlocksChange} onHtmlChange={field.onHtmlChange}
+        onPlainTextChange={field.onPlainTextChange} canInsertImage={field.canInsertImage!==false}/>
     </div>;
-  }
+    return <label key={field.key} className="scope-management-wide-field">
+      <span>{field.label}</span>
+      <input className="scope-search-input" value={field.value??''}
+        onChange={event=>field.onChange?.(event.target.value)} disabled={field.disabled===true}/>
+    </label>;
+  });
+  // Field schema, article attributes and actions are independent capabilities:
+  // combine them in one editor rather than fork by page or feature.
+  if(mode==='fields')return <>{renderFields()}</>;
+  if(mode==='scope')return <div className="scope-editor scope-page-editor">
+    {actionBar}
+    {renderFields()}
+  </div>;
   if(!draft||!['article','attr'].includes(mode))return null;
   const resolvedAttributeTitle=attributeTitle||t('uiExtra.searchUI.attributeTitle');
   return <div className="scope-editor scope-search-article-editor">
+    {renderFields()}
     {mode==='article'&&showBodyEditor?<div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
       <BlockNoteEditor editorKey={'article:'+String(draft.editorKey||'')}
         content={draft.bodyHtml??draft.bodyBlocks}
