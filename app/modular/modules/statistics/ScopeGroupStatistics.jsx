@@ -45,12 +45,12 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
   const endDate=useMemo(()=>taipeiDateKey(),[]);
   const earliest=useQuery({
-    queryKey:['statistics-history-start','loc',scopesQuery.data?.map(row=>row.id).join('|')],
-    enabled:scopesQuery.isSuccess,
+    queryKey:['statistics-history-start','loc',scopeIds.join('|')],
+    enabled:scopesQuery.isSuccess&&policy.isSuccess,
     queryFn:async()=>{
       const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
       const starts=await Promise.all([
-        ...(scopesQuery.data||[]).map(selectFirstScopeStatisticsDate),
+        ...scopes.map(selectFirstScopeStatisticsDate),
         selectFirstDailyRuneDate()
       ]);
       return starts.filter(Boolean).sort()[0]||'';

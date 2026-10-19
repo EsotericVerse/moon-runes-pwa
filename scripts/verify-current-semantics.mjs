@@ -243,9 +243,11 @@ if(!failures.length){
   ])if(!(chartModel+'\n'+statisticsMultiChart).includes(token)){
     failures.push('Statistics chart must have a real analytic purpose: '+token);
   }
-  for(const token of ['locAllowed.length?locAllowed.map','optionsForCurrent.length?optionsForCurrent.map',
-    "aggregateScopes&&scopeId==='loc'",'locChartType']){
-    if(!statistics.includes(token))failures.push('Statistics must disable meaningless views and keep LOC Scope isolation: '+token);
+  for(const token of ['locAllowed.length?locAllowed.map','locChartType']){
+    if(!groupStatistics.includes(token))failures.push('LOC charts must hide unsupported visualizations: '+token);
+  }
+  for(const token of ['optionsForCurrent.length?optionsForCurrent.map',"aggregateScopes&&scopeId==='loc'"]){
+    if(!statistics.includes(token))failures.push('Scope statistics capability must remain isolated: '+token);
   }
   if(statistics.includes('disabled={!locAllowed.some')||statistics.includes('disabled={!optionsForCurrent.some')||ownIntersection.includes('disabled={!availableCharts.some')){
     failures.push('Unsupported chart types must be hidden, not left grey in controls.');
@@ -353,17 +355,20 @@ if(!failures.length){
      !cultureWorkIndex.includes('mediaCount:Number(mediaCount)||0'))
     failures.push('Culture bounded work-list queries must reuse their first-page exact counts in the cursor');
   const ownStatistics=statistics.split('function ScopeStatisticsResults(')[1]?.split('function ScopeStatisticsPanel(')[0]||'';
-  if(!ownStatistics.includes('enabled:!isLrunesDaily,'))
-    failures.push('LunaRunes daily statistics must not fetch unrelated managed Scope registry data');
+  if(ownStatistics.includes("queryKey:['managed-scopes']")||!ownStatistics.includes('defaultScopeData(scopeId)'))
+    failures.push('Single-Scope statistics must reuse the resolved route instead of requesting every Scope');
+  if(!groupStatistics.includes('enabled:scopesQuery.isSuccess&&policy.isSuccess,')||
+     !groupStatistics.includes('...scopes.map(selectFirstScopeStatisticsDate)'))
+    failures.push('Group statistics history probes must exclude Scopes disabled by sharing consent');
   if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
      !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
     failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');
   if(!statistics.includes('summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}')||
-     !statistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
+     !groupStatistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
     failures.push('Intersection chart bundles must remain unopened until requested');
-  if(!statistics.includes('preloadedSources={preloadedSources}')||
+  if(!groupStatistics.includes('preloadedSources={preloadedSources}')||
      !crossMember.includes('preloadedSources.get(id)')||
-     crossMember.includes('selectScopeSourceBreakdownRows(')||
+     crossMember.includes('selectScopeSourceBreakdownRows(')||crossMember.includes('selectScopeRegistry(')||!crossMember.includes('new Map(scopes.map(row=>[row.id,row.label||row.id]))')||
      !ownIntersection.includes('sharedCatalog||localCatalog'))
     failures.push('Statistics intersection must reuse already fetched source rows and taxonomy');
   if(!searchProviders.includes("const textColumns=['uid','title','createtime'")||
@@ -371,7 +376,8 @@ if(!failures.length){
     failures.push('Search provider result pages must not SELECT complete article bodies');
   const queryContract=read('app/loc/db-contract.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','DB_QUERY_TEXT_BATCH_SIZE=1000','queryBatchSize(columns'])if(!queryContract.includes(token))failures.push('Shared metadata/text query limit contract missing '+token);
-  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
+  for(const token of ['sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   if(!statistics.includes('uiExtra.statisticsView.displayStyle')||!statistics.includes('Rune66Summary')||
@@ -383,7 +389,7 @@ if(!failures.length){
   for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','uiExtra.statisticsView.groupPageNav','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
     if(!statisticsMultiChart.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
-  if(!statistics.includes('<LocMemberIntersection')||!statistics.includes('uiExtra.statisticsView.memberDistribution'))failures.push('LOC member-level cross comparison missing.');
+  if(!groupStatistics.includes('<LocMemberIntersection')||!groupStatistics.includes('uiExtra.statisticsView.memberDistribution'))failures.push('LOC member-level cross comparison missing.');
   if(statisticsMultiChart.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
   for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","uiExtra.statisticsView.keywordSettings"]){

@@ -3,7 +3,7 @@ import UiText,{useUiText} from '../../../i18n/UiText';
 
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {defaultScopeData,selectScopeRegistry} from '../../../loc/scope-data';
+import {defaultScopeData} from '../../../loc/scope-data';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
 import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
@@ -25,18 +25,8 @@ export default function LocMemberIntersection({
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
   const rangeKey=startDate+'|'+endDate;
-  // Source taxonomy is already in the parent's sharing query.
-  // Only Scope display names need a separate read.
-  const peopleQuery=useQuery({
-    queryKey:['loc-statistics-people'],
-    queryFn:()=>selectScopeRegistry({scopeKind:'scope'}),
-    staleTime:5*60_000
-  });
-  const catalog={
-    data:{...sharing,people:peopleQuery.data||[]},
-    error:peopleQuery.error,isPending:peopleQuery.isPending
-  };
-  const names=useMemo(()=>new Map((catalog.data?.people||[]).map(row=>[row.scope_id,row.display_name||row.scope_id])),[catalog.data?.people]);
+  // The caller supplies Scope IDs and display names from the existing registry result.
+  const names=useMemo(()=>new Map(scopes.map(row=>[row.id,row.label||row.id])),[scopes]);
   // Daily Rune is a dedicated test feed, not a registered Galaxy source or a
   // group/personal source classification. It is always a LOC comparison choice.
   const available=[
@@ -131,7 +121,7 @@ export default function LocMemberIntersection({
         </label>
       </div>)}
     </div>
-    {fetched.error||catalog.error?<p className="scope-status scope-error">{String(fetched.error?.message||catalog.error?.message||t('uiExtra.statisticsView.memberCrossLoadError'))}</p>:null}
+    {fetched.error?<p className="scope-status scope-error">{String(fetched.error?.message||t('uiExtra.statisticsView.memberCrossLoadError'))}</p>:null}
     {fetched.isPending||fetched.isFetching?<p className="scope-status" role="status"><UiText id="uiExtra.statisticsView.memberCrossUpdate"/></p>:null}
     {!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={zoomRange} idPrefix="loc-member-stat">

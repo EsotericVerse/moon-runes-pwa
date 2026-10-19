@@ -388,16 +388,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
-  const scopesQuery=useQuery({
-    queryKey:['managed-scopes'],
-    queryFn:selectPublicStatisticsMembers,
-    enabled:!isLrunesDaily,
-    staleTime:5*60_000
-  });
-  const targetScopes=useMemo(()=>{
-    const scopes=scopesQuery.data||[];
-    return scopes.filter(scope=>scope.id===scopeId);
-  },[scopeId,scopesQuery.data]);
+  // The active route already resolves the requested Scope; no registry-wide SELECT.
+  const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
   const earliest=useQuery({
     queryKey:['statistics-history-start',scopeId],
     enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
@@ -537,7 +529,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
-    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
     {!mediaDimension&&(sourceRows.error||sourceCatalog.error||adminSourceQuery.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error||adminSourceQuery.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
