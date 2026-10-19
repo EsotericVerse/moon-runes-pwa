@@ -52,6 +52,7 @@ const cleared=[
   'app/modular/features/Search.jsx',
   'app/modular/features/Statistics.jsx',
   'app/loc/ManagementImportPanel.jsx',
+  'app/loc/SunoImportPanel.jsx',
   'app/loc/ScopeEditableBlocks.jsx',
   'app/loc/GlobalSettings.jsx',
   'app/loc/SourceCategoryEditor.jsx',
@@ -78,4 +79,4 @@ for(const file of cleared){
     }
   }
 }
-console.log('[ui-i18n] 4 locale JSON structures, static keys and 20 hardcode-free UI files passed');
+console.log('[ui-i18n] 4 locale JSON structures, static keys and 21 hardcode-free UI files passed');

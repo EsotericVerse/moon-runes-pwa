@@ -37,6 +37,7 @@ const genericHome=read('app/loc/views/GenericScopeHomeView.jsx');
 const scopeRuntime=read('app/modular/use-scope-runtime.js');
 const scopeRegistry=read('app/modular/scope-registry.js');
 const importPanel=read('app/loc/ManagementImportPanel.jsx');
+const sunoImport=read('app/loc/SunoImportPanel.jsx');
 const scopeSettings=read('app/loc/ScopeSettingsPanel.jsx');
 const publisher=read('app/loc/ManagementArticlePublisher.jsx');
 const blockNoteEntry=read('app/loc/BlockNoteEditor.jsx');
@@ -148,13 +149,15 @@ must(admin.includes('admin-page-description:')&&admin.includes('admin-search-int
   scopeSettings.includes('scope-intro:')&&scopeSettings.includes('scope-aliases:')&&
   keywordLibrary.includes('keyword-principle:')&&keywordLibrary.includes('keyword-lines:')&&
   editor.includes('timeline-note:')&&editor.includes('timeline-style:')&&
-  importPanel.includes('suno-lyrics:')&&importPanel.includes('suno-style:')&&
+  sunoImport.includes('suno-lyrics:')&&sunoImport.includes('suno-style:')&&
   blockNoteEntry.includes('onPlainTextChange')&&
-  [admin,scopeSettings,keywordLibrary,editor,importPanel].every(source=>!source.includes('<textarea')),
+  [admin,scopeSettings,keywordLibrary,editor,importPanel,sunoImport].every(source=>!source.includes('<textarea')),
   'All Admin and management narrative text must reuse BlockNote; structured data retains native typed fields');
 
 must(publisher.includes('scope-publisher-main')&&publisher.includes('scope-publisher-sidebar')&&publisher.includes('BlockNoteEditor')&&publisher.includes('draft.bodyHtml')&&!publisher.includes('content_blocks'),'article publisher must use shared BlockNote and persist its HTML in the existing content field');
-must(importPanel.includes("import {refreshSunoStyleMetaTags}")&&importPanel.includes("refreshSunoStyleMetaTags(blocksToPlainText(blocks),current.metaTags)")&&importPanel.includes("regenerateStyleTags"),'Suno Style must generate Meta Tags from exact source phrases, with author review');
+must(sunoImport.includes("import {refreshSunoStyleMetaTags}")&&sunoImport.includes("refreshSunoStyleMetaTags(blocksToPlainText(blocks),current.metaTags)")&&sunoImport.includes("regenerateStyleTags")&&
+  importPanel.includes("dynamic(()=>import('./SunoImportPanel')")&&importPanel.includes("sunoOpen?<SunoImport"),
+  'Suno authoring must load on demand, preserve BlockNote and derive editable Style Meta Tags');
 must(!statistics.includes('statExclude')&&!statistics.includes('applyExclusions')&&!statistics.includes('統計排除詞')&&!read('app/loc/statistics-facets.js').includes('filterMediaStyleRows')&&!read('app/modular/feature-navigation.js').includes('statExclude'),'Metadata statistics must not contain blacklist/NOT exclusion features');
 must(blockNoteEntry.includes("dynamic(()=>import('./BlockNoteEditorClient')")&&blockNoteEntry.includes("from './blocknote-content.mjs'")&&!blockNoteEntry.includes('contentEditable')&&!blockNoteEntry.includes('execCommand'),'BlockNote must be the only shared lazy-loaded editor entrypoint');
 must(blockNoteContent.includes('plainTextToBlocks')&&blockNoteContent.includes('blocksToPlainText')&&blockNoteContent.includes('normalizeBlocks'),'BlockNote converters must remain independent of React');

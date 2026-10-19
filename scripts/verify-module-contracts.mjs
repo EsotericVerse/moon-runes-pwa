@@ -49,6 +49,18 @@ if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.m
    !statisticsSource.includes("enabled:!isLrunesDaily&&!mediaDimension"))
   failures.push('Statistics source model must be loaded only in an active source mode');
 
+// Suno's authoring and style classification depend on BlockNote but file/ZIP
+// import must not download them until the user opens Suno Import.
+const sunoPanelSource=readFileSync(resolve(root,'app/loc/SunoImportPanel.jsx'),'utf8');
+if(!importPanelSource.includes("const SunoImport=dynamic(()=>import('./SunoImportPanel')")||
+   !importPanelSource.includes('sunoOpen?<SunoImport')||
+   importPanelSource.includes("from './BlockNoteEditor'")||
+   importPanelSource.includes("from './blocknote-content.mjs'")||
+   importPanelSource.includes("from './suno-style-meta-tags.mjs'")||
+   !sunoPanelSource.includes("from './BlockNoteEditor'")||
+   !sunoPanelSource.includes("from './suno-style-meta-tags.mjs'"))
+  failures.push('Suno and BlockNote must be separately downloaded only for an active authoring session');
+
 // Prevent parser capabilities from returning to the initial import-panel bundle.
 const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
 for(const moduleName of ['universal-file-import.mjs','private-archive-universal.mjs']){

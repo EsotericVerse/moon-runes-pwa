@@ -530,6 +530,15 @@ test('route, page and management edit capabilities remain lazily split from read
   assert.ok(home.includes("const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then("));
   assert.ok(!/^import BlockNoteEditor/m.test(article));
   assert.ok(!/^import BlockNoteEditor/m.test(home));
+  const importer=read('app/loc/ManagementImportPanel.jsx');
+  const suno=read('app/loc/SunoImportPanel.jsx');
+  assert.ok(importer.includes("const SunoImport=dynamic(()=>import('./SunoImportPanel')"));
+  assert.ok(importer.includes("sunoOpen?<SunoImport"));
+  assert.ok(!importer.includes("from './BlockNoteEditor'"),'file import must not eagerly import BlockNote');
+  assert.ok(!importer.includes("from './suno-style-meta-tags.mjs'"),'file import must not eagerly load Suno classification');
+  assert.ok(!importer.includes("from './blocknote-content.mjs'"),'file import must not eagerly load BlockNote converters');
+  assert.ok(suno.includes("from './BlockNoteEditor'")&&suno.includes("refreshSunoStyleMetaTags"),
+    'Suno capability retains the canonical WYSIWYG editor and Style meta tags');
 });
 
 
