@@ -13,6 +13,7 @@ import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modules/statistics/StatisticsMultiChart';
 import StatisticsChartFrame from '../modular/modules/statistics/StatisticsChartFrame';
+import StatisticsDetails from '../modular/modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {
   DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
@@ -199,18 +200,7 @@ export function LrunesDailyStatisticsPanel(){
         </ResponsiveContainer>}
       </StatisticsChartFrame>:!ranking.length?<StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
         <p className="scope-status">{text.empty}</p>
-      </StatisticsChartFrame>:<><div className="scope-ranking">
-        {pagination.rows.map((row,index)=><div key={row.key}>
-          <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
-          <span>{row.count.toLocaleString()}{text.times}{row.ratio.toFixed(1)}%</span>
-        </div>)}
-      </div>
-      {pagination.totalPages>1?<nav className="scope-stat-controls" aria-label={text.rankingPages}>
-        <button type="button" className="loc-button" disabled={pagination.currentPage===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>{text.previous}</button>
-        <span className="scope-status">{text.page}{pagination.currentPage} / {pagination.totalPages}{text.pageSize}</span>
-        <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>{text.next}</button>
-      </nav>:null}
-      <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
+      </StatisticsChartFrame>:<>      <StatisticsChartFrame level={zoomLevel} onChange={value=>{setZoomLevel(value);setPage(1);}} range={zoomRange} idPrefix="daily-rune-stat">
       {selectedChart==='bar'?<ResponsiveContainer width="100%" height={Math.max(220,bars.length*29+50)}>
         <BarChart data={bars} layout="vertical" margin={{top:8,right:16,bottom:8,left:4}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
@@ -222,7 +212,20 @@ export function LrunesDailyStatisticsPanel(){
       </ResponsiveContainer>:<StatisticsMultiChart
         type={selectedChart} rows={timeline} series={runeSeries} distribution={runeCategories} height={360}
       />}
-      </StatisticsChartFrame></>}
+      </StatisticsChartFrame>
+      <StatisticsDetails>{()=><>
+<div className="scope-ranking">
+        {pagination.rows.map((row,index)=><div key={row.key}>
+          <strong>{(pagination.currentPage-1)*pagination.pageSize+index+1}. {row.label}</strong>
+          <span>{row.count.toLocaleString()}{text.times}{row.ratio.toFixed(1)}%</span>
+        </div>)}
+      </div>
+      {pagination.totalPages>1?<nav className="scope-stat-controls" aria-label={text.rankingPages}>
+        <button type="button" className="loc-button" disabled={pagination.currentPage===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>{text.previous}</button>
+        <span className="scope-status">{text.page}{pagination.currentPage} / {pagination.totalPages}{text.pageSize}</span>
+        <button type="button" className="loc-button" disabled={pagination.currentPage===pagination.totalPages} onClick={()=>setPage(current=>Math.min(pagination.totalPages,current+1))}>{text.next}</button>
+      </nav>:null}
+      </>}</StatisticsDetails></>}
     </>:null}
   </>;
 }
