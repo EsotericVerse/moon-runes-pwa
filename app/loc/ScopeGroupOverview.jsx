@@ -3,7 +3,7 @@
 import {useQuery} from '@tanstack/react-query';
 import UiText,{useUiText} from '../i18n/UiText';
 import {selectScopeGroupChildren} from './scope-data';
-import {navigationHref} from '../modular/nav-destinations.mjs';
+import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
 
 const FEATURE_PATH=Object.freeze({search:'search',statics:'statics',culture:'culture',governance:'governance'});

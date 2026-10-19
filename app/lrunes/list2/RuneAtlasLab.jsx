@@ -5,7 +5,7 @@ import RuneArtStage from '../visual/RuneArtStage';
 import RuneCardInfo from '../RuneCardInfo';
 import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
-import {navigationHref} from '../../modular/nav-destinations.mjs';
+import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';

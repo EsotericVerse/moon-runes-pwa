@@ -16,7 +16,7 @@ import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/s
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 import {useNavigationPreferences} from './loc/use-navigation-preferences';
 import {NavigationPreferences} from './modular/navigation-preferences';
-import {navigationHref} from './modular/nav-destinations.mjs';
+import {navigationHref} from './modular/scope-registry.js';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 

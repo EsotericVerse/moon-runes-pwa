@@ -2,7 +2,7 @@
 import {useUiLocale} from '../i18n/ui-locale';
 import {translateUiField} from '../i18n/ui-functional-copy.mjs';
 
-import {navigationHref} from './nav-destinations.mjs';
+import {navigationHref} from './scope-registry.js';
 import useNativeNavigation from './use-native-navigation';
 
 // A page-local parent link; no new fixed or floating navigation bar.

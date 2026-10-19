@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {NavigationPreferences} from '../app/modular/navigation-preferences.js';
 const {DEFAULT_FAVORITES,parseFavorites,serializeFavorites,homeScopeForAccount}=NavigationPreferences.account;
-import {navigationHref} from '../app/modular/nav-destinations.mjs';
+import {navigationHref} from '../app/modular/scope-registry.js';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const {cleanFolderName,parseFavoriteFolders,serializeFavoriteFolders,visibleFavoriteLayout,normalizeFavoriteFolders}=NavigationPreferences.account.folders;

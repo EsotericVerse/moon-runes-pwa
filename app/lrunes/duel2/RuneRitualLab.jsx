@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import RuneArtStage from '../visual/RuneArtStage';
 import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
-import {navigationHref} from '../../modular/nav-destinations.mjs';
+import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';

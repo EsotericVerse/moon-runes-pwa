@@ -1,6 +1,6 @@
 'use client';
 
-import {navigationHref} from '../modular/nav-destinations.mjs';
+import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
 
 export default function RuneArtNav(){

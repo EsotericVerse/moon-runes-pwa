@@ -9,7 +9,7 @@ import EffekseerStage from './effekseer/EffekseerStage';
 import RuneExtrudedGlyph from './effekseer/RuneExtrudedGlyph';
 import {RUNE_GLYPH_STYLES,runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
 import {groupImage,runeImage,runeName} from './rune-directory.mjs';
-import {navigationHref} from '../modular/nav-destinations.mjs';
+import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
 import './skin-lab.css';
 import './visual/rune-art-layout.css';
