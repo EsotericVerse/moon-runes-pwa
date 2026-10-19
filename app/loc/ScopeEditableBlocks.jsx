@@ -2,11 +2,14 @@
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import BlockNoteEditor,{ObjectEditor} from './BlockNoteEditor';
+// Read-only home blocks must not eagerly import editor UI or BlockNote.
+const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
+const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 
 import {HomeBlock} from './home-block-model';

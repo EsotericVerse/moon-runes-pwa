@@ -1,7 +1,10 @@
 'use client';
 
 import {WorkSummaryCard} from './ui';
-import BlockNoteEditor,{ObjectEditor} from '../loc/BlockNoteEditor';
+import dynamic from 'next/dynamic';
+// A plain-text article does not need an editor chunk; edit and rich view mount on demand.
+const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
+const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {UI_COPY} from '../i18n/ui-copy';
 import UiText,{useUiText} from '../i18n/UiText';
 import {isInteractiveContentTarget} from '../loc/inline-edit-interaction.mjs';

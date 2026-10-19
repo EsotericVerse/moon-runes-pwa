@@ -3,13 +3,16 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useState} from 'react';
 import Select from 'react-select';
+import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
-import PrivateLocalFiles from './PrivateLocalFiles';
-import ManagementImportPanel from './ManagementImportPanel';
-import ManagementArticlePublisher from './ManagementArticlePublisher';
-import ScopeSettingsPanel from './ScopeSettingsPanel';
-import ScopeGroupManagement from './ScopeGroupManagement';
+// The home/account Settings screens never download import or management editors.
+const panelLoading=()=>null;
+const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:panelLoading});
+const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:panelLoading});
+const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:panelLoading});
+const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:panelLoading});
+const ScopeGroupManagement=dynamic(()=>import('./ScopeGroupManagement'),{loading:panelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';

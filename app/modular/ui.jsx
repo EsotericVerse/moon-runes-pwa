@@ -2,6 +2,7 @@
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useQuery} from '@tanstack/react-query';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
@@ -9,8 +10,9 @@ import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading
 import {useScopeRuntime} from './use-scope-runtime';
 import {selectScopeBlocks} from '../loc/scope-data';
 import {HomeBlock} from '../loc/home-block-model';
-import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
-import BlockNoteEditor from '../loc/BlockNoteEditor';
+// Shared display stays light: mount the editor only on pages that need it.
+const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks'),{loading:()=>null});
+const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 import HeroCornerIdentity from '../loc/HeroCornerIdentity';
 
 // One visual header contract. On the LOC feature pages this same visible

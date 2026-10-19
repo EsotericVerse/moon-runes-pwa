@@ -8,14 +8,15 @@ import {useQuery} from '@tanstack/react-query';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
 import {selectScopeConfig} from './scope-data';
-import AboutView from './views/AboutView';
-import AuthorHomeView from './views/AuthorHomeView';
-import AdminHomeView from './views/AdminHomeView';
-import GenericScopeHomeView from './views/GenericScopeHomeView';
-import ScopeGroupOverview from './ScopeGroupOverview';
 import {FeaturePage} from '../modular/ui';
 const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
 // Heavy visualizations and editors should load only when their own page opens.
+// Each home and group capability is independently loaded for its actual route.
+const AboutView=dynamic(()=>import('./views/AboutView'),{loading});
+const AuthorHomeView=dynamic(()=>import('./views/AuthorHomeView'),{loading});
+const AdminHomeView=dynamic(()=>import('./views/AdminHomeView'),{loading});
+const GenericScopeHomeView=dynamic(()=>import('./views/GenericScopeHomeView'),{loading});
+const ScopeGroupOverview=dynamic(()=>import('./ScopeGroupOverview'),{loading});
 const Statistics=dynamic(()=>import('../modular/features/Statistics'),{loading});
 const KeywordSettings=dynamic(()=>import('../modular/features/KeywordSettings'),{loading});
 const Culture=dynamic(()=>import('../modular/features/Culture'),{loading});
