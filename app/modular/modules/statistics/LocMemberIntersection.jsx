@@ -3,9 +3,7 @@ import UiText,{useUiText} from '../../../i18n/UiText';
 
 import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {selectRows} from '../../../loc/db-query.mjs';
 import {defaultScopeData,selectScopeRegistry} from '../../../loc/scope-data';
-import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
 import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
 import {realMoonPhase} from '../../../loc/model/moon-phase';
@@ -15,33 +13,28 @@ import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
 import {sharedGroupCodes,sharedSourceBreakdown,canParticipateInCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
-async function readCatalog(table,columns){
-  return (await selectRows(table,{columns,limit:250,offset:0})).rows;
-}
 const DEFAULT_LANE_COUNT=2;
 export default function LocMemberIntersection({
   scopes=[],startDate='',endDate='',unit='month',sharing={},
   laneCount=DEFAULT_LANE_COUNT,choices=[],graph='line',
   onLaneCountChange,onChoicesChange,onGraphChange,
-  zoomLevel=0,onZoomLevelChange,zoomRange={}
+  zoomLevel=0,onZoomLevelChange,zoomRange={},preloadedSources=null
 }){
   const t=useUiText();
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
   const rangeKey=startDate+'|'+endDate;
-  const catalog=useQuery({
-    queryKey:['loc-source-categories'],
-    queryFn:async()=>{
-      const [categories,aliases,personal,people]=await Promise.all([
-        readCatalog('silver.statistics_source_categories','category_code,display_name,enabled,sort_order'),
-        readCatalog('silver.statistics_source_aliases','source_key,category_code'),
-        readCatalog('silver.scope_source_subcategories','scope_id,source_key,category_code,display_name,enabled'),
-        selectScopeRegistry({scopeKind:'scope'})
-      ]);
-      return {categories,aliases,scopeSources:personal,people};
-    },
+  // Source taxonomy is already in the parent's sharing query.
+  // Only Scope display names need a separate read.
+  const peopleQuery=useQuery({
+    queryKey:['loc-statistics-people'],
+    queryFn:()=>selectScopeRegistry({scopeKind:'scope'}),
     staleTime:5*60_000
   });
+  const catalog={
+    data:{...sharing,people:peopleQuery.data||[]},
+    error:peopleQuery.error,isPending:peopleQuery.isPending
+  };
   const names=useMemo(()=>new Map((catalog.data?.people||[]).map(row=>[row.scope_id,row.display_name||row.scope_id])),[catalog.data?.people]);
   // Daily Rune is a dedicated test feed, not a registered Galaxy source or a
   // group/personal source classification. It is always a LOC comparison choice.
@@ -63,17 +56,15 @@ export default function LocMemberIntersection({
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
     queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily')),JSON.stringify(sharing)],
-    enabled:Boolean(startDate&&endDate&&chosenIds.length),
+    enabled:Boolean(preloadedSources&&startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
-        const scope=available.find(item=>item.id===id)?.scope;
-        const [rows,daily]=await Promise.all([
-          sharedGroupCodes(id,sharing.permissions,sharing.categories).size
-            ?selectScopeSourceBreakdownRows(scope,{startDate,endDate}):Promise.resolve([]),
-          id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
-            ?selectDailyRuneRange({startDate,endDate})
-            :Promise.resolve([])
-        ]);
+        const rows=sharedGroupCodes(id,sharing.permissions,sharing.categories).size
+          ?preloadedSources.get(id)||[]
+          :[];
+        const daily=id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
+          ?await selectDailyRuneRange({startDate,endDate})
+          :[];
         const draws=id==='lrunes'
           ?normalizeDailyDraws(daily,date=>realMoonPhase(new Date(date+'T12:00:00+08:00')))
           :[];
