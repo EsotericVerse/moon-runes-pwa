@@ -11,9 +11,7 @@ import {useNavigationPreferences} from './use-navigation-preferences';
 const panelLoading=()=>null;
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:panelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:panelLoading});
-const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:panelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:panelLoading});
-const ScopeGroupManagement=dynamic(()=>import('./ScopeGroupManagement'),{loading:panelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
@@ -34,16 +32,17 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [home,setHome]=useState('loc');
   const [section,setSection]=useState(initialSection);
   const [requestedScope,setRequestedScope]=useState('');
-  const [manageAction,setManageAction]=useState('publish');
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
 
   useEffect(()=>{
-    setNative(Capacitor.isNativePlatform());
+    const isNative=Capacitor.isNativePlatform();
+    setNative(isNative);
     const params=new URLSearchParams(window.location.search);
     const chosen=params.get('section');
     // Historical links can enter the merged UI without a dead-end pane.
     if(chosen==='favorites')setSection('home');
+    else if(isNative&&chosen==='files')setSection('manage'); // Preserve prior mobile file links.
     else if(['home','files','personal','manage','account'].includes(chosen))setSection(chosen);
     const scope=params.get('scope');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
@@ -52,7 +51,7 @@ export default function GlobalSettings({initialSection='home'}={}){
   const registryQuery=useQuery({
     queryKey:['settings-scope-registry'],
     queryFn:selectScopeRegistry,
-    enabled:urlResolved&&section!=='account',
+    enabled:!native&&urlResolved&&section!=='account',
     staleTime:5*60_000
   });
   const registry=registryQuery.data||[];
@@ -103,18 +102,13 @@ export default function GlobalSettings({initialSection='home'}={}){
 
   const sections=[
     option('home',uiT('uiExtra.globalSettings.homeSettings')),
-    option('files',native?uiT('uiExtra.globalSettings.localFiles'):uiT('uiExtra.globalSettings.documentImport')),
+    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]
+      :[option('files',uiT('uiExtra.globalSettings.documentImport'))]),
     ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
-    ...(managedScopes.length||canManageGlobal?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
     option('account',uiT('uiExtra.globalSettings.account'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
-  const manageOptions=[
-    ...(managedScopes.length?[option('publish',uiT('uiExtra.globalSettings.publish'))]:[]),
-    ...(canManageGlobal?[option('members',uiT('uiExtra.globalSettings.members')),option('admin',uiT('uiExtra.globalSettings.systemSettings'))]:[])
-  ];
-  const activeManage=manageOptions.find(item=>item.value===manageAction)||manageOptions[0];
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
 
   async function saveHome(event){
@@ -177,7 +171,7 @@ export default function GlobalSettings({initialSection='home'}={}){
         </div>
       </section>:null}
 
-      {activeSection==='files'?(native?<PrivateLocalFiles/>:<section className="loc-card">
+      {activeSection==='files'&&!native?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.documentImport"/></h2>
         {account.user?managedScopes.length?<div className="loc-settings-panel-group">
           {scopeOptions.length>1?<label htmlFor="loc-import-scope">Scope</label>:null}
@@ -188,7 +182,7 @@ export default function GlobalSettings({initialSection='home'}={}){
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
         </div>:<p><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
         <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
-      </section>):null}
+      </section>:null}
 
       {activeSection==='personal'&&selectedScope?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.personalHome"/></h2>
@@ -200,24 +194,8 @@ export default function GlobalSettings({initialSection='home'}={}){
         <ScopeSettingsPanel key={selectedScope.id} scopeId={selectedScope.id}/>
       </section>:null}
 
-      {activeSection==='manage'&&activeManage?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.manageMenu"/></h2>
-        <label htmlFor="loc-manage-action"><UiText id="uiExtra.globalSettings.manageFeature"/></label>
-        <Select {...selectProps} inputId="loc-manage-action" instanceId="loc-manage-action"
-          options={manageOptions} value={activeManage}
-          onChange={item=>setManageAction(item?.value||manageOptions[0].value)}/>
-        {activeManage.value==='publish'&&selectedScope?<div className="loc-settings-panel-group">
-          {scopeOptions.length>1?<label htmlFor="loc-manage-scope">Scope</label>:null}
-          {scopeOptions.length>1?<Select {...selectProps} inputId="loc-manage-scope"
-            instanceId="loc-manage-scope" options={scopeOptions}
-            value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
-            onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-          <ManagementArticlePublisher key={selectedScope.id} scopeId={selectedScope.id}/>
-        </div>:null}
-        {activeManage.value==='members'&&canManageGlobal?<ScopeGroupManagement scopeId="loc"/>:null}
-        {activeManage.value==='admin'&&canManageGlobal?<a className="loc-button"
-          href="/admin/"><UiText id="uiExtra.globalSettings.openSystemSettings"/></a>:null}
-      </section>:null}
+      {/* Device management never mounts website Scope/Article/Admin capabilities. */}
+      {native&&activeSection==='manage'?<PrivateLocalFiles/>:null}
 
       {activeSection==='account'?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.account"/></h2>

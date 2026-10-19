@@ -5,6 +5,8 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {useAccount} from '../../loc/use-account';
+import {navigationHref} from '../scope-registry';
+import useNativeNavigation from '../use-native-navigation';
 
 // Governance pages share one Scope block capability. The optional editor is
 // fetched only when a governance route actually renders its blocks.
@@ -16,15 +18,11 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
   personal:'說明個人作品的來源、版本與著作權原則。'
 });
 
-function GovernanceBlocks({scopeId,account}){
-  const canManage=scopeId==='loc'&&(
-    account.canManageGlobalSync()||
-    account.canManageScopeSync('loc')||
-    account.canManageScopeSync('lrunes')
-  );
+function GovernanceBlocks({scopeId,account,native}){
+  const canManage=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <a className="loc-button primary" href="/governance/manage/">管理選單</a>
+      <a className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)}>治理管理</a>
     </nav>:null}
     <ScopeEditableBlocks
       scopeId={scopeId}
@@ -38,10 +36,11 @@ function GovernanceBlocks({scopeId,account}){
 export default function Governance({section=null}){
   const {scopeId}=useScopeRuntime();
   const account=useAccount();
+  const native=useNativeNavigation();
   const subtitle=section==='law'
     ?UI_COPY.governance.rights
     :(GOVERNANCE_SUBTITLES[scopeId]||GOVERNANCE_SUBTITLES.personal);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
-    <GovernanceBlocks scopeId={scopeId} account={account}/>
+    <GovernanceBlocks scopeId={scopeId} account={account} native={native}/>
   </FeaturePage>;
 }

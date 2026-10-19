@@ -17,7 +17,7 @@ export default function ScopeGroupManagement({scopeId='loc'}){
         <strong>{scope.display_name||scope.scope_id}</strong>
         <div className="scope-result-links">
           <a href={scopeHref(scope.scope_id)}><UiText id="uiExtra.scopeGroup.openHome"/></a>
-          <a href={'/settings/?section=manage&scope='+encodeURIComponent(scope.scope_id)}><UiText id="uiExtra.scopeGroup.manageMember"/></a>
+          <a href={scopeHref(scope.scope_id,'governance/manage')}><UiText id="uiExtra.scopeGroup.manageMember"/></a>
         </div>
       </article>)}
       {!query.isPending&&!scopes.length?<p className="scope-status"><UiText id="uiExtra.scopeGroup.noMembers"/></p>:null}

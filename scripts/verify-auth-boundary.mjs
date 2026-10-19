@@ -28,23 +28,25 @@ if(!failures.length){
   for(const token of ["z.enum(['admin','scope'])",'permissionRows','scopes.has(normalizeScopeId(scopeId))','canManageGlobalSync()?defaultScopeData'])if(!account.includes(token))failures.push('account authorization missing '+token);
   const storage=read(files.userStorage);
   for(const token of ["apiRelation('user_records')","apiRelation('user_settings')","onConflict:'owner_id,id'","onConflict:'owner_id,setting_key'"])if(!storage.includes(token))failures.push('user storage missing '+token);
-  // Governance retains a permission-filtered management selector; Settings
-  // and each editing panel enforce their own Scope gate. Do not require the
-  // retired redirect implementation, which is not an authorization boundary.
+  // Governance authorizes website Scope management. Settings has independent
+  // Scope preferences/import and a device-only local management section.
   const governance=read(files.scopeManagement);
   const settings=read('app/loc/GlobalSettings.jsx');
   const importer=read('app/loc/ManagementImportPanel.jsx');
   for(const token of ["account.canManageGlobalSync()",
     "account.canManageScopeSync('lrunes')",
-    "account.canManageScopeSync('loc')",
+    'canManageHere=account.canManageScopeSync(routeScopeId)',
     'account.canManageScopeSync(row.scope_id)',
     'if(!account.user)',
-    '<ManagementArticlePublisher'])
+    '<ManagementArticlePublisher','<ScopeGroupManagement'])
     if(!governance.includes(token))failures.push('Governance authorization missing '+token);
   for(const token of ['account.canManageScopeSync(item.id)',
-    '<ScopeSettingsPanel','<ManagementArticlePublisher',
+    '<ScopeSettingsPanel','<PrivateLocalFiles',
     '<ManagementImportPanel'])
     if(!settings.includes(token))failures.push('Settings management gate missing '+token);
+  if(!settings.includes("native&&activeSection==='manage'?<PrivateLocalFiles/>")||
+     settings.includes('<ManagementArticlePublisher')||settings.includes('<ScopeGroupManagement'))
+    failures.push('Native manage must be device-local, and website publishing/groups must stay in Governance');
   if(!importer.includes('account.canManageScopeSync(scopeId)'))
     failures.push('Import panel missing Scope authorization');
   if(!read(files.adminManagement).includes('account.canManageGlobalSync()'))failures.push('Admin management role gate missing');

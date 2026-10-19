@@ -170,15 +170,15 @@ test('native first-row NAV respects iOS safe area while web retains original lay
 
 
 
-test('Settings has one home & favorites pane, one import pane, and separated management without Rune UI',()=>{
+test('web Settings, Scope Governance and native local management are independent capabilities',()=>{
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
   const daily=fs.readFileSync('app/daily/log/DailyLogClient.jsx','utf8');
   assert.match(settings,/import Select from 'react-select';/);
   assert.match(settings,/inputId="loc-settings-function"/);
   assert.ok(settings.includes("option('home',uiT('uiExtra.globalSettings.homeSettings'))"));
-  assert.ok(settings.includes("option('files',native?uiT('uiExtra.globalSettings.localFiles'):uiT('uiExtra.globalSettings.documentImport'))"));
+  assert.ok(settings.includes("option('files',uiT('uiExtra.globalSettings.documentImport'))"));
   assert.ok(settings.includes("option('personal',uiT('uiExtra.globalSettings.personalHome'))"));
-  assert.ok(settings.includes("option('manage',uiT('uiExtra.globalSettings.manageMenu'))"));
+  assert.ok(settings.includes("native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]"));
   assert.match(settings,/activeSection==='home'/);
   assert.match(settings,/activeSection==='files'/);
   assert.match(settings,/activeSection==='personal'/);
@@ -188,17 +188,17 @@ test('Settings has one home & favorites pane, one import pane, and separated man
   assert.match(settings,/<PrivateLocalFiles\/>/);
   assert.match(settings,/<ScopeSettingsPanel/);
   assert.match(settings,/<ManagementImportPanel/);
-  assert.match(settings,/<ManagementArticlePublisher/);
-  assert.match(settings,/<ScopeGroupManagement/);
+  assert.doesNotMatch(settings,/<ManagementArticlePublisher|<ScopeGroupManagement/);
+  assert.match(settings,/native&&activeSection==='manage'\?<PrivateLocalFiles\/>/);
   assert.doesNotMatch(settings,/月典抽牌|每日符文紀錄|DailyLogClient|RuneSQLiteTransfer|RuneDrawClient|RuneAppDayNightDashboard/);
   assert.doesNotMatch(settings,/section==='favorites'|section==='daily'|我的最愛（展示）/);
   assert.match(daily,/<DailyRuneCalendar/);
 });
-test('governance management delegates to permission-scoped Settings',()=>{
+test('website governance authorizes its own Scope while native Settings manage remains local',()=>{
   const governance=fs.readFileSync('app/modular/features/Governance.jsx','utf8');
   const legacy=fs.readFileSync('app/loc/GovernanceManagement.jsx','utf8');
   const settings=fs.readFileSync('app/loc/GlobalSettings.jsx','utf8');
-  assert.doesNotMatch(governance,/governance-management-cta/);
+  assert.match(governance,/navigationHref\(scopeId,'governance\/manage',native\)/);
   assert.match(legacy,/href="\/settings\/\?section=account"/);
   assert.match(legacy,/if\(!account\.user\)/);
   assert.match(legacy,/account\.canManageScopeSync\('loc'\)/);
@@ -207,9 +207,12 @@ test('governance management delegates to permission-scoped Settings',()=>{
   assert.match(settings,/account.canManageScopeSync\(item.id\)/);
   assert.match(settings,/canManageGlobal/);
   assert.match(settings,/ScopeSettingsPanel/);
-  assert.match(settings,/ManagementArticlePublisher/);
-  assert.match(settings,/ScopeGroupManagement/);
+  assert.match(legacy,/ManagementArticlePublisher/);
+  assert.match(legacy,/ScopeGroupManagement/);
+  assert.match(legacy,/routeScopeId==='lrunes'/);
+  assert.match(legacy,/canManageHere/);
   assert.match(settings,/ManagementImportPanel/);
+  assert.doesNotMatch(settings,/<ManagementArticlePublisher|<ScopeGroupManagement/);
 });
 
 test('Capacitor static-file route is normalized to canonical Scope URL before hydration',()=>{

@@ -35,7 +35,7 @@ export default function GenericScopeHomeView(){
         <a href={navigationHref(scopeId,'statics',native)}><UiText id="features.statics.title"/></a>
         <a href={navigationHref(scopeId,'culture',native)}><UiText id="features.culture.title"/></a>
         <a href={navigationHref(scopeId,'governance',native)}><UiText id="features.governance.title"/></a>
-        <a href={'/settings/?section=manage&scope='+encodeURIComponent(scopeId)}><UiText id="common.management"/></a>
+        <a href={navigationHref(scopeId,'governance/manage',native)}><UiText id="common.management"/></a>
       </div>
     </section>
   </section></main>;

@@ -106,22 +106,37 @@ must(editor.includes("['style_comment','style']")&&!editor.includes('style_tags'
 must(editor.includes('payload.style_description=styleDescription')&&editor.includes('payload.anchor_ids=[anchorId]')&&cultureUi.includes("beginTimelineCreation(recordType,'')")&&functionalOption(cultureUi,'style_comment','風格標籤'),'Style create/update must use shared Type selector and save one independent TEXT description and one formal anchor');
 must(cultureUi.includes('<Article')&&cultureUi.includes('editable={canEditWork}')&&!cultureUi.includes('actions={canEditWork?')&&!cultureUi.includes('onClick={canEditWork'),'Culture articles must use shared Article(uid) click editing without an Edit button');
 must(galaxy.includes('selectStyleKeywordMatches')&&!galaxy.includes('scopeCards('),'Search must match exact style-tag keywords and must not use partial Scope-ID cards');
-must(globalSettings.includes('<ScopeGroupManagement scopeId="loc"/>')&&globalSettings.includes('canManageGlobal'),'Scope group membership management must be permission-gated in Settings');
-must(governance.includes('href="/governance/manage/"')&&governance.includes('canManageGlobalSync()')&&globalSettings.includes("option('manage',uiT('uiExtra.globalSettings.manageMenu'))"),'Dedicated Governance management and Settings management must both remain available under permission gates');
+must(management.includes('<ScopeGroupManagement scopeId="loc"/>')&&management.includes("routeScopeId==='loc'&&canManageGlobal"),'Website group membership is permission-gated in LOC Governance, not device Settings');
+must(governance.includes("navigationHref(scopeId,'governance/manage',native)")&&governance.includes('account.canManageScopeSync(scopeId)')&&globalSettings.includes("native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]"),'Each Scope routes to its own Governance; native-only management stays on the device');
 must(management.includes('href="/settings/?section=account"')&&management.includes('if(!account.user)')&&management.includes("account.canManageScopeSync('loc')")&&!management.includes('account.signIn(')&&globalSettings.includes('account.signIn(new URL('),'management must hand unauthenticated users to Settings OAuth and keep Scope permission gates');
-must(globalSettings.includes('ScopeGroupManagement'),'Settings must compose the Scope Group module');
+must(management.includes("dynamic(()=>import('./ScopeGroupManagement')"),'Website Scope Group management must load only in the Governance global section');
 must(scopeRuntime.includes("aggregateChildren:activeRegistryRow.scope_kind==='group'")&&genericHome.includes('ScopeGroupOverview')&&sharedSearch.includes('ScopeGroupOverview'),'New DB Scope Groups must use the generic runtime and existing public overview');
 must(locApp.includes("scopeMeta?.aggregateChildren&&scopeId!=='loc'")&&locApp.includes("['statics','culture','governance'].includes(forcedView)")&&locApp.includes('groupOverviewView?<FeaturePage')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Dynamic DB Groups must route Statistics/Culture/Governance to existing read-only member overview instead of LOC aggregate or nonexistent Group tables');
 must(groupOverview.includes('navigationHref(row.scope_id')&&groupOverview.includes('useNativeNavigation')&&groupOverview.includes('selectScopeGroupChildren(scopeId)'),'Scope Group overview must direct users to child Scope queries without expensive group-wide counts');
-must(globalSettings.includes('<ScopeSettingsPanel')&&globalSettings.includes('<ManagementArticlePublisher')&&globalSettings.includes('<ManagementImportPanel')&&globalSettings.includes("activeSection==='personal'")&&globalSettings.includes("activeSection==='manage'")&&!globalSettings.includes('ManagementDisclosure'),'Settings separates personal homepage from management and shares the formal import panel');
+must(globalSettings.includes('<ScopeSettingsPanel')&&globalSettings.includes('<ManagementImportPanel')&&
+  globalSettings.includes("native&&activeSection==='manage'?<PrivateLocalFiles/>")&&
+  !globalSettings.includes('<ManagementArticlePublisher')&&
+  !globalSettings.includes('<ScopeGroupManagement')&&
+  management.includes('<ManagementArticlePublisher')&&
+  !globalSettings.includes('ManagementDisclosure'),
+  'Web Settings keep Scope preferences/import; native-only Manage operates local files; website publishing stays in Governance');
 const keywordPage=read('app/modular/features/KeywordSettings.jsx');
 const keywordAuthorRoute=read('app/lo3rwang/statics/keywords/page.jsx');
 const keywordGenericRoute=read('app/scope/statics/keywords/page.jsx');
 must(statistics.includes("scopeHref(scopeId,'statics/keywords')")&&statistics.includes('ScopeStatisticsResults')&&!statistics.includes('KeywordLibraryPanel')&&!statistics.includes("current==='keywords'"),'Statistics must link to a dedicated keyword management page without mounting keyword editor');
 must(keywordPage.includes("dynamic(()=>import('../../loc/KeywordLibraryPanel')")&&keywordPage.includes('canManageScopeSync(scopeId)')&&keywordAuthorRoute.includes('forcedView="keywords"')&&keywordGenericRoute.includes('forcedView="keywords"')&&locApp.includes('keywords:KeywordSettings'),'all Scope keyword management must use a dedicated permission-gated static route');
 must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
-must(globalSettings.includes('account.canManageScopeSync(item.id)')&&globalSettings.includes('selectedScope')&&globalSettings.includes('canManageGlobal'),'Settings management must enforce per-Scope and global authority');
-must(governance.includes('href="/governance/manage/"')&&genericHome.includes("'/settings/?section=manage&scope='")&&read('app/governance/manage/page.jsx').includes('forcedView="manage"')&&read('app/settings/page.jsx').includes('<GlobalSettings'),'Governance Manage and Settings must coexist as independently reachable management routes');
+must(globalSettings.includes('account.canManageScopeSync(item.id)')&&globalSettings.includes('selectedScope')&&
+  management.includes('canManageHere=account.canManageScopeSync(routeScopeId)'),
+  'Web Settings select authorized Scope; Governance enforces authority of its own route');
+must(governance.includes("navigationHref(scopeId,'governance/manage',native)")&&
+  genericHome.includes("navigationHref(scopeId,'governance/manage',native)")&&
+  read('app/governance/manage/page.jsx').includes('forcedView="manage"')&&
+  read('app/lrunes/governance/manage/page.jsx').includes('forcedScope="lrunes"')&&
+  read('app/lo3rwang/governance/manage/page.jsx').includes('forcedScope="lo3rwang"')&&
+  locApp.includes('<ActiveView section={forcedSection} scopeId={scopeId}/>')&&
+  read('app/settings/page.jsx').includes('<GlobalSettings'),
+  'Scope Governance routes, website Settings and device-local management must retain separate entrypoints');
 must(!importPanel.includes('ManagementArticlePublisher')&&!importPanel.includes('role="tablist"')&&importPanel.includes('JsonImport')&&importPanel.includes('SourceRefresh'),'Data Import must contain import tools only');
 must(!importPanel.includes('content_type')&&!importPanel.includes('<ImportContentTypeCatalog')&&importPanel.includes('statistics_able:row.statistics_able'),'Import excludes redundant content types and preserves visibility');
 must(importPanel.includes('ImportFormatSettings')&&importPanel.includes('format.recordPath')&&importPanel.includes('format.fields')&&importPanel.includes('writeImportBatches')&&importPanel.includes('progress.percent')&&importPanel.includes('uiExtra.importUI.nextJson'),'Import must configure source formats, write bounded batches, and report visible progress across queued files');

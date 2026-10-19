@@ -514,10 +514,15 @@ test('route, page and management edit capabilities remain lazily split from read
       name+' should not be imported by unrelated app routes');
     assert.ok(!app.includes('import '+name+' from '),'No eager route imports');
   }
-  for(const name of ['PrivateLocalFiles','ManagementImportPanel','ManagementArticlePublisher','ScopeSettingsPanel','ScopeGroupManagement']){
+  for(const name of ['PrivateLocalFiles','ManagementImportPanel','ScopeSettingsPanel']){
     assert.ok(settings.includes("const "+name+"=dynamic(()=>import('./"+name+"')"),
       name+' must load only when its Settings section is mounted');
     assert.ok(!settings.includes('import '+name+' from '),'No eager management imports');
+  }
+  const governance=read('app/loc/GovernanceManagement.jsx');
+  for(const name of ['ManagementArticlePublisher','ScopeGroupManagement','RuneManagementPanel']){
+    assert.ok(governance.includes("const "+name+"=dynamic(()=>import('./"+name+"')"),
+      name+' must load only when its Governance tab is opened');
   }
   assert.ok(ui.includes("const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks')"));
   assert.ok(ui.includes("const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor')"));

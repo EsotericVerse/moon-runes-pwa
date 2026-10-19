@@ -98,7 +98,7 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
             title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title',governance:'features.governance.title'}[forcedView])}
             description={t('uiExtra.feature.groupGuide')}
           />
-        </FeaturePage>:<ActiveView section={forcedSection}/>}
+        </FeaturePage>:<ActiveView section={forcedSection} scopeId={scopeId}/>}
       </FeatureGate>
     </Suspense>
   </div>;
