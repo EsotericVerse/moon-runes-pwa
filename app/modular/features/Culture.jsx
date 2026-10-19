@@ -22,7 +22,7 @@ const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTim
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 
 import {selectGalaxyContent} from '../../loc/galaxy-query';
-import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
+
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
@@ -206,7 +206,10 @@ export default function Culture(){
   });
   const styleQuery=useQuery({
     queryKey:['culture-style-filter','rune66',classificationScope,selectedWindowStart,selectedWindowEnd],
-    queryFn:()=>selectRune66Classification({startDate:selectedWindowStart,endDate:selectedWindowEnd}),
+    queryFn:async()=>{
+      const {selectRune66Classification}=await import('../../loc/rune66-keyword-analysis');
+      return selectRune66Classification({startDate:selectedWindowStart,endDate:selectedWindowEnd});
+    },
     enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(selectedWindowStart&&selectedWindowEnd),
     staleTime:5*60_000
   });
