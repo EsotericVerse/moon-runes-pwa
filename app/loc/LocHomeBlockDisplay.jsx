@@ -25,16 +25,36 @@ function imageFor(slot,scopeId='loc'){
   return assets[Number(slot?.order)||0]||null;
 }
 
+// Every homepage reads the same image configuration; legacy HTML images and
+// pre-existing site artwork are fallbacks, never hidden sources of truth.
+export function resolveHomeImage(slot,scopeId='loc'){
+  const preset=imageFor(slot,scopeId);
+  const config=slot?.image&&typeof slot.image==='object'?slot.image:null;
+  const embedded=BlockNoteContent.image.firstFrameImageUrl(slot);
+  const source=['default','custom','none'].includes(config?.source)
+    ?config.source:(embedded?'custom':preset?'default':'none');
+  const customUrl=BlockNoteContent.image.normalizeImageSource(config?.url||embedded);
+  const src=source==='none'?'':source==='default'?preset?.src?.src||'':customUrl;
+  const position=['left','right','top','bottom'].includes(config?.position)
+    ?config.position:(preset?.position||'right');
+  const width=Number.isFinite(Number(config?.width))&&Number(config?.width)>=160&&Number(config?.width)<=680
+    ?Math.round(Number(config.width)):parseInt(preset?.width,10)||420;
+  const mode=config?.mode==='side'||config?.mode==='background'?config.mode:BlockNoteContent.image.heroImageMode(slot);
+  return {src,source,position,width,mode,preset,embedded,customUrl,
+    alt:source==='default'?preset?.alt||'框架圖片':'框架圖片',
+    small:source==='default'?preset?.small:null};
+}
+
 export function locHomeBlockClass(slot,scopeId='loc'){
   const order=Number(slot?.order)||0;
-  const media=imageFor(slot,scopeId);
-  const hasCustomImage=Boolean(BlockNoteContent.image.firstFrameImageUrl(slot));
+  const image=resolveHomeImage(slot,scopeId);
   return [
     order===1?'loc-hero loc-home-hero':'loc-card',
     'loc-home-block',
     order===1?'loc-home-block--hero':'',
-    order===1&&BlockNoteContent.image.heroImageMode(slot)==='side'?'loc-home-block--hero-side':'',
-    order!==1&&(media||hasCustomImage)?'loc-home-block--with-image loc-home-block--image-'+(media?.position||'right'):''
+    order===1&&image.mode==='side'?'loc-home-block--hero-side':'',
+    order===1&&image.mode==='side'?'loc-home-block--image-'+(image.position==='left'?'left':'right'):'',
+    order!==1&&image.src?'loc-home-block--with-image loc-home-block--image-'+image.position:''
   ].filter(Boolean).join(' ');
 }
 
@@ -45,37 +65,33 @@ function RichHtml({html,className='',stripImage=false}){
 
 function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
-  const media=imageFor(slot,scopeId);
-  const customImage=BlockNoteContent.image.firstFrameImageUrl(slot);
-  const children=HomeBlock.visibleEntities(slot).filter(entity=>!customImage||entity.title||
+  const image=resolveHomeImage(slot,scopeId);
+  const children=HomeBlock.visibleEntities(slot).filter(entity=>entity.title||
     BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
   return <>
     <header className="loc-home-block__header">
       {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
       {slot.title?<Heading>{slot.title}</Heading>:null}
-      <RichHtml html={slot.subtitle} stripImage={Boolean(customImage)} className="loc-subtitle loc-home-block__subtitle"/>
+      <RichHtml html={slot.subtitle} stripImage className="loc-subtitle loc-home-block__subtitle"/>
     </header>
-    <RichHtml html={slot.text} stripImage={Boolean(customImage)} className="loc-home-block__body"/>
+    <RichHtml html={slot.text} stripImage className="loc-home-block__body"/>
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
         return <article className={'loc-home-block__child '+(card?'loc-home-block__child--card':'loc-home-block__child--bubble')}
           key={entity.uid||'child-'+index}>
           {card?<h3>{entity.title}</h3>:null}
-          <RichHtml html={entity.text} stripImage={Boolean(customImage)} className="loc-home-block__child-copy"/>
+          <RichHtml html={entity.text} stripImage className="loc-home-block__child-copy"/>
         </article>;
       })}
     </div>:null}
-    {(media||customImage)?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={media?.alt||'首頁主視覺'}>
-      <picture>{!customImage&&media?.small?<source media="(max-width: 900px)" srcSet={media.small.src}/>:null}
-        <img src={customImage||media?.src.src} width={customImage?undefined:media?.src.width} height={customImage?undefined:media?.src.height}
-          alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
+    {image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
+      <picture>{image.small?<source media="(max-width: 900px)" srcSet={image.small.src}/>:null}
+        <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
     </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
-      style={media?.width?{'--loc-home-media-max':media.width}:undefined}>
-      <img src={customImage||media?.src.src}
-        width={customImage?undefined:media?.src.width} height={customImage?undefined:media?.src.height}
-        alt={media?.alt||'文字框架圖片'} loading="lazy" decoding="async"/>
+      style={{'--loc-home-media-max':image.width+'px'}}>
+      <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
     </article>):null}
     {hero?<HeroCornerIdentity scopeId={scopeId}/>:null}
   </>;

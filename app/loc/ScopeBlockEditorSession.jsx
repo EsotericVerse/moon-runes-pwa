@@ -8,6 +8,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import UiText,{useUiText} from '../i18n/UiText';
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
+import {resolveHomeImage} from './LocHomeBlockDisplay';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -24,6 +25,30 @@ export default function ScopeBlockEditorSession({
   const [message,setMessage]=useState('');
   const table=`silver.${scopeId}_blocks`;
   const cancel=()=>onClose();
+  const isHomeFrame=pageName==='index'&&['loc','lo3rwang'].includes(scopeId);
+  const image= isHomeFrame?resolveHomeImage(draft,scopeId):null;
+  const titleLimit=160;
+  const englishLimit=192;
+  const subtitleLimit=384;
+  const subtitleValue=html=>{
+    const raw=String(html||'');
+    if(typeof DOMParser==='undefined')return raw.replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]*>/g,' ').trim();
+    return new DOMParser().parseFromString(raw,'text/html').body.textContent?.replace(/\s+/g,' ').trim()||'';
+  };
+  const subtitleHtml=value=>'<p>'+String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'</p>';
+  const stripInlineImage=value=>String(value||'').replace(/<img\b[^>]*>/gi,'');
+  // Only an explicit image management action migrates old embedded images.
+  function configureImage(changes,removeEmbedded=true){
+    setDraft(current=>{
+      const base=current.image&&typeof current.image==='object'?current.image:{};
+      const next={...current,image:{...base,...changes}};
+      return removeEmbedded?{...next,
+        subtitle:stripInlineImage(next.subtitle),
+        text:stripInlineImage(next.text),
+        entities:next.entities.map(entity=>({...entity,text:stripInlineImage(entity.text)}))
+      }:next;
+    });
+  }
   function updateHeroImageMode(value){
     const mode=value==='side'?'side':'background';
     setDraft(current=>{
@@ -32,7 +57,7 @@ export default function ScopeBlockEditorSession({
         {uid:HomeBlock.createUid(),title:'',text:'',order:1}
       ];
       entities[0]={...entities[0],image_mode:mode};
-      return {...current,entities};
+      return {...current,entities,image:{...(current.image||{}),mode}};
     });
   }
 
@@ -110,6 +135,10 @@ export default function ScopeBlockEditorSession({
     setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
     try{
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft))throw new Error(t('uiExtra.editBlocks.emptyContent'));
+      if(Array.from(String(draft.title||'')).length>titleLimit)throw new Error('中文標題不得超過 '+titleLimit+' 字。');
+      if(Array.from(String(draft.eyebrow||'')).length>englishLimit)throw new Error('英文標題不得超過 '+englishLimit+' 字。');
+      if(Array.from(String(draft.subtitle||'')).length>subtitleLimit)throw new Error('標題說明不得超過 '+subtitleLimit+' 字。');
+      if(isHomeFrame&&draft.image?.source==='custom'&&!BlockNoteContent.image.normalizeImageSource(draft.image.url))throw new Error('請輸入有效的圖片網址。');
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
       if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
@@ -122,6 +151,7 @@ export default function ScopeBlockEditorSession({
         block_eyebrow:String(draft.eyebrow||'').trim(),
         block_title:String(draft.title||'').trim(),
         block_subtitle:normalizeSavedHtml(draft.subtitle),
+        ...(isHomeFrame?{block_image:draft.image||null}:{}),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
         block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},index)=>({
@@ -211,11 +241,11 @@ export default function ScopeBlockEditorSession({
           <ObjectEditor mode="scope" fields={[
             ...(editEyebrow?[{
               key:'eyebrow',label:<UiText id="uiExtra.editBlocks.englishEyebrow"/>,
-              value:draft.eyebrow,onChange:value=>setDraft(current=>({...current,eyebrow:value}))
+              value:draft.eyebrow,maxLength:englishLimit,onChange:value=>setDraft(current=>({...current,eyebrow:value}))
             }]:[]),
             {
               key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
-              value:draft.title,onChange:value=>setDraft(current=>({...current,title:value}))
+              value:draft.title,maxLength:titleLimit,onChange:value=>setDraft(current=>({...current,title:value}))
             },
             ...(pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?[{
               key:'hero-mode',kind:'node',
@@ -226,18 +256,51 @@ export default function ScopeBlockEditorSession({
               </fieldset>
             }]:[]),
             {
-              key:'subtitle',kind:'rich',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
-              editorKey:draft.uid+':subtitle:edit',content:draft.subtitle?{html:draft.subtitle}:'',
-              onHtmlChange:html=>setDraft(current=>({...current,subtitle:html})),
-              canInsertImage:allowImages&&canInsertImageIn(draft.subtitle)
+              key:'subtitle-line',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
+              value:subtitleValue(draft.subtitle),maxLength:subtitleLimit-7,
+              onChange:value=>setDraft(current=>({...current,subtitle:subtitleHtml(value)}))
             },
             {
               key:'body',kind:'rich',label:<UiText id="uiExtra.editBlocks.body"/>,
               editorKey:draft.uid+':body:edit',content:draft.text?{html:draft.text}:'',
               onHtmlChange:html=>setDraft(current=>({...current,text:html})),
-              canInsertImage:allowImages&&canInsertImageIn(draft.text)
+              canInsertImage:allowImages&&!isHomeFrame&&canInsertImageIn(draft.text)
             }
           ]}/>
+          {isHomeFrame?<fieldset className="scope-frame-image-settings">
+            <legend>框架圖片設定</legend>
+            <div className="scope-frame-image-preview">
+              {image?.src?<img src={image.src} alt="目前框架圖片預覽" loading="lazy"/>:<span>目前不顯示圖片</span>}
+            </div>
+            <div className="scope-frame-image-fields">
+              <label>圖片來源
+                <select value={image?.source||'none'} onChange={event=>{
+                  const source=event.target.value;
+                  configureImage({source,url:source==='custom'?(image?.customUrl||image?.src||''):''});
+                }}>
+                  <option value="default" disabled={!image?.preset}>原有預設圖片</option>
+                  <option value="custom">自訂圖片網址</option>
+                  <option value="none">不顯示圖片</option>
+                </select>
+              </label>
+              <label className="scope-frame-image-url">目前圖片網址
+                <input type="url" value={image?.source==='default'?image?.src||'':draft.image?.source==='custom'?draft.image.url||'':image?.source==='custom'?image?.src||'':''}
+                  disabled={image?.source!=='custom'} placeholder="https://"
+                  onChange={event=>configureImage({source:'custom',url:event.target.value},false)}/>
+              </label>
+              <label>圖片位置
+                <select value={image?.position||'right'} onChange={event=>configureImage({position:event.target.value},false)} disabled={!image?.src}>
+                  <option value="left">左側</option><option value="right">右側</option>
+                  {draft.order!==1?<><option value="top">上方</option><option value="bottom">下方</option></>:null}
+                </select>
+              </label>
+              {draft.order!==1?<label>圖片寬度（px）
+                <input type="number" min="160" max="680" step="20" value={image?.width||420}
+                  disabled={!image?.src} onChange={event=>configureImage({width:Number(event.target.value)},false)}/>
+              </label>:null}
+              <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>移除圖片</button>
+            </div>
+          </fieldset>:null}
           {allowEntities?renderEditableEntities(draft.entities):null}
   </>;
 }

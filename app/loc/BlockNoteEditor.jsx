@@ -91,9 +91,10 @@ export function ObjectEditor({
           {element}
         </div>;
     }
-    return <label key={field.key} className="scope-management-wide-field">
+    return <label key={field.key} className={'scope-management-wide-field'+(field.key==='eyebrow'||field.key==='title'||field.key==='subtitle-line'?' scope-frame-header-field':'')}>
       <span>{field.label}</span>
-      <input className="scope-search-input" value={field.value??''}
+      <input className="scope-search-input" value={field.value??''} type="text"
+        maxLength={field.maxLength} title={field.hint||undefined}
         onChange={event=>field.onChange?.(event.target.value)} disabled={field.disabled===true}/>
     </label>;
   });
@@ -102,7 +103,7 @@ export function ObjectEditor({
   if(mode==='fields')return <>{renderFields()}</>;
   if(mode==='scope')return <div className="scope-editor scope-page-editor">
     {actionBar}
-    {renderFields()}
+    <div className="scope-frame-field-grid">{renderFields()}</div>
   </div>;
   if(!draft||!['article','attr'].includes(mode))return null;
   const resolvedAttributeTitle=attributeTitle||t('uiExtra.searchUI.attributeTitle');
