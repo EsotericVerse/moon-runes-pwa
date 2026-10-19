@@ -736,23 +736,6 @@
   .scope-search-workspace .scope-search-form>button{min-width:0;padding:.7rem .35rem}
   .scope-search-filter-tabs button{padding:.7rem .3rem;font-size:.82rem}
 }
-
-/* Rune-only FAQ: grouped questions with an inline BlockNote answer editor. */
-.runes-faq-view{display:grid;gap:1rem;min-width:0}
-.runes-faq-filter{display:grid;gap:.4rem;margin-top:1rem;max-width:30rem}
-.runes-faq-filter>label{font-weight:700}
-.runes-faq-list{display:grid;gap:.65rem;min-width:0}
-.runes-faq-item{min-width:0}
-.runes-faq-question-row{display:flex;align-items:center;gap:.7rem;justify-content:space-between}
-.runes-faq-question{flex:1;min-width:0;margin:0;padding:.15rem 0;text-align:left;font-size:1.05rem;font-weight:700;color:var(--loc-text)}
-.runes-faq-answer{border-top:1px solid var(--loc-ui-hairline);margin-top:.75rem;padding-top:.85rem;min-width:0}
-.runes-faq-answer-text{white-space:pre-wrap;margin:0;line-height:1.7}
-.runes-faq-answer .scope-editor{display:grid;gap:.75rem}
-.runes-faq-answer .scope-management-wide-field{display:grid;gap:.35rem}
-.runes-faq-answer .scope-management-wide-field input,.runes-faq-answer .scope-management-wide-field textarea,.runes-faq-answer .scope-management-wide-field select{width:100%;min-width:0}
-
-.runes-faq-pages{display:flex;align-items:center;justify-content:center;gap:.9rem;flex-wrap:wrap;padding:.5rem 0}
-
 /* Statistic detail rows remain invisible until explicitly expanded. */
 .scope-stat-details{margin-top:1rem;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);overflow:hidden}
 .scope-stat-details>summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.85rem 1rem;cursor:pointer;font-weight:700;color:var(--loc-text);list-style:none}
