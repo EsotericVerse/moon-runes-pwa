@@ -41,6 +41,14 @@ walk(resolve(root,'app'),path=>{
 });
 
 
+// Non-source Statistics views must not load the source classification engine.
+const statisticsSource=readFileSync(resolve(root,'app/modular/features/Statistics.jsx'),'utf8');
+if(statisticsSource.includes("from '../../loc/statistics-admin-source.mjs'"))
+  failures.push('Statistics eagerly imports source-classification model');
+if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.mjs')")||
+   !statisticsSource.includes("enabled:!isLrunesDaily&&!mediaDimension"))
+  failures.push('Statistics source model must be loaded only in an active source mode');
+
 // Prevent parser capabilities from returning to the initial import-panel bundle.
 const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
 for(const moduleName of ['universal-file-import.mjs','private-archive-universal.mjs']){

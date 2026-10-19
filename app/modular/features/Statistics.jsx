@@ -13,7 +13,6 @@ import {useQuery} from '@tanstack/react-query';
 import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
-import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
@@ -613,11 +612,23 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
-  const adminSource=useMemo(()=>administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
-    startDate:queryRange.startDate,endDate:queryRange.endDate,
-    unit:queryRange.bucket,scopeId,
-    dimension:rankingType==='source_custom'?'personal':'group'
-  }),[sourceRows.data,sourceCatalog.data,queryRange.startDate,queryRange.endDate,queryRange.bucket,scopeId,rankingType]);
+  // Source classification is a capability, not a prerequisite for media charts
+  // or the LunaRunes daily page. Load its existing model only for source results.
+  const adminSourceQuery=useQuery({
+    queryKey:['administrative-source-trend',scopeId,rankingType,queryRange.startDate,queryRange.endDate,
+      queryRange.bucket,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
+    enabled:!isLrunesDaily&&!mediaDimension&&sourceRows.isSuccess&&sourceCatalog.isSuccess,
+    queryFn:async()=>{
+      const {administrativeSourceTrend}=await import('../../loc/statistics-admin-source.mjs');
+      return administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
+        startDate:queryRange.startDate,endDate:queryRange.endDate,
+        unit:queryRange.bucket,scopeId,
+        dimension:rankingType==='source_custom'?'personal':'group'
+      });
+    },
+    staleTime:5*60_000
+  });
+  const adminSource=adminSourceQuery.data||{rows:[],series:[],distribution:[],total:0};
   const basicTrend=adminSource.rows;
   const basicSeries=adminSource.series;
   const basicDistribution=adminSource.distribution;
@@ -674,15 +685,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending)))?<div className="scope-stat-data-pending">
+    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending||adminSourceQuery.isPending)))?<div className="scope-stat-data-pending">
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
-    {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
+    {!mediaDimension&&(sourceRows.error||sourceCatalog.error||adminSourceQuery.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error||adminSourceQuery.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
-    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
+    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!adminSourceQuery.isPending&&!sourceRows.error&&!sourceCatalog.error&&!adminSourceQuery.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
