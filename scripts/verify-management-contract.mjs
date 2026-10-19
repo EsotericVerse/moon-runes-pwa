@@ -21,6 +21,9 @@ const globalSettings=read('app/loc/GlobalSettings.jsx');
 const governance=read('app/modular/features/Governance.jsx');
 const statistics=read('app/modular/features/Statistics.jsx');
 const admin=read('app/loc/views/AdminHomeView.jsx');
+const adminDatabasePanel=read('app/loc/views/admin-panels/DatabaseTarget.jsx');
+const adminThemePanel=read('app/loc/views/admin-panels/ThemeEditor.jsx');
+const adminBlocklistPanel=read('app/loc/views/admin-panels/AdminEmailBlocklist.jsx');
 const dbContract=read('app/loc/db-contract.mjs');
 const contentPolicy=read('app/loc/content-policy.js');
 const keywordLibrary=read('app/loc/KeywordLibraryPanel.jsx');
@@ -289,7 +292,7 @@ must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_
   read('app/loc/scope-data.js').includes("rpc('read_scope_page_copy'")&&
   read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
   'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name');
-must(!admin.includes('applyTheme(')&&admin.includes('admin-theme-local-preview')&&admin.includes('uiExtra.adminView.editingTheme'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
+must(!adminThemePanel.includes('applyTheme(')&&adminThemePanel.includes('admin-theme-local-preview')&&adminThemePanel.includes('uiExtra.adminView.editingTheme'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');
 must(admin.includes('部分人員設定讀取失敗')&&admin.includes('configFailures.push')&&admin.includes('readAdminScopeConfig(row.scope_id)')&&admin.includes("String(error?.code||'')==='PGRST205'"),'Admin must retry newly provisioned Scope config until PostgREST schema cache settles');
@@ -363,7 +366,7 @@ must(
   'Admin Registry must distinguish exclusive Domain/Directory modes and clarify DNS is external'
 );
 must(
-  admin.includes("label:'系統黑名單'")&&admin.includes("silver.email_blocklist")&&
+  admin.includes("label:'系統黑名單'")&&adminBlocklistPanel.includes("silver.email_blocklist")&&
   dbContract.includes("rpc('is_current_email_blocklisted'"),
   'Admin must maintain global email blocklist and validate blocked login through the DB'
 );
@@ -375,15 +378,18 @@ must(
   editableBlocks.includes('movableSlots.length>1')&&
   dbContract.includes("rpc('move_scope_block'")&&
   scopeSettings.includes('THEME_SLOTS.map(theme=>')&&
-  admin.includes('label:theme.theme_name||theme.label||THEME_SLOTS.find'),
+  adminThemePanel.includes('label:theme.theme_name||theme.label||THEME_SLOTS.find'),
   'Editable page frames must move up/down atomically while theme selectors display names only'
 );
 
 
 
+must(['DatabaseTarget','ThemeEditor','AdminEmailBlocklist'].every(name=>
+  admin.includes("dynamic(()=>import('./admin-panels/"+name+"')")),
+  'Admin must load independent management workspaces only after the section is selected');
 must(admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes('parent_scope_id'),'Admin must read the DB Scope Registry hierarchy');
-must(admin.includes("silver.database_targets")&&admin.includes('save_database_target')&&admin.includes('SQL_ENGINE_OPTIONS.map')&&admin.includes('databaseProviderChoices')&&admin.includes('Link / Project'),'Admin must save and select explicit SQL type/provider/Link targets');
-must(admin.includes("silver.loc_theme")&&admin.includes('THEME_DB_COLUMNS')&&admin.includes('themeColumnForToken')&&admin.includes('THEME_TOKEN_KEYS')&&admin.includes('type="color"')&&!admin.includes('theme_attr'),'Admin Theme editor must persist typed theme columns without JSONB');
+must(adminDatabasePanel.includes("silver.database_targets")&&adminDatabasePanel.includes('save_database_target')&&adminDatabasePanel.includes('SQL_ENGINE_OPTIONS.map')&&adminDatabasePanel.includes('databaseProviderChoices')&&adminDatabasePanel.includes('Link / Project'),'Admin must save and select explicit SQL type/provider/Link targets');
+must(adminThemePanel.includes("silver.loc_theme")&&adminThemePanel.includes('THEME_DB_COLUMNS')&&adminThemePanel.includes('themeColumnForToken')&&adminThemePanel.includes('THEME_TOKEN_KEYS')&&adminThemePanel.includes('type="color"')&&!adminThemePanel.includes('theme_attr'),'Admin Theme editor must persist typed theme columns without JSONB');
 must(dbContract.includes("schema('silver').rpc('management_write'")&&dbContract.includes('batchSize=200')&&!dbContract.includes("schema('api').rpc("),'client RPC calls must use exposed silver wrappers with bounded insert batches');
 must(dbContract.includes('`silver.${scope}_keywords`')&&!dbContract.includes("api.lo3rwang_keywords_manage"),'keyword library writes must resolve the current Scope keyword table');
 must(dbContract.includes('copyKeywordLibraryClass')&&keywordLibrary.includes('copyKeywordLibraryClass'),'keyword library must support copying a complete independent Class');
