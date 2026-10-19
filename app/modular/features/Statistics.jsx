@@ -930,14 +930,14 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
-    {canManageSources?<details className="scope-stat-section">
-      <summary><UiText id="uiExtra.statisticsView.groupSourcesShare"/></summary>
-      <ScopeGroupStatisticsSharing scopeId={scopeId}/>
-    </details>:null}
-    {canManageSources?<details className="scope-stat-section">
-      <summary><UiText id="uiExtra.statisticsView.personalSourcesManage"/></summary>
-      <ScopeCustomSourceCategories scopeId={scopeId}/>
-    </details>:null}
+    {canManageSources?<StatisticsDetails className="scope-stat-section"
+      summary={<UiText id="uiExtra.statisticsView.groupSourcesShare"/>}>
+      {()=> <ScopeGroupStatisticsSharing scopeId={scopeId}/>}
+    </StatisticsDetails>:null}
+    {canManageSources?<StatisticsDetails className="scope-stat-section"
+      summary={<UiText id="uiExtra.statisticsView.personalSourcesManage"/>}>
+      {()=> <ScopeCustomSourceCategories scopeId={scopeId}/>}
+    </StatisticsDetails>:null}
   </>;
 }
 

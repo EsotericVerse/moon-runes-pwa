@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {test} from 'node:test';
 import {StatisticsFacets} from '../app/loc/statistics-facets.js';
 const {mediaFacetDaily,mediaPlatform,mediaStyleTags}=StatisticsFacets.base;
@@ -84,4 +85,16 @@ test('one statistics Object composes media facets with cross and style extension
   assert.equal(base.length,2);
   assert.equal(cross.options.length,2);
   assert.equal(StatisticsFacets.style.styleTreeClasses([{class_name:'Pop'}])[0],'Pop');
+});
+
+
+test('statistics management capabilities mount only when their disclosures open',()=>{
+  const detail=fs.readFileSync('app/modular/modules/statistics/StatisticsDetails.jsx','utf8');
+  const page=fs.readFileSync('app/modular/features/Statistics.jsx','utf8');
+  assert.ok(detail.includes("onToggle={event=>setOpen(event.currentTarget.open)}"));
+  assert.ok(detail.includes("open?(typeof children==='function'?children():children):null"));
+  assert.ok(page.includes('summary={<UiText id="uiExtra.statisticsView.groupSourcesShare"/>}'));
+  assert.ok(page.includes('summary={<UiText id="uiExtra.statisticsView.personalSourcesManage"/>}'));
+  assert.ok(page.includes('{()=> <ScopeGroupStatisticsSharing scopeId={scopeId}/>}'));
+  assert.ok(page.includes('{()=> <ScopeCustomSourceCategories scopeId={scopeId}/>}'));
 });
