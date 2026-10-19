@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
+import {useQueryClient} from '@tanstack/react-query';
 import {getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
 import {selectScopeConfig,selectScopeRegistryEntry} from '../loc/scope-data';
 
@@ -16,6 +17,7 @@ function genericRouteScope(pathname,search){
 }
 
 export function useScopeRuntime(){
+  const client=useQueryClient();
   const pathname=usePathname()||'/';
   const genericShell=pathname==='/scope'||pathname.startsWith('/scope/');
   const [location,setLocation]=useState({host:'',search:'',mounted:false});
@@ -86,7 +88,11 @@ export function useScopeRuntime(){
       setConfigRow(configCache.get(scopeId));
       return()=>{active=false};
     }
-    selectScopeConfig(scopeId).then(row=>{
+    client.fetchQuery({
+      queryKey:['scope-public-config',scopeId],
+      queryFn:()=>selectScopeConfig(scopeId),
+      staleTime:60_000
+    }).then(row=>{
       if(!active)return;
       configCache.set(scopeId,row||null);
       setConfigRow(row||null);
@@ -95,7 +101,7 @@ export function useScopeRuntime(){
       setConfigRow(null);
     });
     return()=>{active=false};
-  },[scopeId,configEnabled]);
+  },[scopeId,configEnabled,client]);
 
   const activeConfigRow=configRow?.id===scopeId?configRow:null;
   const structural=activeRegistryRow?{

@@ -86,9 +86,10 @@ test.describe('LunaRunes tabletop UI',()=>{
   });
 
   test('desktop can start a two-player game and finish opening setup',async({page})=>{
-    const unnecessaryCountRequests=[],gameSelectRequests=[];
+    const unnecessaryCountRequests=[],gameSelectRequests=[],scopeConfigRequests=[];
     page.on('request',request=>{
       const method=request.method(),url=request.url();
+      if(method==='GET'&&url.includes('/rest/v1/lrunes?'))scopeConfigRequests.push(url);
       if(!url.includes('/rest/v1/game?')&&!url.includes('/rest/v1/runes?'))return;
       if(method==='HEAD')unnecessaryCountRequests.push(url);
       if(method==='GET')gameSelectRequests.push(url);
@@ -112,7 +113,8 @@ test.describe('LunaRunes tabletop UI',()=>{
     await expect(page.getByText(/第 1 回合/).first()).toBeVisible();
     expect(gameSelectRequests.length,'The game must have loaded its real SQL dataset before counting queries').toBeGreaterThanOrEqual(7);
     expect(unnecessaryCountRequests,'Game and Rune facts must come from counted SELECTs, not separate HEAD COUNT probes').toEqual([]);
-    console.log('[game-sql-audit]',JSON.stringify({dataSelects:gameSelectRequests.length,extraHeadCounts:unnecessaryCountRequests.length}));
+    expect(scopeConfigRequests.length,'Scope Runtime, theme and locale must share one config SQL request').toBeLessThanOrEqual(1);
+    console.log('[game-sql-audit]',JSON.stringify({dataSelects:gameSelectRequests.length,extraHeadCounts:unnecessaryCountRequests.length,scopeConfigSelects:scopeConfigRequests.length}));
 
     const players=page.locator('.lrg-player');
     await expect(players).toHaveCount(2);
