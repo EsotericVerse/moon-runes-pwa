@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useUiCopy} from '../i18n/ui-locale';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -11,7 +12,8 @@ import {selectDailyRuneRange,selectFirstDailyRuneDate} from '../loc/daily-runes'
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from './daily-moon-river.mjs';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
-import StatisticsMultiChart,{availableStatisticChartTypes} from '../modular/modules/statistics/StatisticsMultiChart';
+import {availableStatisticChartTypes} from '../modular/modules/statistics/statistics-time-zoom.mjs';
+const StatisticsMultiChart=dynamic(()=>import('../modular/modules/statistics/StatisticsMultiChart'),{loading:()=>null});
 import StatisticsChartFrame from '../modular/modules/statistics/StatisticsChartFrame';
 import StatisticsDetails from '../modular/modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
