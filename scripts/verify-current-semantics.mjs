@@ -150,6 +150,8 @@ if(!failures.length){
 
   // Regression contract: Daily Rune is an independent LOC comparison test feed.
   // Failure or withdrawal of group-source permissions cannot suppress it.
+  if(statistics.includes("from 'recharts'")||!statistics.includes('.then(m=>m.Rune66Summary)'))
+    failures.push('Optional Rune66 renderer must not force Recharts into the base statistics bundle');
   if(!statistics.includes('dynamic(()=>import(\'../modules/statistics/StatisticsMultiChart\')')||
      !statistics.includes("from '../modules/statistics/statistics-time-zoom.mjs'")||
      statistics.includes('import StatisticsMultiChart,{')||
@@ -352,14 +354,17 @@ if(!failures.length){
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers','sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
-  for(const token of ['uiExtra.statisticsView.displayStyle','uiExtra.statisticsView.classRuneTitle','uiExtra.statisticsView.runeRankTitle'])if(!statistics.includes(token))failures.push('Statistics style-filter presentation missing '+token);
+  if(!statistics.includes('uiExtra.statisticsView.displayStyle')||!statistics.includes('Rune66Summary')||
+     !statisticsMultiChart.includes('uiExtra.statisticsView.classRuneTitle')||
+     !statisticsMultiChart.includes('uiExtra.statisticsView.runeRankTitle'))
+    failures.push('Statistics style-filter presentation missing');
   // Group is an already-aggregated ranking; page only its rendered rows, while
   // keeping the full result set for percentages and stable rank ordering.
   for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','uiExtra.statisticsView.groupPageNav','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
-    if(!statistics.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
+    if(!statisticsMultiChart.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
   if(!statistics.includes('<LocMemberIntersection')||!statistics.includes('uiExtra.statisticsView.memberDistribution'))failures.push('LOC member-level cross comparison missing.');
-  if(statistics.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
+  if(statisticsMultiChart.includes('{groupRows.map(row=>'))failures.push('Statistics Group ranking must not render every item in one long list.');
   const keywordPanel=read('app/loc/KeywordLibraryPanel.jsx');
   for(const token of ["const [styleFilter,setStyleFilter]=useState('none')","<ScopeStatisticsResults","scopeHref(scopeId,'statics/keywords')","uiExtra.statisticsView.keywordSettings"]){
     if(!statistics.includes(token))failures.push('Statistics must defer keyword analysis and link its independent editor: '+token);
