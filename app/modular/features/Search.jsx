@@ -28,7 +28,6 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {applyFilters,selectRows} from '../../loc/db-query.mjs';
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
 const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
-import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 
 
 const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
@@ -75,10 +74,10 @@ function isoOrNull(value,t){
   if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
   return date.toISOString();
 }
-function parseGroupListsText(value,t){
+function parseGroupListsText(value,t,parseGroupListsAttr){
   try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
 }
-function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
+function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGroupLists){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
@@ -137,7 +136,7 @@ function changedMediaAttributes(draft,t){
   }
   return changed;
 }
-function changedGalaxyAttributes(draft,t){
+function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{};
   const changed={};
   const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
@@ -154,7 +153,7 @@ function changedGalaxyAttributes(draft,t){
     changed.class_id=value===''?null:Number(value);
     if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
   }
-  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t);
+  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t,parseGroupListsAttr);
   return changed;
 }
 
@@ -642,8 +641,10 @@ export default function Search(){
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       const {plainTextToBlocks}=await import('../../loc/blocknote-content.mjs');
+      const {formatGroupLists}=result.resourceType==='galaxy'
+        ?await import('../../loc/group-lists.mjs'):{formatGroupLists:null};
       setEditDraft(result.resourceType==='galaxy'
-        ?galaxyDraftFromRow(fullRow,result.title,plainTextToBlocks)
+        ?galaxyDraftFromRow(fullRow,result.title,plainTextToBlocks,formatGroupLists)
         :mediaDraftFromRow(fullRow,result.title,plainTextToBlocks));
     }catch(exception){
       setEditingKey('');
@@ -664,7 +665,8 @@ export default function Search(){
         const rawEdits=Object.fromEntries(Object.entries(editDraft.attrs||{})
           .filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(editDraft.originalAttrs?.[key])));
         assertPlainGalaxyAttributes({...rawEdits,...(titleChanged?{title:editDraft.title}:{})});
-        const attrs=changedGalaxyAttributes(editDraft,t);
+        const {parseGroupListsAttr}=await import('../../loc/group-lists.mjs');
+        const attrs=changedGalaxyAttributes(editDraft,t,parseGroupListsAttr);
         assertPlainGalaxyAttributes({...attrs,...(titleChanged?{title:nextTitle}:{})});
         contentPatch={...(titleChanged?{title:nextTitle}:{}),content:body,UpdateTime:new Date().toISOString(),...attrs};
       }else{
