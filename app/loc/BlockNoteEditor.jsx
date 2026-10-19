@@ -60,11 +60,25 @@ export function ObjectEditor({
   attributeFields=null,
   showBodyEditor=true,
   attributeTitle='',
-  mediaHref=null
+  mediaHref=null,
+  actions=[],
+  actionClassName='scope-inline-editbar',
+  status='',
+  statusClassName='',
+  statusRole='status'
 }){
   const t=useUiText();
+  const actionBar=actions.length||status?<div className={actionClassName}>
+    {actions.map(action=><button key={action.key} type="button"
+      className={'loc-button'+(action.primary?' primary':'')+(action.danger?' scope-danger-button':'')}
+      disabled={action.disabled===true} onClick={action.onClick}>{action.label}</button>)}
+    {status?<span className={'scope-inline-save-status'+(statusClassName?' '+statusClassName:'')}
+      role={statusRole} aria-live={statusRole==='status'?'polite':undefined}>{status}</span>:null}
+  </div>:null;
+  if(mode==='actions')return actionBar;
   if(mode==='scope'){
     return <div className="scope-editor scope-page-editor">
+      {actionBar}
       {fields.map(field=>{
         if(field.kind==='node')return <div key={field.key}>{field.node}</div>;
         if(field.kind==='rich')return <div key={field.key} className="scope-management-wide-field">
