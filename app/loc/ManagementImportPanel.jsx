@@ -12,7 +12,7 @@ import {UNIVERSAL_IMPORT_ACCEPT,parseUniversalImportFile} from './universal-file
 import {ARCHIVE_MAX_BYTES,detectZipArchiveSource} from './private-archive-universal.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
-import ArticleBodyEditor from './ArticleBodyEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -720,7 +720,7 @@ function SunoImport({scopeId}){
     <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <div className="scope-management-wide-field"><span>{UI_COPY.management.lyrics}</span>
-        <ArticleBodyEditor editorKey={'suno-lyrics:'+draft.editorKey} content={draft.lyricsBlocks}
+        <BlockNoteEditor editorKey={'suno-lyrics:'+draft.editorKey} content={draft.lyricsBlocks}
           onBlocksChange={blocks=>setDraft(current=>current.editorKey===draft.editorKey
             ?{...current,lyricsBlocks:blocks}:current)}
           onHtmlChange={html=>setDraft(current=>current.editorKey===draft.editorKey
@@ -732,7 +732,7 @@ function SunoImport({scopeId}){
       </div>
       <div className="scope-stat-controls">
         <div className="scope-management-wide-field"><span>Suno Style</span>
-          <ArticleBodyEditor editorKey={'suno-style:'+draft.editorKey} content={draft.stylePromptBlocks}
+          <BlockNoteEditor editorKey={'suno-style:'+draft.editorKey} content={draft.stylePromptBlocks}
             onBlocksChange={blocks=>setDraft(current=>current.editorKey!==draft.editorKey?current:{
               ...current,stylePromptBlocks:blocks,
               stylePromptPlain:blocksToPlainText(blocks),
