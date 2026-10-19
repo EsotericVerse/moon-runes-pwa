@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/group-lists.mjs';
 import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/content-policy.js';
 import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
+import {HomeBlock} from '../app/loc/home-block-model.js';
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
@@ -39,6 +40,28 @@ function loadProvider(records){
   };
   return {makeProvider:vm.runInNewContext(source+'; makeProvider',context),calls};
 }
+
+
+test('one HomeBlock model normalizes child objects across all Scope edit sessions',()=>{
+  const input=Array.from({length:9},(_,i)=>({
+    uid:i===0?'ABCDEF12':'',
+    title:i===1?'小標':'',
+    text:'<p>內文 '+(i+1)+'</p>',
+    ...(i===0?{image_mode:'side'}:{})
+  }));
+  const normalized=HomeBlock.normalizeEntities(input);
+  assert.equal(HomeBlock.entityLimit,6);
+  assert.equal(normalized.length,6);
+  assert.deepEqual(normalized.map(row=>row.order),[1,2,3,4,5,6]);
+  assert.equal(normalized[0].uid,'ABCDEF12');
+  assert.equal(normalized[0].image_mode,'side');
+  assert.equal(normalized[1].title,'小標');
+  assert.equal(normalized[1].text,'<p>內文 2</p>');
+  assert.ok(normalized.every(row=>/^[A-Za-z0-9]{8}$/.test(row.uid)));
+  assert.equal(new Set(normalized.map(row=>row.uid)).size,6);
+  assert.equal(input[0].order,undefined,'normalization must not mutate database rows');
+  assert.equal(HomeBlock.normalizeEntities([]).length,0);
+});
 
 test('literal search pagination fetches one bounded page, never an exact COUNT',async()=>{
   const records=Array.from({length:25},(_,i)=>({uid:'doc-'+i}));
