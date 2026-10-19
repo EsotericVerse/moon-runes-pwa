@@ -341,6 +341,9 @@ if(!failures.length){
   if(!culture.includes("const [styleFilter,setStyleFilter]=useState('none');")||
      !culture.includes("setStyleFilter('none');"))
     failures.push('Culture keyword Class corpus scans must wait for an explicit user selection');
+  if(!culture.includes('initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!openPeriod&&!selectedPeriodKey)')||
+     !culture.includes('!initialPeriodSelectionPending&&Boolean(scopeData)'))
+    failures.push('Culture must not scan all-time metadata before auto-selecting its initial saved period');
   const cultureWorkIndex=cultureQuery.split('export async function selectScopePeriodWorkIndex(')[1]?.split('export async function selectScopePeriodWorkDetails(')[0]||'';
   if(!cultureWorkIndex.includes('const hasCursorCounts=')||
      (cultureWorkIndex.match(/count:hasCursorCounts\?null:'exact'/g)||[]).length!==2||
