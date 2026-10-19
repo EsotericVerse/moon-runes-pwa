@@ -37,11 +37,16 @@ function DataSourceStatus(){
   const current=status.degraded
     ?`${copy.uiExtra.dataSourceStatus.backup}（${status.backupLabel}）`
     :`${copy.uiExtra.dataSourceStatus.primary}（${status.primaryLabel}）`;
-  return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')} role="status">
-    <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
-    <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
-    <span><FieldText text="目前使用："/>{current}</span>
-    {status.degraded?<span><FieldText text="備援資料可能有同步時間差。"/></span>:null}
+  return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')}>
+    <details className="scope-data-source-details" open={status.degraded||undefined}>
+      <summary>{copy.uiExtra.dataSourceStatus.detailsTitle}</summary>
+      <div className="scope-data-source-values">
+        <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
+        <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
+        <span><FieldText text="目前使用："/>{current}</span>
+      </div>
+    </details>
+    {status.degraded?<span role="status"><FieldText text="備援資料可能有同步時間差。"/></span>:null}
   </div>;
 }
 
