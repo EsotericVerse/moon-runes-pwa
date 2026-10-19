@@ -262,7 +262,9 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
 
   const current=scopeOf(scope);
   const textFilters=publicContentFilters([...(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]),...textKindFilters]);
-  const textColumns=['uid','title','content','createtime','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
+  // Article content is a search predicate, not a list payload. Fetch it only
+  // when the result is explicitly opened or edited.
+  const textColumns=['uid','title','createtime','source_place','searchable','UpdateTime','url','source_id','target_id','ref_id','source_name','media_link','statistics_able','class_id','group_lists'];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,searchFields:['title'],dateColumn:'createtime',filters:textFilters,authenticated:includeHiddenText,exactColumn:'title'
