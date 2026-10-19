@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
-import ArticleBodyEditor from './ArticleBodyEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
@@ -605,12 +605,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             <label><span>{l.sort}</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
           </div>
           <div className="scope-management-wide-field"><span>{l.principle}</span>
-            <ArticleBodyEditor editorKey={'keyword-principle:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
+            <BlockNoteEditor editorKey={'keyword-principle:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
               content={draft.principle||''} canInsertImage={false}
               onPlainTextChange={value=>setDraft(current=>({...current,principle:value}))}/>
           </div>
           <div className="scope-management-wide-field"><span>{l.keywordsPerLine}</span>
-            <ArticleBodyEditor editorKey={'keyword-lines:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
+            <BlockNoteEditor editorKey={'keyword-lines:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
               content={draft.keywords_text||''} canInsertImage={false}
               onPlainTextChange={value=>setDraft(current=>({...current,keywords_text:value}))}/>
           </div>
