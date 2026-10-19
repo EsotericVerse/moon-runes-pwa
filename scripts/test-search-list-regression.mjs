@@ -14,6 +14,16 @@ function extract(file,start,end){
   assert.ok(a>=0&&b>a,'Cannot locate executable implementation in '+file);
   return source.slice(a,b);
 }
+function extractSearchProvider(){
+  const source=fs.readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
+  const first=source.indexOf('export async function searchGalaxyRows(');
+  const following=source.indexOf('export async function hydrateGalaxySearchRows(',first);
+  assert.ok(first>=0&&following>first,'Cannot locate bounded search provider before UID hydration');
+  const section=source.slice(first,following);
+  const closing=section.lastIndexOf('\n}\n');
+  assert.ok(closing>0,'Cannot locate search provider closing brace');
+  return section.slice(0,closing+2);
+}
 function loadProvider(records){
   const calls=[];
   const source=extract('app/loc/galaxy-query.js','function makeProvider(', 'function genericScopeProviders(');
@@ -182,7 +192,7 @@ test('search provider can be invoked again for a different term without reloadin
 });
 
 test('all title matches are searched before any article body matches',async()=>{
-  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const source=extractSearchProvider();
   const calls=[];
   const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
     DEFAULT_LIST_BATCH_SIZE:20,
@@ -342,7 +352,7 @@ test('date range filters span full Taipei calendar days',()=>{
 });
 
 test('browsing without a keyword invokes the bounded search provider',async()=>{
-  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const source=extractSearchProvider();
   const calls=[];
   const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
     DEFAULT_LIST_BATCH_SIZE:20,
