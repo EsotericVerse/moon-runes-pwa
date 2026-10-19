@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_FAVORITES,parseFavorites,serializeFavorites,homeScopeForAccount} from '../app/modular/navigation-preferences.mjs';
+import {NavigationPreferences} from '../app/modular/navigation-preferences.js';
+const {DEFAULT_FAVORITES,parseFavorites,serializeFavorites,homeScopeForAccount}=NavigationPreferences.account;
 import {navigationHref} from '../app/modular/nav-destinations.mjs';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -183,7 +184,7 @@ test('Settings has one home & favorites pane, one import pane, and separated man
   assert.match(settings,/activeSection==='personal'/);
   assert.match(settings,/activeSection==='manage'/);
   assert.match(settings,/scope-settings-favorite-preview/);
-  assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
+  assert.match(settings,/deviceNavigation\.MOBILE_HOME_STORAGE_KEY/);
   assert.match(settings,/<PrivateLocalFiles\/>/);
   assert.match(settings,/<ScopeSettingsPanel/);
   assert.match(settings,/<ManagementImportPanel/);
@@ -256,8 +257,8 @@ test('native My Phone stays device-only and LunaRunes is immutable in favorites'
   const home=fs.readFileSync('app/loc/MyPhoneHome.jsx','utf8');
   assert.match(shell,/favoriteLinks\.unshift/);
   assert.match(shell,/mobileHomeHref/);
-  assert.match(settings,/\['lrunes',\.\.\.\(mobileFavoriteEnabled/);
-  assert.match(settings,/MOBILE_HOME_STORAGE_KEY/);
+  assert.match(settings,/\['lrunes',\.\.\.\(deviceNavigation\.mobileFavoriteEnabled/);
+  assert.match(settings,/deviceNavigation\.MOBILE_HOME_STORAGE_KEY/);
   assert.match(home,/<PrivateLocalFiles\/>/);
   assert.doesNotMatch(home,/文化統計與作品全文搜尋|搜尋已匯入檔案名稱|尚未匯入作品/);
 });
@@ -267,4 +268,18 @@ test('retired private browser-only workbench cannot be reached from Settings',()
   assert.doesNotMatch(settings,/private-import/);
   assert.equal(fs.existsSync('app/private-import/page.jsx'),false);
   assert.equal(fs.existsSync('app/loc/PrivateXArchiveWeb.jsx'),false);
+});
+
+
+test('one navigation object composes account and local-device capabilities without crossing storage boundaries',()=>{
+  const {account,device}=NavigationPreferences;
+  assert.equal(account.HOME_SETTING_KEY,'loc-home-scope-v1');
+  assert.equal(account.parseFavorites(null).length,3);
+  const storage={getItem:key=>key===device.MOBILE_HOME_STORAGE_KEY?'myphone':'true'};
+  assert.equal(device.mobileHomepageChoice(storage),'myphone');
+  assert.equal(device.mobileHomepageEnabled(storage),true);
+  assert.equal(device.mobileFavoriteEnabled(storage),true);
+  assert.equal(device.mobileHomeHref(true),'/my-phone/index.html');
+  assert.equal(account.homeScopeForAccount('myphone',{user:{id:'one'}},['myphone']),'loc');
+  assert.equal(device.MOBILE_HOME_STORAGE_KEY.startsWith('loc-device-'),true);
 });

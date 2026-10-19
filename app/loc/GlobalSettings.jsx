@@ -12,13 +12,8 @@ import ScopeSettingsPanel from './ScopeSettingsPanel';
 import ScopeGroupManagement from './ScopeGroupManagement';
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
-import {
-  DEFAULT_FAVORITES,HOME_SETTING_KEY,homeScopeForAccount,validScopeId
-} from '../modular/navigation-preferences.mjs';
-import {
-  MOBILE_HOME_ID,MOBILE_HOME_STORAGE_KEY,
-  mobileFavoriteEnabled,mobileHomepageChoice
-} from '../modular/mobile-home-preference.mjs';
+import {NavigationPreferences} from '../modular/navigation-preferences';
+const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
 const option=(value,label)=>({value,label});
 const selectProps={
@@ -57,7 +52,7 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[]);
   useEffect(()=>{
     if(prefs.loading)return;
-    setHome(native?mobileHomepageChoice(window.localStorage):(validScopeId(prefs.home)||'loc'));
+    setHome(native?deviceNavigation.mobileHomepageChoice(window.localStorage):(accountNavigation.validScopeId(prefs.home)||'loc'));
   },[native,prefs.home,prefs.loading,account.user?.id]);
 
   const choices=useMemo(()=>{
@@ -84,19 +79,19 @@ export default function GlobalSettings({initialSection='home'}={}){
       item.id==='loc'||(native&&item.id==='lrunes')||
       (account.user&&(account.canManageGlobalSync()||allowed.has(item.id)))
     );
-    if(native)items.push({id:MOBILE_HOME_ID,label:uiT('uiExtra.globalSettings.myPhone')});
+    if(native)items.push({id:deviceNavigation.MOBILE_HOME_ID,label:uiT('uiExtra.globalSettings.myPhone')});
     return items;
   },[choices,native,account.user,account.authorizer]);
   const actualHome=native?
     (allowedHomes.some(item=>item.id===home)?home:'loc'):
-    homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
+    accountNavigation.homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
 
   const favoriteItems=useMemo(()=>{
     const ids=native?
-      ['lrunes',...(mobileFavoriteEnabled(typeof window==='undefined'?null:window.localStorage)?[MOBILE_HOME_ID]:[]),...prefs.favorites]:
+      ['lrunes',...(deviceNavigation.mobileFavoriteEnabled(typeof window==='undefined'?null:window.localStorage)?[deviceNavigation.MOBILE_HOME_ID]:[]),...prefs.favorites]:
       prefs.favorites;
     const unique=[...new Set(ids)];
-    return unique.map(id=>id===MOBILE_HOME_ID?{id,label:uiT('uiExtra.globalSettings.myPhone')}:choices.find(item=>item.id===id))
+    return unique.map(id=>id===deviceNavigation.MOBILE_HOME_ID?{id,label:uiT('uiExtra.globalSettings.myPhone')}:choices.find(item=>item.id===id))
       .filter(Boolean);
   },[native,prefs.favorites.join(','),choices]);
 
@@ -123,12 +118,12 @@ export default function GlobalSettings({initialSection='home'}={}){
     try{
       if(native){
         const next=allowedHomes.some(item=>item.id===home)?home:'loc';
-        window.localStorage.setItem(MOBILE_HOME_STORAGE_KEY,next);
+        window.localStorage.setItem(deviceNavigation.MOBILE_HOME_STORAGE_KEY,next);
         window.dispatchEvent(new Event('loc-device-navigation-changed'));
         setHome(next);
       }else{
-        const next=homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
-        await putSetting(HOME_SETTING_KEY,next);
+        const next=accountNavigation.homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
+        await putSetting(accountNavigation.HOME_SETTING_KEY,next);
         window.dispatchEvent(new CustomEvent('loc-navigation-changed',{detail:{home:next}}));
         setHome(next);
       }
