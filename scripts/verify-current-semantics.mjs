@@ -251,7 +251,7 @@ if(!failures.length){
      ownIntersection.includes('只分析目前 Scope 已允許統計的作品與媒體紀錄')||
      ownIntersection.includes("useState(false);\n  const [numberOfLanes")||
      ownIntersection.includes('開啟自交互統計')||
-     !ownIntersection.includes('enabled:valid,')||
+     !ownIntersection.includes('enabled:valid&&!sharedCatalog,')||
      !galaxy.includes('export async function selectScopeSourceBreakdownRows(scope,')){
     failures.push('Statistics must expose ten real charts, optional visible gap folds and strictly own-Scope intersections.');
   }
@@ -329,6 +329,9 @@ if(!failures.length){
     failures.push('Culture source snapshots must read Galaxy and Media just once each');
   if(!culture.includes('enabled:worksOpen')||!culture.includes("onToggle={event=>setWorksOpen(event.currentTarget.open)}"))
     failures.push('Culture work detail SELECTs must wait for explicit list expansion');
+  if(!statistics.includes('summary={<FieldText text="作品自交互統計"/>}')||
+     !statistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
+    failures.push('Intersection chart bundles must remain unopened until requested');
   if(!statistics.includes('preloadedSources={preloadedSources}')||
      !crossMember.includes('preloadedSources.get(id)')||
      crossMember.includes('selectScopeSourceBreakdownRows(')||
