@@ -10,6 +10,8 @@ const game=read('app/lrunes/game/GameView.jsx');
 const registry=read('app/modular/theme-registry.js');
 const themeData=read('app/loc/theme-data.js');
 const admin=read('app/loc/views/AdminHomeView.jsx');
+const adminTheme=read('app/loc/views/admin-panels/ThemeEditor.jsx');
+if(!admin.includes("dynamic(()=>import('./admin-panels/ThemeEditor')"))failures.push('Theme editor must load only when its Admin panel is selected');
 
 if(THEME_SLOTS.length!==8)failures.push('theme registry must expose eight stable IDs');
 const ids=THEME_SLOTS.map(slot=>slot.id);
@@ -24,7 +26,7 @@ if(!registry.includes('Emergency fallback only')||registry.includes("const THEME
 
 for(const token of ["selectRows('silver.loc_theme'",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','mergeThemeSlot'])if(!themeData.includes(token))failures.push('DB theme column loader missing '+token);
 for(const token of ["queryKey:['theme-registry']",'selectThemeRegistry','mergeThemeSlot','themeChoices'])if(!shell.includes(token))failures.push('AppShell DB-backed theme control missing '+token);
-for(const token of ["dbAuthRelation('silver.loc_theme')",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','type="color"'])if(!admin.includes(token))failures.push('Admin Theme editor missing '+token);
+for(const token of ["dbAuthRelation('silver.loc_theme')",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','type="color"'])if(!adminTheme.includes(token))failures.push('Admin Theme editor missing '+token);
 for(const token of ['selectThemeRegistry','mergeThemeSlot',"queryKey:['theme-registry']"])if(!game.includes(token))failures.push('Game must consume DB-backed theme registry: '+token);
 
 for(const scope of Object.values(SCOPES)){
@@ -50,8 +52,8 @@ for(const token of ["selection.scopeId===scopeId","setSelection({scopeId,themeId
 
 for(const token of ['THEME_DB_COLUMNS','THEME_TOKEN_KEYS.map(themeColumnForToken)','themeColumnForToken','themeUiId','themeNumber'])if(!themeData.includes(token))failures.push('Live theme database column adapter missing '+token);
 for(const key of ['--loc-bg','--loc-shadow-card'])if(!THEME_TOKEN_KEYS.includes(key))failures.push('Theme DB column mapping missing '+key);
-if(themeData.includes('theme_attr')||admin.includes('theme_attr'))failures.push('Live theme code must not restore legacy JSONB attributes');
-if(!admin.includes('theme_db_numeric')||!admin.includes('themeNumber(themeId)'))failures.push('Admin theme ID translation must work with database numeric IDs');
+if(themeData.includes('theme_attr')||adminTheme.includes('theme_attr'))failures.push('Live theme code must not restore legacy JSONB attributes');
+if(!adminTheme.includes('theme_db_numeric')||!adminTheme.includes('themeNumber(themeId)'))failures.push('Admin theme ID translation must work with database numeric IDs');
 
 // CSS subtraction guard: preserve the active shared frame and remove obsolete hero variants.
 const homeCss=read('app/styles/home-content.css');
