@@ -123,6 +123,18 @@ button,a,.loc-control,.loc-button,
   background:linear-gradient(90deg,var(--loc-accent),var(--loc-gold));
   box-shadow:0 0 18px color-mix(in srgb,var(--loc-accent) 45%,transparent);
   pointer-events:none;
+  transform:scaleX(0);
+  transition:transform .1s ease-out;
+}
+@keyframes loc-scroll-progress-fill{
+  from{transform:scaleX(0)}
+  to{transform:scaleX(1)}
+}
+@supports (animation-timeline: scroll(root block)){
+  .loc-scroll-progress{
+    animation:loc-scroll-progress-fill linear both;
+    animation-timeline:scroll(root block);
+  }
 }
 
 .loc-next-main,.scope-main{

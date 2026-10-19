@@ -1,8 +1,7 @@
 'use client';
 
-import {useEffect,useMemo,useState,useSyncExternalStore} from 'react';
+import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
-import {motion,useScroll,useSpring} from 'motion/react';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider,useUiLocale} from './i18n/ui-locale';
@@ -188,6 +187,36 @@ function targetIsCurrent(href,host,pathname){
   }catch{return false;}
 }
 
+// A two-pixel progress indicator should not eagerly download motion/react
+// on every route. Use native scroll-driven CSS; older browsers get a tiny,
+// passive, requestAnimationFrame-throttled fallback.
+function ScrollProgress(){
+  const elementRef=useRef(null);
+  useEffect(()=>{
+    if(typeof CSS!=='undefined'&&CSS.supports?.('animation-timeline: scroll(root block)'))return undefined;
+    let frame=0;
+    const paint=()=>{
+      frame=0;
+      if(!elementRef.current)return;
+      const height=Math.max(document.documentElement.scrollHeight,document.body?.scrollHeight||0);
+      const remaining=height-window.innerHeight;
+      const ratio=remaining>0?Math.max(0,Math.min(1,window.scrollY/remaining)):0;
+      elementRef.current.style.transform='scaleX('+ratio+')';
+    };
+    const schedule=()=>{if(!frame)frame=window.requestAnimationFrame(paint);};
+    paint();
+    window.addEventListener('scroll',schedule,{passive:true});
+    window.addEventListener('resize',schedule);
+    return()=>{
+      window.removeEventListener('scroll',schedule);
+      window.removeEventListener('resize',schedule);
+      if(frame)window.cancelAnimationFrame(frame);
+    };
+  },[]);
+  return <div ref={elementRef} className="loc-scroll-progress"
+    style={{transform:'scaleX(0)'}} aria-hidden="true"/>;
+}
+
 function NavTarget({href,label,current=false}){
   return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
 }
@@ -196,8 +225,6 @@ export default function AppShell({children}){
   const [client]=useState(()=>new QueryClient({
     defaultOptions:{queries:{staleTime:30_000,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
   }));
-  const {scrollYProgress}=useScroll();
-  const scaleX=useSpring(scrollYProgress,{stiffness:220,damping:34,mass:.28});
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
@@ -352,7 +379,7 @@ export default function AppShell({children}){
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
-    <motion.div className="loc-scroll-progress" style={{scaleX}} aria-hidden="true"/>
+    <ScrollProgress/>
     <header className="scope-global" data-native={native?'ios':'web'}>
       <nav className="scope-nav" aria-label={copy.nav.aria}>
         <ScrollableScopeNav label={translateUiField(activeLocale,'常用空間')} resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
