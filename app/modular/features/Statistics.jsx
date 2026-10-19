@@ -9,9 +9,7 @@ import {useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
-import {
-  Bar,BarChart,CartesianGrid,ResponsiveContainer,Tooltip,XAxis,YAxis
-} from 'recharts';
+
 import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
@@ -30,6 +28,7 @@ import {scopeHref} from '../scope-registry';
 const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyStatisticsPanel),{loading:()=>null});
 import {STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/statistics-time-zoom.mjs';
 const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
+const Rune66Summary=dynamic(()=>import('../modules/statistics/StatisticsMultiChart').then(m=>m.Rune66Summary),{loading:()=>null});
 const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
 const LocMemberIntersection=dynamic(()=>import('../modules/statistics/LocMemberIntersection'),{loading:()=>null});
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
@@ -42,11 +41,6 @@ import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const OTHER_RANKING_PAGE_SIZE=10;
-const RUNE_RANKING_PAGE_SIZE=8;
-const CHART_ACCENT='var(--loc-accent)';
-const CHART_TEXT='var(--loc-text)';
-const CHART_GRID='var(--loc-line)';
-const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const CHART_TYPES=STAT_VISUAL_TYPES;
 const STAT_TYPES=['total','source','source_custom','media_type','media_platform','media_style'];
 const STAT_TYPE_KEYS=Object.freeze({
@@ -355,89 +349,6 @@ function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevel
       </>}
     </>}
   </section>;
-}
-
-function classLabel(value,t){
-  const text=String(value||'').trim();
-  const suffix=t('uiExtra.statisticsView.groupSuffix');
-  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.groupSuffix)?text:text+suffix;
-}
-function groupLabel(value,t){
-  const text=String(value||'').trim();
-  const suffix=t('uiExtra.statisticsView.runeSuffix');
-  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.runeSuffix)?text:text+suffix;
-}
-function Rune66Summary({analysis}){
-  const t=useUiText();
-  const [groupPage,setGroupPage]=useState(1);
-  const data=analysis||{};
-  const className=String(data.keywordMeta?.class_name||t('uiExtra.statisticsView.classFallback'));
-  const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
-  const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
-  if(!data.staticstime)return null;
-  if(!data.statisticsEnabled)return <div className="scope-ranking">
-    <div><strong>{className}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
-  </div>;
-  const classRows=[...(data.groupTotals||[])]
-    .filter(row=>Number(row.document_count||0)>0)
-    .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
-  const groupRows=[...(data.runeRanking||[])]
-    .filter(row=>Number(row.count||0)>0);
-  const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
-  const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
-  const groupPageCount=Math.max(1,Math.ceil(groupRows.length/RUNE_RANKING_PAGE_SIZE));
-  const activeGroupPage=Math.min(groupPage,groupPageCount);
-  const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
-  return <div className="scope-rune66-summary">
-    <section className="scope-card">
-      <h3><UiText id="uiExtra.statisticsView.classRuneTitle"/></h3>
-      {classRows.length?<ResponsiveContainer width="100%" height={360}>
-        <BarChart data={classRows.map(row=>({label:classLabel(row.group,t),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis dataKey="label" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" name={t('uiExtra.statisticsView.classWorkCount')} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
-        </BarChart>
-      </ResponsiveContainer>:null}
-      <StatisticsDetails>{()=><>
-    <div className="scope-ranking"><div><strong>{className}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
-      <div className="scope-ranking">
-        {classRows.map(row=>{
-          const count=Number(row.document_count||0);
-          const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
-          return <div key={row.group}><strong>{classLabel(row.group,t)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
-        })}
-      </div>
-      </>}</StatisticsDetails>
-    </section>
-    <section className="scope-card">
-      <h3><UiText id="uiExtra.statisticsView.runeRankTitle"/></h3>
-      {groupRows.length?<ResponsiveContainer width="100%" height={Math.max(250,Math.min(10,groupRows.length)*36+60)}>
-        <BarChart data={groupRows.slice(0,10).map(row=>({label:groupLabel(row.label,t),value:Number(row.count)||0}))} layout="vertical" margin={{top:8,right:18,bottom:12,left:8}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
-          <YAxis type="category" dataKey="label" width={100} tick={{fill:CHART_TEXT,fontSize:11}}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
-        </BarChart>
-      </ResponsiveContainer>:null}
-      <StatisticsDetails>{()=><>
-      <div className="scope-ranking">
-        {visibleGroupRows.map(row=>{
-          const count=Number(row.count||0);
-          const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
-          return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong><span>{t('uiExtra.statisticsView.runeHits',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
-        })}
-      </div>
-      {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
-        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
-        <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
-        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
-      </nav>:null}
-      </>}</StatisticsDetails>
-    </section>
-  </div>;
 }
 
 function StatisticTypeSelect({scopeId,navigation,types}){
