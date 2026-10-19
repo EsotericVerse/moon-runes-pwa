@@ -744,7 +744,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
     {!isLrunesDaily&&Boolean(targetScopes[0])?<StatisticsDetails
-      summary={<FieldText text="作品自交互統計"/>}>
+      summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}>
       {()=> <ScopeSelfIntersection
         key={scopeId}
         scope={targetScopes[0]}
