@@ -2,7 +2,7 @@
 import UiText,{useUiText} from '../../../i18n/UiText';
 
 import {useMemo} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {defaultScopeData} from '../../../loc/scope-data';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
 import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
@@ -22,6 +22,7 @@ export default function LocMemberIntersection({
   zoomLevel=0,onZoomLevelChange,zoomRange={},preloadedSources=null
 }){
   const t=useUiText();
+  const queryClient=useQueryClient();
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
   const rangeKey=startDate+'|'+endDate;
@@ -54,7 +55,11 @@ export default function LocMemberIntersection({
           ?preloadedSources.get(id)||[]
           :[];
         const daily=id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
-          ?await selectDailyRuneRange({startDate,endDate})
+          ?await queryClient.fetchQuery({
+            queryKey:['loc-member-daily-runes',startDate,endDate],
+            queryFn:()=>selectDailyRuneRange({startDate,endDate}),
+            staleTime:5*60_000
+          })
           :[];
         const draws=id==='lrunes'
           ?normalizeDailyDraws(daily,date=>realMoonPhase(new Date(date+'T12:00:00+08:00')))

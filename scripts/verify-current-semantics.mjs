@@ -373,7 +373,9 @@ if(!failures.length){
     failures.push('Intersection chart bundles must remain unopened until requested');
   if(!groupStatistics.includes('preloadedSources={preloadedSources}')||
      !crossMember.includes('preloadedSources.get(id)')||
-     crossMember.includes('selectScopeSourceBreakdownRows(')||crossMember.includes('selectScopeRegistry(')||!crossMember.includes('new Map(scopes.map(row=>[row.id,row.label||row.id]))')||
+     crossMember.includes('selectScopeSourceBreakdownRows(')||crossMember.includes('selectScopeRegistry(')||
+      !crossMember.includes("queryKey:['loc-member-daily-runes',startDate,endDate]")||
+      !crossMember.includes('queryClient.fetchQuery({')||!crossMember.includes('new Map(scopes.map(row=>[row.id,row.label||row.id]))')||
      !ownIntersection.includes('sharedCatalog||localCatalog'))
     failures.push('Statistics intersection must reuse already fetched source rows and taxonomy');
   if(!searchProviders.includes("const textColumns=['uid','title','createtime'")||
