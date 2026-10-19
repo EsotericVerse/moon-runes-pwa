@@ -86,7 +86,8 @@ export function availableStatisticChartTypes({rows=[],series=[],distribution=[],
   const hasMix=categories.length>=2;
   const compare=fields.length>=2;
   const usable=type=>{
-    if(type==='line'||type==='bar')return hasTime||hasMix;
+    if(type==='line')return hasTime||hasMix;
+    if(type==='bar')return hasTime||categories.length>0;
     if(type==='area')return hasTime&&time.length>=2;
     if(type==='pie'||type==='treemap')return hasMix;
     if(type==='stacked')return compare&&time.length>=2;
