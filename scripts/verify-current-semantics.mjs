@@ -388,7 +388,9 @@ if(!failures.length){
      !search.includes('await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds)'))
     failures.push('Search must return bounded UID pages, then hydrate narrow display metadata only');
   const queryContract=read('app/loc/db-contract.mjs');
-  for(const token of ['DB_QUERY_BATCH_SIZE=65535','DB_QUERY_TEXT_BATCH_SIZE=1000','queryBatchSize(columns'])if(!queryContract.includes(token))failures.push('Shared metadata/text query limit contract missing '+token);
+  for(const token of ['DB_QUERY_BATCH_SIZE=65535','export function queryBatchSize(){','return DB_QUERY_BATCH_SIZE;'])if(!queryContract.includes(token))failures.push('Universal 65535 database query ceiling missing '+token);
+  if(queryContract.includes('DB_QUERY_TEXT_BATCH_SIZE')||queryContract.includes('LONG_TEXT_COLUMNS'))failures.push('Query limits must never depend on whether columns contain headings or body text');
+  if(!read('app/loc/db-query.mjs').includes('pageSize=500'))failures.push('Bulk readers must remain page-bounded even though the universal maximum is 65535');
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   for(const token of ['sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {DB_QUERY_BATCH_SIZE,queryBatchSize} from '../app/loc/db-contract.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -6,6 +7,13 @@ import {parseGroupLists,formatGroupLists,parseGroupListsAttr} from '../app/loc/g
 import {assertPlainGalaxyAttributes,hasHtmlTag} from '../app/loc/content-policy.js';
 import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
 import {HomeBlock} from '../app/loc/home-block-model.js';
+
+test('all database columns share the 65535 hard limit regardless of text fields',()=>{
+  assert.equal(DB_QUERY_BATCH_SIZE,65535);
+  for(const columns of ['*','uid','title','content','block_title','block_text','uid,title,content',['uid','content']]){
+    assert.equal(queryBatchSize(columns),65535);
+  }
+});
 
 function extract(file,start,end){
   const source=fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
