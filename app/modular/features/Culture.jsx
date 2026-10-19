@@ -120,7 +120,8 @@ export default function Culture(){
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
-  const [styleFilter,setStyleFilter]=useState(scopeId==='lo3rwang'?'rune66':'none');
+  // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
+  const [styleFilter,setStyleFilter]=useState('none');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
   const [anchorSaveBusy,setAnchorSaveBusy]=useState(false);
   const [anchorSaveMessage,setAnchorSaveMessage]=useState('');
@@ -140,7 +141,7 @@ export default function Culture(){
   const [editError,setEditError]=useState('');
 
   useEffect(()=>{
-    setStyleFilter(scopeId==='lo3rwang'?'rune66':'none');
+    setStyleFilter('none');
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
