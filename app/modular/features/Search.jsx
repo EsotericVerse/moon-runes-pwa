@@ -351,6 +351,7 @@ export default function Search(){
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
+  const loadMoreInFlight=useRef(false);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
   // LOC searches all managed Scopes; only other Scope Groups are directory guides.
@@ -419,6 +420,9 @@ export default function Search(){
       setLoadMoreError('');
       setLoadingMore(true);
     }else{
+      // A fresh query must clear any pagination state left by the previous one.
+      loadMoreInFlight.current=false;
+      setLoadingMore(false);
       setLoadMoreError('');
       setEditingKey('');setEditDraft(null);
       setFullTextKey('');setFullText('');setFullTextRow(null);setFullTextError('');
@@ -530,8 +534,10 @@ export default function Search(){
 
   async function loadNextSearch(){
     const q=matchedQueryRef.current||query.trim();
-    if((!q&&!activeSearchOptionsRef.current?.browse)||!hasMore||loadingMore||nextCursor===null)return;
-    await executeSearch(q,nextCursor,{append:true,browse:activeSearchOptionsRef.current?.browse});
+    if((!q&&!activeSearchOptionsRef.current?.browse)||!hasMore||loadMoreInFlight.current||nextCursor===null)return;
+    loadMoreInFlight.current=true;
+    try{await executeSearch(q,nextCursor,{append:true,browse:activeSearchOptionsRef.current?.browse});}
+    finally{loadMoreInFlight.current=false;}
   }
 
   async function executeIdentity(rawIdentity){
@@ -714,6 +720,8 @@ export default function Search(){
 
   function resetSearchState(){
     ++searchId.current;
+    loadMoreInFlight.current=false;
+    setLoadingMore(false);
     matchedQueryRef.current='';
     activeSearchOptionsRef.current=null;
     setResults([]);setHasMore(false);setNextCursor(null);setBrowseResults(false);
