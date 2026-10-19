@@ -110,6 +110,7 @@ if(!failures.length){
   for(const token of ['class_group','class_enable','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
+  const groupStatistics=read('app/modular/modules/statistics/ScopeGroupStatistics.jsx');
   const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
   const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
   const chartModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
@@ -136,15 +137,15 @@ if(!failures.length){
   // no blanket Scope sharing flag and no personal custom source switch.
   const crossSharing=read('app/loc/statistics-group-sharing.mjs');
   const sharingEditor=read('app/loc/ScopeGroupStatisticsSharing.jsx');
-  if(!statistics.includes("queryKey:['cross-statistics-sharing']")||
-     !statistics.includes('sharedScopeDensity(')||
+  if(!groupStatistics.includes("queryKey:['cross-statistics-sharing']")||
+     !groupStatistics.includes('sharedScopeDensity(')||
      !statistics.includes('<ScopeGroupStatisticsSharing')||
      !crossMember.includes('sharedSourceBreakdown(')||
      !crossSharing.includes("row.kind!=='source'&&row.kind!=='media'")||
      !crossSharing.includes('sharedGroupCodes(')||
      !sharingEditor.includes('scope_group_source_sharing')||
      !sharingEditor.includes("share_enabled:shareEnabled")||
-     statistics.includes('statistics_cross_scope_enabled')||
+     statistics.includes('statistics_cross_scope_enabled')||groupStatistics.includes('statistics_cross_scope_enabled')||
      sharingEditor.includes('scope_source_subcategories')){
     failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
   }
@@ -161,7 +162,7 @@ if(!failures.length){
   }
   if(!crossSharing.includes('row.share_enabled===false')||
      !crossSharing.includes("key.startsWith('daily'))return false")||
-     !statistics.includes('sharing={policy.data||{}}')||
+     !groupStatistics.includes('sharing={policy.data||{}}')||
      !crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
      !crossMember.includes("metric.startsWith('daily')")||
      !crossMember.includes("?person==='lrunes':allowedMemberMetric(person,metric,sharing)")||
@@ -185,9 +186,9 @@ if(!failures.length){
      !crossMember.includes('fetched.data?.rangeKey===rangeKey')||
      !crossMember.includes('!fetched.isPending&&!fetched.isFetching&&hasCurrentData')||
      !crossMember.includes('uiExtra.statisticsView.memberCrossUpdate')||
-     !statistics.includes("key={startDate+'|'+rangeEndDate}")||
-     !statistics.includes('choices={memberChoices} onChoicesChange={setMemberChoices}')||
-     !statistics.includes('laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}')){
+     !groupStatistics.includes("key={startDate+'|'+rangeEndDate}")||
+     !groupStatistics.includes('choices={memberChoices} onChoicesChange={setMemberChoices}')||
+     !groupStatistics.includes('laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}')){
     failures.push('Cross-member totals must belong to the exact current date window and preserve selected lanes after zoom.');
   }
 
@@ -205,7 +206,7 @@ if(!failures.length){
      !zoomControls.includes('全部資料')||
      !zoomModel.includes("days>31?'week'")||
      !zoomModel.includes('earliestDate')||
-     !statistics.includes('selectFirstDailyRuneDate()')||
+     !groupStatistics.includes('selectFirstDailyRuneDate()')||
      !statistics.includes('selectFirstScopeStatisticsDate')||
      !runeDaily.includes('selectFirstDailyRuneDate')||
      !runeDaily.includes('<StatisticsChartFrame')||
@@ -216,7 +217,7 @@ if(!failures.length){
   }
 
   if(statistics.includes('<StatisticsZoomControls')||runeDaily.includes('<StatisticsZoomControls')||
-     !statistics.includes('idPrefix="loc-stat"')||
+     !groupStatistics.includes('idPrefix="loc-stat"')||
      !statistics.includes('idPrefix="scope-stat"')||
      !statistics.includes('idPrefix="loc-member-stat"') &&
        !crossMember.includes('idPrefix="loc-member-stat"')||

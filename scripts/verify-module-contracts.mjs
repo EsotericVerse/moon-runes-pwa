@@ -44,16 +44,17 @@ walk(resolve(root,'app'),path=>{
 // Cover every .mjs dependency in the repository, not only the browser app.
 // Node tooling and test entrypoints are included but are not browser bundles.
 const mjsInventory={app:[],scripts:[],tests:[],root:[]};
-let staticMjsEdges=0,dynamicMjsEdges=0;
+let staticMjsEdges=0;
 function auditMjs(path,group){
   if(!path.endsWith('.mjs'))return;
   mjsInventory[group].push(rel(path));
   const content=readFileSync(path,'utf8');
-  for(const match of content.matchAll(/(?:from\s+|import\s*\(\s*)['"]([.]{1,2}\/[^'"]+)['"]/g)){
-    if(!resolves(path,match[1]))failures.push(rel(path)+': unresolved relative import '+match[1]);
-    if(!match[1].endsWith('.mjs'))continue;
-    if(match[0].startsWith('import'))dynamicMjsEdges+=1;
-    else staticMjsEdges+=1;
+  // Match ESM declarations, not text inside assertions or source-code strings.
+  // Dynamic import boundaries are checked separately against each capability.
+  const declarations=/^\s*(?:import|export)\s+(?:\{[^}]*\}|[^\n;{}]*?)(?:\s+from\s+|\s*)['"](\.{1,2}\/[^'"]+)['"]/gm;
+  for(const match of content.matchAll(declarations)){
+    if(!resolves(path,match[1]))failures.push(rel(path)+': unresolved relative module '+match[1]);
+    if(match[1].endsWith('.mjs'))staticMjsEdges+=1;
   }
 }
 for(const group of ['app','scripts','tests']){
@@ -68,7 +69,7 @@ if(mjsTotal===0)failures.push('No .mjs modules found; inventory cannot be verifi
 console.log('[module-contracts] audited '+mjsTotal+' .mjs (app '+
   mjsInventory.app.length+', scripts '+mjsInventory.scripts.length+
   ', tests '+mjsInventory.tests.length+', root '+mjsInventory.root.length+
-  '), linked .mjs edges: static '+staticMjsEdges+', dynamic '+dynamicMjsEdges);
+  '), static .mjs edges: '+staticMjsEdges);
 
 // Non-source Statistics views must not load the source classification engine.
 const statisticsSource=readFileSync(resolve(root,'app/modular/features/Statistics.jsx'),'utf8');
