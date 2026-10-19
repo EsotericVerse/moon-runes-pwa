@@ -5,6 +5,7 @@ import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
 import {Capacitor} from '@capacitor/core';
 import DailyRuneTransfer from '../../lrunes/DailyRuneTransfer';
 import ContextReturnNav from '../../modular/ContextReturnNav';
+import {navigationHref} from '../../modular/nav-destinations.mjs';
 import RuneCardInfo from '../../lrunes/RuneCardInfo';
 import {runeImage} from '../../lrunes/rune-directory.mjs';
 import {
@@ -282,6 +283,9 @@ export default function DailyLogClient({embedded=false}={}){
   const Root=embedded?'section':'main';
   return <Root className={'loc-view'+(!embedded?' daily-rune-log-view':'')}>
     {!embedded?<ContextReturnNav scopeId="lrunes" label="回符文首頁"/>:null}
+    {!embedded?<nav className="scope-preview-links" aria-label="每日符文分析">
+      <a className="loc-button" href={navigationHref('lrunes','daily/trend',native)}>查看每日符文趨勢</a>
+    </nav>:null}
     {!embedded?<header className="loc-hero loc-hero-feature">
       <p className="loc-eyebrow">每日抽籤紀錄</p>
       <h1>每日符文抽籤紀錄</h1>
