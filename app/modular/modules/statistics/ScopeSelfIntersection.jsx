@@ -10,6 +10,7 @@ import {selectRows} from '../../../loc/db-query.mjs';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
 import StatisticsMultiChart,{availableStatisticChartTypes} from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
+import StatisticsDetails from './StatisticsDetails';
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
@@ -201,14 +202,16 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           </label>)}
         </div>
         {enough?<div>
-          <div className="scope-ranking">
-            <div><strong>{l.activeDays}</strong><span>{calculated.days.toLocaleString(locale)}{l.dayUnit}</span></div>
-            {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString(locale)}{l.recordUnit}</span></div>)}
-          </div>
           <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-self-stat">
             <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series}
               distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
           </StatisticsChartFrame>
+          <StatisticsDetails>{()=><>
+          <div className="scope-ranking">
+            <div><strong>{l.activeDays}</strong><span>{calculated.days.toLocaleString(locale)}{l.dayUnit}</span></div>
+            {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString(locale)}{l.recordUnit}</span></div>)}
+          </div>
+          </>}</StatisticsDetails>
         </div>:<p className="scope-status">{l.notEnoughSources.replace('{count}',numberOfLanes)}</p>}
       </div>:null}
   </section>;
