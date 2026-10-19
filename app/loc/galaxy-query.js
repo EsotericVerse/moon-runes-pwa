@@ -373,6 +373,7 @@ export async function searchGalaxyRows(scopes,query,{
 }
 
 
+/** Hydrate only the visible UID page; title and article body stay out of match queries. */
 export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeIds=[]){
   const items=Array.isArray(entries)?entries:[];
   const scopeMap=new Map((Array.isArray(scopes)?scopes:[]).map(scope=>[scope.id,scope]));
