@@ -383,8 +383,8 @@ if(!failures.length){
      !ownIntersection.includes('sharedCatalog||localCatalog'))
     failures.push('Statistics intersection must reuse already fetched source rows and taxonomy');
   if(!searchProviders.includes("const textColumns=['uid'];")||
-     !searchProviders.includes('export async function hydrateGalaxySearchRows(')||
-     !searchProviders.includes("filters:[{column:'uid',operator:'in',value:keys}]")||
+     !galaxy.includes('export async function hydrateGalaxySearchRows(')||
+     !galaxy.includes("filters:[{column:'uid',operator:'in',value:keys}]")||
      !search.includes('await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds)'))
     failures.push('Search must return bounded UID pages, then hydrate narrow display metadata only');
   const queryContract=read('app/loc/db-contract.mjs');
