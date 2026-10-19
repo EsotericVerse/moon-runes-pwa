@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
 import {blocksToPlainText,looksLikeMarkdown,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
-import {HOME_BLOCK_LIMIT,homeBlockRows,visibleHomeEntities} from '../app/loc/home-block-model.mjs';
+import {HomeBlock} from '../app/loc/home-block-model.js';
 import {importRowsFromJson,mappedImportValue} from '../app/loc/import-batch.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -46,7 +46,7 @@ const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
 const locHomeBlock=read('app/loc/LocHomeBlockDisplay.jsx');
 const locHomeCss=read('app/styles/loc-about-original.css');
 const locHome=read('app/loc/views/AboutView.jsx');
-const sharedFeatureHero=read('app/loc/feature-hero.mjs');
+const sharedFeatureHero=read('app/loc/home-block-model.js');
 const featureUi=read('app/modular/ui.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
 const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
@@ -177,14 +177,14 @@ must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
 must(!locHome.includes('LocFeatureHeroManagement')&&!fs.existsSync(path.join(root,'app/loc/LocFeatureHeroManagement.jsx')),'the detached four-feature title manager must not exist on the LOC homepage');
 must(!featureUi.includes('editEyebrow={false}')&&featureUi.includes("eyebrow={slot.stored?slot.eyebrow:''}")&&featureUi.includes("eyebrow={shared?.eyebrow||''}")&&sharedFeatureHero.includes("eyebrow:String(row.block_eyebrow||'').trim()"),'four feature-page headers must expose the same editable canonical English eyebrow to LOC and other Scopes');
-must(featureUi.includes('locEditableHero?<ScopeEditableBlocks')&&featureUi.includes('slotTag="header"')&&featureUi.includes('page={FEATURE_HERO_PAGE}')&&featureUi.includes('orders={[FEATURE_HERO_ORDER[featureId]]}')&&featureUi.includes('renderDisplay={slot=><FeatureHeroContent')&&featureUi.includes('allowDelete={false}')&&featureUi.includes('allowEntities={false}'),'LOC four function pages must edit their visible first/header frame through the existing BlockNote, without a separate manager');
+must(featureUi.includes('locEditableHero?<ScopeEditableBlocks')&&featureUi.includes('slotTag="header"')&&featureUi.includes('page={HomeBlock.FEATURE_HERO_PAGE}')&&featureUi.includes('orders={[HomeBlock.FEATURE_HERO_ORDER[featureId]]}')&&featureUi.includes('renderDisplay={slot=><FeatureHeroContent')&&featureUi.includes('allowDelete={false}')&&featureUi.includes('allowEntities={false}'),'LOC four function pages must edit their visible first/header frame through the existing BlockNote, without a separate manager');
 must(editableBlocks.includes("const SlotTag=slotTag==='header'?'header':'section'")&&editableBlocks.includes('onClickCapture={canEdit&&!active&&!explicitEditButton?event=>')&&editableBlocks.includes("account.canManageGlobalSync()"),'shared block editor must render a semantic clickable heading with global manager permission');
-must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',FEATURE_HERO_PAGE)")&&featureUi.includes("sharedFeatureHeroFor(sharedQuery.data,featureId)"),'non-LOC feature pages read LOC hero content while LunaRunes stays unchanged');
+must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE)")&&featureUi.includes("HomeBlock.featureHeroFor(sharedQuery.data,featureId)"),'non-LOC feature pages read LOC hero content while LunaRunes stays unchanged');
 must(featureUi.includes("data-feature-hero-source={shared?'loc':'default'}"),'feature header should expose shared DB origin for automated testing');
 
 must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
 
-must(HOME_BLOCK_LIMIT===8&&homeBlockRows([
+must(HomeBlock.limit===8&&HomeBlock.rows([
   {uid:'A',page_name:'index',block_order:4},
   {uid:'B',page_name:'index',block_order:1},
   {uid:'C',page_name:'other',block_order:3},
@@ -201,11 +201,11 @@ const colFixture={
     {uid:'d',title:'',text:'<p></p>'}
   ]
 };
-must(visibleHomeEntities(colFixture).map(entity=>entity.uid).join(',')==='a,b,c','LOC status must show all populated child items in DB order and hide only empty placeholders');
-must(visibleHomeEntities({...colFixture,entities:[{uid:'copy',title:'',text:colFixture.text}]}).length===0,'legacy duplicate whole-body child must not print twice');
-must(locHomeBlock.includes('visibleHomeEntities(slot)')&&locHomeBlock.includes('dangerouslySetInnerHTML')&&!locHomeBlock.includes('splitStatusContentSections')&&!locHomeBlock.includes('paragraphParts')&&!locHomeBlock.includes('entityAt('),'LOC read-only display must preserve all BlockNote HTML without rewriting or hardcoded data indexes');
+must(HomeBlock.visibleEntities(colFixture).map(entity=>entity.uid).join(',')==='a,b,c','LOC status must show all populated child items in DB order and hide only empty placeholders');
+must(HomeBlock.visibleEntities({...colFixture,entities:[{uid:'copy',title:'',text:colFixture.text}]}).length===0,'legacy duplicate whole-body child must not print twice');
+must(locHomeBlock.includes('HomeBlock.visibleEntities(slot)')&&locHomeBlock.includes('dangerouslySetInnerHTML')&&!locHomeBlock.includes('splitStatusContentSections')&&!locHomeBlock.includes('paragraphParts')&&!locHomeBlock.includes('entityAt('),'LOC read-only display must preserve all BlockNote HTML without rewriting or hardcoded data indexes');
 must(!fs.existsSync(path.join(root,'app/loc/LocHomeEditableBlock.jsx'))&&!locHome.includes('LocHomeEditableBlock'),'retired multi-renderer homepage module must be gone');
-must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes('resolveSlotClassName(slot)')&&editableBlocks.includes('homeBlockRows(rows,pageName,maxBlocks)'),'Home must create only one DOM section per DB row without nested layout wrappers');
+must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes('resolveSlotClassName(slot)')&&editableBlocks.includes('HomeBlock.rows(rows,pageName,maxBlocks)'),'Home must create only one DOM section per DB row without nested layout wrappers');
 must(editableBlocks.includes('displayed.push(normalizeRow(null,placeholderFirstOrder))')&&locHomeBlock.includes('home-hero-visual'),'Hero responsive image must be rendered statically even before the DB content loads');
 must(!locHomeCss.includes('display:contents')&&!locHomeCss.includes('!important'),'Homepage CSS must not rely on wrapper-hiding or cascade override hacks');
 

@@ -9,8 +9,7 @@ import {useAccount} from './use-account';
 import BlockNoteEditor,{ObjectEditor} from './BlockNoteEditor';
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
-import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
-import {homeBlockRows} from './home-block-model.mjs';
+import {HomeBlock} from './home-block-model';
 import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
 
 const ENTITY_LIMIT=6;
@@ -51,7 +50,7 @@ function normalizeRow(row,order){
     eyebrow:String(row?.block_eyebrow||''),
     title:String(row?.block_title||''),
     subtitle:String(row?.block_subtitle||''),
-    text:removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
+    text:HomeBlock.removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
     entities:normalizeEntities(row?.block_entity)
   };
 }
@@ -107,7 +106,7 @@ export default function ScopeEditableBlocks({
       return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
     }
     if(Number.isInteger(maxBlocks)&&maxBlocks>0){
-      const displayed=homeBlockRows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
+      const displayed=HomeBlock.rows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
       if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
         displayed.push({...draft});
       }
@@ -314,7 +313,7 @@ export default function ScopeEditableBlocks({
   function renderEntities(entities,editable=false){
     if(!entities.length&&!editable)return null;
     return <div className="scope-block-entity-grid">
-      {entities.map((entity,index)=><article className={childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}
+      {entities.map((entity,index)=><article className={HomeBlock.childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}
         role={!editable&&onSuggestionClick?'link':undefined}
         tabIndex={!editable&&onSuggestionClick?0:undefined}
         onKeyDown={!editable&&onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
@@ -341,7 +340,7 @@ export default function ScopeEditableBlocks({
             canInsertImage={allowImages&&canInsertImageIn(entity.text)}
           />
         </>:<>
-          {childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
+          {HomeBlock.childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
           {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
         </>}
       </article>)}

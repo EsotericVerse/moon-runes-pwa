@@ -3,8 +3,7 @@
 import {SITE_IMAGES} from '../site-images';
 import HeroCornerIdentity from './HeroCornerIdentity';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
-import {childPresentation} from './block-presentation.mjs';
-import {visibleHomeEntities} from './home-block-model.mjs';
+import {HomeBlock} from './home-block-model';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {firstFrameImageUrl,heroImageMode,stripHeroImageTag} from './blocknote-image-url.mjs';
 
@@ -48,7 +47,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
   const media=imageFor(slot,scopeId);
   const customImage=firstFrameImageUrl(slot);
-  const children=visibleHomeEntities(slot).filter(entity=>!customImage||entity.title||
+  const children=HomeBlock.visibleEntities(slot).filter(entity=>!customImage||entity.title||
     stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
   return <>
@@ -60,7 +59,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
     <RichHtml html={slot.text} stripImage={Boolean(customImage)} className="loc-home-block__body"/>
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
-        const card=childPresentation(entity.title)==='card';
+        const card=HomeBlock.childPresentation(entity.title)==='card';
         return <article className={'loc-home-block__child '+(card?'loc-home-block__child--card':'loc-home-block__child--bubble')}
           key={entity.uid||'child-'+index}>
           {card?<h3>{entity.title}</h3>:null}

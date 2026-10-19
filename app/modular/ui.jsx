@@ -8,7 +8,7 @@ import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
 import {selectScopeBlocks} from '../loc/scope-data';
-import {FEATURE_HERO_PAGE,FEATURE_HERO_ORDER,sharedFeatureHeroFor,shouldUseSharedFeatureHero} from '../loc/feature-hero.mjs';
+import {HomeBlock} from '../loc/home-block-model';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import BlockNoteEditor from '../loc/BlockNoteEditor';
 import HeroCornerIdentity from '../loc/HeroCornerIdentity';
@@ -41,16 +41,16 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const resolvedSubtitle=localizedScope?.[featureId]||scope?.featureSubtitles?.[featureId]||profile.subtitle||'';
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
-  const sharedEnabled=shouldUseSharedFeatureHero(scopeId,featureId);
+  const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const locEditableHero=sharedEnabled&&scopeId==='loc';
-  const heroClassName='loc-card scope-hero scope-feature-hero'+(FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
+  const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
   const sharedQuery=useQuery({
-    queryKey:['scope-blocks','loc',FEATURE_HERO_PAGE],
-    queryFn:()=>selectScopeBlocks('loc',FEATURE_HERO_PAGE),
+    queryKey:['scope-blocks','loc',HomeBlock.FEATURE_HERO_PAGE],
+    queryFn:()=>selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE),
     staleTime:60_000,
     enabled:sharedEnabled&&!locEditableHero
   });
-  const shared=sharedEnabled&&!locEditableHero?sharedFeatureHeroFor(sharedQuery.data,featureId):null;
+  const shared=sharedEnabled&&!locEditableHero?HomeBlock.featureHeroFor(sharedQuery.data,featureId):null;
   const fallbackCopy={
     title:profile.title,
     subtitle:finalSubtitle,
@@ -61,13 +61,13 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
     <section className="scope-page">
       {locEditableHero?<ScopeEditableBlocks
         scopeId="loc"
-        page={FEATURE_HERO_PAGE}
-        orders={[FEATURE_HERO_ORDER[featureId]]}
+        page={HomeBlock.FEATURE_HERO_PAGE}
+        orders={[HomeBlock.FEATURE_HERO_ORDER[featureId]]}
         containerless
         slotTag="header"
         slotClassName={heroClassName}
         editSlotClassName={heroClassName}
-        placeholderFirstOrder={FEATURE_HERO_ORDER[featureId]}
+        placeholderFirstOrder={HomeBlock.FEATURE_HERO_ORDER[featureId]}
         allowEditing
         allowDelete={false}
         allowEntities={false}
