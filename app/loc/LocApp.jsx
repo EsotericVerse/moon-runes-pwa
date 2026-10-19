@@ -53,7 +53,13 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
     enabled
   });
   if(!enabled)return children;
-  if(query.isPending)return <div className="loc-loading"><UiText id="uiExtra.feature.settingsLoading"/></div>;
+  if(query.isPending)return <FeaturePage featureId={view==='keywords'?'statics':view}>
+    <section className="loc-card scope-feature-card scope-feature-loading">
+      <div className="scope-feature-loading__controls" aria-hidden="true"><span/><span/><span/></div>
+      <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
+      <p className="scope-status" role="status"><UiText id="uiExtra.feature.settingsLoading"/></p>
+    </section>
+  </FeaturePage>;
   if(query.data?.[flag]===false)return <main className="scope-main"><section className="scope-page"><section className="loc-card"><p className="scope-status"><UiText id="uiExtra.feature.unpublished"/></p></section></section></main>;
   return children;
 }
