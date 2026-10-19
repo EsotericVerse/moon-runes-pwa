@@ -6,7 +6,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import ArticleBodyEditor from './ArticleBodyEditor';
+import BlockNoteEditor from './BlockNoteEditor';
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
@@ -334,7 +334,7 @@ export default function ScopeEditableBlocks({
               onChange={event=>updateEntity(index,{title:event.target.value})}
             />
           </label>
-          <ArticleBodyEditor
+          <BlockNoteEditor
             editorKey={entity.uid+':edit'}
             content={entity.text?{html:entity.text}:''}
             onHtmlChange={html=>updateEntity(index,{text:html})}
@@ -405,7 +405,7 @@ export default function ScopeEditableBlocks({
           <div className="scope-management-wide-field">
             <span><UiText id="uiExtra.editBlocks.subtitle"/></span>
           </div>
-          <ArticleBodyEditor
+          <BlockNoteEditor
             editorKey={draft.uid+':subtitle:edit'}
             content={draft.subtitle?{html:draft.subtitle}:''}
             onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
@@ -414,7 +414,7 @@ export default function ScopeEditableBlocks({
           <div className="scope-management-wide-field">
             <span><UiText id="uiExtra.editBlocks.body"/></span>
           </div>
-          <ArticleBodyEditor
+          <BlockNoteEditor
             editorKey={draft.uid+':body:edit'}
             content={draft.text?{html:draft.text}:''}
             onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
