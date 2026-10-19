@@ -2,7 +2,6 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
-import {useQueryClient} from '@tanstack/react-query';
 import {getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
 import {selectScopeConfig,selectScopeRegistryEntry} from '../loc/scope-data';
 
@@ -17,7 +16,6 @@ function genericRouteScope(pathname,search){
 }
 
 export function useScopeRuntime(){
-  const client=useQueryClient();
   const pathname=usePathname()||'/';
   const genericShell=pathname==='/scope'||pathname.startsWith('/scope/');
   const [location,setLocation]=useState({host:'',search:'',mounted:false});
@@ -59,11 +57,7 @@ export function useScopeRuntime(){
     setRegistryRow(null);
     setRegistryResolved(!dynamic);
     setRegistryError('');
-    client.fetchQuery({
-      queryKey:['scope-registry-entry',scopeId],
-      queryFn:()=>selectScopeRegistryEntry(scopeId),
-      staleTime:5*60_000
-    }).then(row=>{
+    selectScopeRegistryEntry(scopeId).then(row=>{
       if(!active)return;
       if(row)setScopeRegistryRouteRows([row]);
       registryCache.set(scopeId,row||null);
@@ -73,7 +67,7 @@ export function useScopeRuntime(){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError(String(error?.message||error||'Scope Registry 讀取失敗'));
     });
     return()=>{active=false};
-  },[dynamic,scopeId,location.mounted,client]);
+  },[dynamic,scopeId,location.mounted]);
 
   const activeRegistryRow=registryRow?.scope_id===scopeId?registryRow:null;
   const base=getScope(scopeId);
@@ -92,11 +86,7 @@ export function useScopeRuntime(){
       setConfigRow(configCache.get(scopeId));
       return()=>{active=false};
     }
-    client.fetchQuery({
-      queryKey:['scope-public-config',scopeId],
-      queryFn:()=>selectScopeConfig(scopeId),
-      staleTime:60_000
-    }).then(row=>{
+    selectScopeConfig(scopeId).then(row=>{
       if(!active)return;
       configCache.set(scopeId,row||null);
       setConfigRow(row||null);
@@ -105,7 +95,7 @@ export function useScopeRuntime(){
       setConfigRow(null);
     });
     return()=>{active=false};
-  },[scopeId,configEnabled,client]);
+  },[scopeId,configEnabled]);
 
   const activeConfigRow=configRow?.id===scopeId?configRow:null;
   const structural=activeRegistryRow?{

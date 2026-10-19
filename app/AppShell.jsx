@@ -311,11 +311,7 @@ export default function AppShell({children}){
     let active=true;
     setLocaleSelection({scopeId,locale:'zh-Hant',manual:false});
     if(!scopeId||currentScope.aggregateChildren||scopeId==='admin')return()=>{active=false};
-    client.fetchQuery({
-      queryKey:['scope-public-config',scopeId],
-      queryFn:()=>selectScopeConfig(scopeId),
-      staleTime:60_000
-    }).then(row=>{
+    selectScopeConfig(scopeId).then(row=>{
       if(!active)return;
       const locale=normalizeUiLocale(row?.locale);
       setLocaleSelection(current=>{
@@ -324,7 +320,7 @@ export default function AppShell({children}){
       });
     }).catch(()=>{});
     return()=>{active=false};
-  },[scopeId,currentScope.aggregateChildren,client]);
+  },[scopeId,currentScope.aggregateChildren]);
 
   useEffect(()=>{
     if(typeof document!=='undefined')document.documentElement.lang=activeLocale;
