@@ -1074,3 +1074,5 @@ body{
 .scope-feature-loading>.scope-status{border:0;padding:0;color:var(--loc-muted)}
 @media(prefers-reduced-motion:reduce){.scope-feature-loading__controls span,.scope-feature-loading__body span{animation:none}}
 @media(max-width:560px){.scope-feature-loading{min-height:18rem}.scope-feature-loading__body{min-height:9rem;padding:.8rem}}
+
+.scope-stat-data-pending{display:grid;gap:.75rem;min-width:0}
