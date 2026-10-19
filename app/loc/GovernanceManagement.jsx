@@ -1,12 +1,14 @@
 'use client';
 
 import {useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useAccount} from './use-account';
 import {useEffect,useMemo} from 'react';
-import ManagementArticlePublisher from './ManagementArticlePublisher';
 import {selectScopeRegistry} from './scope-data';
 
-import RuneManagementPanel from './RuneManagementPanel';
+// Only the selected management tab loads its tools and dependencies.
+const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:()=>null});
+const RuneManagementPanel=dynamic(()=>import('./RuneManagementPanel'),{loading:()=>null});
 
 export default function GovernanceManagement(){
   const account=useAccount();

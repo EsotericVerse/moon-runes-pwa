@@ -52,8 +52,6 @@ const locHome=read('app/loc/views/AboutView.jsx');
 const sharedFeatureHero=read('app/loc/home-block-model.js');
 const featureUi=read('app/modular/ui.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
-const personalGovernance=read('app/modular/governance/PersonalGovernance.jsx');
-const runesGovernance=read('app/modular/governance/LunaRunesGovernance.jsx');
 const sharedSearch=read('app/modular/features/Search.jsx');
 
 
@@ -224,8 +222,12 @@ must(
   (runesHome.match(/<ScopeEditableBlocks/g)||[]).length===1,
   'Only the LunaRunes Hero may use inline BlockNote; its other homepage sections remain fixed'
 );
-must(personalGovernance.includes('ScopeEditableBlocks')&&personalGovernance.includes('page="governance"'),'personal governance must use governance block rows');
-must(runesGovernance.includes('ScopeEditableBlocks')&&runesGovernance.includes('page="governance"'),'LunaRunes governance must use governance block rows');
+must(governance.includes("dynamic(()=>import('../../loc/ScopeEditableBlocks')")&&governance.includes('page="governance"')&&governance.includes('scopeId={scopeId}'),
+  'every Scope governance page must use the one lazy shared block implementation');
+must(governance.includes('governance-grid-loc')&&governance.includes('GOVERNANCE_SUBTITLES')&&governance.includes('canManageGlobalSync'),
+  'shared governance must preserve LOC-specific presentation and management entry');
+must(management.includes("dynamic(()=>import('./ManagementArticlePublisher')")&&management.includes("dynamic(()=>import('./RuneManagementPanel')"),
+  'Governance management must load only the selected tab capability');
 must(!publisher.includes('content_blocks')&&!sharedSearch.includes('content_blocks')&&!cultureUi.includes('content_blocks')&&!galaxy.includes('content_blocks')&&!featureUi.includes('blocks=null'),'Galaxy must read, write and display canonical content only');
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('editorDraft={draft}')&&articleListItem.includes('<ObjectEditor mode="article"')&&featureUi.includes('<BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&!sharedSearch.includes('GalaxyAttrSummary')&&!sharedSearch.includes('GalaxyAttrEditor')&&!sharedSearch.includes('GalaxyAttrPanel')&&sharedSearch.includes('assertPlainGalaxyAttributes(')&&blockNoteEntry.includes('attributeFields.map(')&&sharedSearch.includes('changedGalaxyAttributes(editDraft,t)')&&sharedSearch.includes('<Article')&&!sharedSearch.includes('actions={editable?')&&sharedSearch.includes('rowScopeData?.galaxy')&&sharedSearch.includes('assertPlainGalaxyAttributes(')&&sharedSearch.includes('updateRows')&&sharedSearch.includes('deleteRows'),'Search must use Article(uid), shared BlockNote, and the existing management_write boundary for article attributes and deletes');
 must(!sharedSearch.includes('selectAuthRow')&&sharedSearch.includes('selectPublicEditableRow')&&!cultureUi.includes('dbAuthRelation')&&cultureUi.includes('selectRows'),'Search and Culture article edit forms must use the same public read path as the homepage before permission-checked writes');
