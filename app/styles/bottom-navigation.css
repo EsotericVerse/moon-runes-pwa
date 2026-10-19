@@ -52,3 +52,10 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 .scope-nav-empty{font-style:italic;}
 .scope-settings-options .loc-card form{display:grid;justify-items:start;gap:.7rem;margin-top:.65rem;}
 .scope-settings-options input[type='checkbox']{flex:none;}
+
+
+/* Keep scroll-to-focus targets readable above the fixed feature dock. */
+html{scroll-padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  scroll-margin-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));
+}
