@@ -1225,7 +1225,8 @@
     },
     "dataSourceStatus": {
       "primary": "メインデータ",
-      "backup": "バックアップデータ"
+      "backup": "バックアップデータ",
+      "detailsTitle": "データソースの詳細"
     },
     "selfIntersection": {
       "readingSources": "ソースを読み込み中…",
