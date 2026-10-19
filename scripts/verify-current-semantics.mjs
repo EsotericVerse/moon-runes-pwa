@@ -168,8 +168,8 @@ if(!failures.length){
      !crossMember.includes("preloadedSources.get(id)")||
      !crossMember.includes("{!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>")||
      crossMember.includes('canOfferMemberCrossStatistics(')||
-     !statisticsMultiChart.includes('if(!hasTime&&!categories.length)return []')||
-     !statisticsMultiChart.includes("if(type==='area')return hasTime&&time.length>=2")){
+     !chartModel.includes('if(!hasTime&&!categories.length)return []')||
+     !chartModel.includes("if(type==='area')return hasTime&&time.length>=2")){
     failures.push('LOC Daily Rune comparison must not depend on group source-category loading or authorization.');
   }
 
@@ -468,7 +468,7 @@ if(!failures.length){
   for(const token of ['isAggregateScope','locCombinedSourceRiverItems','locScopeDistributionItems'])if(!culture.includes(token))failures.push('LOC aggregate Culture contract missing '+token);
   for(const token of ['selectManagedScopes','Promise.all(managedScopes','buildLocSourceRiver','buildLocScopeDistribution'])if(!cultureQuery.includes(token))failures.push('LOC Culture aggregate data loader missing '+token);
   for(const token of ['selectScopeGroupChildren','uiExtra.scopeGroup.memberHome','uiExtra.scopeGroup.openMemberFeature'])if(!scopeGroupOverview.includes(token))failures.push('Scope Group overview navigation contract missing '+token);
-  if(!search.includes('enabled:!aggregateScopes')||!search.includes('uiExtra.searchUI.memberSearch')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
+  if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||!search.includes('uiExtra.searchUI.memberSearch')||!search.includes('ScopeGroupOverview'))failures.push('Scope Group Search must use registry overview instead of multi-Scope search.');
   const timelineEditor=read('app/modular/features/CultureTimelineEditor.jsx');
   if(cultureQuery.includes('anchor_pair')||timelineEditor.includes('anchor_pair'))failures.push('Timeline code must not restore legacy anchor_pair storage.');
   if(!cultureQuery.includes('anchor_ids'))failures.push('Culture timeline ordered-anchor contract missing anchor_ids');
