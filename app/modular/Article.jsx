@@ -16,12 +16,12 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     if(!isInteractiveContentTarget(event.target))onEdit(uid);
   }:undefined;
   const editingReady=editing&&Boolean(editorDraft);
-  const editorActions=editingReady?<div className="scope-article-editor-actions">
-    <button type="button" className="loc-button primary" disabled={editBusy} onClick={onSave}>{editBusy?UI_COPY.common.saving:UI_COPY.common.save}</button>
-    {editable&&onDelete?<button type="button" className="loc-button scope-danger-button" disabled={editBusy} onClick={onDelete}><UiText id="uiExtra.editBlocks.remove"/></button>:null}
-    <button type="button" className="loc-button" disabled={editBusy} onClick={onCancel}>{UI_COPY.common.cancel}</button>
-    {editError?<span className="scope-inline-save-status scope-error" role="alert">{editError}</span>:null}
-  </div>:null;
+  const editorActions=editingReady?<ObjectEditor mode="actions" actionClassName="scope-article-editor-actions"
+    actions={[
+      {key:'save',primary:true,disabled:editBusy,onClick:onSave,label:editBusy?UI_COPY.common.saving:UI_COPY.common.save},
+      ...(editable&&onDelete?[{key:'delete',danger:true,disabled:editBusy,onClick:onDelete,label:<UiText id="uiExtra.editBlocks.remove"/>}]:[]),
+      {key:'cancel',disabled:editBusy,onClick:onCancel,label:UI_COPY.common.cancel}
+    ]} status={editError} statusClassName="scope-error" statusRole="alert"/>:null;
   const titleEditor=editingReady?<input className="scope-article-edit-title" aria-label={UI_COPY.common.title} value={editorDraft.title||''} onChange={event=>onDraftChange(current=>({...current,title:event.target.value}))}/>:null;
   // The same saved media relationship links externally in view mode, but opens
   // the existing scoped Galaxy Media attribute editor while an article is edited.
