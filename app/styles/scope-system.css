@@ -320,7 +320,7 @@
 .daily-log-calendar{padding:clamp(.75rem,1.5vw,1rem)}
 .daily-log-calendar .scope-daily-calendar-nav{gap:.5rem;margin-bottom:.5rem}
 .daily-log-calendar .scope-daily-calendar-nav h2{font-size:clamp(1rem,1.8vw,1.2rem)}
-.daily-log-calendar .scope-daily-calendar-nav .loc-button{min-height:2rem;padding:.25rem .6rem}
+.daily-log-calendar .scope-daily-calendar-nav .loc-button{min-width:44px;min-height:44px;padding:.25rem .6rem}
 .daily-log-calendar .scope-daily-calendar-grid{gap:.125rem}
 .daily-log-calendar .scope-daily-calendar-weekday{padding:.25rem .0625rem;font-size:.75rem}
 .daily-log-calendar .scope-daily-calendar-cell{min-height:42px;padding:.2rem .125rem;border-radius:6px}
