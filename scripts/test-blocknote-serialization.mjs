@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from '../app/loc/blocknote-serialization.mjs';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from '../app/loc/blocknote-content.mjs';
 import {normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag} from '../app/loc/blocknote-image-url.mjs';
 
 const glyph='\uFFFC';
