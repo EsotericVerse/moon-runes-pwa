@@ -50,3 +50,27 @@ test('mobile deep-feature dock and rune return link',async({page})=>{
   await expect(back).toBeVisible();
   await expect(back).toHaveAttribute('href',/^(?:https:\/\/lrunes\.lo3rwang\.cc\/|https:\/\/loc\.lo3rwang\.cc\/lrunes\/|\/lrunes\/index\.html)$/);
 });
+
+test('mobile task pages expose the task quickly without oversized hero artwork',async({page,isMobile})=>{
+  test.skip(!isMobile,'Mobile layout contract');
+  for(const route of ['/search/','/statics/','/culture/']){
+    await page.goto(route,{waitUntil:'domcontentloaded'});
+    const hero=page.locator('.scope-feature-hero--artwork').first();
+    await expect(hero).toBeVisible({timeout:25_000});
+    const size=await hero.boundingBox();
+    expect(size.height,route+' hero should leave first-screen space for work').toBeLessThanOrEqual(265);
+  }
+});
+
+test('footer keeps data source metadata on demand and failover warnings visible',async({page})=>{
+  await page.goto('/settings/',{waitUntil:'domcontentloaded'});
+  const source=page.locator('.scope-data-source-global');
+  const disclosure=source.locator('.scope-data-source-details');
+  await expect(disclosure.locator('summary')).toBeVisible();
+  const degraded=await source.evaluate(element=>element.classList.contains('is-backup'));
+  if(!degraded)await expect(disclosure).not.toHaveAttribute('open');
+  await disclosure.locator('summary').click();
+  await expect(disclosure).toHaveAttribute('open');
+  await expect(disclosure.locator('.scope-data-source-values')).toBeVisible();
+  await expect(disclosure.locator('.scope-data-source-values>span')).toHaveCount(3);
+});
