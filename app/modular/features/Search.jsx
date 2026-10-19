@@ -13,7 +13,8 @@ import {useRouter,useSearchParams} from 'next/navigation';
 import {deleteRows,logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
-import Article from '../Article';
+// Article cards/editing are requested only when results actually render.
+const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';

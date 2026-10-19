@@ -28,7 +28,8 @@ import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
-import Article from '../Article';
+// Article cards/editing are requested only when results actually render.
+const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {blocksToPlainText,plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
