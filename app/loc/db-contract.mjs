@@ -103,7 +103,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    const batchSize=500;
+    const batchSize=1000;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
