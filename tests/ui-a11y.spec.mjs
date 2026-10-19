@@ -1,7 +1,14 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const ROUTES=['/','/lrunes/','/culture/','/statics/','/search/','/game/','/lo3rwang/'];
+// Representative pages across shared templates and distinct Scope experiences.
+const ROUTES=[
+  '/','/culture/','/statics/','/search/','/game/','/governance/','/settings/',
+  '/lo3rwang/','/lo3rwang/culture/','/lo3rwang/statics/','/lo3rwang/search/',
+  '/lrunes/','/lrunes/culture/','/lrunes/statics/','/lrunes/search/','/lrunes/game/',
+  '/lrunes/daily/log/','/lrunes/daily/trend/','/lrunes/card/','/lrunes/card3d/',
+  '/lrunes/list/','/admin/'
+];
 
 for(const route of ROUTES){
   test(`${route} keeps the Current visual contract`,async({page},testInfo)=>{
