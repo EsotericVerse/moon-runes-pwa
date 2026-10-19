@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {snapTimelineRangeToAnchors} from '../app/modular/modules/culture-timeline/culture-anchor-snap.mjs';
+import {CultureTimelineModel} from '../app/modular/modules/culture-timeline/culture-timeline-model.js';
 import {blocksToPlainText,looksLikeMarkdown,normalizeBlocks,plainTextToBlocks} from '../app/loc/blocknote-content.mjs';
 import {HomeBlock} from '../app/loc/home-block-model.js';
 import {importRowsFromJson,mappedImportValue} from '../app/loc/import-batch.mjs';
@@ -253,12 +253,12 @@ const anchorFixture=[
   {entry_type:'anchor',resource_id:'c',date_status:'exact',start_date:'2024-04-01'},
   {entry_type:'anchor',resource_id:'d',date_status:'exact',start_date:'2024-05-01'}
 ];
-const snappedPeriod=snapTimelineRangeToAnchors({start:'2024-01-02',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);
+const snappedPeriod=CultureTimelineModel.snapTimelineRangeToAnchors({start:'2024-01-02',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);
 must(snappedPeriod.anchor_ids.join(',')==='a,c'&&snappedPeriod.item.end==='2024-03-31','period range drag must snap to exclusive-end anchor without changing row dates');
-const snappedEvent=snapTimelineRangeToAnchors({start:'2024-01-01',end:'2024-04-01'},{entryType:'event',raw:{anchor_ids:['a','b']}},anchorFixture);
+const snappedEvent=CultureTimelineModel.snapTimelineRangeToAnchors({start:'2024-01-01',end:'2024-04-01'},{entryType:'event',raw:{anchor_ids:['a','b']}},anchorFixture);
 must(snappedEvent.anchor_ids.join(',')==='a,c'&&snappedEvent.item.end==='2024-04-01','event range drag must snap inclusive end to actual anchor');
 let duplicateAnchorRejected=false;
-try{snapTimelineRangeToAnchors({start:'2024-04-01',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);}catch{duplicateAnchorRejected=true}
+try{CultureTimelineModel.snapTimelineRangeToAnchors({start:'2024-04-01',end:'2024-03-31'},{entryType:'period',raw:{anchor_ids:['a','b']}},anchorFixture);}catch{duplicateAnchorRejected=true}
 must(duplicateAnchorRejected,'period bounds must reject duplicate or reversed anchor ranges');
 
 must(cultureUi.includes('CultureTimelineEditor')&&cultureUi.includes('selectedTimelineRecordId')&&cultureUi.includes('editable={account.canManageScopeSync(scopeId)}')&&cultureUi.includes('onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}')&&cultureUi.includes('onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}'),'Time vis-timeline must preserve native add/edit/remove for four types');

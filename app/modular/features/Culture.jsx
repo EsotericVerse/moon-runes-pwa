@@ -18,7 +18,7 @@ import {
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
-import {formatCultureDateTime} from '../modules/culture-timeline/culture-timeline-model.mjs';
+import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
@@ -919,7 +919,7 @@ export default function Culture(){
                       title={workDisplayHeading(work,{media:false,limit:80})}
                       source={work.source_name||work.group_label||''}
                       scopeId={work.scope_id||classificationScope}
-                      date={work.display_date||formatCultureDateTime(work.createtime||work.created_at)}
+                      date={work.display_date||CultureTimelineModel.formatCultureDateTime(work.createtime||work.created_at)}
                       body={editingWorkKey===workKey&&editDraft?'':work.description||work.media_metadata_text||''}
                       relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}

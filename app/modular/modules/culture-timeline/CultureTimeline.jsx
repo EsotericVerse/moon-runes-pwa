@@ -5,7 +5,7 @@ import {translateUiField} from '../../../i18n/ui-functional-copy.mjs';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
-import {densityStyleForCount,densityStyleForRatio,formatCultureDateTime} from './culture-timeline-model.mjs';
+import {CultureTimelineModel} from './culture-timeline-model';
 
 // Stable defaults matter: an inline [] or {} used as a hook dependency
 // would destroy and recreate vis-timeline after setReady() on each render.
@@ -51,7 +51,7 @@ function timelineRows(items,labelOf,focus,labels={}){
     const groupContent=item?.group_label||group;
     const groupOrder=Number.isFinite(Number(item?.group_order))?Number(item.group_order):null;
     const ratio=densityRatio;
-    const density=ratio>0?densityStyleForRatio(ratio):densityStyleForCount(item?.item_count);
+    const density=ratio>0?CultureTimelineModel.densityStyleForRatio(ratio):CultureTimelineModel.densityStyleForCount(item?.item_count);
     const classes=[
       String(item?.className||item?.class_name||'').trim(),
       focused?'scope-period-timeline-focus':'',
@@ -90,7 +90,7 @@ function timelineRows(items,labelOf,focus,labels={}){
 
 function groupLabel(id){return String(id||'');}
 function dateLabel(value){
-  const formatted=formatCultureDateTime(value);
+  const formatted=CultureTimelineModel.formatCultureDateTime(value);
   return formatted.length>=10?formatted.slice(0,10):formatted;
 }
 function settle(handler,item,row,callback,defaultValue=null){

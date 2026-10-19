@@ -2,7 +2,7 @@
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
 
-import {decodeCultureText,formatCultureDateTime} from '../modular/modules/culture-timeline/culture-timeline-model.mjs';
+import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
 import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectCategoryCounts,selectDailyCategoryCounts,selectSourceCatalog,selectSourceDaily} from './galaxy-query';
 import {selectCount,selectRows} from './db-query.mjs';
@@ -494,7 +494,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
 
 function mediaMetadataDescription(row){
   const fields=[['標題',row.title],['類型',row.media_type],['Meta Tag',row.meta_tags]];
-  return fields.map(([label,value])=>{const text=decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
+  return fields.map(([label,value])=>{const text=CultureTimelineModel.decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
 export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
@@ -622,7 +622,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     createtime:row.createtime,
     start_date:row.createtime,
     date:row.createtime,
-    display_date:formatCultureDateTime(row.createtime),
+    display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
     entry_id:row.uid,
     entry_type:'work',
     group_label:String(row.source_name||''),
@@ -640,8 +640,8 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     entry_type:'media_metadata',
     start_date:row.createtime,
     date:row.createtime,
-    display_date:formatCultureDateTime(row.createtime),
-    title:decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
+    display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
+    title:CultureTimelineModel.decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
     description:metadataDescription,
     media_metadata_text:metadataDescription,
     group_label:String(row.media_type||''),
