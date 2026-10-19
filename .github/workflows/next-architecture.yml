@@ -40,3 +40,11 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
         run: npm run test:ui
+      - name: Keep browser screenshots for visual inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-screenshots
+          path: test-results/**/full-page.png
+          if-no-files-found: ignore
+          retention-days: 3
