@@ -79,26 +79,6 @@ function taipeiDateKey(date=new Date()){
     return date.toISOString().slice(0,10);
   }
 }
-function trendBucket(value,unit){
-  const key=dateKey(value);
-  if(!key)return null;
-  const date=new Date(key+'T00:00:00Z');
-  const year=date.getUTCFullYear();
-  const month=date.getUTCMonth();
-  if(unit==='month'){
-    const monthText=String(month+1).padStart(2,'0');
-    const end=new Date(Date.UTC(year,month+1,0)).toISOString().slice(0,10);
-    return {key:year+'-'+monthText,label:year+'/'+monthText,start:year+'-'+monthText+'-01',end};
-  }
-  if(unit==='week'){
-    const day=date.getUTCDay();
-    date.setUTCDate(date.getUTCDate()+(day===0?-6:1-day));
-    const start=date.toISOString().slice(0,10);
-    const endDate=new Date(date);endDate.setUTCDate(endDate.getUTCDate()+6);
-    return {key:start,label:start.slice(5).replace('-','/'),start,end:endDate.toISOString().slice(0,10)};
-  }
-  return {key,label:key.slice(5).replace('-','/'),start:key,end:key};
-}
 function rowsInWindow(rows=[],range={}){
   const startDate=dateKey(range.startDate),endDate=dateKey(range.endDate);
   const bucket=['month','week','day'].includes(range.bucket)?range.bucket:'day';
@@ -107,36 +87,6 @@ function rowsInWindow(rows=[],range={}){
     const day=dateKey(row.day);
     return day&&day>=startDate&&day<=endDate;
   }),startDate,endDate,bucket};
-}
-function buildSourceTrend(rows=[],range={}){
-  const window=rowsInWindow(rows,range);
-  if(!window.startDate||!window.endDate)return [];
-  const buckets=new Map();
-  for(let cursor=new Date(window.startDate+'T00:00:00Z'),end=new Date(window.endDate+'T00:00:00Z');cursor<=end;cursor.setUTCDate(cursor.getUTCDate()+1)){
-    const day=cursor.toISOString().slice(0,10);
-    const bucket=trendBucket(day,window.bucket);
-    if(!bucket||buckets.has(bucket.key))continue;
-    buckets.set(bucket.key,{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0});
-  }
-  for(const row of window.rows){
-    const bucket=trendBucket(row.day,window.bucket);
-    if(!bucket)continue;
-    const item=buckets.get(bucket.key)||{period:bucket.label,_sort:bucket.key,start_date:bucket.start,end_date:bucket.end,total:0};
-    const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
-    const count=Number(row.item_count)||0;
-    item[source]=(Number(item[source])||0)+count;
-    item.total+=count;
-    buckets.set(bucket.key,item);
-  }
-  return [...buckets.values()].sort((a,b)=>a._sort.localeCompare(b._sort)).map(item=>{
-    const output={period:item.period,start_date:item.start_date,end_date:item.end_date,total:item.total};
-    for(const source of SOURCE_TREND_ORDER){
-      const count=Number(item[source])||0;
-      output[source+'_count']=count;
-      output[source]=item.total>0?Number(((count/item.total)*100).toFixed(2)):0;
-    }
-    return output;
-  });
 }
 function buildSummary(rows=[],range={}){
   const window=rowsInWindow(rows,range);
@@ -165,59 +115,6 @@ function SummaryList({rankingType,summary}){
     {rows.map(row=><div key={row.term}><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></div>)}
   </div>;
 }
-function SummaryChart({type='bar',rankingType,summary,height=380}){
-  const UI_COPY=useUiCopy();
-  const data=rankingType==='total'
-    ?[{term:UI_COPY.statistics.totalSource,value:summary.total}]
-    :summary.sources.map(row=>({term:row.term,value:Number(row.item_count)||0}));
-  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
-  if(type==='pie')return <ResponsiveContainer width="100%" height={height}>
-    <PieChart><Tooltip contentStyle={CHART_TOOLTIP}/><Pie data={data} dataKey="value" nameKey="term" cx="50%" cy="50%" outerRadius={Math.min(140,height/2-26)}>
-      {data.map((row,index)=><Cell key={row.term} fill={PIE_COLORS[index%PIE_COLORS.length]}/>)}
-    </Pie></PieChart>
-  </ResponsiveContainer>;
-  return <ResponsiveContainer width="100%" height={height}>
-    <BarChart data={data} margin={{top:8,right:18,bottom:32,left:8}}>
-      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-      <XAxis dataKey="term" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <Tooltip contentStyle={CHART_TOOLTIP}/>
-      <Bar dataKey="value" fill={CHART_ACCENT} radius={[4,4,0,0]}/>
-    </BarChart>
-  </ResponsiveContainer>;
-}
-function TotalTrendChart({rows=[],range={},height=420}){
-  const UI_COPY=useUiCopy();
-  const t=useUiText();
-  const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
-  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
-  return <ResponsiveContainer width="100%" height={height}>
-    <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
-      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-      <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toLocaleString()+' '+t('uiExtra.statisticsView.unitItem'),UI_COPY.statistics.totalSource]}/>
-      <Line type="monotone" dataKey="total" name={t('uiExtra.statisticsView.totalSource')} stroke={CHART_ACCENT} strokeWidth={3} dot={false}/>
-    </LineChart>
-  </ResponsiveContainer>;
-}
-function SourceTrendChart({rows=[],range={},height=420}){
-  const UI_COPY=useUiCopy();
-  const data=useMemo(()=>buildSourceTrend(rows,range),[rows,range]);
-  if(!data.length)return <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>;
-  return <ResponsiveContainer width="100%" height={height}>
-    <LineChart data={data} margin={{top:8,right:18,bottom:48,left:4}}>
-      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-      <XAxis dataKey="period" angle={-24} textAnchor="end" interval="preserveStartEnd" height={72} tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-      <YAxis domain={[0,100]} tick={{fill:CHART_TEXT}} stroke={CHART_GRID} tickFormatter={value=>value+'%'}/>
-      <Tooltip contentStyle={CHART_TOOLTIP} formatter={value=>[Number(value).toFixed(1)+'%']}/>
-      <Legend/>
-      {SOURCE_TREND_ORDER.map((source,index)=><Line key={source} type="monotone" dataKey={source} stroke={PIE_COLORS[index%PIE_COLORS.length]} strokeWidth={2} dot={false} connectNulls/>)}
-    </LineChart>
-  </ResponsiveContainer>;
-}
-
-
 function facetTotals(rows=[]){
   const map=new Map();
   for(const row of rows){
