@@ -66,10 +66,10 @@ export default function DailyRuneCalendar({
       <h2 aria-live="polite">{monthLabel}</h2>
       <button className="loc-button" type="button" disabled={loading} onClick={onNext} aria-label="下個月">›</button>
     </div>
-    <div role="grid" aria-label={monthLabel} className="scope-daily-calendar-grid">
-      {WEEKDAYS.map((day,index)=><div role="columnheader" key={'weekday-'+index} className="scope-daily-calendar-weekday">{day}</div>)}
+    <div role="group" aria-label={monthLabel} className="scope-daily-calendar-grid">
+      {WEEKDAYS.map((day,index)=><div aria-hidden="true" key={'weekday-'+index} className="scope-daily-calendar-weekday">{day}</div>)}
       {cells.map((day,index)=>{
-        if(!day)return <div role="gridcell" aria-hidden="true" key={'blank-'+index}/>;
+        if(!day)return <div aria-hidden="true" key={'blank-'+index}/>;
         const key=dateKey(year,month,day);
         const entries=showDetails?(byDate.get(key)||[]):[];
         const main=entries.some(row=>row.draw_kind==='main');
@@ -77,7 +77,6 @@ export default function DailyRuneCalendar({
         const selected=selectedDate===key;
         const moonMarkers=showDetails?phaseMarkers(key):[];
         return <button
-          role="gridcell"
           key={key}
           type="button"
           aria-pressed={selected}
