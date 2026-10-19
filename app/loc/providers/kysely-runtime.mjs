@@ -1,5 +1,5 @@
 import {sql} from 'kysely';
-import {queryBatchSize} from '../query-contract.mjs';
+import {queryBatchSize} from '../db-contract.mjs';
 
 const identifier=/^[a-z][a-z0-9_]*$/i;
 const schemas=new Set(['silver','api']);

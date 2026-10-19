@@ -1,4 +1,4 @@
-import {queryBatchSize} from '../query-contract.mjs';
+import {queryBatchSize} from '../db-contract.mjs';
 
 class KyselyQuery {
   constructor(execute,schema,table){this.executeRequest=execute;this.request={kind:'query',schema,table,operation:'select',columns:['*'],filters:[],or:[],orders:[],limit:queryBatchSize('*'),offset:0}}
