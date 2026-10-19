@@ -7,7 +7,6 @@ import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
 import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import dynamic from 'next/dynamic';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useAccount} from '../use-account';

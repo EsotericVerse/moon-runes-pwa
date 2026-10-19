@@ -8,7 +8,8 @@ import {adaptNeonThemeRequest,normalizeNeonThemeRows} from '../app/loc/providers
 const edge=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
 const drivers=readFileSync(new URL('../supabase/functions/loc-kysely/drivers.ts',import.meta.url),'utf8');
 const secrets=readFileSync(new URL('../supabase/functions/loc-kysely/database-connections.ts',import.meta.url),'utf8');
-const adminUi=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
+// The SQL target UI is an on-demand Admin capability; keep its original form contract.
+const adminUi=readFileSync(new URL('../app/loc/views/admin-panels/DatabaseTarget.jsx',import.meta.url),'utf8');
 const dbQuery=readFileSync(new URL('../app/loc/db-query.mjs',import.meta.url),'utf8');
 const dbStatus=readFileSync(new URL('../app/loc/db-source-status.mjs',import.meta.url),'utf8');
 const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
