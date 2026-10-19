@@ -6,7 +6,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
-import BlockNoteEditor from './BlockNoteEditor';
+import BlockNoteEditor,{ObjectEditor} from './BlockNoteEditor';
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 import {stripLocHomeEditorPlaceholders} from './loc-home-text.mjs';
 import {childPresentation,removeDuplicatedLegacySubtitle} from './block-presentation.mjs';
@@ -381,45 +381,36 @@ export default function ScopeEditableBlocks({
             <button type="button" className="loc-button" disabled={busy} onClick={cancel}><UiText id="uiExtra.editBlocks.cancel"/></button>
             {message?<span className={'scope-inline-save-status'+(message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?' scope-error':'')} role="status" aria-live="polite">{message}</span>:null}
           </div>
-          {editEyebrow?<label className="scope-management-wide-field">
-            <span><UiText id="uiExtra.editBlocks.englishEyebrow"/></span>
-            <input
-              className="scope-search-input"
-              value={draft.eyebrow}
-              onChange={event=>setDraft(current=>({...current,eyebrow:event.target.value}))}
-            />
-          </label>:null}
-          <label className="scope-management-wide-field">
-            <span><UiText id="uiExtra.editBlocks.chineseHeadline"/></span>
-            <input
-              className="scope-search-input"
-              value={draft.title}
-              onChange={event=>setDraft(current=>({...current,title:event.target.value}))}
-            />
-          </label>
-          {pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?<fieldset className="scope-hero-image-mode">
-            <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
-          </fieldset>:null}
-          <div className="scope-management-wide-field">
-            <span><UiText id="uiExtra.editBlocks.subtitle"/></span>
-          </div>
-          <BlockNoteEditor
-            editorKey={draft.uid+':subtitle:edit'}
-            content={draft.subtitle?{html:draft.subtitle}:''}
-            onHtmlChange={html=>setDraft(current=>({...current,subtitle:html}))}
-            canInsertImage={allowImages&&canInsertImageIn(draft.subtitle)}
-          />
-          <div className="scope-management-wide-field">
-            <span><UiText id="uiExtra.editBlocks.body"/></span>
-          </div>
-          <BlockNoteEditor
-            editorKey={draft.uid+':body:edit'}
-            content={draft.text?{html:draft.text}:''}
-            onHtmlChange={html=>setDraft(current=>({...current,text:html}))}
-            canInsertImage={allowImages&&canInsertImageIn(draft.text)}
-          />
+          <ObjectEditor mode="scope" fields={[
+            ...(editEyebrow?[{
+              key:'eyebrow',label:<UiText id="uiExtra.editBlocks.englishEyebrow"/>,
+              value:draft.eyebrow,onChange:value=>setDraft(current=>({...current,eyebrow:value}))
+            }]:[]),
+            {
+              key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
+              value:draft.title,onChange:value=>setDraft(current=>({...current,title:value}))
+            },
+            ...(pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?[{
+              key:'hero-mode',kind:'node',
+              node:<fieldset className="scope-hero-image-mode">
+                <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
+                <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
+                <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
+              </fieldset>
+            }]:[]),
+            {
+              key:'subtitle',kind:'rich',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
+              editorKey:draft.uid+':subtitle:edit',content:draft.subtitle?{html:draft.subtitle}:'',
+              onHtmlChange:html=>setDraft(current=>({...current,subtitle:html})),
+              canInsertImage:allowImages&&canInsertImageIn(draft.subtitle)
+            },
+            {
+              key:'body',kind:'rich',label:<UiText id="uiExtra.editBlocks.body"/>,
+              editorKey:draft.uid+':body:edit',content:draft.text?{html:draft.text}:'',
+              onHtmlChange:html=>setDraft(current=>({...current,text:html})),
+              canInsertImage:allowImages&&canInsertImageIn(draft.text)
+            }
+          ]}/>
           {allowEntities?renderEntities(draft.entities,true):null}
         </>:<>
           {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label={t('uiExtra.editBlocks.editSuggestion')}><UiText id="uiExtra.editBlocks.edit"/></button>:null}
