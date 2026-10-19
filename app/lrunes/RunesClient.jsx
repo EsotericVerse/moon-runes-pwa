@@ -67,6 +67,7 @@ export default function RunesClient(){
     <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
       <a className="loc-button" href={runeHref('game',native)}>符文遊戲</a>
       <a className="loc-button" href={runeHref('daily/log',native)}>每日符文紀錄</a>
+      <a className="loc-button" href={runeHref('daily/trend',native)}>每日符文趨勢</a>
     </nav>
 
     <RuneIntroSection />
