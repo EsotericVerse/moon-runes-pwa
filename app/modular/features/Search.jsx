@@ -7,7 +7,7 @@ import UiText,{useUiText} from '../../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
 
 import {deleteRows,logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
@@ -323,6 +323,7 @@ export default function Search(){
   const account=useAccount();
   const searchParams=useSearchParams();
   const router=useRouter();
+  const queryClient=useQueryClient();
   const [query,setQuery]=useState('');
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
@@ -459,7 +460,11 @@ export default function Search(){
         if(q)logSearchKeyword(scopeId,q).catch(()=>{});
       }
       const styleTagMatches=(!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate)
-        ?await selectStyleKeywordMatches(targetScopes,q)
+        ?await queryClient.fetchQuery({
+          queryKey:['search-style-keyword',targetScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
+          queryFn:()=>selectStyleKeywordMatches(targetScopes,q),
+          staleTime:60_000
+        })
         :[];
       const search=await searchGalaxyRows(targetScopes,q,{
         limit:pageSize,

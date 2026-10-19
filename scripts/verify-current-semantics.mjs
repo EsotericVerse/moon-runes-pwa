@@ -368,6 +368,10 @@ if(!failures.length){
   if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
      !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
     failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');
+  if(!search.includes("queryKey:['search-style-keyword',")||
+     !search.includes('queryClient.fetchQuery({')||
+     !culture.includes("queryClient.invalidateQueries({queryKey:['search-style-keyword']})"))
+    failures.push('Repeated exact style searches must reuse a bounded cache, invalidated by Culture updates');
   if(!statistics.includes('summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}')||
      !groupStatistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
     failures.push('Intersection chart bundles must remain unopened until requested');

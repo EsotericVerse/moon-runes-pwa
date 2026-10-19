@@ -438,7 +438,8 @@ export default function Culture(){
   async function refreshTimelineData(){
     await Promise.all([
       queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]}),
-      queryClient.invalidateQueries({queryKey:['culture-period-settings',scopeId]})
+      queryClient.invalidateQueries({queryKey:['culture-period-settings',scopeId]}),
+      queryClient.invalidateQueries({queryKey:['search-style-keyword']})
     ]);
   }
   async function moveTimelineRecord(item,row){
