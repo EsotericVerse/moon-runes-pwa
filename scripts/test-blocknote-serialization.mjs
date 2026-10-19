@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from '../app/loc/blocknote-content.mjs';
-import {normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag} from '../app/loc/blocknote-image-url.mjs';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml,BlockNoteContent} from '../app/loc/blocknote-content.mjs';
+const {normalizeImageSource,imageBlockForUrl,isEmptyImageTarget,countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode,stripHeroImageTag}=BlockNoteContent.image;
 
 const glyph='\uFFFC';
 const blocks=[

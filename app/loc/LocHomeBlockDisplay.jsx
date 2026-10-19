@@ -5,7 +5,7 @@ import HeroCornerIdentity from './HeroCornerIdentity';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import {HomeBlock} from './home-block-model';
 
-import {firstFrameImageUrl,heroImageMode,stripHeroImageTag} from './blocknote-image-url.mjs';
+import {BlockNoteContent} from './blocknote-content.mjs';
 
 // Existing, approved site images only. New text frames have no image by default;
 // images are not uploaded to, or stored by, the block editor.
@@ -28,27 +28,27 @@ function imageFor(slot,scopeId='loc'){
 export function locHomeBlockClass(slot,scopeId='loc'){
   const order=Number(slot?.order)||0;
   const media=imageFor(slot,scopeId);
-  const hasCustomImage=Boolean(firstFrameImageUrl(slot));
+  const hasCustomImage=Boolean(BlockNoteContent.image.firstFrameImageUrl(slot));
   return [
     order===1?'loc-hero loc-home-hero':'loc-card',
     'loc-home-block',
     order===1?'loc-home-block--hero':'',
-    order===1&&heroImageMode(slot)==='side'?'loc-home-block--hero-side':'',
+    order===1&&BlockNoteContent.image.heroImageMode(slot)==='side'?'loc-home-block--hero-side':'',
     order!==1&&(media||hasCustomImage)?'loc-home-block--with-image loc-home-block--image-'+(media?.position||'right'):''
   ].filter(Boolean).join(' ');
 }
 
 function RichHtml({html,className='',stripImage=false}){
-  const content=HomeBlock.stripLocHomeEditorPlaceholders(stripImage?stripHeroImageTag(html):html||'');
+  const content=HomeBlock.stripLocHomeEditorPlaceholders(stripImage?BlockNoteContent.image.stripHeroImageTag(html):html||'');
   return content.trim()?<div className={className} dangerouslySetInnerHTML={{__html:content}}/>:null;
 }
 
 function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
   const media=imageFor(slot,scopeId);
-  const customImage=firstFrameImageUrl(slot);
+  const customImage=BlockNoteContent.image.firstFrameImageUrl(slot);
   const children=HomeBlock.visibleEntities(slot).filter(entity=>!customImage||entity.title||
-    stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
+    BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
   return <>
     <header className="loc-home-block__header">

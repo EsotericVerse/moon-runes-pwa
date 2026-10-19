@@ -4,8 +4,7 @@ import FieldText from '../i18n/FieldText';
 import {useEffect,useRef} from 'react';
 import {useCreateBlockNote} from '@blocknote/react';
 import {BlockNoteView} from '@blocknote/mantine';
-import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from './blocknote-content.mjs';
-import {imageBlockForUrl,isEmptyImageTarget} from './blocknote-image-url.mjs';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml,BlockNoteContent} from './blocknote-content.mjs';
 
 export default function BlockNoteEditorClient({
   initialBlocks=[],
@@ -84,7 +83,7 @@ export default function BlockNoteEditorClient({
     event?.preventDefault?.();
     const entered=globalThis.prompt?.('圖片網址（直接圖片連結，不上傳檔案）','https://');
     if(entered===null||entered===undefined)return;
-    const image=imageBlockForUrl(entered);
+    const image=BlockNoteContent.image.imageBlockForUrl(entered);
     if(!image){
       globalThis.alert?.('請輸入有效的 http:// 或 https:// 圖片網址。');
       return;
@@ -107,7 +106,7 @@ export default function BlockNoteEditorClient({
         return;
       }else{
         const current=editor.getTextCursorPosition?.()?.block||editor.document?.at(-1);
-        if(isEmptyImageTarget(current)){
+        if(BlockNoteContent.image.isEmptyImageTarget(current)){
           editor.updateBlock(current,image);
         }else if(current){
           editor.insertBlocks([image],current,'after');

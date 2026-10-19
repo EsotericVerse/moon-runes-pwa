@@ -10,7 +10,7 @@ import BlockNoteEditor,{ObjectEditor} from './BlockNoteEditor';
 import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
 
 import {HomeBlock} from './home-block-model';
-import {countHtmlImages,frameImageCount,firstFrameImageUrl,heroImageMode} from './blocknote-image-url.mjs';
+import {BlockNoteContent} from './blocknote-content.mjs';
 
 const ENTITY_LIMIT=6;
 const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -173,7 +173,7 @@ export default function ScopeEditableBlocks({
   }
 
   function canInsertImageIn(html=''){
-    return !draft||frameImageCount(draft)-countHtmlImages(html)===0;
+    return !draft||BlockNoteContent.image.frameImageCount(draft)-BlockNoteContent.image.countHtmlImages(html)===0;
   }
 
   function updateEntity(index,patch){
@@ -197,7 +197,7 @@ export default function ScopeEditableBlocks({
   function removeEntity(index){
     setDraft(current=>{
       if(!current)return current;
-      const mode=heroImageMode(current);
+      const mode=BlockNoteContent.image.heroImageMode(current);
       const entities=current.entities
         .filter((_,entityIndex)=>entityIndex!==index)
         .map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
@@ -214,7 +214,7 @@ export default function ScopeEditableBlocks({
       if(!current)return current;
       const target=index+direction;
       if(target<0||target>=current.entities.length)return current;
-      const mode=heroImageMode(current);
+      const mode=BlockNoteContent.image.heroImageMode(current);
       const entities=[...current.entities];
       [entities[index],entities[target]]=[entities[target],entities[index]];
       const ordered=entities.map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
@@ -244,10 +244,10 @@ export default function ScopeEditableBlocks({
     if(!draft)return;
     setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
     try{
-      const embeddedImages=frameImageCount(draft);
+      const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
       if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
-      if(embeddedImages===1&&!firstFrameImageUrl(draft))throw new Error(t('uiExtra.editBlocks.invalidImage'));
+      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft))throw new Error(t('uiExtra.editBlocks.invalidImage'));
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
         ?HomeBlock.stripLocHomeEditorPlaceholders(value)
         :String(value??'');
@@ -399,8 +399,8 @@ export default function ScopeEditableBlocks({
               key:'hero-mode',kind:'node',
               node:<fieldset className="scope-hero-image-mode">
                 <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
-                <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
-                <label><input type="radio" name={'hero-image-'+draft.uid} checked={heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
+                <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
+                <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
               </fieldset>
             }]:[]),
             {
