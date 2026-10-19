@@ -1,6 +1,6 @@
 'use client';
 
-import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
+import {DB_QUERY_BATCH_SIZE,queryBatchSize} from './query-contract.mjs';
 
 
 import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
@@ -122,7 +122,7 @@ export async function selectRows(table,{
   authenticated=false
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('DB SELECT requires explicit columns');
-  const safeMaximum=Math.max(1,Math.floor(Number(maxLimit)||DB_QUERY_BATCH_SIZE));
+  const safeMaximum=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(maxLimit)||DB_QUERY_BATCH_SIZE)));
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   const {data,count:total,__dataSource}=await executePublicRead(table,relation=>{
@@ -143,7 +143,7 @@ export async function selectAllRows(table,{
   pageSize=DB_QUERY_BATCH_SIZE,
   onProgress=null
 }={}){
-  const size=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
+  const size=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
   const first=await selectRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
   const rows=[...first.rows];
   const total=Number(first.count) || rows.length;
