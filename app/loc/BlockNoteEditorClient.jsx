@@ -4,7 +4,7 @@ import FieldText from '../i18n/FieldText';
 import {useEffect,useRef} from 'react';
 import {useCreateBlockNote} from '@blocknote/react';
 import {BlockNoteView} from '@blocknote/mantine';
-import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from './blocknote-serialization.mjs';
+import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml} from './blocknote-content.mjs';
 import {imageBlockForUrl,isEmptyImageTarget} from './blocknote-image-url.mjs';
 
 export default function BlockNoteEditorClient({
