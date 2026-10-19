@@ -192,7 +192,7 @@ export default function ScopeEditableBlocks({
             :<>
               {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
               {slot.title?<Heading>{slot.title}</Heading>:null}
-              {slot.subtitle?<div className="loc-subtitle scope-block-subtitle" dangerouslySetInnerHTML={{__html:slot.subtitle}}/>:null}
+              {slot.subtitle?<p className="loc-subtitle scope-block-subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
               {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
               {renderEntities(slot.entities)}
             </>}

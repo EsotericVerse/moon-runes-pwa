@@ -143,7 +143,7 @@
 /* Shared feature heading contract: eyebrow, title + right-side subtitle, description below. */
 .scope-hero>.home-title-row{
   display:grid!important;
-  grid-template-columns:max-content minmax(0,1fr)!important;
+  grid-template-columns:fit-content(44%) minmax(0,1fr)!important;
   gap:clamp(1rem,3vw,2.75rem)!important;
   align-items:end!important;
   width:100%;
@@ -160,27 +160,20 @@
   grid-column:2!important;
   align-self:end!important;
   justify-self:start!important;
-  max-width:32rem;
+  max-width:none;
+  min-width:0;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+  white-space:normal;
   margin:0!important;
   padding:0 0 .35rem!important;
   border:0!important;
 }
 .scope-hero-description{
   display:block;
-}
-@media(max-width:760px){
-  .scope-hero>.home-title-row{
-    grid-template-columns:1fr!important;
-    align-items:start!important;
-  }
-  .scope-hero>.home-title-row>h1,
-  .scope-hero>.home-title-row>.scope-subtitle{
-    grid-column:1!important;
-  }
-  .scope-hero>.home-title-row>.scope-subtitle{
-    max-width:none;
-    padding-top:.3rem!important;
-  }
 }
 
 /* Culture timeline: use the active LOC theme colors instead of vis-timeline defaults. */

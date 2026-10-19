@@ -23,9 +23,7 @@ function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=fa
     {eyebrow?<p className="loc-eyebrow">{eyebrow}</p>:null}
     <div className="home-title-row">
       <h1>{title}</h1>
-      {subtitle?(rich
-        ?<div className="loc-subtitle scope-subtitle scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:subtitle}}/>
-        :<p className="loc-subtitle scope-subtitle">{subtitle}</p>):null}
+      {subtitle?<p className="loc-subtitle scope-subtitle">{HomeBlock.plainBlockLine(subtitle)}</p>:null}
     </div>
     {description?(rich
       ?<div className="scope-hero-description scope-shared-hero-rich" dangerouslySetInnerHTML={{__html:description}}/>

@@ -20,13 +20,14 @@
 }
 .loc-home-block__header{
   display:grid;
-  /* Text headings span the full block; images begin below this line. */
-  grid-template-columns:minmax(0,1fr);
-  align-items:start;
+  /* Eyebrow spans the row; title and plain-text subtitle share the next row. */
+  grid-template-columns:fit-content(44%) minmax(0,1fr);
+  column-gap:clamp(.65rem,2.6vw,2.5rem);
+  align-items:center;
   margin-bottom:1rem;
 }
 .loc-home-block__header>.loc-eyebrow{
-  grid-column:1;
+  grid-column:1 / -1;
   grid-row:1;
   margin:0 0 .3rem;
   color:var(--loc-gold);
@@ -52,10 +53,10 @@
   text-wrap:initial;
 }
 .loc-home-block__header>.loc-home-block__subtitle{
-  grid-column:1;
-  grid-row:3;
-  justify-self:stretch;
-  max-width:100%;
+  grid-column:2;
+  grid-row:2;
+  justify-self:start;
+  max-width:none;
   min-width:0;
   margin:.1rem 0 0;
   padding:0;
@@ -297,13 +298,6 @@
   .loc-home-block__children{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:760px){
-  .loc-home-block__header{grid-template-columns:minmax(0,1fr)}
-  .loc-home-block__header>.loc-home-block__subtitle{
-    grid-column:1;
-    grid-row:auto;
-    max-width:none;
-    margin-top:.35rem;
-  }
   .loc-home-block--with-image,
   .loc-home-block--image-left{
     grid-template-columns:minmax(0,1fr);
@@ -311,8 +305,6 @@
     row-gap:.5rem;
   }
   .loc-home-block--with-image>.loc-home-block__media{margin-top:.75rem}
-  .loc-home-block--hero>.loc-home-block__header{display:block}
-  .loc-home-block--hero>.loc-home-block__header>.loc-subtitle{margin-top:.65rem}
 }
 @media(max-width:620px){
   .loc-home-block__children{grid-template-columns:minmax(0,1fr)}
@@ -384,12 +376,18 @@
   overflow-wrap:anywhere;
   word-break:break-word;
 }
-.loc-home-block__subtitle,
-.loc-home-block__subtitle>p{
+.loc-home-block__subtitle{
   min-width:0;
+  max-width:100%;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
   overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
+  white-space:normal;
+  text-overflow:clip;
+  overflow-wrap:anywhere;
+  word-break:normal!important;
 }
 .loc-home-block--image-top,
 .loc-home-block--image-bottom{
@@ -410,3 +408,5 @@
   .loc-home-block--image-top{grid-template-areas:"media" "header" "body" "children";}
   .loc-home-block--image-bottom{grid-template-areas:"header" "body" "media" "children";}
 }
+
+.loc-home-block--hero>.loc-home-block__header{max-width:100%}

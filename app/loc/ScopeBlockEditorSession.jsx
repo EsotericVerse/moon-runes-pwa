@@ -27,15 +27,10 @@ export default function ScopeBlockEditorSession({
   const cancel=()=>onClose();
   const isHomeFrame=pageName==='index'&&['loc','lo3rwang'].includes(scopeId);
   const image= isHomeFrame?resolveHomeImage(draft,scopeId):null;
-  const titleLimit=160;
-  const englishLimit=192;
-  const subtitleLimit=384;
-  const subtitleValue=html=>{
-    const raw=String(html||'');
-    if(typeof DOMParser==='undefined')return raw.replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]*>/g,' ').trim();
-    return new DOMParser().parseFromString(raw,'text/html').body.textContent?.replace(/\s+/g,' ').trim()||'';
-  };
-  const subtitleHtml=value=>'<p>'+String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'</p>';
+  const titleLimit=64;
+  const englishLimit=64;
+  const subtitleLimit=128;
+  const subtitleValue=HomeBlock.plainBlockLine;
   const stripInlineImage=value=>String(value||'').replace(/<img\b[^>]*>/gi,'');
   // Only an explicit image management action migrates old embedded images.
   function configureImage(changes,removeEmbedded=true){
@@ -148,9 +143,9 @@ export default function ScopeBlockEditorSession({
         :String(value??'');
       const values={
         page_name:pageName,
-        block_eyebrow:String(draft.eyebrow||'').trim(),
-        block_title:String(draft.title||'').trim(),
-        block_subtitle:normalizeSavedHtml(draft.subtitle),
+        block_eyebrow:subtitleValue(draft.eyebrow),
+        block_title:subtitleValue(draft.title),
+        block_subtitle:subtitleValue(draft.subtitle),
         ...(isHomeFrame?{block_image:draft.image||null}:{}),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
@@ -257,8 +252,8 @@ export default function ScopeBlockEditorSession({
             }]:[]),
             {
               key:'subtitle-line',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
-              value:subtitleValue(draft.subtitle),maxLength:subtitleLimit-7,
-              onChange:value=>setDraft(current=>({...current,subtitle:subtitleHtml(value)}))
+              value:subtitleValue(draft.subtitle),maxLength:subtitleLimit,
+              onChange:value=>setDraft(current=>({...current,subtitle:value}))
             },
             {
               key:'body',kind:'rich',label:<UiText id="uiExtra.editBlocks.body"/>,

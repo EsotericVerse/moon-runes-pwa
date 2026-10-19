@@ -2,7 +2,7 @@
 /* Homepage title hierarchy: left title, right short explanation. */
 .home-title-row{
   display:grid;
-  grid-template-columns:max-content minmax(0,1fr);
+  grid-template-columns:fit-content(44%) minmax(0,1fr);
   gap:clamp(1rem,3vw,2.75rem);
   align-items:end;
 }
@@ -14,7 +14,14 @@
 }
 .home-title-row>.loc-subtitle{
   justify-self:start;
-  max-width:32rem;
+  min-width:0;
+  max-width:none;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+  white-space:normal;
   margin:.25rem 0 0!important;
   padding:0 0 .35rem!important;
   border:0!important;
@@ -42,20 +49,6 @@
   margin:.1rem 0 0!important;
 }
 .home-section-heading>h2{margin-top:.2rem}
-@media(max-width:760px){
-  .home-title-row{
-    grid-template-columns:1fr;
-    align-items:start;
-  }
-  .home-title-row>.loc-subtitle{
-    grid-column:1;
-    grid-row:auto;
-    justify-self:start;
-    max-width:none;
-    margin-top:.4rem!important;
-    padding-top:.3rem!important;
-  }
-}
 @media(max-width:720px){
   .home-section-heading{grid-template-columns:1fr}
   .home-section-heading>.loc-subtitle{

@@ -73,7 +73,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
     <header className="loc-home-block__header">
       {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
       {slot.title?<Heading>{slot.title}</Heading>:null}
-      <RichHtml html={slot.subtitle} stripImage className="loc-subtitle loc-home-block__subtitle"/>
+      {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
     </header>
     <RichHtml html={slot.text} stripImage className="loc-home-block__body"/>
     {children.length?<div className="loc-home-block__children">

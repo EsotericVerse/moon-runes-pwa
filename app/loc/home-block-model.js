@@ -38,6 +38,14 @@ export function normalizeHomeBlockEntities(value){
 
 export const HOME_BLOCK_LIMIT=8;
 
+// VARCHAR headings are plain strings; remove only legacy markup wrappers.
+export function plainBlockLine(value=''){
+  return String(value??'').replace(/<br\s*\/?\s*>/gi,' ')
+    .replace(/<[^>]*>/g,' ').replace(/&nbsp;|&#0*160;|&#x0*a0;/gi,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+
 /** One indexed page row is one text frame; repeat neither row nor field. */
 export function homeBlockRows(rows,page='index',limit=HOME_BLOCK_LIMIT){
   const target=String(page||'index').toLowerCase();
@@ -152,6 +160,7 @@ export const HomeBlock=Object.freeze({
   heroExtraFor,
   childPresentation,
   removeDuplicatedLegacySubtitle,
+  plainBlockLine,
   FEATURE_HERO_PAGE,
   FEATURE_HERO_ORDER,
   FEATURE_HERO_IDS,
