@@ -6,14 +6,16 @@ import {UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
 import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
 import {translateUiField} from '../../i18n/ui-functional-copy.mjs';
 import {useCallback,useEffect,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../modular/theme-registry';
 import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../theme-data';
 import {useAccount} from '../use-account';
 import {SQL_ENGINE_OPTIONS} from '../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../providers/database-link.mjs';
-import {AdminSourceCategories} from '../SourceCategoryEditor';
-import {ObjectEditor} from '../BlockNoteEditor';
+// Registry editing and source catalogs are independent admin capabilities.
+const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:()=>null});
+const ObjectEditor=dynamic(()=>import('../BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {ScopeFeatureToggles} from '../../modular/ui';
 import {
   deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows

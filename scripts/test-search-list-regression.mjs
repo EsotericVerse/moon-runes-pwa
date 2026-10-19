@@ -526,3 +526,17 @@ test('route, page and management edit capabilities remain lazily split from read
   assert.ok(!/^import BlockNoteEditor/m.test(article));
   assert.ok(!/^import BlockNoteEditor/m.test(home));
 });
+
+
+test('Culture and Admin leave inactive editor/query capabilities unmounted',()=>{
+  const culture=fs.readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const admin=fs.readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
+  assert.ok(culture.includes("enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)"));
+  assert.ok(culture.includes("selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate')"));
+  assert.ok(culture.includes("setSuggestedRequestNonce(0)"),'closing an editor must unmount it');
+  assert.ok(culture.includes("!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&classificationBuckets.length"));
+  assert.ok(culture.includes("isAggregateScope&&locCombinedSourceRiverItems.length"));
+  assert.ok(admin.includes("const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor')"));
+  assert.ok(admin.includes("const ObjectEditor=dynamic(()=>import('../BlockNoteEditor')"));
+  assert.ok(!/^import \{AdminSourceCategories\}/m.test(admin));
+});

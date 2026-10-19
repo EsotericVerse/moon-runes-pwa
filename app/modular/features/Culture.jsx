@@ -45,6 +45,7 @@ function isInteractiveTarget(target){
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
 const EMPTY_RIVER_FOCUS=Object.freeze({});
+const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
 function classificationRiverLabel(item){
   return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):'';
@@ -198,7 +199,7 @@ export default function Culture(){
       startDate:selectedWorkPeriod?.start_date,
       endDate:selectedWorkPeriod?.end_date
     }),
-    enabled:!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData),
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData),
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
@@ -486,13 +487,16 @@ export default function Culture(){
       .map(item=>String(item?.start_date||item?.date||'').slice(0,10))
       .filter(Boolean)
   ,[timelineItems]);
+  // Unselected modes must not execute the density-change algorithm.
   const riverAnalysis=useMemo(
-    ()=>analyzeRiverDensity(classificationBuckets,existingAnchorDates),
-    [classificationBuckets,existingAnchorDates]
+    ()=>!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&classificationBuckets.length
+      ?analyzeRiverDensity(classificationBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
+    [isAggregateScope,isLrunesDaily,isLocItemView,classificationBuckets,existingAnchorDates]
   );
   const locRiverAnalysis=useMemo(
-    ()=>analyzeRiverDensity(locCombinedSourceRiverItems,[]),
-    [locCombinedSourceRiverItems]
+    ()=>isAggregateScope&&locCombinedSourceRiverItems.length
+      ?analyzeRiverDensity(locCombinedSourceRiverItems,[]):EMPTY_RIVER_ANALYSIS,
+    [isAggregateScope,locCombinedSourceRiverItems]
   );
   const virtualAnchorItems=useMemo(()=>{
     const total=Math.max(1,Number(riverAnalysis.totalCount)||0);
@@ -791,13 +795,15 @@ export default function Culture(){
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
                   {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
                 </div>:null}
-                {account.canManageScopeSync(scopeId)?<CultureTimelineEditor
+                {account.canManageScopeSync(scopeId)&&Boolean(
+                  selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate')
+                )?<CultureTimelineEditor
                   scopeId={scopeId}
                   selectedRecordId={selectedTimelineRecordId}
                   suggestedAnchorDate={selectedTimelineDate}
                   suggestedRecordType={suggestedRecordType}
                   suggestedRequestNonce={suggestedRequestNonce}
-                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('')}}
+                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSuggestedRequestNonce(0)}}
                 />:null}
               </section>
 
