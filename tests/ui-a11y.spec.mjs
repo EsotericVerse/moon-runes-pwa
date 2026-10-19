@@ -21,6 +21,9 @@ for(const route of ROUTES){
 
     const main=page.locator('main,.loc-next-main,.scope-main').first();
     await expect(main).toBeVisible();
+    // A loading shell is not the page: inspect the settled content instead.
+    await expect(page.locator('.scope-feature-loading')).toHaveCount(0,{timeout:20_000});
+    await expect(page.locator('.loc-loading')).toHaveCount(0,{timeout:20_000});
 
     await page.screenshot({
       path:testInfo.outputPath('full-page.png'),
