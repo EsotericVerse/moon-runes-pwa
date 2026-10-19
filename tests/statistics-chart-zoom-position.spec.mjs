@@ -81,7 +81,7 @@ test('opening one-Scope intersection reuses already requested source SQL rows',a
   page.on('request',request=>{
     if(request.method()!=='GET')return;
     const url=request.url();
-    if(/\\/rest\\/v1\\/lo3rwang_galaxy(?:_media)?(?:\\?|$)/.test(url))sql.push(url);
+    if(url.includes('/rest/v1/lo3rwang_galaxy'))sql.push(url);
   });
   await page.goto('/lo3rwang/statics/',{waitUntil:'domcontentloaded'});
   const intersection=page.locator('details.scope-stat-details').last();
