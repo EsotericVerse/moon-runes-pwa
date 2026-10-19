@@ -859,6 +859,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
+    {((mediaDimension&&mediaQuery.isPending)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending)))?<div className="scope-stat-data-pending">
+      <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
+      <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
+    </div>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
     {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
