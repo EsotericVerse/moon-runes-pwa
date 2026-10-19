@@ -1076,3 +1076,13 @@ body{
 @media(max-width:560px){.scope-feature-loading{min-height:18rem}.scope-feature-loading__body{min-height:9rem;padding:.8rem}}
 
 .scope-stat-data-pending{display:grid;gap:.75rem;min-width:0}
+
+
+/* Task-first mobile hierarchy: LOC/Author search, statistics, culture and
+   governance keep their artwork but no longer consume half the first screen.
+   Rune artwork and the homepage remain on their independent scales. */
+@media(max-width:760px){
+  .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .scope-feature-hero--artwork{
+    min-height:clamp(12.5rem,30svh,15rem);
+  }
+}
