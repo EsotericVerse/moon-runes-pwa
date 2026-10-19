@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import {UI_COPY} from '../i18n/ui-copy';
+import {useUiText} from '../i18n/UiText';
 import {blocksToPlainText,looksLikeMarkdown,normalizeBlocks,plainTextToBlocks} from './blocknote-content.mjs';
 
 // BlockNote itself is browser-only; keep this as the single public editor entrypoint.
@@ -42,5 +44,78 @@ export default function BlockNoteEditor({
       onHtmlChange={onHtmlChange}
       canInsertImage={canInsertImage}
     />
+  </div>;
+}
+
+/**
+ * One configurable editing surface. Schema/Scope-specific persistence stays
+ * with its existing parent; form rendering and BlockNote stay here.
+ */
+export function ObjectEditor({
+  mode='article',
+  draft=null,
+  onChange=null,
+  fields=[],
+  showHidden=false,
+  attributeFields=null,
+  showBodyEditor=true,
+  attributeTitle='',
+  mediaHref=null
+}){
+  const t=useUiText();
+  if(mode==='scope'){
+    return <div className="scope-editor scope-page-editor">
+      {fields.map(field=>{
+        if(field.kind==='node')return <div key={field.key}>{field.node}</div>;
+        if(field.kind==='rich')return <div key={field.key} className="scope-management-wide-field">
+          <span>{field.label}</span>
+          <BlockNoteEditor editorKey={field.editorKey} content={field.content}
+            onBlocksChange={field.onBlocksChange} onHtmlChange={field.onHtmlChange}
+            onPlainTextChange={field.onPlainTextChange} canInsertImage={field.canInsertImage!==false}/>
+        </div>;
+        return <label key={field.key} className="scope-management-wide-field">
+          <span>{field.label}</span>
+          <input className="scope-search-input" value={field.value??''}
+            onChange={event=>field.onChange?.(event.target.value)} disabled={field.disabled===true}/>
+        </label>;
+      })}
+    </div>;
+  }
+  if(!draft||!['article','attr'].includes(mode))return null;
+  const resolvedAttributeTitle=attributeTitle||t('uiExtra.searchUI.attributeTitle');
+  return <div className="scope-editor scope-search-article-editor">
+    {mode==='article'&&showBodyEditor?<div className="scope-editor-blocknote"><span>{UI_COPY.common.body}</span>
+      <BlockNoteEditor editorKey={'article:'+String(draft.editorKey||'')}
+        content={draft.bodyHtml??draft.bodyBlocks}
+        onBlocksChange={blocks=>onChange?.(current=>({...current,bodyBlocks:blocks,body:blocksToPlainText(blocks)}))}
+        onHtmlChange={html=>onChange?.(current=>({...current,bodyHtml:html}))}/>
+    </div>:null}
+    {mode==='article'&&showHidden?<div className="scope-editor-options">
+      <label><input type="checkbox" checked={draft.hidden===true}
+        onChange={event=>onChange?.(current=>({...current,hidden:event.target.checked,attrs:current.attrs?{...current.attrs,searchable:!event.target.checked}:current.attrs}))}/>{UI_COPY.common.hiddenFromSearch}</label>
+    </div>:null}
+    {Array.isArray(attributeFields)&&attributeFields.length?<section className="scope-search-attr-panel" aria-label={resolvedAttributeTitle}>
+      <h3 className="scope-search-attr-heading">{resolvedAttributeTitle}</h3>
+      <div className="scope-search-attr-grid">
+        {attributeFields.map(({key,kind='text',readOnly=false})=>{
+          const current=key==='title'?draft.title:draft.attrs?.[key];
+          const editValue=key==='content'?t('uiExtra.searchUI.attrShown'):current;
+          const setValue=value=>onChange?.(previous=>key==='title'?{...previous,title:value}:{...previous,attrs:{...(previous.attrs||{}),[key]:value}});
+          return <label className={'scope-search-attr-item'+(!readOnly?' is-editable':'')} key={key}>
+            <span className="scope-search-attr-name">{key}</span>
+            {readOnly?<span className="scope-search-attr-value">{String(editValue??'')}</span>
+              :kind==='boolean'?<span className="scope-search-attr-boolean">
+                <input type="checkbox" checked={current===true} onChange={event=>setValue(event.target.checked)}/>
+                <span>{current===true?'true':'false'}</span>
+              </span>
+              :kind==='array'||kind==='multiline'?<textarea rows={2} aria-label={key}
+                value={String(current??'')} onChange={event=>setValue(event.target.value)}/>
+              :<input aria-label={key} type={kind==='date'?'datetime-local':kind==='number'?'number':'text'}
+                value={String(current??'')} onChange={event=>setValue(event.target.value)}/>}
+            {key==='media_link'&&mediaHref?String(current||'').split(/[\n,]+/).map(id=>id.trim()).filter(Boolean).map(id=><a key={id} href={mediaHref(id)} className="scope-search-media-edit-link">{t('uiExtra.searchUI.editMedia',{id})}</a>):null}
+          </label>;
+        })}
+      </div>
+    </section>:null}
   </div>;
 }
