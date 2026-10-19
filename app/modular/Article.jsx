@@ -1,6 +1,7 @@
 'use client';
 
 import {WorkSummaryCard} from './ui';
+import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 // A plain-text article does not need an editor chunk; edit and rich view mount on demand.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
@@ -10,6 +11,34 @@ import UiText,{useUiText} from '../i18n/UiText';
 import {isInteractiveContentTarget} from '../loc/content-policy.js';
 import {galaxyMediaHref} from './feature-navigation';
 
+
+// The existing BlockNote read-only canvas is needed only once a rich-text
+// result is close to the viewport. Off-screen search results stay unmounted,
+// including editor setup and HTML parsing, until a reader scrolls near them.
+function DeferredArticleBody({html}){
+  const [visible,setVisible]=useState(false);
+  const container=useRef(null);
+  useEffect(()=>{
+    const node=container.current;
+    if(!node)return;
+    if(typeof IntersectionObserver==='undefined'){
+      setVisible(true);
+      return;
+    }
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        setVisible(true);
+        observer.disconnect();
+      }
+    },{rootMargin:'240px 0px'});
+    observer.observe(node);
+    return ()=>observer.disconnect();
+  },[]);
+  return <div ref={container} className="scope-article-block-display"
+    style={!visible?{minHeight:'3rem'}:undefined}>
+    {visible?<BlockNoteEditor editable={false} initialContent={html}/>:null}
+  </div>;
+}
 
 // Shared article(uid) list module for Search and Culture.
 export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId=''}){
@@ -38,7 +67,7 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={visibleRelations} links={visibleLinks}
     destinations={destinations} className={styleTag?'scope-article-style-tag-hit':''} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
-    {richBody&&!editingReady?<div className="scope-article-block-display"><BlockNoteEditor editable={false} initialContent={body}/></div>:null}
+    {richBody&&!editingReady?<DeferredArticleBody html={body}/>:null}
     {editingReady?<ObjectEditor mode="article" draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} attributeFields={attributeFields} showBodyEditor={showBodyEditor} attributeTitle={attributeTitle} mediaHref={mediaScopeId?id=>galaxyMediaHref(mediaScopeId,id):null}/>:null}
     {children}
   </WorkSummaryCard>;

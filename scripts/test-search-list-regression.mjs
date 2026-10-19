@@ -529,6 +529,10 @@ test('route, page and management edit capabilities remain lazily split from read
   assert.ok(article.includes("const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then("));
   assert.ok(home.includes("const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then("));
   assert.ok(!/^import BlockNoteEditor/m.test(article));
+  assert.ok(article.includes('<DeferredArticleBody html={body}'));
+  assert.ok(article.includes("new IntersectionObserver(entries=>"));
+  assert.ok(article.includes("visible?<BlockNoteEditor editable={false} initialContent={html}"),
+    'Read-only rich results must mount the canonical BlockNote only near the viewport');
   assert.ok(!/^import BlockNoteEditor/m.test(home));
   const importer=read('app/loc/ManagementImportPanel.jsx');
   const suno=read('app/loc/SunoImportPanel.jsx');

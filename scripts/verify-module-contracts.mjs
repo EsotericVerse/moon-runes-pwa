@@ -86,7 +86,7 @@ if(statisticsSource.includes("from '../../loc/galaxy-query'")||
    !statisticsSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
    !statisticsSource.includes("const {selectMediaCrossTagRows}=await loadGalaxyStatistics()")||
    !statisticsSource.includes("const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics()")||
-   !statisticsSource.includes("await import('../../loc/statistics-group-sharing-query.mjs')"))
+   !readFileSync(resolve(root,'app/modular/modules/statistics/ScopeGroupStatistics.jsx'),'utf8').includes("await import('../../../loc/statistics-group-sharing-query.mjs')"))
   failures.push('Statistics Galaxy and group-sharing engines must be loaded on the active query or interaction');
 
 // Suno's authoring and style classification depend on BlockNote but file/ZIP
