@@ -14,13 +14,13 @@ import AdminHomeView from './views/AdminHomeView';
 import GenericScopeHomeView from './views/GenericScopeHomeView';
 import ScopeGroupOverview from './ScopeGroupOverview';
 import {FeaturePage} from '../modular/ui';
-import Statistics from '../modular/features/Statistics';
-import KeywordSettings from '../modular/features/KeywordSettings';
-import Culture from '../modular/features/Culture';
-import Search from '../modular/features/Search';
-import Governance from '../modular/features/Governance';
-
 const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
+// Heavy visualizations and editors should load only when their own page opens.
+const Statistics=dynamic(()=>import('../modular/features/Statistics'),{loading});
+const KeywordSettings=dynamic(()=>import('../modular/features/KeywordSettings'),{loading});
+const Culture=dynamic(()=>import('../modular/features/Culture'),{loading});
+const Search=dynamic(()=>import('../modular/features/Search'),{loading});
+const Governance=dynamic(()=>import('../modular/features/Governance'),{loading});
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
