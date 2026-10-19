@@ -359,6 +359,12 @@ export default function ScopeEditableBlocks({
       const movableIndex=movableSlots.findIndex(item=>item.uid===slot.uid);
       const empty=!slot.eyebrow&&!slot.title&&!slot.subtitle&&!slot.text&&!slot.entities.length;
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
+      // A Search suggestion needs an actual clickable term, not just its
+      // section heading. Editors always retain their block and edit action.
+      if(onSuggestionClick&&!canEdit&&!active
+          &&!recommendationTerm(slot.text)
+          &&!recommendationTerm(slot.subtitle)
+          &&!slot.entities.some(entity=>recommendationTerm(entity.title)||recommendationTerm(entity.text)))return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <SlotTag
