@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import {Fragment} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiText} from '../i18n/UiText';
 import {blocksToPlainText,looksLikeMarkdown,normalizeBlocks,plainTextToBlocks} from './blocknote-content.mjs';
@@ -77,13 +78,19 @@ export function ObjectEditor({
   </div>:null;
   if(mode==='actions')return actionBar;
   const renderFields=()=>fields.map(field=>{
-    if(field.kind==='node')return <div key={field.key}>{field.node}</div>;
-    if(field.kind==='rich')return <div key={field.key} className="scope-management-wide-field">
-      <span>{field.label}</span>
-      <BlockNoteEditor editorKey={field.editorKey} content={field.content}
+    if(field.kind==='node')return field.bare
+      ?<Fragment key={field.key}>{field.node}</Fragment>
+      :<div key={field.key}>{field.node}</div>;
+    if(field.kind==='rich'){
+      const element=<BlockNoteEditor editorKey={field.editorKey} content={field.content}
         onBlocksChange={field.onBlocksChange} onHtmlChange={field.onHtmlChange}
-        onPlainTextChange={field.onPlainTextChange} canInsertImage={field.canInsertImage!==false}/>
-    </div>;
+        onPlainTextChange={field.onPlainTextChange} canInsertImage={field.canInsertImage!==false}/>;
+      return field.bare?<Fragment key={field.key}>{element}</Fragment>
+        :<div key={field.key} className="scope-management-wide-field">
+          {field.label!=null?<span>{field.label}</span>:null}
+          {element}
+        </div>;
+    }
     return <label key={field.key} className="scope-management-wide-field">
       <span>{field.label}</span>
       <input className="scope-search-input" value={field.value??''}

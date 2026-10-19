@@ -8,7 +8,7 @@ import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
-import BlockNoteEditor from './BlockNoteEditor';
+import {ObjectEditor} from './BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
 
 const blank=()=>({
@@ -65,19 +65,19 @@ export default function ManagementArticlePublisher({scopeId}){
     <h2>{UI_COPY.management.article}</h2>
     <form className="scope-publisher" onSubmit={save}>
       <div className="scope-publisher-main">
-        <input
-          className="scope-publisher-title"
-          value={draft.title}
-          onChange={event=>change('title',event.target.value)}
-          placeholder={t('uiExtra.publisher.addTitle')}
-          aria-label={t('uiExtra.publisher.articleTitle')}
-        />
-        <BlockNoteEditor
-          editorKey={'publisher:'+scopeId+':'+draft.editorKey}
-          content={draft.bodyBlocks}
-          onBlocksChange={blocks=>change('bodyBlocks',blocks)}
-          onHtmlChange={html=>change('bodyHtml',html)}
-        />
+        <ObjectEditor mode="fields" fields={[
+          {key:'title',kind:'node',bare:true,node:<input
+            className="scope-publisher-title"
+            value={draft.title}
+            onChange={event=>change('title',event.target.value)}
+            placeholder={t('uiExtra.publisher.addTitle')}
+            aria-label={t('uiExtra.publisher.articleTitle')}/>},
+          {key:'body',kind:'rich',bare:true,
+            editorKey:'publisher:'+scopeId+':'+draft.editorKey,
+            content:draft.bodyBlocks,
+            onBlocksChange:blocks=>change('bodyBlocks',blocks),
+            onHtmlChange:html=>change('bodyHtml',html)}
+        ]}/>
       </div>
 
       <aside className="scope-publisher-sidebar">
