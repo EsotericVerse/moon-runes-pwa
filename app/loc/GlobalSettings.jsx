@@ -2,6 +2,7 @@
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
@@ -29,7 +30,7 @@ export default function GlobalSettings({initialSection='home'}={}){
   const prefs=useNavigationPreferences();
   const {account}=prefs;
   const [native,setNative]=useState(false);
-  const [registry,setRegistry]=useState([]);
+  const [urlResolved,setUrlResolved]=useState(false);
   const [home,setHome]=useState('loc');
   const [section,setSection]=useState(initialSection);
   const [requestedScope,setRequestedScope]=useState('');
@@ -46,13 +47,15 @@ export default function GlobalSettings({initialSection='home'}={}){
     else if(['home','files','personal','manage','account'].includes(chosen))setSection(chosen);
     const scope=params.get('scope');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
+    setUrlResolved(true);
   },[]);
-  useEffect(()=>{
-    let active=true;
-    selectScopeRegistry().then(rows=>{if(active)setRegistry(rows||[]);})
-      .catch(()=>{if(active)setRegistry([]);});
-    return()=>{active=false;};
-  },[]);
+  const registryQuery=useQuery({
+    queryKey:['settings-scope-registry'],
+    queryFn:selectScopeRegistry,
+    enabled:urlResolved&&section!=='account',
+    staleTime:5*60_000
+  });
+  const registry=registryQuery.data||[];
   useEffect(()=>{
     if(prefs.loading)return;
     setHome(native?deviceNavigation.mobileHomepageChoice(window.localStorage):(accountNavigation.validScopeId(prefs.home)||'loc'));
