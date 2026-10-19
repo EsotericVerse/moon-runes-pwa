@@ -50,7 +50,22 @@ test('LOC Search shows all-Scope search controls instead of Scope Group guide',a
   await page.goto('/search/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.scope-search-form')).toBeVisible({timeout:25000});
   await expect(page.locator('#scope-search-query')).toBeVisible();
-  await expect(page.locator('.scope-tabs button')).toHaveCount(2);
+  // Search uses one unified query form with three on-demand advanced filters.
+  const advanced=page.locator('.scope-search-advanced-toggle');
+  await expect(advanced).toHaveAttribute('aria-expanded','false');
+  await advanced.click();
+  await expect(advanced).toHaveAttribute('aria-expanded','true');
+  const tabs=page.locator('.scope-search-filter-tabs button[role="tab"]');
+  await expect(tabs).toHaveCount(3);
+  await expect(page.locator('#scope-search-content-type')).toBeVisible();
+  await tabs.nth(1).click();
+  await expect(page.locator('#scope-search-source')).toBeVisible();
+  await tabs.nth(2).click();
+  await expect(page.locator('#scope-search-start-date')).toBeVisible();
+  await expect(page.locator('#scope-search-end-date')).toBeVisible();
+  await advanced.click();
+  await expect(advanced).toHaveAttribute('aria-expanded','false');
+  await expect(tabs).toHaveCount(0);
   await expect(page.locator('.scope-group-overview')).toHaveCount(0);
   await expect(page.getByText('請先選擇要搜尋的 Scope',{exact:false})).toHaveCount(0);
 });
