@@ -37,6 +37,7 @@ import ScopeGroupStatisticsSharing from '../../loc/ScopeGroupStatisticsSharing';
 import {selectCrossScopeSharing} from '../../loc/statistics-group-sharing-query.mjs';
 import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../loc/statistics-group-sharing.mjs';
 import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
+import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const PIE_COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
@@ -308,14 +309,6 @@ function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],char
     {!totals.length?<StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
       <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>
     </StatisticsChartFrame>:<>
-      <div className="scope-ranking">
-        {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
-      </div>
-      {pages>1?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.pageNav')}>
-        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
-        <span>{currentPage} / {pages}</span>
-        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
-      </nav>:null}
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
         <StatisticsMultiChart type={chosenChartType}
           rows={chartRows}
@@ -325,6 +318,16 @@ function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],char
           height={420}
         />
       </StatisticsChartFrame>
+      <StatisticsDetails>{()=><>
+      <div className="scope-ranking">
+        {displayed.slice((currentPage-1)*pageSize,currentPage*pageSize).map(row=><div key={row.term}><strong>{row.term}</strong><span>{row.item_count.toLocaleString()}</span></div>)}
+      </div>
+      {pages>1?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.pageNav')}>
+        <button type="button" className="loc-button" disabled={currentPage===1} onClick={()=>setRankingPage(currentPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
+        <span>{currentPage} / {pages}</span>
+        <button type="button" className="loc-button" disabled={currentPage===pages} onClick={()=>setRankingPage(currentPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
+      </nav>:null}
+      </>}</StatisticsDetails>
     </>}
   </>;
 }
@@ -683,6 +686,13 @@ function ScopeGroupStatistics(){
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
     <p className="scope-status"><UiText id="uiExtra.statisticsView.groupAggregateHelp"/></p>
+    <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="loc-stat">
+      {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
+        type={locChartType} rows={trendData} series={locSeries}
+        distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
+      />:<p className="scope-status">{densityQuery.isPending?t('uiExtra.statisticsUI.loading'):t('uiExtra.statisticsUI.noChart')}</p>}
+    </StatisticsChartFrame>
+    <StatisticsDetails>{()=><>
     <div className="scope-ranking">
       <div>
         <strong><UiText id="uiExtra.statisticsView.memberCount"/></strong>
@@ -694,12 +704,7 @@ function ScopeGroupStatistics(){
       {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · {t('uiExtra.statisticsView.viewMemberStat')}</a>)}
     </div>
 
-    <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="loc-stat">
-      {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
-        type={locChartType} rows={trendData} series={locSeries}
-        distribution={locDistribution} totalKey={aggregateType==='total'?'total':''} height={420}
-      />:<p className="scope-status">{densityQuery.isPending?t('uiExtra.statisticsUI.loading'):t('uiExtra.statisticsUI.noChart')}</p>}
-    </StatisticsChartFrame>
+    </>}</StatisticsDetails>
     <LocMemberIntersection key={startDate+'|'+rangeEndDate}
       scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
       unit={bucket} sharing={policy.data||{}}
@@ -847,7 +852,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error,UI_COPY)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
-      <SummaryList rankingType={rankingType} summary={sourceSummary}/>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
           type={effectiveChartType}
@@ -859,6 +863,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           height={420}
         />
       </StatisticsChartFrame>
+      <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style')crossTagQuery.refetch();}} disabled={mediaQuery.isFetching||(rankingType==='media_style'&&crossTagQuery.isFetching)}>
