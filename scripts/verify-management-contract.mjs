@@ -239,8 +239,10 @@ must(
 );
 must(governance.includes("dynamic(()=>import('../../loc/ScopeEditableBlocks')")&&governance.includes('page="governance"')&&governance.includes('scopeId={scopeId}'),
   'every Scope governance page must use the one lazy shared block implementation');
-must(governance.includes('governance-grid-loc')&&governance.includes('GOVERNANCE_SUBTITLES')&&governance.includes('canManageGlobalSync'),
-  'shared governance must preserve LOC-specific presentation and management entry');
+must(governance.includes('governance-grid-loc')&&governance.includes('GOVERNANCE_SUBTITLES')&&
+  governance.includes('account.canManageScopeSync(scopeId)')&&
+  governance.includes("navigationHref(scopeId,'governance/manage',native)"),
+  'shared governance must preserve Scope styling, authority and its dedicated management route');
 must(management.includes("dynamic(()=>import('./ManagementArticlePublisher')")&&management.includes("dynamic(()=>import('./RuneManagementPanel')"),
   'Governance management must load only the selected tab capability');
 must(!publisher.includes('content_blocks')&&!sharedSearch.includes('content_blocks')&&!cultureUi.includes('content_blocks')&&!galaxy.includes('content_blocks')&&!featureUi.includes('blocks=null'),'Galaxy must read, write and display canonical content only');
