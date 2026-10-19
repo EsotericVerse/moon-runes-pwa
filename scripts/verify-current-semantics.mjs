@@ -111,6 +111,7 @@ if(!failures.length){
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
   const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
+  const chartModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const ownIntersection=read('app/modular/modules/statistics/ScopeSelfIntersection.jsx');
   const sourceTaxonomy=read('app/loc/statistics-admin-source.mjs');
   const sourceEditor=read('app/loc/SourceCategoryEditor.jsx');
@@ -149,6 +150,12 @@ if(!failures.length){
 
   // Regression contract: Daily Rune is an independent LOC comparison test feed.
   // Failure or withdrawal of group-source permissions cannot suppress it.
+  if(!statistics.includes('dynamic(()=>import(\'../modules/statistics/StatisticsMultiChart\')')||
+     !statistics.includes("from '../modules/statistics/statistics-time-zoom.mjs'")||
+     statistics.includes('import StatisticsMultiChart,{')||
+     !runeDaily.includes("from '../modular/modules/statistics/statistics-time-zoom.mjs'")){
+    failures.push('Chart capability selection must not eagerly import the Recharts renderer');
+  }
   if(!crossSharing.includes('row.share_enabled===false')||
      !crossSharing.includes("key.startsWith('daily'))return false")||
      !statistics.includes('sharing={policy.data||{}}')||
@@ -219,7 +226,7 @@ if(!failures.length){
     failures.push('Statistics +/- zoom must stay on the right of each chart, not among selection controls.');
   }
 
-  const chartChoices=statisticsMultiChart.match(/'uiExtra\.chartTypes\.'\+type/g)||[];
+  const chartChoices=chartModel.match(/'uiExtra\.chartTypes\.'\+type/g)||[];
   const chartIds=['line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'];
   // Real visual analytics must depend on valid dimensions; never manufacture
   // a 100% 'total' pie or render a time index as a second scatter metric.
@@ -229,7 +236,7 @@ if(!failures.length){
     'scatterPair(time,fields)','radarPeriodComparison(time,fields)',
     'activePeriodCoverage(time,fields)','movingAverage(time,fields,totalKey)',
     "t('uiExtra.chartLabels.movingAverage')","t('uiExtra.chartLabels.firstHalf')","t('uiExtra.chartLabels.lastHalf')"
-  ])if(!statisticsMultiChart.includes(token)){
+  ])if(!(chartModel+'\n'+statisticsMultiChart).includes(token)){
     failures.push('Statistics chart must have a real analytic purpose: '+token);
   }
   for(const token of ['locAllowed.length?locAllowed.map','optionsForCurrent.length?optionsForCurrent.map',
