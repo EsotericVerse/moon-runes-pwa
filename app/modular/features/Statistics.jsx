@@ -556,6 +556,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const scopesQuery=useQuery({
     queryKey:['managed-scopes'],
     queryFn:selectPublicStatisticsMembers,
+    enabled:!isLrunesDaily,
     staleTime:5*60_000
   });
   const targetScopes=useMemo(()=>{
