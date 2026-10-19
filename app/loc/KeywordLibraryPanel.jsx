@@ -7,8 +7,8 @@ import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
-import BlockNoteEditor from './BlockNoteEditor';
-import {clearRune66ClassificationCache,runRune66ClassificationBatch} from './rune66-keyword-analysis';
+const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
+
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
 
@@ -91,6 +91,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
 
   async function invalidateClassification(){
+    const {clearRune66ClassificationCache}=await import('./rune66-keyword-analysis');
     clearRune66ClassificationCache();
     await Promise.all([
       queryClient.invalidateQueries({queryKey:['statistics-style-filter'],refetchType:'all'}),
@@ -336,6 +337,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     setBusy(true);setMessage('');
     setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
     try{
+      const {runRune66ClassificationBatch}=await import('./rune66-keyword-analysis');
       const result=await runRune66ClassificationBatch(scopeId,{onProgress:setBatchProgress});
       await invalidateClassification();
       await load('',selectedClass);
