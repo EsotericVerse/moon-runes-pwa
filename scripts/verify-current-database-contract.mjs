@@ -26,10 +26,13 @@ for(const requirement of ['managedScopes(client)','verifyManagedScope(client,sco
   'probe(client,scope.galaxy,galaxyColumns)']){
   assert.ok(releaseProbe.includes(requirement),'Release data check is missing '+requirement);
 }
-const admin=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
+// The database control form remains unchanged but is now an independent lazy Admin panel.
+const admin=readFileSync(new URL('../app/loc/views/admin-panels/DatabaseTarget.jsx',import.meta.url),'utf8');
+const adminRouter=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
 const supabaseAdapter=readFileSync(new URL('../app/loc/providers/supabase.mjs',import.meta.url),'utf8');
 assert.ok(supabaseAdapter.includes("rpc('loc_public_routing_state')"),'Routine routing status must stay on managed Data API');
-assert.ok(admin.includes('save_database_target')&&admin.includes('saveRouting')&&admin.includes('set_database_routing'),
+assert.ok(adminRouter.includes("dynamic(()=>import('./admin-panels/DatabaseTarget')")&&
+  admin.includes('save_database_target')&&admin.includes('saveRouting')&&admin.includes('set_database_routing'),
   'Admin must separate saving from deliberate emergency database switching');
 const ignored=new Set(['.git','.next','node_modules','out','dist','ios','.turbo']);
 const root=new URL('../',import.meta.url);
