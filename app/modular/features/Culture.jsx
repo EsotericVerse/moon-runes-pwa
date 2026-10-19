@@ -165,6 +165,9 @@ export default function Culture(){
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
+  // Without a current period, the first effect selects the latest saved period.
+  // Do not scan all-time metadata only to immediately scan that period again.
+  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!openPeriod&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
@@ -201,7 +204,7 @@ export default function Culture(){
       endDate:selectedWorkPeriod?.end_date
       });
     },
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData),
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&!initialPeriodSelectionPending&&Boolean(scopeData),
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
