@@ -56,6 +56,7 @@ const cleared=[
   'app/loc/ManagementImportPanel.jsx',
   'app/loc/SunoImportPanel.jsx',
   'app/loc/ScopeEditableBlocks.jsx',
+  'app/loc/ScopeBlockEditorSession.jsx',
   'app/loc/GlobalSettings.jsx',
   'app/loc/SourceCategoryEditor.jsx',
   'app/modular/modules/statistics/StatisticsMultiChart.jsx',

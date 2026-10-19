@@ -45,6 +45,7 @@ const articleListItem=read('app/modular/Article.jsx');
 const blockNoteContent=read('app/loc/blocknote-content.mjs');
 const blockNoteEditor=read('app/loc/BlockNoteEditorClient.jsx');
 const editableBlocks=read('app/loc/ScopeEditableBlocks.jsx');
+const editableSession=read('app/loc/ScopeBlockEditorSession.jsx');
 const authorHome=read('app/loc/views/AuthorHomeView.jsx');
 const authorHomeEditable=read('app/loc/AuthorHomeEditableBlock.jsx');
 const locHomeBlock=read('app/loc/LocHomeBlockDisplay.jsx');
@@ -170,23 +171,28 @@ must(!fs.existsSync(path.join(root,'app/loc/RichBlockEditor.jsx')),'retired Rich
 must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBlockForUrl')&&blockNoteEditor.includes('canInsertImage'),'BlockNote must allow remote image URL insertion with the current frame quota');
-must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableBlocks.includes('frameImageCount(draft)')&&editableBlocks.includes('embeddedImages>1')&&editableBlocks.includes('canInsertImageIn('),'page frames may contain at most one remotely linked image across all body and child fields');
-must(editableBlocks.includes('uiExtra.editBlocks.heroImageMode')&&editableBlocks.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
+must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableSession.includes('frameImageCount(draft)')&&editableSession.includes('embeddedImages>1')&&editableSession.includes('canInsertImageIn('),'page frames may contain at most one remotely linked image across all body and child fields');
+must(editableSession.includes('uiExtra.editBlocks.heroImageMode')&&editableSession.includes('image_mode')&&locHomeBlock.includes('heroImageMode(slot)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side is a persisted exclusive choice shared by LOC and author homepages');
 must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('(media||customImage)?')&&locHomeBlock.includes("5:{src:{src:'/pics/lo3rwang-3.png'}"),'non-Hero preset images must be contained image bubbles and never duplicate custom images');
 
-must(editableBlocks.includes('<ObjectEditor mode="scope"')&&publisher.includes('<ObjectEditor mode="fields"')&&publisher.includes("kind:'rich',bare:true")&&blockNoteEntry.includes('field.bare?')&&articleListItem.includes('<ObjectEditor mode="article"')&&blockNoteEntry.includes('export function ObjectEditor(')&&blockNoteEntry.includes('<BlockNoteCanvas')&&sharedSearch.includes('editorDraft={draft}')&&cultureUi.includes('editorDraft={editingWorkKey===workKey?editDraft:null}')&&blockNoteEntry.includes('onBlocksChange={blocks=>')&&blockNoteEntry.includes('onHtmlChange={html=>')&&blockNoteEntry.includes('bodyHtml??draft.bodyBlocks'),'homepage, Culture, Search and publishing must share one BlockNote editor module with WYSIWYG HTML persistence');
-must(articleListItem.includes('scope-article-editor-actions')&&articleListItem.includes('titleEditor={titleEditor}')&&articleListItem.includes('UI_COPY.common.save')&&articleListItem.includes('uiExtra.editBlocks.remove')&&articleListItem.includes('onClick:onSave')&&editableBlocks.includes('onClick:save')&&admin.includes('mode="actions"')&&blockNoteEntry.includes("if(mode==='actions')return actionBar;")&&sharedSearch.includes('onSave={()=>saveEditing(editTarget)}')&&sharedSearch.includes('onDelete={()=>deleteEditing(editTarget)}')&&sharedSearch.includes("attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}")&&cultureUi.includes('onSave={()=>saveEditingWork(work)}')&&cultureUi.includes('onDelete={()=>deleteEditingWork(work)'),'Search and Culture must share the homepage-style header action row, editable title, article attributes, Save, Delete, and Cancel');
+must(editableSession.includes('<ObjectEditor mode="scope"')&&publisher.includes('<ObjectEditor mode="fields"')&&publisher.includes("kind:'rich',bare:true")&&blockNoteEntry.includes('field.bare?')&&articleListItem.includes('<ObjectEditor mode="article"')&&blockNoteEntry.includes('export function ObjectEditor(')&&blockNoteEntry.includes('<BlockNoteCanvas')&&sharedSearch.includes('editorDraft={draft}')&&cultureUi.includes('editorDraft={editingWorkKey===workKey?editDraft:null}')&&blockNoteEntry.includes('onBlocksChange={blocks=>')&&blockNoteEntry.includes('onHtmlChange={html=>')&&blockNoteEntry.includes('bodyHtml??draft.bodyBlocks'),'homepage, Culture, Search and publishing must share one BlockNote editor module with WYSIWYG HTML persistence');
+must(articleListItem.includes('scope-article-editor-actions')&&articleListItem.includes('titleEditor={titleEditor}')&&articleListItem.includes('UI_COPY.common.save')&&articleListItem.includes('uiExtra.editBlocks.remove')&&articleListItem.includes('onClick:onSave')&&editableSession.includes('onClick:save')&&admin.includes('mode="actions"')&&blockNoteEntry.includes("if(mode==='actions')return actionBar;")&&sharedSearch.includes('onSave={()=>saveEditing(editTarget)}')&&sharedSearch.includes('onDelete={()=>deleteEditing(editTarget)}')&&sharedSearch.includes("attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}")&&cultureUi.includes('onSave={()=>saveEditingWork(work)}')&&cultureUi.includes('onDelete={()=>deleteEditingWork(work)'),'Search and Culture must share the homepage-style header action row, editable title, article attributes, Save, Delete, and Cancel');
 must(sharedSearch.includes('<Article')&&cultureUi.includes('<Article')&&articleListItem.includes('onClickCapture')&&articleListItem.includes('onEdit(uid)')&&articleListItem.includes('richBody')&&articleListItem.includes('<DeferredArticleBody html={body}')&&articleListItem.includes('IntersectionObserver'),'Search and Culture lists must render the same Article(uid) component with BlockNote rich-body display');
 must(!fs.existsSync(path.join(root,'app/loc/ArticleBodyEditor.jsx'))&&!sharedSearch.includes('<ArticleBodyEditor')&&!cultureUi.includes('<ArticleBodyEditor'), 'retired editor wrapper must be absent and editing must use shared BlockNote');
 for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
-must(editableBlocks.includes('ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableBlocks.includes('page_name')&&editableBlocks.includes('block_entity')&&editableBlocks.includes("column:'uid'")&&editableBlocks.includes('isInteractiveContentTarget'),'Scope page editing must use stable block uid plus up to six child entities');
-must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>editableBlocks.includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
-must(editableBlocks.includes('childPresentation(entity.title)')&&editableBlocks.includes('uiExtra.editBlocks.bubbleHint')&&!editableBlocks.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
+must(sharedFeatureHero.includes('HOME_BLOCK_ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableSession.includes('page_name')&&editableBlocks.includes('block_entity')&&editableSession.includes("column:'uid'")&&editableBlocks.includes('isInteractiveContentTarget'),'Scope page editing must use stable block uid plus up to six child entities');
+must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>(editableBlocks+editableSession).includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
+must(editableBlocks.includes('childPresentation(entity.title)')&&editableSession.includes('uiExtra.editBlocks.bubbleHint')&&!editableBlocks.includes('entity.kind')&&!editableSession.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
 must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}'),'LOC and Author heading displays must use the dedicated rich subtitle');
 
 
-must(editableBlocks.includes('uiExtra.editBlocks.saveFailedPrefix')&&blockNoteEntry.includes('scope-inline-save-status')&&editableBlocks.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
-must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}'),'public page display must use static site markup; BlockNote is edit-only');
+must(editableSession.includes('uiExtra.editBlocks.saveFailedPrefix')&&blockNoteEntry.includes('scope-inline-save-status')&&editableSession.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
+must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}')&&
+  editableBlocks.includes("dynamic(()=>import('./ScopeBlockEditorSession')")&&
+  !editableBlocks.includes("from './db-client.mjs'")&&
+  editableSession.includes('const [draft,setDraft]=useState(')&&
+  editableSession.includes("await import('./db-client.mjs')"),
+  'All Scope pages render without editor mutation code and load one self-contained React session only on edit');
 must(authorHome.includes('AuthorHomeEditableBlocks')&&!authorHome.includes('heroContent={<div'),'author homepage must render database blocks rather than hardcoded old homepage text');
 must(authorHomeEditable.includes('scopeId="lo3rwang"')&&authorHomeEditable.includes('allowEditing')&&authorHomeEditable.includes('containerless')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}')&&authorHomeEditable.includes('resolveSlotClassName={authorHomeBlockClass}')&&!authorHomeEditable.includes('allowEditing={false}'),'author homepage must use LOC common frames with permission-gated DB editing');
 must(locHomeBlock.includes('function SharedHomeBlockDisplay')&&locHomeBlock.includes('function AuthorHomeBlockDisplay')&&locHomeBlock.includes('const AUTHOR_MEDIA')&&authorHome.includes('loc-view loc-home'),'author and LOC homepages must share the identical frame and HTML layout with distinct preset images');
@@ -394,10 +400,10 @@ must(
 );
 
 must(
-  editableBlocks.includes('async function moveBlock(direction)')&&
-  editableBlocks.includes('moveScopeBlock(scopeId,pageName,draft.uid,direction)')&&
-  editableBlocks.includes('uiExtra.editBlocks.moveUp')&&editableBlocks.includes('uiExtra.editBlocks.moveDown')&&
-  editableBlocks.includes('movableSlots.length>1')&&
+  editableSession.includes('async function moveBlock(direction)')&&
+  editableSession.includes('moveScopeBlock(scopeId,pageName,draft.uid,direction)')&&
+  editableSession.includes('uiExtra.editBlocks.moveUp')&&editableSession.includes('uiExtra.editBlocks.moveDown')&&
+  editableSession.includes('movableSlots.length>1')&&
   dbContract.includes("rpc('move_scope_block'")&&
   scopeSettings.includes('THEME_SLOTS.map(theme=>')&&
   adminThemePanel.includes('label:theme.theme_name||theme.label||THEME_SLOTS.find'),

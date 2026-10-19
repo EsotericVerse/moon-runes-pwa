@@ -3,46 +3,19 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {deleteRows,insertRows,moveScopeBlock,updateRows} from './db-client.mjs';
+import {useQuery} from '@tanstack/react-query';
 import {selectScopeBlocks} from './scope-data';
 import {useAccount} from './use-account';
 // Read-only home blocks must not eagerly import editor UI or BlockNote.
-const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
-const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
+const ScopeBlockEditorSession=dynamic(()=>import('./ScopeBlockEditorSession'),{loading:()=>null});
 import {isInteractiveContentTarget} from './content-policy.js';
 
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 
-const ENTITY_LIMIT=6;
-const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function makeUid(){
-  const bytes=new Uint8Array(8);
-  globalThis.crypto?.getRandomValues?.(bytes);
-  let uid='';
-  for(let index=0;index<8;index+=1){
-    const value=bytes[index]??Math.floor(Math.random()*UID_ALPHABET.length);
-    uid+=UID_ALPHABET[value%UID_ALPHABET.length];
-  }
-  return uid;
-}
-
 function pageNameOf(value='index'){
   const page=String(value||'index').trim().toLowerCase();
   return page==='home'?'index':page;
-}
-
-function normalizeEntities(value){
-  const rows=Array.isArray(value)?value:[];
-  return rows.slice(0,ENTITY_LIMIT).map((entity,index)=>({
-    uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):makeUid(),
-    title:String(entity?.title||''),
-    text:String(entity?.text||''),
-    ...(entity?.image_mode==='side'?{image_mode:'side'}:{}),
-    order:index+1
-  }));
 }
 
 function normalizeRow(row,order){
@@ -54,10 +27,9 @@ function normalizeRow(row,order){
     title:String(row?.block_title||''),
     subtitle:String(row?.block_subtitle||''),
     text:HomeBlock.removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
-    entities:normalizeEntities(row?.block_entity)
+    entities:HomeBlock.normalizeEntities(row?.block_entity)
   };
 }
-
 
 export default function ScopeEditableBlocks({
   scopeId,
@@ -85,7 +57,6 @@ export default function ScopeEditableBlocks({
 }){
   const t=useUiText();
   const account=useAccount();
-  const queryClient=useQueryClient();
   const pageName=pageNameOf(page);
   const query=useQuery({
     queryKey:['scope-blocks',scopeId,pageName],
@@ -93,13 +64,11 @@ export default function ScopeEditableBlocks({
     staleTime:60_000
   });
   const canEdit=allowEditing&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
-  const table=`silver.${scopeId}_blocks`;
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
   );
-  const [draft,setDraft]=useState(null);
-  const [busy,setBusy]=useState(false);
+  const [editingSlot,setEditingSlot]=useState(null);
   const [message,setMessage]=useState('');
 
   const slots=useMemo(()=>{
@@ -110,8 +79,8 @@ export default function ScopeEditableBlocks({
     }
     if(Number.isInteger(maxBlocks)&&maxBlocks>0){
       const displayed=HomeBlock.rows(rows,pageName,maxBlocks).map(row=>normalizeRow(row,row.block_order));
-      if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)&&draft.order<=maxBlocks){
-        displayed.push({...draft});
+      if(editingSlot&&!editingSlot.stored&&!displayed.some(slot=>slot.order===editingSlot.order)&&editingSlot.order<=maxBlocks){
+        displayed.push({...editingSlot});
       }
       // Render the standard Hero visual in static HTML before client data loads.
       // The placeholder is replaced by the real first block after the DB query.
@@ -123,13 +92,13 @@ export default function ScopeEditableBlocks({
       return displayed;
     }
     const displayed=rows.map(row=>normalizeRow(row,row.block_order));
-    // Unbounded pages must render the unsaved draft, or the Add Block button appears inert.
-    if(draft&&!draft.stored&&!displayed.some(slot=>slot.order===draft.order)){
-      displayed.push({...draft});
+    // Unbounded pages must render the unsaved editingSlot, or the Add Block button appears inert.
+    if(editingSlot&&!editingSlot.stored&&!displayed.some(slot=>slot.order===editingSlot.order)){
+      displayed.push({...editingSlot});
       displayed.sort((a,b)=>a.order-b.order);
     }
     return displayed;
-  },[query.data,normalizedOrders,maxBlocks,pageName,draft,placeholderFirstOrder]);
+  },[query.data,normalizedOrders,maxBlocks,pageName,editingSlot,placeholderFirstOrder]);
   const nextOrder=useMemo(()=>{
     const rows=Array.isArray(query.data)?query.data:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
@@ -138,172 +107,19 @@ export default function ScopeEditableBlocks({
 
   function begin(slot){
     if(!canEdit)return;
-    setDraft({
-      ...slot,
-      uid:slot.uid||makeUid(),
-      entities:normalizeEntities(slot.entities)
-    });
+    setEditingSlot({...slot,uid:slot.uid||HomeBlock.createUid(),
+      entities:HomeBlock.normalizeEntities(slot.entities)});
     setMessage('');
   }
-
   function beginWithChild(slot){
     if(!canEdit||!allowEntities)return;
-    const entities=normalizeEntities(slot.entities);
-    if(entities.length>=ENTITY_LIMIT)return;
-    setDraft({
-      ...slot,
-      uid:slot.uid||makeUid(),
-      entities:[...entities,{uid:makeUid(),title:'',text:'',order:entities.length+1}]
-    });
+    const entities=HomeBlock.normalizeEntities(slot.entities);
+    if(entities.length>=HomeBlock.entityLimit)return;
+    setEditingSlot({...slot,uid:slot.uid||HomeBlock.createUid(),
+      entities:[...entities,{uid:HomeBlock.createUid(),title:'',text:'',order:entities.length+1}]});
     setMessage('');
   }
-
-  function cancel(){
-    setDraft(null);
-    setMessage('');
-  }
-
-  function updateHeroImageMode(value){
-    const mode=value==='side'?'side':'background';
-    setDraft(current=>{
-      if(!current)return current;
-      const entities=current.entities.length?[...current.entities]:[
-        {uid:makeUid(),title:'',text:'',order:1}
-      ];
-      entities[0]={...entities[0],image_mode:mode};
-      return {...current,entities};
-    });
-  }
-
-  function canInsertImageIn(html=''){
-    return !draft||BlockNoteContent.image.frameImageCount(draft)-BlockNoteContent.image.countHtmlImages(html)===0;
-  }
-
-  function updateEntity(index,patch){
-    setDraft(current=>{
-      if(!current)return current;
-      const entities=current.entities.map((entity,entityIndex)=>entityIndex===index?{...entity,...patch}:entity);
-      return {...current,entities};
-    });
-  }
-
-  function addEntity(){
-    setDraft(current=>{
-      if(!current||current.entities.length>=ENTITY_LIMIT)return current;
-      return {
-        ...current,
-        entities:[...current.entities,{uid:makeUid(),title:'',text:'',order:current.entities.length+1}]
-      };
-    });
-  }
-
-  function removeEntity(index){
-    setDraft(current=>{
-      if(!current)return current;
-      const mode=BlockNoteContent.image.heroImageMode(current);
-      const entities=current.entities
-        .filter((_,entityIndex)=>entityIndex!==index)
-        .map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
-      if(current.order===1&&entities.length){
-        entities.forEach(entity=>delete entity.image_mode);
-        if(mode==='side')entities[0].image_mode='side';
-      }
-      return {...current,entities};
-    });
-  }
-
-  function moveEntity(index,direction){
-    setDraft(current=>{
-      if(!current)return current;
-      const target=index+direction;
-      if(target<0||target>=current.entities.length)return current;
-      const mode=BlockNoteContent.image.heroImageMode(current);
-      const entities=[...current.entities];
-      [entities[index],entities[target]]=[entities[target],entities[index]];
-      const ordered=entities.map((entity,entityIndex)=>({...entity,order:entityIndex+1}));
-      if(current.order===1&&ordered.length){
-        ordered.forEach(entity=>delete entity.image_mode);
-        if(mode==='side')ordered[0].image_mode='side';
-      }
-      return {...current,entities:ordered};
-    });
-  }
-
-  async function moveBlock(direction){
-    if(!draft?.stored||busy||normalizedOrders.length)return;
-    setBusy(true);setMessage(t('uiExtra.editBlocks.moving'));
-    try{
-      const result=await moveScopeBlock(scopeId,pageName,draft.uid,direction);
-      setDraft(current=>current?.uid===draft.uid?{...current,order:Number(result.block_order)||current.order}:current);
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
-      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
-      setMessage(t('uiExtra.editBlocks.moved'));
-    }catch(error){
-      setMessage(t('uiExtra.editBlocks.moveFailed',{error:String(error?.message||error)}));
-    }finally{setBusy(false);}
-  }
-
-  async function save(){
-    if(!draft)return;
-    setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
-    try{
-      if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft))throw new Error(t('uiExtra.editBlocks.emptyContent'));
-      const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
-      if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
-      if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
-      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft))throw new Error(t('uiExtra.editBlocks.invalidImage'));
-      const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
-        ?HomeBlock.stripLocHomeEditorPlaceholders(value)
-        :String(value??'');
-      const values={
-        page_name:pageName,
-        block_eyebrow:String(draft.eyebrow||'').trim(),
-        block_title:String(draft.title||'').trim(),
-        block_subtitle:normalizeSavedHtml(draft.subtitle),
-        block_text:normalizeSavedHtml(draft.text),
-        block_order:Number(draft.order)||1,
-        block_entity:normalizeEntities(draft.entities).map(({uid,title,text,image_mode},index)=>({
-          uid,
-          title:String(title||'').trim(),
-          text:normalizeSavedHtml(text),
-          ...(pageName==='index'&&draft.order===1&&index===0&&image_mode==='side'?{image_mode:'side'}:{})
-        }))
-      };
-      if(draft.stored){
-        await updateRows(table,values,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
-      }else{
-        await insertRows(table,[{uid:draft.uid,...values}]);
-      }
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
-      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
-      setDraft(null);
-      setMessage(t('uiExtra.editBlocks.saved'));
-    }catch(error){
-      setMessage(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  async function remove(){
-    if(!draft)return;
-    if(!draft.stored){
-      setDraft(null);
-      return;
-    }
-    setBusy(true);setMessage('');
-    try{
-      await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
-      setDraft(null);
-      setMessage(t('uiExtra.editBlocks.deleted'));
-    }catch(error){
-      setMessage(error?.message||t('uiExtra.editBlocks.deleteFailed'));
-    }finally{
-      setBusy(false);
-    }
-  }
-
+  function cancel(){setEditingSlot(null);setMessage('');}
   function recommendationTerm(raw){
     return String(raw||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/\s+/g,' ').trim();
   }
@@ -313,52 +129,26 @@ export default function ScopeEditableBlocks({
       if(term)onSuggestionClick(term);
     }
   }
-
-  function renderEntities(entities,editable=false){
-    if(!entities.length&&!editable)return null;
+  function renderEntities(entities){
+    if(!entities.length)return null;
     return <div className="scope-block-entity-grid">
-      {entities.map((entity,index)=><article className={HomeBlock.childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'} key={entity.uid}
-        role={!editable&&onSuggestionClick?'link':undefined}
-        tabIndex={!editable&&onSuggestionClick?0:undefined}
-        onKeyDown={!editable&&onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
-        onClick={!editable&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}>
-        {editable?<>
-          <div className="scope-block-entity-actions">
-            <button type="button" className="loc-button" disabled={index===0||busy} onClick={()=>moveEntity(index,-1)}>←</button>
-            <button type="button" className="loc-button" disabled={index===entities.length-1||busy} onClick={()=>moveEntity(index,1)}>→</button>
-            <button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeEntity(index)}><UiText id="uiExtra.editBlocks.remove"/></button>
-          </div>
-          <label className="scope-management-wide-field">
-            <span><UiText id="uiExtra.editBlocks.childTitleHint"/></span>
-            <input
-              className="scope-search-input"
-              placeholder={t('uiExtra.editBlocks.bubbleHint')}
-              value={entity.title}
-              onChange={event=>updateEntity(index,{title:event.target.value})}
-            />
-          </label>
-          <BlockNoteEditor
-            editorKey={entity.uid+':edit'}
-            content={entity.text?{html:entity.text}:''}
-            onHtmlChange={html=>updateEntity(index,{text:html})}
-            canInsertImage={allowImages&&canInsertImageIn(entity.text)}
-          />
-        </>:<>
-          {HomeBlock.childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
-          {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
-        </>}
+      {entities.map(entity=><article
+        className={HomeBlock.childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'}
+        key={entity.uid}
+        role={onSuggestionClick?'link':undefined}
+        tabIndex={onSuggestionClick?0:undefined}
+        onKeyDown={onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
+        onClick={onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}>
+        {HomeBlock.childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
+        {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
       </article>)}
-      {editable&&entities.length<ENTITY_LIMIT?<button type="button" className="scope-block-entity-add" onClick={addEntity} disabled={busy}>
-        <UiText id="uiExtra.editBlocks.addChild"/>
-      </button>:null}
     </div>;
   }
-
   const movableSlots=!normalizedOrders.length&&allowDelete?slots.filter(slot=>slot.stored):[];
   const SlotTag=slotTag==='header'?'header':'section';
   const contents=<>
     {slots.map(slot=>{
-      const active=draft?.uid&&(draft.uid===slot.uid||(!slot.stored&&draft.order===slot.order));
+      const active=editingSlot?.uid&&(editingSlot.uid===slot.uid||(!slot.stored&&editingSlot.order===slot.order));
       const movableIndex=movableSlots.findIndex(item=>item.uid===slot.uid);
       const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
       if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
@@ -379,49 +169,22 @@ export default function ScopeEditableBlocks({
         onClickCapture={canEdit&&!active&&!explicitEditButton?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
         onClick={!active&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
       >
-        {active?<>
-          <ObjectEditor mode="actions" actionClassName="scope-inline-editbar" actions={[
-            {key:'save',primary:true,disabled:busy,onClick:save,label:busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')},
-            ...(slot.stored&&movableSlots.length>1?[
-              {key:'up',disabled:busy||movableIndex<=0,onClick:()=>moveBlock(-1),label:<UiText id="uiExtra.editBlocks.moveUp"/>},
-              {key:'down',disabled:busy||movableIndex>=movableSlots.length-1,onClick:()=>moveBlock(1),label:<UiText id="uiExtra.editBlocks.moveDown"/>}
-            ]:[]),
-            ...(allowDelete?[{key:'delete',danger:true,disabled:busy,onClick:remove,label:<UiText id="uiExtra.editBlocks.remove"/>}]:[]),
-            {key:'cancel',disabled:busy,onClick:cancel,label:<UiText id="uiExtra.editBlocks.cancel"/>}
-          ]} status={message}
-            statusClassName={message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?'scope-error':''}/>
-          <ObjectEditor mode="scope" fields={[
-            ...(editEyebrow?[{
-              key:'eyebrow',label:<UiText id="uiExtra.editBlocks.englishEyebrow"/>,
-              value:draft.eyebrow,onChange:value=>setDraft(current=>({...current,eyebrow:value}))
-            }]:[]),
-            {
-              key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
-              value:draft.title,onChange:value=>setDraft(current=>({...current,title:value}))
-            },
-            ...(pageName==='index'&&draft.order===1&&['loc','lo3rwang'].includes(scopeId)?[{
-              key:'hero-mode',kind:'node',
-              node:<fieldset className="scope-hero-image-mode">
-                <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
-                <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
-                <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
-              </fieldset>
-            }]:[]),
-            {
-              key:'subtitle',kind:'rich',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
-              editorKey:draft.uid+':subtitle:edit',content:draft.subtitle?{html:draft.subtitle}:'',
-              onHtmlChange:html=>setDraft(current=>({...current,subtitle:html})),
-              canInsertImage:allowImages&&canInsertImageIn(draft.subtitle)
-            },
-            {
-              key:'body',kind:'rich',label:<UiText id="uiExtra.editBlocks.body"/>,
-              editorKey:draft.uid+':body:edit',content:draft.text?{html:draft.text}:'',
-              onHtmlChange:html=>setDraft(current=>({...current,text:html})),
-              canInsertImage:allowImages&&canInsertImageIn(draft.text)
-            }
-          ]}/>
-          {allowEntities?renderEntities(draft.entities,true):null}
-        </>:<>
+        {active?<ScopeBlockEditorSession
+          key={editingSlot.uid}
+          initial={editingSlot}
+          slot={slot}
+          scopeId={scopeId}
+          pageName={pageName}
+          movableSlots={movableSlots}
+          movableIndex={movableIndex}
+          normalizedOrders={normalizedOrders}
+          allowDelete={allowDelete}
+          allowEntities={allowEntities}
+          allowImages={allowImages}
+          editEyebrow={editEyebrow}
+          onClose={cancel}
+          onDone={notice=>{setEditingSlot(null);setMessage(notice)}}
+        />:<>
           {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label={t('uiExtra.editBlocks.editSuggestion')}><UiText id="uiExtra.editBlocks.edit"/></button>:null}
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
@@ -430,13 +193,13 @@ export default function ScopeEditableBlocks({
               {slot.title?<Heading>{slot.title}</Heading>:null}
               {slot.subtitle?<div className="loc-subtitle scope-block-subtitle" dangerouslySetInnerHTML={{__html:slot.subtitle}}/>:null}
               {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
-              {renderEntities(slot.entities,false)}
+              {renderEntities(slot.entities)}
             </>}
-          {canEdit&&allowEntities&&allowInlineChildAdd&&slot.entities.length<ENTITY_LIMIT?<button
+          {canEdit&&allowEntities&&allowInlineChildAdd&&slot.entities.length<HomeBlock.entityLimit?<button
             type="button"
             className="loc-button scope-search-add-child"
             onClick={()=>beginWithChild(slot)}
-            disabled={busy}
+            disabled={Boolean(editingSlot)}
           ><UiText id="uiExtra.editBlocks.addChild"/></button>:null}
           {empty&&canEdit&&!explicitEditButton?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
         </>}
@@ -446,7 +209,7 @@ export default function ScopeEditableBlocks({
       type="button"
       className="loc-button scope-add-page-block"
       onClick={()=>begin(normalizeRow(null,nextOrder))}
-      disabled={busy}
+      disabled={Boolean(editingSlot)}
     ><UiText id="uiExtra.editBlocks.addBlock"/></button>:null}
     {message?<p className="scope-status" role="status">{message}</p>:null}
   </>;

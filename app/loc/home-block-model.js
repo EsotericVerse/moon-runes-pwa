@@ -9,6 +9,33 @@ export function stripLocHomeEditorPlaceholders(html=''){
 }
 
 
+export const HOME_BLOCK_ENTITY_LIMIT=6;
+const UID_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+export function createHomeBlockUid(){
+  const bytes=new Uint8Array(8);
+  globalThis.crypto?.getRandomValues?.(bytes);
+  let uid='';
+  for(let index=0;index<8;index+=1){
+    const value=bytes[index]??Math.floor(Math.random()*UID_ALPHABET.length);
+    uid+=UID_ALPHABET[value%UID_ALPHABET.length];
+  }
+  return uid;
+}
+
+
+export function normalizeHomeBlockEntities(value){
+  const rows=Array.isArray(value)?value:[];
+  return rows.slice(0,HOME_BLOCK_ENTITY_LIMIT).map((entity,index)=>({
+    uid:/^[A-Za-z0-9]{8}$/.test(String(entity?.uid||''))?String(entity.uid):createHomeBlockUid(),
+    title:String(entity?.title||''),
+    text:String(entity?.text||''),
+    ...(entity?.image_mode==='side'?{image_mode:'side'}:{}),
+    order:index+1
+  }));
+}
+
+
 export const HOME_BLOCK_LIMIT=8;
 
 /** One indexed page row is one text frame; repeat neither row nor field. */
@@ -115,6 +142,9 @@ export function heroExtraFor({scopeId='',scopeKind='',extraSign=''}={}){
 
 /** Composable home frames, children and feature-page headers share one object. */
 export const HomeBlock=Object.freeze({
+  entityLimit:HOME_BLOCK_ENTITY_LIMIT,
+  createUid:createHomeBlockUid,
+  normalizeEntities:normalizeHomeBlockEntities,
   limit:HOME_BLOCK_LIMIT,
   rows:homeBlockRows,
   visibleEntities:visibleHomeEntities,

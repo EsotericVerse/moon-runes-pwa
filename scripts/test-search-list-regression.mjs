@@ -344,7 +344,8 @@ test('search reference section uses existing editable page=search BlockNote cont
   const reader=fs.readFileSync(new URL('../app/loc/scope-data.js',import.meta.url),'utf8');
   const blocks=fs.readFileSync(new URL('../app/loc/ScopeEditableBlocks.jsx',import.meta.url),'utf8');
   assert.ok(reader.includes('silver.${id}_blocks'));
-  assert.ok(blocks.includes('silver.${scopeId}_blocks'));
+  const editSession=fs.readFileSync(new URL('../app/loc/ScopeBlockEditorSession.jsx',import.meta.url),'utf8');
+  assert.ok(editSession.includes('silver.${scopeId}_blocks'));
   assert.ok(blocks.includes("['scope-blocks',scopeId,pageName]"),'Query caches must be isolated per Scope');
   assert.ok(source.includes('className="scope-search-reference-grid"'));
   assert.ok(source.includes('slotClassName="loc-card scope-search-reference-block"'));
@@ -355,11 +356,14 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(blocks.includes('const displayed=rows.map(row=>normalizeRow(row,row.block_order));'),'Unbounded Add Block must render its new draft');
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
-  assert.ok(blocks.includes("dynamic(()=>import('./BlockNoteEditor')"),'Page blocks must load the canonical BlockNote editor only on demand');
+  assert.ok(blocks.includes("dynamic(()=>import('./ScopeBlockEditorSession')"),'Page blocks must instantiate editing only on demand');
+  assert.ok(editSession.includes("dynamic(()=>import('./BlockNoteEditor')"),'The mounted edit session uses the canonical BlockNote');
+  assert.ok(!blocks.includes("from './db-client.mjs'"),'A read-only Scope must not load the editor write pipeline');
+  assert.ok(editSession.includes('const [draft,setDraft]=useState('),'The edit session owns its draft lifecycle');
   assert.ok(!/^import BlockNoteEditor/m.test(blocks),'Do not pull the editor into every read-only page');
-  assert.ok(blocks.includes('page_name:pageName'));
-  assert.ok(blocks.includes('await updateRows(table,values'));
-  assert.ok(blocks.includes('await insertRows(table,'));
+  assert.ok(editSession.includes('page_name:pageName'));
+  assert.ok(editSession.includes('await updateRows(table,values'));
+  assert.ok(editSession.includes('await insertRows(table,'));
 });
 
 test('LOC, author and runes read distinct page=search Blocks records',async()=>{
@@ -527,13 +531,18 @@ test('route, page and management edit capabilities remain lazily split from read
   assert.ok(ui.includes("const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks')"));
   assert.ok(ui.includes("const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor')"));
   assert.ok(article.includes("const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then("));
-  assert.ok(home.includes("const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then("));
+  const editorSession=read('app/loc/ScopeBlockEditorSession.jsx');
+  assert.ok(home.includes("const ScopeBlockEditorSession=dynamic(()=>import('./ScopeBlockEditorSession')"));
+  assert.ok(editorSession.includes("const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then("));
   assert.ok(!/^import BlockNoteEditor/m.test(article));
   assert.ok(article.includes('<DeferredArticleBody html={body}'));
   assert.ok(article.includes("new IntersectionObserver(entries=>"));
   assert.ok(article.includes("visible?<BlockNoteEditor editable={false} initialContent={html}"),
     'Read-only rich results must mount the canonical BlockNote only near the viewport');
   assert.ok(!/^import BlockNoteEditor/m.test(home));
+  assert.ok(!home.includes('onClick:save')&&!home.includes('await insertRows(table,'));
+  assert.ok(editorSession.includes('onClick:save')&&editorSession.includes("await import('./db-client.mjs')"),
+    'Editable Scope persistence must live exclusively in the on-demand React session');
   const importer=read('app/loc/ManagementImportPanel.jsx');
   const suno=read('app/loc/SunoImportPanel.jsx');
   assert.ok(importer.includes("const SunoImport=dynamic(()=>import('./SunoImportPanel')"));
