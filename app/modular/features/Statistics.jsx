@@ -283,13 +283,13 @@ function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],char
   return <>
     {rankingType==='media_style'&&scopeId==='lo3rwang'&&classes.length?<div className="scope-stat-controls">
       <label><span><UiText id="uiExtra.statisticsUI.mediaStyle"/></span><select className="scope-select" value={styleLevel} onChange={event=>{setStyleLevel(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
-        <option value="tags">Meta Tags</option>
-        <option value="class">Class</option>
-        <option value="group">Group</option>
-        <option value="item">Item</option>
+        <option value="tags"><UiText id="uiExtra.statisticsView.facetTags"/></option>
+        <option value="class"><UiText id="uiExtra.statisticsView.facetClass"/></option>
+        <option value="group"><UiText id="uiExtra.statisticsView.facetGroup"/></option>
+        <option value="item"><UiText id="uiExtra.statisticsView.facetItem"/></option>
       </select></label>
-      {styleLevel!=='tags'?<label><span>Class</span><select className="scope-select" value={styleClass} onChange={event=>{setStyleClass(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
-        <option value="">All Classes</option>
+      {styleLevel!=='tags'?<label><span><UiText id="uiExtra.statisticsView.facetClass"/></span><select className="scope-select" value={styleClass} onChange={event=>{setStyleClass(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
+        <option value=""><UiText id="uiExtra.statisticsView.facetAllClasses"/></option>
         {classes.map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>:null}
     </div>:null}
