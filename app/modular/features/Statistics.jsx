@@ -699,13 +699,15 @@ function ScopeGroupStatistics(){
     </div>
 
     </>}</StatisticsDetails>
-    <LocMemberIntersection key={startDate+'|'+rangeEndDate}
-      scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
-      unit={bucket} sharing={policy.data||{}} preloadedSources={preloadedSources}
-      laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
-      choices={memberChoices} onChoicesChange={setMemberChoices}
-      graph={memberGraph} onGraphChange={setMemberGraph}
-      zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>
+    <StatisticsDetails className="scope-stat-details" summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}>
+      {()=> <LocMemberIntersection key={startDate+'|'+rangeEndDate}
+        scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
+        unit={bucket} sharing={policy.data||{}} preloadedSources={preloadedSources}
+        laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
+        choices={memberChoices} onChoicesChange={setMemberChoices}
+        graph={memberGraph} onGraphChange={setMemberGraph}
+        zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>}
+    </StatisticsDetails>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
@@ -895,14 +897,17 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
     </>:null}
-    {!isLrunesDaily&&Boolean(targetScopes[0])?<ScopeSelfIntersection
-      key={scopeId}
-      scope={targetScopes[0]}
-      range={queryRange}
-      zoomLevel={zoomLevel}
-      onZoomLevelChange={setZoomLevel}
-      sharedCatalog={mediaDimension?null:sourceCatalog}
-    />:null}
+    {!isLrunesDaily&&Boolean(targetScopes[0])?<StatisticsDetails
+      summary={<FieldText text="作品自交互統計"/>}>
+      {()=> <ScopeSelfIntersection
+        key={scopeId}
+        scope={targetScopes[0]}
+        range={queryRange}
+        zoomLevel={zoomLevel}
+        onZoomLevelChange={setZoomLevel}
+        sharedCatalog={mediaDimension?null:sourceCatalog}
+      />}
+    </StatisticsDetails>:null}
     </>}
   </section>;
 }
