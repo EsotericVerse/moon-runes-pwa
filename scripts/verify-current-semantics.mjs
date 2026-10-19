@@ -360,6 +360,11 @@ if(!failures.length){
   if(!groupStatistics.includes('enabled:scopesQuery.isSuccess&&policy.isSuccess,')||
      !groupStatistics.includes('...scopes.map(selectFirstScopeStatisticsDate)'))
     failures.push('Group statistics history probes must exclude Scopes disabled by sharing consent');
+  if(!groupStatistics.includes("queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')]")||
+     !groupStatistics.includes('sharedScopeDensity(entry.rows,entry.scopeId,policy.data)')||
+     groupStatistics.includes('JSON.stringify(policy.data?.permissions')||
+     sharingEditor.includes("invalidateQueries({queryKey:['scope-density','loc']}"))
+    failures.push('Sharing changes must recompute group charts from cached raw rows without issuing new Galaxy SELECTs');
   if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
      !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
     failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');

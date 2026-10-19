@@ -40,7 +40,6 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
       await query.refetch();
       await Promise.all([
         client.invalidateQueries({queryKey:['cross-statistics-sharing']}),
-        client.invalidateQueries({queryKey:['scope-density','loc']}),
         client.invalidateQueries({queryKey:['loc-member-cross']}),
         client.invalidateQueries({queryKey:['loc-source-categories']})
       ]);

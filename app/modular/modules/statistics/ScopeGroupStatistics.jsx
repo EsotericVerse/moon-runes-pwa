@@ -61,18 +61,20 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
     [zoomLevel,endDate,earliest.data]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
   const densityQuery=useQuery({
-    queryKey:['scope-density','loc',zoomLevel,startDate,rangeEndDate,scopeIds.join('|'),JSON.stringify(policy.data?.permissions||[])],
+    queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')],
     queryFn:async()=>{
       const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics();
       return Promise.all(scopes.map(async scope=>{
         const rows=await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate});
-        return {scopeId:scope.id,rows,density:sharedScopeDensity(rows,scope.id,policy.data)};
+        return {scopeId:scope.id,rows};
       }));
     },
     enabled:Boolean(policy.data&&scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
-  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>entry.density),[densityQuery.data]);
+  // Consent is a client-side projection. A policy update must not re-SELECT unchanged Galaxy rows.
+  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>
+    sharedScopeDensity(entry.rows,entry.scopeId,policy.data)),[densityQuery.data,policy.data]);
   const preloadedSources=useMemo(()=>densityQuery.data
     ?new Map(densityQuery.data.map(entry=>[entry.scopeId,entry.rows]))
     :null,[densityQuery.data]);
