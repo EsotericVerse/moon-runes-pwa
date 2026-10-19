@@ -110,6 +110,7 @@ if(!failures.length){
   for(const token of ['class_group','class_enable','item_no','item_name','principle','keywords'])if(!rune66Engine.includes(token))failures.push('Rune66 unified keyword item model missing '+token);
   if(rune66Engine.includes('keyword_group')||rune66Engine.includes("node_type==='style'")||rune66Engine.includes("node_type==='keyword'"))failures.push('Rune66 engine must not restore style/rule/node-type keyword storage');
   const statistics=read('app/modular/features/Statistics.jsx');
+  const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
   const statisticsMultiChart=read('app/modular/modules/statistics/StatisticsMultiChart.jsx');
   const chartModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
   const ownIntersection=read('app/modular/modules/statistics/ScopeSelfIntersection.jsx');
@@ -194,7 +195,7 @@ if(!failures.length){
   const zoomFrame=read('app/modular/modules/statistics/StatisticsChartFrame.jsx');
   const layoutCss=read('app/styles/scope-system.css');
   const zoomModel=read('app/modular/modules/statistics/statistics-time-zoom.mjs');
-  const runeDaily=read('app/lrunes/DailyRuneAnalytics.jsx');
+
   if(statistics.includes('TIME_STANDARDS')||statistics.includes('timeStandard')||
      !statistics.includes('<StatisticsChartFrame')||
      !zoomFrame.includes('<StatisticsZoomControls')||
