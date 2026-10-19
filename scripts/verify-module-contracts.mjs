@@ -90,6 +90,18 @@ if(statisticsSource.includes("from '../../loc/galaxy-query'")||
    !readFileSync(resolve(root,'app/modular/modules/statistics/ScopeGroupStatistics.jsx'),'utf8').includes("await import('../../../loc/statistics-group-sharing-query.mjs')"))
   failures.push('Statistics Galaxy and group-sharing engines must be loaded on the active query or interaction');
 
+// Media facets have their own React hook state, chart selection and pagination.
+// Unrelated statistics never mount the media category/classification controls.
+const mediaFacetSource=readFileSync(resolve(root,'app/modular/modules/statistics/MediaFacetStatistics.jsx'),'utf8');
+const timeZoomSource=readFileSync(resolve(root,'app/modular/modules/statistics/statistics-time-zoom.mjs'),'utf8');
+if(!statisticsSource.includes("dynamic(()=>import('../modules/statistics/MediaFacetStatistics')")||
+   statisticsSource.includes('function MediaFacetStatistics(')||
+   !mediaFacetSource.includes('export default function MediaFacetStatistics(')||
+   !mediaFacetSource.includes("useState('all')")||
+   !mediaFacetSource.includes('RUNE_RANKING_PAGE_SIZE')||
+   !timeZoomSource.includes('export const RUNE_RANKING_PAGE_SIZE=8'))
+  failures.push('Media facets must mount as a mode-specific React capability');
+
 // Media pair visualization and its on-click work lookup are one optional
 // capability; unrelated statistics must never instantiate its React tree.
 if(!statisticsSource.includes("dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics')")||

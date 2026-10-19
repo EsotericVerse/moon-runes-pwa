@@ -1,6 +1,9 @@
 // The LOC / LunaRunes statistics timeframe is controlled exclusively by +/-.
 // Default to the last calendar year; zoom out only as far as *real* historical
 // records, with no fixed year ceiling. Automatic buckets are presentation only.
+// One page-size contract for both the visual Rune ranking and media facets.
+export const RUNE_RANKING_PAGE_SIZE=8;
+export const OTHER_RANKING_PAGE_SIZE=10;
 const MS_PER_DAY=86_400_000;
 const DATE=/^\d{4}-\d{2}-\d{2}$/;
 const validDate=value=>{

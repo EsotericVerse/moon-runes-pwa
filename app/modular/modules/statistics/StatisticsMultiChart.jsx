@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import {UI_COPY} from '../../../i18n/ui-copy';
-import {availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color} from './statistics-time-zoom.mjs';
+import {RUNE_RANKING_PAGE_SIZE,availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color} from './statistics-time-zoom.mjs';
 export {STAT_VISUAL_TYPES,availableStatisticChartTypes} from './statistics-time-zoom.mjs';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
@@ -18,7 +18,6 @@ const CHART_ACCENT='var(--loc-accent)';
 const CHART_TEXT='var(--loc-text)';
 const CHART_GRID='var(--loc-line)';
 const CHART_TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
-const RUNE_RANKING_PAGE_SIZE=8;
 
 const TOOLTIP={background:'var(--loc-panel)',border:'1px solid var(--loc-line)',color:'var(--loc-text)',borderRadius:'8px'};
 const GRID='var(--loc-line)',TEXT='var(--loc-text)',DAY=86400000;

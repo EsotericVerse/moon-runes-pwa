@@ -397,7 +397,11 @@ if(!failures.length){
     failures.push('Statistics style-filter presentation missing');
   // Group is an already-aggregated ranking; page only its rendered rows, while
   // keeping the full result set for percentages and stable rank ordering.
-  for(const token of ['RUNE_RANKING_PAGE_SIZE=8','groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','uiExtra.statisticsView.groupPageNav','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
+  if(!zoomModel.includes('export const RUNE_RANKING_PAGE_SIZE=8')||
+     !zoomModel.includes('export const OTHER_RANKING_PAGE_SIZE=10')||
+     !statisticsMultiChart.includes("import {RUNE_RANKING_PAGE_SIZE,"))
+    failures.push('Rune media and visual chart pagination must share one page-size contract');
+  for(const token of ['groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE)','visibleGroupRows.map','uiExtra.statisticsView.groupPageNav','setGroupPage(activeGroupPage-1)','setGroupPage(activeGroupPage+1)']){
     if(!statisticsMultiChart.includes(token))failures.push('Statistics Group ranking pagination missing '+token);
   }
   if(!groupStatistics.includes('<LocMemberIntersection')||!groupStatistics.includes('uiExtra.statisticsView.memberDistribution'))failures.push('LOC member-level cross comparison missing.');
