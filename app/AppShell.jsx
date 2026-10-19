@@ -20,7 +20,7 @@ import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/nav-destinations.mjs';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
-import {visibleFavoriteLayout} from './modular/favorite-folders.mjs';
+
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
 const SYSTEM_THEME_ID='system-default';
@@ -303,7 +303,7 @@ export default function AppShell({children}){
   // dynamic IDs are omitted; built-in fallback links work before DB hydration.
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
   const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
-  const layout=visibleFavoriteLayout(preferences.favorites,preferences.folders);
+  const layout=accountNavigation.folders.visibleFavoriteLayout(preferences.favorites,preferences.folders);
   const favoriteLinks=layout.direct.filter(id=>!native||id!=='lrunes').map(id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     const active=registryMap.get(id);

@@ -5,7 +5,7 @@ const {DEFAULT_FAVORITES,parseFavorites,serializeFavorites,homeScopeForAccount}=
 import {navigationHref} from '../app/modular/nav-destinations.mjs';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {cleanFolderName,parseFavoriteFolders,serializeFavoriteFolders,visibleFavoriteLayout,normalizeFavoriteFolders} from '../app/modular/favorite-folders.mjs';
+const {cleanFolderName,parseFavoriteFolders,serializeFavoriteFolders,visibleFavoriteLayout,normalizeFavoriteFolders}=NavigationPreferences.account.folders;
 
 test('anonymous users start with three favorite workspaces and LOC homepage',()=>{
   assert.deepEqual(parseFavorites(null),DEFAULT_FAVORITES);
@@ -84,7 +84,7 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.doesNotMatch(shell,/scope-favorites-label/);
   assert.match(shell,/className="scope-nav-loc-home"/);
   assert.match(shell,/copy.nav.home/);
-  assert.match(shell,/visibleFavoriteLayout\(preferences.favorites,preferences.folders\)/);
+  assert.match(shell,/accountNavigation\.folders\.visibleFavoriteLayout\(preferences.favorites,preferences.folders\)/);
   assert.match(shell,/openFolder\?<div id="scope-nav-folder-contents"/);
   assert.match(shell,/aria-expanded=\{openFolderId===folder.id\}/);
   assert.match(rail,/position.overflow\?<button/);
@@ -282,4 +282,17 @@ test('one navigation object composes account and local-device capabilities witho
   assert.equal(device.mobileHomeHref(true),'/my-phone/index.html');
   assert.equal(account.homeScopeForAccount('myphone',{user:{id:'one'}},['myphone']),'loc');
   assert.equal(device.MOBILE_HOME_STORAGE_KEY.startsWith('loc-device-'),true);
+});
+
+
+test('account favorite folders compose with account preferences without granting permissions',()=>{
+  const account=NavigationPreferences.account;
+  const folders=account.folders;
+  const raw=folders.serializeFavoriteFolders([{id:'alpha0001',label:'我的空間',scopes:['lrunes','loc']}]);
+  const restored=folders.parseFavoriteFolders(raw);
+  assert.deepEqual(restored,[{id:'alpha0001',label:'我的空間',scopes:['lrunes']}]);
+  const layout=folders.visibleFavoriteLayout(account.parseFavorites('lrunes,lo3rwang,loc'),restored);
+  assert.deepEqual(layout.direct,['lo3rwang']);
+  assert.deepEqual(layout.directories[0].scopes,['lrunes']);
+  assert.equal(account.homeScopeForAccount('lrunes',{user:null},['lrunes']),'loc');
 });
