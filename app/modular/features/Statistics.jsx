@@ -497,16 +497,8 @@ function Rune66Summary({analysis}){
   const activeGroupPage=Math.min(groupPage,groupPageCount);
   const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
   return <div className="scope-rune66-summary">
-    <div className="scope-ranking"><div><strong>{className}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
     <section className="scope-card">
       <h3><UiText id="uiExtra.statisticsView.classRuneTitle"/></h3>
-      <div className="scope-ranking">
-        {classRows.map(row=>{
-          const count=Number(row.document_count||0);
-          const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
-          return <div key={row.group}><strong>{classLabel(row.group,t)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
-        })}
-      </div>
       {classRows.length?<ResponsiveContainer width="100%" height={360}>
         <BarChart data={classRows.map(row=>({label:classLabel(row.group,t),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
@@ -516,9 +508,29 @@ function Rune66Summary({analysis}){
           <Bar dataKey="value" name={t('uiExtra.statisticsView.classWorkCount')} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
         </BarChart>
       </ResponsiveContainer>:null}
+      <StatisticsDetails>{()=><>
+    <div className="scope-ranking"><div><strong>{className}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
+      <div className="scope-ranking">
+        {classRows.map(row=>{
+          const count=Number(row.document_count||0);
+          const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
+          return <div key={row.group}><strong>{classLabel(row.group,t)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
+        })}
+      </div>
+      </>}</StatisticsDetails>
     </section>
     <section className="scope-card">
       <h3><UiText id="uiExtra.statisticsView.runeRankTitle"/></h3>
+      {groupRows.length?<ResponsiveContainer width="100%" height={Math.max(250,Math.min(10,groupRows.length)*36+60)}>
+        <BarChart data={groupRows.slice(0,10).map(row=>({label:groupLabel(row.label,t),value:Number(row.count)||0}))} layout="vertical" margin={{top:8,right:18,bottom:12,left:8}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
+          <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
+          <YAxis type="category" dataKey="label" width={100} tick={{fill:CHART_TEXT,fontSize:11}}/>
+          <Tooltip contentStyle={CHART_TOOLTIP}/>
+          <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
+        </BarChart>
+      </ResponsiveContainer>:null}
+      <StatisticsDetails>{()=><>
       <div className="scope-ranking">
         {visibleGroupRows.map(row=>{
           const count=Number(row.count||0);
@@ -531,6 +543,7 @@ function Rune66Summary({analysis}){
         <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
         <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
       </nav>:null}
+      </>}</StatisticsDetails>
     </section>
   </div>;
 }
