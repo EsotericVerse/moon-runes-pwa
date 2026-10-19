@@ -20,7 +20,7 @@ import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '.
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
-import {analyzeRiverDensity} from '../modules/culture-timeline/river-density-analysis.mjs';
+
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -488,15 +488,32 @@ export default function Culture(){
       .filter(Boolean)
   ,[timelineItems]);
   // Unselected modes must not execute the density-change algorithm.
+  // Import the changepoint analysis only when a visible river has data.
+  // Basic timeline modes must not download the karaul detection engine eagerly.
+  const [riverDensityAnalyzer,setRiverDensityAnalyzer]=useState(null);
+  const needsRiverDensity=Boolean(
+    isAggregateScope?locCombinedSourceRiverItems.length:
+      !isLrunesDaily&&!isLocItemView&&classificationBuckets.length
+  );
+  useEffect(()=>{
+    if(!needsRiverDensity||riverDensityAnalyzer)return undefined;
+    let active=true;
+    import('../modules/culture-timeline/river-density-analysis.mjs')
+      .then(module=>{
+        if(active)setRiverDensityAnalyzer(()=>module.analyzeRiverDensity);
+      })
+      .catch(error=>{if(active)console.error('Culture river-density module failed to load',error);});
+    return ()=>{active=false;};
+  },[needsRiverDensity,riverDensityAnalyzer]);
   const riverAnalysis=useMemo(
-    ()=>!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&classificationBuckets.length
-      ?analyzeRiverDensity(classificationBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
-    [isAggregateScope,isLrunesDaily,isLocItemView,classificationBuckets,existingAnchorDates]
+    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&classificationBuckets.length
+      ?riverDensityAnalyzer(classificationBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
+    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,classificationBuckets,existingAnchorDates]
   );
   const locRiverAnalysis=useMemo(
-    ()=>isAggregateScope&&locCombinedSourceRiverItems.length
-      ?analyzeRiverDensity(locCombinedSourceRiverItems,[]):EMPTY_RIVER_ANALYSIS,
-    [isAggregateScope,locCombinedSourceRiverItems]
+    ()=>riverDensityAnalyzer&&isAggregateScope&&locCombinedSourceRiverItems.length
+      ?riverDensityAnalyzer(locCombinedSourceRiverItems,[]):EMPTY_RIVER_ANALYSIS,
+    [riverDensityAnalyzer,isAggregateScope,locCombinedSourceRiverItems]
   );
   const virtualAnchorItems=useMemo(()=>{
     const total=Math.max(1,Number(riverAnalysis.totalCount)||0);
