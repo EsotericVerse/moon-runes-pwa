@@ -58,7 +58,10 @@ test('mobile task pages expose the task quickly without oversized hero artwork',
     const hero=page.locator('.scope-feature-hero--artwork').first();
     await expect(hero).toBeVisible({timeout:25_000});
     const size=await hero.boundingBox();
-    expect(size.height,route+' hero should leave first-screen space for work').toBeLessThanOrEqual(265);
+    // Keep authored text readable: Culture naturally needs slightly more room.
+    expect(size.height,route+' hero should leave first-screen space for work').toBeLessThanOrEqual(280);
+    const content=await page.locator('.scope-content').first().boundingBox();
+    expect(content.y,route+' controls should start within the first screen').toBeLessThan(page.viewportSize().height*.67);
   }
 });
 
