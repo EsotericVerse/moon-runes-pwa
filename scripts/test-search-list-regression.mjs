@@ -182,7 +182,7 @@ test('search provider can be invoked again for a different term without reloadin
 });
 
 test('all title matches are searched before any article body matches',async()=>{
-  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\nexport async function hydrateGalaxySearchRows(');
   const calls=[];
   const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
     DEFAULT_LIST_BATCH_SIZE:20,
@@ -342,7 +342,7 @@ test('date range filters span full Taipei calendar days',()=>{
 });
 
 test('browsing without a keyword invokes the bounded search provider',async()=>{
-  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\n/**');
+  const source=extract('app/loc/galaxy-query.js','export async function searchGalaxyRows(', '\n\nexport async function hydrateGalaxySearchRows(');
   const calls=[];
   const searchGalaxyRows=vm.runInNewContext(source.replace(/^export /,'')+'; searchGalaxyRows',{
     DEFAULT_LIST_BATCH_SIZE:20,
