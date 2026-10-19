@@ -5,8 +5,11 @@ import UiText,{useUiText} from '../../i18n/UiText';
 import {navigationHref} from '../../modular/nav-destinations.mjs';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {useScopeRuntime} from '../../modular/use-scope-runtime';
-import ScopeGroupOverview from '../ScopeGroupOverview';
-import ScopeEditableBlocks from '../ScopeEditableBlocks';
+import dynamic from 'next/dynamic';
+// Only one of these mutually exclusive home capabilities is needed per Scope.
+// Scope Groups must not load the editing implementation.
+const ScopeGroupOverview=dynamic(()=>import('../ScopeGroupOverview'),{loading:()=>null});
+const ScopeEditableBlocks=dynamic(()=>import('../ScopeEditableBlocks'),{loading:()=>null});
 
 export default function GenericScopeHomeView(){
   const t=useUiText();
