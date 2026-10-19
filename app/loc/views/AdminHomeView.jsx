@@ -13,7 +13,7 @@ import {useAccount} from '../use-account';
 import {SQL_ENGINE_OPTIONS} from '../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../providers/database-link.mjs';
 import {AdminSourceCategories} from '../SourceCategoryEditor';
-import ArticleBodyEditor from '../ArticleBodyEditor';
+import BlockNoteEditor from '../BlockNoteEditor';
 import {
   deleteScope,deleteRows,insertRows,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
 } from '../db-client.mjs';
@@ -446,17 +446,17 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         {currentCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
           <label><span><UiText id="uiExtra.adminView.navigationTitle"/></span><input required value={currentCopy.Title_TW||''} onChange={e=>patchPageCopy('Title_TW',e.target.value)}/></label>
           <div className="scope-management-wide-field"><span><UiText id="uiExtra.adminView.pageDescription"/></span>
-            <ArticleBodyEditor editorKey={'admin-page-description:'+selectedId} content={currentCopy.Desc_TW||''}
+            <BlockNoteEditor editorKey={'admin-page-description:'+selectedId} content={currentCopy.Desc_TW||''}
               canInsertImage={false} onPlainTextChange={value=>patchPageCopy('Desc_TW',value)}/>
           </div>
         </section>:null}
         <label><span><UiText id="uiExtra.adminView.displayName"/></span><input value={currentConfig.display_name||''} onChange={e=>patchConfig('display_name',e.target.value)}/></label>
         <div className="scope-management-wide-field"><span><UiText id="uiExtra.adminView.searchIntroduction"/></span>
-          <ArticleBodyEditor editorKey={'admin-search-intro:'+selectedId} content={currentConfig.search_intro||''}
+          <BlockNoteEditor editorKey={'admin-search-intro:'+selectedId} content={currentConfig.search_intro||''}
             canInsertImage={false} onPlainTextChange={value=>patchConfig('search_intro',value)}/>
         </div>
         <div className="scope-management-wide-field"><span><UiText id="uiExtra.adminView.searchAliases"/></span>
-          <ArticleBodyEditor editorKey={'admin-search-aliases:'+selectedId}
+          <BlockNoteEditor editorKey={'admin-search-aliases:'+selectedId}
             content={normalizeAliases(currentConfig.search_aliases).join('\n')}
             canInsertImage={false}
             onPlainTextChange={value=>patchConfig('search_aliases',value.split('\n'))}/>
