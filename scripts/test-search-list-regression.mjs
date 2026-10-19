@@ -354,7 +354,8 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(blocks.includes('const displayed=rows.map(row=>normalizeRow(row,row.block_order));'),'Unbounded Add Block must render its new draft');
   assert.ok(!source.includes('selectSearchReferenceSuggestions('));
   assert.ok(!source.includes('setSearchMode('));
-  assert.ok(blocks.includes('import BlockNoteEditor'));
+  assert.ok(blocks.includes("dynamic(()=>import('./BlockNoteEditor')"),'Page blocks must load the canonical BlockNote editor only on demand');
+  assert.ok(!/^import BlockNoteEditor/m.test(blocks),'Do not pull the editor into every read-only page');
   assert.ok(blocks.includes('page_name:pageName'));
   assert.ok(blocks.includes('await updateRows(table,values'));
   assert.ok(blocks.includes('await insertRows(table,'));
@@ -491,4 +492,36 @@ test('Same URL is shown exactly once and prefers a Galaxy Media title',()=>{
   ]);
   assert.equal(output.length,1);
   assert.equal(output[0].label,'混沌之月，共振之時');
+});
+
+
+test('route, page and management edit capabilities remain lazily split from read-only entrypoints',()=>{
+  const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+  const app=read('app/loc/LocApp.jsx');
+  const ui=read('app/modular/ui.jsx');
+  const settings=read('app/loc/GlobalSettings.jsx');
+  const article=read('app/modular/Article.jsx');
+  const home=read('app/loc/ScopeEditableBlocks.jsx');
+  for(const [name,module] of [
+    ['AdminHomeView','./views/AdminHomeView'],
+    ['AuthorHomeView','./views/AuthorHomeView'],
+    ['AboutView','./views/AboutView'],
+    ['GenericScopeHomeView','./views/GenericScopeHomeView'],
+    ['ScopeGroupOverview','./ScopeGroupOverview']
+  ]){
+    assert.ok(app.includes("const "+name+"=dynamic(()=>import('"+module+"')"),
+      name+' should not be imported by unrelated app routes');
+    assert.ok(!app.includes('import '+name+' from '),'No eager route imports');
+  }
+  for(const name of ['PrivateLocalFiles','ManagementImportPanel','ManagementArticlePublisher','ScopeSettingsPanel','ScopeGroupManagement']){
+    assert.ok(settings.includes("const "+name+"=dynamic(()=>import('./"+name+"')"),
+      name+' must load only when its Settings section is mounted');
+    assert.ok(!settings.includes('import '+name+' from '),'No eager management imports');
+  }
+  assert.ok(ui.includes("const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks')"));
+  assert.ok(ui.includes("const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor')"));
+  assert.ok(article.includes("const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then("));
+  assert.ok(home.includes("const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then("));
+  assert.ok(!/^import BlockNoteEditor/m.test(article));
+  assert.ok(!/^import BlockNoteEditor/m.test(home));
 });
