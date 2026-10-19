@@ -174,7 +174,7 @@ if(!failures.length){
      !crossMember.includes('return {rangeKey,datasets:new Map(pairs)}')||
      !crossMember.includes('fetched.data?.rangeKey===rangeKey')||
      !crossMember.includes('!fetched.isPending&&!fetched.isFetching&&hasCurrentData')||
-     !crossMember.includes('正在更新交會統計')||
+     !crossMember.includes('uiExtra.statisticsView.memberCrossUpdate')||
      !statistics.includes("key={startDate+'|'+rangeEndDate}")||
      !statistics.includes('choices={memberChoices} onChoicesChange={setMemberChoices}')||
      !statistics.includes('laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}')){
