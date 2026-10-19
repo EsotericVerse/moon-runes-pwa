@@ -50,3 +50,50 @@ test('LOC statistics show charts first and render detailed rows only when reques
   await details.locator('summary').click();
   await expect(details.locator('.scope-ranking')).toHaveCount(0);
 });
+
+test('opening LOC member intersection does not issue another Scope registry SELECT',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='desktop-chromium','Network SQL audit runs once per browser target');
+  const sql=[];
+  page.on('request',request=>{
+    if(request.method()!=='GET')return;
+    const url=request.url();
+    if(url.includes('/rest/v1/')&&url.includes('scope_registry'))sql.push(url);
+  });
+  await page.goto('/statics/',{waitUntil:'domcontentloaded'});
+  const member=page.locator('details.scope-stat-details').last();
+  await expect(page.locator('#loc-stat-zoom-in')).toBeVisible({timeout:25_000});
+  await expect(member.locator('summary')).toBeVisible({timeout:25_000});
+  await page.waitForLoadState('networkidle',{timeout:25_000});
+  const before=sql.length;
+  await member.locator('summary').click();
+  await expect(member.locator('[data-stat-cross-range]')).toBeVisible({timeout:25_000});
+  await page.waitForLoadState('networkidle',{timeout:25_000});
+  const after=sql.length;
+  await testInfo.attach('loc-registry-sql-audit.json',{
+    body:JSON.stringify({before,after,urls:sql},null,2),contentType:'application/json'
+  });
+  expect(after-before,'Opening member intersection must reuse the parent registry rows').toBe(0);
+});
+
+test('opening one-Scope intersection reuses already requested source SQL rows',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='desktop-chromium','Network SQL audit runs once per browser target');
+  const sql=[];
+  page.on('request',request=>{
+    if(request.method()!=='GET')return;
+    const url=request.url();
+    if(/\\/rest\\/v1\\/lo3rwang_galaxy(?:_media)?(?:\\?|$)/.test(url))sql.push(url);
+  });
+  await page.goto('/lo3rwang/statics/',{waitUntil:'domcontentloaded'});
+  const intersection=page.locator('details.scope-stat-details').last();
+  await expect(intersection.locator('summary')).toBeVisible({timeout:25_000});
+  await page.waitForLoadState('networkidle',{timeout:25_000});
+  const before=sql.length;
+  await intersection.locator('summary').click();
+  await expect(intersection).toHaveAttribute('open','',{timeout:25_000});
+  await page.waitForLoadState('networkidle',{timeout:25_000});
+  const after=sql.length;
+  await testInfo.attach('own-scope-sql-audit.json',{
+    body:JSON.stringify({before,after,urls:sql},null,2),contentType:'application/json'
+  });
+  expect(after-before,'Opening own-Scope intersection must reuse its already fetched raw rows').toBe(0);
+});
