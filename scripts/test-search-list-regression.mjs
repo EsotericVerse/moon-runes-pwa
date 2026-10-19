@@ -434,7 +434,7 @@ test('Search uses a single BlockNote edit draft, with Galaxy metadata below the 
 });
 
 test('Homepage and article click-to-edit ignore existing links and visualization targets',async()=>{
-  const {isInteractiveContentTarget}=await import('../app/loc/inline-edit-interaction.mjs');
+  const {isInteractiveContentTarget}=await import('../app/loc/content-policy.js');
   for(const selector of ['a','button','svg','canvas','video','.vis-timeline','.recharts-wrapper','[data-no-inline-edit]']){
     const target={closest:value=>value.includes(selector)?{}:null};
     assert.equal(isInteractiveContentTarget(target),true);

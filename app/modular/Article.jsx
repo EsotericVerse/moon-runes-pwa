@@ -7,7 +7,7 @@ const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>
 const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {UI_COPY} from '../i18n/ui-copy';
 import UiText,{useUiText} from '../i18n/UiText';
-import {isInteractiveContentTarget} from '../loc/inline-edit-interaction.mjs';
+import {isInteractiveContentTarget} from '../loc/content-policy.js';
 import {galaxyMediaHref} from './feature-navigation';
 
 

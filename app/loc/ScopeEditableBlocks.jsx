@@ -10,7 +10,7 @@ import {useAccount} from './use-account';
 // Read-only home blocks must not eagerly import editor UI or BlockNote.
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
-import {isInteractiveContentTarget} from './inline-edit-interaction.mjs';
+import {isInteractiveContentTarget} from './content-policy.js';
 
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
