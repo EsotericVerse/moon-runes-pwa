@@ -220,7 +220,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   ].map(value=>workDisplayText(value||'').trim()).filter(Boolean).join(' · ');
   const body=row.style_keyword_tag?'':isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
-    :(isGalaxy?(row.summary?workDisplayText(row.summary):row.excerpt?workDisplayText(row.excerpt):''):(bodyField?workDisplayText(row[bodyField]):text));
+    :(isGalaxy?Array.from(String(workDisplayText(row.summary||row.excerpt||title)||'').replace(/\s+/g,' ').trim()).slice(0,96).join(''):(bodyField?workDisplayText(row[bodyField]):text));
   const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
   const scope=String(row.scope_id||scopeId||'').trim();
   const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';

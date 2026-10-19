@@ -218,8 +218,11 @@ test('Galaxy result card does not receive a second copy of the complete body',()
   const toResult=vm.runInNewContext(source+'; toResult',context);
   const row={uid:'1074A2BA',title:'完整文章',content:'第一段\n第二段',__table:'silver.lo3rwang_galaxy'};
   const result=toResult(row,'personal','lo3rwang');
-  assert.equal(result.snippet,'','Identity must never print content as a full-sized preview');
+  assert.equal(result.snippet,'完整文章','Identity uses existing title prefix, not the complete content');
   assert.equal(result.resourceType,'galaxy');
+  const longTitle='甲'.repeat(150);
+  assert.equal(toResult({...row,title:longTitle},'personal','lo3rwang').snippet,'甲'.repeat(96),
+    'Identity preview must be bounded without a second body SELECT');
   assert.notEqual(toResult({...row,uid:'ANOTHER'},'personal','lo3rwang').key,result.key);
 });
 
