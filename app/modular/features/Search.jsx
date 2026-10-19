@@ -357,7 +357,7 @@ export default function Search(){
   const scopesQuery=useQuery({
     queryKey:['search-scope-registry'],
     queryFn:selectScopeRegistry,
-    enabled:!aggregateScopes,
+    enabled:scopeId==='loc'&&!aggregateScopes,
     staleTime:5*60_000
   });
   const targetScopes=useMemo(()=>{
@@ -579,7 +579,7 @@ export default function Search(){
   }
 
   useEffect(()=>{
-    if(!scopesQuery.isSuccess||account.permissionLoading)return;
+    if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const media=String(searchParams?.get('media')||'').trim();
     if(media){setQuery('');executeMediaIdentity(media);return;}
