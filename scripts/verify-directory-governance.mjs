@@ -3,7 +3,7 @@ import {basename,join,resolve} from 'node:path';
 
 const root=process.cwd();
 const failures=[];
-const allowedRootDirs=new Set(['.github','app','assets','pics','public','scripts','supabase','tests']);
+const allowedRootDirs=new Set(['.agents','.github','app','assets','pics','public','scripts','supabase','tests']);
 for(const name of ['app','assets','pics','public','scripts','supabase','tests']){
   if(!existsSync(resolve(root,name)))failures.push('missing Current root directory: '+name+'/');
 }
