@@ -574,7 +574,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const mediaQuery=useQuery({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
-    enabled:mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:mediaDimension&&rankingType!=='media_style'&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
     staleTime:5*60_000
   });
   const crossTagQuery=useQuery({
@@ -627,7 +627,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     sources:adminSource.distribution.map(row=>({term:row.name,item_count:row.value})),
     startDate:queryRange.startDate,endDate:queryRange.endDate
   };
-  const facetRange=rowsInWindow(mediaQuery.data||[],queryRange);
+  // Media Style facets and cross-tag relationships are projections of one
+  // identical metadata scan; never fetch the same media corpus twice.
+  const mediaRows=useMemo(()=>rankingType==='media_style'
+    ?(crossTagQuery.data?StatisticsFacets.base.mediaFacetDaily(crossTagQuery.data,'media_style'):[])
+    :(mediaQuery.data||[]),[rankingType,crossTagQuery.data,mediaQuery.data]);
+  const mediaLoading=rankingType==='media_style'?crossTagQuery.isPending:mediaQuery.isPending;
+  const mediaFetching=rankingType==='media_style'?crossTagQuery.isFetching:mediaQuery.isFetching;
+  const mediaError=rankingType==='media_style'?crossTagQuery.error:mediaQuery.error;
+  const facetRange=rowsInWindow(mediaRows,queryRange);
   const facetTotalsForOptions=facetTotals(facetRange.rows);
   const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
   const facetData=facetTrend(facetRange.rows,facetRange,facetNames);
@@ -666,14 +674,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {((mediaDimension&&mediaQuery.isPending)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending)))?<div className="scope-stat-data-pending">
+    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending)))?<div className="scope-stat-data-pending">
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
     {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
-    {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error,UI_COPY)}</p>:null}
+    {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
@@ -690,8 +698,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style')crossTagQuery.refetch();}} disabled={mediaQuery.isFetching||(rankingType==='media_style'&&crossTagQuery.isFetching)}>
-        {mediaQuery.isFetching||(rankingType==='media_style'&&crossTagQuery.isFetching)?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
+      <button type="button" className="loc-button" onClick={()=>rankingType==='media_style'?crossTagQuery.refetch():mediaQuery.refetch()} disabled={mediaFetching}>
+        {mediaFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
@@ -704,10 +712,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       zoomLevel={zoomLevel}
       onZoomLevelChange={setZoomLevel}
     />:null}
-    {mediaDimension&&!mediaQuery.isPending&&!mediaQuery.error?<MediaFacetStatistics
+    {mediaDimension&&!mediaLoading&&!mediaError?<MediaFacetStatistics
       key={rankingType}
       rankingType={rankingType}
-      rows={mediaQuery.data||[]}
+      rows={mediaRows}
       mediaRows={crossTagQuery.data||[]}
       treeRows={styleTreeQuery.data||[]}
       chartType={chartType}
