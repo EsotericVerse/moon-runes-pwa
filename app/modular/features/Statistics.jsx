@@ -13,7 +13,7 @@ import {
   Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
-import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectSourceTrendRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
+import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossPairWorks,selectScopeDensityRows,selectScopeSourceBreakdownRows,selectFirstScopeStatisticsDate} from '../../loc/galaxy-query';
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
@@ -139,24 +139,6 @@ function buildSourceTrend(rows=[],range={}){
     return output;
   });
 }
-function buildSummary(rows=[],range={}){
-  const window=rowsInWindow(rows,range);
-  const totals=new Map(SOURCE_TREND_ORDER.map(source=>[source,0]));
-  let total=0;
-  for(const row of window.rows){
-    const source=SOURCE_TREND_ORDER.includes(row.source)?row.source:'Others';
-    const count=Number(row.item_count)||0;
-    totals.set(source,(totals.get(source)||0)+count);
-    total+=count;
-  }
-  return {
-    total,
-    sources:SOURCE_TREND_ORDER.map(source=>({term:source,item_count:totals.get(source)||0})),
-    startDate:window.startDate,
-    endDate:window.endDate
-  };
-}
-
 function SummaryList({rankingType,summary}){
   const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
@@ -757,12 +739,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,earliest.data||''),
     [zoomLevel,queryEndDate,earliest.data]);
-  const trendQuery=useQuery({
-    queryKey:['statistics-source-trend',scopeId,zoomLevel,queryRange.startDate,queryRange.endDate],
-    queryFn:()=>selectSourceTrendRows(targetScopes,queryRange),
-    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType)&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:5*60_000
-  });
   const mediaQuery=useQuery({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:()=>selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange),
@@ -785,7 +761,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
     staleTime:5*60_000
   });
-  const summary=useMemo(()=>buildSummary(trendQuery.data||[],queryRange),[trendQuery.data,queryRange]);
   const sourceCatalog=useQuery({
     queryKey:['statistics-source-taxonomy',scopeId],
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
@@ -814,7 +789,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const basicTrend=adminSource.rows;
   const basicSeries=adminSource.series;
   const basicDistribution=adminSource.distribution;
-  const sourceSummary={...summary,total:adminSource.total,
+  // The existing source breakdown already drives the chart and its summary.
+  // Do not re-scan Galaxy and Galaxy Media in a second trend query.
+  const sourceSummary={total:adminSource.total,
     sources:adminSource.distribution.map(row=>({term:row.name,item_count:row.value})),
     startDate:queryRange.startDate,endDate:queryRange.endDate
   };
@@ -860,7 +837,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     </div>:null}
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
-    {!mediaDimension&&(trendQuery.error||sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(trendQuery.error||sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
+    {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(mediaQuery.error,UI_COPY)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
