@@ -59,7 +59,11 @@ export function useScopeRuntime(){
     setRegistryRow(null);
     setRegistryResolved(!dynamic);
     setRegistryError('');
-    selectScopeRegistryEntry(scopeId).then(row=>{
+    client.fetchQuery({
+      queryKey:['scope-registry-entry',scopeId],
+      queryFn:()=>selectScopeRegistryEntry(scopeId),
+      staleTime:5*60_000
+    }).then(row=>{
       if(!active)return;
       if(row)setScopeRegistryRouteRows([row]);
       registryCache.set(scopeId,row||null);
@@ -69,7 +73,7 @@ export function useScopeRuntime(){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError(String(error?.message||error||'Scope Registry 讀取失敗'));
     });
     return()=>{active=false};
-  },[dynamic,scopeId,location.mounted]);
+  },[dynamic,scopeId,location.mounted,client]);
 
   const activeRegistryRow=registryRow?.scope_id===scopeId?registryRow:null;
   const base=getScope(scopeId);
