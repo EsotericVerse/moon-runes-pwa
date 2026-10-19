@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {mediaFacetDaily,mediaPlatform,mediaStyleTags} from '../app/loc/statistics-facets.mjs';
+import {StatisticsFacets} from '../app/loc/statistics-facets.js';
+const {mediaFacetDaily,mediaPlatform,mediaStyleTags}=StatisticsFacets.base;
 
 test('URL host and path distinguish IG Reels, posts, Vocus and Suno',()=>{
   assert.equal(mediaPlatform({url:'https://www.instagram.com/reel/ABC/?igsh=abc'}),'IG Reels');
@@ -72,4 +73,15 @@ test('all valid source Meta Tags remain countable regardless of vocalist spellin
   assert.deepEqual(Object.fromEntries(rows.map(row=>[row.category,row.item_count])),{
     'Dream Pop':2,'Male Voice':1,'Male Vocals':1
   });
+});
+
+
+test('one statistics Object composes media facets with cross and style extensions',()=>{
+  assert.equal(StatisticsFacets.base.mediaStyleTags('Dream Pop,Dream Pop').length,1);
+  const sample=[{media_id:'song-1',createtime:'2026-10-19',meta_tags:'Dream Pop, Art Pop',media_type:'suno'}];
+  const base=StatisticsFacets.base.mediaFacetDaily(sample,'media_style');
+  const cross=StatisticsFacets.cross.mediaCrossTagCatalog(sample);
+  assert.equal(base.length,2);
+  assert.equal(cross.options.length,2);
+  assert.equal(StatisticsFacets.style.styleTreeClasses([{class_name:'Pop'}])[0],'Pop');
 });

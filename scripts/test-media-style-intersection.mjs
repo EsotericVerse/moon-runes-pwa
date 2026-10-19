@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../app/loc/media-style-intersection.mjs';
+import {StatisticsFacets} from '../app/loc/statistics-facets.js';
+const {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog}=StatisticsFacets.cross;
 
 const data=[
   {media_id:'a',title:'作品甲',url:'https://example.com/a',createtime:'2026-06-08T22:00:00+00:00',meta_tags:'Mandopop, Dream Pop, Alternative Pop, Neo-Soul, dream pop'},

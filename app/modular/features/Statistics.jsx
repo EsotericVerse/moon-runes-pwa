@@ -16,7 +16,7 @@ import {selectMediaStatisticsFacetRows,selectMediaCrossTagRows,selectMediaCrossP
 import {selectRows} from '../../loc/db-query.mjs';
 import {selectFirstDailyRuneDate} from '../../loc/daily-runes';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
-import {defaultMediaCrossAxes,mediaCrossIntersections,mediaCrossTagCatalog} from '../../loc/media-style-intersection.mjs';
+
 import {selectRune66Classification} from '../../loc/rune66-keyword-analysis';
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
@@ -25,7 +25,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage} from '../ui';
 import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
-import {mediaStyleTreeDaily,styleTreeClasses} from '../../loc/media-style-tree-statistics.mjs';
+import {StatisticsFacets} from '../../loc/statistics-facets';
 import {scopeHref} from '../scope-registry';
 import {LrunesDailyStatisticsPanel} from '../../lrunes/DailyRuneAnalytics';
 import StatisticsMultiChart,{STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/StatisticsMultiChart';
@@ -259,9 +259,9 @@ function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],char
   const [rankingPage,setRankingPage]=useState(1);
   const [styleLevel,setStyleLevel]=useState('tags');
   const [styleClass,setStyleClass]=useState('');
-  const classes=useMemo(()=>styleTreeClasses(treeRows),[treeRows]);
+  const classes=useMemo(()=>StatisticsFacets.style.styleTreeClasses(treeRows),[treeRows]);
   const effectiveRows=useMemo(()=>rankingType==='media_style'&&styleLevel!=='tags'
-    ?mediaStyleTreeDaily(mediaRows,treeRows,styleLevel,styleClass):rows,
+    ?StatisticsFacets.style.mediaStyleTreeDaily(mediaRows,treeRows,styleLevel,styleClass):rows,
     [rankingType,styleLevel,styleClass,rows,mediaRows,treeRows]);
   const window=useMemo(()=>rowsInWindow(effectiveRows,range),[effectiveRows,range]);
   // No NOT/exclusion list; count all existing Meta Tags.
@@ -362,14 +362,14 @@ function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevel
   const [worksLoading,setWorksLoading]=useState(false);
   const [worksError,setWorksError]=useState('');
   const worksRequest=useRef(0);
-  const catalog=useMemo(()=>mediaCrossTagCatalog(rows),[rows]);
+  const catalog=useMemo(()=>StatisticsFacets.cross.mediaCrossTagCatalog(rows),[rows]);
   const tagKeys=new Set(catalog.options.map(x=>x.key));
-  const defaults=defaultMediaCrossAxes(catalog);
+  const defaults=StatisticsFacets.cross.defaultMediaCrossAxes(catalog);
   const left=leftOverride===null?defaults.left:leftOverride.filter(x=>tagKeys.has(x));
   const leftSet=new Set(left);
   const right=rightOverride===null?catalog.options.filter(x=>!leftSet.has(x.key)).map(x=>x.key)
     :rightOverride.filter(x=>tagKeys.has(x));
-  const pairs=useMemo(()=>mediaCrossIntersections(catalog,left,right),[catalog,left.join('\u0000'),right.join('\u0000')]);
+  const pairs=useMemo(()=>StatisticsFacets.cross.mediaCrossIntersections(catalog,left,right),[catalog,left.join('\u0000'),right.join('\u0000')]);
   const selected=pairs.find(x=>x.key===selectedPair);
   async function loadPairWorks(pair,offset=0,append=false){
     const request=++worksRequest.current;

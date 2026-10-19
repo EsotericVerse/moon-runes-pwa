@@ -1,7 +1,7 @@
 'use client';
 
 import {DB_QUERY_BATCH_SIZE} from './query-contract.mjs';
-import {mediaFacetDaily,mediaStyleTags} from './statistics-facets.mjs';
+import {StatisticsFacets} from './statistics-facets';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
@@ -394,7 +394,7 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
     });
     if(offset===0)total=Number.isFinite(Number(page.count))?Number(page.count):page.rows.length;
     source=page.dataSource||source;
-    for(const row of mediaFacetDaily(page.rows,dimension)){
+    for(const row of StatisticsFacets.base.mediaFacetDaily(page.rows,dimension)){
       const key=row.day+'\u0000'+row.category.normalize('NFKC').toLocaleLowerCase();
       const existing=aggregates.get(key);
       if(existing)existing.item_count+=row.item_count;
@@ -460,9 +460,9 @@ export async function selectMediaCrossPairWorks(scope,pair,{
     if(!page.rows.length)return {rows,nextOffset:cursor,hasMore:false};
     for(const row of page.rows){
       const rowOffset=cursor++;
-      const tags=new Set(mediaStyleTags(row.meta_tags).map(tag=>tag.normalize('NFKC').toLocaleLowerCase()));
+      const tags=new Set(StatisticsFacets.base.mediaStyleTags(row.meta_tags).map(tag=>tag.normalize('NFKC').toLocaleLowerCase()));
       if(!tags.has(left)||!tags.has(right))continue;
-      rows.push({id:String(row.media_id),title:String(row.title||''),url:String(row.url||''),day:mediaDay(row.createtime)});
+      rows.push({id:String(row.media_id),title:String(row.title||''),url:String(row.url||''),day:StatisticsFacets.base.mediaDay(row.createtime)});
       if(rows.length>safeLimit){
         return {rows:rows.slice(0,safeLimit),nextOffset:rowOffset,hasMore:true};
       }

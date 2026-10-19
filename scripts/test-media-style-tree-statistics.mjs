@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {mediaStyleTreeDaily,styleTreeClasses} from '../app/loc/media-style-tree-statistics.mjs';
+import {StatisticsFacets} from '../app/loc/statistics-facets.js';
+const {mediaStyleTreeDaily,styleTreeClasses}=StatisticsFacets.style;
 
 const tree=[
   {class_name:'Pop',class_group:'Progressive',item_name:'Progressive Pop',keywords:['Progressive Pop','Progressive Pop / Hip-Hop']},
