@@ -1,6 +1,8 @@
+import {queryBatchSize} from '../query-contract.mjs';
+
 class KyselyQuery {
-  constructor(execute,schema,table){this.executeRequest=execute;this.request={kind:'query',schema,table,operation:'select',columns:['*'],filters:[],or:[],orders:[],limit:1000,offset:0}}
-  select(columns='*',options={}){this.request.columns=String(columns||'*').split(',').map(x=>x.trim()).filter(Boolean);this.request.count=options.count||null;this.request.head=options.head===true;if(this.request.operation!=='select')this.request.returning=true;return this}
+  constructor(execute,schema,table){this.executeRequest=execute;this.request={kind:'query',schema,table,operation:'select',columns:['*'],filters:[],or:[],orders:[],limit:queryBatchSize('*'),offset:0}}
+  select(columns='*',options={}){this.request.columns=String(columns||'*').split(',').map(x=>x.trim()).filter(Boolean);this.request.limit=queryBatchSize(this.request.columns);this.request.count=options.count||null;this.request.head=options.head===true;if(this.request.operation!=='select')this.request.returning=true;return this}
   insert(values){this.request.operation='insert';this.request.values=values;return this}
   update(values){this.request.operation='update';this.request.values=values;return this}
   delete(){this.request.operation='delete';return this}
