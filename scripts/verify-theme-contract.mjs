@@ -43,7 +43,7 @@ if(!layout.includes("const GAME_BOOTSTRAP_THEME_ID='theme-4'")||!layout.includes
 if(!game.includes("GAME_THEME_DEFAULT='theme-4'")||!game.includes('hasCanonicalGameTheme?')||!game.includes('colorScheme:gameTheme.scheme'))failures.push('Nature game must remain default and avoid Order palette flash while loading');
 if(!shell.includes('root.dataset.themeSignature===themeSignature(slot)'))failures.push('AppShell theme control must avoid needless root reapply while detecting token changes');
 const globalCss=read('app/globals.css');
-if(!shell.includes('if(themeRegistryQuery.isPending)return')||!shell.includes("configQuery.isPending&&configQuery.fetchStatus!=='idle'"))failures.push('AppShell must hold first paint until canonical DB Theme and Scope config are ready');
+if(shell.includes('if(themeRegistryQuery.isPending)return')||shell.includes("configQuery.isPending&&configQuery.fetchStatus!=='idle'"))failures.push('AppShell must not hold first paint on the network: show the built-in palette at hydration, then apply the DB Theme when it arrives');
 if(!globalCss.includes('html[data-theme-bootstrap="scheme-only"] body')||!globalCss.includes('visibility:hidden;'))failures.push('First load must not show intermediate Theme colors');
 if(layout.includes('sessionStorage')||shell.includes('sessionStorage')||registry.includes('sessionStorage'))failures.push('Temporary Theme choices and palettes must not be stored in browser storage');
 if(!registry.includes('delete root.dataset.themeBootstrap'))failures.push('Theme hydration must remove temporary scheme-only bootstrap marker');

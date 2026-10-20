@@ -107,18 +107,16 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     :THEME_SLOTS.map(item=>({id:item.id,label:item.label}));
 
   useEffect(()=>{
-    // A static export cannot know the current DB palette during HTML render.
-    // Hold first paint until the chosen Scope config and canonical palette resolve,
-    // then display the finished theme once. No user choice or palette is stored.
-    if(configQuery.isPending&&configQuery.fetchStatus!=='idle')return;
-    if(themeRegistryQuery.isPending)return;
+    // Show the page as soon as it hydrates, in the built-in day/night palette, and
+    // never wait on the network. The DB palette and the Scope's configured theme
+    // are applied the moment they arrive (slot changes). No palette is stored.
     const root=document.documentElement;
     if(root.dataset.themeSignature===themeSignature(slot)){
       delete root.dataset.themeBootstrap;
       return;
     }
     applyTheme(slot);
-  },[slot,scopeId,effectiveThemeId,configQuery.isPending,configQuery.fetchStatus,themeRegistryQuery.isPending]);
+  },[slot,scopeId,effectiveThemeId]);
 
   useEffect(()=>{
     if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
