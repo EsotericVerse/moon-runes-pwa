@@ -7,6 +7,7 @@ import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
+import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
 
@@ -20,15 +21,18 @@ function renderRuneHero(slot,native){
   const subtitle=slot.stored?slot.subtitle:'';
   const text=slot.stored?slot.text:'';
   return <>
-    <img
-      className="runes-home-hero-image"
-      src={runesHeroAsset.src}
-      alt=""
-      aria-hidden="true"
-      loading="eager"
-      fetchPriority="high"
-      decoding="async"
-    />
+    <picture>
+      <source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>
+      <img
+        className="runes-home-hero-image"
+        src={runesHeroAsset.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
+    </picture>
     <div className="runes-home-hero-overlay" aria-hidden="true"/>
     {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
       role="img" aria-label={sign.label}>{sign.text}</span>:null}

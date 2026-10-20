@@ -2,6 +2,7 @@
 
 import {SITE_IMAGES} from '../site-images';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
+import authorHeroSmallAsset from '../../pics/lo3rwang-hero_s.webp';
 import {HomeBlock} from './home-block-model';
 
 import {BlockNoteContent} from './blocknote-content.mjs';
@@ -15,7 +16,7 @@ const LOC_MEDIA=Object.freeze({
   5:{src:SITE_IMAGES.author,alt:'作者 Lucas Oscar Wang 政德',position:'right',width:'360px'}
 });
 const AUTHOR_MEDIA=Object.freeze({
-  1:{src:authorHeroAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
+  1:{src:authorHeroAsset,small:authorHeroSmallAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
   5:{src:{src:'/pics/lo3rwang-3.webp'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
 });
 
@@ -87,7 +88,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
       })}
     </div>:null}
     {image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
-      <picture>{image.small?<source media="(max-width: 900px)" srcSet={image.small.src}/>:null}
+      <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
         <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
     </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
       style={{'--loc-home-media-max':image.width+'px'}}>

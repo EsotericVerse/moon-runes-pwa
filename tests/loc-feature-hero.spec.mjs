@@ -282,30 +282,57 @@ test('Search does not show an empty title-only suggestions card to visitors',asy
   expect(emptyCards).toBe(0);
 });
 
-// One Hero text standard: eyebrow, title, subtitle and description share one
-// left edge and stack top-to-bottom (the old "title | subtitle" two-column row
-// moved the subtitle's left edge with the length of each page's title).
-const HERO_TEXT_PARTS=':scope > .loc-eyebrow, :scope > .home-title-row > h1, :scope > .home-title-row > .loc-subtitle, :scope > .scope-hero-description, :scope > .loc-home-block__header > *, :scope > .loc-home-block__body';
-async function expectHeroTextAligned(hero){
-  const rects=await hero.evaluate((el,selector)=>[...el.querySelectorAll(selector)]
-    .map(node=>node.getBoundingClientRect()).filter(rect=>rect.width>0&&rect.height>0)
-    .map(rect=>({left:rect.left,top:rect.top,bottom:rect.bottom})),HERO_TEXT_PARTS);
-  expect(rects.length).toBeGreaterThan(1);
-  for(const rect of rects)expect(Math.abs(rect.left-rects[0].left)).toBeLessThanOrEqual(1);
-  for(let i=1;i<rects.length;i++)expect(rects[i].top).toBeGreaterThanOrEqual(rects[i-1].bottom-1);
+// One Hero standard for the LOC, Author and LunaRunes homes: eyebrow, title and
+// body share one left edge, the title is readable on the artwork, and every body
+// line has the same type metrics (no taller/larger line than its neighbours).
+async function heroMetrics(hero,copy){
+  return hero.evaluate((el,selectors)=>{
+    const q=selector=>el.querySelector(selector);
+    const left=node=>node?Math.round(node.getBoundingClientRect().left):null;
+    const eyebrow=q(selectors.eyebrow),title=q(selectors.title);
+    const paragraphs=[...el.querySelectorAll(selectors.body)].filter(node=>node.textContent.trim());
+    const style=node=>getComputedStyle(node);
+    const luminance=value=>{
+      const [r,g,b]=value.match(/\d+(\.\d+)?/g).slice(0,3).map(Number);
+      return (0.2126*r+0.7152*g+0.0722*b)/255;
+    };
+    return {
+      lefts:[left(eyebrow),left(title),left(paragraphs[0])].filter(value=>value!==null),
+      titleLuminance:luminance(style(title).color),
+      sizes:[...new Set(paragraphs.map(node=>style(node).fontSize))],
+      lineHeights:[...new Set(paragraphs.map(node=>style(node).lineHeight))],
+      weights:[...new Set(paragraphs.map(node=>style(node).fontWeight))],
+      paragraphCount:paragraphs.length,
+      minHeight:parseFloat(style(el).minHeight),
+      paddingLeft:parseFloat(style(el).paddingLeft)
+    };
+  },copy);
 }
 
-test('Every Hero shares one left edge and a single text stack',async({page})=>{
-  for(const prefix of ['','/lo3rwang']){
-    await page.goto(prefix+'/',{waitUntil:'domcontentloaded'});
-    const home=page.locator('.loc-home > section.loc-home-block--hero').first();
-    await expect(home.locator(':scope > .loc-home-block__header h1')).toBeVisible({timeout:25_000});
-    await expectHeroTextAligned(home);
-    for(const feature of ['culture','statics','search','governance']){
-      await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
-      const hero=page.locator('header.scope-feature-hero');
-      await expect(hero.locator('.home-title-row>h1')).toBeVisible({timeout:25_000});
-      await expectHeroTextAligned(hero);
-    }
+test('LOC, Author and LunaRunes Heroes share one text standard',async({page})=>{
+  const homeSelectors={eyebrow:':scope > .loc-home-block__header > .loc-eyebrow',title:':scope > .loc-home-block__header > h1',body:':scope > .loc-home-block__body p'};
+  const runeSelectors={eyebrow:'.runes-home-hero-copy > .loc-eyebrow',title:'.runes-home-hero-copy h1',body:'.runes-home-hero-copy p:not(.loc-eyebrow)'};
+  const results=[];
+  for(const [path,hero,selectors] of [
+    ['/','.loc-home > section.loc-home-block--hero',homeSelectors],
+    ['/lo3rwang/','.loc-home > section.loc-home-block--hero',homeSelectors],
+    ['/lrunes/','.runes-home-hero',runeSelectors]
+  ]){
+    await page.goto(path,{waitUntil:'domcontentloaded'});
+    const locator=page.locator(hero).first();
+    await expect(locator.locator(selectors.title.replace(':scope > ',''))).toBeVisible({timeout:25_000});
+    const metrics=await heroMetrics(locator,selectors);
+    for(const value of metrics.lefts)expect(Math.abs(value-metrics.lefts[0])).toBeLessThanOrEqual(1);
+    expect(metrics.titleLuminance).toBeGreaterThan(0.8);
+    expect(metrics.sizes).toHaveLength(1);
+    expect(metrics.lineHeights).toHaveLength(1);
+    expect(metrics.weights).toHaveLength(1);
+    results.push(metrics);
+  }
+  for(const metrics of results.slice(1)){
+    expect(metrics.sizes).toEqual(results[0].sizes);
+    expect(metrics.lineHeights).toEqual(results[0].lineHeights);
+    expect(metrics.minHeight).toBe(results[0].minHeight);
+    expect(metrics.paddingLeft).toBe(results[0].paddingLeft);
   }
 });
