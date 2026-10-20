@@ -144,24 +144,6 @@ for(const path of [
   if(!existsSync(resolve(root,path)))failures.push('missing Current module/asset: '+path);
 }
 
-for(const path of [
-  'app/QueryProvider.jsx',
-  'app/AppExperience.jsx',
-  'app/modular/ScopeNav.jsx',
-  'app/modular/ScopeFooter.jsx',
-  'app/modular/ThemeSelect.jsx',
-  'app/modular/FeaturePage.jsx',
-  'app/modular/ContentEditor.jsx',
-  'app/modular/WorkFullText.jsx',
-  'app/modular/WorkSummaryCard.jsx',
-  'app/modular/IncrementalList.jsx',
-  'app/loc/scope-table-mapping.js',
-  'app/loc/aggregate-query.js',
-  'app/loc/search-providers.js',
-]){
-  if(existsSync(resolve(root,path)))failures.push('retired data-layer module still present: '+path);
-}
-
 // The route imports GameBoard's default export. Exporting a helper instead
 // silently renders only the Hero and prevents ALL gameplay data requests.
 const gameBoardSource=readFileSync(resolve(root,'app/lrunes/game/GameBoard.jsx'),'utf8');

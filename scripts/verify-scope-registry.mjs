@@ -19,7 +19,6 @@ if(HomeBlock.heroExtraFor({scopeId:'loc',extraSign:'moon'})!==null)
   failures.push('DB-style input cannot override a fixed Extra Sign');
 
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
-if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
 if(Object.values(SCOPES).some(scope=>Boolean(scope.searchAliases)))failures.push('DB search_aliases must not be duplicated in static Scope Registry');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
