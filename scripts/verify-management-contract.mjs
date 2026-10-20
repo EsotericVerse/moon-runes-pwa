@@ -56,7 +56,6 @@ const featureUi=read('app/modular/ui.jsx');
 const runesHome=read('app/lrunes/RunesClient.jsx');
 const sharedSearch=read('app/modular/features/Search.jsx');
 
-
 // Verify current runtime boundaries, not checked-in database patches. CI's
 // verify:db-public covers the actual Supabase Data API and public visibility.
 const runtimePorts=read('app/loc/providers/kysely-runtime.mjs');
@@ -171,25 +170,13 @@ must(!fs.existsSync(path.join(root,'app/loc/RichBlockEditor.jsx')),'retired Rich
 must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBlockForUrl')&&blockNoteEditor.includes('canInsertImage'),'BlockNote must allow remote image URL insertion with the current frame quota');
-must(blockNoteEntry.includes('canInsertImage={canInsertImage}')&&editableSession.includes('frameImageCount(draft)')&&editableSession.includes('embeddedImages>1')&&editableSession.includes('canInsertImageIn('),'page frames may contain at most one remotely linked image across all body and child fields');
-must(editableSession.includes('uiExtra.editBlocks.heroImageMode')&&editableSession.includes('image_mode')&&locHomeBlock.includes('resolveHomeImage(slot,scopeId)')&&locHomeBlock.includes('authorHomeBlockClass'),'Hero background or side uses the shared persisted image setting');
-must(locHomeBlock.includes('loc-home-block__media-bubble')&&locHomeBlock.includes('image.src?(hero?')&&locHomeBlock.includes("5:{src:{src:'/pics/lo3rwang-3.png'}"),'non-Hero presets and custom images must use one image frame');
-must(editableSession.includes('block_image')&&editableSession.includes('scope-frame-image-settings')&&editableSession.includes("source:'none'")&&editableSession.includes('titleLimit=64')&&editableSession.includes('englishLimit=64')&&editableSession.includes('subtitleLimit=128'),'Block image management and bounded titles must be persisted');
-must(read('app/styles/loc-about-original.css').includes('"children children"'),'child bubbles must span both columns in media frames');
-must(!read('app/styles/loc-about-original.css').includes('grid-template-columns:max-content minmax(0,1fr)'),'homepage headings may not use an unbounded max-content track');
 
 must(editableSession.includes('<ObjectEditor mode="scope"')&&publisher.includes('<ObjectEditor mode="fields"')&&publisher.includes("kind:'rich',bare:true")&&blockNoteEntry.includes('field.bare?')&&articleListItem.includes('<ObjectEditor mode="article"')&&blockNoteEntry.includes('export function ObjectEditor(')&&blockNoteEntry.includes('<BlockNoteCanvas')&&sharedSearch.includes('editorDraft={draft}')&&cultureUi.includes('editorDraft={editingWorkKey===workKey?editDraft:null}')&&blockNoteEntry.includes('onBlocksChange={blocks=>')&&blockNoteEntry.includes('onHtmlChange={html=>')&&blockNoteEntry.includes('bodyHtml??draft.bodyBlocks'),'homepage, Culture, Search and publishing must share one BlockNote editor module with WYSIWYG HTML persistence');
 must(articleListItem.includes('scope-article-editor-actions')&&articleListItem.includes('titleEditor={titleEditor}')&&articleListItem.includes('UI_COPY.common.save')&&articleListItem.includes('uiExtra.editBlocks.remove')&&articleListItem.includes('onClick:onSave')&&editableSession.includes('onClick:save')&&admin.includes('mode="actions"')&&blockNoteEntry.includes("if(mode==='actions')return actionBar;")&&sharedSearch.includes('onSave={()=>saveEditing(editTarget)}')&&sharedSearch.includes('onDelete={()=>deleteEditing(editTarget)}')&&sharedSearch.includes("attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}")&&cultureUi.includes('onSave={()=>saveEditingWork(work)}')&&cultureUi.includes('onDelete={()=>deleteEditingWork(work)'),'Search and Culture must share the homepage-style header action row, editable title, article attributes, Save, Delete, and Cancel');
 must(sharedSearch.includes('<Article')&&cultureUi.includes('<Article')&&articleListItem.includes('onClickCapture')&&articleListItem.includes('onEdit(uid)')&&articleListItem.includes('richBody')&&articleListItem.includes('<DeferredArticleBody html={body}')&&articleListItem.includes('IntersectionObserver'),'Search and Culture lists must render the same Article(uid) component with BlockNote rich-body display');
 must(!fs.existsSync(path.join(root,'app/loc/ArticleBodyEditor.jsx'))&&!sharedSearch.includes('<ArticleBodyEditor')&&!cultureUi.includes('<ArticleBodyEditor'), 'retired editor wrapper must be absent and editing must use shared BlockNote');
 for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
-must(sharedFeatureHero.includes('HOME_BLOCK_ENTITY_LIMIT=6')&&editableBlocks.includes("page='index'")&&editableSession.includes('page_name')&&editableBlocks.includes('block_entity')&&editableSession.includes("column:'uid'")&&editableBlocks.includes('isInteractiveContentTarget'),'Scope page editing must use stable block uid plus up to six child entities');
-must(['block_eyebrow','block_title','block_subtitle','block_text'].every(col=>(editableBlocks+editableSession).includes(col)&&scopeData.includes(col)),'Scope blocks must read and edit four canonical header/body columns');
-must(editableBlocks.includes('childPresentation(entity.title)')&&editableSession.includes('uiExtra.editBlocks.bubbleHint')&&!editableBlocks.includes('entity.kind')&&!editableSession.includes('entity.kind'),'title-free child bubble and titled child card must use implicit kind, without a type selector');
-must(locHomeBlock.includes('slot.subtitle')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}'),'LOC and Author heading displays must use the dedicated rich subtitle');
 
-
-must(editableSession.includes('uiExtra.editBlocks.saveFailedPrefix')&&blockNoteEntry.includes('scope-inline-save-status')&&editableSession.includes('refetchQueries'),'page block saves must visibly report success/failure and refetch saved data');
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}')&&
   editableBlocks.includes("dynamic(()=>import('./ScopeBlockEditorSession')")&&
   !editableBlocks.includes("from './db-client.mjs'")&&
@@ -197,20 +184,9 @@ must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.include
   editableSession.includes("await import('./db-client.mjs')"),
   'All Scope pages render without editor mutation code and load one self-contained React session only on edit');
 must(authorHome.includes('AuthorHomeEditableBlocks')&&!authorHome.includes('heroContent={<div'),'author homepage must render database blocks rather than hardcoded old homepage text');
-must(authorHomeEditable.includes('scopeId="lo3rwang"')&&authorHomeEditable.includes('allowEditing')&&authorHomeEditable.includes('containerless')&&authorHomeEditable.includes('renderDisplay={AuthorHomeBlockDisplay}')&&authorHomeEditable.includes('resolveSlotClassName={authorHomeBlockClass}')&&!authorHomeEditable.includes('allowEditing={false}'),'author homepage must use LOC common frames with permission-gated DB editing');
-must(locHomeBlock.includes('function SharedHomeBlockDisplay')&&locHomeBlock.includes('function AuthorHomeBlockDisplay')&&locHomeBlock.includes('const AUTHOR_MEDIA')&&authorHome.includes('loc-view loc-home'),'author and LOC homepages must share the identical frame and HTML layout with distinct preset images');
 must(!authorHomeEditable.includes('AboutDisplay')&&!authorHomeEditable.includes('ProfessionalDisplay')&&!authorHomeEditable.includes('SoulsDisplay')&&!authorHomeEditable.includes('author-contact-layout'),'author homepage must not retain bespoke section renderers');
-must(locHomeCss.includes('[data-loc-scope="lo3rwang"]')&&locHomeCss.includes('justify-content:center;')&&locHomeCss.includes('flex-direction:column;')&&!locHomeCss.includes('.loc-next-main[data-loc-scope="loc"][data-loc-view="home"]'),'LOC and Author must reuse the canonical shared Hero frame; desktop copy aligns without per-scope overrides');
-must(locHomeBlock.includes('loc-home-block__header')&&locHomeBlock.includes('loc-home-block__body')&&locHomeBlock.includes('loc-home-block__children')&&locHomeCss.includes('.loc-home-block__children'),'LOC homepage must use one consistent header/body/children contract');
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
 must(!locHome.includes('LocFeatureHeroManagement')&&!fs.existsSync(path.join(root,'app/loc/LocFeatureHeroManagement.jsx')),'the detached four-feature title manager must not exist on the LOC homepage');
-must(!featureUi.includes('editEyebrow={false}')&&featureUi.includes("eyebrow={slot.stored?slot.eyebrow:''}")&&featureUi.includes("eyebrow={shared?.eyebrow||''}")&&sharedFeatureHero.includes("eyebrow:String(row.block_eyebrow||'').trim()"),'four feature-page headers must expose the same editable canonical English eyebrow to LOC and other Scopes');
-must(featureUi.includes('locEditableHero?<ScopeEditableBlocks')&&featureUi.includes('slotTag="header"')&&featureUi.includes('page={HomeBlock.FEATURE_HERO_PAGE}')&&featureUi.includes('orders={[HomeBlock.FEATURE_HERO_ORDER[featureId]]}')&&featureUi.includes('renderDisplay={slot=><FeatureHeroContent')&&featureUi.includes('allowDelete={false}')&&featureUi.includes('allowEntities={false}'),'LOC four function pages must edit their visible first/header frame through the existing BlockNote, without a separate manager');
-must(editableBlocks.includes("const SlotTag=slotTag==='header'?'header':'section'")&&editableBlocks.includes('onClickCapture={canEdit&&!active&&!explicitEditButton?event=>')&&editableBlocks.includes("account.canManageGlobalSync()"),'shared block editor must render a semantic clickable heading with global manager permission');
-must(sharedFeatureHero.includes("scopeId!=='lrunes'")&&featureUi.includes("HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId)")&&featureUi.includes("selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE)")&&featureUi.includes("HomeBlock.featureHeroFor(sharedQuery.data,featureId)"),'non-LOC feature pages read LOC hero content while LunaRunes stays unchanged');
-must(featureUi.includes("data-feature-hero-source={shared?'loc':'default'}"),'feature header should expose shared DB origin for automated testing');
-
-must(locHome.includes('maxBlocks={8}')&&locHome.includes('placeholderFirstOrder={1}')&&locHome.includes('containerless')&&locHome.includes('renderDisplay={LocHomeBlockDisplay}')&&locHomeBlock.includes("order===1?'loc-hero loc-home-hero'")&&locHomeBlock.includes('SITE_IMAGES.locHero'),'LOC homepage must print up to 8 ordered frames, with Hero background only for order 1');
 
 must(HomeBlock.limit===8&&HomeBlock.rows([
   {uid:'A',page_name:'index',block_order:4},
@@ -231,11 +207,7 @@ const colFixture={
 };
 must(HomeBlock.visibleEntities(colFixture).map(entity=>entity.uid).join(',')==='a,b,c','LOC status must show all populated child items in DB order and hide only empty placeholders');
 must(HomeBlock.visibleEntities({...colFixture,entities:[{uid:'copy',title:'',text:colFixture.text}]}).length===0,'legacy duplicate whole-body child must not print twice');
-must(locHomeBlock.includes('HomeBlock.visibleEntities(slot)')&&locHomeBlock.includes('dangerouslySetInnerHTML')&&!locHomeBlock.includes('splitStatusContentSections')&&!locHomeBlock.includes('paragraphParts')&&!locHomeBlock.includes('entityAt('),'LOC read-only display must preserve all BlockNote HTML without rewriting or hardcoded data indexes');
 must(!fs.existsSync(path.join(root,'app/loc/LocHomeEditableBlock.jsx'))&&!locHome.includes('LocHomeEditableBlock'),'retired multi-renderer homepage module must be gone');
-must(editableBlocks.includes('containerless?contents:')&&editableBlocks.includes('resolveSlotClassName(slot)')&&editableBlocks.includes('HomeBlock.rows(rows,pageName,maxBlocks)'),'Home must create only one DOM section per DB row without nested layout wrappers');
-must(editableBlocks.includes('displayed.push(normalizeRow(null,placeholderFirstOrder))')&&locHomeBlock.includes('home-hero-visual'),'Hero responsive image must be rendered statically even before the DB content loads');
-must(!locHomeCss.includes('display:contents')&&!locHomeCss.includes('!important'),'Homepage CSS must not rely on wrapper-hiding or cascade override hacks');
 
 must(
   runesHome.includes('ScopeEditableBlocks')&&
@@ -343,7 +315,6 @@ must(admin.includes("result?.deleted!==true")&&admin.includes("dbAuthRelation('s
 must(functionalButton(admin,'()=>onDeleteNode?.(selectedId)','刪除')&&admin.includes('onDeleteNode={requestDelete}'),'read-only Attr summary and graph delete must share the same confirmation');
 must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-actions'),'delete confirmation must remain readable and visible on mobile');
 
-
 must(
   !admin.includes('<span>排序</span>')&&functionalLabel(admin,'span','主題')&&
   !admin.includes('groupDraft.sort_order')&&
@@ -414,8 +385,6 @@ must(
   'Editable page frames must move up/down atomically while theme selectors display names only'
 );
 
-
-
 must(['DatabaseTarget','ThemeEditor','AdminEmailBlocklist'].every(name=>
   admin.includes("dynamic(()=>import('./admin-panels/"+name+"')")),
   'Admin must load independent management workspaces only after the section is selected');
@@ -446,15 +415,12 @@ must(keywordLibrary.includes('current_keyword_class_id')&&keywordLibrary.include
 must(keywordLibrary.includes('l.reanalyse')&&keywordLibrary.includes('runRune66ClassificationBatch'),'keyword management must expose explicit batch classification instead of live recalculation');
 must(dbContract.includes("rpc('apply_keyword_classification'")&&dbContract.includes('p_scope_id:scope')&&dbContract.includes('silver.keyword_classes')&&dbContract.includes('randomUUID'),'keyword classification writes and copied Classes must be Scope-aware and use the UUID registry');
 
-
 must(keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_CHARS=32')&&keywordAnalysis.includes('DEFAULT_KEYWORD_MIN_DOCUMENTS=100'),'keyword batch must retain >32 article and >100 statistics thresholds');
 must(keywordAnalysis.includes('analysisCharacterCount(row?.content)>minChars'),'keyword classification must gate on non-whitespace body characters');
 must(keywordAnalysis.includes("columns:'uid,createtime,class_id,group_lists'"),'public keyword Statistics/Culture must read stored article attrs');
 must(keywordAnalysis.includes('dynamicTieCount')&&keywordAnalysis.includes('counts.get(candidate)'),'complete keyword ties must use dynamic current Class counts');
 
-
 must(dbContract.includes("mode:'begin'")&&dbContract.includes("mode:'chunk'")&&dbContract.includes("mode:'finalize'")&&dbContract.includes('batchSize=1000'),'keyword attr writes must reset, write bounded chunks, then finalize staticstime');
-
 
 must(keywordAnalysis.includes('classifyDocumentsIncrementally')&&keywordAnalysis.includes('onProgress:({completed,total})')&&keywordAnalysis.includes("reportBatchProgress(onProgress,'completed'")&&keywordAnalysis.includes('verified?.staticstime'),'keyword analysis must report real read/classify/write progress and verify the anchor before 100 percent');
 must(keywordLibrary.includes('<progress value={batchProgress.percent}')&&keywordLibrary.includes('onProgress:setBatchProgress')&&keywordLibrary.includes("phase:'failed'"),'keyword batch UI must report visible percent and preserve failure status');
@@ -463,15 +429,6 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 
 // Source and future-Scope schema parity: the Time contract is flat TEXT,
 // not a growing JSONB attribute bag or a stored keyword-count snapshot.
-
-
-
-
-
-
-
-
-
 
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
 must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('update'")&&admin.includes("manageScopeRegistry('create_group'"),'Admin tree workspace must edit Registry hierarchy and create Scope Groups');

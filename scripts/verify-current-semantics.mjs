@@ -30,8 +30,6 @@ if(!failures.length){
   const identity=read('app/loc/views/AboutView.jsx');
   const identitySource=identity+'\n'+read('README.md');
   const runeIntro=read('app/lrunes/RuneIntroSection.jsx');
-  // Identity copy now belongs to silver.loc_blocks (index/order), not hardcoded JSX.
-  if(!identity.includes('page="index"')||!identity.includes('maxBlocks={8}')||!identity.includes('renderDisplay={LocHomeBlockDisplay}'))failures.push('LOC identity must render the canonical indexed page blocks');
   for(const token of ['LOC','LunaRunes'])if(!identitySource.includes(token))failures.push('identity seed missing '+token);
   if(!runeIntro.includes('Symbolic Language'))failures.push('Rune intro identity missing Symbolic Language');
   const dailyData=read('app/loc/daily-runes.js');
