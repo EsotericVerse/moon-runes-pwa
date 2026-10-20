@@ -236,7 +236,7 @@ export default function Culture(){
       const className=String(row.classification_group||'').trim();
       if(!date||!className)continue;
       const key=className+'\u0000'+date;
-      const count=(counts.get(key)||0)+1;
+      const count=(counts.get(key)||0)+(Number(row.count)||1);
       counts.set(key,count);
       classMax.set(className,Math.max(classMax.get(className)||0,count));
     }

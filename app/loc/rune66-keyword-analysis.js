@@ -1,6 +1,6 @@
 'use client';
 
-import {applyKeywordClassification,dbAuthRelation} from './db-client.mjs';
+import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
 import {selectAllRows} from './db-query.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
@@ -10,6 +10,7 @@ const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
 const analysisPromises=new Map();
+let rune66SummaryInstalled=true;
 
 function normalizeScopeId(value){
   const scope=String(value||'lo3rwang').trim().toLowerCase();
@@ -333,42 +334,72 @@ function emptyStored(config,extra={}){
     ...extra
   };
 }
-function storedSummary(rows,config){
-  const meta=config?.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
-  const classes=meta.classes&&typeof meta.classes==='object'?meta.classes:{};
-  const items=meta.items&&typeof meta.items==='object'?meta.items:{};
-  const eligible=(rows||[]).filter(row=>normalizedGroupLists(row?.group_lists)!==false);
-  const classCounts=new Map();
-  const itemCounts=new Map();
-  const itemDocuments=new Map();
-  const classifications=[];
-
-  for(const row of eligible){
-    const classId=Number(row?.class_id);
-    const className=Number.isInteger(classId)?String(classes[String(classId)]||'').trim():'';
-    if(className){
-      classCounts.set(classId,(classCounts.get(classId)||0)+1);
-      classifications.push({
-        key:'galaxy:'+String(row.uid||''),
-        uid:String(row.uid||''),
-        kind:'galaxy',
-        title:'',
-        date:String(row.createtime||'').slice(0,10),
-        status:'classified',
-        classification_group:className,
-        class_id:classId,
-        tied_groups:[],
-        group_lists:normalizedGroupLists(row.group_lists)
-      });
-    }
+// Exact counts for the stored classification, reduced from row-level data. Used only
+// when the database-side function (silver.read_rune66_summary) is not available.
+function aggregateStoredRows(rows){
+  const agg={eligible:0,classDays:new Map(),itemCounts:new Map(),itemDocuments:new Map()};
+  for(const row of rows||[]){
     const lists=normalizedGroupLists(row?.group_lists);
     if(lists===false)continue;
+    agg.eligible+=1;
+    const classId=Number(row?.class_id);
+    if(Number.isInteger(classId)){
+      const key=classId+'|'+String(row.createtime||'').slice(0,10);
+      agg.classDays.set(key,(agg.classDays.get(key)||0)+1);
+    }
     for(const [itemId,value] of Object.entries(lists)){
       const count=Number(value)||0;
       if(count<=0)continue;
-      itemCounts.set(itemId,(itemCounts.get(itemId)||0)+count);
-      itemDocuments.set(itemId,(itemDocuments.get(itemId)||0)+1);
+      agg.itemCounts.set(itemId,(agg.itemCounts.get(itemId)||0)+count);
+      agg.itemDocuments.set(itemId,(agg.itemDocuments.get(itemId)||0)+1);
     }
+  }
+  return {
+    eligible:agg.eligible,
+    classDays:[...agg.classDays].map(([key,count])=>{const split=key.indexOf('|');return {class_id:Number(key.slice(0,split)),day:key.slice(split+1),count};}),
+    itemCounts:agg.itemCounts,
+    itemDocuments:agg.itemDocuments
+  };
+}
+// Same shape, taken straight from the database's exact counts.
+function aggregateRune66Rows(rows){
+  const agg={eligible:0,classDays:[],itemCounts:new Map(),itemDocuments:new Map()};
+  for(const row of rows||[]){
+    if(row.kind==='eligible')agg.eligible=Number(row.hit_count)||0;
+    else if(row.kind==='class_day')agg.classDays.push({class_id:Number(row.class_id),day:String(row.day||'').slice(0,10),count:Number(row.hit_count)||0});
+    else if(row.kind==='item'){
+      agg.itemCounts.set(String(row.item_key),Number(row.hit_count)||0);
+      agg.itemDocuments.set(String(row.item_key),Number(row.document_count)||0);
+    }
+  }
+  return agg;
+}
+function storedSummary(agg,config){
+  const meta=config?.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
+  const classes=meta.classes&&typeof meta.classes==='object'?meta.classes:{};
+  const items=meta.items&&typeof meta.items==='object'?meta.items:{};
+  const classCounts=new Map();
+  const itemCounts=agg.itemCounts;
+  const itemDocuments=agg.itemDocuments;
+  const classifications=[];
+
+  for(const entry of agg.classDays){
+    const className=Number.isInteger(entry.class_id)?String(classes[String(entry.class_id)]||'').trim():'';
+    if(!className||entry.count<=0)continue;
+    classCounts.set(entry.class_id,(classCounts.get(entry.class_id)||0)+entry.count);
+    classifications.push({
+      key:'class-day:'+entry.class_id+':'+entry.day,
+      uid:'',
+      kind:'galaxy',
+      title:'',
+      date:entry.day,
+      status:'classified',
+      classification_group:className,
+      class_id:entry.class_id,
+      count:entry.count,
+      tied_groups:[],
+      group_lists:{}
+    });
   }
 
   const groupTotals=Object.entries(classes)
@@ -390,13 +421,13 @@ function storedSummary(rows,config){
       document_count:itemDocuments.get(id)||0
     }))
     .sort((a,b)=>a.rune_id-b.rune_id);
-  const classifiedCount=classifications.length;
+  const classifiedCount=classifications.reduce((sum,row)=>sum+row.count,0);
   const base=emptyStored(config);
   return {
     ...base,
-    documentCount:eligible.length,
+    documentCount:agg.eligible,
     classifiedCount,
-    unclassifiedCount:Math.max(0,eligible.length-classifiedCount),
+    unclassifiedCount:Math.max(0,agg.eligible-classifiedCount),
     classifications:base.statisticsEnabled?classifications:[],
     runeTotals:base.statisticsEnabled?runeTotals:[],
     runeRanking:base.statisticsEnabled?[...runeTotals].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id):[],
@@ -411,6 +442,15 @@ export async function selectRune66Classification({scopeId='lo3rwang',startDate='
   const promise=(async()=>{
     const {scope,config}=await scopeAndConfig(normalizedScopeId);
     if(!config.staticstime)return emptyStored(config);
+    if(rune66SummaryInstalled){
+      try{
+        const counted=await readRune66Summary(normalizedScopeId,{startDate,endDate});
+        return storedSummary(aggregateRune66Rows(counted),config);
+      }catch(error){
+        if(!['PGRST202','42883'].includes(String(error?.code||'')))throw error;
+        rune66SummaryInstalled=false;
+      }
+    }
     const rows=await selectAllRows(scope.galaxy,{
       columns:'uid,createtime,class_id,group_lists',
       filters:[
@@ -421,7 +461,7 @@ export async function selectRune66Classification({scopeId='lo3rwang',startDate='
       ],
       orders:[{column:'createtime',ascending:true}]
     });
-    return storedSummary(rows.rows||[],config);
+    return storedSummary(aggregateStoredRows(rows.rows||[]),config);
   })().catch(error=>{
     analysisPromises.delete(key);
     throw error;
