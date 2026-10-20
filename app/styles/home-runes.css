@@ -1,5 +1,5 @@
 /* LunaRunes home: hero and primary actions. */
-.runes-home-hero{
+.runes-home-hero.runes-home-hero{
   position:relative;
   display:grid;
   grid-template-columns:minmax(0,1fr);
@@ -37,7 +37,7 @@
     linear-gradient(180deg,rgba(3,6,13,.02) 0%,rgba(3,6,13,.04) 58%,rgba(3,6,13,.26) 100%);
 }
 @media(max-width:760px){
-  .runes-home-hero{align-content:end;min-height:clamp(460px,118vw,570px);padding:1.35rem}
+  .runes-home-hero.runes-home-hero{align-content:end;min-height:clamp(460px,118vw,570px);padding:1.35rem}
   .runes-home-hero-overlay{
     background:
       linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.18) 44%,rgba(3,6,13,.64) 100%),

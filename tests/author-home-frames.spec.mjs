@@ -34,7 +34,7 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
 });
 
 
-test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay readable',async({page})=>{
+test('LOC and Author Heros share one cover frame while keeping author overlay readable',async({page})=>{
   const viewport=page.viewportSize();
   await page.goto('/',{waitUntil:'domcontentloaded'});
   const locHero=page.locator('.loc-home > section[data-block-order="1"]');
@@ -50,18 +50,9 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
   expect(Math.abs(locArtwork.x-locHeroSize.x)).toBeLessThan(6);
   expect(Math.abs(locArtwork.y-locHeroSize.y)).toBeLessThan(6);
   await expect(locHero).toHaveCSS('aspect-ratio',viewport.width>760?'16 / 9':'auto');
-  if(viewport.width>760){
-    await expect(locHero).toHaveCSS('display','flex');
-    await expect(locHero).toHaveCSS('flex-direction','column');
-    await expect(locHero).toHaveCSS('justify-content','center');
-  }else{
-    await expect(locHero).toHaveCSS('display','block');
-  }
-  if(viewport.width>760){
-    expect(locHeroSize.height).toBeGreaterThanOrEqual(locHeroSize.width*9/16-2);
-    // LOC must gain a widescreen editorial frame instead of its former
-    // 360–540px-only height cap, without enlarging or distorting its asset.
-  }
+  // LOC now uses the same Hero frame as the Author home (grid, 16:9 on desktop).
+  await expect(locHero).toHaveCSS('display','grid');
+  if(viewport.width>760)expect(locHeroSize.height).toBeGreaterThanOrEqual(locHeroSize.width*9/16-2);
 
   await page.goto('/lo3rwang/',{waitUntil:'domcontentloaded'});
   const authorHero=page.locator('.loc-home > section[data-block-order="1"]');
@@ -93,12 +84,13 @@ test('LOC and Author Heros share a 16:9 cover frame while keeping author overlay
     :Math.min(570,Math.max(460,viewport.width*1.18));
   const actualMinHeight=await authorHero.evaluate(el=>Number.parseFloat(getComputedStyle(el).minHeight));
   expect(Math.abs(actualMinHeight-expectedMinHeight)).toBeLessThan(2);
-  expect(actualMinHeight).toBeGreaterThan(locMinHeight+25);
+  // One Hero standard: LOC and Author share the same frame height.
+  expect(Math.abs(actualMinHeight-locMinHeight)).toBeLessThan(2);
   expect(authorSize.height).toBeGreaterThanOrEqual(actualMinHeight-2);
   if(desktop){
     expect(authorSize.height).toBeGreaterThanOrEqual(authorSize.width*9/16-2);
   }
-  await expect(authorImage).toHaveCSS('object-position',desktop?'50% 50%':'58% 50%');
+  await expect(authorImage).toHaveCSS('object-position','50% 50%');
   const overlay=await authorHero.locator(':scope > .loc-home-block__media')
     .evaluate(el=>getComputedStyle(el,'::after').backgroundImage);
   expect(overlay).toContain('linear-gradient(');

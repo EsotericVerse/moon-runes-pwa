@@ -222,11 +222,13 @@ for(const {prefix,filename,mark} of [
       // Scope identity is loaded asynchronously from silver.scope_registry.
       // Await the actual sign; no text, images, or accessibility checks are skipped.
       await expect(hero.locator(':scope > .home-hero-identity--'+mark)).toHaveCount(1);
-      const imageUrl=await hero.evaluate(el=>{
+      const readImageUrl=()=>hero.evaluate(el=>{
         const background=getComputedStyle(el).backgroundImage;
         return background.match(/url\(["']?([^"')]+)["']?\)/)?.[1]||'';
       });
-      expect(imageUrl).toContain(filename+'-'+asset);
+      // The Scope (and so which artwork variable applies) resolves after hydration.
+      await expect.poll(readImageUrl,{timeout:15_000}).toContain(filename+'-'+asset);
+      const imageUrl=await readImageUrl();
       expect(imageUrl).toMatch(/\.jpg$/);
       const loaded=await page.evaluate(async url=>{
         const img=new Image();
