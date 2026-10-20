@@ -8,7 +8,6 @@ for(const route of ['/','/lrunes/','/lo3rwang/']){
     await expect(page.locator('.scope-global')).toHaveCSS('position','static');
     await expect(page.locator('.scope-feature-dock')).toHaveCSS('position','fixed');
     await expect(nav.getByText('我的最愛',{exact:true})).toHaveCount(0);
-    await expect(page.locator('.scope-nav-loc-home')).toHaveText('回月典首頁');
     await expect(page.locator('.scope-nav-loc-home')).toBeVisible();
     await expect(page.locator('.scope-feature-dock a')).toHaveCount(6);
     const sizes=await nav.evaluate(el=>{

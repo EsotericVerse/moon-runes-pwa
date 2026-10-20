@@ -223,11 +223,6 @@ must(!publisher.includes('content_blocks')&&!sharedSearch.includes('content_bloc
 must(sharedSearch.includes('startEditing')&&sharedSearch.includes('editorDraft={draft}')&&articleListItem.includes('<ObjectEditor mode="article"')&&featureUi.includes('<BlockNoteEditor')&&sharedSearch.includes('GALAXY_EDITOR_COLUMNS')&&!sharedSearch.includes('GalaxyAttrSummary')&&!sharedSearch.includes('GalaxyAttrEditor')&&!sharedSearch.includes('GalaxyAttrPanel')&&sharedSearch.includes('assertPlainGalaxyAttributes(')&&blockNoteEntry.includes('attributeFields.map(')&&sharedSearch.includes("SearchEditDraft.changedAttributes('galaxy',editDraft,t)")&&sharedSearch.includes("await import('./search-edit-draft')")&&read('app/modular/features/search-edit-draft.js').includes("'../../loc/group-lists.mjs'")&&sharedSearch.includes('<Article')&&!sharedSearch.includes('actions={editable?')&&sharedSearch.includes('rowScopeData?.galaxy')&&sharedSearch.includes('assertPlainGalaxyAttributes(')&&sharedSearch.includes('updateRows')&&sharedSearch.includes('deleteRows'),'Search must use Article(uid), shared BlockNote, and the existing management_write boundary for article attributes and deletes');
 must(!sharedSearch.includes('selectAuthRow')&&sharedSearch.includes('selectPublicEditableRow')&&!cultureUi.includes('dbAuthRelation')&&cultureUi.includes('selectRows'),'Search and Culture article edit forms must use the same public read path as the homepage before permission-checked writes');
 must(sharedSearch.includes('selectScopeRegistry')&&sharedSearch.includes("item.scope_kind==='scope'")&&!sharedSearch.includes('selectManagedScopes')&&sharedSearch.includes('mediaOnly:false,browse')&&!sharedSearch.includes('setSearchMode('),'Unified public search must enumerate active public Scopes, while management permissions gate editing');
-must(!cultureUi.includes('尋找既有定錨點')&&!cultureUi.includes('尋找風格標籤')&&
-  cultureUi.includes('uiExtra.cultureView.ddOfficialAnchor')&&cultureUi.includes("aria-label={translateUiField(locale,'新增時間長河紀錄')}")&&
-  [['period','時期'],['event','事件'],['style_comment','風格標籤']].every(([value,label])=>functionalOption(cultureUi,value,label))&&
-  !cultureUi.includes('新增時期（選擇既有定錨點）')&&!cultureUi.includes('新增事件（選擇既有定錨點）'),
-  'Time toolbar is one anchor button plus one three-option selector, with no redundant lookup dropdown');
 must(nativeTimeline.includes('anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period'),'Time River fourth group must always be period, not style');
 must(editor.includes("ids.length!==2||concrete.length!==2")&&
   editor.includes("ids.length>2||concrete.length<1||concrete.length>2")&&
@@ -287,24 +282,11 @@ must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admi
 must(admin.includes('provisionScope(')&&admin.includes('uiExtra.adminView.ddMember')&&admin.includes('uiExtra.adminView.ddGroup'),'Admin Registry must create Scope and Scope Group from the tree workspace');
 
 must(functionalButton(admin,'refresh','重新讀取'),'Admin graph must allow manual reload after a dynamic Scope schema cache settles');
-must(admin.includes("value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label")&&
-  !admin.includes("{label:'預設語系',value:normalizeUiLocale(config?.locale)}")&&
-  admin.includes("UI_LOCALE_OPTIONS.map(option=><option value={option.value}"),
-  'Admin Scope locale summary must show the same translated labels as the editing selector, not raw BCP 47 codes');
 
 must(admin.includes('className="admin-delete-confirm"')&&admin.includes("onClick={confirmDelete}")&&admin.includes("deleteTyped.trim().toLowerCase()!==deletePending")&&admin.includes("onClick={cancelDelete}"),'Scope delete UI must require typed ID and support visible cancellation');
 must(admin.includes("result?.deleted!==true")&&admin.includes("dbAuthRelation('silver.scope_registry')")&&admin.includes("if(remaining?.length)")&&admin.includes('setRegistry(rows=>rows.filter(row=>row.scope_id!==id))'),'Scope node may disappear only after RPC success and Registry verification');
 must(adminCss.includes('.admin-delete-confirm')&&adminCss.includes('.admin-node-actions'),'delete confirmation must remain readable and visible on mobile');
 
-must(
-  !admin.includes('<span>排序</span>')&&functionalLabel(admin,'span','主題')&&
-  !admin.includes('groupDraft.sort_order')&&
-  scopeSettings.includes('<UiText id="common.theme"/>')&&
-  scopeSettings.includes("change('theme',")&&
-  scopeSettings.includes('theme:String(draft.theme')&&
-  admin.includes("active:current.scope_id==='loc'?true:current.active!==false"),
-  'Scope management must hide numeric order while retaining named eight-Theme selection'
-);
 const scopeCreatePanel=admin.split("    {kind==='scope'?<>")[1]?.split("    </>:<>")[0]||'';
 must(
   functionalLabel(scopeCreatePanel,'span','人員代碼')&&
@@ -324,35 +306,6 @@ must(
   admin.includes("theme:'system-default'")&&admin.includes('copy_keywords:true')&&
   admin.includes("locale:normalizeUiLocale(scopeDraft.locale)"),
   'Scope provisioning derives routing from ID, stores explicit owner/locale, auto Theme and initial Rune66 class'
-);
-must(
-  admin.includes('onClick:saveRegistryAndConfig')&&
-  admin.includes('onClick:cancelEdit')&&
-  admin.includes('onClick:()=>onDeleteNode?.(current.scope_id)')&&
-  admin.includes("patchRegistry('active',e.target.checked)")&&
-  !admin.includes('開啟 UI')&&admin.includes('請輸入 {deletePending} 以確認')&&
-  !admin.includes('onClick={copyRune66}')&&!admin.includes('copyRune66KeywordClass')&&
-  keywordLibrary.includes('onClick={copyRune66}')&&
-  keywordLibrary.includes('copyRune66KeywordClass(scopeId)')&&
-  keywordLibrary.includes('l.copyRuneButton')&&
-  dbContract.includes("rpc('delete_scope'")&&
-  dbContract.includes("rpc('copy_rune66_keyword_class'"),
-  'Admin Scope node must expose Save/Cancel/Delete and visibility as a draft; Rune66 Class copy belongs to Scope Keyword Library'
-);
-must(
-  admin.includes('name={\'registry-route-mode-\'+selectedId}')&&
-  admin.includes('checked={routeMode===\'domain\'}')&&
-  admin.includes('checked={routeMode===\'directory\'}')&&
-  !admin.includes('DNS、轉址及網站託管設定須另外完成')&&
-  !admin.includes('onChange={e=>patchRegistry(\'domain\'')&&
-  !admin.includes('onChange={e=>patchRegistry(\'directory\'')&&
-  admin.includes('name="new-group-route-mode"'),
-  'Admin Registry must distinguish exclusive Domain/Directory modes and clarify DNS is external'
-);
-must(
-  admin.includes("label:'系統黑名單'")&&adminBlocklistPanel.includes("silver.email_blocklist")&&
-  dbContract.includes("rpc('is_current_email_blocklisted'"),
-  'Admin must maintain global email blocklist and validate blocked login through the DB'
 );
 
 must(

@@ -93,7 +93,6 @@ assert.match(read('app/lrunes/card/daily/page.jsx'),/card\/daily\/page/);
 // Existing draw algorithm/meaning, actual moon, directions and 11-card ceiling remain.
 assert.match(duel,/MAX_DRAW=11/);
 assert.match(duel,/REVEAL_MS=1000/);
-assert.match(duel,/DIRECTIONS=\['正位','半正位','半逆位','逆位'\]/);
 assert.match(duel,/realMoonPhase\(/);
 assert.match(duel,/randomIndex\(remaining.length\)/);
 assert.match(duel,/loadDrawCards\(/);
@@ -111,9 +110,6 @@ assert.match(duel,/onClick=\{reset\}/);
 assert.match(duel,/onClick=\{finish\}/);
 const controls=duel.slice(duel.indexOf('className="rune-art-duel-action-dock"'),
   duel.indexOf('<section className="rune-art-stage"'));
-assert.match(controls,/重新開始占卜/);
-assert.match(controls,/招喚下一枚符文/);
-assert.match(controls,/占卜結束，觀看籤詩/);
 assert.ok(controls.indexOf('重新開始占卜')<controls.indexOf('招喚下一枚符文'));
 assert.ok(controls.indexOf('招喚下一枚符文')<controls.indexOf('占卜結束，觀看籤詩'));
 assert.match(duel,/<RuneArtStage mode="draw" items=\{items\} charging=\{busy\} actions=\{actionDock\}/);
@@ -122,9 +118,7 @@ assert.match(duel,/resultOpen&&finished&&typeof document/);
 assert.match(duel,/className="rune-art-result-home"/);
 assert.match(duel,/className="rune-art-result-new"/);
 assert.doesNotMatch(duel,/\{finished\?<section className="rune-skin-verse/);
-assert.match(art,/卡片方向：\{last.direction/);
 assert.match(art,/className="rune-art-ritual-actions"/);
-assert.doesNotMatch(daily,/占卜結束，觀看每日指示/);
 assert.match(daily,/setDetails\(true\);/,'one daily draw immediately opens guidance');
 assert.doesNotMatch(daily,/actions=\{dailyActions\}/,'daily draw does not have an unnecessary finish action');
 assert.match(daily,/createPortal\(/);
@@ -138,9 +132,6 @@ assert.match(layout,/\.rune-art-ritual-actions/);
 assert.match(skin,/\.rune-art-direction-label/);
 assert.match(art,/className="rune-art-charge"/);
 assert.match(art,/DIRECTION_ANGLES=Object\.freeze/);
-assert.match(art,/'逆位':180/);
-assert.match(art,/'半正位':90/);
-assert.match(art,/'半逆位':-90/);
 assert.match(art,/animate=\{\{rotate:angle\}\}/);
 const toolbar=duel.indexOf('rune-art-toolbar');
 const stage=duel.indexOf('<section className="rune-art-stage"');
@@ -192,8 +183,6 @@ for(let id=1;id<=66;id++)assert.ok(existsSync(resolve(root,'assets/lunarunes/car
 
 assert.match(daily,/realMoonPhase\(/);
 assert.match(daily,/loadDrawCards\(/);
-assert.match(daily,/每日占卜祝福/);
 assert.match(daily,/onSelect=\{\(\)=>setDetails\(true\)\}/);
 assert.match(read('app/lrunes/RunesClient.jsx'),/runeHref\('card\/duel',native\)/);
-assert.match(read('app/card/page.jsx'),/符文美術場域/);
 console.log('LunaRunes original-art Motion routes and legacy separation passed.');

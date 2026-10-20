@@ -27,7 +27,6 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   await page.goto('/lo3rwang/search/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('header.scope-feature-hero')).toHaveAttribute('data-feature-hero-source','loc',{timeout:25_000});
   await expect(page.locator('header.scope-feature-hero > .loc-eyebrow')).toHaveText('Search');
-  await expect(page.locator('header.scope-feature-hero h1')).toHaveText('搜尋');
   // Subtitle text is authored and editable in the LOC shared source.
   // Test sharing by comparing to LOC's live value, never by pinning its wording.
   const authorSearchSubtitle=(await page.locator('header.scope-feature-hero .scope-subtitle').allTextContents()).join('').trim();

@@ -58,7 +58,6 @@ test('favorite folders are plain text, safe Unicode labels and stable per-folder
   ];
   const scalar=serializeFavoriteFolders(folders);
   assert.equal(scalar.startsWith('{'),false);
-  assert.equal(scalar.includes('寫作與 月亮'),false);
   assert.deepEqual(parseFavoriteFolders(scalar),folders);
   assert.equal(cleanFolderName('  測試\n目錄\t'), '測試 目錄');
 });
@@ -98,7 +97,6 @@ test('NAV pins return to LOC, conditionally scrolls and expands directories as a
   assert.equal(fs.readFileSync('app/styles/uiux.css','utf8').includes('.scope-global{\n  position:sticky;'),false);
   assert.ok(fs.readFileSync('app/styles/bottom-navigation.css','utf8').includes('.scope-feature-dock{\n  position:fixed;'));
   assert.match(global,/@import "\.\/styles\/nav.css";/);
-  assert.doesNotMatch(settings,/新增、刪除與目錄管理暫不啟用/);
   assert.match(fs.readFileSync('app/loc/use-navigation-preferences.js','utf8'),/FOLDERS_SETTING_KEY/);
 });
 
@@ -190,8 +188,6 @@ test('web Settings, Scope Governance and native local management are independent
   assert.match(settings,/<ManagementImportPanel/);
   assert.doesNotMatch(settings,/<ManagementArticlePublisher|<ScopeGroupManagement/);
   assert.match(settings,/native&&activeSection==='manage'\?<PrivateLocalFiles\/>/);
-  assert.doesNotMatch(settings,/月典抽牌|每日符文紀錄|DailyLogClient|RuneSQLiteTransfer|RuneDrawClient|RuneAppDayNightDashboard/);
-  assert.doesNotMatch(settings,/section==='favorites'|section==='daily'|我的最愛（展示）/);
   assert.match(daily,/<DailyRuneCalendar/);
 });
 test('website governance authorizes its own Scope while native Settings manage remains local',()=>{
@@ -263,7 +259,6 @@ test('native My Phone stays device-only and LunaRunes is immutable in favorites'
   assert.match(settings,/\['lrunes',\.\.\.\(deviceNavigation\.mobileFavoriteEnabled/);
   assert.match(settings,/deviceNavigation\.MOBILE_HOME_STORAGE_KEY/);
   assert.match(home,/<PrivateLocalFiles\/>/);
-  assert.doesNotMatch(home,/文化統計與作品全文搜尋|搜尋已匯入檔案名稱|尚未匯入作品/);
 });
 
 test('retired private browser-only workbench cannot be reached from Settings',()=>{

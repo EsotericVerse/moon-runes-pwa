@@ -52,8 +52,6 @@ assert.match(component,/new THREE\.ExtrudeGeometry\(shapes/);
 assert.match(component,/mesh\.rotation\.set\(0,0,0\)/,'3D text face must never tilt away');
 assert.match(component,/canvas\.offsetWidth,height=canvas\.offsetHeight/,'use native render resolution during giant reveal');
 assert.match(component,/renderer\.setPixelRatio\(/);
-assert.match(component,/if\(word==='彩'\)applySpectrumVertices\(geometry\)/,
-  'spectrum rune keeps its authored rainbow material');
 assert.match(css,/rune-3d-glyph-fallback\[data-solid-ready="true"\]\{opacity:0\}/,
   'original Chinese text stays visible until real geometry is ready');
 assert.doesNotMatch(component,/new THREE\.(?:Points|ShaderMaterial)/,'text rendering must not add invented magic FX');

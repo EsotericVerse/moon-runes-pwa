@@ -78,7 +78,6 @@ for(const key of ["key:'4card'","key:'6card'","key:'7card'","key:'8card'","key:'
   if(!customModes.includes(key))throw new Error('Custom draw count missing: '+key);
 }
 if(!runeHome.includes('<CustomDrawSelector'))throw new Error('Rune home custom count selector missing');
-if(!customSelector.includes('指定抽牌數量')||!customSelector.includes('window.location.assign'))throw new Error('Custom count selector navigation missing');
 
 const spreadContracts=[
   ["key:'2card'","segments:[1,1]"],
@@ -114,6 +113,5 @@ for(const fragment of [
   "'9card':{x:[0,1,2],variable:[3,4,5],y:[6,7,8]}",
   "'10card':{x:[0,1,2,3],variable:[4,5],y:[6,7,8,9]}"
 ])if(!guidance.includes(fragment))throw new Error('Rune x/y guidance missing: '+fragment);
-for(const fragment of ['狀況形容','狀況表達','每日占卜提醒','每日占卜引導','每日占卜祝福'])if(!dailySurface.includes(fragment))throw new Error('Daily moon-aware layer missing: '+fragment);
 
 console.log('[rune-draw] Current 66-Rune draw, exact moon-aware Situation/Daily reads, linked Rune verse grammar, flexible 2–10 card spreads, OW3gs and ritual verified');

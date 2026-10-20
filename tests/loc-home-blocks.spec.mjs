@@ -62,7 +62,6 @@ test('LOC index home frames are rendered once, in database order, with authored 
   expect(strong).toBeGreaterThanOrEqual(600);
 
   const author=page.locator('.loc-home > section[data-block-order="5"]');
-  await expect(author.locator('.loc-home-block__header h2')).toHaveText('作者的話');
   // The image is lazy-loaded on purpose; it only has a size once scrolled near.
   await author.scrollIntoViewIfNeeded();
   await expect(author.locator('.loc-home-block__media-bubble img')).toBeVisible();

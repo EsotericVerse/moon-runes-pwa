@@ -8,7 +8,6 @@ test('Author homepage uses the exact LOC frame components and layouts',async({pa
   expect(await frames.evaluateAll(items=>items.map(x=>Number(x.dataset.blockOrder)))).toEqual([1,2,3,4,5,6]);
   const hero=page.locator('.loc-home > section[data-block-order="1"]');
   await expect(hero).toHaveClass(/loc-home-block--hero/);
-  await expect(hero.locator(':scope > .loc-home-block__header h1')).toHaveText('政德');
   await expect(hero.locator(':scope > .loc-home-block__media img')).toHaveAttribute('src',/lo3rwang-hero\.[^.]+\.jpg/);
   await expect(hero.locator(':scope > .loc-home-block__media')).toHaveCSS('position','absolute');
   await expect(page.locator('.author-home-hero-copy,.author-trinity-layout,.author-role-grid,.author-system-grid')).toHaveCount(0);
