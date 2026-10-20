@@ -54,6 +54,29 @@ export function loadUiLocale(locale){
   return pending[value];
 }
 
+// Strings that belong to one lazily loaded feature (keyword library, private
+// files, timeline editor, item confluence, daily-rune analytics). They live in
+// features.<language>.json and are only imported by those features' own
+// chunks, never by the page shell.
+const FEATURE_LOADERS={
+  'zh-Hans':()=>import('./features.zh_cn.json',{with:{type:'json'}}),
+  en:()=>import('./features.en.json',{with:{type:'json'}}),
+  ja:()=>import('./features.ja.json',{with:{type:'json'}})
+};
+const featureCopy={};
+const featurePending={};
+export function isFeatureCopyLoaded(locale){return Boolean(featureCopy[locale]);}
+export function loadFeatureCopy(locale){
+  const value=String(locale||'').trim();
+  if(featureCopy[value]||!Object.hasOwn(FEATURE_LOADERS,value))return Promise.resolve(featureCopy[value]||null);
+  featurePending[value]??=FEATURE_LOADERS[value]().then(mod=>(featureCopy[value]=mod.default));
+  return featurePending[value];
+}
+// defaults = the Traditional Chinese section, imported by the calling feature.
+export function featureSection(locale,section,defaults){
+  return featureCopy[locale]?.[section]||defaults;
+}
+
 export function normalizeUiLocale(locale){
   const value=String(locale||'').trim();
   return Object.hasOwn(LOADERS,value)||value===UI_LOCALE?value:UI_LOCALE;

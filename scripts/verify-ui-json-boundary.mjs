@@ -7,7 +7,8 @@ import {readFileSync} from 'node:fs';
 const root=new URL('../',import.meta.url);
 const read=path=>readFileSync(new URL(path,root),'utf8');
 const locales=['zh_tw','zh_cn','en','ja'];
-const dictionaries=Object.fromEntries(locales.map(locale=>[locale,JSON.parse(read('app/i18n/'+locale+'.json'))]));
+// Feature-only strings live in features.<language>.json (loaded by those features); check them as part of the same dictionary.
+const dictionaries=Object.fromEntries(locales.map(locale=>[locale,{...JSON.parse(read('app/i18n/'+locale+'.json')),...JSON.parse(read('app/i18n/features.'+locale+'.json'))}]));
 const zh=dictionaries.zh_tw;
 function keysOf(node,prefix=''){
   return Object.entries(node||{}).flatMap(([key,value])=>{

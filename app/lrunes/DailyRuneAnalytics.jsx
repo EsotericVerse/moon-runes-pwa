@@ -2,7 +2,8 @@
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useUiCopy} from '../i18n/ui-locale';
+import {useFeatureCopy} from '../i18n/ui-locale';
+import featureZh from '../i18n/features.zh_tw.json' with {type:'json'};
 import {useQuery} from '@tanstack/react-query';
 import {
   Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,LineChart,
@@ -71,7 +72,7 @@ function useDailyRuneWindow(mode,customFrom,customTo){
   return {range,query,draws};
 }
 function RangeControls({mode,setMode,from,setFrom,to,setTo}){
-  const text=useUiCopy().dailyRune;
+  const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   return <div className="scope-stat-controls">
     <label><span>{text.range}</span>
       <select className="scope-select" value={mode} onChange={event=>setMode(event.target.value)}>
@@ -97,7 +98,7 @@ function nextDay(date){return offsetDate(date,{days:1});}
 function riverLabel(row){return String(row?.display_label||'');}
 
 export function LrunesDailyCulturePanel(){
-  const text=useUiCopy().dailyRune;
+  const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   const [mode,setMode]=useState('1y');
   const [from,setFrom]=useState('');
   const [to,setTo]=useState('');
@@ -142,7 +143,7 @@ export function LrunesDailyCulturePanel(){
 }
 
 export function LrunesDailyStatisticsPanel(){
-  const text=useUiCopy().dailyRune;
+  const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   const [zoomLevel,setZoomLevel]=useState(0);
   const today=useMemo(()=>todayInTaipei(),[]);
   const earliest=useQuery({

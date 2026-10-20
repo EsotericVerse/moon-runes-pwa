@@ -1,7 +1,7 @@
 'use client';
 
 import {createContext,useContext,useEffect,useMemo,useState} from 'react';
-import {isUiLocaleLoaded,loadUiLocale,normalizeUiLocale,uiCopy,UI_LOCALE} from './ui-copy';
+import {featureSection,isFeatureCopyLoaded,isUiLocaleLoaded,loadFeatureCopy,loadUiLocale,normalizeUiLocale,uiCopy,UI_LOCALE} from './ui-copy';
 
 const UiLocaleContext=createContext(Object.freeze({
   locale:UI_LOCALE,
@@ -35,4 +35,18 @@ export function useUiLocale(){
 
 export function useUiCopy(){
   return useUiLocale().copy;
+}
+
+// Copy for one lazily loaded feature. `defaults` is that feature's own
+// Traditional Chinese section; other languages are fetched on demand.
+export function useFeatureCopy(section,defaults){
+  const {locale}=useUiLocale();
+  const [,refresh]=useState(0);
+  useEffect(()=>{
+    if(isFeatureCopyLoaded(locale))return undefined;
+    let active=true;
+    loadFeatureCopy(locale).then(()=>{if(active)refresh(n=>n+1);});
+    return ()=>{active=false;};
+  },[locale]);
+  return featureSection(locale,section,defaults);
 }

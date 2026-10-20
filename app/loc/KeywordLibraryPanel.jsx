@@ -1,7 +1,8 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
+import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
+import featureZh from '../i18n/features.zh_tw.json' with {type:'json'};
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
@@ -58,7 +59,7 @@ function formatStaticTime(value,l,locale){
 }
 
 export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
-  const l=useUiCopy().keywordPanel;
+  const l=useFeatureCopy('keywordPanel',featureZh.keywordPanel);
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
   const account=useAccount();

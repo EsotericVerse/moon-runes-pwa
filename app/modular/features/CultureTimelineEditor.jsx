@@ -1,5 +1,6 @@
 'use client';
-import {useUiCopy} from '../../i18n/ui-locale';
+import {useFeatureCopy,useUiCopy} from '../../i18n/ui-locale';
+import featureZh from '../../i18n/features.zh_tw.json' with {type:'json'};
 
 
 
@@ -51,7 +52,7 @@ function rowSortDate(row,anchors){
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
   const copy=useUiCopy();
-  const l=copy.timelineEditor;
+  const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
   const account=useAccount();
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
