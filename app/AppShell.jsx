@@ -209,10 +209,16 @@ function NavTarget({href,label,current=false,native=false}){
   return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<ScopeLink href={href} native={native}>{label}</ScopeLink>;
 }
 
+// The provider must sit ABOVE the component that calls useAppBootstrap, so it
+// lives in this thin wrapper (a hook cannot read a provider rendered by itself).
 export default function AppShell({children}){
   const [client]=useState(()=>new QueryClient({
     defaultOptions:{queries:{staleTime:30_000,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
   }));
+  return <QueryClientProvider client={client}><AppShellInner>{children}</AppShellInner></QueryClientProvider>;
+}
+
+function AppShellInner({children}){
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
@@ -330,7 +336,7 @@ export default function AppShell({children}){
   },[native,nativeHomepage,pathname,preferences.loading,preferences.account,registryLoaded,registryScopes]);
 
 
-  return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
+  return <UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name} pageName={pageName}/>
     <ScrollProgress/>
     <header className="scope-global" data-native={native?'ios':'web'}>
@@ -384,5 +390,5 @@ export default function AppShell({children}){
       </div>
       <DataSourceStatus/>
     </footer>
-  </UiLocaleProvider></QueryClientProvider>;
+  </UiLocaleProvider>;
 }
