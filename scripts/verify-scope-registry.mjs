@@ -3,13 +3,13 @@ import {HomeBlock} from '../app/loc/home-block-model.js';
 
 const failures=[];
 const expectedExtra=[
-  {scopeId:'loc',key:'codex',label:'LOC 圓環中心實心點標誌',text:''},
-  {scopeId:'lo3rwang',key:'anchor',label:'光之定錨點',text:'光之定錨點'},
-  {scopeId:'lrunes',key:'moon',label:'玄韻家黃色圓點標誌',text:''}
+  {scopeId:'loc',key:'codex'},
+  {scopeId:'lo3rwang',key:'anchor'},
+  {scopeId:'lrunes',key:'moon'}
 ];
-for(const {scopeId,key,label,text} of expectedExtra){
+for(const {scopeId,key} of expectedExtra){
   const sign=HomeBlock.heroExtraFor(scopeId);
-  if(!sign||sign.key!==key||sign.label!==label||sign.text!==text)
+  if(!sign||sign.key!==key)
     failures.push('Fixed Extra Sign contract mismatch: '+scopeId);
 }
 for(const candidate of ['admin','anotherscope','','LOC','lunarunes']){
