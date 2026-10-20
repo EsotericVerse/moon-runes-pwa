@@ -7,6 +7,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {useAccount} from '../../loc/use-account';
 import {navigationHref} from '../scope-registry';
 import useNativeNavigation from '../use-native-navigation';
+import ScopeLink from '../ScopeLink';
 
 // Governance pages share one Scope block capability. The optional editor is
 // fetched only when a governance route actually renders its blocks.
@@ -22,7 +23,7 @@ function GovernanceBlocks({scopeId,account,native}){
   const canManage=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <a className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)}>治理管理</a>
+      <ScopeLink className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)} native={native}>治理管理</ScopeLink>
     </nav>:null}
     <ScopeEditableBlocks
       scopeId={scopeId}

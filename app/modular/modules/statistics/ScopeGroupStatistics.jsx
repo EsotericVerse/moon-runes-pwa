@@ -7,6 +7,7 @@ import {useUiCopy} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
 import {defaultScopeData} from '../../../loc/scope-data';
 import {featureNavigationHref} from '../../feature-navigation';
+import ScopeLink from '../../ScopeLink';
 import {featureDataErrorMessage} from '../../feature-data-state';
 import {availableStatisticChartTypes,statisticsZoomWindow} from './statistics-time-zoom.mjs';
 import StatisticsChartFrame from './StatisticsChartFrame';
@@ -141,7 +142,7 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
     </div>
 
     <div className="scope-result-links">
-      {scopeIds.map(id=><a key={id} href={featureNavigationHref(id,'statics')}>{id} · {t('uiExtra.statisticsView.viewMemberStat')}</a>)}
+      {scopeIds.map(id=><ScopeLink key={id} href={featureNavigationHref(id,'statics')}>{id} · {t('uiExtra.statisticsView.viewMemberStat')}</ScopeLink>)}
     </div>
 
     </>}</StatisticsDetails>

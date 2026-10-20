@@ -6,6 +6,7 @@ import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {FeaturePage} from '../ui';
+import ScopeLink from '../ScopeLink';
 
 const KeywordLibraryPanel=dynamic(()=>import('../../loc/KeywordLibraryPanel'),{
   loading:()=> <p className="scope-status"><UiText id="uiExtra.keywords.settingsLoading"/></p>
@@ -19,7 +20,7 @@ export default function KeywordSettings(){
     <section className="loc-card scope-feature-card">
       <h2><UiText id="uiExtra.keywords.settingsTitle"/></h2>
       <p className="scope-status"><UiText id="uiExtra.keywords.settingsGuide"/></p>
-      <a className="loc-button" href={scopeHref(scopeId,'statics')}><UiText id="uiExtra.keywords.backToStatistics"/></a>
+      <ScopeLink className="loc-button" href={scopeHref(scopeId,'statics')}><UiText id="uiExtra.keywords.backToStatistics"/></ScopeLink>
     </section>
     {account.loading||account.permissionLoading
       ?<p className="scope-status"><UiText id="uiExtra.keywords.verifyingAccess"/></p>

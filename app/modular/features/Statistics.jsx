@@ -23,6 +23,7 @@ import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
 import {scopeHref} from '../scope-registry';
+import ScopeLink from '../ScopeLink';
 const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyStatisticsPanel),{loading:()=>null});
 import {STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/statistics-time-zoom.mjs';
 const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
@@ -391,9 +392,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
 function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,canManageSources=false}){
   return <>
     {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
-      <a className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
+      <ScopeLink className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
         <UiText id="uiExtra.statisticsView.keywordSettings"/>
-      </a>
+      </ScopeLink>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
   </>;

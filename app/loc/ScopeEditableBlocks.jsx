@@ -3,8 +3,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery} from '@tanstack/react-query';
-import {selectScopeBlocks} from './scope-data';
+import {useAppBootstrap} from './app-bootstrap';
 import {useAccount} from './use-account';
 // Read-only home blocks must not eagerly import editor UI or BlockNote.
 const ScopeBlockEditorSession=dynamic(()=>import('./ScopeBlockEditorSession'),{loading:()=>null});
@@ -59,11 +58,11 @@ export default function ScopeEditableBlocks({
   const t=useUiText();
   const account=useAccount();
   const pageName=pageNameOf(page);
-  const query=useQuery({
-    queryKey:['scope-blocks',scopeId,pageName],
-    queryFn:()=>selectScopeBlocks(scopeId,pageName),
-    staleTime:60_000
-  });
+  // Same (scopeId, pageName) request AppShell already makes for this route's
+  // Registry/NAV/Theme bootstrap. React Query serves this from that one call
+  // instead of this component re-querying the blocks on its own.
+  const bootstrap=useAppBootstrap(scopeId,pageName);
+  const blocks=bootstrap.data?.blocks;
   const canEdit=allowEditing&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
@@ -73,7 +72,7 @@ export default function ScopeEditableBlocks({
   const [message,setMessage]=useState('');
 
   const slots=useMemo(()=>{
-    const rows=Array.isArray(query.data)?query.data:[];
+    const rows=Array.isArray(blocks)?blocks:[];
     if(normalizedOrders.length){
       const byOrder=new Map(rows.map(row=>[Number(row.block_order),row]));
       return normalizedOrders.map(order=>normalizeRow(byOrder.get(order),order));
@@ -99,11 +98,11 @@ export default function ScopeEditableBlocks({
       displayed.sort((a,b)=>a.order-b.order);
     }
     return displayed;
-  },[query.data,normalizedOrders,maxBlocks,pageName,editingSlot,placeholderFirstOrder]);
+  },[blocks,normalizedOrders,maxBlocks,pageName,editingSlot,placeholderFirstOrder]);
   const nextOrder=useMemo(()=>{
-    const rows=Array.isArray(query.data)?query.data:[];
+    const rows=Array.isArray(blocks)?blocks:[];
     return Math.max(0,...rows.map(row=>Number(row.block_order)||0))+1;
-  },[query.data]);
+  },[blocks]);
 
 
   function begin(slot){

@@ -5,6 +5,7 @@ import {Fragment} from 'react';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiText} from '../i18n/UiText';
 import {blocksToPlainText,looksLikeMarkdown,normalizeBlocks,plainTextToBlocks} from './blocknote-content.mjs';
+import ScopeLink from '../modular/ScopeLink';
 
 // BlockNote itself is browser-only; keep this as the single public editor entrypoint.
 const BlockNoteCanvas=dynamic(()=>import('./BlockNoteEditorClient'),{
@@ -137,7 +138,7 @@ export function ObjectEditor({
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>
               :<input aria-label={key} type={kind==='date'?'datetime-local':kind==='number'?'number':'text'}
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>}
-            {key==='media_link'&&mediaHref?String(current||'').split(/[\n,]+/).map(id=>id.trim()).filter(Boolean).map(id=><a key={id} href={mediaHref(id)} className="scope-search-media-edit-link">{t('uiExtra.searchUI.editMedia',{id})}</a>):null}
+            {key==='media_link'&&mediaHref?String(current||'').split(/[\n,]+/).map(id=>id.trim()).filter(Boolean).map(id=><ScopeLink key={id} href={mediaHref(id)} className="scope-search-media-edit-link">{t('uiExtra.searchUI.editMedia',{id})}</ScopeLink>):null}
           </label>;
         })}
       </div>

@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import ScopeLink from '../ScopeLink';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
@@ -745,7 +746,7 @@ export default function Culture(){
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
                 <div className='scope-result-links'>
-                  {locIntersectionScopeIds.map(id=><a key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</a>)}
+                  {locIntersectionScopeIds.map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
                 </div>
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>

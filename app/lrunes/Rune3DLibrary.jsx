@@ -11,6 +11,7 @@ import {RUNE_GLYPH_STYLES,runeGlyphProfile} from './effekseer/rune-glyph-library
 import {groupImage,runeImage,runeName} from './rune-directory.mjs';
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
+import ScopeLink from '../modular/ScopeLink';
 import './skin-lab.css';
 import './visual/rune-art-layout.css';
 import './effekseer/effekseer-stage.css';
@@ -239,9 +240,9 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
 
     <footer className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="符文圖鑑導覽">
-        <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)}>符文抽牌</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card/daily',native)}>每日符文</a>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','',native)} native={native}>回符文首頁</ScopeLink>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)} native={native}>符文抽牌</ScopeLink>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','card/daily',native)} native={native}>每日符文</ScopeLink>
       </nav>
     </footer>
 

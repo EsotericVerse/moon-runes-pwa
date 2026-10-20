@@ -9,6 +9,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 import {resolveHomeImage} from './LocHomeBlockDisplay';
+import {appBootstrapKey} from './app-bootstrap';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -117,8 +118,8 @@ export default function ScopeBlockEditorSession({
       const {moveScopeBlock}=await import('./db-client.mjs');
       const result=await moveScopeBlock(scopeId,pageName,draft.uid,direction);
       setDraft(current=>current?.uid===draft.uid?{...current,order:Number(result.block_order)||current.order}:current);
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
-      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
+      await queryClient.invalidateQueries({queryKey:appBootstrapKey(scopeId,pageName)});
+      await queryClient.refetchQueries({queryKey:appBootstrapKey(scopeId,pageName),type:'active'});
       setMessage(t('uiExtra.editBlocks.moved'));
     }catch(error){
       setMessage(t('uiExtra.editBlocks.moveFailed',{error:String(error?.message||error)}));
@@ -162,8 +163,8 @@ export default function ScopeBlockEditorSession({
       }else{
         await insertRows(table,[{uid:draft.uid,...values}]);
       }
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
-      await queryClient.refetchQueries({queryKey:['scope-blocks',scopeId,pageName],type:'active'});
+      await queryClient.invalidateQueries({queryKey:appBootstrapKey(scopeId,pageName)});
+      await queryClient.refetchQueries({queryKey:appBootstrapKey(scopeId,pageName),type:'active'});
       onDone(t('uiExtra.editBlocks.saved'));
     }catch(error){
       setMessage(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
@@ -182,7 +183,7 @@ export default function ScopeBlockEditorSession({
     try{
       const {deleteRows}=await import('./db-client.mjs');
       await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
-      await queryClient.invalidateQueries({queryKey:['scope-blocks',scopeId,pageName]});
+      await queryClient.invalidateQueries({queryKey:appBootstrapKey(scopeId,pageName)});
       onDone(t('uiExtra.editBlocks.deleted'));
     }catch(error){
       setMessage(error?.message||t('uiExtra.editBlocks.deleteFailed'));

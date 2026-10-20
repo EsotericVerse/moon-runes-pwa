@@ -384,7 +384,7 @@ test('search reference section uses existing editable page=search BlockNote cont
   assert.ok(reader.includes('silver.${id}_blocks'));
   const editSession=fs.readFileSync(new URL('../app/loc/ScopeBlockEditorSession.jsx',import.meta.url),'utf8');
   assert.ok(editSession.includes('silver.${scopeId}_blocks'));
-  assert.ok(blocks.includes("['scope-blocks',scopeId,pageName]"),'Query caches must be isolated per Scope');
+  assert.ok(blocks.includes('useAppBootstrap(scopeId,pageName)'),'Query caches must be isolated per Scope');
   assert.ok(source.includes('className="scope-search-reference-grid"'));
   assert.ok(source.includes('slotClassName="loc-card scope-search-reference-block"'));
   assert.ok(source.includes('orders={[1]}'),'Search suggestions must use exactly one outer block');

@@ -10,6 +10,7 @@ import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/list-loading
 import {useScopeRuntime} from './use-scope-runtime';
 import {selectScopeBlocks} from '../loc/scope-data';
 import {HomeBlock} from '../loc/home-block-model';
+import ScopeLink from './ScopeLink';
 // Shared display stays light: mount the editor only on pages that need it.
 const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks'),{loading:()=>null});
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
@@ -169,13 +170,13 @@ export function WorkSummaryCard({
     {hidden?<p className="scope-status">{copy.work.hidden}</p>:null}
     {body?<p className="scope-culture-work-meta-description">{body}</p>:null}
     {safeRelations.length?<div className="scope-result-links scope-work-relations">
-      {safeRelations.map((link,index)=><a key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</a>)}
+      {safeRelations.map((link,index)=><ScopeLink key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</ScopeLink>)}
     </div>:null}
     {showLinks&&safeLinks.length?<div className="scope-result-links">
       {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||copy.format.link(index+1)}</a>)}
     </div>:null}
     {destinations?.length?<div className="scope-result-links">
-      {destinations.map(destination=><a key={destination.id||destination.href} href={destination.href}>{destination.label}</a>)}
+      {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
   </article>;

@@ -18,6 +18,7 @@ import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/scope-registry.js';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
+import ScopeLink from './modular/ScopeLink';
 
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
@@ -204,8 +205,8 @@ function ScrollProgress(){
     style={{transform:'scaleX(0)'}} aria-hidden="true"/>;
 }
 
-function NavTarget({href,label,current=false}){
-  return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
+function NavTarget({href,label,current=false,native=false}){
+  return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<ScopeLink href={href} native={native}>{label}</ScopeLink>;
 }
 
 export default function AppShell({children}){
@@ -337,25 +338,25 @@ export default function AppShell({children}){
         <ScrollableScopeNav label={translateUiField(activeLocale,'常用空間')} resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
           {favoriteLinks.map(item=>{
             const href=item.id===deviceNavigation.MOBILE_HOME_ID?deviceNavigation.mobileHomeHref(native):navigationHref(item.id,'',native);
-            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)} native={native}/>;
           })}
           {visibleFolders.map(folder=><button type="button" key={folder.id}
             className="scope-nav-folder" aria-expanded={openFolderId===folder.id}
             aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
             {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
           </button>)}
-          {!favoriteLinks.length&&!visibleFolders.length?<a href={native?'/settings/index.html':'/settings/'} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></a>:null}
+          {!favoriteLinks.length&&!visibleFolders.length?<ScopeLink href={native?'/settings/index.html':'/settings/'} native={native} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></ScopeLink>:null}
         </ScrollableScopeNav>
-        <a href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')}
+        <ScopeLink href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')} native={native}
           className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
           {copy.nav.home}
-        </a>
+        </ScopeLink>
       </nav>
       {openFolder?<div id="scope-nav-folder-contents" className="scope-nav-subrow" aria-label={openFolder.label+' '+translateUiField(activeLocale,'目錄')}>
         <ScrollableScopeNav label={openFolder.label+' '+translateUiField(activeLocale,'目錄內容')} resetKey={openFolder.id+'|'+openFolder.links.map(item=>item.id).join(',')}>
           {openFolder.links.map(item=>{
             const href=navigationHref(item.id,'',native);
-            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)} native={native}/>;
           })}
           {!openFolder.links.length?<span className="scope-nav-folder-empty"><FieldText text="目錄尚無入口"/></span>:null}
         </ScrollableScopeNav>
@@ -364,12 +365,12 @@ export default function AppShell({children}){
     </header>
     {children}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
-      {featureTabs.map(tab=><a key={tab.id} href={tab.href}
+      {featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
           !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>
         <BottomNavIcon name={tab.icon}/>
         <span>{tab.label}</span>
-      </a>)}
+      </ScopeLink>)}
     </nav>
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">

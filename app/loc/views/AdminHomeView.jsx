@@ -7,6 +7,7 @@ import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
+import ScopeLink from '../../modular/ScopeLink';
 import {THEME_SLOTS} from '../../modular/theme-registry';
 import {useAccount} from '../use-account';
 // Registry editing and source catalogs are independent admin capabilities.
@@ -42,7 +43,7 @@ function Login({account}){
   return <section className="loc-view">
     <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.loginTitle}</h1></header>
     <section className="loc-card">
-      <a className="loc-button primary" href="/settings/">前往設定登入</a>
+      <ScopeLink className="loc-button primary" href="/settings/">前往設定登入</ScopeLink>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </section>;
@@ -727,11 +728,11 @@ export default function AdminHomeView(){
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
-  if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><a href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></a></section></section>;
+  if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></section>;
 
   return <section className="loc-view scope-management-page">
     <header className="loc-hero loc-hero-context admin-hero">
-      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><a className="loc-button" href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></a></div>
+      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><ScopeLink className="loc-button" href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></div>
       <div className="admin-main-select">
         <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label={translateUiField(locale,'Admin 管理功能')}>{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select>
       </div>

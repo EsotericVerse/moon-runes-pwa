@@ -6,6 +6,7 @@ import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
+import ScopeLink from '../../modular/ScopeLink';
 import {randomIndex,loadDrawCards,buildFixedReading} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import {RUNE_ALL_DRAW_MODES} from '../rune-draw-modes.mjs';
@@ -62,7 +63,7 @@ function RuneDrawCardDialog({item,onClose}){
     </section>
   </div>;
 }
-function RuneDrawResultDialog({items,reading,homeHref,onRestart,onClose}){
+function RuneDrawResultDialog({items,reading,homeHref,homeHrefNative=false,onRestart,onClose}){
   useEffect(()=>{
     const closeOnEscape=event=>{if(event.key==='Escape')onClose();};
     window.addEventListener('keydown',closeOnEscape);
@@ -78,7 +79,7 @@ function RuneDrawResultDialog({items,reading,homeHref,onRestart,onClose}){
           <h2>本次占卜籤詩</h2>
         </div>
         <div className="rune-art-result-actions">
-          <a className="rune-art-result-home" href={homeHref}>回到首頁</a>
+          <ScopeLink className="rune-art-result-home" href={homeHref} native={homeHrefNative}>回到首頁</ScopeLink>
           <button type="button" className="rune-art-result-new" onClick={onRestart}>開始新抽牌</button>
           <button type="button" className="rune-art-result-close" onClick={onClose}
             aria-label="關閉占卜結果">×</button>
@@ -194,11 +195,11 @@ export default function RuneRitualLab({presentationSwitcher=null}){
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-art-footer">
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
-        <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
-        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 符文展示首頁</a>
-        <a href={navigationHref('lrunes','card/list',native)} className="rune-skin-btn">切換指定圖鑑</a>
-        <a href={navigationHref('lrunes','card/daily',native)} className="rune-skin-btn">每日符文</a>
-        <a href={navigationHref('lrunes','duel/one',native)} className="rune-skin-btn">舊版抽牌</a>
+        <ScopeLink href={navigationHref('lrunes','',native)} native={native} className="rune-skin-btn">回符文首頁</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','card',native)} native={native} className="rune-skin-btn">← 符文展示首頁</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','card/list',native)} native={native} className="rune-skin-btn">切換指定圖鑑</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','card/daily',native)} native={native} className="rune-skin-btn">每日符文</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','duel/one',native)} native={native} className="rune-skin-btn">舊版抽牌</ScopeLink>
       </nav>
     </div>
     <details className="rune-art-draw-guide" aria-label="占卜張數說明">
@@ -222,6 +223,7 @@ export default function RuneRitualLab({presentationSwitcher=null}){
     {resultOpen&&finished&&typeof document!=='undefined'?createPortal(
       <RuneDrawResultDialog items={items} reading={reading}
         homeHref={navigationHref('lrunes','card',native)}
+        homeHrefNative={native}
         onRestart={reset} onClose={()=>setResultOpen(false)}/>,document.body
     ):null}
     </div>
