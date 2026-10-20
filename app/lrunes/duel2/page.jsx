@@ -1,1 +1,1 @@
-export {metadata,default} from '../../duel2/page';
+export {metadata,default} from '../../card/duel2/page';

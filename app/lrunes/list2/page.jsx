@@ -1,1 +1,1 @@
-export {metadata,default} from '../../list2/page';
+export {metadata,default} from '../../card/list2/page';
