@@ -1,6 +1,10 @@
 'use client';
 import FieldText from '../i18n/FieldText';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import featureZh from '../i18n/sections/uiExtra.feature.zh_tw.js';
+registerDefaultSection('uiExtra.feature',featureZh);
 
 import dynamic from 'next/dynamic';
 import {Suspense,useEffect} from 'react';
@@ -81,6 +85,7 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
 }
 
 export default function LocApp({forcedView='home',forcedSection=null,forcedScope=null}){
+  useUiSection('uiExtra.feature');
   const t=useUiText();
   const runtime=useScopeRuntime();
   const scopeId=forcedScope||runtime.scopeId;

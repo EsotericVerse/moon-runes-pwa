@@ -3,9 +3,13 @@
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
-import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
-import {UiLocaleProvider,useLoadedUiLocale,useUiLocale} from './i18n/ui-locale';
+import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
+import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
+import fieldsZh from './i18n/sections/fields.zh_tw.js';
+import dataSourceStatusZh from './i18n/sections/uiExtra.dataSourceStatus.zh_tw.js';
+registerDefaultSection('fields',fieldsZh);
+registerDefaultSection('uiExtra.dataSourceStatus',dataSourceStatusZh);
 import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot} from './loc/theme-data';
@@ -32,13 +36,20 @@ const NAV_SCOPES=Object.values(SCOPES)
 
 function DataSourceStatus(){
   const {copy}=useUiLocale();
+  useUiSection('uiExtra.dataSourceStatus');
+  // Defensive optional chaining: for the three non-default locales this
+  // section is fetched async (useUiSection above), so a render that lands
+  // before it arrives must not crash — it falls back to an empty label
+  // rather than throwing on `undefined.x`. The default locale (zh-Hant)
+  // always has this section synchronously via registerDefaultSection.
+  const section=copy.uiExtra.dataSourceStatus||{};
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   const current=status.degraded
-    ?`${copy.uiExtra.dataSourceStatus.backup}（${status.backupLabel}）`
-    :`${copy.uiExtra.dataSourceStatus.primary}（${status.primaryLabel}）`;
+    ?`${section.backup||''}（${status.backupLabel}）`
+    :`${section.primary||''}（${status.primaryLabel}）`;
   return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')}>
     <details className="scope-data-source-details" open={status.degraded||undefined}>
-      <summary>{copy.uiExtra.dataSourceStatus.detailsTitle}</summary>
+      <summary>{section.detailsTitle}</summary>
       <div className="scope-data-source-values">
         <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
         <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
@@ -279,6 +290,18 @@ function AppShellInner({children}){
   const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
+  // AppShellInner establishes the UiLocaleProvider below rather than sitting
+  // inside one, so the normal useUiSection('fields') hook (which reads the
+  // locale from context) would only ever see the default locale here. This
+  // triggers the fetch for the actual active locale directly; translateUiField
+  // already falls back to the literal text while it's in flight, so nothing
+  // can crash either way — this only makes the real translation arrive.
+  useEffect(()=>{
+    if(isSectionLoaded(activeLocale,'fields'))return undefined;
+    let active=true;
+    loadSection(activeLocale,'fields').catch(()=>{});
+    return ()=>{active=false;};
+  },[activeLocale]);
   const navScopeId=currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 

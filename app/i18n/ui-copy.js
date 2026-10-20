@@ -125,6 +125,9 @@ const SECTION_LOADERS={
     'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.zh_cn.js'),
     'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.zh_cn.js'),
     'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.zh_cn.js'),
+    'fields':()=>import('./sections/fields.zh_cn.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.zh_cn.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.zh_cn.js'),
   },
   'en':{
     'search':()=>import('./sections/search.en.js'),
@@ -155,6 +158,9 @@ const SECTION_LOADERS={
     'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.en.js'),
     'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.en.js'),
     'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.en.js'),
+    'fields':()=>import('./sections/fields.en.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.en.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.en.js'),
   },
   'ja':{
     'search':()=>import('./sections/search.ja.js'),
@@ -185,6 +191,9 @@ const SECTION_LOADERS={
     'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.ja.js'),
     'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.ja.js'),
     'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.ja.js'),
+    'fields':()=>import('./sections/fields.ja.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.ja.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.ja.js'),
   },
 };
 
