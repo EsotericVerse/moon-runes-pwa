@@ -337,3 +337,7 @@ export const DB_QUERY_BATCH_SIZE=65535;
 export function queryBatchSize(){
   return DB_QUERY_BATCH_SIZE;
 }
+// Default page for whole-table reads (selectAllRows). Each request fetches one
+// real page instead of asking for the ceiling, so request cost stays proportional
+// to the data and matches the Supabase Data API's default 1000-row response cap.
+export const DB_PAGE_SIZE=1000;

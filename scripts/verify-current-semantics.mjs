@@ -390,7 +390,7 @@ if(!failures.length){
   const queryContract=read('app/loc/db-contract.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','export function queryBatchSize(){','return DB_QUERY_BATCH_SIZE;'])if(!queryContract.includes(token))failures.push('Universal 65535 database query ceiling missing '+token);
   if(queryContract.includes('DB_QUERY_TEXT_BATCH_SIZE')||queryContract.includes('LONG_TEXT_COLUMNS'))failures.push('Query limits must never depend on whether columns contain headings or body text');
-  if(!read('app/loc/db-query.mjs').includes('pageSize=DB_QUERY_BATCH_SIZE'))failures.push('All database bulk reads must use the shared 65535 ceiling unless the caller explicitly requests fewer rows');
+  if(!read('app/loc/db-query.mjs').includes('pageSize=DB_PAGE_SIZE')||!queryContract.includes('DB_PAGE_SIZE=1000'))failures.push('Whole-table reads must page by the shared DB_PAGE_SIZE, never by the 65535 ceiling');
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   for(const token of ['sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');

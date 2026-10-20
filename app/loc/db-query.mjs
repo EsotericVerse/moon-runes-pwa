@@ -1,7 +1,7 @@
 'use client';
 
-import {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
-export {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
+import {DB_PAGE_SIZE,DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
+export {DB_PAGE_SIZE,DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 
 import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
 import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
@@ -171,10 +171,10 @@ export async function selectAllRows(table,{
   filters=[],
   orFilter='',
   orders=[],
-  pageSize=DB_QUERY_BATCH_SIZE,
+  pageSize=DB_PAGE_SIZE,
   onProgress=null
 }={}){
-  const size=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
+  const size=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(pageSize)||DB_PAGE_SIZE)));
   const first=await selectRows(table,{columns,filters,orFilter,orders,limit:size,offset:0,count:'exact'});
   const rows=[...first.rows];
   const total=Number(first.count) || rows.length;
