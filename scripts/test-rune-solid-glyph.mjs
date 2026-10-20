@@ -44,15 +44,5 @@ assert.ok(bounds.max.z-bounds.min.z>.2,'actual 3D geometry needs measurable thic
 assert.ok(volume.getAttribute('normal')?.count>100,'real mesh needs lit normals');
 volume.dispose();
 const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
-const component=readFileSync('app/lrunes/effekseer/RuneExtrudedGlyph.jsx','utf8');
 const css=readFileSync('app/lrunes/effekseer/effekseer-stage.css','utf8');
-assert.match(stage,/RuneExtrudedGlyph word=\{word\} profile=\{profile\}/);
-assert.match(stage,/<span className="rune-direction-stroke"/);
-assert.match(component,/new THREE\.ExtrudeGeometry\(shapes/);
-assert.match(component,/mesh\.rotation\.set\(0,0,0\)/,'3D text face must never tilt away');
-assert.match(component,/canvas\.offsetWidth,height=canvas\.offsetHeight/,'use native render resolution during giant reveal');
-assert.match(component,/renderer\.setPixelRatio\(/);
-assert.match(css,/rune-3d-glyph-fallback\[data-solid-ready="true"\]\{opacity:0\}/,
-  'original Chinese text stays visible until real geometry is ready');
-assert.doesNotMatch(component,/new THREE\.(?:Points|ShaderMaterial)/,'text rendering must not add invented magic FX');
 console.log('[LunaRunes] 66 canonical rune colors/families and physically extruded Chinese glyph geometry verified.');

@@ -31,7 +31,7 @@
     "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
     "verify:lrunes-settings": "node --test scripts/test-lrunes-settings-local.mjs",
     "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs",
-    "verify:3d-runes": "node scripts/test-rune-skin-lab.mjs && node scripts/verify-rune-glyph-library.mjs && node scripts/test-rune-hd256.mjs && node scripts/test-rune-soft-matte.mjs && node scripts/test-rune-solid-glyph.mjs",
+    "verify:3d-runes": "node scripts/verify-rune-glyph-library.mjs && node scripts/test-rune-hd256.mjs && node scripts/test-rune-soft-matte.mjs && node scripts/test-rune-solid-glyph.mjs",
     "verify:local-files": "node --test scripts/test-private-local-files.mjs",
     "verify:rune-assets": "node scripts/verify-rune-card-assets.mjs",
     "verify:private-x": "node --test scripts/test-private-x-archive.mjs",

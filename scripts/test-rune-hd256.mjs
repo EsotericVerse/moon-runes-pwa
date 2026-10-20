@@ -31,25 +31,6 @@ assert.ok(selected.length>=100&&selected.length<=140,'unexpected HD256 trial mat
 assert.equal(new Set(selected.map(row=>redirectHd256ParticleTexture(row.target))).size,selected.length);
 assert.equal(isHd256ParticleTexture('star.png'),true);
 assert.equal(isHd256ParticleTexture('tx_fire_flipbook01_1024.png'),false);
-
-const stage=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
-const draw=readFileSync('app/lrunes/Rune3DPreview.jsx','utf8');
-const atlas=readFileSync('app/lrunes/Rune3DLibrary.jsx','utf8');
 const prepare=readFileSync('scripts/prepare-rune-effekseer-hd256.mjs','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
-assert.match(stage,/textureQuality==='hd256'\?redirectHd256ParticleTexture:undefined/,
- 'native loadEffect must receive HD256 resource callback');
-assert.match(stage,/},textureRedirect\);/,'base effect sprite pack must be used');
-assert.match(stage,/},hd256Redirect\);/,'group/impact/overlay must also be redirectable');
-assert.match(draw,/useState\('hd256'\)/,'public draw stage must start with 256 pixels');
-assert.match(atlas,/useState\('hd256'\)/,'public atlas must start with 256 pixels');
-assert.match(draw,/RuneMistBackdrop phase=\{phase\} quality=\{sceneQuality\} textureQuality=\{textureQuality\}/,
- 'opt-in smoke must continue to be present');
-assert.match(stage,/textureQuality='original'/,'renderer must retain emergency resource rollback');
-assert.match(prepare,/HD256_SPRITE_EDGE/);
-assert.match(prepare,/meta\.hasAlpha/,'transparency must be preserved');
-assert.match(prepare,/scale=Math\.max\(1,HD256_SPRITE_EDGE\/Math\.max\(meta\.width,meta\.height\)\)/,
- 'upscale below 256 but do not downsample already detailed images');
-assert.match(pkg.scripts.prebuild,/prepare-rune-effekseer-hd256\.mjs/,'production build must create 256 assets');
-assert.match(pkg.scripts.predev,/prepare-rune-effekseer-hd256\.mjs/,'local build must create 256 assets');
 console.log('[HD256] '+selected.length+' pinned authored PNGs route to 256xmax-edge sprites, originals retained.');

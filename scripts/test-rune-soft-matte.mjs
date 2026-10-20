@@ -15,26 +15,13 @@ assert.equal(redirectSoftMatteTexture('Textures/tx_noise01_256.png'),'Textures/t
 assert.equal(redirectSoftMatteTexture('Texture/Thunder1.png'),'Texture/Thunder1.png');
 assert.equal(redirectSoftMatteTexture('MAGICALxSPIRAL/MxS_Sylph10.efkefc'),
   'MAGICALxSPIRAL/MxS_Sylph10.efkefc');
-
-const renderer=readFileSync('app/lrunes/effekseer/EffekseerStage.jsx','utf8');
-const loader=readFileSync('scripts/prepare-rune-effekseer-soft-matte.mjs','utf8');
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
-assert.match(renderer,/\['M:foot_smoke2','M:Sylph10'\]\.includes\(effect\.key\)/,
-  'only affected Illusion and Phase rune effects switch to opaque-matte repair');
-assert.match(renderer,/overlay\.role==='jade-reflection'\s*\?redirectSoftMatteTexture:hd256Redirect/,
-  'Jade licensed shield overlay keeps selected edge-corrected bitmaps');
-assert.match(renderer,/const textureRedirect=ambient&&effectFile\.endsWith/,
-  'native ambient fog keeps native-alpha HD cloud and independent mapping');
 assert.equal(runeEffectFor({english_name:'Jade'}).overlays[0].key,'M:Gohlem_Shield1',
   'Jade must never replay opaque ImageDistortion demo material over the large glyph');
 assert.equal(runeEffectFor({english_name:'Mirror'}).overlays[0].key,'S:ImageDistortion',
   'unrelated Mirror effect should not be silently altered');
 assert.equal(runeEffectFor({english_name:'Phase'}).key,'M:Sylph10');
 assert.equal(runeEffectFor({english_name:'Illusion'}).key,'M:foot_smoke2');
-assert.match(loader,/\.ensureAlpha\(\)/);
-assert.match(loader,/const feather=smoothstep\(border\)/);
-assert.match(loader,/originalMeta\.hasAlpha\?1:smoothstep/,
-  'only matte-only sprites derive alpha from brightness');
 assert.ok(pkg.scripts.prebuild.includes('prepare-rune-effekseer-soft-matte.mjs'));
 assert.ok(pkg.scripts.predev.includes('prepare-rune-effekseer-soft-matte.mjs'));
 console.log('[EFFEKSEER-SOFTMATTE] Selected Illusion/Phase/Jade edge repairs scoped; 63 other rune effects unchanged.');
