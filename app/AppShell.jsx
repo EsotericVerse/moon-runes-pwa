@@ -2,16 +2,16 @@
 
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
 import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
-import {mergeThemeSlot,selectThemeRegistry} from './loc/theme-data';
+import {mergeThemeSlot} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
 import {faviconForScope} from './site-favicons';
-import {selectScopeConfig,selectScopeRegistry,selectScopePageCopy} from './loc/scope-data';
+import {appBootstrapPageCopy,useAppBootstrap} from './loc/app-bootstrap';
 import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.mjs';
 import {useNavigationPreferences} from './loc/use-navigation-preferences';
 import {NavigationPreferences} from './modular/navigation-preferences';
@@ -73,30 +73,23 @@ function automaticThemeId(date=new Date()){
   return hour>=6&&hour<18?DAY_THEME_ID:NIGHT_THEME_ID;
 }
 
-function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride=''}){
+function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride='',pageName='index'}){
   const scope=scopeMeta||getScope(String(scopeId||'').trim());
   // Scope defaults are owned by the Scope config table; the game route alone
   // has its own purpose-built temporary default, never persisted to the DB.
   const fixedDefaultThemeId=String(defaultThemeIdOverride||'').trim();
-  const configQuery=useQuery({
-    queryKey:['scope-public-config',scopeId],
-    queryFn:()=>selectScopeConfig(scopeId),
-    staleTime:60_000,
-    enabled:!fixedDefaultThemeId&&!scope.aggregateChildren&&scope.id!=='admin'
-  });
-  const configuredTheme=String(configQuery.data?.theme||'').trim();
+  // Shares the ONE bootstrap request other shell parts already make for this
+  // page: nothing here issues a second round trip for config or Themes.
+  const bootstrap=useAppBootstrap(scopeId,pageName);
+  const configEnabled=!fixedDefaultThemeId&&!scope.aggregateChildren&&scope.id!=='admin';
+  const configuredTheme=configEnabled?String(bootstrap.data?.config?.theme||'').trim():'';
   const configuredDefaultThemeId=configuredTheme===SYSTEM_THEME_ID?'':configuredTheme;
   const [selection,setSelection]=useState(()=>({scopeId,themeId:SYSTEM_THEME_ID}));
   const [now,setNow]=useState(()=>new Date());
   const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
   const systemDefaultThemeId=fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now);
   const effectiveThemeId=selectedThemeId===SYSTEM_THEME_ID?systemDefaultThemeId:selectedThemeId;
-  const themeRegistryQuery=useQuery({
-    queryKey:['theme-registry'],
-    queryFn:selectThemeRegistry,
-    staleTime:60_000
-  });
-  const themeRows=Array.isArray(themeRegistryQuery.data)?themeRegistryQuery.data:[];
+  const themeRows=Array.isArray(bootstrap.data?.themes)?bootstrap.data.themes:[];
   const override=themeRows.find(row=>row.theme_id===effectiveThemeId)||null;
   const slot=useMemo(
     ()=>mergeThemeSlot(effectiveThemeId,override),
@@ -139,17 +132,14 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
 }
 // Scope NAV labels and browser page copy use silver.manage.Title_TW / Desc_TW.
 // Scope display_name remains independent for directory and content presentation.
-function ScopePageCopy({scopeId,display_name}){
-  const pageCopyQuery=useQuery({
-    queryKey:['scope-page-copy',scopeId],
-    queryFn:()=>selectScopePageCopy(scopeId),
-    enabled:Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin',
-    staleTime:60_000
-  });
+function ScopePageCopy({scopeId,display_name,pageName='index'}){
+  const enabled=Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin';
+  const bootstrap=useAppBootstrap(scopeId,pageName);
+  const pageCopy=enabled?appBootstrapPageCopy(bootstrap.data,scopeId):null;
   useEffect(()=>{
-    const title=String(pageCopyQuery.data?.Title_TW||display_name||'').trim();
+    const title=String(pageCopy?.Title_TW||display_name||'').trim();
     if(title&&document.title!==title)document.title=title;
-    const description=String(pageCopyQuery.data?.Desc_TW||'').trim();
+    const description=String(pageCopy?.Desc_TW||'').trim();
     if(description){
       let meta=document.head.querySelector('meta[name="description"]');
       if(!meta){
@@ -159,7 +149,7 @@ function ScopePageCopy({scopeId,display_name}){
       }
       if(meta.getAttribute('content')!==description)meta.setAttribute('content',description);
     }
-  },[scopeId,display_name,pageCopyQuery.data?.Title_TW,pageCopyQuery.data?.Desc_TW]);
+  },[scopeId,display_name,pageCopy?.Title_TW,pageCopy?.Desc_TW]);
   return null;
 }
 function LanguageSelect({locale,onChange,copy=UI_COPY}){
@@ -238,15 +228,26 @@ export default function AppShell({children}){
     link.href=faviconForScope(scopeId);
   },[scopeId,host]);
   const currentFeature=featureIdForPath(pathname);
+  const pageName=currentFeature||'index';
   const isSettings=normalizePath(pathname)==='/settings';
   const [native,setNative]=useState(false);
   const [mobileFavorite,setMobileFavorite]=useState(true);
   const [nativeHomepage,setNativeHomepage]=useState('loc');
   const preferences=useNavigationPreferences();
-  const [navDisplayNames,setNavDisplayNames]=useState({});
-  const [registryScopes,setRegistryScopes]=useState([]);
-  const [registryLoaded,setRegistryLoaded]=useState(false);
   const [openFolderId,setOpenFolderId]=useState('');
+  // ONE request for this page. The Scope Registry, every registered Scope's
+  // NAV title, the active Themes and this Scope's own config and blocks all
+  // come from it; ThemeSelect and ScopePageCopy below ask for the exact same
+  // (scopeId, pageName) key, so React Query serves them from this one call.
+  const bootstrap=useAppBootstrap(scopeId,pageName);
+  const registryScopes=bootstrap.data?.registry||[];
+  const registryLoaded=bootstrap.isSuccess||bootstrap.isError;
+  const navDisplayNames=useMemo(()=>{
+    const entries=(bootstrap.data?.page_copy||[])
+      .map(row=>[String(row.scope_id||''),String(row.Title_TW||'').trim()])
+      .filter(([,label])=>label);
+    return Object.fromEntries(entries);
+  },[bootstrap.data]);
   useEffect(()=>{
     const actual=Capacitor.isNativePlatform();
     setNative(actual);
@@ -260,66 +261,19 @@ export default function AppShell({children}){
     return()=>window.removeEventListener('loc-device-navigation-changed',sync);
   },[]);
   useEffect(()=>{
-    let active=true;
-    selectScopeRegistry().then(rows=>{
-      if(active){
-        setScopeRegistryRouteRows(rows);
-        setRegistryScopes(rows||[]);
-      }
-    }).catch(()=>{}).finally(()=>{if(active)setRegistryLoaded(true);});
-    Promise.all(NAV_SCOPES.filter(item=>item.id!=='loc').map(async item=>{
-      try{
-        const row=await client.fetchQuery({
-          queryKey:['scope-page-copy',item.id],
-          queryFn:()=>selectScopePageCopy(item.id),
-          staleTime:60_000
-        });
-        return [item.id,row?.Title_TW];
-      }catch{return [item.id,''];}
-    })).then(labels=>{
-      if(active)setNavDisplayNames(Object.fromEntries(labels.filter(([,label])=>label)));
-    });
-    return()=>{active=false};
-  },[client]);
-  // Custom favorites follow the canonical Title_TW label when provided.
-  useEffect(()=>{
-    let active=true;
-    Promise.all(preferences.favorites.filter(id=>id!=='loc').map(async id=>{
-      try{
-        const row=await client.fetchQuery({
-          queryKey:['scope-page-copy',id],queryFn:()=>selectScopePageCopy(id),staleTime:60_000
-        });
-        return [id,row?.Title_TW];
-      }catch{return [id,''];}
-    })).then(rows=>{
-      if(active)setNavDisplayNames(current=>({...current,
-        ...Object.fromEntries(rows.filter(([,label])=>label))
-      }));
-    });
-    return()=>{active=false;};
-  },[client,preferences.favorites.join(',')]);
+    if(bootstrap.data?.registry)setScopeRegistryRouteRows(bootstrap.data.registry);
+  },[bootstrap.data]);
   const currentScope=scope||getScope(scopeId);
-  const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
-  const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
+  // The Scope's locale travels inside the same bootstrap request as its config;
+  // no separate fetch. A manual pick stands until the Scope changes.
+  const [manualLocale,setManualLocale]=useState(null);
+  const configLocaleEnabled=Boolean(scopeId)&&!currentScope.aggregateChildren&&scopeId!=='admin';
+  const configuredLocale=configLocaleEnabled?normalizeUiLocale(bootstrap.data?.config?.locale):'zh-Hant';
+  const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
   const navScopeId=currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
-
-  useEffect(()=>{
-    let active=true;
-    setLocaleSelection({scopeId,locale:'zh-Hant',manual:false});
-    if(!scopeId||currentScope.aggregateChildren||scopeId==='admin')return()=>{active=false};
-    selectScopeConfig(scopeId).then(row=>{
-      if(!active)return;
-      const locale=normalizeUiLocale(row?.locale);
-      setLocaleSelection(current=>{
-        if(current.scopeId===scopeId&&current.manual)return current;
-        return {scopeId,locale,manual:false};
-      });
-    }).catch(()=>{});
-    return()=>{active=false};
-  },[scopeId,currentScope.aggregateChildren]);
 
   useEffect(()=>{
     if(typeof document!=='undefined')document.documentElement.lang=activeLocale;
@@ -376,7 +330,7 @@ export default function AppShell({children}){
 
 
   return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
-    <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name}/>
+    <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name} pageName={pageName}/>
     <ScrollProgress/>
     <header className="scope-global" data-native={native?'ios':'web'}>
       <nav className="scope-nav" aria-label={copy.nav.aria}>
@@ -420,11 +374,11 @@ export default function AppShell({children}){
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>
-        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope} copy={copy} defaultThemeIdOverride={gameThemeDefault}/>
+        <ThemeSelect scopeId={scopeId} scopeMeta={currentScope} copy={copy} defaultThemeIdOverride={gameThemeDefault} pageName={pageName}/>
         <LanguageSelect
           locale={activeLocale}
           copy={copy}
-          onChange={locale=>setLocaleSelection({scopeId,locale:normalizeUiLocale(locale),manual:true})}
+          onChange={locale=>setManualLocale({scopeId,locale:normalizeUiLocale(locale)})}
         />
       </div>
       <DataSourceStatus/>

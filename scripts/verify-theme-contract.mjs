@@ -25,7 +25,7 @@ if(fallback.id!=='theme-7'||!fallback.tokens||Object.keys(fallback.tokens).lengt
 if(!registry.includes('Emergency fallback only')||registry.includes("const THEME_1=")||registry.includes("const THEME_8="))failures.push('static JS must keep only one emergency palette, not eight canonical palettes');
 
 for(const token of ["selectRows('silver.loc_theme'",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','mergeThemeSlot'])if(!themeData.includes(token))failures.push('DB theme column loader missing '+token);
-for(const token of ["queryKey:['theme-registry']",'selectThemeRegistry','mergeThemeSlot','themeChoices'])if(!shell.includes(token))failures.push('AppShell DB-backed theme control missing '+token);
+for(const token of ['useAppBootstrap','bootstrap.data?.themes','mergeThemeSlot','themeChoices'])if(!shell.includes(token))failures.push('AppShell DB-backed theme control missing '+token);
 for(const token of ["dbAuthRelation('silver.loc_theme')",'THEME_DB_COLUMNS','themeColumnForToken','THEME_TOKEN_KEYS','type="color"'])if(!adminTheme.includes(token))failures.push('Admin Theme editor missing '+token);
 for(const token of ['selectThemeRegistry','mergeThemeSlot',"queryKey:['theme-registry']"])if(!game.includes(token))failures.push('Game must consume DB-backed theme registry: '+token);
 
@@ -34,7 +34,7 @@ for(const scope of Object.values(SCOPES)){
   if(policy.mode==='fixed'&&!expectedIds.includes(policy.themeId))failures.push(scope.id+': invalid fixed theme '+policy.themeId);
 }
 if(SCOPES.lo3rwang?.theme?.mode==='fixed'||SCOPES.lrunes?.theme?.mode==='fixed')failures.push('Scope theme defaults must be owned by DB config, not hardcoded in routing');
-if(!shell.includes("queryFn:()=>selectScopeConfig(scopeId)")||!shell.includes("fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"))failures.push('Scope theme must resolve from current DB config and remain temporary when user switches');
+if(!shell.includes("bootstrap.data?.config?.theme")||!shell.includes("fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now)"))failures.push('Scope theme must resolve from current DB config and remain temporary when user switches');
 
 for(const token of ["SYSTEM_THEME_ID='system-default'","THEME_TIME_ZONE='Asia/Taipei'","DAY_THEME_ID='theme-7'","NIGHT_THEME_ID='theme-1'",'copy.common.systemTheme'])if(!shell.includes(token))failures.push('AppShell theme control missing '+token);
 if(!layout.includes("import AppShell from './AppShell'")||!layout.includes('<AppShell>{children}</AppShell>'))failures.push('Root layout must use AppShell');

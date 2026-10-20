@@ -317,12 +317,13 @@ must(!admin.includes('async function toggleScopeHidden')&&admin.includes("patchR
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}'),'Admin Scope creation must immediately reject repeated Domain labels');
-must(read('app/AppShell.jsx').includes('function ScopePageCopy({scopeId,display_name})')&&
-  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Title_TW')&&
-  read('app/AppShell.jsx').includes('pageCopyQuery.data?.Desc_TW')&&
-  read('app/loc/scope-data.js').includes("rpc('read_scope_page_copy'")&&
+must(read('app/AppShell.jsx').includes("function ScopePageCopy({scopeId,display_name,pageName='index'})")&&
+  read('app/AppShell.jsx').includes('appBootstrapPageCopy(bootstrap.data,scopeId)')&&
+  read('app/AppShell.jsx').includes('pageCopy?.Title_TW')&&
+  read('app/AppShell.jsx').includes('pageCopy?.Desc_TW')&&
+  read('app/loc/app-bootstrap.js').includes("rpc('read_app_bootstrap'")&&
   read('app/AppShell.jsx').includes('configRow?.display_name||registryRow?.display_name'),
-  'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name');
+  'browser page copy must derive from manage Title_TW/Desc_TW independently of display_name, via the one shared bootstrap request');
 must(!adminThemePanel.includes('applyTheme(')&&adminThemePanel.includes('admin-theme-local-preview')&&adminThemePanel.includes('uiExtra.adminView.editingTheme'),'Admin Theme draft and preview must never mutate the live document root theme on entry or edit');
 must(admin.includes('admin-registry-fallback')&&admin.includes('圖形樹載入失敗，已切換清單模式。')&&admin.includes('setTreeError'),'Scope Registry must provide a visible fallback instead of failing blank');
 must(admin.includes('syncManageScopeRow(')&&admin.includes("role:'scope'"),'Admin Scope node must edit Manage mapping atomically and keep role=scope fixed');

@@ -4,10 +4,9 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import dynamic from 'next/dynamic';
 import {Suspense,useEffect} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
-import {selectScopeConfig} from './scope-data';
+import {useAppBootstrap} from './app-bootstrap';
 import {FeaturePage} from '../modular/ui';
 const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
 // Heavy visualizations and editors should load only when their own page opens.
@@ -66,12 +65,9 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
   const flag=FEATURE_FLAGS[view]||'';
   const scope=scopeMeta||getScope(scopeId);
   const enabled=Boolean(flag)&&!scope.aggregateChildren&&scope.id!=='admin';
-  const query=useQuery({
-    queryKey:['scope-public-config',scopeId],
-    queryFn:()=>selectScopeConfig(scopeId),
-    staleTime:60_000,
-    enabled
-  });
+  // Shares the shell's bootstrap request for this same page; no second config read.
+  const bootstrap=useAppBootstrap(scopeId,view==='home'?'index':view,{enabled});
+  const query={isPending:enabled&&bootstrap.isPending,data:bootstrap.data?.config};
   if(!enabled)return children;
   if(query.isPending)return <FeaturePage featureId={view==='keywords'?'statics':view}>
     <section className="loc-card scope-feature-card scope-feature-loading">
