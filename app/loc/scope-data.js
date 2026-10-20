@@ -68,40 +68,7 @@ export async function selectManagedScopes(){
   return scopeDataFromManageRows(rows);
 }
 
-export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}){
-  const filters=[{column:'active',operator:'eq',value:true}];
-  if(parentScopeId)filters.push({column:'parent_scope_id',operator:'eq',value:String(parentScopeId).trim()});
-  if(scopeKind)filters.push({column:'scope_kind',operator:'eq',value:String(scopeKind).trim()});
-  const {rows}=await selectRows('silver.scope_registry',{
-    columns:'scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order',
-    filters,
-    orders:[{column:'sort_order',ascending:true},{column:'scope_id',ascending:true}],
-    limit:DB_QUERY_BATCH_SIZE,
-    offset:0
-  });
-  return (rows||[]).map(row=>({
-    scope_id:String(row.scope_id||'').trim(),
-    display_name:String(row.display_name||'').trim(),
-    scope_kind:String(row.scope_kind||'').trim(),
-    domain:String(row.domain||'').trim()||null,
-    directory:String(row.directory||'').trim()||null,
-    parent_scope_id:String(row.parent_scope_id||'').trim()||null,
-    active:row.active!==false,
-    sort_order:Number(row.sort_order)||0
-  }));
-}
-
-export async function selectScopeRegistryEntry(scopeId){
-  const id=String(scopeId||'').trim().toLowerCase();
-  if(!SCOPE_ID_PATTERN.test(id))return null;
-  const {rows}=await selectRows('silver.scope_registry',{
-    columns:'scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order',
-    filters:[{column:'scope_id',operator:'eq',value:id},{column:'active',operator:'eq',value:true}],
-    limit:1,
-    offset:0
-  });
-  const row=rows?.[0];
-  if(!row)return null;
+function normalizeRegistryRow(row){
   return {
     scope_id:String(row.scope_id||'').trim(),
     display_name:String(row.display_name||'').trim(),
@@ -112,6 +79,33 @@ export async function selectScopeRegistryEntry(scopeId){
     active:row.active!==false,
     sort_order:Number(row.sort_order)||0
   };
+}
+
+// silver.scope_registry 已停用：registry 列表改由 read_app_bootstrap RPC
+// 動態組出（來源是 silver.manage 的指向欄位 + 各節點自己的 display_name），
+// 回傳格式跟舊版 scope_registry 查詢完全相同，呼叫端不需要改動。
+async function fetchRegistryRows(){
+  const {data,error}=await dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
+  if(error)throw error;
+  return Array.isArray(data?.registry)?data.registry:[];
+}
+
+export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}){
+  const rows=await fetchRegistryRows();
+  return rows
+    .filter(row=>row?.active!==false)
+    .filter(row=>!parentScopeId||String(row.parent_scope_id||'').trim()===String(parentScopeId).trim())
+    .filter(row=>!scopeKind||String(row.scope_kind||'').trim()===String(scopeKind).trim())
+    .map(normalizeRegistryRow)
+    .sort((a,b)=>a.sort_order-b.sort_order||a.scope_id.localeCompare(b.scope_id));
+}
+
+export async function selectScopeRegistryEntry(scopeId){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!SCOPE_ID_PATTERN.test(id))return null;
+  const rows=await fetchRegistryRows();
+  const row=rows.find(item=>String(item?.scope_id||'').trim()===id&&item?.active!==false);
+  return row?normalizeRegistryRow(row):null;
 }
 
 export async function selectScopeGroupChildren(scopeId='loc'){
