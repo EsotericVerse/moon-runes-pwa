@@ -31,8 +31,7 @@ const neonLocReadTables = new Set([
   "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
   "loc_search_keywords", "loc_theme", "lrunes", "lrunes_blocks", "lrunes_daily",
   "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "manage", "runes",
-  "runes_etc", "runes_group", "scope_group_source_sharing", "scope_other_sources",
-  "scope_registry", "scope_source_subcategories", "statistics_source_aliases",
+  "runes_etc", "runes_group", "scope_registry", "statistics_source_aliases",
   "statistics_source_categories",
 ]);
 
