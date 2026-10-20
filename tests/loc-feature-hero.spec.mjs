@@ -173,9 +173,12 @@ test('Each homepage Hero has exactly its fixed Scope identity above overlays',as
     await expect(mark).toHaveCSS('position','absolute');
     await expect(mark).toHaveCSS('pointer-events','none');
     await expect.poll(()=>mark.evaluate(element=>Number(getComputedStyle(element).zIndex)),{timeout:10000}).toBeGreaterThanOrEqual(3);
-    const heroBox=await hero.boundingBox();
-    const markBox=await mark.boundingBox();
-    expect(heroBox&&markBox).toBeTruthy();
+    let heroBox=null,markBox=null;
+    await expect.poll(async()=>{
+      heroBox=await hero.boundingBox();
+      markBox=await mark.boundingBox();
+      return Boolean(heroBox&&markBox);
+    },{timeout:15_000}).toBe(true);
     expect(markBox.x).toBeGreaterThanOrEqual(heroBox.x-2);
     expect(markBox.y).toBeGreaterThanOrEqual(heroBox.y-2);
     expect(markBox.x+markBox.width).toBeLessThanOrEqual(heroBox.x+heroBox.width+2);
@@ -227,9 +230,11 @@ for(const {prefix,filename,mark} of [
         return background.match(/url\(["']?([^"')]+)["']?\)/)?.[1]||'';
       });
       // The Scope (and so which artwork variable applies) resolves after hydration.
-      await expect.poll(readImageUrl,{timeout:15_000}).toContain(filename+'-'+asset);
-      const imageUrl=await readImageUrl();
-      expect(imageUrl).toMatch(/\.jpg$/);
+      // The URL can read empty for a frame while the Hero re-renders; keep the
+      // last settled value rather than sampling twice.
+      let imageUrl='';
+      await expect.poll(async()=>{imageUrl=await readImageUrl();return imageUrl;},{timeout:15_000})
+        .toMatch(new RegExp(filename+'-'+asset+'[^/]*\\.jpg$'));
       const loaded=await page.evaluate(async url=>{
         const img=new Image();
         img.src=url;
