@@ -39,7 +39,7 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
-        run: npm run test:ui
+        run: npx playwright test --reporter=github,list
       - name: Keep browser screenshots for visual inspection
         if: always()
         uses: actions/upload-artifact@v4
