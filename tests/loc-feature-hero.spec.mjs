@@ -255,7 +255,7 @@ test('LOC and Author feature Hero text is vertically centered in its artwork fra
       await expect(hero).toHaveCSS('display','flex');
       await expect(hero).toHaveCSS('flex-direction','column');
       await expect(hero).toHaveCSS('justify-content','center');
-      const offset=await hero.evaluate(el=>{
+      const measureOffset=()=>hero.evaluate(el=>{
         const heroBounds=el.getBoundingClientRect();
         const visibleText=[...el.querySelectorAll(':scope > .loc-eyebrow, :scope > .home-title-row, :scope > .scope-hero-description')]
           .map(node=>node.getBoundingClientRect())
@@ -264,7 +264,9 @@ test('LOC and Author feature Hero text is vertically centered in its artwork fra
         const visualCenter=(visibleText[0].top+visibleText[visibleText.length-1].bottom)/2;
         return Math.abs(visualCenter-(heroBounds.top+heroBounds.bottom)/2);
       });
-      expect(offset).toBeLessThanOrEqual(32);
+      // Text hydrates after the frame; poll instead of sampling once (a single
+      // early sample saw no visible text and reported Infinity).
+      await expect.poll(measureOffset,{timeout:15_000}).toBeLessThanOrEqual(32);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(2);
     }
