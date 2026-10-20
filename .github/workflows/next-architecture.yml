@@ -41,6 +41,8 @@ jobs:
       - name: Verify public database API
         run: npm run verify:db-public
       - name: Build Current static export
+        # shell: bash enables pipefail; without it `| tee` hides a failed build.
+        shell: bash
         run: npm run build 2>&1 | tee /tmp/next-build.log
       - name: Report build failure to job summary
         if: failure()
