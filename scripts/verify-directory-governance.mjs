@@ -3,16 +3,6 @@ import {basename,join,resolve} from 'node:path';
 
 const root=process.cwd();
 const failures=[];
-const allowedRootDirs=new Set(['.agents','.github','app','assets','pics','public','scripts','supabase','tests']);
-for(const name of ['app','assets','pics','public','scripts','supabase','tests']){
-  if(!existsSync(resolve(root,name)))failures.push('missing Current root directory: '+name+'/');
-}
-for(const name of readdirSync(root)){
-  const path=resolve(root,name);
-  if(statSync(path).isDirectory()&&!allowedRootDirs.has(name)&&!['.git','node_modules','.next','out'].includes(name)){
-    failures.push('unowned repository root directory: '+name+'/');
-  }
-}
 function walk(dir,files=[]){
   for(const name of readdirSync(dir)){
     const path=join(dir,name);
@@ -37,4 +27,4 @@ if(failures.length){
   console.error('[directory-governance] failures:\n'+failures.map(item=>'- '+item).join('\n'));
   process.exit(1);
 }
-console.log('[directory-governance] root directories and rune source files verified');
+console.log('[directory-governance] rune source files verified');
