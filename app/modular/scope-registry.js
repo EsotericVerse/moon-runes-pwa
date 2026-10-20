@@ -50,7 +50,7 @@ export const SCOPES=Object.freeze({
 
 const DEFAULT_SCOPE_ID=Object.values(SCOPES).find(scope=>scope.default)?.id||Object.keys(SCOPES)[0];
 const GENERIC_SCOPE_HOST='loc.lo3rwang.cc';
-const GENERIC_SCOPE_PATH='/scope';
+const GENERIC_SCOPE_PATH='/scope-shell';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 
 export const DUPLICATE_DOMAIN_MESSAGE='網域名稱重複，拒絕建立。';
@@ -196,7 +196,7 @@ export function navigationHref(scopeId='loc',localPath='',native=false){
   if(!native)return scopeHref(scopeId,localPath);
   const id=normalizeScopeId(scopeId)||'loc';
   const part=String(localPath||'').split('/').filter(Boolean).join('/');
-  const prefix=id==='loc'?'':isKnownScope(id)?'/'+id:'/scope';
+  const prefix=id==='loc'?'':isKnownScope(id)?'/'+id:'/scope-shell';
   const path=(prefix+'/'+(part?part+'/':'')).replace(/\/+/g,'/');
   // Capacitor iOS serves bundled files by their explicit .html path; extension-
   // less feature routes can fall back to the root index.html instead of the

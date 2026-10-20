@@ -122,7 +122,7 @@ must(globalSettings.includes('<ScopeSettingsPanel')&&globalSettings.includes('<M
   'Web Settings keep Scope preferences/import; native-only Manage operates local files; website publishing stays in Governance');
 const keywordPage=read('app/modular/features/KeywordSettings.jsx');
 const keywordAuthorRoute=read('app/lo3rwang/statics/keywords/page.jsx');
-const keywordGenericRoute=read('app/scope/statics/keywords/page.jsx');
+const keywordGenericRoute=read('app/scope-shell/statics/keywords/page.jsx');
 must(statistics.includes("scopeHref(scopeId,'statics/keywords')")&&statistics.includes('ScopeStatisticsResults')&&!statistics.includes('KeywordLibraryPanel')&&!statistics.includes("current==='keywords'"),'Statistics must link to a dedicated keyword management page without mounting keyword editor');
 must(keywordPage.includes("dynamic(()=>import('../../loc/KeywordLibraryPanel')")&&keywordPage.includes('canManageScopeSync(scopeId)')&&keywordAuthorRoute.includes('forcedView="keywords"')&&keywordGenericRoute.includes('forcedView="keywords"')&&locApp.includes('keywords:KeywordSettings'),'all Scope keyword management must use a dedicated permission-gated static route');
 must(!management.includes('ManagementDataPanel')&&!management.includes('LivePreview')&&!management.includes("value:'period'"),'Scope Manage must not recreate data browser, preview or period pages');
@@ -365,8 +365,8 @@ must(dbContract.includes("rpc('provision_scope'")&&dbContract.includes('provisio
 must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('manageScopeRegistry'),'DB client must expose authorized Scope Registry management');
 must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('update'")&&admin.includes("manageScopeRegistry('create_group'"),'Admin tree workspace must edit Registry hierarchy and create Scope Groups');
 
-must(scopeRuntime.includes("pathname==='/scope'||pathname.startsWith('/scope/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
-must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
+must(scopeRuntime.includes("pathname==='/scope-shell'||pathname.startsWith('/scope-shell/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
+must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope-shell'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
 must(importPanel.includes('function SourceRefresh')&&importPanel.includes(".in('uid',batch)")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + UID lookups instead of full-table scans');
 
 must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');

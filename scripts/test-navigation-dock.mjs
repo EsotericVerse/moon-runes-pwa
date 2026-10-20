@@ -32,7 +32,7 @@ test('native links resolve bundled routes, not external canonical domains',()=>{
   assert.equal(navigationHref('lrunes','',true),'/lrunes/index.html');
   assert.equal(navigationHref('lrunes','culture',true),'/lrunes/culture/index.html');
   assert.equal(navigationHref('lo3rwang','statics',true),'/lo3rwang/statics/index.html');
-  assert.equal(navigationHref('family1','governance',true),'/scope/governance/index.html?scope=family1');
+  assert.equal(navigationHref('family1','governance',true),'/scope-shell/governance/index.html?scope=family1');
   assert.match(navigationHref('lrunes','culture',false),/^https:\/\//);
 });
 test('favorite folders are plain text, safe Unicode labels and stable per-folder IDs',()=>{

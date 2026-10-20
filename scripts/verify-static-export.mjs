@@ -20,11 +20,11 @@ for(const route of [
   'governance/index.html',
   'scope/index.html',
   'settings/index.html',
-  'scope/search/index.html',
-  'scope/statics/index.html',
-  'scope/culture/index.html',
-  'scope/governance/index.html',
-  'scope/governance/manage/index.html',
+  'scope-shell/search/index.html',
+  'scope-shell/statics/index.html',
+  'scope-shell/culture/index.html',
+  'scope-shell/governance/index.html',
+  'scope-shell/governance/manage/index.html',
   '404.html'
 ])requireFile(route);
 

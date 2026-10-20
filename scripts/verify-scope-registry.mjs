@@ -38,8 +38,8 @@ for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],[
   if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
 }
 if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author homepage must remain a LOC Directory route');
-if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
-if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
+if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope-shell/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
+if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope-shell/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
 for(const [id,scope] of Object.entries(SCOPES)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(scope.domain||scope.mount)failures.push(id+' must not independently define Domain/Directory values');

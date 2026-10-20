@@ -10,14 +10,14 @@ const configCache=new Map();
 
 function genericRouteScope(pathname,search){
   const path=String(pathname||'/');
-  if(!(path==='/scope'||path.startsWith('/scope/')))return '';
+  if(!(path==='/scope-shell'||path.startsWith('/scope-shell/')))return '';
   const params=new URLSearchParams(String(search||'').replace(/^\?/,''));
   return normalizeScopeId(params.get('scope'));
 }
 
 export function useScopeRuntime(){
   const pathname=usePathname()||'/';
-  const genericShell=pathname==='/scope'||pathname.startsWith('/scope/');
+  const genericShell=pathname==='/scope-shell'||pathname.startsWith('/scope-shell/');
   const [location,setLocation]=useState({host:'',search:'',mounted:false});
 
   useEffect(()=>{
