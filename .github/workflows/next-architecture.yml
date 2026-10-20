@@ -53,18 +53,14 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
         run: npx playwright test --reporter=github,list
-      - name: Report static server state to job summary
+      - name: Report static server state as annotation
         if: failure()
         run: |
-          {
-            echo '## Static server diagnostics'
-            echo '```'
-            python3 --version
-            ls out | head -20
-            (python3 -m http.server 4173 --bind 127.0.0.1 -d out >/dev/null 2>&1 &) ; sleep 3
-            curl -sS -o /dev/null -w 'GET / -> %{http_code}\n' http://127.0.0.1:4173/ || echo 'curl failed'
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          (python3 -m http.server 4173 --bind 127.0.0.1 -d out >/dev/null 2>&1 &) ; sleep 3
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4173/ || echo curlfail)
+          IDX=$([ -f out/index.html ] && echo yes || echo NO)
+          SIZE=$(du -sm out | cut -f1)
+          echo "::error title=static-server-diag::python=$(python3 --version) GET/=$CODE out/index.html=$IDX out_MB=$SIZE"
       - name: Keep browser screenshots for visual inspection
         if: always()
         uses: actions/upload-artifact@v4

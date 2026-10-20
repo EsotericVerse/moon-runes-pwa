@@ -45,6 +45,11 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Probe out/ with tar
+        if: always()
+        run: |
+          tar -cf /dev/null --dereference --hard-dereference out 2>/tmp/tar.err; RC=$?
+          echo "::notice title=tar-probe::rc=$RC $(head -c 300 /tmp/tar.err | tr '\n' ' ')"
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
