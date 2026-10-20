@@ -21,7 +21,13 @@ concurrency:
 
 jobs:
   build-next-architecture:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: every run since 2026-10-20 07:20 UTC has
+    # failed - almost all at "Run browser accessibility checks" with the
+    # Playwright webServer never answering - regardless of what the commit
+    # actually changed. ubuntu-latest's own notice on these runs says it is
+    # migrating to Ubuntu 26 starting the same week, so this pins the
+    # known-good image while that migration rolls out.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
