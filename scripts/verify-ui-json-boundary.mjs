@@ -69,10 +69,15 @@ const cleared=[
   'app/modular/features/LocItemConfluence.jsx',
   'app/modular/features/CultureTimelineEditor.jsx'
 ];
+// Only interface wording the browser actually renders is in scope here.
+// Code comments (// line comments, /* block */ comments, including JSX's
+// {/* ... */}) are developer notes, not UI text, and must stay free to be
+// written in Chinese like the rest of this codebase's commentary.
+const stripComments=text=>text.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');
 for(const file of cleared){
   const text=read(file);
-  assert.ok(!/[\u3400-\u9fff]/u.test(text),
-    file+' contains hard-coded Chinese. Put interface strings into locale JSON and use ASCII keys.');
+  assert.ok(!/[\u3400-\u9fff]/u.test(stripComments(text)),
+    file+' contains hard-coded Chinese outside a comment. Put interface strings into locale JSON and use ASCII keys.');
   for(const match of text.matchAll(/['"]((?:uiExtra|features|scope|common|nav|search|statistics|culture|management|dailyRune|privateFiles|itemConfluence|timelineEditor)\.[\w.]+)['"]/gu)){
     const key=match[1];
     const tail=text.slice(match.index+match[0].length).trimStart();
