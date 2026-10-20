@@ -174,7 +174,7 @@ export function scopeHref(scopeId,localPath=''){
   const pathname=path?'/'+path+'/':'/';
   if(SCOPES[id])return base+pathname+(query?'?'+query:'')+hash;
   const params=new URLSearchParams(query);
-  params.set('scope',id);
+  params.set('scopeid',id);
   return base+pathname+'?'+params.toString()+hash;
 }
 
@@ -202,5 +202,5 @@ export function navigationHref(scopeId='loc',localPath='',native=false){
   // less feature routes can fall back to the root index.html instead of the
   // nested Next static export. Keep website canonical paths unchanged.
   const nativeFile=path+'index.html';
-  return isKnownScope(id)?nativeFile:nativeFile+'?scope='+encodeURIComponent(id);
+  return isKnownScope(id)?nativeFile:nativeFile+'?scopeid='+encodeURIComponent(id);
 }

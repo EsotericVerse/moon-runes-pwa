@@ -366,7 +366,7 @@ must(dbContract.includes("rpc('manage_scope_registry'")&&dbContract.includes('ma
 must(admin.includes('CreateNodePanel')&&admin.includes("manageScopeRegistry('update'")&&admin.includes("manageScopeRegistry('create_group'"),'Admin tree workspace must edit Registry hierarchy and create Scope Groups');
 
 must(scopeRuntime.includes("pathname==='/scope-shell'||pathname.startsWith('/scope-shell/')")&&scopeRuntime.includes('selectScopeRegistryEntry'),'generic Scope runtime must resolve DB registry entries through the fixed static shell');
-must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope-shell'")&&scopeRegistry.includes("params.set('scope',id)"),'unknown DB Scope links must route through the generic static shell');
+must(scopeRegistry.includes("GENERIC_SCOPE_PATH='/scope-shell'")&&scopeRegistry.includes("params.set('scopeid',id)"),'unknown DB Scope links must route through the generic static shell');
 must(importPanel.includes('function SourceRefresh')&&importPanel.includes(".in('uid',batch)")&&importPanel.includes(".eq('source_name',selected)")&&importPanel.includes("offset+=200"),'Source Refresh must use bounded source_name + UID lookups instead of full-table scans');
 
 must(importPanel.includes('record.createtime||current.createtime||null')&&importPanel.includes('record.source_place||current.source_place||null')&&importPanel.includes('record.url||current.url||null'),'Source Refresh must preserve optional existing metadata when the payload omits it');

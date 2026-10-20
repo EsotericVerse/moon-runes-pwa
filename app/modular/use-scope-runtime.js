@@ -12,7 +12,7 @@ function genericRouteScope(pathname,search){
   const path=String(pathname||'/');
   if(!(path==='/scope-shell'||path.startsWith('/scope-shell/')))return '';
   const params=new URLSearchParams(String(search||'').replace(/^\?/,''));
-  return normalizeScopeId(params.get('scope'));
+  return normalizeScopeId(params.get('scopeid'));
 }
 
 export function useScopeRuntime(){

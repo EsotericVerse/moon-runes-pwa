@@ -44,7 +44,7 @@ export default function GlobalSettings({initialSection='home'}={}){
     if(chosen==='favorites')setSection('home');
     else if(isNative&&chosen==='files')setSection('manage'); // Preserve prior mobile file links.
     else if(['home','files','personal','manage','account'].includes(chosen))setSection(chosen);
-    const scope=params.get('scope');
+    const scope=params.get('scopeid');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
   },[]);
