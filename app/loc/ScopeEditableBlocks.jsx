@@ -1,5 +1,9 @@
 'use client';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
@@ -55,6 +59,7 @@ export default function ScopeEditableBlocks({
   slotTag='section',
   slotId=''
 }){
+  useUiSection('uiExtra.editBlocks');
   const t=useUiText();
   const account=useAccount();
   const pageName=pageNameOf(page);

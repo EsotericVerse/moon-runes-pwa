@@ -1,0 +1,3 @@
+export default {
+  "guide": "この Scope Group はメンバー一覧と案内のみを提供します。各 Scope のコンテンツと分析はそれぞれで管理します。"
+};

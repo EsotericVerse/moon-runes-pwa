@@ -1,5 +1,9 @@
 'use client';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import sourceCategoryZh from '../i18n/sections/uiExtra.sourceCategory.zh_tw.js';
+registerDefaultSection('uiExtra.sourceCategory',sourceCategoryZh);
 
 import {useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -28,6 +32,7 @@ export function useSourceCategories(){
 }
 
 export function AdminSourceCategories(){
+  useUiSection('uiExtra.sourceCategory');
   const t=useUiText();
   const account=useAccount(),query=useSourceCategories(),client=useQueryClient();
   const [category,setCategory]=useState(''),[title,setTitle]=useState('');

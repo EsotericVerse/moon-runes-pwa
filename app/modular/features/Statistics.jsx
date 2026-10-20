@@ -1,8 +1,18 @@
 'use client';
 
-import {UI_COPY} from '../../i18n/ui-copy';
-import {useUiCopy} from '../../i18n/ui-locale';
+import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
+import statisticsZh from '../../i18n/sections/statistics.zh_tw.js';
+import statisticsUIZh from '../../i18n/sections/uiExtra.statisticsUI.zh_tw.js';
+import statisticsViewZh from '../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+import chartTypesZh from '../../i18n/sections/uiExtra.chartTypes.zh_tw.js';
+// See Search.jsx for why this registration pattern is safe for both the
+// default locale (synchronous, no fetch) and the other three (useUiSection).
+registerDefaultSection('statistics',statisticsZh);
+registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
+registerDefaultSection('uiExtra.chartTypes',chartTypesZh);
 
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
@@ -418,6 +428,10 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canMana
 }
 
 export default function Statistics(){
+  useUiSection('statistics');
+  useUiSection('uiExtra.statisticsUI');
+  useUiSection('uiExtra.statisticsView');
+  useUiSection('uiExtra.chartTypes');
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const searchParams=useSearchParams();

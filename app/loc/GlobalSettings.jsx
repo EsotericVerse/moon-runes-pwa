@@ -1,5 +1,9 @@
 'use client';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import globalSettingsZh from '../i18n/sections/uiExtra.globalSettings.zh_tw.js';
+registerDefaultSection('uiExtra.globalSettings',globalSettingsZh);
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -24,6 +28,7 @@ const selectProps={
 };
 
 export default function GlobalSettings({initialSection='home'}={}){
+  useUiSection('uiExtra.globalSettings');
   const uiT=useUiText();
   const prefs=useNavigationPreferences();
   const {account}=prefs;

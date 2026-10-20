@@ -1,7 +1,12 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
-import {UI_COPY} from '../../../i18n/ui-copy';
+import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
+import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+import paginationZh from '../../../i18n/sections/uiExtra.pagination.zh_tw.js';
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
+registerDefaultSection('uiExtra.pagination',paginationZh);
 import {useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {featureDataErrorMessage} from '../../feature-data-state';
@@ -30,6 +35,8 @@ function MediaCrossTagPicker({title,options,selected,onChange}){
   </details>;
 }
 export default function MediaCrossTagStatistics({scope,rows=[],range={},zoomLevel=0,onZoomLevelChange,facetTrend,loadGalaxyStatistics}){
+  useUiSection('uiExtra.statisticsView');
+  useUiSection('uiExtra.pagination');
   const t=useUiText();
   const [leftOverride,setLeftOverride]=useState(null);
   const [rightOverride,setRightOverride]=useState(null);

@@ -1,0 +1,21 @@
+export default {
+  "distribution": "Time distribution",
+  "river": "Time river",
+  "intersectionRiver": "Intersection river",
+  "combinedSources": "Combined sources",
+  "combinedRiver": "Combined source river",
+  "classificationRiver": "Work classification river",
+  "structure": "Periods · Events · Anchors",
+  "period": "Period",
+  "allTime": "All time",
+  "allWorks": "All works",
+  "list": "List",
+  "virtualAnchor": "Virtual anchor",
+  "virtualAnchorHelp": "Select ◇ on the timeline or a date below to view and choose a boundary. Virtual points are not saved to the database.",
+  "showAllWorks": "Show all works",
+  "editing": "Editing",
+  "noPeriodClassification": "No work classification data for this period.",
+  "selectedPrefix": "Selected | ",
+  "creating": "Creating…",
+  "viewMode": "View mode"
+};

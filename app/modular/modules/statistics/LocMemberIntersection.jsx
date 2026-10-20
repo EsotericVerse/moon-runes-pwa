@@ -1,5 +1,9 @@
 'use client';
 import UiText,{useUiText} from '../../../i18n/UiText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiSection} from '../../../i18n/ui-locale';
+import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
 
 import {useMemo} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -20,6 +24,7 @@ export default function LocMemberIntersection({
   onLaneCountChange,onChoicesChange,onGraphChange,
   zoomLevel=0,onZoomLevelChange,zoomRange={},loadGalaxyStatistics=null
 }){
+  useUiSection('uiExtra.statisticsView');
   const t=useUiText();
   const queryClient=useQueryClient();
   // The time range identifies the returned dataset. Choices live in the LOC

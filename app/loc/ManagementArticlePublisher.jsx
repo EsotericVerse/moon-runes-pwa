@@ -1,8 +1,17 @@
 'use client';
 import UiText,{useUiText} from '../i18n/UiText';
 
-import {UI_COPY} from '../i18n/ui-copy';
-import {useUiCopy} from '../i18n/ui-locale';
+import {UI_COPY,registerDefaultSection} from '../i18n/ui-copy';
+import {useUiCopy,useUiSection} from '../i18n/ui-locale';
+import managementZh from '../i18n/sections/management.zh_tw.js';
+import publisherZh from '../i18n/sections/uiExtra.publisher.zh_tw.js';
+import sharingZh from '../i18n/sections/uiExtra.sharing.zh_tw.js';
+registerDefaultSection('management',managementZh);
+registerDefaultSection('uiExtra.publisher',publisherZh);
+// uiExtra.sharing currently has no consumer in the codebase; it is kept
+// registered here (its content unchanged) so it stays reachable rather than
+// silently dropped by this split.
+registerDefaultSection('uiExtra.sharing',sharingZh);
 import {useState} from 'react';
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -17,6 +26,8 @@ const blank=()=>({
 });
 
 export default function ManagementArticlePublisher({scopeId}){
+  useUiSection('management');
+  useUiSection('uiExtra.publisher');
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();

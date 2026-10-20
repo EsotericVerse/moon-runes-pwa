@@ -2,9 +2,15 @@
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQuery} from '@tanstack/react-query';
-import {UI_COPY} from '../../../i18n/ui-copy';
-import {useUiCopy} from '../../../i18n/ui-locale';
+import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiCopy,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
+import statisticsZh from '../../../i18n/sections/statistics.zh_tw.js';
+import statisticsUIZh from '../../../i18n/sections/uiExtra.statisticsUI.zh_tw.js';
+import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+registerDefaultSection('statistics',statisticsZh);
+registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
 import {defaultScopeData} from '../../../loc/scope-data';
 import {featureNavigationHref} from '../../feature-navigation';
 import ScopeLink from '../../ScopeLink';
@@ -17,6 +23,9 @@ const StatisticsMultiChart=dynamic(()=>import('./StatisticsMultiChart'),{loading
 const LocMemberIntersection=dynamic(()=>import('./LocMemberIntersection'),{loading:()=>null});
 
 export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGalaxyStatistics}){
+  useUiSection('statistics');
+  useUiSection('uiExtra.statisticsUI');
+  useUiSection('uiExtra.statisticsView');
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const [aggregateType,setAggregateType]=useState('total');

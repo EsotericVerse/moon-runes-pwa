@@ -2,11 +2,16 @@
 import {useEffect,useState} from 'react';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiSection} from '../../../i18n/ui-locale';
+import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
 import {dbAuthClient,dbAuthRelation} from '../../db-client.mjs';
+registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function DatabaseTarget(){
+  useUiSection('uiExtra.adminView');
   const [rows,setRows]=useState([]);
   const [selectedId,setSelectedId]=useState('');
   const [status,setStatus]=useState('');

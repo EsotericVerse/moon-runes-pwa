@@ -1,10 +1,15 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import UiText from '../../../i18n/UiText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiSection} from '../../../i18n/ui-locale';
+import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {useAccount} from '../../use-account';
 import {dbAuthRelation} from '../../db-client.mjs';
+registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function AdminEmailBlocklist(){
+  useUiSection('uiExtra.adminView');
   const account=useAccount();
   const [emails,setEmails]=useState([]);
   const [email,setEmail]=useState('');

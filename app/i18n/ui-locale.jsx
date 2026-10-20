@@ -1,7 +1,7 @@
 'use client';
 
 import {createContext,useContext,useEffect,useMemo,useState} from 'react';
-import {featureSection,isFeatureCopyLoaded,isUiLocaleLoaded,loadFeatureCopy,loadUiLocale,normalizeUiLocale,uiCopy,UI_LOCALE} from './ui-copy';
+import {featureSection,isFeatureCopyLoaded,isSectionLoaded,isUiLocaleLoaded,loadFeatureCopy,loadSection,loadUiLocale,normalizeUiLocale,subscribeSectionVersion,uiCopy,UI_LOCALE} from './ui-copy';
 
 const UiLocaleContext=createContext(Object.freeze({
   locale:UI_LOCALE,
@@ -22,10 +22,21 @@ export function useLoadedUiLocale(locale){
   return ready||isUiLocaleLoaded(normalized);
 }
 
+// Bumps whenever any section (search, statistics, uiExtra.editBlocks, …)
+// finishes loading anywhere in the tree, so the context value below is
+// recomputed and every UiText/FieldText/useUiCopy consumer re-renders with
+// the freshly merged dictionary, without each needing its own plumbing.
+function useSectionTick(){
+  const [tick,setTick]=useState(0);
+  useEffect(()=>subscribeSectionVersion(()=>setTick(t=>t+1)),[]);
+  return tick;
+}
+
 export function UiLocaleProvider({locale=UI_LOCALE,children}){
   const normalized=normalizeUiLocale(locale);
   const ready=useLoadedUiLocale(normalized);
-  const value=useMemo(()=>({locale:normalized,copy:uiCopy(normalized)}),[normalized,ready]);
+  const sectionTick=useSectionTick();
+  const value=useMemo(()=>({locale:normalized,copy:uiCopy(normalized)}),[normalized,ready,sectionTick]);
   return <UiLocaleContext.Provider value={value}>{children}</UiLocaleContext.Provider>;
 }
 
@@ -49,4 +60,21 @@ export function useFeatureCopy(section,defaults){
     return ()=>{active=false;};
   },[locale]);
   return featureSection(locale,section,defaults);
+}
+
+// Triggers (and, via the version bump above, re-renders once ready for) a
+// section split out of the per-locale dictionaries themselves — e.g.
+// `useUiSection('search')` or `useUiSection('uiExtra.editBlocks')`. The
+// owning feature file registers its own Traditional Chinese copy at module
+// scope (registerDefaultSection), so this hook only needs to arrange the
+// fetch for the other three locales; callers keep reading the result via
+// `copy.<path>` or `<UiText id="<path>.x"/>` exactly as before.
+export function useUiSection(path){
+  const {locale}=useUiLocale();
+  useEffect(()=>{
+    if(isSectionLoaded(locale,path))return undefined;
+    let active=true;
+    loadSection(locale,path).catch(()=>{});
+    return ()=>{active=false;};
+  },[locale,path]);
 }

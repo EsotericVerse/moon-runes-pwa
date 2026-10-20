@@ -1,7 +1,9 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
-import {useUiLocale} from '../../../i18n/ui-locale';
-import {translateUiField} from '../../../i18n/ui-copy';
+import {useUiLocale,useUiSection} from '../../../i18n/ui-locale';
+import {translateUiField,registerDefaultSection} from '../../../i18n/ui-copy';
+import selfIntersectionZh from '../../../i18n/sections/uiExtra.selfIntersection.zh_tw.js';
+registerDefaultSection('uiExtra.selfIntersection',selfIntersectionZh);
 
 import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
@@ -33,6 +35,7 @@ function canonicalBucket(day,unit){
   return {key:day,from:day,to:day};
 }
 export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
+  useUiSection('uiExtra.selfIntersection');
   const {locale,copy}=useUiLocale();
   const l=copy.uiExtra.selfIntersection;
   const [numberOfLanes,setNumberOfLanes]=useState(2);

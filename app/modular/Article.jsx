@@ -6,10 +6,15 @@ import dynamic from 'next/dynamic';
 // A plain-text article does not need an editor chunk; edit and rich view mount on demand.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('../loc/BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
-import {UI_COPY} from '../i18n/ui-copy';
+import {UI_COPY,registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 import {isInteractiveContentTarget} from '../loc/content-policy.js';
 import {galaxyMediaHref} from './feature-navigation';
+import searchUIZh from '../i18n/sections/uiExtra.searchUI.zh_tw.js';
+import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+registerDefaultSection('uiExtra.searchUI',searchUIZh);
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 
 
 // The existing BlockNote read-only canvas is needed only once a rich-text
@@ -42,6 +47,8 @@ function DeferredArticleBody({html}){
 
 // Shared article(uid) list module for Search and Culture.
 export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId=''}){
+  useUiSection('uiExtra.searchUI');
+  useUiSection('uiExtra.editBlocks');
   const t=useUiText();
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
   const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{

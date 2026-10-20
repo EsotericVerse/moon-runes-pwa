@@ -6,6 +6,12 @@ import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+import frameEditorZh from '../i18n/sections/uiExtra.frameEditor.zh_tw.js';
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
+registerDefaultSection('uiExtra.frameEditor',frameEditorZh);
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 import {resolveHomeImage} from './LocHomeBlockDisplay';
@@ -19,6 +25,8 @@ export default function ScopeBlockEditorSession({
   normalizedOrders=[],allowDelete=true,allowEntities=true,allowImages=true,
   editEyebrow=true,onClose,onDone
 }){
+  useUiSection('uiExtra.editBlocks');
+  useUiSection('uiExtra.frameEditor');
   const t=useUiText();
   const queryClient=useQueryClient();
   const [draft,setDraft]=useState(()=>({...initial,entities:HomeBlock.normalizeEntities(initial.entities)}));

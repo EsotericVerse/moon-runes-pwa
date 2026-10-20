@@ -1,0 +1,12 @@
+export default {
+  "scopeUnavailable": "Scope データを解決できません",
+  "addTitle": "タイトルを追加",
+  "articleTitle": "記事タイトル",
+  "publish": "公開",
+  "excludeSearch": "公開検索に表示しない",
+  "publishing": "公開中…",
+  "publishArticle": "記事を公開",
+  "source": "ソース",
+  "sourceHint": "例：threads / vocus / personal",
+  "relations": "詳細な関連付け"
+};

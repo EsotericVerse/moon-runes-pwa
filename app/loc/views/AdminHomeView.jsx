@@ -2,8 +2,12 @@
 import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
-import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale} from '../../i18n/ui-copy';
-import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiCopy,useUiLocale,useUiSection} from '../../i18n/ui-locale';
+import adminZh from '../../i18n/sections/admin.zh_tw.js';
+import adminViewZh from '../../i18n/sections/uiExtra.adminView.zh_tw.js';
+registerDefaultSection('admin',adminZh);
+registerDefaultSection('uiExtra.adminView',adminViewZh);
 import {useCallback,useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {scopeHref,duplicateDomainLabelError} from '../../modular/scope-registry';
@@ -720,6 +724,8 @@ function AdminRegistry(){
 }
 
 export default function AdminHomeView(){
+  useUiSection('admin');
+  useUiSection('uiExtra.adminView');
   const UI_COPY=useUiCopy();
   const {locale}=useUiLocale();
   const account=useAccount();

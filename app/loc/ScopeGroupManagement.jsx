@@ -6,8 +6,13 @@ import {useQuery} from '@tanstack/react-query';
 import {selectScopeGroupChildren} from './scope-data';
 import {scopeHref} from '../modular/scope-registry';
 import ScopeLink from '../modular/ScopeLink';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import {useUiSection} from '../i18n/ui-locale';
+import scopeGroupZh from '../i18n/sections/uiExtra.scopeGroup.zh_tw.js';
+registerDefaultSection('uiExtra.scopeGroup',scopeGroupZh);
 
 export default function ScopeGroupManagement({scopeId='loc'}){
+  useUiSection('uiExtra.scopeGroup');
   const query=useQuery({queryKey:['scope-group-children',scopeId],queryFn:()=>selectScopeGroupChildren(scopeId),staleTime:60_000});
   const scopes=query.data||[];
   return <section className="loc-card scope-feature-card">

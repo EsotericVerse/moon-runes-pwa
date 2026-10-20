@@ -2,9 +2,16 @@
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useUiCopy} from '../../../i18n/ui-locale';
+import {useUiCopy,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
+import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+import dataErrorsZh from '../../../i18n/sections/uiExtra.dataErrors.zh_tw.js';
+import statisticsUIZh from '../../../i18n/sections/uiExtra.statisticsUI.zh_tw.js';
 import {StatisticsFacets} from '../../../loc/statistics-facets';
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
+registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
+registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
 import {availableStatisticChartTypes,RUNE_RANKING_PAGE_SIZE,OTHER_RANKING_PAGE_SIZE} from './statistics-time-zoom.mjs';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
@@ -12,6 +19,9 @@ import StatisticsDetails from './StatisticsDetails';
 const StatisticsMultiChart=dynamic(()=>import('./StatisticsMultiChart'),{loading:()=>null});
 
 export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange,rowsInWindow,facetTotals,facetTrend}){
+  useUiSection('uiExtra.statisticsView');
+  useUiSection('uiExtra.dataErrors');
+  useUiSection('uiExtra.statisticsUI');
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const [selectedTag,setSelectedTag]=useState('all');

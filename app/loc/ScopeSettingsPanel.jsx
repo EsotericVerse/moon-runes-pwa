@@ -1,15 +1,17 @@
 'use client';
-import {useUiLocale} from '../i18n/ui-locale';
+import {useUiLocale,useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useState} from 'react';
-import {UI_LOCALE_OPTIONS,normalizeUiLocale} from '../i18n/ui-copy';
+import {UI_LOCALE_OPTIONS,normalizeUiLocale,registerDefaultSection} from '../i18n/ui-copy';
 import {THEME_SLOTS} from '../modular/theme-registry';
 import {ScopeFeatureToggles} from '../modular/ui';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {ObjectEditor} from './BlockNoteEditor';
+import scopeSettingsZh from '../i18n/sections/uiExtra.scopeSettings.zh_tw.js';
+registerDefaultSection('uiExtra.scopeSettings',scopeSettingsZh);
 
 const EMPTY={
   display_name:'',
@@ -30,6 +32,7 @@ function aliasList(value){
 }
 
 export default function ScopeSettingsPanel({scopeId}){
+  useUiSection('uiExtra.scopeSettings');
   const {locale}=useUiLocale();
   const uiT=useUiText();
   const account=useAccount();

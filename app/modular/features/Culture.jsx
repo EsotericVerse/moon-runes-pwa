@@ -2,8 +2,16 @@
 import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
-import {translateUiField,UI_COPY} from '../../i18n/ui-copy';
-import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField,UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiCopy,useUiLocale,useUiSection} from '../../i18n/ui-locale';
+import cultureZh from '../../i18n/sections/culture.zh_tw.js';
+import cultureViewZh from '../../i18n/sections/uiExtra.cultureView.zh_tw.js';
+import dataErrorsZh from '../../i18n/sections/uiExtra.dataErrors.zh_tw.js';
+import paginationZh from '../../i18n/sections/uiExtra.pagination.zh_tw.js';
+registerDefaultSection('culture',cultureZh);
+registerDefaultSection('uiExtra.cultureView',cultureViewZh);
+registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
+registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
@@ -94,6 +102,10 @@ function periodPositionRatio(date,start,end){
   return Math.max(0,Math.min(1,(x-a)/(b-a)));
 }
 export default function Culture(){
+  useUiSection('culture');
+  useUiSection('uiExtra.cultureView');
+  useUiSection('uiExtra.dataErrors');
+  useUiSection('uiExtra.pagination');
   const UI_COPY=useUiCopy();
   const l=UI_COPY.uiExtra.cultureView;
   const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
