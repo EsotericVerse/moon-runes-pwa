@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
-import featureZh from '../i18n/features.zh_tw.json' with {type:'json'};
+import featureZh from '../i18n/features.zh_tw.js';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';

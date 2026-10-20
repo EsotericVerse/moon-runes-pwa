@@ -1,4 +1,4 @@
-{
+export default {
   "dailyRune": {
     "drawMain": "主抽",
     "drawSupplement": "补抽",
@@ -341,4 +341,4 @@
     "groupDeletedPrefix": "Group「",
     "uuidCopiedSuffix": "。"
   }
-}
+};

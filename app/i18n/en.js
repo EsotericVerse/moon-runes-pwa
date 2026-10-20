@@ -1,4 +1,4 @@
-{
+export default {
   "common": {
     "save": "Save",
     "saving": "Saving…",
@@ -1273,4 +1273,4 @@
       "imageRemove": "Remove image"
     }
   }
-}
+};

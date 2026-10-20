@@ -1,4 +1,4 @@
-{
+export default {
   "common": {
     "save": "儲存",
     "saving": "儲存中…",
@@ -1273,4 +1273,4 @@
       "imageRemove": "移除圖片"
     }
   }
-}
+};

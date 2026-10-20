@@ -3,7 +3,7 @@
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useFeatureCopy} from '../i18n/ui-locale';
-import featureZh from '../i18n/features.zh_tw.json' with {type:'json'};
+import featureZh from '../i18n/features.zh_tw.js';
 import {useQuery} from '@tanstack/react-query';
 import {
   Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,LineChart,

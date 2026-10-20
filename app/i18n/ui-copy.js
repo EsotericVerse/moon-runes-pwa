@@ -2,7 +2,7 @@
 // Traditional Chinese is the default and ships with every page. The other
 // three dictionaries are separate chunks, fetched only when that language is
 // actually selected (loadUiLocale).
-import zhTw from './zh_tw.json' with {type:'json'};
+import zhTw from './zh_tw.js';
 
 function interpolate(template,values={}){
   return String(template||'').replace(/\{(label|query)\}/g,(_,key)=>String(values[key]??''));
@@ -36,9 +36,9 @@ export const UI_COPY=zhHant;
 // to the default dictionary.
 export const UI_DICTIONARIES={'zh-Hant':zhHant};
 const LOADERS={
-  'zh-Hans':()=>import('./zh_cn.json',{with:{type:'json'}}),
-  en:()=>import('./en.json',{with:{type:'json'}}),
-  ja:()=>import('./ja.json',{with:{type:'json'}})
+  'zh-Hans':()=>import('./zh_cn.js'),
+  en:()=>import('./en.js'),
+  ja:()=>import('./ja.js')
 };
 const pending={};
 export function isUiLocaleLoaded(locale){return Boolean(UI_DICTIONARIES[locale]);}
@@ -59,9 +59,9 @@ export function loadUiLocale(locale){
 // features.<language>.json and are only imported by those features' own
 // chunks, never by the page shell.
 const FEATURE_LOADERS={
-  'zh-Hans':()=>import('./features.zh_cn.json',{with:{type:'json'}}),
-  en:()=>import('./features.en.json',{with:{type:'json'}}),
-  ja:()=>import('./features.ja.json',{with:{type:'json'}})
+  'zh-Hans':()=>import('./features.zh_cn.js'),
+  en:()=>import('./features.en.js'),
+  ja:()=>import('./features.ja.js')
 };
 const featureCopy={};
 const featurePending={};

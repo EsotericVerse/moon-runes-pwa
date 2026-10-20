@@ -1,4 +1,4 @@
-{
+export default {
   "dailyRune": {
     "drawMain": "Main draw",
     "drawSupplement": "Supplemental draw",
@@ -341,4 +341,4 @@
     "groupDeletedPrefix": "Group “",
     "uuidCopiedSuffix": "."
   }
-}
+};
