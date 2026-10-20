@@ -145,7 +145,6 @@
 /* Hero keeps the already approved full-bleed background and reading contrast. */
 .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero{
   position:relative;
-  display:block;
   isolation:isolate;
   overflow:hidden;
   /* Mobile is content-height driven; desktop alone enforces the 16:9 image
@@ -160,18 +159,20 @@
   --loc-accent:#e8d6ac;
   color:var(--loc-text);
 }
+/* Vertical centering must match the side-image hero's grid centering at
+   every width (mobile included) -- previously this was desktop-only, so a
+   background-image hero's text sat top-aligned on phones while a side-image
+   hero (order 2/3/5) stayed centered, an inconsistency invisible only because
+   these hero images were 404ing in production until the pics/ copy fix. */
+.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:0;
+}
 @media(min-width:761px){
   .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
     aspect-ratio:16 / 9;
-  }
-  /* Reuse the common frame without activating the old two-column
-     artwork grid. The background figure must remain inset 0 while the
-     original copy stays left aligned and vertically centered. */
-  .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:0;
   }
 }
 /* Outrank the shared .loc-home > .loc-hero > .home-hero-visual card rule:
