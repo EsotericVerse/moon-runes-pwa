@@ -286,6 +286,51 @@ button,a,.loc-control,.loc-button,
   margin-top:clamp(.65rem,1.4vw,1rem);
 }
 
+/* ONE Hero text standard for every Scope and every Hero (home frames, feature
+   pages, LunaRunes): eyebrow, title, subtitle and description share a single
+   left edge in one column, with the same gaps and the same reading measure.
+   The older "title | subtitle" two-column row sized its title column to the
+   title's own text (fit-content), so the subtitle's left edge moved from page
+   to page and never lined up with the eyebrow or the description. */
+:root{--loc-hero-measure:750px;--loc-hero-stack-gap:.5rem;--loc-hero-copy-gap:.9rem}
+:is(.scope-hero,.loc-hero,.runes-home-hero-copy)>.home-title-row,
+.runes-home-hero-copy .home-title-row,
+.loc-home-block--hero>.loc-home-block__header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  row-gap:var(--loc-hero-stack-gap)!important;
+  column-gap:0!important;
+  align-items:start!important;
+  justify-items:start!important;
+  width:100%;
+  max-width:var(--loc-hero-measure);
+  margin:0 0 var(--loc-hero-copy-gap)!important;
+  text-align:start;
+}
+:is(.scope-hero,.loc-hero,.runes-home-hero-copy)>.home-title-row>:is(h1,.loc-subtitle,.scope-subtitle),
+.runes-home-hero-copy .home-title-row>:is(h1,.loc-subtitle),
+.loc-home-block--hero>.loc-home-block__header>:is(.loc-eyebrow,h1,.loc-home-block__subtitle){
+  grid-column:1!important;
+  grid-row:auto!important;
+  align-self:start!important;
+  justify-self:start!important;
+  width:auto;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  text-align:start!important;
+}
+.scope-feature-hero>.loc-eyebrow,
+.loc-hero>.loc-eyebrow,
+.runes-home-hero-copy>.loc-eyebrow{margin:0 0 var(--loc-hero-stack-gap)!important;text-align:start}
+.scope-feature-hero .scope-hero-description,
+.loc-home-block--hero>.loc-home-block__body{
+  max-width:var(--loc-hero-measure);
+  margin-top:0;
+  text-align:start;
+}
+
 /* Hero-only precedence stays in shared UI; homepage frame CSS remains override-free. */
 :is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
   .loc-home>.loc-home-block--hero .loc-home-block__header>.loc-eyebrow{

@@ -281,3 +281,31 @@ test('Search does not show an empty title-only suggestions card to visitors',asy
   ).length);
   expect(emptyCards).toBe(0);
 });
+
+// One Hero text standard: eyebrow, title, subtitle and description share one
+// left edge and stack top-to-bottom (the old "title | subtitle" two-column row
+// moved the subtitle's left edge with the length of each page's title).
+const HERO_TEXT_PARTS=':scope > .loc-eyebrow, :scope > .home-title-row > h1, :scope > .home-title-row > .loc-subtitle, :scope > .scope-hero-description, :scope > .loc-home-block__header > *, :scope > .loc-home-block__body';
+async function expectHeroTextAligned(hero){
+  const rects=await hero.evaluate((el,selector)=>[...el.querySelectorAll(selector)]
+    .map(node=>node.getBoundingClientRect()).filter(rect=>rect.width>0&&rect.height>0)
+    .map(rect=>({left:rect.left,top:rect.top,bottom:rect.bottom})),HERO_TEXT_PARTS);
+  expect(rects.length).toBeGreaterThan(1);
+  for(const rect of rects)expect(Math.abs(rect.left-rects[0].left)).toBeLessThanOrEqual(1);
+  for(let i=1;i<rects.length;i++)expect(rects[i].top).toBeGreaterThanOrEqual(rects[i-1].bottom-1);
+}
+
+test('Every Hero shares one left edge and a single text stack',async({page})=>{
+  for(const prefix of ['','/lo3rwang']){
+    await page.goto(prefix+'/',{waitUntil:'domcontentloaded'});
+    const home=page.locator('.loc-home > section.loc-home-block--hero').first();
+    await expect(home.locator(':scope > .loc-home-block__header h1')).toBeVisible({timeout:25_000});
+    await expectHeroTextAligned(home);
+    for(const feature of ['culture','statics','search','governance']){
+      await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
+      const hero=page.locator('header.scope-feature-hero');
+      await expect(hero.locator('.home-title-row>h1')).toBeVisible({timeout:25_000});
+      await expectHeroTextAligned(hero);
+    }
+  }
+});
