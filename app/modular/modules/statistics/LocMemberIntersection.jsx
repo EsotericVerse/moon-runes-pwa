@@ -12,11 +12,10 @@ import {availableStatisticChartTypes} from './statistics-time-zoom.mjs';
 import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
-import {sharedGroupCodes,sharedSourceBreakdown,canParticipateInCrossStatistics,allowedMemberMetric} from '../../../loc/statistics-group-sharing.mjs';
 
 const DEFAULT_LANE_COUNT=2;
 export default function LocMemberIntersection({
-  scopes=[],startDate='',endDate='',unit='month',sharing={},
+  scopes=[],startDate='',endDate='',unit='month',
   laneCount=DEFAULT_LANE_COUNT,choices=[],graph='line',
   onLaneCountChange,onChoicesChange,onGraphChange,
   zoomLevel=0,onZoomLevelChange,zoomRange={},preloadedSources=null
@@ -31,14 +30,13 @@ export default function LocMemberIntersection({
   // Daily Rune is a dedicated test feed, not a registered Galaxy source or a
   // group/personal source classification. It is always a LOC comparison choice.
   const available=[
-    ...scopes.filter(scope=>scope.id!=='lrunes'&&
-      canParticipateInCrossStatistics(scope.id,sharing.permissions,sharing.categories))
+    ...scopes.filter(scope=>scope.id!=='lrunes')
       .map(scope=>({id:scope.id,label:names.get(scope.id)||scope.id,scope})),
     {id:'lrunes',label:names.get('lrunes')||'月之符文',
       scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')}
   ];
-  const allows=(person,metric)=>metric.startsWith('daily')
-    ?person==='lrunes':allowedMemberMetric(person,metric,sharing);
+  // Each Scope is compared only by its own totals and media types; source groups are never merged across Scopes.
+  const allows=(person,metric)=>metric.startsWith('daily')?person==='lrunes':!metric.startsWith('source:');
   const lanes=Array.from({length:laneCount},(_,index)=>{
     const candidate=choices[index]||{};
     const fallback=available[index%Math.max(available.length,1)]?.id||'';
@@ -47,13 +45,11 @@ export default function LocMemberIntersection({
   });
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
-    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily')),JSON.stringify(sharing)],
+    queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily'))],
     enabled:Boolean(preloadedSources&&startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
-        const rows=sharedGroupCodes(id,sharing.permissions,sharing.categories).size
-          ?preloadedSources.get(id)||[]
-          :[];
+        const rows=preloadedSources.get(id)||[];
         const daily=id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
           ?await queryClient.fetchQuery({
             queryKey:['loc-member-daily-runes',startDate,endDate],
@@ -64,7 +60,7 @@ export default function LocMemberIntersection({
         const draws=id==='lrunes'
           ?normalizeDailyDraws(daily,date=>realMoonPhase(new Date(date+'T12:00:00+08:00')))
           :[];
-        return [id,{rows:sharedSourceBreakdown(rows,id,sharing),daily:draws}];
+        return [id,{rows,daily:draws}];
       }));
       return {rangeKey,datasets:new Map(pairs)};
     },
@@ -72,9 +68,7 @@ export default function LocMemberIntersection({
   });
   const hasCurrentData=fetched.data?.rangeKey===rangeKey;
   const datasets=hasCurrentData?fetched.data.datasets:new Map();
-  const shareablePersonal=(sharing.scopeSources||[]).filter(row=>
-    sharedGroupCodes(row.scope_id,sharing.permissions,sharing.categories).has(row.category_code));
-  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows),sharing.categories||[],shareablePersonal);
+  const measures=availableMemberMeasures([...datasets.values()].map(item=>item.rows));
   const adjusted=lanes.map((lane,index)=>({
     ...lane,
     metric:measures.some(item=>item.id===lane.metric)&&allows(lane.person,lane.metric)
@@ -82,9 +76,8 @@ export default function LocMemberIntersection({
     label:(names.get(lane.person)||lane.person)+' · '+(measures.find(item=>item.id===lane.metric)?.name||t('uiExtra.statisticsView.memberCrossAllWorks'))
   }));
   const calculated=useMemo(()=>calculateMemberCross(adjusted,datasets,{
-    from:startDate,to:endDate,unit,
-    categories:sharing.categories||[],aliases:sharing.aliases||[],scopeSources:sharing.scopeSources||[]
-  }),[JSON.stringify(adjusted),datasets,startDate,endDate,unit,sharing]);
+    from:startDate,to:endDate,unit
+  }),[JSON.stringify(adjusted),datasets,startDate,endDate,unit]);
   const distribution=calculated.totals.map(item=>({name:item.name,value:item.value}));
   const charts=availableStatisticChartTypes({rows:calculated.rows,series:calculated.series,distribution});
   const chosenChart=charts.some(([kind])=>kind===graph)?graph:(charts[0]?.[0]||'line');

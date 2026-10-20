@@ -62,7 +62,6 @@ const cleared=[
   'app/loc/SourceCategoryEditor.jsx',
   'app/modular/modules/statistics/StatisticsMultiChart.jsx',
   'app/modular/modules/statistics/MediaFacetStatistics.jsx',
-  'app/loc/ScopeGroupStatisticsSharing.jsx',
   'app/loc/ManagementArticlePublisher.jsx',
   'app/modular/ui.jsx',
   'app/lrunes/DailyRuneAnalytics.jsx',

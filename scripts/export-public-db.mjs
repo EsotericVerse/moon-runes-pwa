@@ -13,7 +13,7 @@ const {data:scopeRows,error:scopeError}=await client.schema('silver').from('mana
 if(scopeError)throw new Error('Scope registry read failed: '+scopeError.message);
 if(!Array.isArray(scopeRows))throw new Error('Scope registry missing');
 const catalogTables=new Set(inventory.relations.filter(row=>row.schema_name==='silver'&&row.relkind==='r').map(row=>row.relname));
-const tables=new Set(['manage','game','lrunes_daily','runes','runes_etc','runes_group','keyword_classes','loc_theme','loc_blocks','scope_registry','scope_source_rules','statistics_source_aliases','statistics_source_categories'].filter(table=>catalogTables.has(table)));
+const tables=new Set(['manage','game','lrunes_daily','runes','runes_etc','runes_group','keyword_classes','loc_theme','loc_blocks','scope_registry',''statistics_source_aliases','statistics_source_categories'].filter(table=>catalogTables.has(table)));
 for(const row of scopeRows){
   const id=String(row.id||'');
   const galaxy=String(row.galaxy||'galaxy');

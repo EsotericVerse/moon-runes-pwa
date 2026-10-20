@@ -122,32 +122,18 @@ if(!failures.length){
      !statistics.includes("queryKey:['statistics-source-taxonomy',scopeId]")||
      !sourceTaxonomy.includes("assignedSource(")||
      !sourceEditor.includes('AdminSourceCategories')||
-     !sourceEditor.includes('ScopeCustomSourceCategories')||
-     !sourceEditor.includes('silver.scope_source_rules')||
-     !statistics.includes('source_custom')||
-     !statistics.includes('<ScopeCustomSourceCategories')||
-     !crossMember.includes("sharing.scopeSources")||
-     !ownIntersection.includes("scope_source_rules")||
-     !crossMember.includes("availableMemberMeasures")||
+     sourceEditor.includes('ScopeCustomSourceCategories')||
+     statistics.includes('source_custom')||
      !ownIntersection.includes("kind:'group'")){
-    failures.push('Group source categories and Scope-owned personal source classification must share real data.');
+    failures.push('Admin group source categories must feed Statistics; source names inside Others are counted live and personal classification must not exist.');
   }
 
-  // Cross-person participation is Scope × group source consent; there is
-  // no blanket Scope sharing flag and no personal custom source switch.
-  const crossSharing=read('app/loc/statistics-group-sharing.mjs');
-  const sharingEditor=read('app/loc/ScopeGroupStatisticsSharing.jsx');
-  if(!groupStatistics.includes("queryKey:['cross-statistics-sharing']")||
-     !groupStatistics.includes('sharedScopeDensity(')||
-     !statistics.includes('<ScopeGroupStatisticsSharing')||
-     !crossMember.includes('sharedSourceBreakdown(')||
-     !crossSharing.includes("row.kind!=='source'&&row.kind!=='media'")||
-     !crossSharing.includes('sharedGroupCodes(')||
-     !sharingEditor.includes('scope_source_rules')||!sharingEditor.includes("kind:'group_share'")||
-     !sharingEditor.includes("enabled:shareEnabled")||
-     statistics.includes('statistics_cross_scope_enabled')||groupStatistics.includes('statistics_cross_scope_enabled')||
-     sharingEditor.includes("kind:'subcategory'")){
-    failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
+  // Cross-member comparison never merges same-named source groups across Scopes and has no sharing switch.
+  if(crossMember.includes('source:')&&!crossMember.includes("!metric.startsWith('source:')")||
+     groupStatistics.includes('cross-statistics-sharing')||
+     statistics.includes('ScopeGroupStatisticsSharing')||
+     statistics.includes('statistics_cross_scope_enabled')||groupStatistics.includes('statistics_cross_scope_enabled')){
+    failures.push('Cross-member statistics must not use source-group sharing or merge source groups across Scopes.');
   }
 
   // Regression contract: Daily Rune is an independent LOC comparison test feed.
@@ -160,12 +146,8 @@ if(!failures.length){
      !runeDaily.includes("from '../modular/modules/statistics/statistics-time-zoom.mjs'")){
     failures.push('Chart capability selection must not eagerly import the Recharts renderer');
   }
-  if(!crossSharing.includes('row.share_enabled===false')||
-     !crossSharing.includes("key.startsWith('daily'))return false")||
-     !groupStatistics.includes('sharing={policy.data||{}}')||
-     !crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
+  if(!crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
      !crossMember.includes("metric.startsWith('daily')")||
-     !crossMember.includes("?person==='lrunes':allowedMemberMetric(person,metric,sharing)")||
      !crossMember.includes("preloadedSources.get(id)")||
      !crossMember.includes("{!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>")||
      crossMember.includes('canOfferMemberCrossStatistics(')||
@@ -174,11 +156,9 @@ if(!failures.length){
     failures.push('LOC Daily Rune comparison must not depend on group source-category loading or authorization.');
   }
 
-  if(!ownIntersection.includes("{kind:'personal',label:'個人自訂來源分類'}")||
-     !ownIntersection.includes("const basic=ownScopeCategoryCatalog(rows)")||
-     !ownIntersection.includes("id:'personal\\u0000'+item.raw")||
-     !ownIntersection.includes("ids.push('personal\\u0000'")){
-    failures.push('Own-Scope comparisons must preserve the raw source dimension beside group and personal source classifications.');
+  if(ownIntersection.includes("kind:'personal'")||!ownIntersection.includes("const basic=ownScopeCategoryCatalog(rows)")||
+     !ownIntersection.includes("id:'group\\u0000'+id")){
+    failures.push('Own-Scope comparisons must keep raw source names (counted live) beside the admin group classification, with no personal classification.');
   }
 
   if(!crossMember.includes('data-stat-cross-resolved-range=')||
@@ -358,14 +338,10 @@ if(!failures.length){
   const ownStatistics=statistics.split('function ScopeStatisticsResults(')[1]?.split('function ScopeStatisticsPanel(')[0]||'';
   if(ownStatistics.includes("queryKey:['managed-scopes']")||!ownStatistics.includes('defaultScopeData(scopeId)'))
     failures.push('Single-Scope statistics must reuse the resolved route instead of requesting every Scope');
-  if(!groupStatistics.includes('enabled:scopesQuery.isSuccess&&policy.isSuccess,')||
-     !groupStatistics.includes('...scopes.map(selectFirstScopeStatisticsDate)'))
-    failures.push('Group statistics history probes must exclude Scopes disabled by sharing consent');
-  if(!groupStatistics.includes("queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')]")||
-     !groupStatistics.includes('sharedScopeDensity(entry.rows,entry.scopeId,policy.data)')||
-     groupStatistics.includes('JSON.stringify(policy.data?.permissions')||
-     sharingEditor.includes("invalidateQueries({queryKey:['scope-density','loc']}"))
-    failures.push('Sharing changes must recompute group charts from cached raw rows without issuing new Galaxy SELECTs');
+  if(!groupStatistics.includes('enabled:scopesQuery.isSuccess,')||
+     !groupStatistics.includes('...scopes.map(selectFirstScopeStatisticsDate)')||
+     !groupStatistics.includes("queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')]"))
+    failures.push('Group statistics must query every registered Scope without any sharing filter.');
   if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
      !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
     failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');
@@ -393,7 +369,7 @@ if(!failures.length){
   if(queryContract.includes('DB_QUERY_TEXT_BATCH_SIZE')||queryContract.includes('LONG_TEXT_COLUMNS'))failures.push('Query limits must never depend on whether columns contain headings or body text');
   if(!read('app/loc/db-query.mjs').includes('pageSize=DB_QUERY_BATCH_SIZE'))failures.push('All database bulk reads must use the shared 65535 ceiling unless the caller explicitly requests fewer rows');
   for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
-  for(const token of ['sharedScopeDensity(','uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
+  for(const token of ['uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');
   if(!statistics.includes('uiExtra.statisticsView.displayStyle')||!statistics.includes('Rune66Summary')||

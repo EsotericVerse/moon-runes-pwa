@@ -93,8 +93,4 @@ test('statistics management capabilities mount only when their disclosures open'
   const page=fs.readFileSync('app/modular/features/Statistics.jsx','utf8');
   assert.ok(detail.includes("onToggle={event=>setOpen(event.currentTarget.open)}"));
   assert.ok(detail.includes("open?(typeof children==='function'?children():children):null"));
-  assert.ok(page.includes('summary={<UiText id="uiExtra.statisticsView.groupSourcesShare"/>}'));
-  assert.ok(page.includes('summary={<UiText id="uiExtra.statisticsView.personalSourcesManage"/>}'));
-  assert.ok(page.includes('{()=> <ScopeGroupStatisticsSharing scopeId={scopeId}/>}'));
-  assert.ok(page.includes('{()=> <ScopeCustomSourceCategories scopeId={scopeId}/>}'));
 });

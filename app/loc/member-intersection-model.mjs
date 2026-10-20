@@ -2,19 +2,14 @@ const ISO_DATE=/^\d{4}-\d{2}-\d{2}$/;
 const time=value=>new Date(value+'T00:00:00Z');
 const number=value=>Math.max(0,Number(value)||0);
 const lower=value=>String(value||'').trim().toLowerCase();
-export function personalSource(value,scopeSources=[],scopeId=''){
-  return (scopeSources||[]).find(row=>row.enabled!==false&&
-    lower(row.scope_id)===lower(scopeId)&&lower(row.source_key)===lower(value))||null;
-}
-// Personal assignments refine the group source classification inside one Scope.
-// Unassigned sources fall back to Admin's mapping, then to Others.
-export function assignedSource(value,aliases=[],categories=[],scopeSources=[],scopeId=''){
-  const personal=personalSource(value,scopeSources,scopeId);
+// Admin's alias mapping decides the group; anything unmapped is Others. The raw
+// source names inside Others are counted live from the data, never stored.
+export function assignedSource(value,aliases=[],categories=[]){
   const mapping=aliases.find(row=>lower(row.source_key)===lower(value));
-  const category=lower(personal?.category_code||mapping?.category_code||'others');
+  const category=lower(mapping?.category_code||'others');
   return categories.some(row=>row.category_code===category&&row.enabled!==false)?category:'others';
 }
-export function availableMemberMeasures(datasets=[],categories=[],scopeSources=[]){
+export function availableMemberMeasures(datasets=[],categories=[]){
   const media=new Set();
   for(const rows of datasets)for(const row of rows||[]){
     if(row.kind==='media'&&row.category)media.add(lower(row.category));
@@ -24,10 +19,6 @@ export function availableMemberMeasures(datasets=[],categories=[],scopeSources=[
     {id:'text',name:'文字作品'},
     {id:'multimedia',name:'多媒體'},
     ...categories.filter(x=>x.enabled!==false).map(row=>({id:'source:'+row.category_code,name:'群組來源分類 · '+row.display_name})),
-    ...scopeSources.filter(row=>row.enabled!==false).map(row=>({
-      id:'personal:'+row.scope_id+':'+row.source_key,
-      name:'個人自訂來源分類 · '+row.display_name
-    })),
     ...[...media].sort().map(id=>({id:'media:'+id,name:'多媒體類型 · '+id})),
     {id:'daily',name:'每日符文'},
     {id:'daily:kind:main',name:'每日符文 · 主抽'},
@@ -36,7 +27,7 @@ export function availableMemberMeasures(datasets=[],categories=[],scopeSources=[
     ...['新月','上弦','滿月','下弦','空亡'].map(phase=>({id:'daily:phase:'+phase,name:'每日符文 · '+phase}))
   ];
 }
-function measureRows(rows=[],metric,categories,aliases,scopeSources=[],scopeId=''){
+function measureRows(rows=[],metric,categories,aliases){
   const counts=new Map();
   for(const row of rows||[]){
     const day=String(row.day||'').slice(0,10);
@@ -47,12 +38,7 @@ function measureRows(rows=[],metric,categories,aliases,scopeSources=[],scopeId='
     if(metric==='total')include=row.kind==='total';
     else if(metric==='text')include=row.kind==='total'&&row.category==='文字作品';
     else if(metric==='multimedia')include=row.kind==='total'&&row.category==='多媒體';
-    else if(metric.startsWith('source:'))include=row.kind==='source'&&assignedSource(row.category,aliases,categories,scopeSources,scopeId)===metric.slice(7);
-    else if(metric.startsWith('personal:')){
-      const target=metric.slice(9),split=target.indexOf(':');
-      include=row.kind==='source'&&split>0&&target.slice(0,split)===scopeId&&
-        lower(row.category)===target.slice(split+1)&&Boolean(personalSource(row.category,scopeSources,scopeId));
-    }
+    else if(metric.startsWith('source:'))include=row.kind==='source'&&assignedSource(row.category,aliases,categories)===metric.slice(7);
     else if(metric.startsWith('media:'))include=row.kind==='media'&&lower(row.category)===metric.slice(6);
     if(include)counts.set(day,(counts.get(day)||0)+count);
   }
@@ -67,14 +53,14 @@ function bucket(day,unit){
   return day;
 }
 export function calculateMemberCross(lanes=[],datasets=new Map(),{
-  from='',to='',unit='week',categories=[],aliases=[],scopeSources=[]
+  from='',to='',unit='week',categories=[],aliases=[]
 }={}){
   if(!ISO_DATE.test(from)||!ISO_DATE.test(to)||from>to)return {rows:[],series:[],totals:[],commonDays:0,unionDays:0,daysPerLane:[]};
   const selected=lanes.slice(0,4).map((lane,i)=>({
     ...lane,key:'line'+i,
     values:lane.metric.startsWith('daily')
       ?new Map()
-      :measureRows(datasets.get(lane.person)?.rows||[],lane.metric,categories,aliases,scopeSources,lane.person)
+      :measureRows(datasets.get(lane.person)?.rows||[],lane.metric,categories,aliases)
   }));
   for(const lane of selected)if(lane.metric.startsWith('daily')){
     if(lane.person!=='lrunes')continue;

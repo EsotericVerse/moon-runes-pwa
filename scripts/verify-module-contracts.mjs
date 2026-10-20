@@ -86,9 +86,8 @@ if(statisticsSource.includes("from '../../loc/galaxy-query'")||
    !statisticsSource.includes("const loadGalaxyStatistics=()=>import('../../loc/galaxy-query')")||
    !mediaCrossSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
    !statisticsSource.includes("const {selectMediaCrossTagRows}=await loadGalaxyStatistics()")||
-   !statisticsSource.includes("const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics()")||
-   !readFileSync(resolve(root,'app/modular/modules/statistics/ScopeGroupStatistics.jsx'),'utf8').includes("await import('../../../loc/statistics-group-sharing-query.mjs')"))
-  failures.push('Statistics Galaxy and group-sharing engines must be loaded on the active query or interaction');
+   !statisticsSource.includes("const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics()"))
+  failures.push('Statistics Galaxy engines must be loaded on the active query or interaction');
 
 // Media facets have their own React hook state, chart selection and pagination.
 // Unrelated statistics never mount the media category/classification controls.

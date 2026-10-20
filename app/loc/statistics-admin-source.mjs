@@ -1,4 +1,4 @@
-import {assignedSource,personalSource} from './member-intersection-model.mjs';
+import {assignedSource} from './member-intersection-model.mjs';
 
 const day=value=>String(value||'').slice(0,10);
 function bucket(d,unit){
@@ -10,25 +10,15 @@ function bucket(d,unit){
   }
   return d;
 }
-export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day',dimension='group',scopeId=''}={}){
+export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day'}={}){
   const start=day(startDate),end=day(endDate);
   const categories=(taxonomy.categories||[]).filter(c=>c.enabled!==false);
   const aliases=taxonomy.aliases||[];
-  const scopeSources=taxonomy.scopeSources||[];
-  const custom=dimension==='personal';
-  const activeCustom=scopeSources.filter(row=>row.scope_id===scopeId&&row.enabled!==false&&
-    categories.some(category=>category.category_code===row.category_code));
-  const personalKeys=new Map(activeCustom.map((row,i)=>[String(row.source_key).toLowerCase(),{
-    key:'personal_'+i,label:row.display_name
-  }]));
   if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end){
     return {rows:[],series:[],distribution:[],total:0};
   }
-  const keys=custom
-    ?new Map([...personalKeys.values()].map(item=>[item.key,item.label]))
-    :new Map(categories.map(c=>[c.category_code,c.display_name]));
-  if(!custom&&!keys.has('others'))keys.set('others','Others');
-  if(custom)keys.set('uncategorized','未自訂來源');
+  const keys=new Map(categories.map(c=>[c.category_code,c.display_name]));
+  if(!keys.has('others'))keys.set('others','Others');
   const data=new Map(),totals=new Map(),rawRecords=Array.isArray(raw)?raw:[];
   for(let date=new Date(start+'T00:00:00Z'),last=new Date(end+'T00:00:00Z');date<=last;date.setUTCDate(date.getUTCDate()+1)){
     const today=date.toISOString().slice(0,10),group=bucket(today,unit);
@@ -42,9 +32,7 @@ export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDa
     if(!item)continue;
     if(record.kind==='total')item.total+=count;
     if(record.kind!=='source')continue;
-    const personal=custom?personalSource(record.category,scopeSources,scopeId):null;
-    const category=custom?(personalKeys.get(String(personal?.source_key||'').toLowerCase())?.key||'uncategorized')
-      :assignedSource(record.category,aliases,categories,scopeSources,scopeId);
+    const category=assignedSource(record.category,aliases,categories);
     const key='category_'+category;
     item[key]=(item[key]||0)+count;
     totals.set(category,(totals.get(category)||0)+count);

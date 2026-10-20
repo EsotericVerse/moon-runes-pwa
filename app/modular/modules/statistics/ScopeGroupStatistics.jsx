@@ -5,7 +5,6 @@ import {useQuery} from '@tanstack/react-query';
 import {UI_COPY} from '../../../i18n/ui-copy';
 import {useUiCopy} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
-import {canParticipateInCrossStatistics,sharedScopeDensity} from '../../../loc/statistics-group-sharing.mjs';
 import {selectFirstDailyRuneDate} from '../../../loc/daily-runes';
 import {featureNavigationHref} from '../../feature-navigation';
 import {featureDataErrorMessage} from '../../feature-data-state';
@@ -31,22 +30,12 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
     queryFn:selectPublicStatisticsMembers,
     staleTime:5*60_000
   });
-  const policy=useQuery({
-    queryKey:['cross-statistics-sharing'],
-    queryFn:async()=>{
-      const {selectCrossScopeSharing}=await import('../../../loc/statistics-group-sharing-query.mjs');
-      return selectCrossScopeSharing();
-    },
-    staleTime:0,refetchOnMount:'always',refetchOnWindowFocus:true
-  });
-  const scopes=useMemo(()=>(scopesQuery.data||[]).filter(scope=>
-    canParticipateInCrossStatistics(scope.id,policy.data?.permissions,policy.data?.categories)
-  ),[scopesQuery.data,policy.data]);
+  const scopes=useMemo(()=>scopesQuery.data||[],[scopesQuery.data]);
   const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
   const endDate=useMemo(()=>taipeiDateKey(),[]);
   const earliest=useQuery({
     queryKey:['statistics-history-start','loc',scopeIds.join('|')],
-    enabled:scopesQuery.isSuccess&&policy.isSuccess,
+    enabled:scopesQuery.isSuccess,
     queryFn:async()=>{
       const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
       const starts=await Promise.all([
@@ -69,12 +58,18 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
         return {scopeId:scope.id,rows};
       }));
     },
-    enabled:Boolean(policy.data&&scopes.length&&startDate&&rangeEndDate),
+    enabled:Boolean(scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
-  // Consent is a client-side projection. A policy update must not re-SELECT unchanged Galaxy rows.
-  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>
-    sharedScopeDensity(entry.rows,entry.scopeId,policy.data)),[densityQuery.data,policy.data]);
+  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>{
+    const daily=new Map();
+    for(const row of entry.rows||[]){
+      if(row.kind!=='total')continue;
+      const day=String(row.day||'').slice(0,10);
+      daily.set(day,(daily.get(day)||0)+(Number(row.item_count)||0));
+    }
+    return [...daily.entries()].map(([day,item_count])=>({scope_id:entry.scopeId,day,item_count}));
+  }),[densityQuery.data]);
   const preloadedSources=useMemo(()=>densityQuery.data
     ?new Map(densityQuery.data.map(entry=>[entry.scopeId,entry.rows]))
     :null,[densityQuery.data]);
@@ -175,14 +170,13 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
     <StatisticsDetails className="scope-stat-details" summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}>
       {()=> <LocMemberIntersection key={startDate+'|'+rangeEndDate}
         scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
-        unit={bucket} sharing={policy.data||{}} preloadedSources={preloadedSources}
+        unit={bucket} preloadedSources={preloadedSources}
         laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
         choices={memberChoices} onChoicesChange={setMemberChoices}
         graph={memberGraph} onGraphChange={setMemberGraph}
         zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>}
     </StatisticsDetails>
     {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
-    {policy.error?<p className="scope-status scope-error">{featureDataErrorMessage(policy.error,UI_COPY)}</p>:null}
     {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error,UI_COPY)}</p>:null}
   </section>;

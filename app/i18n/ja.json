@@ -727,7 +727,6 @@
     "statisticsUI": {
       "dailyRune": "毎日のルーン",
       "sourceGroup": "グループのソース分類",
-      "sourceCustom": "個人のカスタムソース分類",
       "mediaType": "メディアの種類",
       "mediaPlatform": "メディアプラットフォーム統計",
       "mediaStyle": "メディアスタイル統計（メタタグ）",
@@ -950,7 +949,6 @@
       "displayStyle": "スタイル",
       "keywordSettings": "キーワード設定",
       "groupSourcesShare": "グループソース分類・公開統計",
-      "personalSourcesManage": "個人ソース分類・管理",
       "scopeGroupStatisticsTitle": "Scope Group 統計ガイド",
       "scopeGroupStatisticsHelp": "各 Scope が作品・ソース・2～4 組の交互統計を担当します。Group は案内のみを行います。",
       "groupSuffix": "グループ",
@@ -1061,15 +1059,8 @@
       "defaultMap": "グループ分類の既定割当",
       "rawSource": "元のソース",
       "assign": "分類を割り当てる",
-      "personalTitle": "個人のソース分類",
-      "personalGuide": "現在のメンバーのソース名と所属分類のみ管理します。作品本文や他の Scope は変更しません。",
-      "displayName": "カスタム表示名",
-      "savePersonal": "個人ソース分類を保存",
-      "customName": "カスタム名",
       "badCode": "分類コードまたは名前が無効です",
-      "chooseSource": "ソースとグループ分類を選択してください",
-      "badSource": "ソース名が無効です",
-      "chooseGroup": "有効なグループ分類を選択してください"
+      "chooseSource": "ソースとグループ分類を選択してください"
     },
     "sharing": {
       "updated": "グループソース分類の共有設定を更新しました。",

@@ -8,7 +8,6 @@ import {useAccount} from './use-account';
 
 const CATEGORIES='silver.statistics_source_categories';
 const ALIASES='silver.statistics_source_aliases';
-const PERSONAL='silver.scope_source_rules';
 const ID=/^[a-z][a-z0-9_-]{0,63}$/;
 const SOURCE=/^.{1,120}$/;
 const normalize=value=>String(value||'').trim().toLowerCase();
@@ -102,83 +101,6 @@ export function AdminSourceCategories(){
       </div>)}
     </div>
     {query.error?<p className="scope-status scope-error">{String(query.error.message||query.error)}</p>:null}
-    {notice?<p role="status" className="scope-status">{notice}</p>:null}
-  </section>;
-}
-
-export function ScopeCustomSourceCategories({scopeId}){
-  const t=useUiText();
-  const account=useAccount(),client=useQueryClient(),groupQuery=useSourceCategories();
-  const [source,setSource]=useState(''),[label,setLabel]=useState(''),[category,setCategory]=useState('others');
-  const [labels,setLabels]=useState({}),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
-  const canManage=Boolean(scopeId&&account.canManageScopeSync(scopeId));
-  const query=useQuery({
-    queryKey:['scope-source-subcategories',scopeId],
-    enabled:canManage,
-    queryFn:async()=>{
-      const {data,error}=await dbAuthRelation(PERSONAL)
-        .select('source_key,category_code,display_name,enabled').eq('scope_id',scopeId).eq('kind','subcategory').order('source_key');
-      if(error)throw Error(error.message);
-      return data||[];
-    },
-    staleTime:60_000
-  });
-  if(!canManage)return null;
-  const groups=(groupQuery.data?.categories||[]).filter(row=>row.enabled);
-  async function apply(fn){
-    setBusy(true);setNotice('');
-    try{
-      await fn();
-      await query.refetch();
-      await client.invalidateQueries({queryKey:['statistics-source-taxonomy',scopeId]});
-      await client.invalidateQueries({queryKey:['own-scope-source-catalog',scopeId]});
-      await client.invalidateQueries({queryKey:['loc-source-categories']});
-      setSource('');setLabel('');
-    }catch(error){setNotice(String(error.message||error));}
-    finally{setBusy(false);}
-  }
-  const add=()=>apply(async()=>{
-    const key=normalize(source),name=label.trim()||source.trim();
-    if(!SOURCE.test(key)||!key||!name||name.length>80)throw Error(t('uiExtra.sourceCategory.badSource'));
-    if(!groups.some(row=>row.category_code===category))throw Error(t('uiExtra.sourceCategory.chooseGroup'));
-    const {error}=await dbAuthRelation(PERSONAL).upsert({
-      scope_id:scopeId,kind:'subcategory',source_key:key,display_name:name,category_code:category,enabled:true
-    },{onConflict:'scope_id,kind,source_key'});
-    if(error)throw Error(error.message);
-  });
-  const update=(key,values)=>apply(async()=>{
-    const {error}=await dbAuthRelation(PERSONAL).update(values)
-      .eq('scope_id',scopeId).eq('kind','subcategory').eq('source_key',key);
-    if(error)throw Error(error.message);
-  });
-  return <section className="scope-inline-card" aria-label={t('uiExtra.sourceCategory.personalTitle')}>
-    <h3><UiText id="uiExtra.sourceCategory.personalTitle"/></h3>
-    <p className="scope-status"><UiText id="uiExtra.sourceCategory.personalGuide"/></p>
-    <div className="scope-stat-controls">
-      <label><UiText id="uiExtra.sourceCategory.rawSource"/><input value={source} maxLength={120} onChange={e=>setSource(e.target.value)} placeholder="source_name"/></label>
-      <label><UiText id="uiExtra.sourceCategory.displayName"/><input value={label} maxLength={80} onChange={e=>setLabel(e.target.value)}/></label>
-      <label><UiText id="uiExtra.sourceCategory.groupTitle"/><select className="scope-select" value={groups.some(row=>row.category_code===category)?category:(groups[0]?.category_code||'')} onChange={e=>setCategory(e.target.value)}>
-        {groups.map(row=><option key={row.category_code} value={row.category_code}>{row.display_name}</option>)}
-      </select></label>
-      <button type="button" className="loc-button" disabled={busy||!source.trim()||!groups.length} onClick={add}><UiText id="uiExtra.sourceCategory.savePersonal"/></button>
-    </div>
-    <div className="scope-management-records">
-      {(query.data||[]).map(row=><div className="scope-inline-card" key={row.source_key}>
-        <span>{row.source_key}</span>
-        <label><UiText id="uiExtra.sourceCategory.customName"/><input maxLength={80} disabled={busy}
-          value={labels[row.source_key]??row.display_name}
-          onChange={e=>setLabels(old=>({...old,[row.source_key]:e.target.value}))}/></label>
-        <button type="button" className="loc-button" disabled={busy||!String(labels[row.source_key]??row.display_name).trim()}
-          onClick={()=>update(row.source_key,{display_name:String(labels[row.source_key]??row.display_name).trim()})}><UiText id="uiExtra.sourceCategory.saveName"/></button>
-        <label><UiText id="uiExtra.sourceCategory.groupTitle"/><select className="scope-select" value={row.category_code} disabled={busy}
-          onChange={e=>update(row.source_key,{category_code:e.target.value})}>
-          {(groupQuery.data?.categories||[]).map(item=><option key={item.category_code} value={item.category_code}>{item.display_name}</option>)}
-        </select></label>
-        <button type="button" className="loc-button" disabled={busy}
-          onClick={()=>update(row.source_key,{enabled:!row.enabled})}><UiText id={row.enabled?'uiExtra.sourceCategory.disable':'uiExtra.sourceCategory.enable'}/></button>
-      </div>)}
-    </div>
-    {groupQuery.error||query.error?<p className="scope-status scope-error">{String(groupQuery.error?.message||query.error?.message)}</p>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }

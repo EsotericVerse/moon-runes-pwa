@@ -727,7 +727,6 @@
     "statisticsUI": {
       "dailyRune": "每日符文",
       "sourceGroup": "群组来源分类",
-      "sourceCustom": "个人自定义来源分类",
       "mediaType": "多媒体类型",
       "mediaPlatform": "多媒体来源统计",
       "mediaStyle": "多媒体风格统计（Meta Tag）",
@@ -950,7 +949,6 @@
       "displayStyle": "表现风格",
       "keywordSettings": "关键词设置",
       "groupSourcesShare": "群组来源分类 · 共享统计",
-      "personalSourcesManage": "个人自定义来源分类 · 管理",
       "scopeGroupStatisticsTitle": "Scope Group 统计导航",
       "scopeGroupStatisticsHelp": "各 Scope 自行进行作品、来源与 2～4 组交互统计；Group 仅提供导航。",
       "groupSuffix": "群组",
@@ -1061,15 +1059,8 @@
       "defaultMap": "群组来源默认归属",
       "rawSource": "原始来源",
       "assign": "指定归属",
-      "personalTitle": "个人自定义来源分类",
-      "personalGuide": "仅管理当前成员的原始来源名称及群组归属，不修改作品正文或其他 Scope。",
-      "displayName": "自定义显示名称",
-      "savePersonal": "保存个人来源分类",
-      "customName": "自定义名称",
       "badCode": "分类代码或名称无效",
-      "chooseSource": "请选择来源与群组来源分类",
-      "badSource": "来源名称无效",
-      "chooseGroup": "请先选择有效的群组来源分类"
+      "chooseSource": "请选择来源与群组来源分类"
     },
     "sharing": {
       "updated": "已更新群组来源分类的共享统计设置。",

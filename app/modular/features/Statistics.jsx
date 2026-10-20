@@ -32,19 +32,16 @@ const MediaCrossTagStatistics=dynamic(()=>import('../modules/statistics/MediaCro
 const MediaFacetStatistics=dynamic(()=>import('../modules/statistics/MediaFacetStatistics'),{loading:()=>null});
 const ScopeGroupStatistics=dynamic(()=>import('../modules/statistics/ScopeGroupStatistics'),{loading:()=>null});
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
-const ScopeCustomSourceCategories=dynamic(()=>import('../../loc/SourceCategoryEditor').then(m=>m.ScopeCustomSourceCategories),{loading:()=>null});
-const ScopeGroupStatisticsSharing=dynamic(()=>import('../../loc/ScopeGroupStatisticsSharing'),{loading:()=>null});
 import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
 import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const CHART_TYPES=STAT_VISUAL_TYPES;
-const STAT_TYPES=['total','source','source_custom','media_type','media_platform','media_style'];
+const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
 const STAT_TYPE_KEYS=Object.freeze({
   daily_rune:'uiExtra.statisticsUI.dailyRune',
   total:'statistics.totalSource',
   source:'uiExtra.statisticsUI.sourceGroup',
-  source_custom:'uiExtra.statisticsUI.sourceCustom',
   media_type:'uiExtra.statisticsUI.mediaType',
   media_platform:'uiExtra.statisticsUI.mediaPlatform',
   media_style:'uiExtra.statisticsUI.mediaStyle'
@@ -226,13 +223,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     queryKey:['statistics-source-taxonomy',scopeId],
     enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
     queryFn:async()=>{
-      const [cat,aliases,personal]=await Promise.all([
+      const [cat,aliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
-        selectRows('silver.scope_source_rules',{columns:'scope_id,source_key,category_code,display_name,enabled',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId},{column:'kind',operator:'eq',value:'subcategory'}],limit:250})
+        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
       ]);
-      return {categories:cat.rows,aliases:aliases.rows,scopeSources:personal.rows};
+      return {categories:cat.rows,aliases:aliases.rows};
     },
     staleTime:5*60_000
   });
@@ -255,8 +250,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {administrativeSourceTrend}=await import('../../loc/statistics-admin-source.mjs');
       return administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
         startDate:queryRange.startDate,endDate:queryRange.endDate,
-        unit:queryRange.bucket,scopeId,
-        dimension:rankingType==='source_custom'?'personal':'group'
+        unit:queryRange.bucket
       });
     },
     staleTime:5*60_000
@@ -402,14 +396,6 @@ function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,
       </a>
     </section>:null}
     <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
-    {canManageSources?<StatisticsDetails className="scope-stat-section"
-      summary={<UiText id="uiExtra.statisticsView.groupSourcesShare"/>}>
-      {()=> <ScopeGroupStatisticsSharing scopeId={scopeId}/>}
-    </StatisticsDetails>:null}
-    {canManageSources?<StatisticsDetails className="scope-stat-section"
-      summary={<UiText id="uiExtra.statisticsView.personalSourcesManage"/>}>
-      {()=> <ScopeCustomSourceCategories scopeId={scopeId}/>}
-    </StatisticsDetails>:null}
   </>;
 }
 
