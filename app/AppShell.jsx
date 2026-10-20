@@ -4,7 +4,7 @@ import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
-import {UiLocaleProvider,useUiLocale} from './i18n/ui-locale';
+import {UiLocaleProvider,useLoadedUiLocale,useUiLocale} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
 import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
@@ -303,7 +303,8 @@ export default function AppShell({children}){
   const currentScope=scope||getScope(scopeId);
   const [localeSelection,setLocaleSelection]=useState(()=>({scopeId:'',locale:'zh-Hant',manual:false}));
   const activeLocale=localeSelection.scopeId===scopeId?normalizeUiLocale(localeSelection.locale):'zh-Hant';
-  const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale]);
+  const localeReady=useLoadedUiLocale(activeLocale);
+  const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
   const navScopeId=currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
