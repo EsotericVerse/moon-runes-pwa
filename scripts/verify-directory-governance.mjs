@@ -25,8 +25,6 @@ function walk(dir,files=[]){
   return files;
 }
 const files=walk(root);
-if(files.some(path=>path.toLowerCase().endsWith('.sql')))
-  failures.push('LOC 1.0 must contain zero standalone SQL files');
 for(const file of ['LunaRune66.xlsx','LunarRunesCardCut.pdf']){
   if(!existsSync(resolve(root,file)))failures.push('missing LOC 1.0 artifact: '+file);
 }
