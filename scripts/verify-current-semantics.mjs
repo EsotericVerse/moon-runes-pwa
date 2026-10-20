@@ -385,7 +385,7 @@ if(!failures.length){
   if(!searchProviders.includes("const textColumns=['uid'];")||
      !galaxy.includes('export async function hydrateGalaxySearchRows(')||
      !galaxy.includes("filters:[{column:'uid',operator:'in',value:keys}]")||
-     !search.includes('await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds)'))
+     !search.includes('await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds,{signal})'))
     failures.push('Search must return bounded UID pages, then hydrate narrow display metadata only');
   const queryContract=read('app/loc/db-contract.mjs');
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','export function queryBatchSize(){','return DB_QUERY_BATCH_SIZE;'])if(!queryContract.includes(token))failures.push('Universal 65535 database query ceiling missing '+token);

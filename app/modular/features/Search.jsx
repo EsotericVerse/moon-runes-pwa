@@ -25,7 +25,7 @@ import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
-import {applyFilters,selectRows} from '../../loc/db-query.mjs';
+import {applyFilters,isAbortError,selectRows} from '../../loc/db-query.mjs';
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
 const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
 
@@ -351,6 +351,16 @@ export default function Search(){
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
+  // Every search owns an AbortController; a newer search, a reset or unmount
+  // cancels the previous one so superseded requests stop instead of piling up.
+  const abortRef=useRef(null);
+  const beginRequest=()=>{
+    abortRef.current?.abort();
+    const controller=new AbortController();
+    abortRef.current=controller;
+    return controller;
+  };
+  useEffect(()=>()=>{abortRef.current?.abort();},[]);
   const loadMoreInFlight=useRef(false);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
@@ -415,6 +425,10 @@ export default function Search(){
     if(!append){activeSearchOptionsRef.current=options;setBrowseResults(options.browse);}
 
     const id=++searchId.current;
+    const controller=beginRequest();
+    const {signal}=controller;
+    // A fresh search supersedes any in-flight style-keyword fetch for the same key.
+    if(!append)queryClient.cancelQueries({queryKey:['search-style-keyword']});
     setError('');
     if(append){
       setLoadMoreError('');
@@ -463,25 +477,30 @@ export default function Search(){
         }
         if(q)logSearchKeyword(scopeId,q).catch(()=>{});
       }
-      const styleTagMatches=(!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate)
-        ?await queryClient.fetchQuery({
-          queryKey:['search-style-keyword',targetScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
-          queryFn:()=>selectStyleKeywordMatches(targetScopes,q),
-          staleTime:60_000
-        })
-        :[];
-      const search=await searchGalaxyRows(targetScopes,q,{
+      const wantsStyleTags=!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
+      // Start the primary search first so it takes the first connection slot, then
+      // run the cross-Scope style-tag lookup alongside it instead of in front of it.
+      const searchPromise=searchGalaxyRows(targetScopes,q,{
         limit:pageSize,
         // Always search article providers, including when the same keyword
         // exactly matches a style tag.
         cursor,
         mediaOnly:options.mediaOnly,hiddenScopeIds,
         contentType:options.contentType,sourceFilter:options.sourceFilter,
-        startDate:options.startDate,endDate:options.endDate,browse:options.browse
+        startDate:options.startDate,endDate:options.endDate,browse:options.browse,
+        signal
       });
+      const stylePromise=wantsStyleTags
+        ?queryClient.fetchQuery({
+          queryKey:['search-style-keyword',targetScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
+          queryFn:()=>selectStyleKeywordMatches(targetScopes,q,{signal}),
+          staleTime:60_000
+        })
+        :Promise.resolve([]);
+      const [styleTagMatches,search]=await Promise.all([stylePromise,searchPromise]);
       if(id!==searchId.current)return;
 
-      const searchRows=await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds);
+      const searchRows=await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds,{signal});
       if(id!==searchId.current)return;
       const textByScope=new Map();
       for(const entry of searchRows){
@@ -496,7 +515,7 @@ export default function Search(){
       await Promise.all([...textByScope.entries()].map(async([rowScope,rows])=>{
         const scopeData=scopeById.get(rowScope);
         if(!scopeData)return;
-        const resolved=await resolveGalaxyExternalLinks(scopeData,rows);
+        const resolved=await resolveGalaxyExternalLinks(scopeData,rows,{signal});
         for(const row of resolved)resolvedByKey.set(rowScope+':'+row.uid,row);
       }));
       const enrichedRows=searchRows.map(entry=>{
@@ -520,7 +539,7 @@ export default function Search(){
       const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append)setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
     }catch(exception){
-      if(id!==searchId.current)return;
+      if(id!==searchId.current||isAbortError(exception))return;
       if(append){
         setLoadMoreError(featureDataErrorMessage(exception,UI_COPY));
       }else{
@@ -544,6 +563,7 @@ export default function Search(){
     const identity=String(rawIdentity||'').trim();
     if(!identity)return;
     const id=++searchId.current;
+    beginRequest();
     matchedQueryRef.current='';
     setError('');setLoadMoreError('');setHasMore(false);setNextCursor(null);setLoadingMore(false);
     setFullText('');setFullTextRow(null);setFullTextError('');setFullTextLoading(true);
@@ -574,6 +594,7 @@ export default function Search(){
 
   async function executeMediaIdentity(rawMediaId){
     const mediaId=String(rawMediaId||'').trim(),id=++searchId.current;
+    beginRequest();
     setError('');setStatus('');setResults([]);setEditDraft(null);setEditingKey('');
     setHasMore(false);setNextCursor(null);setFullText('');setFullTextRow(null);
     try{
@@ -720,6 +741,7 @@ export default function Search(){
 
   function resetSearchState(){
     ++searchId.current;
+    abortRef.current?.abort();
     loadMoreInFlight.current=false;
     setLoadingMore(false);
     matchedQueryRef.current='';

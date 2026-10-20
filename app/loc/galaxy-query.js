@@ -120,14 +120,15 @@ export async function selectCategoryCounts(table,categoryColumn,{startDate='',en
 function mediaIdsOf(value){
   return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
 }
-async function mediaRowsFor(scope,mediaIds=[]){
+async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
   const current=scopeOf(scope);
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
   return (await selectRows(current.galaxyMedia,{
     columns:'media_id,title,url,media_type',
     filters:[{column:'media_id',operator:'in',value:ids}],
-    limit:ids.length
+    limit:ids.length,
+    signal
   })).rows;
 }
 function resolvedLinks(row,mediaById){
@@ -142,12 +143,12 @@ function resolvedLinks(row,mediaById){
   return links;
 }
 
-export async function resolveGalaxyExternalLinks(scope,rows=[]){
+export async function resolveGalaxyExternalLinks(scope,rows=[],{signal=null}={}){
   const current=scopeOf(scope);
   const source=Array.isArray(rows)?rows:[];
   if(!source.length)return [];
   const ids=[...new Set(source.flatMap(row=>mediaIdsOf(row?.media_link)))];
-  const mediaRows=await mediaRowsFor(current,ids);
+  const mediaRows=await mediaRowsFor(current,ids,{signal});
   const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
   return source.map(row=>({...row,resolved_links:resolvedLinks(row,mediaById)}));
 }
@@ -214,7 +215,7 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   const pageSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
   return Object.freeze({
     id,table,source,scope,idColumn,columns:outputColumns,searchFields:frozenFields,filters:frozenFilters,
-    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false}={}){
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false,signal=null}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
@@ -236,7 +237,7 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
         }else if(!browse)dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
-      },{source,authenticated});
+      },{source,authenticated,signal});
       const dataSource=dataResult.__dataSource||source||'auto';
       const found=dataResult.data||[];
       const hasMore=found.length>pageSize;
@@ -305,10 +306,14 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
 function normalizeSearch(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').replace(/[\s\u3000]+/g,'');
 }
-export async function selectStyleKeywordMatches(scopes,query){
+// Scope tables are independent, so one LOC-wide keyword used to fire one request per
+// Scope at once. A small worker pool keeps the browser's connection slots free for
+// the primary search request, and the signal stops the remaining work on re-search.
+export async function selectStyleKeywordMatches(scopes,query,{signal=null,concurrency=4}={}){
   const key=normalizeSearch(query);
   if(!key)return [];
-  const found=await Promise.all((Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time).map(async scope=>{
+  const targets=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time);
+  const matchScope=async scope=>{
     const current=scopeOf(scope);
     const {rows=[]}=await selectRows(current.time,{
       columns:'record_id,record_type,label,style_description,status',
@@ -316,7 +321,8 @@ export async function selectStyleKeywordMatches(scopes,query){
         {column:'record_type',operator:'eq',value:'style_comment'},
         {column:'label',operator:'eq',value:String(query||'').normalize('NFKC').trim()}
       ],
-      limit:DEFAULT_LIST_BATCH_SIZE
+      limit:DEFAULT_LIST_BATCH_SIZE,
+      signal
     });
     return rows
       .filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&normalizeSearch(row.label)===key)
@@ -331,12 +337,24 @@ export async function selectStyleKeywordMatches(scopes,query){
         source:'風格標籤',
         providerId:current.id+':style-keyword'
       }));
-  }));
-  return found.flat();
+  };
+  const found=new Array(targets.length);
+  let cursor=0;
+  const worker=async()=>{
+    while(cursor<targets.length){
+      if(signal?.aborted)return;
+      const index=cursor++;
+      found[index]=await matchScope(targets[index]);
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(Math.max(1,concurrency),targets.length)},worker));
+  // Never return a partial result for a cancelled lookup: callers cache successes.
+  if(signal?.aborted){const cancelled=new Error('Request cancelled');cancelled.name='AbortError';throw cancelled;}
+  return found.filter(Boolean).flat();
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',browse=false
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',browse=false,signal=null
 }={}){
   const q=String(query||'').trim();
   if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
@@ -360,11 +378,13 @@ export async function searchGalaxyRows(scopes,query,{
   const provider=providers[stage-1];
   if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
   try{
-    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse});
+    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse,signal});
     if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor,source:result.dataSource||cursor?.source||'auto'}};
     const hasMore=stage<providers.length;
     return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0,source:'auto'}:null};
   }catch(error){
+    // A cancelled search is not a provider failure: never advance to the next stage.
+    if(error?.name==='AbortError')throw error;
     failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
     const hasMore=stage<providers.length;
     if(!hasMore)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
@@ -373,7 +393,7 @@ export async function searchGalaxyRows(scopes,query,{
 }
 
 
-export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeIds=[]){
+export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeIds=[],{signal=null}={}){
   const items=Array.isArray(entries)?entries:[];
   const scopeMap=new Map((Array.isArray(scopes)?scopes:[]).map(scope=>[scope.id,scope]));
   const privateScopes=new Set(hiddenScopeIds||[]);
@@ -394,7 +414,8 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
       columns:'uid,title,createtime,source_place,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
-      authenticated:privateScopes.has(scope.id)
+      authenticated:privateScopes.has(scope.id),
+      signal
     });
     for(const row of rows||[])metadata.set(scope.id+':'+row.uid,row);
   }));

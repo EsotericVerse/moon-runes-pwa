@@ -3,7 +3,7 @@ import FieldText from '../i18n/FieldText';
 import UiText,{useUiText} from '../i18n/UiText';
 
 import dynamic from 'next/dynamic';
-import {Suspense} from 'react';
+import {Suspense,useEffect} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
@@ -36,6 +36,25 @@ const VIEWS={
   manage:ManagementView
 };
 const HOME_VIEWS={loc:AboutView,lrunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
+// Same modules as the dynamic() declarations above, so the bundler reuses the same
+// chunks. Only the view that is about to render is requested, and it is requested
+// immediately, in parallel with the registry and FeatureGate config queries,
+// instead of after they finish.
+const VIEW_PRELOADERS={
+  game:()=>import('../lrunes/game/GameBoard'),
+  statics:()=>import('../modular/features/Statistics'),
+  keywords:()=>import('../modular/features/KeywordSettings'),
+  culture:()=>import('../modular/features/Culture'),
+  search:()=>import('../modular/features/Search'),
+  governance:()=>import('../modular/features/Governance'),
+  manage:()=>import('./GovernanceManagement')
+};
+const HOME_PRELOADERS={
+  loc:()=>import('./views/AboutView'),
+  lrunes:()=>import('../lrunes/RunesClient'),
+  lo3rwang:()=>import('./views/AuthorHomeView'),
+  admin:()=>import('./views/AdminHomeView')
+};
 const FEATURE_FLAGS=Object.freeze({
   search:'search_able',
   statics:'statistics_able',
@@ -77,6 +96,14 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
   // an overview/guide only: never query another Scope's Galaxy or Time here.
   const groupOverviewView=Boolean(scopeMeta?.aggregateChildren&&scopeId!=='loc'&&
     ['statics','culture','governance'].includes(forcedView));
+
+  useEffect(()=>{
+    const preload=forcedView==='home'
+      ?HOME_PRELOADERS[scopeId]||(()=>import('./views/GenericScopeHomeView'))
+      :VIEW_PRELOADERS[forcedView]||HOME_PRELOADERS.loc;
+    preload().catch(()=>{});
+    if(groupOverviewView)import('./ScopeGroupOverview').catch(()=>{});
+  },[forcedView,scopeId,groupOverviewView]);
 
   if(!forcedScope&&runtime.dynamic&&!runtime.registryResolved){
     return <div className="loc-next-main" data-loc-scope={scopeId}><div className="loc-loading"><UiText id="uiExtra.feature.registryLoading"/></div></div>;
