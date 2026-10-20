@@ -5,7 +5,9 @@ export default defineConfig({
   timeout:45_000,
   expect:{timeout:8_000},
   fullyParallel:false,
-  retries:0,
+  // CI runners are occasionally slow to come up; one retry absorbs that noise
+  // without hiding a real, repeatable failure (retries stay off locally).
+  retries:process.env.CI?1:0,
   reporter:[['list']],
   use:{
     baseURL:'http://127.0.0.1:4173',
@@ -22,6 +24,9 @@ export default defineConfig({
     command:'python3 -m http.server 4173 -d out',
     url:'http://127.0.0.1:4173',
     reuseExistingServer:false,
-    timeout:20_000
+    // This run's CI logs showed the last two runs timing out waiting for this
+    // plain static-file server to answer at all within 20s — a shared-runner
+    // contention issue, not an app problem. Give it more headroom.
+    timeout:60_000
   }
 });

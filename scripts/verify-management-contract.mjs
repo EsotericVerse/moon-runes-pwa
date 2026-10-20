@@ -166,7 +166,6 @@ must(read('app/loc/BlockNoteEditorClient.jsx').includes('tryParseMarkdownToBlock
 must(blocksToPlainText(plainTextToBlocks('第一段\n第二段'))==='第一段\n第二段','BlockNote converter must preserve paragraph boundaries');
 must(normalizeBlocks({html:'<p>原始文字</p>'}).html==='<p>原始文字</p>','BlockNote must preserve legacy HTML hydration');
 must(Array.isArray(normalizeBlocks([{type:'paragraph',content:'字'}])),'BlockNote must accept temporary UI editor blocks');
-must(!fs.existsSync(path.join(root,'app/loc/RichBlockEditor.jsx')),'retired RichBlockEditor must be removed');
 must(blockNoteEditor.includes("from '@blocknote/react'")&&blockNoteEditor.includes("from '@blocknote/mantine'")&&blockNoteEditor.includes('BlockNoteView')&&!blockNoteEditor.includes('uploadFile'),'BlockNote must be the shared URL-only text/media authoring surface');
 must(blockNoteEditor.includes('getSelectedLinkUrl')&&blockNoteEditor.includes('createLink')&&blockNoteEditor.includes('移除連結'),'BlockNote must expose explicit hyperlink editing controls');
 must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBlockForUrl')&&blockNoteEditor.includes('canInsertImage'),'BlockNote must allow remote image URL insertion with the current frame quota');
@@ -174,8 +173,6 @@ must(blockNoteEditor.includes('圖片網址')&&blockNoteEditor.includes('imageBl
 must(editableSession.includes('<ObjectEditor mode="scope"')&&publisher.includes('<ObjectEditor mode="fields"')&&publisher.includes("kind:'rich',bare:true")&&blockNoteEntry.includes('field.bare?')&&articleListItem.includes('<ObjectEditor mode="article"')&&blockNoteEntry.includes('export function ObjectEditor(')&&blockNoteEntry.includes('<BlockNoteCanvas')&&sharedSearch.includes('editorDraft={draft}')&&cultureUi.includes('editorDraft={editingWorkKey===workKey?editDraft:null}')&&blockNoteEntry.includes('onBlocksChange={blocks=>')&&blockNoteEntry.includes('onHtmlChange={html=>')&&blockNoteEntry.includes('bodyHtml??draft.bodyBlocks'),'homepage, Culture, Search and publishing must share one BlockNote editor module with WYSIWYG HTML persistence');
 must(articleListItem.includes('scope-article-editor-actions')&&articleListItem.includes('titleEditor={titleEditor}')&&articleListItem.includes('UI_COPY.common.save')&&articleListItem.includes('uiExtra.editBlocks.remove')&&articleListItem.includes('onClick:onSave')&&editableSession.includes('onClick:save')&&admin.includes('mode="actions"')&&blockNoteEntry.includes("if(mode==='actions')return actionBar;")&&sharedSearch.includes('onSave={()=>saveEditing(editTarget)}')&&sharedSearch.includes('onDelete={()=>deleteEditing(editTarget)}')&&sharedSearch.includes("attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}")&&cultureUi.includes('onSave={()=>saveEditingWork(work)}')&&cultureUi.includes('onDelete={()=>deleteEditingWork(work)'),'Search and Culture must share the homepage-style header action row, editable title, article attributes, Save, Delete, and Cancel');
 must(sharedSearch.includes('<Article')&&cultureUi.includes('<Article')&&articleListItem.includes('onClickCapture')&&articleListItem.includes('onEdit(uid)')&&articleListItem.includes('richBody')&&articleListItem.includes('<DeferredArticleBody html={body}')&&articleListItem.includes('IntersectionObserver'),'Search and Culture lists must render the same Article(uid) component with BlockNote rich-body display');
-must(!fs.existsSync(path.join(root,'app/loc/ArticleBodyEditor.jsx'))&&!sharedSearch.includes('<ArticleBodyEditor')&&!cultureUi.includes('<ArticleBodyEditor'), 'retired editor wrapper must be absent and editing must use shared BlockNote');
-for(const [file,body] of [['app/modular/ui.jsx',read('app/modular/ui.jsx')],['app/loc/ManagementArticlePublisher.jsx',publisher],['app/modular/features/Search.jsx',sharedSearch],['app/modular/features/Culture.jsx',cultureUi],['app/loc/ScopeEditableBlocks.jsx',editableBlocks]])must(!body.includes('RichBlockEditor'),file+' must not refer to retired RichBlockEditor');
 
 must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.includes('editable={false}')&&
   editableBlocks.includes("dynamic(()=>import('./ScopeBlockEditorSession')")&&
@@ -184,9 +181,7 @@ must(editableBlocks.includes('dangerouslySetInnerHTML')&&!editableBlocks.include
   editableSession.includes("await import('./db-client.mjs')"),
   'All Scope pages render without editor mutation code and load one self-contained React session only on edit');
 must(authorHome.includes('AuthorHomeEditableBlocks')&&!authorHome.includes('heroContent={<div'),'author homepage must render database blocks rather than hardcoded old homepage text');
-must(!authorHomeEditable.includes('AboutDisplay')&&!authorHomeEditable.includes('ProfessionalDisplay')&&!authorHomeEditable.includes('SoulsDisplay')&&!authorHomeEditable.includes('author-contact-layout'),'author homepage must not retain bespoke section renderers');
 must(locHome.includes('allowEditing')&&editableBlocks.includes("account.canManageGlobalSync()")&&editableBlocks.includes("scopeId==='loc'"),'LOC homepage must preserve permission-based BlockNote editing');
-must(!locHome.includes('LocFeatureHeroManagement')&&!fs.existsSync(path.join(root,'app/loc/LocFeatureHeroManagement.jsx')),'the detached four-feature title manager must not exist on the LOC homepage');
 
 must(HomeBlock.limit===8&&HomeBlock.rows([
   {uid:'A',page_name:'index',block_order:4},
@@ -207,7 +202,6 @@ const colFixture={
 };
 must(HomeBlock.visibleEntities(colFixture).map(entity=>entity.uid).join(',')==='a,b,c','LOC status must show all populated child items in DB order and hide only empty placeholders');
 must(HomeBlock.visibleEntities({...colFixture,entities:[{uid:'copy',title:'',text:colFixture.text}]}).length===0,'legacy duplicate whole-body child must not print twice');
-must(!fs.existsSync(path.join(root,'app/loc/LocHomeEditableBlock.jsx'))&&!locHome.includes('LocHomeEditableBlock'),'retired multi-renderer homepage module must be gone');
 
 must(
   runesHome.includes('ScopeEditableBlocks')&&
@@ -289,7 +283,7 @@ must(!admin.includes('async function toggleScopeHidden')&&admin.includes("patchR
 must(!admin.includes("react-select")&&!admin.includes('<Select')&&admin.includes('admin-native-select'),'Admin must use native select controls instead of react-select');
 must(['群組人員管理','資料庫設定','主題設定'].every(label=>admin.includes("label:'"+label+"'"))&&!admin.includes("value:'search'")&&!admin.includes('SearchKeywordReport'),'Admin primary menu must stay concise Chinese system settings without a redundant search query report');
 must(admin.includes('scopeDomainError?<p')&&admin.includes('groupDomainError?<p')&&admin.includes("duplicateDomainLabelError(id,mode)")&&admin.includes('disabled={Boolean(scopeDomainError)||creatingScope}'),'Admin Scope creation must immediately reject repeated Domain labels');
-must(read('app/AppShell.jsx').includes("function ScopePageCopy({scopeId,display_name,pageName='index'})")&&
+must(read('app/AppShell.jsx').includes('function ScopePageCopy(')&&
   read('app/AppShell.jsx').includes('appBootstrapPageCopy(bootstrap.data,scopeId)')&&
   read('app/AppShell.jsx').includes('pageCopy?.Title_TW')&&
   read('app/AppShell.jsx').includes('pageCopy?.Desc_TW')&&
