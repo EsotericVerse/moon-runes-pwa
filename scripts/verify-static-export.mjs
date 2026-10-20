@@ -61,10 +61,10 @@ if(fs.existsSync(indexPath)){
   }
 
   for(const stale of [
-    '/pics/LOC-PicAll.png',
-    '/pics/LunaRunes.png',
-    '/pics/ChaosGalaxy.png',
-    '/pics/aboutme.png'
+    '/pics/LOC-PicAll.webp',
+    '/pics/LunaRunes.webp',
+    '/pics/ChaosGalaxy.webp',
+    '/pics/aboutme.webp'
   ]){
     if(html.includes(stale))failures.push('LOC homepage still exposes legacy unversioned image URL: '+stale);
   }
@@ -73,8 +73,8 @@ if(fs.existsSync(indexPath)){
     failures.push('LOC homepage contains eager image loading; keep homepage images lazy to prevent React image preload duplication');
   }
 
-  const hero=html.match(/<img[^>]+src=["']([^"']*LOC-PicAll\.[^"']+\.png)["']/i)?.[1]||'';
-  const mobile=html.match(/<source[^>]+srcSet=["']([^"']*LOC-PicAll_s\.[^"']+\.png)["']/i)?.[1]||'';
+  const hero=html.match(/<img[^>]+src=["']([^"']*LOC-PicAll\.[^"']+\.webp)["']/i)?.[1]||'';
+  const mobile=html.match(/<source[^>]+srcSet=["']([^"']*LOC-PicAll_s\.[^"']+\.webp)["']/i)?.[1]||'';
   const og=html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1]||'';
 
   if(!hero)failures.push('LOC homepage hashed desktop hero asset not found');

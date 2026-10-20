@@ -134,7 +134,7 @@ function OfficialLinks(){
 function ThreeSouls(){
   return <div className="author-trinity-layout">
     <figure className="home-architecture-figure author-trinity-figure">
-      <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
+      <img src="/pics/lo3rwang-3.webp" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
     </figure>
     <div className="author-trinity-copy">
       <article className="loc-bubble author-trinity-core">

@@ -16,7 +16,7 @@ const LOC_MEDIA=Object.freeze({
 });
 const AUTHOR_MEDIA=Object.freeze({
   1:{src:authorHeroAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
-  5:{src:{src:'/pics/lo3rwang-3.png'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
+  5:{src:{src:'/pics/lo3rwang-3.webp'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
 });
 
 function imageFor(slot,scopeId='loc'){

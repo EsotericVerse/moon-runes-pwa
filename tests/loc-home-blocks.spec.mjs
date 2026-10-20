@@ -8,8 +8,8 @@ test('LOC index home frames are rendered once, in database order, with authored 
   // replaces the SSR placeholder during hydration, invalidating its old box.
   await expect(page.locator('.loc-home > section[data-block-order="5"]')).toBeVisible({timeout:20_000});
   await expect(hero).toBeVisible();
-  await expect(hero.locator('picture img')).toHaveAttribute('src',/LOC-PicAll\.[^.]+\.png/);
-  await expect(hero.locator('picture source')).toHaveAttribute('srcSet',/LOC-PicAll_s\.[^.]+\.png/);
+  await expect(hero.locator('picture img')).toHaveAttribute('src',/LOC-PicAll\.[^.]+\.webp/);
+  await expect(hero.locator('picture source')).toHaveAttribute('srcSet',/LOC-PicAll_s\.[^.]+\.webp/);
 
   // The shared visual-card rule must not push the Hero image into text flow.
   const heroArtwork=hero.locator('.home-hero-visual');
