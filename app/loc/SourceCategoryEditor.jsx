@@ -8,7 +8,7 @@ import {useAccount} from './use-account';
 
 const CATEGORIES='silver.statistics_source_categories';
 const ALIASES='silver.statistics_source_aliases';
-const PERSONAL='silver.scope_source_subcategories';
+const PERSONAL='silver.scope_source_rules';
 const ID=/^[a-z][a-z0-9_-]{0,63}$/;
 const SOURCE=/^.{1,120}$/;
 const normalize=value=>String(value||'').trim().toLowerCase();
@@ -117,7 +117,7 @@ export function ScopeCustomSourceCategories({scopeId}){
     enabled:canManage,
     queryFn:async()=>{
       const {data,error}=await dbAuthRelation(PERSONAL)
-        .select('source_key,category_code,display_name,enabled').eq('scope_id',scopeId).order('source_key');
+        .select('source_key,category_code,display_name,enabled').eq('scope_id',scopeId).eq('kind','subcategory').order('source_key');
       if(error)throw Error(error.message);
       return data||[];
     },
@@ -142,13 +142,13 @@ export function ScopeCustomSourceCategories({scopeId}){
     if(!SOURCE.test(key)||!key||!name||name.length>80)throw Error(t('uiExtra.sourceCategory.badSource'));
     if(!groups.some(row=>row.category_code===category))throw Error(t('uiExtra.sourceCategory.chooseGroup'));
     const {error}=await dbAuthRelation(PERSONAL).upsert({
-      scope_id:scopeId,source_key:key,display_name:name,category_code:category,enabled:true
-    },{onConflict:'scope_id,source_key'});
+      scope_id:scopeId,kind:'subcategory',source_key:key,display_name:name,category_code:category,enabled:true
+    },{onConflict:'scope_id,kind,source_key'});
     if(error)throw Error(error.message);
   });
   const update=(key,values)=>apply(async()=>{
     const {error}=await dbAuthRelation(PERSONAL).update(values)
-      .eq('scope_id',scopeId).eq('source_key',key);
+      .eq('scope_id',scopeId).eq('kind','subcategory').eq('source_key',key);
     if(error)throw Error(error.message);
   });
   return <section className="scope-inline-card" aria-label={t('uiExtra.sourceCategory.personalTitle')}>

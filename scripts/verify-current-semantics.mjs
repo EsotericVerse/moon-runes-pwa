@@ -123,11 +123,11 @@ if(!failures.length){
      !sourceTaxonomy.includes("assignedSource(")||
      !sourceEditor.includes('AdminSourceCategories')||
      !sourceEditor.includes('ScopeCustomSourceCategories')||
-     !sourceEditor.includes('silver.scope_source_subcategories')||
+     !sourceEditor.includes('silver.scope_source_rules')||
      !statistics.includes('source_custom')||
      !statistics.includes('<ScopeCustomSourceCategories')||
      !crossMember.includes("sharing.scopeSources")||
-     !ownIntersection.includes("scope_source_subcategories")||
+     !ownIntersection.includes("scope_source_rules")||
      !crossMember.includes("availableMemberMeasures")||
      !ownIntersection.includes("kind:'group'")){
     failures.push('Group source categories and Scope-owned personal source classification must share real data.');
@@ -143,10 +143,10 @@ if(!failures.length){
      !crossMember.includes('sharedSourceBreakdown(')||
      !crossSharing.includes("row.kind!=='source'&&row.kind!=='media'")||
      !crossSharing.includes('sharedGroupCodes(')||
-     !sharingEditor.includes('scope_group_source_sharing')||
-     !sharingEditor.includes("share_enabled:shareEnabled")||
+     !sharingEditor.includes('scope_source_rules')||!sharingEditor.includes("kind:'group_share'")||
+     !sharingEditor.includes("enabled:shareEnabled")||
      statistics.includes('statistics_cross_scope_enabled')||groupStatistics.includes('statistics_cross_scope_enabled')||
-     sharingEditor.includes('scope_source_subcategories')){
+     sharingEditor.includes("kind:'subcategory'")){
     failures.push('Group sources must have per-Scope opt-in for cross-member totals and charts; personal custom source controls remain independent.');
   }
 

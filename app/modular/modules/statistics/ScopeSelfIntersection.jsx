@@ -57,8 +57,8 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       const [c,a,p]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
-        selectRows('silver.scope_source_subcategories',{columns:'scope_id,source_key,category_code,display_name,enabled',
-          filters:[{column:'scope_id',operator:'eq',value:scope.id}],limit:250})
+        selectRows('silver.scope_source_rules',{columns:'scope_id,source_key,category_code,display_name,enabled',
+          filters:[{column:'scope_id',operator:'eq',value:scope.id},{column:'kind',operator:'eq',value:'subcategory'}],limit:250})
       ]);
       return {categories:c.rows,aliases:a.rows,scopeSources:p.rows};
     },

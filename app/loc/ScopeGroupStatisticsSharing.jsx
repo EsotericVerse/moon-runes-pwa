@@ -7,7 +7,7 @@ import {dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useSourceCategories} from './SourceCategoryEditor';
 
-const RELATION='silver.scope_group_source_sharing';
+const RELATION='silver.scope_source_rules';
 
 // The checkbox applies to this member's *group* source categories, not to
 // personal custom sources and not to the member's own statistics.
@@ -21,21 +21,21 @@ export default function ScopeGroupStatisticsSharing({scopeId}){
     enabled,
     queryFn:async()=>{
       const {data,error}=await dbAuthRelation(RELATION)
-        .select('scope_id,category_code,share_enabled').eq('scope_id',scopeId);
+        .select('scope_id,category_code,enabled').eq('scope_id',scopeId).eq('kind','group_share');
       if(error)throw Error(error.message);
       return data||[];
     },
     staleTime:0,refetchOnWindowFocus:true
   });
   if(!enabled)return null;
-  const permissions=new Map((query.data||[]).map(row=>[row.category_code,row.share_enabled!==false]));
+  const permissions=new Map((query.data||[]).map(row=>[row.category_code,row.enabled!==false]));
   async function update(categoryCode,shareEnabled){
     setBusy(categoryCode);setNotice('');
     try{
       const {error}=await dbAuthRelation(RELATION).upsert({
-        scope_id:scopeId,category_code:categoryCode,share_enabled:shareEnabled,
+        scope_id:scopeId,kind:'group_share',source_key:categoryCode,category_code:categoryCode,enabled:shareEnabled,
         updated_at:new Date().toISOString()
-      },{onConflict:'scope_id,category_code'});
+      },{onConflict:'scope_id,kind,source_key'});
       if(error)throw Error(error.message);
       await query.refetch();
       await Promise.all([

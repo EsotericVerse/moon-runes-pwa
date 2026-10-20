@@ -229,8 +229,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const [cat,aliases,personal]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250}),
-        selectRows('silver.scope_source_subcategories',{columns:'scope_id,source_key,category_code,display_name,enabled',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId}],limit:250})
+        selectRows('silver.scope_source_rules',{columns:'scope_id,source_key,category_code,display_name,enabled',
+          filters:[{column:'scope_id',operator:'eq',value:scopeId},{column:'kind',operator:'eq',value:'subcategory'}],limit:250})
       ]);
       return {categories:cat.rows,aliases:aliases.rows,scopeSources:personal.rows};
     },
