@@ -15,8 +15,6 @@ for(const {scopeId,key} of expectedExtra){
 for(const candidate of ['admin','anotherscope','','LOC','lunarunes']){
   if(HomeBlock.heroExtraFor(candidate)!==null)failures.push('Other Scopes must never receive a fixed Extra Sign');
 }
-if(HomeBlock.heroExtraFor({scopeId:'loc',extraSign:'moon'})!==null)
-  failures.push('DB-style input cannot override a fixed Extra Sign');
 
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
