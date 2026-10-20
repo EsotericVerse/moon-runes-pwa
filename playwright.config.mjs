@@ -21,12 +21,12 @@ export default defineConfig({
     {name:'mobile-webkit',use:{...devices['iPhone 13'],browserName:'webkit'},testMatch:'**/ios-touch.spec.mjs'}
   ],
   webServer:{
-    command:'python3 -m http.server 4173 -d out',
+    // Bind explicitly to the same IPv4 address Playwright polls. Without
+    // --bind, http.server's default listen address depends on the runner's
+    // Python version and can end up not answering on 127.0.0.1.
+    command:'python3 -m http.server 4173 --bind 127.0.0.1 -d out',
     url:'http://127.0.0.1:4173',
     reuseExistingServer:false,
-    // This run's CI logs showed the last two runs timing out waiting for this
-    // plain static-file server to answer at all within 20s — a shared-runner
-    // contention issue, not an app problem. Give it more headroom.
     timeout:60_000
   }
 });
