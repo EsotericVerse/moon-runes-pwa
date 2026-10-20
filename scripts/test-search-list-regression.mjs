@@ -271,19 +271,13 @@ test('Galaxy TEXT hit pairs and excluded state roundtrip',()=>{
   assert.equal(formatGroupLists({}),'');
   assert.equal(parseGroupListsAttr('14:1, 12:3'),'12:3,14:1');
 });
-test('editing an article does not rewrite untouched attributes',()=>{
-  const source=extract('app/modular/features/Search.jsx','function changedGalaxyAttributes(', 'function normalizeScopeAlias(');
-  const context={
-    isoOrNull:()=>null,nullableText:value=>String(value||'').trim()||null,
-    parseListText:value=>String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean),
-    parseGroupListsText:value=>value
-  };
-  const changedGalaxyAttributes=vm.runInNewContext(source+'; changedGalaxyAttributes',context);
+test('editing an article does not rewrite untouched attributes',async()=>{
+  const {SearchEditDraft}=await import('../app/modular/features/search-edit-draft.js');
   const attrs={createtime:'',source_place:'',searchable:true,url:'',source_id:'',ref_id:'',source_name:'',target_id:'',media_link:'',statistics_able:true,class_id:'',group_lists:'false'};
   const draft={attrs:{...attrs},originalAttrs:{...attrs},hidden:false};
-  assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),'{}');
+  assert.equal(JSON.stringify(SearchEditDraft.changedAttributes('galaxy',draft,()=>'')),'{}');
   draft.attrs.target_id='id-1\nid-2';
-  assert.equal(JSON.stringify(changedGalaxyAttributes(draft,()=>'')),JSON.stringify({target_id:['id-1','id-2']}));
+  assert.equal(JSON.stringify(SearchEditDraft.changedAttributes('galaxy',draft,()=>'')),JSON.stringify({target_id:['id-1','id-2']}));
 });
 
 test('exact style-tag search returns its complete intro as a separate recommendation row',async()=>{
@@ -511,7 +505,7 @@ test('Search Media Link viewing and editing use the same article and BlockNote a
   assert.ok(navigation.includes('media:NavigationValue.optional()'));
   assert.ok(search.includes('executeMediaIdentity(media)'));
   assert.ok(search.includes('MEDIA_EDITOR_COLUMNS'));
-  assert.ok(search.includes('changedMediaAttributes(editDraft,t)'));
+  assert.ok(search.includes("SearchEditDraft.changedAttributes('media',editDraft,t)"));
   assert.ok(search.includes("attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}"));
   assert.ok(search.includes("showBodyEditor={row.resourceType==='galaxy'}"));
   assert.ok(importUi.includes('writeImportBatches(createMedia'));

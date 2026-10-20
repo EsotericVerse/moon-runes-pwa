@@ -1,0 +1,128 @@
+// Edit-session helpers for Search results. Loaded only when an author opens
+// an article or media entry for editing (dynamic import in Search.jsx), so the
+// plain search page never ships this code.
+import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
+import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
+
+function nullableText(value){
+  const text=String(value??'').trim();
+  return text||null;
+}
+function listText(value){
+  return Array.isArray(value)?value.join('\n'):'';
+}
+function parseListText(value){
+  return [...new Set(String(value||'').split(/[\n,]+/g).map(item=>item.trim()).filter(Boolean))];
+}
+function datetimeLocalValue(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  const local=new Date(date.getTime()-date.getTimezoneOffset()*60_000);
+  return local.toISOString().slice(0,16);
+}
+function isoOrNull(value,t){
+  const text=String(value||'').trim();
+  if(!text)return null;
+  const date=new Date(text);
+  if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
+  return date.toISOString();
+}
+function parseGroupListsText(value,t,parseGroupListsAttr){
+  try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
+}
+function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGroupLists){
+  const attrs={
+    uid:String(row.uid||'').trim(),
+    createtime:datetimeLocalValue(row.createtime),
+    source_place:String(row.source_place||''),
+    searchable:row.searchable!==false,
+    UpdateTime:String(row.UpdateTime||''),
+    url:String(row.url||''),
+    source_id:String(row.source_id||'').trim(),
+    target_id:listText(row.target_id),
+    ref_id:String(row.ref_id||'').trim(),
+    source_name:String(row.source_name||''),
+    media_link:listText(row.media_link),
+    statistics_able:row.statistics_able!==false,
+    class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
+    group_lists:formatGroupLists(row.group_lists)
+  };
+  const body=String(row.content??'');
+  return {
+    title:String(row.title??fallbackTitle??''),
+    originalTitle:String(row.title??fallbackTitle??''),
+    body,
+    bodyHtml:body,
+    bodyBlocks:plainTextToBlocks(body),
+    editorKey:String(row.uid||row.media_id||''),
+    hidden:row.searchable===false,
+    attrs,
+    originalAttrs:{...attrs}
+  };
+}
+
+function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
+  const attrs={
+    media_id:String(row.media_id||''), title:String(row.title||''),
+    galaxy_link:String(row.galaxy_link||'').trim(),
+    source_place:String(row.source_place||''),media_type:String(row.media_type||''),
+    url:String(row.url||''),meta_tags:String(row.meta_tags||''),
+    createtime:datetimeLocalValue(row.createtime),
+    rune_references:row.rune_references==null?'':JSON.stringify(row.rune_references,null,2)
+  };
+  return {title:String(row.title??fallbackTitle??''),originalTitle:String(row.title??fallbackTitle??''),
+    body:'',bodyHtml:'',bodyBlocks:plainTextToBlocks(''),editorKey:String(row.media_id||''),
+    attrs,originalAttrs:{...attrs}};
+}
+function changedMediaAttributes(draft,t){
+  const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
+  for(const key of ['galaxy_link','source_place','media_type','url','meta_tags']){
+    if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
+  }
+  if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
+  if(changed.galaxy_link&&!/^[a-z0-9]{8}$/i.test(changed.galaxy_link))throw new Error(t('uiExtra.searchUI.mediaLinkUidInvalid'));
+  if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
+  if(current.rune_references!==initial.rune_references){
+    const value=String(current.rune_references||'').trim();
+    if(!value)changed.rune_references=null;
+    else {try{changed.rune_references=JSON.parse(value)}catch{throw new Error(t('uiExtra.searchUI.runeReferencesInvalid'))}}
+  }
+  return changed;
+}
+function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
+  const current=draft?.attrs||{},initial=draft?.originalAttrs||{};
+  const changed={};
+  const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
+  if(differs('searchable'))changed.searchable=current.searchable!==false;
+  if(differs('createtime'))changed.createtime=isoOrNull(current.createtime,t);
+  for(const key of ['source_place','url','source_id','ref_id','source_name']){
+    if(differs(key))changed[key]=nullableText(current[key]);
+  }
+  if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;
+  if(differs('target_id'))changed.target_id=parseListText(current.target_id);
+  if(differs('media_link'))changed.media_link=parseListText(current.media_link);
+  if(differs('class_id')){
+    const value=String(current.class_id??'').trim();
+    changed.class_id=value===''?null:Number(value);
+    if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
+  }
+  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t,parseGroupListsAttr);
+  return changed;
+}
+
+export class SearchEditDraft{
+  static nullableText(value){return nullableText(value);}
+  // Builds the editable draft for a Galaxy (article) or Galaxy Media row.
+  static fromRow(resourceType,row,fallbackTitle=''){
+    return resourceType==='galaxy'
+      ?galaxyDraftFromRow(row,fallbackTitle,plainTextToBlocks,formatGroupLists)
+      :mediaDraftFromRow(row,fallbackTitle,plainTextToBlocks);
+  }
+  // Only the attributes the author actually changed; throws a localized error on invalid input.
+  static changedAttributes(resourceType,draft,t){
+    return resourceType==='galaxy'
+      ?changedGalaxyAttributes(draft,t,parseGroupListsAttr)
+      :changedMediaAttributes(draft,t);
+  }
+}
