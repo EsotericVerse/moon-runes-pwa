@@ -11,32 +11,14 @@ if(!fs.existsSync(assetsSource))throw new Error('Static asset source missing: as
 fs.rmSync(assetsTarget,{recursive:true,force:true});
 fs.cpSync(assetsSource,assetsTarget,{recursive:true});
 
-const publicPics=[
-  '01.soul.jpg',
-  '02_connection.jpg',
-  '03_life.jpg',
-  '04_nature.jpg',
-  '05_mineral.jpg',
-  '06_element.jpg',
-  '07_order.jpg',
-  '08_disorder.jpg',
-  '09_specia.jpg',
-  'g1c-soul.link.jpg',
-  'g2c-mineral.life.jpg',
-  'g3c-nature.element.jpg',
-  'g4c-order.disorder.jpg',
-  'lo3rwang-3.png',
-  'LOC-auth.png',
-];
-
+// pics/ is copied wholesale, the same as assets/ above: any image added here
+// (including new subfolders) ships to the static export automatically, with
+// no per-file whitelist to maintain by hand.
+const picsSource=path.join(root,'pics');
 const picsTarget=path.join(output,'pics');
+if(!fs.existsSync(picsSource))throw new Error('Static asset source missing: pics');
 fs.rmSync(picsTarget,{recursive:true,force:true});
-fs.mkdirSync(picsTarget,{recursive:true});
-for(const name of publicPics){
-  const source=path.join(root,'pics',name);
-  if(!fs.existsSync(source))throw new Error(`Static picture source missing: pics/${name}`);
-  fs.copyFileSync(source,path.join(picsTarget,name));
-}
+fs.cpSync(picsSource,picsTarget,{recursive:true});
 
 const rootDownloads=['LunarRunesCardCut.pdf'];
 for(const name of rootDownloads){
@@ -45,4 +27,4 @@ for(const name of rootDownloads){
   fs.copyFileSync(source,path.join(output,name));
 }
 
-console.log(`[static-assets] copied assets/, ${publicPics.length} Current pics and ${rootDownloads.length} governed root downloads into out/`);
+console.log(`[static-assets] copied assets/, pics/ (whole directory) and ${rootDownloads.length} governed root downloads into out/`);

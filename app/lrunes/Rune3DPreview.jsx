@@ -6,6 +6,7 @@ import {createPortal} from 'react-dom';
 import EffekseerStage,{WaitingEffekseerStage,RuneMistBackdrop} from './effekseer/EffekseerStage';
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
+import ScopeLink from '../modular/ScopeLink';
 import {selectRows} from '../loc/db-query.mjs';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from './RuneDrawClient';
@@ -321,9 +322,9 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
     </div>:null}
     <footer className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="符文三大功能">
-        <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','',native)} native={native}>回符文首頁</ScopeLink>
         {MODES.filter(([id])=>id!==mode).map(([id,name])=>
-          <a key={id} className="rune-skin-btn" href={navigationHref('lrunes','card/'+id,native)}>{name}</a>)}
+          <ScopeLink key={id} className="rune-skin-btn" href={navigationHref('lrunes','card/'+id,native)} native={native}>{name}</ScopeLink>)}
       </nav>
     </footer>
     {selected&&<ResultDialog title={runeName(selected)+'之符文'} onClose={()=>setSelected(null)}>

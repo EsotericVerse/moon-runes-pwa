@@ -1,5 +1,6 @@
 import AuthorHomeEditableBlocks from '../AuthorHomeEditableBlock';
 import ContextReturnNav from '../../modular/ContextReturnNav';
+import ScopeLink from '../../modular/ScopeLink';
 
 function AuthorPage({eyebrow,title,subtitle,intro,sections=[]}){
   // Detailed subpages only. The public homepage uses shared LOC DB blocks.
@@ -94,12 +95,12 @@ function SystemsCopy(){
     <article className="author-editorial-block">
       <h3>LOC／月典</h3>
       <p>LOC 是我從長期文字、作品與時間整理需求中逐步形成的語言架構框架。它把原本只能靠直覺掌握的脈絡，整理成可以回看、搜尋與比較的結構。</p>
-      <p><a href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</a></p>
+      <p><ScopeLink href="https://loc.lo3rwang.cc/">查看 LOC／月典 →</ScopeLink></p>
     </article>
     <article className="author-editorial-block">
       <h3>LunaRunes／月之符文</h3>
       <p>LunaRunes 是我建立的另一套符號式語言與原創系統。它與 LOC 可以互相參照，但兩者有各自的定義、用途與發展脈絡。</p>
-      <p><a href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</a></p>
+      <p><ScopeLink href="https://lrunes.lo3rwang.cc/">查看 LunaRunes／月之符文 →</ScopeLink></p>
     </article>
   </div>;
 }
@@ -109,17 +110,17 @@ function ArchiveTools(){
     <article className="author-editorial-block">
       <h3>文化 · Culture</h3>
       <p>把作品放回時間長河與來源分布，先看不同時期如何出現、集中、稀疏與交會，再回到原始內容理解脈絡。</p>
-      <p><a href="/lo3rwang/culture/">查看文化 →</a></p>
+      <p><ScopeLink href="/lo3rwang/culture/">查看文化 →</ScopeLink></p>
     </article>
     <article className="author-editorial-block">
       <h3>統計 · Statistics</h3>
       <p>把作品數量、來源與其他可計算資料整理成分布與比較。數字用來看結構，不直接代替內容判讀。</p>
-      <p><a href="/lo3rwang/statics/">查看統計 →</a></p>
+      <p><ScopeLink href="/lo3rwang/statics/">查看統計 →</ScopeLink></p>
     </article>
     <article className="author-editorial-block">
       <h3>搜尋 · Search</h3>
       <p>從累積的文字、作品與多媒體描述中找回原文、標題、來源與相關紀錄；搜尋負責找到資料，不替資料生成新的語意。</p>
-      <p><a href="/lo3rwang/search/">開始搜尋 →</a></p>
+      <p><ScopeLink href="/lo3rwang/search/">開始搜尋 →</ScopeLink></p>
     </article>
   </div>;
 }
@@ -133,7 +134,7 @@ function OfficialLinks(){
 function ThreeSouls(){
   return <div className="author-trinity-layout">
     <figure className="home-architecture-figure author-trinity-figure">
-      <img src="/pics/lo3rwang-3.png" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
+      <img src="/pics/lo3rwang-3.webp" alt="Oscar 政德、玄鑒 Lucas、符韻 Rune，以及柏隆 Bruno、睿汶 Raven 的關係圖" loading="lazy"/>
     </figure>
     <div className="author-trinity-copy">
       <article className="loc-bubble author-trinity-core">

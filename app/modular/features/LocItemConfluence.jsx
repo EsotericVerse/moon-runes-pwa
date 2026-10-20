@@ -1,7 +1,7 @@
 'use client';
 import {useFeatureCopy,useUiLocale} from '../../i18n/ui-locale';
 import {translateUiField} from '../../i18n/ui-copy';
-import featureZh from '../../i18n/features.zh_tw.json' with {type:'json'};
+import featureZh from '../../i18n/features.zh_tw.js';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';

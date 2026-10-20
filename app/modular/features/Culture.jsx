@@ -2,14 +2,23 @@
 import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
-import {translateUiField,UI_COPY} from '../../i18n/ui-copy';
-import {useUiCopy,useUiLocale} from '../../i18n/ui-locale';
+import {translateUiField,UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiCopy,useUiLocale,useUiSection} from '../../i18n/ui-locale';
+import cultureZh from '../../i18n/sections/culture.zh_tw.js';
+import cultureViewZh from '../../i18n/sections/uiExtra.cultureView.zh_tw.js';
+import dataErrorsZh from '../../i18n/sections/uiExtra.dataErrors.zh_tw.js';
+import paginationZh from '../../i18n/sections/uiExtra.pagination.zh_tw.js';
+registerDefaultSection('culture',cultureZh);
+registerDefaultSection('uiExtra.cultureView',cultureViewZh);
+registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
+registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import ScopeLink from '../ScopeLink';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
@@ -93,6 +102,10 @@ function periodPositionRatio(date,start,end){
   return Math.max(0,Math.min(1,(x-a)/(b-a)));
 }
 export default function Culture(){
+  useUiSection('culture');
+  useUiSection('uiExtra.cultureView');
+  useUiSection('uiExtra.dataErrors');
+  useUiSection('uiExtra.pagination');
   const UI_COPY=useUiCopy();
   const l=UI_COPY.uiExtra.cultureView;
   const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
@@ -745,7 +758,7 @@ export default function Culture(){
                   hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
                 <div className='scope-result-links'>
-                  {locIntersectionScopeIds.map(id=><a key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</a>)}
+                  {locIntersectionScopeIds.map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
                 </div>
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>

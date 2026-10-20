@@ -1,8 +1,13 @@
 'use client';
 
 import {useState} from 'react';
-import {useUiCopy} from '../i18n/ui-locale';
+import {useUiCopy,useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import managementZh from '../i18n/sections/management.zh_tw.js';
+import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
+registerDefaultSection('management',managementZh);
+registerDefaultSection('uiExtra.importUI',importUIZh);
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
@@ -12,6 +17,8 @@ import BlockNoteEditor from './BlockNoteEditor';
 import {blocksToPlainText,hasBlockNoteContent,plainTextToBlocks} from './blocknote-content.mjs';
 
 export default function SunoImportPanel({scopeId}){
+  useUiSection('management');
+  useUiSection('uiExtra.importUI');
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();

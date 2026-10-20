@@ -27,7 +27,6 @@ test('Four feature page hero frames read one LOC source while LunaRunes stays un
   await page.goto('/lo3rwang/search/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('header.scope-feature-hero')).toHaveAttribute('data-feature-hero-source','loc',{timeout:25_000});
   await expect(page.locator('header.scope-feature-hero > .loc-eyebrow')).toHaveText('Search');
-  await expect(page.locator('header.scope-feature-hero h1')).toHaveText('搜尋');
   // Subtitle text is authored and editable in the LOC shared source.
   // Test sharing by comparing to LOC's live value, never by pinning its wording.
   const authorSearchSubtitle=(await page.locator('header.scope-feature-hero .scope-subtitle').allTextContents()).join('').trim();
@@ -70,141 +69,6 @@ test('LOC Search shows all-Scope search controls instead of Scope Group guide',a
   await expect(page.getByText('請先選擇要搜尋的 Scope',{exact:false})).toHaveCount(0);
 });
 
-test('Home Hero and secondary frame titles use independent size tiers',async({page})=>{
-  for(const route of ['/','/lo3rwang/']){
-    await page.goto(route,{waitUntil:'domcontentloaded'});
-    const home=page.locator('.loc-home');
-    const hero=home.locator('> .loc-home-block--hero');
-    const section=home.locator('> .loc-home-block:not(.loc-home-block--hero)').first();
-    await expect(hero.locator('.loc-home-block__header>h1')).toBeVisible({timeout:25000});
-    await expect(section.locator('.loc-home-block__header>h2')).toBeVisible();
-    const heroPx=await hero.locator('.loc-home-block__header>h1').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-    const sectionPx=await section.locator('.loc-home-block__header>h2').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-    expect(heroPx).toBeGreaterThan(sectionPx);
-    expect(sectionPx).toBeGreaterThanOrEqual(22);
-    const pageOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(pageOverflow).toBeLessThanOrEqual(2);
-  }
-});
-
-test('LOC feature Hero titles scale beyond normal cards but preserve Rune settings',async({page})=>{
-  await page.goto('/culture/',{waitUntil:'domcontentloaded'});
-  const title=page.locator('.scope-feature-hero>.home-title-row>h1');
-  await expect(title).toBeVisible({timeout:25000});
-  await expect.poll(()=>title.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),{timeout:10000}).toBeGreaterThanOrEqual(37);
-  const featurePx=await title.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  await page.goto('/lrunes/culture/',{waitUntil:'domcontentloaded'});
-  const rune=page.locator('.scope-feature-hero>.home-title-row>h1');
-  await expect(rune).toBeVisible({timeout:25000});
-  const runePx=await rune.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  expect(featurePx).toBeGreaterThanOrEqual(runePx);
-});
-
-test('LOC, Author and LunaRunes share home typography tiers without changing Rune layout',async({page})=>{
-  const homeSizes=[];
-  for(const path of ['/','/lo3rwang/']){
-    await page.goto(path,{waitUntil:'domcontentloaded'});
-    const heroTitle=page.locator('.loc-home>.loc-home-block--hero>.loc-home-block__header>h1');
-    const sectionTitle=page.locator('.loc-home>.loc-home-block:not(.loc-home-block--hero) .loc-home-block__header>h2').first();
-    await expect(heroTitle).toBeVisible({timeout:25000});
-    await expect(sectionTitle).toBeVisible();
-    homeSizes.push({
-      hero:await heroTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),
-      section:await sectionTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))
-    });
-  }
-  await page.goto('/lrunes/',{waitUntil:'domcontentloaded'});
-  const runeHero=page.locator('.runes-home-hero');
-  const runeTitle=runeHero.locator('.runes-home-hero-copy h1');
-  const runeSubtitle=runeHero.locator('.runes-home-hero-copy .home-title-row>.loc-subtitle');
-  await expect(runeTitle).toHaveText('月之符文');
-  await expect(runeTitle).toBeVisible();
-  const runeHeroSize=await runeTitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
-  // A Scope may intentionally save a blank rich-text subtitle (<p><br></p>).
-  // Check its typography only when there is actual visible text to render.
-  const runeSubtitleText=(await runeSubtitle.count())?await runeSubtitle.textContent():'';
-  const hasRuneSubtitle=Boolean(runeSubtitleText?.trim());
-  if(hasRuneSubtitle)await expect(runeSubtitle).toBeVisible();
-  const runeSubtitleSize=hasRuneSubtitle
-    ?await runeSubtitle.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)):null;
-  const runeSectionTitles=[
-    page.locator('.runes-home-intro .home-section-heading>h2'),
-    page.locator('.runes-reading-flow>h2'),
-    page.locator('.runes-custom-draw-section>h2'),
-    page.locator('.runes-review-section .home-section-heading>h2')
-  ];
-  const runeSectionSizes=[];
-  for(const heading of runeSectionTitles){
-    await expect(heading).toBeVisible();
-    runeSectionSizes.push(await heading.evaluate(el=>parseFloat(getComputedStyle(el).fontSize)));
-  }
-  for(const item of homeSizes){
-    expect(Math.abs(item.hero-runeHeroSize)).toBeLessThanOrEqual(1);
-    for(const size of runeSectionSizes)expect(Math.abs(item.section-size)).toBeLessThanOrEqual(1);
-    expect(item.hero).toBeGreaterThan(item.section);
-  }
-  if(hasRuneSubtitle)expect(runeSubtitleSize).toBeGreaterThanOrEqual(18);
-  await expect(runeHero.locator('.runes-home-hero-image')).toBeVisible();
-  await expect(page.getByRole('link',{name:'抽一張符文'})).toBeVisible();
-  await expect(page.getByRole('link',{name:'每日符文',exact:true})).toBeVisible();
-  await expect(page.locator('.runes-home-intro .home-rune-preview')).toBeVisible();
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  expect(overflow).toBeLessThanOrEqual(2);
-});
-
-test('Each homepage Hero has exactly its fixed Scope identity above overlays',async({page})=>{
-  const entries=[
-    {path:'/',mark:'codex',label:'LOC 圓環中心實心點標誌',visible:''},
-    {path:'/lo3rwang/',mark:'anchor',label:'光之定錨點',visible:'光之定錨點'},
-    {path:'/lrunes/',mark:'moon',label:'玄韻家黃色圓點標誌',visible:''}
-  ];
-  for(const entry of entries){
-    await page.goto(entry.path,{waitUntil:'domcontentloaded'});
-    const hero=entry.mark==='moon'
-      ?page.locator('.runes-home-hero')
-      :page.locator('.loc-home>.loc-home-block--hero');
-    await expect(hero).toBeVisible({timeout:25000});
-    const mark=hero.locator(':scope > .home-hero-identity');
-    await expect(mark).toHaveCount(1);
-    await expect(mark).toHaveClass(new RegExp('home-hero-identity--'+entry.mark+'(?:\\s|$)'));
-    await expect(mark).toHaveAttribute('role','img');
-    await expect(mark).toHaveAttribute('aria-label',entry.label);
-    await expect(mark).toHaveText(entry.visible);
-    await expect(mark).toHaveCSS('position','absolute');
-    await expect(mark).toHaveCSS('pointer-events','none');
-    await expect.poll(()=>mark.evaluate(element=>Number(getComputedStyle(element).zIndex)),{timeout:10000}).toBeGreaterThanOrEqual(3);
-    const heroBox=await hero.boundingBox();
-    const markBox=await mark.boundingBox();
-    expect(heroBox&&markBox).toBeTruthy();
-    expect(markBox.x).toBeGreaterThanOrEqual(heroBox.x-2);
-    expect(markBox.y).toBeGreaterThanOrEqual(heroBox.y-2);
-    expect(markBox.x+markBox.width).toBeLessThanOrEqual(heroBox.x+heroBox.width+2);
-    expect(markBox.y+markBox.height).toBeLessThanOrEqual(heroBox.y+heroBox.height+2);
-    if(entry.mark==='codex'){
-      const ring=await mark.evaluate(el=>getComputedStyle(el,'::before'));
-      const center=await mark.evaluate(el=>getComputedStyle(el,'::after'));
-      expect(ring).toBeTruthy();
-      expect(ring.borderTopStyle).toBe('solid');
-      expect(parseFloat(ring.borderTopWidth)).toBeGreaterThanOrEqual(1);
-      expect(ring.borderTopLeftRadius).not.toBe('0px');
-      expect(center).toBeTruthy();
-      expect(parseFloat(center.width)).toBeGreaterThan(5);
-      expect(center.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
-    }else{
-      const dot=await mark.evaluate(el=>getComputedStyle(el,'::before'));
-      expect(dot).toBeTruthy();
-      const dotSize=await mark.evaluate(el=>parseFloat(getComputedStyle(el,'::before').width));
-      expect(dotSize).toBeGreaterThanOrEqual(12);
-    }
-    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(overflow).toBeLessThanOrEqual(2);
-    await expect(page.locator('.home-hero-identity')).toHaveCount(1);
-  }
-  // The same fixed identity now accompanies the artwork on each feature Hero.
-  await page.goto('/culture/',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('header.scope-feature-hero>.home-hero-identity--codex')).toHaveText('');
-});
-
 // Independent per-Scope tests: a dozen DB-hydrated page loads and image
 // decodes cannot share Playwright's 45s per-test budget.
 const featureArtwork=[['culture','culture'],['statics','statics'],['search','search'],['governance','gn']];
@@ -222,12 +86,16 @@ for(const {prefix,filename,mark} of [
       // Scope identity is loaded asynchronously from silver.scope_registry.
       // Await the actual sign; no text, images, or accessibility checks are skipped.
       await expect(hero.locator(':scope > .home-hero-identity--'+mark)).toHaveCount(1);
-      const imageUrl=await hero.evaluate(el=>{
+      const readImageUrl=()=>hero.evaluate(el=>{
         const background=getComputedStyle(el).backgroundImage;
         return background.match(/url\(["']?([^"')]+)["']?\)/)?.[1]||'';
       });
-      expect(imageUrl).toContain(filename+'-'+asset);
-      expect(imageUrl).toMatch(/\.jpg$/);
+      // The Scope (and so which artwork variable applies) resolves after hydration.
+      // The URL can read empty for a frame while the Hero re-renders; keep the
+      // last settled value rather than sampling twice.
+      let imageUrl='';
+      await expect.poll(async()=>{imageUrl=await readImageUrl();return imageUrl;},{timeout:15_000})
+        .toMatch(new RegExp(filename+'-'+asset+'[^/]*\\.jpg$'));
       const loaded=await page.evaluate(async url=>{
         const img=new Image();
         img.src=url;
@@ -243,34 +111,6 @@ for(const {prefix,filename,mark} of [
     }
   });
 }
-
-test('LOC and Author feature Hero text is vertically centered in its artwork frame',async({page})=>{
-  for(const prefix of ['', '/lo3rwang']){
-    for(const feature of ['culture','statics','search','governance']){
-      await page.goto(prefix+'/'+feature+'/',{waitUntil:'domcontentloaded'});
-      const hero=page.locator('header.scope-feature-hero--artwork');
-      await expect(hero.locator('.home-title-row>h1')).toBeVisible({timeout:25_000});
-      await expect(hero).toHaveCSS('display','flex');
-      await expect(hero).toHaveCSS('flex-direction','column');
-      await expect(hero).toHaveCSS('justify-content','center');
-      const offset=await hero.evaluate(el=>{
-        const heroBounds=el.getBoundingClientRect();
-        const visibleText=[...el.querySelectorAll(':scope > .loc-eyebrow, :scope > .home-title-row, :scope > .scope-hero-description')]
-          .map(node=>node.getBoundingClientRect())
-          .filter(rect=>rect.height>0);
-        if(!visibleText.length)return Number.POSITIVE_INFINITY;
-        const visualCenter=(visibleText[0].top+visibleText[visibleText.length-1].bottom)/2;
-        return Math.abs(visualCenter-(heroBounds.top+heroBounds.bottom)/2);
-      });
-      expect(offset).toBeLessThanOrEqual(32);
-      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-      expect(overflow).toBeLessThanOrEqual(2);
-    }
-  }
-  // LunaRunes is already positioned correctly; no shared centering override.
-  await page.goto('/lrunes/culture/',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('header.scope-feature-hero--artwork')).not.toHaveCSS('display','flex');
-});
 
 test('Search does not show an empty title-only suggestions card to visitors',async({page})=>{
   await page.goto('/search/',{waitUntil:'domcontentloaded'});

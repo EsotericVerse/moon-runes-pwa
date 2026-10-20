@@ -1,7 +1,12 @@
 'use client';
 
-import {useUiCopy,useUiLocale} from '../i18n/ui-locale';
+import {useUiCopy,useUiLocale,useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import managementZh from '../i18n/sections/management.zh_tw.js';
+import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
+registerDefaultSection('management',managementZh);
+registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
@@ -659,6 +664,8 @@ function MediaRecordInsert({scopeId}){
 
 
 export default function ManagementImportPanel({scopeId}){
+  useUiSection('management');
+  useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
   const [revision,setRevision]=useState(0);
   const [busyCount,setBusyCount]=useState(0);

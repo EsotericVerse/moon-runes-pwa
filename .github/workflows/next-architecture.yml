@@ -21,7 +21,13 @@ concurrency:
 
 jobs:
   build-next-architecture:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: every run since 2026-10-20 07:20 UTC has
+    # failed - almost all at "Run browser accessibility checks" with the
+    # Playwright webServer never answering - regardless of what the commit
+    # actually changed. ubuntu-latest's own notice on these runs says it is
+    # migrating to Ubuntu 26 starting the same week, so this pins the
+    # known-good image while that migration rolls out.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,6 +41,8 @@ jobs:
       - name: Verify public database API
         run: npm run verify:db-public
       - name: Build Current static export
+        # shell: bash enables pipefail; without it `| tee` hides a failed build.
+        shell: bash
         run: npm run build 2>&1 | tee /tmp/next-build.log
       - name: Report build failure to job summary
         if: failure()
@@ -43,10 +51,23 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           tail -n 200 /tmp/next-build.log >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Job summaries and raw logs are not readable from every client;
+          # annotations are, so surface the tail of the build output there too.
+          grep -v '^\s*$' /tmp/next-build.log | tail -n 8 | cut -c1-400 | while IFS= read -r line; do
+            echo "::error title=build-tail::${line//%/%25}"
+          done
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
         run: npx playwright test --reporter=github,list
+      - name: Report static server state as annotation
+        if: failure()
+        run: |
+          (python3 -m http.server 4173 --bind 127.0.0.1 -d out >/dev/null 2>&1 &) ; sleep 3
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4173/ || echo curlfail)
+          IDX=$([ -f out/index.html ] && echo yes || echo NO)
+          SIZE=$(du -sm out | cut -f1)
+          echo "::error title=static-server-diag::python=$(python3 --version) GET/=$CODE out/index.html=$IDX out_MB=$SIZE"
       - name: Keep browser screenshots for visual inspection
         if: always()
         uses: actions/upload-artifact@v4

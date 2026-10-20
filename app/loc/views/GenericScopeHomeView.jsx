@@ -5,13 +5,19 @@ import UiText,{useUiText} from '../../i18n/UiText';
 import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
 import {useScopeRuntime} from '../../modular/use-scope-runtime';
+import ScopeLink from '../../modular/ScopeLink';
 import dynamic from 'next/dynamic';
+import {registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiSection} from '../../i18n/ui-locale';
+import genericScopeZh from '../../i18n/sections/uiExtra.genericScope.zh_tw.js';
+registerDefaultSection('uiExtra.genericScope',genericScopeZh);
 // Only one of these mutually exclusive home capabilities is needed per Scope.
 // Scope Groups must not load the editing implementation.
 const ScopeGroupOverview=dynamic(()=>import('../ScopeGroupOverview'),{loading:()=>null});
 const ScopeEditableBlocks=dynamic(()=>import('../ScopeEditableBlocks'),{loading:()=>null});
 
 export default function GenericScopeHomeView(){
+  useUiSection('uiExtra.genericScope');
   const t=useUiText();
   const native=useNativeNavigation();
   const {scopeId,scope,registryRow}=useScopeRuntime();
@@ -31,11 +37,11 @@ export default function GenericScopeHomeView(){
       <ScopeEditableBlocks scopeId={scopeId} page="index"/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
-        <a href={navigationHref(scopeId,'search',native)}><UiText id="nav.search"/></a>
-        <a href={navigationHref(scopeId,'statics',native)}><UiText id="features.statics.title"/></a>
-        <a href={navigationHref(scopeId,'culture',native)}><UiText id="features.culture.title"/></a>
-        <a href={navigationHref(scopeId,'governance',native)}><UiText id="features.governance.title"/></a>
-        <a href={navigationHref(scopeId,'governance/manage',native)}><UiText id="common.management"/></a>
+        <ScopeLink href={navigationHref(scopeId,'search',native)} native={native}><UiText id="nav.search"/></ScopeLink>
+        <ScopeLink href={navigationHref(scopeId,'statics',native)} native={native}><UiText id="features.statics.title"/></ScopeLink>
+        <ScopeLink href={navigationHref(scopeId,'culture',native)} native={native}><UiText id="features.culture.title"/></ScopeLink>
+        <ScopeLink href={navigationHref(scopeId,'governance',native)} native={native}><UiText id="features.governance.title"/></ScopeLink>
+        <ScopeLink href={navigationHref(scopeId,'governance/manage',native)} native={native}><UiText id="common.management"/></ScopeLink>
       </div>
     </section>
   </section></main>;

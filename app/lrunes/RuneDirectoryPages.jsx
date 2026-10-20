@@ -7,10 +7,13 @@ import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
 import ContextReturnNav from '../modular/ContextReturnNav';
 import RuneCardInfo from './RuneCardInfo';
+import ScopeLink from '../modular/ScopeLink';
 
 function useRuneListHref(){
   const native=useNativeNavigation();
-  return (path='')=>navigationHref('lrunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`,native);
+  const href=(path='')=>navigationHref('lrunes',`list${path?'/'+String(path).replace(/^\/+/, ''):''}`,native);
+  href.native=native;
+  return href;
 }
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes';
 const RUNE_DETAIL_COLUMNS='rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
@@ -94,10 +97,10 @@ export function RuneDirectoryRoot(){
     <section className="loc-card"><h2>群組列表</h2>
       {error?<p className="loc-error" role="alert">符文群組讀取失敗：{error}</p>:null}
       {!error&&!groups.length?<p className="loc-note">正在讀取符文群組…</p>:null}
-      <div className="runes-group-picker">{groups.map(group=><a key={group.id} className="runes-group-choice" href={listHref(`${group.id}/`)}>
+      <div className="runes-group-picker">{groups.map(group=><ScopeLink key={group.id} className="runes-group-choice" href={listHref(`${group.id}/`)} native={listHref.native}>
         <img className="runes-group-choice-image" data-rune-group={group.id} src={groupImage(group.id)} alt={`${group.name}組概念圖`} width="144" height="96" loading="lazy"/>
         <span className="runes-group-choice-copy"><strong>{group.id} · {group.name}</strong><small>{group.description}</small></span>
-      </a>)}</div>
+      </ScopeLink>)}</div>
     </section>
   </section></main>;
 }
@@ -118,9 +121,9 @@ export function RuneGroupPage({groupId}){
       <div className="runes-group-head"><img className="runes-group-choice-image" data-rune-group={group.id} src={groupImage(group.id)} alt={`${group.name}組概念圖`} width="160" height="120"/><div><h2>{group.name}組資訊</h2><p>{group.description}</p><p>符文構成：{cards.map(card=>runeName(card)).join('、')}</p></div></div>
     </section>
     <section className="loc-card"><h2>符文列表</h2><div className="runes-library-grid">
-      {cards.map(card=>{const localId=localRuneId(group.id,card);return <a className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)}><img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/><span className="runes-library-card-copy"><strong>{localId} · {runeName(card)}之符文</strong><small>{card.rune_description||''}</small></span></a>;})}
+      {cards.map(card=>{const localId=localRuneId(group.id,card);return <ScopeLink className="runes-library-card" key={`${group.id}-${localId}`} href={listHref(`${group.id}/${localId}/`)} native={listHref.native}><img className="runes-library-thumb" src={runeImage(card)} alt={`${runeName(card)}之符文卡`} width="72" height="72" loading="lazy"/><span className="runes-library-card-copy"><strong>{localId} · {runeName(card)}之符文</strong><small>{card.rune_description||''}</small></span></ScopeLink>;})}
     </div></section>
-    <nav className="loc-card"><a href={listHref()}>回符文圖鑑</a></nav>
+    <nav className="loc-card"><ScopeLink href={listHref()} native={listHref.native}>回符文圖鑑</ScopeLink></nav>
   </section></main>;
 }
 
@@ -134,10 +137,10 @@ export function RuneDetailPage({groupId,runeId}){
   if(!group||!card)return <main className="loc-next-main"><section className="loc-view"><ContextReturnNav scopeId="lrunes" path="list" label="回符文圖鑑"/><p className="loc-error" role="alert">{error||'找不到對應符文。'}</p></section></main>;
   return <main className="loc-next-main"><section className="loc-view">
     <nav className="scope-context-return scope-preview-links" aria-label="返回群組">
-      <a className="loc-button" href={listHref(`${group.id}/`)}>← 回{group.name}組</a>
+      <ScopeLink className="loc-button" href={listHref(`${group.id}/`)} native={listHref.native}>← 回{group.name}組</ScopeLink>
     </nav>
     <header className="loc-hero loc-hero-context"><p className="loc-eyebrow">{group.name}組 · 第 {String(runeId).padStart(2,'0')} 枚</p><h1>{runeName(card)}之符文</h1><p className="loc-subtitle">{group.name}組</p></header>
     <RuneDetails card={card}/>
-    <nav className="loc-card"><a href={listHref(`${group.id}/`)}>回{group.name}組</a> · <a href={listHref()}>回符文圖鑑</a></nav>
+    <nav className="loc-card"><ScopeLink href={listHref(`${group.id}/`)} native={listHref.native}>回{group.name}組</ScopeLink> · <ScopeLink href={listHref()} native={listHref.native}>回符文圖鑑</ScopeLink></nav>
   </section></main>;
 }

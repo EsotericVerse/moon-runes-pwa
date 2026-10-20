@@ -1,12 +1,18 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {UI_COPY} from '../../i18n/ui-copy';
+import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiSection} from '../../i18n/ui-locale';
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {useAccount} from '../../loc/use-account';
 import {navigationHref} from '../scope-registry';
 import useNativeNavigation from '../use-native-navigation';
+import ScopeLink from '../ScopeLink';
+import governanceZh from '../../i18n/sections/governance.zh_tw.js';
+import editBlocksZh from '../../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+registerDefaultSection('governance',governanceZh);
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 
 // Governance pages share one Scope block capability. The optional editor is
 // fetched only when a governance route actually renders its blocks.
@@ -22,7 +28,7 @@ function GovernanceBlocks({scopeId,account,native}){
   const canManage=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <>
     {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <a className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)}>治理管理</a>
+      <ScopeLink className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)} native={native}>治理管理</ScopeLink>
     </nav>:null}
     <ScopeEditableBlocks
       scopeId={scopeId}
@@ -34,6 +40,8 @@ function GovernanceBlocks({scopeId,account,native}){
 }
 
 export default function Governance({section=null}){
+  useUiSection('governance');
+  useUiSection('uiExtra.editBlocks');
   const {scopeId}=useScopeRuntime();
   const account=useAccount();
   const native=useNativeNavigation();

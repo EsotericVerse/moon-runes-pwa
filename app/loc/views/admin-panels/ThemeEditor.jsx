@@ -2,11 +2,16 @@
 import {useEffect,useState} from 'react';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
+import {useUiSection} from '../../../i18n/ui-locale';
+import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../../modular/theme-registry';
 import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../../theme-data';
 import {dbAuthRelation} from '../../db-client.mjs';
+registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function ThemeEditor(){
+  useUiSection('uiExtra.adminView');
   const [rows,setRows]=useState([]);
   const [themeId,setThemeId]=useState(()=>{
     const current=typeof document==='undefined'?'':String(document.documentElement.dataset.themeId||'');

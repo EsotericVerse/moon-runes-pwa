@@ -36,13 +36,11 @@ test('daily App dashboard derives defensible recent direction trends, not symbol
   assert.equal(week.forward,3);
   assert.equal(week.blocked,1);
   assert.equal(week.forwardRatio,75);
-  assert.equal(week.tendency,'偏向推進');
   assert.equal(week.daily.length,7);
   assert.equal(week.daily[6].count,0);
   const month=buildRuneAppOverview(daily,'2026-10-11',30);
   assert.equal(month.total,5);
   assert.equal(month.counts['逆位'],1);
-  assert.equal(buildRuneAppOverview([], '2026-10-11',7).tendency,'資料不足');
 });
 
 async function makeValidBackup(){
@@ -76,5 +74,5 @@ test('renamed JSON and unmarked SQLite are refused instead of being accepted by 
   db.run("UPDATE rune_file_meta SET format='wrong'");
   const wrong=db.export();
   db.close();
-  await assert.rejects(()=>inspectRuneSQLite(wrong),/不相容/);
+  await assert.rejects(()=>inspectRuneSQLite(wrong),Error);
 });

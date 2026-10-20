@@ -3,9 +3,13 @@
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
-import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy} from './i18n/ui-copy';
-import {UiLocaleProvider,useLoadedUiLocale,useUiLocale} from './i18n/ui-locale';
+import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
+import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
+import fieldsZh from './i18n/sections/fields.zh_tw.js';
+import dataSourceStatusZh from './i18n/sections/uiExtra.dataSourceStatus.zh_tw.js';
+registerDefaultSection('fields',fieldsZh);
+registerDefaultSection('uiExtra.dataSourceStatus',dataSourceStatusZh);
 import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot} from './loc/theme-data';
@@ -18,6 +22,7 @@ import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/scope-registry.js';
 import BottomNavIcon from './modular/BottomNavIcon';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
+import ScopeLink from './modular/ScopeLink';
 
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
@@ -31,13 +36,20 @@ const NAV_SCOPES=Object.values(SCOPES)
 
 function DataSourceStatus(){
   const {copy}=useUiLocale();
+  useUiSection('uiExtra.dataSourceStatus');
+  // Defensive optional chaining: for the three non-default locales this
+  // section is fetched async (useUiSection above), so a render that lands
+  // before it arrives must not crash — it falls back to an empty label
+  // rather than throwing on `undefined.x`. The default locale (zh-Hant)
+  // always has this section synchronously via registerDefaultSection.
+  const section=copy.uiExtra.dataSourceStatus||{};
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   const current=status.degraded
-    ?`${copy.uiExtra.dataSourceStatus.backup}（${status.backupLabel}）`
-    :`${copy.uiExtra.dataSourceStatus.primary}（${status.primaryLabel}）`;
+    ?`${section.backup||''}（${status.backupLabel}）`
+    :`${section.primary||''}（${status.primaryLabel}）`;
   return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')}>
     <details className="scope-data-source-details" open={status.degraded||undefined}>
-      <summary>{copy.uiExtra.dataSourceStatus.detailsTitle}</summary>
+      <summary>{section.detailsTitle}</summary>
       <div className="scope-data-source-values">
         <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
         <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
@@ -204,14 +216,20 @@ function ScrollProgress(){
     style={{transform:'scaleX(0)'}} aria-hidden="true"/>;
 }
 
-function NavTarget({href,label,current=false}){
-  return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<a href={href}>{label}</a>;
+function NavTarget({href,label,current=false,native=false}){
+  return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<ScopeLink href={href} native={native}>{label}</ScopeLink>;
 }
 
+// The provider must sit ABOVE the component that calls useAppBootstrap, so it
+// lives in this thin wrapper (a hook cannot read a provider rendered by itself).
 export default function AppShell({children}){
   const [client]=useState(()=>new QueryClient({
     defaultOptions:{queries:{staleTime:30_000,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
   }));
+  return <QueryClientProvider client={client}><AppShellInner>{children}</AppShellInner></QueryClientProvider>;
+}
+
+function AppShellInner({children}){
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
@@ -272,6 +290,18 @@ export default function AppShell({children}){
   const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
+  // AppShellInner establishes the UiLocaleProvider below rather than sitting
+  // inside one, so the normal useUiSection('fields') hook (which reads the
+  // locale from context) would only ever see the default locale here. This
+  // triggers the fetch for the actual active locale directly; translateUiField
+  // already falls back to the literal text while it's in flight, so nothing
+  // can crash either way — this only makes the real translation arrive.
+  useEffect(()=>{
+    if(isSectionLoaded(activeLocale,'fields'))return undefined;
+    let active=true;
+    loadSection(activeLocale,'fields').catch(()=>{});
+    return ()=>{active=false;};
+  },[activeLocale]);
   const navScopeId=currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
@@ -329,7 +359,7 @@ export default function AppShell({children}){
   },[native,nativeHomepage,pathname,preferences.loading,preferences.account,registryLoaded,registryScopes]);
 
 
-  return <QueryClientProvider client={client}><UiLocaleProvider locale={activeLocale}>
+  return <UiLocaleProvider locale={activeLocale}>
     <ScopePageCopy scopeId={scopeId} display_name={configRow?.display_name||registryRow?.display_name} pageName={pageName}/>
     <ScrollProgress/>
     <header className="scope-global" data-native={native?'ios':'web'}>
@@ -337,25 +367,25 @@ export default function AppShell({children}){
         <ScrollableScopeNav label={translateUiField(activeLocale,'常用空間')} resetKey={preferences.favorites.join(',')+'|'+mobileFavorite+'|'+native+'|'+visibleFolders.map(folder=>folder.id+':'+folder.label).join(',')}>
           {favoriteLinks.map(item=>{
             const href=item.id===deviceNavigation.MOBILE_HOME_ID?deviceNavigation.mobileHomeHref(native):navigationHref(item.id,'',native);
-            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)} native={native}/>;
           })}
           {visibleFolders.map(folder=><button type="button" key={folder.id}
             className="scope-nav-folder" aria-expanded={openFolderId===folder.id}
             aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
             {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
           </button>)}
-          {!favoriteLinks.length&&!visibleFolders.length?<a href={native?'/settings/index.html':'/settings/'} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></a>:null}
+          {!favoriteLinks.length&&!visibleFolders.length?<ScopeLink href={native?'/settings/index.html':'/settings/'} native={native} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></ScopeLink>:null}
         </ScrollableScopeNav>
-        <a href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')}
+        <ScopeLink href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')} native={native}
           className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
           {copy.nav.home}
-        </a>
+        </ScopeLink>
       </nav>
       {openFolder?<div id="scope-nav-folder-contents" className="scope-nav-subrow" aria-label={openFolder.label+' '+translateUiField(activeLocale,'目錄')}>
         <ScrollableScopeNav label={openFolder.label+' '+translateUiField(activeLocale,'目錄內容')} resetKey={openFolder.id+'|'+openFolder.links.map(item=>item.id).join(',')}>
           {openFolder.links.map(item=>{
             const href=navigationHref(item.id,'',native);
-            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)}/>;
+            return <NavTarget key={item.id} href={href} label={item.label} current={targetIsCurrent(href,host,pathname)} native={native}/>;
           })}
           {!openFolder.links.length?<span className="scope-nav-folder-empty"><FieldText text="目錄尚無入口"/></span>:null}
         </ScrollableScopeNav>
@@ -364,12 +394,12 @@ export default function AppShell({children}){
     </header>
     {children}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
-      {featureTabs.map(tab=><a key={tab.id} href={tab.href}
+      {featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
           !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>
         <BottomNavIcon name={tab.icon}/>
         <span>{tab.label}</span>
-      </a>)}
+      </ScopeLink>)}
     </nav>
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
@@ -383,5 +413,5 @@ export default function AppShell({children}){
       </div>
       <DataSourceStatus/>
     </footer>
-  </UiLocaleProvider></QueryClientProvider>;
+  </UiLocaleProvider>;
 }

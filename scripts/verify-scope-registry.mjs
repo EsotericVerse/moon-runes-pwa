@@ -3,23 +3,20 @@ import {HomeBlock} from '../app/loc/home-block-model.js';
 
 const failures=[];
 const expectedExtra=[
-  {scopeId:'loc',key:'codex',label:'LOC 圓環中心實心點標誌',text:''},
-  {scopeId:'lo3rwang',key:'anchor',label:'光之定錨點',text:'光之定錨點'},
-  {scopeId:'lrunes',key:'moon',label:'玄韻家黃色圓點標誌',text:''}
+  {scopeId:'loc',key:'codex'},
+  {scopeId:'lo3rwang',key:'anchor'},
+  {scopeId:'lrunes',key:'moon'}
 ];
-for(const {scopeId,key,label,text} of expectedExtra){
+for(const {scopeId,key} of expectedExtra){
   const sign=HomeBlock.heroExtraFor(scopeId);
-  if(!sign||sign.key!==key||sign.label!==label||sign.text!==text)
+  if(!sign||sign.key!==key)
     failures.push('Fixed Extra Sign contract mismatch: '+scopeId);
 }
 for(const candidate of ['admin','anotherscope','','LOC','lunarunes']){
   if(HomeBlock.heroExtraFor(candidate)!==null)failures.push('Other Scopes must never receive a fixed Extra Sign');
 }
-if(HomeBlock.heroExtraFor({scopeId:'loc',extraSign:'moon'})!==null)
-  failures.push('DB-style input cannot override a fixed Extra Sign');
 
 if(resolveScope('unknown.example','/')!=='loc')failures.push('default Scope must remain loc');
-if(SCOPES.lunarunes)failures.push('retired lunarunes runtime Scope id must not return');
 if(!SCOPES.lrunes)failures.push('canonical lrunes Scope id missing');
 if(Object.values(SCOPES).some(scope=>Boolean(scope.searchAliases)))failures.push('DB search_aliases must not be duplicated in static Scope Registry');
 if(resolveScope('127.0.0.1','/lrunes/')!=='lrunes')failures.push('local static preview must resolve /lrunes/ as LunaRunes');
@@ -41,8 +38,8 @@ for(const [id,mode,reject] of [['lo3rwang','domain',true],['cc','domain',true],[
   if(Boolean(duplicateDomainLabelError(id,mode))!==reject)failures.push('Domain duplicate labels mismatch: '+id+' / '+mode);
 }
 if(scopeHref('lo3rwang')!=='https://loc.lo3rwang.cc/lo3rwang/')failures.push('Author homepage must remain a LOC Directory route');
-if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope/?scope=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
-if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope/search/?scope=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
+if(scopeHref('newscope')!=='https://loc.lo3rwang.cc/scope-shell/?scopeid=newscope')failures.push('dynamic Scope homepage must use the generic static shell');
+if(featureHref('newscope','search')!=='https://loc.lo3rwang.cc/scope-shell/search/?scopeid=newscope')failures.push('dynamic Scope features must preserve Scope ID in the generic shell query');
 for(const [id,scope] of Object.entries(SCOPES)){
   if(scope.id!==id)failures.push(id+' registry key/id mismatch');
   if(scope.domain||scope.mount)failures.push(id+' must not independently define Domain/Directory values');

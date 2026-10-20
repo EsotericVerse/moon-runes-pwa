@@ -1,10 +1,12 @@
 /* LunaRunes home: hero and primary actions. */
-.runes-home-hero{
+.runes-home-hero.runes-home-hero{
   position:relative;
   display:grid;
-  align-items:center;
-  min-height:clamp(400px,46vw,560px);
-  padding:clamp(1.5rem,4vw,3.5rem);
+  grid-template-columns:minmax(0,1fr);
+  align-content:center;
+  /* Same frame as the LOC/Author Hero (see loc-about-original.css). */
+  min-height:clamp(430px,50vw,620px);
+  padding:clamp(1.6rem,4vw,3.75rem);
   overflow:hidden;
   isolation:isolate;
   border:1px solid color-mix(in srgb,var(--loc-accent) 22%,var(--loc-line));
@@ -31,8 +33,16 @@
   z-index:1;
   pointer-events:none;
   background:
-    linear-gradient(90deg,rgba(3,6,16,.97) 0%,rgba(3,6,16,.90) 34%,rgba(3,6,16,.58) 58%,rgba(3,6,16,.14) 82%,rgba(3,6,16,.08) 100%),
-    linear-gradient(180deg,rgba(4,8,18,.08) 0%,rgba(4,8,18,.08) 62%,rgba(4,8,18,.54) 100%);
+    linear-gradient(90deg,rgba(3,6,13,.68) 0%,rgba(3,6,13,.46) 31%,rgba(3,6,13,.20) 52%,rgba(3,6,13,.06) 75%,transparent 100%),
+    linear-gradient(180deg,rgba(3,6,13,.02) 0%,rgba(3,6,13,.04) 58%,rgba(3,6,13,.26) 100%);
+}
+@media(max-width:760px){
+  .runes-home-hero.runes-home-hero{align-content:end;min-height:clamp(460px,118vw,570px);padding:1.35rem}
+  .runes-home-hero-overlay{
+    background:
+      linear-gradient(180deg,rgba(3,6,13,.08) 0%,rgba(3,6,13,.18) 44%,rgba(3,6,13,.64) 100%),
+      linear-gradient(90deg,rgba(3,6,13,.30) 0%,rgba(3,6,13,.12) 72%,transparent 100%);
+  }
 }
 
 .runes-home-hero::after{
@@ -45,7 +55,7 @@
   z-index:2;
   display:grid;
   gap:.85rem;
-  width:min(100%,42rem);
+  width:min(100%,var(--loc-hero-measure,750px));
 }
 
 .runes-home-hero-copy .loc-eyebrow{
@@ -73,7 +83,7 @@
   color:rgba(239,242,255,.8);
   text-shadow:0 2px 20px rgba(0,0,0,.36);
 }
-.runes-home-hero-copy>p:not(.loc-eyebrow):not(.runes-home-system){
+.runes-home-hero-copy>p:not(.loc-eyebrow){
   font-size:var(--loc-type-hero-copy);
   line-height:var(--loc-line-hero-copy);
 }
@@ -90,49 +100,11 @@
   line-height:var(--loc-line-hero-copy);
   text-shadow:0 2px 20px rgba(0,0,0,.36);
 }
-.runes-home-hero-copy .runes-home-body>p:first-child{
-  max-width:36rem;
-  margin-top:.85rem!important;
-  color:#f7f8ff!important;
-  font-weight:750;
-  line-height:1.65!important;
-}
-.runes-home-hero-copy .runes-home-body>p:nth-child(2){
-  margin-top:.7rem!important;
-  color:rgba(232,236,250,.84)!important;
-  font-size:1rem!important;
-  line-height:1.55!important;
-}
-
-.runes-home-hero .runes-home-lead{
-  color:#f7f8ff!important;
-}
-
-.runes-home-hero .runes-home-system{
-  color:rgba(232,236,250,.84)!important;
-}
-
 .runes-home-hero .loc-button{
   border-color:rgba(224,230,255,.24);
   background:rgba(7,11,24,.58);
   color:#f7f8ff;
   backdrop-filter:blur(10px);
-}
-
-.runes-home-lead{
-  max-width:36rem;
-  margin:.85rem 0 0!important;
-  color:var(--loc-heading)!important;
-  font-size:var(--loc-type-hero-copy)!important;
-  font-weight:750;
-  line-height:1.65!important;
-}
-
-.runes-home-system{
-  margin-top:.7rem!important;
-  color:var(--loc-muted)!important;
-  font-size:1rem!important;
-  line-height:1.55!important;
 }
 
 .runes-home-primary-actions{

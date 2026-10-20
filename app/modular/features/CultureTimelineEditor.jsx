@@ -1,6 +1,9 @@
 'use client';
-import {useFeatureCopy,useUiCopy} from '../../i18n/ui-locale';
-import featureZh from '../../i18n/features.zh_tw.json' with {type:'json'};
+import {useFeatureCopy,useUiCopy,useUiSection} from '../../i18n/ui-locale';
+import featureZh from '../../i18n/features.zh_tw.js';
+import {registerDefaultSection} from '../../i18n/ui-copy';
+import dataErrorsZh from '../../i18n/sections/uiExtra.dataErrors.zh_tw.js';
+registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
 
 
 
@@ -51,6 +54,7 @@ function rowSortDate(row,anchors){
 }
 
 export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
+  useUiSection('uiExtra.dataErrors');
   const copy=useUiCopy();
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
   const account=useAccount();

@@ -1,12 +1,16 @@
 'use client';
 
 import {useMemo,useState} from 'react';
-import {UI_COPY} from '../../../i18n/ui-copy';
+import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
 import {RUNE_RANKING_PAGE_SIZE,availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color} from './statistics-time-zoom.mjs';
 export {STAT_VISUAL_TYPES,availableStatisticChartTypes} from './statistics-time-zoom.mjs';
-import {useUiLocale} from '../../../i18n/ui-locale';
+import {useUiLocale,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
 import StatisticsDetails from './StatisticsDetails';
+import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
+import chartLabelsZh from '../../../i18n/sections/uiExtra.chartLabels.zh_tw.js';
+registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
+registerDefaultSection('uiExtra.chartLabels',chartLabelsZh);
 import {
   Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,ComposedChart,
   Legend,Line,LineChart,Pie,PieChart,PolarAngleAxis,PolarGrid,
@@ -46,6 +50,8 @@ export default function StatisticsMultiChart({
   type='line',rows=[],series=[],distribution=[],totalKey='',height=380,foldBlank=false,
   barLayout='horizontal',onCategoryClick=null,onSeriesClick=null
 }){
+  useUiSection('uiExtra.statisticsView');
+  useUiSection('uiExtra.chartLabels');
   const {locale}=useUiLocale();
   const t=useUiText();
   const units={dayUnit:t('uiExtra.chartLabels.dayUnit'),periodUnit:t('uiExtra.chartLabels.periodUnit')};
@@ -164,6 +170,7 @@ function groupLabel(value,t){
   return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.runeSuffix)?text:text+suffix;
 }
 export function Rune66Summary({analysis}){
+  useUiSection('uiExtra.statisticsView');
   const t=useUiText();
   const [groupPage,setGroupPage]=useState(1);
   const data=analysis||{};

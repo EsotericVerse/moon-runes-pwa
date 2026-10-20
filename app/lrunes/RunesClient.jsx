@@ -1,11 +1,13 @@
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
+import ScopeLink from '../modular/ScopeLink';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
+import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
 
@@ -19,15 +21,18 @@ function renderRuneHero(slot,native){
   const subtitle=slot.stored?slot.subtitle:'';
   const text=slot.stored?slot.text:'';
   return <>
-    <img
-      className="runes-home-hero-image"
-      src={runesHeroAsset.src}
-      alt=""
-      aria-hidden="true"
-      loading="eager"
-      fetchPriority="high"
-      decoding="async"
-    />
+    <picture>
+      <source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>
+      <img
+        className="runes-home-hero-image"
+        src={runesHeroAsset.src}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
+    </picture>
     <div className="runes-home-hero-overlay" aria-hidden="true"/>
     {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
       role="img" aria-label={sign.label}>{sign.text}</span>:null}
@@ -39,9 +44,9 @@ function renderRuneHero(slot,native){
       </div>
       {text?<div className="runes-home-body scope-rich-surface" dangerouslySetInnerHTML={{__html:text}}/>:null}
       <div className="runes-home-primary-actions" aria-label="開始抽牌">
-        <a className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)}>抽一張符文</a>
-        <a className="loc-button" href={runeHref('card/daily',native)}>每日符文</a>
-        <a className="loc-button" href={runeHref('card/list',native)}>符文圖鑑</a>
+        <ScopeLink className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)} native={native}>抽一張符文</ScopeLink>
+        <ScopeLink className="loc-button" href={runeHref('card/daily',native)} native={native}>每日符文</ScopeLink>
+        <ScopeLink className="loc-button" href={runeHref('card/list',native)} native={native}>符文圖鑑</ScopeLink>
       </div>
     </div>
   </>;
@@ -67,8 +72,8 @@ export default function RunesClient(){
     />
 
     <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
-      <a className="loc-button" href={runeHref('game',native)}>符文遊戲</a>
-      <a className="loc-button" href={runeHref('daily/log',native)}>每日符文紀錄</a>
+      <ScopeLink className="loc-button" href={runeHref('game',native)} native={native}>符文遊戲</ScopeLink>
+      <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
     </nav>
 
     <RuneIntroSection />

@@ -7,6 +7,7 @@ import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
 import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
+import ScopeLink from '../../modular/ScopeLink';
 import {runeImage,groupImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
 import '../visual/rune-art-layout.css';
@@ -190,10 +191,10 @@ export default function RuneAtlasLab({presentationSwitcher=null}){
     <footer className="rune-art-footer">
       <span>原創美術展示 · 保留符文原始卡面</span>
       <nav className="rune-skin-controls" aria-label="返回與模式切換">
-        <a href={navigationHref('lrunes','',native)} className="rune-skin-btn">回符文首頁</a>
-        <a href={navigationHref('lrunes','card',native)} className="rune-skin-btn">← 符文展示首頁</a>
-        <a href={navigationHref('lrunes','card/duel',native)} className="rune-skin-btn">切換隨機抽牌</a>
-        <a href={navigationHref('lrunes','list',native)} className="rune-skin-btn">舊版圖鑑</a>
+        <ScopeLink href={navigationHref('lrunes','',native)} native={native} className="rune-skin-btn">回符文首頁</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','card',native)} native={native} className="rune-skin-btn">← 符文展示首頁</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','card/duel',native)} native={native} className="rune-skin-btn">切換隨機抽牌</ScopeLink>
+        <ScopeLink href={navigationHref('lrunes','list',native)} native={native} className="rune-skin-btn">舊版圖鑑</ScopeLink>
       </nav>
     </footer>
     {details?<RuneInfoDialog rune={details} onClose={closeDetails}/>:null}

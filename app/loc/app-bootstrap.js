@@ -3,7 +3,7 @@
 import {useQuery} from '@tanstack/react-query';
 import {dbPublicClient} from './db-client.mjs';
 import {selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
-import {selectThemeRegistry} from './theme-data';
+import {selectThemeRegistry,themeUiId} from './theme-data';
 
 // ONE request per page. React Query dedupes every consumer that asks for the
 // same (scopeId, pageName) under this one key, so the Scope Registry, NAV
@@ -50,8 +50,10 @@ export async function selectAppBootstrap(scopeId,pageName='index'){
         blocks:Array.isArray(data?.blocks)?data.blocks:[],
         registry:Array.isArray(data?.registry)?data.registry:[],
         page_copy:Array.isArray(data?.page_copy)?data.page_copy:[],
-        theme_list:Array.isArray(data?.theme_list)?data.theme_list:[],
-        themes:Array.isArray(data?.themes)?data.themes:[]
+        // The function returns the raw numeric Theme key (1..8); the UI works
+        // with 'theme-N' identifiers, exactly as selectThemeRegistry returns.
+        theme_list:(Array.isArray(data?.theme_list)?data.theme_list:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)})),
+        themes:(Array.isArray(data?.themes)?data.themes:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)}))
       };
     }catch(error){
       if(!missingRpc(error))throw error;

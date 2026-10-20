@@ -6,6 +6,7 @@ import RuneArtStage from '../visual/RuneArtStage';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
+import ScopeLink from '../../modular/ScopeLink';
 import {loadDrawCards,randomIndex} from '../RuneDrawClient';
 import {runeImage} from '../rune-directory.mjs';
 import '../skin-lab.css';
@@ -79,10 +80,10 @@ export default function RuneDaily3D({presentationSwitcher=null}){
     {error?<p className="rune-skin-error" role="alert">{error}</p>:null}
     <div className="rune-art-footer">
       <nav className="rune-skin-controls" aria-label="符文模式">
-        <a className="rune-skin-btn" href={navigationHref('lrunes','',native)}>回符文首頁</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card',native)}>← 符文展示首頁</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)}>一般抽牌</a>
-        <a className="rune-skin-btn" href={navigationHref('lrunes','duel/daily',native)}>原版每日指示</a>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','',native)} native={native}>回符文首頁</ScopeLink>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','card',native)} native={native}>← 符文展示首頁</ScopeLink>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','card/duel',native)} native={native}>一般抽牌</ScopeLink>
+        <ScopeLink className="rune-skin-btn" href={navigationHref('lrunes','duel/daily',native)} native={native}>原版每日指示</ScopeLink>
       </nav>
     </div>
     {details&&draw&&typeof document!=='undefined'?createPortal(
@@ -97,7 +98,7 @@ export default function RuneDaily3D({presentationSwitcher=null}){
               <h2>每日符文指示</h2>
             </div>
             <div className="rune-art-result-actions">
-              <a className="rune-art-result-home" href={navigationHref('lrunes','card',native)}>回到首頁</a>
+              <ScopeLink className="rune-art-result-home" href={navigationHref('lrunes','card',native)} native={native}>回到首頁</ScopeLink>
               <button type="button" className="rune-art-result-close"
                 onClick={()=>setDetails(false)} aria-label="關閉每日指示">×</button>
             </div>

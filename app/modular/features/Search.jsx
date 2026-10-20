@@ -1,9 +1,24 @@
 'use client';
 import FieldText from '../../i18n/FieldText';
 
-import {UI_COPY} from '../../i18n/ui-copy';
-import {useUiCopy} from '../../i18n/ui-locale';
+import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
+import searchZh from '../../i18n/sections/search.zh_tw.js';
+import searchUIZh from '../../i18n/sections/uiExtra.searchUI.zh_tw.js';
+import editBlocksZh from '../../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+import cultureViewZh from '../../i18n/sections/uiExtra.cultureView.zh_tw.js';
+import paginationZh from '../../i18n/sections/uiExtra.pagination.zh_tw.js';
+// This feature's own Traditional Chinese sections are bundled into its own
+// lazy chunk and registered immediately, so the search/uiExtra.* keys this
+// file reads are always present for the default locale; the other three
+// locales are fetched on demand by useUiSection below. None of these keys
+// are part of the app-wide core dictionary any more.
+registerDefaultSection('search',searchZh);
+registerDefaultSection('uiExtra.searchUI',searchUIZh);
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
+registerDefaultSection('uiExtra.cultureView',cultureViewZh);
+registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
@@ -210,6 +225,11 @@ function searchHref(scopeId,query,filters={}){
 
 
 export default function Search(){
+  useUiSection('search');
+  useUiSection('uiExtra.searchUI');
+  useUiSection('uiExtra.editBlocks');
+  useUiSection('uiExtra.cultureView');
+  useUiSection('uiExtra.pagination');
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();

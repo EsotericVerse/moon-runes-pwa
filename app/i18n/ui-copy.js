@@ -2,7 +2,7 @@
 // Traditional Chinese is the default and ships with every page. The other
 // three dictionaries are separate chunks, fetched only when that language is
 // actually selected (loadUiLocale).
-import zhTw from './zh_tw.json' with {type:'json'};
+import zhTw from './zh_tw.js';
 
 function interpolate(template,values={}){
   return String(template||'').replace(/\{(label|query)\}/g,(_,key)=>String(values[key]??''));
@@ -10,7 +10,11 @@ function interpolate(template,values={}){
 
 function withFormat(content){
   const f=content.formatMessages;
-  return Object.freeze({...content,format:Object.freeze({
+  // Not frozen: feature/scope-owned sections (search, statistics, culture, …)
+  // are merged into this same object on demand by registerDefaultSection/
+  // mergeLoadedSection below, long after the per-locale dictionary first
+  // loads. Leaf values stay exactly what the source file provided.
+  return {...content,format:Object.freeze({
     searchScope:label=>interpolate(f.searchScope,{label}),
     searchResult:({label,query,hasMore,partial=''})=>
       interpolate(f.result,{label,query})+(hasMore?f.more:f.end)+partial,
@@ -19,7 +23,7 @@ function withFormat(content){
     songLink:index=>f.songLink+' '+index,
     period:index=>f.period+' '+index,
     selected:value=>f.selected+value
-  })});
+  })};
 }
 
 const zhHant=withFormat(zhTw);
@@ -36,9 +40,9 @@ export const UI_COPY=zhHant;
 // to the default dictionary.
 export const UI_DICTIONARIES={'zh-Hant':zhHant};
 const LOADERS={
-  'zh-Hans':()=>import('./zh_cn.json',{with:{type:'json'}}),
-  en:()=>import('./en.json',{with:{type:'json'}}),
-  ja:()=>import('./ja.json',{with:{type:'json'}})
+  'zh-Hans':()=>import('./zh_cn.js'),
+  en:()=>import('./en.js'),
+  ja:()=>import('./ja.js')
 };
 const pending={};
 export function isUiLocaleLoaded(locale){return Boolean(UI_DICTIONARIES[locale]);}
@@ -59,9 +63,9 @@ export function loadUiLocale(locale){
 // features.<language>.json and are only imported by those features' own
 // chunks, never by the page shell.
 const FEATURE_LOADERS={
-  'zh-Hans':()=>import('./features.zh_cn.json',{with:{type:'json'}}),
-  en:()=>import('./features.en.json',{with:{type:'json'}}),
-  ja:()=>import('./features.ja.json',{with:{type:'json'}})
+  'zh-Hans':()=>import('./features.zh_cn.js'),
+  en:()=>import('./features.en.js'),
+  ja:()=>import('./features.ja.js')
 };
 const featureCopy={};
 const featurePending={};
@@ -75,6 +79,181 @@ export function loadFeatureCopy(locale){
 // defaults = the Traditional Chinese section, imported by the calling feature.
 export function featureSection(locale,section,defaults){
   return featureCopy[locale]?.[section]||defaults;
+}
+
+// Sections split out of the per-locale dictionaries themselves (as opposed
+// to FEATURE_LOADERS above, which covers whole standalone feature files).
+// A section is addressed by a dotted path such as 'search' or
+// 'uiExtra.editBlocks'. The feature file that owns a section statically
+// imports its own Traditional Chinese copy and registers it with
+// registerDefaultSection — so the default locale never performs a network
+// fetch and a lookup can never read `undefined` — while the other three
+// locales fetch their copy on demand via loadSection. Either way the result
+// is merged into the same per-locale dictionary object that uiCopy()
+// returns, so every existing lookup style (`copy.search.x`,
+// `<UiText id="search.x"/>`, `<UiText id="uiExtra.editBlocks.x"/>`) keeps
+// working unchanged once the section has arrived.
+
+
+const SECTION_LOADERS={
+  'zh-Hans':{
+    'search':()=>import('./sections/search.zh_cn.js'),
+    'statistics':()=>import('./sections/statistics.zh_cn.js'),
+    'culture':()=>import('./sections/culture.zh_cn.js'),
+    'governance':()=>import('./sections/governance.zh_cn.js'),
+    'management':()=>import('./sections/management.zh_cn.js'),
+    'admin':()=>import('./sections/admin.zh_cn.js'),
+    'uiExtra.scopeGroup':()=>import('./sections/uiExtra.scopeGroup.zh_cn.js'),
+    'uiExtra.genericScope':()=>import('./sections/uiExtra.genericScope.zh_cn.js'),
+    'uiExtra.keywords':()=>import('./sections/uiExtra.keywords.zh_cn.js'),
+    'uiExtra.scopeSettings':()=>import('./sections/uiExtra.scopeSettings.zh_cn.js'),
+    'uiExtra.searchUI':()=>import('./sections/uiExtra.searchUI.zh_cn.js'),
+    'uiExtra.statisticsUI':()=>import('./sections/uiExtra.statisticsUI.zh_cn.js'),
+    'uiExtra.importUI':()=>import('./sections/uiExtra.importUI.zh_cn.js'),
+    'uiExtra.statisticsView':()=>import('./sections/uiExtra.statisticsView.zh_cn.js'),
+    'uiExtra.chartTypes':()=>import('./sections/uiExtra.chartTypes.zh_cn.js'),
+    'uiExtra.chartLabels':()=>import('./sections/uiExtra.chartLabels.zh_cn.js'),
+    'uiExtra.globalSettings':()=>import('./sections/uiExtra.globalSettings.zh_cn.js'),
+    'uiExtra.editBlocks':()=>import('./sections/uiExtra.editBlocks.zh_cn.js'),
+    'uiExtra.sourceCategory':()=>import('./sections/uiExtra.sourceCategory.zh_cn.js'),
+    'uiExtra.sharing':()=>import('./sections/uiExtra.sharing.zh_cn.js'),
+    'uiExtra.publisher':()=>import('./sections/uiExtra.publisher.zh_cn.js'),
+    'uiExtra.pagination':()=>import('./sections/uiExtra.pagination.zh_cn.js'),
+    'uiExtra.adminView':()=>import('./sections/uiExtra.adminView.zh_cn.js'),
+    'uiExtra.cultureView':()=>import('./sections/uiExtra.cultureView.zh_cn.js'),
+    'uiExtra.cultureTimeline':()=>import('./sections/uiExtra.cultureTimeline.zh_cn.js'),
+    'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.zh_cn.js'),
+    'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.zh_cn.js'),
+    'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.zh_cn.js'),
+    'fields':()=>import('./sections/fields.zh_cn.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.zh_cn.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.zh_cn.js'),
+  },
+  'en':{
+    'search':()=>import('./sections/search.en.js'),
+    'statistics':()=>import('./sections/statistics.en.js'),
+    'culture':()=>import('./sections/culture.en.js'),
+    'governance':()=>import('./sections/governance.en.js'),
+    'management':()=>import('./sections/management.en.js'),
+    'admin':()=>import('./sections/admin.en.js'),
+    'uiExtra.scopeGroup':()=>import('./sections/uiExtra.scopeGroup.en.js'),
+    'uiExtra.genericScope':()=>import('./sections/uiExtra.genericScope.en.js'),
+    'uiExtra.keywords':()=>import('./sections/uiExtra.keywords.en.js'),
+    'uiExtra.scopeSettings':()=>import('./sections/uiExtra.scopeSettings.en.js'),
+    'uiExtra.searchUI':()=>import('./sections/uiExtra.searchUI.en.js'),
+    'uiExtra.statisticsUI':()=>import('./sections/uiExtra.statisticsUI.en.js'),
+    'uiExtra.importUI':()=>import('./sections/uiExtra.importUI.en.js'),
+    'uiExtra.statisticsView':()=>import('./sections/uiExtra.statisticsView.en.js'),
+    'uiExtra.chartTypes':()=>import('./sections/uiExtra.chartTypes.en.js'),
+    'uiExtra.chartLabels':()=>import('./sections/uiExtra.chartLabels.en.js'),
+    'uiExtra.globalSettings':()=>import('./sections/uiExtra.globalSettings.en.js'),
+    'uiExtra.editBlocks':()=>import('./sections/uiExtra.editBlocks.en.js'),
+    'uiExtra.sourceCategory':()=>import('./sections/uiExtra.sourceCategory.en.js'),
+    'uiExtra.sharing':()=>import('./sections/uiExtra.sharing.en.js'),
+    'uiExtra.publisher':()=>import('./sections/uiExtra.publisher.en.js'),
+    'uiExtra.pagination':()=>import('./sections/uiExtra.pagination.en.js'),
+    'uiExtra.adminView':()=>import('./sections/uiExtra.adminView.en.js'),
+    'uiExtra.cultureView':()=>import('./sections/uiExtra.cultureView.en.js'),
+    'uiExtra.cultureTimeline':()=>import('./sections/uiExtra.cultureTimeline.en.js'),
+    'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.en.js'),
+    'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.en.js'),
+    'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.en.js'),
+    'fields':()=>import('./sections/fields.en.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.en.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.en.js'),
+  },
+  'ja':{
+    'search':()=>import('./sections/search.ja.js'),
+    'statistics':()=>import('./sections/statistics.ja.js'),
+    'culture':()=>import('./sections/culture.ja.js'),
+    'governance':()=>import('./sections/governance.ja.js'),
+    'management':()=>import('./sections/management.ja.js'),
+    'admin':()=>import('./sections/admin.ja.js'),
+    'uiExtra.scopeGroup':()=>import('./sections/uiExtra.scopeGroup.ja.js'),
+    'uiExtra.genericScope':()=>import('./sections/uiExtra.genericScope.ja.js'),
+    'uiExtra.keywords':()=>import('./sections/uiExtra.keywords.ja.js'),
+    'uiExtra.scopeSettings':()=>import('./sections/uiExtra.scopeSettings.ja.js'),
+    'uiExtra.searchUI':()=>import('./sections/uiExtra.searchUI.ja.js'),
+    'uiExtra.statisticsUI':()=>import('./sections/uiExtra.statisticsUI.ja.js'),
+    'uiExtra.importUI':()=>import('./sections/uiExtra.importUI.ja.js'),
+    'uiExtra.statisticsView':()=>import('./sections/uiExtra.statisticsView.ja.js'),
+    'uiExtra.chartTypes':()=>import('./sections/uiExtra.chartTypes.ja.js'),
+    'uiExtra.chartLabels':()=>import('./sections/uiExtra.chartLabels.ja.js'),
+    'uiExtra.globalSettings':()=>import('./sections/uiExtra.globalSettings.ja.js'),
+    'uiExtra.editBlocks':()=>import('./sections/uiExtra.editBlocks.ja.js'),
+    'uiExtra.sourceCategory':()=>import('./sections/uiExtra.sourceCategory.ja.js'),
+    'uiExtra.sharing':()=>import('./sections/uiExtra.sharing.ja.js'),
+    'uiExtra.publisher':()=>import('./sections/uiExtra.publisher.ja.js'),
+    'uiExtra.pagination':()=>import('./sections/uiExtra.pagination.ja.js'),
+    'uiExtra.adminView':()=>import('./sections/uiExtra.adminView.ja.js'),
+    'uiExtra.cultureView':()=>import('./sections/uiExtra.cultureView.ja.js'),
+    'uiExtra.cultureTimeline':()=>import('./sections/uiExtra.cultureTimeline.ja.js'),
+    'uiExtra.selfIntersection':()=>import('./sections/uiExtra.selfIntersection.ja.js'),
+    'uiExtra.dataErrors':()=>import('./sections/uiExtra.dataErrors.ja.js'),
+    'uiExtra.frameEditor':()=>import('./sections/uiExtra.frameEditor.ja.js'),
+    'fields':()=>import('./sections/fields.ja.js'),
+    'uiExtra.feature':()=>import('./sections/uiExtra.feature.ja.js'),
+    'uiExtra.dataSourceStatus':()=>import('./sections/uiExtra.dataSourceStatus.ja.js'),
+  },
+};
+
+const loadedSectionPaths={'zh-Hant':new Set(),'zh-Hans':new Set(),en:new Set(),ja:new Set()};
+const sectionPending={};
+let sectionVersion=0;
+const sectionListeners=new Set();
+function bumpSectionVersion(){
+  sectionVersion+=1;
+  for(const listener of sectionListeners)listener();
+}
+// Lets ui-locale.jsx force a context re-render whenever any section finishes
+// loading anywhere, so already-mounted UiText/FieldText/useUiCopy consumers
+// pick up the freshly merged data without each needing its own plumbing.
+export function subscribeSectionVersion(listener){
+  sectionListeners.add(listener);
+  return ()=>sectionListeners.delete(listener);
+}
+
+function setAtPath(target,path,value){
+  const keys=path.split('.');
+  let node=target;
+  for(let i=0;i<keys.length-1;i++){
+    const key=keys[i];
+    if(typeof node[key]!=='object'||node[key]===null)node[key]={};
+    node=node[key];
+  }
+  node[keys[keys.length-1]]=value;
+}
+function getAtPath(source,path){
+  return path.split('.').reduce((value,key)=>value?.[key],source);
+}
+
+export function isSectionLoaded(locale,path){
+  return locale==='zh-Hant'||Boolean(loadedSectionPaths[locale]?.has(path));
+}
+// Called at module-evaluation time by the feature file that owns this
+// section (before that file's component function ever runs), so the
+// default locale's copy of the section is always present synchronously —
+// both for `copy.<path>` style reactive reads and for any direct
+// `UI_COPY.<path>` static read in the same file.
+export function registerDefaultSection(path,value){
+  if(loadedSectionPaths['zh-Hant'].has(path))return;
+  setAtPath(zhHant,path,value);
+  loadedSectionPaths['zh-Hant'].add(path);
+  bumpSectionVersion();
+}
+export function loadSection(locale,path){
+  if(locale==='zh-Hant')return Promise.resolve(getAtPath(zhHant,path));
+  if(loadedSectionPaths[locale]?.has(path))return Promise.resolve(getAtPath(UI_DICTIONARIES[locale],path));
+  const loader=SECTION_LOADERS[locale]?.[path];
+  if(!loader)return Promise.resolve(getAtPath(zhHant,path));
+  const key=locale+'::'+path;
+  sectionPending[key]??=loadUiLocale(locale).then(()=>loader()).then(mod=>{
+    setAtPath(UI_DICTIONARIES[locale],path,mod.default);
+    loadedSectionPaths[locale].add(path);
+    bumpSectionVersion();
+    return mod.default;
+  });
+  return sectionPending[key];
 }
 
 export function normalizeUiLocale(locale){
