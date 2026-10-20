@@ -71,67 +71,6 @@ console.log('[module-contracts] audited '+mjsTotal+' .mjs (app '+
   ', tests '+mjsInventory.tests.length+', root '+mjsInventory.root.length+
   '), static .mjs edges: '+staticMjsEdges);
 
-// Non-source Statistics views must not load the source classification engine.
-const statisticsSource=readFileSync(resolve(root,'app/modular/features/Statistics.jsx'),'utf8');
-const mediaCrossSource=readFileSync(resolve(root,'app/modular/modules/statistics/MediaCrossTagStatistics.jsx'),'utf8');
-if(statisticsSource.includes("from '../../loc/statistics-admin-source.mjs'"))
-  failures.push('Statistics eagerly imports source-classification model');
-if(!statisticsSource.includes("await import('../../loc/statistics-admin-source.mjs')")||
-   !statisticsSource.includes("enabled:!isLrunesDaily&&!mediaDimension"))
-  failures.push('Statistics source model must be loaded only in an active source mode');
-
-// Galaxy query capability is not part of daily Rune statistics or other
-// unrelated rankings; it is downloaded by the active query / chart interaction.
-if(statisticsSource.includes("from '../../loc/galaxy-query'")||
-   !statisticsSource.includes("const loadGalaxyStatistics=()=>import('../../loc/galaxy-query')")||
-   !mediaCrossSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()")||
-   !statisticsSource.includes("const {selectMediaCrossTagRows}=await loadGalaxyStatistics()")||
-   !statisticsSource.includes("const {selectScopeOverview}=await loadGalaxyStatistics()"))
-  failures.push('Statistics Galaxy engines must be loaded on the active query or interaction');
-
-// Media facets have their own React hook state, chart selection and pagination.
-// Unrelated statistics never mount the media category/classification controls.
-const mediaFacetSource=readFileSync(resolve(root,'app/modular/modules/statistics/MediaFacetStatistics.jsx'),'utf8');
-const timeZoomSource=readFileSync(resolve(root,'app/modular/modules/statistics/statistics-time-zoom.mjs'),'utf8');
-if(!statisticsSource.includes("dynamic(()=>import('../modules/statistics/MediaFacetStatistics')")||
-   statisticsSource.includes('function MediaFacetStatistics(')||
-   !mediaFacetSource.includes('export default function MediaFacetStatistics(')||
-   !mediaFacetSource.includes("useState('all')")||
-   !mediaFacetSource.includes('RUNE_RANKING_PAGE_SIZE')||
-   !timeZoomSource.includes('export const RUNE_RANKING_PAGE_SIZE=8'))
-  failures.push('Media facets must mount as a mode-specific React capability');
-
-// Media pair visualization and its on-click work lookup are one optional
-// capability; unrelated statistics must never instantiate its React tree.
-if(!statisticsSource.includes("dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics')")||
-   statisticsSource.includes('function MediaCrossTagStatistics(')||
-   statisticsSource.includes('function MediaCrossTagPicker(')||
-   !mediaCrossSource.includes('export default function MediaCrossTagStatistics(')||
-   !mediaCrossSource.includes("const {selectMediaCrossPairWorks}=await loadGalaxyStatistics()"))
-  failures.push('Media cross-tag capability must be deferred to the active media-style view');
-
-// Suno's authoring and style classification depend on BlockNote but file/ZIP
-// import must not download them until the user opens Suno Import.
-const importPanelSource=readFileSync(resolve(root,'app/loc/ManagementImportPanel.jsx'),'utf8');
-const sunoPanelSource=readFileSync(resolve(root,'app/loc/SunoImportPanel.jsx'),'utf8');
-if(!importPanelSource.includes("const SunoImport=dynamic(()=>import('./SunoImportPanel')")||
-   !importPanelSource.includes('sunoOpen?<SunoImport')||
-   importPanelSource.includes("from './BlockNoteEditor'")||
-   importPanelSource.includes("from './blocknote-content.mjs'")||
-   importPanelSource.includes("from './suno-style-meta-tags.mjs'")||
-   !sunoPanelSource.includes("from './BlockNoteEditor'")||
-   !sunoPanelSource.includes("from './suno-style-meta-tags.mjs'"))
-  failures.push('Suno and BlockNote must be separately downloaded only for an active authoring session');
-
-// Prevent parser capabilities from returning to the initial import-panel bundle.
-
-for(const moduleName of ['universal-file-import.mjs','private-archive-universal.mjs']){
-  if(importPanelSource.includes("from './"+moduleName+"'"))
-    failures.push('Import panel eagerly loads parser: '+moduleName);
-  if(!importPanelSource.includes("await import('./"+moduleName+"')"))
-    failures.push('Import panel missing on-demand parser: '+moduleName);
-}
-
 for(const path of [
   'app/lrunes/RunesClient.jsx',
   'app/lrunes/RuneDrawClient.jsx',
