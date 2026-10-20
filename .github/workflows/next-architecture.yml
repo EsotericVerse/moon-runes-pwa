@@ -51,6 +51,11 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           tail -n 200 /tmp/next-build.log >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Job summaries and raw logs are not readable from every client;
+          # annotations are, so surface the tail of the build output there too.
+          grep -v '^\s*$' /tmp/next-build.log | tail -n 8 | cut -c1-400 | while IFS= read -r line; do
+            echo "::error title=build-tail::${line//%/%25}"
+          done
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Run browser accessibility checks
