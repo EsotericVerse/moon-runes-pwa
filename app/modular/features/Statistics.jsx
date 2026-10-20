@@ -4,10 +4,10 @@ import {UI_COPY} from '../../i18n/ui-copy';
 import {useUiCopy} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 
 // Defer Galaxy's data/query engine until the selected statistics mode needs it.
 const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
@@ -158,13 +158,6 @@ function StatisticTypeSelect({scopeId,navigation,types}){
   </label>;
 }
 
-async function selectPublicStatisticsMembers(){
-  const rows=await selectScopeRegistry({scopeKind:'scope'});
-  return rows.map(row=>({...defaultScopeData(row.scope_id),label:row.display_name||row.scope_id}))
-    .filter(row=>row.id&&row.galaxy&&row.galaxyMedia);
-}
-
-
 function ScopeStatisticsResults({scopeId,navigation,types}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -180,17 +173,40 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
-  const earliest=useQuery({
-    queryKey:['statistics-history-start',scopeId],
-    enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
+  const queryClient=useQueryClient();
+  // The earliest date only widens the zoom-out limit. It arrives with the chart data
+  // itself, so the first window (last year) never waits for it.
+  const [knownEarliest,setKnownEarliest]=useState('');
+  const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,knownEarliest),
+    [zoomLevel,queryEndDate,knownEarliest]);
+  const sourceChart=!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(rankingType);
+  // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
+  const overview=useQuery({
+    queryKey:['scope-overview',scopeId,queryRange.startDate,queryRange.endDate],
+    enabled:sourceChart&&Boolean(queryRange.startDate&&queryRange.endDate),
     queryFn:async()=>{
-      const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
-      return selectFirstScopeStatisticsDate(targetScopes[0]);
+      const {selectScopeOverview}=await loadGalaxyStatistics();
+      const data=await selectScopeOverview(targetScopes[0],queryRange);
+      // The self-intersection panel reads the same rows; seed its cache so opening it is free.
+      queryClient.setQueryData(['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],data.rows);
+      return data;
     },
     staleTime:5*60_000
   });
-  const queryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,earliest.data||''),
-    [zoomLevel,queryEndDate,earliest.data]);
+  // Media charts carry their own facet rows; the earliest date is one small request.
+  const earliestQuery=useQuery({
+    queryKey:['statistics-history-start',scopeId],
+    enabled:!isLrunesDaily&&mediaDimension&&!knownEarliest&&Boolean(targetScopes[0]),
+    queryFn:async()=>{
+      const {selectScopeEarliest}=await loadGalaxyStatistics();
+      return selectScopeEarliest(targetScopes[0]);
+    },
+    staleTime:5*60_000
+  });
+  useEffect(()=>{
+    const found=overview.data?.earliest||earliestQuery.data||'';
+    if(found&&found!==knownEarliest)setKnownEarliest(found);
+  },[overview.data,earliestQuery.data,knownEarliest]);
   const mediaQuery=useQuery({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
@@ -219,27 +235,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
     staleTime:5*60_000
   });
-  const sourceCatalog=useQuery({
-    queryKey:['statistics-source-taxonomy',scopeId],
-    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(rankingType),
-    queryFn:async()=>{
-      const [cat,aliases]=await Promise.all([
-        selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
-      ]);
-      return {categories:cat.rows,aliases:aliases.rows};
-    },
-    staleTime:5*60_000
-  });
-  const sourceRows=useQuery({
-    queryKey:['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],
-    queryFn:async()=>{
-      const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics();
-      return selectScopeSourceBreakdownRows(targetScopes[0],queryRange);
-    },
-    enabled:!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:5*60_000
-  });
+  const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
+    data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
+  const sourceCatalog={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:null,
+    data:overview.data?{categories:overview.data.categories,aliases:overview.data.aliases}:undefined,
+    dataUpdatedAt:overview.dataUpdatedAt};
   // Source classification is a capability, not a prerequisite for media charts
   // or the LunaRunes daily page. Load its existing model only for source results.
   const adminSourceQuery=useQuery({
@@ -316,7 +316,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
-    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
+    {earliestQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliestQuery.error,UI_COPY)}</p>:null}
     {!mediaDimension&&(sourceRows.error||sourceCatalog.error||adminSourceQuery.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error||adminSourceQuery.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
     {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!adminSourceQuery.isPending&&!sourceRows.error&&!sourceCatalog.error&&!adminSourceQuery.error?<>
@@ -404,7 +404,6 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canMana
   // Cross-Scope statistical aggregation belongs to LOC only. Other Scope
   // Groups remain overview/navigation surfaces, never merged COUNT queries.
   if(aggregateScopes&&scopeId==='loc')return <ScopeGroupStatistics
-    selectPublicStatisticsMembers={selectPublicStatisticsMembers}
     taipeiDateKey={taipeiDateKey}
     trendBucket={trendBucket}
     loadGalaxyStatistics={loadGalaxyStatistics}/>;

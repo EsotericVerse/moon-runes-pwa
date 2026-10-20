@@ -6,7 +6,9 @@ import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs'
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {readScopeStatistics} from './db-client.mjs';
+import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
+import {defaultScopeData,selectScopeRegistry} from './scope-data';
+import {selectFirstDailyRuneDate} from './daily-runes';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -661,6 +663,62 @@ export async function selectFirstScopeStatisticsDate(scope){
   const dates=[...(text.rows||[]),...(media.rows||[])].map(row=>String(row.createtime||'').slice(0,10))
     .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
   return dates[0]||'';
+}
+
+// One request per chart. The database returns the earliest date, the exact daily
+// counts and the small source taxonomy together; the row-level readers below only
+// serve while the functions are not installed (for example on a backup database).
+export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  try{
+    return await readScopeOverview(current.id,{startDate,endDate});
+  }catch(error){
+    if(!missingStatisticsRpc(error))throw error;
+  }
+  const [earliest,rows,categories,aliases]=await Promise.all([
+    selectFirstScopeStatisticsDate(current),
+    selectScopeSourceBreakdownRows(current,{startDate,endDate}),
+    selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
+    selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
+  ]);
+  return {earliest,rows,categories:categories.rows,aliases:aliases.rows};
+}
+export async function selectScopeEarliest(scope){
+  const current=scopeOf(scope);
+  try{
+    return await readScopeEarliest(current.id);
+  }catch(error){
+    if(!missingStatisticsRpc(error))throw error;
+  }
+  return selectFirstScopeStatisticsDate(current);
+}
+// LOC is a set: one call returns each Scope's daily totals and the earliest date of the set.
+export async function selectLocStatistics({startDate='',endDate=''}={}){
+  try{
+    return await readLocStatistics({startDate,endDate});
+  }catch(error){
+    if(!missingStatisticsRpc(error))throw error;
+  }
+  const registry=await selectScopeRegistry({scopeKind:'scope'});
+  const scopes=registry.map(row=>({scope_id:row.scope_id,display_name:row.display_name,data:defaultScopeData(row.scope_id)}))
+    .filter(item=>item.data?.galaxy&&item.data?.galaxyMedia);
+  const [perScope,dailyStart]=await Promise.all([
+    Promise.all(scopes.map(async item=>{
+      const [start,rows]=await Promise.all([
+        selectFirstScopeStatisticsDate(item.data),
+        selectScopeSourceBreakdownRows(item.data,{startDate,endDate})
+      ]);
+      const daily=new Map();
+      for(const row of rows)if(row.kind==='total')daily.set(row.day,(daily.get(row.day)||0)+(Number(row.item_count)||0));
+      return {start,rows:[...daily].map(([day,item_count])=>({scope_id:item.scope_id,day,item_count}))};
+    })),
+    selectFirstDailyRuneDate()
+  ]);
+  return {
+    earliest:[...perScope.map(item=>item.start),dailyStart].filter(Boolean).sort()[0]||'',
+    scopes:scopes.map(({scope_id,display_name})=>({scope_id,display_name})),
+    rows:perScope.flatMap(item=>item.rows)
+  };
 }
 
 // Separate source and media breakdowns. These are independently

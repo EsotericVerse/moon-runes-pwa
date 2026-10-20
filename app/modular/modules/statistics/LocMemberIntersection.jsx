@@ -18,7 +18,7 @@ export default function LocMemberIntersection({
   scopes=[],startDate='',endDate='',unit='month',
   laneCount=DEFAULT_LANE_COUNT,choices=[],graph='line',
   onLaneCountChange,onChoicesChange,onGraphChange,
-  zoomLevel=0,onZoomLevelChange,zoomRange={},preloadedSources=null
+  zoomLevel=0,onZoomLevelChange,zoomRange={},loadGalaxyStatistics=null
 }){
   const t=useUiText();
   const queryClient=useQueryClient();
@@ -46,10 +46,18 @@ export default function LocMemberIntersection({
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
   const fetched=useQuery({
     queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily'))],
-    enabled:Boolean(preloadedSources&&startDate&&endDate&&chosenIds.length),
+    enabled:Boolean(loadGalaxyStatistics&&startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
       const pairs=await Promise.all(chosenIds.map(async id=>{
-        const rows=preloadedSources.get(id)||[];
+        // Only the Scopes chosen in the lanes are read, and only now that the panel is open.
+        const scope=scopes.find(item=>item.id===id);
+        const rows=scope
+          ?await queryClient.fetchQuery({
+            queryKey:['own-scope-source-intersection',id,startDate,endDate],
+            queryFn:async()=>(await loadGalaxyStatistics()).selectScopeSourceBreakdownRows(scope,{startDate,endDate}),
+            staleTime:5*60_000
+          })
+          :[];
         const daily=id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
           ?await queryClient.fetchQuery({
             queryKey:['loc-member-daily-runes',startDate,endDate],

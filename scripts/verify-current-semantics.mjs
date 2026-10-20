@@ -77,7 +77,7 @@ if(!failures.length){
   const scopeData=read('app/loc/scope-data.js');
   for(const token of ["MANAGE_TABLE='silver.manage'",'scopeDataFromManageRows','defaultScopeData','selectManagedScopes'])if(!scopeData.includes(token))failures.push('Scope data source missing '+token);
   const statisticsCurrent=read('app/modular/features/Statistics.jsx');
-  if(!statisticsCurrent.includes('selectPublicStatisticsMembers')||statisticsCurrent.includes('queryFn:selectManagedScopes')){
+  if(statisticsCurrent.includes('queryFn:selectManagedScopes')||!statisticsCurrent.includes('<ScopeGroupStatistics')){
     failures.push('Public statistics must resolve active members without authentication.');
   }
   const packageJson=JSON.parse(read('package.json'));
@@ -119,7 +119,7 @@ if(!failures.length){
   const sourceEditor=read('app/loc/SourceCategoryEditor.jsx');
   const crossMember=read('app/modular/modules/statistics/LocMemberIntersection.jsx');
   if(!statistics.includes('administrativeSourceTrend(')||
-     !statistics.includes("queryKey:['statistics-source-taxonomy',scopeId]")||
+     !statistics.includes("queryKey:['scope-overview',scopeId,queryRange.startDate,queryRange.endDate]")||
      !sourceTaxonomy.includes("assignedSource(")||
      !sourceEditor.includes('AdminSourceCategories')||
      sourceEditor.includes('ScopeCustomSourceCategories')||
@@ -148,7 +148,7 @@ if(!failures.length){
   }
   if(!crossMember.includes("scope:scopes.find(scope=>scope.id==='lrunes')||defaultScopeData('lrunes')")||
      !crossMember.includes("metric.startsWith('daily')")||
-     !crossMember.includes("preloadedSources.get(id)")||
+     !crossMember.includes("queryKey:['own-scope-source-intersection',id,startDate,endDate]")||
      !crossMember.includes("{!fetched.isPending&&!fetched.isFetching&&hasCurrentData?<>")||
      crossMember.includes('canOfferMemberCrossStatistics(')||
      !chartModel.includes('if(!hasTime&&!categories.length)return []')||
@@ -186,8 +186,8 @@ if(!failures.length){
      !zoomControls.includes('全部資料')||
      !zoomModel.includes("days>31?'week'")||
      !zoomModel.includes('earliestDate')||
-     !groupStatistics.includes('selectFirstDailyRuneDate()')||
-     !statistics.includes('selectFirstScopeStatisticsDate')||
+     !groupStatistics.includes('selectLocStatistics')||
+     !statistics.includes('selectScopeEarliest')||
      !runeDaily.includes('selectFirstDailyRuneDate')||
      !runeDaily.includes('<StatisticsChartFrame')||
      !runeDaily.includes('zoomRange.bucket')||
@@ -338,10 +338,10 @@ if(!failures.length){
   const ownStatistics=statistics.split('function ScopeStatisticsResults(')[1]?.split('function ScopeStatisticsPanel(')[0]||'';
   if(ownStatistics.includes("queryKey:['managed-scopes']")||!ownStatistics.includes('defaultScopeData(scopeId)'))
     failures.push('Single-Scope statistics must reuse the resolved route instead of requesting every Scope');
-  if(!groupStatistics.includes('enabled:scopesQuery.isSuccess,')||
-     !groupStatistics.includes('...scopes.map(selectFirstScopeStatisticsDate)')||
-     !groupStatistics.includes("queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')]"))
-    failures.push('Group statistics must query every registered Scope without any sharing filter.');
+  if(!groupStatistics.includes("queryKey:['loc-statistics',startDate,rangeEndDate]")||
+     !groupStatistics.includes('selectLocStatistics({startDate,endDate:rangeEndDate})')||
+     groupStatistics.includes('selectScopeSourceBreakdownRows')||groupStatistics.includes('selectFirstScopeStatisticsDate'))
+    failures.push('LOC statistics must be ONE database request for the whole set (totals, Scope list, earliest date).');
   if(!search.includes("enabled:scopeId==='loc'&&!aggregateScopes,")||
      !search.includes("if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;"))
     failures.push('Single-Scope Search must neither fetch nor await the LOC Scope registry');
@@ -352,9 +352,8 @@ if(!failures.length){
   if(!statistics.includes('summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}')||
      !groupStatistics.includes('summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}'))
     failures.push('Intersection chart bundles must remain unopened until requested');
-  if(!groupStatistics.includes('preloadedSources={preloadedSources}')||
-     !crossMember.includes('preloadedSources.get(id)')||
-     crossMember.includes('selectScopeSourceBreakdownRows(')||crossMember.includes('selectScopeRegistry(')||
+  if(!groupStatistics.includes('loadGalaxyStatistics={loadGalaxyStatistics}')||
+     !crossMember.includes('selectScopeSourceBreakdownRows(')||crossMember.includes('selectScopeRegistry(')||
       !crossMember.includes("queryKey:['loc-member-daily-runes',startDate,endDate]")||
       !crossMember.includes('queryClient.fetchQuery({')||!crossMember.includes('new Map(scopes.map(row=>[row.id,row.label||row.id]))')||
      !ownIntersection.includes('sharedCatalog||localCatalog'))
@@ -368,7 +367,7 @@ if(!failures.length){
   for(const token of ['DB_QUERY_BATCH_SIZE=65535','export function queryBatchSize(){','return DB_QUERY_BATCH_SIZE;'])if(!queryContract.includes(token))failures.push('Universal 65535 database query ceiling missing '+token);
   if(queryContract.includes('DB_QUERY_TEXT_BATCH_SIZE')||queryContract.includes('LONG_TEXT_COLUMNS'))failures.push('Query limits must never depend on whether columns contain headings or body text');
   if(!read('app/loc/db-query.mjs').includes('pageSize=DB_QUERY_BATCH_SIZE'))failures.push('All database bulk reads must use the shared 65535 ceiling unless the caller explicitly requests fewer rows');
-  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow','selectPublicStatisticsMembers'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
+  for(const token of ['ScopeGroupStatistics','ScopeStatisticsPanel','statisticsZoomWindow'])if(!statistics.includes(token))failures.push('Statistics aggregate/query-window contract missing '+token);
   for(const token of ['uiExtra.statisticsView.memberCount','uiExtra.statisticsView.memberDistribution'])if(!groupStatistics.includes(token))failures.push('LOC aggregate statistics contract missing '+token);
   if(statistics.includes("?{startDate:customFrom,endDate:customTo}\n    :{startDate:'',endDate:''}"))failures.push('Preset Statistics ranges must not fall back to an unbounded database query.');
   if(galaxy.includes("{column:'source_name',operator:'neq',value:''}"))failures.push('Unknown source rows must reach Statistics and map to Others instead of being discarded.');

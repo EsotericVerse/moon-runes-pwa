@@ -165,6 +165,42 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return Array.isArray(data)?data:[];
   }
 
+  // One request per chart: the database returns the earliest date, the exact
+  // daily counts and the (tiny) source taxonomy together. RPC errors keep their code
+  // so callers can fall back while the function is not installed.
+  async function rpcJson(name,args,label){
+    const {data,error}=await publicClient.schema('silver').rpc(name,args);
+    if(error){
+      const failure=new Error(error.message||label+' read failed');
+      failure.code=error.code;
+      throw failure;
+    }
+    return data;
+  }
+  const dayOrNull=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+  async function readScopeOverview(scopeId,{startDate='',endDate=''}={}){
+    const data=await rpcJson('read_scope_overview',{
+      p_scope_id:normalizeScopeId(scopeId),p_start:dayOrNull(startDate),p_end:dayOrNull(endDate)
+    },'Scope overview');
+    return {
+      earliest:dayOrNull(data?.earliest)||'',
+      rows:Array.isArray(data?.rows)?data.rows:[],
+      categories:Array.isArray(data?.categories)?data.categories:[],
+      aliases:Array.isArray(data?.aliases)?data.aliases:[]
+    };
+  }
+  async function readScopeEarliest(scopeId){
+    return dayOrNull(await rpcJson('read_scope_earliest',{p_scope_id:normalizeScopeId(scopeId)},'Scope earliest'))||'';
+  }
+  async function readLocStatistics({startDate='',endDate=''}={}){
+    const data=await rpcJson('read_loc_statistics',{p_start:dayOrNull(startDate),p_end:dayOrNull(endDate)},'LOC statistics');
+    return {
+      earliest:dayOrNull(data?.earliest)||'',
+      scopes:Array.isArray(data?.scopes)?data.scopes:[],
+      rows:Array.isArray(data?.rows)?data.rows:[]
+    };
+  }
+
   async function writeKeywordLibraryItem(scopeId,operation,item={}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
@@ -358,7 +394,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

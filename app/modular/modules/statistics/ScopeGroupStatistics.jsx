@@ -1,11 +1,11 @@
 'use client';
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQuery} from '@tanstack/react-query';
 import {UI_COPY} from '../../../i18n/ui-copy';
 import {useUiCopy} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
-import {selectFirstDailyRuneDate} from '../../../loc/daily-runes';
+import {defaultScopeData} from '../../../loc/scope-data';
 import {featureNavigationHref} from '../../feature-navigation';
 import {featureDataErrorMessage} from '../../feature-data-state';
 import {availableStatisticChartTypes,statisticsZoomWindow} from './statistics-time-zoom.mjs';
@@ -15,7 +15,7 @@ import StatisticsDetails from './StatisticsDetails';
 const StatisticsMultiChart=dynamic(()=>import('./StatisticsMultiChart'),{loading:()=>null});
 const LocMemberIntersection=dynamic(()=>import('./LocMemberIntersection'),{loading:()=>null});
 
-export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taipeiDateKey,trendBucket,loadGalaxyStatistics}){
+export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGalaxyStatistics}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const [aggregateType,setAggregateType]=useState('total');
@@ -25,54 +25,32 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
   const [memberLaneCount,setMemberLaneCount]=useState(2);
   const [memberChoices,setMemberChoices]=useState([]);
   const [memberGraph,setMemberGraph]=useState('line');
-  const scopesQuery=useQuery({
-    queryKey:['managed-scopes'],
-    queryFn:selectPublicStatisticsMembers,
-    staleTime:5*60_000
-  });
-  const scopes=useMemo(()=>scopesQuery.data||[],[scopesQuery.data]);
-  const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
+  // LOC is a set. ONE request returns every Scope's exact daily totals together with
+  // the set's earliest date and Scope list; detail comparisons load only when opened.
   const endDate=useMemo(()=>taipeiDateKey(),[]);
-  const earliest=useQuery({
-    queryKey:['statistics-history-start','loc',scopeIds.join('|')],
-    enabled:scopesQuery.isSuccess,
-    queryFn:async()=>{
-      const {selectFirstScopeStatisticsDate}=await loadGalaxyStatistics();
-      const starts=await Promise.all([
-        ...scopes.map(selectFirstScopeStatisticsDate),
-        selectFirstDailyRuneDate()
-      ]);
-      return starts.filter(Boolean).sort()[0]||'';
-    },
-    staleTime:5*60_000
-  });
-  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate,earliest.data||''),
-    [zoomLevel,endDate,earliest.data]);
+  const [knownEarliest,setKnownEarliest]=useState('');
+  const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate,knownEarliest),
+    [zoomLevel,endDate,knownEarliest]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
-  const densityQuery=useQuery({
-    queryKey:['scope-density','loc',startDate,rangeEndDate,scopeIds.join('|')],
+  const locQuery=useQuery({
+    queryKey:['loc-statistics',startDate,rangeEndDate],
+    enabled:Boolean(startDate&&rangeEndDate),
     queryFn:async()=>{
-      const {selectScopeSourceBreakdownRows}=await loadGalaxyStatistics();
-      return Promise.all(scopes.map(async scope=>{
-        const rows=await selectScopeSourceBreakdownRows(scope,{startDate,endDate:rangeEndDate});
-        return {scopeId:scope.id,rows};
-      }));
+      const {selectLocStatistics}=await loadGalaxyStatistics();
+      return selectLocStatistics({startDate,endDate:rangeEndDate});
     },
-    enabled:Boolean(scopes.length&&startDate&&rangeEndDate),
     staleTime:5*60_000
   });
-  const densityRows=useMemo(()=>(densityQuery.data||[]).flatMap(entry=>{
-    const daily=new Map();
-    for(const row of entry.rows||[]){
-      if(row.kind!=='total')continue;
-      const day=String(row.day||'').slice(0,10);
-      daily.set(day,(daily.get(day)||0)+(Number(row.item_count)||0));
-    }
-    return [...daily.entries()].map(([day,item_count])=>({scope_id:entry.scopeId,day,item_count}));
-  }),[densityQuery.data]);
-  const preloadedSources=useMemo(()=>densityQuery.data
-    ?new Map(densityQuery.data.map(entry=>[entry.scopeId,entry.rows]))
-    :null,[densityQuery.data]);
+  useEffect(()=>{
+    const found=locQuery.data?.earliest||'';
+    if(found&&found!==knownEarliest)setKnownEarliest(found);
+  },[locQuery.data,knownEarliest]);
+  const scopes=useMemo(()=>(locQuery.data?.scopes||[]).map(row=>({
+    ...defaultScopeData(row.scope_id),label:row.display_name||row.scope_id
+  })).filter(row=>row.id&&row.galaxy&&row.galaxyMedia),[locQuery.data]);
+  const scopeIds=useMemo(()=>scopes.map(scope=>String(scope.id||'').trim()).filter(Boolean),[scopes]);
+  const densityQuery=locQuery;
+  const densityRows=useMemo(()=>locQuery.data?.rows||[],[locQuery.data]);
   const overallTotal=useMemo(
     ()=>densityRows.reduce((sum,row)=>sum+(Number(row.item_count)||0),0),
     [densityRows]
@@ -169,15 +147,13 @@ export default function ScopeGroupStatistics({selectPublicStatisticsMembers,taip
     </>}</StatisticsDetails>
     <StatisticsDetails className="scope-stat-details" summary={<UiText id="uiExtra.statisticsView.memberCrossTitle"/>}>
       {()=> <LocMemberIntersection key={startDate+'|'+rangeEndDate}
-        scopes={scopesQuery.data||[]} startDate={startDate} endDate={rangeEndDate}
-        unit={bucket} preloadedSources={preloadedSources}
+        scopes={scopes} startDate={startDate} endDate={rangeEndDate}
+        unit={bucket} loadGalaxyStatistics={loadGalaxyStatistics}
         laneCount={memberLaneCount} onLaneCountChange={setMemberLaneCount}
         choices={memberChoices} onChoicesChange={setMemberChoices}
         graph={memberGraph} onGraphChange={setMemberGraph}
         zoomLevel={zoomLevel} onZoomLevelChange={setZoomLevel} zoomRange={zoomRange}/>}
     </StatisticsDetails>
-    {scopesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(scopesQuery.error,UI_COPY)}</p>:null}
-    {earliest.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliest.error,UI_COPY)}</p>:null}
     {densityQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(densityQuery.error,UI_COPY)}</p>:null}
   </section>;
 }
