@@ -337,9 +337,10 @@ if(!failures.length){
   // computed from the returned metadata rather than repeated SELECTs.
   const cultureSnapshot=cultureQuery.split('export async function selectScopePeriodSourceSnapshot(')[1]?.split('export async function selectScopePeriodWorkIndex(')[0]||'';
   const searchProviders=galaxy.split('function genericScopeProviders(')[1]?.split('function normalizeSearch(')[0]||'';
-  if((cultureSnapshot.match(/selectAllRows\(scope\.(?:galaxy|galaxyMedia),/g)||[]).length!==2||
-     /selectSourceCatalog\(|selectSourceDaily\(|selectCategoryCounts\(/.test(cultureSnapshot))
-    failures.push('Culture source snapshots must read Galaxy and Media just once each');
+  // The database counts: one exact-count call, never a row-level read of Galaxy or Media.
+  if((cultureSnapshot.match(/selectScopeDailyCounts\(scope,/g)||[]).length!==1||
+     /selectAllRows\(|selectSourceCatalog\(|selectSourceDaily\(|selectCategoryCounts\(/.test(cultureSnapshot))
+    failures.push('Culture source snapshots must take exact counts from the database in one call');
   if(!culture.includes('enabled:worksOpen')||!culture.includes("onToggle={event=>setWorksOpen(event.currentTarget.open)}"))
     failures.push('Culture work detail SELECTs must wait for explicit list expansion');
   if(!culture.includes("const [styleFilter,setStyleFilter]=useState('none');")||

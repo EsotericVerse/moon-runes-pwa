@@ -4,7 +4,7 @@
 
 import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
 import {workDisplayText} from '../modular/work-display-model';
-import {resolveGalaxyExternalLinks,selectDailyCategoryCounts} from './galaxy-query';
+import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query';
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
@@ -323,21 +323,11 @@ export async function selectScopeCultureData(scopeId){
 
     const intersectionScopeIds=validBundles.map(bundle=>bundle.runtimeId);
     const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
-      const [textDaily,mediaDaily]=await Promise.all([
-        selectDailyCategoryCounts(bundle.galaxy,'source_name',{
-          startDate:intersectionStart,
-          endDate:today,
-          filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-          includeEmpty:true,
-          includeUndated:false
-        }),
-        selectDailyCategoryCounts(bundle.galaxyMedia,'media_type',{
-          startDate:intersectionStart,
-          endDate:today,
-          includeEmpty:true,
-          includeUndated:false
-        })
-      ]);
+      const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(bundle.scope,{
+        startDate:intersectionStart,
+        endDate:today,
+        includeEmptyMedia:true
+      });
       return [
         ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId})),
         ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId}))
@@ -388,43 +378,25 @@ export async function selectScopeCultureData(scopeId){
 export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
-  // Read each corpus only once. Category totals and daily density are two
-  // projections of the same metadata, not four separate database scans.
-  const [textResult,mediaResult]=await Promise.all([
-    selectAllRows(scope.galaxy,{
-      columns:'source_name,createtime',
-      filters:publicContentFilters([
-        ...dateFilters(startDate,endDate),
-        {column:'statistics_able',operator:'eq',value:true}
-      ])
-    }),
-    selectAllRows(scope.galaxyMedia,{
-      columns:'media_type,createtime',
-      filters:dateFilters(startDate,endDate)
-    })
-  ]);
-  const summarize=(rows,column,includeEmpty)=>{
-    const catalog=new Map(),daily=new Map();
+  // The database counts per day and category (undated rows included, day ''); category
+  // totals and daily density are two projections of the same exact counts.
+  const counted=await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true});
+  const summarize=(rows,includeEmpty)=>{
+    const catalog=new Map(),daily=[];
     for(const row of rows){
-      const category=String(row?.[column]||'').trim();
+      const category=String(row.category||'').trim();
       if(!includeEmpty&&!category)continue;
-      catalog.set(category,(catalog.get(category)||0)+1);
-      const day=String(row?.createtime||'').slice(0,10);
-      if(!day)continue;
-      const key=day+'\u0000'+category;
-      daily.set(key,(daily.get(key)||0)+1);
+      catalog.set(category,(catalog.get(category)||0)+row.item_count);
+      if(row.day)daily.push({day:row.day,category,item_count:row.item_count});
     }
     return {
       catalog:[...catalog].map(([term,item_count])=>({term,item_count}))
         .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term)),
-      daily:[...daily].map(([key,item_count])=>{
-        const split=key.indexOf('\u0000');
-        return {day:key.slice(0,split),category:key.slice(split+1),item_count};
-      }).sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category))
+      daily:daily.sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category))
     };
   };
-  const text=summarize(textResult.rows,'source_name',true);
-  const media=summarize(mediaResult.rows,'media_type',false);
+  const text=summarize(counted.text,true);
+  const media=summarize(counted.media,false);
 
   const groupMap=new Map(LOC_SOURCE_ORDER.map(category=>[category,{
     category_key:'source:'+category,

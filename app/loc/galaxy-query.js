@@ -59,11 +59,11 @@ function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}
 // yet so callers keep using the row-level path until it is.
 const missingStatisticsRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
 let statisticsRpcInstalled=true;
-async function scopeStatisticsRows(scope,{startDate='',endDate=''}={}){
+async function scopeStatisticsRows(scope,{startDate='',endDate='',includeUndated=false}={}){
   const current=scopeOf(scope);
   if(!statisticsRpcInstalled)return null;
   try{
-    return await readScopeStatistics(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate)});
+    return await readScopeStatistics(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated});
   }catch(error){
     if(missingStatisticsRpc(error)){statisticsRpcInstalled=false;return null;}
     throw error;
@@ -83,6 +83,28 @@ async function scopeDailyCounts(current,range){
     selectSourceDaily(current,range),
     selectDailyCategoryCounts(current.galaxyMedia,'media_type',range)
   ]);
+}
+
+// Per-Scope daily category counts for text works and media, computed by the
+// database. includeEmptyMedia keeps media rows without a type; includeUndated
+// keeps rows without a date (their day is '').
+export async function selectScopeDailyCounts(scope,{startDate='',endDate='',includeEmptyMedia=false,includeUndated=false}={}){
+  const current=scopeOf(scope);
+  const counted=await scopeStatisticsRows(current,{startDate,endDate,includeUndated});
+  const order=(a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category);
+  if(counted){
+    const pick=kind=>counted.filter(row=>row.kind===kind&&(kind==='source'||includeEmptyMedia||row.category))
+      .map(row=>({day:row.day,category:row.category,item_count:Number(row.item_count)||0})).sort(order);
+    return {text:pick('source'),media:pick('media')};
+  }
+  const [text,media]=await Promise.all([
+    selectDailyCategoryCounts(current.galaxy,'source_name',{
+      startDate,endDate,filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
+      includeEmpty:true,includeUndated
+    }),
+    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate,includeEmpty:includeEmptyMedia,includeUndated})
+  ]);
+  return {text,media};
 }
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
