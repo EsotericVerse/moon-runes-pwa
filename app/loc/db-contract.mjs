@@ -135,6 +135,24 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data;
   }
 
+  // Database-side statistics: the database counts, the browser receives the exact
+  // totals ({day,kind,category,item_count}) instead of every Galaxy/Media row.
+  async function readScopeStatistics(scopeId,{startDate='',endDate=''}={}){
+    const scope=normalizeScopeId(scopeId);
+    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const {data,error}=await publicClient.schema('silver').rpc('read_scope_statistics',{
+      p_scope_id:scope,
+      p_start:day(startDate),
+      p_end:day(endDate)
+    });
+    if(error){
+      const failure=new Error(error.message||'Scope statistics read failed');
+      failure.code=error.code;
+      throw failure;
+    }
+    return Array.isArray(data)?data:[];
+  }
+
   async function writeKeywordLibraryItem(scopeId,operation,item={}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
@@ -328,7 +346,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

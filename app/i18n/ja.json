@@ -1259,6 +1259,27 @@
       "queryFailed": "データの取得に失敗しました。",
       "loading": "データを読み込み中です。データ量が多い場合は時間がかかることがあります。",
       "empty": "データがありません。"
+    },
+    "frameEditor": {
+      "titleTooLong": "中国語タイトルは {limit} 文字以内にしてください。",
+      "eyebrowTooLong": "英語タイトルは {limit} 文字以内にしてください。",
+      "subtitleTooLong": "タイトル説明は {limit} 文字以内にしてください。",
+      "imageUrlInvalid": "有効な画像URLを入力してください。",
+      "imageLegend": "フレーム画像設定",
+      "imagePreviewAlt": "現在のフレーム画像プレビュー",
+      "imageNone": "画像は表示されていません",
+      "imageSource": "画像ソース",
+      "imageDefault": "既定の画像",
+      "imageCustom": "カスタム画像URL",
+      "imageHide": "画像を表示しない",
+      "imageUrl": "現在の画像URL",
+      "imagePosition": "画像位置",
+      "posLeft": "左",
+      "posRight": "右",
+      "posTop": "上",
+      "posBottom": "下",
+      "imageWidth": "画像の幅（px）",
+      "imageRemove": "画像を削除"
     }
   },
   "dailyRune": {

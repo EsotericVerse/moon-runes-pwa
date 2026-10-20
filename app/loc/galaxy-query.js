@@ -6,6 +6,7 @@ import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs'
 import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
+import {readScopeStatistics} from './db-client.mjs';
 
 function unique(values=[]){
   return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];
@@ -53,6 +54,37 @@ function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}
   }).sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
 }
 
+// Database-side statistics (silver.read_scope_statistics). Returns the exact
+// {day,kind,category,item_count} rows, or null when the function is not installed
+// yet so callers keep using the row-level path until it is.
+const missingStatisticsRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
+let statisticsRpcInstalled=true;
+async function scopeStatisticsRows(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  if(!statisticsRpcInstalled)return null;
+  try{
+    return await readScopeStatistics(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate)});
+  }catch(error){
+    if(missingStatisticsRpc(error)){statisticsRpcInstalled=false;return null;}
+    throw error;
+  }
+}
+// Text (source) and media daily counts from ONE database-side call; falls back to the
+// row-level readers only while the function is not installed.
+async function scopeDailyCounts(current,range){
+  const counted=await scopeStatisticsRows(current,range);
+  if(counted){
+    return [
+      counted.filter(row=>row.kind==='source').map(row=>({scope_id:current.id,source_name:row.category,day:row.day,item_count:row.item_count})),
+      counted.filter(row=>row.kind==='media'&&row.category).map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
+    ];
+  }
+  return Promise.all([
+    selectSourceDaily(current,range),
+    selectDailyCategoryCounts(current.galaxyMedia,'media_type',range)
+  ]);
+}
+
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
   const filters=publicContentFilters([
@@ -74,6 +106,15 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
 
 export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
+  const counted=await scopeStatisticsRows(current,{startDate,endDate});
+  if(counted){
+    return counted.filter(row=>row.kind==='source').map(row=>({
+      scope_id:current.id,
+      source_name:row.category,
+      day:row.day,
+      item_count:row.item_count
+    }));
+  }
   const filters=publicContentFilters([
     ...timeFilters('createtime',startDate,endDate),
     {column:'statistics_able',operator:'eq',value:true}
@@ -539,10 +580,7 @@ function sourceBucket(value=''){
 }
 async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const [textDaily,mediaDaily]=await Promise.all([
-    selectSourceDaily(current,{startDate,endDate}),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate})
-  ]);
+  const [textDaily,mediaDaily]=await scopeDailyCounts(current,{startDate,endDate});
   const combined=new Map();
   for(const row of textDaily){
     const day=dateOnly(row.day); if(!day)continue;
@@ -562,10 +600,7 @@ async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
 
 async function scopeDensityRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const [textDaily,mediaDaily]=await Promise.all([
-    selectSourceDaily(current,{startDate,endDate}),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate})
-  ]);
+  const [textDaily,mediaDaily]=await scopeDailyCounts(current,{startDate,endDate});
   const daily=new Map();
   for(const row of [...textDaily,...mediaDaily]){
     const day=dateOnly(row.day);
@@ -610,6 +645,8 @@ export async function selectFirstScopeStatisticsDate(scope){
 // chosen within the current Scope; no cross-Scope read or merged corpus.
 export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
+  const counted=await scopeStatisticsRows(current,{startDate,endDate});
+  if(counted)return counted;
   const [texts,media]=await Promise.all([
     selectAllRows(current.galaxy,{
       columns:'source_name,createtime',

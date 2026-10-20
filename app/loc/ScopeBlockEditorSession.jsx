@@ -130,10 +130,10 @@ export default function ScopeBlockEditorSession({
     setBusy(true);setMessage(t('uiExtra.editBlocks.saving'));
     try{
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft))throw new Error(t('uiExtra.editBlocks.emptyContent'));
-      if(Array.from(String(draft.title||'')).length>titleLimit)throw new Error('中文標題不得超過 '+titleLimit+' 字。');
-      if(Array.from(String(draft.eyebrow||'')).length>englishLimit)throw new Error('英文標題不得超過 '+englishLimit+' 字。');
-      if(Array.from(String(draft.subtitle||'')).length>subtitleLimit)throw new Error('標題說明不得超過 '+subtitleLimit+' 字。');
-      if(isHomeFrame&&draft.image?.source==='custom'&&!BlockNoteContent.image.normalizeImageSource(draft.image.url))throw new Error('請輸入有效的圖片網址。');
+      if(Array.from(String(draft.title||'')).length>titleLimit)throw new Error(t('uiExtra.frameEditor.titleTooLong',{limit:titleLimit}));
+      if(Array.from(String(draft.eyebrow||'')).length>englishLimit)throw new Error(t('uiExtra.frameEditor.eyebrowTooLong',{limit:englishLimit}));
+      if(Array.from(String(draft.subtitle||'')).length>subtitleLimit)throw new Error(t('uiExtra.frameEditor.subtitleTooLong',{limit:subtitleLimit}));
+      if(isHomeFrame&&draft.image?.source==='custom'&&!BlockNoteContent.image.normalizeImageSource(draft.image.url))throw new Error(t('uiExtra.frameEditor.imageUrlInvalid'));
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
       if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
@@ -263,37 +263,37 @@ export default function ScopeBlockEditorSession({
             }
           ]}/>
           {isHomeFrame?<fieldset className="scope-frame-image-settings">
-            <legend>框架圖片設定</legend>
+            <legend>{t('uiExtra.frameEditor.imageLegend')}</legend>
             <div className="scope-frame-image-preview">
-              {image?.src?<img src={image.src} alt="目前框架圖片預覽" loading="lazy"/>:<span>目前不顯示圖片</span>}
+              {image?.src?<img src={image.src} alt={t('uiExtra.frameEditor.imagePreviewAlt')} loading="lazy"/>:<span>{t('uiExtra.frameEditor.imageNone')}</span>}
             </div>
             <div className="scope-frame-image-fields">
-              <label>圖片來源
+              <label>{t('uiExtra.frameEditor.imageSource')}
                 <select value={image?.source||'none'} onChange={event=>{
                   const source=event.target.value;
                   configureImage({source,url:source==='custom'?(image?.customUrl||image?.src||''):''});
                 }}>
-                  <option value="default" disabled={!image?.preset}>原有預設圖片</option>
-                  <option value="custom">自訂圖片網址</option>
-                  <option value="none">不顯示圖片</option>
+                  <option value="default" disabled={!image?.preset}>{t('uiExtra.frameEditor.imageDefault')}</option>
+                  <option value="custom">{t('uiExtra.frameEditor.imageCustom')}</option>
+                  <option value="none">{t('uiExtra.frameEditor.imageHide')}</option>
                 </select>
               </label>
-              <label className="scope-frame-image-url">目前圖片網址
+              <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
                 <input type="url" value={image?.source==='default'?image?.src||'':draft.image?.source==='custom'?draft.image.url||'':image?.source==='custom'?image?.src||'':''}
                   disabled={image?.source!=='custom'} placeholder="https://"
                   onChange={event=>configureImage({source:'custom',url:event.target.value},false)}/>
               </label>
-              <label>圖片位置
+              <label>{t('uiExtra.frameEditor.imagePosition')}
                 <select value={image?.position||'right'} onChange={event=>configureImage({position:event.target.value},false)} disabled={!image?.src}>
-                  <option value="left">左側</option><option value="right">右側</option>
-                  {draft.order!==1?<><option value="top">上方</option><option value="bottom">下方</option></>:null}
+                  <option value="left">{t('uiExtra.frameEditor.posLeft')}</option><option value="right">{t('uiExtra.frameEditor.posRight')}</option>
+                  {draft.order!==1?<><option value="top">{t('uiExtra.frameEditor.posTop')}</option><option value="bottom">{t('uiExtra.frameEditor.posBottom')}</option></>:null}
                 </select>
               </label>
-              {draft.order!==1?<label>圖片寬度（px）
+              {draft.order!==1?<label>{t('uiExtra.frameEditor.imageWidth')}
                 <input type="number" min="160" max="680" step="20" value={image?.width||420}
                   disabled={!image?.src} onChange={event=>configureImage({width:Number(event.target.value)},false)}/>
               </label>:null}
-              <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>移除圖片</button>
+              <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
             </div>
           </fieldset>:null}
           {allowEntities?renderEditableEntities(draft.entities):null}
