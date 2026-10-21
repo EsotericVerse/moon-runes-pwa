@@ -2,8 +2,9 @@
 
 // The unified edit screen for a whole ScopeEditableBlocks page: every block's
 // fields render as drafts at once; nothing reaches the database until the one
-// bottom "Save" action commits every draft (content edits, new blocks,
-// deletions and reordering) together.
+// "Save" action (rendered in the top toolbar, next to the exit-edit-mode
+// button) commits every draft (content edits, new blocks, deletions and
+// reordering) together.
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
@@ -37,7 +38,7 @@ function stripInlineImage(value){
 export default function ScopeBlockDraftList({
   slots,scopeId,pageName,allowDelete=true,allowEntities=true,allowImages=true,
   editEyebrow=true,canAddBlock=false,slotClassName='loc-card',editSlotClassName='',
-  preserveOrder=false,onDone,onCancel
+  preserveOrder=false,toolbar=null,onDone,onCancel
 }){
   useUiSection('uiExtra.editBlocks');
   useUiSection('uiExtra.frameEditor');
@@ -318,19 +319,26 @@ export default function ScopeBlockDraftList({
     </section>;
   }
 
-  // No wrapping element here: the drafts render as direct children of
-  // whatever grid/list container the caller already wraps around the
-  // normal display slots, so each page's own CSS (grid-direct-child
-  // sizing, card styling) still matches during editing instead of landing
-  // one DOM level too deep.
+  // No wrapping element around the draft cards themselves: they render as
+  // direct children of whatever grid/list container the caller already
+  // wraps around the normal display slots, so each page's own CSS
+  // (grid-direct-child sizing, card styling) still matches during editing
+  // instead of landing one DOM level too deep. The toolbar row (exit-edit
+  // button + any caller extra, e.g. a management link, plus Save/Cancel) is
+  // the one exception: it's wrapped together on purpose so all of it renders
+  // as a single row at the top, instead of the exit button up top and
+  // Save/Cancel trailing after every draft card.
   const visibleDrafts=drafts.filter(draft=>!draft._deleted);
   return <>
+    <div className="scope-block-draft-toolbar">
+      {toolbar}
+      <div className="scope-block-draft-actions">
+        <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')}</button>
+        <button type="button" className="loc-button" disabled={busy} onClick={()=>{if(window.confirm(t('uiExtra.editBlocks.cancelConfirm')))onCancel();}}><UiText id="uiExtra.editBlocks.cancel"/></button>
+      </div>
+    </div>
     {visibleDrafts.map((draft,index)=>renderDraft(draft,index,visibleDrafts))}
     {canAddBlock?<button type="button" className="loc-button scope-add-page-block" onClick={addBlock} disabled={busy}><UiText id="uiExtra.editBlocks.addBlock"/></button>:null}
-    <div className="scope-block-draft-actions">
-      <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')}</button>
-      <button type="button" className="loc-button" disabled={busy} onClick={()=>{if(window.confirm(t('uiExtra.editBlocks.cancelConfirm')))onCancel();}}><UiText id="uiExtra.editBlocks.cancel"/></button>
-    </div>
     {message?<p className={'scope-status'+(message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?' scope-error':'')} role="status">{message}</p>:null}
   </>;
 }

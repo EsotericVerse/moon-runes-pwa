@@ -190,8 +190,9 @@
   grid-column:1/-1;
   align-self:start;
 }
-.scope-editable-block-grid.governance-grid>.scope-edit-mode-toggle{
-  align-self:center;
+.scope-editable-block-grid.governance-grid>.scope-edit-mode-toggle,
+.scope-editable-block-grid.governance-grid>.scope-block-draft-toolbar{
+  grid-column:1/-1;
   justify-self:start;
 }
 .governance-grid-loc>.scope-editable-block:first-child .scope-rich-surface>p:first-child{
@@ -240,8 +241,11 @@
 .scope-editable-block.is-editing,
 .scope-editable-block.scope-block-draft{padding-top:2.7rem}
 .scope-edit-mode-toggle{margin-bottom:1rem}
+.scope-block-draft-toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-bottom:1rem;
+}
 .scope-block-draft-actions{
-  display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;
+  display:flex;flex-wrap:wrap;gap:.5rem;
 }
 
 .scope-rich-editor{min-width:0}

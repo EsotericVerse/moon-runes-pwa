@@ -176,12 +176,15 @@ export default function ScopeEditableBlocks({
       </button>:null}
       {toggleExtra}
     </div>:null;
-    // The toggle (plus any caller-supplied extra action, e.g. a management
-    // link) sits together between the first and second blocks -- not a top
-    // banner, not stretched into the grid -- so it renders inline with the
-    // first visible slot rather than before the whole list.
+    // While browsing (not editing), the toggle (plus any caller-supplied
+    // extra action, e.g. a management link) sits between the first and
+    // second blocks -- not a top banner, not stretched into the grid -- so
+    // it renders inline with the first visible slot rather than before the
+    // whole list. While editing, it moves into ScopeBlockDraftList's own
+    // toolbar row instead, so it renders together with Save/Cancel in one
+    // row instead of the toggle up top and Save/Cancel trailing after
+    // every draft card.
     const contents=<>
-      {editMode?toggleButton:null}
       {editMode?<ScopeBlockDraftList
         slots={slots}
         scopeId={scopeId}
@@ -194,6 +197,7 @@ export default function ScopeEditableBlocks({
         slotClassName={slotClassName}
         editSlotClassName={editSlotClassName}
         preserveOrder={Boolean(normalizedOrders.length)}
+        toolbar={toggleButton}
         onCancel={()=>setEditMode(false)}
         onDone={notice=>{setEditMode(false);setMessage(notice)}}
       />:slots.flatMap((slot,index)=>{
