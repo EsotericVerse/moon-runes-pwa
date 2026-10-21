@@ -45,6 +45,25 @@ export const SCOPES=Object.freeze({
     id:'admin',
     featureScope:'loc',
     theme:Object.freeze({mode:'auto'})
+  }),
+
+  // Private, device-local content (future: MSN/Twitter-style personal
+  // archive imports, parsed into an on-device SQLite store -- never
+  // Supabase). nativeOnly marks it for useScopeRuntime: outside the native
+  // App this id must resolve exactly like an unmatched path, not like a
+  // known-but-restricted one. No `nav` key on purpose: it never appears in
+  // the built-in Scope switcher (NAV_SCOPES in AppShell.jsx filters on
+  // `scope.nav`, same reason `admin` above stays out of it); reachable only
+  // by an explicit link from Settings, and optionally pinned to My
+  // Favorites the same way `admin`-adjacent MOBILE_HOME_ID already is.
+  local:Object.freeze({
+    id:'local',
+    nativeOnly:true,
+    featureSubtitles:Object.freeze({
+      statics:'查看本機私人匯入資料的數量、來源與時間變化。',
+      culture:'把本機私人匯入的紀錄放回時間順序，觀察不同時期的變化。',
+      search:'從本機私人匯入的文章找到對應內容。'
+    })
   })
 });
 
