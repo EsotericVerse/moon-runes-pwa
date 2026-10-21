@@ -329,7 +329,7 @@
 
 /* Admin: tree-first system management */
 .admin-hero-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.admin-main-select,.admin-inline-select{max-width:32rem}
+.admin-main-select,.admin-inline-select{position:relative;z-index:10;max-width:32rem}
 .admin-workspace{display:grid;gap:1rem;min-width:0}
 .admin-deployment-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:1.15rem;align-items:start}
 .admin-deployment-layout>*{min-width:0}
