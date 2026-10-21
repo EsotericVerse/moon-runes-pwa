@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'每日符文｜月之符文',
-  description:'每天抽取一枚符文作為當日回看與行動參考，並保留自己的判斷與選擇。',
-  path:'/duel/daily/'
+  title:'每日符文 · 已搬家｜月之符文',description:'此頁已整合至正式每日符文頁。',path:'/duel/daily/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="daily"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/daily/?d=old" label="前往每日符文"/>;}

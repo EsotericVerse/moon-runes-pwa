@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'八卡抽籤｜月之符文',
-  description:'以 3 / 2 / 3 結構抽取八張符文，前後各三張、中段兩張。',
-  path:'/duel/eight/'
+  title:'符文抽牌 · 八張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/eight/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="8card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=8card" label="前往符文抽牌"/>;}

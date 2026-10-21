@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'雙卡抽籤｜月之符文',
-  description:'以兩枚符文組成因與果的閱讀結構，先看造成現況的來源，再看主要結果或落點。',
-  path:'/duel/two/'
+  title:'符文抽牌 · 兩張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/two/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="2card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=2card" label="前往符文抽牌"/>;}

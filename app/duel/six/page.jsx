@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'六卡抽籤｜月之符文',
-  description:'以 2 / 2 / 2 結構抽取六張符文，前段、變數、後段各兩張。',
-  path:'/duel/six/'
+  title:'符文抽牌 · 六張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/six/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="6card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=6card" label="前往符文抽牌"/>;}

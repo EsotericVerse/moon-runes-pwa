@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'四卡抽籤｜月之符文',
-  description:'以 1 / 2 / 1 結構抽取四張符文，中段使用兩張變數形成籤詩。',
-  path:'/duel/four/'
+  title:'符文抽牌 · 四張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/four/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="4card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=4card" label="前往符文抽牌"/>;}

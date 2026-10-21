@@ -64,17 +64,20 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
-  const [sceneQuality,setSceneQuality]=useState('high');
-  // Display actual 256px comparison textures on the public 3D stage by default.
-  // ?texture=original remains a diagnostic rollback, not a user-facing gate.
-  const [textureQuality,setTextureQuality]=useState('hd256');
+  // 3D is a single fixed high-quality presentation -- no power-saving
+  // alternate mode. If a device can't run it, the fallback is switching
+  // presentation entirely (2D, then the old fixed-spread view), not a
+  // degraded 3D tier.
+  // Default to the full-resolution textures on the public 3D stage.
+  // ?texture=hd256 remains a diagnostic/perf rollback, not a user-facing gate.
+  const [textureQuality,setTextureQuality]=useState('original');
   // Opt-in QA only: ?fog_preview=1 exposes native fog loading/alpha readings.
   const [diagnoseAmbient,setDiagnoseAmbient]=useState(false);
   // The licensed Effekseer smoke scene is now part of the main 3D draw stage.
   // No hidden runtime toggle: the black stage masks dark-matte sprite edges.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
-    setTextureQuality(query.get('texture')==='original'?'original':'hd256');
+    setTextureQuality(query.get('texture')==='hd256'?'hd256':'original');
     setDiagnoseAmbient(query.get('fog_preview')==='1');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
@@ -214,7 +217,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const presented=isList?(focusedRune||runes[0]||null):(phase==='revealing'?pending?.card||null:null);
   function choose(entry){setSelected(entry);}
   const label=isList?(group?group.name+'之符文':'九大符文群組'):mode==='daily'?'每日符文 · 3D':'月光抽牌 · 3D';
-  const details=isList?selected:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id))?.card;
+  const detailItem=isList?null:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id));
+  const details=isList?selected:detailItem?.card;
   const day=mode==='daily'?items[0]:null;
   return <main className="loc-next-main" data-rune-3d-preview={mode}>
     <div className="loc-panel rune-skin-lab rune-3d-shell">
@@ -232,11 +236,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
             onClick={()=>setCeremonySubject('glyph')}>巨大符文字</button>
           <button type="button" aria-pressed={ceremonySubject==='card'}
             onClick={()=>setCeremonySubject('card')}>漂浮卡圖</button>
-          <button type="button" aria-pressed={sceneQuality==='high'}
-            onClick={()=>setSceneQuality(current=>current==='high'?'balanced':'high')}>
-            {sceneQuality==='high'?'高畫質':'省電模式'}
-          </button>
-          <span className="rune-3d-toolbar-label">粒子貼圖：256</span>
+          <span className="rune-3d-toolbar-label">粒子貼圖：{textureQuality==='original'?'原始':'256'}</span>
         </div>}
     </nav>
     <section className="rune-3d-stage" aria-label={label} ref={stageRef}
@@ -244,7 +244,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       {!isList?<div className="rune-3d-night-backdrop" aria-hidden="true">
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
-      {!isList?<RuneMistBackdrop phase={phase} quality={sceneQuality} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>:null}
+      {!isList?<RuneMistBackdrop phase={phase} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
@@ -253,7 +253,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
           {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
             rune={pending.card} direction={pending.direction} ceremony
             appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
-            quality={sceneQuality} textureQuality={textureQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
+            textureQuality={textureQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
             onGlyphClick={()=>{}}/>:null}
           {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
             onClick={drawOne} disabled={busy}>點選畫面抽牌</button>:null}
@@ -328,9 +328,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       </nav>
     </footer>
     {selected&&<ResultDialog title={runeName(selected)+'之符文'} onClose={()=>setSelected(null)}>
-      {details?<><p>{details.english_name||''}　{details.group_name||''}</p>
-        <img className="rune-3d-daily-card" src={runeImage(details)} alt={runeName(details)+'原始卡面'}/>
-        <p>{details.rune_description||details.rune_name}</p></>:null}
+      {details?<RuneCardInfo card={details} imageSrc={runeImage(details)}
+        direction={detailItem?.direction||''} realMoonPhase={detailItem?.moon||''} layout="home"/>:null}
     </ResultDialog>}
     {resultOpen&&items.length>0&&<ResultDialog title={mode==='daily'?'抽牌結果與每日指引':'抽牌結果與指引籤詩'}
       onClose={()=>setResultOpen(false)}>

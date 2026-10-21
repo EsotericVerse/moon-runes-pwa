@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'三卡抽籤｜月之符文',
-  description:'以源、轉、合三個位置閱讀事情的起點、變化與整合結果。',
-  path:'/duel/three/'
+  title:'符文抽牌 · 三張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/three/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="3card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=3card" label="前往符文抽牌"/>;}

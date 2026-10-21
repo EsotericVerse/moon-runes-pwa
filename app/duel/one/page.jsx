@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'單卡抽籤｜月之符文',
-  description:'抽取一枚符文與一個方向，用來閱讀當下最核心的語意、狀態與單卡籤詩。',
-  path:'/duel/one/'
+  title:'符文抽牌 · 單卡 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/one/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="single"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=single" label="前往符文抽牌"/>;}

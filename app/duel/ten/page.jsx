@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'十卡抽籤｜月之符文',
-  description:'以 4 / 2 / 4 語義結構抽取十張符文，畫面以五組雙卡排列。',
-  path:'/duel/ten/'
+  title:'符文抽牌 · 十張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/ten/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="10card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=10card" label="前往符文抽牌"/>;}
