@@ -37,7 +37,7 @@ function stripInlineImage(value){
 export default function ScopeBlockDraftList({
   slots,scopeId,pageName,allowDelete=true,allowEntities=true,allowImages=true,
   editEyebrow=true,canAddBlock=false,slotClassName='loc-card',editSlotClassName='',
-  onDone,onCancel
+  preserveOrder=false,onDone,onCancel
 }){
   useUiSection('uiExtra.editBlocks');
   useUiSection('uiExtra.frameEditor');
@@ -187,7 +187,12 @@ export default function ScopeBlockDraftList({
           block_subtitle:HomeBlock.plainBlockLine(draft.subtitle),
           ...(isHomeFrame?{block_image:draft.image||null}:{}),
           block_text:normalizeSavedHtml(draft.text),
-          block_order:index+1,
+          // Free-form pages (add/delete/reorder) renumber by position so
+          // the saved order stays compact and matches the on-screen order.
+          // A caller that restricts this editor to specific fixed slots
+          // (ScopeEditableBlocks' `orders` prop -- the single-hero editors)
+          // must keep writing to that exact slot, never slide into slot 1.
+          block_order:preserveOrder?Number(draft.order)||index+1:index+1,
           block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},entityIndex)=>({
             uid,
             title:String(title||'').trim(),

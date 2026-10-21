@@ -856,14 +856,19 @@ export default function Search(){
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}
         >
-          {row.resourceType==='galaxy'&&editingKey!==row.key?<WorkFullText
-            open={fullTextKey===row.key}
-            loading={fullTextLoading&&fullTextKey===row.key}
-            error={fullTextKey===row.key?fullTextError:''}
-            content={fullTextKey===row.key?fullText:''}
-            onToggle={()=>toggleFullText(row)}
-            showToggle={!searchParams?.get('identity')}
-          />:null}
+          {row.resourceType==='galaxy'&&editingKey!==row.key?<div className="scope-work-fulltext-row">
+            <WorkFullText
+              open={fullTextKey===row.key}
+              loading={fullTextLoading&&fullTextKey===row.key}
+              error={fullTextKey===row.key?fullTextError:''}
+              content={fullTextKey===row.key?fullText:''}
+              onToggle={()=>toggleFullText(row)}
+              showToggle={!searchParams?.get('identity')}
+            />
+            {editable?<button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditing(editTarget)}>
+              <UiText id="uiExtra.editBlocks.edit"/>
+            </button>:null}
+          </div>:null}
 
         </Article>;
       }}

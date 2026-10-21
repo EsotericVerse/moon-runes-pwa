@@ -991,7 +991,7 @@ export default function Culture(){
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=>{
-                      const canEditWork=Boolean(work.uid&&account.user);
+                      const canEditWork=Boolean(work.uid)&&account.canManageScopeSync(work.scope_id||classificationScope);
                       const workKey=String(work.key||('galaxy:'+work.uid));
                       return <Article
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
@@ -1015,13 +1015,18 @@ export default function Culture(){
                       editError={editError}
                       showHidden
                     >
-                      {work.uid&&editingWorkKey!==workKey?<WorkFullText
-                        open={fullTextKey===work.key}
-                        loading={fullTextLoading&&fullTextKey===work.key}
-                        error={fullTextKey===work.key?fullTextError:''}
-                        content={fullTextKey===work.key?fullText:''}
-                        onToggle={()=>toggleWorkContent(work)}
-                      />:null}
+                      {work.uid&&editingWorkKey!==workKey?<div className="scope-work-fulltext-row">
+                        <WorkFullText
+                          open={fullTextKey===work.key}
+                          loading={fullTextLoading&&fullTextKey===work.key}
+                          error={fullTextKey===work.key?fullTextError:''}
+                          content={fullTextKey===work.key?fullText:''}
+                          onToggle={()=>toggleWorkContent(work)}
+                        />
+                        {canEditWork?<button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditingWork(work)}>
+                          <UiText id="uiExtra.editBlocks.edit"/>
+                        </button>:null}
+                      </div>:null}
                     </Article>;
                     }}
                   />

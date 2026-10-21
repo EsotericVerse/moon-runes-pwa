@@ -21,12 +21,12 @@ function heroImageUrlOf(row){
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
 // Shared display stays light: mount the editor only on pages that need it.
-const ScopeEditableBlocks=dynamic(()=>import('../loc/ScopeEditableBlocks'),{loading:()=>null});
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 
-// One visual header contract. On the LOC feature pages this same visible
-// header is wrapped by the existing ScopeEditableBlocks editor; elsewhere it
-// remains a read-only projection of exactly the same LOC records.
+// One visual header contract. Every feature page -- LOC/group included --
+// renders this as a read-only projection of the shared 'feature_hero' LOC
+// records; editing (text and the 8 hero images) happens only from the admin
+// 功能首頁圖設定 panel (admin-panels/FeatureHeroImages.jsx), never inline here.
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   const sign=HomeBlock.heroExtraFor(scopeId);
   return <>
@@ -53,7 +53,6 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
-  const locEditableHero=sharedEnabled&&scopeId==='loc';
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
   // Admin-only override for the 8 feature-hero images (4 features x
   // group/scope), stored as plain silver.loc_blocks rows on symmetric
@@ -68,7 +67,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
     queryKey:['scope-blocks','loc',HomeBlock.FEATURE_HERO_PAGE],
     queryFn:()=>selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE),
     staleTime:60_000,
-    enabled:sharedEnabled&&!locEditableHero
+    enabled:sharedEnabled
   });
   const heroImageQuery=useQuery({
     queryKey:['scope-blocks','loc',heroImageKind+'_'+featureId],
@@ -78,7 +77,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   });
   const heroImageOverride=heroImageUrlOf((heroImageQuery.data||[])[0]);
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
-  const shared=sharedEnabled&&!locEditableHero?HomeBlock.featureHeroFor(sharedQuery.data,featureId):null;
+  const shared=sharedEnabled?HomeBlock.featureHeroFor(sharedQuery.data,featureId):null;
   const fallbackCopy={
     title:profile.title,
     subtitle:finalSubtitle,
@@ -87,29 +86,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
 
   return <main className="scope-main">
     <section className="scope-page">
-      {locEditableHero?<ScopeEditableBlocks
-        scopeId="loc"
-        page={HomeBlock.FEATURE_HERO_PAGE}
-        orders={[HomeBlock.FEATURE_HERO_ORDER[featureId]]}
-        containerless
-        slotTag="header"
-        slotClassName={heroClassName}
-        editSlotClassName={heroClassName}
-        resolveSlotStyle={()=>heroStyle}
-        placeholderFirstOrder={HomeBlock.FEATURE_HERO_ORDER[featureId]}
-        allowEditing
-        explicitEditButton
-        allowDelete={false}
-        allowEntities={false}
-        renderDisplay={slot=><FeatureHeroContent
-          scopeId={scopeId}
-          eyebrow={slot.stored?slot.eyebrow:''}
-          title={slot.stored?slot.title||profile.title:fallbackCopy.title}
-          subtitle={slot.stored?slot.subtitle:fallbackCopy.subtitle}
-          description={slot.stored?slot.text:fallbackCopy.description}
-          rich={slot.stored}
-        />}
-      />:<header className={heroClassName} style={heroStyle} data-feature-hero-source={shared?'loc':'default'}>
+      <header className={heroClassName} style={heroStyle} data-feature-hero-source={shared?'loc':'default'}>
         <FeatureHeroContent
           scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
@@ -118,7 +95,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
           description={shared?shared.description:fallbackCopy.description}
           rich={Boolean(shared)}
         />
-      </header>}
+      </header>
       <div className="scope-content">{children}</div>
     </section>
   </main>;

@@ -475,6 +475,7 @@
 
 /* Reusable article actions live alongside the heading, not after the full article. */
 .scope-work-summary-actions{display:flex;align-items:center;justify-content:flex-end;gap:.6rem;flex-wrap:wrap}
+.scope-work-fulltext-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 
 
 .scope-data-source-details{min-width:0;width:100%}

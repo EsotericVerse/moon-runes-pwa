@@ -193,6 +193,7 @@ export default function ScopeEditableBlocks({
         canAddBlock={canAddBlock}
         slotClassName={slotClassName}
         editSlotClassName={editSlotClassName}
+        preserveOrder={Boolean(normalizedOrders.length)}
         onCancel={()=>setEditMode(false)}
         onDone={notice=>{setEditMode(false);setMessage(notice)}}
       />:slots.flatMap((slot,index)=>{
