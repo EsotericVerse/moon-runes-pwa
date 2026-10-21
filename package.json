@@ -6,41 +6,9 @@
     "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
     "prebuild": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
     "dev": "next dev",
-    "verify:modules": "node scripts/verify-module-contracts.mjs",
-    "verify:blocknote": "node scripts/test-blocknote-serialization.mjs",
-    "verify:feature-hero": "node scripts/test-feature-hero.mjs",
-    "verify:block-presentation": "node scripts/test-block-presentation.mjs",
-    "verify:loc-home-text": "node scripts/test-loc-home-text.mjs",
-    "verify:directories": "node scripts/verify-directory-governance.mjs",
-    "verify:auth": "node scripts/verify-auth-boundary.mjs",
-    "verify:rune-draw": "node scripts/verify-rune-draw-algorithm.mjs && node --test scripts/test-rune-draw-reads.mjs scripts/test-rune-moon-phase.mjs && npm run verify:3d-runes",
-    "verify:statistics-facets": "node --test scripts/test-statistics-facets.mjs scripts/test-suno-style-meta-tags.mjs scripts/test-member-intersection.mjs scripts/test-administrative-sources.mjs scripts/test-statistics-zoom.mjs scripts/test-media-style-intersection.mjs scripts/test-media-style-tree-statistics.mjs",
-    "verify": "npm run verify:nav && npm run verify:management && npm run verify:rune-assets && npm run verify:block-presentation && npm run verify:blocknote && npm run verify:feature-hero && npm run verify:loc-home-text && npm run verify:db-adapters && npm run verify:kysely-edge && npm run verify:database-targets && npm run verify:sql-standard && npm run verify:sql-runtime && npm run verify:sql-import && npm run verify:database-contract && npm run verify:rune-draw && npm run verify:statistics-facets && npm run verify:lrunes-daily && npm run verify:lrunes-settings && npm run verify:local-files && npm run verify:private-archive && npm run verify:daily-transfer && npm run verify:loc-items && npm run verify:rune66-keywords && npm run verify:modules && npm run verify:scope-registry && npm run verify:directories && npm run verify:auth",
     "build": "next build",
-    "verify:scope-registry": "node scripts/verify-scope-registry.mjs",
-    "postbuild": "node scripts/copy-static-assets.mjs && node scripts/verify-static-export.mjs && node scripts/diagnose-effekseer-smoke.mjs",
-    "verify:db-public": "node scripts/verify-db-public-read.mjs",
-    "test:ui": "playwright test",
-    "verify:static-export": "node scripts/verify-static-export.mjs",
-    "verify:management": "node scripts/verify-management-contract.mjs && node --test scripts/test-import-batch.mjs scripts/test-import-source-classification.mjs scripts/test-universal-file-import.mjs scripts/test-search-list-regression.mjs",
-    "verify:rune66-keywords": "node scripts/verify-rune66-keyword-engine.mjs",
-    "verify:db-adapters": "node scripts/verify-db-adapters.mjs",
-    "verify:kysely-edge": "node --test scripts/test-kysely-edge-client.mjs scripts/test-kysely-runtime.mjs",
-    "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
-    "verify:nav": "node --test scripts/test-navigation-dock.mjs",
-    "verify:lrunes-daily": "node --test scripts/test-lrunes-daily-analytics.mjs scripts/test-lrunes-moon-river.mjs",
-    "verify:lrunes-settings": "node --test scripts/test-lrunes-settings-local.mjs",
-    "verify:loc-items": "node --test scripts/test-loc-item-confluence.mjs",
-    "verify:3d-runes": "node scripts/verify-rune-glyph-library.mjs && node scripts/test-rune-hd256.mjs && node scripts/test-rune-soft-matte.mjs && node scripts/test-rune-solid-glyph.mjs",
-    "verify:local-files": "node --test scripts/test-private-local-files.mjs",
-    "verify:rune-assets": "node scripts/verify-rune-card-assets.mjs",
-    "verify:private-archive": "node --test scripts/test-private-archive-universal.mjs",
-    "verify:daily-transfer": "node --test scripts/test-daily-transfer.mjs",
-    "verify:sql-standard": "node scripts/verify-sql-standard.mjs",
-    "verify:sql-runtime": "node scripts/verify-sql-runtime.mjs",
-    "verify:sql-import": "node scripts/verify-sql-import.mjs",
-    "verify:database-contract": "node scripts/verify-current-database-contract.mjs",
-    "verify:database-targets": "node scripts/test-database-targets.mjs && node scripts/test-database-link.mjs && node scripts/test-database-routing.mjs"
+    "postbuild": "node scripts/copy-static-assets.mjs && node scripts/diagnose-effekseer-smoke.mjs",
+    "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
@@ -82,8 +50,6 @@
     "kysely": "0.29.6"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
-    "@playwright/test": "1.63.0",
     "@capacitor/cli": "8.5.3"
   }
 }

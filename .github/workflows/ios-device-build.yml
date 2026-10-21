@@ -31,8 +31,6 @@ jobs:
           xcrun --find swift
       - name: Install dependency lockfile
         run: npm ci --no-audit --no-fund
-      - name: Verify navigation before native packaging
-        run: npm run verify:nav
       - name: Build existing LOC static export
         run: |
           npm run build

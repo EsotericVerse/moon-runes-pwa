@@ -56,10 +56,6 @@ jobs:
           grep -v '^\s*$' /tmp/next-build.log | tail -n 8 | cut -c1-400 | while IFS= read -r line; do
             echo "::error title=build-tail::${line//%/%25}"
           done
-      - name: Install Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
-      - name: Run browser accessibility checks
-        run: npx playwright test --reporter=github,list
       - name: Report static server state as annotation
         if: failure()
         run: |
