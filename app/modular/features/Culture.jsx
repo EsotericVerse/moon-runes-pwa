@@ -16,7 +16,7 @@ registerDefaultSection('uiExtra.pagination',paginationZh);
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -34,7 +34,6 @@ import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
-import {useOffsetPagination} from '../use-offset-pagination';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 const LrunesDailyCulturePanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyCulturePanel),{loading:()=>null});
@@ -279,17 +278,15 @@ export default function Culture(){
   // Fall back to all works instead of disabling pagination and clearing it.
   // Keyword Class is an independent visualization, not a work-list filter.
   const effectiveCategoryKey=selectedGroup?.category_key||'';
-  const periodWorksPage=useOffsetPagination({
-    key:[
-      classificationScope,
-      selectedWorkPeriod?.period||'all',
-      selectedWorkPeriod?.start_date||'',
-      selectedWorkPeriod?.end_date||'',
-      effectiveCategoryKey||'all'
-    ].join('|'),
-    pageSize:DEFAULT_LIST_BATCH_SIZE,
+  // react-query 原生 useInfiniteQuery 取代手刻的 offset/cursor 分頁狀態機：
+  // 自動快取、去重過期請求、取消過期請求全部交給模組處理，這裡只保留
+  // 業務邏輯本身（呼叫 culture-query 兩段式查詢、依 key 合併跨頁重複列）。
+  const periodWorksQuery=useInfiniteQuery({
+    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period||'all',selectedWorkPeriod?.start_date||'',selectedWorkPeriod?.end_date||'',effectiveCategoryKey||'all'],
+    initialPageParam:null,
+    getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
     enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
-    loadPage:async(cursor,limit)=>{
+    queryFn:async({pageParam})=>{
       const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:selectedWorkPeriod?.start_date||'',
@@ -297,8 +294,8 @@ export default function Culture(){
         sourceName:selectedGroup?.source_name||'',
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
-        limit,
-        cursor:cursor&&typeof cursor==='object'?cursor:null
+        limit:DEFAULT_LIST_BATCH_SIZE,
+        cursor:pageParam&&typeof pageParam==='object'?pageParam:null
       });
       const details=await selectScopePeriodWorkDetails(scopeData,{items:indexPage.rows||[]});
       return {
@@ -307,11 +304,26 @@ export default function Culture(){
         hasMore:Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
         nextCursor:indexPage.nextCursor
       };
-    },
-    getRowKey:row=>String(row?.key||row?.uid||row?.entry_id||'')
+    }
   });
+  const periodWorksPages=periodWorksQuery.data?.pages||[];
+  const visibleWorkRows=useMemo(()=>{
+    const map=new Map();
+    periodWorksPages.forEach((page,pageIndex)=>(page.rows||[]).forEach((row,index)=>{
+      map.set(String(row?.key||row?.uid||row?.entry_id||'')||(pageIndex+':'+index),row);
+    }));
+    return [...map.values()];
+  },[periodWorksPages]);
+  const periodWorksPage={
+    rows:visibleWorkRows,
+    totalCount:periodWorksPages[periodWorksPages.length-1]?.totalCount,
+    loading:periodWorksQuery.isLoading||periodWorksQuery.isFetchingNextPage,
+    error:periodWorksQuery.error,
+    hasMore:Boolean(periodWorksQuery.hasNextPage),
+    loadNext:periodWorksQuery.fetchNextPage,
+    reload:periodWorksQuery.refetch
+  };
   const selectedCount=Number(periodWorksPage.totalCount??selectedGroup?.item_count)||0;
-  const visibleWorkRows=periodWorksPage.rows||[];
 
   useEffect(()=>{
     setSelectedCategory('');
