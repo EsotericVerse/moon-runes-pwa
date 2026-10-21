@@ -4,6 +4,7 @@ export default {
   "myPhone": "マイフォン",
   "homeSettings": "ホーム設定",
   "localFiles": "端末内ファイル",
+  "localScope": "ローカル（この端末のみ）",
   "documentImport": "ドキュメント取り込み",
   "personalHome": "個人ホーム",
   "manageMenu": "管理メニュー",

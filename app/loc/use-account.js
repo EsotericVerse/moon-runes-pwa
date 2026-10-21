@@ -100,8 +100,14 @@ export function useAccount(){
     await signOutAccount();
     setState({...emptyState,loading:false,permissionLoading:false});
   },[]);
+  // `local` is the hidden, device-only Scope (see scope-registry.js /
+  // providers/local-sqlite.mjs): its data never reaches Supabase, so the
+  // normal cloud manage-role check neither applies nor can ever pass for it
+  // (it has no row in silver.loc, and must stay usable without any sign-in
+  // at all -- that's the point of a private, on-device import). It is
+  // always "managed" by whoever is physically using this device/browser.
   const canManageScopeSync=useCallback(
-    scopeId=>Boolean(state.authorizer?.canManageScopeSync(scopeId)),
+    scopeId=>normalizeScopeId(scopeId)==='local'||Boolean(state.authorizer?.canManageScopeSync(scopeId)),
     [state.authorizer]
   );
   const canManageGlobalSync=useCallback(
@@ -110,6 +116,7 @@ export function useAccount(){
   );
   const scopeDataFor=useCallback(scopeId=>{
     const id=normalizeScopeId(scopeId);
+    if(id==='local')return defaultScopeData('local');
     return state.scopes.find(scope=>scope.id===id)
       ||(state.authorizer?.canManageGlobalSync()?defaultScopeData(id):null);
   },[state.authorizer,state.scopes]);

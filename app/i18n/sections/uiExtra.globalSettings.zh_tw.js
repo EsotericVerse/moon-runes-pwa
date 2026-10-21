@@ -4,6 +4,7 @@ export default {
   "myPhone": "我的手機",
   "homeSettings": "首頁設定",
   "localFiles": "本機檔案",
+  "localScope": "本機（僅此裝置）",
   "documentImport": "文件匯入",
   "personalHome": "個人首頁",
   "manageMenu": "管理選單",

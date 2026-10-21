@@ -4,6 +4,7 @@ export default {
   "myPhone": "My phone",
   "homeSettings": "Homepage settings",
   "localFiles": "Local files",
+  "localScope": "Local (this device only)",
   "documentImport": "Document import",
   "personalHome": "Personal homepage",
   "manageMenu": "Management",

@@ -46,8 +46,10 @@ export default function GlobalSettings({initialSection='home'}={}){
     const params=new URLSearchParams(window.location.search);
     const chosen=params.get('section');
     // Historical links can enter the merged UI without a dead-end pane.
+    // 'files' used to not exist on native (it bounced to 'manage'); now that
+    // native also has its own real 'files' tab (local-scope import), a
+    // 'files' link is honored on every platform instead of being redirected.
     if(chosen==='favorites')setSection('home');
-    else if(isNative&&chosen==='files')setSection('manage'); // Preserve prior mobile file links.
     else if(['home','files','personal','manage','account'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
@@ -66,7 +68,11 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[native,prefs.home,prefs.loading,account.user?.id]);
 
   const choices=useMemo(()=>{
-    const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')}];
+    // `local` is never in the cloud scope registry (device-only, see
+    // use-account.js's canManageScopeSync/scopeDataFor special case), so it
+    // has to be listed here by hand, same as the other three static Scopes,
+    // or it could never be picked as an import target in the 'files' tab.
+    const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')},{id:'local',label:uiT('uiExtra.globalSettings.localScope')}];
     const found=new Map(baseChoices.map(item=>[item.id,item]));
     for(const row of registry){
       if(!row?.scope_id||row.scope_id==='admin')continue;
@@ -77,10 +83,15 @@ export default function GlobalSettings({initialSection='home'}={}){
     }
     return [...found.values()];
   },[registry,uiT('common.language')]);
-  const managedScopes=useMemo(()=>
-    !native&&account.user?choices.filter(item=>account.canManageScopeSync(item.id)):[],
-    [choices,native,account.user,account.authorizer]
-  );
+  // `local` is always available here -- native or web, signed in or not --
+  // since canManageScopeSync('local') is unconditional (see use-account.js).
+  // Every other Scope keeps the existing "web + signed in" requirement
+  // unchanged.
+  const managedScopes=useMemo(()=>{
+    const cloudManaged=!native&&account.user?choices.filter(item=>item.id!=='local'&&account.canManageScopeSync(item.id)):[];
+    const local=choices.find(item=>item.id==='local');
+    return local?[...cloudManaged,local]:cloudManaged;
+  },[choices,native,account.user,account.authorizer]);
   const canManageGlobal=!native&&Boolean(account.user)&&account.canManageGlobalSync();
   const selectedScope=managedScopes.find(item=>item.id===requestedScope)||managedScopes[0]||null;
   const allowedHomes=useMemo(()=>{
@@ -107,8 +118,13 @@ export default function GlobalSettings({initialSection='home'}={}){
 
   const sections=[
     option('home',uiT('uiExtra.globalSettings.homeSettings')),
-    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]
-      :[option('files',uiT('uiExtra.globalSettings.documentImport'))]),
+    // Native keeps its own 'manage' tab (PrivateLocalFiles, the raw-file
+    // backup tool) AND now also gets 'files' (the scope-aware structured
+    // import -- ManagementImportPanel), since managedScopes always includes
+    // `local` regardless of platform: without this, the phone app would have
+    // no way to reach the local-scope import at all.
+    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
+    option('files',uiT('uiExtra.globalSettings.documentImport')),
     ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
     option('account',uiT('uiExtra.globalSettings.account'))
   ];
