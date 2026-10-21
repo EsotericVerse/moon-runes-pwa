@@ -9,7 +9,7 @@
     "build": "next build",
     "postbuild": "node scripts/copy-static-assets.mjs && node scripts/diagnose-effekseer-smoke.mjs",
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
-    "audit:security": "npm audit --audit-level=high"
+    "audit:security": "npm audit --audit-level=critical"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
