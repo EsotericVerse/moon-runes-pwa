@@ -136,5 +136,16 @@ export default {
   "unchanged": "Unchanged",
   "skipped": "Skipped",
   "sourceLabel": "Source",
-  "noUid": "No valid records with an explicitly provided article UID."
+  "noUid": "No valid records with an explicitly provided article UID.",
+  "duplicateTitle": "Data cleanup (duplicate detection)",
+  "duplicateHelp": "Run manually after an import: groups rows by an exact createtime match, then by exact matching content within that group. Nothing is deleted automatically -- check the rows you want removed, then delete.",
+  "duplicateScanning": "Scanning…",
+  "duplicateRun": "Run detection",
+  "duplicateNoneFound": "No duplicates found.",
+  "duplicateGroupsFound": "Found {count} possible duplicate group(s).",
+  "duplicateScanFailed": "Duplicate detection failed.",
+  "duplicateDeleteSelected": "Delete selected ({count})",
+  "duplicateDeleted": "Deleted {count} item(s).",
+  "duplicateDeleteFailed": "Delete failed.",
+  "duplicateUpdated": "Updated: {time}"
 };

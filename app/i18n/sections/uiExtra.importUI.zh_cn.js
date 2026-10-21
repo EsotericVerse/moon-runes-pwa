@@ -136,5 +136,16 @@ export default {
   "unchanged": "不变",
   "skipped": "跳过",
   "sourceLabel": "来源",
-  "noUid": "没有明确提供文章 UID 的有效记录。"
+  "noUid": "没有明确提供文章 UID 的有效记录。",
+  "duplicateTitle": "数据重整（重复检测）",
+  "duplicateHelp": "导入后手动执行：先比对 createtime 是否完全相同，再比对内文是否相同；两者都相同才视为重复。不会自动删除，请勾选后再删除。",
+  "duplicateScanning": "检测中…",
+  "duplicateRun": "开始检测",
+  "duplicateNoneFound": "没有找到重复。",
+  "duplicateGroupsFound": "找到 {count} 组可能重复。",
+  "duplicateScanFailed": "重复检测失败。",
+  "duplicateDeleteSelected": "删除已勾选（{count}）",
+  "duplicateDeleted": "已删除 {count} 篇。",
+  "duplicateDeleteFailed": "删除失败。",
+  "duplicateUpdated": "更新时间：{time}"
 };

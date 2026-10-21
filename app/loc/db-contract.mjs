@@ -201,6 +201,24 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     };
   }
 
+  // "資料重整": run on demand (typically right after an import), never
+  // automatically. The database does the grouping -- exact createtime match
+  // first, then exact canonicalized content match within that group -- so
+  // nothing is paged through the client; see silver.find_galaxy_duplicates.
+  // Groups that don't match on both stay apart (false negatives preferred
+  // over ever auto-merging two different posts). No row is ever deleted
+  // here -- the caller reviews each group and deletes explicitly.
+  async function findGalaxyDuplicates(scopeId){
+    const data=await rpcJson('find_galaxy_duplicates',{p_scope_id:normalizeScopeId(scopeId)},'Duplicate scan');
+    return (Array.isArray(data)?data:[]).map(row=>({
+      sourceName:String(row?.source_name||''),
+      createtime:String(row?.createtime||''),
+      uids:(Array.isArray(row?.uids)?row.uids:[]).map(String),
+      titles:(Array.isArray(row?.titles)?row.titles:[]).map(String),
+      updateTimes:(Array.isArray(row?.update_times)?row.update_times:[]).map(value=>String(value||''))
+    }));
+  }
+
   async function writeKeywordLibraryItem(scopeId,operation,item={}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
@@ -378,7 +396,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

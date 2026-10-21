@@ -136,5 +136,16 @@ export default {
   "unchanged": "変更なし",
   "skipped": "スキップ",
   "sourceLabel": "ソース",
-  "noUid": "記事 UID が明示された有効なレコードがありません。"
+  "noUid": "記事 UID が明示された有効なレコードがありません。",
+  "duplicateTitle": "データ整理（重複検出）",
+  "duplicateHelp": "インポート後に手動で実行します。createtime が完全に一致するものをまとめ、その中でさらに本文が完全に一致するものだけを重複とみなします。自動削除はされません。チェックしてから削除してください。",
+  "duplicateScanning": "検出中…",
+  "duplicateRun": "検出を実行",
+  "duplicateNoneFound": "重複は見つかりませんでした。",
+  "duplicateGroupsFound": "{count} 件の重複候補グループが見つかりました。",
+  "duplicateScanFailed": "重複検出に失敗しました。",
+  "duplicateDeleteSelected": "選択した項目を削除（{count}）",
+  "duplicateDeleted": "{count} 件を削除しました。",
+  "duplicateDeleteFailed": "削除に失敗しました。",
+  "duplicateUpdated": "更新日時：{time}"
 };

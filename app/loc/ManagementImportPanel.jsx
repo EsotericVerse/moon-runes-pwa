@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
+import {insertRows,dbAuthRelation,updateRows,deleteRows,findGalaxyDuplicates} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
@@ -583,6 +583,101 @@ function SourceRefresh({scopeId,format,onBusyChange}){
   </div>;
 }
 
+// "資料重整": a manual, on-demand pass -- run once after an import, or any
+// time from this button -- never automatic. The matching itself runs as one
+// SQL query in the database (silver.find_galaxy_duplicates): group by exact
+// createtime, then by exact canonicalized content within that group. A pair
+// that doesn't match on both stays listed as two separate rows -- that's
+// deliberate (an edited duplicate may no longer match; keeping both beats
+// auto-merging two different posts). Nothing is ever deleted automatically;
+// every checkbox here is a row the person reviewed and chose themselves.
+function DuplicateDetection({scopeId}){
+  const t=useUiText();
+  const account=useAccount();
+  const [groups,setGroups]=useState(null);
+  const [selected,setSelected]=useState(()=>new Set());
+  const [status,setStatus]=useState('');
+  const [busy,setBusy]=useState(false);
+  if(!account.canManageScopeSync(scopeId))return null;
+
+  function formatTime(value){
+    return value?String(value).slice(0,19).replace('T',' '):'';
+  }
+
+  async function scan(){
+    setBusy(true);setStatus(t('uiExtra.importUI.duplicateScanning'));setGroups(null);setSelected(new Set());
+    try{
+      const found=await findGalaxyDuplicates(scopeId);
+      setGroups(found);
+      setStatus(found.length?t('uiExtra.importUI.duplicateGroupsFound',{count:found.length}):t('uiExtra.importUI.duplicateNoneFound'));
+    }catch(error){
+      setGroups(null);
+      setStatus(String(error?.message||error||t('uiExtra.importUI.duplicateScanFailed')));
+    }finally{setBusy(false);}
+  }
+
+  function toggle(uid){
+    setSelected(current=>{
+      const next=new Set(current);
+      if(next.has(uid))next.delete(uid);else next.add(uid);
+      return next;
+    });
+  }
+
+  async function removeSelected(){
+    if(!selected.size||busy)return;
+    setBusy(true);setStatus('');
+    try{
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
+      const uids=[...selected];
+      // management_write's delete path only accepts eq filters -- one call per row.
+      for(const uid of uids){
+        await deleteRows(galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]});
+      }
+      setGroups(current=>(current||[])
+        .map(group=>({
+          ...group,
+          titles:group.titles.filter((_,index)=>!selected.has(group.uids[index])),
+          updateTimes:group.updateTimes.filter((_,index)=>!selected.has(group.uids[index])),
+          uids:group.uids.filter(uid=>!selected.has(uid))
+        }))
+        .filter(group=>group.uids.length>1));
+      setStatus(t('uiExtra.importUI.duplicateDeleted',{count:uids.length}));
+      setSelected(new Set());
+    }catch(error){
+      setStatus(String(error?.message||error||t('uiExtra.importUI.duplicateDeleteFailed')));
+    }finally{setBusy(false);}
+  }
+
+  return <div className="scope-inline-card">
+    <h4><UiText id="uiExtra.importUI.duplicateTitle"/></h4>
+    <p><UiText id="uiExtra.importUI.duplicateHelp"/></p>
+    <div className="scope-tabs">
+      <button type="button" disabled={busy} onClick={scan}>
+        {busy?t('uiExtra.importUI.duplicateScanning'):t('uiExtra.importUI.duplicateRun')}
+      </button>
+      <button type="button" disabled={busy||!selected.size} onClick={removeSelected}>
+        <UiText id="uiExtra.importUI.duplicateDeleteSelected" params={{count:selected.size}}/>
+      </button>
+    </div>
+    {status?<p className="scope-status" role="status">{status}</p>:null}
+    {groups&&groups.length?<div className="scope-management-records">
+      {groups.map((group,groupIndex)=><article className="scope-inline-card" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
+        <strong>{group.sourceName} · {formatTime(group.createtime)}</strong>
+        <div className="scope-management-fields">
+          {group.uids.map((uid,index)=><label key={uid}>
+            <input type="checkbox" checked={selected.has(uid)} onChange={()=>toggle(uid)}/>
+            <span>{group.titles[index]||uid}</span>
+            <span>{uid}</span>
+            <span><UiText id="uiExtra.importUI.duplicateUpdated" params={{time:formatTime(group.updateTimes[index])||'—'}}/></span>
+          </label>)}
+        </div>
+      </article>)}
+    </div>:null}
+  </div>;
+}
+
 function MediaRecordInsert({scopeId}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -681,6 +776,7 @@ export default function ManagementImportPanel({scopeId}){
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
     <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    <DuplicateDetection scopeId={scopeId}/>
     <MediaRecordInsert scopeId={scopeId}/>
     <button type="button" className="loc-button" aria-expanded={sunoOpen}
       onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
