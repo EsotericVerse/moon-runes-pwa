@@ -33,7 +33,7 @@
 
 1. **使用者出示 Suno URL，即授權新增儲存該 URL 之前、可核實且與該首歌曲明確相關的作者原始大綱、完整歌詞、完整 Suno Style 及衍生 meta_tags。** 只限該 URL 對應的新作品，先唯讀查重；資料寫入 Supabase（LOC 主庫）既有 Galaxy／Galaxy Media 正確欄位與關聯。**如果是既有資料，只有使用者另行明確說「更新」及指定範圍才能更新，否則不得覆寫。** 其他資料不因單純提供內容而自動入庫。
 2. **每首歌都要逐項核查四份資料，不能漏存：** ①使用者的**原始作者創作大綱**；②完整且原樣的 **Suno Style**；③**完整歌詞**；④**meta_tags**（直接由完整 Suno Style 自動擷取曲風、人聲及相關特徵的精華）。依已存在的正確 Galaxy／Galaxy Media 欄位與關聯儲存；大綱、Style、歌詞為各自獨立的文字紀錄，不得把大綱塞進歌詞；Style 原文與衍生 meta_tags 必須分開儲存。以實際來源資料為準，禁止自行改寫或補造任何作品文字。
-3. **Suno Style 文字紀錄固定 searchable=false、statistics_able=false。** 歌詞及原始作者大綱則保留其應有的搜尋／統計政策，不得因 Style 排除而一起排除。meta_tags 必須從已取得的完整 Suno Style 直接提取精華，使用現有的 Suno Style 標籤擷取能力，寫入對應歌曲的 Galaxy Media meta_tags 欄位；不再另外詢問 type、style 或要求使用者重複整理標籤。Suno 歌曲的 media_type 固定為 suno。不得未經授權臆測、翻譯或自行增造標籤；使用者已明示的 LP／符文音樂分類仍依原有規則保留。
+3. **Suno Style 文字紀錄固定 searchable=false、statistics_able=false。** 歌詞及原始作者大綱則保留其應有的搜尋／統計政策，不得因 Style 排除而一起排除。meta_tags 必須從已取得的完整 Suno Style 直接提取精華，使用現有的 Suno Style 標籤擷取能力，寫入對應歌曲的 Galaxy Media meta_tags 欄位；不再另外詢問 type、style 或要求使用者重複整理標籤。media_type 依內容實際型態（音樂／影片／圖片）判斷寫入，不得未經授權臆測、翻譯或自行增造標籤；使用者已明示的 LP／符文音樂分類仍依原有規則保留。
 4. **Suno URL 之前的相關作品資料即為當次新增範圍。** 若內容散見於可核實的既有創作紀錄，先核對內容與歌曲歸屬；meta_tags 依完整 Suno Style 自動提取。缺少可信來源的項目標記為尚缺，不臆造、不假稱四項完整、不擅自補寫已有作品。
 5. **URL 是外部來源的唯一定位依據；LOC 的 media_id 是 LOC 自建 UUID。** 不自行定義或存入所謂「Suno ID」、不再使用 source_native_id，也不得從 URL 擷取其他識別字串作為判重依據。歌曲、專輯與播放清單依原始 URL 類型及可核實的實際關聯區分；不得靠標題或 LP 編號猜測或改動曲序。
 6. **新增與更新嚴格區分。** 單純出示 Suno URL 授權新增該 URL 之前明確相關的四項內容；已存在的相同 URL 先唯讀比對並回報，禁止覆寫。只有使用者另外指明「更新」與內容範圍時才允許既有紀錄更新。
