@@ -177,14 +177,14 @@ export default function ScopeEditableBlocks({
       {toggleExtra}
     </div>:null;
     // While browsing (not editing), the toggle (plus any caller-supplied
-    // extra action, e.g. a management link) sits between the first and
-    // second blocks -- not a top banner, not stretched into the grid -- so
-    // it renders inline with the first visible slot rather than before the
-    // whole list. While editing, it moves into ScopeBlockDraftList's own
-    // toolbar row instead, so it renders together with Save/Cancel in one
-    // row instead of the toggle up top and Save/Cancel trailing after
-    // every draft card.
+    // extra action, e.g. a management link) renders before the whole list,
+    // in the gap between the page hero and the first content block/card --
+    // not stretched into the grid, not interleaved between blocks. While
+    // editing, it moves into ScopeBlockDraftList's own toolbar row instead,
+    // so it renders together with Save/Cancel in one row instead of the
+    // toggle up top and Save/Cancel trailing after every draft card.
     const contents=<>
+      {!editMode?toggleButton:null}
       {editMode?<ScopeBlockDraftList
         slots={slots}
         scopeId={scopeId}
@@ -228,7 +228,7 @@ export default function ScopeEditableBlocks({
               {renderEntities(slot.entities)}
             </>}
         </SlotTag>;
-        return index===0&&toggleButton?[node,toggleButton]:[node];
+        return [node];
       })}
       {!editMode&&message?<p className="scope-status" role="status">{message}</p>:null}
     </>;
