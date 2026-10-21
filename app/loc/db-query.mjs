@@ -4,7 +4,7 @@ import {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 export {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 
 import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
-import {markPrimaryReadFailed,markPrimaryReadSucceeded} from './db-source-status.mjs';
+import {markPrimaryReadFailed,markPrimaryReadSucceeded,markBackupReadFailed,markBackupReadSucceeded} from './db-source-status.mjs';
 
 import {selectedDatabaseRouting} from './providers/routing-state.mjs';
 const recoverableReadError=error=>{
@@ -92,7 +92,14 @@ export async function executePublicRead(table,buildQuery,{source='auto',authenti
   };
   const backup=async()=>{
     if(!routing.backupId||!dbBackupPublicClient)throw new Error('Backup database is not selected');
-    return run(dbBackupPublicClient,'backup');
+    try{
+      const value=await run(dbBackupPublicClient,'backup');
+      markBackupReadSucceeded(table);
+      return value;
+    }catch(error){
+      markBackupReadFailed(table,error);
+      throw error;
+    }
   };
   if(source==='primary')return primary();
   if(source==='backup')return backup();

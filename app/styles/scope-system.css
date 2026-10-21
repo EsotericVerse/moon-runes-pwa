@@ -23,6 +23,11 @@
   font-weight:650;
   opacity:1;
 }
+.scope-data-source-global.is-unavailable{
+  color:var(--loc-danger);
+  font-weight:650;
+  opacity:1;
+}
 .scope-nav{display:flex;align-items:center;margin:0 auto;overflow-x:auto}
 .scope-nav a,.scope-nav-current{text-decoration:none;white-space:nowrap;border-radius:999px}
 .scope-nav-current{font-weight:700;}

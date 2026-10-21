@@ -282,6 +282,7 @@ export default {
   "備用資料來源：": "Backup source: ",
   "目前使用：": "Currently using: ",
   "備援資料可能有同步時間差。": "Backup data may be out of sync.",
+  "主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。": "Both the primary and backup data sources are currently unreachable; some content may be temporarily unavailable.",
   "目錄": "Directory",
   "目錄尚無入口": "No entries in this directory",
   "收合目錄": "Collapse directory",

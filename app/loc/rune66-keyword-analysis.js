@@ -130,7 +130,7 @@ function buildClassMap(catalogRows=[]){
   const ordered=[...groups.entries()]
     .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]))
     .map(([group,order],index)=>({group,order,class_id:index+1}));
-  if(ordered.length!==8)throw new Error('目前文章 class_id 契約需要恰好 8 個啟用 Class；目前為 '+ordered.length+' 個。');
+  if(ordered.length!==9)throw new Error('目前文章 class_id 契約需要恰好 9 個啟用 Class；目前為 '+ordered.length+' 個。');
   return {
     ordered,
     groupToClassId:new Map(ordered.map(item=>[item.group,item.class_id])),

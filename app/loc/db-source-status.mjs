@@ -3,25 +3,36 @@ const DEFAULT_STATE=Object.freeze({
   backupLabel:'Neon',
   activeSource:'primary',
   degraded:false,
+  unavailable:false,
   failingResources:[],
+  unavailableResources:[],
   primaryError:'',
   fallbackSince:null
 });
 
 let labels={primaryLabel:DEFAULT_STATE.primaryLabel,backupLabel:DEFAULT_STATE.backupLabel};
 const failures=new Map();
+// Resources where the backup read also failed after the primary read failed.
+// Tracked separately so "primary degraded, backup covering" can be told apart
+// from "primary and backup both failed" instead of both reporting as 'backup'.
+const backupFailures=new Map();
 const listeners=new Set();
 let manualReadLabel='';
 
 function snapshot(){
   const failingResources=[...failures.keys()].sort();
+  const unavailableResources=failingResources.filter(key=>backupFailures.has(key));
   const first=[...failures.values()][0]||null;
+  const degraded=Boolean(manualReadLabel||failingResources.length);
+  const unavailable=Boolean(unavailableResources.length);
   return Object.freeze({
     ...labels,
     backupLabel:manualReadLabel||labels.backupLabel,
-    activeSource:manualReadLabel||failingResources.length?'backup':'primary',
-    degraded:Boolean(manualReadLabel||failingResources.length),
+    activeSource:unavailable?'unavailable':(degraded?'backup':'primary'),
+    degraded,
+    unavailable,
     failingResources,
+    unavailableResources,
     primaryError:first?.message||'',
     fallbackSince:first?.since||null
   });
@@ -57,7 +68,25 @@ export function markPrimaryReadFailed(resource,error){
 }
 export function markPrimaryReadSucceeded(resource){
   const key=String(resource||'public-read');
-  if(!failures.delete(key))return;
+  // A healthy primary read means any stale backup-failure record for this
+  // same resource is no longer relevant to the overall status.
+  const hadPrimary=failures.delete(key);
+  const hadBackup=backupFailures.delete(key);
+  if(!hadPrimary&&!hadBackup)return;
+  emit();
+}
+export function markBackupReadFailed(resource,error){
+  const key=String(resource||'public-read');
+  const existing=backupFailures.get(key);
+  backupFailures.set(key,{
+    message:String(error?.message||error||'Backup public read failed'),
+    since:existing?.since||new Date().toISOString()
+  });
+  emit();
+}
+export function markBackupReadSucceeded(resource){
+  const key=String(resource||'public-read');
+  if(!backupFailures.delete(key))return;
   emit();
 }
 export function getDbSourceStatus(){return current;}

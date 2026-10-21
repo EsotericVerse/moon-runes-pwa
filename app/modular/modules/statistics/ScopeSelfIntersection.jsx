@@ -1,6 +1,7 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
 import {useUiLocale,useUiSection} from '../../../i18n/ui-locale';
+import {useUiText} from '../../../i18n/UiText';
 import {translateUiField,registerDefaultSection} from '../../../i18n/ui-copy';
 import selfIntersectionZh from '../../../i18n/sections/uiExtra.selfIntersection.zh_tw.js';
 registerDefaultSection('uiExtra.selfIntersection',selfIntersectionZh);
@@ -37,6 +38,7 @@ function canonicalBucket(day,unit){
 export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
   useUiSection('uiExtra.selfIntersection');
   const {locale,copy}=useUiLocale();
+  const t=useUiText();
   const l=copy.uiExtra.selfIntersection;
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
@@ -165,7 +167,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           </label>
           <label><span><FieldText text="圖表"/></span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{translateUiField(locale,label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
             </select>
           </label>
           <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>

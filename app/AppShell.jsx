@@ -44,10 +44,12 @@ function DataSourceStatus(){
   // always has this section synchronously via registerDefaultSection.
   const section=copy.uiExtra.dataSourceStatus||{};
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
-  const current=status.degraded
-    ?`${section.backup||''}（${status.backupLabel}）`
-    :`${section.primary||''}（${status.primaryLabel}）`;
-  return <div className={'scope-data-source-global'+(status.degraded?' is-backup':'')}>
+  const current=status.unavailable
+    ?`${section.unavailable||''}`
+    :status.degraded
+      ?`${section.backup||''}（${status.backupLabel}）`
+      :`${section.primary||''}（${status.primaryLabel}）`;
+  return <div className={'scope-data-source-global'+(status.unavailable?' is-unavailable':status.degraded?' is-backup':'')}>
     <details className="scope-data-source-details" open={status.degraded||undefined}>
       <summary>{section.detailsTitle}</summary>
       <div className="scope-data-source-values">
@@ -56,7 +58,9 @@ function DataSourceStatus(){
         <span><FieldText text="目前使用："/>{current}</span>
       </div>
     </details>
-    {status.degraded?<span role="status"><FieldText text="備援資料可能有同步時間差。"/></span>:null}
+    {status.unavailable
+      ?<span role="status"><FieldText text="主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。"/></span>
+      :status.degraded?<span role="status"><FieldText text="備援資料可能有同步時間差。"/></span>:null}
   </div>;
 }
 
