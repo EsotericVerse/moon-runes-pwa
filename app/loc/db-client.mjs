@@ -18,16 +18,30 @@ configureDbSourceLabels(adapter.primarySourceLabel||'Primary',adapter.backupSour
 // exists or branch on scope id -- they keep calling dbPublicClient /
 // dbAuthClient / insertRows / readScopeStatistics / etc. exactly as today.
 const localAdapter=createLocalSqliteAdapter();
-function isLocalRelation(table){
+// `runes`/`runes_etc`/`runes_group` is a BARE table name collision: the
+// on-device "local" Scope plans its own read-only copy of these under that
+// same name (see local-sqlite.mjs's header comment), but the live,
+// pre-existing `silver.runes*` tables -- read by the whole Rune feature
+// (draw, directory, 3D library, daily log, game board, management panel)
+// site-wide, today -- share the exact same bare name. Matching on name
+// alone silently redirected every one of those production reads to the
+// empty on-device SQLite file (confirmed: silver.runes_group/runes/runes_etc
+// instead of Supabase), breaking every rune draw.
+// `local`/`local_*` has no such collision (nothing else in the app uses
+// those names), so only the runes* tables need the schema check: they only
+// ever route locally under the Scope's own `local` schema, never `silver`.
+function isLocalRelation(table,schemaName){
   const name=String(table||'').split('.').pop();
-  return name==='local'||name.startsWith('local_')||name==='runes'||name==='runes_etc'||name==='runes_group';
+  if(name==='local'||name.startsWith('local_'))return true;
+  if(name==='runes'||name==='runes_etc'||name==='runes_group')return schemaName==='local';
+  return false;
 }
 function routedSchema(schemaName,cloudSchema){
   const localSchema=localAdapter.publicClient.schema(schemaName);
   return {
-    from(table){return isLocalRelation(table)?localSchema.from(table):cloudSchema.from(table);},
+    from(table){return isLocalRelation(table,schemaName)?localSchema.from(table):cloudSchema.from(table);},
     rpc(name,args={},options={}){
-      const toLocal=name==='management_write'?isLocalRelation(args?.p_table):String(args?.p_scope_id||'')==='local';
+      const toLocal=name==='management_write'?isLocalRelation(args?.p_table,schemaName):String(args?.p_scope_id||'')==='local';
       return toLocal?localSchema.rpc(name,args):cloudSchema.rpc(name,args,options);
     }
   };
