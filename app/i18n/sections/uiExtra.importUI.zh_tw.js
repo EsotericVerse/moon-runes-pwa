@@ -89,7 +89,13 @@ export default {
     "target_id": "目標關聯",
     "ref_id": "參照關聯",
     "searchable": "公開搜尋",
-    "statistics_able": "納入統計"
+    "statistics_able": "納入統計",
+    "media_link": "Media Link",
+    "media": "Media",
+    "media_type": "Media Type",
+    "galaxy_link": "Galaxy Link",
+    "meta_tags": "Meta Tags",
+    "rune_references": "Rune References"
   },
   "formatSummary": "匯入格式設定（共用於 JSON Import／Source Refresh）",
   "recordPath": "資料陣列路徑（預設支援根陣列／items／posts／data／records）",
