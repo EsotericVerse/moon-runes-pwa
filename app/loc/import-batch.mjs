@@ -18,7 +18,8 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   source_id:['source_id'],
   target_id:['target_id'],
   ref_id:['ref_id'],
-  searchable:['searchable','search']
+  searchable:['searchable','search'],
+  statistics_able:['statistics_able','statistics']
 });
 
 
