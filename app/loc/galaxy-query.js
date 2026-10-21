@@ -3,7 +3,7 @@
 
 import {StatisticsFacets} from './statistics-facets';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
-import {DEFAULT_LIST_BATCH_SIZE} from './list-loading-contract.mjs';
+import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';

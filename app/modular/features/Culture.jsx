@@ -34,7 +34,7 @@ import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
-import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/list-loading-contract.mjs';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 const LrunesDailyCulturePanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyCulturePanel),{loading:()=>null});
 const LocItemConfluence=dynamic(()=>import('./LocItemConfluence'),{loading:()=>null});
