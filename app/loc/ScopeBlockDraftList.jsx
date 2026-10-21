@@ -36,7 +36,8 @@ function stripInlineImage(value){
 
 export default function ScopeBlockDraftList({
   slots,scopeId,pageName,allowDelete=true,allowEntities=true,allowImages=true,
-  editEyebrow=true,canAddBlock=false,onDone,onCancel
+  editEyebrow=true,canAddBlock=false,slotClassName='loc-card',editSlotClassName='',
+  onDone,onCancel
 }){
   useUiSection('uiExtra.editBlocks');
   useUiSection('uiExtra.frameEditor');
@@ -239,7 +240,7 @@ export default function ScopeBlockDraftList({
   function renderDraft(draft,index,visibleDrafts){
     const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
     const image=isHomeFrame?resolveHomeImage(draft,scopeId):null;
-    return <section className="loc-card scope-editable-block scope-block-draft" key={draft.uid}>
+    return <section className={(editSlotClassName||slotClassName)+' scope-editable-block scope-block-draft'} key={draft.uid}>
       <div className="scope-inline-editbar">
         {visibleDrafts.length>1?<button type="button" className="loc-button" disabled={busy||index===0} onClick={()=>moveBlock(draft.uid,-1)}><UiText id="uiExtra.editBlocks.moveUp"/></button>:null}
         {visibleDrafts.length>1?<button type="button" className="loc-button" disabled={busy||index===visibleDrafts.length-1} onClick={()=>moveBlock(draft.uid,1)}><UiText id="uiExtra.editBlocks.moveDown"/></button>:null}
@@ -309,12 +310,16 @@ export default function ScopeBlockDraftList({
         </div>
       </fieldset>:null}
       {allowEntities?renderDraftEntities(draft):null}
-      {draft._deleted?<p className="scope-status scope-error"><UiText id="uiExtra.editBlocks.remove"/></p>:null}
     </section>;
   }
 
+  // No wrapping element here: the drafts render as direct children of
+  // whatever grid/list container the caller already wraps around the
+  // normal display slots, so each page's own CSS (grid-direct-child
+  // sizing, card styling) still matches during editing instead of landing
+  // one DOM level too deep.
   const visibleDrafts=drafts.filter(draft=>!draft._deleted);
-  return <div className="scope-block-draft-list">
+  return <>
     {visibleDrafts.map((draft,index)=>renderDraft(draft,index,visibleDrafts))}
     {canAddBlock?<button type="button" className="loc-button scope-add-page-block" onClick={addBlock} disabled={busy}><UiText id="uiExtra.editBlocks.addBlock"/></button>:null}
     <div className="scope-block-draft-actions">
@@ -322,5 +327,5 @@ export default function ScopeBlockDraftList({
       <button type="button" className="loc-button" disabled={busy} onClick={()=>{if(window.confirm(t('uiExtra.editBlocks.cancelConfirm')))onCancel();}}><UiText id="uiExtra.editBlocks.cancel"/></button>
     </div>
     {message?<p className={'scope-status'+(message.startsWith(t('uiExtra.editBlocks.saveFailedPrefix'))?' scope-error':'')} role="status">{message}</p>:null}
-  </div>;
+  </>;
 }

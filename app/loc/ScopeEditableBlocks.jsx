@@ -181,6 +181,8 @@ export default function ScopeEditableBlocks({
         allowImages={allowImages}
         editEyebrow={editEyebrow}
         canAddBlock={canAddBlock}
+        slotClassName={slotClassName}
+        editSlotClassName={editSlotClassName}
         onCancel={()=>setEditMode(false)}
         onDone={notice=>{setEditMode(false);setMessage(notice)}}
       />:slots.map(slot=>{
