@@ -34,7 +34,7 @@ export default function GenericScopeHomeView(){
   return <main className="scope-main"><section className="scope-page">
     <header className="loc-card scope-hero"><p className="loc-eyebrow">Scope</p><h1>{scope.label}</h1><p>{scopeId}</p></header>
     <section className="loc-card">
-      <ScopeEditableBlocks scopeId={scopeId} page="index"/>
+      <ScopeEditableBlocks scopeId={scopeId} page="index" explicitEditButton/>
       <p className="scope-status">{registryRow?.domain||registryRow?.directory||''}</p>
       <div className="scope-result-links">
         <ScopeLink href={navigationHref(scopeId,'search',native)} native={native}><UiText id="nav.search"/></ScopeLink>

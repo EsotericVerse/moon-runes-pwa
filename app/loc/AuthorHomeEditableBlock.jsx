@@ -10,6 +10,7 @@ export default function AuthorHomeEditableBlocks(){
     scopeId="lo3rwang"
     page="index"
     allowEditing
+    explicitEditButton
     containerless
     maxBlocks={8}
     placeholderFirstOrder={1}

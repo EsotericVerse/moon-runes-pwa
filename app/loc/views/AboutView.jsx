@@ -8,6 +8,7 @@ export default function AboutView(){
       page="index"
       headingLevel={2}
       allowEditing
+      explicitEditButton
       containerless
       maxBlocks={8}
       placeholderFirstOrder={1}

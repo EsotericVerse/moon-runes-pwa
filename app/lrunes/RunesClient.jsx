@@ -66,6 +66,7 @@ export default function RunesClient(){
       containerless
       placeholderFirstOrder={1}
       renderDisplay={slot=>renderRuneHero(slot,native)}
+      explicitEditButton
       allowDelete={false}
       allowEntities={false}
       allowImages={false}

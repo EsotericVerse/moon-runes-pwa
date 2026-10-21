@@ -71,6 +71,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         editSlotClassName={heroClassName}
         placeholderFirstOrder={HomeBlock.FEATURE_HERO_ORDER[featureId]}
         allowEditing
+        explicitEditButton
         allowDelete={false}
         allowEntities={false}
         renderDisplay={slot=><FeatureHeroContent
