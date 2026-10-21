@@ -797,6 +797,16 @@ export default function Culture(){
 
 
             </>:<>
+              {account.canManageScopeSync(scopeId)?<button type='button' className='loc-button scope-edit-mode-toggle scope-culture-timeline-edit-toggle' onClick={()=>setTimelineEditMode(current=>{
+                const next=!current;
+                if(!next){
+                  setSelectedTimelineRecordId('');
+                  setSelectedTimelineDate('');
+                }
+                return next;
+              })}>
+                <UiText id={timelineEditMode?'uiExtra.cultureView.exitTimelineEdit':'uiExtra.cultureView.timelineEdit'}/>
+              </button>:null}
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
@@ -805,18 +815,7 @@ export default function Culture(){
                     <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                   </select></label>
-                  {account.canManageScopeSync(scopeId)?<>
-                  <button type='button' className='loc-button scope-edit-mode-toggle' onClick={()=>setTimelineEditMode(current=>{
-                    const next=!current;
-                    if(!next){
-                      setSelectedTimelineRecordId('');
-                      setSelectedTimelineDate('');
-                    }
-                    return next;
-                  })}>
-                    <UiText id={timelineEditMode?'uiExtra.editBlocks.exitEditMode':'uiExtra.editBlocks.enterEditMode'}/>
-                  </button>
-                  {timelineEditMode?<>
+                  {account.canManageScopeSync(scopeId)&&timelineEditMode?<>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><UiText id="uiExtra.cultureView.ddOfficialAnchor"/></button>
                   <select className='scope-select' aria-label={translateUiField(locale,'新增時間長河紀錄')} defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
@@ -830,7 +829,6 @@ export default function Culture(){
                     <option value='style_comment'><UiText id="uiExtra.cultureView.styleTag"/></option>
                   </select>
                   <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
-                  </>:null}
                   </>:null}
                 </div>
                 {timelineItems.length?<CultureTimeline

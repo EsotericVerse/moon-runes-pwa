@@ -1,4 +1,6 @@
 export default {
+  "timelineEdit": "時間編輯",
+  "exitTimelineEdit": "結束時間編輯",
   "timelineContent": "時間長河項目",
   "dailyRunes": "每日符文",
   "worksAndPeriods": "文化作品與時期",

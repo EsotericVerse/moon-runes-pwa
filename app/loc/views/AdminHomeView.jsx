@@ -70,7 +70,7 @@ export default function AdminHomeView(){
 
   return <section className="loc-view scope-management-page">
     <header className="loc-hero loc-hero-context admin-hero">
-      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><ScopeLink className="loc-button" href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></div>
+      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1></div>
       <div className="admin-main-select">
         <Select {...selectProps}
           inputId="admin-section-select"
