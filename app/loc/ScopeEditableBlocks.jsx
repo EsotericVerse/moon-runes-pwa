@@ -46,6 +46,7 @@ export default function ScopeEditableBlocks({
   headingLevel=3,
   renderDisplay=null,
   resolveSlotClassName=null,
+  resolveSlotStyle=null,
   maxBlocks=null,
   placeholderFirstOrder=null,
   containerless=false,
@@ -54,6 +55,7 @@ export default function ScopeEditableBlocks({
   allowEntities=true,
   allowInlineChildAdd=false,
   explicitEditButton=false,
+  toggleExtra=null,
   onSuggestionClick=null,
   allowImages=true,
   editEyebrow=true,
@@ -168,10 +170,18 @@ export default function ScopeEditableBlocks({
   // unified draft screen -- no per-block click target, no per-block button.
   if(explicitEditButton){
     const canAddBlock=!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks);
-    const contents=<>
-      {canEdit?<button type="button" className="loc-button scope-edit-mode-toggle" onClick={()=>setEditMode(current=>!current)}>
+    const toggleButton=canEdit||toggleExtra?<div className="scope-edit-mode-toggle" key="scope-edit-mode-toggle">
+      {canEdit?<button type="button" className="loc-button" onClick={()=>setEditMode(current=>!current)}>
         <UiText id={editMode?'uiExtra.editBlocks.exitEditMode':'uiExtra.editBlocks.enterEditMode'}/>
       </button>:null}
+      {toggleExtra}
+    </div>:null;
+    // The toggle (plus any caller-supplied extra action, e.g. a management
+    // link) sits together between the first and second blocks -- not a top
+    // banner, not stretched into the grid -- so it renders inline with the
+    // first visible slot rather than before the whole list.
+    const contents=<>
+      {editMode?toggleButton:null}
       {editMode?<ScopeBlockDraftList
         slots={slots}
         scopeId={scopeId}
@@ -185,18 +195,19 @@ export default function ScopeEditableBlocks({
         editSlotClassName={editSlotClassName}
         onCancel={()=>setEditMode(false)}
         onDone={notice=>{setEditMode(false);setMessage(notice)}}
-      />:slots.map(slot=>{
+      />:slots.flatMap((slot,index)=>{
         const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
-        if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
+        if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return [];
         if(onSuggestionClick&&!canEdit
             &&!recommendationTerm(slot.text)
             &&!recommendationTerm(slot.subtitle)
-            &&!slot.entities.some(entity=>recommendationTerm(entity.text)))return null;
+            &&!slot.entities.some(entity=>recommendationTerm(entity.text)))return [];
         const level=Number(headingLevel);
         const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
-        return <SlotTag
+        const node=<SlotTag
           id={slotId||undefined}
           className={(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName)+' scope-editable-block'+(empty?' is-empty':'')}
+          style={typeof resolveSlotStyle==='function'?resolveSlotStyle(slot):undefined}
           key={slot.uid||'order:'+slot.order}
           data-page-name={pageName}
           data-block-order={slot.order}
@@ -212,6 +223,7 @@ export default function ScopeEditableBlocks({
               {renderEntities(slot.entities)}
             </>}
         </SlotTag>;
+        return index===0&&toggleButton?[node,toggleButton]:[node];
       })}
       {!editMode&&message?<p className="scope-status" role="status">{message}</p>:null}
     </>;

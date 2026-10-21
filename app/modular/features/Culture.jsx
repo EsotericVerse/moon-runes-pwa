@@ -145,6 +145,11 @@ export default function Culture(){
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
+  // Selecting a river record must only ever show its summary. Opening the
+  // editor (and the river's own add/move/remove affordances) requires this
+  // explicit toggle - same reasoning as ScopeEditableBlocks' explicitEditButton:
+  // a tap meant to just read the river must never fall straight into edit mode.
+  const [timelineEditMode,setTimelineEditMode]=useState(false);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -801,6 +806,17 @@ export default function Culture(){
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                   </select></label>
                   {account.canManageScopeSync(scopeId)?<>
+                  <button type='button' className='loc-button scope-edit-mode-toggle' onClick={()=>setTimelineEditMode(current=>{
+                    const next=!current;
+                    if(!next){
+                      setSelectedTimelineRecordId('');
+                      setSelectedTimelineDate('');
+                    }
+                    return next;
+                  })}>
+                    <UiText id={timelineEditMode?'uiExtra.editBlocks.exitEditMode':'uiExtra.editBlocks.enterEditMode'}/>
+                  </button>
+                  {timelineEditMode?<>
                   <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><UiText id="uiExtra.cultureView.ddOfficialAnchor"/></button>
                   <select className='scope-select' aria-label={translateUiField(locale,'新增時間長河紀錄')} defaultValue='' onChange={event=>{
                     const recordType=event.currentTarget.value;
@@ -815,6 +831,7 @@ export default function Culture(){
                   </select>
                   <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
                   </>:null}
+                  </>:null}
                 </div>
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
@@ -823,34 +840,35 @@ export default function Culture(){
                   mode='overview'
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
-                  onTimeClick={account.canManageScopeSync(scopeId)?date=>{
+                  onTimeClick={account.canManageScopeSync(scopeId)&&timelineEditMode?date=>{
                     beginTimelineCreation('anchor',date);
                   }:null}
                   onSelect={item=>{
                     setSelectedTimelineInfo(item||null);
+                    if(!timelineEditMode)return;
                     const recordId=String(item?.recordId||'').trim();
                     if(!recordId)return;
                     setSelectedTimelineRecordId(recordId);
                     setSelectedTimelineDate('');
                   }}
-                  editable={account.canManageScopeSync(scopeId)}
+                  editable={account.canManageScopeSync(scopeId)&&timelineEditMode}
                   onAdd={null}
-                  onMove={account.canManageScopeSync(scopeId)?moveTimelineRecord:null}
-                  onUpdate={account.canManageScopeSync(scopeId)?(item,row)=>{
+                  onMove={account.canManageScopeSync(scopeId)&&timelineEditMode?moveTimelineRecord:null}
+                  onUpdate={account.canManageScopeSync(scopeId)&&timelineEditMode?(item,row)=>{
                     if(row?.recordId){
                       setSelectedTimelineRecordId(row.recordId);
                       setSelectedTimelineDate('');
                     }
                     return null;
                   }:null}
-                  onRemove={account.canManageScopeSync(scopeId)?removeTimelineRecord:null}
+                  onRemove={account.canManageScopeSync(scopeId)&&timelineEditMode?removeTimelineRecord:null}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
                 {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
                   <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
                   {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
                 </div>:null}
-                {account.canManageScopeSync(scopeId)&&Boolean(
+                {account.canManageScopeSync(scopeId)&&timelineEditMode&&Boolean(
                   selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate')
                 )?<CultureTimelineEditor
                   scopeId={scopeId}

@@ -1,0 +1,140 @@
+'use client';
+import {useEffect,useState} from 'react';
+import dynamic from 'next/dynamic';
+import UiText from '../../../i18n/UiText';
+import {selectScopeBlocks} from '../../scope-data';
+import {HomeBlock} from '../../home-block-model';
+
+// The four feature pages (文化/統計/搜尋/治理) each carry one shared hero:
+// a title/text block admin already edits from loc.lo3rwang.cc itself (via
+// the existing explicitEditButton editor on silver.loc_blocks, page
+// 'feature_hero' -- unchanged, stays exactly where it was), plus one
+// background image. The image differs by scope kind -- the LOC/group view
+// and a regular Scope view use two different pictures, 4 features x 2
+// kinds = 8 slots. No new table and no new column: all 8 are plain
+// silver.loc_blocks rows, told apart purely by page_name -- symmetric
+// "<kind>_<feature>" pages, one row each (block_order 1): group_culture /
+// scope_culture, group_statics / scope_statics, group_search /
+// scope_search, group_governance / scope_governance.
+const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
+
+const FEATURES=Object.freeze([
+  {id:'culture',label:'文化'},
+  {id:'statics',label:'統計'},
+  {id:'search',label:'搜尋'},
+  {id:'governance',label:'治理'}
+]);
+const SCOPE_VARIANTS=Object.freeze([
+  {kind:'group',label:'LOC（group）首頁圖'},
+  {kind:'scope',label:'一般 Scope（scope）首頁圖'}
+]);
+function pageFor(kind,feature){return kind+'_'+feature.id;}
+
+function imageUrlOf(row){
+  const image=row?.block_image;
+  if(!image)return '';
+  if(typeof image==='string'){
+    try{const parsed=JSON.parse(image);return String(parsed?.url||'');}catch{return '';}
+  }
+  return String(image?.url||'');
+}
+
+function ImageSlot({feature,variant}){
+  const page=pageFor(variant.kind,feature);
+  const order=1;
+  const [rows,setRows]=useState(null);
+  const [value,setValue]=useState('');
+  const [busy,setBusy]=useState(false);
+  const [status,setStatus]=useState('');
+  const [revision,setRevision]=useState(0);
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try{
+        const data=await selectScopeBlocks('loc',page);
+        if(!active)return;
+        setRows(data);
+        const row=(data||[]).find(item=>Number(item.block_order)===order);
+        setValue(imageUrlOf(row));
+      }catch(error){
+        if(active)setStatus(error?.message||'讀取失敗。');
+      }
+    })();
+    return()=>{active=false};
+  },[page,order,revision]);
+
+  async function save(){
+    setBusy(true);setStatus('');
+    try{
+      const {updateRows,insertRows}=await import('../../db-client.mjs');
+      const table='silver.loc_blocks';
+      const existing=(rows||[]).find(item=>Number(item.block_order)===order);
+      const trimmed=value.trim();
+      const image=trimmed?{source:'custom',url:trimmed}:null;
+      if(existing?.uid){
+        const {error}=await updateRows(table,{block_image:image},{filters:[{column:'uid',operator:'eq',value:existing.uid}]});
+        if(error)throw new Error(error.message||'儲存失敗。');
+      }else{
+        const {error}=await insertRows(table,[{page_name:page,block_order:order,block_image:image}]);
+        if(error)throw new Error(error.message||'儲存失敗。');
+      }
+      setStatus('已更新。');
+      setRevision(v=>v+1);
+    }catch(error){
+      setStatus(error?.message||'儲存失敗。');
+    }finally{
+      setBusy(false);
+    }
+  }
+
+  return <label>
+    <span>{variant.label}</span>
+    <div className="admin-theme-token-input">
+      <input
+        type="url"
+        placeholder="https://loc.lo3rwang.cc/pics/..."
+        value={value}
+        disabled={rows===null}
+        onChange={event=>setValue(event.target.value)}
+      />
+      <button type="button" className="loc-button" disabled={busy||rows===null} onClick={save}>
+        <UiText id="uiExtra.adminView.saveThemeSettings"/>
+      </button>
+    </div>
+    {status?<p className="scope-status" role="status">{status}</p>:null}
+  </label>;
+}
+
+export default function FeatureHeroImages(){
+  return <section className="loc-card admin-workspace">
+    <h2>功能首頁圖設定</h2>
+    <p className="scope-status">
+      管理文化／統計／搜尋／治理四個功能頁共用的 hero 標題文字，以及各自的首頁圖片
+      （LOC／一般 Scope 各一張，共 8 張）。圖片留空並儲存＝清除覆蓋，頁面改用既有的
+      預設圖片，不會變成沒有圖。
+    </p>
+    {FEATURES.map(feature=>{
+      const order=HomeBlock.FEATURE_HERO_ORDER[feature.id];
+      return <section className="loc-card scope-inline-card" key={feature.id}>
+        <h3>{feature.label}</h3>
+        <ScopeEditableBlocks
+          scopeId="loc"
+          page={HomeBlock.FEATURE_HERO_PAGE}
+          orders={[order]}
+          containerless
+          slotClassName="loc-card"
+          editSlotClassName="loc-card"
+          placeholderFirstOrder={order}
+          allowEditing
+          explicitEditButton
+          allowDelete={false}
+          allowEntities={false}
+        />
+        <div className="scope-management-fields">
+          {SCOPE_VARIANTS.map(variant=><ImageSlot feature={feature} variant={variant} key={variant.kind}/>)}
+        </div>
+      </section>;
+    })}
+  </section>;
+}

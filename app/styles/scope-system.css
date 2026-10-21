@@ -230,6 +230,7 @@
 .scope-stat-domain-heading h2{margin:.15rem 0 .4rem}
 .scope-stat-domain-heading p{margin:0;color:var(--scope-muted)}
 .scope-stat-section{display:grid;gap:1rem;min-width:0}
+.scope-stat-keyword-link{justify-items:start}
 .scope-media-meta-settings button{
   cursor:pointer;
 }

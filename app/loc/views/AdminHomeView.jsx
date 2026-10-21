@@ -10,6 +10,7 @@ registerDefaultSection('admin',adminZh);
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
+import Select from 'react-select';
 import {scopeHref} from '../../modular/scope-registry';
 import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
@@ -21,12 +22,17 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'sources',label:'群組來源分類'},
   {value:'database',label:'資料庫設定'},
   {value:'themes',label:'主題設定'},
-  {value:'blocklist',label:'系統黑名單'}
+  {value:'blocklist',label:'系統黑名單'},
+  {value:'featureHero',label:'功能首頁圖設定'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增人員'},
   {value:'group',label:'新增群組'}
 ]);
+const selectProps={
+  unstyled:true,isSearchable:false,
+  className:'loc-settings-select',classNamePrefix:'loc-settings-select'
+};
 
 function Login({account}){
   const UI_COPY=useUiCopy();
@@ -47,6 +53,7 @@ const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loa
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:()=>null});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:()=>null});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:()=>null});
+const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:()=>null});
 
 export default function AdminHomeView(){
   useUiSection('admin');
@@ -65,7 +72,14 @@ export default function AdminHomeView(){
     <header className="loc-hero loc-hero-context admin-hero">
       <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1><ScopeLink className="loc-button" href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></div>
       <div className="admin-main-select">
-        <select className="admin-native-select" value={selectedOption.value} onChange={e=>setSection(e.target.value||'registry')} aria-label={translateUiField(locale,'Admin 管理功能')}>{ADMIN_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select>
+        <Select {...selectProps}
+          inputId="admin-section-select"
+          instanceId="admin-section-select"
+          aria-label={translateUiField(locale,'Admin 管理功能')}
+          options={ADMIN_OPTIONS}
+          value={selectedOption}
+          onChange={option=>setSection(option?.value||'registry')}
+        />
       </div>
     </header>
     {section==='registry'?<AdminRegistryPanel/>:null}
@@ -73,5 +87,6 @@ export default function AdminHomeView(){
     {section==='database'?<DatabaseTarget/>:null}
     {section==='themes'?<ThemeEditor/>:null}
     {section==='blocklist'?<AdminEmailBlocklist/>:null}
+    {section==='featureHero'?<FeatureHeroImages/>:null}
   </section>;
 }

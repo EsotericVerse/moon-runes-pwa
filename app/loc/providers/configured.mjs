@@ -15,7 +15,7 @@ export function createConfiguredAdapter(){
   return {
     ...primary,
     backupPublicClient:backup,
-    primarySourceLabel:'Admin-selected',
-    backupSourceLabel:'Backup'
+    primarySourceLabel:'Supabase',
+    backupSourceLabel:'Neon'
   };
 }

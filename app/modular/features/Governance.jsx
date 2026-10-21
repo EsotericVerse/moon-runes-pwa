@@ -26,18 +26,15 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
 
 function GovernanceBlocks({scopeId,account,native}){
   const canManage=Boolean(account.user)&&account.canManageScopeSync(scopeId);
-  return <>
-    {canManage?<nav className="loc-card" aria-label="治理管理入口">
-      <ScopeLink className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)} native={native}>治理管理</ScopeLink>
-    </nav>:null}
-    <ScopeEditableBlocks
-      scopeId={scopeId}
-      page="governance"
-      className={'loc-grid two governance-grid'+(scopeId==='loc'?' governance-grid-loc':'')}
-      headingLevel={2}
-      explicitEditButton
-    />
-  </>;
+  const manageLink=canManage?<ScopeLink className="loc-button primary" href={navigationHref(scopeId,'governance/manage',native)} native={native}>治理管理</ScopeLink>:null;
+  return <ScopeEditableBlocks
+    scopeId={scopeId}
+    page="governance"
+    className={'loc-grid two governance-grid'+(scopeId==='loc'?' governance-grid-loc':'')}
+    headingLevel={2}
+    explicitEditButton
+    toggleExtra={manageLink}
+  />;
 }
 
 export default function Governance({section=null}){

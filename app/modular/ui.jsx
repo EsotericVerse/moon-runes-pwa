@@ -9,6 +9,15 @@ import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/db-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
 import {selectScopeBlocks} from '../loc/scope-data';
+
+function heroImageUrlOf(row){
+  const image=row?.block_image;
+  if(!image)return '';
+  if(typeof image==='string'){
+    try{const parsed=JSON.parse(image);return String(parsed?.url||'');}catch{return '';}
+  }
+  return String(image?.url||'');
+}
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
 // Shared display stays light: mount the editor only on pages that need it.
@@ -46,12 +55,29 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const locEditableHero=sharedEnabled&&scopeId==='loc';
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
+  // Admin-only override for the 8 feature-hero images (4 features x
+  // group/scope), stored as plain silver.loc_blocks rows on symmetric
+  // "<kind>_<feature>" pages (see admin-panels/FeatureHeroImages.jsx) --
+  // never a separate table or column, and never the shared hero text's own
+  // 'feature_hero' page. Missing row -- including while the query is
+  // loading -- just means "keep the existing hardcoded CSS image"; this
+  // never removes or hides the current artwork.
+  const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
+  const heroImageKind=scopeId==='loc'?'group':'scope';
   const sharedQuery=useQuery({
     queryKey:['scope-blocks','loc',HomeBlock.FEATURE_HERO_PAGE],
     queryFn:()=>selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE),
     staleTime:60_000,
     enabled:sharedEnabled&&!locEditableHero
   });
+  const heroImageQuery=useQuery({
+    queryKey:['scope-blocks','loc',heroImageKind+'_'+featureId],
+    queryFn:()=>selectScopeBlocks('loc',heroImageKind+'_'+featureId),
+    staleTime:60_000,
+    enabled:hasFeatureHero
+  });
+  const heroImageOverride=heroImageUrlOf((heroImageQuery.data||[])[0]);
+  const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=sharedEnabled&&!locEditableHero?HomeBlock.featureHeroFor(sharedQuery.data,featureId):null;
   const fallbackCopy={
     title:profile.title,
@@ -69,6 +95,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         slotTag="header"
         slotClassName={heroClassName}
         editSlotClassName={heroClassName}
+        resolveSlotStyle={()=>heroStyle}
         placeholderFirstOrder={HomeBlock.FEATURE_HERO_ORDER[featureId]}
         allowEditing
         explicitEditButton
@@ -82,7 +109,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
           description={slot.stored?slot.text:fallbackCopy.description}
           rich={slot.stored}
         />}
-      />:<header className={heroClassName} data-feature-hero-source={shared?'loc':'default'}>
+      />:<header className={heroClassName} style={heroStyle} data-feature-hero-source={shared?'loc':'default'}>
         <FeatureHeroContent
           scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
