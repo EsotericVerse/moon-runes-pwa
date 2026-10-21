@@ -142,8 +142,8 @@ export default function ScopeEditableBlocks({
         key={entity.uid}
         role={onSuggestionClick?'link':undefined}
         tabIndex={onSuggestionClick?0:undefined}
-        onKeyDown={onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}
-        onClick={onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.title||entity.text);}}:undefined}>
+        onKeyDown={onSuggestionClick?event=>{if(event.key==='Enter'&&!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.text);}}:undefined}
+        onClick={onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target,event.currentTarget)){event.stopPropagation();selectSuggestion(entity.text);}}:undefined}>
         {HomeBlock.childPresentation(entity.title)==='card'?<h4>{entity.title}</h4>:null}
         {entity.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>:null}
       </article>)}
