@@ -678,86 +678,6 @@ function DuplicateDetection({scopeId}){
   </div>;
 }
 
-function MediaRecordInsert({scopeId}){
-  const UI_COPY=useUiCopy();
-  const t=useUiText();
-  const account=useAccount();
-  const [draft,setDraft]=useState({
-    galaxy_link:'',
-    source_place:'',
-    media_type:'',
-    title:'',
-    url:'',
-    meta_tags:'',
-    createtime:''
-  });
-  const [status,setStatus]=useState('');
-  const [busy,setBusy]=useState(false);
-  if(!account.canManageScopeSync(scopeId))return null;
-
-  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
-
-  async function save(event){
-    event.preventDefault();
-    setBusy(true);setStatus('');
-    try{
-      const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
-      if(galaxyLink&&galaxyLink.length!==8)throw new Error(t('uiExtra.importUI.linkUidInvalid'));
-      const mediaType=repairMojibakeText(draft.media_type).trim();
-      if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
-      const metaTags=repairMojibakeText(draft.meta_tags).trim();
-      const mediaTitle=repairMojibakeText(draft.title).trim();
-      const sourcePlace=repairMojibakeText(draft.source_place).trim();
-      if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.mediaEncoding'));
-      if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
-      const record={
-        galaxy_link:galaxyLink||null,
-        source_place:sourcePlace||null,
-        media_type:mediaType,
-        title:mediaTitle||null,
-        url:String(draft.url||'').trim()||null,
-        meta_tags:metaTags,
-        createtime:iso(draft.createtime)
-      };
-      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
-      if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      await insertRows(galaxyMedia,[record]);
-      setStatus(t('uiExtra.importUI.mediaSaved'));
-      setDraft({
-        galaxy_link:'',
-            source_place:'',
-        media_type:'',
-        title:'',
-        url:'',
-        meta_tags:'',
-        createtime:''
-      });
-    }catch(error){setStatus(error?.message||t('uiExtra.importUI.mediaSaveFailed'));}
-    finally{setBusy(false);}
-  }
-
-  return <div className="scope-inline-card">
-    <h4>{UI_COPY.management.addMedia}</h4>
-    <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
-    <form onSubmit={save} className="scope-editor">
-      <div className="scope-stat-controls">
-        <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
-        <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
-        <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
-      </div>
-      <div className="scope-stat-controls">
-        <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
-      </div>
-      <label><UiText id="uiExtra.importUI.mediaTitle"/><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
-      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
-      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
-      <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
-      {status?<p className="scope-status">{status}</p>:null}
-    </form>
-  </div>;
-}
-
-
 export default function ManagementImportPanel({scopeId}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
@@ -777,7 +697,6 @@ export default function ManagementImportPanel({scopeId}){
     <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <DuplicateDetection scopeId={scopeId}/>
-    <MediaRecordInsert scopeId={scopeId}/>
     <button type="button" className="loc-button" aria-expanded={sunoOpen}
       onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
     {sunoOpen?<SunoImport scopeId={scopeId}/>:null}
