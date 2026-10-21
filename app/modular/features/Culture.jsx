@@ -733,6 +733,11 @@ export default function Culture(){
   }
 
   return <FeaturePage featureId="culture">
+    {!query.isPending&&!query.error&&hasTimelineSurface&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&account.canManageScopeSync(scopeId)?<button type='button' className='loc-button scope-edit-mode-toggle scope-culture-timeline-edit-toggle' onClick={()=>setTimelineEditMode(current=>{
+      const next=!current;
+      if(!next){setSelectedTimelineRecordId('');setSelectedTimelineDate('');}
+      return next;
+    })}><UiText id={timelineEditMode?'uiExtra.cultureView.exitTimelineEdit':'uiExtra.cultureView.timelineEdit'}/></button>:null}
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
       {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span><UiText id="uiExtra.cultureView.timelineContent"/></span>
         <select className='scope-select' value={lrunesView} onChange={event=>setLrunesView(event.target.value)}>
@@ -797,16 +802,6 @@ export default function Culture(){
 
 
             </>:<>
-              {account.canManageScopeSync(scopeId)?<button type='button' className='loc-button scope-edit-mode-toggle scope-culture-timeline-edit-toggle' onClick={()=>setTimelineEditMode(current=>{
-                const next=!current;
-                if(!next){
-                  setSelectedTimelineRecordId('');
-                  setSelectedTimelineDate('');
-                }
-                return next;
-              })}>
-                <UiText id={timelineEditMode?'uiExtra.cultureView.exitTimelineEdit':'uiExtra.cultureView.timelineEdit'}/>
-              </button>:null}
               <section className='scope-card scope-culture-structure-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
