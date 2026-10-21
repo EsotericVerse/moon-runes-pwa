@@ -26,7 +26,7 @@ const VISUALS=Object.freeze({
     '3d':dynamic(()=>import('./Rune3DLibrary'),{ssr:false})
   }
 });
-const VIEW_LABELS=Object.freeze({old:'舊版抽牌',2d:'2D 原創美術',3d:'3D 符文特效'});
+const VIEW_LABELS=Object.freeze({old:'舊版抽牌','2d':'2D 原創美術','3d':'3D 符文特效'});
 const TITLES=Object.freeze({duel:'符文抽牌',daily:'每日符文',list:'符文圖鑑'});
 
 function canonicalView(queryValue,defaultView,allowed){
