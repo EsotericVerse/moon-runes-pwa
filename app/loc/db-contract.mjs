@@ -348,22 +348,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function syncManageScopeRow(values,{scopeId,email}={}){
-    const result=await managementWrite({
-      p_table:'silver.manage',
-      p_operation:'scope_sync',
-      p_rows:null,
-      p_values:values||{},
-      p_filters:[
-        {column:'id',operator:'eq',value:String(scopeId||'')},
-        {column:'email',operator:'eq',value:String(email||'')}
-      ]
-    });
-    const affected=Number(result?.count||0);
-    if(affected<1)throw new Error('Scope mapping update affected 0 rows');
-    return {...result,count:affected};
-  }
-
   async function logSearchKeyword(scopeId,queryText){
     const scope=String(scopeId||'').trim().toLowerCase();
     const query=String(queryText||'').trim();
@@ -394,7 +378,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,syncManageScopeRow,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
