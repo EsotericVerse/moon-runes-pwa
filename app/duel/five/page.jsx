@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'五卡抽籤｜月之符文',
-  description:'以兩張成因、一張意外變化與兩張現在狀況，組成五卡的完整籤詩結構。',
-  path:'/duel/five/'
+  title:'符文抽牌 · 五張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/five/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="5card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=5card" label="前往符文抽牌"/>;}

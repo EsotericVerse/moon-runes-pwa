@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'九卡抽籤｜月之符文',
-  description:'以 3 / 3 / 3 結構抽取九張符文，三段各由三張符文構成。',
-  path:'/duel/nine/'
+  title:'符文抽牌 · 九張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/nine/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="9card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=9card" label="前往符文抽牌"/>;}

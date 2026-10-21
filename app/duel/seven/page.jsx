@@ -1,12 +1,6 @@
-import DuelDrawPage from '../DuelDrawPage';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
-
 export const metadata=lunarunesMetadata({
-  title:'七卡抽籤｜月之符文',
-  description:'以 2 / 3 / 2 結構抽取七張符文，中段以三張變數展開。',
-  path:'/duel/seven/'
+  title:'符文抽牌 · 七張 · 已搬家｜月之符文',description:'此頁已整合至正式抽牌頁。',path:'/duel/seven/',noIndex:true
 });
-
-export default function DuelPage(){
-  return <DuelDrawPage drawKey="7card"/>;
-}
+export default function Page(){return <RuneLegacyRedirect target="/card/duel/?d=old&spread=7card" label="前往符文抽牌"/>;}

@@ -1,6 +1,6 @@
-import RuneUnifiedView from '../../lrunes/RuneUnifiedView';
+import RuneLegacyRedirect from '../../lrunes/RuneLegacyRedirect';
 import {lunarunesMetadata} from '../../seo/metadata';
 export const metadata=lunarunesMetadata({
-  title:'符文圖鑑 · 3D 相容入口｜月之符文',description:'既有 3D 圖鑑連結仍可使用，並可在同一頁切換 2D 原創符文卡圖。',path:'/card3d/list/'
+  title:'符文圖鑑 · 已搬家｜月之符文',description:'此頁已整合至正式符文圖鑑頁。',path:'/card3d/list/',noIndex:true
 });
-export default function Page(){return <RuneUnifiedView feature="list" defaultView="3d"/>;}
+export default function Page(){return <RuneLegacyRedirect target="/card/list/" label="前往符文圖鑑"/>;}
