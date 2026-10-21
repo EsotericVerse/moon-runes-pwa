@@ -1,5 +1,8 @@
 export default {
   "edit": "編輯",
+  "enterEditMode": "進入編輯模式",
+  "exitEditMode": "結束編輯模式",
+  "cancelConfirm": "確定要放棄所有未儲存的修改嗎？",
   "editSuggestion": "編輯搜尋建議",
   "moving": "正在調整區塊順序…",
   "moved": "區塊順序已儲存。其他未儲存的文字修改仍留在草稿。",

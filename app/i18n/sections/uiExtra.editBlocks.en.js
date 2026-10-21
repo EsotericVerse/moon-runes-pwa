@@ -1,5 +1,8 @@
 export default {
   "edit": "Edit",
+  "enterEditMode": "Enter edit mode",
+  "exitEditMode": "Exit edit mode",
+  "cancelConfirm": "Discard every unsaved change?",
   "editSuggestion": "Edit search suggestions",
   "moving": "Reordering blocks…",
   "moved": "Block order saved. Unsaved edits remain in the draft.",

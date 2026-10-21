@@ -1,5 +1,5 @@
 'use client';
-import UiText,{useUiText} from '../i18n/UiText';
+import UiText from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {useUiSection} from '../i18n/ui-locale';
 import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
@@ -11,6 +11,7 @@ import {useAppBootstrap} from './app-bootstrap';
 import {useAccount} from './use-account';
 // Read-only home blocks must not eagerly import editor UI or BlockNote.
 const ScopeBlockEditorSession=dynamic(()=>import('./ScopeBlockEditorSession'),{loading:()=>null});
+const ScopeBlockDraftList=dynamic(()=>import('./ScopeBlockDraftList'),{loading:()=>null});
 import {isInteractiveContentTarget} from './content-policy.js';
 
 import {HomeBlock} from './home-block-model';
@@ -60,7 +61,6 @@ export default function ScopeEditableBlocks({
   slotId=''
 }){
   useUiSection('uiExtra.editBlocks');
-  const t=useUiText();
   const account=useAccount();
   const pageName=pageNameOf(page);
   // Same (scopeId, pageName) request AppShell already makes for this route's
@@ -75,6 +75,12 @@ export default function ScopeEditableBlocks({
   );
   const [editingSlot,setEditingSlot]=useState(null);
   const [message,setMessage]=useState('');
+  // explicitEditButton means "one single page-level entry point, not one
+  // button or one click target per block". Toggling it on swaps the whole
+  // block list for a unified draft screen (ScopeBlockDraftList); until then
+  // the page behaves exactly like a read-only visitor sees it -- no click
+  // handler, no hover affordance, nothing to accidentally trigger.
+  const [editMode,setEditMode]=useState(false);
 
   const slots=useMemo(()=>{
     const rows=Array.isArray(blocks)?blocks:[];
@@ -157,6 +163,59 @@ export default function ScopeEditableBlocks({
   }
   const movableSlots=!normalizedOrders.length&&allowDelete?slots.filter(slot=>slot.stored):[];
   const SlotTag=slotTag==='header'?'header':'section';
+
+  // explicitEditButton: one page-level toggle swaps the whole list for the
+  // unified draft screen -- no per-block click target, no per-block button.
+  if(explicitEditButton){
+    const canAddBlock=!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks);
+    const contents=<>
+      {canEdit?<button type="button" className="loc-button scope-edit-mode-toggle" onClick={()=>setEditMode(current=>!current)}>
+        <UiText id={editMode?'uiExtra.editBlocks.exitEditMode':'uiExtra.editBlocks.enterEditMode'}/>
+      </button>:null}
+      {editMode?<ScopeBlockDraftList
+        slots={slots}
+        scopeId={scopeId}
+        pageName={pageName}
+        allowDelete={allowDelete}
+        allowEntities={allowEntities}
+        allowImages={allowImages}
+        editEyebrow={editEyebrow}
+        canAddBlock={canAddBlock}
+        onCancel={()=>setEditMode(false)}
+        onDone={notice=>{setEditMode(false);setMessage(notice)}}
+      />:slots.map(slot=>{
+        const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
+        if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return null;
+        if(onSuggestionClick&&!canEdit
+            &&!recommendationTerm(slot.text)
+            &&!recommendationTerm(slot.subtitle)
+            &&!slot.entities.some(entity=>recommendationTerm(entity.text)))return null;
+        const level=Number(headingLevel);
+        const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
+        return <SlotTag
+          id={slotId||undefined}
+          className={(typeof resolveSlotClassName==='function'?resolveSlotClassName(slot):slotClassName)+' scope-editable-block'+(empty?' is-empty':'')}
+          key={slot.uid||'order:'+slot.order}
+          data-page-name={pageName}
+          data-block-order={slot.order}
+          onClick={onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
+        >
+          {typeof renderDisplay==='function'
+            ?renderDisplay(slot)
+            :<>
+              {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
+              {slot.title?<Heading>{slot.title}</Heading>:null}
+              {slot.subtitle?<p className="loc-subtitle scope-block-subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
+              {slot.text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:slot.text}}/>:null}
+              {renderEntities(slot.entities)}
+            </>}
+        </SlotTag>;
+      })}
+      {!editMode&&message?<p className="scope-status" role="status">{message}</p>:null}
+    </>;
+    return containerless?contents:<div className={'scope-editable-block-grid '+className}>{contents}</div>;
+  }
+
   const contents=<>
     {slots.map(slot=>{
       const active=editingSlot?.uid&&(editingSlot.uid===slot.uid||(!slot.stored&&editingSlot.order===slot.order));
@@ -177,7 +236,7 @@ export default function ScopeEditableBlocks({
         key={slot.uid||'order:'+slot.order}
         data-page-name={pageName}
         data-block-order={slot.order}
-        onClickCapture={canEdit&&!active&&!explicitEditButton?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
+        onClickCapture={canEdit&&!active?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
         onClick={!active&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
       >
         {active?<ScopeBlockEditorSession
@@ -196,7 +255,6 @@ export default function ScopeEditableBlocks({
           onClose={cancel}
           onDone={notice=>{setEditingSlot(null);setMessage(notice)}}
         />:<>
-          {canEdit&&explicitEditButton?<button type="button" className="loc-button scope-search-block-edit" onClick={()=>begin(slot)} aria-label={t('uiExtra.editBlocks.editSuggestion')}><UiText id="uiExtra.editBlocks.edit"/></button>:null}
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
             :<>
@@ -212,7 +270,7 @@ export default function ScopeEditableBlocks({
             onClick={()=>beginWithChild(slot)}
             disabled={Boolean(editingSlot)}
           ><UiText id="uiExtra.editBlocks.addChild"/></button>:null}
-          {empty&&canEdit&&!explicitEditButton?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
+          {empty&&canEdit?<p className="scope-status"><UiText id="uiExtra.editBlocks.clickToCreate"/></p>:null}
         </>}
       </SlotTag>;
     })}

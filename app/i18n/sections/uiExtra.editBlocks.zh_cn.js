@@ -1,5 +1,8 @@
 export default {
   "edit": "编辑",
+  "enterEditMode": "进入编辑模式",
+  "exitEditMode": "结束编辑模式",
+  "cancelConfirm": "确定要放弃所有未保存的修改吗？",
   "editSuggestion": "编辑搜索建议",
   "moving": "正在调整区块顺序…",
   "moved": "区块顺序已保存。其他未保存的文字修改仍保留在草稿中。",

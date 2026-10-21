@@ -1,5 +1,8 @@
 export default {
   "edit": "編集",
+  "enterEditMode": "編集モードに入る",
+  "exitEditMode": "編集モードを終了",
+  "cancelConfirm": "未保存の変更をすべて破棄しますか？",
   "editSuggestion": "検索候補を編集",
   "moving": "ブロックの順序を変更中…",
   "moved": "ブロックの順序を保存しました。未保存の文字変更は下書きに残っています。",
