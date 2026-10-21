@@ -142,7 +142,8 @@ function DrawStage({items,onSelect,onBackgroundClick,reduced,daily=false,chargin
         <div className="rune-art-empty-ring" aria-hidden="true">☾</div>
         {daily?<button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
           disabled={!onBackgroundClick}>觸碰月光，召喚每日符文</button>:
-          <p className="rune-art-empty-hint">按下「招喚下一枚符文」，讓月光揭開卡片。</p>}
+          <button className="rune-art-invoke" type="button" onClick={()=>onBackgroundClick?.()}
+            disabled={!onBackgroundClick}>按下「招喚下一枚符文」，讓月光揭開卡片。</button>}
         {actions?<div className="rune-art-ritual-actions">{actions}</div>:null}
       </motion.div>}
     </AnimatePresence>
