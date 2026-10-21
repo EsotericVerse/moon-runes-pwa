@@ -52,9 +52,9 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
   const [focusId,setFocusId]=useState(null);
   const [showCardInfo,setShowCardInfo]=useState(false);
   const [playback,setPlayback]=useState(0);
-  const [textureQuality,setTextureQuality]=useState('original');
+  const [textureQuality,setTextureQuality]=useState('hd256');
   useEffect(()=>{
-    setTextureQuality(new URLSearchParams(window.location.search).get('texture')==='hd256'?'hd256':'original');
+    setTextureQuality(new URLSearchParams(window.location.search).get('texture')==='original'?'original':'hd256');
   },[]);
   const reducedMotion=useReducedMotion();
   const [status,setStatus]=useState('loading');
