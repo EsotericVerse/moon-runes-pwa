@@ -24,8 +24,8 @@ import ScopeLink from './ScopeLink';
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 
 // One visual header contract. Every feature page -- LOC/group included --
-// renders this as a read-only projection of the shared 'feature_hero' LOC
-// records; editing (text and the 8 hero images) happens only from the admin
+// renders this as a read-only projection of the group_<feature> LOC record;
+// editing (text and the 8 hero images) happens only from the admin
 // 功能首頁圖設定 panel (admin-panels/FeatureHeroImages.jsx), never inline here.
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   const sign=HomeBlock.heroExtraFor(scopeId);
@@ -55,29 +55,33 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
   // Admin-only override for the 8 feature-hero images (4 features x
-  // group/scope), stored as plain silver.loc_blocks rows on symmetric
-  // "<kind>_<feature>" pages (see admin-panels/FeatureHeroImages.jsx) --
-  // never a separate table or column, and never the shared hero text's own
-  // 'feature_hero' page. Missing row -- including while the query is
-  // loading -- just means "keep the existing hardcoded CSS image"; this
-  // never removes or hides the current artwork.
+  // group/scope), stored as plain silver.loc_blocks rows on the same
+  // symmetric "<kind>_<feature>" pages as the shared hero text (see
+  // admin-panels/FeatureHeroImages.jsx) -- never a separate table or
+  // column. Missing row -- including while the query is loading -- just
+  // means "keep the existing hardcoded CSS image"; this never removes or
+  // hides the current artwork.
   const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
-  const heroImageKind=scopeId==='loc'?'group':'scope';
-  const sharedQuery=useQuery({
-    queryKey:['scope-blocks','loc',HomeBlock.FEATURE_HERO_PAGE],
-    queryFn:()=>selectScopeBlocks('loc',HomeBlock.FEATURE_HERO_PAGE),
+  // group_<feature> carries both LOC's own hero text (admin-edited, read by
+  // every Scope) and LOC's own hero image override, so loc viewers need only
+  // this one query; a non-loc Scope view also needs its own scope_<feature>
+  // row for its image override (that row never carries text).
+  const groupHeroQuery=useQuery({
+    queryKey:['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
+    queryFn:()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),
     staleTime:60_000,
-    enabled:sharedEnabled
+    enabled:sharedEnabled||hasFeatureHero
   });
-  const heroImageQuery=useQuery({
-    queryKey:['scope-blocks','loc',heroImageKind+'_'+featureId],
-    queryFn:()=>selectScopeBlocks('loc',heroImageKind+'_'+featureId),
+  const scopeHeroImageQuery=useQuery({
+    queryKey:['scope-blocks','loc','scope_'+featureId],
+    queryFn:()=>selectScopeBlocks('loc','scope_'+featureId),
     staleTime:60_000,
-    enabled:hasFeatureHero
+    enabled:hasFeatureHero&&scopeId!=='loc'
   });
-  const heroImageOverride=heroImageUrlOf((heroImageQuery.data||[])[0]);
+  const heroImageRow=(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
+  const heroImageOverride=heroImageUrlOf(heroImageRow);
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
-  const shared=sharedEnabled?HomeBlock.featureHeroFor(sharedQuery.data,featureId):null;
+  const shared=sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
   const fallbackCopy={
     title:profile.title,
     subtitle:finalSubtitle,

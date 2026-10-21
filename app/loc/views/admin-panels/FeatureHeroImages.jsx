@@ -6,16 +6,17 @@ import {selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 
 // The four feature pages (文化/統計/搜尋/治理) each carry one shared hero:
-// a title/text block admin already edits from loc.lo3rwang.cc itself (via
-// the existing explicitEditButton editor on silver.loc_blocks, page
-// 'feature_hero' -- unchanged, stays exactly where it was), plus one
-// background image. The image differs by scope kind -- the LOC/group view
-// and a regular Scope view use two different pictures, 4 features x 2
-// kinds = 8 slots. No new table and no new column: all 8 are plain
-// silver.loc_blocks rows, told apart purely by page_name -- symmetric
-// "<kind>_<feature>" pages, one row each (block_order 1): group_culture /
-// scope_culture, group_statics / scope_statics, group_search /
-// scope_search, group_governance / scope_governance.
+// a title/text block admin edits from loc.lo3rwang.cc itself (the
+// explicitEditButton editor below, on the group_<feature> page -- the same
+// page its own image override lives on), plus one background image that
+// differs by scope kind -- the LOC/group view and a regular Scope view use
+// two different pictures, 4 features x 2 kinds = 8 slots. No new table and
+// no new column: all 8 are plain silver.loc_blocks rows, told apart purely
+// by page_name -- symmetric "<kind>_<feature>" pages, one row each
+// (block_order always 1, never repurposed to mean "which feature"):
+// group_culture / scope_culture, group_statics / scope_statics,
+// group_search / scope_search, group_governance / scope_governance. Only
+// the group_<feature> row ever carries text; scope_<feature> is image-only.
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
 const FEATURES=Object.freeze([
@@ -115,17 +116,16 @@ export default function FeatureHeroImages(){
       預設圖片，不會變成沒有圖。
     </p>
     {FEATURES.map(feature=>{
-      const order=HomeBlock.FEATURE_HERO_ORDER[feature.id];
       return <section className="loc-card scope-inline-card" key={feature.id}>
         <h3>{feature.label}</h3>
         <ScopeEditableBlocks
           scopeId="loc"
-          page={HomeBlock.FEATURE_HERO_PAGE}
-          orders={[order]}
+          page={HomeBlock.featureHeroPageFor(feature.id)}
+          orders={[1]}
           containerless
           slotClassName="loc-card"
           editSlotClassName="loc-card"
-          placeholderFirstOrder={order}
+          placeholderFirstOrder={1}
           allowEditing
           explicitEditButton
           allowDelete={false}

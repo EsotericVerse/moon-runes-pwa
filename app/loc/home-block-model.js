@@ -100,11 +100,16 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
   return text.startsWith(heading)?text.slice(heading.length):text;
 }
 
-// The four feature headers share one LOC-managed data source; LOC edits in place,
-// other Scopes consume its read-only presentation.
-// Rows live on silver.loc_blocks.page_name='feature_hero', never on 'index'.
+// The four feature headers share LOC-managed hero rows on silver.loc_blocks,
+// one page per feature -- page_name='group_<feature>', block_order always 1
+// (the same symmetric "<kind>_<feature>" naming already used for the 8
+// feature-hero images, see admin-panels/FeatureHeroImages.jsx). block_order
+// is purely "which block within this page" -- it never stands in for which
+// feature; the page_name already does that job. LOC edits the group_<feature>
+// row's text in place from the admin 功能首頁圖設定 panel; every Scope reads
+// it read-only. The matching scope_<feature> row (see FeatureHeroImages.jsx)
+// only ever carries that Scope-view's image override, never text.
 // LunaRunes deliberately remains on its current read-only localized header.
-export const FEATURE_HERO_PAGE='feature_hero';
 export const FEATURE_HERO_ORDER=Object.freeze({
   culture:1,
   statics:2,
@@ -113,10 +118,12 @@ export const FEATURE_HERO_ORDER=Object.freeze({
 });
 export const FEATURE_HERO_IDS=Object.freeze(Object.keys(FEATURE_HERO_ORDER));
 
-export function sharedFeatureHeroFor(rows,featureId){
-  const order=FEATURE_HERO_ORDER[String(featureId||'')];
-  if(!order)return null;
-  const row=(Array.isArray(rows)?rows:[]).find(item=>item?.page_name===FEATURE_HERO_PAGE&&Number(item.block_order)===order);
+export function featureHeroPageFor(featureId){
+  return 'group_'+String(featureId||'');
+}
+
+export function sharedFeatureHeroFor(rows){
+  const row=(Array.isArray(rows)?rows:[]).find(item=>Number(item?.block_order)===1);
   if(!row)return null;
   return {
     eyebrow:String(row.block_eyebrow||'').trim(),
@@ -156,7 +163,7 @@ export const HomeBlock=Object.freeze({
   childPresentation,
   removeDuplicatedLegacySubtitle,
   plainBlockLine,
-  FEATURE_HERO_PAGE,
+  featureHeroPageFor,
   FEATURE_HERO_ORDER,
   FEATURE_HERO_IDS,
   featureHeroFor:sharedFeatureHeroFor,
