@@ -35,6 +35,7 @@ function GovernanceBlocks({scopeId,account,native}){
       page="governance"
       className={'loc-grid two governance-grid'+(scopeId==='loc'?' governance-grid-loc':'')}
       headingLevel={2}
+      explicitEditButton
     />
   </>;
 }
