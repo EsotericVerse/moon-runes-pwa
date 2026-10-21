@@ -7,7 +7,13 @@ import {dbPublicClient} from './db-client.mjs';
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
 // app-bootstrap request (see app/loc/app-bootstrap.js); there is no
 // standalone per-page RPC call for it any more.
-export const MANAGE_TABLE='silver.manage';
+// silver.manage 已停用：管理權限改由 silver.loc（main index table）的
+// manage_email/manage_role/galaxy_table/time_table/birthday 欄位提供，
+// 下面用 PostgREST column alias 把形狀對回舊版 silver.manage 查詢，
+// buildScopeData/scopeDataFromManageRows 完全不需要改動。
+export const MANAGE_TABLE='silver.loc';
+const MANAGE_COLUMNS='id,role:manage_role,galaxy:galaxy_table,time:time_table,birthday';
+const MANAGE_ROLE_COLUMN='manage_role';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
@@ -59,8 +65,8 @@ export function scopeDataFromManageRows(rows=[]){
 
 export async function selectManagedScopes(){
   const {rows}=await selectRows(MANAGE_TABLE,{
-    columns:'id,role,galaxy,time,birthday',
-    filters:[{column:'role',operator:'in',value:['admin','scope']}],
+    columns:MANAGE_COLUMNS,
+    filters:[{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
     offset:0
@@ -130,8 +136,8 @@ export async function selectManagedScope(scopeId){
   const id=String(scopeId||'').trim();
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
   const {rows}=await selectRows(MANAGE_TABLE,{
-    columns:'id,role,galaxy,time,birthday',
-    filters:[{column:'id',operator:'eq',value:id},{column:'role',operator:'in',value:['admin','scope']}],
+    columns:MANAGE_COLUMNS,
+    filters:[{column:'id',operator:'eq',value:id},{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
     offset:0

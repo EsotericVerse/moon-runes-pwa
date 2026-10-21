@@ -19,7 +19,7 @@ const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(m
 const ObjectEditor=dynamic(()=>import('../BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {ScopeFeatureToggles} from '../../modular/ui';
 import {
-  deleteScope,deleteRows,insertRows,dbAuthRelation,manageScopeRegistry,provisionScope,syncManageScopeRow,updateRows
+  deleteScope,dbAuthRelation,manageScopeRegistry,provisionScope,updateRows
 } from '../db-client.mjs';
 
 // Independent admin capabilities are loaded only for the selected workspace.
@@ -90,14 +90,29 @@ function useAdminScopeData(){
     let active=true;
     (async()=>{
       try{
-        const [mappingResult,registryResult]=await Promise.all([
-          dbAuthRelation('silver.manage').select('id,email,role,galaxy,time,birthday,Title_TW,Desc_TW').order('id',{ascending:true}).order('email',{ascending:true}),
-          dbAuthRelation('silver.scope_registry').select('scope_id,display_name,scope_kind,domain,directory,parent_scope_id,active,sort_order').order('sort_order',{ascending:true}).order('scope_id',{ascending:true})
-        ]);
-        if(mappingResult.error)throw new Error(mappingResult.error.message||'Mapping 讀取失敗。');
-        if(registryResult.error)throw new Error(registryResult.error.message||'人員目錄讀取失敗。');
+        // silver.manage + silver.scope_registry 已停用：兩者的資料現在統一在
+        // silver.loc（main index table），一次查詢後在這裡拆成跟舊版相同形狀
+        // 的 registry／mappings，下面所有渲染邏輯不需要改動。
+        const locResult=await dbAuthRelation('silver.loc')
+          .select('id,display_name,manage_email,manage_role,domain,directory,parent_scope_id,active,sort_order,galaxy_table,time_table,birthday,title_tw,desc_tw')
+          .order('sort_order',{ascending:true}).order('id',{ascending:true});
+        if(locResult.error)throw new Error(locResult.error.message||'人員目錄讀取失敗。');
 
-        const registryRows=registryResult.data||[];
+        const locRows=locResult.data||[];
+        const scopeKindOf=role=>role==='group'?'group':role==='system'?'system':'scope';
+        const registryRows=locRows.map(row=>({
+          scope_id:row.id,
+          display_name:row.display_name,
+          scope_kind:scopeKindOf(row.manage_role),
+          domain:row.domain,directory:row.directory,parent_scope_id:row.parent_scope_id,
+          active:row.active,sort_order:row.sort_order
+        }));
+        const mappingRows=locRows.filter(row=>row.manage_email).map(row=>({
+          id:row.id,email:row.manage_email,role:row.manage_role,
+          galaxy:row.galaxy_table,time:row.time_table,
+          birthday:row.birthday,
+          Title_TW:row.title_tw,Desc_TW:row.desc_tw
+        }));
         const configRows={};
         const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
@@ -112,7 +127,7 @@ function useAdminScopeData(){
 
         if(!active)return;
         setRegistry(registryRows);
-        setMappings((mappingResult.data||[]).map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+        setMappings(mappingRows.map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
         setConfigs(configRows);
         setStatus(configFailures.length?'部分人員設定讀取失敗：'+configFailures.join('；'):'');
       }catch(error){
@@ -346,9 +361,9 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         if(!String(currentCopy.Title_TW||'').trim())throw new Error('NAV 中文名稱不可空白。');
         if(String(currentCopy.Title_TW||'')!==String(pageCopy?.Title_TW||'')||
           String(currentCopy.Desc_TW||'')!==String(pageCopy?.Desc_TW||'')){
-          await updateRows('silver.manage',{
-            Title_TW:String(currentCopy.Title_TW||'').trim(),
-            Desc_TW:String(currentCopy.Desc_TW||'').trim()
+          await updateRows('silver.loc',{
+            title_tw:String(currentCopy.Title_TW||'').trim(),
+            desc_tw:String(currentCopy.Desc_TW||'').trim()
           },{filters:[{column:'id',operator:'eq',value:current.scope_id}]});
         }
       }
@@ -371,14 +386,18 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     }catch(error){setStatus(error?.message||'人員更新失敗。');}
   }
 
+  // silver.loc 現在是「一個 scope_id 一列」，一個 scope 只對應一位管理者
+  // （manage_email/manage_role），不再是 silver.manage 當年的 1 對多設計。
+  // 「新增管理者」＝寫入這一列的 manage_email/manage_role；「移除」＝清空它們；
+  // 不會再新增或刪除 silver.loc 的整列（那一列同時也是這個 scope 的登記資料）。
   async function saveMapping(row){
     setStatus('');
     try{
-      await syncManageScopeRow({
-        galaxy:String(row.galaxy||'galaxy').trim()||'galaxy',
-        time:String(row.time||'time').trim()||'time',
+      await updateRows('silver.loc',{
+        galaxy_table:String(row.galaxy||'galaxy').trim()||'galaxy',
+        time_table:String(row.time||'time').trim()||'time',
         birthday:row.birthday||null
-      },{scopeId:row.id,email:row.email});
+      },{filters:[{column:'id',operator:'eq',value:row.id}]});
       setStatus('Mapping 已更新。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 更新失敗。');}
   }
@@ -386,9 +405,9 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   async function removeMapping(row){
     if(!window.confirm('移除 '+row.email+'？'))return;
     try{
-      await deleteRows('silver.manage',{filters:[
-        {column:'id',operator:'eq',value:row.id},{column:'email',operator:'eq',value:row.email}
-      ]});
+      await updateRows('silver.loc',{
+        manage_email:null,manage_role:null
+      },{filters:[{column:'id',operator:'eq',value:row.id}]});
       setStatus('Mapping 已移除。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 刪除失敗。');}
   }
@@ -399,14 +418,12 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     try{
       const email=String(newMapping.email||'').trim().toLowerCase();
       if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
-      await insertRows('silver.manage',[{
-        id:selected.scope_id,email,role:'scope',
-        galaxy:String(newMapping.galaxy||'galaxy').trim()||'galaxy',
-        time:String(newMapping.time||'time').trim()||'time',
-        birthday:newMapping.birthday||null,
-        Title_TW:String(pageCopy?.Title_TW||'').trim()||selected.scope_id,
-        Desc_TW:String(pageCopy?.Desc_TW||'').trim()
-      }]);
+      await updateRows('silver.loc',{
+        manage_email:email,manage_role:'scope',
+        galaxy_table:String(newMapping.galaxy||'galaxy').trim()||'galaxy',
+        time_table:String(newMapping.time||'time').trim()||'time',
+        birthday:newMapping.birthday||null
+      },{filters:[{column:'id',operator:'eq',value:selected.scope_id}]});
       setNewMapping({...EMPTY_MAPPING});setStatus('Mapping 已新增。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
   }
@@ -680,8 +697,8 @@ function AdminRegistry(){
       if(result?.deleted!==true||result?.scope_id!==id){
         throw new Error('刪除 RPC 未回傳正確的完成確認。');
       }
-      const {data:remaining,error:verifyError}=await dbAuthRelation('silver.scope_registry')
-        .select('scope_id').eq('scope_id',id).limit(1);
+      const {data:remaining,error:verifyError}=await dbAuthRelation('silver.loc')
+        .select('id').eq('id',id).limit(1);
       if(verifyError)throw new Error('刪除已執行，但 Registry 驗證失敗：'+verifyError.message);
       if(remaining?.length)throw new Error('資料庫仍存在 '+id+'，已取消前端成功提示。');
       setRegistry(rows=>rows.filter(row=>row.scope_id!==id));

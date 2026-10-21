@@ -65,9 +65,12 @@ export function useAccount(){
       }
       let permissions=[];
       if(email){
-        const {data,error}=await dbAuthRelation('silver.manage')
-          .select('id,email,role,galaxy,time,birthday')
-          .eq('email',email);
+        // silver.manage 已停用：登入權限改由 silver.loc 的 manage_email/manage_role
+        // 欄位判斷（main index table），回傳形狀跟舊版 silver.manage 查詢完全相同，
+        // 呼叫端（createScopeAuthorizer / scopeDataFromManageRows）不需要改動。
+        const {data,error}=await dbAuthRelation('silver.loc')
+          .select('id,email:manage_email,role:manage_role,galaxy:galaxy_table,time:time_table,birthday')
+          .eq('manage_email',email);
         if(error)throw new Error(error.message||'Management permission read failed');
         permissions=data||[];
       }

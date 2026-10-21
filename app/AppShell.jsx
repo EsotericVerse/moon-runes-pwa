@@ -142,7 +142,8 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
-// Scope NAV labels and browser page copy use silver.manage.Title_TW / Desc_TW.
+// Scope NAV labels and browser page copy use silver.loc.title_tw / desc_tw
+// (main index table; silver.manage.Title_TW / Desc_TW is no longer the source).
 // Scope display_name remains independent for directory and content presentation.
 function ScopePageCopy({scopeId,display_name,pageName='index'}){
   const enabled=Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin';
