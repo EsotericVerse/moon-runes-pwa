@@ -3,7 +3,7 @@ export default {
   "sourceGroup": "群組來源分類",
   "mediaType": "多媒體類型",
   "mediaPlatform": "多媒體來源統計",
-  "mediaStyle": "多媒體風格統計（Meta Tag）",
+  "mediaStyle": "音樂曲風統計",
   "notApplied": "不套用",
   "keywordClass": "關鍵詞 Class",
   "loading": "統計讀取中…",

@@ -1,7 +1,6 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import ContextReturnNav from '../../modular/ContextReturnNav';
 import {runeImage} from '../rune-directory.mjs';
 import {Client} from 'boardgame.io/react';
 import {useQuery} from '@tanstack/react-query';
@@ -323,7 +322,6 @@ function Board({G,moves,rules,onRestart}){
       }
     }}>
       <main className="lrg">
-        <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
         <Paper component="header" className="lrg-top">
           <div>
             <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
@@ -486,12 +484,10 @@ export default function GameBoard(){
   }):null,[data,count,match]);
 
   if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
-    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
     <GameHomeHero/>
     <Alert severity="info">載入遊戲資料…</Alert>
   </main></ThemeProvider>;
   if(error||!data)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
-    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
     <GameHomeHero/>
     <Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert>
   </main></ThemeProvider>;
@@ -499,7 +495,6 @@ export default function GameBoard(){
 
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
-      <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
       <GameHomeHero data={data}/>
 
       <Paper className="lrg-setup">
