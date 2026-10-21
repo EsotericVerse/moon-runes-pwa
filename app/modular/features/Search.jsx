@@ -264,6 +264,12 @@ export default function Search(){
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
+  // Anchors the status/results block so a fresh search can scroll the
+  // results into view instead of leaving the viewport on the search form.
+  const resultsRef=useRef(null);
+  function scrollToResults(){
+    resultsRef.current?.scrollIntoView({block:'start',behavior:'smooth'});
+  }
   // Every search owns an AbortController; a newer search, a reset or unmount
   // cancels the previous one so superseded requests stop instead of piling up.
   const abortRef=useRef(null);
@@ -386,6 +392,7 @@ export default function Search(){
           setHasMore(false);
           setNextCursor(null);
           setStatus('');
+          scrollToResults();
           return;
         }
         if(q)logSearchKeyword(scopeId,q).catch(()=>{});
@@ -450,7 +457,10 @@ export default function Search(){
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
-      if(!append)setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+      if(!append){
+        setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+        scrollToResults();
+      }
     }catch(exception){
       if(id!==searchId.current||isAbortError(exception))return;
       if(append){
@@ -458,6 +468,7 @@ export default function Search(){
       }else{
         setError(featureDataErrorMessage(exception,UI_COPY));
         setStatus(UI_COPY.search.failed);
+        scrollToResults();
       }
     }finally{
       if(append&&id===searchId.current)setLoadingMore(false);
@@ -700,7 +711,7 @@ export default function Search(){
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
       startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period')
     });
-    if(url!==current||searchParams?.get('identity')){router.push(url);return;}
+    if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
     await executeSearch(term);
   }
 
@@ -783,6 +794,7 @@ export default function Search(){
         />
       </div>
     </section>
+    <div ref={resultsRef}>
     {status?<p className="scope-status">{status}</p>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
@@ -856,5 +868,6 @@ export default function Search(){
         </Article>;
       }}
     />
+    </div>
   </FeaturePage>;
 }
