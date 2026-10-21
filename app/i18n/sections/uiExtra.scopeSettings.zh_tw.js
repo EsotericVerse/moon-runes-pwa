@@ -7,7 +7,7 @@ export default {
   "searchNameHint": "搜尋名稱或別名",
   "aliasesHint": "每行一個，例如：\\nlo3rwang\\nLucas Oscar Wang\\n政德",
   "personalTitle": "個人設定",
-  "miscellaneous": "基本與雜項設定",
+  "miscellaneous": "基本設定",
   "displayName": "顯示名稱",
   "systemDayNight": "系統預設（日／夜自動）",
   "defaultLocale": "預設語系",
