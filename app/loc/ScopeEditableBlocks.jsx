@@ -135,9 +135,15 @@ export default function ScopeEditableBlocks({
     }
   }
   function renderEntities(entities){
-    if(!entities.length)return null;
+    // In suggestion mode, a viewer who cannot edit should only ever see
+    // entities that actually have a clickable term; editors still see every
+    // entity (including empty ones) so they can fill them in.
+    const visibleEntities=onSuggestionClick&&!canEdit
+      ?entities.filter(entity=>recommendationTerm(entity.text))
+      :entities;
+    if(!visibleEntities.length)return null;
     return <div className="scope-block-entity-grid">
-      {entities.map(entity=><article
+      {visibleEntities.map(entity=><article
         className={HomeBlock.childPresentation(entity.title)==='card'?'scope-block-entity':'loc-bubble scope-block-text-bubble'}
         key={entity.uid}
         role={onSuggestionClick?'link':undefined}
@@ -162,7 +168,7 @@ export default function ScopeEditableBlocks({
       if(onSuggestionClick&&!canEdit&&!active
           &&!recommendationTerm(slot.text)
           &&!recommendationTerm(slot.subtitle)
-          &&!slot.entities.some(entity=>recommendationTerm(entity.title)||recommendationTerm(entity.text)))return null;
+          &&!slot.entities.some(entity=>recommendationTerm(entity.text)))return null;
       const level=Number(headingLevel);
       const Heading=level===1?'h1':level===2?'h2':level===4?'h4':'h3';
       return <SlotTag
