@@ -39,9 +39,13 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
   if(!account.user)return <section className="loc-card"><h2>治理管理</h2><ScopeLink className="loc-button primary" href="/settings/?section=account">請先登入</ScopeLink></section>;
   if(!canManageHere)return <section className="loc-card"><p>目前帳號沒有治理管理權限。</p></section>;
-  return <main className="scope-main"><section className="scope-page">
-    <section className="loc-card scope-management-page">
-      <h2>Scope 內容管理</h2>
+  // Same page chrome as /admin/'s AdminHomeView (loc-view/loc-hero/admin-hero/
+  // admin-hero-row/admin-main-select) -- this page is rendered the same way
+  // (a top-level VIEWS entry in LocApp.jsx, no FeaturePage hero wrapper), so
+  // it reuses the same classes/CSS rather than inventing its own markup.
+  return <section className="loc-view scope-management-page">
+    <header className="loc-hero loc-hero-context admin-hero">
+      <div className="admin-hero-row"><h1>Scope 內容管理</h1></div>
       <div className="admin-main-select">
         <Select {...selectProps}
           inputId="governance-management-select"
@@ -52,9 +56,9 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
           onChange={option=>setSection(option?.value||'settings')}
         />
       </div>
-      {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-      {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
-      {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
-    </section>
-  </section></main>;
+    </header>
+    {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
+    {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
+    {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
+  </section>;
 }
