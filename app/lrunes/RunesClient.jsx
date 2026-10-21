@@ -1,5 +1,6 @@
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
+import {useAccount} from '../loc/use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
@@ -47,6 +48,7 @@ function renderRuneHero(slot,native){
         <ScopeLink className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)} native={native}>抽一張符文</ScopeLink>
         <ScopeLink className="loc-button" href={runeHref('card/daily',native)} native={native}>每日符文</ScopeLink>
         <ScopeLink className="loc-button" href={runeHref('card/list',native)} native={native}>符文圖鑑</ScopeLink>
+        <ScopeLink className="loc-button" href={runeHref('game',native)} native={native}>符文遊戲</ScopeLink>
       </div>
     </div>
   </>;
@@ -54,6 +56,7 @@ function renderRuneHero(slot,native){
 
 export default function RunesClient(){
   const native=useNativeNavigation();
+  const account=useAccount();
   return <main className="loc-next-main"><section className="loc-view">
     <ScopeEditableBlocks
       scopeId="lrunes"
@@ -70,12 +73,10 @@ export default function RunesClient(){
       allowDelete={false}
       allowEntities={false}
       allowImages={false}
+      toggleExtra={account.user?<nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
+        <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
+      </nav>:null}
     />
-
-    <nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
-      <ScopeLink className="loc-button" href={runeHref('game',native)} native={native}>符文遊戲</ScopeLink>
-      <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
-    </nav>
 
     <RuneIntroSection />
 
