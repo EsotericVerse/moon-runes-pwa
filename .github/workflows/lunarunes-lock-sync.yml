@@ -3,10 +3,6 @@ name: Synchronize LunaRunes dependency lockfile
 # should normally ship with package.json in one commit.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'package.json'
 permissions:
   contents: write
 jobs:
