@@ -240,7 +240,7 @@
 }
 .scope-editable-block.is-editing,
 .scope-editable-block.scope-block-draft{padding-top:2.7rem}
-.scope-edit-mode-toggle{margin-bottom:1rem}
+.scope-edit-mode-toggle{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-bottom:1rem}
 .scope-block-draft-toolbar{
   display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-bottom:1rem;
 }
