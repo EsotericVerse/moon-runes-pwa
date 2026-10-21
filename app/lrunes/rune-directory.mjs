@@ -1,7 +1,15 @@
+import {LOC_ORIGIN} from '../seo/metadata.js';
+
+// assets/ and pics/ are both published at the one deployed origin
+// (loc.lo3rwang.cc -- see scripts/copy-static-assets.mjs, which copies both
+// wholesale into the same out/ that GitHub Pages serves). Native/iOS has no
+// local copy of either, so every image reference here is an absolute URL
+// rather than a root-relative path: a relative path only resolves inside a
+// page actually served from that origin, which the native app is not.
 const GROUP_IMAGE_BY_ID=Object.freeze({
-  '01':'/pics/01.soul.jpg','02':'/pics/02_connection.jpg','03':'/pics/03_life.jpg',
-  '04':'/pics/04_nature.jpg','05':'/pics/05_mineral.jpg','06':'/pics/06_element.jpg',
-  '07':'/pics/07_order.jpg','08':'/pics/08_disorder.jpg','09':'/pics/09_specia.jpg'
+  '01':LOC_ORIGIN+'/pics/01.soul.jpg','02':LOC_ORIGIN+'/pics/02_connection.jpg','03':LOC_ORIGIN+'/pics/03_life.jpg',
+  '04':LOC_ORIGIN+'/pics/04_nature.jpg','05':LOC_ORIGIN+'/pics/05_mineral.jpg','06':LOC_ORIGIN+'/pics/06_element.jpg',
+  '07':LOC_ORIGIN+'/pics/07_order.jpg','08':LOC_ORIGIN+'/pics/08_disorder.jpg','09':LOC_ORIGIN+'/pics/09_specia.jpg'
 });
 
 export function groupImage(id){return GROUP_IMAGE_BY_ID[String(id).padStart(2,'0')]||'';}
@@ -14,7 +22,7 @@ export function runeName(card){return String(card?.rune_name||'').replace(/ä¹‹ç¬
 export function runeImage(card){
   const id=Number(card?.rune_id??card?.id??card?.rune_number);
   if(!Number.isInteger(id)||id<1||id>66)return '';
-  return `/assets/lunarunes/cards/${String(id).padStart(2,'0')}.png`;
+  return `${LOC_ORIGIN}/assets/lunarunes/cards/${String(id).padStart(2,'0')}.png`;
 }
 export function runeNumbersForGroup(groupId){
   const id=Number(groupId);
