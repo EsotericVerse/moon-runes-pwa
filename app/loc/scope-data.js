@@ -69,7 +69,8 @@ export async function selectManagedScopes(){
     filters:[{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
-    offset:0
+    offset:0,
+    authenticated:true
   });
   return scopeDataFromManageRows(rows);
 }
@@ -140,7 +141,8 @@ export async function selectManagedScope(scopeId){
     filters:[{column:'id',operator:'eq',value:id},{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
-    offset:0
+    offset:0,
+    authenticated:true
   });
   return scopeDataFromManageRows(rows)[0]||null;
 }
