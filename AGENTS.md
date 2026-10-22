@@ -16,6 +16,7 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
   - New third-party skill/package/MCP server → `.agents/skills/find-skills/SKILL.md` Step 4 (install count ≥1K, source reputation, GitHub stars ≥100) before installing; a skill failing this check is refused even if it would help portability.
   - Code touching auth, input/output boundaries, or secrets → read only `.agents/skills/code-review-expert/references/security-checklist.md` as a checklist (XSS, injection, SSRF, path traversal, AuthN/AuthZ, token handling) — do not run that skill's full review workflow; the user does not want code review.
   - Any Postgres/Supabase change (schema, RLS, functions, migrations) → `.agents/skills/supabase-postgres-best-practices/SKILL.md`, Security & RLS is priority 3 of 8, CRITICAL.
+  - Supabase Auth, Edge Functions, Realtime, Storage, the Supabase CLI/MCP, or `supabase-js`/`@supabase/ssr` client code → `.agents/skills/supabase/SKILL.md`. Fetch `https://supabase.com/changelog.md` first per its Core Principles; this project's Supabase config can change out from under training data.
   - Building/reviewing our own MCP integrations → `.agents/skills/mcp-builder/SKILL.md`.
 - **Portable:**
   - Before writing new code, scan for an existing module/pattern instead → `.agents/skills/improve-codebase-architecture/SKILL.md` (reuse/consolidation, not cosmetic refactors).
@@ -53,6 +54,7 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 | `.agents/skills/vercel-react-best-practices/SKILL.md` | React or Next.js implementation, review, refactoring, data fetching, rendering, and performance. Read relevant rule files as directed. |
 | `.agents/skills/vercel-composition-patterns/SKILL.md` | React component API design, composition, reusable components, compound components, or boolean-prop proliferation. |
 | `.agents/skills/supabase-postgres-best-practices/SKILL.md` | Any Postgres/Supabase database query, schema, migration, index, RLS, function, or performance work. Load before database changes and follow its reference guidance. |
+| `.agents/skills/supabase/SKILL.md` | Supabase Auth, Edge Functions, Realtime, Storage, Vectors, Cron, Queues, client/SSR integration (supabase-js, @supabase/ssr), CLI/MCP, and debugging Supabase-specific errors — everything about using Supabase beyond raw Postgres. Complements, doesn't replace, supabase-postgres-best-practices. |
 | `.agents/skills/ui-skills-root/SKILL.md` | UI work. Use its documented selector to choose a small set of relevant UI skills and follow its limit for that UI workflow. |
 | `.agents/skills/frontend-design/SKILL.md` | Creating or substantially reshaping a user interface with a deliberate visual direction. |
 | `.agents/skills/ui-ux-pro-max/SKILL.md` | UI/UX decisions on layout, forms, color, typography, interaction, and UX review. Query its local data with `python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>`; read-only, offline. |
