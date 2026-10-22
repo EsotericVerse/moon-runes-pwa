@@ -449,14 +449,14 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       </>:null}
 
       <div className="admin-route-summary" aria-label="目前路由">
-        <span><UiText id="uiExtra.adminView.routeType"/></span>
-        <strong>{routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong>
         <code>{routeValue}</code>
       </div>
-      {!routeLocked?<div className="admin-inline-flags" role="radiogroup" aria-label="路由模式">
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="domain" checked={routeMode==='domain'} onChange={()=>chooseRouteMode('domain')}/><UiText id="uiExtra.adminView.independentDomain"/></label>
-        <label><input type="radio" name={'registry-route-mode-'+selectedId} value="directory" checked={routeMode==='directory'} onChange={()=>chooseRouteMode('directory')}/><UiText id="uiExtra.adminView.siteDirectory"/></label>
-      </div>:null}
+      {!routeLocked?<label><span><UiText id="uiExtra.adminView.routeType"/></span>
+        <select className="admin-native-select" value={routeMode==='domain'?'domain':'directory'} onChange={event=>chooseRouteMode(event.target.value)}>
+          <option value="directory">Directory · 站內路徑</option>
+          <option value="domain">Domain · 獨立網域</option>
+        </select>
+      </label>:null}
       {current.scope_id!=='loc'?<label><span><UiText id="uiExtra.adminView.parentGroup"/></span><select className="admin-native-select" value={String(current.parent_scope_id||'')} onChange={e=>patchRegistry('parent_scope_id',e.target.value||'')}>{parentOptions.map(option=><option value={option.value} key={option.value||'root'}><FieldText text={option.label}/></option>)}</select></label>:null}
       {current.scope_kind==='scope'?<label className="scope-setting-toggle"><input type="checkbox" checked={current.active!==false} onChange={e=>patchRegistry('active',e.target.checked)}/> <UiText id="uiExtra.adminView.publiclyEnabled"/></label>:null}
       <ObjectEditor mode="actions" actionClassName="scope-tabs admin-edit-actions" actions={[
@@ -568,21 +568,25 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <label><span><UiText id="uiExtra.adminView.memberId"/></span><input maxLength="15" value={scopeDraft.scope_id} onChange={e=>setScopeDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span><UiText id="uiExtra.adminView.administratorEmail"/></span><input type="email" required autoComplete="off" value={scopeDraft.email} onChange={e=>setScopeDraft(v=>({...v,email:e.target.value}))}/></label>
       <label><span><UiText id="uiExtra.adminView.defaultLanguage"/></span><select className="admin-native-select" value={normalizeUiLocale(scopeDraft.locale)} onChange={e=>setScopeDraft(v=>({...v,locale:normalizeUiLocale(e.target.value)}))}>{UI_LOCALE_OPTIONS.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
-      <div className="admin-inline-flags" role="radiogroup" aria-label="人員網址">
-        <label><input type="radio" name="new-scope-route-mode" value="directory" checked={scopeDraft.route_mode==='directory'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
-        <label><input type="radio" name="new-scope-route-mode" value="domain" checked={scopeDraft.route_mode==='domain'} onChange={()=>setScopeDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
-      </div>
-      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><strong>{scopeDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
+      <label><span><UiText id="uiExtra.adminView.routeType"/></span>
+        <select className="admin-native-select" value={scopeDraft.route_mode==='domain'?'domain':'directory'} onChange={e=>setScopeDraft(v=>({...v,route_mode:e.target.value==='domain'?'domain':'directory'}))}>
+          <option value="directory">Directory · 站內路徑</option>
+          <option value="domain">Domain · 獨立網域</option>
+        </select>
+      </label>
+      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
       <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}><FieldText text={creatingScope?'建立與驗證中…':'建立'}/></button>
     </>:<>
       <label><span><UiText id="uiExtra.adminView.groupId"/></span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span><UiText id="uiExtra.adminView.groupName"/></span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
-      <div className="admin-inline-flags" role="radiogroup" aria-label="群組網址">
-        <label><input type="radio" name="new-group-route-mode" value="directory" checked={groupDraft.route_mode==='directory'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'directory'}))}/>Directory</label>
-        <label><input type="radio" name="new-group-route-mode" value="domain" checked={groupDraft.route_mode==='domain'} onChange={()=>setGroupDraft(v=>({...v,route_mode:'domain'}))}/>Domain</label>
-      </div>
-      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><strong>{groupDraft.route_mode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'}</strong><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
+      <label><span><UiText id="uiExtra.adminView.routeType"/></span>
+        <select className="admin-native-select" value={groupDraft.route_mode==='domain'?'domain':'directory'} onChange={e=>setGroupDraft(v=>({...v,route_mode:e.target.value==='domain'?'domain':'directory'}))}>
+          <option value="directory">Directory · 站內路徑</option>
+          <option value="domain">Domain · 獨立網域</option>
+        </select>
+      </label>
+      <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
       <label><span><UiText id="uiExtra.adminView.parentGroup2"/></span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
       <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}><UiText id="uiExtra.adminView.create"/></button>
