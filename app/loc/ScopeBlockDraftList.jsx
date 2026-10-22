@@ -23,7 +23,7 @@ const EYEBROW_LIMIT=64;
 const SUBTITLE_LIMIT=128;
 
 function isHomeFrameFor(scopeId,pageName,order){
-  if(scopeId==='lrunes')return pageName==='hero'&&order===1;
+  if(scopeId==='lrunes')return pageName==='hero'&&Number(order)>=1;
   return pageName==='index'&&Number(order)>=1&&['loc','lo3rwang'].includes(scopeId);
 }
 

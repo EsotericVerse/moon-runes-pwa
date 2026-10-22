@@ -6,14 +6,11 @@ import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
-import {resolveHomeImage} from '../loc/LocHomeBlockDisplay';
+import {resolveHomeImage,RunesHomeBlockDisplay,locHomeBlockClass} from '../loc/LocHomeBlockDisplay';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
-const runesHeroAsset={src:'/pics/LunaRunes-hero.jpg'};
-const runesHeroSmallAsset={src:'/pics/LunaRunes-hero_s.webp'};
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
 
-const RUNE_HERO_ORDERS=[1];
 // LunaRunes is a special-case homepage: only the Hero copy is editable.
 // Draw routes, draw buttons, game, intro, and reading guidance remain fixed UI.
 function renderRuneHero(slot,native){
@@ -26,10 +23,9 @@ function renderRuneHero(slot,native){
   const children=slot.stored?HomeBlock.visibleEntities(slot).filter(entity=>entity.title||String(entity.text||'').replace(/<[^>]*>/g,'').trim()):[];
   return <>
     {image.src?<picture>
-      {image.source==='default'?<source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>:null}
-      <img
+            <img
         className="runes-home-hero-image"
-        src={image.source==='default'?runesHeroAsset.src:image.src}
+        src={image.src}
         alt=""
         aria-hidden="true"
         loading="eager"
@@ -56,12 +52,6 @@ function renderRuneHero(slot,native){
           </article>;
         })}
       </div>:null}
-      <div className="runes-home-primary-actions" aria-label="開始抽牌">
-        <ScopeLink className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)} native={native}>抽一張符文</ScopeLink>
-        <ScopeLink className="loc-button" href={runeHref('card/daily',native)} native={native}>每日符文</ScopeLink>
-        <ScopeLink className="loc-button" href={runeHref('card/list',native)} native={native}>符文圖鑑</ScopeLink>
-        <ScopeLink className="loc-button" href={runeHref('game',native)} native={native}>符文遊戲</ScopeLink>
-      </div>
     </div>
   </>;
 }
@@ -73,17 +63,18 @@ export default function RunesClient(){
     <ScopeEditableBlocks
       scopeId="lrunes"
       page="hero"
-      orders={RUNE_HERO_ORDERS}
-      slotTag="header"
-      slotId="intro"
-      slotClassName="loc-hero runes-home-hero"
-      resolveSlotClassName={slot=>"loc-hero runes-home-hero"+(resolveHomeImage({...slot,order:1},"lrunes").mode==='side'?" runes-home-hero--side":"")}
-      editSlotClassName="loc-hero"
+      allowEditing
+      maxBlocks={8}
+      headingLevel={2}
+      slotClassName="loc-card loc-home-block"
+      resolveSlotClassName={slot=>Number(slot.order)===1
+        ?"loc-hero runes-home-hero"+(resolveHomeImage({...slot,order:1},"lrunes").mode==='side'?" runes-home-hero--side":"")
+        :locHomeBlockClass(slot,'lrunes')}
+      editSlotClassName="loc-card loc-home-block"
       containerless
       placeholderFirstOrder={1}
-      renderDisplay={slot=>renderRuneHero(slot,native)}
+      renderDisplay={slot=>Number(slot.order)===1?renderRuneHero(slot,native):RunesHomeBlockDisplay(slot)}
       explicitEditButton
-      allowDelete={false}
       toggleExtra={account.user?<nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
         <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
       </nav>:null}
