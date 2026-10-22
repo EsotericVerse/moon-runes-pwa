@@ -2,28 +2,34 @@
 
 ## Priority order
 
-System security ≫ ease of maintenance > system performance = UIUX > code aesthetics. Security is first by a wide margin, ahead of every other priority including "prefer mature modules" below. When priorities conflict, resolve in this order:
+Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin, ahead of every other priority including "prefer mature/portable modules" below. When priorities conflict, resolve in this order:
 
-1. **System security.** Vet any third-party skill, package, or MCP server (license, source reputation, available security audits, what its scripts actually do) before installing it, even when it would otherwise help maintainability — an unvetted dependency is refused regardless of convenience. Database, credentials, auth, and permission-boundary code keep necessary manual checks even if that means more hand-written code, never fewer checks for the sake of using less code.
-2. **Ease of maintenance.** Prefer mature, existing modules/SDKs/packages over new hand-written code; the user does not want to see bespoke implementations when an established one exists. Before writing new code, check for an existing library, already-installed dependency, or existing in-repo implementation that does the job. One shared implementation per capability — do not fork the same logic into multiple files or add parallel implementations "for performance" or "to look cleaner." Only write new code when no suitable existing option exists, and say why.
-3. **System performance = UIUX** (equal priority, traded off against each other as the specific case requires, not against each other's fixed ranking).
-4. **Code aesthetics / code volume.** Lowest priority — never trade away 1–3 to make code shorter, more elegant, or more "modular" looking.
+1. **Security.** Vet any third-party skill, package, or MCP server (license, source reputation, available security audits, what its scripts actually do) before installing it, even when it would otherwise help portability — an unvetted dependency is refused regardless of convenience. Database, credentials, auth, and permission-boundary code keep necessary manual checks even if that means more hand-written code, never fewer checks for the sake of using less code.
+2. **Portable.** Prefer mature, portable, widely-used modules/SDKs/packages over new hand-written code tied to this one codebase; the user does not want to see bespoke implementations when an established one exists. Before writing new code, check for an existing library, already-installed dependency, or existing in-repo implementation that does the job. One shared implementation per capability — do not fork the same logic into multiple files or add parallel implementations "for performance" or "to look cleaner." Only write new code when no suitable existing option exists, and say why.
+3. **Loading = UI** (equal priority, traded off against each other as the specific case requires, not against each other's fixed ranking). "Loading" means load/runtime performance (bundle size, waterfalls, rendering cost), not code elegance.
+4. **Code.** Lowest priority — never trade away 1–3 to make code shorter, more elegant, or more "modular" looking. The user does not want proactive code review for style/structure; only act on security findings (tier 1) or when the user explicitly asks for a review.
+
+## Git workflow
+
+- No branches, no PRs. Commit directly to `main`.
+- Still use version control as a safety net: commit real, working increments as you go (not one giant commit at the end) so a mistake can be reverted without losing unrelated work. Don't batch unrelated changes into one commit.
+- `git pull --rebase` before every push; never force-push over someone else's commits.
 
 ### Which skill handles which priority
 
-- **System security:**
-  - New third-party skill/package/MCP server → `.agents/skills/find-skills/SKILL.md` Step 4 (install count ≥1K, source reputation, GitHub stars ≥100) before installing; a skill failing this check is refused even if it would help maintainability.
-  - Code touching auth, input/output boundaries, or secrets → `.agents/skills/code-review-expert/references/security-checklist.md` (XSS, injection, SSRF, path traversal, AuthN/AuthZ, token handling).
+- **Security:**
+  - New third-party skill/package/MCP server → `.agents/skills/find-skills/SKILL.md` Step 4 (install count ≥1K, source reputation, GitHub stars ≥100) before installing; a skill failing this check is refused even if it would help portability.
+  - Code touching auth, input/output boundaries, or secrets → read only `.agents/skills/code-review-expert/references/security-checklist.md` as a checklist (XSS, injection, SSRF, path traversal, AuthN/AuthZ, token handling) — do not run that skill's full review workflow; the user does not want code review.
   - Any Postgres/Supabase change (schema, RLS, functions, migrations) → `.agents/skills/supabase-postgres-best-practices/SKILL.md`, Security & RLS is priority 3 of 8, CRITICAL.
   - Building/reviewing our own MCP integrations → `.agents/skills/mcp-builder/SKILL.md`.
-- **Ease of maintenance:**
-  - Before writing new code, scan for an existing module/pattern instead → `.agents/skills/improve-codebase-architecture/SKILL.md` (deepening/reuse, not cosmetic refactors).
-- **System performance = UIUX:**
+- **Portable:**
+  - Before writing new code, scan for an existing module/pattern instead → `.agents/skills/improve-codebase-architecture/SKILL.md` (reuse/consolidation, not cosmetic refactors).
+- **Loading = UI:**
   - React/Next.js code → `.agents/skills/vercel-react-best-practices/SKILL.md` (70 rules, priority 1–2 are waterfalls and bundle size).
   - Component API/composition → `.agents/skills/vercel-composition-patterns/SKILL.md`.
   - Visual/interaction design decisions → `.agents/skills/ui-ux-pro-max/SKILL.md`.
   - Verify a change actually works/renders correctly, not just compiles → `.agents/skills/webapp-testing/SKILL.md` (Playwright: real page, screenshot, console/network logs).
-- **Code aesthetics:** lowest priority; do not open `improve-codebase-architecture` or `code-review-expert` purely for style.
+- **Code:** lowest priority; do not open `improve-codebase-architecture` or `code-review-expert` proactively for style or structure — only on explicit request, or for the security checklist use above.
 
 ## Operating rules
 
