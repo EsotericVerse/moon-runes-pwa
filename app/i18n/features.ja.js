@@ -274,6 +274,8 @@ export default {
     "minimumCharsInvalid": "最小文字数は0〜10000の整数にしてください。",
     "minimumDocumentsInvalid": "最小記事数は0〜1000000の整数にしてください。",
     "activeClassRequired": "使用中のClassを選択してください。",
+    "defaultGroup": "デフォルトグループ（ヒットなし時）",
+    "defaultGroupInvalid": "現在のClassに属するデフォルトグループを選択してください。",
     "settingsChanged": "分析設定を更新しました。記事を再分析してください。",
     "settingsSaved": "分析設定を更新しました。",
     "settingsSaveError": "分析設定の保存に失敗しました。",

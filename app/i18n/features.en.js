@@ -274,6 +274,8 @@ export default {
     "minimumCharsInvalid": "Minimum analysis characters must be an integer between 0 and 10000.",
     "minimumDocumentsInvalid": "Minimum article count must be an integer between 0 and 1000000.",
     "activeClassRequired": "Select an active Class.",
+    "defaultGroup": "Default group (zero matches)",
+    "defaultGroupInvalid": "Select a default group that belongs to the current Class.",
     "settingsChanged": "Analysis settings updated. Reanalyze articles.",
     "settingsSaved": "Analysis settings updated.",
     "settingsSaveError": "Failed to save keyword analysis settings.",

@@ -95,6 +95,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [minDocuments,setMinDocuments]=useState(DEFAULT_KEYWORD_MIN_DOCUMENTS);
   const [currentClassId,setCurrentClassId]=useState('');
   const [shareEnabled,setShareEnabled]=useState(false);
+  // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_group_item_no).
+  // Stored per class_id (same value on every row of that class), so it rides
+  // along in the main keyword SELECT below rather than a separate query.
+  const [defaultGroupItemNo,setDefaultGroupItemNo]=useState('0');
   const [keywordDocumentCount,setKeywordDocumentCount]=useState(0);
   const [staticstime,setStaticstime]=useState('');
   const [configSnapshot,setConfigSnapshot]=useState(null);
@@ -134,7 +138,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     try{
       const [keywordResult,configResult]=await Promise.all([
         dbAuthRelation(TABLE)
-          .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+          .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
           .order('class_name',{ascending:true})
           .order('order_no',{ascending:true})
           .order('item_no',{ascending:true}),
@@ -156,19 +160,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       const nextDocumentCount=Math.max(0,Number(config.keyword_document_count)||0);
       const nextStaticstime=String(config.staticstime||'');
 
-      setMinChars(nextMinChars);
-      setMinDocuments(nextMinDocuments);
-      setCurrentClassId(nextCurrentClassId);
-      setShareEnabled(nextShareEnabled);
-      setKeywordDocumentCount(nextDocumentCount);
-      setStaticstime(nextStaticstime);
-      setConfigSnapshot({
-        minChars:nextMinChars,
-        minDocuments:nextMinDocuments,
-        currentClassId:nextCurrentClassId,
-        shareEnabled:nextShareEnabled
-      });
-
       const next=keywordResult.data||[];
       setRows(next);
       const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
@@ -176,6 +167,23 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       const requested=String(preferredClass||selectedClass||currentClassName||'').trim();
       const nextClass=classNames.includes(requested)?requested:(classNames.includes('符文66')?'符文66':(classNames[0]||''));
       setSelectedClass(nextClass);
+      // Same value is repeated on every row of nextCurrentClassId -- any one row works.
+      const nextDefaultGroupItemNo=String(next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.default_group_item_no??0);
+
+      setMinChars(nextMinChars);
+      setMinDocuments(nextMinDocuments);
+      setCurrentClassId(nextCurrentClassId);
+      setShareEnabled(nextShareEnabled);
+      setKeywordDocumentCount(nextDocumentCount);
+      setStaticstime(nextStaticstime);
+      setDefaultGroupItemNo(nextDefaultGroupItemNo);
+      setConfigSnapshot({
+        minChars:nextMinChars,
+        minDocuments:nextMinDocuments,
+        currentClassId:nextCurrentClassId,
+        shareEnabled:nextShareEnabled,
+        defaultGroupItemNo:nextDefaultGroupItemNo
+      });
       const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
         ||next.find(row=>String(row.class_name)===nextClass)
         ||null;
@@ -227,6 +235,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const items=useMemo(()=>rows
     .filter(row=>String(row.class_name)===selectedClass)
     .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
+  // For the "預設群組" dropdown in 分析設定: the active analysis class's items
+  // (currentClassId, not selectedClass -- the panel can be browsing a different
+  // class in the manual editor while 分析設定 still targets currentClassId).
+  const currentClassItems=useMemo(()=>rows
+    .filter(row=>String(row.class_id)===String(currentClassId))
+    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,currentClassId]);
   const selectedClassId=String(items[0]?.class_id||'');
   const groups=useMemo(()=>[...new Set(items.map(item=>String(item.class_group||'').trim()).filter(Boolean))],[items]);
   const groupItems=useMemo(()=>items.filter(item=>String(item.class_group||'').trim()===selectedGroup),[items,selectedGroup]);
@@ -236,6 +250,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     ||Number(minDocuments)!==Number(configSnapshot.minDocuments)
     ||String(currentClassId)!==String(configSnapshot.currentClassId)
     ||Boolean(shareEnabled)!==Boolean(configSnapshot.shareEnabled)
+    ||String(defaultGroupItemNo)!==String(configSnapshot.defaultGroupItemNo)
   );
 
   function selectItem(row){
@@ -342,9 +357,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!classes.some(item=>item.class_id===currentClassId)){
       setMessage(l.activeClassRequired);return;
     }
-    const classificationChanged=chars!==Number(configSnapshot?.minChars)||currentClassId!==String(configSnapshot?.currentClassId||'');
+    const defaultItemNo=Number(defaultGroupItemNo);
+    if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
+      setMessage(l.defaultGroupInvalid);return;
+    }
+    const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
+    const classificationChanged=chars!==Number(configSnapshot?.minChars)||currentClassId!==String(configSnapshot?.currentClassId||'')||defaultGroupChanged;
     setBusy(true);setMessage('');
     try{
+      if(defaultGroupChanged){
+        await updateRows(TABLE,{default_group_item_no:defaultItemNo},{filters:[{column:'class_id',operator:'eq',value:currentClassId}]});
+      }
       await updateRows(CONFIG_TABLE,{
         keyword_min_chars:chars,
         keyword_min_documents:documents,
@@ -535,7 +558,15 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     {workspace==='analysis'?<section className="scope-inline-card">
       <h3>{l.analysisSettings}</h3>
       <div className="scope-management-fields">
-        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>setCurrentClassId(event.target.value)}>
+        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>{
+          const nextClassId=event.target.value;
+          setCurrentClassId(nextClassId);
+          // default_group_item_no is per-class_id -- resync to the newly
+          // chosen class's own stored value instead of carrying over the
+          // previous class's setting.
+          const nextDefault=rows.find(row=>String(row.class_id)===nextClassId)?.default_group_item_no;
+          setDefaultGroupItemNo(String(nextDefault??0));
+        }}>
           {classes.map(item=><option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}
         </select></label>
         <label><span>{l.minChars}</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
@@ -543,6 +574,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         <label><span>{l.sharePermission}</span><select className="scope-select" value={shareEnabled?'open':'closed'} onChange={event=>setShareEnabled(event.target.value==='open')}>
           <option value="closed">{l.closed}</option>
           <option value="open">{l.open}</option>
+        </select></label>
+        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultGroupItemNo} onChange={event=>setDefaultGroupItemNo(event.target.value)}>
+          {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.item_no)}>{item.item_no}　{item.item_name}</option>)}
         </select></label>
       </div>
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>

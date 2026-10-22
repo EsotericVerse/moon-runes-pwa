@@ -274,6 +274,8 @@ export default {
     "minimumCharsInvalid": "最小分析字数必须是 0 到 10000 的整数。",
     "minimumDocumentsInvalid": "最小统计文章数必须是 0 到 1000000 的整数。",
     "activeClassRequired": "请选择目前使用的 Class。",
+    "defaultGroup": "预设群组（零命中时）",
+    "defaultGroupInvalid": "请选择一个属于目前 Class 的预设群组。",
     "settingsChanged": "分析设定已更新；请重新分析文章。",
     "settingsSaved": "分析设定已更新。",
     "settingsSaveError": "关键词分析设定储存失败。",
