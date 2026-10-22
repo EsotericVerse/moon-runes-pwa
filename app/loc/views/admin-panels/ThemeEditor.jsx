@@ -99,14 +99,22 @@ export default function ThemeEditor(){
   }
 
   return <section className="loc-card admin-workspace">
+    <h2><UiText id="uiExtra.adminView.themeAppearance"/></h2>
     <div className="admin-inline-select"><label><span><UiText id="uiExtra.adminView.editingTheme"/></span><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-7')}>{options.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label></div>
     {draft?<>
       <div className="scope-management-fields">
         <label><span><UiText id="uiExtra.adminView.name"/></span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
-        <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setScheme(e.target.value)}><option value="light">light</option><option value="dark">dark</option></select></label>
-        <label><span>Group</span><input value={draft.label||''} disabled title="Group 使用主題名稱，不重複儲存"/></label>
-        <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
-        <label className="admin-theme-primary-color"><span>主色</span><div className="admin-theme-token-input"><input type="color" aria-label="選擇主色" value={normalizeThemeHex(draft.identityColor)||normalizeThemeHex(draft.tokens?.['--loc-accent'])||'#555555'} onChange={e=>setIdentityColor(e.target.value)}/><input aria-label="主色色碼" value={draft.identityColor||''} maxLength={7} placeholder="#RRGGBB" onChange={e=>setIdentityColor(e.target.value)}/></div><small>改變主色會自動重算相依色彩；產生後仍可在下方逐項微調。</small></label>
+        <label><span><UiText id="uiExtra.adminView.themeScheme"/></span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setScheme(e.target.value)}><option value="light"><UiText id="uiExtra.adminView.lightScheme"/></option><option value="dark"><UiText id="uiExtra.adminView.darkScheme"/></option></select></label>
+        <label><span><UiText id="uiExtra.adminView.themeGroup"/></span><input value={draft.label||''} disabled title="Group 使用主題名稱，不重複儲存"/></label>
+        <label><span><UiText id="uiExtra.adminView.themeStyleKey"/></span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
+        <fieldset className="admin-theme-primary-color">
+          <legend><UiText id="uiExtra.adminView.themePrimaryColor"/></legend>
+          <div className="admin-theme-primary-color-fields">
+            <label><span><UiText id="uiExtra.adminView.themeColorPicker"/></span><input type="color" aria-label="選擇主色" value={normalizeThemeHex(draft.identityColor)||normalizeThemeHex(draft.tokens?.['--loc-accent'])||'#555555'} onChange={e=>setIdentityColor(e.target.value)}/></label>
+            <label><span><UiText id="uiExtra.adminView.themeHexCode"/></span><input aria-label="主色色碼" value={draft.identityColor||''} maxLength={7} placeholder="#RRGGBB" onChange={e=>setIdentityColor(e.target.value)}/></label>
+          </div>
+          <small><UiText id="uiExtra.adminView.themePrimaryHelp"/></small>
+        </fieldset>
       </div>
       <section className="scope-inline-card admin-theme-local-preview" aria-label="主題色彩預覽" style={{...draft.tokens,background:'var(--loc-bg)',color:'var(--loc-text)',borderColor:'var(--loc-line)'}}>
         <strong style={{color:'var(--loc-heading)'}}>色彩預覽：{draft.label||themeId}</strong>
@@ -119,13 +127,17 @@ export default function ThemeEditor(){
           <span style={{color:'var(--loc-danger)'}}>錯誤提示色</span>
         </div>
       </section>
-      <div className="admin-theme-token-grid">
+      <details className="admin-theme-advanced-colors">
+        <summary><UiText id="uiExtra.adminView.advancedThemeColors"/></summary>
+        <p><UiText id="uiExtra.adminView.advancedThemeColorsHelp"/></p>
+        <div className="admin-theme-token-grid">
         {THEME_TOKEN_KEYS.map(key=>{
           const value=String(draft.tokens?.[key]||'');
           const color=/^#[0-9a-f]{6}$/i.test(value);
           return <label key={key}><span>{key}</span><div className="admin-theme-token-input">{color?<input type="color" value={value} onChange={e=>setToken(key,e.target.value)}/>:null}<input value={value} onChange={e=>setToken(key,e.target.value)}/></div></label>;
         })}
-      </div>
+        </div>
+      </details>
       <button type="button" className="loc-button primary" onClick={save}><UiText id="uiExtra.adminView.saveThemeSettings"/></button>
     </>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}

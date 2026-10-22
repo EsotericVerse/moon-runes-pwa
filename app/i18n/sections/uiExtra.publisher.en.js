@@ -8,5 +8,9 @@ export default {
   "publishArticle": "Publish article",
   "source": "Source",
   "sourceHint": "e.g. threads / vocus / personal",
-  "relations": "Advanced relations"
+  "relations": "Advanced relations",
+  "articleBody": "Article text",
+  "parentArticleId": "Parent article ID",
+  "targetArticleId": "Target article ID",
+  "referenceArticleId": "Referenced article ID",
 };

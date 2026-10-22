@@ -26,5 +26,13 @@ export default {
   "loading": "加载中…",
   "signedIn": "已登录",
   "home": "首页",
-  "save": "保存"
+  "save": "保存",
+  "settingsSections": "设置项目",
+  "homeSettingsDescription": "选择登录后显示的首页。",
+  "manageMenuDescription": "管理手机菜单与保存在本机的文件。",
+  "dailyRune": "每日符文记录",
+  "dailyRuneDescription": "查看每日符文记录。",
+  "documentImportDescription": "将文章与数据导入可管理的 Scope。",
+  "accountDescription": "查看登录状态与账号信息。",
+  "importScope": "导入目标 Scope",
 };

@@ -467,14 +467,14 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       ]}/>
     </>}
 
-    {selected.scope_kind==='scope'&&!editing?<details className="admin-node-mapping">
-      <summary>管理者 Mapping（{scopeMappings.length}）</summary>
+      {selected.scope_kind==='scope'&&!editing?<details className="admin-node-mapping">
+      <summary><UiText id="uiExtra.adminView.administratorMapping"/>（{scopeMappings.length}）</summary>
       {scopeMappings.map(row=><article className="scope-inline-card" key={row.email}>
         <strong>{row.email}</strong>
         <div className="scope-management-fields">
-          <label><span>Galaxy</span><input value={row.galaxy||'galaxy'} onChange={e=>patchMapping(row.email,'galaxy',e.target.value)}/></label>
-          <label><span>Time</span><input value={row.time||'time'} onChange={e=>patchMapping(row.email,'time',e.target.value)}/></label>
-          <label><span>Birthday</span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.email,'birthday',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.galaxyTable"/></span><input value={row.galaxy||'galaxy'} onChange={e=>patchMapping(row.email,'galaxy',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.timeTable"/></span><input value={row.time||'time'} onChange={e=>patchMapping(row.email,'time',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.birthdayMapping"/></span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.email,'birthday',e.target.value)}/></label>
         </div>
         <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><UiText id="uiExtra.adminView.saveMapping"/></button><button type="button" onClick={()=>removeMapping(row)}><UiText id="uiExtra.adminView.remove"/></button></div>
       </article>)}
@@ -576,7 +576,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       </label>
       <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><code>{scopeDraft.route_mode==='domain'?(scopeDraft.scope_id||'scope-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(scopeDraft.scope_id||'scope-id')}</code></div>
       {scopeDomainError?<p className="scope-status scope-error" role="alert">{scopeDomainError}</p>:null}
-      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}><FieldText text={creatingScope?'建立與驗證中…':'建立'}/></button>
+      <button type="button" className="loc-button primary" disabled={Boolean(scopeDomainError)||creatingScope} onClick={createScope}><UiText id={creatingScope?'uiExtra.adminView.provisioningMember':'uiExtra.adminView.ddMember'}/></button>
     </>:<>
       <label><span><UiText id="uiExtra.adminView.groupId"/></span><input maxLength="15" value={groupDraft.scope_id} onChange={e=>setGroupDraft(v=>({...v,scope_id:e.target.value.toLowerCase()}))}/></label>
       <label><span><UiText id="uiExtra.adminView.groupName"/></span><input value={groupDraft.display_name} onChange={e=>setGroupDraft(v=>({...v,display_name:e.target.value}))}/></label>
@@ -589,7 +589,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
       <div className="admin-route-summary"><span><UiText id="uiExtra.adminView.createLocation"/></span><code>{groupDraft.route_mode==='domain'?(groupDraft.scope_id||'group-id')+'.lo3rwang.cc':'https://loc.lo3rwang.cc/'+(groupDraft.scope_id||'group-id')}</code></div>
       {groupDomainError?<p className="scope-status scope-error" role="alert">{groupDomainError}</p>:null}
       <label><span><UiText id="uiExtra.adminView.parentGroup2"/></span><select className="admin-native-select" value={groupDraft.parent_scope_id||'loc'} onChange={e=>setGroupDraft(v=>({...v,parent_scope_id:e.target.value||'loc'}))}>{parentOptions.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label>
-      <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}><UiText id="uiExtra.adminView.create"/></button>
+      <button type="button" className="loc-button primary" disabled={Boolean(groupDomainError)} onClick={createGroup}><UiText id="uiExtra.adminView.ddGroup"/></button>
     </>}
   </aside>;
 }

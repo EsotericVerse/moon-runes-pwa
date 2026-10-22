@@ -8,5 +8,9 @@ export default {
   "publishArticle": "發佈文章",
   "source": "來源",
   "sourceHint": "例如 threads / vocus / personal",
-  "relations": "進階關聯"
+  "relations": "進階關聯",
+  "articleBody": "文章正文",
+  "parentArticleId": "上層文章 ID",
+  "targetArticleId": "目標文章 ID",
+  "referenceArticleId": "參照文章 ID",
 };

@@ -26,5 +26,13 @@ export default {
   "loading": "読み込み中…",
   "signedIn": "ログイン済み",
   "home": "ホーム",
-  "save": "保存"
+  "save": "保存",
+  "settingsSections": "設定項目",
+  "homeSettingsDescription": "ログイン後に表示するホームを選択します。",
+  "manageMenuDescription": "メニューと端末内のファイルを管理します。",
+  "dailyRune": "毎日のルーン記録",
+  "dailyRuneDescription": "毎日のルーン記録を確認します。",
+  "documentImportDescription": "管理対象の Scope に記事やデータを取り込みます。",
+  "accountDescription": "ログインとアカウントの状態を確認します。",
+  "importScope": "取り込み先の Scope",
 };

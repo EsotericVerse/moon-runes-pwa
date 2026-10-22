@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import {FeaturePage} from '../modular/ui';
+import ManagementSectionNav from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 // The home/account Settings screens never download import or management editors.
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
@@ -24,7 +25,7 @@ import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
-const option=(value,label)=>({value,label});
+const option=(value,label,description)=>({value,label,description});
 const selectProps={
   unstyled:true,isSearchable:false,
   className:'loc-settings-select',classNamePrefix:'loc-settings-select'
@@ -108,13 +109,13 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[native,prefs.favorites.join(','),choices]);
 
   const sections=[
-    option('home',uiT('uiExtra.globalSettings.homeSettings')),
-    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
+    option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription')),
+    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'))]:[]),
     // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
     // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。
-    ...(native||account.user?[option('dailyRune','每日符文紀錄')]:[]),
-    option('files',uiT('uiExtra.globalSettings.documentImport')),
-    option('account',uiT('uiExtra.globalSettings.account'))
+    ...(native||account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'))]:[]),
+    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription')),
+    option('account',uiT('uiExtra.globalSettings.account'),uiT('uiExtra.globalSettings.accountDescription'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
@@ -151,14 +152,12 @@ export default function GlobalSettings({initialSection='home'}={}){
   }
 
   return <FeaturePage featureId="setting">
-    <div className="scope-content scope-settings-options">
-      <section className="loc-card loc-settings-switcher">
-        <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
-          aria-label={uiT('uiExtra.globalSettings.chooseSettings')} options={sections}
-          value={sections.find(item=>item.value===activeSection)||sections[0]}
-          onChange={item=>{setSection(item?.value||'home');setStatus('');}}/>
-      </section>
-
+    <div className="scope-settings-options management-workspace">
+      <ManagementSectionNav id="settings-sections" title={uiT('uiExtra.globalSettings.settingsSections')}
+        panelId="settings-management-panel" items={sections} value={activeSection}
+        onChange={next=>{setSection(next);setStatus('');}}/>
+      <div className="management-workspace-panel" id="settings-management-panel" role="region"
+        aria-labelledby={'settings-sections-option-'+activeSection}>
       {activeSection==='home'?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
@@ -180,7 +179,7 @@ export default function GlobalSettings({initialSection='home'}={}){
 
       {activeSection==='files'&&!native?<div className="loc-settings-panel-group">
         {account.user?managedScopes.length?<>
-          {scopeOptions.length>1?<Select {...selectProps} aria-label="Scope" inputId="loc-import-scope"
+          {scopeOptions.length>1?<Select {...selectProps} aria-label={uiT('uiExtra.globalSettings.importScope')} inputId="loc-import-scope"
             instanceId="loc-import-scope" options={scopeOptions}
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
@@ -203,6 +202,7 @@ export default function GlobalSettings({initialSection='home'}={}){
         {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
       </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}
+      </div>
     </div>
   </FeaturePage>;
 }

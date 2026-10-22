@@ -1,48 +1,253 @@
-/* One menu baseline for Admin, Scope Management, and Settings. */
-.admin-main-select,.loc-settings-switcher{
-  position:relative;
-  z-index:var(--loc-management-menu-layer);
+/* Shared information architecture for the three management workspaces. */
+.management-workspace{
+  --management-min:16rem;
+  display:grid;
+  grid-template-columns:minmax(14rem,16.5rem) minmax(0,1fr);
+  align-items:start;
+  gap:clamp(1rem,2vw,1.5rem);
+  min-width:0;
 }
-.admin-main-select{
-  max-width:var(--loc-management-menu-max-width);
+.management-section-nav,
+.management-workspace-panel{min-width:0;}
+.management-section-nav{
+  padding:1rem;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg,18px);
+  background:var(--loc-ui-panel,var(--loc-panel));
 }
+.management-section-nav__title{
+  margin:0 0 .75rem;
+  color:var(--loc-heading);
+  font-size:.95rem;
+  font-weight:750;
+}
+.management-section-nav__items{display:grid;gap:.45rem;}
+.management-section-nav__item{
+  display:grid;
+  gap:.22rem;
+  width:100%;
+  min-height:4.2rem;
+  padding:.72rem .78rem;
+  border:1px solid transparent;
+  border-inline-start:3px solid transparent;
+  border-radius:var(--loc-ui-radius-sm,10px);
+  background:transparent;
+  color:var(--loc-text);
+  text-align:start;
+  font:inherit;
+  cursor:pointer;
+  transition:background-color var(--loc-ui-fast,160ms) ease,border-color var(--loc-ui-fast,160ms) ease;
+}
+.management-section-nav__item:hover{background:var(--loc-ui-panel-soft,var(--loc-surface-soft));}
+.management-section-nav__item[aria-pressed="true"]{
+  border-color:var(--loc-accent-border-soft,var(--loc-line));
+  border-inline-start-color:var(--loc-accent);
+  background:var(--loc-accent-surface,var(--loc-ui-accent-soft));
+}
+.management-section-nav__item:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:2px;
+}
+.management-section-nav__label{font-size:.96rem;font-weight:700;line-height:1.35;}
+.management-section-nav__description{color:var(--loc-muted);font-size:.78rem;line-height:1.45;}
+.management-workspace-panel{display:grid;align-content:start;gap:1rem;}
+.management-workspace-panel>.loc-card{margin:0;}
+.management-workspace-panel .admin-source-category-grid,
+.management-workspace-panel .admin-source-alias-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,15.5rem),1fr));
+  align-items:stretch;
+  gap:.8rem;
+  margin:1rem 0 1.5rem;
+}
+.admin-source-category-card,
+.admin-source-alias-card{
+  display:grid;
+  align-content:start;
+  gap:.8rem;
+  min-width:0;
+  padding:1rem;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-md,14px);
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+}
+.admin-source-category-card__meta{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+.admin-source-category-card__code{
+  min-width:0;
+  overflow-wrap:anywhere;
+  color:var(--loc-muted);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.78rem;
+}
+.admin-source-category-card__status{
+  flex:none;
+  padding:.18rem .5rem;
+  border:1px solid var(--loc-line);
+  border-radius:999px;
+  color:var(--loc-muted);
+  font-size:.75rem;
+}
+.admin-source-category-card__status.is-enabled{border-color:var(--loc-accent-border-soft,var(--loc-line));color:var(--loc-accent);}
+.admin-source-category-card>label,
+.admin-source-alias-card>label{display:grid;gap:.4rem;min-width:0;font-weight:600;}
+.admin-source-category-card>label>span,
+.admin-source-alias-card>label>span{color:var(--loc-heading);font-size:.9rem;}
+.admin-source-category-card input,
+.admin-source-alias-card select{width:100%;min-width:0;min-height:2.75rem;padding:.62rem .72rem;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm,10px);background:var(--loc-panel);color:var(--loc-text);font:inherit;}
+.admin-source-category-card__actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:auto;padding-top:.15rem;}
+.admin-source-category-card__actions .loc-button{min-height:2.55rem;}
+.admin-source-alias-card>strong{min-height:2.3rem;overflow-wrap:anywhere;color:var(--loc-heading);}
+.management-workspace-panel h2:first-child{margin-top:0;}
+.management-workspace-panel h3.admin-workspace-section-heading{grid-column:1/-1;margin:0;}
 
-/* Native/web settings switchers: reuse active LOC Theme variables, not a second palette. */
-.loc-settings-switcher>label,.loc-settings-panel-group label{display:block;margin-bottom:.5rem;font-weight:600;}
+/* Inputs read as fields inside a group, rather than a stack of miniature cards. */
+.management-workspace-panel .scope-management-fields,
+.management-workspace-panel .admin-page-copy-fields{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem 1.15rem;
+  margin:.35rem 0;
+  padding:1rem;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-md,14px);
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+}
+.management-workspace-panel .scope-management-fields>label,
+.management-workspace-panel .scope-management-fields>.scope-management-wide-field,
+.management-workspace-panel .admin-page-copy-fields>label,
+.management-workspace-panel .admin-context-panel>label,
+.management-workspace-panel .scope-stat-controls>label,
+.management-workspace-panel>.loc-card>label{
+  display:grid;
+  align-content:start;
+  gap:.42rem;
+  min-width:0;
+  min-height:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--loc-text);
+  font-size:.94rem;
+  font-weight:600;
+  line-height:1.4;
+}
+.management-workspace-panel .scope-management-fields>label>span:first-child,
+.management-workspace-panel .admin-page-copy-fields>label>span:first-child,
+.management-workspace-panel .admin-context-panel>label>span:first-child,
+.management-workspace-panel .scope-stat-controls>label>span:first-child,
+.management-workspace-panel>.loc-card>label>span:first-child,
+.management-workspace-panel .scope-publisher-panel label>span,
+.management-workspace-panel .scope-management-wide-field>span{
+  color:var(--loc-heading);
+  font-family:inherit;
+  font-size:.92rem;
+  font-weight:650;
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+.management-workspace-panel .scope-management-fields :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),textarea,select),
+.management-workspace-panel .scope-management-wide-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),textarea,select),
+.management-workspace-panel .admin-page-copy-fields :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),textarea,select),
+.management-workspace-panel .admin-context-panel>label :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select),
+.management-workspace-panel .scope-stat-controls label :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select),
+.management-workspace-panel>.loc-card>label :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select),
+.management-workspace-panel .scope-publisher-panel input{
+  width:100%;
+  min-width:0;
+  min-height:2.75rem;
+  margin:0;
+  padding:.62rem .72rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-ui-radius-sm,10px);
+  background:var(--loc-panel);
+  color:var(--loc-text);
+  font:inherit;
+  font-size:1rem;
+}
+.management-workspace-panel textarea{min-height:7rem;line-height:1.55;}
+.management-workspace-panel :is(input,select,textarea,button):focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:2px;
+}
+.management-workspace-panel .scope-stat-controls{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:end;
+  gap:1rem;
+  margin:.75rem 0 1rem;
+}
+.management-workspace-panel .scope-stat-controls>.loc-button,
+.management-workspace-panel .scope-stat-controls>button{justify-self:start;min-height:2.75rem;}
+.management-workspace-panel .scope-management-fields>.scope-management-wide-field{grid-column:1/-1;}
+.management-workspace-panel .admin-inline-select{
+  display:flex;
+  align-items:end;
+  flex-wrap:wrap;
+  gap:.7rem;
+  max-width:100%;
+}
+.management-workspace-panel .admin-inline-select label{display:grid;gap:.42rem;min-width:min(100%,15rem);font-weight:600;}
+.management-workspace-panel .admin-inline-select label>span{color:var(--loc-heading);font-size:.92rem;}
+.management-workspace-panel .admin-inline-select select{min-height:2.75rem;}
+.management-workspace-panel .scope-publisher-panel{gap:.8rem;padding:1rem;}
+.management-workspace-panel .scope-publisher-panel label{gap:.42rem;font-size:.9rem;font-weight:600;}
+.management-workspace-panel .scope-publisher-title{padding:.7rem .75rem;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm,10px);}
+.management-workspace-panel .admin-theme-advanced-colors{
+  padding:1rem;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-md,14px);
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+}
+.management-workspace-panel .admin-theme-advanced-colors>summary{cursor:pointer;color:var(--loc-heading);font-weight:700;}
+.management-workspace-panel .admin-theme-advanced-colors>p{color:var(--loc-muted);line-height:1.55;}
+.management-workspace-panel .admin-theme-advanced-colors[open]>p{margin:.6rem 0;}
+.management-workspace-panel .admin-theme-token-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;}
+.management-workspace-panel .admin-theme-token-grid label{min-width:0;}
+.management-workspace-panel .admin-theme-token-grid input{min-width:0;width:100%;font-size:.9rem;}
+.management-workspace-panel .admin-theme-token-grid input[type="color"]{width:2.7rem;min-width:2.7rem;}
+.management-workspace-panel .scope-management-fields>.admin-theme-primary-color{
+  grid-column:1/-1;
+  display:grid;
+  gap:.75rem;
+  margin:0;
+  padding:.9rem 1rem 1rem;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-sm,10px);
+  background:var(--loc-panel);
+}
+.admin-theme-primary-color>legend{padding:0 .35rem;color:var(--loc-heading);font-weight:700;}
+.admin-theme-primary-color-fields{display:grid;grid-template-columns:minmax(8rem,.55fr) minmax(12rem,1fr);gap:1rem;}
+.admin-theme-primary-color-fields label{display:grid;align-content:start;gap:.4rem;min-width:0;font-size:.9rem;font-weight:600;}
+.admin-theme-primary-color-fields label>span{color:var(--loc-text);}
+.admin-theme-primary-color-fields input[type="color"]{width:100%;min-width:0;min-height:2.75rem;padding:.25rem;}
+.management-workspace-panel .admin-theme-primary-color>small{color:var(--loc-muted);font-size:.84rem;line-height:1.5;}
+.management-workspace-panel .admin-theme-advanced-colors>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:4px;}
+
+/* Scope picker inside Settings still uses the existing React Select control. */
 .loc-settings-select{width:100%;max-width:var(--loc-management-menu-max-width);position:relative;z-index:var(--loc-management-menu-control-layer);}
 .loc-settings-select__control{
   min-height:var(--loc-management-menu-control-min-height);display:flex;align-items:center;gap:var(--loc-management-menu-control-gap);
   border:1px solid var(--loc-line);border-radius:var(--loc-management-menu-control-radius);
-  padding:var(--loc-management-menu-control-padding);background:var(--loc-panel);color:var(--loc-text);
-  cursor:pointer;transition:border-color .15s ease;
+  padding:var(--loc-management-menu-control-padding);background:var(--loc-panel);color:var(--loc-text);cursor:pointer;
 }
-.loc-settings-select__control--is-focused{
-  border-color:var(--loc-accent);
-  box-shadow:0 0 0 2px var(--loc-accent-surface-strong);
-}
+.loc-settings-select__control--is-focused{border-color:var(--loc-accent);box-shadow:0 0 0 2px var(--loc-accent-surface-strong);}
 .loc-settings-select__value-container{display:flex;flex:1;min-width:0;align-items:center;gap:.25rem;}
-.loc-settings-select__single-value{color:var(--loc-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.loc-settings-select__input-container{color:var(--loc-text);}
+.loc-settings-select__single-value,.loc-settings-select__input-container{color:var(--loc-text);}
 .loc-settings-select__indicators{display:flex;align-items:center;color:var(--loc-muted);}
 .loc-settings-select__indicator{padding:.25rem;display:flex;align-items:center;}
 .loc-settings-select__indicator-separator{display:none;}
 .loc-settings-select__menu{
   position:absolute;top:100%;width:100%;z-index:var(--loc-management-menu-popup-layer);margin-top:var(--loc-management-menu-popup-offset);
-  border:1px solid var(--loc-line);border-radius:var(--loc-management-menu-control-radius);
-  background:var(--loc-panel);color:var(--loc-text);
-  box-shadow:var(--loc-shadow-card);overflow:hidden;
-  isolation:isolate;
+  border:1px solid var(--loc-line);border-radius:var(--loc-management-menu-control-radius);background:var(--loc-panel);
+  color:var(--loc-text);box-shadow:var(--loc-shadow-card);overflow:hidden;isolation:isolate;
 }
 .loc-settings-select__menu-list{max-height:var(--loc-management-menu-list-max-height);overflow-y:auto;padding:var(--loc-management-menu-list-padding);background:var(--loc-panel);}
 .loc-settings-select__option{padding:var(--loc-management-menu-option-padding);cursor:pointer;border-radius:var(--loc-management-menu-option-radius);background:var(--loc-panel);}
 .loc-settings-select__option--is-focused{background:var(--loc-accent-surface-strong);}
 .loc-settings-select__option--is-selected{background:var(--loc-rune-selected-bg);color:var(--loc-text);font-weight:600;}
-.loc-settings-select__placeholder{color:var(--loc-muted);}
-.loc-settings-panel-group{display:grid;gap:1rem;}
-.loc-settings-panel-group>.loc-card{margin:0;}
-.scope-settings-options>.loc-settings-switcher{margin-bottom:0;}
+.management-workspace-panel .loc-settings-select{max-width:32rem;}
 
-/* Read-only favorites are a compact visual preview within Home settings. */
+/* Read-only favorites remain a compact preview inside Homepage settings. */
 .scope-settings-favorite-preview{
   display:flex;align-items:center;flex-wrap:wrap;gap:.55rem 1rem;
   border-top:1px solid var(--loc-line);padding-top:.75rem;margin-top:.9rem;
@@ -56,43 +261,23 @@
   color:var(--loc-text);background:var(--loc-surface-soft);font-size:.85rem;
 }
 
-/* The management / settings / admin menu is the page's main control: make it read as one. */
-.admin-main-select .loc-settings-select__control,
-.loc-settings-switcher .loc-settings-select__control{
-  border:1.5px solid var(--loc-accent-border,var(--loc-accent));
-  background:var(--loc-surface-strong,var(--loc-panel));
-  box-shadow:var(--loc-shadow-card);
+@media(max-width:820px){
+  .management-workspace{grid-template-columns:minmax(0,1fr);}
+  .management-section-nav{padding:.8rem;}
+  .management-section-nav__title{margin-bottom:.6rem;}
+  .management-section-nav__items{grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;}
+  .management-section-nav__item{min-height:4.15rem;padding:.62rem;}
+  .management-section-nav__description{font-size:.74rem;}
 }
-.admin-main-select .loc-settings-select__control:hover,
-.loc-settings-switcher .loc-settings-select__control:hover{border-color:var(--loc-accent)}
-.admin-main-select .loc-settings-select__single-value,
-.loc-settings-switcher .loc-settings-select__single-value{
-  color:var(--loc-heading);font-size:1.05rem;font-weight:700;letter-spacing:.02em;
+@media(max-width:540px){
+  .management-workspace-panel .scope-management-fields,
+  .management-workspace-panel .admin-page-copy-fields,
+  .management-workspace-panel .scope-stat-controls,
+  .management-workspace-panel .admin-theme-primary-color-fields,
+  .management-workspace-panel .admin-theme-token-grid{grid-template-columns:minmax(0,1fr);}
+  .management-workspace-panel .scope-management-fields{padding:.85rem;}
+  .management-workspace-panel .scope-management-fields>.scope-management-wide-field{grid-column:auto;}
 }
-.admin-main-select .loc-settings-select__indicators,
-.loc-settings-switcher .loc-settings-select__indicators{color:var(--loc-accent)}
-.admin-main-select .loc-settings-select__option,
-.loc-settings-switcher .loc-settings-select__option{font-weight:600;color:var(--loc-text)}
-.loc-settings-switcher{
-  padding:.9rem 1rem;border:1px solid var(--loc-accent-border-soft,var(--loc-line));
-}
-
-
-/* Align the three management selectors; Settings uses the same compact
-   control row instead of a decorative card around the control. */
-.admin-main-select,
-.loc-settings-switcher{
-  width:min(100%,var(--loc-management-menu-max-width));
-  max-width:none;
-  align-self:start;
-}
-.scope-settings-options>.loc-settings-switcher{
-  padding:0;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  box-shadow:none;
-}
-.scope-settings-options>.loc-settings-switcher .loc-settings-select{
-  max-width:none;
+@media(prefers-reduced-motion:reduce){
+  .management-section-nav__item{transition:none;}
 }

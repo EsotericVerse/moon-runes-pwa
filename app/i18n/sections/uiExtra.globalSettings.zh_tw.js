@@ -26,5 +26,13 @@ export default {
   "loading": "載入中…",
   "signedIn": "已登入",
   "home": "首頁",
-  "save": "儲存"
+  "save": "儲存",
+  "settingsSections": "設定項目",
+  "homeSettingsDescription": "選擇登入後要顯示的首頁。",
+  "manageMenuDescription": "管理手機選單與儲存在本機的檔案。",
+  "dailyRune": "每日符文紀錄",
+  "dailyRuneDescription": "查看每日符文紀錄。",
+  "documentImportDescription": "將文章與資料匯入可管理的 Scope。",
+  "accountDescription": "查看登入狀態與帳號資訊。",
+  "importScope": "匯入目標 Scope",
 };

@@ -2,10 +2,10 @@
 
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
-import Select from 'react-select';
 import {useAccount} from './use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
+import ManagementSectionNav from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
@@ -13,14 +13,10 @@ const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loadi
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
-  {value:'settings',label:'Scope 設定'},
-  {value:'publisher',label:'發表文章'},
-  {value:'import',label:'資料匯入'}
+  {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
+  {value:'publisher',label:'發表文章',description:'新增文章與單筆多媒體資料。'},
+  {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'}
 ]);
-const selectProps={
-  unstyled:true,isSearchable:false,
-  className:'loc-settings-select',classNamePrefix:'loc-settings-select'
-};
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
@@ -31,20 +27,15 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   return <FeaturePage featureId="manage">
 
-    <div className="scope-management-page">
-      <div className="admin-main-select">
-        <Select {...selectProps}
-          inputId="governance-management-select"
-          instanceId="governance-management-select"
-          aria-label="Scope 管理功能"
-          options={MANAGEMENT_OPTIONS}
-          value={selectedOption}
-          onChange={option=>setSection(option?.value||'settings')}
-        />
+    <div className="management-workspace">
+      <ManagementSectionNav id="scope-sections" title="管理項目" panelId="scope-management-panel"
+        items={MANAGEMENT_OPTIONS} value={section} onChange={setSection}/>
+      <div className="management-workspace-panel" id="scope-management-panel" role="region"
+        aria-labelledby={'scope-sections-option-'+selectedOption.value}>
+        {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
+        {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
+        {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
       </div>
-      {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-      {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
-      {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
     </div>
   </FeaturePage>;
 }

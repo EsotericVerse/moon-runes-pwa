@@ -403,6 +403,13 @@
   .admin-deployment-tree{height:clamp(20rem,43vh,26rem)}
   .admin-graph-header{align-items:flex-start}
 }
+@media(min-width:1200px){
+  .admin-deployment-layout{grid-template-columns:minmax(17rem,.82fr) minmax(0,1.18fr);}
+  .admin-graph-header{grid-column:1/-1;}
+  .admin-deployment-tree{grid-column:1;grid-row:2;height:clamp(24rem,54vh,38rem);}
+  .admin-editor-section{grid-column:2;grid-row:2;align-self:start;}
+  .admin-delete-confirm,.admin-deployment-layout>.scope-status{grid-column:1/-1;}
+}
 
 /* vis-timeline is the primary Time CRUD surface; the dialog only edits metadata the timeline cannot encode. */
 .scope-culture-timeline-dialog{position:fixed;inset:auto clamp(.75rem,4vw,3rem) clamp(.75rem,4vw,3rem) auto;z-index:1200;width:min(44rem,calc(100vw - 1.5rem));max-height:min(78vh,48rem);margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:auto}

@@ -8,5 +8,9 @@ export default {
   "publishArticle": "記事を公開",
   "source": "ソース",
   "sourceHint": "例：threads / vocus / personal",
-  "relations": "詳細な関連付け"
+  "relations": "詳細な関連付け",
+  "articleBody": "記事本文",
+  "parentArticleId": "親記事 ID",
+  "targetArticleId": "対象記事 ID",
+  "referenceArticleId": "参照記事 ID",
 };

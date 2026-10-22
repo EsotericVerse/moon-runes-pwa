@@ -78,15 +78,22 @@ export function AdminSourceCategories(){
       <label><UiText id="uiExtra.sourceCategory.name"/><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>
       <button className="loc-button" type="button" disabled={busy||!category.trim()||!title.trim()} onClick={add}><UiText id="uiExtra.sourceCategory.createGroup"/></button>
     </div>
-    <div className="scope-management-records">
-      {items.map(row=><div className="scope-inline-card" key={row.category_code}>
-        <label><UiText id="uiExtra.sourceCategory.name"/><input value={labels[row.category_code]??row.display_name} maxLength={80}
+    <div className="admin-source-category-grid">
+      {items.map(row=><article className="admin-source-category-card" key={row.category_code}>
+        <div className="admin-source-category-card__meta">
+          <span className="admin-source-category-card__code">{row.category_code}</span>
+          <span className={'admin-source-category-card__status'+(row.enabled?' is-enabled':'')}>
+            <UiText id={row.enabled?'uiExtra.sourceCategory.enabled':'uiExtra.sourceCategory.disabled'}/>
+          </span>
+        </div>
+        <label><span><UiText id="uiExtra.sourceCategory.name"/></span><input value={labels[row.category_code]??row.display_name} maxLength={80}
           onChange={e=>setLabels(values=>({...values,[row.category_code]:e.target.value}))} disabled={busy}/></label>
-        <span>{row.category_code}</span>
-        <button type="button" className="loc-button" disabled={busy||!String(labels[row.category_code]??row.display_name).trim()}
-          onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]??row.display_name).trim()})}><UiText id="uiExtra.sourceCategory.saveName"/></button>
-        <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}><UiText id={row.enabled?'uiExtra.sourceCategory.disable':'uiExtra.sourceCategory.enable'}/></button>
-      </div>)}
+        <div className="admin-source-category-card__actions">
+          <button type="button" className="loc-button" disabled={busy||!String(labels[row.category_code]??row.display_name).trim()}
+            onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]??row.display_name).trim()})}><UiText id="uiExtra.sourceCategory.saveName"/></button>
+          <button type="button" className="loc-button" disabled={busy} onClick={()=>modify(CATEGORIES,{category_code:row.category_code},{enabled:!row.enabled})}><UiText id={row.enabled?'uiExtra.sourceCategory.disable':'uiExtra.sourceCategory.enable'}/></button>
+        </div>
+      </article>)}
     </div>
     <h3><UiText id="uiExtra.sourceCategory.defaultMap"/></h3>
     <div className="scope-stat-controls">
@@ -96,13 +103,13 @@ export function AdminSourceCategories(){
       </select></label>
       <button type="button" className="loc-button" disabled={busy||!alias.trim()} onClick={map}><UiText id="uiExtra.sourceCategory.assign"/></button>
     </div>
-    <div className="scope-management-records">
-      {aliases.map(row=><div className="scope-inline-card" key={row.source_key}>
+    <div className="admin-source-alias-grid">
+      {aliases.map(row=><article className="admin-source-alias-card" key={row.source_key}>
         <strong>{row.source_key}</strong>
-        <select className="scope-select" value={row.category_code} disabled={busy} onChange={e=>modify(ALIASES,{source_key:row.source_key},{category_code:e.target.value})}>
+        <label><span><UiText id="uiExtra.sourceCategory.assignedGroup"/></span><select className="scope-select" value={row.category_code} disabled={busy} onChange={e=>modify(ALIASES,{source_key:row.source_key},{category_code:e.target.value})}>
           {items.map(x=><option key={x.category_code} value={x.category_code}>{x.display_name}</option>)}
-        </select>
-      </div>)}
+        </select></label>
+      </article>)}
     </div>
     {query.error?<p className="scope-status scope-error">{String(query.error.message||query.error)}</p>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}

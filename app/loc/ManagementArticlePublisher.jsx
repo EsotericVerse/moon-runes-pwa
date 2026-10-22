@@ -102,16 +102,16 @@ function MediaRecordInsert({scopeId}){
     <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
-        <label>media_type<input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
-        <label>galaxy_link<input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
-        <label>createtime<input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaArticleUidLabel"/></span><input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaCreatedAtLabel"/></span><input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
-        <label>source_place<input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaLocationLabel"/></span><input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
       </div>
-      <label><UiText id="uiExtra.importUI.mediaTitle"/><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
-      <label>url<input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
-      <label>meta_tags<input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
+      <label><span><UiText id="uiExtra.importUI.mediaTitle"/></span><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
+      <label><span><UiText id="uiExtra.importUI.mediaExternalUrlLabel"/></span><input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
+      <label><span><UiText id="uiExtra.importUI.mediaTagsLabel"/></span><input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
       {status?<p className="scope-status">{status}</p>:null}
     </form>
@@ -171,13 +171,13 @@ export default function ManagementArticlePublisher({scopeId}){
     <form className="scope-publisher" onSubmit={save}>
       <div className="scope-publisher-main">
         <ObjectEditor mode="fields" fields={[
-          {key:'title',kind:'node',bare:true,node:<input
+          {key:'title',kind:'node',bare:false,node:<input
             className="scope-publisher-title"
             value={draft.title}
             onChange={event=>change('title',event.target.value)}
             placeholder={t('uiExtra.publisher.addTitle')}
-            aria-label={t('uiExtra.publisher.articleTitle')}/>},
-          {key:'body',kind:'rich',bare:true,
+            aria-label={t('uiExtra.publisher.articleTitle')}/>,label:<UiText id="uiExtra.publisher.articleTitle"/>},
+          {key:'body',kind:'rich',label:<UiText id="uiExtra.publisher.articleBody"/>,
             editorKey:'publisher:'+scopeId+':'+draft.editorKey,
             content:draft.bodyBlocks,
             onBlocksChange:blocks=>change('bodyBlocks',blocks),
@@ -213,9 +213,9 @@ export default function ManagementArticlePublisher({scopeId}){
 
         <details className="scope-publisher-panel">
           <summary><UiText id="uiExtra.publisher.relations"/></summary>
-          <label><span>source_id</span><input value={draft.source_id} onChange={event=>change('source_id',event.target.value)} placeholder={UI_COPY.management.articleParent}/></label>
-          <label><span>target_id</span><input value={draft.target_id} onChange={event=>change('target_id',event.target.value)} placeholder={UI_COPY.management.articleTarget}/></label>
-          <label><span>ref_id</span><input value={draft.ref_id} onChange={event=>change('ref_id',event.target.value)} placeholder={UI_COPY.management.articleReference}/></label>
+          <label><span><UiText id="uiExtra.publisher.parentArticleId"/></span><input value={draft.source_id} onChange={event=>change('source_id',event.target.value)} placeholder={UI_COPY.management.articleParent}/></label>
+          <label><span><UiText id="uiExtra.publisher.targetArticleId"/></span><input value={draft.target_id} onChange={event=>change('target_id',event.target.value)} placeholder={UI_COPY.management.articleTarget}/></label>
+          <label><span><UiText id="uiExtra.publisher.referenceArticleId"/></span><input value={draft.ref_id} onChange={event=>change('ref_id',event.target.value)} placeholder={UI_COPY.management.articleReference}/></label>
         </details>
       </aside>
     </form>

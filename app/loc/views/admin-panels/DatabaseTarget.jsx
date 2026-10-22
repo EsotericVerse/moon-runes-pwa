@@ -107,6 +107,7 @@ export default function DatabaseTarget(){
     finally{setSaving(false);}
   }
   return <section className="loc-card admin-workspace">
+    <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
     <div className="scope-management-fields">
       <label><span><UiText id="uiExtra.adminView.primaryDatabase"/></span><select className="admin-native-select" value={primaryId} onChange={event=>setPrimaryId(event.target.value)}>
         {rows.filter(item=>!item._new).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
@@ -118,8 +119,9 @@ export default function DatabaseTarget(){
       <label><span><UiText id="uiExtra.adminView.routingMode"/></span><select className="admin-native-select" value={routingMode} onChange={event=>setRoutingMode(event.target.value)}>
         <option value="single"><UiText id="uiExtra.adminView.singleDatabase"/></option><option value="db-managed"><UiText id="uiExtra.adminView.dbManagedReplication"/></option>
       </select></label>
-      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={saveRouting} disabled={saving||!primaryId}><FieldText text={saving?'處理中…':'套用'}/></button></div>
+      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={saveRouting} disabled={saving||!primaryId}><UiText id={saving?'uiExtra.adminView.applyingRouting':'uiExtra.adminView.applyRouting'}/></button></div>
     </div>
+    <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <label><span><UiText id="uiExtra.adminView.savedDatabases"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
         {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.selected?<UiText id="uiExtra.adminView.active"/>:null}</option>)}
@@ -127,7 +129,8 @@ export default function DatabaseTarget(){
       <button type="button" className="loc-button" onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
     </div>
     {row?<div className="scope-management-fields">
-      <label><span>Type</span><select className="admin-native-select" value={row.engine||'postgres'} disabled={isManaged} onChange={event=>{
+      <h3 className="admin-workspace-section-heading"><UiText id="uiExtra.adminView.connectionDetails"/></h3>
+      <label><span><UiText id="uiExtra.adminView.databaseType"/></span><select className="admin-native-select" value={row.engine||'postgres'} disabled={isManaged} onChange={event=>{
         const engine=event.target.value;
         setRows(current=>current.map(item=>item.target_id===selectedId?{...item,engine,provider:engine==='postgres'?item.provider:'custom',connection_mode:'direct'}:item));
       }}>
@@ -136,12 +139,12 @@ export default function DatabaseTarget(){
       <label><span><UiText id="uiExtra.adminView.provider"/></span><select className="admin-native-select" value={row.provider} disabled={isManaged} onChange={event=>patch('provider',event.target.value)}>
         {databaseProviderChoices(row.engine).map(option=><option key={option.value} value={option.value}><FieldText text={option.label}/></option>)}
       </select></label>
-      <label><span>{cloud?'Link / Project':'DB Host:Port'}</span><input value={row.project_url||''} onChange={event=>patch('project_url',event.target.value)}
+      <label><span><UiText id="uiExtra.adminView.databaseEndpoint"/></span><input value={row.project_url||''} onChange={event=>patch('project_url',event.target.value)}
         placeholder={row.provider==='supabase'?'Project ID 或 https://xxx.supabase.co':row.provider==='neon'?'Neon DB Endpoint 或 Data API URL':'db.example.com:5432'}/></label>
       <label><span><UiText id="uiExtra.adminView.regionArea"/></span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
-      <label><span>Database</span><input value={database} onChange={event=>setDatabase(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':row.provider==='neon'?'neondb':'Database name'}/></label>
-      <label><span>User</span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
-      <label><span>Password</span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
+      <label><span><UiText id="uiExtra.adminView.databaseName"/></span><input value={database} onChange={event=>setDatabase(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':row.provider==='neon'?'neondb':'Database name'}/></label>
+      <label><span><UiText id="uiExtra.adminView.databaseUser"/></span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
+      <label><span><UiText id="uiExtra.adminView.databasePassword"/></span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
         <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}><FieldText text={saving?'儲存中…':'儲存設定'}/></button>
         {!row.selected?<button type="button" className="loc-button" onClick={()=>save({switchTarget:true})} disabled={saving}><FieldText text={saving?'處理中…':'切換至此資料庫'}/></button>:null}

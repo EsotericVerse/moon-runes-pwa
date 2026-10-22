@@ -56,8 +56,8 @@ export default function AdminEmailBlocklist(){
     finally{setBusy(false);}
   }
   return <section className="loc-card admin-workspace">
-    <h2>系統黑名單（Email Block List）</h2>
-    <label><span>Email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+    <h2><UiText id="uiExtra.adminView.emailBlocklist"/></h2>
+    <label><span><UiText id="uiExtra.adminView.blockedEmailAddress"/></span><input type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
     <button type="button" className="loc-button primary" onClick={add} disabled={busy}><UiText id="uiExtra.adminView.addToBlocklist"/></button>
     {loading?<p className="scope-status">讀取中…</p>:null}
     {!loading&&emails.length===0?<p className="scope-status">目前沒有封鎖 Email。</p>:null}

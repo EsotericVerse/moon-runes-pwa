@@ -26,5 +26,13 @@ export default {
   "loading": "Loading…",
   "signedIn": "Signed in",
   "home": "Home",
-  "save": "Save"
+  "save": "Save",
+  "settingsSections": "Settings sections",
+  "homeSettingsDescription": "Choose the homepage shown after sign-in.",
+  "manageMenuDescription": "Manage the menu and files stored on this device.",
+  "dailyRune": "Daily rune log",
+  "dailyRuneDescription": "View your daily rune records.",
+  "documentImportDescription": "Import articles and data into a managed Scope.",
+  "accountDescription": "Check your sign-in and account status.",
+  "importScope": "Import destination Scope",
 };
