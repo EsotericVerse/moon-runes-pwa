@@ -145,8 +145,8 @@ const RUNE_GROUP_EFFECT_KEYS=Object.freeze([
 ]);
 function groupEffectFor(rune){
   const id=Number(rune?.rune_id);
-  if(!Number.isInteger(id)||id<1||id>66)return null;
-  const index=id<=64?Math.floor((id-1)/8):8;
+  if(!Number.isInteger(id)||id<0||id>66)return null;
+  const index=id===0?8:(id<=64?Math.floor((id-1)/8):8);
   const filename=AUTHORED_EFFECT_FILES[RUNE_GROUP_EFFECT_KEYS[index]];
   return filename?{path:SOURCE+filename,tuning:{scale:1.8,speed:.72}}:null;
 }
