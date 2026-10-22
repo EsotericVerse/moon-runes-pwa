@@ -20,8 +20,8 @@ const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(m
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
-  {value:'sources',label:'群組來源分類'},
-  {value:'themes',label:'主題設定'},
+  {value:'sources',label:'來源設定'},
+  {value:'themes',label:'主題顏色設定'},
   {value:'system',label:'系統設定'},
   {value:'featureHero',label:'功能區塊設定'}
 ]);
