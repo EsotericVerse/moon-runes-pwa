@@ -8,8 +8,8 @@ import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
 import {resolveHomeImage} from '../loc/LocHomeBlockDisplay';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
-import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
-import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
+const runesHeroAsset={src:'/pics/LunaRunes-hero.jpg'};
+const runesHeroSmallAsset={src:'/pics/LunaRunes-hero_s.webp'};
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
 

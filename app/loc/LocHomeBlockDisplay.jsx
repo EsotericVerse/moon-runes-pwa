@@ -1,10 +1,10 @@
 'use client';
 
 import {SITE_IMAGES} from '../site-images';
-import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
-import authorHeroSmallAsset from '../../pics/lo3rwang-hero_s.webp';
-import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
-import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
+const authorHeroAsset={src:'/pics/lo3rwang-hero.jpg'};
+const authorHeroSmallAsset={src:'/pics/lo3rwang-hero_s.webp'};
+const runesHeroAsset={src:'/pics/LunaRunes-hero.jpg'};
+const runesHeroSmallAsset={src:'/pics/LunaRunes-hero_s.webp'};
 import {HomeBlock} from './home-block-model';
 
 import {BlockNoteContent} from './blocknote-content.mjs';

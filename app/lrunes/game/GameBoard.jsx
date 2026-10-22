@@ -12,7 +12,7 @@ import {DndContext,PointerSensor,TouchSensor,useDraggable,useDroppable,useSensor
 import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
-import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
+const gameHeroAsset={src:'/pics/LunaRunesGame.jpg'};
 import './game-board.css';
 
 const LABELS=['A','B','C','D'];

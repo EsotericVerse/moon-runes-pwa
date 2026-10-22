@@ -11,7 +11,7 @@ import {
 } from './game-data';
 import {getThemeSlot,THEME_SLOTS} from '../../modular/theme-registry';
 import {mergeThemeSlot,selectThemeRegistry} from '../../loc/theme-data';
-import gameHeroAsset from '../../../pics/LunaRunesGame.jpg';
+const gameHeroAsset={src:'/pics/LunaRunesGame.jpg'};
 
 const NAMES=['A','B','C','D'];
 const GAME_THEME_DEFAULT='theme-4';

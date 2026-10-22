@@ -1,8 +1,8 @@
-import locHeroAsset from '../pics/LOC-PicAll.webp';
-import locHeroSmallAsset from '../pics/LOC-PicAll_s.webp';
-import lunarunesAsset from '../pics/LunaRunes.webp';
-import locArchitectureAsset from '../pics/ChaosGalaxy.webp';
-import authorAsset from '../pics/aboutme.webp';
+const locHeroAsset={src:'/pics/LOC-PicAll.webp'};
+const locHeroSmallAsset={src:'/pics/LOC-PicAll_s.webp'};
+const lunarunesAsset={src:'/pics/LunaRunes.webp'};
+const locArchitectureAsset={src:'/pics/ChaosGalaxy.webp'};
+const authorAsset={src:'/pics/aboutme.webp'};
 
 export const SITE_IMAGES=Object.freeze({
   locHero:locHeroAsset,
