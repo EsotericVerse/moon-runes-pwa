@@ -76,3 +76,23 @@
 .loc-settings-switcher{
   padding:.9rem 1rem;border:1px solid var(--loc-accent-border-soft,var(--loc-line));
 }
+
+
+/* Align the three management selectors; Settings uses the same compact
+   control row instead of a decorative card around the control. */
+.admin-main-select,
+.loc-settings-switcher{
+  width:min(100%,var(--loc-management-menu-max-width));
+  max-width:none;
+  align-self:start;
+}
+.scope-settings-options>.loc-settings-switcher{
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.scope-settings-options>.loc-settings-switcher .loc-settings-select{
+  max-width:none;
+}
