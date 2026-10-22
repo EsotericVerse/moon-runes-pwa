@@ -307,7 +307,7 @@ export default function DailyLogClient({embedded=false}={}){
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
         {comparisons.map(({key,current,previous,currentContext,previousSituation})=>{
-          const editing=canWrite&&editingKey===key&&editForm;
+          const editing=!embedded&&canWrite&&editingKey===key&&editForm;
           return <article className="scope-inline-card runes-single-daily-stage" key={'compare-'+key}>
           <div className="home-rune-layout">
             <RuneCardInfo
@@ -353,7 +353,7 @@ export default function DailyLogClient({embedded=false}={}){
                   </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
                 </div>
               </div>
-              {canWrite&&(!current.local_only||native)&&!editing?<div className="scope-tabs">
+              {!embedded&&canWrite&&(!current.local_only||native)&&!editing?<div className="scope-tabs">
                 <button type="button" disabled={saving} onClick={()=>beginEdit(current)}>編輯</button>
                 <button type="button" disabled={saving} onClick={()=>removeRecord(current)}>刪除</button>
               </div>:null}
