@@ -106,7 +106,7 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
 // feature-hero images, see admin-panels/FeatureHeroImages.jsx). block_order
 // is purely "which block within this page" -- it never stands in for which
 // feature; the page_name already does that job. LOC edits the group_<feature>
-// row's text in place from the admin 功能首頁圖設定 panel; every Scope reads
+// row's text in place from the admin 功能區塊設定 panel; every Scope reads
 // it read-only. The matching scope_<feature> row (see FeatureHeroImages.jsx)
 // only ever carries that Scope-view's image override, never text.
 // LunaRunes deliberately remains on its current read-only localized header.

@@ -23,7 +23,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'sources',label:'群組來源分類'},
   {value:'themes',label:'主題設定'},
   {value:'system',label:'系統設定'},
-  {value:'featureHero',label:'功能首頁圖設定'}
+  {value:'featureHero',label:'功能區塊設定'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增人員'},

@@ -124,7 +124,7 @@ function ImageSlot({feature,variant}){
 
 export default function FeatureHeroImages(){
   return <section className="loc-card admin-workspace">
-    <h2>功能首頁圖設定</h2>
+    <h2>功能區塊設定</h2>
     {FEATURES.map(feature=>{
       return <section className="loc-card scope-inline-card" key={feature.id}>
         <h3>{feature.label}</h3>
