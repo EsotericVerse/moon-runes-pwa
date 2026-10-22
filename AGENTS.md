@@ -1,5 +1,14 @@
 # Agent Instructions
 
+## Priority order
+
+System security ≫ ease of maintenance > system performance = UIUX > code aesthetics. Security is first by a wide margin, ahead of every other priority including "prefer mature modules" below. When priorities conflict, resolve in this order:
+
+1. **System security.** Vet any third-party skill, package, or MCP server (license, source reputation, available security audits, what its scripts actually do) before installing it, even when it would otherwise help maintainability — an unvetted dependency is refused regardless of convenience. Database, credentials, auth, and permission-boundary code keep necessary manual checks even if that means more hand-written code, never fewer checks for the sake of using less code.
+2. **Ease of maintenance.** Prefer mature, existing modules/SDKs/packages over new hand-written code; the user does not want to see bespoke implementations when an established one exists. Before writing new code, check for an existing library, already-installed dependency, or existing in-repo implementation that does the job. One shared implementation per capability — do not fork the same logic into multiple files or add parallel implementations "for performance" or "to look cleaner." Only write new code when no suitable existing option exists, and say why.
+3. **System performance = UIUX** (equal priority, traded off against each other as the specific case requires, not against each other's fixed ranking).
+4. **Code aesthetics / code volume.** Lowest priority — never trade away 1–3 to make code shorter, more elegant, or more "modular" looking.
+
 ## Operating rules
 
 - Follow the user's current request and scope. When implementation is directly requested, carry it through and verify it; do not replace the requested work with a proposal unless essential information or access is missing.
