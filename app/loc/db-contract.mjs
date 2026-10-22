@@ -106,11 +106,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
     // (api.apply_keyword_classification, mode='chunk'), inside a 60s
     // statement_timeout — the query itself has headroom for far more than
-    // this. Raising it step by step (1000 -> 1500 for now) rather than
-    // straight to a large number: a prior run at higher throughput tripped
-    // some rate limiting, so each step needs to be tested for real before
-    // going further, not just reasoned about from the query plan alone.
-    const batchSize=1500;
+    // this. User is testing 5000 directly against real throughput/rate
+    // limits rather than stepping up gradually; if that trips the same
+    // rate limiting seen before, step back down.
+    const batchSize=5000;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
