@@ -32,8 +32,8 @@ const FEATURES=Object.freeze([
   {id:'search',label:'搜尋'},
   {id:'governance',label:'治理'},
   {id:'admin',label:'系統管理'},
-  {id:'manage',label:'Scope 內容管理'},
-  {id:'setting',label:'Scope 設定'}
+  {id:'manage',label:'頁面控管'},
+  {id:'setting',label:'個人設定'}
 ].map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
 const SCOPE_VARIANTS=Object.freeze([
   {kind:'group',label:'LOC（group）首頁圖'},
@@ -126,7 +126,7 @@ export default function FeatureHeroImages(){
     <p className="scope-status">
       管理文化／統計／搜尋／治理四個功能頁共用的 hero 標題文字，以及各自的首頁圖片
       （LOC／一般 Scope 各一張，共 8 張）。圖片留空並儲存＝清除覆蓋，頁面改用既有的
-      預設圖片，不會變成沒有圖。系統管理／Scope 內容管理／本機Scope 設定三頁固定
+      預設圖片，不會變成沒有圖。系統管理／頁面控管／個人設定三頁固定
       只在單一Scope下顯示，標題文字沿用既有文案（不走此處的共用文字編輯器），
       各只有一張首頁圖。
     </p>

@@ -60,12 +60,12 @@ export default {
       "description": ""
     },
     "manage": {
-      "title": "Scope 內容管理",
+      "title": "頁面控管",
       "subtitle": "",
       "description": ""
     },
     "setting": {
-      "title": "Scope 設定",
+      "title": "個人設定",
       "subtitle": "",
       "description": ""
     }
