@@ -110,11 +110,11 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
 
 // Secondary tools stay collapsed and unmounted until opened, so the page is one
 // primary import card instead of four stacked ones.
-function ImportSection({title,children}){
+function ImportSection({title,eyebrow='',children}){
   const [open,setOpen]=useState(false);
   return <section className="loc-card scope-import-section">
     <button type="button" className="scope-import-section-toggle" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
-      <span>{title}</span><span aria-hidden="true">{open?'−':'+'}</span>
+      <span className="scope-import-section-title">{eyebrow?<small className="loc-eyebrow">{eyebrow}</small>:null}<span>{title}</span></span><span className="scope-import-section-mark" aria-hidden="true">{open?'−':'+'}</span>
     </button>
     {open?<div className="scope-import-section-body">{children}</div>:null}
   </section>;
@@ -656,7 +656,7 @@ function DuplicateDetection({scopeId}){
     }finally{setBusy(false);}
   }
 
-  return <ImportSection title={t('uiExtra.importUI.duplicateTitle')}><div className="scope-import-body">
+  return <ImportSection eyebrow="03 · CLEANUP" title={t('uiExtra.importUI.duplicateTitle')}><div className="scope-import-body">
     <p><UiText id="uiExtra.importUI.duplicateHelp"/></p>
     <div className="scope-tabs">
       <button type="button" disabled={busy} onClick={scan}>
@@ -698,14 +698,16 @@ export default function ManagementImportPanel({scopeId,flat=false}){
     setRevision(value=>value+1);
   }
   return <div className="scope-management-imports">
-    <section className="loc-card">
+    <section className="loc-card scope-import-primary">
+      <p className="loc-eyebrow">01 · IMPORT</p>
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
       <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
       <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     </section>
-    <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
+    <ImportSection eyebrow="02 · REFRESH" title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
     <DuplicateDetection scopeId={scopeId}/>
     <section className="loc-card">
+      <p className="loc-eyebrow">04 · SUNO</p>
       <button type="button" className="loc-button" aria-expanded={sunoOpen}
         onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
       {sunoOpen?<SunoImport scopeId={scopeId}/>:null}
