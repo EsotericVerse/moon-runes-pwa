@@ -41,6 +41,15 @@
 | `.agents/skills/code-review-expert/SKILL.md` | Reviewing current code changes. Follow its review workflow; implement findings when the user has asked for fixes. |
 | `.agents/skills/find-skills/SKILL.md` | Discovering or installing a skill when the user asks to find or extend available skills. |
 | `.agents/skills/skill-creator/SKILL.md` | Creating, editing, or evaluating a skill when the user asks for skill work. |
+| `.agents/skills/grill-me/SKILL.md` | Stress-test a plan or design through a relentless one-question-at-a-time interview before building. |
+| `.agents/skills/grilling/SKILL.md` | Grill the user on a plan, decision, or idea when they ask to stress-test it or use a "grill" trigger phrase. |
+| `.agents/skills/grill-with-docs/SKILL.md` | Same interview as grill-me, and records ADRs and a glossary as decisions are made. |
+| `.agents/skills/improve-codebase-architecture/SKILL.md` | Scan the codebase for deepening/refactoring opportunities, present an HTML report, then grill through the chosen one. |
+| `.agents/skills/tdd/SKILL.md` | Test-first development (red-green-refactor) for features and bug fixes, including integration tests. |
+| `.agents/skills/setup-matt-pocock-skills/SKILL.md` | One-time repo setup for the engineering skills (issue tracker, triage labels, domain docs). Run only when the user asks. |
+| `.agents/skills/triage/SKILL.md` | Move issues and external PRs through triage states, categorise, verify, and write agent-ready briefs. |
+| `.agents/skills/prototype/SKILL.md` | Build a throwaway prototype to answer a design question (state model, logic, or UI direction). |
+| `.agents/skills/handoff/SKILL.md` | Compact the current conversation into a handoff document for another agent. |
 
 ## Completion
 
