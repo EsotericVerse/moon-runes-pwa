@@ -153,8 +153,12 @@ export function sharedFeatureHeroFor(rows){
 
 export function shouldUseSharedFeatureHero(scopeId,featureId){
   // Explicitly keep the rune pages, their presentation and content untouched.
+  // scopeId==='admin' is NOT excluded here: featureId==='admin' (the /admin
+  // page itself) only ever renders with scopeId==='admin' -- no other
+  // featureId is ever paired with that scopeId -- so excluding it would
+  // permanently block admin's own group_admin hero text from ever being read.
   return Boolean(FEATURE_HERO_ORDER[String(featureId||'')])&&
-    Boolean(scopeId)&&scopeId!=='lrunes'&&scopeId!=='admin';
+    Boolean(scopeId)&&scopeId!=='lrunes';
 }
 
 // Three fixed personal signs; no public editor, image field, or DB setting can select them.

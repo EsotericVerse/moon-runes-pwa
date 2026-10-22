@@ -24,8 +24,10 @@ const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loadi
 // 一樣有 LOC／一般Scope 兩種變體：這三頁都固定只在一個Scope底下顯示
 // （admin 永遠是 scopeId==='admin'、setting 永遠是 scopeId==='local'，
 // manage 永遠不會是 scopeId==='loc'，因為 loc 自己的管理入口是走
-// /admin），group_<feature> 那一欄用不到；也不提供文字編輯器，標題固定
-// 沿用既有文案，不走 LOC 可編輯的共用 hero 文字。
+// /admin），group_<feature> 那一欄只用不到「第二張圖」那個變體而已——
+// 標題文字一樣統一在這裡（唯一編輯入口）用 group_<feature> 這筆資料
+// 編輯，跟上面四個功能頁完全同一套 ScopeEditableBlocks／explicitEditButton
+// 機制，不特殊處理；各自的 feature 頁本身（FeaturePage）永遠只顯示不可編輯。
 const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},
@@ -124,16 +126,16 @@ export default function FeatureHeroImages(){
   return <section className="loc-card admin-workspace">
     <h2>功能首頁圖設定</h2>
     <p className="scope-status">
-      管理文化／統計／搜尋／治理四個功能頁共用的 hero 標題文字，以及各自的首頁圖片
-      （LOC／一般 Scope 各一張，共 8 張）。圖片留空並儲存＝清除覆蓋，頁面改用既有的
-      預設圖片，不會變成沒有圖。系統管理／頁面控管／個人設定三頁固定
-      只在單一Scope下顯示，標題文字沿用既有文案（不走此處的共用文字編輯器），
-      各只有一張首頁圖。
+      管理七個功能頁（文化／統計／搜尋／治理／系統管理／頁面控管／個人設定）共用的
+      hero 標題文字，以及各自的首頁圖片。文化／統計／搜尋／治理是 LOC／一般 Scope
+      各一張（共 8 張）；系統管理／頁面控管／個人設定三頁固定只在單一Scope下顯示，
+      只有一張首頁圖。圖片留空並儲存＝清除覆蓋，頁面改用既有的預設圖片，不會變成
+      沒有圖。標題文字一律只能在這裡編輯，七個功能頁本身都只會顯示、不提供編輯介面。
     </p>
     {FEATURES.map(feature=>{
       return <section className="loc-card scope-inline-card" key={feature.id}>
         <h3>{feature.label}</h3>
-        {feature.singleSlot?null:<ScopeEditableBlocks
+        <ScopeEditableBlocks
           scopeId="loc"
           page={HomeBlock.featureHeroPageFor(feature.id)}
           orders={[1]}
@@ -145,7 +147,7 @@ export default function FeatureHeroImages(){
           explicitEditButton
           allowDelete={false}
           allowEntities={false}
-        />}
+        />
         <div className="scope-management-fields">
           {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} key={variant.kind}/>)}
         </div>
