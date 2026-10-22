@@ -28,6 +28,7 @@ const Governance=dynamic(()=>import('../modular/features/Governance'),{loading})
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
+const LocalSettingView=dynamic(()=>import('./views/LocalSettingView'),{loading});
 
 const VIEWS={
   game:GameView,
@@ -36,7 +37,8 @@ const VIEWS={
   culture:Culture,
   search:Search,
   governance:Governance,
-  manage:ManagementView
+  manage:ManagementView,
+  setting:LocalSettingView
 };
 const HOME_VIEWS={loc:AboutView,lrunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
 // Same modules as the dynamic() declarations above, so the bundler reuses the same
@@ -50,7 +52,8 @@ const VIEW_PRELOADERS={
   culture:()=>import('../modular/features/Culture'),
   search:()=>import('../modular/features/Search'),
   governance:()=>import('../modular/features/Governance'),
-  manage:()=>import('./GovernanceManagement')
+  manage:()=>import('./GovernanceManagement'),
+  setting:()=>import('./views/LocalSettingView')
 };
 const HOME_PRELOADERS={
   loc:()=>import('./views/AboutView'),

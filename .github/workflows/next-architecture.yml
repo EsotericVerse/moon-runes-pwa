@@ -36,6 +36,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+      - name: Security audit (high and critical)
+        run: npm run audit:security
       - name: Build Current static export
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash

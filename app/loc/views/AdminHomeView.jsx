@@ -14,6 +14,7 @@ import Select from 'react-select';
 import {scopeHref} from '../../modular/scope-registry';
 import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
+import {FeaturePage} from '../../modular/ui';
 // Registry editing and source catalogs are independent admin capabilities.
 const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:()=>null});
 
@@ -68,9 +69,21 @@ export default function AdminHomeView(){
   if(!account.user)return <Login account={account}/>;
   if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></section>;
 
-  return <section className="loc-view scope-management-page">
-    <header className="loc-hero loc-hero-context admin-hero">
-      <div className="admin-hero-row"><h1>{UI_COPY.admin.eyebrow}</h1></div>
+  // Follows the same FeaturePage template as the four major feature pages
+  // (culture/statics/search/governance): the hero only ever holds static
+  // title/eyebrow text, never an interactive control. .loc-hero has
+  // overflow:hidden (for its decorative corner glow), which silently clips
+  // any popup that tries to render inside it -- that is exactly what broke
+  // the react-select menu here before: it lived inside the hero's own
+  // "admin-hero" header box and its dropdown had nowhere to escape to. The
+  // section-select now lives in FeaturePage's children (scope-content),
+  // outside the hero box, same as every other feature page's controls.
+  return <FeaturePage featureId="admin">
+    {/* scope-management-page only supplies the --management-min CSS variable
+        that .scope-management-fields (used throughout the admin panels)
+        reads; kept here, scoped to just this content, now that the hero
+        above no longer carries that class. */}
+    <div className="scope-management-page">
       <div className="admin-main-select">
         <Select {...selectProps}
           inputId="admin-section-select"
@@ -81,12 +94,12 @@ export default function AdminHomeView(){
           onChange={option=>setSection(option?.value||'registry')}
         />
       </div>
-    </header>
-    {section==='registry'?<AdminRegistryPanel/>:null}
-    {section==='sources'?<AdminSourceCategories/>:null}
-    {section==='database'?<DatabaseTarget/>:null}
-    {section==='themes'?<ThemeEditor/>:null}
-    {section==='blocklist'?<AdminEmailBlocklist/>:null}
-    {section==='featureHero'?<FeatureHeroImages/>:null}
-  </section>;
+      {section==='registry'?<AdminRegistryPanel/>:null}
+      {section==='sources'?<AdminSourceCategories/>:null}
+      {section==='database'?<DatabaseTarget/>:null}
+      {section==='themes'?<ThemeEditor/>:null}
+      {section==='blocklist'?<AdminEmailBlocklist/>:null}
+      {section==='featureHero'?<FeatureHeroImages/>:null}
+    </div>
+  </FeaturePage>;
 }

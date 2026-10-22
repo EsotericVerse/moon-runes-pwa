@@ -53,6 +53,21 @@ export default {
       "title": "搜尋",
       "subtitle": "輸入關鍵字，從文字、作品、多媒體與符文中找到相關內容。",
       "description": "搜尋結果會保留原本的來源與關係，方便回到完整內容或延伸查看前後脈絡。"
+    },
+    "admin": {
+      "title": "系統管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "manage": {
+      "title": "Scope 內容管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "setting": {
+      "title": "Scope 設定",
+      "subtitle": "",
+      "description": ""
     }
   },
   "scope": {

@@ -20,8 +20,8 @@
 .rune-skin-cosmos.two{grid-template-columns:repeat(2,minmax(0,1fr));max-width:490px}
 .rune-skin-cosmos.three{grid-template-columns:repeat(3,minmax(0,1fr));max-width:670px}
 .rune-skin-orbit-card{width:100%;max-width:215px;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center}
-.rune-skin-orbit-name{font-size:.86rem;letter-spacing:.06em;color:#e9d9b9}
-.rune-skin-orbit-direction{color:#bcc6da;font-size:.72rem}
+.rune-skin-orbit-name{font-size:.86rem;letter-spacing:.06em;color:var(--loc-text)}
+.rune-skin-orbit-direction{color:var(--loc-muted);font-size:.72rem}
 .rune-skin-glyph{position:relative;width:100%;max-width:198px;aspect-ratio:1;isolation:isolate;perspective:700px;filter:drop-shadow(0 0 9px #e2ce8d22)}
 .rune-skin-glyph-touch{all:unset;box-sizing:border-box;display:block;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;touch-action:manipulation;transform-style:preserve-3d}
 .rune-skin-canvas{display:block;position:relative;z-index:2;width:100%;height:100%;object-fit:contain;filter:drop-shadow(1px 4px 3px #03030d77);transform:translateZ(13px)}
@@ -35,18 +35,18 @@
 .rune-skin-glyph[data-rune-group="7"] .rune-skin-aura{filter:hue-rotate(315deg) blur(4px)}
 .rune-skin-glyph[data-rune-group="8"] .rune-skin-aura{filter:hue-rotate(350deg) blur(4px)}
 .rune-skin-position-ring{position:absolute;inset:2%;width:96%;height:96%;z-index:1;opacity:.66;filter:drop-shadow(0 0 3px currentColor);pointer-events:none}
-.rune-skin-card-moon{position:absolute;z-index:3;right:4%;top:2%;font-size:1.32rem;color:#efebd6;text-shadow:0 0 9px #e3d8ff99;pointer-events:none}
+.rune-skin-card-moon{position:absolute;z-index:3;right:4%;top:2%;font-size:1.32rem;color:var(--loc-text);text-shadow:0 0 9px #e3d8ff99;pointer-events:none}
 .rune-skin-static-card{position:relative;z-index:2;width:70%;height:80%;object-fit:contain;margin:auto;display:block;border-radius:12px}
-.rune-skin-spell{text-align:center;min-height:28px;color:#e8cf9d;font-size:.99rem;letter-spacing:.1em;margin:10px 0}
-.rune-skin-verse{margin:20px 0;padding:22px;border:1px solid #dfc89066;border-radius:16px;background:linear-gradient(145deg,#27233b,#151a2d);color:#f3e5cf}
+.rune-skin-spell{text-align:center;min-height:28px;color:var(--loc-text);font-size:.99rem;letter-spacing:.1em;margin:10px 0}
+.rune-skin-verse{margin:20px 0;padding:22px;border:1px solid #dfc89066;border-radius:16px;background:linear-gradient(145deg,#27233b,#151a2d);color:var(--loc-text)}
 .rune-skin-verse p{white-space:pre-wrap;line-height:1.85;font-size:clamp(1rem,2.5vw,1.22rem)}
 .rune-skin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.rune-skin-atlas-item{min-width:0;padding:10px 6px 13px;text-align:center;border:1px solid color-mix(in srgb,var(--rune-gold) 24%,transparent);border-radius:16px;background:radial-gradient(circle at center 39%,#2d304c,#101523 80%);color:#e6e1eb}
+.rune-skin-atlas-item{min-width:0;padding:10px 6px 13px;text-align:center;border:1px solid color-mix(in srgb,var(--rune-gold) 24%,transparent);border-radius:16px;background:radial-gradient(circle at center 39%,#2d304c,#101523 80%);color:var(--loc-text)}
 .rune-skin-atlas-item .rune-skin-glyph{margin:0 auto}
-.rune-skin-atlas-item strong{display:block;color:#f3ddb0;font-size:.98rem}
-.rune-skin-atlas-item small{display:block;line-height:1.6;color:#c4c4d4}
-.rune-skin-status{margin:12px 0;color:#c9c9da;min-height:23px}
-.rune-skin-error{color:#ff9b9b}
+.rune-skin-atlas-item strong{display:block;color:var(--loc-text);font-size:.98rem}
+.rune-skin-atlas-item small{display:block;line-height:1.6;color:var(--loc-muted)}
+.rune-skin-status{margin:12px 0;color:var(--loc-muted);min-height:23px}
+.rune-skin-error{color:var(--loc-danger)}
 @keyframes rune-skin-breathe{0%,100%{opacity:.65;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
 @media(max-width:650px){.rune-skin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rune-skin-cosmos{gap:0}.rune-skin-glyph{max-width:162px}.rune-skin-moon{width:80px;height:80px}.rune-skin-stage{min-height:360px;padding:10px}.rune-skin-btn{padding:10px 12px}.rune-skin-orbit-card{max-width:145px}.rune-skin-atlas-item{padding:8px 3px}}
 @media(prefers-reduced-motion:reduce){.rune-skin-aura{animation:none}}
@@ -82,5 +82,5 @@
 .loc-next-main>.loc-panel.rune-art-shell{
   background:linear-gradient(150deg,#24203c,#15172c 64%,#20213a);
   border-color:#bba58b8c;
-  color:#f4e9db;
+  color:var(--loc-text);
 }

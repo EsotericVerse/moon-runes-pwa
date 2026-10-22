@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Select from 'react-select';
 import {useAccount} from './use-account';
 import ScopeLink from '../modular/ScopeLink';
+import {FeaturePage} from '../modular/ui';
 
 // Only scope's own content-management tools load here. Nothing admin-level
 // (domain/directory/database/system members) belongs on this page — that is
@@ -39,13 +40,21 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
   if(!account.user)return <section className="loc-card"><h2>治理管理</h2><ScopeLink className="loc-button primary" href="/settings/?section=account">請先登入</ScopeLink></section>;
   if(!canManageHere)return <section className="loc-card"><p>目前帳號沒有治理管理權限。</p></section>;
-  // Same page chrome as /admin/'s AdminHomeView (loc-view/loc-hero/admin-hero/
-  // admin-hero-row/admin-main-select) -- this page is rendered the same way
-  // (a top-level VIEWS entry in LocApp.jsx, no FeaturePage hero wrapper), so
-  // it reuses the same classes/CSS rather than inventing its own markup.
-  return <section className="loc-view scope-management-page">
-    <header className="loc-hero loc-hero-context admin-hero">
-      <div className="admin-hero-row"><h1>Scope 內容管理</h1></div>
+  // Follows the same FeaturePage template as the four major feature pages
+  // and as /admin/'s AdminHomeView (own featureId, "manage" -- distinct from
+  // /admin's "admin", never shared: this page is always reached per-Scope,
+  // never under scopeId==='loc' -- see Governance.jsx's manageHref, which
+  // sends `loc` itself to /admin instead). The section-select used to live
+  // inside the hero header (admin-hero-row/admin-main-select nested in a
+  // "loc-hero" box); .loc-hero has overflow:hidden for its decorative corner
+  // glow, which silently clipped the react-select dropdown with nowhere to
+  // escape to. It now lives in FeaturePage's children, outside the hero.
+  return <FeaturePage featureId="manage">
+    {/* scope-management-page only supplies the --management-min CSS
+        variable that .scope-management-fields (used by ScopeSettingsPanel
+        etc.) reads; kept here, scoped to just this content, now that the
+        hero above no longer carries that class. */}
+    <div className="scope-management-page">
       <div className="admin-main-select">
         <Select {...selectProps}
           inputId="governance-management-select"
@@ -56,9 +65,9 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
           onChange={option=>setSection(option?.value||'settings')}
         />
       </div>
-    </header>
-    {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-    {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
-    {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
-  </section>;
+      {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
+      {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
+      {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
+    </div>
+  </FeaturePage>;
 }

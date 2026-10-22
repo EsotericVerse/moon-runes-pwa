@@ -399,18 +399,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   </section>;
 }
 
-function ScopeStatisticsPanel({scopeId,navigation,types,canManageKeywords=false,canManageSources=false}){
-  return <>
-    {canManageKeywords?<section className="scope-stat-section scope-stat-keyword-link">
-      <ScopeLink className="loc-button" href={scopeHref(scopeId,'statics/keywords')}>
-        <UiText id="uiExtra.statisticsView.keywordSettings"/>
-      </ScopeLink>
-    </section>:null}
-    <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>
-  </>;
+function ScopeStatisticsPanel({scopeId,navigation,types,canManageSources=false}){
+  return <ScopeStatisticsResults scopeId={scopeId} navigation={navigation} types={types}/>;
 }
 
-function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageKeywords=false,canManageSources=false}){
+function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canManageSources=false}){
   const t=useUiText();
   // Cross-Scope statistical aggregation belongs to LOC only. Other Scope
   // Groups remain overview/navigation surfaces, never merged COUNT queries.
@@ -424,7 +417,7 @@ function StatisticsPanel({scopeId,aggregateScopes=false,navigation,types,canMana
     title={t('uiExtra.statisticsView.scopeGroupStatisticsTitle')}
     description={t('uiExtra.statisticsView.scopeGroupStatisticsHelp')}
   />;
-  return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageKeywords={canManageKeywords} canManageSources={canManageSources}/>;
+  return <ScopeStatisticsPanel scopeId={scopeId} navigation={navigation} types={types} canManageSources={canManageSources}/>;
 }
 
 export default function Statistics(){
@@ -439,13 +432,13 @@ export default function Statistics(){
   const canManageKeywords=Boolean(account.user)&&scopeId!=='lrunes'&&account.canManageScopeSync(scopeId);
   const canManageSources=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="statics">
+    {canManageKeywords?<ScopeLink className="loc-button scope-edit-mode-toggle" href={scopeHref(scopeId,'statics/keywords')}><UiText id="uiExtra.statisticsView.keywordSettings"/></ScopeLink>:null}
     <section className="loc-card scope-feature-card">
       <StatisticsPanel
         scopeId={scopeId}
         aggregateScopes={Boolean(scope?.aggregateChildren)}
         navigation={navigation}
         types={scopeId==='lrunes'?['daily_rune',...STAT_TYPES]:STAT_TYPES}
-        canManageKeywords={canManageKeywords}
         canManageSources={canManageSources}
       />
     </section>
