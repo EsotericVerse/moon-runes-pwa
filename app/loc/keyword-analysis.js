@@ -397,10 +397,22 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
   const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta},{
+    // Mirrors applyKeywordClassification's own phase sequence (db-contract.mjs):
+    // prepare -> write (ramping) -> sync (clears orphaned rows) -> finalizing.
+    // Each phase needs its own percent/label; letting an unlisted phase fall
+    // through to write's formula re-displays a stale "已寫入 N/N 篇" at the
+    // same percent write just finished at, which looks like a stall/glitch.
     onProgress:({phase,completed,total})=>{
-      const percent=phase==='prepare'?61:phase==='finalizing'?99:61+38*(total?completed/total:1);
-      const label=phase==='prepare'?'準備寫入文章 Attr':phase==='finalizing'?'正在定錨並核對寫入數量':
-        '資料庫已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇';
+      const percent=phase==='prepare'?61
+        :phase==='write'?61+30*(total?completed/total:1)
+        :phase==='sync'?95
+        :phase==='finalizing'?99
+        :61+38*(total?completed/total:1);
+      const label=phase==='prepare'?'準備寫入文章 Attr'
+        :phase==='write'?'資料庫已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇'
+        :phase==='sync'?'正在清除不再符合資格的文章'
+        :phase==='finalizing'?'正在定錨並核對寫入數量'
+        :'處理中';
       reportBatchProgress(onProgress,phase,completed,total,percent,label);
     }
   });

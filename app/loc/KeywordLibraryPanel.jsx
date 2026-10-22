@@ -589,7 +589,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>
-        <progress value={batchProgress.percent} max="100" aria-label={l.attrProgress} />
+        <div className="scope-keyword-batch-progress-bar" role="progressbar"
+          aria-valuenow={batchProgress.percent} aria-valuemin={0} aria-valuemax={100} aria-label={l.attrProgress}>
+          <div className="scope-keyword-batch-progress-fill" style={{transform:'scaleX('+(batchProgress.percent/100)+')'}}/>
+        </div>
         <p>{batchProgress.label}</p>
         {batchProgress.total>0?<p>{l.stage}{Number(batchProgress.completed||0).toLocaleString()} / {Number(batchProgress.total).toLocaleString()}{l.articleUnit}</p>:null}
       </div>:null}

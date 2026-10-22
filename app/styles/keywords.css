@@ -14,9 +14,16 @@ h3 .loc-keyword-emphasis{
   font-weight:800;
 }
 
-/* The percentage is computed from actual loaded, classified and committed rows. */
+/* The percentage is computed from actual loaded, classified and committed rows;
+   real updates arrive in discrete ~0.5s network-round-trip steps (paginated
+   reads/writes), not a smooth stream. The bar below is a plain bare <progress>
+   element's value snapping instantly to each step, which reads as choppy/fake.
+   A transform-based fill with a short transition bridges between those real
+   steps so the same real data reads as continuous motion instead. */
 .scope-keyword-batch-progress{margin-top:1rem;display:grid;gap:.35rem;}
 .scope-keyword-batch-progress-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
 .scope-keyword-batch-progress-head span{font-variant-numeric:tabular-nums;font-weight:700;}
-.scope-keyword-batch-progress progress{display:block;width:100%;height:.75rem;accent-color:var(--loc-accent);}
+.scope-keyword-batch-progress-bar{position:relative;width:100%;height:.75rem;border-radius:999px;overflow:hidden;background:var(--loc-ui-panel-soft,var(--loc-panel));}
+.scope-keyword-batch-progress-fill{position:absolute;inset:0;width:100%;transform-origin:left;background:var(--loc-accent);transition:transform .45s ease-out;will-change:transform;}
+@media(prefers-reduced-motion:reduce){.scope-keyword-batch-progress-fill{transition:none;}}
 .scope-keyword-batch-progress p{margin:0;}
