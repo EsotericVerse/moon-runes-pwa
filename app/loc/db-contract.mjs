@@ -105,10 +105,16 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
     // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
     // (api.apply_keyword_classification, mode='chunk'), inside a 60s
-    // statement_timeout. Both 5000 and 3000 tripped rate limiting in real
-    // testing (the query plan has headroom, but something upstream of
-    // Postgres doesn't) -- back down to 1500, the last value that worked.
-    const batchSize=1500;
+    // statement_timeout set on that function itself. Earlier rounds of
+    // tuning this value (1000/3000/5000/1500) were chasing the wrong thing:
+    // the real constraint was the `authenticator` role's statement_timeout
+    // (8s, applied at actual connection login -- unaffected by this
+    // function's own 60s override, which only covers mode='chunk' calls,
+    // not the plain reads elsewhere in the classification flow). That role
+    // timeout is now raised to 30s, so this batch size was never the
+    // bottleneck; 5000 here is untested at this value but should have
+    // headroom now.
+    const batchSize=5000;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);

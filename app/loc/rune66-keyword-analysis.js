@@ -262,7 +262,7 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
       // size (65535) is sized for narrow rows; with content included, a
       // scope under that row count fetches its entire table in one request.
       // Page this read explicitly instead of relying on the shared ceiling.
-      pageSize:2000,
+      pageSize:5000,
       onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
         3+17*(total?completed/total:1),
         '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
