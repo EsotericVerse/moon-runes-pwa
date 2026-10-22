@@ -355,7 +355,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       // double-clicking, or two people running this at once.
       const cooldownMatch=rawMessage.match(/keyword classification cooldown active: ([\d.]+) ?s remaining/i);
       if(cooldownMatch){
-        setMessage(l.classificationCooldownActive.replace('{seconds}',cooldownMatch[1]));
+        let remaining=Math.ceil(Number(cooldownMatch[1])||0);
+        setMessage(l.classificationCooldownActive.replace('{seconds}',String(remaining)));
+        const tick=setInterval(()=>{
+          remaining-=1;
+          if(remaining<=0){
+            clearInterval(tick);
+            setMessage('');
+            return;
+          }
+          setMessage(l.classificationCooldownActive.replace('{seconds}',String(remaining)));
+        },1000);
       }else if(/keyword classification already running for this scope/i.test(rawMessage)){
         setMessage(l.classificationAlreadyRunning);
       }else{
