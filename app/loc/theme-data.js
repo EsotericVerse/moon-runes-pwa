@@ -63,8 +63,6 @@ export function mergeThemeSlot(themeId,override=null){
 
 
 const clampChannel=value=>Math.max(0,Math.min(1,value));
-const clampPercent=value=>Math.max(0,Math.min(100,value));
-
 export function normalizeThemeHex(value){
   const match=/^#?([0-9a-f]{6})$/i.exec(String(value||'').trim());
   return match?'#'+match[1].toLowerCase():'';
@@ -182,7 +180,7 @@ export function deriveThemeTokens(identityColor,scheme='light',currentTokens={})
     '--loc-body-mid':dark?tone(.08,.30):tone(.985,.10),
     '--loc-hero-start':themeRgba(dark?tone(.12,.34):tone(.99,.08),.99),
     '--loc-hero-end':themeRgba(dark?tone(.075,.28):tone(.98,.10),.99),
-    '--loc-shadow':dark?'0 20px 55px '+neutralShadow:'0 20px 55px '+neutralShadow,
-    '--loc-shadow-card':dark?'0 12px 35px '+cardShadow:'0 12px 35px '+cardShadow
+    '--loc-shadow':'0 20px 55px '+neutralShadow,
+    '--loc-shadow-card':'0 12px 35px '+cardShadow
   };
 }
