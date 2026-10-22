@@ -130,7 +130,9 @@ export default function GlobalSettings({initialSection='home'}={}){
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
     option('files',uiT('uiExtra.globalSettings.documentImport')),
     ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
-    option('dailyRune','每日符文紀錄'),
+    // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
+    // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。
+    ...(native||account.user?[option('dailyRune','每日符文紀錄')]:[]),
     option('account',uiT('uiExtra.globalSettings.account'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
