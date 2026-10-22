@@ -372,7 +372,7 @@ export default function DailyLogClient({embedded=false}={}){
       </div>:null}
     </section>:null}
 
-    {!embedded?<DailyRuneTransfer cloudCanManage={canWrite&&!native}
+    {canViewDetails?<DailyRuneTransfer cloudCanManage={canViewDetails&&!native}
       onImported={()=>{loadMonth();window.dispatchEvent(new CustomEvent('loc-rune-local-changed'));}}/>:null}
     {!embedded&&canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>
