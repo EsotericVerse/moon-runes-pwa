@@ -9,12 +9,6 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 3. **Loading = UI** (equal priority, traded off against each other as the specific case requires, not against each other's fixed ranking). "Loading" means load/runtime performance (bundle size, waterfalls, rendering cost), not code elegance.
 4. **Code.** Lowest priority — never trade away 1–3 to make code shorter, more elegant, or more "modular" looking. The user does not want proactive code review for style/structure; only act on security findings (tier 1) or when the user explicitly asks for a review.
 
-## Git workflow
-
-- No branches, no PRs. Commit directly to `main`.
-- Still use version control as a safety net: commit real, working increments as you go (not one giant commit at the end) so a mistake can be reverted without losing unrelated work. Don't batch unrelated changes into one commit.
-- `git pull --rebase` before every push; never force-push over someone else's commits.
-
 ### Which skill handles which priority
 
 - **Security:**
@@ -30,6 +24,12 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
   - Visual/interaction design decisions → `.agents/skills/ui-ux-pro-max/SKILL.md`.
   - Verify a change actually works/renders correctly, not just compiles → `.agents/skills/webapp-testing/SKILL.md` (Playwright: real page, screenshot, console/network logs).
 - **Code:** lowest priority; do not open `improve-codebase-architecture` or `code-review-expert` proactively for style or structure — only on explicit request, or for the security checklist use above.
+
+## Git workflow
+
+- No branches, no PRs. Commit directly to `main`.
+- Still use version control as a safety net: commit real, working increments as you go (not one giant commit at the end) so a mistake can be reverted without losing unrelated work. Don't batch unrelated changes into one commit.
+- `git pull --rebase` before every push; never force-push over someone else's commits.
 
 ## Operating rules
 
@@ -69,13 +69,13 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 | `.agents/skills/browser-use/SKILL.md` | Direct CDP or attached-session browser work, including logged-in sessions, Playwright/Puppeteer, or hosted browser workflows. Use when that specific control path is needed; follow its session-safety instructions. |
 | `.agents/skills/remotion-best-practices/SKILL.md` | Any Remotion video or animation work. Treat it as the Remotion workflow router and follow its delegated instructions. |
 | `.agents/skills/seo-audit/SKILL.md` | Auditing, diagnosing, or reviewing site SEO. Use metadata-fixing for a scoped metadata implementation task. |
-| `.agents/skills/code-review-expert/SKILL.md` | Reviewing current code changes. Follow its review workflow; implement findings when the user has asked for fixes. |
+| `.agents/skills/code-review-expert/SKILL.md` | Not run proactively (see Priority order → Code). Its `references/security-checklist.md` is read as a checklist for the Security tier. Run the full review workflow only when the user explicitly asks for a code review. |
 | `.agents/skills/find-skills/SKILL.md` | Discovering or installing a skill when the user asks to find or extend available skills. |
 | `.agents/skills/skill-creator/SKILL.md` | Creating, editing, or evaluating a skill when the user asks for skill work. |
 | `.agents/skills/grill-me/SKILL.md` | Stress-test a plan or design through a relentless one-question-at-a-time interview before building. |
 | `.agents/skills/grilling/SKILL.md` | Grill the user on a plan, decision, or idea when they ask to stress-test it or use a "grill" trigger phrase. |
 | `.agents/skills/grill-with-docs/SKILL.md` | Same interview as grill-me, and records ADRs and a glossary as decisions are made. |
-| `.agents/skills/improve-codebase-architecture/SKILL.md` | Scan the codebase for deepening/refactoring opportunities, present an HTML report, then grill through the chosen one. |
+| `.agents/skills/improve-codebase-architecture/SKILL.md` | Scan for reuse/consolidation opportunities (Portable tier) before writing new code, not for cosmetic refactors (see Priority order → Code). Present an HTML report, then grill through the chosen one. |
 | `.agents/skills/tdd/SKILL.md` | Test-first development (red-green-refactor) for features and bug fixes, including integration tests. |
 | `.agents/skills/setup-matt-pocock-skills/SKILL.md` | One-time repo setup for the engineering skills (issue tracker, triage labels, domain docs). Run only when the user asks. |
 | `.agents/skills/triage/SKILL.md` | Move issues and external PRs through triage states, categorise, verify, and write agent-ready briefs. |
