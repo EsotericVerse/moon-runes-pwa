@@ -1,33 +1,46 @@
-# Repository Agent Instructions
+# Agent Instructions
 
-## Skill-first work
+## Operating rules
 
-- Before working, inspect `.agents/skills/` and `skills-lock.json`. Select the installed Skills whose descriptions match the task. Read each selected `SKILL.md` and any references it directs you to use before planning or editing.
-- Apply those Skills' actual workflows. Do not infer a Skill's behavior from its name, claim an unavailable Skill is installed, or load unrelated Skills.
-- Use only Skills that currently exist in the repository and are listed in `skills-lock.json`. Do not cite, recreate, or rely on deleted Skills.
-- Keep this file limited to durable repository-wide instructions. Do not copy Skill procedures into it or create a parallel project-specific architecture doctrine.
-- When a repository instruction conflicts with an applicable installed Skill, remove the conflicting instruction instead of blending incompatible rules, unless the user's current explicit instruction requires otherwise. When two applicable Skills conflict, inspect their scope and references; use the more task-specific guidance and report any unresolved conflict.
-
-## Scope and execution
-
-- Follow the user's current request and its stated scope. When the user directly asks for implementation, implement it and verify it; do not stop at a proposal unless required information or access is genuinely missing.
-- Inspect the current repository, dependencies, and call sites before making technical claims or changes. Do not rely on stale notes, filenames, or assumptions when the source can be checked.
-- Make only changes needed for the requested task. Preserve unrelated user-authored content and data. A request to change application behavior authorizes the code changes needed for that behavior, not unrelated content edits.
-- Treat database writes and schema changes as separate from Git operations. Perform them only within the user's explicit task scope, and use the relevant installed database Skill before acting.
-- Do not add engineering notes or internal explanations to user-visible UI copy unless the user asks for that copy.
+- Follow the user's current request and scope. When implementation is directly requested, carry it through and verify it; do not replace the requested work with a proposal unless essential information or access is missing.
+- Before acting, inspect the relevant source, call sites, dependencies, and current state. Do not treat old notes or assumptions as evidence when the repository can be checked.
+- Select skills from the skills that actually exist under `.agents/skills/`. Before planning or editing in a triggered skill's domain, read its `SKILL.md` and the references or workflows it requires. Apply the skill's procedure; this routing table is only an index.
+- Do not invoke unrelated skills or claim a missing skill is installed. If a skill's own workflow delegates to another skill or tool, follow that workflow.
+- The user's current instruction takes precedence over repository guidance. Remove stale or contradictory repository rules rather than combining incompatible instructions. If two applicable skills conflict, use their documented scope and specific workflow; surface only a conflict that cannot be resolved from those instructions.
+- Keep this file to durable repository-wide rules and routing. Keep detailed procedures in their skill files.
+- When a skill is added, removed, or updated under `.agents/skills/`, reconcile this file's routing in the same change. Route every installed skill and remove routes for skills that no longer exist.
 
 ## Skill routing
 
-Use these installed repository Skills when their task triggers apply:
+| Installed skill | Use it for |
+|---|---|
+| `.agents/skills/brainstorming/SKILL.md` | New features, behavior changes, components, or other creative/planning work. Use repository context and any decisions already given; ask only for decisions that remain genuinely unclear. Once direction is clear and implementation is authorized, proceed. |
+| `.agents/skills/vercel-react-best-practices/SKILL.md` | React or Next.js implementation, review, refactoring, data fetching, rendering, and performance. Read relevant rule files as directed. |
+| `.agents/skills/vercel-composition-patterns/SKILL.md` | React component API design, composition, reusable components, compound components, or boolean-prop proliferation. |
+| `.agents/skills/supabase-postgres-best-practices/SKILL.md` | Any Postgres/Supabase database query, schema, migration, index, RLS, function, or performance work. Load before database changes and follow its reference guidance. |
+| `.agents/skills/ui-skills-root/SKILL.md` | Entry point for UI work. Use first to select the smallest relevant UI skill set via its documented CLI; obey its limit of no more than three selected UI skills. |
+| `.agents/skills/frontend-design/SKILL.md` | Creating or substantially reshaping a user interface with a deliberate visual direction. |
+| `.agents/skills/baseline-ui/SKILL.md` | Quick UI polish for spacing, hierarchy, typography, and small layout issues. |
+| `.agents/skills/fixing-accessibility/SKILL.md` | Implementing or fixing accessibility, including keyboard access, focus, ARIA, forms, contrast, and WCAG issues. |
+| `.agents/skills/fixing-metadata/SKILL.md` | Page metadata, social previews, canonical URLs, structured data, favicons, and robots directives. |
+| `.agents/skills/fixing-motion-performance/SKILL.md` | Animation jank and motion performance, including layout thrashing and compositor-related issues. |
+| `.agents/skills/improve-ui/SKILL.md` | Read-only audit of an existing product UI and a self-contained implementation plan. Never use it to edit product source. |
+| `.agents/skills/web-design-guidelines/SKILL.md` | Read-only review against Web Interface Guidelines. Fetch the current guidelines as the skill directs. |
+| `.agents/skills/create-design-md/SKILL.md` | Creating or updating `DESIGN.md` from repository or website evidence; follow its scope restrictions on product source. |
+| `.agents/skills/component-canvas/SKILL.md` | Building an interactive canvas to inspect existing UI components and variants. |
+| `.agents/skills/create-canvas/SKILL.md` | Building a freeform interactive canvas for exploring, comparing, or iterating on ideas. |
+| `.agents/skills/sleek-design-mobile-apps/SKILL.md` | Designing mobile screens with Sleek or implementing Sleek designs in React Native or HTML. Read the applicable design/implementation guide; do not expose required secrets. |
+| `.agents/skills/vercel-react-native-skills/SKILL.md` | React Native or Expo implementation, native modules, animation, and mobile performance. |
+| `.agents/skills/agent-browser/SKILL.md` | Browser interaction, web-app testing, screenshots, and browser task automation. Prefer this skill for general browser automation; follow its documented CLI setup before use. |
+| `.agents/skills/browser-use/SKILL.md` | Direct CDP or attached-session browser work, including logged-in sessions, Playwright/Puppeteer, or hosted browser workflows. Use when that specific control path is needed; follow its session-safety instructions. |
+| `.agents/skills/remotion-best-practices/SKILL.md` | Any Remotion video or animation work. Treat it as the Remotion workflow router and follow its delegated instructions. |
+| `.agents/skills/seo-audit/SKILL.md` | Auditing, diagnosing, or reviewing site SEO. Use metadata-fixing for a scoped metadata implementation task. |
+| `.agents/skills/code-review-expert/SKILL.md` | Reviewing current code changes. Follow its review workflow; implement findings when the user has asked for fixes. |
+| `.agents/skills/find-skills/SKILL.md` | Discovering or installing a skill when the user asks to find or extend available skills. |
+| `.agents/skills/skill-creator/SKILL.md` | Creating, editing, or evaluating a skill when the user asks for skill work. |
 
-- React or Next.js implementation, data fetching, bundle size, rendering, or performance: `.agents/skills/vercel-react-best-practices/SKILL.md`; load its relevant rule files.
-- React component APIs, composition, compound components, or component architecture: `.agents/skills/vercel-composition-patterns/SKILL.md`.
-- PostgreSQL or Supabase queries, schema, migrations, RLS, indexes, database functions, or database performance: `.agents/skills/supabase-postgres-best-practices/SKILL.md`; load its relevant references before database work.
-- UI design, accessibility, metadata, motion, or browser-based interaction: select the matching installed Skill, such as `frontend-design`, `improve-ui`, `fixing-accessibility`, `fixing-metadata`, `fixing-motion-performance`, `agent-browser`, or `browser-use`.
-- Code review: use `.agents/skills/code-review-expert/SKILL.md` and follow its review workflow. Keep review-only work separate from implementation unless the user asks for fixes.
+## Completion
 
-## Verification and handoff
-
-- Inspect the final diff and verify that unrelated files and content were not changed.
-- Run checks appropriate to the change and report what actually passed. Do not treat a green CI run, installed package, or partial-page check as proof that the requested behavior works.
-- State any unverified behavior and why it could not be checked. Report changed files, key differences, verification results, and remaining work; do not hand technical review or acceptance back to the user.
+- Inspect the final diff and verify that unrelated files were not changed.
+- Run checks appropriate to the task and report the actual results. State what remains unverified and why.
+- In the handoff, summarize the changed files, the meaningful differences, and verification performed.
