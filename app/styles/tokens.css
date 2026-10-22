@@ -47,6 +47,21 @@
   --loc-font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --loc-weight-body:400;
   --loc-weight-ui:500;
+
+  /* Shared menu sizing across Admin, Scope Management, and Settings. */
+  --loc-management-menu-max-width:38rem;
+  --loc-management-menu-layer:15;
+  --loc-management-menu-control-layer:3;
+  --loc-management-menu-popup-layer:20;
+  --loc-management-menu-control-min-height:46px;
+  --loc-management-menu-control-gap:.5rem;
+  --loc-management-menu-control-padding:.25rem .75rem;
+  --loc-management-menu-control-radius:12px;
+  --loc-management-menu-option-padding:.7rem .85rem;
+  --loc-management-menu-option-radius:8px;
+  --loc-management-menu-popup-offset:4px;
+  --loc-management-menu-list-max-height:min(45vh,320px);
+  --loc-management-menu-list-padding:4px;
 }
 
 @media (prefers-color-scheme: light){

@@ -33,8 +33,7 @@
 .scope-nav-current{font-weight:700;}
 
 .scope-search input{min-width:0;border-radius:999px;color:var(--scope-text)}
-.scope-management-select{display:grid;gap:.35rem;max-width:24rem;margin-top:1rem}
-.scope-management-select>label{color:var(--scope-muted);font-size:.82rem}
+
 .scope-main{margin:0 auto;}
 .scope-page,.scope-content,.scope-list{display:grid;}
 
