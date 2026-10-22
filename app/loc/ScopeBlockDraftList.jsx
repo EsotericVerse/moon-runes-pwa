@@ -302,6 +302,7 @@ export default function ScopeBlockDraftList({
                 patchImage(draft.uid, url.trim()?{source:'custom',url}:{source:'default',url:''},false);
               }}/>
           </label>
+          <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>patchImage(draft.uid,{source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
         </div>
       </fieldset>:null}
       {allowEntities?renderDraftEntities(draft):null}

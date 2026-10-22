@@ -37,9 +37,7 @@ export function resolveHomeImage(slot,scopeId='loc'){
   const embedded=BlockNoteContent.image.firstFrameImageUrl(slot);
   const picked=['default','custom','none'].includes(config?.source)
     ?config.source:(embedded?'custom':preset?'default':'none');
-  // The home hero always shows an image: "none" is no longer offered, and a
-  // previously stored "none" falls back to the default.
-  const source=Number(slot?.order)===1&&picked==='none'&&preset?'default':picked;
+  const source=picked;
   const customUrl=BlockNoteContent.image.normalizeImageSource(config?.url||embedded);
   const src=source==='none'?'':source==='default'?preset?.src?.src||'':customUrl;
   const position=Number(slot?.order)===1?'right':['left','right','top','bottom'].includes(config?.position)

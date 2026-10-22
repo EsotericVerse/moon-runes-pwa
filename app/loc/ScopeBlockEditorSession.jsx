@@ -295,6 +295,7 @@ export default function ScopeBlockEditorSession({
                 configureImage( url.trim()?{source:'custom',url}:{source:'default',url:''},false);
               }}/>
           </label>
+          <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
             </div>
           </fieldset>:null}
           {allowEntities?renderEditableEntities(draft.entities):null}
