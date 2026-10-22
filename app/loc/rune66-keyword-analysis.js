@@ -34,10 +34,12 @@ function normalizedGroupLists(value){
   return parseGroupLists(value);
 }
 function isEligibleRow(row,minChars){
+  // statistics_able is now filtered in the query itself (see
+  // runRune66ClassificationBatch's selectAllRows call) -- every row reaching
+  // here already satisfies it, so it's not re-checked.
   return Boolean(
     String(row?.uid||'').trim()
     &&row?.searchable!==false
-    &&row?.statistics_able!==false
     &&analysisCharacterCount(row?.content)>minChars
   );
 }
@@ -256,7 +258,11 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
   const [catalogRows,textResult]=await Promise.all([
     loadCurrentCatalog(normalizedScopeId,currentClassId),
     selectAllRows(scope.galaxy,{
-      columns:'uid,title,content,createtime,searchable,statistics_able',
+      columns:'uid,title,content,createtime,searchable',
+      // statistics_able is the eligibility gate itself -- filter it in the
+      // query (fewer rows read, fewer rows paged through) instead of
+      // selecting it and discarding non-qualifying rows in isEligibleRow.
+      filters:[{column:'statistics_able',operator:'eq',value:true}],
       orders:[{column:'createtime',ascending:true}],
       // This selects `content`, the one large column in this table (avg ~160
       // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
