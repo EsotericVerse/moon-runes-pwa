@@ -78,10 +78,10 @@ export default function AdminHomeView(){
   // section-select now lives in FeaturePage's children (scope-content),
   // outside the hero box, same as every other feature page's controls.
   return <FeaturePage featureId="admin">
-    {/* scope-management-page only supplies the --management-min CSS variable
-        that .scope-management-fields (used throughout the admin panels)
-        reads; kept here, scoped to just this content, now that the hero
-        above no longer carries that class. */}
+    {/* scope-management-page supplies the --management-min CSS variable that
+        .scope-management-fields (used throughout the admin panels) reads,
+        and lays itself out as a grid with --scope-gap between its own direct
+        children (the section-select and each panel) so they don't touch. */}
     <div className="scope-management-page">
       <div className="admin-main-select">
         <Select {...selectProps}

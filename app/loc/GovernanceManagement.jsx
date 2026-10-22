@@ -50,10 +50,11 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   // glow, which silently clipped the react-select dropdown with nowhere to
   // escape to. It now lives in FeaturePage's children, outside the hero.
   return <FeaturePage featureId="manage">
-    {/* scope-management-page only supplies the --management-min CSS
-        variable that .scope-management-fields (used by ScopeSettingsPanel
-        etc.) reads; kept here, scoped to just this content, now that the
-        hero above no longer carries that class. */}
+    {/* scope-management-page supplies the --management-min CSS variable
+        that .scope-management-fields (used by ScopeSettingsPanel etc.)
+        reads, and lays itself out as a grid with --scope-gap between its
+        own direct children (the section-select and each panel) so they
+        don't touch. */}
     <div className="scope-management-page">
       <div className="admin-main-select">
         <Select {...selectProps}
