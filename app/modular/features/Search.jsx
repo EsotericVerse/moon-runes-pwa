@@ -263,9 +263,10 @@ export default function Search(){
   // Anchors the status/results block so a fresh search can scroll the
   // results into view instead of leaving the viewport on the search form.
   const resultsRef=useRef(null);
-  function scrollToResults(){
-    resultsRef.current?.scrollIntoView({block:'start',behavior:'smooth'});
-  }
+  const scrollPending=useRef(false);
+  // The results list is not rendered yet when a search resolves, so the page is
+  // still too short to scroll; flag it and scroll once the new results are committed.
+  function scrollToResults(){scrollPending.current=true;}
   // Every search owns an AbortController; a newer search, a reset or unmount
   // cancels the previous one so superseded requests stop instead of piling up.
   const abortRef=useRef(null);
@@ -276,6 +277,11 @@ export default function Search(){
     return controller;
   };
   useEffect(()=>()=>{abortRef.current?.abort();},[]);
+  useEffect(()=>{
+    if(!scrollPending.current)return;
+    scrollPending.current=false;
+    resultsRef.current?.scrollIntoView({block:'start',behavior:'smooth'});
+  },[results,status,error]);
   const loadMoreInFlight=useRef(false);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
@@ -773,15 +779,14 @@ export default function Search(){
           </div>:null}
         </div>:null}
       </div>
-    </section>
     <div className="scope-search-reference-editor">
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
         orders={[1]}
         className="scope-search-reference-grid"
-        slotClassName="loc-card scope-search-reference-block"
-        editSlotClassName="loc-card scope-search-reference-block"
+        slotClassName="scope-search-reference-block"
+        editSlotClassName="scope-search-reference-block"
         headingLevel={2}
         allowEditing
         allowDelete={false}
@@ -790,7 +795,8 @@ export default function Search(){
         onSuggestionClick={term=>router.push(searchHref(scopeId,term))}
       />
     </div>
-    <div ref={resultsRef}>
+    </section>
+    <div ref={resultsRef} className="scope-search-results">
     {status?<p className="scope-status">{status}</p>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
