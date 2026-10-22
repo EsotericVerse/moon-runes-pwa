@@ -22,6 +22,7 @@
 | `.agents/skills/supabase-postgres-best-practices/SKILL.md` | Any Postgres/Supabase database query, schema, migration, index, RLS, function, or performance work. Load before database changes and follow its reference guidance. |
 | `.agents/skills/ui-skills-root/SKILL.md` | UI work. Use its documented selector to choose a small set of relevant UI skills and follow its limit for that UI workflow. |
 | `.agents/skills/frontend-design/SKILL.md` | Creating or substantially reshaping a user interface with a deliberate visual direction. |
+| `.agents/skills/ui-ux-pro-max/SKILL.md` | UI/UX decisions on layout, forms, color, typography, interaction, and UX review. Query its local data with `python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>`; read-only, offline. |
 | `.agents/skills/baseline-ui/SKILL.md` | Quick UI polish for spacing, hierarchy, typography, and small layout issues. |
 | `.agents/skills/fixing-accessibility/SKILL.md` | Implementing or fixing accessibility, including keyboard access, focus, ARIA, forms, contrast, and WCAG issues. |
 | `.agents/skills/fixing-metadata/SKILL.md` | Page metadata, social previews, canonical URLs, structured data, favicons, and robots directives. |
