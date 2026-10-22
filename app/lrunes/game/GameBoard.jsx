@@ -12,7 +12,8 @@ import {DndContext,PointerSensor,TouchSensor,useDraggable,useDroppable,useSensor
 import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
-const gameHeroAsset={src:'/pics/LunaRunesGame.jpg'};
+import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
+import {resolveHomeImage} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
 
 const LABELS=['A','B','C','D'];
@@ -453,23 +454,44 @@ function Board({G,moves,rules,onRestart}){
     </DndContext>;
 }
 
-// The artwork and the game identity are stable UI, not database results.
-// Render the Hero during loading too; only the game-data badges wait for SQL.
+// Hero copy and image are Scope content (lrunes / page "game"); only the
+// game-data badges below stay fixed UI and wait for SQL.
+const GAME_HERO_DEFAULTS={eyebrow:'LUNARUNES · TABLETOP',title:'月之符文',text:'<p>以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</p>'};
 function GameHomeHero({data=null}){
-  return <Paper className="lrg-home-hero">
-    <div className="lrg-home-copy">
-      <Typography variant="overline" color="primary">LUNARUNES · TABLETOP</Typography>
-      <Typography variant="h3" component="h1">月之符文</Typography>
-      <Typography color="text.secondary">以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</Typography>
-      {data?<Stack direction="row" flexWrap="wrap" gap={1} sx={{mt:1.5}}>
-        <Chip label={data.cards.length+' 枚符文'}/>
-        <Chip label={data.events.length+' 張事件'}/>
-        <Chip label={data.roles.length+' 職'}/>
-        <Chip label={data.rounds.length+' 個正式回合＋平手決鬥'}/>
-      </Stack>:null}
-    </div>
-    <img className="lrg-hero-image" src={gameHeroAsset.src} alt="月之符文桌遊主視覺"/>
-  </Paper>;
+  return <ScopeEditableBlocks
+    scopeId="lrunes"
+    page="game"
+    orders={[1]}
+    slotTag="header"
+    slotClassName="lrg-home-hero"
+    resolveSlotClassName={slot=>'lrg-home-hero'+(resolveHomeImage({...slot,order:1},'lrunes').mode==='side'?' lrg-home-hero--side':'')}
+    editSlotClassName="loc-card loc-home-block"
+    containerless
+    placeholderFirstOrder={1}
+    explicitEditButton
+    allowDelete={false}
+    allowEntities={false}
+    renderDisplay={slot=>{
+      const image=resolveHomeImage({...slot,order:1},'lrunes');
+      const eyebrow=slot.stored?slot.eyebrow:GAME_HERO_DEFAULTS.eyebrow;
+      const title=slot.stored?slot.title:GAME_HERO_DEFAULTS.title;
+      const text=slot.stored?slot.text:GAME_HERO_DEFAULTS.text;
+      return <>
+        <div className="lrg-home-copy">
+          {eyebrow?<Typography variant="overline" color="primary">{eyebrow}</Typography>:null}
+          {title?<Typography variant="h3" component="h1">{title}</Typography>:null}
+          {text?<div className="scope-rich-surface" dangerouslySetInnerHTML={{__html:text}}/>:null}
+          {data?<Stack direction="row" flexWrap="wrap" gap={1} sx={{mt:1.5}}>
+            <Chip label={data.cards.length+' 枚符文'}/>
+            <Chip label={data.events.length+' 張事件'}/>
+            <Chip label={data.roles.length+' 職'}/>
+            <Chip label={data.rounds.length+' 個正式回合＋平手決鬥'}/>
+          </Stack>:null}
+        </div>
+        {image.src?<img className="lrg-hero-image" src={image.src} alt="月之符文桌遊主視覺"/>:null}
+      </>;
+    }}
+  />;
 }
 
 export default function GameBoard(){

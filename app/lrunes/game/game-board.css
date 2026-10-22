@@ -325,3 +325,14 @@
 @media(prefers-reduced-motion:reduce){
   .lrg-card{transition:none}
 }
+
+/* Hero image mode "side": image sits on the right instead of behind the copy. */
+.lrg-home-hero--side::before{display:none}
+.lrg-home-hero--side .lrg-hero-image{
+  position:relative;inset:auto;z-index:2;width:46%;height:auto;max-height:480px;aspect-ratio:4/3;
+  margin:1rem clamp(16px,3vw,40px) 1rem auto;border-radius:12px;
+}
+@media(max-width:600px){
+  .lrg-home-hero--side{flex-direction:column;align-items:stretch}
+  .lrg-home-hero--side .lrg-hero-image{width:auto;margin:0 1rem 1rem}
+}
