@@ -31,9 +31,16 @@ function normalizeRow(row,order){
     title:String(row?.block_title||''),
     subtitle:String(row?.block_subtitle||''),
     text:HomeBlock.removeDuplicatedLegacySubtitle(row?.block_text,row?.block_subtitle),
-    image:row?.block_image&&typeof row.block_image==='object'?row.block_image:null,
+    image:parseBlockImage(row?.block_image),
     entities:HomeBlock.normalizeEntities(row?.block_entity)
   };
+}
+
+// block_image is a text column: the DB hands back JSON text, writes go in as JSON.
+function parseBlockImage(value){
+  if(value&&typeof value==='object')return value;
+  if(typeof value!=='string'||!value.trim())return null;
+  try{const parsed=JSON.parse(value);return parsed&&typeof parsed==='object'?parsed:null;}catch{return null;}
 }
 
 export default function ScopeEditableBlocks({
