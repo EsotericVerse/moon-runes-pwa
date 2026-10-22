@@ -125,13 +125,6 @@ function ImageSlot({feature,variant}){
 export default function FeatureHeroImages(){
   return <section className="loc-card admin-workspace">
     <h2>功能首頁圖設定</h2>
-    <p className="scope-status">
-      管理七個功能頁（文化／統計／搜尋／治理／系統管理／頁面控管／個人設定）共用的
-      hero 標題文字，以及各自的首頁圖片。文化／統計／搜尋／治理是 LOC／一般 Scope
-      各一張（共 8 張）；系統管理／頁面控管／個人設定三頁固定只在單一Scope下顯示，
-      只有一張首頁圖。圖片留空並儲存＝清除覆蓋，頁面改用既有的預設圖片，不會變成
-      沒有圖。標題文字一律只能在這裡編輯，七個功能頁本身都只會顯示、不提供編輯介面。
-    </p>
     {FEATURES.map(feature=>{
       return <section className="loc-card scope-inline-card" key={feature.id}>
         <h3>{feature.label}</h3>
