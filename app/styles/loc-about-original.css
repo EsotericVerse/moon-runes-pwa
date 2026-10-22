@@ -138,8 +138,8 @@
   justify-self:center;
 }
 .loc-home-block--image-left{
-  grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
-  grid-template-areas:"header header" "body media" "children children";
+  grid-template-columns:minmax(0,1fr) minmax(0,1.38fr);
+  grid-template-areas:"header header" "media body" "children children";
 }
 /* Hero keeps the already approved full-bleed background and reading contrast. */
 .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero{
