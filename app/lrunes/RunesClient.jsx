@@ -65,7 +65,7 @@ export default function RunesClient(){
       slotTag="header"
       slotId="intro"
       slotClassName="loc-hero runes-home-hero"
-      editSlotClassName="loc-hero runes-home-hero"
+      editSlotClassName="loc-hero"
       containerless
       placeholderFirstOrder={1}
       renderDisplay={slot=>renderRuneHero(slot,native)}
