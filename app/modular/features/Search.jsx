@@ -29,6 +29,7 @@ import {useScopeRuntime} from '../use-scope-runtime';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
+import {parseSearchQuery} from '../../loc/search-query.mjs';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
 
@@ -95,7 +96,7 @@ function escapeSearchRegExp(value){
 function highlightSearchText(text='',query=''){
   const source=String(text||''),raw=String(query||'').trim();
   if(!source||!raw)return source;
-  const terms=[...new Set([raw,...raw.split(/\s+/g)].map(item=>item.trim()).filter(Boolean))].sort((a,b)=>b.length-a.length);
+  const terms=[...new Set([parseSearchQuery(raw).exact,...parseSearchQuery(raw).terms].filter(Boolean))].sort((a,b)=>b.length-a.length);if(!terms.length)return source;
   const pattern=new RegExp('('+terms.map(escapeSearchRegExp).join('|')+')','giu');
   const normalized=new Set(terms.map(term=>term.normalize('NFKC').toLocaleLowerCase('zh-Hant')));
   return source.split(pattern).map((part,index)=>{

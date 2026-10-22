@@ -4,6 +4,7 @@
 import {StatisticsFacets} from './statistics-facets';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
+import {parseSearchQuery} from './search-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
@@ -251,13 +252,14 @@ function orExpression(fields,term){
   const pattern=literalPattern(term).replace(/"/g,'\\"');
   return fields.map(field=>field+'.ilike."'+pattern+'"').join(',');
 }
-function applyLiteralTerms(query,fields,queryText,and=[],nor=[]){
-  // Treat whitespace separated words as independent required terms. Each
-  // term may occur in any searchable column; chaining PostgREST OR groups
-  // makes the groups intersect instead of requiring one exact whole phrase.
-  const terms=unique([...String(queryText||'').trim().split(/[\s\u3000]+/g),...and]);
-  for(const term of terms)query=query.or(orExpression(fields,term));
-  for(const term of unique(nor)){
+function applyParsedTerms(query,fields,parsed,and=[],nor=[]){
+  const groups=(parsed.groups.length?parsed.groups:[[]]).map(group=>unique([...group,...and])).filter(group=>group.length);
+  if(groups.length===1){
+    for(const term of groups[0])query=query.or(orExpression(fields,term));
+  }else if(groups.length>1){
+    query=query.or(groups.map(group=>'and('+group.map(term=>'or('+orExpression(fields,term)+')').join(',')+')').join(','));
+  }
+  for(const term of unique([...parsed.excludes,...nor])){
     const pattern=literalPattern(term);
     for(const field of fields)query=query.not(field,'ilike',pattern);
   }
@@ -283,6 +285,9 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
     async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false,signal=null}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
+      const parsed=parseSearchQuery(query);
+      // Exact-match stages only apply to a plain keyword or a single "quoted phrase".
+      if(!browse&&exactColumn&&!parsed.exact)return {rows:[],hasMore:false,nextCursor:null,totalCount:null,dataSource:source||'auto'};
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
       const orders=[
         ...(dateColumn?[{column:dateColumn,ascending:true}]:[]),
@@ -297,9 +302,9 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
         dataQuery=applyFilters(dataQuery,activeFilters);
         if(sourceClause)dataQuery=dataQuery.or(sourceClause);
         if(!browse&&exactColumn){
-          const exact=literalPattern(query).slice(1,-1);
+          const exact=literalPattern(parsed.exact).slice(1,-1);
           dataQuery=dataQuery.ilike(exactColumn,exact);
-        }else if(!browse)dataQuery=applyLiteralTerms(dataQuery,frozenFields,query,and,nor);
+        }else if(!browse)dataQuery=applyParsedTerms(dataQuery,frozenFields,parsed,and,nor);
         dataQuery=applyOrders(dataQuery,orders);
         return dataQuery.range(offset,offset+pageSize);
       },{source,authenticated,signal});
