@@ -145,7 +145,7 @@ export function normalizeImageSource(value=''){
 
 export function imageBlockForUrl(value=''){
   const url=normalizeImageSource(value);
-  return url?{type:'image',props:{url,caption:'',showPreview:true}}:null;
+  return url?{type:'image',props:{url,caption:'',showPreview:true,textAlignment:'left',previewWidth:480}}:null;
 }
 
 export function isEmptyImageTarget(block){
