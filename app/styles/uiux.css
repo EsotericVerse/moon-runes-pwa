@@ -513,6 +513,20 @@ button,a,.loc-control,.loc-button,
   color:#f5f7fc!important;
   text-shadow:0 2px 14px rgba(0,0,0,.55);
 }
+
+/* Management entry pages share one composition: left-aligned content,
+   centered vertically in the artwork frame, for every Scope route. */
+.loc-next-main .scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting):not(.is-editing){
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  text-align:start;
+}
+.loc-next-main .scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting)>.home-title-row{
+  align-self:flex-start;
+  text-align:start;
+}
 .scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/scope-culture.jpg')}
 .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/scope-statics.jpg')}
 .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/scope-search.jpg')}
