@@ -19,15 +19,28 @@ import {HomeBlock} from '../../home-block-model';
 // the group_<feature> row ever carries text; scope_<feature> is image-only.
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
+// admin／manage／setting (/admin、各Scope的/governance/manage、local的
+// /local/setting) 各自只有一張圖（singleSlot:true），不像上面四個功能頁
+// 一樣有 LOC／一般Scope 兩種變體：這三頁都固定只在一個Scope底下顯示
+// （admin 永遠是 scopeId==='admin'、setting 永遠是 scopeId==='local'，
+// manage 永遠不會是 scopeId==='loc'，因為 loc 自己的管理入口是走
+// /admin），group_<feature> 那一欄用不到；也不提供文字編輯器，標題固定
+// 沿用既有文案，不走 LOC 可編輯的共用 hero 文字。
 const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},
   {id:'search',label:'搜尋'},
-  {id:'governance',label:'治理'}
-]);
+  {id:'governance',label:'治理'},
+  {id:'admin',label:'系統管理'},
+  {id:'manage',label:'Scope 內容管理'},
+  {id:'setting',label:'Scope 設定'}
+].map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
 const SCOPE_VARIANTS=Object.freeze([
   {kind:'group',label:'LOC（group）首頁圖'},
   {kind:'scope',label:'一般 Scope（scope）首頁圖'}
+]);
+const SINGLE_VARIANT=Object.freeze([
+  {kind:'scope',label:'首頁圖'}
 ]);
 function pageFor(kind,feature){return kind+'_'+feature.id;}
 
@@ -113,12 +126,14 @@ export default function FeatureHeroImages(){
     <p className="scope-status">
       管理文化／統計／搜尋／治理四個功能頁共用的 hero 標題文字，以及各自的首頁圖片
       （LOC／一般 Scope 各一張，共 8 張）。圖片留空並儲存＝清除覆蓋，頁面改用既有的
-      預設圖片，不會變成沒有圖。
+      預設圖片，不會變成沒有圖。系統管理／Scope 內容管理／本機Scope 設定三頁固定
+      只在單一Scope下顯示，標題文字沿用既有文案（不走此處的共用文字編輯器），
+      各只有一張首頁圖。
     </p>
     {FEATURES.map(feature=>{
       return <section className="loc-card scope-inline-card" key={feature.id}>
         <h3>{feature.label}</h3>
-        <ScopeEditableBlocks
+        {feature.singleSlot?null:<ScopeEditableBlocks
           scopeId="loc"
           page={HomeBlock.featureHeroPageFor(feature.id)}
           orders={[1]}
@@ -130,9 +145,9 @@ export default function FeatureHeroImages(){
           explicitEditButton
           allowDelete={false}
           allowEntities={false}
-        />
+        />}
         <div className="scope-management-fields">
-          {SCOPE_VARIANTS.map(variant=><ImageSlot feature={feature} variant={variant} key={variant.kind}/>)}
+          {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} key={variant.kind}/>)}
         </div>
       </section>;
     })}

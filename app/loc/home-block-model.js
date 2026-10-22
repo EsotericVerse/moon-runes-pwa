@@ -110,13 +110,31 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
 // it read-only. The matching scope_<feature> row (see FeatureHeroImages.jsx)
 // only ever carries that Scope-view's image override, never text.
 // LunaRunes deliberately remains on its current read-only localized header.
+// admin / manage / setting (the /admin, each Scope's own /governance/manage,
+// and the local Scope's /local/setting pages) join this same hero template,
+// but each is its own independent featureId -- they never share text or an
+// image with each other or with the four above. None of them ever renders
+// under scopeId==='loc' (loc's own management entry point is /admin itself,
+// never /governance/manage; /admin and /local/setting are each pinned to
+// exactly one fixed Scope), so unlike the four above, none of them needs
+// the group_<feature>/scope_<feature> two-slot split -- one image each,
+// via shouldUseSingleFeatureHeroImage below.
 export const FEATURE_HERO_ORDER=Object.freeze({
   culture:1,
   statics:2,
   search:3,
-  governance:4
+  governance:4,
+  admin:5,
+  manage:6,
+  setting:7
 });
 export const FEATURE_HERO_IDS=Object.freeze(Object.keys(FEATURE_HERO_ORDER));
+// The three single-image features (see comment above): exactly one
+// silver.loc_blocks page_name="scope_<feature>" row, never a "group_" row.
+export const SINGLE_SLOT_FEATURE_HERO_IDS=Object.freeze(['admin','manage','setting']);
+export function shouldUseSingleFeatureHeroImage(featureId){
+  return SINGLE_SLOT_FEATURE_HERO_IDS.includes(String(featureId||''));
+}
 
 export function featureHeroPageFor(featureId){
   return 'group_'+String(featureId||'');
@@ -167,5 +185,7 @@ export const HomeBlock=Object.freeze({
   FEATURE_HERO_ORDER,
   FEATURE_HERO_IDS,
   featureHeroFor:sharedFeatureHeroFor,
-  shouldUseSharedFeatureHero
+  shouldUseSharedFeatureHero,
+  SINGLE_SLOT_FEATURE_HERO_IDS,
+  shouldUseSingleFeatureHeroImage
 });

@@ -63,6 +63,11 @@ export default {
       "title": "Scope 內容管理",
       "subtitle": "",
       "description": ""
+    },
+    "setting": {
+      "title": "Scope 設定",
+      "subtitle": "",
+      "description": ""
     }
   },
   "scope": {
