@@ -73,7 +73,6 @@ export function AdminSourceCategories(){
   });
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.sourceCategory.groupTitle"/></h2>
-    <p className="scope-status"><UiText id="uiExtra.sourceCategory.groupGuide"/></p>
     <div className="scope-stat-controls">
       <label><UiText id="uiExtra.sourceCategory.code"/><input value={category} onChange={e=>setCategory(e.target.value)} maxLength={64}/></label>
       <label><UiText id="uiExtra.sourceCategory.name"/><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label>

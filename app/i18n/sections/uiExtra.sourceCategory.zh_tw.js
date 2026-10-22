@@ -1,6 +1,5 @@
 export default {
-  "groupTitle": "群組來源分類",
-  "groupGuide": "僅系統管理員設定來源主分類；個別人員的來源命名及歸屬在各自的統計頁管理。",
+  "groupTitle": "來源設定",
   "code": "分類代碼",
   "name": "分類名稱",
   "createGroup": "新增群組來源分類",

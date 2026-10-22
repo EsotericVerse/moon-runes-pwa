@@ -128,28 +128,34 @@ function ImageSlot({feature,variant}){
 }
 
 export default function FeatureHeroImages(){
+  // Only the picked feature mounts: all 7 at once meant 7 block editors plus
+  // ~11 image-row fetches on opening this tab, which is what made it stall.
+  const [featureId,setFeatureId]=useState(FEATURES[0].id);
+  const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
-    {FEATURES.map(feature=>{
-      return <section className="loc-card scope-inline-card" key={feature.id}>
-        <h3>{feature.label}</h3>
-        <ScopeEditableBlocks
-          scopeId="loc"
-          page={HomeBlock.featureHeroPageFor(feature.id)}
-          orders={[1]}
-          containerless
-          slotClassName="loc-card"
-          editSlotClassName="loc-card"
-          placeholderFirstOrder={1}
-          allowEditing
-          explicitEditButton
-          allowDelete={false}
-          allowEntities={false}
-        />
-        <div className="scope-management-fields">
-          {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} key={variant.kind}/>)}
-        </div>
-      </section>;
-    })}
+    <div className="scope-preview-links" role="group" aria-label="功能區塊">
+      {FEATURES.map(item=><button type="button" key={item.id} className={'loc-button'+(item.id===feature.id?' primary':'')}
+        aria-pressed={item.id===feature.id} onClick={()=>setFeatureId(item.id)}>{item.label}</button>)}
+    </div>
+    <section className="loc-card scope-inline-card" key={feature.id}>
+      <h3>{feature.label}</h3>
+      <ScopeEditableBlocks
+        scopeId="loc"
+        page={HomeBlock.featureHeroPageFor(feature.id)}
+        orders={[1]}
+        containerless
+        slotClassName="loc-card"
+        editSlotClassName="loc-card"
+        placeholderFirstOrder={1}
+        allowEditing
+        explicitEditButton
+        allowDelete={false}
+        allowEntities={false}
+      />
+      <div className="scope-management-fields">
+        {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} key={feature.id+variant.kind}/>)}
+      </div>
+    </section>
   </section>;
 }

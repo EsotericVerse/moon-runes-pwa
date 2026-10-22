@@ -804,3 +804,18 @@
   .scope-page-editor .scope-frame-field-grid>.scope-frame-header-field:nth-child(3),
   .scope-frame-image-fields .scope-frame-image-url{grid-column:1/-1}
 }
+
+/* Import page: one primary card, secondary tools as collapsible rows. */
+.scope-import-body{display:grid;gap:.8rem;min-width:0}
+.scope-import-body>h3{margin:0}
+.scope-import-body label{display:grid;gap:.35rem}
+.scope-import-facts{display:grid;gap:.4rem 1rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));margin:0}
+.scope-import-facts>div{display:grid;gap:.15rem;min-width:0}
+.scope-import-facts dt{font-size:.82rem;color:var(--loc-muted)}
+.scope-import-facts dd{margin:0;overflow-wrap:anywhere}
+.scope-import-audit summary{cursor:pointer}
+.scope-import-preview .scope-inline-card{padding:.6rem .8rem}
+.scope-import-section{border-top:1px solid var(--loc-ui-hairline)}
+.scope-import-section-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:.8rem .2rem;border:0;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;cursor:pointer;text-align:left}
+.scope-import-section-body{padding:0 .2rem .9rem}
+.scope-management-imports{display:grid;gap:1rem}

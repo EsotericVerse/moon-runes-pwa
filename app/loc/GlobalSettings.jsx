@@ -12,13 +12,13 @@ import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import {FeaturePage} from '../modular/ui';
+import PanelLoading from './PanelLoading';
 // The home/account Settings screens never download import or management editors.
-const panelLoading=()=>null;
-const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:panelLoading});
-const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:panelLoading});
+const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
+const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 // 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
 // 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
-const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:panelLoading});
+const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:PanelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
@@ -53,7 +53,7 @@ export default function GlobalSettings({initialSection='home'}={}){
     // native also has its own real 'files' tab (local-scope import), a
     // 'files' link is honored on every platform instead of being redirected.
     if(chosen==='favorites')setSection('home');
-    else if(['home','files','personal','manage','account','dailyRune'].includes(chosen))setSection(chosen);
+    else if(['home','files','manage','account','dailyRune'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
@@ -127,11 +127,10 @@ export default function GlobalSettings({initialSection='home'}={}){
     // `local` regardless of platform: without this, the phone app would have
     // no way to reach the local-scope import at all.
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
-    option('files',uiT('uiExtra.globalSettings.documentImport')),
-    ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
     // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
     // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。
     ...(native||account.user?[option('dailyRune','每日符文紀錄')]:[]),
+    option('files',uiT('uiExtra.globalSettings.documentImport')),
     option('account',uiT('uiExtra.globalSettings.account'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
@@ -207,15 +206,6 @@ export default function GlobalSettings({initialSection='home'}={}){
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
         </div>:<p><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
         <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
-      </section>:null}
-
-      {activeSection==='personal'&&selectedScope?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.personalHome"/></h2>
-        {scopeOptions.length>1?<label htmlFor="loc-personal-scope"><UiText id="uiExtra.globalSettings.home"/></label>:null}
-        {scopeOptions.length>1?<Select {...selectProps} inputId="loc-personal-scope"
-          instanceId="loc-personal-scope" options={scopeOptions}
-          value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
-          onChange={item=>setRequestedScope(item?.value||'')}/>:null}
       </section>:null}
 
       {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}

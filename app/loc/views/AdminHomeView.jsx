@@ -15,15 +15,16 @@ import {scopeHref} from '../../modular/scope-registry';
 import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
 import {FeaturePage} from '../../modular/ui';
+import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
-const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:()=>null});
+const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:PanelLoading});
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
   {value:'sources',label:'來源設定'},
   {value:'themes',label:'主題顏色設定'},
-  {value:'system',label:'系統設定'},
-  {value:'featureHero',label:'功能區塊設定'}
+  {value:'featureHero',label:'功能區塊設定'},
+  {value:'system',label:'系統設定'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
   {value:'scope',label:'新增人員'},
@@ -49,11 +50,11 @@ function Login({account}){
 // Registry（DeploymentTree + 節點編輯／新增面板）已搬到 admin-panels/AdminRegistry.jsx，
 // 跟底下其他四個分頁走同一套 dynamic() 按需載入模式——先前它是唯一一個 ~600 行
 // 邏輯直接寫死在這個檔案裡、一開啟 /admin 不管先看哪個分頁都會被打包下載的分頁。
-const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:()=>null});
-const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:()=>null});
-const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:()=>null});
-const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:()=>null});
-const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:()=>null});
+const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
+const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
+const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
+const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
+const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
 
 export default function AdminHomeView(){
   useUiSection('admin');
