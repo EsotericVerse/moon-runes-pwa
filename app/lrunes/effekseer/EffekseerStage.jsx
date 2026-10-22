@@ -183,11 +183,6 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
         const resize=()=>{
           const r=target.getBoundingClientRect();
           if(!r.width||!r.height)return;
-          // Renderer-native resolution control, not a stretched CSS screenshot.
-          // The giant rune reveal pushes the camera 2x closer to particles.
-          // High mode supersamples the native Effekseer WebGL framebuffer even
-          // on desktop displays with DPR 1; CSS enlargement cannot do this.
-          // This improves raster aliasing, not missing source alpha/detail.
           const maxDpr=ambient?(quality==='high'?1.5:1):quality==='high'?3:1.2;
           const deviceDpr=window.devicePixelRatio||1;
           const renderDpr=!ambient&&quality==='high'

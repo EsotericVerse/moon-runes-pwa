@@ -1,10 +1,3 @@
-// Shared redirect stub for retired LunaRunes routes (old /card3d/*, /duel/*
-// fixed-spread pages, and the /card/duel2 | /card/list2 trial pages), now
-// consolidated under /card/duel|daily|list. Same safe-replace pattern as
-// app/not-found.jsx: an inline <script> runs before React hydrates, so the
-// redirect fires even with JS barely started, and a plain link is the
-// no-JS fallback. One shared implementation -- every legacy page.jsx below
-// just passes its own target path.
 function redirectScript(target){
   return `(()=>{try{
     const url=new URL(${JSON.stringify(target)},window.location.origin);

@@ -1,10 +1,5 @@
 'use client';
 
-// The unified edit screen for a whole ScopeEditableBlocks page: every block's
-// fields render as drafts at once; nothing reaches the database until the one
-// "Save" action (rendered in the top toolbar, next to the exit-edit-mode
-// button) commits every draft (content edits, new blocks, deletions and
-// reordering) together.
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
@@ -201,11 +196,6 @@ export default function ScopeBlockDraftList({
           block_subtitle:HomeBlock.plainBlockLine(draft.subtitle),
           ...(isHomeFrame?{block_image:draft.image||null}:{}),
           block_text:normalizeSavedHtml(draft.text),
-          // Free-form pages (add/delete/reorder) renumber by position so
-          // the saved order stays compact and matches the on-screen order.
-          // A caller that restricts this editor to specific fixed slots
-          // (ScopeEditableBlocks' `orders` prop -- the single-hero editors)
-          // must keep writing to that exact slot, never slide into slot 1.
           block_order:preserveOrder?Number(draft.order)||index+1:index+1,
           block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},entityIndex)=>({
             uid,
@@ -335,15 +325,6 @@ export default function ScopeBlockDraftList({
     </section>;
   }
 
-  // No wrapping element around the draft cards themselves: they render as
-  // direct children of whatever grid/list container the caller already
-  // wraps around the normal display slots, so each page's own CSS
-  // (grid-direct-child sizing, card styling) still matches during editing
-  // instead of landing one DOM level too deep. The toolbar row (exit-edit
-  // button + any caller extra, e.g. a management link, plus Save/Cancel) is
-  // the one exception: it's wrapped together on purpose so all of it renders
-  // as a single row at the top, instead of the exit button up top and
-  // Save/Cancel trailing after every draft card.
   const visibleDrafts=drafts.filter(draft=>!draft._deleted);
   return <>
     <div className="scope-block-draft-toolbar">

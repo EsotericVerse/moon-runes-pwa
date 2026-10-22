@@ -31,7 +31,6 @@
 .loc-hidden-input{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
 .loc-style-group.fallback{border-style:dashed}.loc-draw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));}
 
-
 /* LunaRunes context catalog: group to rune to principle and editable keywords. */
 .loc-rune-context{display:grid;gap:1rem}
 .loc-rune-context-crumbs{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
@@ -107,7 +106,6 @@
   .governance-management-cta>a{justify-self:start}
 }
 
-
 /* Management workspace */
 .scope-management-page{--management-min:16rem;display:grid;gap:var(--scope-gap)}
 .scope-management-split{display:grid;grid-template-columns:minmax(15rem,.78fr) minmax(0,1.22fr);gap:1rem;align-items:start}
@@ -156,7 +154,6 @@
   .scope-management-records{max-height:none}
   .scope-management-preview iframe{height:62vh}
 }
-
 
 .scope-import-preview{display:grid;gap:.7rem;margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
 .scope-import-preview .scope-management-records{max-height:24rem}
@@ -394,7 +391,6 @@
   .admin-graph-header{align-items:flex-start}
 }
 
-
 /* vis-timeline is the primary Time CRUD surface; the dialog only edits metadata the timeline cannot encode. */
 .scope-culture-timeline-dialog{position:fixed;inset:auto clamp(.75rem,4vw,3rem) clamp(.75rem,4vw,3rem) auto;z-index:1200;width:min(44rem,calc(100vw - 1.5rem));max-height:min(78vh,48rem);margin:0;padding:0;border:0;background:transparent;color:inherit;overflow:auto}
 .scope-culture-timeline-dialog::backdrop{background:rgb(0 0 0 / .35);backdrop-filter:blur(2px)}
@@ -411,7 +407,6 @@
 .scope-culture-anchor-actions .scope-preview-links{display:flex;flex-wrap:wrap;gap:.5rem;width:100%}
 .scope-period-timeline .vis-item.scope-virtual-anchor.is-selected{color:var(--loc-gold)!important;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--loc-gold) 72%,transparent))}
 @media(max-width:760px){.scope-culture-timeline-dialog{inset:auto .5rem .5rem .5rem;width:auto;max-height:82vh}}
-
 
 /* BlockNote is the single text/media authoring surface. Media remains URL-backed; rich structure is stored separately. */
 .scope-blocknote{min-width:0}

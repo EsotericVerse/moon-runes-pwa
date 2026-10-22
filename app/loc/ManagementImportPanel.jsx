@@ -586,14 +586,6 @@ function SourceRefresh({scopeId,format,onBusyChange}){
   </div>;
 }
 
-// "資料重整": a manual, on-demand pass -- run once after an import, or any
-// time from this button -- never automatic. The matching itself runs as one
-// SQL query in the database (silver.find_galaxy_duplicates): group by exact
-// createtime, then by exact canonicalized content within that group. A pair
-// that doesn't match on both stays listed as two separate rows -- that's
-// deliberate (an edited duplicate may no longer match; keeping both beats
-// auto-merging two different posts). Nothing is ever deleted automatically;
-// every checkbox here is a row the person reviewed and chose themselves.
 const DUPLICATE_RENDER_LIMIT=40;
 function DuplicateDetection({scopeId}){
   const t=useUiText();

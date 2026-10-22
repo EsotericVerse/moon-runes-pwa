@@ -99,7 +99,6 @@ export default function BlockNoteEditorClient({
       };
       const existing=findImage(editor.document);
       if(existing){
-        // Changing the URL replaces the existing image, never adds a second.
         editor.updateBlock(existing,image);
       }else if(!canInsertImage){
         globalThis.alert?.('這個文字框架已有一張圖片。請先移除原圖，再插入其他位置。');

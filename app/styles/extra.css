@@ -1,7 +1,3 @@
-/* Scope Extra Sign - personal IP markers only.
-   Keys are fixed in code (HomeBlock.heroExtraFor), never stored in the database;
-   presentation is public and never implies online/login status.
-   Other Scope UI, Theme and functionality remain in shared CSS. */
 /* One fixed Scope identity per homepage Hero. The shared node stays above
    artwork/overlays without affecting Hero layout, text flow or input events. */
 .home-hero-identity{

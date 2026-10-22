@@ -46,10 +46,6 @@ function Login({account}){
   </section>;
 }
 
-// Independent admin capabilities are loaded only for the selected workspace.
-// Registry（DeploymentTree + 節點編輯／新增面板）已搬到 admin-panels/AdminRegistry.jsx，
-// 跟底下其他四個分頁走同一套 dynamic() 按需載入模式——先前它是唯一一個 ~600 行
-// 邏輯直接寫死在這個檔案裡、一開啟 /admin 不管先看哪個分頁都會被打包下載的分頁。
 const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
@@ -69,15 +65,6 @@ export default function AdminHomeView(){
   if(!account.user)return <Login account={account}/>;
   if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></section>;
 
-  // Follows the same FeaturePage template as the four major feature pages
-  // (culture/statics/search/governance): the hero only ever holds static
-  // title/eyebrow text, never an interactive control. .loc-hero has
-  // overflow:hidden (for its decorative corner glow), which silently clips
-  // any popup that tries to render inside it -- that is exactly what broke
-  // the react-select menu here before: it lived inside the hero's own
-  // "admin-hero" header box and its dropdown had nowhere to escape to. The
-  // section-select now lives in FeaturePage's children (scope-content),
-  // outside the hero box, same as every other feature page's controls.
   return <FeaturePage featureId="admin">
     {/* scope-management-page supplies the --management-min CSS variable that
         .scope-management-fields (used throughout the admin panels) reads,

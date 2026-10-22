@@ -25,12 +25,6 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
 });
 
 function GovernanceBlocks({scopeId,account,native}){
-  // `loc` itself is the aggregate site (aggregateChildren:true in
-  // scope-registry.js), not a content Scope like lrunes/lo3rwang -- it has
-  // no scope-level content for governance/manage to manage. Its "治理管理"
-  // entry point goes to the site-wide /admin tools instead, and (matching
-  // ScopeEditableBlocks' own canEdit rule for `loc`) requires the global
-  // admin role rather than any scope-level grant.
   const canManage=Boolean(account.user)&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
   const manageHref=scopeId==='loc'?navigationHref('admin','',native):navigationHref(scopeId,'governance/manage',native);
   const manageLink=canManage?<ScopeLink className="loc-button primary" href={manageHref} native={native}>治理管理</ScopeLink>:null;

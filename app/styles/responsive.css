@@ -59,8 +59,6 @@
   font-family:var(--loc-font-family);
 }
 
-
-
 /* First title of every page is the largest title on that page. */
 .loc-view>.loc-hero>h1,
 .loc-view>.loc-hero>.home-title-row>h1{

@@ -64,13 +64,6 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
-  // 3D is a single fixed high-quality presentation -- no power-saving
-  // alternate mode. If a device can't run it, the fallback is switching
-  // presentation entirely (2D, then the old fixed-spread view), not a
-  // degraded 3D tier.
-  // hd256 is the higher-quality re-rendered sprite set and the default;
-  // most phones handle it fine now. ?texture=original remains a
-  // diagnostic rollback to the legacy authored sprites, not a user-facing gate.
   const [textureQuality,setTextureQuality]=useState('hd256');
   // Opt-in QA only: ?fog_preview=1 exposes native fog loading/alpha readings.
   const [diagnoseAmbient,setDiagnoseAmbient]=useState(false);

@@ -53,9 +53,6 @@ function useAdminScopeData(){
     let active=true;
     (async()=>{
       try{
-        // silver.manage + silver.scope_registry 已停用：兩者的資料現在統一在
-        // silver.loc（main index table），一次查詢後在這裡拆成跟舊版相同形狀
-        // 的 registry／mappings，下面所有渲染邏輯不需要改動。
         const locResult=await dbAuthRelation('silver.loc')
           .select('id,display_name,manage_email,manage_role,domain,directory,parent_scope_id,active,sort_order,galaxy_table,time_table,birthday,title_tw,desc_tw')
           .order('sort_order',{ascending:true}).order('id',{ascending:true});
@@ -349,10 +346,6 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     }catch(error){setStatus(error?.message||'人員更新失敗。');}
   }
 
-  // silver.loc 現在是「一個 scope_id 一列」，一個 scope 只對應一位管理者
-  // （manage_email/manage_role），不再是 silver.manage 當年的 1 對多設計。
-  // 「新增管理者」＝寫入這一列的 manage_email/manage_role；「移除」＝清空它們；
-  // 不會再新增或刪除 silver.loc 的整列（那一列同時也是這個 scope 的登記資料）。
   async function saveMapping(row){
     setStatus('');
     try{

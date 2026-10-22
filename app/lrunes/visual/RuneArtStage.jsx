@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * LunaRunes 2D art-directed presentation.
- * Uses the project's original nine group paintings and 66 published rune cards.
- * No WebGL, Three.js, extruded glyphs, tarot pack, pseudo-3D tilting, or shaders.
- * Motion is used only for enter/exit and reveal choreography.
- */
 import {motion,AnimatePresence,useReducedMotion} from 'motion/react';
 import {groupImage,runeImage,runeName} from '../rune-directory.mjs';
 import RuneCardInfo from '../RuneCardInfo';

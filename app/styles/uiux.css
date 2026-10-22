@@ -158,15 +158,6 @@ button,a,.loc-control,.loc-button,
 }
 
 /* Global navigation: occupies the first document row; does not follow scroll. */
-.scope-global{
-  position:static;
-  top:auto;
-  z-index:100;
-  padding:.65rem clamp(.65rem,2vw,1.25rem);
-  border:0;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--loc-bg) 88%,transparent),color-mix(in srgb,var(--loc-bg) 66%,transparent));
-  backdrop-filter:blur(22px) saturate(1.25);
-}
 
 .scope-global::after{
   content:"";
@@ -179,13 +170,7 @@ button,a,.loc-control,.loc-button,
 }
 
 .scope-nav{
-  max-width:var(--loc-ui-max);
   gap:.2rem;
-  padding:.45rem .55rem;
-  border:1px solid var(--loc-ui-hairline);
-  border-radius:999px;
-  background:color-mix(in srgb,var(--loc-panel) 68%,transparent);
-  box-shadow:0 12px 38px rgb(0 0 0 / .10),inset 0 1px 0 rgb(255 255 255 / .04);
   scrollbar-width:none;
 }
 
@@ -286,13 +271,6 @@ button,a,.loc-control,.loc-button,
   margin-top:clamp(.65rem,1.4vw,1rem);
 }
 
-/* ONE Hero standard for the LOC, Author and LunaRunes homes (frame geometry
-   and shading live with each Hero's artwork rules; text lives here).
-   - eyebrow on its own row; title and subtitle share the next row and wrap
-     naturally -- the title is never squeezed into a fixed 44% column, which is
-     what broke "LOC月典" into "LOC月 / 典";
-   - every body line has the same size, weight and line-height, so bold or
-     linked runs cannot make one line taller than its neighbours. */
 :root{--loc-hero-measure:750px}
 .runes-home-hero{
   /* Same local palette as the LOC/Author Hero: the selected Theme must never
@@ -330,7 +308,6 @@ button,a,.loc-control,.loc-button,
   padding:0!important;
   text-align:start;
 }
-.loc-home-block--hero>.loc-home-block__body{max-width:var(--loc-hero-measure)}
 .loc-home-block--hero>.loc-home-block__body :is(p,li),
 .runes-home-hero-copy p:not(.loc-eyebrow){
   max-width:var(--loc-hero-measure);
@@ -360,9 +337,6 @@ button,a,.loc-control,.loc-button,
   line-height:1.42!important;
 }
 
-/* LunaRunes keeps its own moonlit artwork and structure, but shares the
-   homepage Hero type scale. Put necessary global subtitle/eyebrow precedence
-   here rather than adding overrides to the rune artwork/layout stylesheet. */
 .runes-home-hero .runes-home-hero-copy>.loc-eyebrow{
   font-size:var(--loc-type-hero-eyebrow)!important;
   color:rgba(230,235,255,.84)!important;
@@ -449,7 +423,6 @@ button,a,.loc-control,.loc-button,
   margin:.35rem 0;
 }
 
-
 .loc-eyebrow,.scope-eyebrow{
   color:var(--loc-gold)!important;
   font-size:var(--loc-type-eyebrow)!important;
@@ -527,11 +500,6 @@ button,a,.loc-control,.loc-button,
   background-repeat:no-repeat;
   background-size:cover;
 }
-/* LOC and Author keep left-aligned wording, centered vertically within the
-   image frame. Rune feature-page layout is intentionally left unchanged.
-   admin／local join the same rule so /admin and /local/setting's hero text
-   sits the same way as every other feature page's -- there is nothing
-   rune-specific about them. */
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"],[data-loc-scope="admin"],[data-loc-scope="local"])
   .scope-feature-hero--artwork:not(.is-editing){
   display:flex;
@@ -571,9 +539,6 @@ button,a,.loc-control,.loc-button,
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/LOC-statics.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/LOC-search.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
-/* admin／manage／setting: one image each, no "LOC view" counterpart --
-   none of the three ever renders under scopeId==='loc' (see
-   home-block-model.js's SINGLE_SLOT_FEATURE_HERO_IDS comment). */
 .scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-manage.jpg')}
 .scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/local-setting.jpg')}
@@ -875,7 +840,6 @@ button,a,.loc-control,.loc-button,
   border-radius:0 var(--loc-ui-radius-md) var(--loc-ui-radius-md) 0;
   background:var(--loc-ui-gold-soft);
 }
-
 
 .scope-footer{
   max-width:var(--loc-ui-max);
@@ -1186,8 +1150,6 @@ body{
   .scope-nav{scroll-behavior:auto}
 }
 
-
-
 /* Preserve the shared feature hero and a meaningful content frame while
    per-Scope visibility settings are being resolved. */
 .scope-feature-loading{display:grid;gap:1.2rem;min-height:23rem;align-content:start}
@@ -1211,10 +1173,6 @@ body{
 
 .scope-stat-data-pending{display:grid;gap:.75rem;min-width:0}
 
-
-/* Task-first mobile hierarchy: LOC/Author search, statistics, culture and
-   governance keep their artwork but no longer consume half the first screen.
-   Rune artwork and the homepage remain on their independent scales. */
 @media(max-width:760px){
   .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .scope-feature-hero--artwork{
     min-height:clamp(12.5rem,30svh,15rem);

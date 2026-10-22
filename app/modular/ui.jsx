@@ -23,10 +23,6 @@ import ScopeLink from './ScopeLink';
 // Shared display stays light: mount the editor only on pages that need it.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 
-// One visual header contract. Every feature page -- LOC/group included --
-// renders this as a read-only projection of the group_<feature> LOC record;
-// editing (text and the 8 hero images) happens only from the admin
-// 功能區塊設定 panel (admin-panels/FeatureHeroImages.jsx), never inline here.
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   const sign=HomeBlock.heroExtraFor(scopeId);
   return <>
@@ -54,13 +50,6 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
   const finalSubtitle=subtitle||resolvedSubtitle;
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
-  // Admin-only override for the 8 feature-hero images (4 features x
-  // group/scope), stored as plain silver.loc_blocks rows on the same
-  // symmetric "<kind>_<feature>" pages as the shared hero text (see
-  // admin-panels/FeatureHeroImages.jsx) -- never a separate table or
-  // column. Missing row -- including while the query is loading -- just
-  // means "keep the existing hardcoded CSS image"; this never removes or
-  // hides the current artwork.
   const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
   // group_<feature> carries both LOC's own hero text (admin-edited, read by
   // every Scope) and LOC's own hero image override, so loc viewers need only

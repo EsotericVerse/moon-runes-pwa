@@ -54,7 +54,6 @@ export default function ScopeBlockEditorSession({
   const subtitleLimit=128;
   const subtitleValue=HomeBlock.plainBlockLine;
   const stripInlineImage=value=>String(value||'').replace(/<img\b[^>]*>/gi,'');
-  // Only an explicit image management action migrates old embedded images.
   function configureImage(changes,removeEmbedded=true){
     setDraft(current=>{
       const base=current.image&&typeof current.image==='object'?current.image:{};

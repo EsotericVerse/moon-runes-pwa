@@ -23,7 +23,6 @@
 .rune-art-gallery-intro p{font-size:.92rem;color:var(--loc-muted);margin:0;}
 .rune-art-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(11px,2.5vw,23px);
   position:relative;z-index:1;max-width:1050px;margin:auto;}
-.rune-art-gallery--runes .rune-art-gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
 .rune-art-gallery-tile{min-width:0;position:relative;padding:7px;display:block;width:100%;
   overflow:hidden;border:1px solid var(--loc-gold-border-soft);border-radius:15px;
   background:linear-gradient(135deg,var(--loc-panel-2),var(--loc-panel) 35%,var(--loc-panel));
@@ -146,7 +145,6 @@
 @keyframes rune-art-shine{0%,66%,100%{left:-100%;opacity:0;}73%{opacity:1}90%{left:145%;opacity:0}}
 @media(max-width:760px){
   .rune-art-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-  .rune-art-gallery--runes .rune-art-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .rune-art-gallery{padding:17px;}
   .rune-art-tile-caption{padding:9px 5px 5px;gap:5px;}
   .rune-art-ritual{min-height:550px;padding:22px 13px;}

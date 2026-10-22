@@ -161,10 +161,6 @@
   .scope-nav-arrow,.scope-nav-close-folder{min-width:29px;min-height:44px;padding:.15rem;}
 }
 
-/* Capacitor iOS only: the first NAV row must sit below the Dynamic Island,
-   never inside the screen cutout. WKWebView can report zero CSS env insets,
-   so use a conservative tall-iPhone fallback, not a device-resolution ID.
-   Safe area is reserved once, above a compact non-floating 40px row. */
 .scope-global[data-native="ios"]{
   --loc-native-top-fallback:20px;
   width:min(var(--loc-ui-max),calc(100% - 1rem - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));

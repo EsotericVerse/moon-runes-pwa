@@ -48,10 +48,6 @@ export default function GlobalSettings({initialSection='home'}={}){
     setNative(isNative);
     const params=new URLSearchParams(window.location.search);
     const chosen=params.get('section');
-    // Historical links can enter the merged UI without a dead-end pane.
-    // 'files' used to not exist on native (it bounced to 'manage'); now that
-    // native also has its own real 'files' tab (local-scope import), a
-    // 'files' link is honored on every platform instead of being redirected.
     if(chosen==='favorites')setSection('home');
     else if(['home','files','manage','account','dailyRune'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
@@ -71,10 +67,6 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[native,prefs.home,prefs.loading,account.user?.id]);
 
   const choices=useMemo(()=>{
-    // `local` is never in the cloud scope registry (device-only, see
-    // use-account.js's canManageScopeSync/scopeDataFor special case), so it
-    // has to be listed here by hand, same as the other three static Scopes,
-    // or it could never be picked as an import target in the 'files' tab.
     const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')},{id:'local',label:uiT('uiExtra.globalSettings.localScope')}];
     const found=new Map(baseChoices.map(item=>[item.id,item]));
     for(const row of registry){
@@ -86,10 +78,6 @@ export default function GlobalSettings({initialSection='home'}={}){
     }
     return [...found.values()];
   },[registry,uiT('common.language')]);
-  // `local` is always available here -- native or web, signed in or not --
-  // since canManageScopeSync('local') is unconditional (see use-account.js).
-  // Every other Scope keeps the existing "web + signed in" requirement
-  // unchanged.
   const managedScopes=useMemo(()=>{
     const cloudManaged=!native&&account.user?choices.filter(item=>item.id!=='local'&&account.canManageScopeSync(item.id)):[];
     const local=choices.find(item=>item.id==='local');
@@ -121,11 +109,6 @@ export default function GlobalSettings({initialSection='home'}={}){
 
   const sections=[
     option('home',uiT('uiExtra.globalSettings.homeSettings')),
-    // Native keeps its own 'manage' tab (PrivateLocalFiles, the raw-file
-    // backup tool) AND now also gets 'files' (the scope-aware structured
-    // import -- ManagementImportPanel), since managedScopes always includes
-    // `local` regardless of platform: without this, the phone app would have
-    // no way to reach the local-scope import at all.
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
     // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
     // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。

@@ -62,13 +62,6 @@ export function useFeatureCopy(section,defaults){
   return featureSection(locale,section,defaults);
 }
 
-// Triggers (and, via the version bump above, re-renders once ready for) a
-// section split out of the per-locale dictionaries themselves — e.g.
-// `useUiSection('search')` or `useUiSection('uiExtra.editBlocks')`. The
-// owning feature file registers its own Traditional Chinese copy at module
-// scope (registerDefaultSection), so this hook only needs to arrange the
-// fetch for the other three locales; callers keep reading the result via
-// `copy.<path>` or `<UiText id="<path>.x"/>` exactly as before.
 export function useUiSection(path){
   const {locale}=useUiLocale();
   useEffect(()=>{

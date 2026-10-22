@@ -188,9 +188,6 @@ export default function Culture(){
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
-  // Deep-linked date ranges pick the initial period only once per URL request.
-  // Without this guard, re-rendered period arrays used to reapply the old URL
-  // and immediately undo a user's selection in the Culture period dropdown.
   const appliedDateNavigationRef=useRef('');
   useEffect(()=>{
     if(!requestedWindowStart){
@@ -279,13 +276,7 @@ export default function Culture(){
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
-  // When a period changes, the old category may not exist in the new period.
-  // Fall back to all works instead of disabling pagination and clearing it.
-  // Keyword Class is an independent visualization, not a work-list filter.
   const effectiveCategoryKey=selectedGroup?.category_key||'';
-  // react-query 原生 useInfiniteQuery 取代手刻的 offset/cursor 分頁狀態機：
-  // 自動快取、去重過期請求、取消過期請求全部交給模組處理，這裡只保留
-  // 業務邏輯本身（呼叫 culture-query 兩段式查詢、依 key 合併跨頁重複列）。
   const periodWorksQuery=useInfiniteQuery({
     queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period||'all',selectedWorkPeriod?.start_date||'',selectedWorkPeriod?.end_date||'',effectiveCategoryKey||'all'],
     initialPageParam:null,

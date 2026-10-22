@@ -9,11 +9,6 @@ import searchUIZh from '../../i18n/sections/uiExtra.searchUI.zh_tw.js';
 import editBlocksZh from '../../i18n/sections/uiExtra.editBlocks.zh_tw.js';
 import cultureViewZh from '../../i18n/sections/uiExtra.cultureView.zh_tw.js';
 import paginationZh from '../../i18n/sections/uiExtra.pagination.zh_tw.js';
-// This feature's own Traditional Chinese sections are bundled into its own
-// lazy chunk and registered immediately, so the search/uiExtra.* keys this
-// file reads are always present for the default locale; the other three
-// locales are fetched on demand by useUiSection below. None of these keys
-// are part of the app-wide core dictionary any more.
 registerDefaultSection('search',searchZh);
 registerDefaultSection('uiExtra.searchUI',searchUIZh);
 registerDefaultSection('uiExtra.editBlocks',editBlocksZh);

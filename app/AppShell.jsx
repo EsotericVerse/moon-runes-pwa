@@ -37,11 +37,6 @@ const NAV_SCOPES=Object.values(SCOPES)
 function DataSourceStatus(){
   const {copy}=useUiLocale();
   useUiSection('uiExtra.dataSourceStatus');
-  // Defensive optional chaining: for the three non-default locales this
-  // section is fetched async (useUiSection above), so a render that lands
-  // before it arrives must not crash — it falls back to an empty label
-  // rather than throwing on `undefined.x`. The default locale (zh-Hant)
-  // always has this section synchronously via registerDefaultSection.
   const section=copy.uiExtra.dataSourceStatus||{};
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   const current=status.unavailable
@@ -146,9 +141,6 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
     </select>
   </label>;
 }
-// Scope NAV labels and browser page copy use silver.loc.title_tw / desc_tw
-// (main index table; silver.manage.Title_TW / Desc_TW is no longer the source).
-// Scope display_name remains independent for directory and content presentation.
 function ScopePageCopy({scopeId,display_name,pageName='index'}){
   const enabled=Boolean(scopeId)&&scopeId!=='loc'&&scopeId!=='admin';
   const bootstrap=useAppBootstrap(scopeId,pageName);
@@ -295,12 +287,6 @@ function AppShellInner({children}){
   const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
-  // AppShellInner establishes the UiLocaleProvider below rather than sitting
-  // inside one, so the normal useUiSection('fields') hook (which reads the
-  // locale from context) would only ever see the default locale here. This
-  // triggers the fetch for the actual active locale directly; translateUiField
-  // already falls back to the literal text while it's in flight, so nothing
-  // can crash either way — this only makes the real translation arrive.
   useEffect(()=>{
     if(isSectionLoaded(activeLocale,'fields'))return undefined;
     let active=true;

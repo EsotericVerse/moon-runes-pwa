@@ -6,29 +6,8 @@ import UiText from '../../../i18n/UiText';
 import {selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 
-// The four feature pages (文化/統計/搜尋/治理) each carry one shared hero:
-// a title/text block admin edits from loc.lo3rwang.cc itself (the
-// explicitEditButton editor below, on the group_<feature> page -- the same
-// page its own image override lives on), plus one background image that
-// differs by scope kind -- the LOC/group view and a regular Scope view use
-// two different pictures, 4 features x 2 kinds = 8 slots. No new table and
-// no new column: all 8 are plain silver.loc_blocks rows, told apart purely
-// by page_name -- symmetric "<kind>_<feature>" pages, one row each
-// (block_order always 1, never repurposed to mean "which feature"):
-// group_culture / scope_culture, group_statics / scope_statics,
-// group_search / scope_search, group_governance / scope_governance. Only
-// the group_<feature> row ever carries text; scope_<feature> is image-only.
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
-// admin／manage／setting (/admin、各Scope的/governance/manage、local的
-// /local/setting) 各自只有一張圖（singleSlot:true），不像上面四個功能頁
-// 一樣有 LOC／一般Scope 兩種變體：這三頁都固定只在一個Scope底下顯示
-// （admin 永遠是 scopeId==='admin'、setting 永遠是 scopeId==='local'，
-// manage 永遠不會是 scopeId==='loc'，因為 loc 自己的管理入口是走
-// /admin），group_<feature> 那一欄只用不到「第二張圖」那個變體而已——
-// 標題文字一樣統一在這裡（唯一編輯入口）用 group_<feature> 這筆資料
-// 編輯，跟上面四個功能頁完全同一套 ScopeEditableBlocks／explicitEditButton
-// 機制，不特殊處理；各自的 feature 頁本身（FeaturePage）永遠只顯示不可編輯。
 const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},

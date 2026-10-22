@@ -138,7 +138,6 @@
   justify-self:center;
 }
 .loc-home-block--image-left{
-  /* Legacy left-position flags cannot move artwork above the body or into the title row. */
   grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);
   grid-template-areas:"header header" "body media" "children children";
 }
@@ -301,10 +300,6 @@
   .loc-home-block__children{grid-template-columns:minmax(0,1fr)}
 }
 
-
-/* THE Hero standard (approved on the Author home, now shared by LOC and
-   LunaRunes): same frame height, padding, bottom-anchored copy on phones and
-   editorial shading, whatever artwork a Scope supplies. */
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])[data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side){
   display:grid;
   grid-template-columns:minmax(0,1fr);

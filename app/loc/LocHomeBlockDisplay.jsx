@@ -25,8 +25,6 @@ function imageFor(slot,scopeId='loc'){
   return assets[Number(slot?.order)||0]||null;
 }
 
-// Every homepage reads the same image configuration; legacy HTML images and
-// pre-existing site artwork are fallbacks, never hidden sources of truth.
 export function resolveHomeImage(slot,scopeId='loc'){
   const preset=imageFor(slot,scopeId);
   const config=slot?.image&&typeof slot.image==='object'?slot.image:null;

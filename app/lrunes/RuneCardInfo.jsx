@@ -3,35 +3,12 @@ import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
 
-// The existing 3D-extruded-glyph module (Rune3DLibrary's own fallback path)
-// already renders "just the rune's single Chinese character, large" when its
-// WebGL layer can't mount -- that's exactly what a missing/offline image
-// needs here too, so this reuses it instead of inventing a second, plainer
-// text fallback. Loaded only when an <img> actually fails, not on every
-// mount: this is a heavier client/WebGL component (see Rune3DLibrary.jsx's
-// own dynamic-import use of it).
 const RuneExtrudedGlyph=dynamic(()=>import('./effekseer/RuneExtrudedGlyph'),{ssr:false,loading:()=>null});
 
-// Two fixed, separate display modes by context -- never a fallback chain
-// between them:
-//  - the Rune Directory/gallery (layout="profile") is always the published
-//    photo art (now a loc.lo3rwang.cc URL -- see rune-directory.mjs); if
-//    that fails to load it falls back to plain text, never the 3D glyph.
-//  - the draw/ritual screens (layout="draw"/"home", via glyphFirst) always
-//    show this 3D-extruded glyph; the flat image is only the lighter-weight
-//    option when WebGL can't run on that phone, not what the gallery shows.
-// `card` drives the glyph (word + runeGlyphProfile). Group-concept images
-// (one per 9 groups, not one per rune) have no single rune to extrude, so
-// those callers pass `fallbackText` (the group name) and are always the
-// plain-text-on-error image mode regardless of `glyphFirst`.
 export function RuneImage({src,alt,className,card,fallbackText,glyphFirst=false,...imgProps}){
   const [imageFailed,setImageFailed]=useState(false);
   if(glyphFirst&&card){
     const word=text(card.rune_name).replace(/之符文$/,'').slice(0,1);
-    // RuneExtrudedGlyph already degrades to its own 2D text span internally
-    // when WebGL can't mount (see rune-glyph-solid.mjs's try/catch) -- that
-    // is the "phone can't run it" lighter-weight path, not a reason to swap
-    // to the image here too.
     if(word){
       const profile=runeGlyphProfile(card);
       return <span className={className} role="img" aria-label={alt}

@@ -7,8 +7,6 @@ import statisticsZh from '../../i18n/sections/statistics.zh_tw.js';
 import statisticsUIZh from '../../i18n/sections/uiExtra.statisticsUI.zh_tw.js';
 import statisticsViewZh from '../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
 import chartTypesZh from '../../i18n/sections/uiExtra.chartTypes.zh_tw.js';
-// See Search.jsx for why this registration pattern is safe for both the
-// default locale (synchronous, no fetch) and the other three (useUiSection).
 registerDefaultSection('statistics',statisticsZh);
 registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
 registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);

@@ -1,5 +1,4 @@
 
-/* Independent skin laboratory; no legacy Duel / Directory selectors are changed. */
 .rune-skin-lab{--rune-gold:#ecd6a6;--rune-night:#101325;max-width:1120px;margin:0 auto;padding:clamp(14px,3vw,30px);color:var(--loc-text,#f0edf4)}
 .rune-skin-header{padding:14px 0 22px}
 .rune-skin-header h1{margin:.2em 0;font-size:clamp(1.55rem,4vw,2.5rem);letter-spacing:.03em}
@@ -15,10 +14,10 @@
 .rune-skin-stage:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-radial-gradient(circle at 50% 47%,transparent 0px,transparent 74px,#d6bfff0b 75px,transparent 77px);opacity:.8}
 .rune-skin-moon{width:108px;height:108px;margin:10px auto;position:relative;z-index:2;border-radius:50%;background:radial-gradient(circle at 28% 27%,#f8f6e9,#cdd7e6 49%,#74799e 100%);box-shadow:0 0 22px 10px #cfd4ff33,0 0 100px 24px #c0a6ec24,inset -12px -9px 17px #41456780}
 .rune-skin-moon:after{content:'';position:absolute;inset:-18px;border:1px solid #b9b5d36b;border-radius:50%;box-shadow:0 0 26px #b3bfff30}
-.rune-skin-cosmos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));justify-items:center;align-items:center;max-width:800px;margin:14px auto 4px;gap:4px}
-.rune-skin-cosmos.single{grid-template-columns:1fr;max-width:250px}
-.rune-skin-cosmos.two{grid-template-columns:repeat(2,minmax(0,1fr));max-width:490px}
-.rune-skin-cosmos.three{grid-template-columns:repeat(3,minmax(0,1fr));max-width:670px}
+.rune-skin-cosmos{grid-template-columns:repeat(3,minmax(0,1fr));justify-items:center;align-items:center;gap:4px}
+.rune-skin-cosmos.single{grid-template-columns:1fr;}
+.rune-skin-cosmos.two{grid-template-columns:repeat(2,minmax(0,1fr));}
+.rune-skin-cosmos.three{grid-template-columns:repeat(3,minmax(0,1fr));}
 .rune-skin-orbit-card{width:100%;max-width:215px;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center}
 .rune-skin-orbit-name{font-size:.86rem;letter-spacing:.06em;color:var(--loc-text)}
 .rune-skin-orbit-direction{color:var(--loc-muted);font-size:.72rem}
@@ -64,12 +63,6 @@
   .rune-skin-cosmos .rune-skin-orbit-direction{font-size:.67rem}
 }
 
-/* Follow the site's ORIGINAL two-layer page composition:
-   main.loc-next-main controls the viewport width and outer gutters;
-   child .loc-panel is the ONE text/content box with the canonical themed
-   border, corners, padding and shadow. Only lift the old independent rune
-   max-width constraints, which otherwise narrow the inner box a second time.
-   Never paint a second frame onto the outer <main>. */
 .loc-next-main>.loc-panel.rune-skin-lab{
   box-sizing:border-box;
   width:100%;

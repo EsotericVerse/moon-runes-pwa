@@ -92,8 +92,6 @@ export default function PrivateLocalFiles(){
     setBusy(true);setError('');setStatus('');setPreview(null);
     let copyPath='';
     try{
-      // An explicit user action only. A temporary Cache copy gives the iOS
-      // share/open sheet the original extension instead of the opaque .bin name.
       const [{Filesystem,Directory},{Share}]=await Promise.all([
         import('@capacitor/filesystem'),import('@capacitor/share')
       ]);

@@ -77,11 +77,6 @@ export default function ScopeEditableBlocks({
   );
   const [editingSlot,setEditingSlot]=useState(null);
   const [message,setMessage]=useState('');
-  // explicitEditButton means "one single page-level entry point, not one
-  // button or one click target per block". Toggling it on swaps the whole
-  // block list for a unified draft screen (ScopeBlockDraftList); until then
-  // the page behaves exactly like a read-only visitor sees it -- no click
-  // handler, no hover affordance, nothing to accidentally trigger.
   const [editMode,setEditMode]=useState(false);
 
   const slots=useMemo(()=>{
@@ -95,8 +90,6 @@ export default function ScopeEditableBlocks({
       if(editingSlot&&!editingSlot.stored&&!displayed.some(slot=>slot.order===editingSlot.order)&&editingSlot.order<=maxBlocks){
         displayed.push({...editingSlot});
       }
-      // Render the standard Hero visual in static HTML before client data loads.
-      // The placeholder is replaced by the real first block after the DB query.
       if(Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0&&placeholderFirstOrder<=maxBlocks
           &&!displayed.some(slot=>slot.order===placeholderFirstOrder)){
         displayed.push(normalizeRow(null,placeholderFirstOrder));
@@ -176,21 +169,6 @@ export default function ScopeEditableBlocks({
       </button>:null}
       {toggleExtra}
     </div>:null;
-    // While browsing (not editing), the toggle (plus any caller-supplied
-    // extra action, e.g. a management link or the daily-rune shortcut)
-    // renders in the gap between the page hero and the first text content
-    // block/card -- not stretched into the grid, not interleaved between
-    // blocks. Most callers render their hero separately, before this
-    // component, so that gap is simply "before this component's own
-    // output" (slots[0] here IS the first real content block). But some
-    // callers (placeholderFirstOrder set) use this component's own first
-    // slot AS the hero (see AuthorHomeEditableBlock, RunesClient,
-    // FeatureHeroImages) -- there the gap is AFTER that first slot, not
-    // before it, or the toggle would render above the hero instead of
-    // below it. While editing, the toggle moves into ScopeBlockDraftList's
-    // own toolbar row instead, so it renders together with Save/Cancel in
-    // one row instead of the toggle up top and Save/Cancel trailing after
-    // every draft card.
     const heroSlotOrder=Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0?placeholderFirstOrder:null;
     const contents=<>
       {!editMode&&!heroSlotOrder?toggleButton:null}
