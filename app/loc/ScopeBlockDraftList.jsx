@@ -51,6 +51,19 @@ export default function ScopeBlockDraftList({
   const [message,setMessage]=useState('');
   const table=`silver.${scopeId}_blocks`;
 
+  async function refreshBlockQueries(){
+    const bootstrapKey=appBootstrapKey(scopeId,pageName);
+    const displayKey=['scope-blocks',scopeId,pageName];
+    await Promise.all([
+      queryClient.invalidateQueries({queryKey:bootstrapKey}),
+      queryClient.invalidateQueries({queryKey:displayKey})
+    ]);
+    await Promise.all([
+      queryClient.refetchQueries({queryKey:bootstrapKey,type:'active'}),
+      queryClient.refetchQueries({queryKey:displayKey,type:'active'})
+    ]);
+  }
+
   function patchDraft(uid,patch){
     setDrafts(current=>current.map(draft=>draft.uid===uid?{...draft,...patch}:draft));
   }
@@ -207,8 +220,7 @@ export default function ScopeBlockDraftList({
           await insertRows(table,[{uid:draft.uid,...values}]);
         }
       }
-      await queryClient.invalidateQueries({queryKey:appBootstrapKey(scopeId,pageName)});
-      await queryClient.refetchQueries({queryKey:appBootstrapKey(scopeId,pageName),type:'active'});
+      await refreshBlockQueries();
       onDone(t('uiExtra.editBlocks.saved'));
     }catch(error){
       setMessage(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
