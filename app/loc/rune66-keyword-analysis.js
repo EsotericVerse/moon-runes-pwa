@@ -257,6 +257,12 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
     selectAllRows(scope.galaxy,{
       columns:'uid,title,content,createtime,searchable,statistics_able',
       orders:[{column:'createtime',ascending:true}],
+      // This selects `content`, the one large column in this table (avg ~160
+      // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
+      // size (65535) is sized for narrow rows; with content included, a
+      // scope under that row count fetches its entire table in one request.
+      // Page this read explicitly instead of relying on the shared ceiling.
+      pageSize:2000,
       onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
         3+17*(total?completed/total:1),
         '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
