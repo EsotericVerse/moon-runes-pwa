@@ -115,6 +115,7 @@ export default {
   "importComplete": "第 {index}／{total} 檔完成：新增 {count} 筆{skipped}。{next}",
   "importFailed": "匯入失敗。",
   "importRetry": " 可保留本檔並重新執行；系統會重新核對已存在 UID。",
+  "writeCooldownActive": "剛執行過大量寫入，請在 5 分鐘後再試。",
   "fileLabel": "檔案：",
   "fileQueue": "（第 {index}／{total} 檔）｜建議來源：",
   "preview": "JSON 匯入預覽",

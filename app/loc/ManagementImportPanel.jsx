@@ -8,7 +8,7 @@ import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
 registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
-import {useDeferredValue,useMemo,useState} from 'react';
+import {useDeferredValue,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {insertRows,dbAuthRelation,updateRows,deleteRows,findGalaxyDuplicates} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -24,6 +24,29 @@ const ZIP_LAYOUT_KEYS=Object.freeze({
 });
 const ZIP_FIELD_KEYS=Object.freeze(['id','text','author','time','relation','attachment','collection']);
 const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',copilot:'Microsoft Copilot',perplexity:'Perplexity', 'meta-ai':'Meta AI',facebook:'Facebook',messenger:'Messenger',instagram:'Instagram',threads:'Threads',whatsapp:'WhatsApp',x:'X / Twitter',telegram:'Telegram',discord:'Discord',line:'LINE',slack:'Slack',teams:'Microsoft Teams',snapchat:'Snapchat',wechat:'WeChat',tiktok:'TikTok',reddit:'Reddit',linkedin:'LinkedIn',pinterest:'Pinterest',youtube:'YouTube','google-takeout':'Google Takeout'});
+// Same cooldown pattern as keyword classification (KeywordLibraryPanel.jsx):
+// a purely client-side, no-DB-attribute 5-minute gate after a bulk write
+// completes. NOTE: this is a debounce against re-triggering a bulk write
+// while a prior one may still be settling, not a confirmed fix for a known
+// root cause -- live Supabase edge_logs for the read-side failure this was
+// modeled on actually showed Postgres error 57014 (query_canceled), not a
+// rate-limit/abuse rejection, so "Supabase bans repeated requests" is NOT
+// an established cause. Keep this as a precaution against rapid re-clicks
+// until the real mechanism is confirmed.
+const BULK_WRITE_COOLDOWN_MS=300000;
+function useBulkWriteCooldown(){
+  const [active,setActive]=useState(false);
+  const availableAtRef=useRef(0);
+  return {
+    active,
+    remainingMs(){return availableAtRef.current-Date.now()},
+    start(){
+      availableAtRef.current=Date.now()+BULK_WRITE_COOLDOWN_MS;
+      setActive(true);
+      setTimeout(()=>setActive(false),BULK_WRITE_COOLDOWN_MS);
+    }
+  };
+}
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
@@ -244,6 +267,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
+  const writeCooldown=useBulkWriteCooldown();
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
@@ -308,6 +332,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   }
   async function run(){
     if(busy||!rows.length)return;
+    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
@@ -343,6 +368,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped}));
       setRows([]);
+      writeCooldown.start();
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);onBusyChange?.(false);}
   }
@@ -402,7 +428,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
     </div>:null}
     <div className="scope-tabs">
-      <button type="button" disabled={busy||!analysisCurrent||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
+      <button type="button" disabled={busy||!analysisCurrent||!analyzed.valid.length||writeCooldown.active} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
       {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button>:null}
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -436,6 +462,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
+  const writeCooldown=useBulkWriteCooldown();
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function chooseFile(event){
@@ -516,6 +543,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
 
   async function applyRefresh(){
     if(!plan||busy)return;
+    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
     const selected=source.trim();
     setBusy(true);onBusyChange?.(true);setStatus('');
     const total=plan.creates.length+plan.updates.length;
@@ -556,6 +584,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
       });
       setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}) +t('uiExtra.importUI.refreshMediaSuffix',{media:mediaSummary.created,linked:mediaSummary.connected}));
       setPlan(null);setRows([]);setFileName('');
+      writeCooldown.start();
     }catch(error){
       setPlan(null);
       setStatus(String(error?.message||error||t('uiExtra.importUI.refreshWriteFailed'))+t('uiExtra.importUI.refreshRetry'));
@@ -569,7 +598,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     <label><UiText id="uiExtra.importUI.sourceLabel"/><input disabled={busy} value={source} onChange={event=>{setSource(event.target.value);setPlan(null);setProgress(null);}} placeholder={sourceSuggestion(fileName)}/></label>
     <div className="scope-tabs">
       <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?t('uiExtra.importUI.processing'):t('uiExtra.importUI.analyze')}</button>
-      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)} onClick={applyRefresh}><UiText id="uiExtra.importUI.applyRefresh"/></button>
+      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)||writeCooldown.active} onClick={applyRefresh}><UiText id="uiExtra.importUI.applyRefresh"/></button>
     </div>
     {plan?<div className="scope-ranking">
       <div><strong><UiText id="uiExtra.importUI.create"/></strong><span>{plan.creates.length.toLocaleString()}</span></div>
