@@ -84,6 +84,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [configSnapshot,setConfigSnapshot]=useState(null);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
+  const [classificationCoolingDown,setClassificationCoolingDown]=useState(false);
   const [savingStage,setSavingStage]=useState('');
   const [batchProgress,setBatchProgress]=useState(null);
   const [message,setMessage]=useState('');
@@ -347,25 +348,23 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         l.analyzedMiddle+Number(result.dynamicTieCount||0).toLocaleString()+
         l.tiesSuffix
       );
+      // Matches the DB-side 30s cooldown (keyword_classification_last_finished_at
+      // in silver.apply_keyword_classification). Disable the button here too
+      // so the person sees it greyed out instead of clicking and hitting an
+      // error -- the DB check is still the real guard (covers other people,
+      // other tabs); this is just so the same tab doesn't need to ask it.
+      setClassificationCoolingDown(true);
+      setTimeout(()=>setClassificationCoolingDown(false),30000);
     }catch(error){
       setBatchProgress(current=>current?{...current,phase:'failed',label:l.analysisInterrupted}:null);
       const rawMessage=String(error?.message||error||l.batchError);
       // Friendlier text for the two guard errors added on the DB side
       // (silver.apply_keyword_classification, mode='begin'): one person
       // double-clicking, or two people running this at once.
-      const cooldownMatch=rawMessage.match(/keyword classification cooldown active: ([\d.]+) ?s remaining/i);
-      if(cooldownMatch){
-        let remaining=Math.ceil(Number(cooldownMatch[1])||0);
-        setMessage(l.classificationCooldownActive.replace('{seconds}',String(remaining)));
-        const tick=setInterval(()=>{
-          remaining-=1;
-          if(remaining<=0){
-            clearInterval(tick);
-            setMessage('');
-            return;
-          }
-          setMessage(l.classificationCooldownActive.replace('{seconds}',String(remaining)));
-        },1000);
+      if(/keyword classification cooldown active/i.test(rawMessage)){
+        setMessage(l.classificationCooldownActive);
+        setClassificationCoolingDown(true);
+        setTimeout(()=>setClassificationCoolingDown(false),30000);
       }else if(/keyword classification already running for this scope/i.test(rawMessage)){
         setMessage(l.classificationAlreadyRunning);
       }else{
@@ -534,7 +533,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
         <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>
-        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
+        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId||classificationCoolingDown} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>
