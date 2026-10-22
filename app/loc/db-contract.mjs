@@ -209,14 +209,22 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   // over ever auto-merging two different posts). No row is ever deleted
   // here -- the caller reviews each group and deletes explicitly.
   async function findGalaxyDuplicates(scopeId){
-    const data=await rpcJson('find_galaxy_duplicates',{p_scope_id:normalizeScopeId(scopeId)},'Duplicate scan');
-    return (Array.isArray(data)?data:[]).map(row=>({
+    const scope=normalizeScopeId(scopeId);
+    const data=await rpcJson('find_galaxy_duplicates',{p_scope_id:scope},'Duplicate scan');
+    const groups=(Array.isArray(data)?data:[]).map(row=>({
       sourceName:String(row?.source_name||''),
       createtime:String(row?.createtime||''),
       uids:(Array.isArray(row?.uids)?row.uids:[]).map(String),
       titles:(Array.isArray(row?.titles)?row.titles:[]).map(String),
       updateTimes:(Array.isArray(row?.update_times)?row.update_times:[]).map(value=>String(value||''))
     }));
+    // Rows whose body still holds line breaks are the re-imported copies of a post
+    // that is normally stored on one line.
+    const allUids=groups.flatMap(group=>group.uids);
+    const withBreaks=allUids.length
+      ?new Set((await rpcJson('galaxy_uids_with_newline',{p_scope_id:scope,p_uids:allUids},'Duplicate scan')||[]).map(String))
+      :new Set();
+    return groups.map(group=>({...group,hasNewline:group.uids.map(uid=>withBreaks.has(uid))}));
   }
 
   async function writeKeywordLibraryItem(scopeId,operation,item={}){

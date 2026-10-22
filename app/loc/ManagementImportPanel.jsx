@@ -605,7 +605,17 @@ function DuplicateDetection({scopeId}){
     try{
       const found=await findGalaxyDuplicates(scopeId);
       setGroups(found);
-      setStatus(found.length?t('uiExtra.importUI.duplicateGroupsFound',{count:found.length}):t('uiExtra.importUI.duplicateNoneFound'));
+      // Preselect the copies that contain line breaks, but only where a clean copy
+      // of the same post remains in that group.
+      const preselected=new Set();
+      for(const group of found){
+        if(!group.hasNewline.some(flag=>!flag))continue;
+        group.uids.forEach((uid,index)=>{if(group.hasNewline[index])preselected.add(uid);});
+      }
+      setSelected(preselected);
+      setStatus(found.length
+        ?t('uiExtra.importUI.duplicateGroupsFound',{count:found.length})+(preselected.size?'；已預選 '+preselected.size.toLocaleString()+' 筆含換行的重複版本':'')
+        :t('uiExtra.importUI.duplicateNoneFound'));
     }catch(error){
       setGroups(null);
       setStatus(String(error?.message||error||t('uiExtra.importUI.duplicateScanFailed')));
@@ -628,14 +638,15 @@ function DuplicateDetection({scopeId}){
       if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const uids=[...selected];
       // management_write's delete path only accepts eq filters -- one call per row.
-      for(const uid of uids){
-        await deleteRows(galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]});
+      for(let offset=0;offset<uids.length;offset+=8){
+        await Promise.all(uids.slice(offset,offset+8).map(uid=>deleteRows(galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]})));
       }
       setGroups(current=>(current||[])
         .map(group=>({
           ...group,
           titles:group.titles.filter((_,index)=>!selected.has(group.uids[index])),
           updateTimes:group.updateTimes.filter((_,index)=>!selected.has(group.uids[index])),
+          hasNewline:(group.hasNewline||[]).filter((_,index)=>!selected.has(group.uids[index])),
           uids:group.uids.filter(uid=>!selected.has(uid))
         }))
         .filter(group=>group.uids.length>1));
