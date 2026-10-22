@@ -13,6 +13,7 @@ import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import {FeaturePage} from '../modular/ui';
 import PanelLoading from './PanelLoading';
+import SectionBanner from './SectionBanner';
 // The home/account Settings screens never download import or management editors.
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
@@ -159,8 +160,8 @@ export default function GlobalSettings({initialSection='home'}={}){
           onChange={item=>{setSection(item?.value||'home');setStatus('');}}/>
       </section>
 
+      <SectionBanner id={activeSection}/>
       {activeSection==='home'?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
           <label><span><UiText id="uiExtra.globalSettings.defaultHome"/></span>
             <select className="scope-select" value={actualHome} onChange={event=>setHome(event.target.value)}
@@ -195,7 +196,6 @@ export default function GlobalSettings({initialSection='home'}={}){
       {native&&activeSection==='manage'?<PrivateLocalFiles/>:null}
 
       {activeSection==='account'?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.account"/></h2>
         {waiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
           <p>{account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
           <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
