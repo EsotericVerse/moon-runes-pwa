@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import UiText from '../../../i18n/UiText';
 import {selectScopeBlocks} from '../../scope-data';
@@ -58,6 +59,8 @@ function imageUrlOf(row){
 function ImageSlot({feature,variant}){
   const page=pageFor(variant.kind,feature);
   const order=1;
+  const queryClient=useQueryClient();
+  const displayQueryKey=['scope-blocks','loc',page];
   const [rows,setRows]=useState(null);
   const [value,setValue]=useState('');
   const [busy,setBusy]=useState(false);
@@ -95,6 +98,8 @@ function ImageSlot({feature,variant}){
         const {error}=await insertRows(table,[{page_name:page,block_order:order,block_image:image}]);
         if(error)throw new Error(error.message||'儲存失敗。');
       }
+      await queryClient.invalidateQueries({queryKey:displayQueryKey});
+      await queryClient.refetchQueries({queryKey:displayQueryKey,type:'active'});
       setStatus('已更新。');
       setRevision(v=>v+1);
     }catch(error){
