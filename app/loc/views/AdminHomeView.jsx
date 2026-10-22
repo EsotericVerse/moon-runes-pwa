@@ -16,7 +16,6 @@ import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
 import {FeaturePage} from '../../modular/ui';
 import PanelLoading from '../PanelLoading';
-import SectionBanner from '../SectionBanner';
 // Registry editing and source catalogs are independent admin capabilities.
 const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:PanelLoading});
 
@@ -82,7 +81,6 @@ export default function AdminHomeView(){
           onChange={option=>setSection(option?.value||'registry')}
         />
       </div>
-      <SectionBanner id={section}/>
       {section==='registry'?<AdminRegistryPanel/>:null}
       {section==='sources'?<AdminSourceCategories/>:null}
       {section==='themes'?<ThemeEditor/>:null}

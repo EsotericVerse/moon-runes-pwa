@@ -7,7 +7,6 @@ import {useAccount} from './use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import PanelLoading from './PanelLoading';
-import SectionBanner from './SectionBanner';
 
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
@@ -43,7 +42,6 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
           onChange={option=>setSection(option?.value||'settings')}
         />
       </div>
-      <SectionBanner id={section}/>
       {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
       {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
       {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
