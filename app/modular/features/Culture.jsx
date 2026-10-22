@@ -223,8 +223,8 @@ export default function Culture(){
   const styleQuery=useQuery({
     queryKey:['culture-style-filter','rune66',classificationScope,selectedWindowStart,selectedWindowEnd],
     queryFn:async()=>{
-      const {selectRune66Classification}=await import('../../loc/rune66-keyword-analysis');
-      return selectRune66Classification({startDate:selectedWindowStart,endDate:selectedWindowEnd});
+      const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
+      return selectKeywordAnalysisSummary({startDate:selectedWindowStart,endDate:selectedWindowEnd});
     },
     enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(selectedWindowStart&&selectedWindowEnd),
     staleTime:5*60_000

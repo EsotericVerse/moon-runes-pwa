@@ -109,8 +109,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
 
   async function invalidateClassification(){
-    const {clearRune66ClassificationCache}=await import('./rune66-keyword-analysis');
-    clearRune66ClassificationCache();
+    const {clearKeywordAnalysisCache}=await import('./keyword-analysis');
+    clearKeywordAnalysisCache();
     await Promise.all([
       queryClient.invalidateQueries({queryKey:['statistics-style-filter'],refetchType:'all'}),
       queryClient.invalidateQueries({queryKey:['culture-style-filter'],refetchType:'all'})
@@ -371,8 +371,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     setBusy(true);setMessage('');
     setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
     try{
-      const {runRune66ClassificationBatch}=await import('./rune66-keyword-analysis');
-      const result=await runRune66ClassificationBatch(scopeId,{onProgress:setBatchProgress});
+      const {runKeywordAnalysisBatch}=await import('./keyword-analysis');
+      const result=await runKeywordAnalysisBatch(scopeId,{onProgress:setBatchProgress});
       await invalidateClassification();
       // Refreshes `staticstime` from the row the run just finalized; the
       // cooldown effect above picks up the new value and greys the button

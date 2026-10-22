@@ -298,8 +298,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
     queryFn:async()=>{
-      const {selectRune66Classification}=await import('../../loc/rune66-keyword-analysis');
-      return selectRune66Classification({scopeId,...styleRange});
+      const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
+      return selectKeywordAnalysisSummary({scopeId,...styleRange});
     },
     enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
     staleTime:5*60_000

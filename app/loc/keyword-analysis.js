@@ -11,7 +11,7 @@ const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
 const analysisPromises=new Map();
-let rune66SummaryInstalled=true;
+let keywordSummaryRpcInstalled=true;
 
 function normalizeScopeId(value){
   const scope=String(value||'lo3rwang').trim().toLowerCase();
@@ -35,7 +35,7 @@ function normalizedGroupLists(value){
 }
 function isEligibleRow(row,minChars){
   // statistics_able is now filtered in the query itself (see
-  // runRune66ClassificationBatch's selectAllRows call) -- every row reaching
+  // runKeywordAnalysisBatch's selectAllRows call) -- every row reaching
   // here already satisfies it, so it's not re-checked.
   return Boolean(
     String(row?.uid||'').trim()
@@ -270,7 +270,7 @@ function defaultGroupOf(catalogRows){
   return row?String(row.class_group||'').trim():'';
 }
 
-export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgress}={}){
+export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}){
   const normalizedScopeId=normalizeScopeId(scopeId);
   reportBatchProgress(onProgress,'reading',0,0,0,'確認 Scope 與分析設定');
   const {scope,config}=await scopeAndConfig(normalizedScopeId);
@@ -330,7 +330,7 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
   if(written.count!==payloadRows.length||written.documentCount!==payloadRows.length){
     throw new Error('關鍵詞批次寫回不完整：預期 '+payloadRows.length+'，實際 '+written.count);
   }
-  clearRune66ClassificationCache();
+  clearKeywordAnalysisCache();
   const {data:verifiedRows,error:verificationError}=await dbAuthRelation(scope.config)
     .select('keyword_document_count,staticstime')
     .eq('id',normalizedScopeId).limit(1);
@@ -375,7 +375,7 @@ function emptyStored(config,extra={}){
   };
 }
 // Exact counts for the stored classification, reduced from row-level data. Used only
-// when the database-side function (silver.read_rune66_summary) is not available.
+// when the database-side RPC (silver.read_rune66_summary) is not available.
 function aggregateStoredRows(rows){
   const agg={eligible:0,classDays:new Map(),itemCounts:new Map(),itemDocuments:new Map()};
   for(const row of rows||[]){
@@ -402,7 +402,7 @@ function aggregateStoredRows(rows){
   };
 }
 // Same shape, taken straight from the database's exact counts.
-function aggregateRune66Rows(rows){
+function aggregateSummaryRpcRows(rows){
   const agg={eligible:0,classDays:[],itemCounts:new Map(),itemDocuments:new Map()};
   for(const row of rows||[]){
     if(row.kind==='eligible')agg.eligible=Number(row.hit_count)||0;
@@ -475,20 +475,20 @@ function storedSummary(agg,config){
   };
 }
 
-export async function selectRune66Classification({scopeId='lo3rwang',startDate='',endDate=''}={}){
+export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate=''}={}){
   const normalizedScopeId=normalizeScopeId(scopeId);
   const key=[normalizedScopeId,String(startDate||''),String(endDate||'')].join('|');
   if(analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
     const {scope,config}=await scopeAndConfig(normalizedScopeId);
     if(!config.staticstime)return emptyStored(config);
-    if(rune66SummaryInstalled){
+    if(keywordSummaryRpcInstalled){
       try{
         const counted=await readRune66Summary(normalizedScopeId,{startDate,endDate});
-        return storedSummary(aggregateRune66Rows(counted),config);
+        return storedSummary(aggregateSummaryRpcRows(counted),config);
       }catch(error){
         if(!['PGRST202','42883'].includes(String(error?.code||'')))throw error;
-        rune66SummaryInstalled=false;
+        keywordSummaryRpcInstalled=false;
       }
     }
     const rows=await selectAllRows(scope.galaxy,{
@@ -510,6 +510,6 @@ export async function selectRune66Classification({scopeId='lo3rwang',startDate='
   return promise;
 }
 
-export function clearRune66ClassificationCache(){
+export function clearKeywordAnalysisCache(){
   analysisPromises.clear();
 }
