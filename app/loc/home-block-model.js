@@ -106,7 +106,7 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
 // feature-hero images, see admin-panels/FeatureHeroImages.jsx). block_order
 // is purely "which block within this page" -- it never stands in for which
 // feature; the page_name already does that job. LOC edits the group_<feature>
-// row's text in place from the admin 功能首頁圖設定 panel; every Scope reads
+// row's text in place from the admin 功能區塊設定 panel; every Scope reads
 // it read-only. The matching scope_<feature> row (see FeatureHeroImages.jsx)
 // only ever carries that Scope-view's image override, never text.
 // LunaRunes deliberately remains on its current read-only localized header.
@@ -153,8 +153,12 @@ export function sharedFeatureHeroFor(rows){
 
 export function shouldUseSharedFeatureHero(scopeId,featureId){
   // Explicitly keep the rune pages, their presentation and content untouched.
+  // scopeId==='admin' is NOT excluded here: featureId==='admin' (the /admin
+  // page itself) only ever renders with scopeId==='admin' -- no other
+  // featureId is ever paired with that scopeId -- so excluding it would
+  // permanently block admin's own group_admin hero text from ever being read.
   return Boolean(FEATURE_HERO_ORDER[String(featureId||'')])&&
-    Boolean(scopeId)&&scopeId!=='lrunes'&&scopeId!=='admin';
+    Boolean(scopeId)&&scopeId!=='lrunes';
 }
 
 // Three fixed personal signs; no public editor, image field, or DB setting can select them.

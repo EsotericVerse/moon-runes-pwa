@@ -109,7 +109,7 @@
 
 
 /* Management workspace */
-.scope-management-page{--management-min:16rem}
+.scope-management-page{--management-min:16rem;display:grid;gap:var(--scope-gap)}
 .scope-management-split{display:grid;grid-template-columns:minmax(15rem,.78fr) minmax(0,1.22fr);gap:1rem;align-items:start}
 .scope-management-records{display:grid;gap:.55rem;max-height:62vh;overflow:auto;padding-right:.2rem}
 .scope-management-record{width:100%;text-align:left;display:grid;gap:.2rem;color:var(--loc-text);cursor:pointer}

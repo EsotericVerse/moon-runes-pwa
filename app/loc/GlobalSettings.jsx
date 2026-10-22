@@ -11,11 +11,14 @@ import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
+import {FeaturePage} from '../modular/ui';
 // The home/account Settings screens never download import or management editors.
 const panelLoading=()=>null;
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:panelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:panelLoading});
-const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:panelLoading});
+// 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
+// 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
+const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:panelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
@@ -50,7 +53,7 @@ export default function GlobalSettings({initialSection='home'}={}){
     // native also has its own real 'files' tab (local-scope import), a
     // 'files' link is honored on every platform instead of being redirected.
     if(chosen==='favorites')setSection('home');
-    else if(['home','files','personal','manage','account'].includes(chosen))setSection(chosen);
+    else if(['home','files','personal','manage','account','dailyRune'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
@@ -126,6 +129,9 @@ export default function GlobalSettings({initialSection='home'}={}){
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'))]:[]),
     option('files',uiT('uiExtra.globalSettings.documentImport')),
     ...(managedScopes.length?[option('personal',uiT('uiExtra.globalSettings.personalHome'))]:[]),
+    // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
+    // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。
+    ...(native||account.user?[option('dailyRune','每日符文紀錄')]:[]),
     option('account',uiT('uiExtra.globalSettings.account'))
   ];
   const activeSection=sections.some(item=>item.value===section)?section:'home';
@@ -162,11 +168,9 @@ export default function GlobalSettings({initialSection='home'}={}){
     account.signIn(new URL('/settings/',window.location.href).href);
   }
 
-  return <main className="scope-main"><section className="scope-page">
-    <header className="loc-hero"><h1><UiText id="uiExtra.globalSettings.settings"/></h1></header>
+  return <FeaturePage featureId="setting">
     <div className="scope-content scope-settings-options">
       <section className="loc-card loc-settings-switcher">
-        <label htmlFor="loc-settings-function"><UiText id="uiExtra.globalSettings.chooseSettings"/></label>
         <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
           aria-label={uiT('uiExtra.globalSettings.chooseSettings')} options={sections}
           value={sections.find(item=>item.value===activeSection)||sections[0]}
@@ -212,8 +216,9 @@ export default function GlobalSettings({initialSection='home'}={}){
           instanceId="loc-personal-scope" options={scopeOptions}
           value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
           onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-        <ScopeSettingsPanel key={selectedScope.id} scopeId={selectedScope.id}/>
       </section>:null}
+
+      {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}
 
       {/* Device management never mounts website Scope/Article/Admin capabilities. */}
       {native&&activeSection==='manage'?<PrivateLocalFiles/>:null}
@@ -228,5 +233,5 @@ export default function GlobalSettings({initialSection='home'}={}){
       </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}
     </div>
-  </section></main>;
+  </FeaturePage>;
 }

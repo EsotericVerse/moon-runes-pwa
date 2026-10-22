@@ -492,8 +492,11 @@ button,a,.loc-control,.loc-button,
   background-size:cover;
 }
 /* LOC and Author keep left-aligned wording, centered vertically within the
-   image frame. Rune feature-page layout is intentionally left unchanged. */
-.loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])
+   image frame. Rune feature-page layout is intentionally left unchanged.
+   admin／local join the same rule so /admin and /local/setting's hero text
+   sits the same way as every other feature page's -- there is nothing
+   rune-specific about them. */
+.loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"],[data-loc-scope="admin"],[data-loc-scope="local"])
   .scope-feature-hero--artwork:not(.is-editing){
   display:flex;
   flex-direction:column;
@@ -521,9 +524,9 @@ button,a,.loc-control,.loc-button,
 /* admin／manage／setting: one image each, no "LOC view" counterpart --
    none of the three ever renders under scopeId==='loc' (see
    home-block-model.js's SINGLE_SLOT_FEATURE_HERO_IDS comment). */
-.scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/scope-admin.jpg')}
+.scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-manage.jpg')}
-.scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/scope-setting.jpg')}
+.scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/local-setting.jpg')}
 @media(max-width:760px){
   .scope-feature-hero--artwork{
     background-image:linear-gradient(90deg,rgba(3,6,15,.89),rgba(3,6,15,.62)),var(--scope-feature-hero-image);

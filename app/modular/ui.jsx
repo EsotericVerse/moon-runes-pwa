@@ -26,7 +26,7 @@ const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>
 // One visual header contract. Every feature page -- LOC/group included --
 // renders this as a read-only projection of the group_<feature> LOC record;
 // editing (text and the 8 hero images) happens only from the admin
-// 功能首頁圖設定 panel (admin-panels/FeatureHeroImages.jsx), never inline here.
+// 功能區塊設定 panel (admin-panels/FeatureHeroImages.jsx), never inline here.
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   const sign=HomeBlock.heroExtraFor(scopeId);
   return <>
