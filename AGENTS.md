@@ -4,9 +4,9 @@
 
 - Before working, inspect `.agents/skills/` and `skills-lock.json`. Select the installed Skills whose descriptions match the task. Read each selected `SKILL.md` and any references it directs you to use before planning or editing.
 - Apply those Skills' actual workflows. Do not infer a Skill's behavior from its name, claim an unavailable Skill is installed, or load unrelated Skills.
-- Do not use or reference retired Skills whose names begin with `LOC-`. The repository's current installed Skills are the source for specialized workflows.
-- Keep this file limited to durable repository-wide instructions. Do not copy Skill procedures into it or create a parallel LOC-specific architecture doctrine.
-- When an existing instruction conflicts with a relevant installed Skill, remove the conflicting instruction instead of blending incompatible rules. When two applicable Skills conflict, inspect their scope and references; use the more task-specific guidance and report any unresolved conflict.
+- Use only Skills that currently exist in the repository and are listed in `skills-lock.json`. Do not cite, recreate, or rely on deleted Skills.
+- Keep this file limited to durable repository-wide instructions. Do not copy Skill procedures into it or create a parallel project-specific architecture doctrine.
+- When a repository instruction conflicts with an applicable installed Skill, remove the conflicting instruction instead of blending incompatible rules, unless the user's current explicit instruction requires otherwise. When two applicable Skills conflict, inspect their scope and references; use the more task-specific guidance and report any unresolved conflict.
 
 ## Scope and execution
 
