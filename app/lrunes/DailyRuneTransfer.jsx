@@ -4,11 +4,13 @@ import {useEffect,useRef,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
 import {dbAuthRelation} from '../loc/db-client.mjs';
 import {selectAllRows} from '../loc/db-query.mjs';
+import {UNIVERSAL_IMPORT_ACCEPT} from '../loc/import-batch.mjs';
 import {listLocalDailyRunes,importLocalDailyTransfer} from './local-rune-sqlite.mjs';
 import {
-  DAILY_TRANSFER_MAX_BYTES,DAILY_TRANSFER_BATCH,makeDailyTransfer,parseDailyTransfer,planDailyTransfer
+  DAILY_TRANSFER_MAX_BYTES,DAILY_TRANSFER_BATCH,DAILY_TRANSFER_FORMAT,dailyRowsFromImport,makeDailyTransfer,parseDailyTransfer,planDailyTransfer
 } from './daily-transfer-contract.mjs';
 
+const DAILY_IMPORT_ACCEPT=UNIVERSAL_IMPORT_ACCEPT.replace('.zip,','');
 const FIELDS='record_date,draw_kind,rune_number,direction,recorded_phase';
 const bytesOf=source=>new TextEncoder().encode(source);
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
@@ -69,8 +71,16 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
     setBusy(true);setError('');setMessage('');setPreview(null);
     try{
       if(f.size>DAILY_TRANSFER_MAX_BYTES)throw new Error('匯入檔案超過 24 MB。');
-      const text=new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(await f.arrayBuffer())).replace(/^\uFEFF/,'');
-      const incoming=parseDailyTransfer(text);
+      // Same universal import module as every other import: csv/tsv/xlsx/ods/json/... .
+      const {parseUniversalImportFile}=await import('../loc/universal-file-import.mjs');
+      let incoming;
+      if(/\.json$/i.test(f.name)){
+        const text=new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(await f.arrayBuffer())).replace(/^\uFEFF/,'');
+        const parsed=JSON.parse(text);
+        incoming=parsed?.format===DAILY_TRANSFER_FORMAT?parseDailyTransfer(parsed):dailyRowsFromImport(await parseUniversalImportFile(new File([text],f.name,{type:'application/json'})));
+      }else{
+        incoming=dailyRowsFromImport(await parseUniversalImportFile(f));
+      }
       const existing=await dailyRows(native);
       const plan=planDailyTransfer(incoming,existing);
       setPreview({name:f.name,plan});
@@ -114,11 +124,11 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
     <p className="scope-settings-note">自動分流：{native?
       'iOS App 寫入此裝置本機 SQLite，絕不將匯入紀錄寫入 Supabase。':
       '網站依月之符文管理權限寫入 Supabase，絕不存入手機 Local File。'}
-      兩邊共用相同 JSON 備份格式；相同日期與種類的紀錄不覆寫。</p>
+      匯入沿用通用匯入模組，支援 JSON／CSV／TSV／XLSX／ODS 等表格（欄位：日期、種類、符文編號、位向、月相）；相同日期與種類的紀錄不覆寫。</p>
     <div className="scope-stat-controls">
       <button className="loc-button" type="button" onClick={onExport} disabled={busy}>匯出每日符文</button>
       <button className="loc-button" type="button" onClick={()=>input.current?.click()} disabled={busy}>匯入每日符文</button>
-      <input ref={input} type="file" hidden accept=".json,application/json" onChange={onFile} aria-label="選擇每日符文 JSON 備份"/>
+      <input ref={input} type="file" hidden accept={DAILY_IMPORT_ACCEPT} onChange={onFile} aria-label="選擇每日符文匯入檔案"/>
     </div>
     {preview?<div className="scope-inline-card">
       <p><strong>{preview.name}</strong>　已辨識 {preview.plan.total} 筆，預定新增 {preview.plan.newCount} 筆，

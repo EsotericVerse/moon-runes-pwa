@@ -50,3 +50,57 @@ export function planDailyTransfer(incoming,existing){
     conflictCount:conflicts.length,batches:Math.ceil(fresh.length/DAILY_TRANSFER_BATCH),
     fresh,conflicts};
 }
+
+// Any table the universal import module can read (csv/tsv/xlsx/ods/json...) is
+// mapped onto the same strict row contract; headers are matched by alias only,
+// values are never guessed beyond the documented kind / date spellings.
+const DAILY_ALIASES=Object.freeze({
+  record_date:['record_date','date','日期','紀錄日期','記錄日期'],
+  draw_kind:['draw_kind','kind','type','類別','種類','抽牌種類'],
+  rune_number:['rune_number','rune_id','rune','number','符文編號','編號','符文'],
+  direction:['direction','位向','方向','牌位'],
+  recorded_phase:['recorded_phase','phase','moon_phase','月相','紀錄月相']
+});
+const KIND_WORDS=Object.freeze({
+  main:'main',主抽:'main',主:'main',
+  supplement:'supplement',補抽:'supplement',補:'supplement',
+  history_1:'history_1',歷史1:'history_1',
+  history_2:'history_2',歷史2:'history_2'
+});
+function pick(row,field){
+  const wanted=DAILY_ALIASES[field];
+  for(const key of Object.keys(row)){
+    if(wanted.includes(String(key).replace(/^﻿/,'').trim().toLowerCase()))return row[key];
+  }
+  return undefined;
+}
+function toDate(value){
+  const text=String(value??'').trim();
+  const match=text.match(/^(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/);
+  if(!match)return text;
+  return match[1]+'-'+match[2].padStart(2,'0')+'-'+match[3].padStart(2,'0');
+}
+export function dailyRowsFromImport(list){
+  if(!Array.isArray(list)||!list.length)throw new Error('沒有可匯入的資料列。');
+  if(list.length>50000)throw new Error('來源資料超過 50,000 筆，拒絕一次匯入。');
+  const output=[];
+  list.forEach((source,index)=>{
+    const row=source&&typeof source==='object'&&!Array.isArray(source)?source:{};
+    if(pick(row,'record_date')===undefined||pick(row,'rune_number')===undefined||pick(row,'direction')===undefined)
+      throw new Error('第 '+(index+1)+' 列缺少必要欄位（日期、符文編號、位向）；此檔案不是每日符文紀錄表。');
+    const kindRaw=pick(row,'draw_kind');
+    const kind=kindRaw===undefined||String(kindRaw).trim()===''?'main':KIND_WORDS[String(kindRaw).trim().toLowerCase()]||String(kindRaw).trim();
+    const number=Number(String(pick(row,'rune_number')).trim());
+    const phase=pick(row,'recorded_phase');
+    try{
+      output.push(normalizeDailyTransferRow({
+        record_date:toDate(pick(row,'record_date')),
+        draw_kind:kind,
+        rune_number:number,
+        direction:String(pick(row,'direction')).trim(),
+        recorded_phase:phase==null?'':String(phase).trim()
+      }));
+    }catch(error){throw new Error('第 '+(index+1)+' 列：'+(error?.message||error));}
+  });
+  return makeDailyTransfer(output).records;
+}
