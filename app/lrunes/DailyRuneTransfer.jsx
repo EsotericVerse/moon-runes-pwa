@@ -7,7 +7,7 @@ import {selectAllRows} from '../loc/db-query.mjs';
 import {writeImportBatches} from '../loc/import-batch.mjs';
 import {listLocalDailyRunes,importLocalDailyTransfer} from './local-rune-sqlite.mjs';
 import {
-  DAILY_TRANSFER_MAX_BYTES,DAILY_TRANSFER_BATCH,analyzeDailyImport,makeDailyTransfer,planDailyTransfer
+  DAILY_TRANSFER_MAX_BYTES,DAILY_TRANSFER_BATCH,analyzeDailyImport,parseDailyCsv,makeDailyTransfer,planDailyTransfer
 } from './daily-transfer-contract.mjs';
 
 const FIELDS='record_date,draw_kind,rune_number,direction,recorded_phase';
@@ -79,10 +79,8 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
     try{
       if(!/\.csv$/i.test(file.name))throw new Error('不是 CSV 格式，匯入失敗。');
       if(file.size>DAILY_TRANSFER_MAX_BYTES)throw new Error('匯入檔案超過 24 MB。');
-      const {parseUniversalImportFile}=await import('../loc/universal-file-import.mjs');
       // Strict: only this export's CSV is accepted. Wrong header or any bad row fails the whole file; nothing is written.
-      const list=await parseUniversalImportFile(file);
-      const header=Object.keys(list[0]||{}).map(key=>String(key).replace(/^\uFEFF/,'').trim());
+      const {header,records:list}=parseDailyCsv(new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(await file.arrayBuffer())));
       if(header.length!==CSV_COLUMNS.length||CSV_COLUMNS.some((key,index)=>header[index]!==key))
         throw new Error('欄位不符，必須是匯出的 CSV（'+CSV_COLUMNS.join(',')+'）。');
       const {valid,invalid}=analyzeDailyImport(list);

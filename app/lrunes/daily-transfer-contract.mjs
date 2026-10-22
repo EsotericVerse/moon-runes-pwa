@@ -116,3 +116,34 @@ export function analyzeDailyImport(list,fieldMap={}){
   });
   return {valid,invalid};
 }
+
+// Daily-rune CSV is our own fixed format, so it has its own tiny RFC 4180 reader
+// (quoted cells, doubled quotes, CRLF) -- no document parser module involved.
+export function parseDailyCsv(text){
+  const source=String(text||'').replace(/^\uFEFF/,'');
+  const rows=[];
+  let row=[],cell='',quoted=false;
+  for(let i=0;i<source.length;i++){
+    const ch=source[i];
+    if(quoted){
+      if(ch==='"'){
+        if(source[i+1]==='"'){cell+='"';i++;}else quoted=false;
+      }else cell+=ch;
+    }else if(ch==='"')quoted=true;
+    else if(ch===','){row.push(cell);cell='';}
+    else if(ch==='\n'||ch==='\r'){
+      if(ch==='\r'&&source[i+1]==='\n')i++;
+      row.push(cell);cell='';
+      if(row.some(value=>value!==''))rows.push(row);
+      row=[];
+    }else cell+=ch;
+  }
+  if(quoted)throw new Error('CSV 引號未結束。');
+  if(cell!==''||row.length){row.push(cell);if(row.some(value=>value!==''))rows.push(row);}
+  if(rows.length<2)throw new Error('CSV 沒有資料列。');
+  const header=rows[0].map(value=>value.trim());
+  return {header,records:rows.slice(1).map((values,index)=>{
+    if(values.length!==header.length)throw new Error('第 '+(index+2)+' 行欄位數量不符。');
+    return Object.fromEntries(header.map((key,column)=>[key,values[column]]));
+  })};
+}
