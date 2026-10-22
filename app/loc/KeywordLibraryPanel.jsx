@@ -6,7 +6,7 @@ import featureZh from '../i18n/features.zh_tw.js';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
-import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
+import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 import {useAccount} from './use-account';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 
@@ -382,6 +382,25 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     }
   }
 
+  // Manual full wipe (class_id/group_lists only -- keyword library rows are
+  // untouched) for when the keyword library changed enough that a clean
+  // slate is wanted instead of the incremental narrowed reanalysis above.
+  // Does not re-run analysis by itself; press 重新分析 afterward.
+  async function resetBatch(){
+    if(!window.confirm(l.confirmReset))return;
+    setBusy(true);setMessage('');
+    try{
+      await resetKeywordClassification(scopeId);
+      await invalidateClassification();
+      await load('',selectedClass);
+      setMessage(l.resetDone);
+    }catch(error){
+      setMessage(String(error?.message||error||l.resetError));
+    }finally{
+      setBusy(false);
+    }
+  }
+
   async function remove(){
     if(!draft?.keyword_id)return;
     if(!window.confirm(l.confirmDelete))return;
@@ -552,6 +571,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <div className="scope-preview-links">
         <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
+        <button type="button" className="loc-button" disabled={busy||configDirty||!currentClassId} onClick={resetBatch}>{l.resetClassification}</button>
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>
