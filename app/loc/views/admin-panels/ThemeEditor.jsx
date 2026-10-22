@@ -63,8 +63,13 @@ export default function ThemeEditor(){
     });
   }
   function setToken(key,value){
-    if(key==='--loc-accent'&&normalizeThemeHex(value)){
-      setIdentityColor(value);
+    const normalized=key==='--loc-accent'?normalizeThemeHex(value):'';
+    if(normalized){
+      setDraft(current=>{
+        if(!current)return current;
+        const generated=deriveThemeTokens(normalized,current.scheme,current.tokens)||{};
+        return {...current,identityColor:normalized,tokens:{...current.tokens,...generated,'--loc-accent':normalized}};
+      });
       return;
     }
     setDraft(current=>({...current,tokens:{...current.tokens,[key]:value}}));
@@ -106,7 +111,8 @@ export default function ThemeEditor(){
         <strong style={{color:'var(--loc-heading)'}}>色彩預覽：{draft.label||themeId}</strong>
         <p style={{color:'var(--loc-muted)'}}>預覽整套主題草稿；這裡的變更尚未套用到網站。</p>
         <div className="admin-theme-preview-sample" style={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)'}}>
-          <strong style={{color:'var(--loc-accent)'}}>主色文字</strong>
+          <strong style={{color:'var(--loc-accent)'}}>強調色文字</strong>
+          <span style={{color:draft.identityColor||'var(--loc-accent)'}}>主色基準</span>
           <span style={{color:'var(--loc-gold)'}}>輔助色文字</span>
           <button type="button" style={{background:'linear-gradient(135deg,var(--loc-primary-start),var(--loc-primary-end))',color:'var(--loc-text)',borderColor:'var(--loc-accent-border)'}}>主要按鈕</button>
           <span style={{color:'var(--loc-danger)'}}>錯誤提示色</span>
