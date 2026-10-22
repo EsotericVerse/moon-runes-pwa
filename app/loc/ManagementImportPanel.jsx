@@ -8,7 +8,7 @@ import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
 registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
-import {useMemo,useState} from 'react';
+import {useDeferredValue,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {insertRows,dbAuthRelation,updateRows,deleteRows,findGalaxyDuplicates} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -107,6 +107,18 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
   'url','source_id','target_id','ref_id','searchable','statistics_able',
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
+
+// Secondary tools stay collapsed and unmounted until opened, so the page is one
+// primary import card instead of four stacked ones.
+function ImportSection({title,children}){
+  const [open,setOpen]=useState(false);
+  return <section className="scope-import-section">
+    <button type="button" className="scope-import-section-toggle" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
+      <span>{title}</span><span aria-hidden="true">{open?'−':'+'}</span>
+    </button>
+    {open?<div className="scope-import-section-body">{children}</div>:null}
+  </section>;
+}
 
 function ImportFormatSettings({format,onChange,disabled=false}){
   const t=useUiText();
@@ -233,8 +245,10 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
+  const deferredSource=useDeferredValue(source);
+  const analysisCurrent=deferredSource===source;
   const analyzed=useMemo(()=>{
-    const selected=source.trim();
+    const selected=deferredSource.trim();
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
@@ -242,7 +256,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       mediaOnly:normalized.filter(item=>item.mediaOnlyRecord).map(item=>item.mediaOnlyRecord),
       invalid:normalized.filter(item=>item.error)
     };
-  },[rows,source,format.fields,locale]);
+  },[rows,deferredSource,format.fields,locale]);
   if(!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total){
@@ -333,32 +347,25 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     finally{setBusy(false);onBusyChange?.(false);}
   }
   const pending=queue.length>queueIndex+1;
-  return <div className="scope-inline-card">
-    <h4>{UI_COPY.management.importJson}</h4>
+  return <div className="scope-import-body">
+    <h3>{UI_COPY.management.importJson}</h3>
     <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
-      <p><strong>{t('uiExtra.importUI.zipDetected')}：</strong>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</p>
-      <p>{t('uiExtra.importUI.zipConfidence')}：{t(archiveDetection.confidence===3?'uiExtra.importUI.zipVerified':archiveDetection.confidence?'uiExtra.importUI.zipPossible':'uiExtra.importUI.zipUnknown')}</p>
-      {archiveDetection.evidence.length?<p>{t('uiExtra.importUI.zipEvidence')}：{archiveDetection.evidence.map(item=>item.path).join('、')}</p>:null}
-      <p>{t('uiExtra.importUI.zipStructureCount',{count:archiveDetection.structure?.sampledFiles||0})}</p>
-      {Object.keys(archiveDetection.structure?.layouts||{}).length?<p>
-        {t('uiExtra.importUI.zipLayouts')}：
-        {Object.entries(archiveDetection.structure.layouts).map(([kind,count])=>
-          t('uiExtra.importUI.zipLayout.'+(ZIP_LAYOUT_KEYS[kind]||'records'))+' '+count).join('、')}
-      </p>:null}
-      {Object.keys(archiveDetection.structure?.formats||{}).length?<p>
-        {t('uiExtra.importUI.zipFormats')}：
-        {Object.entries(archiveDetection.structure.formats).map(([kind,count])=>kind.toUpperCase()+' '+count).join('、')}
-      </p>:null}
-      {ZIP_FIELD_KEYS.some(key=>archiveDetection.structure?.fields?.[key])?<p>
-        {t('uiExtra.importUI.zipFields')}：
-        {ZIP_FIELD_KEYS.filter(key=>archiveDetection.structure?.fields?.[key]).map(key=>
-          t('uiExtra.importUI.zipField.'+key)).join('、')}
-      </p>:null}
-      {archiveDetection.audit?<div className="scope-import-audit">
-        <p><strong>{t('uiExtra.importUI.zipAuditTitle')}</strong></p>
+      <dl className="scope-import-facts">
+        <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
+        <div><dt>{t('uiExtra.importUI.zipConfidence')}</dt><dd>{t(archiveDetection.confidence===3?'uiExtra.importUI.zipVerified':archiveDetection.confidence?'uiExtra.importUI.zipPossible':'uiExtra.importUI.zipUnknown')}</dd></div>
+        {archiveDetection.evidence.length?<div><dt>{t('uiExtra.importUI.zipEvidence')}</dt><dd>{archiveDetection.evidence.map(item=>item.path).join('、')}</dd></div>:null}
+        {Object.keys(archiveDetection.structure?.layouts||{}).length?<div><dt>{t('uiExtra.importUI.zipLayouts')}</dt><dd>{Object.entries(archiveDetection.structure.layouts).map(([kind,count])=>
+          t('uiExtra.importUI.zipLayout.'+(ZIP_LAYOUT_KEYS[kind]||'records'))+' '+count).join('、')}</dd></div>:null}
+        {Object.keys(archiveDetection.structure?.formats||{}).length?<div><dt>{t('uiExtra.importUI.zipFormats')}</dt><dd>{Object.entries(archiveDetection.structure.formats).map(([kind,count])=>kind.toUpperCase()+' '+count).join('、')}</dd></div>:null}
+        {ZIP_FIELD_KEYS.some(key=>archiveDetection.structure?.fields?.[key])?<div><dt>{t('uiExtra.importUI.zipFields')}</dt><dd>{ZIP_FIELD_KEYS.filter(key=>archiveDetection.structure?.fields?.[key]).map(key=>
+          t('uiExtra.importUI.zipField.'+key)).join('、')}</dd></div>:null}
+      </dl>
+      <p className="scope-status">{t('uiExtra.importUI.zipStructureCount',{count:archiveDetection.structure?.sampledFiles||0})}</p>
+      {archiveDetection.audit?<details className="scope-import-audit">
+        <summary>{t('uiExtra.importUI.zipAuditTitle')}</summary>
         <p>{t('uiExtra.importUI.zipAuditFiles',{
           total:archiveDetection.audit.files.allFiles,
           sampled:archiveDetection.audit.files.sampled,
@@ -374,14 +381,11 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         {archiveDetection.audit.projects.observedFields.length?<p>
           {t('uiExtra.importUI.zipProjectFields')}：{archiveDetection.audit.projects.observedFields.join('、')}
         </p>:null}
-        {archiveDetection.audit.attention.length?<details>
-          <summary>{t('uiExtra.importUI.zipUninspected')}</summary>
-          <ul>{archiveDetection.audit.attention.slice(0,10).map((item,i)=>
-            <li key={i}>{item.path} — {t('uiExtra.importUI.zipAuditReason.'+item.reason)}</li>)}</ul>
-        </details>:null}
+        {archiveDetection.audit.attention.length?<ul>{archiveDetection.audit.attention.slice(0,10).map((item,i)=>
+          <li key={i}>{item.path} — {t('uiExtra.importUI.zipAuditReason.'+item.reason)}</li>)}</ul>:null}
         <p>{t('uiExtra.importUI.zipAuditCaveat')}</p>
-      </div>:null}
-      <p>{t('uiExtra.importUI.zipReadOnly')}</p>
+      </details>:null}
+      <p className="scope-status">{t('uiExtra.importUI.zipReadOnly')}</p>
     </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
@@ -399,7 +403,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
     </div>:null}
     <div className="scope-tabs">
-      <button type="button" disabled={busy||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
+      <button type="button" disabled={busy||!analysisCurrent||!analyzed.valid.length} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
       {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button>:null}
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -559,8 +563,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
     }finally{setBusy(false);onBusyChange?.(false);}
   }
 
-  return <div className="scope-inline-card">
-    <h4>Source Refresh</h4>
+  return <div className="scope-import-body">
     <p><UiText id="uiExtra.importUI.refreshHelp"/></p>
     <label>Refresh JSON<input type="file" accept=".json,application/json" disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong></p>:null}
@@ -591,6 +594,7 @@ function SourceRefresh({scopeId,format,onBusyChange}){
 // deliberate (an edited duplicate may no longer match; keeping both beats
 // auto-merging two different posts). Nothing is ever deleted automatically;
 // every checkbox here is a row the person reviewed and chose themselves.
+const DUPLICATE_RENDER_LIMIT=40;
 function DuplicateDetection({scopeId}){
   const t=useUiText();
   const account=useAccount();
@@ -650,8 +654,7 @@ function DuplicateDetection({scopeId}){
     }finally{setBusy(false);}
   }
 
-  return <div className="scope-inline-card">
-    <h4><UiText id="uiExtra.importUI.duplicateTitle"/></h4>
+  return <ImportSection title={t('uiExtra.importUI.duplicateTitle')}><div className="scope-import-body">
     <p><UiText id="uiExtra.importUI.duplicateHelp"/></p>
     <div className="scope-tabs">
       <button type="button" disabled={busy} onClick={scan}>
@@ -663,7 +666,7 @@ function DuplicateDetection({scopeId}){
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
     {groups&&groups.length?<div className="scope-management-records">
-      {groups.map((group,groupIndex)=><article className="scope-inline-card" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
+      {groups.slice(0,DUPLICATE_RENDER_LIMIT).map((group,groupIndex)=><article className="scope-inline-card" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
         <strong>{group.sourceName} · {formatTime(group.createtime)}</strong>
         <div className="scope-management-fields">
           {group.uids.map((uid,index)=><label key={uid}>
@@ -675,7 +678,8 @@ function DuplicateDetection({scopeId}){
         </div>
       </article>)}
     </div>:null}
-  </div>;
+    {groups&&groups.length>DUPLICATE_RENDER_LIMIT?<p className="scope-status">{'僅顯示前 '+DUPLICATE_RENDER_LIMIT+' 組，共 '+groups.length.toLocaleString()+' 組；處理後再重新掃描即可看到其餘。'}</p>:null}
+  </div></ImportSection>;
 }
 
 export default function ManagementImportPanel({scopeId}){
@@ -695,7 +699,7 @@ export default function ManagementImportPanel({scopeId}){
     <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
     <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
-    <SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
     <DuplicateDetection scopeId={scopeId}/>
     <button type="button" className="loc-button" aria-expanded={sunoOpen}
       onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
