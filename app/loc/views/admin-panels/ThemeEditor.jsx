@@ -77,6 +77,7 @@ export default function ThemeEditor(){
 
   async function save(){
     if(!draft)return;
+    if(!normalizeThemeHex(draft.identityColor)){setStatus('主色請使用 #RRGGBB 格式。');return;}
     setStatus('');
     try{
       const existing=rows.find(row=>row.theme_id===themeId)||null;
