@@ -461,6 +461,7 @@ function GameHomeHero({data=null}){
   return <ScopeEditableBlocks
     scopeId="lrunes"
     page="game"
+    adminOnly
     orders={[1]}
     slotTag="header"
     slotClassName="lrg-home-hero"

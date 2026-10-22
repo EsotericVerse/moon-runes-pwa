@@ -58,6 +58,7 @@ export default function ScopeEditableBlocks({
   placeholderFirstOrder=null,
   containerless=false,
   allowEditing=true,
+  adminOnly=false,
   allowDelete=true,
   allowEntities=true,
   allowInlineChildAdd=false,
@@ -77,7 +78,7 @@ export default function ScopeEditableBlocks({
   // instead of this component re-querying the blocks on its own.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const blocks=bootstrap.data?.blocks;
-  const canEdit=allowEditing&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
+  const canEdit=allowEditing&&((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
