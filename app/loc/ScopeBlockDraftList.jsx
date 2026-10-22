@@ -24,7 +24,7 @@ const SUBTITLE_LIMIT=128;
 
 function isHomeFrameFor(scopeId,pageName,order){
   if(scopeId==='lrunes')return pageName==='hero'&&order===1;
-  return pageName==='index'&&order===1&&['loc','lo3rwang'].includes(scopeId);
+  return pageName==='index'&&Number(order)>=1&&['loc','lo3rwang'].includes(scopeId);
 }
 
 function absoluteImageUrl(src){
@@ -272,7 +272,7 @@ export default function ScopeBlockDraftList({
           key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
           value:draft.title,maxLength:TITLE_LIMIT,onChange:value=>patchDraft(draft.uid,{title:value})
         },
-        ...(isHomeFrame?[{
+        ...(isHomeFrame&&draft.order===1?[{
           key:'hero-mode',kind:'node',
           node:<fieldset className="scope-hero-image-mode">
             <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
@@ -307,6 +307,18 @@ export default function ScopeBlockDraftList({
                 patchImage(draft.uid, url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
               }}/>
           </label>
+          {draft.order!==1?<>
+            <label>{t('uiExtra.frameEditor.imagePosition')}
+              <select value={image?.position||'right'} onChange={event=>patchImage(draft.uid,{position:event.target.value},false)} disabled={!image?.src}>
+                <option value="left">{t('uiExtra.frameEditor.posLeft')}</option><option value="right">{t('uiExtra.frameEditor.posRight')}</option>
+                <option value="top">{t('uiExtra.frameEditor.posTop')}</option><option value="bottom">{t('uiExtra.frameEditor.posBottom')}</option>
+              </select>
+            </label>
+            <label>{t('uiExtra.frameEditor.imageWidth')}
+              <input type="number" min="160" max="680" step="20" value={image?.width||420}
+                disabled={!image?.src} onChange={event=>patchImage(draft.uid,{width:Number(event.target.value)},false)}/>
+            </label>
+          </>:null}
           <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>patchImage(draft.uid,{source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
         </div>
       </fieldset>:null}
