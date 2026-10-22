@@ -105,11 +105,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
     // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
     // (api.apply_keyword_classification, mode='chunk'), inside a 60s
-    // statement_timeout. 5000 tripped "Primary and backup read failed for
-    // silver.lo3rwang_galaxy" (both read sources failed, likely connection/
-    // rate pressure from the big write landing on the same table other
-    // reads hit concurrently) -- stepped back down to 3000 to retest.
-    const batchSize=3000;
+    // statement_timeout. Both 5000 and 3000 tripped rate limiting in real
+    // testing (the query plan has headroom, but something upstream of
+    // Postgres doesn't) -- back down to 1500, the last value that worked.
+    const batchSize=1500;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
