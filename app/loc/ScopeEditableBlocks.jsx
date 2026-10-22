@@ -163,9 +163,9 @@ export default function ScopeEditableBlocks({
   // unified draft screen -- no per-block click target, no per-block button.
   if(explicitEditButton){
     const canAddBlock=!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks);
-    const toggleButton=canEdit||toggleExtra?<div className="scope-edit-mode-toggle" key="scope-edit-mode-toggle">
-      {canEdit?<button type="button" className="loc-button" onClick={()=>setEditMode(current=>!current)}>
-        <UiText id={editMode?'uiExtra.editBlocks.exitEditMode':'uiExtra.editBlocks.enterEditMode'}/>
+    const toggleButton=(canEdit&&!editMode)||toggleExtra?<div className="scope-edit-mode-toggle" key="scope-edit-mode-toggle">
+      {canEdit&&!editMode?<button type="button" className="loc-button" onClick={()=>setEditMode(true)}>
+        <UiText id="uiExtra.editBlocks.enterEditMode"/>
       </button>:null}
       {toggleExtra}
     </div>:null;

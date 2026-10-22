@@ -23,6 +23,7 @@ const EYEBROW_LIMIT=64;
 const SUBTITLE_LIMIT=128;
 
 function isHomeFrameFor(scopeId,pageName,order){
+  if(scopeId==='lrunes')return pageName==='hero'&&order===1;
   return pageName==='index'&&order===1&&['loc','lo3rwang'].includes(scopeId);
 }
 
@@ -267,7 +268,7 @@ export default function ScopeBlockDraftList({
           key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
           value:draft.title,maxLength:TITLE_LIMIT,onChange:value=>patchDraft(draft.uid,{title:value})
         },
-        ...(isHomeFrame?[{
+        ...(isHomeFrame&&scopeId!=='lrunes'?[{
           key:'hero-mode',kind:'node',
           node:<fieldset className="scope-hero-image-mode">
             <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>

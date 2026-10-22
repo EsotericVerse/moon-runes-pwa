@@ -6,6 +6,7 @@ import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
+import {resolveHomeImage} from '../loc/LocHomeBlockDisplay';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
 import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
@@ -21,19 +22,20 @@ function renderRuneHero(slot,native){
   const title=slot.stored?slot.title:'';
   const subtitle=slot.stored?slot.subtitle:'';
   const text=slot.stored?slot.text:'';
+  const image=resolveHomeImage({...slot,order:1},'lrunes');
   return <>
-    <picture>
-      <source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>
+    {image.src?<picture>
+      {image.source==='default'?<source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>:null}
       <img
         className="runes-home-hero-image"
-        src={runesHeroAsset.src}
+        src={image.source==='default'?runesHeroAsset.src:image.src}
         alt=""
         aria-hidden="true"
         loading="eager"
         fetchPriority="high"
         decoding="async"
       />
-    </picture>
+    </picture>:null}
     <div className="runes-home-hero-overlay" aria-hidden="true"/>
     {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
       role="img" aria-label={sign.label}>{sign.text}</span>:null}
@@ -72,7 +74,6 @@ export default function RunesClient(){
       explicitEditButton
       allowDelete={false}
       allowEntities={false}
-      allowImages={false}
       toggleExtra={account.user?<nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
         <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
       </nav>:null}

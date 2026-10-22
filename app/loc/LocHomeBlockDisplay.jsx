@@ -3,6 +3,8 @@
 import {SITE_IMAGES} from '../site-images';
 import authorHeroAsset from '../../pics/lo3rwang-hero.jpg';
 import authorHeroSmallAsset from '../../pics/lo3rwang-hero_s.webp';
+import runesHeroAsset from '../../pics/LunaRunes-hero.jpg';
+import runesHeroSmallAsset from '../../pics/LunaRunes-hero_s.webp';
 import {HomeBlock} from './home-block-model';
 
 import {BlockNoteContent} from './blocknote-content.mjs';
@@ -20,8 +22,12 @@ const AUTHOR_MEDIA=Object.freeze({
   5:{src:{src:'/pics/lo3rwang-3.webp'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
 });
 
+const RUNES_MEDIA=Object.freeze({
+  1:{src:runesHeroAsset,small:runesHeroSmallAsset,alt:'月之符文首頁主視覺',background:true}
+});
+
 function imageFor(slot,scopeId='loc'){
-  const assets=scopeId==='lo3rwang'?AUTHOR_MEDIA:LOC_MEDIA;
+  const assets=scopeId==='lo3rwang'?AUTHOR_MEDIA:scopeId==='lrunes'?RUNES_MEDIA:LOC_MEDIA;
   return assets[Number(slot?.order)||0]||null;
 }
 
