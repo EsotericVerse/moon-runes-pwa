@@ -284,6 +284,8 @@ export default {
     "completedPrefix": "已完成 ",
     "analyzedMiddle": " 篇文章分析；其中 ",
     "tiesSuffix": " 篇完全平手以當下 Class 累積數動態分配。",
+    "skippedNoChange": "關鍵詞庫與文章皆無變動，已略過重新分析（沿用現有 ",
+    "skippedNoChangeSuffix": " 篇分析結果）。",
     "analysisInterrupted": "分析中斷；請查看下方錯誤後重新執行",
     "batchError": "關鍵詞批次分析失敗。",
     "classificationCooldownActive": "剛執行過重新分析，請在 5 分鐘後再試。",

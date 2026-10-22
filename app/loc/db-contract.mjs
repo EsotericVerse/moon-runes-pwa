@@ -111,7 +111,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
     // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
-    // (api.apply_keyword_classification, mode='chunk'), inside a 60s
+    // (silver.apply_keyword_classification, mode='chunk'), inside a 60s
     // statement_timeout set on that function itself. Earlier rounds of
     // tuning this value (1000/3000/5000/1500) were chasing the wrong thing:
     // the real constraint was the `authenticator` role's statement_timeout
@@ -123,23 +123,44 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // (see KeywordLibraryPanel.jsx) by greying out the button for 30s after
     // a run completes, not by anything in this function.
     const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
+    // `affected` now means "rows actually changed" (mode='chunk' writes are
+    // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
+    // The SQL function itself validates every uid in the batch exists and
+    // throws on a mismatch, so there is nothing left for JS to check here;
+    // `count` tracks rows processed (for progress), `changedCount` tracks
+    // rows actually written, purely for reporting.
     let count=0;
+    let changedCount=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
       const affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
-      if(affected!==batch.length){
-        throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
-      }
-      count+=affected;
+      changedCount+=affected;
+      count+=batch.length;
       onProgress?.({phase:'write',completed:count,total:rows.length});
     }
+
+    // Clears rows that dropped out of this run's eligible set (shrank below
+    // minChars, became non-searchable, or were deleted) without a blanket
+    // wipe of everything still correctly classified -- see the migration's
+    // mode='sync'. Only needs the uid list, not full row payloads.
+    onProgress?.({phase:'sync',completed:count,total:rows.length});
+    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',uids:rows.map(row=>row.uid)});
 
     onProgress?.({phase:'finalizing',completed:count,total:rows.length});
     const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
     if(documentCount!==rows.length){
       throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
     }
-    return {count,documentCount};
+    return {count,changedCount,orphansCleared,documentCount};
+  }
+
+  // Manually-triggered full wipe (the galaxy table's class_id/group_lists
+  // only -- keyword library rows are untouched). Use when the keyword
+  // library changed enough that a clean slate is wanted; an ordinary
+  // runKeywordAnalysisBatch no longer wipes anything on its own.
+  async function resetKeywordClassification(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    return keywordClassificationWrite(scope,{mode:'reset'});
   }
 
   async function readKeywordClass(scopeId,classId){
@@ -423,7 +444,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

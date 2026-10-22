@@ -1,7 +1,7 @@
 'use client';
 
 import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
-import {selectAllRows} from './db-query.mjs';
+import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
@@ -122,18 +122,28 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   };
 }
 
+// Canonical, eternal class_group order per https://loc.lo3rwang.cc/lrunes/governance/
+// (靈魂1-8, 連結9-16, 生命17-24, 自然25-32, 礦物33-40, 元素41-48, 秩序49-56,
+// 無序57-64, 特殊0/65/66). item_no/order_no are fixed data and must never be
+// edited to "fix" class_id -- class_id is derived purely from this list, not
+// from any per-item order_no (特殊's item_no=0 has order_no=0, which used to
+// sort it to class_id=1 under the old min-order_no logic; it must land on 9).
+const CANONICAL_CLASS_GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
 function buildClassMap(catalogRows=[]){
-  const groups=new Map();
+  const groups=new Set();
   for(const row of catalogRows){
     if(row?.class_enable===false)continue;
     const group=String(row?.class_group||'').trim();
-    if(!group)continue;
-    const order=Number.isFinite(Number(row?.order_no))?Number(row.order_no):Number(row?.item_no)||9999;
-    groups.set(group,groups.has(group)?Math.min(groups.get(group),order):order);
+    if(group)groups.add(group);
   }
-  const ordered=[...groups.entries()]
-    .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]))
-    .map(([group,order],index)=>({group,order,class_id:index+1}));
+  const canonicalIndex=new Map(CANONICAL_CLASS_GROUP_ORDER.map((group,index)=>[group,index]));
+  const ordered=[...groups]
+    .sort((a,b)=>{
+      const orderA=canonicalIndex.has(a)?canonicalIndex.get(a):CANONICAL_CLASS_GROUP_ORDER.length;
+      const orderB=canonicalIndex.has(b)?canonicalIndex.get(b):CANONICAL_CLASS_GROUP_ORDER.length;
+      return orderA-orderB||a.localeCompare(b);
+    })
+    .map((group,index)=>({group,order:canonicalIndex.has(group)?canonicalIndex.get(group):9999,class_id:index+1}));
   if(ordered.length!==9)throw new Error('目前文章 class_id 契約需要恰好 9 個啟用 Class；目前為 '+ordered.length+' 個。');
   return {
     ordered,
@@ -151,7 +161,62 @@ function groupListsOf(classification){
   }
   return formatGroupLists(output);
 }
-function metaOf(catalogRows,classMap,currentClassId){
+// Per-item keyword content hash (silver.{scope}_keywords.keyword_sha, a
+// generated column over each item's own `keywords` jsonb), keyed by item_no.
+// Used both to decide whether a re-run can be skipped (checkSkippable) and
+// as the stored snapshot a future run compares against (metaOf).
+function currentShasOf(catalogRows){
+  const shas={};
+  for(const row of catalogRows||[]){
+    if(row?.class_enable===false)continue;
+    const itemNo=Number(row?.item_no);
+    if(!Number.isInteger(itemNo))continue;
+    shas[String(itemNo)]=String(row?.keyword_sha||'');
+  }
+  return shas;
+}
+function shasEqual(a,b){
+  const keysA=Object.keys(a||{}).sort();
+  const keysB=Object.keys(b||{}).sort();
+  if(keysA.length!==keysB.length)return false;
+  return keysA.every((key,index)=>key===keysB[index]&&String(a[key])===String((b||{})[key]));
+}
+// Cheap substitute for re-reading every article's content: a count + the
+// latest createtime among this scope's statistics-eligible rows. Computed
+// with two small aggregate queries (never the big `content` column), both at
+// the start of a run (to decide whether to skip) and stored into keyword_meta
+// on a real run (so the next run's start has something to compare against).
+async function keywordFingerprint(scope){
+  const [count,latest]=await Promise.all([
+    selectCount(scope.galaxy,{idColumn:'uid',filters:[{column:'statistics_able',operator:'eq',value:true}]}),
+    selectRows(scope.galaxy,{
+      columns:'createtime',
+      filters:[{column:'statistics_able',operator:'eq',value:true}],
+      orders:[{column:'createtime',ascending:false}],
+      limit:1
+    })
+  ]);
+  return {count,latest:String(latest.rows?.[0]?.createtime||'')};
+}
+// Nothing eligible has been added/removed/edited (count+latest-createtime
+// unchanged) and no keyword item's own content changed (every keyword_sha
+// unchanged) since the last successful run: the whole analyze+write pipeline
+// can be skipped. This does NOT catch a silent edit to an existing article's
+// content that doesn't also bump its createtime -- that still needs a manual
+// 重新分析 click (or any keyword edit, which always changes a sha and forces
+// a real run).
+function checkSkippable(config,catalogRows,fingerprint){
+  if(!config.staticstime)return null;
+  const meta=config.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
+  const storedShas=meta.shas&&typeof meta.shas==='object'?meta.shas:null;
+  const storedFingerprint=meta.fingerprint&&typeof meta.fingerprint==='object'?meta.fingerprint:null;
+  if(!storedShas||!storedFingerprint)return null;
+  if(!shasEqual(currentShasOf(catalogRows),storedShas))return null;
+  if(Number(fingerprint.count)!==Number(storedFingerprint.count))return null;
+  if(String(fingerprint.latest)!==String(storedFingerprint.latest))return null;
+  return true;
+}
+function metaOf(catalogRows,classMap,currentClassId,fingerprint){
   const className=String(catalogRows?.[0]?.class_name||'').trim();
   return {
     class_id:String(currentClassId||''),
@@ -162,7 +227,9 @@ function metaOf(catalogRows,classMap,currentClassId){
         .filter(row=>Number.isInteger(Number(row?.item_no))&&String(row?.item_name||'').trim())
         .sort((a,b)=>Number(a.item_no)-Number(b.item_no))
         .map(row=>[String(Number(row.item_no)),String(row.item_name).trim()])
-    )
+    ),
+    shas:currentShasOf(catalogRows),
+    fingerprint
   };
 }
 async function resolveDynamicClassifications(documents,catalogRows,onProgress){
@@ -249,7 +316,7 @@ async function loadCurrentCatalog(scopeId,currentClassId){
   // plumbing) or the scope config table -- same value repeated on every row
   // of this class_id, so any row (e.g. [0]) carries the current setting.
   const {data,error}=await dbAuthRelation(`silver.${scope}_keywords`)
-    .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
+    .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no,keyword_sha')
     .eq('class_id',id)
     .order('order_no',{ascending:true})
     .order('item_no',{ascending:true});
@@ -274,34 +341,44 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   const normalizedScopeId=normalizeScopeId(scopeId);
   reportBatchProgress(onProgress,'reading',0,0,0,'確認 Scope 與分析設定');
   const {scope,config}=await scopeAndConfig(normalizedScopeId);
-  reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
   const currentClassId=String(config.current_keyword_class_id||'').trim();
-  const [catalogRows,textResult]=await Promise.all([
+
+  reportBatchProgress(onProgress,'reading',0,0,1,'檢查關鍵詞庫與文章是否有變動');
+  const [catalogRows,fingerprint]=await Promise.all([
     loadCurrentCatalog(normalizedScopeId,currentClassId),
-    selectAllRows(scope.galaxy,{
-      // title and createtime are not selected: matching only reads content
-      // (see documentOf/textOf), and nothing downstream reads the `date`
-      // field that createtime used to feed. createtime is still the order
-      // column below -- PostgREST can order by a column that isn't selected.
-      columns:'uid,content,searchable',
-      // statistics_able is the eligibility gate itself -- filter it in the
-      // query (fewer rows read, fewer rows paged through) instead of
-      // selecting it and discarding non-qualifying rows in isEligibleRow.
-      filters:[{column:'statistics_able',operator:'eq',value:true}],
-      orders:[{column:'createtime',ascending:true}],
-      // This selects `content`, the one large column in this table (avg ~160
-      // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
-      // size (65535) is sized for narrow rows; with content included, a
-      // scope under that row count fetches its entire table in one request.
-      // Page this read explicitly instead of relying on the shared ceiling.
-      pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
-      onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
-        3+17*(total?completed/total:1),
-        '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
-    })
+    keywordFingerprint(scope)
   ]);
+  if(checkSkippable(config,catalogRows,fingerprint)){
+    reportBatchProgress(onProgress,'completed',
+      Number(config.keyword_document_count)||0,Number(config.keyword_document_count)||0,100,
+      '關鍵詞庫與文章皆無變動，已略過重新分析');
+    return emptyStored(config,{skipped:true,documentCount:Number(config.keyword_document_count)||0});
+  }
+
+  reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
+  const textResult=await selectAllRows(scope.galaxy,{
+    // title and createtime are not selected: matching only reads content
+    // (see documentOf/textOf), and nothing downstream reads the `date`
+    // field that createtime used to feed. createtime is still the order
+    // column below -- PostgREST can order by a column that isn't selected.
+    columns:'uid,content,searchable',
+    // statistics_able is the eligibility gate itself -- filter it in the
+    // query (fewer rows read, fewer rows paged through) instead of
+    // selecting it and discarding non-qualifying rows in isEligibleRow.
+    filters:[{column:'statistics_able',operator:'eq',value:true}],
+    orders:[{column:'createtime',ascending:true}],
+    // This selects `content`, the one large column in this table (avg ~160
+    // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
+    // size (65535) is sized for narrow rows; with content included, a
+    // scope under that row count fetches its entire table in one request.
+    // Page this read explicitly instead of relying on the shared ceiling.
+    pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
+    onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
+      3+17*(total?completed/total:1),
+      '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
+  });
   const rawRows=textResult.rows||[];
   const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));
   const documents=eligibleRows.map(documentOf);
@@ -318,7 +395,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       group_lists:result?.group_lists??''
     };
   });
-  const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId);
+  const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
   const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta},{
     onProgress:({phase,completed,total})=>{
       const percent=phase==='prepare'?61:phase==='finalizing'?99:61+38*(total?completed/total:1);
@@ -348,7 +425,8 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     keywordMinDocuments:minDocuments,
     keywordDocumentCount:Number(verified.keyword_document_count),
     statisticsEnabled:documents.length>minDocuments,
-    staticstime:verified.staticstime
+    staticstime:verified.staticstime,
+    skipped:false
   };
 }
 

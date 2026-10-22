@@ -402,9 +402,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       // out for the remainder of the 5-minute window on its own.
       await load('',selectedClass);
       setMessage(
-        l.completedPrefix+Number(result.documentCount||0).toLocaleString()+
-        l.analyzedMiddle+Number(result.dynamicTieCount||0).toLocaleString()+
-        l.tiesSuffix
+        result.skipped?
+          l.skippedNoChange+Number(result.documentCount||0).toLocaleString()+l.skippedNoChangeSuffix:
+          l.completedPrefix+Number(result.documentCount||0).toLocaleString()+
+          l.analyzedMiddle+Number(result.dynamicTieCount||0).toLocaleString()+
+          l.tiesSuffix
       );
     }catch(error){
       setBatchProgress(current=>current?{...current,phase:'failed',label:l.analysisInterrupted}:null);

@@ -284,6 +284,8 @@ export default {
     "completedPrefix": "已完成 ",
     "analyzedMiddle": " 篇文章分析；其中 ",
     "tiesSuffix": " 篇完全平手以当下 Class 累积数动态分配。",
+    "skippedNoChange": "关键词库与文章皆无变动，已略过重新分析（沿用现有 ",
+    "skippedNoChangeSuffix": " 篇分析结果）。",
     "analysisInterrupted": "分析中断；请查看下方错误后重新执行",
     "batchError": "关键词批次分析失败。",
     "confirmDelete": "确定删除这个分类项目？",

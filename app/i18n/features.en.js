@@ -284,6 +284,8 @@ export default {
     "completedPrefix": "Completed ",
     "analyzedMiddle": " articles analyzed; ",
     "tiesSuffix": " tied articles allocated based on current Class totals.",
+    "skippedNoChange": "No change in the keyword library or articles; skipped re-analysis (kept existing ",
+    "skippedNoChangeSuffix": " results).",
     "analysisInterrupted": "Analysis interrupted; check the error below and retry",
     "batchError": "Keyword batch analysis failed.",
     "confirmDelete": "Delete this classification item?",

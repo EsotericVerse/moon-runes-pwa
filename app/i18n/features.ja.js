@@ -284,6 +284,8 @@ export default {
     "completedPrefix": "完了：",
     "analyzedMiddle": "件の記事を分析。そのうち",
     "tiesSuffix": "件の同数記事を現在のClass累積数に基づいて配分しました。",
+    "skippedNoChange": "キーワードライブラリと記事に変更がないため、再分析をスキップしました（既存の",
+    "skippedNoChangeSuffix": "件の結果を維持）。",
     "analysisInterrupted": "分析を中断しました。下記のエラーを確認して再実行してください",
     "batchError": "キーワードの一括分析に失敗しました。",
     "confirmDelete": "この分類項目を削除しますか？",
