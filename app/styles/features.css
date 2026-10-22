@@ -382,6 +382,12 @@
 .admin-theme-token-grid span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:var(--loc-muted)}
 .admin-theme-token-input{display:grid;grid-template-columns:auto 1fr;gap:.45rem;align-items:center}
 .admin-theme-token-input input[type="color"]{width:2.7rem;height:2.3rem;padding:.1rem}
+.admin-theme-primary-color{grid-column:1/-1}
+.admin-theme-primary-color small{color:var(--loc-muted);font-size:.82rem;line-height:1.5}
+.admin-theme-local-preview{display:grid;gap:.65rem}
+.admin-theme-local-preview>p{margin:0}
+.admin-theme-preview-sample{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;padding:.8rem;border-radius:var(--loc-radius-sm);color:var(--loc-text)}
+.admin-theme-preview-sample button{min-height:2.4rem;padding:.45rem .8rem;border:1px solid;border-radius:999px}
 @media(max-width:720px){
   .admin-context-panel,.admin-page-copy-fields{grid-template-columns:minmax(0,1fr)}
   .admin-deployment-tree{height:clamp(20rem,43vh,26rem)}
