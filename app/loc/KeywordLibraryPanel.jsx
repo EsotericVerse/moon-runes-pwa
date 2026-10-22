@@ -15,14 +15,6 @@ const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:fal
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
-// Original design: don't allow back-to-back clicks within 5 minutes of the
-// last completed run. Pure front end, no DB attribute involved -- `staticstime`
-// (silver.<scope> config row) is already read on every `load()`, including the
-// one `runBatch` does right after a run finishes, so it's the already-existing
-// "last success time" shown on screen (the "目前定錨" line), not a new piece
-// of state. Using it instead of a component-local timestamp also means the
-// cooldown survives a page reload instead of resetting.
-const KEYWORD_CLASSIFICATION_COOLDOWN_MS=300000;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
   {value:'analysis',key:'analysisSettings'},
   {value:'manual',key:'manual'},
@@ -65,15 +57,6 @@ function formatStaticTime(value,l,locale){
   const date=new Date(value);
   return Number.isNaN(date.getTime())?String(value):date.toLocaleString(locale,{hour12:false});
 }
-// Milliseconds left before another run is allowed, based on the last
-// completed run's own `staticstime` -- 0 (or less) means the button is live.
-function classificationCooldownRemainingMs(staticstime){
-  if(!staticstime)return 0;
-  const finishedAt=new Date(staticstime).getTime();
-  if(Number.isNaN(finishedAt))return 0;
-  return finishedAt+KEYWORD_CLASSIFICATION_COOLDOWN_MS-Date.now();
-}
-
 export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const l=useFeatureCopy('keywordPanel',featureZh.keywordPanel);
   const {locale}=useUiLocale();
@@ -104,7 +87,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const [configSnapshot,setConfigSnapshot]=useState(null);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
-  const [classificationCoolingDown,setClassificationCoolingDown]=useState(false);
   const [savingStage,setSavingStage]=useState('');
   const [batchProgress,setBatchProgress]=useState(null);
   const [message,setMessage]=useState('');
@@ -209,19 +191,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   }
 
   useEffect(()=>{if(canEdit)load();},[canEdit,account.email,scopeId,TABLE,CONFIG_TABLE]);
-
-  // Grey out the button for whatever's left of the 5-minute window after the
-  // last completed run (`staticstime`, refreshed by `load()` -- including the
-  // one `runBatch` does right after it finishes). Driven by `staticstime`
-  // itself, not a separate click-time timestamp, so this also covers loading
-  // the page fresh shortly after someone else just ran it.
-  useEffect(()=>{
-    const remaining=classificationCooldownRemainingMs(staticstime);
-    if(remaining<=0){setClassificationCoolingDown(false);return;}
-    setClassificationCoolingDown(true);
-    const timer=setTimeout(()=>setClassificationCoolingDown(false),remaining);
-    return ()=>clearTimeout(timer);
-  },[staticstime]);
 
   const classes=useMemo(()=>{
     const map=new Map();
@@ -388,9 +357,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   async function runBatch(){
     if(configDirty){setMessage(l.settingsUnsaved);return;}
-    // Checked here too (not just via the button's disabled attribute) so the
-    // gate holds even if runBatch is ever invoked another way.
-    if(classificationCooldownRemainingMs(staticstime)>0){setMessage(l.classificationCooldownActive);return;}
     setBusy(true);setMessage('');
     setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
     try{
@@ -585,7 +551,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
         <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>
-        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId||classificationCoolingDown} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
+        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>

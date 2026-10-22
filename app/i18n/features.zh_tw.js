@@ -288,7 +288,6 @@ export default {
     "skippedNoChangeSuffix": " 篇分析結果）。",
     "analysisInterrupted": "分析中斷；請查看下方錯誤後重新執行",
     "batchError": "關鍵詞批次分析失敗。",
-    "classificationCooldownActive": "剛執行過重新分析，請在 5 分鐘後再試。",
     "confirmDelete": "確定刪除這個分類項目？",
     "deletedClassChanged": "分類項目已刪除；目前 Class 已變更，請重新分析文章。",
     "deleted": "分類項目已刪除。",
