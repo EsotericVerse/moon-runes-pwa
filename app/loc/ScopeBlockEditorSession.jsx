@@ -20,6 +20,10 @@ import {appBootstrapKey} from './app-bootstrap';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 
+function absoluteImageUrl(src){
+  try{return src?new URL(src,window.location.origin).href:'';}catch{return src||'';}
+}
+
 export default function ScopeBlockEditorSession({
   initial,scopeId,pageName,slot,movableSlots=[],movableIndex=-1,
   normalizedOrders=[],allowDelete=true,allowEntities=true,allowImages=true,
@@ -288,11 +292,12 @@ export default function ScopeBlockEditorSession({
             </div>
             <div className="scope-frame-image-fields">
               <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
-            <input type="url" value={draft.image?.source==='custom'?draft.image.url||'':''}
-              placeholder={image?.preset?'留空＝使用預設圖片 / https://':'https://'}
+            <input type="url" value={image?.source==='default'?absoluteImageUrl(image.src):image?.source==='custom'?(draft.image?.url||''):''}
+              placeholder="https://"
               onChange={event=>{
                 const url=event.target.value;
-                configureImage( url.trim()?{source:'custom',url}:{source:'default',url:''},false);
+                const preset=image?.preset?absoluteImageUrl(resolveHomeImage({...draft,image:{source:'default'}},scopeId).src):'';
+                configureImage( !url.trim()||url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
               }}/>
           </label>
           <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
