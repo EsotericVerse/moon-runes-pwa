@@ -167,6 +167,7 @@ function metaOf(catalogRows,classMap,currentClassId){
 }
 async function resolveDynamicClassifications(documents,catalogRows,onProgress){
   const classMap=buildClassMap(catalogRows);
+  const defaultGroup=defaultGroupOf(catalogRows);
   const engine=await classifyDocumentsIncrementally(documents,catalogRows,onProgress);
   const counts=new Map(classMap.ordered.map(item=>[item.group,0]));
   const byUid=new Map();
@@ -189,6 +190,11 @@ async function resolveDynamicClassifications(documents,catalogRows,onProgress){
     }else{
       const resolved=String(row?.classification_group||'').trim();
       if(classMap.groupToClassId.has(resolved))group=resolved;
+      // Zero keyword hits at all: fall back to this class's configured
+      // default/exception item (silver.{scope}_keywords.default_group_item_no,
+      // an item_no -- resolved by defaultGroupOf() to that item's class_group)
+      // instead of leaving the document permanently unclassified.
+      else if(defaultGroup&&classMap.groupToClassId.has(defaultGroup))group=defaultGroup;
     }
     if(group)counts.set(group,(counts.get(group)||0)+1);
     byUid.set(String(row?.uid||'').trim(),{
@@ -238,14 +244,30 @@ async function loadCurrentCatalog(scopeId,currentClassId){
   const scope=normalizeScopeId(scopeId);
   const id=String(currentClassId||'').trim();
   if(!id)throw new Error('尚未指定目前使用的關鍵詞 Class');
+  // default_group_item_no lives on this same table (silver.{scope}_keywords,
+  // the group layer), not on silver.keyword_classes (demo/registry
+  // plumbing) or the scope config table -- same value repeated on every row
+  // of this class_id, so any row (e.g. [0]) carries the current setting.
   const {data,error}=await dbAuthRelation(`silver.${scope}_keywords`)
-    .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no')
+    .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
     .eq('class_id',id)
     .order('order_no',{ascending:true})
     .order('item_no',{ascending:true});
   if(error)throw new Error(error.message||'關鍵詞 Class 讀取失敗');
   if(!data?.length)throw new Error('目前使用的關鍵詞 Class 沒有內容');
   return data;
+}
+// Resolves the configured default-group item_no to the class_group string
+// that resolveDynamicClassifications' candidate/group machinery works in.
+// Falls back to no default (empty string) if the item is missing or has
+// been disabled since it was configured as the default.
+function defaultGroupOf(catalogRows){
+  const defaultGroupItemNo=Number(catalogRows?.[0]?.default_group_item_no);
+  if(!Number.isInteger(defaultGroupItemNo))return '';
+  const row=(catalogRows||[]).find(item=>
+    Number(item?.item_no)===defaultGroupItemNo&&item?.class_enable!==false
+  );
+  return row?String(row.class_group||'').trim():'';
 }
 
 export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgress}={}){
