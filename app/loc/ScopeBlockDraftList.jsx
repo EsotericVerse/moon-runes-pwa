@@ -299,10 +299,9 @@ export default function ScopeBlockDraftList({
               placeholder={image?.preset?'留空＝使用預設圖片 / https://':'https://'}
               onChange={event=>{
                 const url=event.target.value;
-                patchImage(draft.uid, url.trim()?{source:'custom',url}:{source:image?.preset?'default':'none',url:''},false);
+                patchImage(draft.uid, url.trim()?{source:'custom',url}:{source:'default',url:''},false);
               }}/>
           </label>
-          <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>patchImage(draft.uid,{source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
         </div>
       </fieldset>:null}
       {allowEntities?renderDraftEntities(draft):null}
