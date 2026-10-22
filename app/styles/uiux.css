@@ -375,7 +375,7 @@ button,a,.loc-control,.loc-button,
 
 /* All seven LOC feature Heroes use one typography scale. This includes the
    three management pages and keeps them aligned with culture/statics/search/governance. */
-.loc-next-main .scope-feature-hero:is(
+.scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
@@ -388,7 +388,7 @@ button,a,.loc-control,.loc-button,
   font-weight:var(--loc-weight-page-title)!important;
   line-height:var(--loc-line-hero-title)!important;
 }
-.loc-next-main .scope-feature-hero:is(
+.scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
@@ -399,7 +399,7 @@ button,a,.loc-control,.loc-button,
 ) .loc-eyebrow{
   font-size:var(--loc-type-hero-eyebrow)!important;
 }
-.loc-next-main .scope-feature-hero:is(
+.scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
@@ -412,7 +412,7 @@ button,a,.loc-control,.loc-button,
   font-weight:var(--loc-weight-subtitle);
   line-height:1.42!important;
 }
-.loc-next-main .scope-feature-hero:is(
+.scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
@@ -421,7 +421,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
 ) .scope-hero-description,
-.loc-next-main .scope-feature-hero:is(
+.scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
@@ -552,14 +552,14 @@ button,a,.loc-control,.loc-button,
 
 /* Management entry pages share one composition: left-aligned content,
    centered vertically in the artwork frame, for every Scope route. */
-.loc-next-main .scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting):not(.is-editing){
+.scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting):not(.is-editing){
   display:flex;
   flex-direction:column;
   align-items:flex-start;
   justify-content:center;
   text-align:start;
 }
-.loc-next-main .scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting)>.home-title-row{
+.scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting)>.home-title-row{
   align-self:flex-start;
   text-align:start;
 }
