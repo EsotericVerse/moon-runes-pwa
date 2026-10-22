@@ -284,6 +284,8 @@ export default {
     "tiesSuffix": " 篇完全平手以當下 Class 累積數動態分配。",
     "analysisInterrupted": "分析中斷；請查看下方錯誤後重新執行",
     "batchError": "關鍵詞批次分析失敗。",
+    "classificationCooldownActive": "分類剛執行過，請再等 {seconds} 秒後重試。",
+    "classificationAlreadyRunning": "這個 Scope 的分類正在執行中，請稍候再試。",
     "confirmDelete": "確定刪除這個分類項目？",
     "deletedClassChanged": "分類項目已刪除；目前 Class 已變更，請重新分析文章。",
     "deleted": "分類項目已刪除。",

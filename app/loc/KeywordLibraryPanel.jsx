@@ -349,7 +349,18 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       );
     }catch(error){
       setBatchProgress(current=>current?{...current,phase:'failed',label:l.analysisInterrupted}:null);
-      setMessage(String(error?.message||error||l.batchError));
+      const rawMessage=String(error?.message||error||l.batchError);
+      // Friendlier text for the two guard errors added on the DB side
+      // (silver.apply_keyword_classification, mode='begin'): one person
+      // double-clicking, or two people running this at once.
+      const cooldownMatch=rawMessage.match(/keyword classification cooldown active: ([\d.]+) ?s remaining/i);
+      if(cooldownMatch){
+        setMessage(l.classificationCooldownActive.replace('{seconds}',cooldownMatch[1]));
+      }else if(/keyword classification already running for this scope/i.test(rawMessage)){
+        setMessage(l.classificationAlreadyRunning);
+      }else{
+        setMessage(rawMessage);
+      }
     }finally{
       setBusy(false);
     }
