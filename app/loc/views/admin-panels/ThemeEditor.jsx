@@ -6,7 +6,7 @@ import {registerDefaultSection} from '../../../i18n/ui-copy';
 import {useUiSection} from '../../../i18n/ui-locale';
 import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../../modular/theme-registry';
-import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber} from '../../theme-data';
+import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber,normalizeThemeHex,deriveThemeTokens} from '../../theme-data';
 import {dbAuthRelation} from '../../db-client.mjs';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 
@@ -45,7 +45,35 @@ export default function ThemeEditor(){
     value:theme.theme_id||theme.id,
     label:theme.theme_name||theme.label||THEME_SLOTS.find(slot=>slot.id===(theme.theme_id||theme.id))?.label||theme.theme_id||theme.id
   }));
-  const setToken=(key,value)=>setDraft(current=>({...current,tokens:{...current.tokens,[key]:value}}));
+  function setIdentityColor(value){
+    const normalized=normalizeThemeHex(value);
+    setDraft(current=>{
+      if(!current)return current;
+      if(!normalized)return {...current,identityColor:value};
+      const generated=deriveThemeTokens(normalized,current.scheme,current.tokens)||{};
+      return {...current,identityColor:normalized,tokens:{...current.tokens,...generated}};
+    });
+  }
+  function setScheme(value){
+    setDraft(current=>{
+      if(!current)return current;
+      const scheme=value==='dark'?'dark':'light';
+      const generated=deriveThemeTokens(current.identityColor,scheme,current.tokens)||{};
+      return {...current,scheme,tokens:{...current.tokens,...generated}};
+    });
+  }
+  function setToken(key,value){
+    const normalized=key==='--loc-accent'?normalizeThemeHex(value):'';
+    if(normalized){
+      setDraft(current=>{
+        if(!current)return current;
+        const generated=deriveThemeTokens(normalized,current.scheme,current.tokens)||{};
+        return {...current,identityColor:normalized,tokens:{...current.tokens,...generated,'--loc-accent':normalized}};
+      });
+      return;
+    }
+    setDraft(current=>({...current,tokens:{...current.tokens,[key]:value}}));
+  }
 
   async function save(){
     if(!draft)return;
@@ -58,7 +86,7 @@ export default function ThemeEditor(){
         theme_order:Number(existing?.theme_order)||Number(String(themeId).split('-')[1])||1,
         scheme:draft.scheme==='dark'?'dark':'light',
         style_key:String(draft.styleKey||''),
-        identity_color:String(draft.identityColor||'').trim(),
+        identity_color:normalizeThemeHex(draft.identityColor),
         ...Object.fromEntries(THEME_TOKEN_KEYS.map(key=>[
           themeColumnForToken(key),String(draft.tokens?.[key]||'').trim()
         ]))
@@ -74,15 +102,21 @@ export default function ThemeEditor(){
     {draft?<>
       <div className="scope-management-fields">
         <label><span><UiText id="uiExtra.adminView.name"/></span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
-        <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setDraft(v=>({...v,scheme:e.target.value||'light'}))}><option value="light">light</option><option value="dark">dark</option></select></label>
+        <label><span>Scheme</span><select className="admin-native-select" value={draft.scheme||'light'} onChange={e=>setScheme(e.target.value)}><option value="light">light</option><option value="dark">dark</option></select></label>
         <label><span>Group</span><input value={draft.label||''} disabled title="Group 使用主題名稱，不重複儲存"/></label>
         <label><span>Style Key</span><input value={draft.styleKey||''} onChange={e=>setDraft(v=>({...v,styleKey:e.target.value}))}/></label>
-        <label><span>Identity Color</span><input value={draft.identityColor||''} onChange={e=>setDraft(v=>({...v,identityColor:e.target.value}))}/></label>
+        <label className="admin-theme-primary-color"><span>主色</span><div className="admin-theme-token-input"><input type="color" aria-label="選擇主色" value={normalizeThemeHex(draft.identityColor)||normalizeThemeHex(draft.tokens?.['--loc-accent'])||'#555555'} onChange={e=>setIdentityColor(e.target.value)}/><input aria-label="主色色碼" value={draft.identityColor||''} maxLength={7} placeholder="#RRGGBB" onChange={e=>setIdentityColor(e.target.value)}/></div><small>改變主色會自動重算相依色彩；產生後仍可在下方逐項微調。</small></label>
       </div>
-      <section className="scope-inline-card admin-theme-local-preview" aria-label="主題局部預覽" style={{background:draft.tokens?.['--loc-bg']||'transparent',color:draft.tokens?.['--loc-text']||'inherit',borderColor:draft.tokens?.['--loc-line']||'currentColor'}}>
-        <strong>局部預覽：{draft.label||themeId}</strong>
-        <p>這裡只預覽目前草稿，不會套用到網站。按下儲存只會更新主題資料，不會改變當前選用的主題。</p>
-        <span style={{color:draft.tokens?.['--loc-accent']||'inherit'}}>主題強調文字</span>
+      <section className="scope-inline-card admin-theme-local-preview" aria-label="主題色彩預覽" style={{...draft.tokens,background:'var(--loc-bg)',color:'var(--loc-text)',borderColor:'var(--loc-line)'}}>
+        <strong style={{color:'var(--loc-heading)'}}>色彩預覽：{draft.label||themeId}</strong>
+        <p style={{color:'var(--loc-muted)'}}>預覽整套主題草稿；這裡的變更尚未套用到網站。</p>
+        <div className="admin-theme-preview-sample" style={{background:'var(--loc-panel)',border:'1px solid var(--loc-line)'}}>
+          <strong style={{color:'var(--loc-accent)'}}>強調色文字</strong>
+          <span style={{color:draft.identityColor||'var(--loc-accent)'}}>主色基準</span>
+          <span style={{color:'var(--loc-gold)'}}>輔助色文字</span>
+          <button type="button" style={{background:'linear-gradient(135deg,var(--loc-primary-start),var(--loc-primary-end))',color:'var(--loc-text)',borderColor:'var(--loc-accent-border)'}}>主要按鈕</button>
+          <span style={{color:'var(--loc-danger)'}}>錯誤提示色</span>
+        </div>
       </section>
       <div className="admin-theme-token-grid">
         {THEME_TOKEN_KEYS.map(key=>{
