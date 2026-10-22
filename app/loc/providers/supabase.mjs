@@ -11,11 +11,34 @@ const DEFAULT_SUPABASE_PUBLISHABLE_KEY='sb_publishable_qPn0vAzozVyXKllRuEKf2Q_fv
 // Custom database target management still uses trusted Kysely Edge RPC.
 const EDGE_ONLY_ADMIN_RPCS=new Set(['save_database_target','set_database_target','set_database_routing']);
 
+// Diagnostic: the browser has shown the SAME request (same table, same
+// limit) sometimes carry `apikey` and sometimes not, with no code change in
+// between -- which rules out anything in this module's static header setup
+// (it's a plain constant). Wrap the fetch actually used for every Supabase
+// request so the next time this happens, the console tells us exactly which
+// URL went out with the header missing/empty, instead of guessing again.
+function withApikeyDiagnostics(fetchImpl,publishableKey){
+  if(typeof fetchImpl!=='function')return fetchImpl;
+  return function diagnosedFetch(input,init){
+    try{
+      const headers=new Headers((init&&init.headers)||(input&&input.headers)||undefined);
+      const sentKey=headers.get('apikey');
+      const url=typeof input==='string'?input:input?.url;
+      if(url&&/\/rest\/v1\//.test(url)&&(!sentKey||sentKey!==publishableKey)){
+        console.warn('[supabase] apikey missing/mismatched on outgoing request',{url,sentKey,expectedKey:publishableKey?publishableKey.slice(0,12)+'…':'(none)'});
+      }
+    }catch(diagnosticError){
+      console.warn('[supabase] apikey diagnostic failed to inspect request',diagnosticError);
+    }
+    return fetchImpl(input,init);
+  };
+}
+
 export function createSupabaseAdapter({
   url=process.env.NEXT_PUBLIC_SUPABASE_URL||DEFAULT_SUPABASE_URL,
   publishableKey=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||DEFAULT_SUPABASE_PUBLISHABLE_KEY,
   createClientImpl=createClient,
-  fetchImpl=globalThis.fetch,
+  fetchImpl=withApikeyDiagnostics(globalThis.fetch,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||DEFAULT_SUPABASE_PUBLISHABLE_KEY),
   target='configured'
 }={}){
   if(!url||!publishableKey)throw new Error('Supabase requires a project URL and publishable key');
