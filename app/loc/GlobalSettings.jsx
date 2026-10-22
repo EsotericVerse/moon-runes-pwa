@@ -16,7 +16,6 @@ import {FeaturePage} from '../modular/ui';
 const panelLoading=()=>null;
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:panelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:panelLoading});
-const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:panelLoading});
 // 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
 // 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
 const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:panelLoading});
@@ -172,7 +171,6 @@ export default function GlobalSettings({initialSection='home'}={}){
   return <FeaturePage featureId="setting">
     <div className="scope-content scope-settings-options">
       <section className="loc-card loc-settings-switcher">
-        <label htmlFor="loc-settings-function"><UiText id="uiExtra.globalSettings.chooseSettings"/></label>
         <Select {...selectProps} inputId="loc-settings-function" instanceId="loc-settings-function"
           aria-label={uiT('uiExtra.globalSettings.chooseSettings')} options={sections}
           value={sections.find(item=>item.value===activeSection)||sections[0]}
@@ -218,7 +216,6 @@ export default function GlobalSettings({initialSection='home'}={}){
           instanceId="loc-personal-scope" options={scopeOptions}
           value={scopeOptions.find(item=>item.value===selectedScope.id)||null}
           onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-        <ScopeSettingsPanel key={selectedScope.id} scopeId={selectedScope.id}/>
       </section>:null}
 
       {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}
