@@ -217,7 +217,11 @@ export default function ScopeBlockDraftList({
         if(draft.stored){
           await updateRows(table,values,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
         }else{
-          await insertRows(table,[{uid:draft.uid,...values}]);
+          // Fixed-slot pages can open an empty placeholder when that row does
+          // not exist yet. Give the new row a valid block UID before insert;
+          // the placeholder itself has no stored UID to reuse.
+          const uid=/^[A-Za-z0-9]{8}$/.test(String(draft.uid||''))?draft.uid:HomeBlock.createUid();
+          await insertRows(table,[{uid,...values}]);
         }
       }
       await refreshBlockQueries();
