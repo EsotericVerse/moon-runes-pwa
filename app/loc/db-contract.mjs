@@ -107,54 +107,39 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const rows=Array.isArray(payload?.rows)?payload.rows:[];
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
-    // `begin` claims a per-scope lock in the DB (keyword_classification_running_at)
-    // and enforces a 30s cooldown since the last completed run on this same
-    // scope (keyword_classification_last_finished_at). Both guard the exact
-    // thing that was actually happening: the same request shape, fired
-    // seconds apart (one person double-clicking, or two people running it
-    // at once), hitting Supabase's undocumented burst/abuse protection --
-    // not a bug in row counts or any timeout value. See api.apply_keyword_classification.
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    try{
-      // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary
-      // key (api.apply_keyword_classification, mode='chunk'), inside a 60s
-      // statement_timeout set on that function itself. Earlier rounds of
-      // tuning this value (1000/3000/5000/1500) were chasing the wrong thing:
-      // the real constraint was the `authenticator` role's statement_timeout
-      // (8s, applied at actual connection login -- unaffected by this
-      // function's own 60s override, which only covers mode='chunk' calls,
-      // not the plain reads elsewhere in the classification flow). That role
-      // timeout is now raised to 30s, so this batch size was never the
-      // bottleneck.
-      const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
-      let count=0;
-      for(let offset=0;offset<rows.length;offset+=batchSize){
-        const batch=rows.slice(offset,offset+batchSize);
-        const affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
-        if(affected!==batch.length){
-          throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
-        }
-        count+=affected;
-        onProgress?.({phase:'write',completed:count,total:rows.length});
+    // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
+    // (api.apply_keyword_classification, mode='chunk'), inside a 60s
+    // statement_timeout set on that function itself. Earlier rounds of
+    // tuning this value (1000/3000/5000/1500) were chasing the wrong thing:
+    // the real constraint was the `authenticator` role's statement_timeout
+    // (8s, applied at actual connection login -- unaffected by this
+    // function's own 60s override, which only covers mode='chunk' calls,
+    // not the plain reads elsewhere in the classification flow). That role
+    // timeout is now raised to 30s, so this batch size was never the
+    // bottleneck. The back-to-back-click cooldown is handled client-side
+    // (see KeywordLibraryPanel.jsx) by greying out the button for 30s after
+    // a run completes, not by anything in this function.
+    const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
+    let count=0;
+    for(let offset=0;offset<rows.length;offset+=batchSize){
+      const batch=rows.slice(offset,offset+batchSize);
+      const affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
+      if(affected!==batch.length){
+        throw new Error(`Keyword classification chunk incomplete: expected ${batch.length}, affected ${affected}`);
       }
-
-      onProgress?.({phase:'finalizing',completed:count,total:rows.length});
-      const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
-      if(documentCount!==rows.length){
-        throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
-      }
-      return {count,documentCount};
-    }catch(error){
-      // Release the lock on any failure -- a thrown error here (network
-      // failure, a mismatch, the tab closing) must not leave this scope
-      // locked for every other user until someone fixes it by hand in SQL.
-      // Best-effort: if the abort call itself fails, surface the original
-      // error, not the abort failure.
-      try{await keywordClassificationWrite(scope,{mode:'abort'})}catch{}
-      throw error;
+      count+=affected;
+      onProgress?.({phase:'write',completed:count,total:rows.length});
     }
+
+    onProgress?.({phase:'finalizing',completed:count,total:rows.length});
+    const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
+    if(documentCount!==rows.length){
+      throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
+    }
+    return {count,documentCount};
   }
 
   async function readKeywordClass(scopeId,classId){

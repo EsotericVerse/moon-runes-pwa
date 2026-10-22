@@ -15,6 +15,14 @@ const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:fal
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
+// Original design: don't allow back-to-back clicks within 5 minutes of the
+// last completed run. Pure front end, no DB attribute involved -- `staticstime`
+// (silver.<scope> config row) is already read on every `load()`, including the
+// one `runBatch` does right after a run finishes, so it's the already-existing
+// "last success time" shown on screen (the "目前定錨" line), not a new piece
+// of state. Using it instead of a component-local timestamp also means the
+// cooldown survives a page reload instead of resetting.
+const KEYWORD_CLASSIFICATION_COOLDOWN_MS=300000;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
   {value:'analysis',key:'analysisSettings'},
   {value:'manual',key:'manual'},
@@ -56,6 +64,14 @@ function formatStaticTime(value,l,locale){
   if(!value)return l.notAnchored;
   const date=new Date(value);
   return Number.isNaN(date.getTime())?String(value):date.toLocaleString(locale,{hour12:false});
+}
+// Milliseconds left before another run is allowed, based on the last
+// completed run's own `staticstime` -- 0 (or less) means the button is live.
+function classificationCooldownRemainingMs(staticstime){
+  if(!staticstime)return 0;
+  const finishedAt=new Date(staticstime).getTime();
+  if(Number.isNaN(finishedAt))return 0;
+  return finishedAt+KEYWORD_CLASSIFICATION_COOLDOWN_MS-Date.now();
 }
 
 export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
@@ -185,6 +201,19 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   }
 
   useEffect(()=>{if(canEdit)load();},[canEdit,account.email,scopeId,TABLE,CONFIG_TABLE]);
+
+  // Grey out the button for whatever's left of the 5-minute window after the
+  // last completed run (`staticstime`, refreshed by `load()` -- including the
+  // one `runBatch` does right after it finishes). Driven by `staticstime`
+  // itself, not a separate click-time timestamp, so this also covers loading
+  // the page fresh shortly after someone else just ran it.
+  useEffect(()=>{
+    const remaining=classificationCooldownRemainingMs(staticstime);
+    if(remaining<=0){setClassificationCoolingDown(false);return;}
+    setClassificationCoolingDown(true);
+    const timer=setTimeout(()=>setClassificationCoolingDown(false),remaining);
+    return ()=>clearTimeout(timer);
+  },[staticstime]);
 
   const classes=useMemo(()=>{
     const map=new Map();
@@ -336,40 +365,27 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   async function runBatch(){
     if(configDirty){setMessage(l.settingsUnsaved);return;}
+    // Checked here too (not just via the button's disabled attribute) so the
+    // gate holds even if runBatch is ever invoked another way.
+    if(classificationCooldownRemainingMs(staticstime)>0){setMessage(l.classificationCooldownActive);return;}
     setBusy(true);setMessage('');
     setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
     try{
       const {runRune66ClassificationBatch}=await import('./rune66-keyword-analysis');
       const result=await runRune66ClassificationBatch(scopeId,{onProgress:setBatchProgress});
       await invalidateClassification();
+      // Refreshes `staticstime` from the row the run just finalized; the
+      // cooldown effect above picks up the new value and greys the button
+      // out for the remainder of the 5-minute window on its own.
       await load('',selectedClass);
       setMessage(
         l.completedPrefix+Number(result.documentCount||0).toLocaleString()+
         l.analyzedMiddle+Number(result.dynamicTieCount||0).toLocaleString()+
         l.tiesSuffix
       );
-      // Matches the DB-side 30s cooldown (keyword_classification_last_finished_at
-      // in silver.apply_keyword_classification). Disable the button here too
-      // so the person sees it greyed out instead of clicking and hitting an
-      // error -- the DB check is still the real guard (covers other people,
-      // other tabs); this is just so the same tab doesn't need to ask it.
-      setClassificationCoolingDown(true);
-      setTimeout(()=>setClassificationCoolingDown(false),30000);
     }catch(error){
       setBatchProgress(current=>current?{...current,phase:'failed',label:l.analysisInterrupted}:null);
-      const rawMessage=String(error?.message||error||l.batchError);
-      // Friendlier text for the two guard errors added on the DB side
-      // (silver.apply_keyword_classification, mode='begin'): one person
-      // double-clicking, or two people running this at once.
-      if(/keyword classification cooldown active/i.test(rawMessage)){
-        setMessage(l.classificationCooldownActive);
-        setClassificationCoolingDown(true);
-        setTimeout(()=>setClassificationCoolingDown(false),30000);
-      }else if(/keyword classification already running for this scope/i.test(rawMessage)){
-        setMessage(l.classificationAlreadyRunning);
-      }else{
-        setMessage(rawMessage);
-      }
+      setMessage(String(error?.message||error||l.batchError));
     }finally{
       setBusy(false);
     }
