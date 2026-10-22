@@ -345,7 +345,7 @@
 
 .home-rune-card-data p{
   margin:0;
-  color:var(--loc-muted);
+  color:var(--loc-text);
   font-size:.9rem;
   line-height:1.55;
   overflow-wrap:anywhere;
@@ -361,11 +361,12 @@
 }
 
 .home-rune-card-title strong{
+  color:var(--loc-heading);
   font-size:1.1rem;
 }
 
 .home-rune-card-title span{
-  color:var(--loc-muted);
+  color:var(--loc-text);
   font-size:.9rem;
 }
 
