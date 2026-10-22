@@ -819,3 +819,11 @@
 }
 .scope-import-body input[type=file]:hover{border-color:var(--loc-accent)}
 .scope-management-imports.scope-management-imports>.scope-import-format{margin:0}
+
+/* Functional pages: text boxes (.loc-card) stacked with one gap; bubbles (.loc-bubble) inside. */
+.scope-management-imports{display:grid;gap:1rem}
+.scope-management-imports>.loc-card{margin:0;display:grid;gap:.9rem}
+.scope-management-imports>.loc-card>h2{margin:0}
+.scope-management-imports .scope-import-section-toggle{padding:0;font-size:1.1rem}
+.scope-management-imports .scope-import-section-body{padding:.9rem 0 0}
+.loc-settings-panel-group>.scope-management-imports{margin:0}

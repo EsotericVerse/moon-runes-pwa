@@ -178,16 +178,16 @@ export default function GlobalSettings({initialSection='home'}={}){
         </div>
       </section>:null}
 
-      {activeSection==='files'&&!native?<section className="loc-card">
-        {account.user?managedScopes.length?<div className="loc-settings-panel-group">
+      {activeSection==='files'&&!native?<div className="loc-settings-panel-group">
+        {account.user?managedScopes.length?<>
           {scopeOptions.length>1?<Select {...selectProps} aria-label="Scope" inputId="loc-import-scope"
             instanceId="loc-import-scope" options={scopeOptions}
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-          {selectedScope?<ManagementImportPanel flat key={selectedScope.id} scopeId={selectedScope.id}/>:null}
-        </div>:<p><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
+          {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
+        </>:<p className="loc-card"><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
         <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
-      </section>:null}
+      </div>:null}
 
       {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}
 

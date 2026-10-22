@@ -112,7 +112,7 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
 // primary import card instead of four stacked ones.
 function ImportSection({title,children}){
   const [open,setOpen]=useState(false);
-  return <section className="scope-import-section">
+  return <section className="loc-card scope-import-section">
     <button type="button" className="scope-import-section-toggle" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
       <span>{title}</span><span aria-hidden="true">{open?'−':'+'}</span>
     </button>
@@ -124,7 +124,7 @@ function ImportFormatSettings({format,onChange,disabled=false}){
   const t=useUiText();
   const update=(key,value)=>onChange({...format,[key]:value});
   const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
-  return <details className="scope-inline-card scope-import-format">
+  return <details className="loc-bubble scope-import-format">
     <summary><UiText id="uiExtra.importUI.formatSummary"/></summary>
     <div className="scope-management-fields">
       <label><UiText id="uiExtra.importUI.recordPath"/>
@@ -389,7 +389,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
-        {analyzed.valid.slice(0,5).map(record=><article className="scope-inline-card" key={record.uid}>
+        {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
           <strong>{record.title||record.uid}</strong>
           <span>{record.uid} · {String(record.createtime||'').slice(0,10)||t('uiExtra.importUI.noDate')}</span>
           <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
@@ -668,7 +668,7 @@ function DuplicateDetection({scopeId}){
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
     {groups&&groups.length?<div className="scope-management-records">
-      {groups.slice(0,DUPLICATE_RENDER_LIMIT).map((group,groupIndex)=><article className="scope-inline-card" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
+      {groups.slice(0,DUPLICATE_RENDER_LIMIT).map((group,groupIndex)=><article className="loc-bubble" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
         <strong>{group.sourceName} · {formatTime(group.createtime)}</strong>
         <div className="scope-management-fields">
           {group.uids.map((uid,index)=><label key={uid}>
@@ -697,13 +697,18 @@ export default function ManagementImportPanel({scopeId,flat=false}){
     setFormat(next);
     setRevision(value=>value+1);
   }
-  return <section className={(flat?'':'scope-inline-card ')+'scope-management-imports'}>
-    <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
-    <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+  return <div className="scope-management-imports">
+    <section className="loc-card">
+      <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
+      <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
+      <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+    </section>
     <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
     <DuplicateDetection scopeId={scopeId}/>
-    <button type="button" className="loc-button" aria-expanded={sunoOpen}
-      onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
-    {sunoOpen?<SunoImport scopeId={scopeId}/>:null}
-  </section>;
+    <section className="loc-card">
+      <button type="button" className="loc-button" aria-expanded={sunoOpen}
+        onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
+      {sunoOpen?<SunoImport scopeId={scopeId}/>:null}
+    </section>
+  </div>;
 }

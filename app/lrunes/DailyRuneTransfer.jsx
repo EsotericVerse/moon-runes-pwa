@@ -110,7 +110,7 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
     }catch(e){setError('匯入失敗：'+String(e?.message||e));}
     finally{setBusy(false);setProgress(null);}
   }
-  return <section className="scope-inline-card" aria-label="每日符文匯入及匯出">
+  return <section className="loc-card" aria-label="每日符文匯入及匯出">
     <h2>每日符文 · 匯入與匯出</h2>
     <p className="scope-settings-note">匯出為 CSV；匯入只接受同格式的 CSV，其他格式或任何一列有誤，整份匯入失敗、不寫入任何資料；相同日期與種類的紀錄不覆寫。</p>
     <div className="scope-tabs">
