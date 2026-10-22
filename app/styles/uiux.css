@@ -1178,3 +1178,25 @@ body{
     min-height:clamp(12.5rem,30svh,15rem);
   }
 }
+
+
+/* Management pages: keep their authored artwork while giving the working area
+   more room above the fold. */
+.scope-feature-hero--artwork:is(
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+){
+  min-height:clamp(16rem,20vw,20rem);
+  padding:clamp(1.05rem,2vw,1.65rem);
+}
+@media(max-width:760px){
+  .scope-feature-hero--artwork:is(
+    .scope-feature-hero--admin,
+    .scope-feature-hero--manage,
+    .scope-feature-hero--setting
+  ){
+    min-height:15rem;
+    padding:1rem;
+  }
+}
