@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import UiText from '../../../i18n/UiText';
 import {selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
+import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
 
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
@@ -26,14 +27,6 @@ const SINGLE_VARIANT=Object.freeze([
 ]);
 function pageFor(kind,feature){return kind+'_'+feature.id;}
 
-function imageUrlOf(row){
-  const image=row?.block_image;
-  if(!image)return '';
-  if(typeof image==='string'){
-    try{const parsed=JSON.parse(image);return String(parsed?.url||'');}catch{return '';}
-  }
-  return String(image?.url||'');
-}
 
 function ImageSlot({feature,variant}){
   const page=pageFor(variant.kind,feature);

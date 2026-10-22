@@ -1,4 +1,5 @@
 'use client';
+import {parseBlockImage} from './hero-image.mjs';
 import UiText from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {useUiSection} from '../i18n/ui-locale';
@@ -34,13 +35,6 @@ function normalizeRow(row,order){
     image:parseBlockImage(row?.block_image),
     entities:HomeBlock.normalizeEntities(row?.block_entity)
   };
-}
-
-// block_image is a text column: the DB hands back JSON text, writes go in as JSON.
-function parseBlockImage(value){
-  if(value&&typeof value==='object')return value;
-  if(typeof value!=='string'||!value.trim())return null;
-  try{const parsed=JSON.parse(value);return parsed&&typeof parsed==='object'?parsed:null;}catch{return null;}
 }
 
 export default function ScopeEditableBlocks({

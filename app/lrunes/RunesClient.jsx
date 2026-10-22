@@ -6,7 +6,7 @@ import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
 import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
-import {resolveHomeImage,RunesHomeBlockDisplay,locHomeBlockClass} from '../loc/LocHomeBlockDisplay';
+import {resolveHomeImage,RunesHomeBlockDisplay,locHomeBlockClass,heroSideClass} from '../loc/LocHomeBlockDisplay';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
@@ -68,7 +68,7 @@ export default function RunesClient(){
       headingLevel={2}
       slotClassName="loc-card loc-home-block"
       resolveSlotClassName={slot=>Number(slot.order)===1
-        ?"loc-hero runes-home-hero"+(resolveHomeImage({...slot,order:1},"lrunes").mode==='side'?" runes-home-hero--side":"")
+        ?"loc-hero runes-home-hero"+heroSideClass(slot,'lrunes','runes-home-hero--side')
         :locHomeBlockClass(slot,'lrunes')}
       editSlotClassName="loc-card loc-home-block"
       containerless

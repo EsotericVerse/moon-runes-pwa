@@ -9,15 +9,8 @@ import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/db-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
 import {selectScopeBlocks} from '../loc/scope-data';
+import {heroImageUrl as heroImageUrlOf} from '../loc/hero-image.mjs';
 
-function heroImageUrlOf(row){
-  const image=row?.block_image;
-  if(!image)return '';
-  if(typeof image==='string'){
-    try{const parsed=JSON.parse(image);return String(parsed?.url||'');}catch{return '';}
-  }
-  return String(image?.url||'');
-}
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
 // Shared display stays light: mount the editor only on pages that need it.

@@ -113,3 +113,8 @@ export function AuthorHomeBlockDisplay(slot){
 export function authorHomeBlockClass(slot){
   return locHomeBlockClass(slot,'lo3rwang');
 }
+
+// Shared by every hero that offers background/side: the extra class for side mode.
+export function heroSideClass(slot,scopeId,sideClass){
+  return resolveHomeImage({...slot,order:1},scopeId).mode==='side'?' '+sideClass:'';
+}

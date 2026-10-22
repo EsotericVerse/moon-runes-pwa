@@ -13,6 +13,8 @@ registerDefaultSection('uiExtra.frameEditor',frameEditorZh);
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 import {resolveHomeImage} from './LocHomeBlockDisplay';
+import {isHomeFrameFor} from './hero-image.mjs';
+import {HeroImageFieldset,HeroModeFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
@@ -21,15 +23,6 @@ const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectE
 const TITLE_LIMIT=64;
 const EYEBROW_LIMIT=64;
 const SUBTITLE_LIMIT=128;
-
-function isHomeFrameFor(scopeId,pageName,order){
-  if(scopeId==='lrunes')return ['hero','game'].includes(pageName)&&Number(order)>=1;
-  return pageName==='index'&&Number(order)>=1&&['loc','lo3rwang'].includes(scopeId);
-}
-
-function absoluteImageUrl(src){
-  try{return src?new URL(src,window.location.origin).href:'';}catch{return src||'';}
-}
 
 function stripInlineImage(value){
   return String(value||'').replace(/<img\b[^>]*>/gi,'');
@@ -274,11 +267,7 @@ export default function ScopeBlockDraftList({
         },
         ...(isHomeFrame&&draft.order===1?[{
           key:'hero-mode',kind:'node',
-          node:<fieldset className="scope-hero-image-mode">
-            <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='background'} onChange={()=>updateHeroImageMode(draft.uid,'background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
-            <label><input type="radio" name={'hero-image-'+draft.uid} checked={BlockNoteContent.image.heroImageMode(draft)==='side'} onChange={()=>updateHeroImageMode(draft.uid,'side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
-          </fieldset>
+          node:<HeroModeFieldset draft={draft} name={'hero-image-'+draft.uid} onChange={mode=>updateHeroImageMode(draft.uid,mode)}/>
         }]:[]),
         {
           key:'subtitle-line',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
@@ -292,36 +281,7 @@ export default function ScopeBlockDraftList({
           canInsertImage:allowImages&&!isHomeFrame&&canInsertImageIn(draft,draft.text)
         }
       ]}/>
-      {isHomeFrame?<fieldset className="scope-frame-image-settings">
-        <legend>{t('uiExtra.frameEditor.imageLegend')}</legend>
-        <div className="scope-frame-image-preview">
-          {image?.src?<img src={image.src} alt={t('uiExtra.frameEditor.imagePreviewAlt')} loading="lazy"/>:<span>{t('uiExtra.frameEditor.imageNone')}</span>}
-        </div>
-        <div className="scope-frame-image-fields">
-          <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
-            <input type="url" value={image?.source==='default'?absoluteImageUrl(image.preset?.stable||image.src):image?.source==='custom'?(draft.image?.url||''):''}
-              placeholder="https://"
-              onChange={event=>{
-                const url=event.target.value;
-                const preset=absoluteImageUrl(image?.preset?.stable);
-                patchImage(draft.uid, url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
-              }}/>
-          </label>
-          {draft.order!==1?<>
-            <label>{t('uiExtra.frameEditor.imagePosition')}
-              <select value={image?.position||'right'} onChange={event=>patchImage(draft.uid,{position:event.target.value},false)} disabled={!image?.src}>
-                <option value="left">{t('uiExtra.frameEditor.posLeft')}</option><option value="right">{t('uiExtra.frameEditor.posRight')}</option>
-                <option value="top">{t('uiExtra.frameEditor.posTop')}</option><option value="bottom">{t('uiExtra.frameEditor.posBottom')}</option>
-              </select>
-            </label>
-            <label>{t('uiExtra.frameEditor.imageWidth')}
-              <input type="number" min="160" max="680" step="20" value={image?.width||420}
-                disabled={!image?.src} onChange={event=>patchImage(draft.uid,{width:Number(event.target.value)},false)}/>
-            </label>
-          </>:null}
-          <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>patchImage(draft.uid,{source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
-        </div>
-      </fieldset>:null}
+      {isHomeFrame?<HeroImageFieldset draft={draft} image={image} onChange={(changes,removeEmbedded)=>patchImage(draft.uid,changes,removeEmbedded)}/>:null}
       {allowEntities?renderDraftEntities(draft):null}
     </section>;
   }

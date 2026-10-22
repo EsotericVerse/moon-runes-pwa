@@ -13,7 +13,7 @@ import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YA
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
-import {resolveHomeImage} from '../../loc/LocHomeBlockDisplay';
+import {resolveHomeImage,heroSideClass} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
 
 const LABELS=['A','B','C','D'];
@@ -465,7 +465,7 @@ function GameHomeHero({data=null}){
     orders={[1]}
     slotTag="header"
     slotClassName="lrg-home-hero"
-    resolveSlotClassName={slot=>'lrg-home-hero'+(resolveHomeImage({...slot,order:1},'lrunes').mode==='side'?' lrg-home-hero--side':'')}
+    resolveSlotClassName={slot=>'lrg-home-hero'+heroSideClass(slot,'lrunes','lrg-home-hero--side')}
     editSlotClassName="loc-card loc-home-block"
     containerless
     placeholderFirstOrder={1}
