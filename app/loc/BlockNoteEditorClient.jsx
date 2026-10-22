@@ -81,6 +81,10 @@ export default function BlockNoteEditorClient({
 
   function insertImageUrl(event){
     event?.preventDefault?.();
+    let insertionTarget=null;
+    try{
+      insertionTarget=editor.getTextCursorPosition?.()?.block||null;
+    }catch{}
     const entered=globalThis.prompt?.('圖片網址（直接圖片連結，不上傳檔案）','https://');
     if(entered===null||entered===undefined)return;
     const image=BlockNoteContent.image.imageBlockForUrl(entered);
@@ -103,8 +107,11 @@ export default function BlockNoteEditorClient({
       }else if(!canInsertImage){
         globalThis.alert?.('這個文字框架已有一張圖片。請先移除原圖，再插入其他位置。');
         return;
+      }else if(!insertionTarget){
+        globalThis.alert?.('請先點選要放置圖片的文字位置，再插入圖片。');
+        return;
       }else{
-        const current=editor.getTextCursorPosition?.()?.block||editor.document?.at(-1);
+        const current=insertionTarget;
         if(BlockNoteContent.image.isEmptyImageTarget(current)){
           editor.updateBlock(current,image);
         }else if(current){
