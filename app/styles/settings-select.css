@@ -55,3 +55,24 @@
   border-radius:var(--loc-ui-radius-sm,8px);
   color:var(--loc-text);background:var(--loc-surface-soft);font-size:.85rem;
 }
+
+/* The management / settings / admin menu is the page's main control: make it read as one. */
+.admin-main-select .loc-settings-select__control,
+.loc-settings-switcher .loc-settings-select__control{
+  border:1.5px solid var(--loc-accent-border,var(--loc-accent));
+  background:var(--loc-surface-strong,var(--loc-panel));
+  box-shadow:var(--loc-shadow-card);
+}
+.admin-main-select .loc-settings-select__control:hover,
+.loc-settings-switcher .loc-settings-select__control:hover{border-color:var(--loc-accent)}
+.admin-main-select .loc-settings-select__single-value,
+.loc-settings-switcher .loc-settings-select__single-value{
+  color:var(--loc-heading);font-size:1.05rem;font-weight:700;letter-spacing:.02em;
+}
+.admin-main-select .loc-settings-select__indicators,
+.loc-settings-switcher .loc-settings-select__indicators{color:var(--loc-accent)}
+.admin-main-select .loc-settings-select__option,
+.loc-settings-switcher .loc-settings-select__option{font-weight:600;color:var(--loc-text)}
+.loc-settings-switcher{
+  padding:.9rem 1rem;border:1px solid var(--loc-accent-border-soft,var(--loc-line));
+}
