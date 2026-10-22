@@ -807,3 +807,15 @@
 .scope-import-section-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:.8rem .2rem;border:0;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;cursor:pointer;text-align:left}
 .scope-import-section-body{padding:0 .2rem .9rem}
 .scope-management-imports{display:grid;gap:1rem}
+
+/* Import file picker: one quiet dashed drop row instead of the raw browser control. */
+.scope-import-body input[type=file]{
+  padding:.9rem 1rem;border:1px dashed var(--loc-line);border-radius:var(--loc-radius);
+  background:var(--loc-surface-soft);color:var(--loc-muted);cursor:pointer;font:inherit;
+}
+.scope-import-body input[type=file]::file-selector-button{
+  margin-right:.9rem;padding:.45rem .9rem;border:1px solid var(--loc-line);border-radius:999px;
+  background:var(--loc-surface);color:var(--loc-text);font:inherit;font-weight:600;cursor:pointer;
+}
+.scope-import-body input[type=file]:hover{border-color:var(--loc-accent)}
+.scope-management-imports.scope-management-imports>.scope-import-format{margin:0}

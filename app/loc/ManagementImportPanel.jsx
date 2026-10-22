@@ -348,7 +348,6 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   }
   const pending=queue.length>queueIndex+1;
   return <div className="scope-import-body">
-    <h3>{UI_COPY.management.importJson}</h3>
     <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
@@ -685,7 +684,7 @@ function DuplicateDetection({scopeId}){
   </div></ImportSection>;
 }
 
-export default function ManagementImportPanel({scopeId}){
+export default function ManagementImportPanel({scopeId,flat=false}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
@@ -698,8 +697,7 @@ export default function ManagementImportPanel({scopeId}){
     setFormat(next);
     setRevision(value=>value+1);
   }
-  return <section className="scope-inline-card scope-management-imports">
-    <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
+  return <section className={(flat?'':'scope-inline-card ')+'scope-management-imports'}>
     <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
     <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>

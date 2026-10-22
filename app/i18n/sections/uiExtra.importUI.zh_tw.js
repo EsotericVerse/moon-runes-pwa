@@ -97,7 +97,7 @@ export default {
     "meta_tags": "Meta Tags",
     "rune_references": "Rune References"
   },
-  "formatSummary": "匯入格式設定（共用於 JSON Import／Source Refresh）",
+  "formatSummary": "格式設定",
   "recordPath": "資料陣列路徑（預設支援根陣列／items／posts／data／records）",
   "recordPathHint": "例如 result.entries；留空自動辨識",
   "batchSize": "每批寫入筆數",
@@ -122,7 +122,7 @@ export default {
   "noDate": "無日期",
   "skippedReasons": "前幾筆略過原因：",
   "writtenProgress": "已確認寫入 {completed}／{total} 筆 · {percent}%",
-  "batchImport": "分批匯入目前檔案",
+  "batchImport": "開始匯入",
   "nextJson": "下一個 JSON 檔案",
   "refreshLoaded": "已載入 {count} 筆 Refresh payload；先分析差異，不會直接寫入。",
   "refreshParseFailed": "Refresh JSON／格式解析失敗：{error}",

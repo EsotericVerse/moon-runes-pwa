@@ -179,14 +179,12 @@ export default function GlobalSettings({initialSection='home'}={}){
       </section>:null}
 
       {activeSection==='files'&&!native?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.documentImport"/></h2>
         {account.user?managedScopes.length?<div className="loc-settings-panel-group">
-          {scopeOptions.length>1?<label htmlFor="loc-import-scope">Scope</label>:null}
-          {scopeOptions.length>1?<Select {...selectProps} inputId="loc-import-scope"
+          {scopeOptions.length>1?<Select {...selectProps} aria-label="Scope" inputId="loc-import-scope"
             instanceId="loc-import-scope" options={scopeOptions}
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-          {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
+          {selectedScope?<ManagementImportPanel flat key={selectedScope.id} scopeId={selectedScope.id}/>:null}
         </div>:<p><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
         <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
       </section>:null}
