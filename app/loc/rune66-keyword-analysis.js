@@ -2,6 +2,7 @@
 
 import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
 import {selectAllRows} from './db-query.mjs';
+import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
@@ -262,7 +263,7 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
       // size (65535) is sized for narrow rows; with content included, a
       // scope under that row count fetches its entire table in one request.
       // Page this read explicitly instead of relying on the shared ceiling.
-      pageSize:5000,
+      pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
       onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
         3+17*(total?completed/total:1),
         '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')

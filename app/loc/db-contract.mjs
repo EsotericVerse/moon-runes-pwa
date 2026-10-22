@@ -1,5 +1,12 @@
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 
+// Shared by the keyword-classification read (paging the document scan) and
+// write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
+// have to match -- read and write are different queries with different
+// costs -- but keeping one tuned number instead of two that drift apart
+// under separate testing is less confusing to reason about and re-tune.
+export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
+
 // The existing management-write boundary enforces Galaxy metadata rules
 // consistently for publisher, search, culture and import paths.
 // Galaxy Media and Blocks are different schemas and are not affected.
@@ -112,9 +119,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // function's own 60s override, which only covers mode='chunk' calls,
     // not the plain reads elsewhere in the classification flow). That role
     // timeout is now raised to 30s, so this batch size was never the
-    // bottleneck; 5000 here is untested at this value but should have
-    // headroom now.
-    const batchSize=5000;
+    // bottleneck.
+    const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
