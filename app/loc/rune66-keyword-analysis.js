@@ -44,13 +44,14 @@ function isEligibleRow(row,minChars){
   );
 }
 function documentOf(row){
+  // title is deliberately left out: keyword/rune matching only looks at
+  // the article body (see textOf in model/rune66-keyword-engine.mjs),
+  // unlike site search, which legitimately does match on title.
   return {
     key:'galaxy:'+row.uid,
     uid:String(row.uid||'').trim(),
     kind:'galaxy',
-    title:String(row.title||'').trim(),
-    content:String(row.content||''),
-    date:String(row.createtime||'').slice(0,10)
+    content:String(row.content||'')
   };
 }
 function reportBatchProgress(onProgress,phase,completed,total,percent,label){
@@ -258,7 +259,11 @@ export async function runRune66ClassificationBatch(scopeId='lo3rwang',{onProgres
   const [catalogRows,textResult]=await Promise.all([
     loadCurrentCatalog(normalizedScopeId,currentClassId),
     selectAllRows(scope.galaxy,{
-      columns:'uid,title,content,createtime,searchable',
+      // title and createtime are not selected: matching only reads content
+      // (see documentOf/textOf), and nothing downstream reads the `date`
+      // field that createtime used to feed. createtime is still the order
+      // column below -- PostgREST can order by a column that isn't selected.
+      columns:'uid,content,searchable',
       // statistics_able is the eligibility gate itself -- filter it in the
       // query (fewer rows read, fewer rows paged through) instead of
       // selecting it and discarding non-qualifying rows in isEligibleRow.

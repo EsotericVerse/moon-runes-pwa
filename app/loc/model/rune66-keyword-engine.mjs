@@ -12,9 +12,12 @@ function compareRank(a,b){
     ||String(a.label||'').localeCompare(String(b.label||''));
 }
 
+// Keyword/rune matching only looks at the article body. Title text used to
+// be folded in here too, so a keyword appearing only in the title (never in
+// the content) would still count -- not the intended behavior, so title is
+// deliberately excluded now.
 function textOf(row){
-  return [row?.title,row?.content]
-    .filter(Boolean).join(' ');
+  return String(row?.content||'');
 }
 
 function keywordList(value){
