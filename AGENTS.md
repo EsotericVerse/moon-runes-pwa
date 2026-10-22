@@ -1,63 +1,33 @@
-# LOC Agent 執行規範
+# Repository Agent Instructions
 
-本文件保留 LOC 的專案規則、權責與資料邊界。React／Next.js、資料庫、UI 等專業操作細節，依任務載入對應的已安裝 Skill；不要把通用 Skill 的內容複製成另一套 LOC 規則。
+## Skill-first work
 
-## 1. 工作責任與授權
+- Before working, inspect `.agents/skills/` and `skills-lock.json`. Select the installed Skills whose descriptions match the task. Read each selected `SKILL.md` and any references it directs you to use before planning or editing.
+- Apply those Skills' actual workflows. Do not infer a Skill's behavior from its name, claim an unavailable Skill is installed, or load unrelated Skills.
+- Do not use or reference retired Skills whose names begin with `LOC-`. The repository's current installed Skills are the source for specialized workflows.
+- Keep this file limited to durable repository-wide instructions. Do not copy Skill procedures into it or create a parallel LOC-specific architecture doctrine.
+- When an existing instruction conflicts with a relevant installed Skill, remove the conflicting instruction instead of blending incompatible rules. When two applicable Skills conflict, inspect their scope and references; use the more task-specific guidance and report any unresolved conflict.
 
-- 使用者決定目標、規則、範圍、體驗與成果是否符合期待。Agent 負責技術調查、選型、實作、Code Review、排錯、測試及技術驗證；不得把查呼叫端、看 Diff、跑 CI 或工程驗收交給使用者。
-- 使用者明確交辦功能或規範修改，即授權完成該任務所需、可合理預見的程式修改與驗證。直接交辦的工作應直接執行，不要把必要工作改成等待使用者逐項批准的提案。
-- 授權只涵蓋當次任務及其必要範圍。不得擴大到無關功能、作品內容、資料庫、部署或 Git 歷史；遇到超出範圍的實質變更或高風險動作，先說明並取得明確授權。
-- Git 操作與資料庫操作分開授權。Commit、CI、回退或部署不代表資料庫操作授權。不得自行新增 Branch、PR、合併、刪除分支或改寫歷史。
-- 保護使用者既有的作品文字、資料庫內容與使用者可見文案。除非使用者明確要求，不得改寫、潤飾、刪除、排序或批次修正它們。使用者明確要求功能修改時，可修改實作該功能所需的程式碼；這不授權改動無關內容。
-- 不得把工程說明或開發備註塞進頁面當文案。程式註解可以解釋設計理由；只有使用者要求或核准的文字才可呈現在 UI。
+## Scope and execution
 
-## 2. 架構、功能拓展與 Skills
+- Follow the user's current request and its stated scope. When the user directly asks for implementation, implement it and verify it; do not stop at a proposal unless required information or access is genuinely missing.
+- Inspect the current repository, dependencies, and call sites before making technical claims or changes. Do not rely on stale notes, filenames, or assumptions when the source can be checked.
+- Make only changes needed for the requested task. Preserve unrelated user-authored content and data. A request to change application behavior authorizes the code changes needed for that behavior, not unrelated content edits.
+- Treat database writes and schema changes as separate from Git operations. Perform them only within the user's explicit task scope, and use the relevant installed database Skill before acting.
+- Do not add engineering notes or internal explanations to user-visible UI copy unless the user asks for that copy.
 
-LOC 同時要求功能完整與維持效能。現有系統已達成的效能應作為實作基準；新增功能要查核實際載入、查詢、互動與跨頁影響，不以「功能做出來了」忽略回歸。
+## Skill routing
 
-### 2.1 保留物件的責任與差異
+Use these installed repository Skills when their task triggers apply:
 
-- 先從實際程式碼確認物件、模組、公開 API、擴充點、呼叫端與版本，不從檔名、副檔名或語法猜架構。
-- OOP 不等於把不同物件削減成同一種。保留各物件實際的責任、資料語意、權限、行為、流程與生命週期；只有經核實語意相同的部分才共用。
-- 依需求利用既有 Object、方法或 Function；可以使用繼承與覆寫、組合、委派、策略、配置、插件、Adapter，或補上局部的新實作。它們可依情況搭配，不預設互相排斥。
-- 不為了「全用套件」或「全自製」、class 外觀、共用率、檔案數或程式碼搬家而改架構。某個現成方法已足以完成需求時直接使用；引用模組本身不代表功能已完成，也不可把自製限制說成模組限制。
-- 局部差異先在適當責任處理；確有整體修改需求時，再依已查明的依賴與效果擴大範圍。不得為追逐終極架構願景重造全部。
-- 不把「減少 .mjs」當成當前驗收條件；不以改副檔名、搬成巨型檔案或檔案數下降冒充整合。演進前先核對功能、引用、相容性及實際維護與載入效果。
+- React or Next.js implementation, data fetching, bundle size, rendering, or performance: `.agents/skills/vercel-react-best-practices/SKILL.md`; load its relevant rule files.
+- React component APIs, composition, compound components, or component architecture: `.agents/skills/vercel-composition-patterns/SKILL.md`.
+- PostgreSQL or Supabase queries, schema, migrations, RLS, indexes, database functions, or database performance: `.agents/skills/supabase-postgres-best-practices/SKILL.md`; load its relevant references before database work.
+- UI design, accessibility, metadata, motion, or browser-based interaction: select the matching installed Skill, such as `frontend-design`, `improve-ui`, `fixing-accessibility`, `fixing-metadata`, `fixing-motion-performance`, `agent-browser`, or `browser-use`.
+- Code review: use `.agents/skills/code-review-expert/SKILL.md` and follow its review workflow. Keep review-only work separate from implementation unless the user asks for fixes.
 
-### 2.2 依任務使用已安裝 Skills
+## Verification and handoff
 
-先檢視 repo 內的 `.agents/skills/` 與 `skills-lock.json`，只載入與當次任務相符的 Skills；Skill 提供專業流程與細節，LOC 的專屬資料語意、權限及使用者明示要求仍依本文件和當次指示。不要載入全部 Skills，也不要假稱未安裝的 Skill 已可用。
-
-- React／Next.js 的載入、資料抓取、Bundle、渲染或效能：使用 `.agents/skills/vercel-react-best-practices/SKILL.md`，並按問題讀取其對應規則。
-- React 元件 API、複合元件或元件架構：使用 `.agents/skills/vercel-composition-patterns/SKILL.md`。它處理 React 組合模式，不取代 LOC 對物件責任與語意差異的規則。
-- PostgreSQL／Supabase 查詢、Schema、Migration、RLS、索引、函式或資料庫效能：先使用 `.agents/skills/supabase-postgres-best-practices/SKILL.md`，並讀取相關參考規則。
-- UI 設計、無障礙、Metadata、動畫或瀏覽器操作：依觸發條件選用 repo 內相應的 `frontend-design`、`improve-ui`、`fixing-accessibility`、`fixing-metadata`、`fixing-motion-performance`、`agent-browser` 或 `browser-use` Skill。
-- Skill 缺失或內容無法讀取時，先據實查明；不得依名稱猜它的完整規則。只有使用者要求尋找或安裝新 Skill 時，才使用 `find-skills` 流程。
-
-Skill 是執行方法，不會自行擴大任務授權，也不會覆蓋 LOC 專屬事實。若通用建議與經查證的 LOC 規則看似不一致，先辨識適用範圍與原因，再依使用者明示的 LOC 需求處理。
-
-### 2.3 效能與既有功能
-
-- 使用 Next.js／React 的實際路由、伺服器／用戶端邊界、快取與 Bundle 分析；重型且非首屏必要的功能才依需要延後載入。不要為每個 Function 切 Chunk、重複初始化或另造路由表；不得假設已匯入模組會立即卸載。
-- 先定位真實成本再調整：區分首次載入、執行、重繪與資料查詢；避免無界查詢、無效重複請求與不必要的大量渲染。以對應 Skill 的細則及可核實的測試／量測作判斷，不套用未經測量的效能口號。
-- 任務碰到共用功能時，查明所有相關呼叫端及不同操作情境；只驗證首頁或單一路由不足以代表完整。
-- 依任務核對相關的 BlockNote 編輯與屬性、搜尋、統計、文化展示、符文及 OW3gs 抽牌等既有功能與規則。不得以統合為由任意改變內容、權限、曲序或使用方式。
-
-## 3. 資料與 Suno 入庫邊界
-
-- Supabase 是 LOC 主庫。任何資料庫／Postgres 寫入或結構工作，依第 2.2 節載入 Supabase Skill，並遵守當次任務授權。Neon 同步、還原、Schema、Migration、備份及其他資料操作須有當次明確範圍；Git 操作不構成授權。
-- 只有在使用者提供 Suno URL 並交辦該首作品的新增時，才依以下既有流程處理；URL 不代表可覆寫既有資料：
-  1. 先唯讀查重。只新增該 URL 對應、來源可核實且與歌曲明確相關的資料。既有 URL 只回報比對結果，除非使用者明確要求更新並指定範圍。
-  2. 逐項核查並使用既有 Galaxy／Galaxy Media 正確欄位與關聯儲存：原始作者大綱、完整 Suno Style、完整歌詞、由完整 Style 擷取的 meta_tags。大綱、Style、歌詞各自獨立；不得改寫、補造或把大綱塞進歌詞。找不到可信來源的內容標為缺項。
-  3. Suno Style 文字紀錄固定為 `searchable=false`、`statistics_able=false`；歌詞與大綱維持各自政策。meta_tags 使用現有 Style 標籤擷取能力寫入對應歌曲的 Galaxy Media；`media_type` 依實際型態填寫。不得臆測、翻譯或增造標籤，使用者已明示的 LP／符文分類依既有規則保留。
-  4. Suno URL 是外部來源定位依據；LOC 的 `media_id` 是自建 UUID。不得建立或使用 Suno ID／`source_native_id`，不得由 URL 擷取其他識別字串作判重。依 URL 類型與可核實關聯區分歌曲、專輯及播放清單，不得由標題或 LP 編號猜測或更動曲序。
-  5. 完成後唯讀回查實際寫入，回報 URL、LOC 媒體 UUID（如有）、四項內容、關聯、舊資料查重及 Style 兩個旗標。任何失敗、缺項或未驗證都如實標示，不得宣稱已完成。
-- AGENTS.md 不是自動存檔程式。此流程只適用於明確交辦的 Suno 作品新增；無可用寫入工具或未成功時，不得聲稱資料已保存，也不得延伸到其他資料。
-
-## 4. 驗證與交付
-
-- 修改前確認需求、現況、相依、規則差異及適用 Skills；修改只限授權範圍。
-- Agent 自行檢查實際 Diff，確認無關檔案與文字未變；執行與風險相稱的語法、型別、建置、CI、UI、CRUD、權限、資料回讀或端到端驗證。不得只靠 CI 綠燈、字串斷言或套件安裝宣稱完成。
-- 若目前環境無法驗證某項行為、工具或資料，明確列出未驗證原因，不推測成功。
-- 交付列出異動檔案、主要改動及理由、測試／驗證證據、未完成或未驗證項目，並提供可核實的 Diff／Commit。不要要求使用者代做工程驗收。
-- 特定任務的限制（例如暫停 FAQ、某次不改資料庫）不自動延伸為永久規則；長期資料保護與授權邊界仍適用。
+- Inspect the final diff and verify that unrelated files and content were not changed.
+- Run checks appropriate to the change and report what actually passed. Do not treat a green CI run, installed package, or partial-page check as proof that the requested behavior works.
+- State any unverified behavior and why it could not be checked. Report changed files, key differences, verification results, and remaining work; do not hand technical review or acceptance back to the user.
