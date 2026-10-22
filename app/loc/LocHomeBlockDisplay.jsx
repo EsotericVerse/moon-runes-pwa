@@ -12,18 +12,18 @@ import {BlockNoteContent} from './blocknote-content.mjs';
 // Existing, approved site images only. New text frames have no image by default;
 // images are not uploaded to, or stored by, the block editor.
 const LOC_MEDIA=Object.freeze({
-  1:{src:SITE_IMAGES.locHero,small:SITE_IMAGES.locHeroSmall,alt:'LOC 月典語言架構框架視覺理念圖',background:true},
+  1:{src:SITE_IMAGES.locHero,small:SITE_IMAGES.locHeroSmall,alt:'LOC 月典語言架構框架視覺理念圖',background:true,stable:'/pics/LOC-PicAll.webp'},
   2:{src:SITE_IMAGES.lunarunes,alt:'LunaRunes 月之符文',position:'right',width:'420px'},
   3:{src:SITE_IMAGES.locArchitecture,alt:'LOC 月典架構：時間長河、玄子、玄裂與玄宇宙',position:'right',width:'360px'},
   5:{src:SITE_IMAGES.author,alt:'作者 Lucas Oscar Wang 政德',position:'right',width:'360px'}
 });
 const AUTHOR_MEDIA=Object.freeze({
-  1:{src:authorHeroAsset,small:authorHeroSmallAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true},
+  1:{src:authorHeroAsset,small:authorHeroSmallAsset,alt:'作者 Lucas Oscar Wang 政德首頁主視覺',background:true,stable:'/pics/lo3rwang-hero.jpg'},
   5:{src:{src:'/pics/lo3rwang-3.webp'},alt:'政德、玄鑒與符韻的三魂關係圖',position:'right',width:'420px'}
 });
 
 const RUNES_MEDIA=Object.freeze({
-  1:{src:runesHeroAsset,small:runesHeroSmallAsset,alt:'月之符文首頁主視覺',background:true}
+  1:{src:runesHeroAsset,small:runesHeroSmallAsset,alt:'月之符文首頁主視覺',background:true,stable:'/pics/LunaRunes-hero.jpg'}
 });
 
 function imageFor(slot,scopeId='loc'){

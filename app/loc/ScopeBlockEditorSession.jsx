@@ -292,11 +292,11 @@ export default function ScopeBlockEditorSession({
             </div>
             <div className="scope-frame-image-fields">
               <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
-            <input type="url" value={image?.source==='default'?absoluteImageUrl(image.src):image?.source==='custom'?(draft.image?.url||''):''}
+            <input type="url" value={image?.source==='default'?absoluteImageUrl(image.preset?.stable||image.src):image?.source==='custom'?(draft.image?.url||''):''}
               placeholder="https://"
               onChange={event=>{
                 const url=event.target.value;
-                const preset=image?.preset?absoluteImageUrl(resolveHomeImage({...draft,image:{source:'default'}},scopeId).src):'';
+                const preset=absoluteImageUrl(image?.preset?.stable);
                 configureImage( !url.trim()||url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
               }}/>
           </label>
