@@ -107,6 +107,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const rows=Array.isArray(payload?.rows)?payload.rows:[];
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
+    // Full eligible-uid universe for this run, independent of `rows` --
+    // `rows` may now be a narrowed subset (only the articles a changed
+    // keyword item could affect; see runKeywordAnalysisBatch). 'sync' needs
+    // the FULL set to correctly find orphans: using just `rows`' uids here
+    // would wrongly clear every untouched-but-still-eligible row. Falls
+    // back to rows' own uids when the caller doesn't pass one (e.g. a full
+    // run where rows already is the full set).
+    const eligibleUids=Array.isArray(payload?.eligibleUids)?payload.eligibleUids:rows.map(row=>row.uid);
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
@@ -144,12 +152,12 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // wipe of everything still correctly classified -- see the migration's
     // mode='sync'. Only needs the uid list, not full row payloads.
     onProgress?.({phase:'sync',completed:count,total:rows.length});
-    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',uids:rows.map(row=>row.uid)});
+    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',uids:eligibleUids});
 
     onProgress?.({phase:'finalizing',completed:count,total:rows.length});
     const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
-    if(documentCount!==rows.length){
-      throw new Error(`Keyword classification finalize mismatch: expected ${rows.length}, counted ${documentCount}`);
+    if(documentCount!==eligibleUids.length){
+      throw new Error(`Keyword classification finalize mismatch: expected ${eligibleUids.length}, counted ${documentCount}`);
     }
     return {count,changedCount,orphansCleared,documentCount};
   }

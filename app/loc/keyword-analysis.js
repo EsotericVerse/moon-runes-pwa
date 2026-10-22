@@ -170,16 +170,48 @@ function groupListsOf(classification){
 // scope's own config row (silver.{scope}.keyword_meta.shas), and compared
 // elementwise (same order, same values) to decide whether a re-run can be
 // skipped (checkSkippable).
+function enabledCatalogRows(catalogRows){
+  return (catalogRows||[]).filter(row=>row?.class_enable!==false&&Number.isInteger(Number(row?.item_no)));
+}
 function currentShasOf(catalogRows){
-  return (catalogRows||[])
-    .filter(row=>row?.class_enable!==false&&Number.isInteger(Number(row?.item_no)))
-    .map(row=>String(row?.keyword_sha||''));
+  return enabledCatalogRows(catalogRows).map(row=>String(row?.keyword_sha||''));
 }
 function shasEqual(a,b){
   const listA=Array.isArray(a)?a:[];
   const listB=Array.isArray(b)?b:[];
   if(listA.length!==listB.length)return false;
   return listA.every((sha,index)=>String(sha)===String(listB[index]));
+}
+// Which item_no's keyword_sha differs from last run's stored shas, by array
+// position (same position = same item, since catalogRows' order_no/item_no
+// ordering is stable between runs unless an item was enabled/disabled/added
+// -- in which case the lengths differ and this returns null: "can't tell
+// which changed", so the caller treats everything as changed instead of
+// narrowing anything. This is what lets a real (non-skipped) run only
+// re-score the articles that a changed item could actually affect --
+// group_lists is a flat "rune_id:count,..." string (see group-lists.mjs),
+// so an article whose group_lists has no hit for any changed item_no cannot
+// have a different result this run (every item it WAS scored against is
+// unchanged), and is left alone untouched.
+function changedItemNosOf(catalogRows,storedShas){
+  const rows=enabledCatalogRows(catalogRows);
+  const currentShas=rows.map(row=>String(row?.keyword_sha||''));
+  if(!Array.isArray(storedShas)||storedShas.length!==currentShas.length)return null;
+  const changed=[];
+  for(let index=0;index<currentShas.length;index+=1){
+    if(currentShas[index]!==String(storedShas[index]))changed.push(Number(rows[index].item_no));
+  }
+  return changed;
+}
+// class_id.is.null always included: an article never classified before
+// (newly eligible, or never written since becoming eligible) has no prior
+// group_lists to have been "unaffected" by -- it always needs a first pass.
+function candidateOrFilter(changedItemNos){
+  const parts=['class_id.is.null'];
+  for(const itemNo of changedItemNos||[]){
+    parts.push('group_lists.ilike.%'+itemNo+':%');
+  }
+  return parts.join(',');
 }
 // Cheap substitute for re-reading every article's content: a count + the
 // latest createtime among this scope's statistics-eligible rows. Computed
@@ -357,6 +389,23 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     return emptyStored(config,{skipped:true,documentCount:Number(config.keyword_document_count)||0});
   }
 
+  // Which items changed since the last successful run (null = can't tell,
+  // e.g. first run or the enabled-item set itself changed -- narrow nothing).
+  const storedShas=Array.isArray(config.keyword_meta?.shas)?config.keyword_meta.shas:null;
+  const changedItemNos=changedItemNosOf(catalogRows,storedShas);
+
+  // Full eligible-uid universe, independent of how narrow the content read
+  // below ends up being. Needed for the 'sync' orphan-clear step -- using
+  // just this run's (possibly narrowed) candidate uids there would wrongly
+  // clear every untouched-but-still-eligible article.
+  reportBatchProgress(onProgress,'reading',0,0,2,'讀取符合資格的文章 uid 清單');
+  const eligibleUidResult=await selectAllRows(scope.galaxy,{
+    columns:'uid',
+    filters:[{column:'statistics_able',operator:'eq',value:true}],
+    pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE
+  });
+  const eligibleUids=(eligibleUidResult.rows||[]).map(row=>String(row?.uid||'').trim()).filter(Boolean);
+
   reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
   const textResult=await selectAllRows(scope.galaxy,{
     // title and createtime are not selected: matching only reads content
@@ -367,7 +416,11 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     // statistics_able is the eligibility gate itself -- filter it in the
     // query (fewer rows read, fewer rows paged through) instead of
     // selecting it and discarding non-qualifying rows in isEligibleRow.
+    // orFilter narrows further to the uids a changed item could actually
+    // affect (see changedItemNosOf/candidateOrFilter); empty when nothing
+    // can be narrowed (changedItemNos===null), same as before this change.
     filters:[{column:'statistics_able',operator:'eq',value:true}],
+    orFilter:Array.isArray(changedItemNos)?candidateOrFilter(changedItemNos):'',
     orders:[{column:'createtime',ascending:true}],
     // This selects `content`, the one large column in this table (avg ~160
     // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
@@ -396,7 +449,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     };
   });
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
-  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta},{
+  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta,eligibleUids},{
     // Mirrors applyKeywordClassification's own phase sequence (db-contract.mjs):
     // prepare -> write (ramping) -> sync (clears orphaned rows) -> finalizing.
     // Each phase needs its own percent/label; letting an unlisted phase fall
@@ -416,8 +469,11 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       reportBatchProgress(onProgress,phase,completed,total,percent,label);
     }
   });
-  if(written.count!==payloadRows.length||written.documentCount!==payloadRows.length){
-    throw new Error('關鍵詞批次寫回不完整：預期 '+payloadRows.length+'，實際 '+written.count);
+  // written.count/documentCount are against the full eligible universe now
+  // (see applyKeywordClassification's eligibleUids), not payloadRows.length
+  // -- payloadRows may be a narrowed subset when only some items changed.
+  if(written.count!==payloadRows.length||written.documentCount!==eligibleUids.length){
+    throw new Error('關鍵詞批次寫回不完整：預期處理 '+payloadRows.length+' 篇、總計 '+eligibleUids.length+' 篇，實際總計 '+written.documentCount);
   }
   clearKeywordAnalysisCache();
   const {data:verifiedRows,error:verificationError}=await dbAuthRelation(scope.config)
@@ -425,7 +481,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     .eq('id',normalizedScopeId).limit(1);
   if(verificationError)throw new Error('關鍵詞定錨驗證失敗：'+verificationError.message);
   const verified=verifiedRows?.[0];
-  if(!verified?.staticstime||Number(verified.keyword_document_count)!==payloadRows.length){
+  if(!verified?.staticstime||Number(verified.keyword_document_count)!==eligibleUids.length){
     throw new Error('關鍵詞定錨驗證失敗：文章數或完成時間不符，統計尚不可公開');
   }
   reportBatchProgress(onProgress,'completed',payloadRows.length,payloadRows.length,100,
@@ -436,7 +492,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     keywordMinChars:minChars,
     keywordMinDocuments:minDocuments,
     keywordDocumentCount:Number(verified.keyword_document_count),
-    statisticsEnabled:documents.length>minDocuments,
+    statisticsEnabled:eligibleUids.length>minDocuments,
     staticstime:verified.staticstime,
     skipped:false
   };
