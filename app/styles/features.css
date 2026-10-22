@@ -866,3 +866,17 @@
 }
 .scope-management-imports .scope-tabs button:disabled{opacity:.45;cursor:not-allowed}
 .scope-management-imports progress{width:100%;height:.6rem;accent-color:var(--loc-accent)}
+
+/* Functional pages (import / management / settings): a clear frame and a real shadow. */
+:is(.scope-management-imports,.scope-management-page,.scope-settings-options,.loc-settings-panel-group) :is(.loc-card,.loc-bubble){
+  border:1.5px solid var(--loc-accent-border,var(--loc-line));
+  box-shadow:
+    0 1px 2px color-mix(in srgb,var(--loc-text) 16%,transparent),
+    0 10px 26px color-mix(in srgb,var(--loc-text) 14%,transparent),
+    inset 0 1px 0 rgb(255 255 255 / .06);
+}
+:is(.scope-management-imports,.scope-management-page,.scope-settings-options,.loc-settings-panel-group) .loc-bubble{
+  box-shadow:
+    0 1px 2px color-mix(in srgb,var(--loc-text) 14%,transparent),
+    0 6px 16px color-mix(in srgb,var(--loc-text) 10%,transparent);
+}
