@@ -103,7 +103,12 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    const batchSize=1000;
+    // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
+    // (api.apply_keyword_classification, mode='chunk'), inside a 60s
+    // statement_timeout — a few thousand small rows (uid + class_id +
+    // group_lists) per call is index-backed and fast; this just trades
+    // round-trips for a bit more work per call.
+    const batchSize=3000;
     let count=0;
     for(let offset=0;offset<rows.length;offset+=batchSize){
       const batch=rows.slice(offset,offset+batchSize);
