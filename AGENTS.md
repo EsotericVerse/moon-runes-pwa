@@ -43,6 +43,7 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 - The user's current instruction takes precedence over repository guidance. Remove stale or contradictory repository rules rather than combining incompatible instructions. Surface only conflicts that cannot be resolved from the user's instruction and applicable skill guidance.
 - Keep this file to durable repository-wide rules and routing. Keep detailed procedures in their skill files.
 - The table below indexes only skills stored in this repository. When a skill is added, removed, or updated under `.agents/skills/`, reconcile the table in the same change. Discover environment-provided skills dynamically for each task; do not treat their absence from this table as evidence that they are missing.
+- **Auto-learning:** add a new skill whenever a real, recurring need for it shows up — don't wait to be asked for that exact skill by name. Two conditions, both required: (1) it passes the Security-tier vetting (`find-skills` Step 4: install count, source reputation, audits, read what its scripts do) before it's installed; (2) after installing, do a coherence pass — its guidance must not contradict this file or another installed skill's guidance; if it does, resolve the conflict in the same change (fix the wording, scope one skill narrower, or don't install it) rather than leaving two contradictory instructions in the repo.
 
 ## Repository skill routing
 
