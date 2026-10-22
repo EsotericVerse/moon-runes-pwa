@@ -150,7 +150,7 @@ export default function DailyLogClient({embedded=false}={}){
   },[loadMonth]);
 
   useEffect(()=>{
-    if(!canWrite)return;
+    if(!canViewDetails)return;
     let active=true;
     selectRows('silver.runes',{
       columns:'rune_id,rune_name',
@@ -165,7 +165,7 @@ export default function DailyLogClient({embedded=false}={}){
       }
     }).catch(reason=>setMessage(String(reason?.message||reason||'符文資料讀取失敗。')));
     return()=>{active=false;};
-  },[canWrite]);
+  },[canViewDetails]);
 
   const byDate=useMemo(()=>{
     const grouped=new Map();
@@ -307,7 +307,7 @@ export default function DailyLogClient({embedded=false}={}){
       {comparisonLoading?<p className="loc-status">讀取前次同符文紀錄…</p>:null}
       {!comparisonLoading?<div className="scope-list">
         {comparisons.map(({key,current,previous,currentContext,previousSituation})=>{
-          const editing=!embedded&&canWrite&&editingKey===key&&editForm;
+          const editing=canViewDetails&&editingKey===key&&editForm;
           return <article className="scope-inline-card runes-single-daily-stage" key={'compare-'+key}>
           <div className="home-rune-layout">
             <RuneCardInfo
@@ -324,7 +324,7 @@ export default function DailyLogClient({embedded=false}={}){
               <p className="loc-eyebrow">{current.draw_kind==='supplement'?'每日補抽':'每日主抽'}{current.local_only?' · 本機紀錄':''}</p>
               <div className="daily-rune-heading-row">
                 <h2>{current.rune_name} · {current.direction}</h2>
-                {!embedded&&canWrite&&(!current.local_only||native)&&!editing?<div className="daily-rune-actions">
+                {canViewDetails&&(!current.local_only||native)&&!editing?<div className="daily-rune-actions">
                   <button type="button" className="loc-button" disabled={saving} onClick={()=>beginEdit(current)}>編輯當日符文</button>
                   <button type="button" className="loc-button scope-danger-button" disabled={saving} onClick={()=>removeRecord(current)}>刪除當日符文</button>
                 </div>:null}
