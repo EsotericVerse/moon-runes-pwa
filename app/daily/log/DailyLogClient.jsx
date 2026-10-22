@@ -322,7 +322,13 @@ export default function DailyLogClient({embedded=false}={}){
 
             <div className="home-rune-copy home-rune-copy-plain">
               <p className="loc-eyebrow">{current.draw_kind==='supplement'?'每日補抽':'每日主抽'}{current.local_only?' · 本機紀錄':''}</p>
-              <h2>{current.rune_name} · {current.direction}</h2>
+              <div className="daily-rune-heading-row">
+                <h2>{current.rune_name} · {current.direction}</h2>
+                {!embedded&&canWrite&&(!current.local_only||native)&&!editing?<div className="daily-rune-actions">
+                  <button type="button" className="loc-button" disabled={saving} onClick={()=>beginEdit(current)}>編輯當日符文</button>
+                  <button type="button" className="loc-button scope-danger-button" disabled={saving} onClick={()=>removeRecord(current)}>刪除當日符文</button>
+                </div>:null}
+              </div>
               <div className="home-draw-bubbles" aria-label="每日符文建議">
                 <div className="loc-bubble">
                   <strong>當日狀況</strong>
@@ -353,11 +359,6 @@ export default function DailyLogClient({embedded=false}={}){
                   </>:<p>此前沒有抽到「{current.rune_name}」的紀錄。</p>}
                 </div>
               </div>
-              {!embedded&&canWrite&&(!current.local_only||native)&&!editing?<div className="scope-tabs">
-                <button type="button" disabled={saving} onClick={()=>beginEdit(current)}>編輯</button>
-                <button type="button" disabled={saving} onClick={()=>removeRecord(current)}>刪除</button>
-              </div>:null}
-
               {editing?<form className="scope-stat-controls" onSubmit={saveEdit}>
                 <label><span>符文</span><select className="scope-select" value={editForm.runeNumber} onChange={event=>setEditForm(value=>({...value,runeNumber:event.target.value}))}>{runes.map(item=><option value={item.rune_id} key={item.rune_id}>{item.rune_id}｜{item.rune_name}</option>)}</select></label>
                 <label><span>方向</span><select className="scope-select" value={editForm.direction} onChange={event=>setEditForm(value=>({...value,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
