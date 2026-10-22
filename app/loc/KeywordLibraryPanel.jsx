@@ -254,7 +254,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     if(!className){setMessage(l.classRequired);return;}
     if(!classGroup){setMessage(l.groupRequired);return;}
     if(!itemName){setMessage(l.itemNameRequired);return;}
-    if(!Number.isInteger(itemNo)||itemNo<1){setMessage(l.itemNumberInvalid);return;}
+    if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return;}
 
     const payload={
       keyword_id:draft.keyword_id,
@@ -572,7 +572,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             else {setSelectedId('');setDraft(null);setSelectedKeyword('');setKeywordEdit('');}
           }}>
             <option value="">{l.chooseRune}</option>
-            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||item.item_no}</option>)}
+            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||(item.item_no??'')}</option>)}
           </select></label>
           <label><span>{l.keyword}</span><select className="scope-select" aria-label={l.selectKeyword} value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
             const word=event.target.value;setSelectedKeyword(word);setKeywordEdit(word);
@@ -594,7 +594,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
           if(chosen)selectItem(chosen);
         }}>
           <option value="">{l.newOrNone}</option>
-          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.class_group} · {item.item_name||item.item_no}</option>)}
+          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.class_group} · {item.item_name||(item.item_no??'')}</option>)}
         </select></label>
         <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>{l.addItem}</button>
       </div>:null}
@@ -603,7 +603,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
             <label><span>{l.classEnabled}</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">{l.yes}</option><option value="false">{l.no}</option></select></label>
-            <label><span>{l.itemNo}</span><input type="number" min="1" value={draft.item_no||''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
+            <label><span>{l.itemNo}</span><input type="number" min="0" value={draft.item_no??''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
             <label><span>{l.itemName}</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
             <label><span>{l.sort}</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
           </div>

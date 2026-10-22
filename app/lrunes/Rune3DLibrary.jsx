@@ -8,7 +8,7 @@ import RuneCardInfo from './RuneCardInfo';
 import EffekseerStage from './effekseer/EffekseerStage';
 import RuneExtrudedGlyph from './effekseer/RuneExtrudedGlyph';
 import {RUNE_GLYPH_STYLES,runeGlyphProfile} from './effekseer/rune-glyph-library.mjs';
-import {groupImage,runeImage,runeName} from './rune-directory.mjs';
+import {groupImage,runeImage,runeName,runeNumbersForGroup} from './rune-directory.mjs';
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
 import ScopeLink from '../modular/ScopeLink';
@@ -16,21 +16,19 @@ import './skin-lab.css';
 import './visual/rune-art-layout.css';
 import './effekseer/effekseer-stage.css';
 
-// Nine canonical groups, eight runes each except the last two-rune group.
+// Nine canonical groups, eight runes each except the last group, which also
+// carries rune 0 (德 / Rune Zero, excluded from card draw): 0, 65, 66.
+// Membership comes from runeNumbersForGroup (rune-directory.mjs) — the single
+// canonical source for group<->rune-id mapping — rather than a second,
+// range-only copy that would drift out of sync with it (as happened before).
 const GROUPS=Object.freeze([
-  {id:1,name:'靈魂',start:1,end:8},
-  {id:2,name:'連結',start:9,end:16},
-  {id:3,name:'生命',start:17,end:24},
-  {id:4,name:'自然',start:25,end:32},
-  {id:5,name:'礦物',start:33,end:40},
-  {id:6,name:'元素',start:41,end:48},
-  {id:7,name:'秩序',start:49,end:56},
-  {id:8,name:'無序',start:57,end:64},
-  {id:9,name:'特殊',start:65,end:66}
+  {id:1,name:'靈魂'},{id:2,name:'連結'},{id:3,name:'生命'},{id:4,name:'自然'},
+  {id:5,name:'礦物'},{id:6,name:'元素'},{id:7,name:'秩序'},{id:8,name:'無序'},
+  {id:9,name:'特殊'}
 ]);
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords,extra_rules,extra_notes,rune_evolution_history,myth_story,soul_question,practice_challenge,ritual_advice,harmony_advice';
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
-const inGroup=(rune,group)=>Number(rune.rune_id)>=group.start&&Number(rune.rune_id)<=group.end;
+const inGroup=(rune,group)=>group.runeslist.includes(Number(rune.rune_id));
 function cleanse(value){
   return String(value??'').replace(/&#x([0-9a-f]+);/gi,(_,hex)=>String.fromCodePoint(parseInt(hex,16)))
     .replace(/&#([0-9]+);/g,(_,n)=>String.fromCodePoint(parseInt(n,10)))
@@ -72,11 +70,11 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       if(!active)return;
       const next=(rows||[]).filter(rune=>{
         const id=Number(rune.rune_id);
-        return Number.isInteger(id)&&id>=1&&id<=66;
+        return Number.isInteger(id)&&id>=0&&id<=66;
       });
       const ids=new Set(next.map(rune=>Number(rune.rune_id)));
-      if(next.length!==66||ids.size!==66){
-        throw Error('符文資料不完整：目前讀取 '+ids.size+' / 66');
+      if(next.length!==67||ids.size!==67){
+        throw Error('符文資料不完整：目前讀取 '+ids.size+' / 67');
       }
       setAllRunes(next);setError('');setStatus('ready');
     }).catch(err=>{

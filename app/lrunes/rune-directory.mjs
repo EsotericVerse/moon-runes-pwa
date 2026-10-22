@@ -21,7 +21,7 @@ export function runeName(card){return String(card?.rune_name||'').replace(/ä¹‹ç¬
 // Rune ID is the only canonical image identity on both Web and iOS.
 export function runeImage(card){
   const id=Number(card?.rune_id??card?.id??card?.rune_number);
-  if(!Number.isInteger(id)||id<1||id>66)return '';
+  if(!Number.isInteger(id)||id<0||id>66)return '';
   return `${LOC_ORIGIN}/assets/lunarunes/cards/${String(id).padStart(2,'0')}.png`;
 }
 export function runeNumbersForGroup(groupId){
