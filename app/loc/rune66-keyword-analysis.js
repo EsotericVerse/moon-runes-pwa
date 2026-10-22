@@ -142,7 +142,7 @@ function groupListsOf(classification){
   for(const item of classification?.rune_counts||[]){
     const runeId=Number(item?.rune_id);
     const count=Number(item?.count)||0;
-    if(!Number.isInteger(runeId)||runeId<1||count<=0)continue;
+    if(!Number.isInteger(runeId)||runeId<0||count<=0)continue;
     output[String(runeId)]=count;
   }
   return formatGroupLists(output);
