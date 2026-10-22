@@ -67,10 +67,12 @@ const KIND_WORDS=Object.freeze({
   history_1:'history_1',歷史1:'history_1',
   history_2:'history_2',歷史2:'history_2'
 });
-function pick(row,field){
+function pick(row,field,fieldMap={}){
+  const custom=String(fieldMap?.[field]||'').trim();
+  if(custom&&Object.prototype.hasOwnProperty.call(row,custom))return row[custom];
   const wanted=DAILY_ALIASES[field];
   for(const key of Object.keys(row)){
-    if(wanted.includes(String(key).replace(/^﻿/,'').trim().toLowerCase()))return row[key];
+    if(wanted.includes(String(key).replace(/^\uFEFF/,'').trim().toLowerCase()))return row[key];
   }
   return undefined;
 }
@@ -80,27 +82,37 @@ function toDate(value){
   if(!match)return text;
   return match[1]+'-'+match[2].padStart(2,'0')+'-'+match[3].padStart(2,'0');
 }
-export function dailyRowsFromImport(list){
+export const DAILY_IMPORT_FIELDS=Object.freeze(Object.keys(DAILY_ALIASES));
+export const DAILY_IMPORT_FIELD_LABELS=Object.freeze({
+  record_date:'日期',draw_kind:'種類',rune_number:'符文編號',direction:'位向',recorded_phase:'月相'
+});
+export const DAILY_IMPORT_ALIASES=DAILY_ALIASES;
+// Row-by-row analysis in the same valid / skipped shape the management import
+// preview uses: a bad row is skipped with its reason, never silently corrected.
+export function analyzeDailyImport(list,fieldMap={}){
   if(!Array.isArray(list)||!list.length)throw new Error('沒有可匯入的資料列。');
   if(list.length>50000)throw new Error('來源資料超過 50,000 筆，拒絕一次匯入。');
-  const output=[];
+  const valid=[],invalid=[],seen=new Set();
   list.forEach((source,index)=>{
     const row=source&&typeof source==='object'&&!Array.isArray(source)?source:{};
-    if(pick(row,'record_date')===undefined||pick(row,'rune_number')===undefined||pick(row,'direction')===undefined)
-      throw new Error('第 '+(index+1)+' 列缺少必要欄位（日期、符文編號、位向）；此檔案不是每日符文紀錄表。');
-    const kindRaw=pick(row,'draw_kind');
-    const kind=kindRaw===undefined||String(kindRaw).trim()===''?'main':KIND_WORDS[String(kindRaw).trim().toLowerCase()]||String(kindRaw).trim();
-    const number=Number(String(pick(row,'rune_number')).trim());
-    const phase=pick(row,'recorded_phase');
     try{
-      output.push(normalizeDailyTransferRow({
-        record_date:toDate(pick(row,'record_date')),
+      if(pick(row,'record_date',fieldMap)===undefined||pick(row,'rune_number',fieldMap)===undefined||pick(row,'direction',fieldMap)===undefined)
+        throw new Error('缺少必要欄位（日期、符文編號、位向）');
+      const kindRaw=pick(row,'draw_kind',fieldMap);
+      const kind=kindRaw===undefined||String(kindRaw).trim()===''?'main':KIND_WORDS[String(kindRaw).trim().toLowerCase()]||String(kindRaw).trim();
+      const phase=pick(row,'recorded_phase',fieldMap);
+      const record=normalizeDailyTransferRow({
+        record_date:toDate(pick(row,'record_date',fieldMap)),
         draw_kind:kind,
-        rune_number:number,
-        direction:String(pick(row,'direction')).trim(),
+        rune_number:Number(String(pick(row,'rune_number',fieldMap)).trim()),
+        direction:String(pick(row,'direction',fieldMap)).trim(),
         recorded_phase:phase==null?'':String(phase).trim()
-      }));
-    }catch(error){throw new Error('第 '+(index+1)+' 列：'+(error?.message||error));}
+      });
+      const key=dailyTransferKey(record);
+      if(seen.has(key))throw new Error('檔案內重複的日期與種類 '+key);
+      seen.add(key);
+      valid.push(record);
+    }catch(error){invalid.push({index:index+1,error:'第 '+(index+1)+' 列：'+String(error?.message||error)});}
   });
-  return makeDailyTransfer(output).records;
+  return {valid,invalid};
 }
