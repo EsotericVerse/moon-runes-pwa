@@ -92,4 +92,7 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 
 - Inspect the final diff and verify that unrelated files were not changed.
 - Run checks appropriate to the task and report the actual results. State what remains unverified and why.
-- In the handoff, summarize the changed files, the meaningful differences, and verification performed.
+- Before handing off, confirm the change actually does what was asked — not "the code looks right," but observed behavior: run it, render it (`webapp-testing`/Playwright for UI), query it, or otherwise produce evidence the stated goal is met. A claim with no evidence attached is not a completed task.
+- Also confirm the change does not regress any higher-priority tier it touches: a Loading/UI fix must not introduce a security gap or an unvetted dependency; a Portable change (swapping in a mature module) must not break Loading/UI behavior it replaced. Check all tiers the change actually touches, not just the one it was framed as.
+- Do not bring work to the user for acceptance until the above two checks pass with real evidence in hand. The user verifying unverified work is wasted effort — self-verify first so their review has something real to check against.
+- In the handoff, summarize the changed files, the meaningful differences, and verification performed — including what evidence was produced for "it works" and which other priority tiers were checked.
