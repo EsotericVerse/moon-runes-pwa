@@ -37,13 +37,13 @@ const selectProps={
 
 function Login({account}){
   const UI_COPY=useUiCopy();
-  return <section className="loc-view">
-    <header className="loc-hero"><p className="loc-eyebrow">{UI_COPY.admin.eyebrow}</p><h1>{UI_COPY.admin.loginTitle}</h1></header>
-    <section className="loc-card">
+  return <FeaturePage featureId="admin">
+    <section className="loc-card scope-feature-card">
+      <p>{UI_COPY.admin.loginTitle}</p>
       <ScopeLink className="loc-button primary" href="/settings/">前往設定登入</ScopeLink>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
-  </section>;
+  </FeaturePage>;
 }
 
 const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
@@ -63,7 +63,7 @@ export default function AdminHomeView(){
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
-  if(!account.canManageGlobalSync())return <section className="loc-view"><section className="loc-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></section>;
+  if(!account.canManageGlobalSync())return <FeaturePage featureId="admin"><section className="loc-card scope-feature-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></FeaturePage>;
 
   return <FeaturePage featureId="admin">
     {/* scope-management-page supplies the --management-min CSS variable that
