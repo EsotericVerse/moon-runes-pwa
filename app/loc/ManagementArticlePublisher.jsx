@@ -97,8 +97,9 @@ function MediaRecordInsert({scopeId}){
     finally{setBusy(false);}
   }
 
-  return <div className="scope-inline-card">
-    <h4>{UI_COPY.management.addMedia}</h4>
+  return <section className="loc-card scope-feature-card">
+    <p className="loc-eyebrow">MEDIA</p>
+    <h2>{UI_COPY.management.addMedia}</h2>
     <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
@@ -115,10 +116,10 @@ function MediaRecordInsert({scopeId}){
       <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
       {status?<p className="scope-status">{status}</p>:null}
     </form>
-  </div>;
+  </section>;
 }
 
-export default function ManagementArticlePublisher({scopeId}){
+export default function ManagementArticlePublisher({scopeId,mode='article'}){
   useUiSection('management');
   useUiSection('uiExtra.publisher');
   useUiSection('uiExtra.importUI');
@@ -130,6 +131,7 @@ export default function ManagementArticlePublisher({scopeId}){
   const [busy,setBusy]=useState(false);
 
   if(!scopeId||!account.canManageScopeSync(scopeId))return null;
+  if(mode==='media')return <MediaRecordInsert scopeId={scopeId}/>;
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
 
   async function save(event){
@@ -221,7 +223,5 @@ export default function ManagementArticlePublisher({scopeId}){
     </form>
 
     {status?<p className={'scope-status'+(status===UI_COPY.management.articlePublished?'':' scope-error')} role="status">{status}</p>:null}
-
-    <MediaRecordInsert scopeId={scopeId}/>
   </section>;
 }

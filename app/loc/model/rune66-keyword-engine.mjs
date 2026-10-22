@@ -35,7 +35,7 @@ function compileCatalog(catalogRows=[]){
 
   for(const row of catalogRows){
     const runeId=Number(row?.item_no);
-    if(!Number.isInteger(runeId)||runeId<1||runeId>66)continue;
+    if(!Number.isInteger(runeId)||runeId<0||runeId>66)continue;
     const label=String(row?.item_name||'').trim();
     const group=String(row?.class_group||'').trim();
     if(!label||!group)continue;

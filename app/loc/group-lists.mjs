@@ -1,6 +1,6 @@
 // Canonical TEXT format: "rune_id:hit_count,rune_id:hit_count".
 // "false" means excluded from analysis; "" means analyzed with no hits.
-const ITEM=/^([1-9]\d*):([1-9]\d*)$/;
+const ITEM=/^(0|[1-9]\d*):([1-9]\d*)$/;
 
 export function parseGroupLists(value){
   if(value===false||value==='false'||value==null)return false;
@@ -27,7 +27,7 @@ export function formatGroupLists(value){
   const parsed=parseGroupLists(value);
   if(parsed===false)return 'false';
   return Object.entries(parsed)
-    .filter(([id,count])=>/^[1-9]\d*$/.test(id)&&Number.isSafeInteger(Number(count))&&Number(count)>0)
+    .filter(([id,count])=>/^(0|[1-9]\d*)$/.test(id)&&Number.isSafeInteger(Number(count))&&Number(count)>0)
     .sort((a,b)=>Number(a[0])-Number(b[0]))
     .map(([id,count])=>id+':'+Number(count))
     .join(',');

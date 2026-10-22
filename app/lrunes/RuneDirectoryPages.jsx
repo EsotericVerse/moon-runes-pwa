@@ -91,7 +91,6 @@ export function RuneDirectoryRoot(){
   const listHref=useRuneListHref();
   const {groups,error}=useRuneGroups();
   return <main className="loc-next-main"><section className="loc-view">
-    <ContextReturnNav scopeId="lrunes" label="回符文首頁"/>
     <header className="loc-hero loc-hero-feature"><h1>月之符文圖鑑</h1><p className="loc-subtitle">從九組分類開始瀏覽，再進入各組查看符文名稱、月相、方向與基本說明。</p></header>
     <section className="loc-card"><figure className="runes-atlas-overview"><img src="/assets/lunarunes/reference/loc_runes_66_overview.jpg" alt="月之符文 66 符總圖" loading="eager"/><figcaption>月之符文 66 符總圖</figcaption></figure></section>
     <section className="loc-card"><h2>群組列表</h2>
