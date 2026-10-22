@@ -49,6 +49,10 @@
 | `.agents/skills/setup-matt-pocock-skills/SKILL.md` | One-time repo setup for the engineering skills (issue tracker, triage labels, domain docs). Run only when the user asks. |
 | `.agents/skills/triage/SKILL.md` | Move issues and external PRs through triage states, categorise, verify, and write agent-ready briefs. |
 | `.agents/skills/prototype/SKILL.md` | Build a throwaway prototype to answer a design question (state model, logic, or UI direction). |
+| `.agents/skills/hyperframes/SKILL.md` | Authoring HyperFrames videos (HTML-based video compositions). Start here for video work. |
+| `.agents/skills/hyperframes-cli/SKILL.md` | HyperFrames CLI jobs: scaffold, check, preview, render locally or in the cloud, publish. Needs Node.js 22+ and FFmpeg. |
+| `.agents/skills/hyperframes-registry/SKILL.md` | HyperFrames component/block registry for video compositions. |
+| `.agents/skills/media-use/SKILL.md` | Get or make media for a HyperFrames video: music, sfx, images, voiceover, transcripts, colour grades. HeyGen features need the user's own API key; never expose it. |
 | `.agents/skills/handoff/SKILL.md` | Compact the current conversation into a handoff document for another agent. |
 
 ## Completion
