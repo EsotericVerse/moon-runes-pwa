@@ -835,11 +835,6 @@
   border-color:var(--loc-accent-border-soft,var(--loc-line));
   box-shadow:var(--loc-shadow-card);
 }
-.scope-management-imports>.loc-card::before,
-.scope-management-page .loc-card::before{
-  content:"";position:absolute;inset:0 auto 0 0;width:4px;pointer-events:none;
-  background:linear-gradient(180deg,var(--loc-gold),var(--loc-accent));
-}
 .scope-management-imports>.loc-card>.loc-eyebrow,
 .scope-import-section-title .loc-eyebrow{
   margin:0;color:var(--loc-gold);font-size:.74rem;font-weight:700;letter-spacing:.14em;
@@ -880,3 +875,17 @@
     0 1px 2px color-mix(in srgb,var(--loc-text) 14%,transparent),
     0 6px 16px color-mix(in srgb,var(--loc-text) 10%,transparent);
 }
+
+/* Management pages: every field group inside a text box is a text bubble; boxes and bubbles stack with one gap. */
+.scope-management-page .loc-card>form,.scope-management-imports .loc-card>form{display:grid;gap:1rem}
+:is(.scope-management-page,.scope-management-imports,.scope-settings-options) .loc-card>.scope-management-fields,
+:is(.scope-management-page,.scope-management-imports,.scope-settings-options) .loc-card>form>.scope-management-fields,
+:is(.scope-management-page,.scope-management-imports,.scope-settings-options) .loc-card>.scope-stat-controls,
+:is(.scope-management-page,.scope-management-imports,.scope-settings-options) .loc-card>form.scope-stat-controls{
+  padding:clamp(.9rem,1.7vw,1.25rem);
+  border:1.5px solid var(--loc-accent-border,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg);
+  background:var(--loc-accent-surface,var(--loc-surface-soft));
+  box-shadow:0 1px 2px color-mix(in srgb,var(--loc-text) 14%,transparent),0 6px 16px color-mix(in srgb,var(--loc-text) 10%,transparent);
+}
+.scope-management-page>.loc-card,.scope-management-page>section,.scope-management-page>div:not(.admin-main-select){margin:0}
