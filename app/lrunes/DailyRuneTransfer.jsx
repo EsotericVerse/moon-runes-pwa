@@ -77,10 +77,16 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
     if(!file||busy)return;
     setBusy(true);setStatus('');setError('');setProgress(null);
     try{
-      if(!/\.csv$/i.test(file.name))throw new Error('只接受匯出的 CSV 檔。');
+      if(!/\.csv$/i.test(file.name))throw new Error('不是 CSV 格式，匯入失敗。');
       if(file.size>DAILY_TRANSFER_MAX_BYTES)throw new Error('匯入檔案超過 24 MB。');
       const {parseUniversalImportFile}=await import('../loc/universal-file-import.mjs');
-      const {valid,invalid}=analyzeDailyImport(await parseUniversalImportFile(file));
+      // Strict: only this export's CSV is accepted. Wrong header or any bad row fails the whole file; nothing is written.
+      const list=await parseUniversalImportFile(file);
+      const header=Object.keys(list[0]||{}).map(key=>String(key).replace(/^\uFEFF/,'').trim());
+      if(header.length!==CSV_COLUMNS.length||CSV_COLUMNS.some((key,index)=>header[index]!==key))
+        throw new Error('欄位不符，必須是匯出的 CSV（'+CSV_COLUMNS.join(',')+'）。');
+      const {valid,invalid}=analyzeDailyImport(list);
+      if(invalid.length)throw new Error('檔案有 '+invalid.length+' 列無效，整份不匯入：'+invalid.slice(0,3).map(x=>x.error).join('、'));
       const plan=planDailyTransfer(valid,await dailyRows(native));
       let inserted=0;
       if(native){
@@ -101,14 +107,14 @@ export default function DailyRuneTransfer({cloudCanManage=false,onImported}={}){
         });
       }
       setStatus('匯入完成：新增 '+inserted+' 筆；已存在 '+plan.duplicateCount+' 筆，衝突 '+plan.conflictCount+
-        ' 筆保留原值'+(invalid.length?'，略過無效 '+invalid.length+' 列（'+invalid.slice(0,3).map(x=>x.error).join('、')+'）':'')+'。');
+        ' 筆保留原值。');
       onImported?.();
     }catch(e){setError('匯入失敗：'+String(e?.message||e));}
     finally{setBusy(false);setProgress(null);}
   }
   return <section className="scope-inline-card" aria-label="每日符文匯入及匯出">
     <h2>每日符文 · 匯入與匯出</h2>
-    <p className="scope-settings-note">匯出為 CSV；匯入只接受同格式的 CSV，相同日期與種類的紀錄不覆寫。</p>
+    <p className="scope-settings-note">匯出為 CSV；匯入只接受同格式的 CSV，其他格式或任何一列有誤，整份匯入失敗、不寫入任何資料；相同日期與種類的紀錄不覆寫。</p>
     <div className="scope-tabs">
       <button type="button" className="loc-button" disabled={busy} onClick={onExport}>匯出每日符文（CSV）</button>
       {canImport?<button type="button" className="loc-button" disabled={busy} onClick={()=>input.current?.click()}>匯入每日符文（CSV）</button>:null}
