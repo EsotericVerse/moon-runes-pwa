@@ -9,6 +9,22 @@ System security ≫ ease of maintenance > system performance = UIUX > code aesth
 3. **System performance = UIUX** (equal priority, traded off against each other as the specific case requires, not against each other's fixed ranking).
 4. **Code aesthetics / code volume.** Lowest priority — never trade away 1–3 to make code shorter, more elegant, or more "modular" looking.
 
+### Which skill handles which priority
+
+- **System security:**
+  - New third-party skill/package/MCP server → `.agents/skills/find-skills/SKILL.md` Step 4 (install count ≥1K, source reputation, GitHub stars ≥100) before installing; a skill failing this check is refused even if it would help maintainability.
+  - Code touching auth, input/output boundaries, or secrets → `.agents/skills/code-review-expert/references/security-checklist.md` (XSS, injection, SSRF, path traversal, AuthN/AuthZ, token handling).
+  - Any Postgres/Supabase change (schema, RLS, functions, migrations) → `.agents/skills/supabase-postgres-best-practices/SKILL.md`, Security & RLS is priority 3 of 8, CRITICAL.
+  - Building/reviewing our own MCP integrations → `.agents/skills/mcp-builder/SKILL.md`.
+- **Ease of maintenance:**
+  - Before writing new code, scan for an existing module/pattern instead → `.agents/skills/improve-codebase-architecture/SKILL.md` (deepening/reuse, not cosmetic refactors).
+- **System performance = UIUX:**
+  - React/Next.js code → `.agents/skills/vercel-react-best-practices/SKILL.md` (70 rules, priority 1–2 are waterfalls and bundle size).
+  - Component API/composition → `.agents/skills/vercel-composition-patterns/SKILL.md`.
+  - Visual/interaction design decisions → `.agents/skills/ui-ux-pro-max/SKILL.md`.
+  - Verify a change actually works/renders correctly, not just compiles → `.agents/skills/webapp-testing/SKILL.md` (Playwright: real page, screenshot, console/network logs).
+- **Code aesthetics:** lowest priority; do not open `improve-codebase-architecture` or `code-review-expert` purely for style.
+
 ## Operating rules
 
 - Follow the user's current request and scope. When implementation is directly requested, carry it through and verify it; do not replace the requested work with a proposal unless essential information or access is missing.
