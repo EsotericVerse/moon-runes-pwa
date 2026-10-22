@@ -725,22 +725,6 @@ export default function Search(){
   </FeaturePage>;
 
   return <FeaturePage featureId="search">
-    <div className="scope-search-reference-editor">
-      <ScopeEditableBlocks
-        scopeId={scopeId}
-        page="search"
-        orders={[1]}
-        className="scope-search-reference-grid"
-        slotClassName="loc-card scope-search-reference-block"
-        editSlotClassName="loc-card scope-search-reference-block"
-        headingLevel={2}
-        allowEditing
-        allowDelete={false}
-        allowInlineChildAdd
-        explicitEditButton
-        onSuggestionClick={term=>router.push(searchHref(scopeId,term))}
-      />
-    </div>
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         <label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>
@@ -794,6 +778,22 @@ export default function Search(){
         </div>:null}
       </div>
     </section>
+    <div className="scope-search-reference-editor">
+      <ScopeEditableBlocks
+        scopeId={scopeId}
+        page="search"
+        orders={[1]}
+        className="scope-search-reference-grid"
+        slotClassName="loc-card scope-search-reference-block"
+        editSlotClassName="loc-card scope-search-reference-block"
+        headingLevel={2}
+        allowEditing
+        allowDelete={false}
+        allowInlineChildAdd
+        explicitEditButton
+        onSuggestionClick={term=>router.push(searchHref(scopeId,term))}
+      />
+    </div>
     <div ref={resultsRef}>
     {status?<p className="scope-status">{status}</p>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
