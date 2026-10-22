@@ -157,7 +157,7 @@ export default function ScopeBlockEditorSession({
       if(Array.from(String(draft.title||'')).length>titleLimit)throw new Error(t('uiExtra.frameEditor.titleTooLong',{limit:titleLimit}));
       if(Array.from(String(draft.eyebrow||'')).length>englishLimit)throw new Error(t('uiExtra.frameEditor.eyebrowTooLong',{limit:englishLimit}));
       if(Array.from(String(draft.subtitle||'')).length>subtitleLimit)throw new Error(t('uiExtra.frameEditor.subtitleTooLong',{limit:subtitleLimit}));
-      if(isHomeFrame&&draft.image?.source==='custom'&&!BlockNoteContent.image.normalizeImageSource(draft.image.url))throw new Error(t('uiExtra.frameEditor.imageUrlInvalid'));
+      if(isHomeFrame&&draft.image?.source==='custom'&&String(draft.image.url||'').trim()&&!BlockNoteContent.image.normalizeImageSource(draft.image.url))throw new Error(t('uiExtra.frameEditor.imageUrlInvalid'));
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
       if(!allowImages&&embeddedImages>0)throw new Error(t('uiExtra.editBlocks.textOnly'));
       if(embeddedImages>1)throw new Error(t('uiExtra.editBlocks.oneImage'));
@@ -170,7 +170,7 @@ export default function ScopeBlockEditorSession({
         block_eyebrow:subtitleValue(draft.eyebrow),
         block_title:subtitleValue(draft.title),
         block_subtitle:subtitleValue(draft.subtitle),
-        ...(isHomeFrame?{block_image:draft.image||null}:{}),
+        ...(isHomeFrame?{block_image:draft.image?.source==='custom'&&!String(draft.image.url||'').trim()?{...draft.image,source:'default',url:''}:(draft.image||null)}:{}),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
         block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},index)=>({
@@ -297,7 +297,7 @@ export default function ScopeBlockEditorSession({
               onChange={event=>{
                 const url=event.target.value;
                 const preset=absoluteImageUrl(image?.preset?.stable);
-                configureImage( !url.trim()||url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
+                configureImage( url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
               }}/>
           </label>
           <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>

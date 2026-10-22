@@ -176,7 +176,7 @@ export default function ScopeBlockDraftList({
         setBusy(false);setMessage(t('uiExtra.frameEditor.subtitleTooLong',{limit:SUBTITLE_LIMIT}));return;
       }
       const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
-      if(isHomeFrame&&draft.image?.source==='custom'&&!BlockNoteContent.image.normalizeImageSource(draft.image.url)){
+      if(isHomeFrame&&draft.image?.source==='custom'&&String(draft.image.url||'').trim()&&!BlockNoteContent.image.normalizeImageSource(draft.image.url)){
         setBusy(false);setMessage(t('uiExtra.frameEditor.imageUrlInvalid'));return;
       }
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
@@ -199,7 +199,7 @@ export default function ScopeBlockDraftList({
           block_eyebrow:HomeBlock.plainBlockLine(draft.eyebrow),
           block_title:HomeBlock.plainBlockLine(draft.title),
           block_subtitle:HomeBlock.plainBlockLine(draft.subtitle),
-          ...(isHomeFrame?{block_image:draft.image||null}:{}),
+          ...(isHomeFrame?{block_image:draft.image?.source==='custom'&&!String(draft.image.url||'').trim()?{...draft.image,source:'default',url:''}:(draft.image||null)}:{}),
           block_text:normalizeSavedHtml(draft.text),
           block_order:preserveOrder?Number(draft.order)||index+1:index+1,
           block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},entityIndex)=>({
@@ -304,7 +304,7 @@ export default function ScopeBlockDraftList({
               onChange={event=>{
                 const url=event.target.value;
                 const preset=absoluteImageUrl(image?.preset?.stable);
-                patchImage(draft.uid, !url.trim()||url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
+                patchImage(draft.uid, url.trim()===preset?{source:'default',url:''}:{source:'custom',url},false);
               }}/>
           </label>
           <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>patchImage(draft.uid,{source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
