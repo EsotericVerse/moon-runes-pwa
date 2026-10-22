@@ -373,27 +373,63 @@ button,a,.loc-control,.loc-button,
   color:rgba(239,242,255,.88)!important;
 }
 
-/* LOC + Author use this shared feature Hero scale; LunaRunes feature pages are unchanged. */
-:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
-  .scope-feature-hero>.home-title-row>h1{
+/* All seven LOC feature Heroes use one typography scale. This includes the
+   three management pages and keeps them aligned with culture/statics/search/governance. */
+.loc-next-main .scope-feature-hero:is(
+  .scope-feature-hero--culture,
+  .scope-feature-hero--statics,
+  .scope-feature-hero--search,
+  .scope-feature-hero--governance,
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+)>.home-title-row>h1{
   font-size:var(--loc-type-hero-feature-title)!important;
   font-weight:var(--loc-weight-page-title)!important;
   line-height:var(--loc-line-hero-title)!important;
 }
-:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
-  .scope-feature-hero .loc-eyebrow{
+.loc-next-main .scope-feature-hero:is(
+  .scope-feature-hero--culture,
+  .scope-feature-hero--statics,
+  .scope-feature-hero--search,
+  .scope-feature-hero--governance,
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+) .loc-eyebrow{
   font-size:var(--loc-type-hero-eyebrow)!important;
 }
-:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
-  .scope-feature-hero .scope-subtitle{
+.loc-next-main .scope-feature-hero:is(
+  .scope-feature-hero--culture,
+  .scope-feature-hero--statics,
+  .scope-feature-hero--search,
+  .scope-feature-hero--governance,
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+) .scope-subtitle{
   font-size:var(--loc-type-hero-subtitle)!important;
   font-weight:var(--loc-weight-subtitle);
   line-height:1.42!important;
 }
-:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
-  .scope-feature-hero .scope-hero-description,
-:is(.loc-next-main[data-loc-scope="loc"],.loc-next-main[data-loc-scope="lo3rwang"])
-  .scope-feature-hero .scope-hero-description :where(p,li){
+.loc-next-main .scope-feature-hero:is(
+  .scope-feature-hero--culture,
+  .scope-feature-hero--statics,
+  .scope-feature-hero--search,
+  .scope-feature-hero--governance,
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+) .scope-hero-description,
+.loc-next-main .scope-feature-hero:is(
+  .scope-feature-hero--culture,
+  .scope-feature-hero--statics,
+  .scope-feature-hero--search,
+  .scope-feature-hero--governance,
+  .scope-feature-hero--admin,
+  .scope-feature-hero--manage,
+  .scope-feature-hero--setting
+) .scope-hero-description :where(p,li){
   font-size:var(--loc-type-hero-copy);
   line-height:var(--loc-line-hero-copy);
 }
