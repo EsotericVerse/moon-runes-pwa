@@ -6,6 +6,7 @@ import Select from 'react-select';
 import {useAccount} from './use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
+import PanelLoading from './PanelLoading';
 
 // Only scope's own content-management tools load here. Nothing admin-level
 // (domain/directory/database/system members) belongs on this page — that is
@@ -19,9 +20,9 @@ import {FeaturePage} from '../modular/ui';
 // a react-select switcher picks the section, and each panel component is
 // next/dynamic, so only the selected section's chunk downloads/mounts —
 // not three <details> all open and all mounted at once.
-const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:()=>null});
-const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:()=>null});
-const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:()=>null});
+const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
+const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
+const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'Scope 設定'},
