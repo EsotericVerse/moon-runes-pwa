@@ -31,9 +31,16 @@
   border:1px solid var(--loc-line);border-radius:var(--loc-management-menu-control-radius);
   background:var(--loc-panel);color:var(--loc-text);
   box-shadow:var(--loc-shadow-card);overflow:hidden;
+  isolation:isolate;
 }
-.loc-settings-select__menu-list{max-height:var(--loc-management-menu-list-max-height);overflow-y:auto;padding:var(--loc-management-menu-list-padding);}
-.loc-settings-select__option{padding:var(--loc-management-menu-option-padding);cursor:pointer;border-radius:var(--loc-management-menu-option-radius);}
+/* The scrollable list is its own compositing layer (overflow-y:auto); give it
+   and every row an explicit opaque background instead of relying on the
+   .loc-settings-select__menu ancestor's background to show through them --
+   otherwise some rows can end up compositing over whatever sits behind the
+   menu on the page (e.g. a management panel's own content) instead of the
+   menu's own backdrop. */
+.loc-settings-select__menu-list{max-height:var(--loc-management-menu-list-max-height);overflow-y:auto;padding:var(--loc-management-menu-list-padding);background:var(--loc-panel);}
+.loc-settings-select__option{padding:var(--loc-management-menu-option-padding);cursor:pointer;border-radius:var(--loc-management-menu-option-radius);background:var(--loc-panel);}
 .loc-settings-select__option--is-focused{background:var(--loc-accent-surface-strong);}
 .loc-settings-select__option--is-selected{background:var(--loc-rune-selected-bg);color:var(--loc-text);font-weight:600;}
 .loc-settings-select__placeholder{color:var(--loc-muted);}
