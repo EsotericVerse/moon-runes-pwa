@@ -23,6 +23,7 @@ function renderRuneHero(slot,native){
   const subtitle=slot.stored?slot.subtitle:'';
   const text=slot.stored?slot.text:'';
   const image=resolveHomeImage({...slot,order:1},'lrunes');
+  const children=slot.stored?HomeBlock.visibleEntities(slot).filter(entity=>entity.title||String(entity.text||'').replace(/<[^>]*>/g,'').trim()):[];
   return <>
     {image.src?<picture>
       {image.source==='default'?<source media="(max-width: 760px)" srcSet={runesHeroSmallAsset.src}/>:null}
@@ -46,6 +47,15 @@ function renderRuneHero(slot,native){
         {subtitle?<div className="loc-subtitle" dangerouslySetInnerHTML={{__html:subtitle}}/>:null}
       </div>
       {text?<div className="runes-home-body scope-rich-surface" dangerouslySetInnerHTML={{__html:text}}/>:null}
+      {children.length?<div className="loc-home-block__children runes-home-children">
+        {children.map((entity,index)=>{
+          const card=HomeBlock.childPresentation(entity.title)==='card';
+          return <article className={'loc-home-block__child '+(card?'loc-home-block__child--card':'loc-home-block__child--bubble')} key={entity.uid||'child-'+index}>
+            {card?<h3>{entity.title}</h3>:null}
+            <div className="loc-home-block__child-copy scope-rich-surface" dangerouslySetInnerHTML={{__html:entity.text}}/>
+          </article>;
+        })}
+      </div>:null}
       <div className="runes-home-primary-actions" aria-label="開始抽牌">
         <ScopeLink className="loc-button runes-home-primary-action" href={runeHref('card/duel',native)} native={native}>抽一張符文</ScopeLink>
         <ScopeLink className="loc-button" href={runeHref('card/daily',native)} native={native}>每日符文</ScopeLink>
@@ -74,7 +84,6 @@ export default function RunesClient(){
       renderDisplay={slot=>renderRuneHero(slot,native)}
       explicitEditButton
       allowDelete={false}
-      allowEntities={false}
       toggleExtra={account.user?<nav className="runes-home-nav runes-home-secondary-nav" aria-label="月之符文延伸功能">
         <ScopeLink className="loc-button" href={runeHref('daily/log',native)} native={native}>每日符文紀錄</ScopeLink>
       </nav>:null}
