@@ -274,7 +274,8 @@
   margin:.55rem 0 0;
 }
 /* A single admin-only metadata card deck; no duplicate Summary and Editor. */
-.scope-search-attr-panel{
+.scope-search-attr-panel,
+.scope-management-fields{
   margin-top:.9rem;padding:clamp(.8rem,2vw,1.15rem);
   border:1px solid var(--loc-ui-hairline);
   border-radius:var(--loc-ui-radius-lg);
@@ -288,14 +289,19 @@
   display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));
   gap:.55rem;margin:.85rem 0 0;
 }
-.scope-search-attr-item{
+.scope-management-fields{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:.55rem;
+}
+.scope-search-attr-item,
+.scope-management-fields>label,.scope-management-fields>.scope-management-wide-field{
   display:grid;align-content:start;gap:.32rem;min-width:0;
   min-height:3.5rem;padding:.65rem .8rem;
   border:1px solid var(--loc-ui-hairline);
   border-radius:var(--loc-ui-radius-sm);
   background:var(--loc-ui-panel-strong);
 }
-.scope-search-attr-name{
+.scope-search-attr-name,
+.scope-management-fields>label>span:first-child{
   color:var(--loc-accent);font:600 .73rem/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
   overflow-wrap:anywhere;
 }
@@ -304,11 +310,13 @@
   overflow-wrap:anywhere;white-space:pre-wrap;
   color:var(--loc-text);font-size:.85rem;line-height:1.55;
 }
-.scope-search-attr-item.is-editable{
+.scope-search-attr-item.is-editable,
+.scope-management-fields>label{
   border-color:color-mix(in srgb,var(--loc-accent) 42%,var(--loc-line));
   background:var(--loc-ui-accent-soft);
 }
-.scope-search-attr-item input:not([type="checkbox"]),.scope-search-attr-item textarea{
+.scope-search-attr-item input:not([type="checkbox"]),.scope-search-attr-item textarea,
+.scope-management-fields>label :is(input:not([type="checkbox"]):not([type="file"]),textarea,select){
   width:100%;min-width:0;max-width:100%;margin:0;padding:.5rem .55rem;
   border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);
   background:var(--loc-panel);color:var(--loc-text);font:inherit;font-size:.87rem;
