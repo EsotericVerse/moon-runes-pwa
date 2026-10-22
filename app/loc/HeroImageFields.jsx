@@ -23,7 +23,7 @@ export function HeroImageFieldset({draft,image,onChange}){
       {image?.src?<img src={image.src} alt={t('uiExtra.frameEditor.imagePreviewAlt')} loading="lazy"/>:<span>{t('uiExtra.frameEditor.imageNone')}</span>}
     </div>
     <div className="scope-frame-image-fields">
-      <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
+      <label className="scope-frame-image-url"><span>{t('uiExtra.frameEditor.imageUrl')}</span>
         <input type="url" value={image?.source==='default'?absoluteImageUrl(image.preset?.stable||image.src):image?.source==='custom'?(draft.image?.url||''):''}
           placeholder="https://"
           onChange={event=>{
@@ -33,13 +33,13 @@ export function HeroImageFieldset({draft,image,onChange}){
           }}/>
       </label>
       {!isHero?<>
-        <label>{t('uiExtra.frameEditor.imagePosition')}
+        <label><span>{t('uiExtra.frameEditor.imagePosition')}</span>
           <select value={image?.position||'right'} onChange={event=>onChange({position:event.target.value},false)} disabled={!image?.src}>
             <option value="left">{t('uiExtra.frameEditor.posLeft')}</option><option value="right">{t('uiExtra.frameEditor.posRight')}</option>
             <option value="top">{t('uiExtra.frameEditor.posTop')}</option><option value="bottom">{t('uiExtra.frameEditor.posBottom')}</option>
           </select>
         </label>
-        <label>{t('uiExtra.frameEditor.imageWidth')}
+        <label><span>{t('uiExtra.frameEditor.imageWidth')}</span>
           <input type="number" min="160" max="680" step="20" value={image?.width||420}
             disabled={!image?.src} onChange={event=>onChange({width:Number(event.target.value)},false)}/>
         </label>
