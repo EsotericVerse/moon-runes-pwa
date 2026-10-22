@@ -550,3 +550,20 @@
     grid-template-columns:1fr;
   }
 }
+
+/* Hero image mode "side": image sits on the right instead of behind the copy. */
+.runes-home-hero.runes-home-hero--side{
+  grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  align-items:center;
+  gap:clamp(1rem,3vw,2.5rem);
+}
+.runes-home-hero--side .runes-home-hero-overlay{display:none}
+.runes-home-hero--side picture{grid-column:2;grid-row:1;display:block;min-width:0}
+.runes-home-hero--side .runes-home-hero-image{
+  position:relative;inset:auto;height:auto;max-height:480px;aspect-ratio:4/3;border-radius:var(--loc-radius,14px);
+}
+.runes-home-hero--side .runes-home-hero-copy{grid-column:1;grid-row:1}
+@media(max-width:760px){
+  .runes-home-hero.runes-home-hero--side{grid-template-columns:minmax(0,1fr)}
+  .runes-home-hero--side picture,.runes-home-hero--side .runes-home-hero-copy{grid-column:1;grid-row:auto}
+}

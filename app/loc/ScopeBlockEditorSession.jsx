@@ -287,32 +287,15 @@ export default function ScopeBlockEditorSession({
               {image?.src?<img src={image.src} alt={t('uiExtra.frameEditor.imagePreviewAlt')} loading="lazy"/>:<span>{t('uiExtra.frameEditor.imageNone')}</span>}
             </div>
             <div className="scope-frame-image-fields">
-              <label>{t('uiExtra.frameEditor.imageSource')}
-                <select value={image?.source||'none'} onChange={event=>{
-                  const source=event.target.value;
-                  configureImage({source,url:source==='custom'?(image?.customUrl||image?.src||''):''});
-                }}>
-                  <option value="default" disabled={!image?.preset}>{t('uiExtra.frameEditor.imageDefault')}</option>
-                  <option value="custom">{t('uiExtra.frameEditor.imageCustom')}</option>
-                  <option value="none">{t('uiExtra.frameEditor.imageHide')}</option>
-                </select>
-              </label>
               <label className="scope-frame-image-url">{t('uiExtra.frameEditor.imageUrl')}
-                <input type="url" value={image?.source==='default'?image?.src||'':draft.image?.source==='custom'?draft.image.url||'':image?.source==='custom'?image?.src||'':''}
-                  disabled={image?.source!=='custom'} placeholder="https://"
-                  onChange={event=>configureImage({source:'custom',url:event.target.value},false)}/>
-              </label>
-              <label>{t('uiExtra.frameEditor.imagePosition')}
-                <select value={image?.position||'right'} onChange={event=>configureImage({position:event.target.value},false)} disabled={!image?.src}>
-                  <option value="left">{t('uiExtra.frameEditor.posLeft')}</option><option value="right">{t('uiExtra.frameEditor.posRight')}</option>
-                  {draft.order!==1?<><option value="top">{t('uiExtra.frameEditor.posTop')}</option><option value="bottom">{t('uiExtra.frameEditor.posBottom')}</option></>:null}
-                </select>
-              </label>
-              {draft.order!==1?<label>{t('uiExtra.frameEditor.imageWidth')}
-                <input type="number" min="160" max="680" step="20" value={image?.width||420}
-                  disabled={!image?.src} onChange={event=>configureImage({width:Number(event.target.value)},false)}/>
-              </label>:null}
-              <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
+            <input type="url" value={draft.image?.source==='custom'?draft.image.url||'':''}
+              placeholder={image?.preset?'留空＝使用預設圖片 / https://':'https://'}
+              onChange={event=>{
+                const url=event.target.value;
+                configureImage( url.trim()?{source:'custom',url}:{source:image?.preset?'default':'none',url:''},false);
+              }}/>
+          </label>
+          <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>configureImage({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
             </div>
           </fieldset>:null}
           {allowEntities?renderEditableEntities(draft.entities):null}

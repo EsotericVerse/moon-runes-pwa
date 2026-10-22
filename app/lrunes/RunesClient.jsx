@@ -67,6 +67,7 @@ export default function RunesClient(){
       slotTag="header"
       slotId="intro"
       slotClassName="loc-hero runes-home-hero"
+      resolveSlotClassName={slot=>"loc-hero runes-home-hero"+(resolveHomeImage({...slot,order:1},"lrunes").mode==='side'?" runes-home-hero--side":"")}
       editSlotClassName="loc-hero"
       containerless
       placeholderFirstOrder={1}
