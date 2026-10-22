@@ -21,9 +21,8 @@ const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(m
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組人員管理'},
   {value:'sources',label:'群組來源分類'},
-  {value:'database',label:'資料庫設定'},
   {value:'themes',label:'主題設定'},
-  {value:'blocklist',label:'系統黑名單'},
+  {value:'system',label:'系統設定'},
   {value:'featureHero',label:'功能首頁圖設定'}
 ]);
 const CREATE_OPTIONS=Object.freeze([
@@ -96,9 +95,8 @@ export default function AdminHomeView(){
       </div>
       {section==='registry'?<AdminRegistryPanel/>:null}
       {section==='sources'?<AdminSourceCategories/>:null}
-      {section==='database'?<DatabaseTarget/>:null}
       {section==='themes'?<ThemeEditor/>:null}
-      {section==='blocklist'?<AdminEmailBlocklist/>:null}
+      {section==='system'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
       {section==='featureHero'?<FeatureHeroImages/>:null}
     </div>
   </FeaturePage>;
