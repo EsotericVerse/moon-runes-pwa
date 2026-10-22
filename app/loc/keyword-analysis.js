@@ -162,24 +162,24 @@ function groupListsOf(classification){
   return formatGroupLists(output);
 }
 // Per-item keyword content hash (silver.{scope}_keywords.keyword_sha, a
-// generated column over each item's own `keywords` jsonb), keyed by item_no.
-// Used both to decide whether a re-run can be skipped (checkSkippable) and
-// as the stored snapshot a future run compares against (metaOf).
+// generated column over each item's own `keywords` jsonb). catalogRows is
+// already ordered by order_no,item_no (see loadCurrentCatalog), so this
+// array -- one sha per enabled item, in that fixed order -- is itself the
+// combined identity of the whole keywords multi-class: this scope's current
+// Class as a unit, not any single item. It's what gets stored into this
+// scope's own config row (silver.{scope}.keyword_meta.shas), and compared
+// elementwise (same order, same values) to decide whether a re-run can be
+// skipped (checkSkippable).
 function currentShasOf(catalogRows){
-  const shas={};
-  for(const row of catalogRows||[]){
-    if(row?.class_enable===false)continue;
-    const itemNo=Number(row?.item_no);
-    if(!Number.isInteger(itemNo))continue;
-    shas[String(itemNo)]=String(row?.keyword_sha||'');
-  }
-  return shas;
+  return (catalogRows||[])
+    .filter(row=>row?.class_enable!==false&&Number.isInteger(Number(row?.item_no)))
+    .map(row=>String(row?.keyword_sha||''));
 }
 function shasEqual(a,b){
-  const keysA=Object.keys(a||{}).sort();
-  const keysB=Object.keys(b||{}).sort();
-  if(keysA.length!==keysB.length)return false;
-  return keysA.every((key,index)=>key===keysB[index]&&String(a[key])===String((b||{})[key]));
+  const listA=Array.isArray(a)?a:[];
+  const listB=Array.isArray(b)?b:[];
+  if(listA.length!==listB.length)return false;
+  return listA.every((sha,index)=>String(sha)===String(listB[index]));
 }
 // Cheap substitute for re-reading every article's content: a count + the
 // latest createtime among this scope's statistics-eligible rows. Computed
@@ -208,7 +208,7 @@ async function keywordFingerprint(scope){
 function checkSkippable(config,catalogRows,fingerprint){
   if(!config.staticstime)return null;
   const meta=config.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
-  const storedShas=meta.shas&&typeof meta.shas==='object'?meta.shas:null;
+  const storedShas=Array.isArray(meta.shas)?meta.shas:null;
   const storedFingerprint=meta.fingerprint&&typeof meta.fingerprint==='object'?meta.fingerprint:null;
   if(!storedShas||!storedFingerprint)return null;
   if(!shasEqual(currentShasOf(catalogRows),storedShas))return null;
