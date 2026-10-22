@@ -53,6 +53,8 @@
 | `.agents/skills/hyperframes-cli/SKILL.md` | HyperFrames CLI jobs: scaffold, check, preview, render locally or in the cloud, publish. Needs Node.js 22+ and FFmpeg. |
 | `.agents/skills/hyperframes-registry/SKILL.md` | HyperFrames component/block registry for video compositions. |
 | `.agents/skills/media-use/SKILL.md` | Get or make media for a HyperFrames video: music, sfx, images, voiceover, transcripts, colour grades. HeyGen features need the user's own API key; never expose it. |
+| `.agents/skills/webapp-testing/SKILL.md` | Verify a running web app with Playwright: click through real pages, screenshot, read console/network logs. Use this before claiming a UI change works. |
+| `.agents/skills/mcp-builder/SKILL.md` | Build or review an MCP server that lets Claude talk to an external service. Use when adding or auditing a Claude/MCP integration, not for installing third-party MCP servers found online. |
 | `.agents/skills/handoff/SKILL.md` | Compact the current conversation into a handoff document for another agent. |
 
 ## Completion
