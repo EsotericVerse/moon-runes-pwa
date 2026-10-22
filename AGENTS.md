@@ -103,3 +103,13 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 - Do not bring work to the user for acceptance until the above two checks pass with real evidence in hand. The user verifying unverified work is wasted effort — self-verify first so their review has something real to check against.
 - If the evidence itself shows the result is bad — broken, ugly, half-done, or not what was asked — do not hand it off anyway and let the user catch it. Fix it or say plainly it isn't working and why. Never pass along something you would not accept yourself.
 - In the handoff, summarize the changed files, the meaningful differences, and verification performed — including what evidence was produced for "it works" and which other priority tiers were checked.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
