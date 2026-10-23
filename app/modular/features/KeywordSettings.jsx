@@ -26,8 +26,8 @@ export default function KeywordSettings(){
   const authorized=Boolean(account.user&&scopeId!=='loc'&&scopeId!=='lrunes'&&!scope?.aggregateChildren&&account.canManageScopeSync(scopeId));
   useEffect(()=>{
     if(!authorized||params?.get('edit')!=='1')return;
-    if(!editDock?.active||editDock.scopeId!==scopeId)editDock?.begin(scopeId);
-  },[authorized,scopeId,params,editDock?.active,editDock?.scopeId,editDock?.begin]);
+    editDock?.begin(scopeId);
+  },[authorized,scopeId,params?.get('edit'),editDock?.begin]);
   return <FeaturePage featureId="statics">
     <section className="loc-card scope-feature-card">
       <h2><UiText id="uiExtra.keywords.settingsTitle"/></h2>

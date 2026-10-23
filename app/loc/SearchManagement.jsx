@@ -39,8 +39,8 @@ export default function SearchManagement(){
   const currentSection=SECTIONS.find(option=>option.value===section)||SECTIONS[0];
   useEffect(()=>{
     if(!permitted||!['suggestions','publish'].includes(section))return;
-    if(!editDock?.active||editDock.scopeId!==scopeId)editDock?.begin(scopeId);
-  },[permitted,section,scopeId,searchParams,editDock?.active,editDock?.scopeId,editDock?.begin]);
+    editDock?.begin(scopeId);
+  },[permitted,section,scopeId,editDock?.begin]);
 
   // featureId="search" shares the Scope's existing, database-backed Search Hero.
   // Neither its image nor any of its text is replicated or overridden here.
