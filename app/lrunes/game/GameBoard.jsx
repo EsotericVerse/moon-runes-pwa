@@ -764,7 +764,7 @@ export default function GameBoard(){
               </Typography>
               <Stack direction={{xs:'column',sm:'row'}} spacing={1} alignItems={{sm:'center'}}>
                 <TextField size="small" label="房間代碼" autoComplete="off"
-                  value={inviteCode} onChange={e=>setInviteCode(e.target.value.toUpperCase().replace(/\\s/g,''))}
+                  value={inviteCode} onChange={e=>setInviteCode(e.target.value.toUpperCase().replace(/\s/g,''))}
                   inputProps={{maxLength:12}}/>
                 <Button variant="contained" disabled={!/^[A-F0-9]{12}$/.test(inviteCode)}
                   onClick={()=>{
