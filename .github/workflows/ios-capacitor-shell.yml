@@ -25,10 +25,16 @@ jobs:
           xcrun --find swift
       - name: Install pinned npm dependencies
         run: npm ci --no-audit --no-fund
+      - name: Release security audit
+        run: npm run audit:security
+      - name: Game regression tests
+        run: npm run test:game
       - name: Build LOC static web assets
         run: |
           npm run build
           test -f out/index.html
+      - name: Check Guest and Admin static route exports
+        run: node scripts/verify-release-static-export.mjs
       - name: Generate ephemeral iOS native shell
         run: |
           npx cap add ios

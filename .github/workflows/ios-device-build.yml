@@ -31,10 +31,16 @@ jobs:
           xcrun --find swift
       - name: Install dependency lockfile
         run: npm ci --no-audit --no-fund
+      - name: Release security audit
+        run: npm run audit:security
+      - name: Game regression tests
+        run: npm run test:game
       - name: Build existing LOC static export
         run: |
           npm run build
           test -f out/index.html
+      - name: Check Guest and Admin static route exports
+        run: node scripts/verify-release-static-export.mjs
       - name: Verify numeric source Rune card files (never rewrite)
         run: python3 scripts/prepare-ios-static-assets.py out
       - name: Generate ephemeral iOS project and sync

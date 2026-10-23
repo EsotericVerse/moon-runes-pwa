@@ -42,6 +42,8 @@ jobs:
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
         run: npm run build 2>&1 | tee /tmp/next-build.log
+      - name: Check Guest and Admin static route exports
+        run: node scripts/verify-release-static-export.mjs
       - name: Report build failure to job summary
         if: failure()
         run: |
