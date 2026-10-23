@@ -394,17 +394,35 @@
   .loc-home-block--image-bottom{grid-template-areas:"header" "body" "media" "children";}
 }
 
-/* Image-only keeps the original card frame and image width; children stay below. */
+/* Image-only replaces the existing text area without resizing the frame. */
 .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--image-only{
-  display:flex;
-  flex-direction:column;
+  display:block;
 }
-.loc-home-block--image-only>.loc-home-block__media{
-  order:-1;
-  align-self:center;
+.loc-home-block--image-only>.loc-home-block__image-surface{
+  position:relative;
+  min-width:0;
 }
-.loc-home-block--image-only>.loc-home-block__media img{
-  max-height:480px;
+.loc-home-block__image-measure{
+  visibility:hidden;
+  pointer-events:none;
+}
+.loc-home-block--image-only .loc-home-block__image-surface>.loc-home-block__media{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+  padding:0;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:hidden;
+}
+.loc-home-block--image-only .loc-home-block__image-surface>.loc-home-block__media img{
+  width:100%;
+  height:100%;
   object-fit:contain;
 }
 
