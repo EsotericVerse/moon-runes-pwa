@@ -503,7 +503,8 @@ function mediaMetadataDescription(row){
 export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
-  const rawSources=[...new Set((sourceNames||[]).map(value=>String(value||'').trim()).filter(Boolean))];
+  // Explicitly requested empty source names are valid (e.g. Statistics · Others).
+  const rawSources=[...new Set((sourceNames||[]).map(value=>String(value??'').trim()))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
   const baseOffset=Math.max(0,Math.floor(Number(offset)||0));
