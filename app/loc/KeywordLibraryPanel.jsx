@@ -571,7 +571,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
           const nextDefault=rows.find(row=>String(row.class_id)===nextClassId)?.default_group_item_no;
           setDefaultGroupItemNo(String(nextDefault??0));
         }}>
-          {classes.map(item=><option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}
+          {classes.map(item=><option key={item.class_id} value={item.class_id}>{'關鍵詞組：'+item.class_name}</option>)}
         </select></label>
         <label><span>{l.minChars}</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
         <label><span>{l.minDocuments}</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
@@ -603,12 +603,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
     {workspace!=='analysis'?<>
     <div className="scope-stat-controls">
-      <label><span>Class</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
-        {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{name}</option>)}
+      <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
+        {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
       </select></label>
     </div>
     {selectedClassId?<div className="scope-stat-controls">
-      <label><span>Class UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
+      <label><span>關鍵詞組 UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
       <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
       <span className="scope-status">scope_id: {scopeId}</span>
     </div>:null}
@@ -642,7 +642,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         <div className="scope-stat-controls scope-keyword-manual-path">
           <label><span>{l.runeGroup}</span><select className="scope-select" aria-label={l.selectRuneGroup} value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
             <option value="">{l.chooseRuneGroup}</option>
-            {groups.map(group=><option key={group} value={group}>{group}</option>)}
+            {groups.map(group=><option key={group} value={group}>{[selectedClass,group,'群組'].filter(Boolean).join(' ')}</option>)}
           </select></label>
           <label><span>{l.runeItem}</span><select className="scope-select" aria-label={l.selectRune} value={groupItems.some(row=>String(row.keyword_id)===selectedId)?selectedId:''} disabled={!selectedGroup} onChange={event=>{
             const chosen=groupItems.find(row=>String(row.keyword_id)===event.target.value);
@@ -672,13 +672,13 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
           if(chosen)selectItem(chosen);
         }}>
           <option value="">{l.newOrNone}</option>
-          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.class_group} · {item.item_name||(item.item_no??'')}</option>)}
+          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{[item.class_name,item.class_group,'群組'].filter(Boolean).join(' ')} · {item.item_name||(item.item_no??'')}</option>)}
         </select></label>
         <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>{l.addItem}</button>
       </div>:null}
         {!draft?<p className="scope-status">{workspace==='manual'?l.manualEmpty:l.networkEmpty}</p>:<>
           <div className="scope-management-fields">
-            <label><span>Class</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
+            <label><span>關鍵詞組</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
             <label><span>{l.classEnabled}</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">{l.yes}</option><option value="false">{l.no}</option></select></label>
             <label><span>{l.itemNo}</span><input type="number" min="0" value={draft.item_no??''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
