@@ -9,6 +9,34 @@ export const DAILY_RUNE_MODES=Object.freeze([
 export const DAILY_MOON_PHASES=Object.freeze(['新月','上弦','滿月','下弦','空亡']);
 export const DAILY_DIRECTIONS=Object.freeze(['正位','半正位','半逆位','逆位']);
 
+// Experimental culture scoring only. The four intrinsic phases come directly
+// from silver.runes.moon_phase; adjustments below are NOT canonical divination rules.
+export const CARD_MOON_PHASES=Object.freeze({1:'新月',2:'上弦',3:'滿月',4:'下弦'});
+const PHASE_ADJUSTMENTS=Object.freeze({
+  '新月':Object.freeze({'新月':0.25,'上弦':0.10,'滿月':-0.25,'下弦':0.10,'空亡':0}),
+  '上弦':Object.freeze({'新月':0.10,'上弦':0.25,'滿月':0.10,'下弦':-0.25,'空亡':0}),
+  '滿月':Object.freeze({'新月':-0.25,'上弦':0.10,'滿月':0.25,'下弦':0.10,'空亡':0}),
+  '下弦':Object.freeze({'新月':0.10,'上弦':-0.25,'滿月':0.10,'下弦':0.25,'空亡':0})
+});
+export function dailyRuneInteractionScore(row){
+  const baseScore=DAILY_DIRECTION_SCORE[String(row?.direction||'')];
+  const cardPhase=CARD_MOON_PHASES[Number(row?.moon_phase)]||null;
+  const actualPhase=String(row?.phase||'');
+  // 65 玄 / 66 命 deliberately have no intrinsic moon phase.
+  // Missing/unknown phase is not a neutral score: keep it indeterminate.
+  const validBase=Number.isFinite(baseScore);
+  const adjustment=cardPhase?PHASE_ADJUSTMENTS[cardPhase]?.[actualPhase]:undefined;
+  const validAdjustment=Number.isFinite(adjustment);
+  return {
+    baseScore:validBase?baseScore:null,
+    cardPhase,
+    actualPhase,
+    adjustment:validAdjustment?adjustment:null,
+    score:validBase&&validAdjustment
+      ?Math.round((baseScore+adjustment)*100)/100:null
+  };
+}
+
 export function normalizeDailyDraws(rows=[],phaseAtDate=()=> '未知'){
   return (Array.isArray(rows)?rows:[]).flatMap(row=>{
     const date=String(row?.record_date||'').slice(0,10);
