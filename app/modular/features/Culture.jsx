@@ -98,6 +98,17 @@ function keywordDrillRiverItems(rows,{source='',groupId='',meta={},groupItems=[]
     maximum.set(key,Math.max(maximum.get(key)||0,buckets.get(id).count));
   };
   for(const row of rows||[]){
+    // Unfiltered class density is already aggregated by read_rune66_summary.
+    // Do not download Galaxy attributes just to reproduce these exact counts.
+    if(!source&&!groupId&&row?.kind==='galaxy'&&row?.classification_group){
+      const day=String(row.date||'').slice(0,10);
+      const rowGroup=String(row.class_id??'').trim();
+      const groupLabel=String(classes[rowGroup]||row.classification_group||'').trim();
+      const count=Number(row.count)||0;
+      if(/^\d{4}-\d{2}-\d{2}$/.test(day)&&groupLabel&&count>0)
+        add(rowGroup,[className,groupLabel,'群組'].filter(Boolean).join(' '),day,count,Number(rowGroup)||0);
+      continue;
+    }
     const day=String(row.createtime||'').slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     const hits=parseGroupLists(row.group_lists);
@@ -349,9 +360,12 @@ export default function Culture(){
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
   const riverRangeLoading=classificationWindowValid&&(sourceSnapshotQuery.isPending||sourceSnapshotQuery.isFetching);
+  // Existing SQL summary covers the overview. Drill-down fetches only the
+  // requested source and/or class, without eagerly reading all Galaxy attrs.
+  const keywordDetailRequested=Boolean(keywordDrillSource||keywordDrillGroup);
   const keywordDensityQuery=useQuery({
-    queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd],
-    enabled:styleFilter==='rune66'&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
+    queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd,keywordDrillSource,keywordDrillGroup],
+    enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
     queryFn:async()=>{
       const {rows}=await selectAllRows(scopeData.galaxy,{
@@ -359,7 +373,9 @@ export default function Culture(){
         filters:publicContentFilters([
           {column:'statistics_able',operator:'eq',value:true},
           {column:'createtime',operator:'gte',value:keywordWindowStart+'T00:00:00+08:00'},
-          {column:'createtime',operator:'lte',value:keywordWindowEnd+'T23:59:59.999+08:00'}
+          {column:'createtime',operator:'lte',value:keywordWindowEnd+'T23:59:59.999+08:00'},
+          ...(keywordDrillSource?[{column:'source_name',operator:'eq',value:keywordDrillSource}]:[]),
+          ...(keywordDrillGroup?[{column:'class_id',operator:'eq',value:Number(keywordDrillGroup)}]:[])
         ]),
         orders:[{column:'createtime',ascending:true}]
       });
@@ -367,6 +383,8 @@ export default function Culture(){
     },
     staleTime:5*60_000
   });
+  const keywordRiverPending=keywordDetailRequested?keywordDensityQuery.isPending:styleQuery.isPending;
+  const keywordRiverError=keywordDetailRequested?keywordDensityQuery.error:null;
   useEffect(()=>{
     setKeywordDrillSource('');
     setKeywordDrillGroup('');
@@ -406,12 +424,15 @@ export default function Culture(){
     },
     staleTime:5*60_000
   });
-  const keywordDrillItems=useMemo(()=>
-    keywordDrillGroup&&!keywordGroupCatalogQuery.data?[]
-      :keywordDrillRiverItems(keywordDensityQuery.data,{
-        source:keywordDrillSource,groupId:keywordDrillGroup,
-        meta:styleQuery.data?.keywordMeta,groupItems:keywordGroupCatalogQuery.data||[]
-      }),[keywordDensityQuery.data,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
+  const keywordDrillItems=useMemo(()=>{
+    if(keywordDetailRequested&&!keywordDensityQuery.data)return [];
+    if(keywordDrillGroup&&!keywordGroupCatalogQuery.data)return [];
+    return keywordDrillRiverItems(keywordDetailRequested
+      ?keywordDensityQuery.data:styleQuery.data?.classifications,{
+      source:keywordDrillSource,groupId:keywordDrillGroup,
+      meta:styleQuery.data?.keywordMeta,groupItems:keywordGroupCatalogQuery.data||[]
+    });
+  },[keywordDetailRequested,keywordDensityQuery.data,styleQuery.data?.classifications,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===(
@@ -1180,13 +1201,13 @@ export default function Culture(){
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
-                  {keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
-                    ?<p className='scope-status' role='status'>正在讀取已儲存的文章屬性…</p>:null}
+                  {keywordDetailRequested&&keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
+                    ?<p className='scope-status' role='status'>正在讀取所選來源／群組的文章屬性…</p>:null}
                   {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
-                  {keywordDensityQuery.error||keywordGroupCatalogQuery.error
-                    ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
-                  {!keywordDensityQuery.isPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
-                    &&!keywordDensityQuery.error&&!keywordGroupCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
+                  {keywordRiverError||keywordGroupCatalogQuery.error
+                    ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordRiverError||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
+                  {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
+                    &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
                     key={keywordDrillSource+'|'+keywordDrillGroup}
                     items={keywordDrillItems}
                     labelOf={emptyRiverLabel}
@@ -1200,8 +1221,8 @@ export default function Culture(){
                       if(!keywordDrillGroup)setKeywordDrillGroup(key);
                     }}
                   />:null}
-                  {!keywordDensityQuery.isPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
-                    &&!keywordDensityQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
+                  {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
+                    &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
