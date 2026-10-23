@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.chartTypes',chartTypesZh);
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 
 // Defer Galaxy's data/query engine until the selected statistics mode needs it.
 const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
@@ -23,10 +23,13 @@ import {selectRows} from '../../loc/db-query.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
-import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {FeaturePage} from '../ui';
+import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import {workDisplayHeading,workDisplayText} from '../work-display-model';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
+import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
@@ -41,6 +44,7 @@ const MediaCrossTagStatistics=dynamic(()=>import('../modules/statistics/MediaCro
 const MediaFacetStatistics=dynamic(()=>import('../modules/statistics/MediaFacetStatistics'),{loading:()=>null});
 const ScopeGroupStatistics=dynamic(()=>import('../modules/statistics/ScopeGroupStatistics'),{loading:()=>null});
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
+const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import StatisticsChartFrame from '../modules/statistics/StatisticsChartFrame';
 import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
@@ -104,13 +108,88 @@ function rowsInWindow(rows=[],range={}){
     return day&&day>=startDate&&day<=endDate;
   }),startDate,endDate,bucket};
 }
-function SummaryList({rankingType,summary}){
+function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
+  const [selectedUid,setSelectedUid]=useState('');
+  const group=Array.isArray(sourceNames);
+  const worksQuery=useInfiniteQuery({
+    queryKey:['statistics-source-articles',scope.id,startDate,endDate,sourceNames],
+    initialPageParam:null,
+    queryFn:async({pageParam})=>{
+      const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
+      const index=await selectScopePeriodWorkIndex(scope,{
+        startDate,endDate,
+        sourceName:group?'statistics-source':'',
+        sourceNames:sourceNames||[],
+        limit:DEFAULT_LIST_BATCH_SIZE,cursor:pageParam
+      });
+      const {rows}=await selectScopePeriodWorkDetails(scope,{items:index.rows});
+      const next=index.nextCursor;
+      return {rows,totalCount:index.totalCount,nextCursor:next,
+        hasMore:Number(next.galaxyOffset||0)+Number(next.mediaOffset||0)<Number(index.totalCount||0)};
+    },
+    getNextPageParam:page=>page.hasMore?page.nextCursor:undefined,
+    staleTime:5*60_000
+  });
+  const bodyQuery=useQuery({
+    queryKey:['statistics-source-article-body',scope.id,selectedUid],
+    enabled:Boolean(selectedUid),
+    queryFn:async()=>{
+      const {selectGalaxyContent}=await loadGalaxyStatistics();
+      const result=await selectGalaxyContent(scope,selectedUid);
+      if(!result)throw new Error('找不到文章內容');
+      return workDisplayText(result.content||'');
+    },
+    staleTime:5*60_000
+  });
+  const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
+  return <div className="scope-stat-source-works">
+    <p className="scope-status">{group?'此來源的文章列表':'全部作品列表（含多媒體）'} · {startDate} ～ {endDate}</p>
+    {worksQuery.isPending?<p className="scope-status" role="status">Loading...</p>:null}
+    {worksQuery.error?<p className="scope-status scope-error">
+      {featureDataErrorMessage(worksQuery.error)} <button type="button" className="loc-button" onClick={()=>worksQuery.refetch()}>重新讀取</button>
+    </p>:null}
+    <IncrementalList
+      items={works}
+      batchSize={DEFAULT_LIST_BATCH_SIZE}
+      resetKey={scope.id+'|'+startDate+'|'+endDate+'|'+(sourceNames||[]).join('|')}
+      className="scope-culture-source-work-scroll"
+      loading={worksQuery.isFetchingNextPage}
+      externalHasMore={Boolean(worksQuery.hasNextPage)}
+      onLoadMore={()=>worksQuery.fetchNextPage()}
+      renderItem={(work,index)=><Article
+        key={work.key||work.uid||work.entry_id||index}
+        uid={work.uid}
+        title={workDisplayHeading(work,{media:false,limit:80})}
+        source={work.source_name||work.group_label||''}
+        scopeId={work.scope_id||scope.id}
+        date={work.display_date||String(work.createtime||'').slice(0,10)}
+        body={work.description||work.media_metadata_text||''}
+        relationLinks={galaxyRelationLinks(scope.id,work)}
+        links={work.links||[]}
+      >{work.uid?<WorkFullText
+        open={selectedUid===String(work.uid)}
+        loading={selectedUid===String(work.uid)&&bodyQuery.isPending}
+        error={selectedUid===String(work.uid)&&bodyQuery.error?featureDataErrorMessage(bodyQuery.error):''}
+        content={selectedUid===String(work.uid)?bodyQuery.data||'':''}
+        onToggle={()=>setSelectedUid(old=>old===String(work.uid)?'':String(work.uid))}
+      />:null}</Article>}
+    />
+    {!worksQuery.isPending&&!worksQuery.error&&!works.length?<p className="scope-status">此區間沒有可顯示的作品。</p>:null}
+  </div>;
+}
+function SummaryList({rankingType,summary,scope,range}){
   const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
-    ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total}]
+    ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total,sourceNames:null}]
     :summary.sources;
   return <div className="scope-ranking">
-    {rows.map(row=><div key={row.term}><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></div>)}
+    {rows.map(row=><div key={row.category||row.term} style={{display:'block'}}>
+      <StatisticsDetails className="scope-stat-details" summary={<><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>}>
+        {()=> <SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
+          scope={scope} startDate={range.startDate} endDate={range.endDate}
+          sourceNames={row.sourceNames}/>}
+      </StatisticsDetails>
+    </div>)}
   </div>;
 }
 function facetTotals(rows=[]){
@@ -297,7 +376,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // The existing source breakdown already drives the chart and its summary.
   // Do not re-scan Galaxy and Galaxy Media in a second trend query.
   const sourceSummary={total:adminSource.total,
-    sources:adminSource.distribution.map(row=>({term:row.name,item_count:row.value})),
+    sources:adminSource.distribution.map((row,index)=>{
+      // Category codes and labels share the same order in administrativeSourceTrend.
+      const category=String(adminSource.series[index]?.key||'').replace(/^category_/,'');
+      const sourceNames=[...new Set((sourceRows.data||[])
+        .filter(entry=>entry.kind==='source'&&assignedSource(entry.category,
+          sourceCatalog.data?.aliases||[],sourceCatalog.data?.categories||[])===category)
+        .map(entry=>String(entry.category??'').trim()))];
+      return {term:row.name,item_count:row.value,category,sourceNames};
+    }),
     startDate:queryRange.startDate,endDate:queryRange.endDate
   };
   // Media Style facets and cross-tag relationships are projections of one
@@ -383,7 +470,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           height={420}
         />
       </StatisticsChartFrame>
-      <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}/>}</StatisticsDetails>
+      <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}
+        scope={targetScopes[0]} range={queryRange}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>rankingType==='media_style'?crossTagQuery.refetch():mediaQuery.refetch()} disabled={mediaFetching}>
