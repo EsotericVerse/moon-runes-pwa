@@ -15,7 +15,7 @@ import {loadGameData} from './game-data.js';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {useAccount,usePassiveSessionAccount} from '../../loc/use-account';
 import ManagementSectionNav from '../../modular/ManagementSectionNav';
-import {resolveHomeImage,heroSideClass} from '../../loc/LocHomeBlockDisplay';
+import {resolveHomeImage} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
 
 const LABELS=['A','B','C','D'];
@@ -522,7 +522,7 @@ function GameHomeHero({data=null,editing=false,onEditorExit=null}){
     orders={[1]}
     slotTag="header"
     slotClassName="lrg-home-hero"
-    resolveSlotClassName={slot=>'lrg-home-hero'+heroSideClass(slot,'lrunes','lrg-home-hero--side')}
+    resolveSlotClassName={()=> 'lrg-home-hero'}
     editSlotClassName="loc-card loc-home-block"
     containerless
     placeholderFirstOrder={1}
@@ -618,6 +618,9 @@ export default function GameBoard(){
     [{value:'edit',label:'Hero 編輯中',description:'儲存或取消後返回遊戲首頁'}]:sections;
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
+      <GameHomeHero key={section==='edit'?'editing':'display'} data={data}
+        editing={section==='edit'&&authorizedEdit}
+        onEditorExit={()=>{setAuthorizedEdit(false);setSection('play');}}/>
       <div className="management-workspace lrg-home-workspace">
         <ManagementSectionNav id="game-home-sections" title="遊戲選單"
           panelId="game-home-panel" items={visibleSections} value={section}
@@ -627,7 +630,6 @@ export default function GameBoard(){
           {editError?<Alert severity="warning" role="alert">{editError}</Alert>:null}
           {checkingEdit?<Alert severity="info" role="status">正在驗證 Hero 編輯權限…</Alert>:null}
           {section==='play'?<>
-            <GameHomeHero data={data}/>
             <Paper className="lrg-setup">
               <Typography variant="h6" component="h2">建立本機對局</Typography>
               <Typography variant="body2" color="text.secondary">同一裝置依序操作 A–D 玩家，不需要登入，也不寫入私人對局資料。</Typography>
@@ -644,8 +646,7 @@ export default function GameBoard(){
           </>:null}
           {['rules','events','roles','actions'].includes(section)?
             <DocsPanel key={section} data={data} section={section}/>:null}
-          {section==='edit'&&authorizedEdit?
-            <GameHomeHero data={data} editing onEditorExit={()=>{setAuthorizedEdit(false);setSection('play');}}/>:null}
+          {section==='edit'&&authorizedEdit?<p className="scope-status">請在上方編輯遊戲 Hero。</p>:null}
         </div>
       </div>
     </main>
