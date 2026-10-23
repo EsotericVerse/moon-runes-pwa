@@ -1,7 +1,6 @@
 'use client';
 
 import {useState} from 'react';
-import {useRouter} from 'next/navigation';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
@@ -10,7 +9,6 @@ import {useAccount} from './use-account';
 // No identity or management query runs until the visitor selects it.
 export default function ScopeHomeEditEntry(){
   const {scopeId}=useScopeRuntime();
-  const router=useRouter();
   const account=useAccount({enabled:false});
   const editDock=useEditDock();
   const [busy,setBusy]=useState(false);
@@ -30,15 +28,10 @@ export default function ScopeHomeEditEntry(){
         setMessage('目前帳號沒有此 Scope 的編輯權限。');
         return;
       }
-      const pathname=window.location.pathname;
-      const query=new URLSearchParams(window.location.search);
-      // Preserve scopeid on the generic Scope shell. Never switch ownership.
-      if(pathname?.startsWith('/scope-shell'))query.set('scopeid',scopeId);
-      query.set('edit','1');
+      // The homepage editor is mounted on this same Scope homepage.
+      // Only switch its authorized UI state; never navigate to a new URL.
+      // This also preserves the dynamic Scope shell's existing scopeid query.
       editDock?.begin(scopeId);
-      // Capacitor serves a static index.html. Navigating that file again would
-      // reload the app and discard the authorized in-memory editing session.
-      if(!/\/index\.html$/i.test(pathname))router.push(pathname+'?'+query.toString());
     }catch(error){
       setMessage(String(error?.message||'無法確認編輯權限。'));
     }finally{
