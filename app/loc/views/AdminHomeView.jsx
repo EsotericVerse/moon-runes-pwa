@@ -20,6 +20,7 @@ const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(m
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組與人員',description:'管理群組、人員及所屬關係。'},
+  {value:'reserved',label:'保留 Scope ID',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
   {value:'sources',label:'統計來源分類',description:'整理統計資料使用的來源名稱與分類。'},
   {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
   {value:'featureHero',label:'功能區塊',description:'編輯各功能頁的標題、說明與首圖。'},
@@ -37,6 +38,7 @@ function Login({account}){
 }
 
 const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
+const AdminReservedScopeIds=dynamic(()=>import('./admin-panels/AdminReservedScopeIds'),{loading:PanelLoading});
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
@@ -61,6 +63,7 @@ export default function AdminHomeView(){
       <div className="management-workspace-panel" id="admin-management-panel" role="region"
         aria-labelledby={'admin-sections-option-'+selectedOption.value}>
         {section==='registry'?<AdminRegistryPanel/>:null}
+        {section==='reserved'?<AdminReservedScopeIds/>:null}
         {section==='sources'?<AdminSourceCategories/>:null}
         {section==='themes'?<ThemeEditor/>:null}
         {section==='system'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
