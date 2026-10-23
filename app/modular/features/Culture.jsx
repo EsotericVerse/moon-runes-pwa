@@ -19,6 +19,8 @@ import {useSearchParams} from 'next/navigation';
 import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
+import ManagementSectionNav from '../ManagementSectionNav';
+import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
@@ -46,6 +48,11 @@ function isInteractiveTarget(target){
 
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
+const TIME_EDITOR_SECTIONS=Object.freeze([
+  {value:'anchor-style',label:'定錨點／風格標籤',description:'編輯日期定錨點與依附定錨點的風格標籤。'},
+  {value:'event',label:'事件',description:'編輯以正式定錨點界定的事件。'},
+  {value:'period',label:'時期',description:'編輯時期與起訖定錨點。'}
+]);
 const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
@@ -167,10 +174,13 @@ export default function Culture(){
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
-  const account=useAccount({enabled:searchParams?.get('edit')==='1'});
+  const isTimeEditingView=searchParams?.get('edit')==='1';
+  const account=useAccount({enabled:isTimeEditingView});
+  const editDock=useEditDock();
+  const [timeEditorSection,setTimeEditorSection]=useState('anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
-  const isLrunesDaily=scopeId==='lrunes'&&lrunesView==='daily';
+  const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
   const isLocItemView=scopeId==='loc'&&locCultureView==='item';
   const queryClient=useQueryClient();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
@@ -212,12 +222,16 @@ export default function Culture(){
   // a tap meant to just read the river must never fall straight into edit mode.
   const [timelineEditMode,setTimelineEditMode]=useState(false);
   useEffect(()=>{
-    if(searchParams?.get('edit')!=='1'){
-      setTimelineEditMode(false);
-      return;
-    }
-    if(account.user&&account.canManageScopeSync(scopeId))setTimelineEditMode(true);
-  },[searchParams,account.user,account.authorizer,scopeId]);
+    const permitted=isTimeEditingView&&Boolean(account.user)&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId);
+    setTimelineEditMode(permitted);
+    if(permitted)editDock?.begin(scopeId);
+  },[isTimeEditingView,account.user,account.loading,account.permissionLoading,account.authorizer,scopeId,editDock?.begin]);
+  useEffect(()=>{
+    setSelectedTimelineRecordId('');
+    setSelectedTimelineInfo(null);
+    setSelectedTimelineDate('');
+    setSuggestedRequestNonce(0);
+  },[timeEditorSection]);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -454,6 +468,11 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
+  const timeEditorItems=useMemo(()=>timelineItems.filter(item=>
+    timeEditorSection==='anchor-style'
+      ?['anchor','style_comment'].includes(item.entry_type)
+      :item.entry_type===timeEditorSection
+  ),[timelineItems,timeEditorSection]);
   const currentStructurePeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
@@ -818,6 +837,73 @@ export default function Culture(){
     }finally{
       setFullTextLoading(false);
     }
+  }
+
+  // The dedicated management entry is already in edit mode. Only its selected
+  // record kind appears on the right, with the same native zoom/pan controls.
+  if(isTimeEditingView){
+    const authorized=Boolean(account.user)&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId);
+    const choice=TIME_EDITOR_SECTIONS.find(item=>item.value===timeEditorSection)||TIME_EDITOR_SECTIONS[0];
+    return <FeaturePage featureId="culture">
+      <section className='loc-card scope-feature-card scope-feature-card-wide'>
+        <h2>時間編輯</h2>
+        {account.loading||account.permissionLoading?<p className='scope-status' role='status'>正在確認管理權限…</p>:null}
+        {!account.loading&&!account.permissionLoading&&!authorized?<p className='scope-status scope-error' role='alert'>請登入具有此 Scope 管理權限的帳號。</p>:null}
+        {authorized?<div className='management-workspace scope-time-edit-workspace'>
+          <ManagementSectionNav id='time-editor-sections' title='編輯項目'
+            panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
+            value={timeEditorSection} onChange={setTimeEditorSection}/>
+          <div className='management-workspace-panel' id='time-editor-panel' role='region'
+            aria-labelledby={'time-editor-sections-option-'+choice.value}>
+            <div className='scope-culture-timeline-tools'>
+              <h3>{choice.label}｜時間長河</h3>
+              <div className='scope-stat-controls'>
+                {timeEditorSection==='anchor-style'?<>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 定錨點</button>
+                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>＋ 風格標籤</button>
+                </>:<button type='button' className='loc-button' onClick={()=>beginTimelineCreation(timeEditorSection,'')}>＋ {choice.label}</button>}
+              </div>
+            </div>
+            {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
+            {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
+            {!query.isPending&&!query.error?<CultureTimeline
+              key={'time-editor-'+timeEditorSection}
+              items={timeEditorItems}
+              labelOf={localizedLabelOf}
+              focus={EMPTY_RIVER_FOCUS}
+              mode='overview'
+              windowStart={currentStructureStart}
+              windowEnd={currentStructureEnd}
+              onTimeClick={timeEditorSection==='anchor-style'?date=>beginTimelineCreation('anchor',date):null}
+              onSelect={item=>{
+                setSelectedTimelineInfo(item||null);
+                setSelectedTimelineRecordId(String(item?.recordId||''));
+                setSelectedTimelineDate('');
+              }}
+              editable
+              onMove={moveTimelineRecord}
+              onUpdate={(item,row)=>{
+                if(row?.recordId)setSelectedTimelineRecordId(row.recordId);
+                return null;
+              }}
+              onRemove={removeTimelineRecord}
+            />:null}
+            {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
+              <strong>{selectedTimelineInfo.content||selectedTimelineInfo.title||'時間紀錄'}</strong>
+              <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
+            </div>:null}
+            {Boolean(selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate'))?
+              <CultureTimelineEditor scopeId={scopeId}
+                selectedRecordId={selectedTimelineRecordId}
+                suggestedAnchorDate={selectedTimelineDate}
+                suggestedRecordType={suggestedRecordType}
+                suggestedRequestNonce={suggestedRequestNonce}
+                onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSuggestedRequestNonce(0)}}/>:null}
+            {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
+          </div>
+        </div>:null}
+      </section>
+    </FeaturePage>;
   }
 
   return <FeaturePage featureId="culture">
