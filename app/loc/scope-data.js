@@ -63,16 +63,23 @@ export function scopeDataFromManageRows(rows=[]){
   return [...scopes.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }
 
-export async function selectManagedScopes(){
-  const {rows}=await selectRows(MANAGE_TABLE,{
+// Public Scope-to-table metadata is stable during ordinary browsing. Share the
+// same completed request across Culture/Confluence readers and across route
+// changes. This is NOT an authorization cache; writes still enforce RLS.
+let managedScopesRequest=null;
+export function selectManagedScopes(){
+  if(managedScopesRequest)return managedScopesRequest;
+  managedScopesRequest=selectRows(MANAGE_TABLE,{
     columns:MANAGE_COLUMNS,
     filters:[{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
-    offset:0,
-    authenticated:true
+    offset:0
+  }).then(({rows})=>scopeDataFromManageRows(rows)).catch(error=>{
+    managedScopesRequest=null;
+    throw error;
   });
-  return scopeDataFromManageRows(rows);
+  return managedScopesRequest;
 }
 
 function normalizeRegistryRow(row){
@@ -91,10 +98,26 @@ function normalizeRegistryRow(row){
 // silver.scope_registry 已停用：registry 列表改由 read_app_bootstrap RPC
 // 動態組出（來源是 silver.loc 的指向欄位 + 各節點自己的 display_name），
 // 回傳格式跟舊版 scope_registry 查詢完全相同，呼叫端不需要改動。
+// One public site snapshot per client runtime (including concurrent mounts).
+// Registry, theme catalogue and page-copy are shared by all Scope pages.
+let publicSiteBootstrapRequest=null;
+export function selectPublicSiteBootstrap(){
+  if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
+  publicSiteBootstrapRequest=dbPublicClient.schema('silver')
+    .rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'})
+    .then(({data,error})=>{
+      if(error)throw error;
+      return data||{};
+    }).catch(error=>{
+      publicSiteBootstrapRequest=null;
+      throw error;
+    });
+  return publicSiteBootstrapRequest;
+}
+
 async function fetchRegistryRows(){
-  const {data,error}=await dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
-  if(error)throw error;
-  return Array.isArray(data?.registry)?data.registry:[];
+  const data=await selectPublicSiteBootstrap();
+  return Array.isArray(data.registry)?data.registry:[];
 }
 
 export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}){
@@ -151,15 +174,10 @@ export async function selectScopeGroupChildren(scopeId='loc'){
 export async function selectManagedScope(scopeId){
   const id=String(scopeId||'').trim();
   if(!SCOPE_ID_PATTERN.test(id))throw new Error('Scope ID 無效');
-  const {rows}=await selectRows(MANAGE_TABLE,{
-    columns:MANAGE_COLUMNS,
-    filters:[{column:'id',operator:'eq',value:id},{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
-    orders:[{column:'id',ascending:true}],
-    limit:DB_QUERY_BATCH_SIZE,
-    offset:0,
-    authenticated:true
-  });
-  return scopeDataFromManageRows(rows)[0]||null;
+  // Reuse the identical public metadata snapshot instead of SELECT silver.loc
+  // once more for every individual Scope. Never use this as a permission check.
+  const scopes=await selectManagedScopes();
+  return scopes.find(scope=>scope.id===id)||null;
 }
 
 

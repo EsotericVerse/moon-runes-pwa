@@ -326,7 +326,8 @@ export async function selectScopeCultureData(scopeId){
       const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(bundle.scope,{
         startDate:intersectionStart,
         endDate:today,
-        includeEmptyMedia:true
+        includeEmptyMedia:true,
+        requireAggregate:true
       });
       return [
         ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId})),
@@ -380,7 +381,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   if(!scopeId)throw new Error('scopeId is required');
   // The database counts per day and category (undated rows included, day ''); category
   // totals and daily density are two projections of the same exact counts.
-  const counted=await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true});
+  const counted=await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true,requireAggregate:true});
   const summarize=(rows,includeEmpty)=>{
     const catalog=new Map(),daily=[];
     for(const row of rows){

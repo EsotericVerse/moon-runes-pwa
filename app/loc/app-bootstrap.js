@@ -2,14 +2,12 @@
 
 import {useQuery} from '@tanstack/react-query';
 import {dbPublicClient} from './db-client.mjs';
-import {selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
+import {selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
 
-// ONE request per page. React Query dedupes every consumer that asks for the
-// same (scopeId, pageName) under this one key, so the Scope Registry, NAV
-// titles, Themes, the Scope's own configuration and that page's blocks arrive
-// together instead of as separate round trips from the shell, the Theme menu,
-// the NAV labels and the page's own editable blocks.
+// Shared public site snapshot (Registry/Theme/page copy) is fetched once per
+// client runtime. Each Scope page fetches only its own config and page blocks.
+// React Query deduplicates consumers of the same (scopeId, pageName) key.
 const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
 const PAGE_NAME=/^[a-z0-9_-]+$/;
 let bootstrapRpcInstalled=true;
@@ -41,19 +39,25 @@ export async function selectAppBootstrap(scopeId,pageName='index'){
   const [,id,page]=appBootstrapKey(scopeId,pageName);
   if(bootstrapRpcInstalled){
     try{
-      const {data,error}=await dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:id,p_page_name:page});
-      if(error)throw error;
+      const site=await selectPublicSiteBootstrap();
+      // The LOC homepage is the site snapshot itself. Other pages do not
+      // repeat its silver.loc Registry/page-copy/Theme reads.
+      const [config,blocks]=id==='loc'&&page==='index'
+        ?[site.config||null,Array.isArray(site.blocks)?site.blocks:[]]
+        :await Promise.all([
+          id?(id==='loc'?Promise.resolve(site.config||null):selectScopeConfig(id)):Promise.resolve(null),
+          id?selectScopeBlocks(id,page):Promise.resolve([])
+        ]);
       return {
-        scope_id:String(data?.scope_id||id),
-        page_name:String(data?.page_name||page),
-        config:data?.config||null,
-        blocks:Array.isArray(data?.blocks)?data.blocks:[],
-        registry:Array.isArray(data?.registry)?data.registry:[],
-        page_copy:Array.isArray(data?.page_copy)?data.page_copy:[],
-        // The function returns the raw numeric Theme key (1..8); the UI works
-        // with 'theme-N' identifiers, exactly as selectThemeRegistry returns.
-        theme_list:(Array.isArray(data?.theme_list)?data.theme_list:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)})),
-        themes:(Array.isArray(data?.themes)?data.themes:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)}))
+        scope_id:id,
+        page_name:page,
+        config,
+        blocks,
+        registry:Array.isArray(site.registry)?site.registry:[],
+        page_copy:Array.isArray(site.page_copy)?site.page_copy:[],
+        // Site Themes use numeric IDs in PostgreSQL and theme-N in the UI.
+        theme_list:(Array.isArray(site.theme_list)?site.theme_list:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)})),
+        themes:(Array.isArray(site.themes)?site.themes:[]).map(row=>({...row,theme_id:themeUiId(row.theme_id)}))
       };
     }catch(error){
       if(!missingRpc(error))throw error;

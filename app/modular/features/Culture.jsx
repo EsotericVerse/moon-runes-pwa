@@ -194,6 +194,7 @@ export default function Culture(){
   const [articleSort,setArticleSort]=useState('desc');
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
+  const [keywordOptionsRequested,setKeywordOptionsRequested]=useState(false);
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
@@ -230,6 +231,7 @@ export default function Culture(){
 
   useEffect(()=>{
     setStyleFilter('none');
+    setKeywordOptionsRequested(false);
     setKeywordPeriodKey('latest');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
@@ -324,7 +326,9 @@ export default function Culture(){
   });
   const keywordClassQuery=useQuery({
     queryKey:['scope-active-keyword-class-name',scopeId],
-    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
+    // Opening/focusing the style selector is the first reason to look up
+    // the active Class. Ordinary Time River viewing performs no keyword SQL.
+    enabled:keywordOptionsRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
     queryFn:async()=>{
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
@@ -1021,7 +1025,7 @@ export default function Culture(){
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-stat-controls'>
-                  {keywordClassQuery.error?<span className='scope-status scope-error' role='status'>
+                  {keywordOptionsRequested&&keywordClassQuery.error?<span className='scope-status scope-error' role='status'>
                     關鍵詞組讀取失敗：{featureDataErrorMessage(keywordClassQuery.error,UI_COPY)}
                   </span>:null}
                   <>
@@ -1074,9 +1078,12 @@ export default function Culture(){
                   </label>
                   {!isAggregateScope&&!isLrunesDaily&&!isLocItemView?<label className='scope-culture-period-select'>
                     <span><UiText id="uiExtra.cultureView.style"/></span>
-                    <select className='scope-select' value={styleFilter} onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
+                    <select className='scope-select' value={styleFilter}
+                      onFocus={()=>setKeywordOptionsRequested(true)}
+                      onPointerDown={()=>setKeywordOptionsRequested(true)}
+                      onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
                       <option value='none'><UiText id="uiExtra.cultureView.noFilter"/></option>
-                      <option value='rune66' disabled={!keywordClassQuery.data}>{keywordClassLabel}</option>
+                      <option value='rune66' disabled={!keywordClassQuery.data}>{keywordOptionsRequested?keywordClassLabel:'關鍵詞組（點選載入）'}</option>
                     </select>
                   </label>:null}
                   {styleFilter==='rune66'&&Boolean(styleQuery.data?.keywordMeta?.classes)?<label className='scope-culture-period-select'>

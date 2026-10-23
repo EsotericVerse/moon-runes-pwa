@@ -91,7 +91,7 @@ async function scopeDailyCounts(current,range){
 // Per-Scope daily category counts for text works and media, computed by the
 // database. includeEmptyMedia keeps media rows without a type; includeUndated
 // keeps rows without a date (their day is '').
-export async function selectScopeDailyCounts(scope,{startDate='',endDate='',includeEmptyMedia=false,includeUndated=false}={}){
+export async function selectScopeDailyCounts(scope,{startDate='',endDate='',includeEmptyMedia=false,includeUndated=false,requireAggregate=false}={}){
   const current=scopeOf(scope);
   const counted=await scopeStatisticsRows(current,{startDate,endDate,includeUndated});
   const order=(a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category);
@@ -100,6 +100,9 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
       .map(row=>({day:row.day,category:row.category,item_count:Number(row.item_count)||0})).sort(order);
     return {text:pick('source'),media:pick('media')};
   }
+  // Culture must not silently download every Galaxy/Media timestamp when the
+  // aggregate RPC is unavailable; that can turn one chart into 1000s of rows.
+  if(requireAggregate)throw new Error('Culture requires silver.read_scope_statistics; full Galaxy fallback is disabled');
   const [text,media]=await Promise.all([
     selectDailyCategoryCounts(current.galaxy,'source_name',{
       startDate,endDate,filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
