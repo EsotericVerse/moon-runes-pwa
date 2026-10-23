@@ -32,7 +32,7 @@ import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
@@ -191,6 +191,7 @@ export default function Culture(){
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
+  const [articleSort,setArticleSort]=useState('desc');
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
@@ -414,7 +415,7 @@ export default function Culture(){
   ))||null;
   const effectiveCategoryKey=selectedGroup?.category_key||'';
   const periodWorksQuery=useInfiniteQuery({
-    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all'],
+    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
     enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
@@ -427,6 +428,7 @@ export default function Culture(){
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
         limit:DEFAULT_LIST_BATCH_SIZE,
+        sortDirection:articleSort,
         cursor:pageParam&&typeof pageParam==='object'?pageParam:null
       });
       const details=await selectScopePeriodWorkDetails(scopeData,{items:indexPage.rows||[]});
@@ -1190,15 +1192,16 @@ export default function Culture(){
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
-                  {worksOpen?<><header>
-                    {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:null}
+                  {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
+                    {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:<span/>}
+                    <ArticleSortSelect value={articleSort} onChange={setArticleSort} disabled={Boolean(editingWorkKey)}/>
                   </header>
                   {periodWorksPage.error?<p className='scope-status scope-error'>{featureDataErrorMessage(periodWorksPage.error,UI_COPY)} <button type='button' className='loc-button' onClick={periodWorksPage.reload}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
                   {periodWorksPage.loading&&!visibleWorkRows.length?<p role='status' className='scope-status'>{l.loadingPeriodWorks}</p>:null}
                   <IncrementalList
                     items={visibleWorkRows}
                     batchSize={DEFAULT_LIST_BATCH_SIZE}
-                    resetKey={classificationWindowStart+'|'+classificationWindowEnd+'|'+selectedCategory+'|source'}
+                    resetKey={classificationWindowStart+'|'+classificationWindowEnd+'|'+selectedCategory+'|source|'+articleSort}
                     className='scope-culture-source-work-scroll'
                     externalHasMore={periodWorksPage.hasMore}
                     loading={periodWorksPage.loading}
