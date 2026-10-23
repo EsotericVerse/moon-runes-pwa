@@ -12,46 +12,58 @@
 - **Group**（中層，目前程式碼叫 `class_group`，自由文字）：比對引擎直接拿這個字串當分組 key（`compileCatalog` 的 `row.group=class_group`）。符文66 的 9 個canonical值是 `靈魂/連結/生命/自然/礦物/元素/秩序/無序/特殊`。
 - **Item/Keyword**（底層）：`item_no`（數字，CHECK 用於排序與唯一性）、`item_name`、`principle`、`keywords`（jsonb 陣列）、`order_no`、`keyword_sha`（generated column）。
 
-這個命名跟使用者真正想要的三層模型是錯開一層的：使用者口述的「class」實際對應到現在程式碼的 Group（`class_group`，例如「靈魂組」），使用者口述的「group」實際對應到現在程式碼的 Item（例如「靈之符文」）。這次改版要把 schema 跟程式碼都改成使用者的命名與限制，並且要對所有 Class（不只符文66）通用，不能把符文66現有的 67 項、9 組這個特例寫死進判斷邏輯（這正是前一階段已修的 Bug#3 的同一類問題，現在要從「程式邏輯層的 ceiling 檢查」進一步擴大成「schema 層就有專屬欄位」）。
+使用者釐清後的最終理解：這其實就是一個**tree directory**——符文66不是跟樹分開的「總稱」，符文66本身就是這顆樹的名字（根節點）。一個scope最多可以有**8顆這種樹**（符文66、政德文化、Pop、Rock、Hip-Hop、Vocal 都各自是一顆樹；目前 lo3rwang 已有 6 顆，上限 8）。每顆樹往下永遠是固定3層，每一層都遵守同一個規則「名稱 = 它的子集合」：
 
-## 2. 新三層結構（使用者口述，以現有 Class 層為基準往下展開）
+- 樹本身（符文66）= {它的 class組}（例：符文66 = {靈魂組,連結組,...,特殊}；政德文化 = {音樂類,心情類,微月光,...}）
+- 每個 class組 = {它的 group項}（例：靈魂組 = {靈之符文,...}；音樂類 = {民歌風,動漫風,...}）
+- 每個 group項 = {它的 keywords}（例：民歌風 = {progressive pop, jpop}）
 
-### 2.1 Class 層（頂層，不變）
+沒有第4層、沒有無限延伸、沒有介於中間的「緩衝層」。使用者口述的「class」對應到現在程式碼裡 `class_group` 這個自由文字欄位所代表的那一層（例如「靈魂組」），使用者口述的「group」對應到現在程式碼的 Item（`item_no`/`item_name`，例如「靈之符文」）。`class_group`這個詞本身只是「classes的集合總稱」的口語講法，不是schema裡要另外設計的物件。
 
-維持現狀：`class_id`（uuid）、`class_name`（text）。這層識別「哪一套關鍵字庫版本」（符文66 / 政德文化 / Pop / ...），scope config 的 `current_keyword_class_id` 指向目前啟用的那一個，兩者都不在本次改版範圍內。
+其他scope可以用「scope_id + 樹名（class_name）」來複製一顆樹（例如引用 `lo3rwang` 的「符文66」這顆樹）。
 
-### 2.2 新 Class 層（使用者口述的「class」= 目前程式碼的 Group / `class_group`）
+這次改版要把 schema 跟程式碼都改成使用者的命名與限制，並且要對所有 Class（不只符文66）通用，不能把符文66現有的 67 項、9 組這個特例寫死進判斷邏輯（這正是前一階段已修的 Bug#3 的同一類問題，現在要從「程式邏輯層的 ceiling 檢查」進一步擴大成「schema 層就有專屬欄位」）。符文66目前的 9 組／67 項是這份作品自己的著作內容／示範資料，不是架構限制。
 
-取代現有自由文字 `class_group`，改成獨立欄位：
+## 2. 新三層結構
 
-| 新欄位 | 型態 | 說明 |
+### 2.1 樹根（符文66本身，即現有 Class 層，欄位不變、新增數量上限）
+
+維持現狀：`class_id`（uuid）、`class_name`（text）——這對欄位就是「這顆樹的名字」（符文66 / 政德文化 / Pop / ...），不是跟樹分開的總稱。scope config 的 `current_keyword_class_id` 指向目前啟用的那一顆樹，欄位本身不改、也不會被下面新增的欄位撞名。
+
+**新限制**：每個scope最多 **8 顆樹**（目前程式碼／DB對這個數量沒有上限，需要新增 CHECK 或應用層檢查）。
+
+### 2.2 class層（使用者口述的「class」= 目前程式碼的 `class_group` 自由文字，例如「靈魂組」）
+
+取代現有自由文字 `class_group`，改成獨立欄位。欄位命名要避開跟 2.1 既有的 `class_id`/`class_name` 撞名（實作時用新表或加前綴，例如 `class_group_id`/`class_group_name`/`class_group_order`，命名細節由實作階段決定，不改變語意）：
+
+| 新欄位（示意命名） | 型態 | 說明 |
 |---|---|---|
-| `class_id` | uid（約 4 位字母數字，仿 `galaxy.uid` 的 `^[A-Za-z0-9]{N}$` 風格），unique | 這一組（例如「靈魂組」）的識別碼 |
-| `class_name` | text | 例如「靈魂組」 |
-| `class_order` | integer | 純排序用，不是識別碼 |
+| id | uid（約 4 位字母數字，仿 `galaxy.uid` 的 `^[A-Za-z0-9]{N}$` 風格），unique | 這一組（例如「靈魂組」）的識別碼 |
+| name | text | 例如「靈魂組」；對應現有的 `class_group` 文字值 |
+| order | integer | 純排序用，不是識別碼 |
 
 限制：
 
-- 每個 Class（符文66、政德文化...）底下，這層最多 **8 個一般組 + 1 個預設/current 組 = 最多 9 個**，`class_order` 1–8 給一般組，`class_order=9` 固定給預設/current 組。
+- 每個 Class（符文66、政德文化...）底下，這層最多 **8 個一般組 + 1 個預設/current 組 = 最多 9 個**，order 1–8 給一般組，order=9 固定給預設/current 組。
 - 這是「上限」不是「必須湊滿」：少於 8 個一般組是合法的（符文66目前的靈魂/連結/生命/自然/礦物/元素/秩序/無序＋特殊=8+1=9；但政德文化只有 6 個、Hip-Hop 5 個、Rock/Vocal 3 個，這些都要能正常跑，不能要求湊到 8 或 9）。
-- `class_order=9`（預設/current 組）的 `class_name` 可自訂（不強制叫「特殊」），每個 Class 自己決定名稱。
-- Schema 要擴充（新增上述三欄），程式碼原本「湊滿 9 組才能跑」的判斷邏輯要改成「最多 9 組（1–9 皆合法）」——這點銜接上一階段已經在 `buildClassMap` 做的 ceiling 修正，這次要把它從「用文字比對 CANONICAL_CLASS_GROUP_ORDER 推出順序」改成「直接讀 `class_order` 欄位」。
+- 預設/current 組（order=9）的名稱可自訂（不強制叫「特殊」），每個 Class 自己決定。
+- Schema 要擴充（新增上述欄位），程式碼原本「湊滿 9 組才能跑」的判斷邏輯要改成「最多 9 組（1–9 皆合法）」——銜接上一階段已在 `buildClassMap` 做的 ceiling 修正，這次改成直接讀 order 欄位，不再用文字比對 `CANONICAL_CLASS_GROUP_ORDER` 推順序。
 
-### 2.3 新 Group 層（使用者口述的「group」= 目前程式碼的 Item，例如「靈之符文」）
+### 2.3 group層（使用者口述的「group」= 目前程式碼的 Item，例如「靈之符文」）
 
 取代現有 `item_no` / `item_name` / `order_no`：
 
-| 新欄位 | 型態 | 說明 |
+| 新欄位（示意命名） | 型態 | 說明 |
 |---|---|---|
-| `group_id` | uid（約 4 位字母數字），unique | 取代 `item_no`（目前是數字） |
-| `group_name` | text | 取代 `item_name`，例如「靈之符文」 |
-| `group_order` | integer | 純排序用，取代 `order_no` |
+| group_id | uid（約 4 位字母數字），unique | 取代 `item_no`（目前是數字） |
+| group_name | text | 取代 `item_name`，例如「靈之符文」 |
+| group_order | integer | 純排序用，取代 `order_no` |
 
-限制：**數量不限**。每個新 Class（2.2）底下可以有任意多個新 Group，不設上限（符文66目前 0–66 共 67 項，其他 Class 項數各不相同，維持現狀的彈性）。
+限制：**數量不限**。每個class層底下（2.2）可以有任意多個group項，不設上限（符文66目前 0–66 共 67 項，其他 Class 項數各不相同，維持現狀的彈性）。
 
 ### 2.4 Keywords（底層，不變）
 
-屬於某個新 Group 的「關鍵字跟規則」：`keywords`（jsonb）、`principle`、`keyword_sha`（generated）維持現狀，不改名、不改型態。
+屬於某個group項的「關鍵字跟規則」：`keywords`（jsonb）、`principle`、`keyword_sha`（generated）維持現狀，不改名、不改型態。
 
 ### 2.5 關鍵詞的本質（設計理念，非 schema 變更）
 
