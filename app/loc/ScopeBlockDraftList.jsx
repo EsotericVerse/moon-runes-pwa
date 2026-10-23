@@ -309,14 +309,16 @@ export default function ScopeBlockDraftList({
     isBusy:()=>busy,discard:onCancel
   };
   useEffect(()=>{
-    if(!editDock?.active)return undefined;
+    // Admin can also be opened directly, without homepage Edit mode.
+    // Mounted drafts still participate in the same unsaved-change guard.
+    if(!editDock?.register)return undefined;
     return editDock.register({
       save:options=>dockActions.current.save(options),
       discard:()=>dockActions.current.discard(),
       isDirty:()=>dockActions.current.isDirty(),
       isBusy:()=>dockActions.current.isBusy()
     });
-  },[editDock?.active,editDock?.register]);
+  },[editDock?.register]);
 
   const visibleDrafts=drafts.filter(draft=>!draft._deleted);
   return <>
