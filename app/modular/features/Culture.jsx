@@ -204,12 +204,11 @@ export default function Culture(){
   const keywordWindowValid=/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowStart)
     &&/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowEnd)
     &&keywordWindowStart<=keywordWindowEnd;
-  const classificationWindowStart=styleFilter==='rune66'?keywordWindowStart:selectedWindowStart;
-  const classificationWindowEnd=styleFilter==='rune66'?keywordWindowEnd:selectedWindowEnd;
-  const classificationWindowValid=styleFilter!=='rune66'||keywordWindowValid;
-  const classificationPeriodLabel=styleFilter!=='rune66'
-    ?localizedLabelOf(selectedWorkPeriod,0)
-    :keywordPeriodKey==='custom'?'自訂區間':localizedLabelOf(keywordPeriod,0);
+  const classificationWindowStart=keywordWindowStart;
+  const classificationWindowEnd=keywordWindowEnd;
+  const classificationWindowValid=keywordWindowValid;
+  const classificationPeriodLabel=keywordPeriodKey==='custom'
+    ?'自訂區間':localizedLabelOf(keywordPeriod,0);
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -253,6 +252,11 @@ export default function Culture(){
     enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&keywordWindowValid,
     staleTime:5*60_000
   });
+  // Show a single loading signal until both visible density streams resolve.
+  const riverRangeLoading=classificationWindowValid&&(
+    sourceSnapshotQuery.isFetching||
+    (styleFilter==='rune66'&&styleQuery.isFetching)
+  );
   const styleClassRiverItems=useMemo(()=>{
     const classifications=(styleQuery.data?.classifications||[])
       .filter(row=>row?.status==='classified'&&row?.classification_group&&row?.date);
@@ -867,7 +871,7 @@ export default function Culture(){
                       <option value='rune66'><UiText id="uiExtra.cultureView.keywordClass"/></option>
                     </select>
                   </label>:null}
-                  {scopeId==='lo3rwang'&&styleFilter==='rune66'?<>
+                  <>
                     <label className='scope-culture-period-select'>
                       <span>時間區間</span>
                       <select className='scope-select' aria-label='關鍵詞時間區間'
@@ -897,7 +901,8 @@ export default function Culture(){
                           onChange={event=>setKeywordCustomEnd(event.target.value)}/>
                       </label>
                     </>:null}
-                  </>:null}
+                  </>
+                  {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{classificationPeriodLabel}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
@@ -905,7 +910,7 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
-                <div className='scope-culture-anchor-actions'>
+                {!riverRangeLoading?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
                     <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
@@ -924,8 +929,8 @@ export default function Culture(){
                     </div>
                   </details>:null}
                               {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
-                </div>
-                {classificationRiverItems.length?<CultureTimeline
+                </div>:null}
+                {!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
                   labelOf={classificationRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
@@ -950,11 +955,11 @@ export default function Culture(){
                   <p className='loc-eyebrow'>表現風格 · {String(styleQuery.data?.keywordMeta?.class_name||'關鍵詞 Class')}</p>
                   <h4>關鍵詞密度時間長河</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
-                  {keywordWindowValid&&styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
+                  {keywordWindowValid&&styleQuery.isPending&&!riverRangeLoading?<p className='scope-status'>Loading...</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
-                  {keywordWindowValid&&!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
+                  {!riverRangeLoading&&keywordWindowValid&&!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
                     items={styleClassRiverItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
