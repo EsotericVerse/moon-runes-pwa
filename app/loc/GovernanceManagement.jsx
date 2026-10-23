@@ -25,7 +25,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const canManageHere=account.canManageScopeSync(routeScopeId);
   const [section,setSection]=useState('settings');
   const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
-  if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
+  if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   return <FeaturePage featureId="manage">
 
