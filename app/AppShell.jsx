@@ -359,17 +359,18 @@ function AppShellInner({children}){
   const editSection=typeof window!=='undefined'
     ?new URLSearchParams(window.location.search).get('section'):'';
   const featureEditReturn=editSegments.includes('culture')?'culture'
-    :editSegments.includes('statics')&&editSegments.includes('keywords')?'statics'
+    :editSegments.includes('statics')&&(editSegments.includes('keywords')||editSegments.includes('manage'))?'statics'
     :editSegments.includes('governance')&&editSegments.includes('manage')&&editSegments.includes('search')?'search'
+    :editSegments.includes('admin')&&editSection==='governance'?'governance'
     :editSegments.includes('governance')&&editSegments.includes('manage')&&editSection==='governance'?'governance'
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
     {id:'save',icon:'save',label:isFeatureEditMode?'分段儲存':translateUiField(activeLocale,'儲存'),action:'save'},
     {id:'time',icon:'culture',label:locAdminEdit?'來源管理':translateUiField(activeLocale,'時間編輯'),
-      href:locAdminEdit?editTabHref('governance/manage','section','sources')+'&edit=1':editScopeAvailable?editTabHref('culture','edit','1'):''},
+      href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?'關鍵詞管理':translateUiField(activeLocale,'關鍵詞編輯'),
-      href:locAdminEdit?editTabHref('governance/manage','section','keywords')+'&edit=1':editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
+      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
     {id:'suggestions',icon:'search',label:'文章管理',
       href:locAdminEdit?editTabHref('governance/manage/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('governance/manage/search','section','search')+'&edit=1':''},
     {id:'governance',icon:'governance',label:'管理選單',
