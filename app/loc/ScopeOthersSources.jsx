@@ -77,6 +77,21 @@ export default function ScopeOthersSources({scopeId}){
     setBusy(true);
     setNotice('');
     try{
+      // Validate the complete draft before sending any writes, so a bad
+      // alias cannot leave a newly created category behind on failure.
+      const allowedKeys=new Set(availableGroups.map(row=>row.group_code));
+      for(const row of changedGroups){
+        const name=String(groupEdits[row.group_code].display_name??row.display_name).trim();
+        if(!name||name.length>80)throw Error('小分類名稱不可空白或超過 80 字。');
+      }
+      if(canMap){
+        if(key.length>120||!belongsToOthers(key))throw Error('來源名稱無效或已由 Admin 指定其他大分類。');
+        if(!allowedKeys.has(sourceGroup))throw Error('請先選擇要歸入的小分類。');
+      }
+      for(const row of changedAliases){
+        if(!allowedKeys.has(aliasEdits[row.source_key])||!belongsToOthers(row.source_key))
+          throw Error('來源對應包含已停用的小分類或 Admin 已指定的來源。');
+      }
       if(canAddGroup){
         if(!CODE.test(newGroupKey)||!groupName.trim()||groupName.trim().length>80)
           throw Error('小分類代碼須為 1–64 字小寫英數，名稱不可空白或超過 80 字。');
@@ -94,7 +109,6 @@ export default function ScopeOthersSources({scopeId}){
           .eq('scope_id',scopeId).eq('group_code',row.group_code).select('group_code');
         if(!errorOf(update,'更新小分類').length)throw Error('更新小分類未寫入任何資料。');
       }
-      const allowedKeys=new Set(availableGroups.map(row=>row.group_code));
       if(canMap){
         if(key.length>120)throw Error('來源名稱不可超過 120 字。');
         if(!belongsToOthers(key))throw Error('這個來源已由 Admin 指定到其他大分類，不能在 Others 重新歸類。');
