@@ -105,10 +105,18 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   async function markCurrentClassificationStale(classId){
     if(!classId||String(classId)!==String(currentClassId))return;
+    // staticstime:null alone already forces the next run to be non-skippable
+    // (checkSkippable's first check in keyword-analysis.js is `if(!config.
+    // staticstime)return null`) -- keyword_meta must NOT be wiped here.
+    // keyword_meta.shas is the narrowing baseline (changedItemNosOf); this
+    // function runs after every single keyword edit/remove/copy, so wiping
+    // it here meant the very next 重新分析 could never see a matching-length
+    // stored baseline and narrowing could never fire, ever, for the normal
+    // edit-then-reanalyze workflow. Keep keyword_meta intact; only the
+    // finalize RPC (reset mode, or a successful run) should ever replace it.
     await updateRows(CONFIG_TABLE,{
       staticstime:null,
       keyword_document_count:0,
-      keyword_meta:{},
       updated_at:new Date().toISOString()
     },{filters:[{column:'id',operator:'eq',value:scopeId}]});
     await invalidateClassification();
