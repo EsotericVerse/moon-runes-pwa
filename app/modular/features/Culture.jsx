@@ -139,42 +139,6 @@ function keywordDrillRiverItems(rows,{level='group',source='',groupId='',meta={}
   })).sort((a,b)=>a.start_date.localeCompare(b.start_date)
     ||Number(a.group_order)-Number(b.group_order)||a.group_label.localeCompare(b.group_label));
 }
-// Project the existing daily source counts onto their time periods without
-// mutating either the periods or the source classifications.
-function periodDensityRiverItems(sourceBuckets=[],periods=[]){
-  const accum=new Map(),totals=new Map(),maxima=new Map();
-  for(const row of sourceBuckets){
-    const day=String(row.start_date||'').slice(0,10);
-    const count=Number(row.item_count)||0;
-    if(!day||count<=0)continue;
-    const period=periods.find(item=>{
-      const start=String(item.start_date||'').slice(0,10);
-      const end=String(item.end_date||'9999-12-31').slice(0,10);
-      return (!start||day>=start)&&day<=end;
-    });
-    const id=period?periodKey(period):'unassigned';
-    const name=period?labelOf(period,0):'未設定時期';
-    const key=id+'\u0000'+day;
-    const previous=accum.get(key);
-    accum.set(key,{id,name,day,count:(previous?.count||0)+count});
-  }
-  for(const item of accum.values()){
-    totals.set(item.id,(totals.get(item.id)||0)+item.count);
-    maxima.set(item.id,Math.max(maxima.get(item.id)||0,item.count));
-  }
-  return [...accum.values()].map(item=>({
-    id:'period-density:'+item.id+':'+item.day,
-    entry_id:'period-density:'+item.id+':'+item.day,
-    entry_type:'period_density',
-    group_label:item.name+' · '+(totals.get(item.id)||0).toLocaleString()+' 篇',
-    category:item.name,
-    display_label:'',
-    title:item.day+' · '+item.name+' · '+item.count+' 篇',
-    start_date:item.day,end_date:nextRiverDay(item.day),
-    item_count:item.count,
-    density_ratio:item.count/Math.max(1,maxima.get(item.id)||1)
-  })).sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.group_label.localeCompare(b.group_label));
-}
 function formatCultureUi(template,values={}){
   return String(template||'').replace(/\{([a-zA-Z][\w]*)\}/gu,(match,key)=>
     Object.prototype.hasOwnProperty.call(values,key)?String(values[key]??''):match);
@@ -236,7 +200,6 @@ export default function Culture(){
   const [worksOpen,setWorksOpen]=useState(false);
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
-  const [secondRiverMode,setSecondRiverMode]=useState('period');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
@@ -271,7 +234,6 @@ export default function Culture(){
 
   useEffect(()=>{
     setStyleFilter('none');
-    setSecondRiverMode('period');
     setKeywordPeriodKey('latest');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
@@ -674,12 +636,7 @@ export default function Culture(){
     sourceSnapshotQuery.data?.buckets||[]
   ).filter(item=>!keywordDrillSource||String(item.category||'')===keywordDrillSource),
   [sourceSnapshotQuery.data,keywordDrillSource]);
-  const secondRiverBuckets=useMemo(()=>
-    secondRiverMode==='period'
-      ?periodDensityRiverItems(classificationBuckets,primaryPeriods)
-      :classificationBuckets,
-    [secondRiverMode,classificationBuckets,primaryPeriods]
-  );
+  const secondRiverBuckets=classificationBuckets;
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
@@ -1026,7 +983,6 @@ export default function Culture(){
                             if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
                           }
                           setKeywordPeriodKey(next);
-                          setSecondRiverMode('period');
                         }}>
                         <option value='latest'>最近的時期{latestPeriod?'：'+localizedLabelOf(latestPeriod,0):''}</option>
                         <option value='current'>目前檢視時期</option>
@@ -1054,7 +1010,6 @@ export default function Culture(){
                       disabled={sourceSnapshotQuery.isPending||Boolean(sourceSnapshotQuery.error)}
                       onChange={event=>{
                         setKeywordDrillSource(event.target.value);
-                        setSecondRiverMode('source');
                         setSelectedCategory('');
                       }}>
                       <option value=''>全部來源</option>
@@ -1083,7 +1038,7 @@ export default function Culture(){
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>第二條河道｜{secondRiverMode==='period'?'時期作品密度':'來源作品密度'}｜{classificationPeriodLabel}</h3>
+                <h3>第二條河道｜來源作品密度｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
@@ -1117,7 +1072,7 @@ export default function Culture(){
                       toggleVirtualAnchor(String(item?.start||'').slice(0,10));
                       return;
                     }
-                    const term=String(item?.category||item?.group||'').split(' · ')[0].trim();
+                    const term=String(item?.raw?.category||item?.category||item?.group||'').trim();
                     if(!term)return;
                     const key='source:'+term;
                     if(categoryGroups.some(group=>group.category_key===key)){
