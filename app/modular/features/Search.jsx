@@ -470,14 +470,20 @@ export default function Search({managementMode=false}){
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         sortDirection:options.sortDirection,signal
       });
+      // Style tags enhance results, but their optional request must never
+      // discard valid text/media hits when its own service fails.
       const stylePromise=wantsStyleTags
         ?queryClient.fetchQuery({
           queryKey:['search-style-keyword',searchScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
           queryFn:()=>selectStyleKeywordMatches(searchScopes,q,{signal}),
           staleTime:60_000
+        }).then(rows=>({rows,failed:false}),error=>{
+          if(isAbortError(error)||signal.aborted)throw error;
+          return {rows:[],failed:true};
         })
-        :Promise.resolve([]);
-      const [styleTagMatches,search]=await Promise.all([stylePromise,searchPromise]);
+        :Promise.resolve({rows:[],failed:false});
+      const [styleResult,search]=await Promise.all([stylePromise,searchPromise]);
+      const styleTagMatches=styleResult.rows;
       if(id!==searchId.current)return;
 
       const searchRows=await hydrateGalaxySearchRows(search.rows||[],searchScopes,managementMode?searchScopes.map(item=>item.id):[],{signal});
@@ -516,7 +522,7 @@ export default function Search({managementMode=false}){
       setResults(current=>append?mergeSummaryResults([...current,...pageResults],UI_COPY):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
-      const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
+      const partial=(search.failures?.length||styleResult.failed)?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append){
         setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
         scrollToResults();
