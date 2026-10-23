@@ -398,50 +398,50 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   const text=summarize(counted.text,true);
   const media=summarize(counted.media,false);
 
-  const groupMap=new Map(LOC_SOURCE_ORDER.map(category=>[category,{
-    category_key:'source:'+category,
-    category_type:'source',
-    source_name:category,
-    display_label:category,
-    item_count:0,
-    source_names:[],
-    media_types:[]
-  }]));
+  // A Scope owns its real source_name distribution. LOC's four summary
+  // categories belong exclusively to buildLocSourceRiver, never this view.
+  const groupMap=new Map();
+  const groupFor=(label,kind)=>{
+    const category=kind==='media'?'媒體 · '+(label||'未分類'):label||'未分類';
+    if(!groupMap.has(category)){
+      groupMap.set(category,{
+        category_key:'source:'+category,
+        category_type:kind,
+        source_name:category,
+        display_label:category,
+        item_count:0,
+        source_names:[],
+        media_types:[]
+      });
+    }
+    return groupMap.get(category);
+  };
   for(const row of text.catalog){
-    const category=locSourceCategory(row.term);
-    const group=groupMap.get(category);
-    group.item_count+=(Number(row.item_count)||0);
+    const group=groupFor(row.term,'source');
+    group.item_count+=Number(row.item_count)||0;
     group.source_names.push(String(row.term||'').trim());
   }
   for(const row of media.catalog){
-    const category=locSourceCategory(row.term);
-    const group=groupMap.get(category);
-    group.item_count+=(Number(row.item_count)||0);
+    const group=groupFor(row.term,'media');
+    group.item_count+=Number(row.item_count)||0;
     group.media_types.push(String(row.term||'').trim());
   }
 
   const combined=new Map();
-  for(const row of text.daily){
-    const category=locSourceCategory(row.category);
-    const day=String(row.day||'').slice(0,10);
-    if(!day)continue;
-    const key=category+'|'+day;
-    combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
-  }
-  for(const row of media.daily){
-    const category=locSourceCategory(row.category);
-    const day=String(row.day||'').slice(0,10);
-    if(!day)continue;
-    const key=category+'|'+day;
-    combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
+  for(const [kind,entries] of [['source',text.daily],['media',media.daily]]){
+    for(const row of entries){
+      const category=kind==='media'?'媒體 · '+(row.category||'未分類'):row.category||'未分類';
+      const day=String(row.day||'').slice(0,10);
+      if(!day)continue;
+      const key=category+'\u0000'+day;
+      combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
+    }
   }
 
-  const maxima=new Map();
-  const firstDates=new Map();
-  const lastDates=new Map();
+  const maxima=new Map(),firstDates=new Map(),lastDates=new Map();
   let globalMaximum=0;
   for(const [key,count] of combined){
-    const split=key.lastIndexOf('|');
+    const split=key.lastIndexOf('\u0000');
     const category=key.slice(0,split);
     const day=key.slice(split+1);
     maxima.set(category,Math.max(maxima.get(category)||0,count));
@@ -452,45 +452,41 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
     if(!last||day>last)lastDates.set(category,day);
   }
 
-  const groups=LOC_SOURCE_ORDER.map(category=>{
-    const group=groupMap.get(category);
-    return {
-      ...group,
-      first_date:firstDates.get(category)||null,
-      last_date:lastDates.get(category)||null,
-      source_names:[...new Set(group.source_names)].filter(Boolean),
-      media_types:[...new Set(group.media_types)].filter(Boolean)
-    };
-  }).filter(group=>group.item_count>0&&group.first_date&&group.last_date);
+  const groups=[...groupMap.values()].map(group=>({
+    ...group,
+    first_date:firstDates.get(group.source_name)||null,
+    last_date:lastDates.get(group.source_name)||null,
+    source_names:[...new Set(group.source_names)],
+    media_types:[...new Set(group.media_types)]
+  })).filter(group=>group.item_count>0&&group.first_date&&group.last_date)
+    .sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name));
 
-  const activeCategories=new Set(groups.map(group=>group.source_name));
   const buckets=[...combined.entries()].map(([key,count])=>{
-    const split=key.lastIndexOf('|');
+    const split=key.lastIndexOf('\u0000');
     const source=key.slice(0,split);
     const day=key.slice(split+1);
-    if(!activeCategories.has(source))return null;
     const group=groupMap.get(source);
-    const firstDate=firstDates.get(source)||day;
-    const lastDate=lastDates.get(source)||day;
+    if(!group||!group.first_date||!group.last_date)return null;
     return {
       id:'source_name:'+source+':'+day,
       category:source,
-      group_label:source+' · '+Number(group?.item_count||0).toLocaleString()+' 項 · '+firstDate+' → '+lastDate,
+      group_label:source+' · '+group.item_count.toLocaleString()+' 項 · '+group.first_date+' → '+group.last_date,
       start_date:day,
       item_count:count,
       works:[],
-      first_date:firstDate,
-      last_date:lastDate,
+      first_date:group.first_date,
+      last_date:group.last_date,
       density_ratio:count/Math.max(1,maxima.get(source)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
       display_label:source+' '+count+' 項',
       title:day+' · '+source+' · '+count+' 項',
-      scope_id:'classification',
+      scope_id:scopeId,
       entry_type:'source',
       classification_dimension:'source',
       classification_level:'source'
     };
-  }).filter(Boolean).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||LOC_SOURCE_ORDER.indexOf(a.category)-LOC_SOURCE_ORDER.indexOf(b.category));
+  }).filter(Boolean).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
+    ||a.category.localeCompare(b.category));
 
   return {groups,buckets,totalCount:groups.reduce((sum,row)=>sum+Number(row.item_count||0),0)};
 }
