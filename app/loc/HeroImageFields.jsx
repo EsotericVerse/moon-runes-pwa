@@ -41,7 +41,7 @@ export function HeroImageFieldset({draft,image,onChange,allowImageOnly=false}){
           </select>
         </label>
         <label><span>{t('uiExtra.frameEditor.imageWidth')}</span>
-          <input type="number" min="160" max="680" step="20" value={image?.width||420}
+          <input type="number" min="160" max="800" step="20" value={image?.width||420}
             disabled={!image?.src} onChange={event=>onChange({width:Number(event.target.value)},false)}/>
         </label>
       </>:null}
