@@ -78,7 +78,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
     <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
       <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
   </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
-    style={{'--loc-home-media-max':image.width+'px'}}>
+    style={imageOnly?undefined:{'--loc-home-media-max':image.width+'px'}}>
     <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
   </article>):null;
   return <>
