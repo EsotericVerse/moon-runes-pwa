@@ -8,8 +8,10 @@ import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
 import {dbAuthClient,dbAuthRelation} from '../../db-client.mjs';
+import {DATABASE_ROUTING_CONFIG,resolveDatabaseRouting} from '../../providers/routing-config.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
+const STATIC_ROUTING=resolveDatabaseRouting();
 
 export default function DatabaseTarget(){
   useUiSection('uiExtra.adminView');
@@ -21,10 +23,7 @@ export default function DatabaseTarget(){
   const [username,setUsername]=useState('');
   const [password,setPassword]=useState('');
   const [database,setDatabase]=useState('');
-  const [primaryId,setPrimaryId]=useState('');
-  const [backupId,setBackupId]=useState('');
-  const [routingMode,setRoutingMode]=useState('single');
-  const original=useRef({rows:[],primaryId:'',backupId:'',routingMode:'single'});
+  const original=useRef({rows:[]});
   useEffect(()=>{
     let active=true;
     (async()=>{
@@ -34,15 +33,10 @@ export default function DatabaseTarget(){
       if(!active)return;
       if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
       const next=data||[];
-      const nextPrimary=next.find(item=>item.selected)?.target_id||'';
-      const nextBackup=next.find(item=>item.backup_selected)?.target_id||'';
-      const nextMode=next.find(item=>item.selected)?.routing_mode==='db-managed'?'db-managed':'single';
-      original.current={rows:next,primaryId:nextPrimary,backupId:nextBackup,routingMode:nextMode};
+      original.current={rows:next};
       setRows(next);
-      setPrimaryId(nextPrimary);
-      setBackupId(nextBackup);
-      setRoutingMode(nextMode);
-      setSelectedId(current=>next.some(item=>item.target_id===current)?current:(next.find(item=>item.selected)?.target_id||next[0]?.target_id||''));
+      setSelectedId(current=>next.some(item=>item.target_id===current)?current:
+        (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
   },[revision]);
@@ -58,31 +52,14 @@ export default function DatabaseTarget(){
     pick(id);
   };
   async function remove(){
-    if(!row||row.selected||row.backup_selected){setStatus('無法刪除正在使用的資料庫。');return;}
+    if(!row||row.target_id===STATIC_ROUTING.primaryId||row.target_id===STATIC_ROUTING.backupId||row.selected){setStatus('無法刪除目前路由設定使用的資料庫。');return;}
     if(row._new){const next=rows.filter(item=>item.target_id!==row.target_id);setRows(next);pick(next[0]?.target_id||'');return;}
     const result=await dbAuthRelation('silver.database_targets').delete().eq('target_id',row.target_id);
     if(result.error){setStatus(result.error.message||'刪除資料庫目標失敗。');return;}
     setStatus('已刪除資料庫目標。');setRevision(v=>v+1);
   }
-  async function saveRouting(){
-    if(saving||!primaryId||backupId===primaryId){setStatus('主要與次要資料庫不可相同。');return}
-    if(rows.some(item=>(item.target_id===primaryId||item.target_id===backupId)&&item._new)){
-      setStatus('請先儲存新增的資料庫。');return;
-    }
-    setSaving(true);
-    try{
-      const {error}=await dbAuthClient.schema('silver').rpc('set_database_routing',{
-        p_routing:{primary_id:primaryId,backup_id:backupId||null,mode:routingMode}
-      });
-      if(error)throw new Error(error.message||'資料庫路由設定失敗');
-      window.dispatchEvent(new Event('loc-database-target-changed'));
-      window.location.reload();
-    }catch(error){setStatus(error?.message||'資料庫路由設定失敗')}
-    finally{setSaving(false)}
-  }
-  async function save({switchTarget=false}={}){
+  async function save(){
     if(!row||saving)return false;
-    if(switchTarget&&!window.confirm(row.provider==='neon'?'確定切換至 Neon 唯讀備援？此模式不支援備援寫入，管理功能仍由 Supabase 控制。':'確定切換至這個資料庫？請確認目標已完成連線與權限設定。'))return;
     setSaving(true);setStatus('');
     try{
       const location=normalizeDatabaseLocation(row.provider,row.project_url);
@@ -99,34 +76,23 @@ export default function DatabaseTarget(){
         username,
         database,
         password,
-        activate:switchTarget||row.selected===true
+        activate:false
       };
       const {error}=await dbAuthClient.schema('silver').rpc('save_database_target',{p_target:payload});
       if(error)throw new Error(error.message||'資料庫儲存或切換失敗。');
       setPassword('');setUsername('');setDatabase('');
-      setStatus(switchTarget?(row.provider==='neon'?'已切換至 Neon 唯讀備援，寫入仍由 Supabase 控制。':'已切換至所選資料庫。'):(row.selected?'目前使用中的資料庫設定已儲存。':'備用資料庫設定已儲存，主要資料庫維持不變。'));
-      if(switchTarget){
-        window.dispatchEvent(new Event('loc-database-target-changed'));
-        window.location.reload(); // Prevent mixed cached rows after a global source switch.
-      }
+      setStatus('連線資料已儲存；資料庫 Routing 仍由 repo config 決定。');
       setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');return false;}
     finally{setSaving(false);}
   }
-  const routingDirty=primaryId!==original.current.primaryId||backupId!==original.current.backupId||routingMode!==original.current.routingMode;
   const changedRows=rows.filter(item=>JSON.stringify(item)!==JSON.stringify(original.current.rows.find(saved=>saved.target_id===item.target_id)));
   const unsavedConnections=Boolean(username||password||database);
   useEditDockForm({
     isBusy:()=>saving,
-    isDirty:()=>routingDirty||changedRows.length>0||unsavedConnections,
+    isDirty:()=>changedRows.length>0||unsavedConnections,
     save:async()=>{
-      // Applying routing can reload the entire site and must stay an explicit
-      // operation, not an automatic side effect of switching Admin sections.
-      if(routingDirty){
-        setStatus('路由已修改，請先按「套用路由」，或選擇放棄變更。');
-        return false;
-      }
       if(changedRows.some(item=>item.target_id!==selectedId)){
         setStatus('其他資料庫仍有未儲存資料，請逐筆儲存後再切換分區。');
         return false;
@@ -136,23 +102,12 @@ export default function DatabaseTarget(){
   });
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
-    <div className="scope-management-fields">
-      <label><span><UiText id="uiExtra.adminView.primaryDatabase"/></span><select className="admin-native-select" value={primaryId} onChange={event=>setPrimaryId(event.target.value)}>
-        {rows.filter(item=>!item._new).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
-      </select></label>
-      <label><span><UiText id="uiExtra.adminView.backupDatabase"/></span><select className="admin-native-select" value={backupId} onChange={event=>setBackupId(event.target.value)}>
-        <option value=""><UiText id="uiExtra.adminView.none"/></option>
-        {rows.filter(item=>!item._new&&item.target_id!==primaryId).map(item=><option key={item.target_id} value={item.target_id}>{item.label}</option>)}
-      </select></label>
-      <label><span><UiText id="uiExtra.adminView.routingMode"/></span><select className="admin-native-select" value={routingMode} onChange={event=>setRoutingMode(event.target.value)}>
-        <option value="single"><UiText id="uiExtra.adminView.singleDatabase"/></option><option value="db-managed"><UiText id="uiExtra.adminView.dbManagedReplication"/></option>
-      </select></label>
-      <div className="scope-management-wide-field"><button type="button" className="loc-button primary" onClick={saveRouting} disabled={saving||!primaryId}><UiText id={saving?'uiExtra.adminView.applyingRouting':'uiExtra.adminView.applyRouting'}/></button></div>
-    </div>
+    <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援：{STATIC_ROUTING.backupId||'停用'}｜黑名單：{DATABASE_ROUTING_CONFIG.blacklist.length?DATABASE_ROUTING_CONFIG.blacklist.join('、'):'無'}</p>
+    <p className="scope-status">資料來源由 repo 的 app/loc/providers/routing-config.mjs 決定，修改需重新部署。管理介面不再執行即時路由切換。</p>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <label><span><UiText id="uiExtra.adminView.savedDatabases"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
-        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.selected?<UiText id="uiExtra.adminView.active"/>:null}</option>)}
+        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label} {item.target_id===STATIC_ROUTING.primaryId?<UiText id="uiExtra.adminView.active"/>:null}</option>)}
       </select></label>
       <button type="button" className="loc-button" onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
     </div>
@@ -175,7 +130,7 @@ export default function DatabaseTarget(){
       <label><span><UiText id="uiExtra.adminView.databasePassword"/></span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
         <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}><FieldText text={saving?'儲存中…':'儲存設定'}/></button>
-        {!row.selected?<button type="button" className="loc-button" onClick={()=>save({switchTarget:true})} disabled={saving}><FieldText text={saving?'處理中…':'切換至此資料庫'}/></button>:null}
+
         {!row.selected&&!isManaged?<button type="button" className="loc-button" onClick={remove} disabled={saving}><UiText id="uiExtra.adminView.delete"/></button>:null}
       </div>
     </div>:null}
