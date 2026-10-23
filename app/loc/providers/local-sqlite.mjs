@@ -521,17 +521,17 @@ async function managementWriteLocal(payload){
 async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
   const where=[];
   const params=[];
-  if(p_start){where.push('date(createtime)>=?');params.push(p_start);}
-  if(p_end){where.push('date(createtime)<=?');params.push(p_end);}
+  if(p_start){where.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
+  if(p_end){where.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
   if(!p_include_undated)where.push('createtime IS NOT NULL');
   const whereSql=where.length?' WHERE '+where.join(' AND '):'';
-  const sql=`SELECT date(createtime) AS day, 'article' AS kind, coalesce(source_name,'未分類') AS category, count(*) AS item_count
+  const sql=`SELECT date(createtime, '+8 hours') AS day, 'article' AS kind, coalesce(source_name,'未分類') AS category, count(*) AS item_count
     FROM local_galaxy${whereSql} GROUP BY day, category ORDER BY day`;
   const rows=await selectLocal(sql,params);
   return {data:rows.map(r=>({day:r.day,kind:r.kind,category:r.category,item_count:Number(r.item_count)})),error:null};
 }
 async function readScopeEarliestLocal(){
-  const rows=await selectLocal('SELECT min(date(createtime)) AS earliest FROM local_galaxy WHERE createtime IS NOT NULL');
+  const rows=await selectLocal("SELECT min(date(createtime, '+8 hours')) AS earliest FROM local_galaxy WHERE createtime IS NOT NULL");
   return {data:rows[0]?.earliest||null,error:null};
 }
 async function readScopeOverviewLocal({p_start,p_end}){
@@ -600,9 +600,9 @@ async function applyKeywordClassificationLocal({p_rows}={}){
 async function readRune66SummaryLocal({p_start,p_end}){
   const where=["searchable=1","statistics_able=1","group_lists IS NOT NULL","group_lists<>'false'"];
   const params=[];
-  if(p_start){where.push('date(createtime)>=?');params.push(p_start);}
-  if(p_end){where.push('date(createtime)<=?');params.push(p_end);}
-  const rows=await selectLocal('SELECT class_id, date(createtime) AS d, group_lists FROM local_galaxy WHERE '+where.join(' AND '),params);
+  if(p_start){where.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
+  if(p_end){where.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
+  const rows=await selectLocal("SELECT class_id, date(createtime, '+8 hours') AS d, group_lists FROM local_galaxy WHERE "+where.join(' AND '),params);
   const out=[{kind:'eligible',item_key:null,class_id:null,day:'',hit_count:rows.length,document_count:rows.length}];
   const classDay=new Map();
   const items=new Map();

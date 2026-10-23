@@ -30,6 +30,7 @@ import {selectGalaxyContent} from '../../loc/galaxy-query';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
+import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
@@ -109,7 +110,8 @@ function keywordDrillRiverItems(rows,{source='',groupId='',meta={},groupItems=[]
         add(rowGroup,[className,groupLabel,'群組'].filter(Boolean).join(' '),day,count,Number(rowGroup)||0);
       continue;
     }
-    const day=String(row.createtime||'').slice(0,10);
+    // Match PostgreSQL's Asia/Taipei calendar day rather than UTC prefixes.
+    const day=mediaDay(row.createtime);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     const hits=parseGroupLists(row.group_lists);
     if(hits===false)continue;
