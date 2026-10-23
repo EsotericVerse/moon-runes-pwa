@@ -5,10 +5,11 @@ import {useUiSection} from '../i18n/ui-locale';
 import sourceCategoryZh from '../i18n/sections/uiExtra.sourceCategory.zh_tw.js';
 registerDefaultSection('uiExtra.sourceCategory',sourceCategoryZh);
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
 
 const CATEGORIES='silver.statistics_source_categories';
 const ALIASES='silver.statistics_source_aliases';
@@ -35,10 +36,20 @@ export function AdminSourceCategories(){
   useUiSection('uiExtra.sourceCategory');
   const t=useUiText();
   const account=useAccount(),query=useSourceCategories(),client=useQueryClient();
+  const editDock=useEditDock();
+  const saveRef=useRef(null);
   const [category,setCategory]=useState(''),[title,setTitle]=useState('');
   const [labels,setLabels]=useState({});
   const [alias,setAlias]=useState(''),[parent,setParent]=useState('others');
   const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+  useEffect(()=>{
+    if(!editDock?.active||editDock.scopeId!=='loc'||!account.canManageGlobalSync())return undefined;
+    return editDock.register({
+      save:()=>saveRef.current.save(),
+      isDirty:()=>saveRef.current.isDirty(),
+      isBusy:()=>saveRef.current.isBusy()
+    });
+  },[editDock?.active,editDock?.scopeId,editDock?.register,account.role]);
   if(!account.canManageGlobalSync())return null;
   const items=query.data?.categories||[],aliases=query.data?.aliases||[];
   async function apply(operation){
@@ -50,7 +61,8 @@ export function AdminSourceCategories(){
       await client.invalidateQueries({queryKey:['own-scope-source-catalog']});
       await client.invalidateQueries({queryKey:['loc-source-categories']});
       setCategory('');setTitle('');setAlias('');
-    }catch(error){setNotice(String(error.message||error));}
+      return true;
+    }catch(error){setNotice(String(error.message||error));return false;}
     finally{setBusy(false);}
   }
   const add=()=>apply(async()=>{
@@ -71,6 +83,24 @@ export function AdminSourceCategories(){
     const {error}=await q;
     if(error)throw Error(error.message);
   });
+  const changedNames=items.filter(row=>Object.hasOwn(labels,row.category_code)&&labels[row.category_code]!==row.display_name);
+  saveRef.current={
+    isDirty:()=>Boolean(category.trim()||title.trim()||alias.trim()||changedNames.length),
+    isBusy:()=>busy||query.isPending,
+    save:async()=>{
+      if(busy||query.isPending)return false;
+      const pendingKinds=Number(Boolean(category.trim()||title.trim()))+
+        Number(Boolean(alias.trim()))+Number(Boolean(changedNames.length));
+      if(pendingKinds!==1||changedNames.length>1){
+        setNotice('請先使用各區的儲存／新增按鈕完成多組變更，再切換頁面。');
+        return false;
+      }
+      if(category.trim()||title.trim())return add();
+      if(alias.trim())return map();
+      const row=changedNames[0];
+      return modify(CATEGORIES,{category_code:row.category_code},{display_name:String(labels[row.category_code]).trim()});
+    }
+  };
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.sourceCategory.groupTitle"/></h2>
     <div className="scope-stat-controls">
