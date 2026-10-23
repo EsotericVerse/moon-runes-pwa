@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLunaRunesGame} from '../app/lrunes/game/boardgame-rules.js';
 import {produce} from 'immer';
-import {packTabletopState,unpackTabletopState} from '../app/lrunes/game/use-online-tabletop.js';
+import {packTabletopState,unpackTabletopState} from '../app/lrunes/game/tabletop-state.mjs';
 
 const config={playerMin:2,playerMax:4,deMin:0,deMax:8,openingDraw:8,openingDiscard:3,handBase:5,handTempCap:10,eventResponseCards:2,resonanceSelf:1,resonanceAttack:-1};
 const cards=Array.from({length:66},(_,i)=>({id:i+1,name:'Rune '+(i+1),group:'Group '+(i%8),alphaCompatMacro:'macro'+(i%4)}));
