@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider,useQuery,useQueryClient} from '@tanstack/react-query';
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
@@ -230,22 +230,6 @@ export default function AppShell({children}){
 function AppShellInner({children}){
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const editDock=useEditDock();
-  const queryClient=useQueryClient();
-  const localReadyQuery=useQuery({
-    queryKey:['local-scope-content-ready'],
-    enabled:scopeId==='local',
-    queryFn:async()=>{
-      const {hasLocalScopeContent}=await import('./loc/providers/local-sqlite.mjs');
-      return hasLocalScopeContent();
-    },
-    staleTime:30_000
-  });
-  useEffect(()=>{
-    if(scopeId!=='local')return undefined;
-    const refresh=()=>queryClient.invalidateQueries({queryKey:['local-scope-content-ready']});
-    window.addEventListener('loc-local-scope-data-changed',refresh);
-    return()=>window.removeEventListener('loc-local-scope-data-changed',refresh);
-  },[scopeId,queryClient]);
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
   useEffect(()=>{
@@ -311,7 +295,7 @@ function AppShellInner({children}){
     loadSection(activeLocale,'fields').catch(()=>{});
     return ()=>{active=false;};
   },[activeLocale]);
-  const navScopeId=scopeId==='local'&&!localReadyQuery.data?'loc':currentScope.featureScope||scopeId;
+  const navScopeId=scopeId==='local'?'loc':currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
@@ -362,7 +346,7 @@ function AppShellInner({children}){
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
-        href:isMyPhone?deviceNavigation.mobileHomeHref(true)+'#'+id:navigationHref(navScopeId==='local'&&id==='governance'?'loc':navScopeId,feature.path,native)};
+        href:isMyPhone?deviceNavigation.mobileHomeHref(true)+'#'+id:navigationHref(navScopeId,feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
   ];
