@@ -7,6 +7,7 @@ import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
 import {resolveSqlExecutionPort} from "../../../app/loc/providers/sql-engine-ports.mjs";
+import {resolveDatabaseRouting} from "../../../app/loc/providers/routing-config.mjs";
 
 const corsHeaders = {
   "access-control-allow-origin": "*",
@@ -26,12 +27,14 @@ function configuredPublishableKeys() {
   return new Set(keys);
 }
 const publishableKeys = configuredPublishableKeys();
+// The deployed function and browser use the same source-controlled routing contract.
+const routing = resolveDatabaseRouting();
 const neonLocReadTables = new Set([
   "game", "keyword_classes", "lo3rwang", "lo3rwang_blocks", "lo3rwang_galaxy",
   "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
   "loc_search_keywords", "loc_theme", "lrunes", "lrunes_blocks", "lrunes_daily",
-  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "manage", "runes",
-  "runes_etc", "runes_group", "scope_registry", "statistics_source_aliases",
+  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "loc", "runes",
+  "runes_etc", "runes_group", "statistics_source_aliases",
   "statistics_source_categories",
 ]);
 
@@ -92,6 +95,7 @@ async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claim
   const label=String(input.label||targetId).trim();
   if(!label||label.length>160)throw Object.assign(new Error("Invalid target label"),{httpStatus:400});
   const password=typeof input.password==="string"?input.password:"";
+  if(input.activate===true)throw Object.assign(new Error("Database routing is managed in the repository config, not in SQL"),{httpStatus:409});
   const profile=password?makeConnectionProfile({...target,...input,project_url:location.link},password):null;
   const control=await checkAdminRole(claims);
   if(!profile)await profileForTarget({...target,project_url:location.link});
@@ -105,42 +109,7 @@ async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claim
     const exists=await trx.selectFrom("silver.database_targets").select("target_id").where("target_id","=",targetId).executeTakeFirst();
     if(exists)await trx.updateTable("silver.database_targets").set(record).where("target_id","=",targetId).execute();
     else await trx.insertInto("silver.database_targets").values({...record,target_id:targetId,selected:false}).execute();
-    if(input.activate===true){
-      await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
-      await trx.updateTable("silver.database_targets").set({selected:true,backup_selected:false}).where("target_id","=",targetId).execute();
-    }
-    return {target_id:targetId,provider,engine,selected:input.activate===true};
-  });
-}
-
-async function saveDatabaseRouting(input:Record<string,unknown>,role:string,claims:Record<string,unknown>){
-  if(role!=="authenticated"||!input||typeof input!=="object"||Array.isArray(input))
-    throw Object.assign(new Error("Administrator permission required"),{httpStatus:403});
-  const primaryId=String(input.primary_id||"");
-  const backupId=String(input.backup_id||"");
-  const mode=String(input.mode||"single");
-  if(!/^[a-z][a-z0-9_-]{0,80}$/i.test(primaryId)||
-     (backupId&&!/^[a-z][a-z0-9_-]{0,80}$/i.test(backupId))||
-     backupId===primaryId||!["single","db-managed"].includes(mode))
-    throw Object.assign(new Error("Invalid database routing"),{httpStatus:400});
-  const control=await checkAdminRole(claims);
-  return control.transaction().execute(async trx=>{
-    const ids=backupId?[primaryId,backupId]:[primaryId];
-    const targets=await trx.selectFrom("silver.database_targets")
-      .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
-      .where("target_id","in",ids).execute();
-    if(targets.length!==ids.length)throw Object.assign(new Error("Database target not found"),{httpStatus:400});
-    for(const item of targets){
-      const target=selectedDatabaseTarget([{...item,selected:true}]);
-      await profileForTarget(target);
-    }
-    await trx.updateTable("silver.database_targets")
-      .set({selected:false,backup_selected:false,routing_mode:"single"}).execute();
-    await trx.updateTable("silver.database_targets")
-      .set({selected:true,routing_mode:mode}).where("target_id","=",primaryId).execute();
-    if(backupId)await trx.updateTable("silver.database_targets")
-      .set({backup_selected:true}).where("target_id","=",backupId).execute();
-    return {primary_id:primaryId,backup_id:backupId||null,mode};
+    return {target_id:targetId,provider,engine,selected:targetId===routing.primaryId};
   });
 }
 
@@ -166,30 +135,6 @@ async function executeRequest(trx: any, target: Record<string,any>, role: string
     return result;
   }
   return await executeAllowlistedRpc(trx,body);
-}
-
-async function selectTargetAtomically(id:string,role:string,claims:Record<string,unknown>){
-  if(role!=="authenticated"||!id||!/^[a-z][a-z0-9_-]{0,80}$/i.test(id))
-    throw Object.assign(new Error("Authorized target ID required"),{httpStatus:403});
-  const db=await databaseForTarget(controlTarget);
-  return db.transaction().execute(async trx=>{
-    await sql`set local role authenticated`.execute(trx);
-    await sql`select set_config('request.jwt.claims',${JSON.stringify(claims)},true)`.execute(trx);
-    await sql`select set_config('request.jwt.claim.sub',${String(claims.sub||"")},true)`.execute(trx);
-    const grant=await sql`select silver.can_manage_global() as allowed`.execute(trx);
-    if(grant.rows[0]?.allowed!==true)throw Object.assign(new Error("Administrator permission is required"),{httpStatus:403});
-    const row=await trx.selectFrom("silver.database_targets")
-      .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
-      .where("target_id","=",id).executeTakeFirst();
-    if(!row)throw Object.assign(new Error("Database target does not exist"),{httpStatus:400});
-    const target=selectedDatabaseTarget([{...row,selected:true}]);
-    await profileForTarget(target); // fail closed when the Link has no matching credential
-    await trx.updateTable("silver.database_targets").set({selected:false}).where("selected","=",true).execute();
-    const updated=await trx.updateTable("silver.database_targets").set({selected:true,backup_selected:false,updated_at:new Date()})
-      .where("target_id","=",id).executeTakeFirstOrThrow();
-    if(Number(updated.numUpdatedRows||0)!==1)throw new Error("Database target activation failed");
-    return {target_id:id,provider:target.provider,engine:target.engine};
-  });
 }
 
 function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
@@ -248,23 +193,16 @@ Deno.serve(async (request) => {
 
   let resolvingTarget = false;
   try {
-    // Public status discloses only the selected provider, never connection profiles.
-    // Clients cache this lightweight lookup and keep normal Supabase reads on PostgREST.
+    // Status is a pure repository-config lookup, never a SELECT.
     if(body.kind==="status"&&body.name==="active_public_target"){
       if(requestedTarget!=="configured")return json({error:{message:"Invalid status target"}},400);
-      const control=await databaseForTarget(controlTarget);
-      const rows=await control.selectFrom("silver.database_targets")
-        .select(["target_id","provider","connection_alias","project_url","selected","backup_selected","routing_mode"])
-        .where(eb=>eb.or([eb("selected","=",true),eb("backup_selected","=",true)])).execute();
-      const primary=rows.find(row=>row.selected===true);
-      const backup=rows.find(row=>row.backup_selected===true&&row.target_id!==primary?.target_id);
       return json({data:{
-        provider:primary?.provider||"supabase",
-        primary_id:primary?.target_id||"supabase-current",
-        primary_control:!primary||isSupabaseControlTarget(primary),
-        backup_id:backup?.target_id||null,
-        backup_provider:backup?.provider||null,
-        mode:primary?.routing_mode==="db-managed"?"db-managed":"single"
+        provider:routing.provider,
+        primary_id:routing.primaryId,
+        primary_control:routing.primaryControl,
+        backup_id:routing.backupId,
+        backup_provider:routing.backupProvider,
+        mode:routing.mode
       }});
     }
     if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="save_database_target"){
@@ -273,61 +211,36 @@ Deno.serve(async (request) => {
       const result=await saveDatabaseTarget((body.args as Record<string,any>).p_target,role,claims);
       return json({data:result,count:null});
     }
-    if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="set_database_target"){
-      if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||Object.keys(body.args).some(key=>key!=="p_target_id"))
-        return json({error:{message:"Invalid database target activation"}},400);
-      const targetId=(body.args as Record<string,unknown>).p_target_id;
-      const result=await selectTargetAtomically(String(targetId||""),role,claims);
-      return json({data:result,count:null});
-    }
-    if(body.kind==="rpc"&&body.schema==="silver"&&body.name==="set_database_routing"){
-      if(!body.args||typeof body.args!=="object"||Array.isArray(body.args)||
-         Object.keys(body.args).some(key=>key!=="p_routing"))
-        return json({error:{message:"Invalid routing settings"}},400);
-      const result=await saveDatabaseRouting((body.args as Record<string,any>).p_routing,role,claims);
-      return json({data:result,count:null});
-    }
-    const managesTargets=body.kind==="query"&&body.schema==="silver"&&body.table==="database_targets";
+    // The old admin RPCs must not pretend to switch an immutable, deployed route.
+    if(body.kind==="rpc"&&body.schema==="silver"&&
+       (body.name==="set_database_target"||body.name==="set_database_routing"))
+      return json({error:{message:"Database routing is set in app/loc/providers/routing-config.mjs and requires deployment"}},409);
+
     let target=controlTarget as Record<string,any>;
-    if(requestedTarget==="neon")target={provider:"neon",engine:"postgres",connection_alias:"neon_current",connection_mode:"direct"};
+    if(requestedTarget==="neon"){
+      if(routing.backupId!=="neon-current"||routing.backupProvider!=="neon")
+        return json({error:{message:"Neon target is not enabled by repository routing"}},403);
+      target={provider:"neon",engine:"postgres",connection_alias:"neon_current",connection_mode:"direct"};
+    }
     if(requestedTarget==="backup"){
+      if(!routing.backupId)return json({error:{message:"Backup is disabled by repository routing"}},503);
       if(body.kind!=="query"||body.operation!=="select"||
          body.schema!=="silver"||!neonLocReadTables.has(String(body.table||"")))
         return json({error:{message:"Backup is read-only"}},403);
       resolvingTarget=true;
+      // Only an explicitly requested, enabled backup needs its saved connection profile.
+      // This metadata lookup is NOT a routing decision.
       const control=await databaseForTarget(controlTarget);
       const selected=await control.selectFrom("silver.database_targets")
         .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
-        .where("backup_selected","=",true).executeTakeFirst();
-      if(!selected)return json({error:{message:"Backup database is not selected"}},503);
+        .where("target_id","=",routing.backupId).executeTakeFirst();
+      if(!selected)return json({error:{message:"Configured backup connection was not found"}},503);
       target=selectedDatabaseTarget([{...selected,selected:true}]);
+      if(target.provider!==routing.backupProvider)return json({error:{message:"Backup provider differs from repository config"}},503);
       resolvingTarget=false;
     }
-    if(requestedTarget==="configured"&&!managesTargets){
-      resolvingTarget=true;
-      const control=await databaseForTarget(controlTarget);
-      const resolved=await control.transaction().execute(async trx=>{
-        const rows=await trx.selectFrom("silver.database_targets")
-          .select(["provider","engine","connection_alias","connection_mode","project_url","selected"])
-          .where("selected","=",true).execute();
-        const selected=selectedDatabaseTarget(rows);
-        // Keep the default Supabase read, write, RPC and RLS execution in the
-        // SAME PostgreSQL transaction as target resolution. This avoids a
-        // second pool acquisition and a Vault roundtrip per LOC request.
-        if(isSupabaseControlTarget(selected)){
-          const result=await executeRequest(trx,selected,role,claims,body);
-          return {target:selected,result};
-        }
-        return {target:selected};
-      });
-      resolvingTarget=false;
-      target=resolved.target;
-      if("result" in resolved){
-        const result=resolved.result!;
-        return json(result,200,result.count===null?{}:{"content-range":`0-${Math.max(0,(Array.isArray(result.data)?result.data.length:0)-1)}/${result.count}`});
-      }
-    }
-    if(requestedTarget==="supabase")target=controlTarget;
+    // configured and supabase always execute on the trusted Supabase control target.
+    // No per-request database_targets lookup, even for RPCs and authenticated writes.
     if(target.provider==="neon"&&(body.kind!=="query"||body.operation!=="select"))
       return json({error:{message:"Neon LOC mirror is read-only"}},403);
     if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
@@ -346,7 +259,7 @@ Deno.serve(async (request) => {
     const transientConnectionFailure = code === "53300" || code.startsWith("08") || /connection (?:terminated|timeout)|remaining connection slots/i.test(message);
     const status = (error && typeof error === 'object' && 'httpStatus' in error) ? Number(error.httpStatus) : resolvingTarget || transientConnectionFailure ? 503 : isKyselyClientError(error) ? 400 : 500;
     if (status >= 500) console.error("[loc-kysely] Database request failed", error);
-    const responseMessage = status === 400 || status === 403 ? message : resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : "Database request failed";
+    const responseMessage = status === 400 || status === 403 || status === 409 ? message : resolvingTarget ? "Selected database target is unavailable" : status === 503 ? "Database is temporarily unavailable" : "Database request failed";
     return json({ error: { message: responseMessage, code: code || undefined } }, status);
   }
 });
