@@ -19,7 +19,7 @@ import {useSearchParams} from 'next/navigation';
 import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
-import ManagementSectionNav from '../ManagementSectionNav';
+import ManagementSectionNav,{useManagementSection} from '../ManagementSectionNav';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
@@ -170,7 +170,7 @@ export default function Culture(){
   const isTimeEditingView=searchParams?.get('edit')==='1';
   const account=useAccount({enabled:false});
   const editDock=useEditDock();
-  const [timeEditorSection,setTimeEditorSection]=useState('anchor-style');
+  const [timeEditorSection,,timeEditorHrefFor]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
@@ -867,7 +867,16 @@ export default function Culture(){
         {editorAvailable?<div className='management-workspace scope-time-edit-workspace'>
           <ManagementSectionNav id='time-editor-sections' title='編輯項目'
             panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
-            value={timeEditorSection} onChange={setTimeEditorSection}/>
+            value={timeEditorSection} onChange={next=>{
+              if(next===timeEditorSection)return;
+              const href=timeEditorHrefFor(next);
+              if(!href)return;
+              const url=new URL(href,window.location.href);
+              url.searchParams.delete('anchorDate');
+              const target=url.pathname+url.search+url.hash;
+              if(editDock?.active)editDock.switchTo(target,{history:'push'});
+              else window.history.pushState(null,'',target);
+            }}/>
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
             aria-labelledby={'time-editor-sections-option-'+choice.value}>
             <div className='scope-culture-timeline-tools'>

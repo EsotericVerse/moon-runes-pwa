@@ -187,7 +187,8 @@
 .scope-culture-source-groups{display:grid;margin:.75rem 0}
 .scope-culture-source-button{align-items:center;justify-content:space-between;border:var(--scope-border);color:var(--scope-text);text-align:left;cursor:pointer}
 .scope-culture-source-button:hover{border-color:var(--loc-accent-border);background:var(--loc-gold-surface)}
-.scope-culture-source-button{overflow:hidden}\n.scope-culture-source-button span{min-width:0;color:var(--scope-muted);white-space:normal;overflow-wrap:anywhere}
+.scope-culture-source-button{overflow:hidden}
+.scope-culture-source-button span{min-width:0;color:var(--scope-muted);white-space:normal;overflow-wrap:anywhere}
 .scope-culture-source-detail{display:grid;gap:.65rem;min-height:16rem;margin-top:.8rem;border:var(--scope-border);border-radius:var(--scope-radius);}
 .scope-culture-source-detail>header,.scope-culture-work-heading,.scope-culture-source-pages{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
 .scope-culture-source-detail h4{margin:0}
