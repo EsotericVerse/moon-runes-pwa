@@ -3,7 +3,7 @@
 import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
-import {selectManagedScope} from './scope-data';
+import {defaultScopeData,selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 import {assignedSource} from './member-intersection-model.mjs';
@@ -343,6 +343,24 @@ async function resolveDynamicClassifications(documents,catalogRows,onProgress){
     groupTotals
   };
 }
+// Read the *selected* keyword set's name from this Scope's existing catalog.
+// This is a UI-only read: no class/group IDs, classifications or DB state change.
+export async function selectActiveKeywordClassName(scopeId=''){
+  const scope=defaultScopeData(scopeId);
+  if(!scope)return '';
+  const {rows:configRows}=await selectRows(scope.config,{
+    columns:'current_keyword_class_id',
+    filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
+  });
+  const currentId=String(configRows?.[0]?.current_keyword_class_id||'').trim();
+  if(!currentId)return '';
+  const {rows:keywordRows}=await selectRows(scope.keywords,{
+    columns:'class_name',
+    filters:[{column:'class_id',operator:'eq',value:currentId}],limit:1
+  });
+  return String(keywordRows?.[0]?.class_name||'').trim();
+}
+
 async function scopeAndConfig(scopeId='lo3rwang'){
   const id=normalizeScopeId(scopeId);
   const scope=await selectManagedScope(id);
