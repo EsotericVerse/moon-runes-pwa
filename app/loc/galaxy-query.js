@@ -508,22 +508,39 @@ export async function searchGalaxyRows(scopes,query,{
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;
-  const sourceOffset=Math.max(0,Math.floor(Number(cursor?.offset)||0));
-  const provider=providers[stage-1];
-  if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
-  try{
-    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse,signal,sortDirection});
-    if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor,source:result.dataSource||cursor?.source||'auto'}};
-    const hasMore=stage<providers.length;
-    return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0,source:'auto'}:null};
-  }catch(error){
-    // A cancelled search is not a provider failure: never advance to the next stage.
-    if(error?.name==='AbortError')throw error;
-    failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
-    const hasMore=stage<providers.length;
-    if(!hasMore)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
-    return {rows:[],failures,hasMore:true,nextCursor:{stage:stage+1,offset:0,source:'auto'}};
+  let sourceOffset=Math.max(0,Math.floor(Number(cursor?.offset)||0));
+  let source=cursor?.source||'auto';
+
+  // Empty match stages are internal search work, not a user-visible page.
+  // Advance until we have results or exhaust all providers; otherwise guests
+  // must press "Load more" repeatedly before any matching article appears.
+  while(stage<=providers.length){
+    if(signal?.aborted){
+      const cancelled=new Error('Request cancelled');
+      cancelled.name='AbortError';
+      throw cancelled;
+    }
+    const provider=providers[stage-1];
+    if(!provider)break;
+    try{
+      const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source,browse,signal,sortDirection});
+      const rows=result.rows||[];
+      const hasMore=Boolean(result.hasMore)||stage<providers.length;
+      const nextCursor=result.hasMore
+        ?{stage,offset:result.nextCursor,source:result.dataSource||source}
+        :stage<providers.length?{stage:stage+1,offset:0,source:'auto'}:null;
+      if(rows.length||!hasMore)return {rows,failures,hasMore,nextCursor};
+    }catch(error){
+      // Cancellation must neither trigger fallback nor advance search stages.
+      if(error?.name==='AbortError'||signal?.aborted)throw error;
+      failures.push(new Error(`${provider.id}: ${error?.message||'search failed'}`));
+      if(stage===providers.length)throw new AggregateError(failures,'資料搜尋 Provider 無法查詢');
+    }
+    stage+=1;
+    sourceOffset=0;
+    source='auto';
   }
+  return {rows:[],failures,hasMore:false,nextCursor:null};
 }
 
 
