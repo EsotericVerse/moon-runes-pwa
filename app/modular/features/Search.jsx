@@ -658,7 +658,7 @@ export default function Search({managementMode=false}){
     }
   }
   async function saveEditing(result){
-    if(!editDraft||!result?.editableTable||!result.editableField||editBusy)return;
+    if(!editDraft||!result?.editableTable||!result.editableField||editBusy)return false;
     setEditBusy(true);setEditError('');
     try{
       const isGalaxy=result.resourceType==='galaxy';
@@ -681,7 +681,7 @@ export default function Search({managementMode=false}){
         assertPlainGalaxyAttributes({...plainAttrs,...(titleChanged?{title:nextTitle}:{})});
         contentPatch={...(titleChanged?{title:nextTitle}:{}),...attrs};
         if(!Object.keys(contentPatch).length){
-          setEditingKey('');setEditDraft(null);editDock?.end();return;
+          setEditingKey('');setEditDraft(null);editDock?.end();return true;
         }
       }
       await updateRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}]});
@@ -699,10 +699,12 @@ export default function Search({managementMode=false}){
       setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');setStatus('');
       // Article save stays on the management-search workspace.
       if(managementMode)editDock?.end();
+      return true;
     }catch(exception){
       const message=String(exception?.message||exception||UI_COPY.search.saveFailed);
       setEditError(message);
       if(editDock?.active)editDock.setNotice(message);
+      return false;
     }
     finally{setEditBusy(false)}
   }
@@ -789,13 +791,21 @@ export default function Search({managementMode=false}){
 
   dockActions.current={
     save:()=>saveEditing(editTargetRef.current),
-    discard:()=>{setEditingKey('');setEditDraft(null);setEditError('')}
+    discard:()=>{setEditingKey('');setEditDraft(null);setEditError('')},
+    isDirty:()=>Boolean(editDraft&&(
+      editDraft.title!==editDraft.originalTitle||
+      editDraft.bodyHtml!==editDraft.body||
+      JSON.stringify(editDraft.attrs)!==JSON.stringify(editDraft.originalAttrs)
+    )),
+    isBusy:()=>editBusy
   };
   useEffect(()=>{
     if(!managementMode||!editingKey||!editDraft||!editDock?.active)return undefined;
     return editDock.register({
       save:()=>dockActions.current.save(),
-      discard:()=>dockActions.current.discard()
+      discard:()=>dockActions.current.discard(),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
     });
   },[managementMode,editingKey,Boolean(editDraft),editDock?.active,editDock?.register]);
 
