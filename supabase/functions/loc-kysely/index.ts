@@ -33,7 +33,7 @@ const neonLocReadTables = new Set([
   "game", "keyword_classes", "lo3rwang", "lo3rwang_blocks", "lo3rwang_galaxy",
   "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
   "loc_search_keywords", "loc_theme", "lrunes", "lrunes_blocks", "lrunes_daily",
-  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "loc", "runes",
+  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "runes",
   "runes_etc", "runes_group", "statistics_source_aliases",
   "statistics_source_categories",
 ]);
