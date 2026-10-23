@@ -6,6 +6,7 @@ import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
+import {assignedSource} from './member-intersection-model.mjs';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
@@ -676,14 +677,20 @@ function storedSummary(agg,config){
   };
 }
 
-export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate=''}={}){
+export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate='',sourceCategory='',sourceCategories=[],sourceAliases=[]}={}){
   const normalizedScopeId=normalizeScopeId(scopeId);
+  const category=String(sourceCategory||'').trim().toLowerCase();
+  if(category&&!sourceCategories.some(row=>row.category_code===category&&row.enabled!==false)){
+    throw new Error('指定的來源分類不存在或已停用');
+  }
+  // Only unfiltered summaries use the existing RPC and promise cache.
+  // A selected category needs the original source_name on each saved Attr.
   const key=[normalizedScopeId,String(startDate||''),String(endDate||'')].join('|');
-  if(analysisPromises.has(key))return analysisPromises.get(key);
+  if(!category&&analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
     const {scope,config}=await scopeAndConfig(normalizedScopeId);
     if(!config.staticstime)return emptyStored(config);
-    if(keywordSummaryRpcInstalled){
+    if(!category&&keywordSummaryRpcInstalled){
       try{
         const counted=await readRune66Summary(normalizedScopeId,{startDate,endDate});
         return storedSummary(aggregateSummaryRpcRows(counted),config);
@@ -693,7 +700,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
       }
     }
     const rows=await selectAllRows(scope.galaxy,{
-      columns:'uid,createtime,class_id,group_lists',
+      columns:category?'uid,createtime,class_id,group_lists,source_name':'uid,createtime,class_id,group_lists',
       filters:[
         {column:'searchable',operator:'eq',value:true},
         {column:'statistics_able',operator:'eq',value:true},
@@ -702,12 +709,15 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
       ],
       orders:[{column:'createtime',ascending:true}]
     });
-    return storedSummary(aggregateStoredRows(rows.rows||[]),config);
+    const classified=category?(rows.rows||[]).filter(row=>
+      assignedSource(row.source_name,sourceAliases,sourceCategories)===category
+    ):rows.rows||[];
+    return storedSummary(aggregateStoredRows(classified),config);
   })().catch(error=>{
-    analysisPromises.delete(key);
+    if(!category)analysisPromises.delete(key);
     throw error;
   });
-  analysisPromises.set(key,promise);
+  if(!category)analysisPromises.set(key,promise);
   return promise;
 }
 
