@@ -2,7 +2,7 @@
 
 import {useQuery} from '@tanstack/react-query';
 import {dbPublicClient} from './db-client.mjs';
-import {invalidatePublicScopeMetadata,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
+import {invalidatePublicScopeMetadata,invalidatePublicThemeSnapshot,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
 
 // Shared public site snapshot (Registry/Theme/page copy) is fetched once per
@@ -19,6 +19,10 @@ let locHomeSnapshotDelivered=false;
 export function invalidateAppBootstrapMetadata(){
   locHomeSnapshotDelivered=false;
   invalidatePublicScopeMetadata();
+}
+export function invalidateAppBootstrapThemes(){
+  locHomeSnapshotDelivered=false;
+  invalidatePublicThemeSnapshot();
 }
 const missingRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
 

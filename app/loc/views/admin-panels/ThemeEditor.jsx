@@ -1,5 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
+import {invalidateAppBootstrapThemes} from '../../app-bootstrap';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
 import {registerDefaultSection} from '../../../i18n/ui-copy';
@@ -13,6 +15,7 @@ registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function ThemeEditor(){
   useUiSection('uiExtra.adminView');
+  const queryClient=useQueryClient();
   const [rows,setRows]=useState([]);
   const [themeId,setThemeId]=useState(()=>{
     const current=typeof document==='undefined'?'':String(document.documentElement.dataset.themeId||'');
@@ -95,6 +98,10 @@ export default function ThemeEditor(){
       };
       const {error}=await dbAuthRelation('silver.loc_theme').upsert(payload,{onConflict:'theme_id'});
       if(error)throw new Error(error.message||'Theme 儲存失敗。');
+      // A successful Admin theme save deliberately refreshes the site palette;
+      // browsing Guest pages never refreshes this snapshot.
+      invalidateAppBootstrapThemes();
+      await queryClient.invalidateQueries({queryKey:['app-bootstrap']});
       setStatus((draft.label||'主題')+' 已更新。');setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(error?.message||'Theme 儲存失敗。');return false;}
