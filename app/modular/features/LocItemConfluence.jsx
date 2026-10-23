@@ -4,7 +4,6 @@ import {translateUiField} from '../../i18n/ui-copy';
 import featureZh from '../../i18n/features.zh_tw.js';
 
 import {useEffect,useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
 import {realMoonPhase} from '../../loc/model/moon-phase';
@@ -78,27 +77,41 @@ export default function LocItemConfluence(){
   const [laneB,setLaneB]=useState(()=>defaultLane('','galaxy:all'));
   const [selectedDay,setSelectedDay]=useState('');
   const [page,setPage]=useState(1);
-  const scopesQuery=useQuery({
-    queryKey:['managed-scopes'],
-    queryFn:selectManagedScopes,
-    staleTime:5*60_000
-  });
-  const scopes=scopesQuery.data||EMPTY_SCOPES;
+  const [scopesQuery,setScopesQuery]=useState({data:EMPTY_SCOPES,error:null,isPending:true});
+  useEffect(()=>{
+    let active=true;
+    selectManagedScopes().then(data=>{
+      if(active)setScopesQuery({data,error:null,isPending:false});
+    }).catch(error=>{
+      if(active)setScopesQuery({data:EMPTY_SCOPES,error,isPending:false});
+    });
+    return ()=>{active=false;};
+  },[]);
+  const scopes=scopesQuery.data;
   const range=useMemo(()=>validateItemConfluenceRange(startDate,endDate),[startDate,endDate]);
   const selectionA=useMemo(()=>validateItemLane(laneA,scopes),[laneA,scopes]);
   const selectionB=useMemo(()=>validateItemLane(laneB,scopes),[laneB,scopes]);
   const valid=range.valid&&selectionA.valid&&selectionB.valid;
   const selectedA=scopes.find(scope=>scope.id===laneA.scopeId)||null;
   const selectedB=scopes.find(scope=>scope.id===laneB.scopeId)||null;
-  const query=useQuery({
-    queryKey:['loc-item-confluence',range.startDate,range.endDate,laneA.scopeId,laneA.source,laneA.exact,laneB.scopeId,laneB.source,laneB.exact],
-    queryFn:()=>Promise.all([
+  const readKey=JSON.stringify([range.startDate,range.endDate,laneA,laneB]);
+  const [dailyResult,setDailyResult]=useState({key:'',data:null,error:null});
+  useEffect(()=>{
+    if(!valid||!selectedA||!selectedB)return undefined;
+    let active=true;
+    Promise.all([
       selectLocItemDailySeries({scope:selectedA,lane:laneA,startDate:range.startDate,endDate:range.endDate,knownScopes:scopes}),
       selectLocItemDailySeries({scope:selectedB,lane:laneB,startDate:range.startDate,endDate:range.endDate,knownScopes:scopes})
-    ]),
-    enabled:valid&&Boolean(selectedA&&selectedB),
-    staleTime:60_000
-  });
+    ]).then(data=>{
+      if(active)setDailyResult({key:readKey,data,error:null});
+    }).catch(error=>{
+      if(active)setDailyResult({key:readKey,data:null,error});
+    });
+    return ()=>{active=false;};
+  },[readKey,valid,selectedA,selectedB,scopes,range.startDate,range.endDate]);
+  const query=dailyResult.key===readKey
+    ?{data:dailyResult.data,error:dailyResult.error,isPending:false,isSuccess:!dailyResult.error}
+    :{data:null,error:null,isPending:true,isSuccess:false};
   const labels=useMemo(()=>[laneA,laneB].map(lane=>{
     const label=itemLaneDescription(lane);
     const option=ITEM_LANE_OPTIONS.find(item=>item.value===lane.source);

@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery} from '@tanstack/react-query';
 import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
 import {useUiCopy,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
@@ -42,15 +41,23 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate,knownEarliest),
     [zoomLevel,endDate,knownEarliest]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
-  const locQuery=useQuery({
-    queryKey:['loc-statistics',startDate,rangeEndDate],
-    enabled:Boolean(startDate&&rangeEndDate),
-    queryFn:async()=>{
-      const {selectLocStatistics}=await loadGalaxyStatistics();
-      return selectLocStatistics({startDate,endDate:rangeEndDate});
-    },
-    staleTime:5*60_000
-  });
+  const locKey=startDate+'|'+rangeEndDate;
+  const [locResult,setLocResult]=useState({key:'',data:null,error:null});
+  useEffect(()=>{
+    if(!startDate||!rangeEndDate)return undefined;
+    let active=true;
+    loadGalaxyStatistics().then(({selectLocStatistics})=>
+      selectLocStatistics({startDate,endDate:rangeEndDate})
+    ).then(data=>{
+      if(active)setLocResult({key:locKey,data,error:null});
+    }).catch(error=>{
+      if(active)setLocResult({key:locKey,data:null,error});
+    });
+    return ()=>{active=false;};
+  },[locKey,loadGalaxyStatistics,startDate,rangeEndDate]);
+  const locQuery=locResult.key===locKey
+    ?{data:locResult.data,error:locResult.error,isPending:false}
+    :{data:null,error:null,isPending:true};
   useEffect(()=>{
     const found=locQuery.data?.earliest||'';
     if(found&&found!==knownEarliest)setKnownEarliest(found);
