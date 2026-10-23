@@ -841,11 +841,6 @@ export default function Search({managementMode=false}){
         </div>:null}
       </div>
     {!managementMode?<div className="scope-search-reference-editor">
-      <div className="scope-edit-mode-toggle">
-        <ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>
-          <UiText id="uiExtra.editBlocks.enterEditMode"/>
-        </ScopeLink>
-      </div>
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
@@ -858,6 +853,9 @@ export default function Search({managementMode=false}){
         allowDelete={false}
         allowInlineChildAdd
         explicitEditButton
+        toggleExtra={<ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>
+          <UiText id="uiExtra.editBlocks.enterEditMode"/>
+        </ScopeLink>}
         onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
       />
     </div>:null}
