@@ -34,6 +34,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+      - name: Security release gate (moderate, high and critical)
+        run: npm run audit:security
+      - name: Game regression tests
+        run: npm run test:game
       - name: Build Next static export
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
