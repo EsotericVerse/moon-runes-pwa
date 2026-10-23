@@ -177,6 +177,70 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
     {!worksQuery.isPending&&!worksQuery.error&&!works.length?<p className="scope-status">此區間沒有可顯示的作品。</p>:null}
   </div>;
 }
+// A Scope's subgroups only subdivide the Admin-defined Others total.
+// Load on expansion; never turn small-group aliases into global categories.
+function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
+  const groupsQuery=useQuery({
+    queryKey:['scope-others-source-summary',scopeId],
+    enabled:Boolean(scopeId),
+    queryFn:async()=>{
+      const [groups,aliases]=await Promise.all([
+        selectRows('silver.statistics_scope_others_groups',{
+          columns:'group_code,display_name,enabled,sort_order',
+          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
+          orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'
+        }),
+        selectRows('silver.statistics_scope_others_aliases',{
+          columns:'source_key,group_code',
+          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
+          limit:500,source:'primary'
+        })
+      ]);
+      return {groups:groups.rows||[],aliases:aliases.rows||[]};
+    },
+    staleTime:60_000
+  });
+  const details=useMemo(()=>{
+    const groups=(groupsQuery.data?.groups||[]).filter(item=>item.enabled!==false);
+    const active=new Map(groups.map(group=>[group.group_code,group.display_name]));
+    const aliases=new Map((groupsQuery.data?.aliases||[])
+      .map(item=>[String(item.source_key||'').trim().toLowerCase(),item.group_code]));
+    const counts=new Map(),unassigned=new Map();
+    for(const row of rows){
+      if(row.kind!=='source'||!row.category)continue;
+      if(String(row.day||'').slice(0,10)<range.startDate||
+         String(row.day||'').slice(0,10)>range.endDate)continue;
+      if(assignedSource(row.category,catalog.aliases||[],catalog.categories||[])!=='others')continue;
+      const amount=Number(row.item_count)||0;
+      if(!amount)continue;
+      const name=String(row.category).trim();
+      const category=aliases.get(name.toLowerCase());
+      if(category&&active.has(category))counts.set(category,(counts.get(category)||0)+amount);
+      else unassigned.set(name,(unassigned.get(name)||0)+amount);
+    }
+    const result=groups.map(group=>({
+      key:group.group_code,
+      label:group.display_name,
+      value:counts.get(group.group_code)||0
+    })).filter(group=>group.value);
+    const remaining=[...unassigned.values()].reduce((n,v)=>n+v,0);
+    if(remaining)result.push({key:'unclassified',label:'未細分（Others）',value:remaining});
+    return result.sort((a,b)=>b.value-a.value||a.label.localeCompare(b.label));
+  },[groupsQuery.data,rows,catalog,range.startDate,range.endDate]);
+  return <div className="scope-ranking">
+    <h4>此 Scope 的 Others 小分類</h4>
+    {groupsQuery.isPending?<p className="scope-status">載入小分類…</p>:null}
+    {groupsQuery.error?<p className="scope-status scope-error">
+      {featureDataErrorMessage(groupsQuery.error,UI_COPY)}
+    </p>:null}
+    {!groupsQuery.isPending&&!groupsQuery.error&&details.length
+      ?details.map(item=><div key={item.key} className="scope-stat-controls">
+        <span>{item.label}</span><strong>{item.value.toLocaleString()}</strong>
+      </div>)
+      :!groupsQuery.isPending&&!groupsQuery.error?<p className="scope-status">此區間沒有 Others 來源。</p>:null}
+  </div>;
+}
+
 function SummaryList({rankingType,summary,scope,range}){
   const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
@@ -185,9 +249,14 @@ function SummaryList({rankingType,summary,scope,range}){
   return <div className="scope-ranking">
     {rows.map(row=><div key={row.category||row.term} style={{display:'block'}}>
       <StatisticsDetails className="scope-stat-details" summary={<><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>}>
-        {()=> <SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
-          scope={scope} startDate={range.startDate} endDate={range.endDate}
-          sourceNames={row.sourceNames}/>}
+        {()=> <>
+          {row.category==='others'?<ScopeOthersBreakdown
+            scopeId={scope.id} rows={summary.rawRows||[]}
+            catalog={summary.catalog||{}} range={range}/>:null}
+          <SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
+            scope={scope} startDate={range.startDate} endDate={range.endDate}
+            sourceNames={row.sourceNames}/>
+        </>}
       </StatisticsDetails>
     </div>)}
   </div>;
@@ -390,7 +459,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         .map(entry=>String(entry.category??'').trim()))];
       return {term:row.name,item_count:row.value,category,sourceNames};
     }),
-    startDate:queryRange.startDate,endDate:queryRange.endDate
+    startDate:queryRange.startDate,endDate:queryRange.endDate,
+    rawRows:sourceRows.data||[],catalog:sourceCatalog.data||{}
   };
   // Media Style facets and cross-tag relationships are projections of one
   // identical metadata scan; never fetch the same media corpus twice.
