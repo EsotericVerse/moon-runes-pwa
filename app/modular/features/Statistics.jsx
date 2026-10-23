@@ -415,7 +415,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   }),[queryRange.startDate,queryRange.endDate]);
   const keywordSourcesQuery=useQuery({
     queryKey:['statistics-source-taxonomy'],
-    enabled:scopeId==='lo3rwang',
+    enabled:!isLrunesDaily&&styleFilter==='rune66',
     queryFn:async()=>{
       const [categories,aliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{
@@ -450,7 +450,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         sourceAliases:keywordSourcesQuery.data?.aliases||[]
       });
     },
-    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate)
+    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate)
       &&(!keywordSource||keywordSourcesQuery.isSuccess),
     staleTime:5*60_000
   });
@@ -459,7 +459,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      {scopeId==='lo3rwang'?<label>
+      {!isLrunesDaily?<label>
         <span>顯示關鍵字</span>
         <select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
           {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
@@ -475,7 +475,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           </option>)}
         </select>
       </label>:null}
-      {scopeId==='lo3rwang'?<label>
+      {!isLrunesDaily&&styleFilter==='rune66'?<label>
         <span>來源</span>
         <select className="scope-select" aria-label="關鍵字來源" value={keywordSource}
           onChange={event=>setKeywordSource(event.target.value)}>
