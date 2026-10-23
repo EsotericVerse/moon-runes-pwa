@@ -13,7 +13,7 @@ import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
 import {useAccount} from './use-account';
 import {FeaturePage} from '../modular/ui';
-import ManagementSectionNav from '../modular/ManagementSectionNav';
+import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 // The home/account Settings screens never download import or management editors.
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
@@ -39,7 +39,16 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [native,setNative]=useState(false);
   const [urlResolved,setUrlResolved]=useState(false);
   const [home,setHome]=useState('loc');
-  const [section,setSection]=useState(initialSection);
+  const sections=[
+    option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription')),
+    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'))]:[]),
+    ...(native||prefs.account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'))]:[]),
+    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription')),
+    option('account',uiT('uiExtra.globalSettings.account'),uiT('uiExtra.globalSettings.accountDescription'))
+  ];
+  // favorites is the legacy URL alias for the public home/settings panel.
+  const [section,setSection]=useManagementSection(sections,initialSection,{favorites:'home'});
+
   const [requestedScope,setRequestedScope]=useState('');
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
@@ -53,9 +62,6 @@ export default function GlobalSettings({initialSection='home'}={}){
     const isNative=Capacitor.isNativePlatform();
     setNative(isNative);
     const params=new URLSearchParams(window.location.search);
-    const chosen=params.get('section');
-    if(chosen==='favorites')setSection('home');
-    else if(['home','files','manage','account','dailyRune'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
@@ -110,16 +116,7 @@ export default function GlobalSettings({initialSection='home'}={}){
       .filter(Boolean);
   },[native,prefs.favorites.join(','),choices]);
 
-  const sections=[
-    option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription')),
-    ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'))]:[]),
-    // DailyLogClient 本身的 canViewDetails 也是同一個條件（native 或已登入）；
-    // 分頁選項在這裡先同步，未登入、非native時連選項都不出現，不只是內容空白。
-    ...(native||account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'))]:[]),
-    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription')),
-    option('account',uiT('uiExtra.globalSettings.account'),uiT('uiExtra.globalSettings.accountDescription'))
-  ];
-  const activeSection=sections.some(item=>item.value===section)?section:'home';
+  const activeSection=section;
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
 

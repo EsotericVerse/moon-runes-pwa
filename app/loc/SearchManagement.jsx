@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import ScopeLink from '../modular/ScopeLink';
@@ -8,7 +8,7 @@ import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
-import ManagementSectionNav from '../modular/ManagementSectionNav';
+import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 
 const ManagementSearchWorkspace=dynamic(
   ()=>import('../modular/features/Search'),
@@ -29,18 +29,14 @@ export default function SearchManagement(){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
-  const [section,setSection]=useState(()=>{
-    const initial=String(searchParams?.get('section')||'');
-    return SECTIONS.some(item=>item.value===initial)?initial:'search';
-  });
   const ready=!account.loading&&!account.permissionLoading;
   const isLocAdmin=scopeId==='loc';
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
   const permitted=ready&&Boolean(account.user)&&
     (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
   const options=isLocAdmin?SECTIONS.filter(item=>item.value==='search'):SECTIONS;
+  const [activeSection,setSection]=useManagementSection(options,'search');
   const editRequested=searchParams?.get('edit')==='1';
-  const activeSection=options.some(option=>option.value===section)?section:'search';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
     if(!permitted||(!editRequested&&!['suggestions','publish'].includes(activeSection)))return;

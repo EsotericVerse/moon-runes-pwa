@@ -1,13 +1,13 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useEffect} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
-import ManagementSectionNav from '../modular/ManagementSectionNav';
+import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
@@ -38,11 +38,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
     {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁'}
   ]:MANAGEMENT_OPTIONS;
   const editRequested=searchParams?.get('edit')==='1';
-  const requestedSection=String(searchParams?.get('section')||'');
-  const activeSection=options.some(item=>item.value===requestedSection)
-    ?requestedSection:options[0].value;
-  const [section,setSection]=useState(activeSection);
-  useEffect(()=>setSection(activeSection),[activeSection]);
+  const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
     if(!account.user||!canManageHere||(!editRequested&&!['governance','others'].includes(section))||account.permissionLoading)return;

@@ -1,5 +1,8 @@
 'use client';
 
+import {useCallback} from 'react';
+import {useSearchParams} from 'next/navigation';
+
 /** Visible in-page navigation for management workspaces. */
 export default function ManagementSectionNav({
   id,
@@ -33,4 +36,23 @@ export default function ManagementSectionNav({
       })}
     </div>
   </section>;
+}
+
+// Shared URL state for Admin, Scope management, article management and Settings.
+// Native History API updates Next.js useSearchParams without a route remount,
+// retaining edit=1, scopeid, and any other existing query parameters.
+export function useManagementSection(items,defaultValue='',aliases={}){
+  const searchParams=useSearchParams();
+  const requested=searchParams?.get('section')||'';
+  const normalized=aliases[requested]||requested;
+  const fallback=items.some(item=>item.value===defaultValue)?defaultValue:items[0]?.value||'';
+  const value=items.some(item=>item.value===normalized)?normalized:fallback;
+  const setValue=useCallback(next=>{
+    if(!items.some(item=>item.value===next))return;
+    const url=new URL(window.location.href);
+    if(url.searchParams.get('section')===next)return;
+    url.searchParams.set('section',next);
+    window.history.pushState(null,'',url.pathname+url.search+url.hash);
+  },[items]);
+  return [value,setValue];
 }

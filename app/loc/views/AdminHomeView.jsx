@@ -8,14 +8,14 @@ import adminZh from '../../i18n/sections/admin.zh_tw.js';
 import adminViewZh from '../../i18n/sections/uiExtra.adminView.zh_tw.js';
 registerDefaultSection('admin',adminZh);
 registerDefaultSection('uiExtra.adminView',adminViewZh);
-import {useEffect,useState} from 'react';
+import {useEffect} from 'react';
 import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
 import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
 import {useEditDock} from '../../modular/edit-dock';
 import {FeaturePage} from '../../modular/ui';
-import ManagementSectionNav from '../../modular/ManagementSectionNav';
+import ManagementSectionNav,{useManagementSection} from '../../modular/ManagementSectionNav';
 import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
 
@@ -53,7 +53,7 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,setSection]=useState('registry');
+  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry');
   // The edit flag only restores UI state; it never grants access.
   // A direct Admin visit without the flag keeps the ordinary bottom nav.
   useEffect(()=>{
