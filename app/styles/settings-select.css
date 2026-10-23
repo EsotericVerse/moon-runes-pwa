@@ -278,6 +278,10 @@
   .management-workspace-panel .scope-management-fields{padding:.85rem;}
   .management-workspace-panel .scope-management-fields>.scope-management-wide-field{grid-column:auto;}
 }
+@media(max-width:400px){
+  .management-section-nav__items{grid-template-columns:minmax(0,1fr);gap:.35rem;}
+  .management-section-nav__item{min-height:3.5rem;padding:.55rem .7rem;}
+}
 @media(prefers-reduced-motion:reduce){
   .management-section-nav__item{transition:none;}
 }
