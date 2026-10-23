@@ -314,7 +314,9 @@ export default function Culture(){
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||latestPeriod||allTimePeriod);
   // Without a current period, the first effect selects the latest saved period.
   // Do not scan all-time metadata only to immediately scan that period again.
-  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!selectedPeriodKey);
+  // The latest period is already derived synchronously from loaded records.
+  // Do not hold up the source snapshot waiting for a separate UI selection effect.
+  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!latestPeriod&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   // The lower Culture panel shares one selected interval across the source
@@ -359,7 +361,7 @@ export default function Culture(){
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
   const sourceSnapshotQuery=useQuery({
-    queryKey:['culture-period-source-snapshot',classificationScope,classificationWindowStart,classificationWindowEnd],
+    queryKey:['culture-period-source-snapshot','v2',classificationScope,classificationWindowStart,classificationWindowEnd],
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       return selectScopePeriodSourceSnapshot(scopeData,{
@@ -367,7 +369,7 @@ export default function Culture(){
         endDate:classificationWindowEnd
       });
     },
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&!initialPeriodSelectionPending&&Boolean(scopeData)&&classificationWindowValid,
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid,
     staleTime:5*60_000
   });
   const keywordClassQuery=useQuery({
@@ -392,7 +394,7 @@ export default function Culture(){
   });
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
-  const riverRangeLoading=classificationWindowValid&&sourceSnapshotQuery.isFetching;
+  const riverRangeLoading=classificationWindowValid&&(sourceSnapshotQuery.isPending||sourceSnapshotQuery.isFetching);
   const keywordDensityQuery=useQuery({
     queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd],
     enabled:styleFilter==='rune66'&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
@@ -1174,7 +1176,7 @@ export default function Culture(){
                 <h3>第二條河道｜{secondRiverMode==='period'?'時期作品密度':'來源作品密度'}｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!secondRiverBuckets.length
+                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {!riverRangeLoading&&(riverAnalysis.suggestions.length>0||anchorSaveMessage)?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
@@ -1284,7 +1286,7 @@ export default function Culture(){
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
+                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header>
