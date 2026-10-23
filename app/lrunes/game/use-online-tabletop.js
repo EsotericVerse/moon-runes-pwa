@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {produce} from 'immer';
-import {createSupabaseAdapter} from '../../loc/providers/supabase.mjs';
+import {dbRealtimeClient} from '../../loc/db-client.mjs';
 import {createLunaRunesGame} from './boardgame-rules.js';
 
 const topic=code=>'lrunes:tabletop:'+code;
@@ -76,7 +76,7 @@ export function useOnlineTabletop({data,count,code,host}){
 
   useEffect(()=>{
     let active=true;
-    const sdk=createSupabaseAdapter({target:'supabase'}).publicClient;
+    const sdk=dbRealtimeClient;
     const channel=sdk.channel(topic(code),{
       config:{broadcast:{ack:true,self:false},presence:{key:memberId.current}}
     });
