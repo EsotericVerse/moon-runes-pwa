@@ -394,8 +394,8 @@
   .loc-home-block--image-bottom{grid-template-areas:"header" "body" "media" "children";}
 }
 
-/* Only-image uses the normal body DIV: image width follows the card,
-   and its intrinsic aspect ratio supplies height without any text content. */
+/* Image-only keeps the full body DIV while its image uses the normal
+   configurable media width. Intrinsic ratio provides height without text. */
 .loc-home-block--image-only>.loc-home-block__body--image{
   display:block;
   width:100%;
@@ -403,9 +403,10 @@
 }
 .loc-home-block--image-only>.loc-home-block__body--image>img{
   display:block;
-  width:100%;
+  width:min(100%,var(--loc-home-media-max,100%));
   max-width:100%;
   height:auto;
+  margin-inline:auto;
   object-fit:contain;
 }
 
