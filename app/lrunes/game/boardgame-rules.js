@@ -1,5 +1,5 @@
 /**
- * LunaRunes boardgame.io rules adapter.
+ * LunaRunes local tabletop rules.
  * Pure rules: no LOC components, CSS, navigation or database writes.
  * Supabase game rows are loaded before constructing the match.
  */
