@@ -16,12 +16,15 @@ const ManagementSearchWorkspace=dynamic(
 );
 const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:()=>null});
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:()=>null});
+const ManagementMediaPublisher=dynamic(()=>import('./ManagementMediaPublisher'),{loading:()=>null});
 const SunoImportPanel=dynamic(()=>import('./SunoImportPanel'),{loading:()=>null});
 
 const SECTIONS=Object.freeze([
   {value:'search',label:'管理搜尋'},
   {value:'suggestions',label:'建議搜尋的編輯'},
-  {value:'publish',label:'單獨的文章發表與 Suno 寫入'}
+  {value:'publish',label:'文章發表'},
+  {value:'media',label:'多媒體發表'},
+  {value:'suno',label:'Suno 寫入'}
 ]);
 
 export default function SearchManagement(){
@@ -39,7 +42,7 @@ export default function SearchManagement(){
   const editRequested=searchParams?.get('edit')==='1';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
-    if(!permitted||(!editRequested&&!['suggestions','publish'].includes(activeSection)))return;
+    if(!permitted||(!editRequested&&!['suggestions','publish','media','suno'].includes(activeSection)))return;
     editDock?.begin(scopeId);
   },[permitted,editRequested,activeSection,scopeId,editDock?.begin]);
 
@@ -63,7 +66,13 @@ export default function SearchManagement(){
     <div className="management-workspace">
       <ManagementSectionNav id="management-search-sections" title="文章管理"
         panelId="management-search-panel" items={options}
-        value={activeSection} onChange={setSection}/>
+        value={activeSection} onChange={next=>{
+          if(next===activeSection)return;
+          if(!editDock?.active){setSection(next);return;}
+          const url=new URL(window.location.href);
+          url.searchParams.set('section',next);
+          editDock.switchTo(url.pathname+url.search+url.hash);
+        }}/>
       <div id="management-search-panel" className="management-workspace-panel" role="region"
         aria-labelledby={'management-search-sections-option-'+currentSection.value}>
     {activeSection==='search'?<ManagementSearchWorkspace managementMode/>:null}
@@ -76,10 +85,9 @@ export default function SearchManagement(){
         allowInlineChildAdd explicitEditButton
         authorizedByParent startInEditMode onEditorExit={()=>setSection('search')}/>
     </section>:null}
-    {activeSection==='publish'?<div className="scope-management-imports">
-      <ManagementArticlePublisher scopeId={scopeId}/>
-      <SunoImportPanel scopeId={scopeId}/>
-    </div>:null}
+    {activeSection==='publish'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
+    {activeSection==='media'?<ManagementMediaPublisher scopeId={scopeId}/>:null}
+    {activeSection==='suno'?<SunoImportPanel scopeId={scopeId}/>:null}
       </div>
     </div>
   </FeaturePage>;
