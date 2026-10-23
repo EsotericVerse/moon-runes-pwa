@@ -162,7 +162,7 @@ export default function StatisticsMultiChart({
 function classLabel(value,t){
   const text=String(value||'').trim();
   const suffix=t('uiExtra.statisticsView.groupSuffix');
-  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.groupSuffix)?text:text+suffix;
+  return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.groupSuffix)?text:text+' '+suffix;
 }
 function groupLabel(value,t){
   const text=String(value||'').trim();
