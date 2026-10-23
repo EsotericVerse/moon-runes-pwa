@@ -10,7 +10,6 @@ import ManagementSectionNav from '../modular/ManagementSectionNav';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
-import {useAccount} from './use-account';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
@@ -61,11 +60,10 @@ function formatStaticTime(value,l,locale){
   const date=new Date(value);
   return Number.isNaN(date.getTime())?String(value):date.toLocaleString(locale,{hour12:false});
 }
-export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
+export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const l=useFeatureCopy('keywordPanel',featureZh.keywordPanel);
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
-  const account=useAccount();
   const editDock=useEditDock();
   const native=useNativeNavigation();
   const dockActions=useRef({save:null});
