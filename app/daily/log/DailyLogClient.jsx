@@ -64,10 +64,13 @@ function rowKey(row){
 }
 
 export default function DailyLogClient({embedded=false}={}){
-  const account=useAccount();
+  const sessionAccount=useAccount({sessionOnly:true});
   const [native,setNative]=useState(false);
   useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
-  const canViewDetails=native||(!account.loading&&Boolean(account.user));
+  // Reading daily records only needs a session. Fetch the shared Scope
+  // authorizer only for signed-in cloud users who could write.
+  const managementAccount=useAccount({enabled:!native&&Boolean(sessionAccount.user)});
+  const canViewDetails=native||(!sessionAccount.loading&&Boolean(sessionAccount.user));
   const monthRequest=useRef(0);
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
@@ -88,7 +91,7 @@ export default function DailyLogClient({embedded=false}={}){
     direction:'正位'
   }));
   const {year,month}=monthParts(monthValue);
-  const canWrite=native||(canViewDetails&&account.canManageScopeSync('lrunes'));
+  const canWrite=native||(canViewDetails&&managementAccount.canManageScopeSync('lrunes'));
   // Calendar dates remain public in the UI; no rune data is queried without login.
   const visibleRows=canViewDetails?rows:EMPTY_ROWS;
 
