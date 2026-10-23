@@ -413,9 +413,21 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
   }),[queryRange.startDate,queryRange.endDate]);
+  const keywordClassQuery=useQuery({
+    queryKey:['scope-active-keyword-class-name',scopeId],
+    enabled:!isLrunesDaily,
+    queryFn:async()=>{
+      const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
+      return selectActiveKeywordClassName(scopeId);
+    },
+    staleTime:5*60_000
+  });
+  const keywordClassLabel=keywordClassQuery.data
+    ?'關鍵詞組：'+keywordClassQuery.data
+    :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
   const keywordSourcesQuery=useQuery({
     queryKey:['statistics-source-taxonomy'],
-    enabled:!isLrunesDaily&&styleFilter==='rune66',
+    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
     queryFn:async()=>{
       const [categories,aliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{
@@ -450,7 +462,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         sourceAliases:keywordSourcesQuery.data?.aliases||[]
       });
     },
-    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate)
+    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&Boolean(styleRange.startDate&&styleRange.endDate)
       &&(!keywordSource||keywordSourcesQuery.isSuccess),
     staleTime:5*60_000
   });
@@ -462,9 +474,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<label>
         <span>顯示關鍵字</span>
         <select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-          {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
+          {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}
+            disabled={item.value==='rune66'&&!keywordClassQuery.data}>
+            {item.value==='rune66'?keywordClassLabel:t(item.textKey)}
+          </option>)}
         </select>
       </label>:null}
+      {keywordClassQuery.error&&!isLrunesDaily?<p className="scope-status scope-error" role="status">
+        關鍵詞組讀取失敗：{featureDataErrorMessage(keywordClassQuery.error,UI_COPY)}
+      </p>:null}
       {!isLrunesDaily?<label>
         <span>時期</span>
         <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
