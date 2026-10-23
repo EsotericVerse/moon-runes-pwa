@@ -65,7 +65,7 @@ export function createSupabaseAdapter({
       const selection=await selectedDatabaseRouting(publicRouting);
       if(!selection.verified)throw new Error('Primary database cannot be confirmed; write cancelled');
       if(selection.provider==='neon')throw new Error('Selected primary database is read-only');
-      const source=selection.primaryControl?authenticatedSdk.schema(schema):edgeAdmin.schema(schema);
+      const source=(schema==='api'||!selection.primaryControl)?edgeAdmin.schema(schema):authenticatedSdk.schema(schema);
       let query=source.from(table)[method](...args);
       for(const [name,values] of steps)query=query[name](...values);
       return await query;
@@ -81,7 +81,9 @@ export function createSupabaseAdapter({
     return chain;
   }
   function authenticatedDatabase(schema){
-    const db=authenticatedSdk.schema(schema);
+    // The 'api' schema is private (not exposed to PostgREST). Route only its
+    // authenticated, owner-RLS-protected records through the existing Edge SQL port.
+    const db=schema==='api'?edgeAdmin.schema(schema):authenticatedSdk.schema(schema);
     return {
       from(table){
         const base=db.from(table);
