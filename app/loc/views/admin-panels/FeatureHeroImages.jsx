@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import UiText from '../../../i18n/UiText';
@@ -29,7 +29,7 @@ const SINGLE_VARIANT=Object.freeze([
 function pageFor(kind,feature){return kind+'_'+feature.id;}
 
 
-function ImageSlot({feature,variant}){
+function ImageSlot({feature,variant,onDirtyChange}){
   const page=pageFor(variant.kind,feature);
   const order=1;
   const queryClient=useQueryClient();
@@ -86,7 +86,12 @@ function ImageSlot({feature,variant}){
   }
 
   const original=rows===null?'':imageUrlOf((rows||[]).find(item=>Number(item.block_order)===order));
-  useEditDockForm({save,isBusy:()=>busy,isDirty:()=>rows!==null&&value.trim()!==String(original||'').trim()});
+  const dirty=rows!==null&&value.trim()!==String(original||'').trim();
+  useEffect(()=>{
+    onDirtyChange?.(page,dirty);
+    return ()=>onDirtyChange?.(page,false);
+  },[page,dirty,onDirtyChange]);
+  useEditDockForm({save,isBusy:()=>busy,isDirty:()=>dirty});
 
   return <label>
     <span>{variant.label}</span>
@@ -111,12 +116,23 @@ export default function FeatureHeroImages(){
   // ~11 image-row fetches on opening this tab, which is what made it stall.
   const [featureId,setFeatureId]=useState(FEATURES[0].id);
   const [editorRevision,setEditorRevision]=useState(0);
+  const pendingEdits=useRef(new Set());
+  const trackDirty=useCallback((key,dirty)=>{
+    if(dirty)pendingEdits.current.add(key);
+    else pendingEdits.current.delete(key);
+  },[]);
+  const selectFeature=id=>{
+    if(id===featureId)return;
+    if(pendingEdits.current.size&&!window.confirm('目前有尚未儲存的修改，確定放棄並切換功能嗎？'))return;
+    pendingEdits.current.clear();
+    setFeatureId(id);
+  };
   const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
     <div className="scope-preview-links" role="group" aria-label="功能區塊">
       {FEATURES.map(item=><button type="button" key={item.id} className={'loc-button'+(item.id===feature.id?' primary':'')}
-        aria-pressed={item.id===feature.id} onClick={()=>setFeatureId(item.id)}>{item.label}</button>)}
+        aria-pressed={item.id===feature.id} onClick={()=>selectFeature(item.id)}>{item.label}</button>)}
     </div>
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
@@ -132,12 +148,13 @@ export default function FeatureHeroImages(){
         allowEditing
         authorizedByParent startInEditMode keepEditorOpen
         onEditorExit={()=>setEditorRevision(value=>value+1)}
+        onDirtyChange={dirty=>trackDirty('blocks',dirty)}
         explicitEditButton
         allowDelete={false}
         allowEntities={false}
       />
       <div className="scope-management-fields">
-        {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} key={feature.id+variant.kind}/>)}
+        {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} onDirtyChange={trackDirty} key={feature.id+variant.kind}/>)}
       </div>
     </section>
   </section>;
