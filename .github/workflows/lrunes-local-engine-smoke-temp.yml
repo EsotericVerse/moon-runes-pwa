@@ -58,3 +58,5 @@ jobs:
           fi
 
 # Temporary isolated verification; omit from main.
+
+# Recheck against latest main GameBoard Hero/permissions changes.
