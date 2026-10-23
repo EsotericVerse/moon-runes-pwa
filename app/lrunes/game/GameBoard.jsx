@@ -13,6 +13,7 @@ import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YA
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
+import ManagementSectionNav from '../../modular/ManagementSectionNav';
 import {resolveHomeImage,heroSideClass} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
 
@@ -272,18 +273,30 @@ function DocsPanel({data}){
   const events=data.events.filter(row=>matches(row.id,row.name,row.description,row.requirement,...row.groups));
   const roles=data.roles.filter(row=>matches(row.group,row.name,row.focus,row.mode,row.intervention,row.tool,row.tagline));
   const actions=data.runeActions.filter(row=>matches(row.name,row.group,row.text,row.kind,row.value));
+  const sections=[
+    {value:'rules',label:'遊戲規則',description:'回合流程、事件判定與四組簡稱'},
+    {value:'events',label:'事件卡 · '+data.events.length,description:'事件條件與卡片內容'},
+    {value:'roles',label:'八職 · '+data.roles.length,description:'職業定位、介入與工具'},
+    {value:'actions',label:'符文行動 · '+data.runeActions.length,description:'各符文的遊戲行動效果'}
+  ];
+  const activeSection=sections.find(item=>item.value===section)||sections[0];
 
-  return <Paper className="lrg-docs">
-    <Stack direction={{xs:'column',sm:'row'}} spacing={1.5} justifyContent="space-between" alignItems={{sm:'center'}}>
-      <Tabs value={section} onChange={(_,value)=>setSection(value)} variant="scrollable" scrollButtons="auto" aria-label="遊戲資料">
-        <Tab value="rules" label="規則"/>
-        <Tab value="events" label={'事件 '+data.events.length}/>
-        <Tab value="roles" label={'八職 '+data.roles.length}/>
-        <Tab value="actions" label={'符文行動 '+data.runeActions.length}/>
-      </Tabs>
-      <TextField size="small" label="搜尋遊戲資料" value={query} onChange={event=>setQuery(event.target.value)} sx={{minWidth:{sm:220}}}/>
-    </Stack>
-    <Divider sx={{my:2}}/>
+  return <div className="management-workspace lrg-document-workspace">
+    <ManagementSectionNav id="game-document-sections" title="遊戲資料圖鑑"
+      panelId="game-document-panel" items={sections} value={section} onChange={setSection}/>
+    <Paper component="section" className="management-workspace-panel lrg-docs"
+      id="game-document-panel" role="region"
+      aria-labelledby={'game-document-sections-option-'+activeSection.value}>
+      <Stack direction={{xs:'column',sm:'row'}} spacing={1.5}
+        justifyContent="space-between" alignItems={{sm:'center'}}>
+        <div>
+          <Typography variant="h5" component="h2" fontWeight={700}>{activeSection.label}</Typography>
+          <Typography variant="body2" color="text.secondary">{activeSection.description}</Typography>
+        </div>
+        <TextField size="small" label="搜尋遊戲資料" value={query}
+          onChange={event=>setQuery(event.target.value)} sx={{width:{xs:'100%',sm:'min(100%,260px)'}}}/>
+      </Stack>
+      <Divider/>
 
     {section==='rules'?<RuleSections data={data} query={query}/>:null}
 
@@ -294,7 +307,8 @@ function DocsPanel({data}){
     {section==='actions'?<div className="lrg-doc-grid">{actions.map(action=><Paper variant="outlined" className="lrg-doc-item" key={action.runeId}><Stack direction="row" spacing={1}><Chip size="small" label={String(action.runeId).padStart(2,'0')}/><Chip size="small" variant="outlined" label={action.group}/></Stack><Typography fontWeight={800} sx={{mt:1}}>{action.name}</Typography><Typography variant="body2">{action.text}</Typography>{action.kind?<Typography variant="caption" color="text.secondary">{action.kind}{action.value!==null?' '+action.value:''}</Typography>:null}</Paper>)}</div>:null}
 
     {((section==='events'&&!events.length)||(section==='roles'&&!roles.length)||(section==='actions'&&!actions.length))?<Alert severity="info" sx={{mt:2}}>沒有符合的資料。</Alert>:null}
-  </Paper>;
+    </Paper>
+  </div>;
 }
 
 function Board({G,moves,rules,onRestart}){
