@@ -845,23 +845,23 @@ export default function Search({managementMode=false}){
           {chips.length?chips.map((chip,index)=><span className="scope-search-chip" key={index}>{chip}</span>):!managementMode?<span className="scope-search-chip is-muted">{t('uiExtra.searchUI.noFilters')}</span>:null}
         </div>
         {advancedOpen?<div id="scope-search-filter-panel" className="scope-search-filter-panel">
-          <div role="tablist" className="scope-search-filter-tabs" aria-label={t('uiExtra.searchUI.advancedFilters')}>
-            {['type','source','time'].map(tab=><button type="button" role="tab" key={tab} aria-selected={advancedTab===tab} className={advancedTab===tab?'is-active':''} onClick={()=>setAdvancedTab(tab)}>{t('uiExtra.searchUI.filter'+tab[0].toUpperCase()+tab.slice(1))}</button>)}
+          <div role="group" className="scope-search-filter-tabs" aria-label={t('uiExtra.searchUI.advancedFilters')}>
+            {['type','source','time'].map(tab=><button type="button" key={tab} aria-pressed={advancedTab===tab} className={advancedTab===tab?'is-active':''} onClick={()=>setAdvancedTab(tab)}>{t('uiExtra.searchUI.filter'+tab[0].toUpperCase()+tab.slice(1))}</button>)}
           </div>
-          {advancedTab==='type'?<div role="tabpanel" className="scope-search-filter-body">
+          {advancedTab==='type'?<div className="scope-search-filter-body">
             <label htmlFor="scope-search-content-type">{t('uiExtra.searchUI.filterType')}</label>
             <select id="scope-search-content-type" value={contentType} onChange={event=>updateSearchFilter(setContentType,event.target.value)}>
               {filterTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}
             </select>
             <button type="button" className="loc-button" onClick={browseSelectedType}>{t('uiExtra.searchUI.browseType')}</button>
           </div>:null}
-          {advancedTab==='source'?<div role="tabpanel" className="scope-search-filter-body">
+          {advancedTab==='source'?<div className="scope-search-filter-body">
             <label htmlFor="scope-search-source">{t('uiExtra.searchUI.filterSource')}</label>
             <select id="scope-search-source" value={sourceFilter} onChange={event=>updateSearchFilter(setSourceFilter,event.target.value)}>
               {filterSources.map(([value,label])=><option key={value} value={value}>{label}</option>)}
             </select>
           </div>:null}
-          {advancedTab==='time'?<div role="tabpanel" className="scope-search-filter-body scope-search-date-fields">
+          {advancedTab==='time'?<div className="scope-search-filter-body scope-search-date-fields">
             <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
               <input id="scope-search-start-date" type="date" value={startDate} onChange={event=>{setSelectedPeriod('');updateSearchFilter(setStartDate,event.target.value);}}/></label>
             <label htmlFor="scope-search-end-date">{t('uiExtra.searchUI.endDate')}
