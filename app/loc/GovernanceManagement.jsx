@@ -15,6 +15,8 @@ const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loadi
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:PanelLoading});
 const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:PanelLoading});
+const AdminSourceCategories=dynamic(()=>import('./SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:PanelLoading});
+const LocKeywordManagement=dynamic(()=>import('./LocKeywordManagement'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
@@ -28,25 +30,37 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
-  const canManageHere=account.canManageScopeSync(routeScopeId);
-  const [section,setSection]=useState(()=>{
-    const initial=String(searchParams?.get('section')||'');
-    return MANAGEMENT_OPTIONS.some(item=>item.value===initial)?initial:'settings';
-  });
-  const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
+  const isLoc=routeScopeId==='loc';
+  const canManageHere=isLoc?account.canManageGlobalSync():account.canManageScopeSync(routeScopeId);
+  const options=isLoc?[
+    {value:'sources',label:'來源管理',description:'跨 Scope 統計來源分類'},
+    {value:'keywords',label:'關鍵詞管理',description:'LOC 大群組名稱與 Hash'},
+    {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁'}
+  ]:MANAGEMENT_OPTIONS;
+  const requestedSection=String(searchParams?.get('section')||'');
+  const activeSection=options.some(item=>item.value===requestedSection)
+    ?requestedSection:options[0].value;
+  const [section,setSection]=useState(activeSection);
+  useEffect(()=>setSection(activeSection),[activeSection]);
+  const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
     if(!account.user||!canManageHere||!['governance','others'].includes(section)||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,section,routeScopeId,editDock?.begin]);
+  if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
+    <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
+  </FeaturePage>;
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   return <FeaturePage featureId="manage">
 
     <div className="management-workspace">
       <ManagementSectionNav id="scope-sections" title="管理項目" panelId="scope-management-panel"
-        items={MANAGEMENT_OPTIONS} value={section} onChange={setSection}/>
+        items={options} value={section} onChange={setSection}/>
       <div className="management-workspace-panel" id="scope-management-panel" role="region"
         aria-labelledby={'scope-sections-option-'+selectedOption.value}>
+        {isLoc&&section==='sources'?<AdminSourceCategories/>:null}
+        {isLoc&&section==='keywords'?<LocKeywordManagement/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
         {section==='media'?<ManagementArticlePublisher key={routeScopeId+'-media'} scopeId={routeScopeId} mode="media"/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
