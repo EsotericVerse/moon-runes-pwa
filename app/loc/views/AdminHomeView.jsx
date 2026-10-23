@@ -24,6 +24,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'reserved',label:'保留 Scope ID',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
   {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
   {value:'featureHero',label:'功能區塊',description:'編輯各功能頁的標題、說明與首圖。'},
+  {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁。'},
   {value:'system',label:'系統連線',description:'設定資料庫連線與郵件封鎖名單。'}
 ]);
 function Login({account}){
@@ -43,6 +44,7 @@ const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loadin
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
 const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
+const ScopeEditableBlocks=dynamic(()=>import('../ScopeEditableBlocks'),{loading:PanelLoading});
 
 export default function AdminHomeView(){
   useUiSection('admin');
@@ -81,6 +83,11 @@ export default function AdminHomeView(){
         {section==='themes'?<ThemeEditor/>:null}
         {section==='system'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
+        {section==='governance'?<ScopeEditableBlocks key="loc-governance"
+          scopeId="loc" page="governance"
+          className="loc-grid two governance-grid governance-grid-loc"
+          headingLevel={2} allowDelete
+          authorizedByParent startInEditMode explicitEditButton/>:null}
       </div>
     </div>
   </FeaturePage>;
