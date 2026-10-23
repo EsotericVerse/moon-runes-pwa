@@ -1052,8 +1052,8 @@ export default function Culture(){
                   <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
                   </>:null}
                 </div>
-                {timelineItems.some(item=>item.entry_type==='period')?<CultureTimeline
-                  items={timelineItems.filter(item=>item.entry_type==='period')}
+                {timelineItems.length?<CultureTimeline
+                  items={timelineItems}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
