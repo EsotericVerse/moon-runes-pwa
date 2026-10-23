@@ -16,12 +16,10 @@ import {FeaturePage} from '../../modular/ui';
 import ManagementSectionNav from '../../modular/ManagementSectionNav';
 import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
-const AdminSourceCategories=dynamic(()=>import('../SourceCategoryEditor').then(mod=>mod.AdminSourceCategories),{loading:PanelLoading});
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組與人員',description:'管理群組、人員及所屬關係。'},
   {value:'reserved',label:'保留 Scope ID',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
-  {value:'sources',label:'統計來源分類',description:'整理統計資料使用的來源名稱與分類。'},
   {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
   {value:'featureHero',label:'功能區塊',description:'編輯各功能頁的標題、說明與首圖。'},
   {value:'system',label:'系統連線',description:'設定資料庫連線與郵件封鎖名單。'}
@@ -64,7 +62,6 @@ export default function AdminHomeView(){
         aria-labelledby={'admin-sections-option-'+selectedOption.value}>
         {section==='registry'?<AdminRegistryPanel/>:null}
         {section==='reserved'?<AdminReservedScopeIds/>:null}
-        {section==='sources'?<AdminSourceCategories/>:null}
         {section==='themes'?<ThemeEditor/>:null}
         {section==='system'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}

@@ -34,13 +34,17 @@ export default function SearchManagement(){
     return SECTIONS.some(item=>item.value===initial)?initial:'search';
   });
   const ready=!account.loading&&!account.permissionLoading;
+  const isLocAdmin=scopeId==='loc';
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
-  const permitted=ready&&Boolean(account.user)&&isContentScope&&account.canManageScopeSync(scopeId);
-  const currentSection=SECTIONS.find(option=>option.value===section)||SECTIONS[0];
+  const permitted=ready&&Boolean(account.user)&&
+    (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
+  const options=isLocAdmin?SECTIONS.filter(item=>item.value==='search'):SECTIONS;
+  const activeSection=options.some(option=>option.value===section)?section:'search';
+  const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
-    if(!permitted||!['suggestions','publish'].includes(section))return;
+    if(!permitted||!['suggestions','publish'].includes(activeSection))return;
     editDock?.begin(scopeId);
-  },[permitted,section,scopeId,editDock?.begin]);
+  },[permitted,activeSection,scopeId,editDock?.begin]);
 
   // featureId="search" shares the Scope's existing, database-backed Search Hero.
   // Neither its image nor any of its text is replicated or overridden here.
@@ -58,15 +62,15 @@ export default function SearchManagement(){
   </FeaturePage>;
 
   return <FeaturePage featureId="search">
-    <p className="scope-status">進階管理模式</p>
+    <p className="scope-status">{isLocAdmin?'跨 Scope 文章管理（包含未開放搜尋的文章）':'進階文章管理'}</p>
     <div className="management-workspace">
-      <ManagementSectionNav id="management-search-sections" title="管理搜尋功能"
-        panelId="management-search-panel" items={SECTIONS}
-        value={section} onChange={setSection}/>
+      <ManagementSectionNav id="management-search-sections" title="文章管理"
+        panelId="management-search-panel" items={options}
+        value={activeSection} onChange={setSection}/>
       <div id="management-search-panel" className="management-workspace-panel" role="region"
         aria-labelledby={'management-search-sections-option-'+currentSection.value}>
-    {section==='search'?<ManagementSearchWorkspace managementMode/>:null}
-    {section==='suggestions'?<section className="loc-card">
+    {activeSection==='search'?<ManagementSearchWorkspace managementMode/>:null}
+    {activeSection==='suggestions'?<section className="loc-card">
       <ScopeEditableBlocks scopeId={scopeId} page="search" orders={[1]}
         className="scope-search-reference-grid"
         slotClassName="scope-search-reference-block"
@@ -75,7 +79,7 @@ export default function SearchManagement(){
         allowInlineChildAdd explicitEditButton
         authorizedByParent startInEditMode onEditorExit={()=>setSection('search')}/>
     </section>:null}
-    {section==='publish'?<div className="scope-management-imports">
+    {activeSection==='publish'?<div className="scope-management-imports">
       <ManagementArticlePublisher scopeId={scopeId}/>
       <SunoImportPanel scopeId={scopeId}/>
     </div>:null}

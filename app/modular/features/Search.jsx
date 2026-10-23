@@ -308,7 +308,7 @@ export default function Search({managementMode=false}){
     if(scopeId!=='loc')return [account.scopeDataFor(scopeId)||defaultScopeData(scopeId)].filter(Boolean);
     if(!managementMode)return scopesQuery.data||[];
     return (scopesQuery.data||[])
-      .filter(item=>item.active&&item.scope_kind==='scope'&&canManageSearchScope(account,item.scope_id))
+      .filter(item=>item.scope_kind==='scope'&&canManageSearchScope(account,item.scope_id))
       .map(item=>{
         const data=account.scopeDataFor(item.scope_id)||defaultScopeData(item.scope_id);
         return data?{...data,display_name:String(item.display_name||item.scope_id)}:null;

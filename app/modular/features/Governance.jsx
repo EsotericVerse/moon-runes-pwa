@@ -5,9 +5,6 @@ import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
 import {useUiSection} from '../../i18n/ui-locale';
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {navigationHref} from '../scope-registry';
-import useNativeNavigation from '../use-native-navigation';
-import ScopeLink from '../ScopeLink';
 import governanceZh from '../../i18n/sections/governance.zh_tw.js';
 import editBlocksZh from '../../i18n/sections/uiExtra.editBlocks.zh_tw.js';
 registerDefaultSection('governance',governanceZh);
@@ -23,13 +20,8 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
   personal:'說明個人作品的來源、版本與著作權原則。'
 });
 
-function GovernanceBlocks({scopeId,native}){
-  // Public reading never probes management roles. The management route gates access.
-  // LOC keeps its distinct Admin entrance. Other Scope management starts
-  // from the Scope homepage edit mode, not the public Governance page.
-  const manageLink=scopeId==='loc'
-    ?<ScopeLink className="loc-button primary" href={navigationHref('admin','',native)} native={native}>治理管理</ScopeLink>
-    :null;
+function GovernanceBlocks({scopeId}){
+  // All governance pages are public. Management starts at each Scope homepage.
   return <ScopeEditableBlocks
     scopeId={scopeId}
     page="governance"
@@ -37,7 +29,6 @@ function GovernanceBlocks({scopeId,native}){
     headingLevel={2}
     allowEditing={false}
     explicitEditButton
-    toggleExtra={manageLink}
   />;
 }
 
@@ -45,11 +36,10 @@ export default function Governance({section=null}){
   useUiSection('governance');
   useUiSection('uiExtra.editBlocks');
   const {scopeId}=useScopeRuntime();
-  const native=useNativeNavigation();
   const subtitle=section==='law'
     ?UI_COPY.governance.rights
     :(GOVERNANCE_SUBTITLES[scopeId]||GOVERNANCE_SUBTITLES.personal);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
-    <GovernanceBlocks scopeId={scopeId} native={native}/>
+    <GovernanceBlocks scopeId={scopeId}/>
   </FeaturePage>;
 }

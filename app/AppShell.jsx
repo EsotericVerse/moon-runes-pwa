@@ -347,16 +347,17 @@ function AppShellInner({children}){
       encodeURIComponent(key)+'='+encodeURIComponent(value);
   };
   const editingDockVisible=Boolean(editDock?.active&&editDock.scopeId===navScopeId);
+  const locAdminEdit=navScopeId==='loc';
   const editTabs=[
     {id:'save',icon:'save',label:translateUiField(activeLocale,'儲存'),action:'save'},
-    {id:'time',icon:'culture',label:translateUiField(activeLocale,'時間編輯'),
-      href:editScopeAvailable?editTabHref('culture','edit','1'):''},
-    {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞編輯'),
-      href:editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
-    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'搜尋建議編輯'),
-      href:editScopeAvailable?editTabHref('governance/manage/search','section','suggestions')+'&edit=1':''},
-    {id:'governance',icon:'governance',label:translateUiField(activeLocale,'治理編輯'),
-      href:editScopeAvailable?editTabHref('governance/manage','section','governance')+'&edit=1':''},
+    {id:'time',icon:'culture',label:locAdminEdit?'來源管理':translateUiField(activeLocale,'時間編輯'),
+      href:locAdminEdit?editTabHref('governance/manage','section','sources'):editScopeAvailable?editTabHref('culture','edit','1'):''},
+    {id:'keywords',icon:'keywords',label:locAdminEdit?'關鍵詞管理':translateUiField(activeLocale,'關鍵詞編輯'),
+      href:locAdminEdit?editTabHref('governance/manage','section','keywords'):editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
+    {id:'suggestions',icon:'search',label:'文章管理',
+      href:locAdminEdit?editTabHref('governance/manage/search','section','search'):editScopeAvailable?editTabHref('governance/manage/search','section','search'):''},
+    {id:'governance',icon:'governance',label:'管理選單',
+      href:locAdminEdit?navigationHref('admin','',native):editScopeAvailable?editTabHref('governance/manage','section','settings'):''},
     {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
