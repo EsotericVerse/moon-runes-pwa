@@ -1,8 +1,8 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useReducer,useState} from 'react';
 import {runeImage} from '../rune-directory.mjs';
-import {Client} from 'boardgame.io/react';
+import {produce} from 'immer';
 import {useQuery} from '@tanstack/react-query';
 import {
   Alert,Box,Button,Chip,Divider,FormControl,InputLabel,LinearProgress,MenuItem,
@@ -509,16 +509,23 @@ function GameHomeHero({data=null}){
   />;
 }
 
+function LocalMatch({data,count,onRestart}){
+  const game=useMemo(()=>createLunaRunesGame(data,count),[data,count]);
+  const [G,dispatch]=useReducer(
+    (state,{move,args})=>produce(state,draft=>game.moves[move]({G:draft},...args)),
+    null,()=>game.setup()
+  );
+  const moves=useMemo(()=>Object.fromEntries(
+    Object.keys(game.moves).map(move=>[move,(...args)=>dispatch({move,args})])
+  ),[game]);
+  return <Board G={G} moves={moves} rules={data} onRestart={onRestart}/>;
+}
+
 export default function GameBoard(){
   const uiTheme=useLocGameTheme();
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
-  const Engine=useMemo(()=>data&&match?Client({
-    game:createLunaRunesGame(data,count),
-    board:props=><Board {...props} rules={data} onRestart={()=>setMatch(0)}/>,
-    debug:false
-  }):null,[data,count,match]);
 
   if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
     <GameHomeHero/>
@@ -528,7 +535,7 @@ export default function GameBoard(){
     <GameHomeHero/>
     <Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert>
   </main></ThemeProvider>;
-  if(Engine)return <ThemeProvider theme={uiTheme}><Engine key={match}/></ThemeProvider>;
+  if(match)return <ThemeProvider theme={uiTheme}><LocalMatch key={match} data={data} count={count} onRestart={()=>setMatch(0)}/></ThemeProvider>;
 
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
