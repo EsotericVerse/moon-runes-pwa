@@ -70,7 +70,7 @@ export default function DailyLogClient({embedded=false}={}){
   // Reading daily records only needs a session. Fetch the shared Scope
   // authorizer only for signed-in cloud users who could write.
   const managementAccount=useAccount({enabled:!native&&Boolean(sessionAccount.user)});
-  const canViewDetails=native||(!sessionAccount.loading&&Boolean(sessionAccount.user));
+  const canViewDetails=native||(!sessionAccount.loading&&Boolean(sessionAccount.user)&&!managementAccount.loading&&!managementAccount.permissionLoading);
   const monthRequest=useRef(0);
   const [monthValue,setMonthValue]=useState(()=>Math.max(FIRST_MONTH,currentMonthValue()));
   const [rows,setRows]=useState([]);
