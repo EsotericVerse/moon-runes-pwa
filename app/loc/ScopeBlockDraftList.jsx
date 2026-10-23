@@ -45,9 +45,14 @@ export default function ScopeBlockDraftList({
     setMessage(message);
     if(inDock)editDock?.setNotice(message);
   }
-  const [drafts,setDrafts]=useState(()=>slots.map(slot=>({
-    ...slot,entities:HomeBlock.normalizeEntities(slot.entities),_deleted:false
-  })));
+  const initialDrafts=useRef(null);
+  const [drafts,setDrafts]=useState(()=>{
+    const initial=slots.map(slot=>({
+      ...slot,entities:HomeBlock.normalizeEntities(slot.entities),_deleted:false
+    }));
+    initialDrafts.current=JSON.stringify(initial);
+    return initial;
+  });
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const table=`silver.${scopeId}_blocks`;
@@ -160,32 +165,32 @@ export default function ScopeBlockDraftList({
     });
   }
 
-  async function save(){
-    if(busy)return;
+  async function save({switching=false}={}){
+    if(busy)return false;
     setBusy(true);setMessage('');
     if(inDock)editDock?.setNotice('');
     const visible=drafts.filter(draft=>!draft._deleted);
     for(const draft of visible){
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft)){
-        setBusy(false);report(t('uiExtra.editBlocks.emptyContent'));return;
+        setBusy(false);report(t('uiExtra.editBlocks.emptyContent'));return false;
       }
       if(Array.from(String(draft.title||'')).length>TITLE_LIMIT){
-        setBusy(false);report(t('uiExtra.frameEditor.titleTooLong',{limit:TITLE_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.titleTooLong',{limit:TITLE_LIMIT}));return false;
       }
       if(Array.from(String(draft.eyebrow||'')).length>EYEBROW_LIMIT){
-        setBusy(false);report(t('uiExtra.frameEditor.eyebrowTooLong',{limit:EYEBROW_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.eyebrowTooLong',{limit:EYEBROW_LIMIT}));return false;
       }
       if(Array.from(String(draft.subtitle||'')).length>SUBTITLE_LIMIT){
-        setBusy(false);report(t('uiExtra.frameEditor.subtitleTooLong',{limit:SUBTITLE_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.subtitleTooLong',{limit:SUBTITLE_LIMIT}));return false;
       }
       const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
       if(isHomeFrame&&draft.image?.source==='custom'&&String(draft.image.url||'').trim()&&!BlockNoteContent.image.normalizeImageSource(draft.image.url)){
-        setBusy(false);report(t('uiExtra.frameEditor.imageUrlInvalid'));return;
+        setBusy(false);report(t('uiExtra.frameEditor.imageUrlInvalid'));return false;
       }
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
-      if(!allowImages&&embeddedImages>0){setBusy(false);report(t('uiExtra.editBlocks.textOnly'));return;}
-      if(embeddedImages>1){setBusy(false);report(t('uiExtra.editBlocks.oneImage'));return;}
-      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft)){setBusy(false);report(t('uiExtra.editBlocks.invalidImage'));return;}
+      if(!allowImages&&embeddedImages>0){setBusy(false);report(t('uiExtra.editBlocks.textOnly'));return false;}
+      if(embeddedImages>1){setBusy(false);report(t('uiExtra.editBlocks.oneImage'));return false;}
+      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft)){setBusy(false);report(t('uiExtra.editBlocks.invalidImage'));return false;}
     }
     try{
       const {updateRows,insertRows,deleteRows}=await import('./db-client.mjs');
@@ -223,9 +228,12 @@ export default function ScopeBlockDraftList({
         }
       }
       await refreshBlockQueries();
-      onDone(t('uiExtra.editBlocks.saved'));
+      initialDrafts.current=JSON.stringify(drafts);
+      onDone(t('uiExtra.editBlocks.saved'),{switching});
+      return true;
     }catch(error){
       report(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
+      return false;
     }finally{
       setBusy(false);
     }
@@ -296,12 +304,17 @@ export default function ScopeBlockDraftList({
     </section>;
   }
 
-  dockActions.current={save,discard:onCancel};
+  dockActions.current={
+    save,isDirty:()=>JSON.stringify(drafts)!==initialDrafts.current,
+    isBusy:()=>busy,discard:onCancel
+  };
   useEffect(()=>{
     if(!editDock?.active)return undefined;
     return editDock.register({
-      save:()=>dockActions.current.save(),
-      discard:()=>dockActions.current.discard()
+      save:options=>dockActions.current.save(options),
+      discard:()=>dockActions.current.discard(),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
     });
   },[editDock?.active,editDock?.register]);
 
