@@ -6,7 +6,6 @@ import {usePathname,useRouter,useSearchParams} from 'next/navigation';
 import {runeImage} from '../rune-directory.mjs';
 import {LOC_ORIGIN} from '../../seo/metadata';
 import {produce} from 'immer';
-import {useQuery} from '@tanstack/react-query';
 import {
   Alert,Box,Button,Chip,Divider,FormControl,InputLabel,LinearProgress,MenuItem,
   Paper,Select,Stack,Tab,Tabs,TextField,ThemeProvider,Typography,createTheme
@@ -541,7 +540,17 @@ function LocalMatch({data,count,onRestart}){
 
 export default function GameBoard(){
   const uiTheme=useLocGameTheme();
-  const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
+  const [gameData,setGameData]=useState({data:null,error:null,isLoading:true});
+  useEffect(()=>{
+    let active=true;
+    Promise.resolve().then(loadGameData).then(data=>{
+      if(active)setGameData({data,error:null,isLoading:false});
+    }).catch(error=>{
+      if(active)setGameData({data:null,error,isLoading:false});
+    });
+    return ()=>{active=false;};
+  },[]);
+  const {data,error,isLoading}=gameData;
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
   const router=useRouter();

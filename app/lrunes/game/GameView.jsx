@@ -2,7 +2,6 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {runeImage} from '../rune-directory.mjs';
-import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import {AnimatePresence,motion} from 'motion/react';
 import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
@@ -468,19 +467,23 @@ function phaseForRound(data,round){
 }
 
 export default function GameView(){
-  const {data,error,isLoading}=useQuery({
-    queryKey:['lrunes','game','current'],
-    queryFn:loadGameData,
-    staleTime:0,
-    gcTime:0,
-    refetchOnMount:'always'
-  });
-
-  const {data:themeRows=[]}=useQuery({
-    queryKey:['theme-registry'],
-    queryFn:selectThemeRegistry,
-    staleTime:60_000
-  });
+  const [gameData,setGameData]=useState({data:null,error:null,isLoading:true});
+  const [themeRows,setThemeRows]=useState([]);
+  useEffect(()=>{
+    let active=true;
+    Promise.resolve().then(loadGameData).then(data=>{
+      if(active)setGameData({data,error:null,isLoading:false});
+    }).catch(error=>{
+      if(active)setGameData({data:null,error,isLoading:false});
+    });
+    selectThemeRegistry().then(rows=>{
+      if(active)setThemeRows(rows||[]);
+    }).catch(()=>{
+      if(active)setThemeRows([]);
+    });
+    return ()=>{active=false;};
+  },[]);
+  const {data,error,isLoading}=gameData;
 
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);
