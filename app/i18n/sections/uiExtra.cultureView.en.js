@@ -14,7 +14,7 @@ export default {
   "theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag": "The first river shows anchors, events, style tags, and periods. Select a record to edit it; assign unanchored styles from Add → Style tag.",
   "style": "Style",
   "noFilter": "No filter",
-  "keywordClass": "Keyword class",
+  "keywordClass": "Keyword set",
   "workClassificationLane": "Work classification lane",
   "expandToCompareWorkVolumeChanges": "Expand to compare work volume changes (candidate dates, not official anchors)",
   "selectAllCandidates": "Select all candidates",
