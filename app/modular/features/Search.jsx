@@ -894,7 +894,9 @@ export default function Search({managementMode=false}){
           </div>:null}
           {advancedTab==='source'?<div className="scope-search-filter-body">
             <label htmlFor="scope-search-source">{t('uiExtra.searchUI.filterSource')}</label>
-            <select id="scope-search-source" value={sourceFilter} onChange={event=>updateSearchFilter(setSourceFilter,event.target.value)}>
+            <select id="scope-search-source" value={sourceFilter}
+              disabled={sourceTaxonomyQuery.isPending||sourceTaxonomyQuery.isError}
+              onChange={event=>updateSearchFilter(setSourceFilter,event.target.value)}>
               <option value="">{t('uiExtra.searchUI.allSources')}</option>
               {filterSources.filter(([value])=>value.startsWith('category:')).length?<optgroup label="來源分類">
                 {filterSources.filter(([value])=>value.startsWith('category:')).map(([value,label])=>
@@ -909,7 +911,9 @@ export default function Search({managementMode=false}){
             </select>
             <p className="scope-status">來源分類依管理設定篩選文字作品；多媒體請使用「類型」篩選。</p>
             {sourceTaxonomyQuery.isPending?<p className="scope-status" role="status">載入來源分類…</p>:null}
-            {sourceTaxonomyQuery.isError?<p className="scope-status scope-error" role="alert">來源分類載入失敗，請稍後重試。</p>:null}
+            {sourceTaxonomyQuery.isError?<p className="scope-status scope-error" role="alert">來源分類載入失敗。
+              <button type="button" className="loc-button" onClick={()=>sourceTaxonomyQuery.refetch()}>重試</button>
+            </p>:null}
           </div>:null}
           {advancedTab==='time'?<div className="scope-search-filter-body scope-search-date-fields">
             <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
