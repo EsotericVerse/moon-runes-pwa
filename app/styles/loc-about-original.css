@@ -141,6 +141,17 @@
   grid-template-columns:minmax(0,1fr) minmax(0,1.38fr);
   grid-template-areas:"header header" "media body" "children children";
 }
+/* Explicit media width adjusts the actual desktop grid track, not just
+   the child image. Unconfigured blocks retain their existing proportions. */
+@media(min-width:761px){
+  .loc-home-block--with-image.loc-home-block--media-sized.loc-home-block--image-right{
+    grid-template-columns:minmax(0,1fr) minmax(0,min(var(--loc-home-media-max,420px),72%));
+  }
+  .loc-home-block--with-image.loc-home-block--media-sized.loc-home-block--image-left{
+    grid-template-columns:minmax(0,min(var(--loc-home-media-max,420px),72%)) minmax(0,1fr);
+  }
+}
+
 /* Hero keeps the already approved full-bleed background and reading contrast. */
 .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--hero{
   position:relative;
