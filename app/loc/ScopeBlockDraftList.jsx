@@ -281,7 +281,7 @@ export default function ScopeBlockDraftList({
           canInsertImage:allowImages&&!isHomeFrame&&canInsertImageIn(draft,draft.text)
         }
       ]}/>
-      {isHomeFrame?<HeroImageFieldset draft={draft} image={image} onChange={(changes,removeEmbedded)=>patchImage(draft.uid,changes,removeEmbedded)}/>:null}
+      {isHomeFrame?<HeroImageFieldset draft={draft} image={image} allowImageOnly={pageName==='index'} onChange={(changes,removeEmbedded)=>patchImage(draft.uid,changes,removeEmbedded)}/>:null}
       {allowEntities?renderDraftEntities(draft):null}
     </section>;
   }

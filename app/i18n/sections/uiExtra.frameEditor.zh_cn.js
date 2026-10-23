@@ -16,6 +16,7 @@ export default {
   "posRight": "右侧",
   "posTop": "上方",
   "posBottom": "下方",
+  "posOnly": "仅显示图片",
   "imageWidth": "图片宽度（px）",
   "imageRemove": "移除图片"
 };

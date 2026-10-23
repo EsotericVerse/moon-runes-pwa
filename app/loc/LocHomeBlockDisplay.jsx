@@ -32,7 +32,7 @@ export function resolveHomeImage(slot,scopeId='loc'){
   const source=picked;
   const customUrl=BlockNoteContent.image.normalizeImageSource(config?.url||embedded);
   const src=source==='none'?'':source==='default'?preset?.src?.src||'':customUrl;
-  const position=Number(slot?.order)===1?'right':['left','right','top','bottom'].includes(config?.position)
+  const position=Number(slot?.order)===1?'right':['left','right','top','bottom','only'].includes(config?.position)
     ?config.position:(preset?.position||'right');
   const width=Number.isFinite(Number(config?.width))&&Number(config?.width)>=160&&Number(config?.width)<=680
     ?Math.round(Number(config.width)):parseInt(preset?.width,10)||420;
@@ -64,17 +64,18 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const hero=Number(slot?.order)===1;
   const sign=hero?HomeBlock.heroExtraFor(scopeId):null;
   const image=resolveHomeImage(slot,scopeId);
+  const imageOnly=!hero&&Boolean(image.src)&&image.position==='only';
   const children=HomeBlock.visibleEntities(slot).filter(entity=>entity.title||
     BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
   return <>
-    <header className="loc-home-block__header">
+    {!imageOnly?<header className="loc-home-block__header">
       {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
       {slot.title?<Heading>{slot.title}</Heading>:null}
       {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
-    </header>
-    <RichHtml html={slot.text} stripImage className="loc-home-block__body"/>
-    {children.length?<div className="loc-home-block__children">
+    </header>:null}
+    {!imageOnly?<RichHtml html={slot.text} stripImage className="loc-home-block__body"/>:null}
+    {!imageOnly&&children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
         return <article className={'loc-home-block__child '+(card?'loc-home-block__child--card':'loc-home-block__child--bubble')}

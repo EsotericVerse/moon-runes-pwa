@@ -16,6 +16,7 @@ export default {
   "posRight": "右",
   "posTop": "上",
   "posBottom": "下",
+  "posOnly": "画像のみ表示",
   "imageWidth": "画像の幅（px）",
   "imageRemove": "画像を削除"
 };

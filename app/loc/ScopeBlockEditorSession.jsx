@@ -279,7 +279,7 @@ export default function ScopeBlockEditorSession({
               canInsertImage:allowImages&&!isHomeFrame&&canInsertImageIn(draft.text)
             }
           ]}/>
-          {isHomeFrame?<HeroImageFieldset draft={draft} image={image} onChange={configureImage}/>:null}
+          {isHomeFrame?<HeroImageFieldset draft={draft} image={image} allowImageOnly={pageName==='index'} onChange={configureImage}/>:null}
           {allowEntities?renderEditableEntities(draft.entities):null}
   </>;
 }

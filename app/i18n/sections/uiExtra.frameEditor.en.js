@@ -16,6 +16,7 @@ export default {
   "posRight": "Right",
   "posTop": "Top",
   "posBottom": "Bottom",
+  "posOnly": "Image only",
   "imageWidth": "Image width (px)",
   "imageRemove": "Remove image"
 };
