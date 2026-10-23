@@ -10,7 +10,6 @@ import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 
-const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:PanelLoading});
@@ -20,7 +19,6 @@ const LocKeywordManagement=dynamic(()=>import('./LocKeywordManagement'),{loading
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
-  {value:'media',label:'新增多媒體',description:'新增一筆圖片、影片或外部媒體資料。'},
   {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
   {value:'others',label:'Others 來源細分',description:'管理此 Scope 專屬的 Others 小分類與來源對應。'},
   {value:'governance',label:'治理頁編輯',description:'編輯此 Scope 治理頁的既有區塊。'}
@@ -53,13 +51,18 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
 
     <div className="management-workspace">
       <ManagementSectionNav id="scope-sections" title="管理項目" panelId="scope-management-panel"
-        items={options} value={section} onChange={setSection}/>
+        items={options} value={section} onChange={next=>{
+          if(next===section)return;
+          if(!editDock?.active){setSection(next);return;}
+          const url=new URL(window.location.href);
+          url.searchParams.set('section',next);
+          editDock.switchTo(url.pathname+url.search+url.hash);
+        }}/>
       <div className="management-workspace-panel" id="scope-management-panel" role="region"
         aria-labelledby={'scope-sections-option-'+selectedOption.value}>
         {isLoc&&section==='sources'?<AdminSourceCategories/>:null}
         {isLoc&&section==='keywords'?<LocKeywordManagement/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-        {section==='media'?<ManagementArticlePublisher key={routeScopeId+'-media'} scopeId={routeScopeId} mode="media"/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
         {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
         {section==='governance'?<ScopeEditableBlocks key={routeScopeId+'-governance'}
