@@ -31,25 +31,7 @@ const selectProps={
   className:'loc-settings-select',classNamePrefix:'loc-settings-select'
 };
 
-// A saved article/media, not a file chooser selection or the seeded Scope
-// config row, establishes when local data can feed the four features.
-function LocalImportStatus(){
-  const query=useQuery({
-    queryKey:['local-scope-content-ready'],
-    queryFn:async()=>{
-      const {hasLocalScopeContent}=await import('./providers/local-sqlite.mjs');
-      return hasLocalScopeContent();
-    },
-    staleTime:30_000
-  });
-  return <p className="scope-status" role="status">
-    {query.isPending?'正在確認本機資料…':query.error?'無法確認本機資料：'+String(query.error?.message||query.error)
-      :query.data?'已儲存本機文章／媒體，可以透過下方首頁、文化、統計、搜尋使用本機資料。'
-      :'尚未匯入本機文章／媒體，四大功能仍維持原本資料來源。'}
-  </p>;
-}
-
-export default function GlobalSettings({initialSection='home',localScopeOnly=false}={}){
+export default function GlobalSettings({initialSection='home'}={}){
   useUiSection('uiExtra.globalSettings');
   const uiT=useUiText();
   const prefs=useNavigationPreferences();
@@ -70,13 +52,13 @@ export default function GlobalSettings({initialSection='home',localScopeOnly=fal
     if(chosen==='favorites')setSection('home');
     else if(['home','files','manage','account','dailyRune'].includes(chosen))setSection(chosen);
     const scope=params.get('scopeid');
-    if(!localScopeOnly&&scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
+    if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
-  },[localScopeOnly]);
+  },[]);
   const registryQuery=useQuery({
     queryKey:['settings-scope-registry'],
     queryFn:selectScopeRegistry,
-    enabled:!localScopeOnly&&!native&&urlResolved&&section!=='account',
+    enabled:!native&&urlResolved&&section!=='account',
     staleTime:5*60_000
   });
   const registry=registryQuery.data||[];
@@ -103,8 +85,7 @@ export default function GlobalSettings({initialSection='home',localScopeOnly=fal
     return local?[...cloudManaged,local]:cloudManaged;
   },[choices,native,account.user,account.authorizer]);
   const canManageGlobal=!native&&Boolean(account.user)&&account.canManageGlobalSync();
-  const selectedScope=localScopeOnly?managedScopes.find(item=>item.id==='local')||null
-    :managedScopes.find(item=>item.id===requestedScope)||managedScopes[0]||null;
+  const selectedScope=managedScopes.find(item=>item.id===requestedScope)||managedScopes[0]||null;
   const allowedHomes=useMemo(()=>{
     const allowed=new Set(account.authorizer?.scopeIds||[]);
     const items=choices.filter(item=>
@@ -196,16 +177,15 @@ export default function GlobalSettings({initialSection='home',localScopeOnly=fal
         </div>
       </section>:null}
 
-      {activeSection==='files'&&(localScopeOnly||!native)?<div className="loc-settings-panel-group">
-        {selectedScope&&(selectedScope.id==='local'||account.user)?<>
-          {localScopeOnly?<LocalImportStatus/>:null}
-          {!localScopeOnly&&scopeOptions.length>1?<Select {...selectProps} aria-label={uiT('uiExtra.globalSettings.importScope')} inputId="loc-import-scope"
+      {activeSection==='files'&&!native?<div className="loc-settings-panel-group">
+        {account.user?managedScopes.length?<>
+          {scopeOptions.length>1?<Select {...selectProps} aria-label={uiT('uiExtra.globalSettings.importScope')} inputId="loc-import-scope"
             instanceId="loc-import-scope" options={scopeOptions}
             value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-          <ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>
-        </>:account.user?<p className="loc-card"><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
-          <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
+          {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
+        </>:<p className="loc-card"><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
+        <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
       </div>:null}
 
       {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}
