@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {dbAuthRelation} from './db-client.mjs';
 import {useEditDock} from '../modular/edit-dock';
@@ -16,7 +16,7 @@ const errorOf=(result,label)=>{
   return result.data||[];
 };
 
-export default function ScopeOthersSources({scopeId}){
+export default function ScopeOthersSources({scopeId,scopeData=null}){
   const client=useQueryClient();
   const dock=useEditDock();
   const currentSave=useRef(null);
@@ -48,6 +48,23 @@ export default function ScopeOthersSources({scopeId}){
       };
     },staleTime:60_000
   });
+  // Reuse the existing database-side daily aggregate rather than downloading
+  // Galaxy articles simply to discover the raw Others source names.
+  const existingSources=useQuery({
+    queryKey:['scope-others-existing-sources',scopeId,scopeData?.galaxy],
+    enabled:Boolean(scopeId&&scopeData?.galaxy),
+    queryFn:async()=>{
+      const {selectScopeDailyCounts}=await import('./galaxy-query');
+      const {text}=await selectScopeDailyCounts(scopeData,{includeUndated:true});
+      const totals=new Map();
+      for(const row of text||[]){
+        const key=sourceKey(row.category);
+        if(key)totals.set(key,(totals.get(key)||0)+(Number(row.item_count)||0));
+      }
+      return [...totals].map(([key,count])=>({key,count}))
+        .sort((a,b)=>b.count-a.count||a.key.localeCompare(b.key));
+    },staleTime:5*60_000
+  });
   const groups=query.data?.groups||[];
   const aliases=query.data?.aliases||[];
   const enabledGlobal=new Set((query.data?.globalCategories||[])
@@ -56,6 +73,10 @@ export default function ScopeOthersSources({scopeId}){
     const found=(query.data?.globalAliases||[]).find(row=>sourceKey(row.source_key)===key);
     return !found||found.category_code==='others'||!enabledGlobal.has(found.category_code);
   };
+  const othersSourceOptions=useMemo(()=>(existingSources.data||[])
+    .filter(item=>belongsToOthers(item.key))
+    .filter(item=>!aliases.some(row=>sourceKey(row.source_key)===item.key)),
+  [existingSources.data,query.data,aliases]);
   const newGroupKey=sourceKey(groupCode);
   const stagedGroup=CODE.test(newGroupKey)&&groupName.trim()&&!groups.some(row=>row.group_code===newGroupKey)
     ?[{group_code:newGroupKey,display_name:groupName.trim(),enabled:true}]:[];
@@ -175,7 +196,17 @@ export default function ScopeOthersSources({scopeId}){
         </article>)}
       </div>:<p className="scope-status">尚未建立此 Scope 的 Others 小分類。</p>}
       <h3>來源歸屬</h3>
+      {existingSources.isPending?<p className="scope-status" role="status">正在讀取此 Scope 既有來源…</p>:null}
+      {existingSources.error?<p className="scope-status scope-error" role="alert">既有來源清單讀取失敗：{String(existingSources.error.message||existingSources.error)}；仍可手動輸入來源。</p>:null}
       <div className="scope-management-fields">
+        <label><span>從現有 Others 來源選取</span>
+          <select className="scope-select" value="" disabled={!othersSourceOptions.length}
+            onChange={event=>setSource(event.target.value)}>
+            <option value="">選擇來源（或手動輸入）</option>
+            {othersSourceOptions.map(item=><option key={item.key} value={item.key}>
+              {item.key} · {item.count.toLocaleString()} 篇
+            </option>)}
+          </select></label>
         <label><span>原始來源</span>
           <input value={source} maxLength={120} placeholder="輸入 Others 底下的來源名稱"
             onChange={event=>setSource(event.target.value)}/></label>
