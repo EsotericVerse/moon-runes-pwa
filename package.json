@@ -60,7 +60,15 @@
       "ws": "7.5.11"
     },
     "socket.io@3.1.2": {
+      "engine.io": "6.6.11",
       "socket.io-parser": "4.2.7"
+    },
+    "boardgame.io@0.50.2": {
+      "@koa/cors": "5.0.0",
+      "svelte": "5.55.7"
+    },
+    "xcode@3.0.1": {
+      "uuid": "11.1.1"
     }
   },
   "devDependencies": {
