@@ -73,6 +73,11 @@ function useAdminScopeData(){
           birthday:row.birthday,
           Title_TW:row.title_tw,Desc_TW:row.desc_tw
         }));
+        // The graph needs only the registry: show it immediately instead of
+        // waiting for every independent Scope configuration request.
+        if(!active)return;
+        setRegistry(registryRows);
+        setMappings(mappingRows.map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
         const configRows={};
         const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
@@ -86,8 +91,6 @@ function useAdminScopeData(){
         }));
 
         if(!active)return;
-        setRegistry(registryRows);
-        setMappings(mappingRows.map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
         setConfigs(configRows);
         setStatus(configFailures.length?'部分人員設定讀取失敗：'+configFailures.join('；'):'');
       }catch(error){
@@ -115,11 +118,23 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
     let cancelled=false;
     let network=null;
     let themeObserver=null;
+    let loadTimer=null;
     setTreeState('loading');
     setTreeError('');
     // Admin is the management site, not a Scope or an extra hierarchy level.
     const scopeRows=registry.filter(row=>row.scope_kind!=='system');
-    if(!scopeRows.length)return()=>{cancelled=true;};
+    if(!scopeRows.length){
+      setTreeState('error');
+      setTreeError('目前沒有可繪製的群組或人員。');
+      return()=>{cancelled=true;};
+    }
+    // An unavailable vis-network chunk must never leave a perpetual spinner.
+    loadTimer=setTimeout(()=>{
+      if(cancelled)return;
+      cancelled=true;
+      setTreeState('error');
+      setTreeError('關聯圖載入逾時，已切換至人員清單。');
+    },12000);
     const nodes=scopeRows.map(row=>({
       id:row.scope_id,
       label:(configs[row.scope_id]?.display_name||row.display_name||row.scope_id)+'\n'+row.scope_id+(row.active===false?' · 停用':''),
@@ -189,6 +204,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-theme-id']});
       networkRef.current=network;
       network.fit({animation:false,maxZoomLevel:1});
+      clearTimeout(loadTimer);
       setTreeState('ready');
       network.on('selectNode',params=>{
         const id=String(params?.nodes?.[0]||'');
@@ -226,12 +242,13 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
       }
     }).catch(error=>{
       if(cancelled)return;
+      clearTimeout(loadTimer);
       setTreeState('error');
       setTreeError(String(error?.message||error||'人員關聯圖載入失敗。'));
     });
-    return()=>{cancelled=true;themeObserver?.disconnect();network?.destroy();networkRef.current=null;};
-  // Draft Scope names are not canonical until saved; don't rebuild the graph on each keystroke.
-  },[registry]);
+    return()=>{cancelled=true;clearTimeout(loadTimer);themeObserver?.disconnect();network?.destroy();networkRef.current=null;};
+  // Rebuild on persisted name changes, not in-progress draft edits.
+  },[registry,configs]);
 
   useEffect(()=>{
     const network=networkRef.current;
