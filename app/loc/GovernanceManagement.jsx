@@ -37,6 +37,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
     {value:'keywords',label:'關鍵詞管理',description:'LOC 大群組名稱與 Hash'},
     {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁'}
   ]:MANAGEMENT_OPTIONS;
+  const editRequested=searchParams?.get('edit')==='1';
   const requestedSection=String(searchParams?.get('section')||'');
   const activeSection=options.some(item=>item.value===requestedSection)
     ?requestedSection:options[0].value;
@@ -44,9 +45,9 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   useEffect(()=>setSection(activeSection),[activeSection]);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(!account.user||!canManageHere||!['governance','others'].includes(section)||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['governance','others'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
-  },[account.user,account.permissionLoading,canManageHere,section,routeScopeId,editDock?.begin]);
+  },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
   </FeaturePage>;

@@ -8,10 +8,12 @@ import adminZh from '../../i18n/sections/admin.zh_tw.js';
 import adminViewZh from '../../i18n/sections/uiExtra.adminView.zh_tw.js';
 registerDefaultSection('admin',adminZh);
 registerDefaultSection('uiExtra.adminView',adminViewZh);
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
 import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
+import {useEditDock} from '../../modular/edit-dock';
 import {FeaturePage} from '../../modular/ui';
 import ManagementSectionNav from '../../modular/ManagementSectionNav';
 import PanelLoading from '../PanelLoading';
@@ -47,7 +49,16 @@ export default function AdminHomeView(){
   useUiSection('uiExtra.adminView');
   const UI_COPY=useUiCopy();
   const account=useAccount();
+  const editDock=useEditDock();
+  const searchParams=useSearchParams();
+  const editRequested=searchParams?.get('edit')==='1';
+  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
   const [section,setSection]=useState('registry');
+  // The edit flag only restores UI state; it never grants access.
+  // A direct Admin visit without the flag keeps the ordinary bottom nav.
+  useEffect(()=>{
+    if(editRequested&&canManage)editDock?.begin('loc');
+  },[editRequested,canManage,editDock?.begin]);
   const selectedOption=ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0];
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;

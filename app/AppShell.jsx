@@ -351,13 +351,13 @@ function AppShellInner({children}){
   const editTabs=[
     {id:'save',icon:'save',label:translateUiField(activeLocale,'儲存'),action:'save'},
     {id:'time',icon:'culture',label:locAdminEdit?'來源管理':translateUiField(activeLocale,'時間編輯'),
-      href:locAdminEdit?editTabHref('governance/manage','section','sources'):editScopeAvailable?editTabHref('culture','edit','1'):''},
+      href:locAdminEdit?editTabHref('governance/manage','section','sources')+'&edit=1':editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?'關鍵詞管理':translateUiField(activeLocale,'關鍵詞編輯'),
-      href:locAdminEdit?editTabHref('governance/manage','section','keywords'):editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
+      href:locAdminEdit?editTabHref('governance/manage','section','keywords')+'&edit=1':editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
     {id:'suggestions',icon:'search',label:'文章管理',
-      href:locAdminEdit?editTabHref('governance/manage/search','section','search'):editScopeAvailable?editTabHref('governance/manage/search','section','search'):''},
+      href:locAdminEdit?editTabHref('governance/manage/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('governance/manage/search','section','search')+'&edit=1':''},
     {id:'governance',icon:'governance',label:'管理選單',
-      href:locAdminEdit?navigationHref('admin','',native):editScopeAvailable?editTabHref('governance/manage','section','settings'):''},
+      href:locAdminEdit?navigationHref('admin','',native)+'?edit=1':editScopeAvailable?editTabHref('governance/manage','section','settings')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[

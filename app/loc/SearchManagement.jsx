@@ -39,12 +39,13 @@ export default function SearchManagement(){
   const permitted=ready&&Boolean(account.user)&&
     (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
   const options=isLocAdmin?SECTIONS.filter(item=>item.value==='search'):SECTIONS;
+  const editRequested=searchParams?.get('edit')==='1';
   const activeSection=options.some(option=>option.value===section)?section:'search';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
-    if(!permitted||!['suggestions','publish'].includes(activeSection))return;
+    if(!permitted||(!editRequested&&!['suggestions','publish'].includes(activeSection)))return;
     editDock?.begin(scopeId);
-  },[permitted,activeSection,scopeId,editDock?.begin]);
+  },[permitted,editRequested,activeSection,scopeId,editDock?.begin]);
 
   // featureId="search" shares the Scope's existing, database-backed Search Hero.
   // Neither its image nor any of its text is replicated or overridden here.
