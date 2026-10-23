@@ -12,8 +12,6 @@ import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 
 import {useEditDock} from '../edit-dock';
-import {navigationHref} from '../scope-registry';
-import useNativeNavigation from '../use-native-navigation';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import BlockNoteEditor from '../../loc/BlockNoteEditor';
@@ -62,7 +60,6 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
 
   const editDock=useEditDock();
-  const native=useNativeNavigation();
   const dockActions=useRef({save:null});
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
@@ -308,8 +305,6 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       setMessage('');
       setFormOpen(false);
       onClose?.();
-      if(!switching&&editDock?.active&&editDock.scopeId===scopeId)
-        editDock.complete(navigationHref(scopeId,'culture',native));
       return true;
     }catch(error){
       const detail=error?.message||l.saveError;

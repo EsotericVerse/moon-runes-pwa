@@ -716,7 +716,8 @@ export default function Search({managementMode=false}){
         assertPlainGalaxyAttributes({...plainAttrs,...(titleChanged?{title:nextTitle}:{})});
         contentPatch={...(titleChanged?{title:nextTitle}:{}),...attrs};
         if(!Object.keys(contentPatch).length){
-          setEditingKey('');setEditDraft(null);editDock?.end();return true;
+          if(!managementMode){setEditingKey('');setEditDraft(null);}
+          return true;
         }
       }
       await updateRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}]});
@@ -731,9 +732,16 @@ export default function Search({managementMode=false}){
         setFullText(body);
         setFullTextRow(current=>({...current,...contentPatch,uid:current?.uid||result.editResourceId||result.resourceId}));
       }
-      setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');setStatus('');
-      // Article save stays on the management-search workspace.
-      if(managementMode)editDock?.end();
+      if(managementMode){
+        setEditDraft(current=>current?{
+          ...current,originalTitle:nextTitle,
+          ...(isGalaxy?{body,bodyHtml:body}:{}),
+          originalAttrs:{...current.attrs}
+        }:current);
+      }else{
+        setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');
+      }
+      setStatus('');
       return true;
     }catch(exception){
       const message=String(exception?.message||exception||UI_COPY.search.saveFailed);

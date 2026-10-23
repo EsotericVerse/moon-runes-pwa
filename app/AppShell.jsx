@@ -348,8 +348,17 @@ function AppShellInner({children}){
   };
   const editingDockVisible=Boolean(editDock?.active&&editDock.scopeId===navScopeId);
   const locAdminEdit=navScopeId==='loc';
+  const editSegments=String(pathname||'').split('/').filter(Boolean);
+  const editSection=typeof window!=='undefined'
+    ?new URLSearchParams(window.location.search).get('section'):'';
+  const featureEditReturn=editSegments.includes('culture')?'culture'
+    :editSegments.includes('statics')&&editSegments.includes('keywords')?'statics'
+    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSegments.includes('search')?'search'
+    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSection==='governance'?'governance'
+    :null;
+  const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
-    {id:'save',icon:'save',label:translateUiField(activeLocale,'儲存'),action:'save'},
+    {id:'save',icon:'save',label:isFeatureEditMode?'分段儲存':translateUiField(activeLocale,'儲存'),action:'save'},
     {id:'time',icon:'culture',label:locAdminEdit?'來源管理':translateUiField(activeLocale,'時間編輯'),
       href:locAdminEdit?editTabHref('governance/manage','section','sources')+'&edit=1':editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?'關鍵詞管理':translateUiField(activeLocale,'關鍵詞編輯'),
@@ -358,7 +367,7 @@ function AppShellInner({children}){
       href:locAdminEdit?editTabHref('governance/manage/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('governance/manage/search','section','search')+'&edit=1':''},
     {id:'governance',icon:'governance',label:'管理選單',
       href:locAdminEdit?navigationHref('admin','',native)+'?edit=1':editScopeAvailable?editTabHref('governance/manage','section','settings')+'&edit=1':''},
-    {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
+    {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
     {id:'home',icon:'home',label:translateUiField(activeLocale,'首頁'),href:isMyPhone?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
@@ -424,8 +433,9 @@ function AppShellInner({children}){
         ?<button type="button" key={tab.id}
           disabled={editDock.busy}
           onClick={()=>tab.action==='save'
-            ?editDock.save()
-            :editDock.discard(navigationHref(navScopeId,'',native))}>
+            ?editDock.save({stayInEditMode:isFeatureEditMode})
+            :editDock.discard(navigationHref(navScopeId,isFeatureEditMode?featureEditReturn:'',native),
+              {confirmOnlyWhenDirty:isFeatureEditMode})}>
           <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
         </button>
         :tab.href?<button type="button" key={tab.id} disabled={editDock.busy}

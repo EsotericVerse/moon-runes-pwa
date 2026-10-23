@@ -200,6 +200,7 @@ export default function ScopeBlockDraftList({
       for(const draft of drafts.filter(draft=>draft._deleted&&draft.stored)){
         await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
       }
+      const savedDrafts=[];
       for(const [index,draft] of visible.entries()){
         const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
         const values={
@@ -217,18 +218,14 @@ export default function ScopeBlockDraftList({
             ...(pageName==='index'&&draft.order===1&&entityIndex===0&&image_mode==='side'?{image_mode:'side'}:{})
           }))
         };
-        if(draft.stored){
-          await updateRows(table,values,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
-        }else{
-          // Fixed-slot pages can open an empty placeholder when that row does
-          // not exist yet. Give the new row a valid block UID before insert;
-          // the placeholder itself has no stored UID to reuse.
-          const uid=/^[A-Za-z0-9]{8}$/.test(String(draft.uid||''))?draft.uid:HomeBlock.createUid();
-          await insertRows(table,[{uid,...values}]);
-        }
+        const uid=draft.stored?draft.uid:/^[A-Za-z0-9]{8}$/.test(String(draft.uid||''))?draft.uid:HomeBlock.createUid();
+        if(draft.stored)await updateRows(table,values,{filters:[{column:'uid',operator:'eq',value:uid}]});
+        else await insertRows(table,[{uid,...values}]);
+        savedDrafts.push({...draft,uid,stored:true,order:values.block_order,_deleted:false});
       }
       await refreshBlockQueries();
-      initialDrafts.current=JSON.stringify(drafts);
+      setDrafts(savedDrafts);
+      initialDrafts.current=JSON.stringify(savedDrafts);
       onDone(t('uiExtra.editBlocks.saved'),{switching});
       return true;
     }catch(error){

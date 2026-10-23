@@ -81,7 +81,7 @@ export function EditDockProvider({children}){
     end();
     navigate(target);
   },[end,navigate]);
-  const save=useCallback(async()=>{
+  const save=useCallback(async({stayInEditMode=false}={})=>{
     if(busy)return;
     const editor=currentEditor.current;
     if(typeof editor?.save!=='function'){
@@ -91,24 +91,28 @@ export function EditDockProvider({children}){
     setBusy(true);
     setNotice('');
     try{
-      await editor.save();
+      const saved=await editor.save();
+      if(saved===true&&stayInEditMode)setNotice('已分段儲存，可繼續編輯。');
     }catch(error){
       setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
     }finally{
       setBusy(false);
     }
   },[busy]);
-  const discard=useCallback(target=>{
-    if(busy)return;
-    if(!window.confirm('確定放棄尚未儲存的編輯並返回首頁？'))return;
-    end();
-    navigate(target);
-  },[busy,end,navigate]);
-  // Every mounted form reports its own unsaved state; a focused form is not
-  // necessarily the only edited one on a management page.
   const dirtyEditors=useCallback(()=>[...registeredEditors.current].filter(editor=>
     typeof editor.isDirty==='function'&&editor.isDirty()
   ),[]);
+  const discard=useCallback((target,{confirmOnlyWhenDirty=false}={})=>{
+    if(busy)return;
+    if((!confirmOnlyWhenDirty||dirtyEditors().length)&&
+      !window.confirm(confirmOnlyWhenDirty
+        ?'確定放棄尚未儲存的變更並返回普通頁面？'
+        :'確定放棄尚未儲存的編輯並返回首頁？'))return;
+    end();
+    navigate(target);
+  },[busy,dirtyEditors,end,navigate]);
+  // Every mounted form reports its own unsaved state; a focused form is not
+  // necessarily the only edited one on a management page.
   const switchTo=useCallback((target,{history='replace'}={})=>{
     if(busy||!target)return;
     if([...registeredEditors.current].some(editor=>editor.isBusy?.())){

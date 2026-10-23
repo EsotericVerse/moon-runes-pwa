@@ -213,17 +213,19 @@ export default function ScopeEditableBlocks({
         toolbar={toggleButton}
         onCancel={()=>{
           setEditMode(false);
-          if(editDock?.active&&editDock.scopeId===scopeId)
-            editDock.complete(navigationHref(scopeId,'',native));
-          else onEditorExit?.();
-        }}
-        onDone={(notice,{switching=false}={})=>{
-          setEditMode(false);setMessage(notice);
-          if(switching)return;
           if(editDock?.active&&editDock.scopeId===scopeId){
             const destination=pageName==='search'?'search':pageName==='governance'?'governance':'';
             editDock.complete(navigationHref(scopeId,destination,native));
-          }else onEditorExit?.(notice);
+          }else onEditorExit?.();
+        }}
+        onDone={(notice,{switching=false}={})=>{
+          setMessage(notice);
+          if(['search','governance'].includes(pageName)&&!switching)return;
+          setEditMode(false);
+          if(switching)return;
+          if(editDock?.active&&editDock.scopeId===scopeId)
+            editDock.complete(navigationHref(scopeId,'',native));
+          else onEditorExit?.(notice);
         }}
       />:slots.flatMap((slot,index)=>{
         const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);

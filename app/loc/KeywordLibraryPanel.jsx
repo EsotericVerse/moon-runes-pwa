@@ -2,8 +2,6 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useEditDock} from '../modular/edit-dock';
-import {navigationHref} from '../modular/scope-registry';
-import useNativeNavigation from '../modular/use-native-navigation';
 import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
@@ -65,7 +63,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
   const editDock=useEditDock();
-  const native=useNativeNavigation();
   const dockActions=useRef({save:null});
   const queryClient=useQueryClient();
   const scopeData=account.scopeDataFor(scopeId);
@@ -568,7 +565,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         return false;
       }
       const success=await (choice==='analysis'?saveAnalysisSettings():save());
-      if(success&&!switching)editDock?.complete(navigationHref(scopeId,'statics',native));
       return success;
     },
     isDirty:()=>configDirty||draftDirty,
