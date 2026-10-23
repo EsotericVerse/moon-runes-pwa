@@ -65,6 +65,7 @@ export default function ScopeEditableBlocks({
   authorizedByParent=false,
   startInEditMode=false,
   keepEditorOpen=false,
+  onDirtyChange=null,
   onEditorExit=null,
   toggleExtra=null,
   onSuggestionClick=null,
@@ -211,6 +212,7 @@ export default function ScopeEditableBlocks({
         editSlotClassName={editSlotClassName}
         preserveOrder={Boolean(normalizedOrders.length)}
         toolbar={toggleButton}
+        onDirtyChange={onDirtyChange}
         onCancel={()=>{
           if(keepEditorOpen){onEditorExit?.();return;}
           setEditMode(false);
