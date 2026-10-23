@@ -32,9 +32,26 @@
   background:color-mix(in srgb,var(--loc-accent) 33%,var(--loc-panel) 67%);
   box-shadow:0 8px 17px rgb(0 0 0 / .26);
 }
+/* Current destination: steady glow, a brighter surface and a small
+   position marker. Keep this visual state separate from editing actions. */
 .scope-feature-dock a[aria-current="page"]{
+  position:relative;
   border-color:var(--loc-accent);
-  box-shadow:0 6px 18px color-mix(in srgb,var(--loc-accent) 30%,transparent),0 3px 10px rgb(0 0 0 / .2);
+  background:color-mix(in srgb,var(--loc-accent) 46%,var(--loc-panel) 54%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb,var(--loc-accent) 48%,transparent),
+    0 0 20px color-mix(in srgb,var(--loc-accent) 42%,transparent),
+    0 3px 10px rgb(0 0 0 / .16);
+}
+.scope-feature-dock a[aria-current="page"]::after{
+  content:'';
+  position:absolute;
+  width:18px;
+  height:3px;
+  border-radius:999px;
+  bottom:3px;
+  background:var(--loc-accent);
+  box-shadow:0 0 6px var(--loc-accent);
 }
 body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 /* Embedded Daily Rune test surface precedes the ordinary Global Settings cards. */

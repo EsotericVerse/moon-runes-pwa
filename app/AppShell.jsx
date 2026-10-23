@@ -447,7 +447,7 @@ function AppShellInner({children}){
         </button>)
       :featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
-          !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>
+          !isSettings&&(tab.id==='home'?isScopeHomepage:currentFeature===tab.id)?'page':undefined}>
         <BottomNavIcon name={tab.icon}/>
         <span>{tab.label}</span>
       </ScopeLink>)}
