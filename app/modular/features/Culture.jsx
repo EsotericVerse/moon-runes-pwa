@@ -27,7 +27,7 @@ import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline
 
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 
-import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {useAccount} from '../../loc/use-account';
@@ -243,8 +243,6 @@ export default function Culture(){
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
-  const [anchorSaveBusy,setAnchorSaveBusy]=useState(false);
-  const [anchorSaveMessage,setAnchorSaveMessage]=useState('');
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
@@ -254,15 +252,12 @@ export default function Culture(){
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
-  // Selecting a river record must only ever show its summary. Opening the
-  // editor (and the river's own add/move/remove affordances) requires this
-  // explicit toggle - same reasoning as ScopeEditableBlocks' explicitEditButton:
-  // a tap meant to just read the river must never fall straight into edit mode.
-  const [timelineEditMode,setTimelineEditMode]=useState(false);
+  // Ordinary culture viewing never checks management permissions.
+  // Only the separate editor can provide write operations.
   useEffect(()=>{
-    const permitted=isTimeEditingView&&Boolean(account.user)&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId);
-    setTimelineEditMode(permitted);
-    if(permitted)editDock?.begin(scopeId);
+    if(isTimeEditingView&&account.user&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId)){
+      editDock?.begin(scopeId);
+    }
   },[isTimeEditingView,account.user,account.loading,account.permissionLoading,account.authorizer,scopeId,editDock?.begin]);
   useEffect(()=>{
     setSelectedTimelineRecordId('');
@@ -755,52 +750,11 @@ export default function Culture(){
   );
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
-    setAnchorSaveMessage('');
   },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
 
   const toggleVirtualAnchor=date=>{
     setSelectedVirtualAnchorDates(current=>current.includes(date)?current.filter(item=>item!==date):[...current,date].sort());
   };
-
-  async function saveSelectedVirtualAnchors(verifiedByClick=false){
-    if(!selectedVirtualAnchorDates.length||anchorSaveBusy)return;
-    setAnchorSaveBusy(true);setAnchorSaveMessage('');
-    try{
-      if(!verifiedByClick&&!account.canManageScopeSync(classificationScope))throw new Error(l.createDenied);
-      const time=scopeData?.time;
-      if(!time)throw new Error(l.sourceUnresolved);
-      const now=new Date().toISOString();
-      const existingDays=anchorRecords.map(item=>Date.parse(String(item.start_date||'').slice(0,10)+'T00:00:00Z')).filter(Number.isFinite);
-      const safeDates=selectedVirtualAnchorDates.filter(date=>{
-        const day=Date.parse(date+'T00:00:00Z');
-        return Number.isFinite(day)&&!existingDays.some(existing=>Math.abs(day-existing)<=3*86400000);
-      });
-      if(!safeDates.length)throw new Error(l.existingAnchorNearby);
-      const rows=safeDates.map(date=>({
-        record_type:'anchor',
-        label:'文化作品密度轉折｜'+date,
-        resource_id:'anchor:'+globalThis.crypto.randomUUID(),
-        note:'作品分類河道建議：'+(riverAnalysis.suggestions.find(item=>item.date===date)?.analysis||[]).join(' ')+'；需持續回顧與作品、事件及時期的關係。',
-        status:null,
-        display_order:null,
-        visibility:null,
-        time_date:date,
-        anchor_ids:null,
-        date_status:'exact',
-        year_value:null,
-        updated_at:now
-      }));
-      await insertRows(time,rows);
-      setSelectedVirtualAnchorDates([]);
-      setAnchorSaveMessage(formatCultureUi(l.anchorsCreated,{count:rows.length})+(rows.length<selectedVirtualAnchorDates.length?l.anchorDatesSkipped:''));
-      await query.refetch();
-    }catch(error){
-      setAnchorSaveMessage(error?.message||l.bulkAnchorFailed);
-    }finally{
-      setAnchorSaveBusy(false);
-    }
-  }
-
 
   async function startEditingWork(work){
     const uid=String(work?.uid||'').trim();
@@ -1036,21 +990,6 @@ export default function Culture(){
                     <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
                     {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                   </select></label>
-                  {account.canManageScopeSync(scopeId)&&timelineEditMode?<>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}><UiText id="uiExtra.cultureView.ddOfficialAnchor"/></button>
-                  <select className='scope-select' aria-label={translateUiField(locale,'新增時間長河紀錄')} defaultValue='' onChange={event=>{
-                    const recordType=event.currentTarget.value;
-                    if(!['period','event','style_comment'].includes(recordType))return;
-                    event.currentTarget.value='';
-                    beginTimelineCreation(recordType,'');
-                  }}>
-                    <option value='' disabled><UiText id="uiExtra.cultureView.dd"/></option>
-                    <option value='period'><UiText id="uiExtra.cultureView.period"/></option>
-                    <option value='event'><UiText id="uiExtra.cultureView.event"/></option>
-                    <option value='style_comment'><UiText id="uiExtra.cultureView.styleTag"/></option>
-                  </select>
-                  <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
-                  </>:null}
                 </div>
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
@@ -1059,44 +998,14 @@ export default function Culture(){
                   mode='overview'
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
-                  onTimeClick={account.canManageScopeSync(scopeId)&&timelineEditMode?date=>{
-                    beginTimelineCreation('anchor',date);
-                  }:null}
-                  onSelect={item=>{
-                    setSelectedTimelineInfo(item||null);
-                    if(!timelineEditMode)return;
-                    const recordId=String(item?.recordId||'').trim();
-                    if(!recordId)return;
-                    setSelectedTimelineRecordId(recordId);
-                    setSelectedTimelineDate('');
-                  }}
-                  editable={account.canManageScopeSync(scopeId)&&timelineEditMode}
-                  onAdd={null}
-                  onMove={account.canManageScopeSync(scopeId)&&timelineEditMode?moveTimelineRecord:null}
-                  onUpdate={account.canManageScopeSync(scopeId)&&timelineEditMode?(item,row)=>{
-                    if(row?.recordId){
-                      setSelectedTimelineRecordId(row.recordId);
-                      setSelectedTimelineDate('');
-                    }
-                    return null;
-                  }:null}
-                  onRemove={account.canManageScopeSync(scopeId)&&timelineEditMode?removeTimelineRecord:null}
+                  onSelect={item=>setSelectedTimelineInfo(item||null)}
+                  editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
                 {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
                   <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
                   {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
                 </div>:null}
-                {account.canManageScopeSync(scopeId)&&timelineEditMode&&Boolean(
-                  selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate')
-                )?<CultureTimelineEditor
-                  scopeId={scopeId}
-                  selectedRecordId={selectedTimelineRecordId}
-                  suggestedAnchorDate={selectedTimelineDate}
-                  suggestedRecordType={suggestedRecordType}
-                  suggestedRequestNonce={suggestedRequestNonce}
-                  onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSuggestedRequestNonce(0)}}
-                />:null}
               </section>
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
@@ -1177,34 +1086,21 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
-                {!riverRangeLoading&&(riverAnalysis.suggestions.length>0||anchorSaveMessage)?<div className='scope-culture-anchor-actions'>
+                {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
-                  {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
+                  <details className='scope-culture-anchor-picker'>
                     <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
                     <div className='scope-culture-anchor-choices'>
-                      {riverAnalysis.suggestions.map(item=><label key={item.date} title={(item.analysis||[]).join(' ')}>
-                        <input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)} disabled={anchorSaveBusy} onChange={()=>toggleVirtualAnchor(item.date)}/>
-                        <span>{formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}</span>
-                      </label>)}
+                      {riverAnalysis.suggestions.map(item=>{
+                        const route=featureNavigationHref(scopeId,'culture');
+                        const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
+                        return <div key={item.date} className='scope-status'>
+                          <span>{formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}</span>
+                          <ScopeLink href={href}>前往時間編輯</ScopeLink>
+                        </div>;
+                      })}
                     </div>
-                    <div className='scope-preview-links'>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><UiText id="uiExtra.cultureView.selectAllCandidates"/></button>
-                      <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><UiText id="uiExtra.cultureView.clearSelection"/></button>
-                      <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={async()=>{
-                          const verified=await account.refresh();
-                          if(!verified?.user){
-                            setAnchorSaveMessage('請先登入後建立定錨點。');return;
-                          }
-                          if(!verified.authorizer?.canManageScopeSync(classificationScope)){
-                            setAnchorSaveMessage(l.createDenied);return;
-                          }
-                          await saveSelectedVirtualAnchors(true);
-                        }}>
-                        {anchorSaveBusy?UI_COPY.culture.creating:<><UiText id="uiExtra.cultureView.createAfterReview"/> {selectedVirtualAnchorDates.length} <UiText id="uiExtra.cultureView.formalAnchors"/></>}
-                      </button>
-                    </div>
-                  </details>:null}
-                              {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
+                  </details>
                 </div>:null}
                 {!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
