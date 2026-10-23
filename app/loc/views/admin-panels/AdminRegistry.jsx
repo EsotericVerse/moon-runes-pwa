@@ -302,30 +302,28 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const pageCopy=scopeMappings[0]||null;
   // Only persist after explicit Save. Clicking another node or Cancel discards this draft.
   const [editDraft,setEditDraft]=useState(null);
-  const editBaseline=useRef('');
-  const editing=editDraft?.scopeId===selectedId;
-  const current=editing?editDraft.registry:selected;
-  const currentConfig=editing?editDraft.config:config;
-  const currentCopy=editing?editDraft.pageCopy:pageCopy;
-  const beginEdit=()=>{
-    const next={
-      scopeId:selectedId,
-      registry:{...selected},
-      config:config?{...config}:null,
-      pageCopy:pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null
-    };
-    editBaseline.current=JSON.stringify(next);
-    setEditDraft(next);
-  };
-  const cancelEdit=()=>{editBaseline.current='';setEditDraft(null);};
-  const patchRegistry=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
-    ...draft,registry:{...draft.registry,[key]:value}
+  const draftFromSelected=()=>({
+    scopeId:selectedId,
+    registry:{...selected},
+    config:config?{...config}:null,
+    pageCopy:pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null
   });
-  const patchConfig=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
-    ...draft,config:{...draft.config,[key]:value}
+  const currentDraft=editDraft?.scopeId===selectedId?editDraft:null;
+  const current=currentDraft?.registry||selected;
+  const currentConfig=currentDraft?.config||config;
+  const currentCopy=currentDraft?.pageCopy||pageCopy;
+  const cancelEdit=()=>setEditDraft(null);
+  const patchRegistry=(key,value)=>setEditDraft(draft=>{
+    const base=draft?.scopeId===selectedId?draft:draftFromSelected();
+    return {...base,registry:{...base.registry,[key]:value}};
   });
-  const patchPageCopy=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
-    ...draft,pageCopy:{...draft.pageCopy,[key]:value}
+  const patchConfig=(key,value)=>setEditDraft(draft=>{
+    const base=draft?.scopeId===selectedId?draft:draftFromSelected();
+    return {...base,config:{...(base.config||config),[key]:value}};
+  });
+  const patchPageCopy=(key,value)=>setEditDraft(draft=>{
+    const base=draft?.scopeId===selectedId?draft:draftFromSelected();
+    return {...base,pageCopy:{...(base.pageCopy||pageCopy),[key]:value}};
   });
 
   const groups=registry.filter(row=>row.scope_kind==='group'&&row.active!==false&&row.scope_id!==selectedId);
@@ -336,17 +334,19 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const routeValue=routeMode==='domain'
     ?'https://'+String(current?.domain||'')
     :'https://loc.lo3rwang.cc'+String(current?.directory||'');
-  const chooseRouteMode=mode=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
-    ...draft,registry:{
-      ...draft.registry,
-      domain:mode==='domain'?draft.registry.domain||draft.registry.scope_id+'.lo3rwang.cc':null,
-      directory:mode==='directory'?draft.registry.directory||'/'+draft.registry.scope_id:null
-    }
+  const chooseRouteMode=mode=>setEditDraft(draft=>{
+    const base=draft?.scopeId===selectedId?draft:draftFromSelected();
+    return {...base,registry:{
+      ...base.registry,
+      domain:mode==='domain'?base.registry.domain||base.registry.scope_id+'.lo3rwang.cc':null,
+      directory:mode==='directory'?base.registry.directory||'/'+base.registry.scope_id:null
+    }};
   });
   const patchMapping=(email,key,value)=>setMappings(rows=>rows.map(row=>row.id===selectedId&&row.email===email?{...row,[key]:value}:row));
 
   async function saveRegistryAndConfig(){
-    if(!editing||!current)return false;
+    if(!selected||!current)return false;
+    if(!draftDirty)return true;
     setStatus('');
     try{
       if(current.scope_kind!=='system'){
@@ -386,7 +386,6 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       }
       setStatus(current.scope_id+' 已更新。');
       setEditDraft(null);
-      editBaseline.current='';
       refresh();
       return true;
     }catch(error){setStatus(error?.message||'人員更新失敗。');return false;}
@@ -432,7 +431,12 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
 
   const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
     JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
-  const draftDirty=editing&&JSON.stringify(editDraft)!==editBaseline.current;
+  const draftDirty=Boolean(currentDraft&&(
+    JSON.stringify(currentDraft.registry)!==JSON.stringify(selected)||
+    (currentDraft.config!==null&&JSON.stringify(currentDraft.config)!==JSON.stringify(config))||
+    (currentDraft.pageCopy!==null&&JSON.stringify(currentDraft.pageCopy)!==JSON.stringify(
+      pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null))
+  ));
   const newMappingDirty=JSON.stringify(newMapping)!==JSON.stringify(EMPTY_MAPPING);
   useEditDockForm({
     isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
@@ -448,43 +452,11 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
 
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請選擇人員或群組</p></aside>;
 
-  const attrs=[
-    {label:'人員代碼',value:selected.scope_id},
-    {label:'節點類型',value:selected.scope_kind==='group'?'群組':'人員'},
-    {label:'顯示名稱',value:config?.display_name||selected.display_name||'—'},
-    ...(selected.scope_kind==='scope'?[
-      {label:'NAV 中文名稱',value:pageCopy?.Title_TW||'未設定'},
-      {label:'頁面說明',value:pageCopy?.Desc_TW||'未設定'},
-      {label:'搜尋介紹',value:config?.search_intro||'未設定'},
-      {label:'搜尋別名',value:normalizeAliases(config?.search_aliases).join('、')||'未設定'},
-      {label:'主題',value:themeOptions.find(option=>option.value===(config?.theme||'system-default'))?.label||'系統預設'},
-      {label:'預設語系',value:UI_LOCALE_OPTIONS.find(option=>option.value===normalizeUiLocale(config?.locale))?.label||'繁體中文'},
-      {label:'功能開放',value:['Search','Statistics','Culture'].filter((name,index)=>[config?.search_able,config?.statistics_able,config?.culture_able][index]!==false).join('、')||'全部停用'},
-      {label:'管理者數量',value:String(scopeMappings.length)}
-    ]:[]),
-    {label:'路由類型',value:routeMode==='domain'?'Domain · 獨立網域':'Directory · 站內路徑'},
-    {label:'實際位置',value:routeValue},
-    ...(selected.scope_id==='loc'?[]:[{label:'所屬群組',value:registry.find(row=>row.scope_id===selected.parent_scope_id)?.display_name||selected.parent_scope_id||'—'}]),
-    {label:'狀態',value:selected.active!==false?'啟用':'隱藏'}
-  ];
-
-  return <aside className={'admin-context-panel'+(editing?' is-editing':' is-reading')}>
+  return <aside className="admin-context-panel is-editing">
     <div className="admin-node-heading">
-      <div>
-                <h2>{config?.display_name||selected.display_name||selected.scope_id}</h2>
-      </div>
-      {!editing?<div className="admin-node-actions">
-        <button type="button" className="loc-button primary" onClick={beginEdit}><UiText id="uiExtra.adminView.editSettings"/></button>
-        {selected.scope_kind==='scope'&&!routeLocked?<button type="button" className="loc-button" onClick={()=>onDeleteNode?.(selectedId)}><UiText id="uiExtra.adminView.delete"/></button>:null}
-      </div>:<span className="scope-status"><UiText id="uiExtra.adminView.editingDraftNotSaved"/></span>}
+      <h2>{currentConfig?.display_name||current?.display_name||selected.scope_id}</h2>
+      {draftDirty?<span className="scope-status">有尚未儲存的修改</span>:null}
     </div>
-
-    {!editing?<div className="admin-attribute-grid" aria-label="人員設定摘要">
-      {attrs.map(item=><button type="button" className="admin-attribute" key={item.label} onClick={beginEdit} title={'編輯 '+item.label}>
-        <span><FieldText text={item.label}/></span>
-        <strong>{item.value}</strong>
-      </button>)}
-    </div>:<>
       {current.scope_kind==='group'?<label><span><UiText id="uiExtra.adminView.groupName"/></span><input value={current.display_name||''} onChange={e=>patchRegistry('display_name',e.target.value)}/></label>:null}
       {current.scope_kind==='scope'&&currentConfig?<>
         {currentCopy?<section className="admin-page-copy-fields" aria-label="公開頁面名稱設定">
@@ -527,9 +499,8 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         ...(current.scope_kind==='scope'?[{key:'delete',danger:true,disabled:routeLocked,
           onClick:()=>onDeleteNode?.(current.scope_id),label:<UiText id="uiExtra.adminView.delete"/>}]:[])
       ]}/>
-    </>}
 
-      {selected.scope_kind==='scope'&&!editing?<details className="admin-node-mapping">
+      {selected.scope_kind==='scope'?<details className="admin-node-mapping">
       <summary><UiText id="uiExtra.adminView.administratorMapping"/>（{scopeMappings.length}）</summary>
       {scopeMappings.map(row=><article className="scope-inline-card" key={row.email}>
         <strong>{row.email}</strong>
