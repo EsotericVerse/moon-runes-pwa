@@ -1,7 +1,6 @@
 'use client';
 
-import {useCallback,useEffect} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useCallback,useEffect,useSyncExternalStore} from 'react';
 import {z} from 'zod';
 import {getAccountSession,dbAuthEvents,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
@@ -48,7 +47,7 @@ const SESSION_KEY=['loc-account','session'];
 const MANAGEMENT_KEY=['loc-account','management'];
 // A management workspace verifies once on entry. Never re-query on focus or
 // stale-time expiry; explicit refresh and database write authorization remain.
-const ACCOUNT_CACHE_MS=Infinity;
+
 const emptyState=Object.freeze({
   loading:true,user:null,email:'',role:'',authorizer:null,
   permissionLoading:true,error:'',scopes:[]
@@ -71,12 +70,12 @@ async function loadSessionAccount(){
   }
 }
 
-async function loadManagementAccount(queryClient){
+async function loadManagementAccount(){
   try{
     const session=await getAccountSession();
     const user=session?.user||null;
     if(!user){
-      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      publishAccount('session',signedOutState);
       return signedOutState;
     }
     const email=normalizeAuthEmail(user.email);
@@ -84,7 +83,7 @@ async function loadManagementAccount(queryClient){
     // A blocked account must not keep a cached session-only identity.
     if(await isCurrentEmailBlocklisted()){
       await signOutAccount();
-      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      publishAccount('session',signedOutState);
       return failedState(BLOCKLIST_MESSAGE);
     }
 
@@ -109,48 +108,74 @@ async function loadManagementAccount(queryClient){
   }
 }
 
-export function useAccount({enabled=true,sessionOnly=false}={}){
-  const queryClient=useQueryClient();
-  const queryKey=sessionOnly?SESSION_KEY:MANAGEMENT_KEY;
-  const queryFn=useCallback(
-    ()=>sessionOnly?loadSessionAccount():loadManagementAccount(queryClient),
-    [sessionOnly,queryClient]
-  );
-  const query=useQuery({
-    queryKey,queryFn,enabled,
-    staleTime:ACCOUNT_CACHE_MS,
-    refetchOnWindowFocus:false,
-    refetchOnReconnect:false,
-    retry:false
-  });
-  const state=query.data||emptyState;
 
-  // Explicit entry into edit mode always performs a fresh authorization
-  // check, even when another view has populated the shared query cache.
-  const refresh=useCallback(async()=>{
-    const result=await queryClient.fetchQuery({
-      queryKey,queryFn,staleTime:0,retry:false
+const listeners=new Set();
+const requests=new Map();
+const loaded={session:false,management:false};
+const generation={session:0,management:0};
+let sessionState=emptyState;
+let managementState=emptyState;
+function subscribeAccount(listener){
+  listeners.add(listener);
+  return ()=>listeners.delete(listener);
+}
+function publishAccount(kind,state){
+  if(kind==='session')sessionState=state;
+  else managementState=state;
+  loaded[kind]=true;
+  for(const listener of listeners)listener();
+}
+function invalidateAccount(kind){
+  generation[kind]+=1;
+  loaded[kind]=false;
+  requests.delete(kind);
+  publishAccount(kind,kind==='session'?signedOutState:emptyState);
+  loaded[kind]=false;
+}
+function readAccount(kind,{fresh=false}={}){
+  if(requests.has(kind))return requests.get(kind);
+  if(!fresh&&loaded[kind])return Promise.resolve(kind==='session'?sessionState:managementState);
+  const token=generation[kind];
+  const request=Promise.resolve().then(kind==='session'?loadSessionAccount:loadManagementAccount)
+    .then(result=>{
+      if(generation[kind]===token)publishAccount(kind,result);
+      return generation[kind]===token?result:signedOutState;
+    }).finally(()=>{
+      if(requests.get(kind)===request)requests.delete(kind);
     });
+  requests.set(kind,request);
+  return request;
+}
+
+export function useAccount({enabled=true,sessionOnly=false}={}){
+  const kind=sessionOnly?'session':'management';
+  const state=useSyncExternalStore(subscribeAccount,
+    ()=>sessionOnly?sessionState:managementState,()=>emptyState);
+  useEffect(()=>{
+    if(enabled)void readAccount(kind);
+  },[enabled,kind]);
+  // Admin edit entry must always verify against live Supabase permissions.
+  const refresh=useCallback(async()=>{
+    const result=await readAccount(kind,{fresh:true});
     if(sessionOnly)return result.user||null;
     return result.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
-  },[queryClient,queryKey,queryFn,sessionOnly]);
-
+  },[kind,sessionOnly]);
   const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
   const signOut=useCallback(async()=>{
+    // Prevent a preceding in-flight permission read from restoring a signed-out identity.
+    generation.session+=1;
+    generation.management+=1;
+    requests.clear();
     await signOutAccount();
-    await queryClient.cancelQueries({queryKey:['loc-account']});
-    queryClient.setQueryData(SESSION_KEY,signedOutState);
-    queryClient.setQueryData(MANAGEMENT_KEY,signedOutState);
-  },[queryClient]);
-
-  // The hidden local Scope is device-only and has no cloud management row.
+    publishAccount('session',signedOutState);
+    publishAccount('management',signedOutState);
+  },[]);
   const canManageScopeSync=useCallback(
     scopeId=>normalizeScopeId(scopeId)==='local'||Boolean(state.authorizer?.canManageScopeSync(scopeId)),
     [state.authorizer]
   );
   const canManageGlobalSync=useCallback(
-    ()=>Boolean(state.authorizer?.canManageGlobalSync()),
-    [state.authorizer]
+    ()=>Boolean(state.authorizer?.canManageGlobalSync()),[state.authorizer]
   );
   const scopeDataFor=useCallback(scopeId=>{
     const id=normalizeScopeId(scopeId);
@@ -158,31 +183,24 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     return state.scopes.find(scope=>scope.id===id)
       ||(state.authorizer?.canManageGlobalSync()?defaultScopeData(id):null);
   },[state.authorizer,state.scopes]);
-
-  return {
-    ...state,refresh,signIn,signOut,
-    canManageScopeSync,canManageGlobalSync,scopeDataFor
-  };
+  return {...state,refresh,signIn,signOut,canManageScopeSync,canManageGlobalSync,scopeDataFor};
 }
 
-// Listen to the SDK's existing Auth event stream. Public pages never call
-// getSession() or query silver.loc just to resolve navigation/UI state.
-// OAuth and management entries still use the explicit authorization path.
 export function usePassiveSessionAccount(){
   const account=useAccount({enabled:false,sessionOnly:true});
-  const queryClient=useQueryClient();
   useEffect(()=>{
     const listener=dbAuthEvents.onAuthStateChange((event,session)=>{
-      const previous=queryClient.getQueryData(SESSION_KEY);
       const user=session?.user||null;
-      queryClient.setQueryData(SESSION_KEY,user
+      const previous=sessionState.user;
+      publishAccount('session',user
         ?{...signedOutState,user,email:normalizeAuthEmail(user.email)}
         :signedOutState);
-      if(event==='SIGNED_OUT'||(previous?.user?.id&&previous.user.id!==user?.id)){
-        queryClient.removeQueries({queryKey:MANAGEMENT_KEY,exact:true});
+      // Management permission is tied to identity. Never reuse across users.
+      if(event==='SIGNED_OUT'||(previous?.id&&previous.id!==user?.id)){
+        invalidateAccount('management');
       }
     });
     return ()=>listener.data.subscription.unsubscribe();
-  },[queryClient]);
+  },[]);
   return account;
 }
