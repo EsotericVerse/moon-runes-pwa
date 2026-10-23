@@ -415,7 +415,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   }),[queryRange.startDate,queryRange.endDate]);
   const keywordSourcesQuery=useQuery({
     queryKey:['statistics-source-taxonomy'],
-    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66',
+    enabled:scopeId==='lo3rwang',
     queryFn:async()=>{
       const [categories,aliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{
@@ -475,7 +475,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           </option>)}
         </select>
       </label>:null}
-      {scopeId==='lo3rwang'&&styleFilter==='rune66'?<label>
+      {scopeId==='lo3rwang'?<label>
         <span>來源</span>
         <select className="scope-select" aria-label="關鍵字來源" value={keywordSource}
           onChange={event=>setKeywordSource(event.target.value)}>
