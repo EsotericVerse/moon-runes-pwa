@@ -387,14 +387,13 @@ export default function Culture(){
     queryFn:async()=>{
       const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
       if(!groupName)return [];
-      const {rows}=await selectRows(scopeData.keywords,{
+      const {rows}=await selectAllRows(scopeData.keywords,{
         columns:'item_no,item_name,order_no,class_group',
         filters:[
           {column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)},
           {column:'class_group',operator:'eq',value:groupName}
         ],
-        orders:[{column:'order_no',ascending:true}],
-        limit:1000
+        orders:[{column:'order_no',ascending:true}]
       });
       return rows;
     },
