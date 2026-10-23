@@ -328,11 +328,9 @@ export default function Culture(){
     enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&keywordWindowValid,
     staleTime:5*60_000
   });
-  // Show a single loading signal until both visible density streams resolve.
-  const riverRangeLoading=classificationWindowValid&&(
-    sourceSnapshotQuery.isFetching||
-    (styleFilter==='rune66'&&styleQuery.isFetching)
-  );
+  // The original source-classification river must not wait for (or disappear
+  // when) a separate keyword-density query runs.
+  const riverRangeLoading=classificationWindowValid&&sourceSnapshotQuery.isFetching;
   const keywordDensityQuery=useQuery({
     queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd],
     enabled:styleFilter==='rune66'&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
@@ -986,7 +984,6 @@ export default function Culture(){
                   </>
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
-                {styleFilter!=='rune66'?<>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{classificationPeriodLabel}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
@@ -1022,7 +1019,7 @@ export default function Culture(){
                   </details>:null}
                               {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
                 </div>:null}
-                {styleFilter!=='rune66'&&!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
+                {!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
                   labelOf={classificationRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
@@ -1043,7 +1040,6 @@ export default function Culture(){
                     }
                   }}
                 />:null}
-                </>:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>關鍵詞組：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <div className='scope-stat-controls'>
@@ -1086,8 +1082,8 @@ export default function Culture(){
                     (keywordDrillLevel!=='item'||!keywordCatalogQuery.isPending)&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
-                {styleFilter!=='rune66'&&sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {styleFilter!=='rune66'&&classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
+                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
+                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header>
