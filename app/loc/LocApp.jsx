@@ -29,6 +29,8 @@ const Governance=dynamic(()=>import('../modular/features/Governance'),{loading})
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
+const SourceManagementView=dynamic(()=>import('./LocSourceManagement'),{loading});
+const KeywordManagementView=dynamic(()=>import('./LocKeywordManagementPage'),{loading});
 const LocalSettingView=dynamic(()=>import('./views/LocalSettingView'),{loading});
 
 const VIEWS={
@@ -40,6 +42,8 @@ const VIEWS={
   searchManage:SearchManagement,
   governance:Governance,
   manage:ManagementView,
+  sourceManage:SourceManagementView,
+  keywordManage:KeywordManagementView,
   setting:LocalSettingView
 };
 const HOME_VIEWS={loc:AboutView,lrunes:RunesHomeView,lo3rwang:AuthorHomeView,admin:AdminHomeView};
@@ -56,6 +60,8 @@ const VIEW_PRELOADERS={
   searchManage:()=>import('./SearchManagement'),
   governance:()=>import('../modular/features/Governance'),
   manage:()=>import('./GovernanceManagement'),
+  sourceManage:()=>import('./LocSourceManagement'),
+  keywordManage:()=>import('./LocKeywordManagementPage'),
   setting:()=>import('./views/LocalSettingView')
 };
 const HOME_PRELOADERS={
