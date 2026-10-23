@@ -110,6 +110,7 @@ export default function FeatureHeroImages(){
   // Only the picked feature mounts: all 7 at once meant 7 block editors plus
   // ~11 image-row fetches on opening this tab, which is what made it stall.
   const [featureId,setFeatureId]=useState(FEATURES[0].id);
+  const [editorRevision,setEditorRevision]=useState(0);
   const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
@@ -120,6 +121,7 @@ export default function FeatureHeroImages(){
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
       <ScopeEditableBlocks
+        key={feature.id+':'+editorRevision}
         scopeId="loc"
         page={HomeBlock.featureHeroPageFor(feature.id)}
         orders={[1]}
@@ -128,6 +130,8 @@ export default function FeatureHeroImages(){
         editSlotClassName="loc-card"
         placeholderFirstOrder={1}
         allowEditing
+        authorizedByParent startInEditMode keepEditorOpen
+        onEditorExit={()=>setEditorRevision(value=>value+1)}
         explicitEditButton
         allowDelete={false}
         allowEntities={false}
