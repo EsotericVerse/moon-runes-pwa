@@ -203,7 +203,7 @@
 .lrg-home-workspace{width:100%;align-items:start}
 .lrg-home-workspace .lrg-home-panel{gap:16px}
 .lrg-home-workspace .lrg-docs{margin:0;min-width:0;align-content:start}
-.lrg-home-workspace .lrg-home-hero{min-height:clamp(360px,40vw,520px)}
+.lrg-home>.lrg-home-hero{width:100%;min-height:clamp(400px,46vw,560px)}
 .lrg-home-workspace .management-section-nav{min-width:0}
 
 .lrg-doc-heading{display:grid;gap:.35rem}
@@ -368,13 +368,3 @@
   .lrg-card{transition:none}
 }
 
-/* Hero image mode "side": image sits on the right instead of behind the copy. */
-.lrg-home-hero--side::before{display:none}
-.lrg-home-hero--side .lrg-hero-image{
-  position:relative;inset:auto;z-index:2;width:46%;height:auto;max-height:480px;aspect-ratio:4/3;
-  margin:1rem clamp(16px,3vw,40px) 1rem auto;border-radius:12px;
-}
-@media(max-width:600px){
-  .lrg-home-hero--side{flex-direction:column;align-items:stretch}
-  .lrg-home-hero--side .lrg-hero-image{width:auto;margin:0 1rem 1rem}
-}
