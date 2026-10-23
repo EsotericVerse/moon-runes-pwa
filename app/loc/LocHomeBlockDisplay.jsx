@@ -34,7 +34,7 @@ export function resolveHomeImage(slot,scopeId='loc'){
   const src=source==='none'?'':source==='default'?preset?.src?.src||'':customUrl;
   const position=Number(slot?.order)===1?'right':['left','right','top','bottom','only'].includes(config?.position)
     ?config.position:(preset?.position||'right');
-  const width=Number.isFinite(Number(config?.width))&&Number(config?.width)>=160&&Number(config?.width)<=680
+  const width=Number.isFinite(Number(config?.width))&&Number(config?.width)>=160&&Number(config?.width)<=800
     ?Math.round(Number(config.width)):parseInt(preset?.width,10)||420;
   const mode=config?.mode==='side'||config?.mode==='background'?config.mode:BlockNoteContent.image.heroImageMode(slot);
   return {src,source,position,width,mode,preset,embedded,customUrl,
