@@ -6,13 +6,32 @@ import {createSupabaseAdapter} from '../../loc/providers/supabase.mjs';
 import {createLunaRunesGame} from './boardgame-rules.js';
 
 const topic=code=>'lrunes:tabletop:'+code;
-const validState=G=>G&&typeof G==='object'&&
+const validState=G=>Boolean(G&&typeof G==='object'&&
   Array.isArray(G.players)&&G.players.length>=2&&G.players.length<=4&&
-  G.players.every(p=>Array.isArray(p.hand)&&Array.isArray(p.deck)&&Array.isArray(p.selected))&&
-  Array.isArray(G.eventDeck)&&G.eventDeck.length>0&&Number.isInteger(G.round)&&
-  ['opening','event','resonance','duel','finished'].includes(G.stage)||
-  (G&&typeof G.stage==='string'&&G.stage.includes('resonance')&&
-    Array.isArray(G.players)&&G.players.length>=2&&G.players.length<=4);
+  G.players.every(p=>Array.isArray(p.hand)&&Array.isArray(p.deck)&&Array.isArray(p.discard)&&Array.isArray(p.selected))&&
+  Array.isArray(G.eventDeck)&&G.eventDeck.length>0&&
+  Array.isArray(G.history)&&Array.isArray(G.logs)&&
+  Number.isInteger(G.round)&&Number.isInteger(G.active)&&
+  (['opening','event','resonance','duel','finished'].includes(G.stage)||
+    (typeof G.stage==='string'&&G.stage.includes('resonance'))));
+
+// Only IDs travel over Realtime; large rune descriptions stay in each client's
+// shared rule catalog. This keeps every turn below the 256 KB Free-tier limit.
+export function packTabletopState(G){
+  return {...G,players:G.players.map(p=>({
+    ...p,hand:p.hand.map(c=>c.id),deck:p.deck.map(c=>c.id),
+    discard:p.discard.map(c=>c.id)
+  }))};
+}
+export function unpackTabletopState(G,cards){
+  const byId=new Map(cards.map(c=>[c.id,c]));
+  const players=G.players.map(p=>{
+    const expand=list=>list.map(id=>byId.get(id));
+    return {...p,hand:expand(p.hand),deck:expand(p.deck),discard:expand(p.discard)};
+  });
+  if(players.some(p=>[...p.hand,...p.deck,...p.discard].some(card=>!card)))return null;
+  return {...G,players};
+}
 
 function actionEffect(state,move,args,rules){
   if(move==='resonance'){
@@ -67,7 +86,7 @@ export function useOnlineTabletop({data,count,code,host}){
       .then(result=>{if(result!=='ok')report('Realtime 傳送失敗：'+result)})
       .catch(report);
     const publish=(origin,effect=null)=>{
-      if(Gref.current)send('state',{state:Gref.current,revision:revision.current,origin,effect});
+      if(Gref.current)send('state',{state:packTabletopState(Gref.current),revision:revision.current,origin,effect});
     };
     const apply=(move,args,origin,expected)=>{
       const state=Gref.current;
@@ -95,9 +114,11 @@ export function useOnlineTabletop({data,count,code,host}){
       .on('broadcast',{event:'state'},({payload})=>{
         if(host||!payload||!validState(payload.state)||
           !Number.isInteger(payload.revision)||payload.revision<revision.current)return;
-        Gref.current=payload.state;
+        const next=unpackTabletopState(payload.state,data.cards);
+        if(!next)return;
+        Gref.current=next;
         revision.current=payload.revision;
-        setG(payload.state);
+        setG(next);
         if(payload.effect&&payload.origin!==memberId.current){
           setRemoteEffect({...payload.effect,revision:payload.revision});
         }
@@ -136,7 +157,7 @@ export function useOnlineTabletop({data,count,code,host}){
     revision.current+=1;
     setG(state);
     channelRef.current?.send({type:'broadcast',event:'state',
-      payload:{state,revision:revision.current,origin:memberId.current}})
+      payload:{state:packTabletopState(state),revision:revision.current,origin:memberId.current}})
       .then(result=>{if(result!=='ok')setError('Realtime 傳送失敗：'+result)})
       .catch(e=>setError(String(e?.message||e)));
   };
