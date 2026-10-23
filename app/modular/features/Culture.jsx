@@ -250,13 +250,24 @@ export default function Culture(){
     enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&!initialPeriodSelectionPending&&Boolean(scopeData)&&classificationWindowValid,
     staleTime:5*60_000
   });
+  const keywordClassQuery=useQuery({
+    queryKey:['scope-active-keyword-class-name',scopeId],
+    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
+    queryFn:async()=>{
+      const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
+      return selectActiveKeywordClassName(scopeId);
+    },
+    staleTime:5*60_000
+  });
+  const keywordClassLabel=keywordClassQuery.data?'關鍵詞組：'+keywordClassQuery.data
+    :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
   const styleQuery=useQuery({
     queryKey:['culture-style-filter','rune66',classificationScope,keywordWindowStart,keywordWindowEnd],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({startDate:keywordWindowStart,endDate:keywordWindowEnd});
+      return selectKeywordAnalysisSummary({scopeId,startDate:keywordWindowStart,endDate:keywordWindowEnd});
     },
-    enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&keywordWindowValid,
+    enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&keywordWindowValid,
     staleTime:5*60_000
   });
   // Show a single loading signal until both visible density streams resolve.
@@ -280,21 +291,22 @@ export default function Culture(){
     }
     return [...counts.entries()].map(([key,count],index)=>{
       const [className,date]=key.split('\u0000');
+      const groupDisplay=[String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'').trim(),classLabel(className)].filter(Boolean).join(' ');
       return {
         id:'style-class:'+className+':'+date+':'+index,
         entry_id:'style-class:'+className+':'+date+':'+index,
         entry_type:'style_class_density',
-        group_label:classLabel(className),
+        group_label:groupDisplay,
         category:className,
         display_label:'',
-        title:formatCultureUi(l.densityTitle,{date,group:classLabel(className),count:count.toLocaleString(locale)}),
+        title:formatCultureUi(l.densityTitle,{date,group:groupDisplay,count:count.toLocaleString(locale)}),
         start_date:date,
         end_date:nextRiverDay(date),
         item_count:count,
         density_ratio:count/Math.max(1,classMax.get(className)||1)
       };
     }).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.group_label).localeCompare(String(b.group_label)));
-  },[styleQuery.data,l,locale]);
+  },[styleQuery.data,keywordClassQuery.data,l,locale]);
 
 
 
@@ -866,13 +878,16 @@ export default function Culture(){
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-stat-controls'>
-                  {scopeId==='lo3rwang'?<label className='scope-culture-period-select'>
+                  {!isAggregateScope&&!isLrunesDaily&&!isLocItemView?<label className='scope-culture-period-select'>
                     <span><UiText id="uiExtra.cultureView.style"/></span>
                     <select className='scope-select' value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
                       <option value='none'><UiText id="uiExtra.cultureView.noFilter"/></option>
-                      <option value='rune66'><UiText id="uiExtra.cultureView.keywordClass"/></option>
+                      <option value='rune66' disabled={!keywordClassQuery.data}>{keywordClassLabel}</option>
                     </select>
                   </label>:null}
+                  {keywordClassQuery.error?<span className='scope-status scope-error' role='status'>
+                    關鍵詞組讀取失敗：{featureDataErrorMessage(keywordClassQuery.error,UI_COPY)}
+                  </span>:null}
                   <>
                     <label className='scope-culture-period-select'>
                       <span>時間區間</span>
@@ -963,7 +978,7 @@ export default function Culture(){
                   }}
                 />:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>表現風格 · {String(styleQuery.data?.keywordMeta?.class_name||'關鍵詞 Class')}</p>
+                  <p className='loc-eyebrow'>關鍵詞組：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <h4>關鍵詞密度時間長河</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                   {keywordWindowValid&&styleQuery.isPending&&!riverRangeLoading?<p className='scope-status'>Loading...</p>:null}
