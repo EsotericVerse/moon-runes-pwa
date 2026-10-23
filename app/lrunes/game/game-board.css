@@ -199,10 +199,12 @@
 .lrg-history-panel{margin-top:14px}
 .lrg-trend{height:300px;margin-top:12px}
 .lrg-docs{margin-top:14px}
-/* Game documentation reuses the shared management navigation without affecting the board. */
-.lrg-document-workspace{margin-top:14px}
-.lrg-document-workspace .lrg-docs{margin-top:0;min-width:0;align-content:start}
-.lrg-document-workspace .management-section-nav{min-width:0}
+/* Game home uses the existing management navigation; gameplay stays independent. */
+.lrg-home-workspace{width:100%;align-items:start}
+.lrg-home-workspace .lrg-home-panel{gap:16px}
+.lrg-home-workspace .lrg-docs{margin:0;min-width:0;align-content:start}
+.lrg-home-workspace .lrg-home-hero{min-height:clamp(360px,40vw,520px)}
+.lrg-home-workspace .management-section-nav{min-width:0}
 
 .lrg-rule-sections{
   display:grid;
