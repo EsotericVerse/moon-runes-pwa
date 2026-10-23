@@ -285,8 +285,9 @@ function DocsPanel({data,section}){
   const matches=(...parts)=>!normalized||parts.filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant').includes(normalized);
 
   const roleGroups=[...new Set(data.roles.map(role=>role.group).filter(Boolean))];
-  const eventGroups=[...new Set(data.events.flatMap(event=>event.groups))];
-  const actionGroups=[...new Set(data.runeActions.map(action=>action.group).filter(Boolean))];
+  const missingGroup='__unassigned__';
+  const eventGroups=[...new Set(data.events.flatMap(event=>event.groups.length?event.groups:[missingGroup]))];
+  const actionGroups=[...new Set(data.runeActions.map(action=>action.group||missingGroup))];
   const orderedGroups=groups=>[
     ...roleGroups.filter(group=>groups.includes(group)),
     ...groups.filter(group=>!roleGroups.includes(group))
@@ -300,18 +301,20 @@ function DocsPanel({data,section}){
     ...(unknownRules.length?[{value:'other',label:'其他規則',count:unknownRules.length}]:[]),
     ...(data.macros.length?[{value:'macros',label:'四組簡稱',count:data.macros.length}]:[])
   ]:section==='events'?orderedGroups(eventGroups).map(group=>({
-    value:group,label:group,count:data.events.filter(event=>event.groups.includes(group)).length
+    value:group,label:group===missingGroup?'未分組':group,
+    count:data.events.filter(event=>group===missingGroup?!event.groups.length:event.groups.includes(group)).length
   })):section==='actions'?orderedGroups(actionGroups).map(group=>({
-    value:group,label:group,count:data.runeActions.filter(action=>action.group===group).length
+    value:group,label:group===missingGroup?'未分組':group,
+    count:data.runeActions.filter(action=>(action.group||missingGroup)===group).length
   })):[];
   const allCount=section==='rules'?data.rules.length+data.macros.length
     :section==='events'?data.events.length:data.runeActions.length;
   const choices=categories.length?[...categories,{value:'all',label:'全部項目',count:allCount}]:[];
   const selectedCategory=choices.find(item=>item.value===category);
-  const events=data.events.filter(row=>(category==='all'||row.groups.includes(category))
+  const events=data.events.filter(row=>(category==='all'||(category===missingGroup?!row.groups.length:row.groups.includes(category)))
     &&matches(row.id,row.name,row.description,row.requirement,...row.groups));
   const roles=data.roles.filter(row=>matches(row.group,row.name,row.focus,row.mode,row.intervention,row.tool,row.tagline));
-  const actions=data.runeActions.filter(row=>(category==='all'||row.group===category)
+  const actions=data.runeActions.filter(row=>(category==='all'||(row.group||missingGroup)===category)
     &&matches(row.name,row.group,row.text,row.kind,row.value));
   const labels={
     rules:['遊戲規則','依主題章節查閱遊戲條文與四組簡稱'],
