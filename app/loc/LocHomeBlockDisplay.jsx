@@ -68,13 +68,26 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const children=HomeBlock.visibleEntities(slot).filter(entity=>entity.title||
     BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
-  return <>
-    {!imageOnly?<header className="loc-home-block__header">
+  const copy=<>
+    <header className="loc-home-block__header">
       {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
       {slot.title?<Heading>{slot.title}</Heading>:null}
       {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
-    </header>:null}
-    {!imageOnly?<RichHtml html={slot.text} stripImage className="loc-home-block__body"/>:null}
+    </header>
+    <RichHtml html={slot.text} stripImage className="loc-home-block__body"/>
+  </>;
+  const media=image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
+    <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
+      <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
+  </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
+    style={{'--loc-home-media-max':image.width+'px'}}>
+    <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
+  </article>):null;
+  return <>
+    {imageOnly?<div className="loc-home-block__image-surface">
+      <div className="loc-home-block__image-measure" aria-hidden="true">{copy}</div>
+      {media}
+    </div>:copy}
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
@@ -85,13 +98,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
         </article>;
       })}
     </div>:null}
-    {image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
-      <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
-        <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
-    </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
-      style={{'--loc-home-media-max':image.width+'px'}}>
-      <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
-    </article>):null}
+    {!imageOnly?media:null}
     {sign?<span className={'home-hero-identity home-hero-identity--'+sign.key}
       role="img" aria-label={sign.label}>{sign.text}</span>:null}
   </>;
