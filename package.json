@@ -9,7 +9,7 @@
     "build": "next build",
     "postbuild": "node scripts/copy-static-assets.mjs && node scripts/diagnose-effekseer-smoke.mjs",
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
-    "audit:security": "npm audit --audit-level=critical"
+    "audit:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
@@ -29,7 +29,7 @@
     "sql.js": "1.14.2",
     "vis-network": "10.1.0",
     "vis-timeline": "8.5.4",
-    "zod": "4.6.0",
+    "zod": "4.6.7",
     "officeparser": "8.1.1",
     "@mui/material": "^7.3.0",
     "@emotion/react": "^11.14.0",
