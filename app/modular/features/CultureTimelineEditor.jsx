@@ -169,17 +169,22 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   // Native showModal puts this form in the browser top layer rather than
   // letting a non-modal open dialog disappear below the vis-timeline canvas.
   // It must be a hook, before the conditional return, to support repeated adds.
+  // A newly mounted editor resolves its own account permissions asynchronously.
+  // Opening the draft before those checks complete must not lose showModal:
+  // retry when the authorized dialog actually appears in the DOM.
+  const canRenderEditor=editable&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(dataScope);
   useEffect(()=>{
+    if(!formOpen||!canRenderEditor)return undefined;
     const dialog=dialogRef.current;
-    if(formOpen&&dialog&&!dialog.open)dialog.showModal();
+    if(dialog&&!dialog.open)dialog.showModal();
     return()=>{if(dialog?.open)dialog.close();};
-  },[formOpen]);
+  },[formOpen,canRenderEditor]);
   useEffect(()=>{
     if(!formOpen||!editDock?.active||editDock.scopeId!==scopeId)return undefined;
     return editDock.register({save:()=>dockActions.current.save()});
   },[formOpen,editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
 
-  if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
+  if(!canRenderEditor)return null;
 
   const selectRow=row=>{
     setSelectedId(String(row.record_id));
