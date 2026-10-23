@@ -367,7 +367,7 @@ export async function selectScopeCultureData(scopeId){
   if(id==='local'&&!parts.eras.length){
     const first=await Promise.all([scope.galaxy,scope.galaxyMedia].map(table=>
       selectRows(table,{columns:'createtime',
-        filters:[{column:'createtime',operator:'not.is',value:null}],
+        filters:[{column:'createtime',operator:'gt',value:''}],
         orders:[{column:'createtime',ascending:true}],limit:1
       })
     ));
