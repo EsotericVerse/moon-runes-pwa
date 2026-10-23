@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLunaRunesGame} from '../app/lrunes/game/boardgame-rules.js';
 import {produce} from 'immer';
-import {packTabletopState,unpackTabletopState} from '../app/lrunes/game/tabletop-state.mjs';
+import {packTabletopState,unpackTabletopState,validState} from '../app/lrunes/game/tabletop-state.mjs';
 
 const config={playerMin:2,playerMax:4,deMin:0,deMax:8,openingDraw:8,openingDiscard:3,handBase:5,handTempCap:10,eventResponseCards:2,resonanceSelf:1,resonanceAttack:-1};
 const cards=Array.from({length:66},(_,i)=>({id:i+1,name:'Rune '+(i+1),group:'Group '+(i%8),alphaCompatMacro:'macro'+(i%4)}));
@@ -59,4 +59,54 @@ test('online room snapshot preserves exact cards with smaller Realtime payload',
   assert.deepEqual(unpackTabletopState(packed,rules.cards),original);
   packed.players[0].hand[0]=999;
   assert.equal(unpackTabletopState(packed,rules.cards),null);
+});
+
+test('cross-device 2–4 player turns remain identical after every Realtime snapshot',()=>{
+  for(const count of [2,3,4]){
+    const game=createLunaRunesGame(rules,count);
+    let host=game.setup();
+    const reflect=()=>{
+      const wire=JSON.parse(JSON.stringify(packTabletopState(host)));
+      assert.equal(validState(wire),true);
+      assert.ok(Buffer.byteLength(JSON.stringify(wire),'utf8')<262144,'snapshot must fit Realtime message');
+      const guest=unpackTabletopState(wire,rules.cards);
+      assert.deepEqual(guest,host);
+    };
+    reflect();
+    for(let player=0;player<count;player++){
+      const chosen=host.players[player].hand.slice(0,config.openingDiscard).map(card=>card.id);
+      for(const id of chosen){
+        host=produce(host,draft=>game.moves.toggleCard({G:draft},player,id));
+        reflect();
+      }
+      host=produce(host,draft=>game.moves.confirmOpening({G:draft},player));
+      reflect();
+    }
+    assert.equal(host.stage,'event');
+    for(let player=0;player<count;player++)
+      for(const card of host.players[player].hand.slice(0,config.eventResponseCards)){
+        host=produce(host,draft=>game.moves.toggleCard({G:draft},player,card.id));
+        reflect();
+      }
+    host=produce(host,draft=>game.moves.resolveEvent({G:draft}));
+    assert.equal(host.stage,'resonance');
+    reflect();
+    for(let player=0;player<count;player++){
+      host=produce(host,draft=>game.moves.resonance({G:draft},'self'));
+      reflect();
+    }
+    assert.equal(host.round,3);
+    assert.equal(host.stage,'event');
+  }
+});
+
+test('invalid cross-device snapshots are rejected',()=>{
+  const game=createLunaRunesGame(rules,2);
+  const good=packTabletopState(game.setup());
+  assert.equal(validState({...good,stage:'invalid'}),false);
+  assert.equal(validState({...good,players:[]}),false);
+  assert.equal(validState({...good,round:'one'}),false);
+  assert.equal(unpackTabletopState({...good,players:[
+    {...good.players[0],hand:[999]},good.players[1]
+  ]},rules.cards),null);
 });
