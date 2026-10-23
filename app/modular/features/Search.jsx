@@ -22,7 +22,7 @@ import {useRouter,useSearchParams} from 'next/navigation';
 
 import {deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
-import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import ScopeLink from '../ScopeLink';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
@@ -256,6 +256,7 @@ export default function Search({managementMode=false}){
   const [browseResults,setBrowseResults]=useState(false);
   const activeSearchOptionsRef=useRef(null);
   const [results,setResults]=useState([]);
+  const [articleSort,setArticleSort]=useState('desc');
   const [status,setStatus]=useState(UI_COPY.search.start);
   const [error,setError]=useState('');
   const [loadMoreError,setLoadMoreError]=useState('');
@@ -328,15 +329,23 @@ export default function Search({managementMode=false}){
     const item=scopeById.get(id);
     return item?`${item.display_name||id}(${id})`:id;
   };
-  // Results are displayed per tree, while preserving the existing per-tree
-  // result order and the incremental database pagination.
+  // Keep LOC's per-Scope sections and style suggestions, then order the
+  // loaded article pages by their publication date.
   const orderedResults=useMemo(()=>{
-    if(scopeId!=='loc')return results;
-    const order=new Map(availableScopes.map((item,index)=>[item.id,index]));
-    return results.map((row,index)=>({row,index}))
-      .sort((a,b)=>(order.get(a.row.scopeId)??Infinity)-(order.get(b.row.scopeId)??Infinity)||a.index-b.index)
-      .map(item=>item.row);
-  },[results,scopeId,availableScopes]);
+    const scopes=new Map(availableScopes.map((item,index)=>[item.id,index]));
+    return results.map((row,index)=>({row,index})).sort((a,b)=>{
+      const group=scopeId==='loc'
+        ?(scopes.get(a.row.scopeId)??Infinity)-(scopes.get(b.row.scopeId)??Infinity):0;
+      if(group)return group;
+      const style=Number(Boolean(b.row.styleTagMatch))-Number(Boolean(a.row.styleTagMatch));
+      if(style)return style;
+      const left=String(a.row.date||'').slice(0,19);
+      const right=String(b.row.date||'').slice(0,19);
+      if(!left||!right)return left? -1:right?1:a.index-b.index;
+      const date=left.localeCompare(right);
+      return date?(articleSort==='desc'?-date:date):a.index-b.index;
+    }).map(item=>item.row);
+  },[results,scopeId,availableScopes,articleSort]);
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
   const periodScope=scopeId==='loc'
     ?targetScopes.find(item=>item.id==='lo3rwang')||targetScopes[0]
@@ -370,7 +379,7 @@ export default function Search({managementMode=false}){
     const q=String(rawQuery||'').trim();
     const options=append&&activeSearchOptionsRef.current
       ?activeSearchOptionsRef.current
-      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter,mediaOnly:false,browse});
+      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter,mediaOnly:false,browse,sortDirection:articleSort});
     if(!q&&!options.browse)return;
     const searchScopes=scopeId==='loc'&&options.scopeFilter
       ?availableScopes.filter(item=>item.id===options.scopeFilter)
@@ -459,7 +468,7 @@ export default function Search({managementMode=false}){
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
         contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
-        signal
+        sortDirection:options.sortDirection,signal
       });
       const stylePromise=wantsStyleTags
         ?queryClient.fetchQuery({
@@ -532,6 +541,16 @@ export default function Search({managementMode=false}){
     loadMoreInFlight.current=true;
     try{await executeSearch(q,nextCursor,{append:true,browse:activeSearchOptionsRef.current?.browse});}
     finally{loadMoreInFlight.current=false;}
+  }
+  function changeArticleSort(direction){
+    if(direction===articleSort)return;
+    setArticleSort(direction);
+    const active=activeSearchOptionsRef.current;
+    if(active){
+      executeSearch(matchedQueryRef.current,null,{
+        browse:Boolean(active.browse),overrideOptions:{...active,sortDirection:direction}
+      });
+    }
   }
 
   async function executeIdentity(rawIdentity){
@@ -954,12 +973,15 @@ export default function Search({managementMode=false}){
     </section>
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
+    {results.length||hasMore?<div style={{display:'flex',justifyContent:'flex-end',marginBottom:'.5rem'}}>
+      <ArticleSortSelect value={articleSort} onChange={changeArticleSort} disabled={Boolean(editingKey)}/>
+    </div>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
     <IncrementalList
       items={orderedResults}
       batchSize={pageSize}
-      resetKey={matchedQueryRef.current+'|'+String(browseResults)+'|'+scopeFilter}
+      resetKey={matchedQueryRef.current+'|'+String(browseResults)+'|'+scopeFilter+'|'+articleSort}
       externalHasMore={hasMore}
       loading={loadingMore}
       error={error||loadMoreError}
