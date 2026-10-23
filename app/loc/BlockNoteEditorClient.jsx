@@ -1,7 +1,7 @@
 'use client';
 import FieldText from '../i18n/FieldText';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef} from 'react';
 import {useCreateBlockNote} from '@blocknote/react';
 import {BlockNoteView} from '@blocknote/mantine';
 import {canonicalBlockNoteBlocks,canonicalBlockNoteHtml,BlockNoteContent} from './blocknote-content.mjs';
@@ -22,7 +22,6 @@ export default function BlockNoteEditorClient({
   const hydratedLegacyHtml=useRef(false);
   const htmlEmitVersion=useRef(0);
   const lastEmittedBlocks=useRef('');
-  const [imageWidthTarget,setImageWidthTarget]=useState(null);
 
   useEffect(()=>{
     if(hydratedLegacyHtml.current)return;
@@ -121,39 +120,11 @@ export default function BlockNoteEditorClient({
           editor.replaceBlocks(editor.document,[image]);
         }
       }
-      const insertedImage=findImage(editor.document);
-      if(insertedImage)setImageWidthTarget({
-        id:insertedImage.id,width:Number(insertedImage.props.previewWidth)||480
-      });
       emit();
     }catch(error){
       console.error('BlockNote image URL insert failed',error);
       globalThis.alert?.('圖片連結插入失敗，請重新嘗試。');
     }
-  }
-
-  // A selected BlockNote image keeps its native previewWidth prop; no second
-  // sizing field is stored outside the editor's own document.
-  function refreshImageWidthTarget(){
-    try{
-      const selection=editor.getSelection();
-      const block=selection?.blocks?.length===1?selection.blocks[0]:
-        selection?.blocks?.length?null:editor.getTextCursorPosition().block;
-      setImageWidthTarget(block?.type==='image'
-        ?{id:block.id,width:Number(block.props.previewWidth)||480}:null);
-    }catch{
-      setImageWidthTarget(null);
-    }
-  }
-
-  function resizeSelectedImage(value){
-    const width=Number(value);
-    if(!Number.isInteger(width)||width<160||width>800||!imageWidthTarget)return;
-    const block=editor.getBlock(imageWidthTarget.id);
-    if(block?.type!=='image')return;
-    editor.updateBlock(block,{props:{previewWidth:width}});
-    setImageWidthTarget({id:block.id,width});
-    emit();
   }
 
   function removeLink(event){
@@ -167,39 +138,11 @@ export default function BlockNoteEditorClient({
       <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={editLink}><FieldText text="連結"/></button>
       <button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={removeLink}><FieldText text="移除連結"/></button>
       {canInsertImage?<button type="button" className="loc-button" onMouseDown={event=>event.preventDefault()} onClick={insertImageUrl}><FieldText text="圖片網址"/></button>:null}
-      {imageWidthTarget?<label className="scope-blocknote-image-width">
-        <FieldText text="圖片寬度（px）"/>
-        <select aria-label="圖片寬度（px）" value={imageWidthTarget.width}
-          onChange={event=>resizeSelectedImage(event.target.value)}>
-          {imageWidthTarget.width<160||imageWidthTarget.width>800||imageWidthTarget.width%20!==0
-            ?<option value={imageWidthTarget.width}>{imageWidthTarget.width}</option>:null}
-          {Array.from({length:33},(_,index)=>160+index*20).map(width=>
-            <option key={width} value={width}>{width}</option>)}
-        </select>
-      </label>:null}
     </div>:null}
     <BlockNoteView
       editor={editor}
       editable={editable}
-      onChange={editable?()=>{
-        emit();
-        if(imageWidthTarget){
-          const block=editor.getBlock(imageWidthTarget.id);
-          if(block?.type==='image'){
-            const width=Number(block.props.previewWidth)||480;
-            if(width!==imageWidthTarget.width)setImageWidthTarget({id:block.id,width});
-          }else setImageWidthTarget(null);
-        }
-      }:undefined}
-      onSelectionChange={editable?refreshImageWidthTarget:undefined}
-      onClickCapture={editable?event=>{
-        const node=event.target.closest?.('.bn-editor img');
-        const blockId=node?.closest('[data-id]')?.getAttribute('data-id');
-        const block=blockId?editor.getBlock(blockId):null;
-        if(block?.type==='image'){
-          setImageWidthTarget({id:block.id,width:Number(block.props.previewWidth)||480});
-        }
-      }:undefined}
+      onChange={editable?emit:undefined}
     />
   </>;
 }
