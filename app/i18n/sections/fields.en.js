@@ -90,7 +90,7 @@ export default {
   "時期": "Period",
   "事件": "Event",
   "風格標籤": "Style tag",
-  "關鍵詞 Class": "Keyword class",
+  "關鍵詞 Class": "Keyword set",
   "全選待審候選": "Select all candidates",
   "全部搜尋": "Search all",
   "多媒體搜尋": "Search media",
