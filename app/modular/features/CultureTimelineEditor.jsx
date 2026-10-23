@@ -175,7 +175,11 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   },[formOpen,canRenderEditor]);
   useEffect(()=>{
     if(!formOpen||!editDock?.active||editDock.scopeId!==scopeId)return undefined;
-    return editDock.register({save:()=>dockActions.current.save()});
+    return editDock.register({
+      save:options=>dockActions.current.save(options),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
+    });
   },[formOpen,editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
 
   if(!canRenderEditor)return null;
@@ -209,7 +213,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     (legacyEventIds.length!==2||legacyEventIds.includes('0'))&&
     JSON.stringify(currentAnchorIds)===JSON.stringify(legacyEventIds);
 
-  const save=async event=>{
+  const save=async (event,{switching=false}={})=>{
     event.preventDefault();
     setBusy(true);setMessage('');
     try{
@@ -304,7 +308,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       setMessage('');
       setFormOpen(false);
       onClose?.();
-      if(editDock?.active&&editDock.scopeId===scopeId)
+      if(!switching&&editDock?.active&&editDock.scopeId===scopeId)
         editDock.complete(navigationHref(scopeId,'culture',native));
       return true;
     }catch(error){
@@ -336,7 +340,15 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     finally{setBusy(false);}
   };
 
-  dockActions.current={save:()=>save({preventDefault(){}})};
+  dockActions.current={
+    save:options=>save({preventDefault(){}},options),
+    isDirty:()=>{
+      if(!formOpen)return false;
+      const original=selectedId?rowDraft(rawRows.find(row=>String(row.record_id)===selectedId)):BLANK;
+      return JSON.stringify(draft)!==JSON.stringify(original);
+    },
+    isBusy:()=>busy
+  };
   if(!formOpen)return null;
 
   return <dialog ref={dialogRef} aria-label={l.editorTitle} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
