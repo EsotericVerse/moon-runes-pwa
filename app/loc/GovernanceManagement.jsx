@@ -11,11 +11,13 @@ import PanelLoading from './PanelLoading';
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:PanelLoading});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
+const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
   {value:'media',label:'新增多媒體',description:'新增一筆圖片、影片或外部媒體資料。'},
-  {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'}
+  {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
+  {value:'governance',label:'治理頁編輯',description:'編輯此 Scope 治理頁的既有區塊。'}
 ]);
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
@@ -35,6 +37,12 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
         {section==='media'?<ManagementArticlePublisher key={routeScopeId+'-media'} scopeId={routeScopeId} mode="media"/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
+        {section==='governance'?<ScopeEditableBlocks key={routeScopeId+'-governance'}
+          scopeId={routeScopeId} page="governance"
+          className={'loc-grid two governance-grid'+(routeScopeId==='loc'?' governance-grid-loc':'')}
+          headingLevel={2} allowDelete
+          authorizedByParent startInEditMode explicitEditButton
+          onEditorExit={()=>setSection('settings')}/>:null}
       </div>
     </div>
   </FeaturePage>;

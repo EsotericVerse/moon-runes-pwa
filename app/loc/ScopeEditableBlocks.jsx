@@ -57,6 +57,11 @@ export default function ScopeEditableBlocks({
   allowEntities=true,
   allowInlineChildAdd=false,
   explicitEditButton=false,
+  // Only a separately authenticated management page may set these two options.
+  // The actual write is still checked by the database.
+  authorizedByParent=false,
+  startInEditMode=false,
+  onEditorExit=null,
   toggleExtra=null,
   onSuggestionClick=null,
   allowImages=true,
@@ -65,21 +70,22 @@ export default function ScopeEditableBlocks({
   slotId=''
 }){
   useUiSection('uiExtra.editBlocks');
-  const account=useAccount();
+  const account=useAccount({enabled:allowEditing&&!authorizedByParent});
   const pageName=pageNameOf(page);
   // Same (scopeId, pageName) request AppShell already makes for this route's
   // Registry/NAV/Theme bootstrap. React Query serves this from that one call
   // instead of this component re-querying the blocks on its own.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const blocks=bootstrap.data?.blocks;
-  const canEdit=allowEditing&&((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
+  const canEdit=allowEditing&&(authorizedByParent||
+    ((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId)));
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
   );
   const [editingSlot,setEditingSlot]=useState(null);
   const [message,setMessage]=useState('');
-  const [editMode,setEditMode]=useState(false);
+  const [editMode,setEditMode]=useState(Boolean(startInEditMode));
 
   const slots=useMemo(()=>{
     const rows=Array.isArray(blocks)?blocks:[];
@@ -174,7 +180,10 @@ export default function ScopeEditableBlocks({
     const heroSlotOrder=Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0?placeholderFirstOrder:null;
     const contents=<>
       {!editMode&&!heroSlotOrder?toggleButton:null}
-      {editMode?<ScopeBlockDraftList
+      {editMode&&!bootstrap.isSuccess?<p className="scope-status" role="status">
+        {bootstrap.isError?'搜尋建議載入失敗。':'正在載入搜尋建議…'}
+      </p>:null}
+      {editMode&&bootstrap.isSuccess?<ScopeBlockDraftList
         slots={slots}
         scopeId={scopeId}
         pageName={pageName}
@@ -187,8 +196,8 @@ export default function ScopeEditableBlocks({
         editSlotClassName={editSlotClassName}
         preserveOrder={Boolean(normalizedOrders.length)}
         toolbar={toggleButton}
-        onCancel={()=>setEditMode(false)}
-        onDone={notice=>{setEditMode(false);setMessage(notice)}}
+        onCancel={()=>{setEditMode(false);onEditorExit?.()}}
+        onDone={notice=>{setEditMode(false);setMessage(notice);onEditorExit?.(notice)}}
       />:slots.flatMap((slot,index)=>{
         const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
         if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return [];

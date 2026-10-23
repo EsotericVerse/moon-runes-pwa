@@ -5,7 +5,6 @@ import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
 import {useUiSection} from '../../i18n/ui-locale';
 import {FeaturePage} from '../ui';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {useAccount} from '../../loc/use-account';
 import {navigationHref} from '../scope-registry';
 import useNativeNavigation from '../use-native-navigation';
 import ScopeLink from '../ScopeLink';
@@ -24,15 +23,16 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
   personal:'說明個人作品的來源、版本與著作權原則。'
 });
 
-function GovernanceBlocks({scopeId,account,native}){
-  const canManage=Boolean(account.user)&&(scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId));
+function GovernanceBlocks({scopeId,native}){
+  // Public reading never probes management roles. The management route gates access.
   const manageHref=scopeId==='loc'?navigationHref('admin','',native):navigationHref(scopeId,'governance/manage',native);
-  const manageLink=canManage?<ScopeLink className="loc-button primary" href={manageHref} native={native}>治理管理</ScopeLink>:null;
+  const manageLink=<ScopeLink className="loc-button primary" href={manageHref} native={native}>治理管理</ScopeLink>;
   return <ScopeEditableBlocks
     scopeId={scopeId}
     page="governance"
     className={'loc-grid two governance-grid'+(scopeId==='loc'?' governance-grid-loc':'')}
     headingLevel={2}
+    allowEditing={false}
     explicitEditButton
     toggleExtra={manageLink}
   />;
@@ -42,12 +42,11 @@ export default function Governance({section=null}){
   useUiSection('governance');
   useUiSection('uiExtra.editBlocks');
   const {scopeId}=useScopeRuntime();
-  const account=useAccount();
   const native=useNativeNavigation();
   const subtitle=section==='law'
     ?UI_COPY.governance.rights
     :(GOVERNANCE_SUBTITLES[scopeId]||GOVERNANCE_SUBTITLES.personal);
   return <FeaturePage featureId="governance" subtitle={subtitle}>
-    <GovernanceBlocks scopeId={scopeId} account={account} native={native}/>
+    <GovernanceBlocks scopeId={scopeId} native={native}/>
   </FeaturePage>;
 }

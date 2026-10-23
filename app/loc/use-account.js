@@ -44,7 +44,7 @@ const emptyState={
   permissionLoading:true,error:'',scopes:[]
 };
 
-export function useAccount(){
+export function useAccount({enabled=true}={}){
   const [state,setState]=useState(emptyState);
 
   const refresh=useCallback(async()=>{
@@ -93,7 +93,7 @@ export function useAccount(){
     }
   },[]);
 
-  useEffect(()=>{refresh()},[refresh]);
+  useEffect(()=>{if(enabled)refresh()},[enabled,refresh]);
 
   const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
   const signOut=useCallback(async()=>{

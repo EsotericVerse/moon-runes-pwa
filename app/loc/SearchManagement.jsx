@@ -63,7 +63,8 @@ export default function SearchManagement(){
         slotClassName="scope-search-reference-block"
         editSlotClassName="scope-search-reference-block"
         headingLevel={2} allowEditing allowDelete={false}
-        allowInlineChildAdd explicitEditButton/>
+        allowInlineChildAdd explicitEditButton
+        authorizedByParent startInEditMode onEditorExit={()=>setSection('search')}/>
     </section>:null}
     {section==='publish'?<div className="scope-management-imports">
       <ManagementArticlePublisher scopeId={scopeId}/>
