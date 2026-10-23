@@ -86,7 +86,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const body=<RichHtml html={slot.text} stripImage className="loc-home-block__body"/>;
   const media=image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
     <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
-      <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
+      <img src={image.src} alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async"/></picture>
   </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
     style={{'--loc-home-media-max':image.width+'px'}}>
     <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
