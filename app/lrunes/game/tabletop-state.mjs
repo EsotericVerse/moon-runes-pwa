@@ -1,5 +1,5 @@
 /** Portable LunaRunes Realtime snapshots: serialized IDs, never runtime objects. */
-const validState=G=>Boolean(G&&typeof G==='object'&&
+export const validState=G=>Boolean(G&&typeof G==='object'&&
   Array.isArray(G.players)&&G.players.length>=2&&G.players.length<=4&&
   G.players.every(p=>Array.isArray(p.hand)&&Array.isArray(p.deck)&&Array.isArray(p.discard)&&Array.isArray(p.selected))&&
   Array.isArray(G.eventDeck)&&G.eventDeck.length>0&&
