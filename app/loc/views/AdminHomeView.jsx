@@ -21,9 +21,9 @@ import PanelLoading from '../PanelLoading';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組與人員',description:'管理群組、人員及所屬關係。'},
-  {value:'reserved',label:'保留 Scope ID',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
+  {value:'reserved',label:'保留名稱設定',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
   {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
-  {value:'featureHero',label:'功能區塊',description:'編輯各功能頁的標題、說明與首圖。'},
+  {value:'featureHero',label:'功能區塊設定',description:'編輯各功能頁的標題、說明與首圖。'},
   {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁。'},
   {value:'system',label:'系統連線',description:'設定資料庫連線與郵件封鎖名單。'}
 ]);
