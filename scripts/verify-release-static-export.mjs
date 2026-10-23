@@ -4,7 +4,7 @@ import {join} from 'node:path';
 // Static export must contain the principal Guest and management mounts.
 // This checks file generation only; browser behavior and RLS need separate tests.
 const routes=[
-  '', 'search', 'culture', 'statics',
+  '', 'search', 'culture', 'culture/manage', 'statics', 'statics/manage',
   'lo3rwang', 'lo3rwang/search',
   'lrunes', 'lrunes/search', 'lrunes/game', 'game/room',
   'scope-shell', 'scope-shell/search',
