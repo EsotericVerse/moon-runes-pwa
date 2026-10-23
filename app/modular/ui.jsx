@@ -51,13 +51,13 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const groupHeroQuery=useQuery({
     queryKey:['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
     queryFn:()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),
-    staleTime:60_000,
+    staleTime:Infinity,
     enabled:sharedEnabled||hasFeatureHero
   });
   const scopeHeroImageQuery=useQuery({
     queryKey:['scope-blocks','loc','scope_'+featureId],
     queryFn:()=>selectScopeBlocks('loc','scope_'+featureId),
-    staleTime:60_000,
+    staleTime:Infinity,
     enabled:hasFeatureHero&&scopeId!=='loc'
   });
   const heroImageRow=(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];

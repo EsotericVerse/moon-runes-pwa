@@ -129,7 +129,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         hasMore:Number(next.galaxyOffset||0)+Number(next.mediaOffset||0)<Number(index.totalCount||0)};
     },
     getNextPageParam:page=>page.hasMore?page.nextCursor:undefined,
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const bodyQuery=useQuery({
     queryKey:['statistics-source-article-body',scope.id,selectedUid],
@@ -140,7 +140,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
       if(!result)throw new Error('找不到文章內容');
       return workDisplayText(result.content||'');
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
   return <div className="scope-stat-source-works">
@@ -202,7 +202,7 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
       ]);
       return {groups:groups.rows||[],aliases:aliases.rows||[]};
     },
-    staleTime:60_000
+    staleTime:Infinity
   });
   const details=useMemo(()=>{
     const groups=(groupsQuery.data?.groups||[]).filter(item=>item.enabled!==false);
@@ -356,7 +356,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {selectScopeCultureData}=await import('../../loc/culture-query');
       return selectScopeCultureData(scopeId);
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const periods=useMemo(()=>(periodQuery.data?.eras?.eras||[])
     .filter(row=>String(row.scope_id||'')===scopeId&&row.start_date)
@@ -383,7 +383,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       queryClient.setQueryData(['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],data.rows);
       return data;
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   // Media charts carry their own facet rows; the earliest date is one small request.
   const earliestQuery=useQuery({
@@ -393,7 +393,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {selectScopeEarliest}=await loadGalaxyStatistics();
       return selectScopeEarliest(targetScopes[0]);
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   useEffect(()=>{
     const found=overview.data?.earliest||earliestQuery.data||'';
@@ -406,7 +406,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       return selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange);
     },
     enabled:mediaDimension&&rankingType!=='media_style'&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const crossTagQuery=useQuery({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
@@ -415,7 +415,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       return selectMediaCrossTagRows(targetScopes[0],queryRange);
     },
     enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const styleTreeQuery=useQuery({
     queryKey:['music-style-tree',scopeId],
@@ -425,7 +425,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       return Array.isArray(data)?data:[];
     },
     enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
@@ -445,7 +445,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         unit:queryRange.bucket
       });
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const adminSource=adminSourceQuery.data||{rows:[],series:[],distribution:[],total:0};
   const basicTrend=adminSource.rows;
@@ -496,7 +496,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const keywordClassLabel=keywordClassQuery.data
     ?'關鍵詞組：'+keywordClassQuery.data
@@ -505,7 +505,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     queryKey:['statistics-source-taxonomy'],
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
     queryFn:async()=> (await loadGalaxyStatistics()).selectSourceTaxonomy(),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const configuredSources=useMemo(()=>
     (keywordSourcesQuery.data?.categories||[]).filter(row=>row.enabled!==false),
@@ -529,7 +529,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     },
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&Boolean(styleRange.startDate&&styleRange.endDate)
       &&(!keywordSource||keywordSourcesQuery.isSuccess),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
 
   return <section className="scope-stat-section">

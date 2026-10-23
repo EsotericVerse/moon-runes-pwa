@@ -197,7 +197,7 @@ export default function Culture(){
       return selectScopeCultureData(scopeId);
     },
     enabled:!isLrunesDaily&&!isLocItemView,
-    staleTime:5*60_000
+    staleTime:Infinity
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
@@ -335,7 +335,7 @@ export default function Culture(){
       });
     },
     enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid,
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const keywordClassQuery=useQuery({
     queryKey:['scope-active-keyword-class-name',scopeId],
@@ -346,7 +346,7 @@ export default function Culture(){
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const keywordClassLabel=keywordClassQuery.data?'關鍵詞組：'+keywordClassQuery.data
     :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
@@ -357,7 +357,7 @@ export default function Culture(){
       return selectKeywordAnalysisSummary({scopeId,startDate:keywordWindowStart,endDate:keywordWindowEnd});
     },
     enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&keywordWindowValid,
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
@@ -383,7 +383,7 @@ export default function Culture(){
       });
       return rows;
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const keywordRiverPending=keywordDetailRequested?keywordDensityQuery.isPending:styleQuery.isPending;
   const keywordRiverError=keywordDetailRequested?keywordDensityQuery.error:null;
@@ -424,7 +424,7 @@ export default function Culture(){
       });
       return rows;
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const keywordDrillItems=useMemo(()=>{
     if(keywordDetailRequested&&!keywordDensityQuery.data)return [];

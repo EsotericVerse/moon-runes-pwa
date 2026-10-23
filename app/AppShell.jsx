@@ -225,7 +225,7 @@ function NavTarget({href,label,current=false,native=false}){
 // lives in this thin wrapper (a hook cannot read a provider rendered by itself).
 export default function AppShell({children}){
   const [client]=useState(()=>new QueryClient({
-    defaultOptions:{queries:{staleTime:30_000,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
+    defaultOptions:{queries:{staleTime:Infinity,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
   }));
   return <QueryClientProvider client={client}><EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider></QueryClientProvider>;
 }

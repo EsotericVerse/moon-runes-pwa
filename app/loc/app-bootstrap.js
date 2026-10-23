@@ -114,7 +114,7 @@ export function useAppBootstrap(scopeId,pageName='index',{enabled=true}={}){
         configHint:freshHome?homeState.data?.config:null
       });
     },
-    staleTime:60_000,
+    staleTime:Infinity,
     enabled
   });
 }

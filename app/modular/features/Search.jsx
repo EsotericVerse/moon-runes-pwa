@@ -247,7 +247,7 @@ export default function Search({managementMode=false}){
     queryKey:['statistics-source-taxonomy'],
     queryFn:selectSourceTaxonomy,
     enabled:advancedOpen&&advancedTab==='source'||sourceFilter.startsWith('category:'),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const [scopeFilter,setScopeFilter]=useState('');
   const [startDate,setStartDate]=useState('');
@@ -309,7 +309,7 @@ export default function Search({managementMode=false}){
     queryKey:managementMode?['management-search-scopes',account.email]:['loc-searchable-scopes'],
     queryFn:managementMode?()=>selectScopeRegistry({scopeKind:'scope'}):selectLocSearchScopes,
     enabled:scopeId==='loc'&&!aggregateScopes&&(!managementMode||managementAuthorized),
-    staleTime:5*60_000
+    staleTime:Infinity
   });
   const availableScopes=useMemo(()=>{
     if(scopeId!=='loc')return [account.scopeDataFor(scopeId)||defaultScopeData(scopeId)].filter(Boolean);
@@ -360,7 +360,7 @@ export default function Search({managementMode=false}){
       return rows.filter(row=>row.entry_type==='period'&&row.start_date)
         .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
     },
-    staleTime:5*60_000
+    staleTime:Infinity
   });
 
   async function loadGalaxyDetail(result){
@@ -423,7 +423,7 @@ export default function Search({managementMode=false}){
         ?await queryClient.fetchQuery({
           queryKey:['statistics-source-taxonomy'],
           queryFn:selectSourceTaxonomy,
-          staleTime:5*60_000
+          staleTime:Infinity
         })
         :null;
       if(id!==searchId.current)return;
