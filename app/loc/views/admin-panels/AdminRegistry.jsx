@@ -423,6 +423,22 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     }catch(error){setStatus(error?.message||'Mapping 新增失敗。');return false;}
   }
 
+  const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
+    JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
+  const draftDirty=editing&&JSON.stringify(editDraft)!==editBaseline.current;
+  const newMappingDirty=Object.values(newMapping).some(value=>String(value||'').trim());
+  useEditDockForm({
+    isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
+    save:async()=>{
+      if(draftDirty&&await saveRegistryAndConfig()!==true)return false;
+      for(const item of editedMappings){
+        if(await saveMapping(item)!==true)return false;
+      }
+      if(newMappingDirty&&await addMapping()!==true)return false;
+      return true;
+    }
+  });
+
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請選擇人員或群組</p></aside>;
 
   const attrs=[
@@ -445,21 +461,6 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     {label:'狀態',value:selected.active!==false?'啟用':'隱藏'}
   ];
 
-  const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
-    JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
-  const draftDirty=editing&&JSON.stringify(editDraft)!==editBaseline.current;
-  const newMappingDirty=Object.values(newMapping).some(value=>String(value||'').trim());
-  useEditDockForm({
-    isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
-    save:async()=>{
-      if(draftDirty&&await saveRegistryAndConfig()!==true)return false;
-      for(const item of editedMappings){
-        if(await saveMapping(item)!==true)return false;
-      }
-      if(newMappingDirty&&await addMapping()!==true)return false;
-      return true;
-    }
-  });
   return <aside className={'admin-context-panel'+(editing?' is-editing':' is-reading')}>
     <div className="admin-node-heading">
       <div>
