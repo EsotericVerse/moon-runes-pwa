@@ -211,7 +211,7 @@ export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
   const isTimeEditingView=searchParams?.get('edit')==='1';
-  const account=useAccount({enabled:isTimeEditingView});
+  const account=useAccount({enabled:false});
   const editDock=useEditDock();
   const [timeEditorSection,setTimeEditorSection]=useState('anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
@@ -252,13 +252,11 @@ export default function Culture(){
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
-  // Ordinary culture viewing never checks management permissions.
-  // Only the separate editor can provide write operations.
+  // Opening the time editor is a UI action, not an authorization check.
+  // Verify the active user only when a write is actually requested.
   useEffect(()=>{
-    if(isTimeEditingView&&account.user&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId)){
-      editDock?.begin(scopeId);
-    }
-  },[isTimeEditingView,account.user,account.loading,account.permissionLoading,account.authorizer,scopeId,editDock?.begin]);
+    if(isTimeEditingView&&scopeId&&scopeId!=='loc')editDock?.begin(scopeId);
+  },[isTimeEditingView,scopeId,editDock?.begin]);
   useEffect(()=>{
     setSelectedTimelineRecordId('');
     setSelectedTimelineInfo(null);
@@ -623,6 +621,8 @@ export default function Culture(){
     // anchor_ids. Only a real anchor point can be moved on the river.
     if(row?.entryType!=='anchor'||!row.recordId||!scopeData?.time)return null;
     try{
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('此 Scope 沒有修改權限，請先登入管理帳號。');
       const date=dayKeyFromTimelineValue(item?.start);
       if(!date)throw new Error(l.invalidAnchorDate);
       await updateRows(scopeData.time,{
@@ -654,6 +654,8 @@ export default function Culture(){
       }
     }
     try{
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('此 Scope 沒有刪除權限，請先登入管理帳號。');
       await deleteRows(scopeData.time,{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
       setSelectedTimelineRecordId('');
       setSelectedTimelineDate('');
@@ -856,14 +858,13 @@ export default function Culture(){
   // The dedicated management entry is already in edit mode. Only its selected
   // record kind appears on the right, with the same native zoom/pan controls.
   if(isTimeEditingView){
-    const authorized=Boolean(account.user)&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(scopeId);
+    const editorAvailable=Boolean(scopeId&&scopeId!=='loc');
     const choice=TIME_EDITOR_SECTIONS.find(item=>item.value===timeEditorSection)||TIME_EDITOR_SECTIONS[0];
     return <FeaturePage featureId="culture">
       <section className='loc-card scope-feature-card scope-feature-card-wide'>
         <h2>時間編輯</h2>
-        {account.loading||account.permissionLoading?<p className='scope-status' role='status'>正在確認管理權限…</p>:null}
-        {!account.loading&&!account.permissionLoading&&!authorized?<p className='scope-status scope-error' role='alert'>請登入具有此 Scope 管理權限的帳號。</p>:null}
-        {authorized?<div className='management-workspace scope-time-edit-workspace'>
+        {!editorAvailable?<p className='scope-status'>此區沒有個別 Scope 的時間編輯資料。</p>:null}
+        {editorAvailable?<div className='management-workspace scope-time-edit-workspace'>
           <ManagementSectionNav id='time-editor-sections' title='編輯項目'
             panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
             value={timeEditorSection} onChange={setTimeEditorSection}/>
@@ -908,6 +909,7 @@ export default function Culture(){
             </div>:null}
             {Boolean(selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate'))?
               <CultureTimelineEditor scopeId={scopeId}
+                timeTable={scopeData?.time||''}
                 selectedRecordId={selectedTimelineRecordId}
                 suggestedAnchorDate={selectedTimelineDate}
                 suggestedRecordType={suggestedRecordType}
