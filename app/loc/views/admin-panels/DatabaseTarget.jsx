@@ -106,10 +106,13 @@ export default function DatabaseTarget(){
         updated_at:new Date().toISOString()
       };
       const relation=dbAuthRelation('silver.database_targets');
+      const changes=row._new?payload:Object.fromEntries(
+        Object.entries(payload).filter(([key])=>key==='updated_at'||row[key]!==previous?.[key])
+      );
       const {error}=row._new
-        ?await relation.insert({...payload,target_id:row.target_id,selected:false,
+        ?await relation.insert({...changes,target_id:row.target_id,selected:false,
             backup_selected:false,routing_mode:'single'})
-        :await relation.update(payload).eq('target_id',row.target_id);
+        :await relation.update(changes).eq('target_id',row.target_id);
       if(error)throw new Error(error.message||'資料庫目標資訊儲存失敗。');
       setStatus('資料庫設定已儲存。');
       setRevision(v=>v+1);
