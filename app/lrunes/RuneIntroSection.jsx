@@ -1,24 +1,26 @@
 'use client';
 
-import {useQuery} from '@tanstack/react-query';
+import {useEffect,useState} from 'react';
 import {selectRows} from '../loc/db-query.mjs';
 import {runeImage} from './rune-directory.mjs';
 import RuneCardInfo from './RuneCardInfo';
 import RuneDrawModeBubbles from './RuneDrawModeBubbles';
 
 export default function RuneIntroSection(){
-  const sample=useQuery({
-    queryKey:['lunarunes-intro-rune',66],
-    queryFn:async()=>{
-      const {rows}=await selectRows('silver.runes',{
-        columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
-        filters:[{column:'rune_id',operator:'eq',value:66}],
-        limit:1,offset:0
-      });
-      return rows?.[0]||null;
-    },
-    staleTime:300_000
-  });
+  const [sample,setSample]=useState({data:null,error:null,isPending:true});
+  useEffect(()=>{
+    let active=true;
+    selectRows('silver.runes',{
+      columns:'rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,positive_keywords,negative_keywords',
+      filters:[{column:'rune_id',operator:'eq',value:66}],
+      limit:1,offset:0
+    }).then(({rows})=>{
+      if(active)setSample({data:rows?.[0]||null,error:null,isPending:false});
+    }).catch(error=>{
+      if(active)setSample({data:null,error,isPending:false});
+    });
+    return ()=>{active=false;};
+  },[]);
   return <section className="loc-card home-copy-block home-rune-section runes-home-intro">
     <div className="home-section-heading runes-home-intro-heading">
       <p className="loc-eyebrow">LunaRunes(Symbolic Language)</p>
