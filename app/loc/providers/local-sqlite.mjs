@@ -649,16 +649,6 @@ export async function restoreKeywordLibraryFromDefault(defaultRows=[]){
   return runBatchLocal(statements);
 }
 
-// Only real imported records activate the local workspace. The seeded
-// settings row, an opened file picker, or a parsed-but-unsaved preview do not.
-export async function hasLocalScopeContent(){
-  const [articles,media]=await Promise.all([
-    selectLocal('SELECT 1 FROM local_galaxy LIMIT 1'),
-    selectLocal('SELECT 1 FROM local_galaxy_media LIMIT 1')
-  ]);
-  return articles.length>0||media.length>0;
-}
-
 export async function rpcLocal(name,args={}){
   switch(name){
     case 'management_write':return managementWriteLocal(args);
