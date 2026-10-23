@@ -346,6 +346,8 @@ function resolveSourceSelection(value,taxonomy={}){
   const categories=taxonomy?.categories||[];
   const active=new Set(categories.filter(row=>row.enabled!==false)
     .map(row=>String(row.category_code||'').toLowerCase()));
+  // Statistics always has the implicit Others category when not configured.
+  active.add('others');
   if(!active.has(code))return {kind:'none',names:[]};
   const aliases=taxonomy?.aliases||[];
   const rows=aliases.filter(row=>String(row.source_key||'').trim());
