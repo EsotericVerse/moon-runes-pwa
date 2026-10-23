@@ -117,5 +117,5 @@ export function createSupabaseAdapter({
     },
     auth:authenticatedSdk.auth
   };
-  return {publicClient:publicSdk,configuredPublicClient:publicRouting,authClient,auth:authenticatedSdk.auth};
+  return {publicClient:publicSdk,realtimeClient:publicSdk,configuredPublicClient:publicRouting,authClient,auth:authenticatedSdk.auth};
 }
