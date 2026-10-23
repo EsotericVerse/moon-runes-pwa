@@ -29,6 +29,8 @@ jobs:
         run: npm run audit:security
       - name: Game regression tests
         run: npm run test:game
+      - name: Bootstrap performance and Admin regression tests
+        run: npm run test:bootstrap
       - name: Build LOC static web assets
         run: |
           npm run build

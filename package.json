@@ -9,6 +9,7 @@
     "build": "next build",
     "postbuild": "node scripts/copy-static-assets.mjs && node scripts/diagnose-effekseer-smoke.mjs",
     "test:game": "node --experimental-default-type=module --test scripts/test-lunarunes-boardgame.mjs",
+    "test:bootstrap": "node --experimental-vm-modules --test scripts/test-app-bootstrap.mjs",
     "audit:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {

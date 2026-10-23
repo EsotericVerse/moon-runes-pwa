@@ -42,6 +42,8 @@ jobs:
         run: npm run audit:security
       - name: Test LunaRunes game state transitions
         run: npm run test:game
+      - name: Bootstrap performance and Admin regression tests
+        run: npm run test:bootstrap
       - name: Build Current static export
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
