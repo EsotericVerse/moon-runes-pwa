@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import {QueryClient,QueryClientProvider,useQueryClient} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
@@ -231,6 +231,14 @@ export default function AppShell({children}){
 }
 
 function AppShellInner({children}){
+  const queryClient=useQueryClient();
+  // Administrative Scope metadata updates must refresh the same React Query
+  // snapshot consumed by the shell, runtime, and Guest feature pages.
+  useEffect(()=>{
+    const refresh=()=>queryClient.invalidateQueries({queryKey:['app-bootstrap']});
+    window.addEventListener('loc-public-scope-metadata-changed',refresh);
+    return()=>window.removeEventListener('loc-public-scope-metadata-changed',refresh);
+  },[queryClient]);
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const editDock=useEditDock();
   // Static export serves the same root HTML on multiple Scope subdomains.
