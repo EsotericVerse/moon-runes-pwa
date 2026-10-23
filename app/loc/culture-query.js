@@ -492,6 +492,11 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   }).filter(Boolean).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
     ||a.category.localeCompare(b.category));
 
+  // A dated source catalog must produce dated river buckets. Surface
+  // projection regressions instead of misreporting existing works as zero.
+  if(groups.length>0&&buckets.length===0){
+    throw new Error('作品來源統計已載入，但時間河道資料轉換失敗。');
+  }
   return {groups,buckets,totalCount:groups.reduce((sum,row)=>sum+Number(row.item_count||0),0)};
 }
 

@@ -353,7 +353,7 @@ export default function Culture(){
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
   const sourceSnapshotQuery=useQuery({
-    queryKey:['culture-period-source-snapshot','v2',classificationScope,classificationWindowStart,classificationWindowEnd],
+    queryKey:['culture-period-source-snapshot','v3',classificationScope,classificationWindowStart,classificationWindowEnd],
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       return selectScopePeriodSourceSnapshot(scopeData,{
