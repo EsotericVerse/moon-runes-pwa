@@ -83,10 +83,13 @@ export function selectManagedScopes(){
 }
 
 function normalizeRegistryRow(row){
+  const id=String(row.scope_id||'').trim();
   return {
-    scope_id:String(row.scope_id||'').trim(),
+    scope_id:id,
     display_name:String(row.display_name||'').trim(),
-    scope_kind:String(row.scope_kind||'').trim(),
+    // Admin is an operations node, never an article Scope. The bootstrap RPC
+    // currently reports it as a Scope even though silver.loc marks it system.
+    scope_kind:id==='admin'?'system':String(row.scope_kind||'').trim(),
     domain:String(row.domain||'').trim()||null,
     directory:String(row.directory||'').trim()||null,
     parent_scope_id:String(row.parent_scope_id||'').trim()||null,
@@ -138,9 +141,9 @@ export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}
   const rows=await fetchRegistryRows();
   return rows
     .filter(row=>row?.active!==false)
-    .filter(row=>!parentScopeId||String(row.parent_scope_id||'').trim()===String(parentScopeId).trim())
-    .filter(row=>!scopeKind||String(row.scope_kind||'').trim()===String(scopeKind).trim())
     .map(normalizeRegistryRow)
+    .filter(row=>!parentScopeId||row.parent_scope_id===String(parentScopeId).trim())
+    .filter(row=>!scopeKind||row.scope_kind===String(scopeKind).trim())
     .sort((a,b)=>a.sort_order-b.sort_order||a.scope_id.localeCompare(b.scope_id));
 }
 
