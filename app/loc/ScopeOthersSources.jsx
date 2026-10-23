@@ -161,10 +161,14 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
     }finally{setBusy(false);}
   }
 
-  currentSave.current=save;
+  currentSave.current={save,isDirty:()=>hasChanges,isBusy:()=>busy};
   useEffect(()=>{
     if(!dock?.active||dock.scopeId!==scopeId)return undefined;
-    return dock.register({save:()=>currentSave.current()});
+    return dock.register({
+      save:()=>currentSave.current.save(),
+      isDirty:()=>currentSave.current.isDirty(),
+      isBusy:()=>currentSave.current.isBusy()
+    });
   },[dock?.active,dock?.scopeId,dock?.register,scopeId]);
 
   return <section className="loc-card scope-feature-card">
