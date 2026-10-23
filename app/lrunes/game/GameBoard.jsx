@@ -466,6 +466,7 @@ function GameHomeHero({data=null,editing=false,onEditorExit=null}){
 }
 
 function OnlineMatch({data,count,code,host,onExit}){
+  const [shareError,setShareError]=useState('');
   const {G,moves,start,online,members,error,remoteEffect,hostOnline}=
     useOnlineTabletop({data,count,code,host});
   return <div className="lrg-online">
@@ -487,6 +488,7 @@ function OnlineMatch({data,count,code,host,onExit}){
           }}>複製房間碼</Button>
           <Button variant="outlined" onClick={async()=>{
             const url=LOC_ORIGIN+'/game/room/?room='+code;
+            setShareError('');
             try{
               const {Capacitor}=await import('@capacitor/core');
               if(Capacitor.isNativePlatform()){
@@ -500,13 +502,16 @@ function OnlineMatch({data,count,code,host,onExit}){
             }catch(error){
               // Share sheets can be dismissed by the player without changing the room.
               if(!/cancel|dismiss|abort/i.test(String(error?.message||error)))
-                console.warn('[LunaRunes] 無法分享邀請連結',error);
+                setShareError('無法啟動分享功能；可直接將下方連結傳給朋友。');
             }
           }}>分享跨裝置邀請連結</Button>
           <Button variant="outlined" onClick={onExit}>離開房間</Button>
         </Stack>
       </Stack>
       {error?<Alert severity="error" role="alert" sx={{mt:1}}>{error}</Alert>:null}
+      {shareError?<Alert severity="warning" role="alert" sx={{mt:1}}>
+        {shareError} <span style={{overflowWrap:'anywhere'}}>{LOC_ORIGIN+'/game/room/?room='+code}</span>
+      </Alert>:null}
       {!hostOnline?<Alert severity="warning" role="status" sx={{mt:1}}>
         房主不在線，請等待房主重新連線。此模式不會將對局永久存檔。
       </Alert>:null}
