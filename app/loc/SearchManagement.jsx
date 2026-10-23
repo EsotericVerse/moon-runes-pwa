@@ -39,7 +39,7 @@ export default function SearchManagement(){
   if(!account.user)return <FeaturePage featureId="search">
     <section className="loc-card scope-feature-card">
       <p>請先登入，才能使用管理搜尋。</p>
-      <ScopeLink className="loc-button primary" href="/settings/?section=account">前往登入</ScopeLink>
+      <ScopeLink className="loc-button primary" href="/local/settings/?section=account">前往登入</ScopeLink>
     </section>
   </FeaturePage>;
   if(!permitted)return <FeaturePage featureId="search">
