@@ -182,6 +182,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Custom retains the existing one-year default and +/- zoom; periods are
   // canonical dates from the same Time records Culture uses.
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  useEffect(()=>setSelectedPeriodKey(''),[scopeId]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
