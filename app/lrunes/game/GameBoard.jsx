@@ -12,6 +12,7 @@ import {
 import {DndContext,PointerSensor,TouchSensor,useDraggable,useDroppable,useSensor,useSensors} from '@dnd-kit/core';
 import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {createLunaRunesGame} from './boardgame-rules.js';
+import {useOnlineTabletop} from './use-online-tabletop.js';
 import {loadGameData} from './game-data.js';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
 import {useAccount,usePassiveSessionAccount} from '../../loc/use-account';
@@ -356,7 +357,7 @@ function DocsPanel({data,section}){
   </Paper>;
 }
 
-function Board({G,moves,rules,onRestart}){
+function Board({G,moves,rules,onRestart,remoteEffect=null}){
   const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
   const [showScoringHelp,setShowScoringHelp]=useState(false);
@@ -383,6 +384,16 @@ function Board({G,moves,rules,onRestart}){
     if(rune)playRuneEffect(rune);
     else setBattleEffect({key:++effectSequence.current,kind:'resonance'});
   };
+  useEffect(()=>{
+    if(!remoteEffect||!effectsEnabled)return;
+    if(remoteEffect.kind==='rune'&&remoteEffect.card){
+      playRuneEffect(remoteEffect.card,remoteEffect.appearance||'glyph');
+    }else if(remoteEffect.kind==='resonance'){
+      playResonanceEffect();
+    }
+  // Remote events are keyed by the accepted online state revision.
+  },[remoteEffect]);
+
   const toggleRune=(playerIndex,id)=>{
     const player=G.players[playerIndex];
     if(player&&!player.selected.includes(id)&&
@@ -605,6 +616,44 @@ function GameHomeHero({data=null,editing=false,onEditorExit=null}){
   />;
 }
 
+function OnlineMatch({data,count,code,host,onExit}){
+  const {G,moves,start,online,members,error,remoteEffect,hostOnline}=
+    useOnlineTabletop({data,count,code,host});
+  return <div className="lrg-online">
+    <Paper className="lrg-setup" sx={{m:{xs:1,sm:2},p:2}}>
+      <Stack direction={{xs:'column',sm:'row'}} spacing={1.5}
+        justifyContent="space-between" alignItems={{sm:'center'}}>
+        <div>
+          <Typography variant="overline" color="primary">LUNARUNES · 線上對戰</Typography>
+          <Typography variant="h6" component="h1">房間 {code}</Typography>
+          <Typography variant="body2" color="text.secondary" role="status">
+            {online?'已連上 Supabase Realtime':'連線中／連線已中斷'}
+            {' · 在線裝置 '+members.length}
+            {host?' · 房主':' · 已加入'}
+          </Typography>
+        </div>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Button variant="outlined" onClick={()=>{
+            navigator.clipboard?.writeText(code).catch(()=>{});
+          }}>複製房間碼</Button>
+          <Button variant="outlined" onClick={onExit}>離開房間</Button>
+        </Stack>
+      </Stack>
+      {error?<Alert severity="error" role="alert" sx={{mt:1}}>{error}</Alert>:null}
+      {!hostOnline?<Alert severity="warning" role="status" sx={{mt:1}}>
+        房主不在線，請等待房主重新連線。此模式不會將對局永久存檔。
+      </Alert>:null}
+      {!G?<Stack spacing={1} sx={{mt:2}}>
+        <Typography>{host?'房間已建立，可以等待朋友加入，也可以直接自己開始。':
+          '等待房主開始對局。你可以在此等候，遊戲開始後會自動顯示牌桌。'}</Typography>
+        {host?<Button variant="contained" disabled={!online}
+          onClick={start}>開始線上對局（{count} 人）</Button>:null}
+      </Stack>:null}
+    </Paper>
+    {G?<Board G={G} moves={moves} rules={data} remoteEffect={remoteEffect} onRestart={onExit}/>:null}
+  </div>;
+}
+
 function LocalMatch({data,count,onRestart}){
   const game=useMemo(()=>createLunaRunesGame(data,count),[data,count]);
   const [G,dispatch]=useReducer(
@@ -622,6 +671,9 @@ export default function GameBoard(){
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
+  const [onlineRoom,setOnlineRoom]=useState(null);
+  const [inviteCode,setInviteCode]=useState('');
+  const [roomError,setRoomError]=useState('');
   const [section,setSection]=useState('play');
   const [checkingEdit,setCheckingEdit]=useState(false);
   const [editError,setEditError]=useState('');
@@ -657,6 +709,10 @@ export default function GameBoard(){
     <GameHomeHero/>
     <Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert>
   </main></ThemeProvider>;
+  if(onlineRoom)return <ThemeProvider theme={uiTheme}>
+    <OnlineMatch key={onlineRoom.code} data={data} count={onlineRoom.count}
+      code={onlineRoom.code} host={onlineRoom.host} onExit={()=>setOnlineRoom(null)}/>
+  </ThemeProvider>;
   if(match)return <ThemeProvider theme={uiTheme}><LocalMatch key={match} data={data} count={count} onRestart={()=>setMatch(0)}/></ThemeProvider>;
 
   const sections=[
@@ -693,8 +749,31 @@ export default function GameBoard(){
                     {Array.from({length:data.config.playerMax-data.config.playerMin+1},(_,i)=>i+data.config.playerMin).map(n=><MenuItem key={n} value={n}>{n} 人</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Button variant="contained" size="large" onClick={()=>setMatch(x=>x+1)}>開始遊戲</Button>
+                <Button variant="contained" size="large" onClick={()=>setMatch(x=>x+1)}>本機開始遊戲</Button>
+                <Button variant="outlined" size="large" onClick={()=>{
+                  const bytes=crypto.getRandomValues(new Uint8Array(6));
+                  const code=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+                  setRoomError('');
+                  setOnlineRoom({code,count,host:true});
+                }}>建立線上房間</Button>
               </Stack>
+              <Divider sx={{my:2}}/>
+              <Typography variant="subtitle2">跨裝置線上對戰</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{mb:1}}>
+                手機、IPA 與網頁輸入相同房間碼即可同桌遊玩。無須登入；房主在線時同步遊戲。
+              </Typography>
+              <Stack direction={{xs:'column',sm:'row'}} spacing={1} alignItems={{sm:'center'}}>
+                <TextField size="small" label="房間代碼" autoComplete="off"
+                  value={inviteCode} onChange={e=>setInviteCode(e.target.value.toUpperCase().replace(/\\s/g,''))}
+                  inputProps={{maxLength:12}}/>
+                <Button variant="contained" disabled={!/^[A-F0-9]{12}$/.test(inviteCode)}
+                  onClick={()=>{
+                    if(!/^[A-F0-9]{12}$/.test(inviteCode)){setRoomError('請輸入 12 位房間代碼');return;}
+                    setRoomError('');
+                    setOnlineRoom({code:inviteCode,count,host:false});
+                  }}>加入線上房間</Button>
+              </Stack>
+              {roomError?<Alert severity="warning" sx={{mt:1}}>{roomError}</Alert>:null}
             </Paper>
           </>:null}
           {['rules','events','roles','actions'].includes(section)?
