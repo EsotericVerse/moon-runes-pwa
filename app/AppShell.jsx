@@ -3,7 +3,6 @@
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider,useQueryClient} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
@@ -221,24 +220,11 @@ function NavTarget({href,label,current=false,native=false}){
   return current?<span className="scope-nav-current" aria-current="page">{label}</span>:<ScopeLink href={href} native={native}>{label}</ScopeLink>;
 }
 
-// The provider must sit ABOVE the component that calls useAppBootstrap, so it
-// lives in this thin wrapper (a hook cannot read a provider rendered by itself).
 export default function AppShell({children}){
-  const [client]=useState(()=>new QueryClient({
-    defaultOptions:{queries:{staleTime:Infinity,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
-  }));
-  return <QueryClientProvider client={client}><EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider></QueryClientProvider>;
+  return <EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider>;
 }
 
 function AppShellInner({children}){
-  const queryClient=useQueryClient();
-  // Administrative Scope metadata updates must refresh the same React Query
-  // snapshot consumed by the shell, runtime, and Guest feature pages.
-  useEffect(()=>{
-    const refresh=()=>queryClient.invalidateQueries({queryKey:['app-bootstrap']});
-    window.addEventListener('loc-public-scope-metadata-changed',refresh);
-    return()=>window.removeEventListener('loc-public-scope-metadata-changed',refresh);
-  },[queryClient]);
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const editDock=useEditDock();
   // Static export serves the same root HTML on multiple Scope subdomains.

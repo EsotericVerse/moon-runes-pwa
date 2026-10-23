@@ -1,13 +1,25 @@
 'use client';
 
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useCallback,useEffect,useState} from 'react';
 import {dbPublicClient} from './db-client.mjs';
 import {invalidatePublicScopeMetadata,invalidatePublicThemeSnapshot,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
 
-// Shared public site snapshot (Registry/Theme/page copy) is fetched once per
-// client runtime. Each Scope page fetches only its own config and page blocks.
-// React Query deduplicates consumers of the same (scopeId, pageName) key.
+// Share only identical in-flight/completed bootstrap reads, without a TTL.
+// Reads change after explicit writes, not after a fixed number of seconds.
+const bootstrapReads=new Map();
+function clearBootstrapReads(scopeId='',page=''){
+  const prefix=scopeId?'app-bootstrap|'+scopeId+'|':'';
+  for(const key of bootstrapReads.keys()){
+    if((!prefix||key.startsWith(prefix))&&(!page||key===prefix+page))bootstrapReads.delete(key);
+  }
+  if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('loc-bootstrap-refresh',{
+    detail:{scopeId,page}
+  }));
+}
+export function refreshAppBootstrap(scopeId='',page=''){
+  clearBootstrapReads(scopeId,page);
+}
 const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
 const PAGE_NAME=/^[a-z0-9_-]+$/;
 let bootstrapRpcInstalled=true;
@@ -19,10 +31,12 @@ let locHomeSnapshotDelivered=false;
 export function invalidateAppBootstrapMetadata(){
   locHomeSnapshotDelivered=false;
   invalidatePublicScopeMetadata();
+  clearBootstrapReads();
 }
 export function invalidateAppBootstrapThemes(){
   locHomeSnapshotDelivered=false;
   invalidatePublicThemeSnapshot();
+  clearBootstrapReads();
 }
 const missingRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
 
@@ -99,22 +113,43 @@ export function appBootstrapPageCopy(data,scopeId){
 }
 
 export function useAppBootstrap(scopeId,pageName='index',{enabled=true}={}){
-  const queryClient=useQueryClient();
-  const key=appBootstrapKey(scopeId,pageName);
-  return useQuery({
-    queryKey:key,
-    queryFn:()=>{
-      // Author Home already read this Scope's public Config. Reuse that fresh
-      // React Query value when navigating to Culture; this is NOT an auth grant.
-      // Invalidated or aged entries must never hide a subsequent config update.
-      const homeState=key[2]==='index'?null:queryClient.getQueryState(appBootstrapKey(scopeId,'index'));
-      const freshHome=homeState&&!homeState.isInvalidated
-        &&homeState.dataUpdatedAt>0&&Date.now()-homeState.dataUpdatedAt<60_000;
-      return selectAppBootstrap(scopeId,pageName,{
-        configHint:freshHome?homeState.data?.config:null
+  const [,id,page]=appBootstrapKey(scopeId,pageName);
+  const key='app-bootstrap|'+id+'|'+page;
+  const [state,setState]=useState({key:'',data:null,error:null,isPending:true});
+  const reload=useCallback(()=>{
+    clearBootstrapReads(id,page);
+  },[id,page]);
+  useEffect(()=>{
+    if(!enabled)return undefined;
+    let active=true;
+    const run=()=>{
+      setState(current=>current.key===key?{...current,isPending:true}:{key,data:null,error:null,isPending:true});
+      let request=bootstrapReads.get(key);
+      if(!request){
+        request=selectAppBootstrap(id,page).catch(error=>{
+          bootstrapReads.delete(key);
+          throw error;
+        });
+        bootstrapReads.set(key,request);
+      }
+      request.then(data=>{
+        if(active)setState({key,data,error:null,isPending:false});
+      }).catch(error=>{
+        if(active)setState({key,data:null,error,isPending:false});
       });
-    },
-    staleTime:Infinity,
-    enabled
-  });
+    };
+    const onRefresh=event=>{
+      const changed=event.detail||{};
+      if((!changed.scopeId||changed.scopeId===id)&&(!changed.page||changed.page===page))run();
+    };
+    run();
+    window.addEventListener('loc-bootstrap-refresh',onRefresh);
+    return ()=>{
+      active=false;
+      window.removeEventListener('loc-bootstrap-refresh',onRefresh);
+    };
+  },[key,id,page,enabled]);
+  const resolved=state.key===key?state:{key,data:null,error:null,isPending:true};
+  return {...resolved,isSuccess:!resolved.isPending&&!resolved.error,
+    isError:Boolean(resolved.error),refetch:reload};
 }
