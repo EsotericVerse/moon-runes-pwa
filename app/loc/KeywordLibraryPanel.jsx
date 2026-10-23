@@ -545,21 +545,42 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }
   }
 
+  const originalItem=rows.find(row=>String(row.keyword_id)===String(draft?.keyword_id||''));
+  const draftDirty=Boolean(draft&&(
+    !draft.keyword_id||
+    (originalItem&&(
+      ['class_id','class_name','class_group','class_enable','item_no','item_name','principle','order_no']
+        .some(key=>String(draft[key]??'')!==String(originalItem[key]??''))||
+      String(draft.keywords_text||'')!==keywordText(originalItem.keywords)
+    ))||
+    (workspace==='manual'&&keywordEdit.trim()&&keywordEdit!==selectedKeyword)
+  ));
   dockActions.current={
-    save:async()=>{
+    save:async({switching=false}={})=>{
       if(busy||loading)return false;
-      if(workspace==='library'){
+      if(configDirty&&draftDirty){
+        setMessage('分析設定與關鍵詞草稿都有未儲存內容，請分別儲存。');
+        return false;
+      }
+      const choice=configDirty?'analysis':draftDirty?'manual':workspace;
+      if(choice==='library'){
         setMessage(l.libraryImmediateSave);
         return false;
       }
-      const success=await (workspace==='analysis'?saveAnalysisSettings():save());
-      if(success)editDock?.complete(navigationHref(scopeId,'statics',native));
+      const success=await (choice==='analysis'?saveAnalysisSettings():save());
+      if(success&&!switching)editDock?.complete(navigationHref(scopeId,'statics',native));
       return success;
-    }
+    },
+    isDirty:()=>configDirty||draftDirty,
+    isBusy:()=>busy||loading
   };
   useEffect(()=>{
     if(!editDock?.active||editDock.scopeId!==scopeId||!canEdit)return undefined;
-    return editDock.register({save:()=>dockActions.current.save()});
+    return editDock.register({
+      save:options=>dockActions.current.save(options),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
+    });
   },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId,canEdit]);
 
   if(!canEdit)return null;
