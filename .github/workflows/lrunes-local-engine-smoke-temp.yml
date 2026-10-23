@@ -48,3 +48,5 @@ jobs:
             git pull --rebase origin feat/lrunes-replace-boardgame-20261024
             git push origin HEAD:feat/lrunes-replace-boardgame-20261024
           fi
+
+# Temporary isolated verification; omit from main.
