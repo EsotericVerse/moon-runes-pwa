@@ -233,7 +233,7 @@ export default function Search({managementMode=false}){
   const {scopeId,scope}=useScopeRuntime();
   const editDock=useEditDock();
   const account=useAccount({enabled:managementMode});
-  const managementAuthorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
+  const managementAuthorized=Boolean(managementMode&&account.user&&!account.loading&&!account.permissionLoading&&
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
   const router=useRouter();
@@ -557,7 +557,7 @@ export default function Search({managementMode=false}){
     try{
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId))throw new Error(t('uiExtra.searchUI.invalidMediaId'));
       const mediaScopeId=managementMode&&scopeId==='loc'?String(searchParams?.get('scope')||'').trim():scopeId;
-      if(!mediaScopeId||!canManageSearchScope(account,mediaScopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
+      if(!managementMode||!mediaScopeId||!canManageSearchScope(account,mediaScopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
       const scopeData=account.scopeDataFor(mediaScopeId)||defaultScopeData(mediaScopeId);
       if(!scopeData?.galaxyMedia)throw new Error(UI_COPY.search.notFound);
       const row=await selectPublicEditableRow(scopeData.galaxyMedia,'media_id',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
