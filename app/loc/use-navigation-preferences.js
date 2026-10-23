@@ -9,7 +9,7 @@ const accountNavigation=NavigationPreferences.account;
 
 const INITIAL={home:'loc',favorites:[...accountNavigation.DEFAULT_FAVORITES],folders:[],loading:true,error:''};
 export function useNavigationPreferences(){
-  const account=useAccount();
+  const account=useAccount({sessionOnly:true});
   const [preferences,setPreferences]=useState(INITIAL);
   const identity=account.user?.id||account.user?.email||'';
   useEffect(()=>{

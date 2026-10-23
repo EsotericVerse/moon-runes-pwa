@@ -44,7 +44,7 @@ const emptyState={
   permissionLoading:true,error:'',scopes:[]
 };
 
-export function useAccount({enabled=true}={}){
+export function useAccount({enabled=true,sessionOnly=false}={}){
   const [state,setState]=useState(emptyState);
 
   const refresh=useCallback(async()=>{
@@ -57,6 +57,12 @@ export function useAccount({enabled=true}={}){
       }
 
       const email=normalizeAuthEmail(user?.email);
+      // Personalized navigation needs only a session. Management authorization
+      // is intentionally deferred until the protected route or edit action.
+      if(sessionOnly){
+        setState({...emptyState,loading:false,permissionLoading:false,user,email});
+        return user;
+      }
       // Deny globally before assigning any scope/admin management role.
       if(await isCurrentEmailBlocklisted()){
         await signOutAccount();
@@ -91,7 +97,7 @@ export function useAccount({enabled=true}={}){
       setState({...emptyState,loading:false,permissionLoading:false,error:String(error?.message||error)});
       return null;
     }
-  },[]);
+  },[sessionOnly]);
 
   useEffect(()=>{if(enabled)refresh()},[enabled,refresh]);
 

@@ -230,7 +230,7 @@ export default function Search({managementMode=false}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();
-  const account=useAccount();
+  const account=useAccount({enabled:managementMode});
   const managementAuthorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
@@ -853,9 +853,6 @@ export default function Search({managementMode=false}){
         allowDelete={false}
         allowInlineChildAdd
         explicitEditButton
-        toggleExtra={<ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>
-          <UiText id="uiExtra.editBlocks.enterEditMode"/>
-        </ScopeLink>}
         onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
       />
     </div>:null}

@@ -110,7 +110,7 @@ export default function Culture(){
   const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
-  const account=useAccount();
+  const account=useAccount({enabled:false});
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=scopeId==='lrunes'&&lrunesView==='daily';
@@ -725,11 +725,6 @@ export default function Culture(){
   }
 
   return <FeaturePage featureId="culture">
-    {!query.isPending&&!query.error&&hasTimelineSurface&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&account.canManageScopeSync(scopeId)?<button type='button' className='loc-button scope-edit-mode-toggle scope-culture-timeline-edit-toggle' onClick={()=>setTimelineEditMode(current=>{
-      const next=!current;
-      if(!next){setSelectedTimelineRecordId('');setSelectedTimelineDate('');}
-      return next;
-    })}><UiText id={timelineEditMode?'uiExtra.cultureView.exitTimelineEdit':'uiExtra.cultureView.timelineEdit'}/></button>:null}
     <section className='loc-card scope-feature-card scope-feature-card-wide'>
       {scopeId==='lrunes'?<div className='scope-stat-controls'><label><span><UiText id="uiExtra.cultureView.timelineContent"/></span>
         <select className='scope-select' value={lrunesView} onChange={event=>setLrunesView(event.target.value)}>
@@ -988,7 +983,7 @@ export default function Culture(){
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=>{
-                      const canEditWork=Boolean(work.uid)&&account.canManageScopeSync(work.scope_id||classificationScope);
+                      const canEditWork=false;
                       const workKey=String(work.key||('galaxy:'+work.uid));
                       return <Article
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
@@ -1020,9 +1015,7 @@ export default function Culture(){
                           content={fullTextKey===work.key?fullText:''}
                           onToggle={()=>toggleWorkContent(work)}
                         />
-                        {canEditWork?<button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditingWork(work)}>
-                          <UiText id="uiExtra.editBlocks.edit"/>
-                        </button>:null}
+                        
                       </div>:null}
                     </Article>;
                     }}

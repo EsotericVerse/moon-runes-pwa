@@ -603,20 +603,16 @@ export default function Statistics(){
   useUiSection('uiExtra.statisticsView');
   useUiSection('uiExtra.chartTypes');
   const {scopeId,scope}=useScopeRuntime();
-  const account=useAccount();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  const canManageKeywords=Boolean(account.user)&&scopeId!=='lrunes'&&account.canManageScopeSync(scopeId);
-  const canManageSources=Boolean(account.user)&&account.canManageScopeSync(scopeId);
   return <FeaturePage featureId="statics">
-    {canManageKeywords?<ScopeLink className="loc-button scope-edit-mode-toggle" href={scopeHref(scopeId,'statics/keywords')}><UiText id="uiExtra.statisticsView.keywordSettings"/></ScopeLink>:null}
     <section className="loc-card scope-feature-card">
       <StatisticsPanel
         scopeId={scopeId}
         aggregateScopes={Boolean(scope?.aggregateChildren)}
         navigation={navigation}
         types={scopeId==='lrunes'?['daily_rune',...STAT_TYPES]:STAT_TYPES}
-        canManageSources={canManageSources}
+        canManageSources={false}
       />
     </section>
   </FeaturePage>;
