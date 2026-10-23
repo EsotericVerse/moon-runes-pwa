@@ -238,7 +238,7 @@ export default function Culture(){
   const [secondRiverMode,setSecondRiverMode]=useState('period');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
-  const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
+  const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -278,7 +278,7 @@ export default function Culture(){
   useEffect(()=>{
     setStyleFilter('none');
     setSecondRiverMode('period');
-    setKeywordPeriodKey('current');
+    setKeywordPeriodKey('latest');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
   },[scopeId]);
@@ -295,25 +295,29 @@ export default function Culture(){
   // because a different Culture panel or query refreshed the page.
   const primaryPeriods=useMemo(()=>isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId),[isAggregateScope,allPeriods,scopeId]);
   const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
+  // The newest recorded period, not the open/current flag, is the default.
+  const latestPeriod=primaryPeriods.at(-1)||null;
   const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope,UI_COPY.culture.allTime),[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
   useEffect(()=>{
     if(isAggregateScope||!query.data)return;
-    const preferred=periodKey(openPeriod)||periodKey(primaryPeriods.at(-1))||'all';
+    const preferred=periodKey(latestPeriod)||'all';
     setSelectedPeriodKey(current=>(current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
-  },[scopeId,isAggregateScope,query.data,openPeriod?.period,openPeriod?.start_date,primaryPeriods]);
+  },[scopeId,isAggregateScope,query.data,latestPeriod,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
-    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||openPeriod||allTimePeriod);
+    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||latestPeriod||allTimePeriod);
   // Without a current period, the first effect selects the latest saved period.
   // Do not scan all-time metadata only to immediately scan that period again.
-  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!openPeriod&&!selectedPeriodKey);
+  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   // The lower Culture panel shares one selected interval across the source
   // classification river, keyword-density river, suggestions, and work list.
   // The upper Time structure river keeps its own period navigation.
   const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
-    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||selectedWorkPeriod;
+    :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod)
+    :keywordPeriodKey==='current'?selectedWorkPeriod
+    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||latestPeriod||selectedWorkPeriod;
   const keywordWindowStart=keywordPeriodKey==='custom'
     ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
   const keywordWindowEnd=keywordPeriodKey==='custom'
@@ -1106,6 +1110,7 @@ export default function Culture(){
                           setKeywordPeriodKey(next);
                           setSecondRiverMode('period');
                         }}>
+                        <option value='latest'>最近的時期{latestPeriod?'：'+localizedLabelOf(latestPeriod,0):''}</option>
                         <option value='current'>目前檢視時期</option>
                         <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
                         {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
@@ -1165,7 +1170,7 @@ export default function Culture(){
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!secondRiverBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
-                {!riverRangeLoading?<div className='scope-culture-anchor-actions'>
+                {!riverRangeLoading&&(riverAnalysis.suggestions.length>0||anchorSaveMessage)?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   {riverAnalysis.suggestions.length?<details className='scope-culture-anchor-picker'>
                     <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
@@ -1232,7 +1237,7 @@ export default function Culture(){
                   </div>
                   <h4>{keywordDrillLevel==='group'?'風格群組密度':'風格群組內關鍵詞密度'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
-                  <details className='scope-culture-anchor-picker'>
+                  {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
                     <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
                     {styleRiverAnalysis.suggestions.length?<div className='scope-culture-anchor-choices'>
                       {styleRiverAnalysis.suggestions.map(item=>{
@@ -1246,7 +1251,7 @@ export default function Culture(){
                         </div>;
                       })}
                     </div>:<p className='scope-status'>此時間區間暫無足夠的風格密度變化，或分析資料尚在載入。</p>}
-                  </details>
+                  </details>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
