@@ -32,7 +32,7 @@ function stripInlineImage(value){
 export default function ScopeBlockDraftList({
   slots,scopeId,pageName,allowDelete=true,allowEntities=true,allowImages=true,
   editEyebrow=true,canAddBlock=false,slotClassName='loc-card',editSlotClassName='',
-  preserveOrder=false,toolbar=null,onDone,onCancel
+  preserveOrder=false,toolbar=null,onDone,onCancel,onDirtyChange=null
 }){
   useUiSection('uiExtra.editBlocks');
   useUiSection('uiExtra.frameEditor');
@@ -292,6 +292,11 @@ export default function ScopeBlockDraftList({
     save,isDirty:()=>JSON.stringify(drafts)!==initialDrafts.current,
     isBusy:()=>busy,discard:onCancel
   };
+  useEffect(()=>{
+    onDirtyChange?.(JSON.stringify(drafts)!==initialDrafts.current);
+    return ()=>onDirtyChange?.(false);
+  },[drafts,onDirtyChange]);
+
   useEffect(()=>{
     // Admin can also be opened directly, without homepage Edit mode.
     // Mounted drafts still participate in the same unsaved-change guard.
