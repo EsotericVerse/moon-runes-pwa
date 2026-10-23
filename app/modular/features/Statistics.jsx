@@ -26,7 +26,7 @@ import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
@@ -110,9 +110,10 @@ function rowsInWindow(rows=[],range={}){
 }
 function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
   const [selectedUid,setSelectedUid]=useState('');
+  const [articleSort,setArticleSort]=useState('desc');
   const group=Array.isArray(sourceNames);
   const worksQuery=useInfiniteQuery({
-    queryKey:['statistics-source-articles',scope.id,startDate,endDate,sourceNames],
+    queryKey:['statistics-source-articles',scope.id,startDate,endDate,sourceNames,articleSort],
     initialPageParam:null,
     queryFn:async({pageParam})=>{
       const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
@@ -120,7 +121,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         startDate,endDate,
         sourceName:group?'statistics-source':'',
         sourceNames:sourceNames||[],
-        limit:DEFAULT_LIST_BATCH_SIZE,cursor:pageParam
+        limit:DEFAULT_LIST_BATCH_SIZE,cursor:pageParam,sortDirection:articleSort
       });
       const {rows}=await selectScopePeriodWorkDetails(scope,{items:index.rows});
       const next=index.nextCursor;
@@ -143,7 +144,10 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
   });
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
   return <div className="scope-stat-source-works">
-    <p className="scope-status">{group?'此來源的文章列表':'全部作品列表（含多媒體）'} · {startDate} ～ {endDate}</p>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem'}}>
+      <p className="scope-status">{group?'此來源的文章列表':'全部作品列表（含多媒體）'} · {startDate} ～ {endDate}</p>
+      <ArticleSortSelect value={articleSort} onChange={setArticleSort}/>
+    </div>
     {worksQuery.isPending?<p className="scope-status" role="status">Loading...</p>:null}
     {worksQuery.error?<p className="scope-status scope-error">
       {featureDataErrorMessage(worksQuery.error)} <button type="button" className="loc-button" onClick={()=>worksQuery.refetch()}>重新讀取</button>
@@ -151,7 +155,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
     <IncrementalList
       items={works}
       batchSize={DEFAULT_LIST_BATCH_SIZE}
-      resetKey={scope.id+'|'+startDate+'|'+endDate+'|'+(sourceNames||[]).join('|')}
+      resetKey={scope.id+'|'+startDate+'|'+endDate+'|'+(sourceNames||[]).join('|')+'|'+articleSort}
       className="scope-culture-source-work-scroll"
       loading={worksQuery.isFetchingNextPage}
       externalHasMore={Boolean(worksQuery.hasNextPage)}
