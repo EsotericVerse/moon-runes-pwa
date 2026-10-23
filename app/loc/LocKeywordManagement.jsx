@@ -9,7 +9,7 @@ const TABLE='silver.loc_keywords';
 const SCOPE=/^[a-z][a-z0-9]{0,14}$/;
 const HASH=/^[0-9a-f]{32}$/;
 const EMPTY={scope_id:'lo3rwang',class_name:'',hash:''};
-const keyOf=row=>row.scope_id+'\u0000'+row.class_name;
+const keyOf=row=>JSON.stringify([row.scope_id,row.class_name]);
 
 async function readRegistry(){
   const {data,error}=await dbAuthRelation(TABLE)
