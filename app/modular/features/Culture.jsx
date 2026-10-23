@@ -874,7 +874,7 @@ export default function Culture(){
                   <>
                     <label className='scope-culture-period-select'>
                       <span>時間區間</span>
-                      <select className='scope-select' aria-label='關鍵詞時間區間'
+                      <select className='scope-select' aria-label='時間區間'
                         value={keywordPeriodKey} onChange={event=>{
                           const next=event.target.value;
                           if(next==='custom'){
@@ -891,12 +891,12 @@ export default function Culture(){
                     </label>
                     {keywordPeriodKey==='custom'?<>
                       <label><span>起始日期</span>
-                        <input className='scope-select' aria-label='關鍵詞起始日期' type='date'
+                        <input className='scope-select' aria-label='時間區間起始日期' type='date'
                           value={keywordCustomStart} max={keywordCustomEnd||undefined}
                           onChange={event=>setKeywordCustomStart(event.target.value)}/>
                       </label>
                       <label><span>結束日期</span>
-                        <input className='scope-select' aria-label='關鍵詞結束日期' type='date'
+                        <input className='scope-select' aria-label='時間區間結束日期' type='date'
                           value={keywordCustomEnd} min={keywordCustomStart||undefined}
                           onChange={event=>setKeywordCustomEnd(event.target.value)}/>
                       </label>
