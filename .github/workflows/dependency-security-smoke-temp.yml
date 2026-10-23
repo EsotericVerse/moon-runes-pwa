@@ -4,6 +4,12 @@ on:
     branches: [feat/security-close-legacy-deps-20261024]
     paths:
       - package.json
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/dependency-security-smoke-temp.yml
 permissions:
   contents: write
 jobs:
@@ -18,6 +24,7 @@ jobs:
       - name: Resolve lockfile with npm
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Commit npm-generated lockfile only
+        if: github.event_name == 'push'
         run: |
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
