@@ -207,6 +207,7 @@ export default {
     "description": "Each Class has its own UUID for copying and sharing. Articles only store the analyzed class_id and group_lists. Public statistics read article attributes directly without rerunning keyword analysis.",
     "copyHint": "Creates an independent Class UUID without overwriting keywords or changing the active Class.",
     "workspace": "Keyword workspace",
+    "libraryImmediateSave": "Library copy actions are saved immediately; there are no other settings to save here.",
     "analysisSettings": "Analysis settings",
     "activeClass": "Active Class",
     "minChars": "Minimum analysis characters",
