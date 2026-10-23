@@ -2,13 +2,13 @@
 
 import {useEffect,useState} from 'react';
 import dynamic from 'next/dynamic';
-import Select from 'react-select';
 import {useSearchParams} from 'next/navigation';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
+import ManagementSectionNav from '../modular/ManagementSectionNav';
 
 const ManagementSearchWorkspace=dynamic(
   ()=>import('../modular/features/Search'),
@@ -59,14 +59,12 @@ export default function SearchManagement(){
 
   return <FeaturePage featureId="search">
     <p className="scope-status">進階管理模式</p>
-    <div className="scope-stat-controls scope-stat-workspace-switch">
-      <label htmlFor="management-search-section">管理搜尋功能</label>
-      <Select inputId="management-search-section" instanceId="management-search-section"
-        className="loc-settings-select" classNamePrefix="loc-settings-select"
-        unstyled isSearchable={false} options={SECTIONS} value={currentSection}
-        onChange={option=>setSection(option?.value||'search')}
-        aria-label="管理搜尋功能"/>
-    </div>
+    <div className="management-workspace">
+      <ManagementSectionNav id="management-search-sections" title="管理搜尋功能"
+        panelId="management-search-panel" items={SECTIONS}
+        value={section} onChange={setSection}/>
+      <div id="management-search-panel" className="management-workspace-panel" role="region"
+        aria-labelledby={'management-search-sections-option-'+currentSection.value}>
     {section==='search'?<ManagementSearchWorkspace managementMode/>:null}
     {section==='suggestions'?<section className="loc-card">
       <ScopeEditableBlocks scopeId={scopeId} page="search" orders={[1]}
@@ -81,5 +79,7 @@ export default function SearchManagement(){
       <ManagementArticlePublisher scopeId={scopeId}/>
       <SunoImportPanel scopeId={scopeId}/>
     </div>:null}
+      </div>
+    </div>
   </FeaturePage>;
 }
