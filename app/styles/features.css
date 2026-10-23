@@ -868,3 +868,21 @@
 .scope-frame-image-settings{border-color:var(--loc-ui-hairline);background:var(--loc-ui-panel-soft)}
 .scope-frame-image-settings>legend{color:var(--loc-accent);font:600 .73rem/1.35 ui-monospace,SFMono-Regular,Menlo,monospace}
 .scope-frame-image-fields>label input,.scope-frame-image-fields>label select{padding:.5rem .55rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit;font-size:.87rem}
+
+
+/* Shared EditDock protection for unsaved edits across management sections. */
+.scope-edit-switch-dialog{
+  position:fixed;inset:0;margin:auto;
+  width:min(30rem,calc(100vw - 2rem));max-height:calc(100dvh - 2rem);
+  padding:clamp(1rem,3vw,1.5rem);
+  border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-md);
+  background:var(--loc-panel);color:var(--loc-text);
+  box-shadow:0 24px 80px rgb(0 0 0 / .4);
+}
+.scope-edit-switch-dialog::backdrop{background:rgb(0 0 0 / .6)}
+.scope-edit-switch-dialog h2{margin:0 0 .75rem;font-size:1.15rem}
+.scope-edit-switch-dialog p{margin:.5rem 0 1rem}
+.scope-edit-switch-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.scope-edit-switch-actions>button{flex:1 1 8rem;min-height:2.7rem}
+.scope-edit-switch-actions>button:focus-visible{outline:2px solid var(--loc-accent);outline-offset:3px}
