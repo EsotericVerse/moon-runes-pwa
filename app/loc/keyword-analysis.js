@@ -348,10 +348,19 @@ async function resolveDynamicClassifications(documents,catalogRows,onProgress){
 export async function selectActiveKeywordClassName(scopeId=''){
   const scope=defaultScopeData(scopeId);
   if(!scope)return '';
-  const {rows:configRows}=await selectRows(scope.config,{
-    columns:'current_keyword_class_id',
-    filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
-  });
+  let configRows;
+  try{
+    ({rows:configRows}=await selectRows(scope.config,{
+      columns:'current_keyword_class_id',
+      filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
+    }));
+  }catch(error){
+    // Keyword classification is optional per Scope; some config tables
+    // (e.g. silver.lrunes) intentionally have no active-Class column.
+    if(['42703','PGRST204'].includes(String(error?.code||''))&&
+      String(error?.message||'').includes('current_keyword_class_id'))return '';
+    throw error;
+  }
   const currentId=String(configRows?.[0]?.current_keyword_class_id||'').trim();
   if(!currentId)return '';
   const {rows:keywordRows}=await selectRows(scope.keywords,{
