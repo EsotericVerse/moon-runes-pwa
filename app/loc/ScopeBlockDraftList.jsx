@@ -15,7 +15,7 @@ import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 import {resolveHomeImage} from './LocHomeBlockDisplay';
 import {isHomeFrameFor} from './hero-image.mjs';
-import {HeroImageFieldset,HeroModeFieldset} from './HeroImageFields';
+import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
@@ -83,15 +83,6 @@ export default function ScopeBlockDraftList({
         text:stripInlineImage(next.text),
         entities:next.entities.map(entity=>({...entity,text:stripInlineImage(entity.text)}))
       }:next;
-    }));
-  }
-  function updateHeroImageMode(uid,value){
-    const mode=value==='side'?'side':'background';
-    setDrafts(current=>current.map(draft=>{
-      if(draft.uid!==uid)return draft;
-      const entities=draft.entities.length?[...draft.entities]:[{uid:HomeBlock.createUid(),title:'',text:'',order:1}];
-      entities[0]={...entities[0],image_mode:mode};
-      return {...draft,entities,image:{...(draft.image||{}),mode}};
     }));
   }
   function canInsertImageIn(draft,html=''){
@@ -280,10 +271,6 @@ export default function ScopeBlockDraftList({
           key:'title',label:<UiText id="uiExtra.editBlocks.chineseHeadline"/>,
           value:draft.title,maxLength:TITLE_LIMIT,onChange:value=>patchDraft(draft.uid,{title:value})
         },
-        ...(isHomeFrame&&draft.order===1?[{
-          key:'hero-mode',kind:'node',
-          node:<HeroModeFieldset draft={draft} name={'hero-image-'+draft.uid} onChange={mode=>updateHeroImageMode(draft.uid,mode)}/>
-        }]:[]),
         {
           key:'subtitle-line',label:<UiText id="uiExtra.editBlocks.subtitle"/>,
           value:HomeBlock.plainBlockLine(draft.subtitle),maxLength:SUBTITLE_LIMIT,
