@@ -5,7 +5,7 @@ export default {
   "mediaPlatform": "多媒體來源統計",
   "mediaStyle": "音樂曲風統計",
   "notApplied": "不套用",
-  "keywordClass": "關鍵詞 Class",
+  "keywordClass": "關鍵詞組",
   "loading": "統計讀取中…",
   "noChart": "目前區間沒有可顯示的統計圖形。",
   "loadingMediaTags": "正在讀取多媒體標籤組合…",
