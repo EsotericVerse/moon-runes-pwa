@@ -50,7 +50,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
         {section==='media'?<ManagementArticlePublisher key={routeScopeId+'-media'} scopeId={routeScopeId} mode="media"/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
-        {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId}/>:null}
+        {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
         {section==='governance'?<ScopeEditableBlocks key={routeScopeId+'-governance'}
           scopeId={routeScopeId} page="governance"
           className={'loc-grid two governance-grid'+(routeScopeId==='loc'?' governance-grid-loc':'')}
