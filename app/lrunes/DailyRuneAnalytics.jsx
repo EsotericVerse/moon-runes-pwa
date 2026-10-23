@@ -6,8 +6,8 @@ import {useFeatureCopy} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
 import {useQuery} from '@tanstack/react-query';
 import {
-  Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,LineChart,
-  ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis
+  Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,
+  ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectDailyRuneRange,selectFirstDailyRuneDate} from '../loc/daily-runes';
 import {realMoonPhase} from '../loc/model/moon-phase';
@@ -19,12 +19,11 @@ import StatisticsDetails from '../modular/modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {
   DAILY_RUNE_MODES,normalizeDailyDraws,rankDailyDraws,pageDailyRanking,
-  summarizeDailyDraws,dailyCategoryTrend,dailyDirectionTrend,dailyRuneInteractionScore
+  summarizeDailyDraws,dailyCategoryTrend,dailyDirectionTrend
 } from './daily-analytics-model.mjs';
 
 const PHASE_DATE_TIME='T12:00:00+08:00';
 const FOCUS=Object.freeze({});
-const COLORS=['#7562cf','#8f7de3','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f','#7d8a99'];
 const DRAW_ORDER=Object.freeze({main:0,supplement:1,history_1:2,history_2:3});
 const TIME_OPTION_KEYS=Object.freeze({ '1y':'lastYear','1m':'lastMonth','1w':'lastWeek',custom:'customRange'});
 const MODE_KEYS=Object.freeze({rune:'rune',direction:'direction'});
@@ -96,102 +95,6 @@ function groupLabel(row,text){
 function nextDay(date){return offsetDate(date,{days:1});}
 function riverLabel(row){return String(row?.display_label||'');}
 
-const RUNE_SCORE_SERIES=Object.freeze([
-  {kind:'main',stroke:'var(--loc-accent)'},
-  {kind:'supplement',stroke:'var(--loc-gold)'},
-  {kind:'history_1',stroke:'var(--loc-heading)'},
-  {kind:'history_2',stroke:'var(--loc-muted)'}
-]);
-const UNKNOWN_SCORE_BAND=1.45; // a separately labelled non-numeric lane, never a score.
-
-function DailyRuneScoreRiver({draws,text,onSelect}){
-  const trend=useMemo(()=>{
-    const byDate=new Map();
-    for(const draw of draws){
-      const scored=dailyRuneInteractionScore(draw);
-      const day=String(draw.record_date||'').slice(0,10);
-      if(!scored||!day)continue;
-      if(!byDate.has(day))byDate.set(day,{
-        date:day,at:Date.parse(day+'T00:00:00Z')
-      });
-      const entry=byDate.get(day);
-      const kind=String(draw.draw_kind||'');
-      entry[kind]=scored.score;
-      entry[kind+'_unknown']=scored.score===null?UNKNOWN_SCORE_BAND:null;
-      entry[kind+'_record']={...draw,...scored};
-    }
-    return [...byDate.values()].sort((a,b)=>a.at-b.at);
-  },[draws]);
-  const series=RUNE_SCORE_SERIES.filter(s=>trend.some(row=>row[s.kind+'_record']));
-  const width=Math.min(4000,Math.max(460,trend.length*54+120));
-  if(!series.length)return null;
-  const renderDot=(props,kind,unknown,color)=>{
-    const {cx,cy,payload}=props;
-    const row=payload?.[kind+'_record'];
-    if(!row||!Number.isFinite(cx)||!Number.isFinite(cy)||(unknown!==(row.score===null)))return <g/>;
-    const name=String(row.rune_name||row.rune_number||'');
-    const label=name+(unknown?'？':'');
-    const choose=()=>onSelect(row);
-    return <g role="button" tabIndex={0} aria-label={row.record_date+' '+label}
-      onClick={choose} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();choose();}}}
-      style={{cursor:'pointer'}}>
-      <circle cx={cx} cy={cy} r={5} stroke={color} strokeWidth={2} fill="var(--loc-panel)"/>
-      <text x={cx} y={cy-11} fill="var(--loc-text)" fontSize={13} fontWeight={600}
-        textAnchor="middle">{label}</text>
-    </g>;
-  };
-  return <section className="scope-lrunes-score-river">
-    <h4>{text.scoreRiver}</h4>
-    <p className="scope-status">{text.scoreRule}</p>
-    <div role="region" tabIndex={0} aria-label={text.scoreChartAria}
-      style={{overflowX:'auto',maxWidth:'100%'}}>
-      <div style={{minWidth:width,height:360}}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={trend} margin={{top:35,right:38,bottom:14,left:0}}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--loc-line)"/>
-            <XAxis type="number" scale="time" dataKey="at"
-              domain={['dataMin - 86400000','dataMax + 86400000']} tickCount={7}
-              tickFormatter={v=>{const date=new Date(v);return Number.isFinite(date.getTime())?
-                (date.getUTCMonth()+1)+'/'+date.getUTCDate():'';}}
-              tick={{fill:'var(--loc-text)',fontSize:12}}/>
-            <YAxis type="number" domain={[-1.35,1.65]}
-              ticks={[-1.25,-1,-.5,0,.5,1,1.25,UNKNOWN_SCORE_BAND]}
-              tickFormatter={v=>v===UNKNOWN_SCORE_BAND?'?':v>0?'+'+v:String(v)}
-              width={48} tick={{fill:'var(--loc-text)',fontSize:12}}/>
-            <ReferenceLine y={1.35} stroke="var(--loc-line)" strokeDasharray="4 4"/>
-            <Tooltip content={({active,payload})=>{
-              const item=active?payload?.[0]?.payload:null;
-              if(!item)return null;
-              const records=series.map(s=>item[s.kind+'_record']).filter(Boolean);
-              if(!records.length)return null;
-              return <div style={{maxWidth:260,background:'var(--loc-panel)',color:'var(--loc-text)',
-                border:'1px solid var(--loc-line)',borderRadius:8,padding:10}}>
-                <strong>{item.date}</strong>
-                {records.map(row=><div key={row.draw_kind} style={{marginTop:6}}>
-                  <strong>{row.rune_name} · {groupLabel(row,text)}</strong>
-                  <div>{text.direction}：{row.direction} · {row.baseScore??'?'}</div>
-                  <div>{text.scoreCardPhase}：{row.cardPhase||text.scoreNoCardPhase}</div>
-                  <div>{text.scoreRealPhase}：{row.actualPhase}</div>
-                  <div>{text.scoreAdjustment}：{row.adjustment===null?'?':row.adjustment}</div>
-                  <div>{text.scoreTotal}：{row.score===null?text.scoreUnknown:row.score}</div>
-                </div>)}
-              </div>;
-            }}/>
-            {series.map(s=><Line key={s.kind} name={groupLabel({draw_kind:s.kind},text)}
-              dataKey={s.kind} type="linear" stroke={s.stroke} strokeWidth={2}
-              connectNulls={false} isAnimationActive={false}
-              dot={props=>renderDot(props,s.kind,false,s.stroke)} activeDot={{r:6}}/>)}
-            {series.map(s=><Line key={s.kind+'_unknown'} dataKey={s.kind+'_unknown'}
-              type="linear" stroke="none" legendType="none" isAnimationActive={false}
-              dot={props=>renderDot(props,s.kind,true,s.stroke)} activeDot={false}/>)}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-    <p className="scope-status">{text.scoreHint}</p>
-  </section>;
-}
-
 export function LrunesDailyCulturePanel(){
   const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   const [mode,setMode]=useState('1m');
@@ -219,7 +122,6 @@ export function LrunesDailyCulturePanel(){
     <RangeControls mode={mode} setMode={setMode} from={from} setFrom={setFrom} to={to} setTo={setTo}/>
     {message?<p className="scope-status">{message}</p>:null}
     {!message?<p className="scope-status">{range.startDate} ～ {range.endDate} · {summary.dayCount}{text.days}{summary.recordCount}{text.drawRecords}</p>:null}
-    {!message&&draws.length?<DailyRuneScoreRiver draws={draws} text={text} onSelect={setSelected}/>:null}
     {range&&drawItems.length?<CultureTimeline
       items={drawItems}
       labelOf={riverLabel}
