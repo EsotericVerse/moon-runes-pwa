@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
+import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
@@ -22,6 +23,8 @@ import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/scope-registry.js';
 import BottomNavIcon from './modular/BottomNavIcon';
 import {EditDockProvider,useEditDock} from './modular/edit-dock';
+// Only individual Scope homepages download the opt-in management entry.
+const ScopeHomeEditEntry=dynamic(()=>import('./loc/ScopeHomeEditEntry'),{loading:()=>null});
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import ScopeLink from './modular/ScopeLink';
 
@@ -328,17 +331,29 @@ function AppShellInner({children}){
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
   const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&navScopeId!=='local'&&!currentScope.aggregateChildren;
+  // A Scope homepage may live at /, /scopeid/, /scope-shell/ or /scopeid/index.html.
+  const homeParts=String(pathname||'/').split('/').filter(Boolean);
+  if(homeParts.at(-1)==='index.html')homeParts.pop();
+  const isScopeHomepage=homeParts.length===0||
+    (homeParts.length===1&&(homeParts[0]===scopeId||homeParts[0]==='scope-shell'));
+  const showHomeEditEntry=isScopeHomepage&&editScopeAvailable&&Boolean(scopeId);
+  // Keep existing query parameters (especially dynamic scopeid) on iOS and web.
+  const editTabHref=(route,key,value)=>{
+    const href=navigationHref(navScopeId,route,native);
+    return href+(href.includes('?')?'&':'?')+
+      encodeURIComponent(key)+'='+encodeURIComponent(value);
+  };
   const editingDockVisible=Boolean(editDock?.active&&editDock.scopeId===navScopeId);
   const editTabs=[
     {id:'save',icon:'save',label:translateUiField(activeLocale,'儲存'),action:'save'},
     {id:'time',icon:'culture',label:translateUiField(activeLocale,'時間編輯'),
-      href:editScopeAvailable?navigationHref(navScopeId,'culture?edit=1',native):''},
+      href:editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞編輯'),
       href:editScopeAvailable&&navScopeId!=='lrunes'?navigationHref(navScopeId,'statics/keywords',native):''},
     {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'搜尋建議編輯'),
-      href:editScopeAvailable?navigationHref(navScopeId,'governance/manage/search?section=suggestions',native):''},
+      href:editScopeAvailable?editTabHref('governance/manage/search','section','suggestions'):''},
     {id:'governance',icon:'governance',label:translateUiField(activeLocale,'治理編輯'),
-      href:editScopeAvailable?navigationHref(navScopeId,'governance/manage?section=governance',native):''},
+      href:editScopeAvailable?editTabHref('governance/manage','section','governance'):''},
     {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
@@ -420,6 +435,7 @@ function AppShellInner({children}){
         <span>{tab.label}</span>
       </ScopeLink>)}
     </nav>
+    {showHomeEditEntry?<ScopeHomeEditEntry key={scopeId}/>:null}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>

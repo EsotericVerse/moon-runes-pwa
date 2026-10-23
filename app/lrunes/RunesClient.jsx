@@ -58,7 +58,8 @@ function renderRuneHero(slot,native){
 
 export default function RunesClient(){
   const native=useNativeNavigation();
-  const account=useAccount();
+  // Only a signed-in state is needed for the daily log navigation.
+  const account=useAccount({sessionOnly:true});
   return <main className="loc-next-main"><section className="loc-view">
     <ScopeEditableBlocks
       scopeId="lrunes"

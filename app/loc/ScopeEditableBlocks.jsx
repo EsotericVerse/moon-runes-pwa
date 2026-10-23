@@ -8,7 +8,6 @@ registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 
 import {useMemo,useState} from 'react';
 import {useEditDock} from '../modular/edit-dock';
-import ScopeLink from '../modular/ScopeLink';
 import dynamic from 'next/dynamic';
 import {useAppBootstrap} from './app-bootstrap';
 import {useAccount} from './use-account';
@@ -73,14 +72,18 @@ export default function ScopeEditableBlocks({
 }){
   useUiSection('uiExtra.editBlocks');
   const pageName=pageNameOf(page);
-  const account=useAccount({enabled:allowEditing&&!authorizedByParent&&pageName!=='index'});
+  const isScopeHomepageBlock=pageName==='index'||(scopeId==='lrunes'&&pageName==='hero');
+  const account=useAccount({enabled:allowEditing&&!authorizedByParent&&!isScopeHomepageBlock});
   const editDock=useEditDock();
   // Same (scopeId, pageName) request AppShell already makes for this route's
   // Registry/NAV/Theme bootstrap. React Query serves this from that one call
   // instead of this component re-querying the blocks on its own.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const blocks=bootstrap.data?.blocks;
-  const canEdit=allowEditing&&(authorizedByParent||
+  // The Scope-specific homepage entry has already verified access.
+  // Database authorization remains mandatory on every write.
+  const homeEditActive=isScopeHomepageBlock&&editDock?.active&&editDock.scopeId===scopeId;
+  const canEdit=allowEditing&&(authorizedByParent||homeEditActive||
     ((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId)));
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
@@ -89,34 +92,6 @@ export default function ScopeEditableBlocks({
   const [editingSlot,setEditingSlot]=useState(null);
   const [message,setMessage]=useState('');
   const [editMode,setEditMode]=useState(Boolean(startInEditMode));
-  const [requestBusy,setRequestBusy]=useState(false);
-  const [accessMessage,setAccessMessage]=useState('');
-  function openEditor(){
-    if(pageName==='index')editDock?.begin(scopeId);
-    setAccessMessage('');
-    setEditMode(true);
-  }
-  async function requestEditing(){
-    if(requestBusy)return;
-    if(canEdit){openEditor();return;}
-    if(!allowEditing||authorizedByParent||pageName!=='index')return;
-    setRequestBusy(true);
-    setAccessMessage('');
-    try{
-      const verified=await account.refresh();
-      const allowed=scopeId==='local'||Boolean(
-        (adminOnly||scopeId==='loc')
-          ?verified?.authorizer?.canManageGlobalSync()
-          :verified?.authorizer?.canManageScopeSync(scopeId)
-      );
-      if(allowed){openEditor();return;}
-      setAccessMessage(verified?.user
-        ?'目前帳號沒有這個 Scope 的編輯權限。'
-        :'登入後才能使用編輯模式。');
-    }catch(error){
-      setAccessMessage(String(error?.message||'無法確認編輯權限。'));
-    }finally{setRequestBusy(false)}
-  }
 
   const slots=useMemo(()=>{
     const rows=Array.isArray(blocks)?blocks:[];
@@ -202,20 +177,20 @@ export default function ScopeEditableBlocks({
   // unified draft screen -- no per-block click target, no per-block button.
   if(explicitEditButton){
     const canAddBlock=!normalizedOrders.length&&(!maxBlocks||nextOrder<=maxBlocks);
-    const homeEditEntry=allowEditing&&!authorizedByParent&&pageName==='index';
-    const toggleButton=(canEdit&&!editMode)||homeEditEntry||toggleExtra?<div className="scope-edit-mode-toggle" key="scope-edit-mode-toggle">
-      {(canEdit||homeEditEntry)&&!editMode?<button type="button" disabled={requestBusy} className="loc-button" onClick={requestEditing}>
+    const editing=editMode||homeEditActive;
+    const toggleButton=(canEdit&&!editing)||toggleExtra?<div className="scope-edit-mode-toggle" key="scope-edit-mode-toggle">
+      {canEdit&&!editing?<button type="button" className="loc-button" onClick={()=>setEditMode(true)}>
         <UiText id="uiExtra.editBlocks.enterEditMode"/>
       </button>:null}
       {toggleExtra}
     </div>:null;
     const heroSlotOrder=Number.isInteger(placeholderFirstOrder)&&placeholderFirstOrder>0?placeholderFirstOrder:null;
     const contents=<>
-      {!editMode&&!heroSlotOrder?toggleButton:null}
-      {editMode&&!bootstrap.isSuccess?<p className="scope-status" role="status">
+      {!editing&&!heroSlotOrder?toggleButton:null}
+      {editing&&!bootstrap.isSuccess?<p className="scope-status" role="status">
         {bootstrap.isError?'搜尋建議載入失敗。':'正在載入搜尋建議…'}
       </p>:null}
-      {editMode&&bootstrap.isSuccess?<ScopeBlockDraftList
+      {editing&&bootstrap.isSuccess?<ScopeBlockDraftList
         slots={slots}
         scopeId={scopeId}
         pageName={pageName}
@@ -260,10 +235,7 @@ export default function ScopeEditableBlocks({
         </SlotTag>;
         return heroSlotOrder&&slot.order===heroSlotOrder?[node,toggleButton]:[node];
       })}
-      {!editMode&&accessMessage?<p className="scope-status" role="status">
-        {accessMessage}{!account.user?<>{' '}<ScopeLink href="/local/settings/?section=account">前往登入</ScopeLink></>:null}
-      </p>:null}
-      {!editMode&&message?<p className="scope-status" role="status">{message}</p>:null}
+      {!editing&&message?<p className="scope-status" role="status">{message}</p>:null}
     </>;
     return containerless?contents:<div className={'scope-editable-block-grid '+className}>{contents}</div>;
   }

@@ -67,3 +67,13 @@ html{scroll-padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 
 .scope-feature-dock button{font-family:inherit;cursor:pointer}
 .scope-feature-dock button:disabled{cursor:default;opacity:.48}
+
+/* One entry at the end of each editable Scope homepage, before the footer. */
+.scope-home-edit-entry{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  width:min(700px,calc(100% - 1rem));
+  margin:1rem auto 1.5rem;
+  text-align:center;
+}
+.scope-home-edit-entry .loc-button{max-width:100%;}
+.scope-home-edit-entry .scope-status{margin:0;}
