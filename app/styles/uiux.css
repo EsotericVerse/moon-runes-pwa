@@ -1011,6 +1011,14 @@ button,a,.loc-control,.loc-button,
     font-size:var(--loc-type-hero-feature-title)!important;
     line-height:1.12!important;
   }
+  .loc-home-hero-copy>.home-title-row>h1{
+    font-size:var(--loc-type-hero-home-title)!important;
+    line-height:1.1!important;
+  }
+  :is(.loc-subtitle,.scope-subtitle){
+    font-size:var(--loc-type-subtitle)!important;
+    line-height:var(--loc-line-subtitle)!important;
+  }
   :is(.loc-view,.scope-page,.scope-content,.loc-card,.loc-panel,.loc-bubble,.scope-card,.scope-inline-card,.scope-feature-card,.scope-editor,.scope-blocknote){
     min-width:0;
   }
