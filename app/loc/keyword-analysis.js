@@ -393,6 +393,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   // e.g. first run or the enabled-item set itself changed -- narrow nothing).
   const storedShas=Array.isArray(config.keyword_meta?.shas)?config.keyword_meta.shas:null;
   const changedItemNos=changedItemNosOf(catalogRows,storedShas);
+  const narrowedFilter=Array.isArray(changedItemNos)?candidateOrFilter(changedItemNos):'';
 
   // Full eligible-uid universe, independent of how narrow the content read
   // below ends up being. Needed for the 'sync' orphan-clear step -- using
@@ -406,48 +407,75 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   });
   const eligibleUids=(eligibleUidResult.rows||[]).map(row=>String(row?.uid||'').trim()).filter(Boolean);
 
-  reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
-  const textResult=await selectAllRows(scope.galaxy,{
-    // title and createtime are not selected: matching only reads content
-    // (see documentOf/textOf), and nothing downstream reads the `date`
-    // field that createtime used to feed. createtime is still the order
-    // column below -- PostgREST can order by a column that isn't selected.
-    columns:'uid,content,searchable',
-    // statistics_able is the eligibility gate itself -- filter it in the
-    // query (fewer rows read, fewer rows paged through) instead of
-    // selecting it and discarding non-qualifying rows in isEligibleRow.
-    // orFilter narrows further to the uids a changed item could actually
-    // affect (see changedItemNosOf/candidateOrFilter); empty when nothing
-    // can be narrowed (changedItemNos===null), same as before this change.
-    filters:[{column:'statistics_able',operator:'eq',value:true}],
-    orFilter:Array.isArray(changedItemNos)?candidateOrFilter(changedItemNos):'',
-    orders:[{column:'createtime',ascending:true}],
-    // This selects `content`, the one large column in this table (avg ~160
-    // chars but up to 22K+ per row). DB_QUERY_BATCH_SIZE's default page
-    // size (65535) is sized for narrow rows; with content included, a
-    // scope under that row count fetches its entire table in one request.
-    // Page this read explicitly instead of relying on the shared ceiling.
-    pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
-    onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
-      3+17*(total?completed/total:1),
-      '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
-  });
-  const rawRows=textResult.rows||[];
-  const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));
-  const documents=eligibleRows.map(documentOf);
-  reportBatchProgress(onProgress,'reading',rawRows.length,rawRows.length,20,
-    '讀取完成；符合分析資格 '+documents.length.toLocaleString()+' 篇');
-  const resolved=await resolveDynamicClassifications(documents,catalogRows,onProgress);
-  const eligibleByUid=resolved.byUid;
-  const payloadRows=eligibleRows.map(row=>{
-    const uid=String(row?.uid||'').trim();
-    const result=eligibleByUid.get(uid);
-    return {
-      uid,
-      class_id:result?.class_id||null,
-      group_lists:result?.group_lists??''
+  // Count-first: when the keyword-sha diff lets us narrow at all, find out
+  // exactly how many articles the narrowed filter actually matches BEFORE
+  // reading any article content. If it's zero, every changed item has no
+  // hits anywhere and there's nothing never-classified either -- skip the
+  // content read and the write entirely, and jump straight to refreshing
+  // keyword_meta (so the NEXT run still has a matching baseline to diff
+  // against; otherwise this scope would never narrow again).
+  let candidateCount=null;
+  if(narrowedFilter){
+    reportBatchProgress(onProgress,'reading',0,0,3,'計算需要重新分類的文章數');
+    candidateCount=await selectCount(scope.galaxy,{
+      idColumn:'uid',
+      filters:[{column:'statistics_able',operator:'eq',value:true}],
+      orFilter:narrowedFilter
+    });
+  }
+
+  let documents=[];
+  let resolved;
+  let payloadRows=[];
+  if(candidateCount===0){
+    reportBatchProgress(onProgress,'reading',0,0,20,'關鍵詞異動未影響任何文章，僅更新比對基準');
+    resolved={
+      classMap:buildClassMap(catalogRows),
+      byUid:new Map(),classifications:[],classifiedCount:0,unclassifiedCount:0,
+      tieCount:0,dynamicTieCount:0,finalOrderTieCount:0,groupTotals:[]
     };
-  });
+  }else{
+    reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
+    const textResult=await selectAllRows(scope.galaxy,{
+      // title and createtime are not selected: matching only reads content
+      // (see documentOf/textOf), and nothing downstream reads the `date`
+      // field that createtime used to feed. createtime is still the order
+      // column below -- PostgREST can order by a column that isn't selected.
+      columns:'uid,content,searchable',
+      // statistics_able is the eligibility gate itself -- filter it in the
+      // query (fewer rows read, fewer rows paged through) instead of
+      // selecting it and discarding non-qualifying rows in isEligibleRow.
+      // orFilter narrows further to the uids a changed item could actually
+      // affect (see changedItemNosOf/candidateOrFilter); empty when nothing
+      // can be narrowed (changedItemNos===null), same as before this change.
+      filters:[{column:'statistics_able',operator:'eq',value:true}],
+      orFilter:narrowedFilter,
+      orders:[{column:'createtime',ascending:true}],
+      // Size the page to what's actually needed: candidateCount is the exact
+      // narrowed total when known, so a run that only touches a handful of
+      // articles asks for a handful, not a blanket max-size page every time.
+      pageSize:candidateCount?Math.min(KEYWORD_CLASSIFICATION_BATCH_SIZE,candidateCount):KEYWORD_CLASSIFICATION_BATCH_SIZE,
+      onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
+        3+17*(total?completed/total:1),
+        '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
+    });
+    const rawRows=textResult.rows||[];
+    const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));
+    documents=eligibleRows.map(documentOf);
+    reportBatchProgress(onProgress,'reading',rawRows.length,rawRows.length,20,
+      '讀取完成；符合分析資格 '+documents.length.toLocaleString()+' 篇');
+    resolved=await resolveDynamicClassifications(documents,catalogRows,onProgress);
+    const eligibleByUid=resolved.byUid;
+    payloadRows=eligibleRows.map(row=>{
+      const uid=String(row?.uid||'').trim();
+      const result=eligibleByUid.get(uid);
+      return {
+        uid,
+        class_id:result?.class_id||null,
+        group_lists:result?.group_lists??''
+      };
+    });
+  }
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
   const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta,eligibleUids},{
     // Mirrors applyKeywordClassification's own phase sequence (db-contract.mjs):
@@ -469,11 +497,20 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       reportBatchProgress(onProgress,phase,completed,total,percent,label);
     }
   });
-  // written.count/documentCount are against the full eligible universe now
-  // (see applyKeywordClassification's eligibleUids), not payloadRows.length
-  // -- payloadRows may be a narrowed subset when only some items changed.
-  if(written.count!==payloadRows.length||written.documentCount!==eligibleUids.length){
-    throw new Error('關鍵詞批次寫回不完整：預期處理 '+payloadRows.length+' 篇、總計 '+eligibleUids.length+' 篇，實際總計 '+written.documentCount);
+  // written.count must match what THIS run actually chunked/wrote (a
+  // narrowed subset when only some items changed, or 0 on the count-first
+  // skip above). written.documentCount (DB's count(*) where group_lists<>
+  // 'false') is NOT the same population as eligibleUids.length any more
+  // than it ever was: only statistics_able rows that also pass
+  // isEligibleRow (minChars/searchable) ever get a non-'false' group_lists,
+  // so documentCount is legitimately smaller than eligibleUids.length --
+  // comparing them for equality was the bug (it compared two different
+  // populations). Sanity-bound it instead.
+  if(written.count!==payloadRows.length){
+    throw new Error('關鍵詞批次寫回不完整：預期處理 '+payloadRows.length+' 篇，實際處理 '+written.count);
+  }
+  if(written.documentCount<0||written.documentCount>eligibleUids.length){
+    throw new Error('關鍵詞批次寫回異常：總計分類文章數 '+written.documentCount+' 超出符合資格文章數 '+eligibleUids.length);
   }
   clearKeywordAnalysisCache();
   const {data:verifiedRows,error:verificationError}=await dbAuthRelation(scope.config)
@@ -481,7 +518,10 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     .eq('id',normalizedScopeId).limit(1);
   if(verificationError)throw new Error('關鍵詞定錨驗證失敗：'+verificationError.message);
   const verified=verifiedRows?.[0];
-  if(!verified?.staticstime||Number(verified.keyword_document_count)!==eligibleUids.length){
+  // Compare the fresh read against what finalize itself just returned (not
+  // against eligibleUids.length -- see above), confirming the config row
+  // reflects the same run that just completed.
+  if(!verified?.staticstime||Number(verified.keyword_document_count)!==written.documentCount){
     throw new Error('關鍵詞定錨驗證失敗：文章數或完成時間不符，統計尚不可公開');
   }
   reportBatchProgress(onProgress,'completed',payloadRows.length,payloadRows.length,100,

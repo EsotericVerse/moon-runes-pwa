@@ -156,8 +156,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
     onProgress?.({phase:'finalizing',completed:count,total:rows.length});
     const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
-    if(documentCount!==eligibleUids.length){
-      throw new Error(`Keyword classification finalize mismatch: expected ${eligibleUids.length}, counted ${documentCount}`);
+    // documentCount (DB's count(*) where group_lists<>'false') is NOT the
+    // same population as eligibleUids.length: eligibleUids is every row
+    // with statistics_able=true, but a row only gets a non-'false'
+    // group_lists if it ALSO passes isEligibleRow's minChars/searchable
+    // gate upstream. Those two counts were never meant to be equal --
+    // comparing them for strict equality was the bug. Sanity-bound instead.
+    if(documentCount<0||documentCount>eligibleUids.length){
+      throw new Error(`Keyword classification finalize out of range: counted ${documentCount}, eligible universe ${eligibleUids.length}`);
     }
     return {count,changedCount,orphansCleared,documentCount};
   }
