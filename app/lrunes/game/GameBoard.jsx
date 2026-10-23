@@ -2,7 +2,9 @@
 
 import {useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {usePathname,useRouter,useSearchParams} from 'next/navigation';
 import {runeImage} from '../rune-directory.mjs';
+import {LOC_ORIGIN} from '../../seo/metadata';
 import {produce} from 'immer';
 import {useQuery} from '@tanstack/react-query';
 import {
@@ -636,6 +638,9 @@ function OnlineMatch({data,count,code,host,onExit}){
           <Button variant="outlined" onClick={()=>{
             navigator.clipboard?.writeText(code).catch(()=>{});
           }}>複製房間碼</Button>
+          <Button variant="outlined" onClick={()=>{
+            navigator.clipboard?.writeText(LOC_ORIGIN+'/game/room/?room='+code).catch(()=>{});
+          }}>複製跨裝置邀請連結</Button>
           <Button variant="outlined" onClick={onExit}>離開房間</Button>
         </Stack>
       </Stack>
@@ -672,7 +677,20 @@ export default function GameBoard(){
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
+  const router=useRouter();
+  const pathname=usePathname();
+  const searchParams=useSearchParams();
+  const roomFromUrl=pathname?.startsWith('/game/room')?
+    String(searchParams.get('room')||'').trim().toUpperCase():'';
+  const validRoomFromUrl=/^[A-F0-9]{12}$/.test(roomFromUrl);
   const [onlineRoom,setOnlineRoom]=useState(null);
+  useEffect(()=>{
+    if(!validRoomFromUrl||!pathname?.startsWith('/game/room'))return;
+    // The Next.js room segment represents joining a remote host. A visitor
+    // never becomes host by changing query parameters.
+    setOnlineRoom(current=>current?.code===roomFromUrl?current:
+      {code:roomFromUrl,count:2,host:false});
+  },[pathname,roomFromUrl,validRoomFromUrl]);
   const [inviteCode,setInviteCode]=useState('');
   const [roomError,setRoomError]=useState('');
   const [section,setSection]=useState('play');
@@ -710,9 +728,18 @@ export default function GameBoard(){
     <GameHomeHero/>
     <Alert severity="error" role="alert">遊戲資料載入失敗：{error?.message||'無資料'}</Alert>
   </main></ThemeProvider>;
+  if(pathname?.startsWith('/game/room')&&!validRoomFromUrl)
+    return <ThemeProvider theme={uiTheme}><main className="lrg">
+      <Alert severity="warning" role="alert">房間邀請網址無效。請使用房主分享的完整連結。</Alert>
+      <Button onClick={()=>router.replace('/game/')}>返回遊戲首頁</Button>
+    </main></ThemeProvider>;
   if(onlineRoom)return <ThemeProvider theme={uiTheme}>
     <OnlineMatch key={onlineRoom.code} data={data} count={onlineRoom.count}
-      code={onlineRoom.code} host={onlineRoom.host} onExit={()=>setOnlineRoom(null)}/>
+      code={onlineRoom.code} host={onlineRoom.host}
+      onExit={()=>{setOnlineRoom(null);if(pathname?.startsWith('/game/room'))router.replace('/game/');}}/>
+  </ThemeProvider>;
+  if(pathname?.startsWith('/game/room'))return <ThemeProvider theme={uiTheme}>
+    <main className="lrg"><Alert severity="info" role="status">正在加入線上房間…</Alert></main>
   </ThemeProvider>;
   if(match)return <ThemeProvider theme={uiTheme}><LocalMatch key={match} data={data} count={count} onRestart={()=>setMatch(0)}/></ThemeProvider>;
 
@@ -771,7 +798,7 @@ export default function GameBoard(){
                   onClick={()=>{
                     if(!/^[A-F0-9]{12}$/.test(inviteCode)){setRoomError('請輸入 12 位房間代碼');return;}
                     setRoomError('');
-                    setOnlineRoom({code:inviteCode,count,host:false});
+                    router.push('/game/room/?room='+encodeURIComponent(inviteCode));
                   }}>加入線上房間</Button>
               </Stack>
               {roomError?<Alert severity="warning" sx={{mt:1}}>{roomError}</Alert>:null}
