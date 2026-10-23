@@ -14,7 +14,7 @@ export default {
   "theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag": "第一条河道依次为锚点、事件、风格标签、时期。点击记录直接编辑；未定锚的风格可从“新增 → 风格标签”表单选取。",
   "style": "表现风格",
   "noFilter": "不套用",
-  "keywordClass": "关键词 Class",
+  "keywordClass": "关键词组",
   "workClassificationLane": "作品分类河道",
   "expandToCompareWorkVolumeChanges": "需要时展开比较作品量变化（候选日期，非正式锚点）",
   "selectAllCandidates": "全选待审候选",
