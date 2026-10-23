@@ -153,10 +153,12 @@ export function sharedFeatureHeroFor(rows){
 }
 
 export function shouldUseSharedFeatureHero(scopeId,featureId){
-  // The four public feature heroes share the LOC-managed group_<feature>
-  // text for every Scope, including lrunes. The existing FeaturePage selects
-  // each scope view's independent scope_<feature> image from the database.
-  return Boolean(FEATURE_HERO_ORDER[String(featureId||'')])&&Boolean(scopeId);
+  const id=String(featureId||'');
+  if(!scopeId||!FEATURE_HERO_ORDER[id])return false;
+  // Only the four public LunaRunes features opt back into the same DB-backed
+  // group_<feature> copy used by every other Scope. Keep other rune surfaces
+  // unchanged. FeaturePage already loads the corresponding image slot.
+  return scopeId!=='lrunes'||['culture','statics','search','governance'].includes(id);
 }
 
 // Three fixed personal signs; no public editor, image field, or DB setting can select them.
