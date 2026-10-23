@@ -86,8 +86,11 @@ export default function ScopeEditableBlocks({
   // The Scope-specific homepage entry has already verified access.
   // Database authorization remains mandatory on every write.
   const homeEditActive=isScopeHomepageBlock&&editDock?.active&&editDock.scopeId===scopeId;
-  const canEdit=allowEditing&&(authorizedByParent||homeEditActive||
-    ((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId)));
+  // A cached management role must not enable homepage editing until the
+  // user explicitly enters this Scope's edit mode.
+  const canEdit=allowEditing&&(authorizedByParent||
+    (isScopeHomepageBlock?homeEditActive:
+      ((adminOnly||scopeId==='loc')?account.canManageGlobalSync():account.canManageScopeSync(scopeId))));
   const normalizedOrders=useMemo(
     ()=>Array.isArray(orders)?orders.map(Number).filter(value=>Number.isInteger(value)&&value>0):[],
     [orders]
