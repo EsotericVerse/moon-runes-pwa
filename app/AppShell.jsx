@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import {QueryClient,QueryClientProvider,useQuery,useQueryClient} from '@tanstack/react-query';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
@@ -228,6 +228,22 @@ export default function AppShell({children}){
 
 function AppShellInner({children}){
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
+  const queryClient=useQueryClient();
+  const localReadyQuery=useQuery({
+    queryKey:['local-scope-content-ready'],
+    enabled:scopeId==='local',
+    queryFn:async()=>{
+      const {hasLocalScopeContent}=await import('./loc/providers/local-sqlite.mjs');
+      return hasLocalScopeContent();
+    },
+    staleTime:30_000
+  });
+  useEffect(()=>{
+    if(scopeId!=='local')return undefined;
+    const refresh=()=>queryClient.invalidateQueries({queryKey:['local-scope-content-ready']});
+    window.addEventListener('loc-local-scope-data-changed',refresh);
+    return()=>window.removeEventListener('loc-local-scope-data-changed',refresh);
+  },[scopeId,queryClient]);
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
   useEffect(()=>{
@@ -244,7 +260,7 @@ function AppShellInner({children}){
   },[scopeId,host]);
   const currentFeature=featureIdForPath(pathname);
   const pageName=currentFeature||'index';
-  const isSettings=normalizePath(pathname)==='/settings';
+  const isSettings=['/settings','/local/setting','/local/settings'].includes(normalizePath(pathname));
   const [native,setNative]=useState(false);
   const [mobileFavorite,setMobileFavorite]=useState(true);
   const [nativeHomepage,setNativeHomepage]=useState('loc');
@@ -293,7 +309,7 @@ function AppShellInner({children}){
     loadSection(activeLocale,'fields').catch(()=>{});
     return ()=>{active=false;};
   },[activeLocale]);
-  const navScopeId=currentScope.featureScope||scopeId;
+  const navScopeId=scopeId==='local'&&!localReadyQuery.data?'loc':currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
@@ -332,7 +348,7 @@ function AppShellInner({children}){
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
         href:isMyPhone?deviceNavigation.mobileHomeHref(true)+'#'+id:navigationHref(navScopeId,feature.path,native)};
     }),
-    {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/settings/index.html':'/settings/'}
+    {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
   ];
 
   useEffect(()=>{
@@ -365,7 +381,7 @@ function AppShellInner({children}){
             aria-controls="scope-nav-folder-contents" onClick={()=>setOpenFolderId(current=>current===folder.id?'':folder.id)}>
             {folder.label} <span aria-hidden="true">{openFolderId===folder.id?'▴':'▾'}</span>
           </button>)}
-          {!favoriteLinks.length&&!visibleFolders.length?<ScopeLink href={native?'/settings/index.html':'/settings/'} native={native} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></ScopeLink>:null}
+          {!favoriteLinks.length&&!visibleFolders.length?<ScopeLink href={native?'/local/settings/index.html':'/local/settings/'} native={native} className="scope-nav-empty"><FieldText text="到設定加入常用空間"/></ScopeLink>:null}
         </ScrollableScopeNav>
         <ScopeLink href={navigationHref('loc','',native)+(native?'?loc_direct=1':'')} native={native}
           className="scope-nav-loc-home" aria-current={scopeId==='loc'&&pathname==='/'?'page':undefined}>
