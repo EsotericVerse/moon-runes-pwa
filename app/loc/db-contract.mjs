@@ -1,4 +1,5 @@
 import {assertPlainGalaxyAttributes} from './content-policy.js';
+import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
 
 // Shared by the keyword-classification read (paging the document scan) and
 // write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
@@ -452,7 +453,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
 // One universal hard ceiling for all database read adapters and selected columns.
 // A ceiling does not require fetching that many rows: callers still paginate.
-export const DB_QUERY_BATCH_SIZE=65535;
+export {DB_QUERY_BATCH_SIZE};
 export function queryBatchSize(){
   return DB_QUERY_BATCH_SIZE;
 }

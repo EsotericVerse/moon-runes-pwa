@@ -1,4 +1,5 @@
 import {sql} from 'npm:kysely@0.29.6';
+import {DB_QUERY_BATCH_SIZE} from '../query-batch-size.mjs';
 
 const identifier=/^[a-z][a-z0-9_]*$/i;
 const schemas=new Set(['silver','api']);
@@ -97,7 +98,7 @@ function validateQuery(input){
   }
   if(input.operation==='upsert'&&(!Array.isArray(input.onConflict)||!input.onConflict.length||input.onConflict.some(col=>typeof col!=='string'||!identifier.test(col))))throw new Error('Upsert conflict columns are required');
   const requestedLimit=Number(input.limit);
-  const limit=Number.isFinite(requestedLimit)?Math.max(0,Math.min(1000,Math.floor(requestedLimit))):1000;
+  const limit=Number.isFinite(requestedLimit)?Math.max(0,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(requestedLimit))):1000;
   const offset=Math.max(0,Math.min(10_000_000,Math.floor(Number(input.offset)||0)));
   if(input.or!==undefined&&!Array.isArray(input.or))throw new Error('Invalid OR filter');
   if(['insert','upsert'].includes(input.operation)&&(input.or||[]).length)throw new Error('OR filters are not supported for insert or upsert');
