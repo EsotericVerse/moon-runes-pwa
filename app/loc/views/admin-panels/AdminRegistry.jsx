@@ -312,7 +312,12 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   const current=currentDraft?.registry||selected;
   const currentConfig=currentDraft?.config||config;
   const currentCopy=currentDraft?.pageCopy||pageCopy;
-  const cancelEdit=()=>setEditDraft(null);
+  const cancelEdit=()=>{
+    setEditDraft(null);
+    setMappings(rows=>rows.map(row=>row.id!==selectedId?row:
+      originalMappings.find(saved=>saved.id===row.id&&saved.email===row.email)||row));
+    setNewMapping({...EMPTY_MAPPING});
+  };
   const patchRegistry=(key,value)=>setEditDraft(draft=>{
     const base=draft?.scopeId===selectedId?draft:draftFromSelected();
     return {...base,registry:{...base.registry,[key]:value}};
@@ -685,6 +690,8 @@ export default function AdminRegistry(){
   },[selectedId]);
   const requestDelete=useCallback(id=>{
     if(deleteBusy)return;
+    if(id!==selectedId&&dirtyRef.current()&&
+      !window.confirm('目前有尚未儲存的修改，確定放棄並切換嗎？'))return;
     const row=registry.find(item=>item.scope_id===id);
     if(!row||row.scope_kind!=='scope'){
       setDeleteNotice('只能刪除一般人員；群組與系統節點不可刪除。');
@@ -699,7 +706,7 @@ export default function AdminRegistry(){
     setDeleteTyped('');
     setDeleteNotice('');
     setDeletePending(id);
-  },[registry,deleteBusy]);
+  },[registry,deleteBusy,selectedId]);
   const cancelDelete=()=>{if(deleteBusy)return;setDeletePending('');setDeleteTyped('');};
   const confirmDelete=async()=>{
     const id=deletePending;
