@@ -32,7 +32,7 @@ import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
-import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
+import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSourceTaxonomy} from '../../loc/galaxy-query';
 import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry} from '../../loc/scope-data';
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
@@ -243,6 +243,12 @@ export default function Search({managementMode=false}){
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
   const [sourceFilter,setSourceFilter]=useState('');
+  const sourceTaxonomyQuery=useQuery({
+    queryKey:['statistics-source-taxonomy'],
+    queryFn:selectSourceTaxonomy,
+    enabled:advancedOpen&&advancedTab==='source'||sourceFilter.startsWith('category:'),
+    staleTime:5*60_000
+  });
   const [scopeFilter,setScopeFilter]=useState('');
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
@@ -402,6 +408,16 @@ export default function Search({managementMode=false}){
       setStatus(UI_COPY.format.searchScope(searchCollectionLabel));
     }
     try{
+      // The category is a semantic database filter, not a literal
+      // source_name. Fetch the same cached taxonomy before searching.
+      const sourceTaxonomy=String(options.sourceFilter||'').startsWith('category:')
+        ?await queryClient.fetchQuery({
+          queryKey:['statistics-source-taxonomy'],
+          queryFn:selectSourceTaxonomy,
+          staleTime:5*60_000
+        })
+        :null;
+      if(id!==searchId.current)return;
       if(!append){
         if(!options.browse&&!options.sourceFilter&&!options.contentType&&!options.startDate&&!options.endDate&&scopeId!=='loc'&&matchesScopeAlias(scope,q)){
           matchedQueryRef.current=q;
@@ -441,7 +457,7 @@ export default function Search({managementMode=false}){
         // exactly matches a style tag.
         cursor,
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
-        contentType:options.contentType,sourceFilter:options.sourceFilter,
+        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         signal
       });
@@ -751,11 +767,22 @@ export default function Search({managementMode=false}){
     ['multimedia',t('uiExtra.searchUI.mediaType')],
     ['timeline',t('uiExtra.searchUI.timelineType')]
   ];
+  const sourceCategories=(sourceTaxonomyQuery.data?.categories||[])
+    .filter(row=>row.enabled!==false);
+  const sourceAliases=(sourceTaxonomyQuery.data?.aliases||[])
+    .filter(row=>String(row.source_key||'').trim());
   const filterSources=[
     ['',t('uiExtra.searchUI.allSources')],
-    ['suno','Suno'],['threads','Threads'],['instagram','Instagram'],
-    ['facebook','Facebook'],['vocus','Vocus'],['x','X']
+    ...sourceCategories.map(row=>['category:'+row.category_code,row.display_name||row.category_code]),
+    ...(!sourceCategories.some(row=>row.category_code==='others')
+      ?[['category:others','Others']]:[]),
+    ...sourceAliases.map(row=>['source:'+row.source_key,row.source_key])
   ];
+  // Deep links created before taxonomy-backed filters keep their raw source.
+  if(sourceFilter&&!filterSources.some(([value])=>value===sourceFilter)){
+    filterSources.push([sourceFilter,sourceFilter.startsWith('category:')
+      ?sourceFilter.slice(9):sourceFilter.replace(/^source:/,'')]);
+  }
   const chips=[
     scopeId==='loc'&&scopeFilter&&scopeLabel(scopeFilter),
     contentType&&filterTypes.find(([value])=>value===contentType)?.[1],
@@ -868,8 +895,20 @@ export default function Search({managementMode=false}){
           {advancedTab==='source'?<div className="scope-search-filter-body">
             <label htmlFor="scope-search-source">{t('uiExtra.searchUI.filterSource')}</label>
             <select id="scope-search-source" value={sourceFilter} onChange={event=>updateSearchFilter(setSourceFilter,event.target.value)}>
-              {filterSources.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+              <option value="">{t('uiExtra.searchUI.allSources')}</option>
+              {filterSources.filter(([value])=>value.startsWith('category:')).length?<optgroup label="來源分類">
+                {filterSources.filter(([value])=>value.startsWith('category:')).map(([value,label])=>
+                  <option key={value} value={value}>{label}</option>)}
+              </optgroup>:null}
+              {filterSources.filter(([value])=>value.startsWith('source:')).length?<optgroup label="個別來源">
+                {filterSources.filter(([value])=>value.startsWith('source:')).map(([value,label])=>
+                  <option key={value} value={value}>{label}</option>)}
+              </optgroup>:null}
+              {filterSources.filter(([value])=>value&&!value.startsWith('category:')&&!value.startsWith('source:'))
+                .map(([value,label])=><option key={value} value={value}>{label}</option>)}
             </select>
+            {sourceTaxonomyQuery.isPending?<p className="scope-status" role="status">載入來源分類…</p>:null}
+            {sourceTaxonomyQuery.isError?<p className="scope-status scope-error" role="alert">來源分類載入失敗，請稍後重試。</p>:null}
           </div>:null}
           {advancedTab==='time'?<div className="scope-search-filter-body scope-search-date-fields">
             <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
