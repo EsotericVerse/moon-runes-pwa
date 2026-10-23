@@ -907,6 +907,7 @@ export default function Search({managementMode=false}){
               {filterSources.filter(([value])=>value&&!value.startsWith('category:')&&!value.startsWith('source:'))
                 .map(([value,label])=><option key={value} value={value}>{label}</option>)}
             </select>
+            <p className="scope-status">來源分類依管理設定篩選文字作品；多媒體請使用「類型」篩選。</p>
             {sourceTaxonomyQuery.isPending?<p className="scope-status" role="status">載入來源分類…</p>:null}
             {sourceTaxonomyQuery.isError?<p className="scope-status scope-error" role="alert">來源分類載入失敗，請稍後重試。</p>:null}
           </div>:null}
