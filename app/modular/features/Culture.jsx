@@ -26,7 +26,8 @@ import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
-import {selectRows} from '../../loc/db-query.mjs';
+import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
+import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
@@ -35,7 +36,7 @@ const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
-import {requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
+import {publicContentFilters,requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
 const LrunesDailyCulturePanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyCulturePanel),{loading:()=>null});
 const LocItemConfluence=dynamic(()=>import('./LocItemConfluence'),{loading:()=>null});
 
@@ -75,6 +76,61 @@ function periodKey(item){
 function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+' 群組';
+}
+// The articles already contain class_id and group_lists. A tap only changes
+// which projection of those saved attributes is displayed in the same river.
+function keywordDrillRiverItems(rows,{level='source',source='',groupId='',meta={},catalog=[]}={}){
+  const classes=meta?.classes||{};
+  const className=String(meta?.class_name||'').trim();
+  const groupName=String(classes[String(groupId)]||'').trim();
+  const knownItems=new Map(catalog
+    .filter(item=>String(item.class_group||'').trim()===groupName)
+    .map(item=>[String(Number(item.item_no)),item]));
+  const buckets=new Map(),maximum=new Map();
+  const add=(key,label,day,count,order=0)=>{
+    if(!key||!label||!count)return;
+    const id=key+'\u0000'+day;
+    buckets.set(id,{key,label,day,count:(buckets.get(id)?.count||0)+count,order});
+    maximum.set(key,Math.max(maximum.get(key)||0,buckets.get(id).count));
+  };
+  for(const row of rows||[]){
+    const day=String(row.createtime||'').slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
+    const hits=parseGroupLists(row.group_lists);
+    if(hits===false)continue;
+    const rowSource=String(row.source_name||'').trim()||'未分類';
+    if(level==='source'){
+      add(rowSource,rowSource,day,1);
+      continue;
+    }
+    if(rowSource!==source)continue;
+    const rowGroup=String(row.class_id||'').trim();
+    if(level==='group'){
+      const label=String(classes[rowGroup]||'').trim();
+      if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
+      continue;
+    }
+    if(rowGroup!==String(groupId))continue;
+    for(const [id,rawCount] of Object.entries(hits)){
+      const item=knownItems.get(id);
+      const count=Number(rawCount)||0;
+      if(item&&count>0)add(id,id+' · '+String(item.item_name||id),day,count,Number(item.order_no)||Number(id));
+    }
+  }
+  return [...buckets.values()].map(({key,label,day,count,order})=>({
+    id:'keyword-density:'+level+':'+key+':'+day,
+    entry_id:'keyword-density:'+level+':'+key+':'+day,
+    entry_type:'keyword_density',
+    drill_key:key,
+    group_label:label,
+    category:label,
+    display_label:'',
+    title:day+' · '+label+' · '+count.toLocaleString()+(level==='item'?' 次':' 篇'),
+    start_date:day,end_date:nextRiverDay(day),
+    item_count:count,group_order:order,
+    density_ratio:count/Math.max(1,maximum.get(key)||1)
+  })).sort((a,b)=>a.start_date.localeCompare(b.start_date)
+    ||Number(a.group_order)-Number(b.group_order)||a.group_label.localeCompare(b.group_label));
 }
 function formatCultureUi(template,values={}){
   return String(template||'').replace(/\{([a-zA-Z][\w]*)\}/gu,(match,key)=>
@@ -133,6 +189,8 @@ export default function Culture(){
   const [worksOpen,setWorksOpen]=useState(false);
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
+  const [keywordDrillSource,setKeywordDrillSource]=useState('');
+  const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
@@ -275,40 +333,47 @@ export default function Culture(){
     sourceSnapshotQuery.isFetching||
     (styleFilter==='rune66'&&styleQuery.isFetching)
   );
-  const styleClassRiverItems=useMemo(()=>{
-    const classifications=(styleQuery.data?.classifications||[])
-      .filter(row=>row?.status==='classified'&&row?.classification_group&&row?.date);
-    const counts=new Map();
-    const classMax=new Map();
-    for(const row of classifications){
-      const date=String(row.date||'').slice(0,10);
-      const className=String(row.classification_group||'').trim();
-      if(!date||!className)continue;
-      const key=className+'\u0000'+date;
-      const count=(counts.get(key)||0)+(Number(row.count)||1);
-      counts.set(key,count);
-      classMax.set(className,Math.max(classMax.get(className)||0,count));
-    }
-    return [...counts.entries()].map(([key,count],index)=>{
-      const [className,date]=key.split('\u0000');
-      const groupDisplay=[String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'').trim(),classLabel(className)].filter(Boolean).join(' ');
-      return {
-        id:'style-class:'+className+':'+date+':'+index,
-        entry_id:'style-class:'+className+':'+date+':'+index,
-        entry_type:'style_class_density',
-        group_label:groupDisplay,
-        category:className,
-        display_label:'',
-        title:formatCultureUi(l.densityTitle,{date,group:groupDisplay,count:count.toLocaleString(locale)}),
-        start_date:date,
-        end_date:nextRiverDay(date),
-        item_count:count,
-        density_ratio:count/Math.max(1,classMax.get(className)||1)
-      };
-    }).sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||String(a.group_label).localeCompare(String(b.group_label)));
-  },[styleQuery.data,keywordClassQuery.data,l,locale]);
-
-
+  const keywordDensityQuery=useQuery({
+    queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd],
+    enabled:styleFilter==='rune66'&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
+      &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
+    queryFn:async()=>{
+      const {rows}=await selectAllRows(scopeData.galaxy,{
+        columns:'createtime,source_name,class_id,group_lists',
+        filters:publicContentFilters([
+          {column:'statistics_able',operator:'eq',value:true},
+          {column:'createtime',operator:'gte',value:keywordWindowStart+'T00:00:00+08:00'},
+          {column:'createtime',operator:'lte',value:keywordWindowEnd+'T23:59:59.999+08:00'}
+        ]),
+        orders:[{column:'createtime',ascending:true}]
+      });
+      return rows;
+    },
+    staleTime:5*60_000
+  });
+  const keywordCatalogQuery=useQuery({
+    queryKey:['culture-keyword-group-items',scopeId,styleQuery.data?.keywordMeta?.class_id||''],
+    enabled:styleFilter==='rune66'&&Boolean(keywordDrillSource&&keywordDrillGroup)
+      &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
+    queryFn:async()=>{
+      const {rows}=await selectRows(scopeData.keywords,{
+        columns:'item_no,item_name,class_group,order_no',
+        filters:[{column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)}],
+        limit:1000
+      });
+      return rows;
+    },
+    staleTime:5*60_000
+  });
+  useEffect(()=>{
+    setKeywordDrillSource('');
+    setKeywordDrillGroup('');
+  },[scopeId,styleFilter,keywordWindowStart,keywordWindowEnd]);
+  const keywordDrillLevel=!keywordDrillSource?'source':!keywordDrillGroup?'group':'item';
+  const keywordDrillItems=useMemo(()=>keywordDrillRiverItems(keywordDensityQuery.data,{
+    level:keywordDrillLevel,source:keywordDrillSource,groupId:keywordDrillGroup,
+    meta:styleQuery.data?.keywordMeta,catalog:keywordCatalogQuery.data||[]
+  }),[keywordDensityQuery.data,keywordDrillLevel,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordCatalogQuery.data]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
@@ -956,7 +1021,7 @@ export default function Culture(){
                   </details>:null}
                               {anchorSaveMessage?<span role='status'>{anchorSaveMessage}</span>:null}
                 </div>:null}
-                {!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
+                {styleFilter!=='rune66'&&!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
                   items={classificationRiverItems}
                   labelOf={classificationRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
@@ -979,20 +1044,45 @@ export default function Culture(){
                 />:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>關鍵詞組：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
-                  <h4>關鍵詞密度時間長河</h4>
-                  {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
-                  {keywordWindowValid&&styleQuery.isPending&&!riverRangeLoading?<p className='scope-status'>Loading...</p>:null}
+                  <div className='scope-stat-controls'>
+                    {keywordDrillSource?<button type='button' className='loc-button' onClick={()=>{
+                      if(keywordDrillGroup)setKeywordDrillGroup('');
+                      else setKeywordDrillSource('');
+                    }}>← 返回{keywordDrillGroup?'群組':'來源'}</button>:null}
+                    <span className='scope-status' aria-live='polite'>
+                      {classificationPeriodLabel} → {keywordDrillSource||'選擇來源'}
+                      {keywordDrillSource?' → '+(keywordDrillGroup
+                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')
+                        :'選擇關鍵詞群組'):''}
+                      {keywordDrillGroup?' → 項目密度':''}
+                    </span>
+                  </div>
+                  <h4>{keywordDrillLevel==='source'?'來源密度':keywordDrillLevel==='group'?'關鍵詞群組密度':'群組內項目密度'}</h4>
+                  {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
-                  {!riverRangeLoading&&keywordWindowValid&&!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
-                    items={styleClassRiverItems}
+                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
+                  {(keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled)||(keywordDrillLevel==='item'&&keywordCatalogQuery.isPending)
+                    ?<p className='scope-status' role='status'>正在讀取已儲存的文章屬性…</p>:null}
+                  {keywordDensityQuery.error||keywordCatalogQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error||keywordCatalogQuery.error,UI_COPY)}</p>:null}
+                  {!keywordDensityQuery.isPending&&(keywordDrillLevel!=='item'||!keywordCatalogQuery.isPending)&&!keywordDensityQuery.error&&!keywordCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
+                    key={keywordDrillLevel+'|'+keywordDrillSource+'|'+keywordDrillGroup}
+                    items={keywordDrillItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
                     mode='source'
                     windowStart={keywordWindowStart}
                     windowEnd={keywordWindowEnd}
+                    onSelect={item=>{
+                      const key=String(item?.raw?.drill_key||'').trim();
+                      if(!key)return;
+                      if(keywordDrillLevel==='source')setKeywordDrillSource(key);
+                      else if(keywordDrillLevel==='group')setKeywordDrillGroup(key);
+                    }}
                   />:null}
+                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&
+                    (keywordDrillLevel!=='item'||!keywordCatalogQuery.isPending)&&!keywordDrillItems.length
+                    ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
