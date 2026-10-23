@@ -14,7 +14,6 @@ const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:Pan
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
-  {value:'publisher',label:'發表文章',description:'建立並發表一篇文章。'},
   {value:'media',label:'新增多媒體',description:'新增一筆圖片、影片或外部媒體資料。'},
   {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'}
 ]);
@@ -34,7 +33,6 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
       <div className="management-workspace-panel" id="scope-management-panel" role="region"
         aria-labelledby={'scope-sections-option-'+selectedOption.value}>
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-        {section==='publisher'?<ManagementArticlePublisher key={routeScopeId+'-publisher'} scopeId={routeScopeId}/>:null}
         {section==='media'?<ManagementArticlePublisher key={routeScopeId+'-media'} scopeId={routeScopeId} mode="media"/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
       </div>

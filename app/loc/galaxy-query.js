@@ -332,7 +332,9 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     :'';
 
   const current=scopeOf(scope);
-  const textFilters=publicContentFilters([...(includeHiddenText?[]:[{column:'searchable',operator:'eq',value:true}]),...textKindFilters]);
+  const textFilters=includeHiddenText
+    ?textKindFilters
+    :publicContentFilters([{column:'searchable',operator:'eq',value:true},...textKindFilters]);
   // Article content is a search predicate, not a list payload. Fetch it only
   // when the result is explicitly opened or edited.
   // Match with narrow, bounded UID-only pages; hydrate display fields later.

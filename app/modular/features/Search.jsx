@@ -23,6 +23,8 @@ import {useRouter,useSearchParams} from 'next/navigation';
 import {deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import ScopeLink from '../ScopeLink';
+import ManagementSectionNav from '../ManagementSectionNav';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -31,7 +33,8 @@ import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../f
 import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
-import {defaultScopeData,selectLocSearchScopes} from '../../loc/scope-data';
+import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry} from '../../loc/scope-data';
+const ManagementArticlePublisher=dynamic(()=>import('../../loc/ManagementArticlePublisher'),{loading:()=>null});
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
@@ -220,7 +223,7 @@ function searchHref(scopeId,query,filters={}){
 }
 
 
-export default function Search(){
+export default function Search({managementMode=false}){
   useUiSection('search');
   useUiSection('uiExtra.searchUI');
   useUiSection('uiExtra.editBlocks');
@@ -230,6 +233,9 @@ export default function Search(){
   const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
+  const managementAuthorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
+    (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
+  const [managementSection,setManagementSection]=useState('search');
   const searchParams=useSearchParams();
   const router=useRouter();
   const queryClient=useQueryClient();
@@ -290,14 +296,21 @@ export default function Search(){
   // A tree's own Search page stays separate from LOC's aggregate scope filter.
   const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
   const scopesQuery=useQuery({
-    queryKey:['loc-searchable-scopes'],
-    queryFn:selectLocSearchScopes,
-    enabled:scopeId==='loc'&&!aggregateScopes,
+    queryKey:managementMode?['management-search-scopes',account.email]:['loc-searchable-scopes'],
+    queryFn:managementMode?()=>selectScopeRegistry({scopeKind:'scope'}):selectLocSearchScopes,
+    enabled:scopeId==='loc'&&!aggregateScopes&&(!managementMode||managementAuthorized),
     staleTime:5*60_000
   });
-  const availableScopes=useMemo(()=>scopeId==='loc'
-    ?(scopesQuery.data||[])
-    :[defaultScopeData(scopeId)].filter(Boolean),[scopeId,scopesQuery.data]);
+  const availableScopes=useMemo(()=>{
+    if(scopeId!=='loc')return [account.scopeDataFor(scopeId)||defaultScopeData(scopeId)].filter(Boolean);
+    if(!managementMode)return scopesQuery.data||[];
+    return (scopesQuery.data||[])
+      .filter(item=>item.active&&item.scope_kind==='scope'&&canManageSearchScope(account,item.scope_id))
+      .map(item=>{
+        const data=account.scopeDataFor(item.scope_id)||defaultScopeData(item.scope_id);
+        return data?{...data,display_name:String(item.display_name||item.scope_id)}:null;
+      }).filter(Boolean);
+  },[scopeId,scopesQuery.data,managementMode,account.authorizer]);
   const targetScopes=useMemo(()=>scopeId==='loc'&&scopeFilter
     ?availableScopes.filter(item=>item.id===scopeFilter)
     :availableScopes,[scopeId,scopeFilter,availableScopes]);
@@ -416,7 +429,7 @@ export default function Search(){
           return;
         }
       }
-      const wantsStyleTags=!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
+      const wantsStyleTags=!managementMode&&!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
       // Start the primary search first so it takes the first connection slot, then
       // run the cross-Scope style-tag lookup alongside it instead of in front of it.
       const searchPromise=searchGalaxyRows(searchScopes,q,{
@@ -424,7 +437,7 @@ export default function Search(){
         // Always search article providers, including when the same keyword
         // exactly matches a style tag.
         cursor,
-        mediaOnly:options.mediaOnly,
+        mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
         contentType:options.contentType,sourceFilter:options.sourceFilter,
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         signal
@@ -439,7 +452,7 @@ export default function Search(){
       const [styleTagMatches,search]=await Promise.all([stylePromise,searchPromise]);
       if(id!==searchId.current)return;
 
-      const searchRows=await hydrateGalaxySearchRows(search.rows||[],searchScopes,[],{signal});
+      const searchRows=await hydrateGalaxySearchRows(search.rows||[],searchScopes,managementMode?searchScopes.map(item=>item.id):[],{signal});
       if(id!==searchId.current)return;
       const textByScope=new Map();
       for(const entry of searchRows){
@@ -542,19 +555,21 @@ export default function Search(){
     setHasMore(false);setNextCursor(null);setFullText('');setFullTextRow(null);
     try{
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId))throw new Error(t('uiExtra.searchUI.invalidMediaId'));
-      if(!canManageSearchScope(account,scopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
-      const scopeData=defaultScopeData(scopeId);
+      const mediaScopeId=managementMode&&scopeId==='loc'?String(searchParams?.get('scope')||'').trim():scopeId;
+      if(!mediaScopeId||!canManageSearchScope(account,mediaScopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
+      const scopeData=account.scopeDataFor(mediaScopeId)||defaultScopeData(mediaScopeId);
       if(!scopeData?.galaxyMedia)throw new Error(UI_COPY.search.notFound);
       const row=await selectPublicEditableRow(scopeData.galaxyMedia,'media_id',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
       if(id!==searchId.current)return;
       if(!row)throw new Error(UI_COPY.search.notFound);
-      const item=toResult({...row,scope_id:scopeId,__table:scopeData.galaxyMedia},'Galaxy Media',scopeId);
+      const item=toResult({...row,scope_id:mediaScopeId,__table:scopeData.galaxyMedia},'Galaxy Media',mediaScopeId);
       const {SearchEditDraft}=await import('./search-edit-draft');
       setResults([item]);setEditingKey(item.key);setEditDraft(SearchEditDraft.fromRow('media',row,item.title));
     }catch(exception){if(id===searchId.current)setError(String(exception?.message||exception||UI_COPY.search.editLoadFailed))}
   }
 
   useEffect(()=>{
+    if(managementMode&&!managementAuthorized)return;
     if(scopeId==='loc'&&!scopesQuery.isSuccess)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const media=String(searchParams?.get('media')||'').trim();
@@ -572,7 +587,7 @@ export default function Search(){
     setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
     setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);setScopeFilter(filters.scopeFilter);
     if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
-  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
+  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,managementMode,managementAuthorized]);
 
 
 
@@ -699,7 +714,7 @@ export default function Search(){
     setQuery('');setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
-    router.replace(featureNavigationHref(scopeId,'search'));
+    router.replace(managementMode?scopeHref(scopeId,'governance/manage/search'):featureNavigationHref(scopeId,'search'));
   }
   const filterTypes=[
     ['',t('uiExtra.searchUI.allTypes')],
@@ -721,14 +736,24 @@ export default function Search(){
     endDate&&t('uiExtra.searchUI.endDate')+': '+endDate,
     selectedPeriod&&periodsQuery.data?.find(item=>item.id===selectedPeriod)?.title
   ].filter(Boolean);
+  function workspaceSearchHref(term,filters={}){
+    const href=searchHref(scopeId,term,filters);
+    if(!managementMode)return href;
+    const normal=new URL(href);
+    const manager=new URL(scopeHref(scopeId,'governance/manage/search'));
+    for(const [key,value] of normal.searchParams){
+      if(key!=='scopeid')manager.searchParams.set(key,value);
+    }
+    return manager.href;
+  }
   async function runSearch(event){
     event.preventDefault();
     const term=String(query||'').trim();
     if(!term)return;
     // Keep the keyword in the URL and input so a style-to-style link is a
     // reproducible next search, not a transient single-page interaction.
-    const url=searchHref(scopeId,term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter});
-    const current=searchHref(scopeId,String(searchParams?.get('q')||'').trim(),{
+    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter});
+    const current=workspaceSearchHref(String(searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
       startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),scopeFilter:searchParams?.get('scope')
     });
@@ -736,6 +761,15 @@ export default function Search(){
     await executeSearch(term);
   }
 
+  if(managementMode&&!managementAuthorized)return <FeaturePage featureId="search">
+    <section className="loc-card scope-feature-card">
+      {account.loading||account.permissionLoading
+        ?<p role="status">正在確認管理權限…</p>
+        :!account.user
+          ?<><p>搜尋管理需要登入。</p><ScopeLink className="loc-button primary" href="/settings/?section=account">前往登入</ScopeLink></>
+          :<p>目前帳號沒有這個 Scope 的搜尋管理權限。</p>}
+    </section>
+  </FeaturePage>;
   if(aggregateScopes)return <FeaturePage featureId="search">
     <ScopeGroupOverview
       scopeId={scopeId}
@@ -745,14 +779,38 @@ export default function Search(){
     />
   </FeaturePage>;
 
+  const publishScopeId=scopeId==='loc'?scopeFilter:scopeId;
   return <FeaturePage featureId="search">
-    <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
+    {managementMode?<div className="management-workspace">
+      <ManagementSectionNav id="search-management-sections" title="搜尋管理"
+        panelId="search-management-panel" value={managementSection} onChange={setManagementSection}
+        items={[{value:'search',label:'搜尋編輯',description:'搜尋包含禁止公開搜尋的文章，直接展開編輯。'},
+          {value:'publisher',label:'單篇發表',description:'以既有文章編輯器發表一篇作品。'}]}/>
+      <div className="management-workspace-panel" id="search-management-panel" role="region"
+        aria-labelledby={'search-management-sections-option-'+managementSection}>
+      {managementSection==='publisher'?<>
+        {scopeId==='loc'?<div className="scope-search-scope-filter">
+          <label htmlFor="search-publisher-scope">發表到 Scope</label>
+          <select id="search-publisher-scope" value={scopeFilter}
+            onChange={event=>setScopeFilter(event.target.value)}>
+            <option value="">請選擇 Scope</option>
+            {availableScopes.map(item=><option key={item.id} value={item.id}>{scopeLabel(item.id)}</option>)}
+          </select>
+        </div>:null}
+        {publishScopeId&&availableScopes.some(item=>item.id===publishScopeId)?<ManagementArticlePublisher key={publishScopeId} scopeId={publishScopeId}/>:null}
+      </>:null}
+      </div>
+    </div>:null}
+    {(!managementMode||managementSection==='search')?<section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         <label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>
         <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
+      {!managementMode?<div className="scope-preview-links">
+        <ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>搜尋管理</ScopeLink>
+      </div>:null}
       {scopeId==='loc'?<div className="scope-search-scope-filter">
         <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
         <select id="scope-search-scope" value={scopeFilter}
@@ -808,7 +866,7 @@ export default function Search(){
           </div>:null}
         </div>:null}
       </div>
-    <div className="scope-search-reference-editor">
+    {!managementMode?<div className="scope-search-reference-editor">
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
@@ -823,9 +881,9 @@ export default function Search(){
         explicitEditButton
         onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
       />
-    </div>
-    </section>
-    <div ref={resultsRef} className="scope-search-results">
+    </div>:null}
+    </section>:null}
+    {(!managementMode||managementSection==='search')?<div ref={resultsRef} className="scope-search-results">
     {status?<p className="scope-status">{status}</p>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
@@ -861,6 +919,8 @@ export default function Search(){
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
         <Article
           key={row.key}
+          editOnCardClick={!managementMode}
+          managerMode={managementMode}
           uid={editTarget.editResourceId}
           title={row.title}
           source={row.styleTagMatch?'':row.source}
@@ -881,7 +941,7 @@ export default function Search(){
           onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           editBusy={editBusy}
           editError={editError}
-          showHidden={false}
+          showHidden={managementMode}
           attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
           mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}
           attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}
@@ -890,7 +950,11 @@ export default function Search(){
           styleTagKicker={row.styleTagMatch?<UiText id="uiExtra.searchUI.styleRecommendations"/>:null}
           styleIntroText={row.styleIntroText}
         >
-          {row.resourceType==='galaxy'&&editingKey!==row.key?<div className="scope-work-fulltext-row">
+          {managementMode&&editable&&editingKey!==row.key?<div className="scope-work-fulltext-row">
+            <button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditing(editTarget)}>
+              {row.resourceType==='galaxy'?'展開內文並編輯':'編輯媒體連結'}
+            </button>
+          </div>:!managementMode&&row.resourceType==='galaxy'&&editingKey!==row.key?<div className="scope-work-fulltext-row">
             <WorkFullText
               open={fullTextKey===row.key}
               loading={fullTextLoading&&fullTextKey===row.key}
@@ -908,6 +972,7 @@ export default function Search(){
         </Fragment>;
       }}
     />
-    </div>
+    </div>:null}
   </FeaturePage>;
 }
+

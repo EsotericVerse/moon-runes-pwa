@@ -24,6 +24,7 @@ const Statistics=dynamic(()=>import('../modular/features/Statistics'),{loading})
 const KeywordSettings=dynamic(()=>import('../modular/features/KeywordSettings'),{loading});
 const Culture=dynamic(()=>import('../modular/features/Culture'),{loading});
 const Search=dynamic(()=>import('../modular/features/Search'),{loading});
+const SearchManagement=dynamic(()=>import('./SearchManagement'),{loading});
 const Governance=dynamic(()=>import('../modular/features/Governance'),{loading});
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
@@ -36,6 +37,7 @@ const VIEWS={
   keywords:KeywordSettings,
   culture:Culture,
   search:Search,
+  searchManage:SearchManagement,
   governance:Governance,
   manage:ManagementView,
   setting:LocalSettingView
@@ -51,6 +53,7 @@ const VIEW_PRELOADERS={
   keywords:()=>import('../modular/features/KeywordSettings'),
   culture:()=>import('../modular/features/Culture'),
   search:()=>import('../modular/features/Search'),
+  searchManage:()=>import('./SearchManagement'),
   governance:()=>import('../modular/features/Governance'),
   manage:()=>import('./GovernanceManagement'),
   setting:()=>import('./views/LocalSettingView')

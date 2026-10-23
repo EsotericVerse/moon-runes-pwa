@@ -11,6 +11,7 @@ import {useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 import {isInteractiveContentTarget} from '../loc/content-policy.js';
 import {galaxyMediaHref} from './feature-navigation';
+import {scopeHref} from './scope-registry';
 import searchUIZh from '../i18n/sections/uiExtra.searchUI.zh_tw.js';
 import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
 registerDefaultSection('uiExtra.searchUI',searchUIZh);
@@ -46,12 +47,12 @@ function DeferredArticleBody({html}){
 }
 
 // Shared article(uid) list module for Search and Culture.
-export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId=''}){
+export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId='',editOnCardClick=true,managerMode=false}){
   useUiSection('uiExtra.searchUI');
   useUiSection('uiExtra.editBlocks');
   const t=useUiText();
   const richBody=typeof body==='string'&&/<[a-z][^>]*>/i.test(body);
-  const onClickCapture=editable&&!editing&&typeof onEdit==='function'?event=>{
+  const onClickCapture=editOnCardClick&&editable&&!editing&&typeof onEdit==='function'?event=>{
     if(!isInteractiveContentTarget(event.target))onEdit(uid);
   }:undefined;
   const editingReady=editing&&Boolean(editorDraft);
@@ -64,9 +65,12 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
   const titleEditor=editingReady?<input className="scope-article-edit-title" aria-label={UI_COPY.common.title} value={editorDraft.title||''} onChange={event=>onDraftChange(current=>({...current,title:event.target.value}))}/>:null;
   // The same saved media relationship links externally in view mode, but opens
   // the existing scoped Galaxy Media attribute editor while an article is edited.
+  const mediaEditHref=id=>managerMode
+    ?scopeHref(mediaScopeId,'governance/manage/search')+'?media='+encodeURIComponent(id)
+    :galaxyMediaHref(mediaScopeId,id);
   const mediaEditLinks=editingReady&&mediaScopeId?links
     .filter(link=>String(link?.id||'').startsWith('media:'))
-    .map(link=>({id:'edit:'+link.id,label:link.label||t('uiExtra.searchUI.mediaAttributes'),href:galaxyMediaHref(mediaScopeId,String(link.id).slice(6))}))
+    .map(link=>({id:'edit:'+link.id,label:link.label||t('uiExtra.searchUI.mediaAttributes'),href:mediaEditHref(String(link.id).slice(6))}))
     .filter(link=>link.href):[];
   const visibleLinks=mediaEditLinks.length?links.filter(link=>!String(link?.id||'').startsWith('media:')):links;
   const visibleRelations=mediaEditLinks.length?[...relationLinks,...mediaEditLinks]:relationLinks;
@@ -75,7 +79,7 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     destinations={destinations} className={styleTag?'scope-article-style-tag-hit':''} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
     {richBody&&!editingReady?<DeferredArticleBody html={body}/>:null}
-    {editingReady?<ObjectEditor mode="article" draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} attributeFields={attributeFields} showBodyEditor={showBodyEditor} attributeTitle={attributeTitle} mediaHref={mediaScopeId?id=>galaxyMediaHref(mediaScopeId,id):null}/>:null}
+    {editingReady?<ObjectEditor mode="article" draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} attributeFields={attributeFields} showBodyEditor={showBodyEditor} attributeTitle={attributeTitle} mediaHref={mediaScopeId?mediaEditHref:null}/>:null}
     {children}
   </WorkSummaryCard>;
 }
