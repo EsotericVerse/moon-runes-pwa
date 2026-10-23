@@ -394,6 +394,68 @@
   .loc-home-block--image-bottom{grid-template-areas:"header" "body" "media" "children";}
 }
 
+/* Phone layout: titles and subtitles stack instead of competing for two
+   narrow columns. Never cut editorial copy to two lines on small screens. */
+@media(max-width:760px){
+  .loc-home-block__header{
+    grid-template-columns:minmax(0,1fr);
+    gap:.3rem;
+    align-items:start;
+  }
+  .loc-home-block__header>.loc-eyebrow{
+    grid-column:1;
+    grid-row:auto;
+  }
+  .loc-home-block__header>h1,
+  .loc-home-block__header>h2{
+    grid-column:1;
+    grid-row:auto;
+    max-width:100%;
+    width:auto;
+    font-size:var(--loc-type-home-section-title);
+    overflow-wrap:anywhere;
+  }
+  .loc-home-block__header>.loc-home-block__subtitle{
+    grid-column:1;
+    grid-row:auto;
+    display:block;
+    max-width:100%;
+    -webkit-line-clamp:unset;
+    line-clamp:unset;
+    overflow:visible;
+    white-space:normal;
+    padding:0;
+    margin:.15rem 0 .45rem;
+    font-size:var(--loc-type-subtitle);
+  }
+  .loc-home-block__body,
+  .loc-home-block__child-copy{
+    overflow-wrap:anywhere;
+  }
+  .loc-home-block__body :is(img,video),
+  .loc-home-block__child-copy :is(img,video){
+    max-width:100%;
+    height:auto;
+    object-fit:contain;
+  }
+  .loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block{
+    padding:clamp(.8rem,3.3vw,1.15rem);
+  }
+  /* Hero art remains whole in portrait viewports; reading copy flows below it. */
+  .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])[data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media img{
+    object-fit:contain;
+    object-position:center top;
+  }
+}
+@media(max-width:420px){
+  .loc-home-block__children{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .loc-home-block__child{
+    padding:.85rem;
+  }
+}
+
 /* Image-only keeps the full body DIV while its image uses the normal
    configurable media width. Intrinsic ratio provides height without text. */
 .loc-home-block--image-only>.loc-home-block__body--image{
