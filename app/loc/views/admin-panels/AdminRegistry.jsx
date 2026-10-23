@@ -185,7 +185,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
           createEdgeError:'不可建立此關係',deleteClusterError:'不能刪除群集',editClusterError:'不能編輯群集'
         }},
         manipulation:{
-          enabled:true,initiallyActive:true,addNode:false,addEdge:false,editEdge:false,
+          enabled:true,initiallyActive:false,addNode:false,addEdge:false,editEdge:false,
           editNode:(nodeData,callback)=>{
             const id=String(nodeData?.id||'');
             if(id)handlersRef.current.onSelect?.(id);

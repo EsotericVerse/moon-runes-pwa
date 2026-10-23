@@ -347,6 +347,8 @@
 .admin-graph-header h2{margin:0 0 .3rem}
 .admin-graph-header p{margin:0;color:var(--loc-muted);font-size:.88rem}
 .admin-deployment-tree{height:clamp(21rem,43vh,31rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);overflow:hidden}
+/* vis-network's default manipulation strip is white; match Admin's dark panel. */
+.admin-deployment-tree .vis-manipulation,.admin-deployment-tree .vis-edit-mode{background:var(--loc-panel);border-color:var(--loc-ui-hairline);color:var(--loc-text)}
 .admin-node-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .admin-delete-confirm{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(15rem,.9fr);gap:.75rem 1.1rem;align-items:end;padding:1.1rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-surface-soft)}
 .admin-delete-confirm strong{font-size:1rem;color:var(--loc-heading)}
