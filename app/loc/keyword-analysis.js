@@ -144,7 +144,12 @@ function buildClassMap(catalogRows=[]){
       return orderA-orderB||a.localeCompare(b);
     })
     .map((group,index)=>({group,order:canonicalIndex.has(group)?canonicalIndex.get(group):9999,class_id:index+1}));
-  if(ordered.length!==9)throw new Error('目前文章 class_id 契約需要恰好 9 個啟用 Class；目前為 '+ordered.length+' 個。');
+  // 9 is a ceiling (8 canonical groups + 1 default/special), not a fixed
+  // count every Class must hit exactly -- silver.lo3rwang_galaxy.class_id's
+  // own CHECK constraint is already "class_id BETWEEN 1 AND 9", i.e. a max,
+  // not an exact count, and a Class with fewer enabled groups than 9 is
+  // valid (confirmed live data: 政德文化 has 6, Hip-Hop 5, Rock/Vocal 3).
+  if(ordered.length<1||ordered.length>9)throw new Error('目前文章 class_id 契約最多允許 9 個啟用 Class（至少 1 個）；目前為 '+ordered.length+' 個。');
   return {
     ordered,
     groupToClassId:new Map(ordered.map(item=>[item.group,item.class_id])),
