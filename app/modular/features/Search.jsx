@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
 
-import {deleteRows,logSearchKeyword,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 // Article cards/editing are requested only when results actually render.
@@ -415,7 +415,6 @@ export default function Search(){
           scrollToResults();
           return;
         }
-        if(q)logSearchKeyword(scopeId,q).catch(()=>{});
       }
       const wantsStyleTags=!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
       // Start the primary search first so it takes the first connection slot, then

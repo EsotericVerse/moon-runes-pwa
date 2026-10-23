@@ -428,17 +428,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function logSearchKeyword(scopeId,queryText){
-    const scope=String(scopeId||'').trim().toLowerCase();
-    const query=String(queryText||'').trim();
-    if(!scope||!query)return;
-    const {error}=await publicClient.schema('silver').rpc('log_search_keyword',{
-      p_scope_id:scope,
-      p_query_text:query
-    });
-    if(error)throw new Error(error.message||'Search keyword log failed');
-  }
-
   async function getAccountSession(){
     const {data,error}=await auth.getSession();
     if(error)throw new Error(error.message||'Account session failed');
@@ -458,7 +447,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,logSearchKeyword,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
