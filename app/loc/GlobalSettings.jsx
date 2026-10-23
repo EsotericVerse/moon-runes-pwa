@@ -6,7 +6,6 @@ import globalSettingsZh from '../i18n/sections/uiExtra.globalSettings.zh_tw.js';
 registerDefaultSection('uiExtra.globalSettings',globalSettingsZh);
 
 import {useEffect,useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
@@ -66,13 +65,19 @@ export default function GlobalSettings({initialSection='home'}={}){
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
   },[]);
-  const registryQuery=useQuery({
-    queryKey:['settings-scope-registry'],
-    queryFn:selectScopeRegistry,
-    enabled:!native&&urlResolved&&section!=='account',
-    staleTime:5*60_000
-  });
-  const registry=registryQuery.data||[];
+  const [registry,setRegistry]=useState([]);
+  const registryEnabled=!native&&urlResolved&&section!=='account';
+  useEffect(()=>{
+    if(!registryEnabled)return undefined;
+    let active=true;
+    // Registry comes from the existing public site snapshot; no timed refetch.
+    selectScopeRegistry().then(rows=>{
+      if(active)setRegistry(rows);
+    }).catch(()=>{
+      if(active)setRegistry([]);
+    });
+    return ()=>{active=false;};
+  },[registryEnabled]);
   useEffect(()=>{
     if(prefs.loading)return;
     setHome(native?deviceNavigation.mobileHomepageChoice(window.localStorage):(accountNavigation.validScopeId(prefs.home)||'loc'));

@@ -1,6 +1,6 @@
 'use client';
 
-import {useQuery} from '@tanstack/react-query';
+import {useEffect,useState} from 'react';
 import UiText,{useUiText} from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {useUiSection} from '../i18n/ui-locale';
@@ -18,12 +18,18 @@ export default function ScopeGroupOverview({scopeId='loc',featureId='search',tit
   useUiSection('uiExtra.scopeGroup');
   const t=useUiText();
   const native=useNativeNavigation();
-  const query=useQuery({
-    queryKey:['scope-group-overview',scopeId],
-    queryFn:()=>selectScopeGroupChildren(scopeId),
-    staleTime:5*60_000
-  });
-  const scopes=query.data||[];
+  const [result,setResult]=useState({scopeId:'',data:[],error:null,isPending:true});
+  useEffect(()=>{
+    let active=true;
+    selectScopeGroupChildren(scopeId).then(data=>{
+      if(active)setResult({scopeId,data,error:null,isPending:false});
+    }).catch(error=>{
+      if(active)setResult({scopeId,data:[],error,isPending:false});
+    });
+    return ()=>{active=false;};
+  },[scopeId]);
+  const query=result.scopeId===scopeId?result:{data:[],error:null,isPending:true};
+  const scopes=query.data;
   const featurePath=FEATURE_PATH[featureId]||'';
   const featureLabel=t(FEATURE_LABEL[featureId]||'uiExtra.scopeGroup.unknownFeature');
 
