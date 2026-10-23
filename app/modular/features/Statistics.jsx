@@ -4,10 +4,12 @@ import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
 import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 import statisticsZh from '../../i18n/sections/statistics.zh_tw.js';
+import cultureZh from '../../i18n/sections/culture.zh_tw.js';
 import statisticsUIZh from '../../i18n/sections/uiExtra.statisticsUI.zh_tw.js';
 import statisticsViewZh from '../../i18n/sections/uiExtra.statisticsView.zh_tw.js';
 import chartTypesZh from '../../i18n/sections/uiExtra.chartTypes.zh_tw.js';
 registerDefaultSection('statistics',statisticsZh);
+registerDefaultSection('culture',cultureZh);
 registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
 registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
 registerDefaultSection('uiExtra.chartTypes',chartTypesZh);
@@ -15,7 +17,7 @@ registerDefaultSection('uiExtra.chartTypes',chartTypesZh);
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 
 // Defer Galaxy's data/query engine until the selected statistics mode needs it.
 const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
@@ -23,10 +25,12 @@ import {selectRows} from '../../loc/db-query.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
-import {featureNavigationHref,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
-import {FeaturePage} from '../ui';
+import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
+import {workDisplayHeading,workDisplayText} from '../work-display-model';
+import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
@@ -36,6 +40,7 @@ const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnaly
 import {STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/statistics-time-zoom.mjs';
 const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
 const Rune66Summary=dynamic(()=>import('../modules/statistics/StatisticsMultiChart').then(m=>m.Rune66Summary),{loading:()=>null});
+const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
 const MediaCrossTagStatistics=dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics'),{loading:()=>null});
 const MediaFacetStatistics=dynamic(()=>import('../modules/statistics/MediaFacetStatistics'),{loading:()=>null});
@@ -165,6 +170,111 @@ function StatisticTypeSelect({scopeId,navigation,types}){
       {types.map(value=><option key={value} value={value}>{t(STAT_TYPE_KEYS[value]||value)}</option>)}
     </select>
   </label>;
+}
+
+// Share Culture's paginated work source and Article viewer. No separate statistics
+// corpus, ranking calculation, or eager full-text loading is needed.
+function ScopeStatisticsWorkList({scopeId,startDate,endDate}){
+  useUiSection('culture');
+  const copy=useUiCopy();
+  const scope=useMemo(()=>defaultScopeData(scopeId),[scopeId]);
+  const [open,setOpen]=useState(false);
+  const [fullTextKey,setFullTextKey]=useState('');
+  const [fullText,setFullText]=useState('');
+  const [fullTextError,setFullTextError]=useState('');
+  const [fullTextLoading,setFullTextLoading]=useState(false);
+  const worksQuery=useInfiniteQuery({
+    queryKey:['statistics-period-works',scopeId,startDate,endDate],
+    enabled:open&&Boolean(scope&&startDate&&endDate),
+    initialPageParam:null,
+    getNextPageParam:page=>page.hasMore?page.nextCursor:undefined,
+    queryFn:async({pageParam})=>{
+      const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
+      const index=await selectScopePeriodWorkIndex(scope,{
+        startDate,endDate,limit:DEFAULT_LIST_BATCH_SIZE,
+        cursor:pageParam&&typeof pageParam==='object'?pageParam:null
+      });
+      const details=await selectScopePeriodWorkDetails(scope,{items:index.rows||[]});
+      return {
+        rows:details.rows||[],
+        totalCount:Number(index.totalCount)||0,
+        nextCursor:index.nextCursor,
+        hasMore:Number(index.nextCursor?.galaxyOffset||0)+Number(index.nextCursor?.mediaOffset||0)<Number(index.totalCount||0)
+      };
+    }
+  });
+  const pages=worksQuery.data?.pages||[];
+  const works=useMemo(()=>{
+    const map=new Map();
+    pages.forEach((page,pageIndex)=>(page.rows||[]).forEach((work,index)=>{
+      map.set(String(work?.key||work?.uid||work?.entry_id||'')||(pageIndex+':'+index),work);
+    }));
+    return [...map.values()];
+  },[pages]);
+  useEffect(()=>{
+    setFullTextKey('');
+    setFullText('');
+    setFullTextError('');
+  },[scopeId,startDate,endDate]);
+  async function toggleFullText(work){
+    const uid=String(work?.uid||'').trim();
+    if(!uid)return;
+    const key=String(work?.key||('galaxy:'+uid));
+    if(fullTextKey===key){
+      setFullTextKey('');setFullText('');setFullTextError('');
+      return;
+    }
+    setFullTextKey(key);setFullText('');setFullTextError('');setFullTextLoading(true);
+    try{
+      const {selectGalaxyContent}=await import('../../loc/galaxy-query');
+      const row=await selectGalaxyContent(scope,uid);
+      if(!row)throw new Error('找不到文章內容');
+      setFullText(workDisplayText(row.content||''));
+    }catch(error){
+      setFullTextError(error?.message||String(error));
+    }finally{
+      setFullTextLoading(false);
+    }
+  }
+  const total=worksQuery.data?.pages?.[0]?.totalCount;
+  return <section className='scope-card scope-statistics-work-list'>
+    <details className='scope-culture-source-detail' open={open} onToggle={event=>setOpen(event.currentTarget.open)}>
+      <summary>{copy.culture.allWorks}{total!=null?' · '+Number(total).toLocaleString():''}</summary>
+      {open?<div className='scope-culture-source-work-scroll'>
+        <p className='scope-status'>{startDate} ～ {endDate}</p>
+        {worksQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(worksQuery.error,copy)}</p>:null}
+        <IncrementalList
+          items={works}
+          batchSize={DEFAULT_LIST_BATCH_SIZE}
+          resetKey={scopeId+'|'+startDate+'|'+endDate}
+          externalHasMore={Boolean(worksQuery.hasNextPage)}
+          loading={worksQuery.isLoading||worksQuery.isFetchingNextPage}
+          error={worksQuery.error}
+          onLoadMore={()=>worksQuery.fetchNextPage()}
+          renderItem={(work,index)=>{
+            const key=String(work?.key||'galaxy:'+work?.uid);
+            return <Article
+              key={key||index}
+              uid={work.uid}
+              title={workDisplayHeading(work,{media:false,limit:80})}
+              source={work.source_name||work.group_label||''}
+              scopeId={work.scope_id||scopeId}
+              date={work.display_date||String(work.createtime||'').slice(0,10)}
+              body={work.description||work.media_metadata_text||''}
+              relationLinks={galaxyRelationLinks(scopeId,work)}
+              links={work.links||[]}
+            >{work.uid?<WorkFullText
+              open={fullTextKey===key}
+              loading={fullTextLoading&&fullTextKey===key}
+              error={fullTextKey===key?fullTextError:''}
+              content={fullTextKey===key?fullText:''}
+              onToggle={()=>toggleFullText(work)}
+            />:null}</Article>;
+          }}
+        />
+      </div>:null}
+    </details>
+  </section>;
 }
 
 function ScopeStatisticsResults({scopeId,navigation,types}){
@@ -393,6 +503,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         sharedCatalog={mediaDimension?null:sourceCatalog}
       />}
     </StatisticsDetails>:null}
+    {!isLrunesDaily?<ScopeStatisticsWorkList
+      scopeId={scopeId}
+      startDate={queryRange.startDate}
+      endDate={queryRange.endDate}
+    />:null}
     </>}
   </section>;
 }
