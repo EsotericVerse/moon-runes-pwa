@@ -52,20 +52,26 @@ export async function selectAppBootstrap(scopeId,pageName='index',{configHint=nu
   const [,id,page]=appBootstrapKey(scopeId,pageName);
   if(bootstrapRpcInstalled){
     try{
-      const site=await selectPublicSiteBootstrap();
-      // The LOC homepage is the site snapshot itself. Other pages do not
-      // repeat its silver.loc Registry/page-copy/Theme reads.
+      // The site snapshot and this Scope's public Config/blocks are
+      // independent reads. Start them together instead of waiting for the
+      // Registry/Theme RPC before issuing the Scope requests (a waterfall).
+      // LOC/index alone uses the blocks already returned by that RPC.
       const isLocHome=id==='loc'&&page==='index';
+      const [site,scopeReads]=await Promise.all([
+        selectPublicSiteBootstrap(),
+        isLocHome?Promise.resolve(null):Promise.all([
+          id&&id!=='loc'
+            ?(configHint?Promise.resolve(configHint):selectScopeConfig(id))
+            :Promise.resolve(null),
+          id&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
+        ])
+      ]);
       const [config,blocks]=isLocHome
         ?[site.config||null,
           locHomeSnapshotDelivered
             ?await selectScopeBlocks('loc','index')
             :Array.isArray(site.blocks)?site.blocks:[]]
-        :await Promise.all([
-          id?(id==='loc'?Promise.resolve(site.config||null)
-            :configHint?Promise.resolve(configHint):selectScopeConfig(id)):Promise.resolve(null),
-          id&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
-        ]);
+        :[id==='loc'?site.config||null:scopeReads[0],scopeReads[1]];
       if(isLocHome)locHomeSnapshotDelivered=true;
       return {
         scope_id:id,
