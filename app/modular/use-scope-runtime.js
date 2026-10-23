@@ -2,11 +2,11 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
-import {getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
-import {selectScopeConfig,selectScopeRegistryEntry} from '../loc/scope-data';
+import {featureIdForPath,getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
+import {selectScopeRegistryEntry} from '../loc/scope-data';
+import {useAppBootstrap} from '../loc/app-bootstrap';
 
 const registryCache=new Map();
-const configCache=new Map();
 
 function genericRouteScope(pathname,search){
   const path=String(pathname||'/');
@@ -42,7 +42,6 @@ export function useScopeRuntime(){
   useEffect(()=>{
     const refresh=()=>{
       registryCache.clear();
-      configCache.clear();
       setMetadataRevision(current=>current+1);
     };
     window.addEventListener('loc-public-scope-metadata-changed',refresh);
@@ -84,30 +83,12 @@ export function useScopeRuntime(){
   const configEnabled=Boolean(
     scopeId&&scopeId!=='admin'&&!base.aggregateChildren&&(!dynamic||activeRegistryRow?.scope_kind==='scope')
   );
-  const [configRow,setConfigRow]=useState(()=>configEnabled?(configCache.get(scopeId)||null):null);
-
-  useEffect(()=>{
-    let active=true;
-    if(!configEnabled){
-      setConfigRow(null);
-      return()=>{active=false};
-    }
-    if(configCache.has(scopeId)){
-      setConfigRow(configCache.get(scopeId));
-      return()=>{active=false};
-    }
-    selectScopeConfig(scopeId).then(row=>{
-      if(!active)return;
-      configCache.set(scopeId,row||null);
-      setConfigRow(row||null);
-    }).catch(()=>{
-      if(!active)return;
-      setConfigRow(null);
-    });
-    return()=>{active=false};
-  },[scopeId,configEnabled,metadataRevision]);
-
-  const activeConfigRow=configRow?.id===scopeId?configRow:null;
+  // Scope config already belongs to the page's shared bootstrap. Consume the
+  // exact same React Query key as AppShell, ThemeSelect and ScopeEditableBlocks;
+  // do not maintain a second cache/effect or a second config SELECT.
+  const bootstrap=useAppBootstrap(scopeId,featureIdForPath(pathname)||'index');
+  const activeConfigRow=configEnabled&&bootstrap.data?.config?.id===scopeId
+    ?bootstrap.data.config:null;
   const structural=activeRegistryRow?{
     ...base,
     label:activeRegistryRow.display_name||scopeId,
