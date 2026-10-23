@@ -229,17 +229,6 @@ export default function Culture(){
     enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(selectedWindowStart&&selectedWindowEnd),
     staleTime:5*60_000
   });
-  const styleClassRows=useMemo(()=>{
-    const total=Math.max(0,Number(styleQuery.data?.classifiedCount||0));
-    return [...(styleQuery.data?.groupTotals||[])]
-      .filter(row=>Number(row.document_count||0)>0)
-      .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0))
-      .map(row=>({
-        ...row,
-        class_label:classLabel(row.group),
-        ratio:total>0?(Number(row.document_count||0)/total)*100:0
-      }));
-  },[styleQuery.data,l,locale]);
   const styleClassRiverItems=useMemo(()=>{
     const classifications=(styleQuery.data?.classifications||[])
       .filter(row=>row?.status==='classified'&&row?.classification_group&&row?.date);
@@ -756,9 +745,6 @@ export default function Culture(){
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.intersectionRiver}</h3>
-                {locScopeTotals.length?<p className='scope-status'>
-                  {l.intersectionTotalPrefix}{locIntersectionTotal.toLocaleString(locale)}{l.intersectionByScope}{locScopeTotals.map(item=>item.scope+' '+Number(item.count||0).toLocaleString(locale)+l.articleUnit).join(l.listSeparator)}{l.intersectionEnd}
-                </p>:null}
                 {locScopeRiverItems.length?<CultureTimeline
                   items={locScopeRiverItems}
                   labelOf={emptyRiverLabel}
@@ -927,9 +913,6 @@ export default function Culture(){
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRows.length?<div className='scope-ranking'>
-                    {styleClassRows.map(row=><div key={row.group}><strong>{row.class_label}</strong><span>{Number(row.document_count||0).toLocaleString()} 篇 · {Number(row.ratio||0).toFixed(1)}%</span></div>)}
-                  </div>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
                     items={styleClassRiverItems}
                     labelOf={emptyRiverLabel}
@@ -939,24 +922,8 @@ export default function Culture(){
                     windowEnd={selectedWindowEnd}
                   />:null}
                 </section>:null}
-                <p className='scope-status'>{formatCultureUi(l.periodWorksTotal,{count:Number(sourceSnapshotQuery.data?.totalCount||0).toLocaleString(locale)})}</p>
-
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
-                {categoryGroups.length?<IncrementalList
-                  items={categoryGroups}
-                  batchSize={DEFAULT_LIST_BATCH_SIZE}
-                  resetKey={'source|'+String(selectedWorkPeriod?.period||'')}
-                  className='scope-culture-source-groups'
-                  renderItem={group=><button type='button' key={group.category_key}
-                    className='scope-culture-source-button'
-                    aria-pressed={selectedCategory===group.category_key}
-                    onClick={()=>{setSelectedCategory(selectedCategory===group.category_key?'':group.category_key);setWorksOpen(true);}}>
-                    <strong>{group.display_label}</strong>
-                    <span>{Number(group.item_count||0).toLocaleString(locale)}{l.itemUnit} · {group.first_date||'—'} → {group.last_date||'—'}</span>
-                  </button>}
-                />:null}
-
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString(locale)}{l.workItemUnit}</summary>
                   {worksOpen?<><header>
