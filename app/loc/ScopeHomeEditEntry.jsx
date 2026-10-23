@@ -24,7 +24,10 @@ export default function ScopeHomeEditEntry(){
         setMessage('請先登入，才能進入編輯模式。');
         return;
       }
-      if(!result.authorizer?.canManageScopeSync(scopeId)){
+      const allowed=scopeId==='loc'
+        ?result.authorizer?.canManageGlobalSync()
+        :result.authorizer?.canManageScopeSync(scopeId);
+      if(!allowed){
         setMessage('目前帳號沒有此 Scope 的編輯權限。');
         return;
       }
