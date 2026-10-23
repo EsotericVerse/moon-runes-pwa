@@ -139,6 +139,42 @@ function keywordDrillRiverItems(rows,{level='group',source='',groupId='',meta={}
   })).sort((a,b)=>a.start_date.localeCompare(b.start_date)
     ||Number(a.group_order)-Number(b.group_order)||a.group_label.localeCompare(b.group_label));
 }
+// Project the existing daily source counts onto their time periods without
+// mutating either the periods or the source classifications.
+function periodDensityRiverItems(sourceBuckets=[],periods=[]){
+  const accum=new Map(),totals=new Map(),maxima=new Map();
+  for(const row of sourceBuckets){
+    const day=String(row.start_date||'').slice(0,10);
+    const count=Number(row.item_count)||0;
+    if(!day||count<=0)continue;
+    const period=periods.find(item=>{
+      const start=String(item.start_date||'').slice(0,10);
+      const end=String(item.end_date||'9999-12-31').slice(0,10);
+      return (!start||day>=start)&&day<=end;
+    });
+    const id=period?periodKey(period):'unassigned';
+    const name=period?labelOf(period,0):'未設定時期';
+    const key=id+'\u0000'+day;
+    const previous=accum.get(key);
+    accum.set(key,{id,name,day,count:(previous?.count||0)+count});
+  }
+  for(const item of accum.values()){
+    totals.set(item.id,(totals.get(item.id)||0)+item.count);
+    maxima.set(item.id,Math.max(maxima.get(item.id)||0,item.count));
+  }
+  return [...accum.values()].map(item=>({
+    id:'period-density:'+item.id+':'+item.day,
+    entry_id:'period-density:'+item.id+':'+item.day,
+    entry_type:'period_density',
+    group_label:item.name+' · '+(totals.get(item.id)||0).toLocaleString()+' 篇',
+    category:item.name,
+    display_label:'',
+    title:item.day+' · '+item.name+' · '+item.count+' 篇',
+    start_date:item.day,end_date:nextRiverDay(item.day),
+    item_count:item.count,
+    density_ratio:item.count/Math.max(1,maxima.get(item.id)||1)
+  })).sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.group_label.localeCompare(b.group_label));
+}
 function formatCultureUi(template,values={}){
   return String(template||'').replace(/\{([a-zA-Z][\w]*)\}/gu,(match,key)=>
     Object.prototype.hasOwnProperty.call(values,key)?String(values[key]??''):match);
@@ -199,6 +235,7 @@ export default function Culture(){
   const [worksOpen,setWorksOpen]=useState(false);
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
+  const [secondRiverMode,setSecondRiverMode]=useState('period');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
@@ -240,6 +277,7 @@ export default function Culture(){
 
   useEffect(()=>{
     setStyleFilter('none');
+    setSecondRiverMode('period');
     setKeywordPeriodKey('current');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
@@ -365,7 +403,7 @@ export default function Culture(){
   });
   const keywordCatalogQuery=useQuery({
     queryKey:['culture-keyword-group-items',scopeId,styleQuery.data?.keywordMeta?.class_id||''],
-    enabled:styleFilter==='rune66'&&Boolean(keywordDrillSource&&keywordDrillGroup)
+    enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
       &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
     queryFn:async()=>{
       const {rows}=await selectRows(scopeData.keywords,{
@@ -628,6 +666,12 @@ export default function Culture(){
     sourceSnapshotQuery.data?.buckets||[]
   ).filter(item=>!keywordDrillSource||String(item.category||'')===keywordDrillSource),
   [sourceSnapshotQuery.data,keywordDrillSource]);
+  const secondRiverBuckets=useMemo(()=>
+    secondRiverMode==='period'
+      ?periodDensityRiverItems(classificationBuckets,primaryPeriods)
+      :classificationBuckets,
+    [secondRiverMode,classificationBuckets,primaryPeriods]
+  );
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
@@ -641,7 +685,7 @@ export default function Culture(){
   const [riverDensityAnalyzer,setRiverDensityAnalyzer]=useState(null);
   const needsRiverDensity=Boolean(
     isAggregateScope?locCombinedSourceRiverItems.length:
-      !isLrunesDaily&&!isLocItemView&&classificationBuckets.length
+      !isLrunesDaily&&!isLocItemView&&secondRiverBuckets.length
   );
   useEffect(()=>{
     if(!needsRiverDensity||riverDensityAnalyzer)return undefined;
@@ -654,9 +698,9 @@ export default function Culture(){
     return ()=>{active=false;};
   },[needsRiverDensity,riverDensityAnalyzer]);
   const riverAnalysis=useMemo(
-    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&classificationBuckets.length
-      ?riverDensityAnalyzer(classificationBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
-    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,classificationBuckets,existingAnchorDates]
+    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&secondRiverBuckets.length
+      ?riverDensityAnalyzer(secondRiverBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
+    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,secondRiverBuckets,existingAnchorDates]
   );
   const locRiverAnalysis=useMemo(
     ()=>riverDensityAnalyzer&&isAggregateScope&&locCombinedSourceRiverItems.length
@@ -690,8 +734,8 @@ export default function Culture(){
   // The work-classification river compares works with optional *candidate*
   // density dates; never render a second copy of official anchors.
   const classificationRiverItems=useMemo(
-    ()=>[...classificationBuckets,...virtualAnchorItems],
-    [classificationBuckets,virtualAnchorItems]
+    ()=>[...secondRiverBuckets,...virtualAnchorItems],
+    [secondRiverBuckets,virtualAnchorItems]
   );
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
@@ -1050,7 +1094,7 @@ export default function Culture(){
                       disabled={sourceSnapshotQuery.isPending||Boolean(sourceSnapshotQuery.error)}
                       onChange={event=>{
                         setKeywordDrillSource(event.target.value);
-                        setKeywordDrillGroup('');
+                        setSecondRiverMode('source');
                         setSelectedCategory('');
                       }}>
                       <option value=''>全部來源</option>
@@ -1061,8 +1105,8 @@ export default function Culture(){
                   </label>
                   <>
                     <label className='scope-culture-period-select'>
-                      <span>時間區間</span>
-                      <select className='scope-select' aria-label='時間區間'
+                      <span>時期</span>
+                      <select className='scope-select' aria-label='時期'
                         value={keywordPeriodKey} onChange={event=>{
                           const next=event.target.value;
                           if(next==='custom'){
@@ -1070,6 +1114,7 @@ export default function Culture(){
                             if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
                           }
                           setKeywordPeriodKey(next);
+                          setSecondRiverMode('period');
                         }}>
                         <option value='current'>目前檢視時期</option>
                         <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
@@ -1098,8 +1143,8 @@ export default function Culture(){
                     </select>
                   </label>:null}
                   {styleFilter==='rune66'&&Boolean(styleQuery.data?.keywordMeta?.classes)?<label className='scope-culture-period-select'>
-                    <span>關鍵詞群組</span>
-                    <select className='scope-select' aria-label='關鍵詞群組' value={keywordDrillGroup}
+                    <span>風格群組</span>
+                    <select className='scope-select' aria-label='風格群組' value={keywordDrillGroup}
                       onChange={event=>setKeywordDrillGroup(event.target.value)}>
                       <option value=''>全部群組</option>
                       {keywordGroupOptions.map(group=><option key={group.id} value={group.id}>
@@ -1110,10 +1155,10 @@ export default function Culture(){
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>{classificationPeriodLabel}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
+                <h3>第二條河道｜{secondRiverMode==='period'?'時期作品密度':'來源作品密度'}｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
+                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!secondRiverBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {!riverRangeLoading?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
@@ -1166,7 +1211,7 @@ export default function Culture(){
                   }}
                 />:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>關鍵詞組：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
+                  <p className='loc-eyebrow'>第三條河道｜風格：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <div className='scope-stat-controls'>
                     {keywordDrillSource?<button type='button' className='loc-button' onClick={()=>{
                       if(keywordDrillGroup)setKeywordDrillGroup('');
@@ -1180,7 +1225,7 @@ export default function Culture(){
                       {keywordDrillGroup?' → 項目密度':''}
                     </span>
                   </div>
-                  <h4>{keywordDrillLevel==='source'?'來源密度':keywordDrillLevel==='group'?'關鍵詞群組密度':'群組內項目密度'}</h4>
+                  <h4>{keywordDrillLevel==='group'?'風格群組密度':'風格群組內關鍵詞密度'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
