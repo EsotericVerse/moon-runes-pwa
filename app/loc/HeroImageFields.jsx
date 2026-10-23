@@ -40,10 +40,10 @@ export function HeroImageFieldset({draft,image,onChange,allowImageOnly=false}){
             {allowImageOnly?<option value="only">{t('uiExtra.frameEditor.posOnly')}</option>:null}
           </select>
         </label>
-        <label><span>{t('uiExtra.frameEditor.imageWidth')}</span>
+        {image?.position!=='only'?<label><span>{t('uiExtra.frameEditor.imageWidth')}</span>
           <input type="number" min="160" max="680" step="20" value={image?.width||420}
-            disabled={!image?.src||image?.position==='only'} onChange={event=>onChange({width:Number(event.target.value)},false)}/>
-        </label>
+            disabled={!image?.src} onChange={event=>onChange({width:Number(event.target.value)},false)}/>
+        </label>:null}
       </>:null}
       <button type="button" className="loc-button scope-danger-button" disabled={image?.source==='none'} onClick={()=>onChange({source:'none',url:''})}>{t('uiExtra.frameEditor.imageRemove')}</button>
     </div>
