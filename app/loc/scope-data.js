@@ -101,6 +101,15 @@ function normalizeRegistryRow(row){
 // One public site snapshot per client runtime (including concurrent mounts).
 // Registry, theme catalogue and page-copy are shared by all Scope pages.
 let publicSiteBootstrapRequest=null;
+// Only explicit admin metadata refreshes invalidate the public client snapshot.
+// Guest navigation shares the same promise and never preflights authorization.
+export function invalidatePublicScopeMetadata(){
+  managedScopesRequest=null;
+  publicSiteBootstrapRequest=null;
+  if(typeof window!=='undefined'){
+    window.dispatchEvent(new Event('loc-public-scope-metadata-changed'));
+  }
+}
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
   publicSiteBootstrapRequest=dbPublicClient.schema('silver')

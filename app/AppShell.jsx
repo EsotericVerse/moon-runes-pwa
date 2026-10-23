@@ -11,7 +11,7 @@ import fieldsZh from './i18n/sections/fields.zh_tw.js';
 import dataSourceStatusZh from './i18n/sections/uiExtra.dataSourceStatus.zh_tw.js';
 registerDefaultSection('fields',fieldsZh);
 registerDefaultSection('uiExtra.dataSourceStatus',dataSourceStatusZh);
-import {FEATURES,SCOPES,featureIdForPath,getScope,setScopeRegistryRouteRows} from './modular/scope-registry';
+import {FEATURES,SCOPES,featureIdForPath,getScope,replaceScopeRegistryRouteRows} from './modular/scope-registry';
 import {applyTheme,themeSignature,THEME_SLOTS} from './modular/theme-registry';
 import {mergeThemeSlot} from './loc/theme-data';
 import {useScopeRuntime} from './modular/use-scope-runtime';
@@ -280,7 +280,7 @@ function AppShellInner({children}){
     return()=>window.removeEventListener('loc-device-navigation-changed',sync);
   },[]);
   useEffect(()=>{
-    if(bootstrap.data?.registry)setScopeRegistryRouteRows(bootstrap.data.registry);
+    if(bootstrap.data?.registry)replaceScopeRegistryRouteRows(bootstrap.data.registry);
   },[bootstrap.data]);
   const currentScope=scope||getScope(scopeId);
   // The Scope's locale travels inside the same bootstrap request as its config;

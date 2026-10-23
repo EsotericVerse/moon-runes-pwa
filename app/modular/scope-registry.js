@@ -120,6 +120,10 @@ function cleanPath(pathname='/'){
 // second Domain or display_name configuration.
 let registryRouteRows=new Map();
 const LOC_FALLBACK_HOST='loc.lo3rwang.cc';
+export function replaceScopeRegistryRouteRows(rows=[]){
+  registryRouteRows.clear();
+  setScopeRegistryRouteRows(rows);
+}
 export function setScopeRegistryRouteRows(rows=[]){
   for(const row of Array.isArray(rows)?rows:[]){
     const id=normalizeScopeId(row?.scope_id);

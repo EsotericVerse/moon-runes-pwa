@@ -38,6 +38,16 @@ export function useScopeRuntime(){
   const [registryRow,setRegistryRow]=useState(cached||null);
   const [registryResolved,setRegistryResolved]=useState(!dynamic||(Boolean(scopeId)&&registryCache.has(scopeId)));
   const [registryError,setRegistryError]=useState('');
+  const [metadataRevision,setMetadataRevision]=useState(0);
+  useEffect(()=>{
+    const refresh=()=>{
+      registryCache.clear();
+      configCache.clear();
+      setMetadataRevision(current=>current+1);
+    };
+    window.addEventListener('loc-public-scope-metadata-changed',refresh);
+    return()=>window.removeEventListener('loc-public-scope-metadata-changed',refresh);
+  },[]);
 
   useEffect(()=>{
     let active=true;
@@ -67,7 +77,7 @@ export function useScopeRuntime(){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError(String(error?.message||error||'Scope Registry 讀取失敗'));
     });
     return()=>{active=false};
-  },[dynamic,scopeId,location.mounted]);
+  },[dynamic,scopeId,location.mounted,metadataRevision]);
 
   const activeRegistryRow=registryRow?.scope_id===scopeId?registryRow:null;
   const base=getScope(scopeId);
@@ -95,7 +105,7 @@ export function useScopeRuntime(){
       setConfigRow(null);
     });
     return()=>{active=false};
-  },[scopeId,configEnabled]);
+  },[scopeId,configEnabled,metadataRevision]);
 
   const activeConfigRow=configRow?.id===scopeId?configRow:null;
   const structural=activeRegistryRow?{

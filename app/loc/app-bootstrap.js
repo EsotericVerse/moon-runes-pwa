@@ -2,7 +2,7 @@
 
 import {useQuery} from '@tanstack/react-query';
 import {dbPublicClient} from './db-client.mjs';
-import {selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
+import {invalidatePublicScopeMetadata,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
 
 // Shared public site snapshot (Registry/Theme/page copy) is fetched once per
@@ -15,6 +15,11 @@ let bootstrapRpcInstalled=true;
 // invalidations (e.g. a successful editor save), refresh only loc_blocks
 // instead of repeating the public Registry/Theme/loc bootstrap.
 let locHomeSnapshotDelivered=false;
+// The public snapshot is long-lived until an explicit Admin Registry refresh.
+export function invalidateAppBootstrapMetadata(){
+  locHomeSnapshotDelivered=false;
+  invalidatePublicScopeMetadata();
+}
 const missingRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
 
 export function appBootstrapKey(scopeId,pageName='index'){
