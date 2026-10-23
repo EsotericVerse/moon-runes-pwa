@@ -83,7 +83,8 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   </article>):null;
   return <>
     {header}
-    {imageOnly?<div className="loc-home-block__body loc-home-block__body--image">
+    {imageOnly?<div className="loc-home-block__body loc-home-block__body--image"
+      style={{'--loc-home-media-max':image.width+'px'}}>
       <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
     </div>:body}
     {children.length?<div className="loc-home-block__children">
