@@ -84,11 +84,12 @@ function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+' 群組';
 }
-// Reuse classified articles and their existing group_lists; only display
-// keyword group density, filtering to a chosen group when selected.
-function keywordDrillRiverItems(rows,{source='',groupId='',meta={}}={}){
+// Render Class density first. After selecting a Class, show the distribution
+// of its Group items from saved group_lists, never the underlying keywords.
+function keywordDrillRiverItems(rows,{source='',groupId='',meta={},groupItems=[]}={}){
   const classes=meta?.classes||{};
   const className=String(meta?.class_name||'').trim();
+  const knownGroups=new Map(groupItems.map(item=>[String(Number(item.item_no)),item]));
   const buckets=new Map(),maximum=new Map();
   const add=(key,label,day,count,order=0)=>{
     if(!key||!label||!count)return;
@@ -104,19 +105,27 @@ function keywordDrillRiverItems(rows,{source='',groupId='',meta={}}={}){
     const rowSource=String(row.source_name||'').trim()||'未分類';
     if(source&&rowSource!==source)continue;
     const rowGroup=String(row.class_id||'').trim();
-    if(groupId&&rowGroup!==String(groupId))continue;
-    const label=String(classes[rowGroup]||'').trim();
-    if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
+    if(groupId){
+      if(rowGroup!==String(groupId))continue;
+      for(const [id,rawCount] of Object.entries(hits)){
+        const group=knownGroups.get(id);
+        const count=Number(rawCount)||0;
+        if(group&&count>0)add(id,String(group.item_name||id),day,count,Number(group.order_no)||Number(id));
+      }
+    }else{
+      const label=String(classes[rowGroup]||'').trim();
+      if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
+    }
   }
   return [...buckets.values()].map(({key,label,day,count,order})=>({
-    id:'keyword-density:group:'+key+':'+day,
-    entry_id:'keyword-density:group:'+key+':'+day,
+    id:'keyword-density:'+(groupId?'item':'class')+':'+key+':'+day,
+    entry_id:'keyword-density:'+(groupId?'item':'class')+':'+key+':'+day,
     entry_type:'keyword_density',
     drill_key:key,
     group_label:label,
     category:label,
     display_label:'',
-    title:day+' · '+label+' · '+count.toLocaleString()+' 篇',
+    title:day+' · '+label+' · '+count.toLocaleString()+(groupId?' 次':' 篇'),
     start_date:day,end_date:nextRiverDay(day),
     item_count:count,group_order:order,
     density_ratio:count/Math.max(1,maximum.get(key)||1)
@@ -358,14 +367,45 @@ export default function Culture(){
   // Second-river source choices come from the exact Scope source snapshot.
   // These must be available before choosing a keyword style.
   const keywordSourceOptions=useMemo(()=>sourceSnapshotQuery.data?.groups||[],[sourceSnapshotQuery.data]);
+  // Keep raw source values intact for river filtering; simply separate text
+  // platforms from media and sort each group instead of ranking by volume.
+  const sourceOptionGroups=useMemo(()=>[
+    {label:'文字來源',items:keywordSourceOptions.filter(item=>item.category_type!=='media')},
+    {label:'多媒體類型',items:keywordSourceOptions.filter(item=>item.category_type==='media')}
+  ].map(group=>({...group,items:[...group.items].sort((a,b)=>String(a.display_label||'').localeCompare(String(b.display_label||''),locale))}))
+    .filter(group=>group.items.length>0),[keywordSourceOptions,locale]);
   const keywordGroupOptions=useMemo(()=>Object.entries(styleQuery.data?.keywordMeta?.classes||{})
     .map(([id,name])=>({id,label:String(name||'').trim()}))
     .filter(item=>item.label).sort((a,b)=>Number(a.id)-Number(b.id)),
   [styleQuery.data?.keywordMeta?.classes]);
-  const keywordDrillItems=useMemo(()=>keywordDrillRiverItems(keywordDensityQuery.data,{
-    source:keywordDrillSource,groupId:keywordDrillGroup,
-    meta:styleQuery.data?.keywordMeta
-  }),[keywordDensityQuery.data,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta]);
+  // Fetch Group names/membership only after the user opens a specific Class.
+  // The initial Class-density river never downloads the Group catalog.
+  const keywordGroupCatalogQuery=useQuery({
+    queryKey:['culture-keyword-group-catalog',scopeId,styleQuery.data?.keywordMeta?.class_id||'',keywordDrillGroup],
+    enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
+      &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
+    queryFn:async()=>{
+      const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
+      if(!groupName)return [];
+      const {rows}=await selectRows(scopeData.keywords,{
+        columns:'item_no,item_name,order_no,class_group',
+        filters:[
+          {column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)},
+          {column:'class_group',operator:'eq',value:groupName}
+        ],
+        orders:[{column:'order_no',ascending:true}],
+        limit:1000
+      });
+      return rows;
+    },
+    staleTime:5*60_000
+  });
+  const keywordDrillItems=useMemo(()=>
+    keywordDrillGroup&&!keywordGroupCatalogQuery.data?[]
+      :keywordDrillRiverItems(keywordDensityQuery.data,{
+        source:keywordDrillSource,groupId:keywordDrillGroup,
+        meta:styleQuery.data?.keywordMeta,groupItems:keywordGroupCatalogQuery.data||[]
+      }),[keywordDensityQuery.data,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===(
@@ -982,9 +1022,11 @@ export default function Culture(){
                         setSelectedCategory('');
                       }}>
                       <option value=''>全部來源</option>
-                      {keywordSourceOptions.map(source=><option key={source.category_key} value={source.source_name}>
-                        {source.display_label}
-                      </option>)}
+                      {sourceOptionGroups.map(group=><optgroup key={group.label} label={group.label}>
+                        {group.items.map(source=><option key={source.category_key} value={source.source_name}>
+                          {source.display_label}
+                        </option>)}
+                      </optgroup>)}
                     </select>
                   </label>
                   {!isAggregateScope&&!isLrunesDaily&&!isLocItemView?<label className='scope-culture-period-select'>
@@ -1052,19 +1094,15 @@ export default function Culture(){
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>第三條河道｜風格：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <div className='scope-stat-controls'>
-                    {keywordDrillSource?<button type='button' className='loc-button' onClick={()=>{
-                      if(keywordDrillGroup)setKeywordDrillGroup('');
-                      else setKeywordDrillSource('');
-                    }}>← 返回{keywordDrillGroup?'群組':'來源'}</button>:null}
+                    {keywordDrillGroup?<button type='button' className='loc-button' onClick={()=>setKeywordDrillGroup('')}>← 返回群組總覽</button>
+                      :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}
                     <span className='scope-status' aria-live='polite'>
-                      {classificationPeriodLabel} → {keywordDrillSource||'選擇來源'}
-                      {keywordDrillSource?' → '+(keywordDrillGroup
-                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')
-                        :'選擇關鍵詞群組'):''}
-
+                      {classificationPeriodLabel} → {keywordDrillSource||'全部來源'} → {keywordDrillGroup
+                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')+' · Group 分布'
+                        :'全部群組'}
                     </span>
                   </div>
-                  <h4>風格群組密度</h4>
+                  <h4>{keywordDrillGroup?'Group 分布｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'風格群組密度'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
                     <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
@@ -1086,8 +1124,11 @@ export default function Culture(){
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
                   {keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
                     ?<p className='scope-status' role='status'>正在讀取已儲存的文章屬性…</p>:null}
-                  {keywordDensityQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error,UI_COPY)}</p>:null}
-                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&keywordDrillItems.length?<CultureTimeline
+                  {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
+                  {keywordDensityQuery.error||keywordGroupCatalogQuery.error
+                    ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
+                  {!keywordDensityQuery.isPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
+                    &&!keywordDensityQuery.error&&!keywordGroupCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
                     key={keywordDrillSource+'|'+keywordDrillGroup}
                     items={keywordDrillItems}
                     labelOf={emptyRiverLabel}
@@ -1098,10 +1139,11 @@ export default function Culture(){
                     onSelect={item=>{
                       const key=String(item?.raw?.drill_key||'').trim();
                       if(!key)return;
-                      setKeywordDrillGroup(key);
+                      if(!keywordDrillGroup)setKeywordDrillGroup(key);
                     }}
                   />:null}
-                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&!keywordDrillItems.length
+                  {!keywordDensityQuery.isPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
+                    &&!keywordDensityQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
