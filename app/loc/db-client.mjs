@@ -59,6 +59,8 @@ const client=createDatabaseClient(routedAdapter);
 
 export const dbBackupPublicClient=adapter.backupPublicClient||null;
 export const dbConfiguredPublicClient=adapter.configuredPublicClient||null;
+// Passive Auth events use the configured SDK, not the routed query client.
+export const dbAuthEvents=adapter.auth;
 export const dbPrimarySourceLabel=adapter.primarySourceLabel||'Primary';
 export const dbBackupSourceLabel=adapter.backupSourceLabel||'Backup';
 export const {publicClient:dbPublicClient,authClient:dbAuthClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount}=client;

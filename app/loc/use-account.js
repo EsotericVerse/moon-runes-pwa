@@ -3,7 +3,7 @@
 import {useCallback,useEffect} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {z} from 'zod';
-import {getAccountSession,dbAuthClient,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthEvents,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
@@ -172,7 +172,7 @@ export function usePassiveSessionAccount(){
   const account=useAccount({enabled:false,sessionOnly:true});
   const queryClient=useQueryClient();
   useEffect(()=>{
-    const listener=dbAuthClient.auth.onAuthStateChange((event,session)=>{
+    const listener=dbAuthEvents.onAuthStateChange((event,session)=>{
       const previous=queryClient.getQueryData(SESSION_KEY);
       const user=session?.user||null;
       queryClient.setQueryData(SESSION_KEY,user
