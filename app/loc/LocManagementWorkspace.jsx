@@ -1,0 +1,47 @@
+'use client';
+
+import {useEffect} from 'react';
+import {useSearchParams} from 'next/navigation';
+import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
+import ScopeLink from '../modular/ScopeLink';
+import {FeaturePage} from '../modular/ui';
+import ManagementSectionNav from '../modular/ManagementSectionNav';
+
+// Shared workspace layout and access boundary; each management capability
+// still owns its own route, data, editor, and lifecycle.
+export default function LocManagementWorkspace({featureId,navId,item,children}){
+  const account=useAccount();
+  const editDock=useEditDock();
+  const searchParams=useSearchParams();
+  const editRequested=searchParams?.get('edit')==='1';
+  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
+
+  useEffect(()=>{
+    if(editRequested&&canManage)editDock?.begin('loc');
+  },[editRequested,canManage,editDock?.begin]);
+
+  if(account.loading||account.permissionLoading)return <FeaturePage featureId={featureId}>
+    <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
+  </FeaturePage>;
+  if(!account.user)return <FeaturePage featureId={featureId}>
+    <section className="loc-card scope-feature-card">
+      <ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink>
+    </section>
+  </FeaturePage>;
+  if(!canManage)return <FeaturePage featureId={featureId}>
+    <section className="loc-card scope-feature-card"><p>目前帳號沒有 LOC 管理權限。</p></section>
+  </FeaturePage>;
+
+  const panelId=navId+'-panel';
+  return <FeaturePage featureId={featureId}>
+    <div className="management-workspace">
+      <ManagementSectionNav id={navId} title="管理項目" panelId={panelId}
+        items={[item]} value={item.value} onChange={()=>{}}/>
+      <div className="management-workspace-panel" id={panelId} role="region"
+        aria-labelledby={navId+'-option-'+item.value}>
+        {children}
+      </div>
+    </div>
+  </FeaturePage>;
+}
