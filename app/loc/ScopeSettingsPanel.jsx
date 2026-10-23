@@ -2,12 +2,13 @@
 import {useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {THEME_SLOTS} from '../modular/theme-registry';
 import {selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
 import scopeSettingsZh from '../i18n/sections/uiExtra.scopeSettings.zh_tw.js';
 registerDefaultSection('uiExtra.scopeSettings',scopeSettingsZh);
 
@@ -17,6 +18,9 @@ export default function ScopeSettingsPanel({scopeId}){
   useUiSection('uiExtra.scopeSettings');
   const uiT=useUiText();
   const account=useAccount();
+  const editDock=useEditDock();
+  const dockActions=useRef(null);
+  const [savedTheme,setSavedTheme]=useState('system-default');
   const [draft,setDraft]=useState(EMPTY);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
@@ -27,19 +31,30 @@ export default function ScopeSettingsPanel({scopeId}){
     setLoading(true);setMessage('');
     selectScopeConfig(scopeId).then(row=>{
       if(!active)return;
-      setDraft({theme:row?.theme||'system-default'});
+      const theme=row?.theme||'system-default';
+      setSavedTheme(theme);
+      setDraft({theme});
     }).catch(error=>{
       if(active)setMessage(error?.message||uiT('uiExtra.scopeSettings.loadFailed'));
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false};
   },[scopeId]);
 
+  useEffect(()=>{
+    if(!editDock?.active||editDock.scopeId!==scopeId||!account.canManageScopeSync(scopeId))return undefined;
+    return editDock.register({
+      save:()=>dockActions.current.save(),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
+    });
+  },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId,account.role]);
   if(!account.canManageScopeSync(scopeId))return null;
   const table=account.scopeDataFor(scopeId)?.config;
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
 
   async function save(event){
-    event.preventDefault();
+    event?.preventDefault?.();
+    if(busy||loading)return false;
     setBusy(true);setMessage('');
     try{
       if(!table)throw new Error(uiT('uiExtra.scopeSettings.unavailable'));
@@ -47,14 +62,18 @@ export default function ScopeSettingsPanel({scopeId}){
         theme:String(draft.theme||'system-default'),
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
+      setSavedTheme(String(draft.theme||'system-default'));
       setMessage(uiT('uiExtra.scopeSettings.saved'));
+      return true;
     }catch(error){
       setMessage(error?.message||uiT('uiExtra.scopeSettings.saveFailed'));
+      return false;
     }finally{
       setBusy(false);
     }
   }
 
+  dockActions.current={save:()=>save(),isDirty:()=>draft.theme!==savedTheme,isBusy:()=>busy||loading};
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow"><UiText id="uiExtra.scopeSettings.personalTitle"/></p>
     <h2><UiText id="uiExtra.scopeSettings.miscellaneous"/></h2>
