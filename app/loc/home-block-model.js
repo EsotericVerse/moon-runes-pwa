@@ -109,7 +109,8 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
 // row's text in place from the admin 功能區塊設定 panel; every Scope reads
 // it read-only. The matching scope_<feature> row (see FeatureHeroImages.jsx)
 // only ever carries that Scope-view's image override, never text.
-// LunaRunes deliberately remains on its current read-only localized header.
+// LunaRunes uses the same database-backed read-only feature headers as every
+// other public Scope; only LOC admins edit the shared group_<feature> copy.
 // admin / manage / setting (the /admin, each Scope's own /governance/manage,
 // and the local Scope's /local/setting pages) join this same hero template,
 // but each is its own independent featureId -- they never share text or an
@@ -152,13 +153,10 @@ export function sharedFeatureHeroFor(rows){
 }
 
 export function shouldUseSharedFeatureHero(scopeId,featureId){
-  // Explicitly keep the rune pages, their presentation and content untouched.
-  // scopeId==='admin' is NOT excluded here: featureId==='admin' (the /admin
-  // page itself) only ever renders with scopeId==='admin' -- no other
-  // featureId is ever paired with that scopeId -- so excluding it would
-  // permanently block admin's own group_admin hero text from ever being read.
-  return Boolean(FEATURE_HERO_ORDER[String(featureId||'')])&&
-    Boolean(scopeId)&&scopeId!=='lrunes';
+  // The four public feature heroes share the LOC-managed group_<feature>
+  // text for every Scope, including lrunes. The existing FeaturePage selects
+  // each scope view's independent scope_<feature> image from the database.
+  return Boolean(FEATURE_HERO_ORDER[String(featureId||'')])&&Boolean(scopeId);
 }
 
 // Three fixed personal signs; no public editor, image field, or DB setting can select them.
