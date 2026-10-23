@@ -1,6 +1,9 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
+import {useEditDock} from '../modular/edit-dock';
+import {navigationHref} from '../modular/scope-registry';
+import useNativeNavigation from '../modular/use-native-navigation';
 import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
 import Select from 'react-select';
@@ -62,6 +65,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
   const account=useAccount();
+  const editDock=useEditDock();
+  const native=useNativeNavigation();
+  const dockActions=useRef({save:null});
   const queryClient=useQueryClient();
   const scopeData=account.scopeDataFor(scopeId);
   const TABLE=scopeData?.keywords||'';
@@ -266,17 +272,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   }
 
   async function save(){
-    if(!draft)return;
+    if(!draft){setMessage('請先選擇要編輯的關鍵詞。');return false;}
     const classId=String(draft.class_id||'').trim();
     const className=String(draft.class_name||'').trim();
     const classGroup=String(draft.class_group||'').trim();
     const itemName=String(draft.item_name||'').trim();
     const itemNo=Number(draft.item_no);
-    if(!classId){setMessage(l.uuidRequired);return;}
-    if(!className){setMessage(l.classRequired);return;}
-    if(!classGroup){setMessage(l.groupRequired);return;}
-    if(!itemName){setMessage(l.itemNameRequired);return;}
-    if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return;}
+    if(!classId){setMessage(l.uuidRequired);return false;}
+    if(!className){setMessage(l.classRequired);return false;}
+    if(!classGroup){setMessage(l.groupRequired);return false;}
+    if(!itemName){setMessage(l.itemNameRequired);return false;}
+    if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return false;}
 
     const payload={
       keyword_id:draft.keyword_id,
@@ -314,8 +320,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       }else{
         setMessage(l.savedReloadFailed+classificationWarning);
       }
+      return true;
     }catch(error){
-      setMessage(l.writeError+String(error?.message||error));
+      const detail=l.writeError+String(error?.message||error);
+      setMessage(detail);
+      if(editDock?.active)editDock.setNotice(detail);
+      return false;
     }finally{
       setSavingStage('');
       setBusy(false);
@@ -326,17 +336,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     const chars=Number(minChars);
     const documents=Number(minDocuments);
     if(!Number.isInteger(chars)||chars<0||chars>10000){
-      setMessage(l.minimumCharsInvalid);return;
+      setMessage(l.minimumCharsInvalid);return false;
     }
     if(!Number.isInteger(documents)||documents<0||documents>1000000){
-      setMessage(l.minimumDocumentsInvalid);return;
+      setMessage(l.minimumDocumentsInvalid);return false;
     }
     if(!classes.some(item=>item.class_id===currentClassId)){
-      setMessage(l.activeClassRequired);return;
+      setMessage(l.activeClassRequired);return false;
     }
     const defaultItemNo=Number(defaultGroupItemNo);
     if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
-      setMessage(l.defaultGroupInvalid);return;
+      setMessage(l.defaultGroupInvalid);return false;
     }
     const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
     const classificationChanged=chars!==Number(configSnapshot?.minChars)||currentClassId!==String(configSnapshot?.currentClassId||'')||defaultGroupChanged;
@@ -365,8 +375,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       if(classificationChanged)await invalidateClassification();
       await load('',selectedClass);
       setMessage(classificationChanged?l.settingsChanged:l.settingsSaved);
+      return true;
     }catch(error){
-      setMessage(String(error?.message||error||l.settingsSaveError));
+      const detail=String(error?.message||error||l.settingsSaveError);
+      setMessage(detail);
+      if(editDock?.active)editDock.setNotice(detail);
+      return false;
     }finally{
       setBusy(false);
     }
@@ -532,6 +546,19 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     }
   }
 
+  dockActions.current={
+    save:async()=>{
+      if(busy||loading)return false;
+      const success=await (workspace==='analysis'?saveAnalysisSettings():save());
+      if(success)editDock?.complete(navigationHref(scopeId,'statics',native));
+      return success;
+    }
+  };
+  useEffect(()=>{
+    if(!editDock?.active||editDock.scopeId!==scopeId||!canEdit)return undefined;
+    return editDock.register({save:()=>dockActions.current.save()});
+  },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId,canEdit]);
+
   if(!canEdit)return null;
 
   return <section className="loc-card scope-feature-card scope-management-workspace">
@@ -586,7 +613,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
-        <button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>
+        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>:null}
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
         <button type="button" className="loc-button" disabled={busy||configDirty||!currentClassId} onClick={resetBatch}>{l.resetClassification}</button>
       </div>
@@ -696,7 +723,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
               onPlainTextChange={value=>setDraft(current=>({...current,keywords_text:value}))}/>
           </div>
           <div className="scope-preview-links">
-            <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?l.saving:l.save}</button>
+            {!editDock?.active?<button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?l.saving:l.save}</button>:null}
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>{l.deleteItem}</button>:null}
           </div>
         </>}

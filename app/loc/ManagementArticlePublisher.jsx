@@ -17,7 +17,8 @@ registerDefaultSection('uiExtra.sharing',sharingZh);
 // by ManagementImportPanel's own media handling -- one shared i18n section,
 // not a duplicate copy, reused by both.
 registerDefaultSection('uiExtra.importUI',importUIZh);
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {useEditDock} from '../modular/edit-dock';
 import {insertRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
@@ -126,9 +127,22 @@ export default function ManagementArticlePublisher({scopeId,mode='article'}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();
+  const editDock=useEditDock();
+  const dockActions=useRef({save:null,discard:null});
+  const activateDock=useRef(()=>{});
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId&&mode==='article');
   const [draft,setDraft]=useState(blank());
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
+  useEffect(()=>{
+    if(!inDock)return undefined;
+    const unregister=editDock.register({
+      save:()=>dockActions.current.save(),
+      discard:()=>dockActions.current.discard()
+    });
+    activateDock.current=unregister.activate;
+    return unregister;
+  },[inDock,editDock?.register]);
 
   if(!scopeId||!account.canManageScopeSync(scopeId))return null;
   if(mode==='media')return <MediaRecordInsert scopeId={scopeId}/>;
@@ -136,6 +150,7 @@ export default function ManagementArticlePublisher({scopeId,mode='article'}){
 
   async function save(event){
     event?.preventDefault?.();
+    if(busy)return false;
     setBusy(true);setStatus('');
     try{
       const content=await requireGalaxyContent(draft.bodyHtml||blocksToPlainText(draft.bodyBlocks));
@@ -160,14 +175,24 @@ export default function ManagementArticlePublisher({scopeId,mode='article'}){
 
       setDraft(blank());
       setStatus(UI_COPY.management.articlePublished);
+      return true;
     }catch(error){
-      setStatus(error?.message||UI_COPY.management.articlePublishFailed);
+      const message=error?.message||UI_COPY.management.articlePublishFailed;
+      setStatus(message);
+      if(inDock)editDock.setNotice(message);
+      return false;
     }finally{
       setBusy(false);
     }
   }
+  dockActions.current={
+    save:()=>save(),
+    discard:()=>{setDraft(blank());setStatus('')}
+  };
 
-  return <section className="loc-card scope-feature-card">
+  return <section className="loc-card scope-feature-card"
+    onFocusCapture={()=>activateDock.current?.()}
+    onPointerDownCapture={()=>activateDock.current?.()}>
     <p className="loc-eyebrow">Publish</p>
     <h2>{UI_COPY.management.article}</h2>
     <form className="scope-publisher" onSubmit={save}>
@@ -198,7 +223,7 @@ export default function ManagementArticlePublisher({scopeId,mode='article'}){
             <input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>
             <UiText id="uiExtra.publisher.excludeSearch"/>
           </label>
-          <button className="loc-button primary" type="submit" disabled={busy}><UiText id={busy?'uiExtra.publisher.publishing':'uiExtra.publisher.publishArticle'}/></button>
+          {!inDock?<button className="loc-button primary" type="submit" disabled={busy}><UiText id={busy?'uiExtra.publisher.publishing':'uiExtra.publisher.publishArticle'}/></button>:null}
         </section>
 
         <section className="scope-publisher-panel">

@@ -47,7 +47,7 @@ function DeferredArticleBody({html}){
 }
 
 // Shared article(uid) list module for Search and Culture.
-export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId='',editOnCardClick=true,managerMode=false}){
+export default function Article({uid,title,source='',scopeId='',date='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId='',editOnCardClick=true,managerMode=false,showInlineEditorActions=true}){
   useUiSection('uiExtra.searchUI');
   useUiSection('uiExtra.editBlocks');
   const t=useUiText();
@@ -56,7 +56,7 @@ export default function Article({uid,title,source='',scopeId='',date='',body='',
     if(!isInteractiveContentTarget(event.target))onEdit(uid);
   }:undefined;
   const editingReady=editing&&Boolean(editorDraft);
-  const editorActions=editingReady?<ObjectEditor mode="actions" actionClassName="scope-article-editor-actions"
+  const editorActions=editingReady&&showInlineEditorActions?<ObjectEditor mode="actions" actionClassName="scope-article-editor-actions"
     actions={[
       {key:'save',primary:true,disabled:editBusy,onClick:onSave,label:editBusy?UI_COPY.common.saving:UI_COPY.common.save},
       ...(editable&&onDelete?[{key:'delete',danger:true,disabled:editBusy,onClick:onDelete,label:<UiText id="uiExtra.editBlocks.remove"/>}]:[]),

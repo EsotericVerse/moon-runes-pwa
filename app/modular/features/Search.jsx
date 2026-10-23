@@ -27,6 +27,7 @@ import ScopeLink from '../ScopeLink';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
+import {useEditDock} from '../edit-dock';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -230,6 +231,7 @@ export default function Search({managementMode=false}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();
+  const editDock=useEditDock();
   const account=useAccount({enabled:managementMode});
   const managementAuthorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
@@ -255,6 +257,8 @@ export default function Search({managementMode=false}){
   const [nextCursor,setNextCursor]=useState(null);
   const [loadingMore,setLoadingMore]=useState(false);
   const [editingKey,setEditingKey]=useState('');
+  const editTargetRef=useRef(null);
+  const dockActions=useRef({save:null,discard:null});
   const [editDraft,setEditDraft]=useState(null);
   const [editBusy,setEditBusy]=useState(false);
   const [editError,setEditError]=useState('');
@@ -630,14 +634,16 @@ export default function Search({managementMode=false}){
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       const {SearchEditDraft}=await import('./search-edit-draft');
+      editTargetRef.current=result;
       setEditDraft(SearchEditDraft.fromRow(result.resourceType,fullRow,result.title));
+      if(managementMode)editDock?.begin(scopeId);
     }catch(exception){
       setEditingKey('');
       setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
     }
   }
   async function saveEditing(result){
-    if(!editDraft||!result.editableTable||!result.editableField)return;
+    if(!editDraft||!result?.editableTable||!result.editableField||editBusy)return;
     setEditBusy(true);setEditError('');
     try{
       const isGalaxy=result.resourceType==='galaxy';
@@ -659,7 +665,9 @@ export default function Search({managementMode=false}){
         const {rune_references,...plainAttrs}=attrs;
         assertPlainGalaxyAttributes({...plainAttrs,...(titleChanged?{title:nextTitle}:{})});
         contentPatch={...(titleChanged?{title:nextTitle}:{}),...attrs};
-        if(!Object.keys(contentPatch).length){setEditingKey('');setEditDraft(null);return;}
+        if(!Object.keys(contentPatch).length){
+          setEditingKey('');setEditDraft(null);editDock?.end();return;
+        }
       }
       await updateRows(result.editableTable,contentPatch,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId||result.resourceId}]});
       setResults(current=>current.map(item=>{
@@ -674,7 +682,13 @@ export default function Search({managementMode=false}){
         setFullTextRow(current=>({...current,...contentPatch,uid:current?.uid||result.editResourceId||result.resourceId}));
       }
       setEditingKey('');setEditDraft(null);setStatus('');
-    }catch(exception){setEditError(String(exception?.message||exception||UI_COPY.search.saveFailed))}
+      // Article save stays on the management-search workspace.
+      if(managementMode)editDock?.end();
+    }catch(exception){
+      const message=String(exception?.message||exception||UI_COPY.search.saveFailed);
+      setEditError(message);
+      if(editDock?.active)editDock.setNotice(message);
+    }
     finally{setEditBusy(false)}
   }
   async function deleteEditing(result){
@@ -757,6 +771,18 @@ export default function Search({managementMode=false}){
     if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
     await executeSearch(term);
   }
+
+  dockActions.current={
+    save:()=>saveEditing(editTargetRef.current),
+    discard:()=>{setEditingKey('');setEditDraft(null);setEditError('')}
+  };
+  useEffect(()=>{
+    if(!managementMode||!editingKey||!editDraft||!editDock?.active)return undefined;
+    return editDock.register({
+      save:()=>dockActions.current.save(),
+      discard:()=>dockActions.current.discard()
+    });
+  },[managementMode,editingKey,Boolean(editDraft),editDock?.active,editDock?.register]);
 
   if(managementMode&&!managementAuthorized)return <FeaturePage featureId="search">
     <section className="loc-card scope-feature-card">
@@ -915,6 +941,7 @@ export default function Search({managementMode=false}){
           onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
           editBusy={editBusy}
           editError={editError}
+          showInlineEditorActions={!editDock?.active}
           showHidden={managementMode}
           attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
           mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}

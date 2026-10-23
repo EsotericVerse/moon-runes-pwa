@@ -1,6 +1,7 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {useEditDock} from '../modular/edit-dock';
 import {useUiCopy,useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
@@ -22,9 +23,22 @@ export default function SunoImportPanel({scopeId}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   const account=useAccount();
+  const editDock=useEditDock();
+  const activateDock=useRef(()=>{});
+  const dockActions=useRef({save:null,discard:null});
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
   const freshSunoDraft=()=>({title:'',lyrics:'',lyricsBlocks:plainTextToBlocks(''),stylePrompt:'',stylePromptBlocks:plainTextToBlocks(''),stylePromptPlain:'',editorKey:createUid8(),url:'',createdDate:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
   const [draft,setDraft]=useState(freshSunoDraft);
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
+  useEffect(()=>{
+    if(!inDock)return undefined;
+    const unregister=editDock.register({
+      save:()=>dockActions.current.save(),
+      discard:()=>dockActions.current.discard()
+    });
+    activateDock.current=unregister.activate;
+    return unregister;
+  },[inDock,editDock?.register]);
   if(!account.canManageScopeSync(scopeId))return null;
   const change=(key,value)=>setDraft(current=>({
     ...current,[key]:value,
@@ -35,7 +49,9 @@ export default function SunoImportPanel({scopeId}){
     setDraft(current=>({...current,metaTags:refreshSunoStyleMetaTags(current.stylePromptPlain,current.metaTags),metaTagsEdited:false}));
   }
   async function save(event){
-    event.preventDefault();setBusy(true);setStatus('');
+    event?.preventDefault?.();
+    if(busy)return false;
+    setBusy(true);setStatus('');
     try{
       const title=repairMojibakeText(draft.title).trim();
       const lyrics=normalizeGalaxyContent(draft.lyrics||blocksToPlainText(draft.lyricsBlocks));
@@ -73,10 +89,22 @@ export default function SunoImportPanel({scopeId}){
         meta_tags:metaTags||null,createtime
       }]);
       setStatus(t('uiExtra.importUI.sunoSaved'));setDraft(freshSunoDraft());
-    }catch(error){setStatus(error?.message||t('uiExtra.importUI.sunoSaveFailed'));}
+      return true;
+    }catch(error){
+      const message=error?.message||t('uiExtra.importUI.sunoSaveFailed');
+      setStatus(message);
+      if(inDock)editDock.setNotice(message);
+      return false;
+    }
     finally{setBusy(false);}
   }
-  return <div className="scope-inline-card">
+  dockActions.current={
+    save:()=>save(),
+    discard:()=>{setDraft(freshSunoDraft());setStatus('')}
+  };
+  return <div className="scope-inline-card"
+    onFocusCapture={()=>activateDock.current?.()}
+    onPointerDownCapture={()=>activateDock.current?.()}>
     <h4><UiText id="uiExtra.importUI.sunoImport"/></h4>
     <form onSubmit={save} className="scope-editor">
       <label>{UI_COPY.management.songTitle}<input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
@@ -110,7 +138,7 @@ export default function SunoImportPanel({scopeId}){
         <label>target_id<input value={draft.target_id} onChange={e=>change('target_id',e.target.value)}/></label>
         <label>ref_id<input value={draft.ref_id} onChange={e=>change('ref_id',e.target.value)}/></label>
       </div>
-      <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addSuno}</button>
+      {!inDock?<button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addSuno}</button>:null}
       {status?<p className="scope-status">{status}</p>:null}
     </form>
   </div>;

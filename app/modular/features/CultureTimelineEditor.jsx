@@ -11,6 +11,9 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAccount} from '../../loc/use-account';
+import {useEditDock} from '../edit-dock';
+import {navigationHref} from '../scope-registry';
+import useNativeNavigation from '../use-native-navigation';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import BlockNoteEditor from '../../loc/BlockNoteEditor';
@@ -58,6 +61,9 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   const copy=useUiCopy();
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
   const account=useAccount();
+  const editDock=useEditDock();
+  const native=useNativeNavigation();
+  const dockActions=useRef({save:null});
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
   const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||routeSuggestedAnchorDate||'').slice(0,10);
@@ -168,6 +174,10 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     if(formOpen&&dialog&&!dialog.open)dialog.showModal();
     return()=>{if(dialog?.open)dialog.close();};
   },[formOpen]);
+  useEffect(()=>{
+    if(!formOpen||!editDock?.active||editDock.scopeId!==scopeId)return undefined;
+    return editDock.register({save:()=>dockActions.current.save()});
+  },[formOpen,editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
 
   if(!editable||account.loading||account.permissionLoading||!account.canManageScopeSync(dataScope))return null;
 
@@ -294,7 +304,15 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
       setMessage('');
       setFormOpen(false);
       onClose?.();
-    }catch(error){setMessage(error?.message||l.saveError);}
+      if(editDock?.active&&editDock.scopeId===scopeId)
+        editDock.complete(navigationHref(scopeId,'culture',native));
+      return true;
+    }catch(error){
+      const detail=error?.message||l.saveError;
+      setMessage(detail);
+      if(editDock?.active)editDock.setNotice(detail);
+      return false;
+    }
     finally{setBusy(false);}
   };
 
@@ -317,6 +335,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     finally{setBusy(false);}
   };
 
+  dockActions.current={save:()=>save({preventDefault(){}})};
   if(!formOpen)return null;
 
   return <dialog ref={dialogRef} aria-label={l.editorTitle} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
