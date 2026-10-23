@@ -1,0 +1,115 @@
+'use client';
+import UiText,{useUiText} from '../i18n/UiText';
+import {UI_COPY,registerDefaultSection} from '../i18n/ui-copy';
+import {useUiCopy,useUiSection} from '../i18n/ui-locale';
+import managementZh from '../i18n/sections/management.zh_tw.js';
+import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
+registerDefaultSection('management',managementZh);
+registerDefaultSection('uiExtra.importUI',importUIZh);
+import {useEffect,useRef,useState} from 'react';
+import {useEditDock} from '../modular/edit-dock';
+import {insertRows} from './db-client.mjs';
+import {useAccount} from './use-account';
+import {hasIrrecoverableEncoding,repairMojibakeText} from './content-policy';
+
+const blankMedia=()=>({
+  galaxy_link:'',source_place:'',media_type:'',title:'',
+  url:'',meta_tags:'',createtime:''
+});
+
+function mediaIso(value){
+  if(!value)return null;
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?null:date.toISOString();
+}
+
+// 新增多媒體 belongs with publishing content (it creates a Galaxy Media
+// record the same way publishing an article creates a Galaxy record), not
+// with 資料匯入 (batch/file import of existing external data).
+export default function ManagementMediaPublisher({scopeId}){
+  const UI_COPY=useUiCopy();
+  const t=useUiText();
+  useUiSection('management');
+  useUiSection('uiExtra.importUI');
+  const account=useAccount();
+  const editDock=useEditDock();
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
+  const dockActions=useRef({save:null,isDirty:null,isBusy:null});
+  const [draft,setDraft]=useState(blankMedia);
+  const [status,setStatus]=useState('');
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{
+    if(!inDock)return undefined;
+    return editDock.register({
+      save:()=>dockActions.current.save(),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
+    });
+  },[inDock,editDock?.register]);
+  if(!account.canManageScopeSync(scopeId))return null;
+
+  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
+
+  async function save(event){
+    event?.preventDefault?.();
+    if(busy)return false;
+    setBusy(true);setStatus('');
+    try{
+      const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
+      if(galaxyLink&&galaxyLink.length!==8)throw new Error(t('uiExtra.importUI.linkUidInvalid'));
+      const mediaType=repairMojibakeText(draft.media_type).trim();
+      if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
+      const metaTags=repairMojibakeText(draft.meta_tags).trim();
+      const mediaTitle=repairMojibakeText(draft.title).trim();
+      const sourcePlace=repairMojibakeText(draft.source_place).trim();
+      if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.mediaEncoding'));
+      if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
+      const record={
+        galaxy_link:galaxyLink||null,
+        source_place:sourcePlace||null,
+        media_type:mediaType,
+        title:mediaTitle||null,
+        url:String(draft.url||'').trim()||null,
+        meta_tags:metaTags,
+        createtime:mediaIso(draft.createtime)
+      };
+      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
+      if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
+      await insertRows(galaxyMedia,[record]);
+      setStatus(t('uiExtra.importUI.mediaSaved'));
+      setDraft(blankMedia());
+      return true;
+    }catch(error){
+      const message=error?.message||t('uiExtra.importUI.mediaSaveFailed');
+      setStatus(message);if(inDock)editDock.setNotice(message);
+      return false;
+    }finally{setBusy(false);}
+  }
+  dockActions.current={
+    save:()=>save(),
+    isDirty:()=>Object.keys(blankMedia()).some(key=>draft[key]!==blankMedia()[key]),
+    isBusy:()=>busy
+  };
+
+  return <section className="loc-card scope-feature-card">
+    <p className="loc-eyebrow">MEDIA</p>
+    <h2>{UI_COPY.management.addMedia}</h2>
+    <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
+    <form onSubmit={save} className="scope-editor">
+      <div className="scope-stat-controls">
+        <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaArticleUidLabel"/></span><input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaCreatedAtLabel"/></span><input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
+      </div>
+      <div className="scope-stat-controls">
+        <label><span><UiText id="uiExtra.importUI.mediaLocationLabel"/></span><input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
+      </div>
+      <label><span><UiText id="uiExtra.importUI.mediaTitle"/></span><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
+      <label><span><UiText id="uiExtra.importUI.mediaExternalUrlLabel"/></span><input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
+      <label><span><UiText id="uiExtra.importUI.mediaTagsLabel"/></span><input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
+      <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
+      {status?<p className="scope-status">{status}</p>:null}
+    </form>
+  </section>;
+}
+
