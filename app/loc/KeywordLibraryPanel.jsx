@@ -267,117 +267,122 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setMessage(l.removedFromDraft);
   }
 
-  async function save(){
-    if(!draft){setMessage('請先選擇要編輯的關鍵詞。');return false;}
-    const classId=String(draft.class_id||'').trim();
-    const className=String(draft.class_name||'').trim();
-    const classGroup=String(draft.class_group||'').trim();
-    const itemName=String(draft.item_name||'').trim();
-    const itemNo=Number(draft.item_no);
-    if(!classId){setMessage(l.uuidRequired);return false;}
-    if(!className){setMessage(l.classRequired);return false;}
-    if(!classGroup){setMessage(l.groupRequired);return false;}
-    if(!itemName){setMessage(l.itemNameRequired);return false;}
-    if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return false;}
+  // One save action owns both drafts. Validate both before writing either,
+  // and reload only after all requested writes have completed.
+  async function saveAll(){
+    if(busy||loading)return false;
+    const saveSettings=configDirty;
+    const saveDraft=draftDirty;
+    if(!saveSettings&&!saveDraft)return true;
 
-    const payload={
-      keyword_id:draft.keyword_id,
-      class_id:classId,
-      class_name:className,
-      class_group:classGroup,
-      class_enable:draft.class_enable!==false,
-      item_no:itemNo,
-      item_name:itemName,
-      principle:String(draft.principle||'').trim(),
-      keywords:workspace==='manual'&&keywordEdit.trim()&&(!selectedKeyword||draftKeywords.includes(selectedKeyword))
-        ?keywordDraftWithInput(draftKeywords,selectedKeyword,keywordEdit)
-        :draftKeywords,
-      order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
-    };
+    let payload=null;
+    let classId='';
+    let className='';
+    if(saveDraft){
+      if(!draft){setMessage('請先選擇要編輯的關鍵詞。');return false;}
+      classId=String(draft.class_id||'').trim();
+      className=String(draft.class_name||'').trim();
+      const classGroup=String(draft.class_group||'').trim();
+      const itemName=String(draft.item_name||'').trim();
+      const itemNo=Number(draft.item_no);
+      if(!classId){setMessage(l.uuidRequired);return false;}
+      if(!className){setMessage(l.classRequired);return false;}
+      if(!classGroup){setMessage(l.groupRequired);return false;}
+      if(!itemName){setMessage(l.itemNameRequired);return false;}
+      if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return false;}
+      payload={
+        keyword_id:draft.keyword_id,
+        class_id:classId,
+        class_name:className,
+        class_group:classGroup,
+        class_enable:draft.class_enable!==false,
+        item_no:itemNo,
+        item_name:itemName,
+        principle:String(draft.principle||'').trim(),
+        keywords:workspace==='manual'&&keywordEdit.trim()&&(!selectedKeyword||draftKeywords.includes(selectedKeyword))
+          ?keywordDraftWithInput(draftKeywords,selectedKeyword,keywordEdit)
+          :draftKeywords,
+        order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
+      };
+    }
+
+    const chars=Number(minChars);
+    const documents=Number(minDocuments);
+    const defaultItemNo=Number(defaultGroupItemNo);
+    const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
+    const classificationChanged=saveSettings&&(
+      chars!==Number(configSnapshot?.minChars)||
+      currentClassId!==String(configSnapshot?.currentClassId||'')||
+      defaultGroupChanged
+    );
+    if(saveSettings){
+      if(!Number.isInteger(chars)||chars<0||chars>10000){
+        setMessage(l.minimumCharsInvalid);return false;
+      }
+      if(!Number.isInteger(documents)||documents<0||documents>1000000){
+        setMessage(l.minimumDocumentsInvalid);return false;
+      }
+      if(!classes.some(item=>item.class_id===currentClassId)){
+        setMessage(l.activeClassRequired);return false;
+      }
+      if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
+        setMessage(l.defaultGroupInvalid);return false;
+      }
+    }
 
     setBusy(true);setMessage('');
     setSavingStage(l.writing);
+    let settingsWritten=false;
+    let draftWritten=false;
     try{
-      const result=await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload);
-      // A confirmed write cannot be turned into a "write failure" by a
-      // classification reset or re-query that happens afterward.
+      // Write settings first: a failed keyword INSERT can then be retried
+      // without accidentally creating a second new keyword row.
+      if(saveSettings){
+        if(defaultGroupChanged){
+          await updateRows(TABLE,{default_group_item_no:defaultItemNo},{filters:[{column:'class_id',operator:'eq',value:currentClassId}]});
+        }
+        await updateRows(CONFIG_TABLE,{
+          keyword_min_chars:chars,
+          keyword_min_documents:documents,
+          current_keyword_class_id:currentClassId,
+          keyword_class_share_enabled:Boolean(shareEnabled),
+          ...(classificationChanged?{staticstime:null,keyword_document_count:0}:{}),
+          updated_at:new Date().toISOString()
+        },{filters:[{column:'id',operator:'eq',value:scopeId}]});
+        settingsWritten=true;
+      }
+
+      const result=saveDraft
+        ?await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload)
+        :null;
+      draftWritten=saveDraft;
       setSavingStage(l.updatingAnalysis);
       let classificationWarning='';
       try{
-        await markCurrentClassificationStale(classId);
+        if(classificationChanged)await invalidateClassification();
+        else if(saveDraft)await markCurrentClassificationStale(classId);
       }catch(error){
         classificationWarning=l.analysisUpdateWarning+String(error?.message||error);
       }
+
       setSavingStage(l.reloading);
-      setSelectedClass(className);
-      const reloaded=await load(result.keyword_id||draft.keyword_id||'',className,{preserveOnError:true});
-      if(reloaded){
-        setMessage((classId===currentClassId?l.savedClassChanged:l.saved)+classificationWarning);
-      }else{
-        setMessage(l.savedReloadFailed+classificationWarning);
-      }
+      if(saveDraft)setSelectedClass(className);
+      const reloaded=await load(result?.keyword_id||draft?.keyword_id||'',saveDraft?className:selectedClass,{preserveOnError:true});
+      const savedMessage=saveSettings&&saveDraft?'分析設定與關鍵詞草稿已儲存。'
+        :saveSettings?(classificationChanged?l.settingsChanged:l.settingsSaved)
+        :(classId===currentClassId?l.savedClassChanged:l.saved);
+      setMessage((reloaded?savedMessage:l.savedReloadFailed)+classificationWarning);
       return true;
     }catch(error){
-      const detail=l.writeError+String(error?.message||error);
+      const partial=settingsWritten&&saveDraft&&!draftWritten
+        ?'分析設定已儲存，但關鍵詞草稿尚未儲存；草稿仍保留。'
+        :'';
+      const detail=partial+(saveDraft?l.writeError:'')+String(error?.message||error||l.settingsSaveError);
       setMessage(detail);
       if(editDock?.active)editDock.setNotice(detail);
       return false;
     }finally{
       setSavingStage('');
-      setBusy(false);
-    }
-  }
-
-  async function saveAnalysisSettings(){
-    const chars=Number(minChars);
-    const documents=Number(minDocuments);
-    if(!Number.isInteger(chars)||chars<0||chars>10000){
-      setMessage(l.minimumCharsInvalid);return false;
-    }
-    if(!Number.isInteger(documents)||documents<0||documents>1000000){
-      setMessage(l.minimumDocumentsInvalid);return false;
-    }
-    if(!classes.some(item=>item.class_id===currentClassId)){
-      setMessage(l.activeClassRequired);return false;
-    }
-    const defaultItemNo=Number(defaultGroupItemNo);
-    if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
-      setMessage(l.defaultGroupInvalid);return false;
-    }
-    const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
-    const classificationChanged=chars!==Number(configSnapshot?.minChars)||currentClassId!==String(configSnapshot?.currentClassId||'')||defaultGroupChanged;
-    setBusy(true);setMessage('');
-    try{
-      if(defaultGroupChanged){
-        await updateRows(TABLE,{default_group_item_no:defaultItemNo},{filters:[{column:'class_id',operator:'eq',value:currentClassId}]});
-      }
-      await updateRows(CONFIG_TABLE,{
-        keyword_min_chars:chars,
-        keyword_min_documents:documents,
-        current_keyword_class_id:currentClassId,
-        keyword_class_share_enabled:Boolean(shareEnabled),
-        // staticstime:null + keyword_document_count:0 correctly mark the
-        // classification as stale/unverified the moment a setting that
-        // affects it changes (min_chars, current class, default group).
-        // keyword_meta is NOT cleared here: it holds the sha-narrowing
-        // baseline from the last successful run, which is still valid
-        // (none of these settings change keyword content), and wiping it
-        // would force every next reanalysis to do a full scan instead of
-        // a narrowed one -- the same bug already fixed in
-        // markCurrentClassificationStale.
-        ...(classificationChanged?{staticstime:null,keyword_document_count:0}:{}),
-        updated_at:new Date().toISOString()
-      },{filters:[{column:'id',operator:'eq',value:scopeId}]});
-      if(classificationChanged)await invalidateClassification();
-      await load('',selectedClass);
-      setMessage(classificationChanged?l.settingsChanged:l.settingsSaved);
-      return true;
-    }catch(error){
-      const detail=String(error?.message||error||l.settingsSaveError);
-      setMessage(detail);
-      if(editDock?.active)editDock.setNotice(detail);
-      return false;
-    }finally{
       setBusy(false);
     }
   }
@@ -555,17 +560,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   dockActions.current={
     save:async({switching=false}={})=>{
       if(busy||loading)return false;
-      if(configDirty&&draftDirty){
-        setMessage('分析設定與關鍵詞草稿都有未儲存內容，請分別儲存。');
-        return false;
-      }
-      const choice=configDirty?'analysis':draftDirty?'manual':workspace;
-      if(choice==='library'){
+      if(!configDirty&&!draftDirty&&workspace==='library'){
         setMessage(l.libraryImmediateSave);
         return false;
       }
-      const success=await (choice==='analysis'?saveAnalysisSettings():save());
-      return success;
+      return saveAll();
     },
     isDirty:()=>configDirty||draftDirty,
     isBusy:()=>busy||loading
@@ -617,7 +616,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
-        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAnalysisSettings}>{l.saveSettings}</button>:null}
+        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAll}>{l.saveSettings}</button>:null}
         <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
         <button type="button" className="loc-button" disabled={busy||configDirty||!currentClassId} onClick={resetBatch}>{l.resetClassification}</button>
       </div>
@@ -738,7 +737,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
               onPlainTextChange={value=>setDraft(current=>({...current,keywords_text:value}))}/>
           </div>
           <div className="scope-preview-links">
-            {!editDock?.active?<button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?l.saving:l.save}</button>:null}
+            {!editDock?.active?<button type="button" className="loc-button primary" disabled={busy} onClick={saveAll}>{busy?l.saving:l.save}</button>:null}
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>{l.deleteItem}</button>:null}
           </div>
         </>}
