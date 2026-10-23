@@ -992,6 +992,30 @@ export default function Culture(){
                       </label>
                     </>:null}
                   </>
+                  {styleFilter==='rune66'?<>
+                    <label className='scope-culture-period-select'>
+                      <span>來源</span>
+                      <select className='scope-select' aria-label='關鍵詞來源' value={keywordDrillSource}
+                        disabled={keywordDensityQuery.isPending||Boolean(keywordDensityQuery.error)}
+                        onChange={event=>{
+                          setKeywordDrillSource(event.target.value);
+                          setKeywordDrillGroup('');
+                        }}>
+                        <option value=''>全部來源</option>
+                        {keywordSourceOptions.map(source=><option key={source} value={source}>{source}</option>)}
+                      </select>
+                    </label>
+                    {keywordDrillSource?<label className='scope-culture-period-select'>
+                      <span>關鍵詞群組</span>
+                      <select className='scope-select' aria-label='關鍵詞群組' value={keywordDrillGroup}
+                        onChange={event=>setKeywordDrillGroup(event.target.value)}>
+                        <option value=''>全部群組</option>
+                        {keywordGroupOptions.map(group=><option key={group.id} value={group.id}>
+                          {[String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'').trim(),group.label,'群組'].filter(Boolean).join(' ')}
+                        </option>)}
+                      </select>
+                    </label>:null}
+                  </>:null}
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
@@ -1053,28 +1077,6 @@ export default function Culture(){
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>關鍵詞組：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <div className='scope-stat-controls'>
-                    <label className='scope-culture-period-select'>
-                      <span>來源</span>
-                      <select className='scope-select' aria-label='關鍵詞來源' value={keywordDrillSource}
-                        disabled={keywordDensityQuery.isPending||Boolean(keywordDensityQuery.error)}
-                        onChange={event=>{
-                          setKeywordDrillSource(event.target.value);
-                          setKeywordDrillGroup('');
-                        }}>
-                        <option value=''>全部來源</option>
-                        {keywordSourceOptions.map(source=><option key={source} value={source}>{source}</option>)}
-                      </select>
-                    </label>
-                    {keywordDrillSource?<label className='scope-culture-period-select'>
-                      <span>關鍵詞群組</span>
-                      <select className='scope-select' aria-label='關鍵詞群組' value={keywordDrillGroup}
-                        onChange={event=>setKeywordDrillGroup(event.target.value)}>
-                        <option value=''>全部群組</option>
-                        {keywordGroupOptions.map(group=><option key={group.id} value={group.id}>
-                          {[String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'').trim(),group.label,'群組'].filter(Boolean).join(' ')}
-                        </option>)}
-                      </select>
-                    </label>:null}
                     {keywordDrillSource?<button type='button' className='loc-button' onClick={()=>{
                       if(keywordDrillGroup)setKeywordDrillGroup('');
                       else setKeywordDrillSource('');
