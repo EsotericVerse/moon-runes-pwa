@@ -34,7 +34,9 @@ export default function SunoImportPanel({scopeId}){
     if(!inDock)return undefined;
     const unregister=editDock.register({
       save:()=>dockActions.current.save(),
-      discard:()=>dockActions.current.discard()
+      discard:()=>dockActions.current.discard(),
+      isDirty:()=>dockActions.current.isDirty(),
+      isBusy:()=>dockActions.current.isBusy()
     });
     activateDock.current=unregister.activate;
     return unregister;
@@ -100,7 +102,15 @@ export default function SunoImportPanel({scopeId}){
   }
   dockActions.current={
     save:()=>save(),
-    discard:()=>{setDraft(freshSunoDraft());setStatus('')}
+    discard:()=>{setDraft(freshSunoDraft());setStatus('')},
+    isDirty:()=>Boolean(
+      draft.title.trim()||draft.lyrics.trim()||draft.stylePrompt.trim()||
+      blocksToPlainText(draft.lyricsBlocks).trim()||
+      blocksToPlainText(draft.stylePromptBlocks).trim()||
+      draft.stylePromptPlain.trim()||draft.url.trim()||draft.createdDate||
+      draft.metaTags.trim()||draft.source_id.trim()||draft.target_id.trim()||draft.ref_id.trim()
+    ),
+    isBusy:()=>busy
   };
   return <div className="scope-inline-card"
     onFocusCapture={()=>activateDock.current?.()}
