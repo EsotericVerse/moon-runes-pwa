@@ -21,6 +21,20 @@ export default function GenericScopeHomeView(){
   const t=useUiText();
   const native=useNativeNavigation();
   const {scopeId,scope,registryRow}=useScopeRuntime();
+  // Local has no server-backed loc_blocks; its home is the entry to the
+  // existing device-local features, not a cloud BlockNote editing surface.
+  if(scopeId==='local')return <main className="scope-main"><section className="scope-page">
+    <header className="loc-card scope-hero"><p className="loc-eyebrow">Local Scope</p><h1>本機資料</h1></header>
+    <section className="loc-card">
+      <p className="scope-status">本機匯入的資料只儲存在目前裝置，可從下方功能進行查詢與分析。</p>
+      <div className="scope-result-links">
+        <ScopeLink href={navigationHref('local','culture',native)} native={native}><UiText id="features.culture.title"/></ScopeLink>
+        <ScopeLink href={navigationHref('local','statics',native)} native={native}><UiText id="features.statics.title"/></ScopeLink>
+        <ScopeLink href={navigationHref('local','search',native)} native={native}><UiText id="nav.search"/></ScopeLink>
+        <ScopeLink href={navigationHref('local','settings',native)} native={native}><UiText id="common.settings"/></ScopeLink>
+      </div>
+    </section>
+  </section></main>;
   if(scope?.aggregateChildren){
     return <FeaturePage featureId="governance" subtitle={scope.label}>
       <ScopeGroupOverview
