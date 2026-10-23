@@ -63,7 +63,7 @@ export default {
   "galaxyTable": "Galaxy 資料表",
   "timeTable": "Time 資料表",
   "birthdayMapping": "生日",
-  "themeAppearance": "主題外觀",
+  "themeAppearance": "色彩設定",
   "connectionDetails": "連線資料",
   "blockedEmailAddress": "要封鎖的 Email",
   "applyRouting": "套用路由設定",
