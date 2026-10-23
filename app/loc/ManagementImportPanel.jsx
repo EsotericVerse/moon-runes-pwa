@@ -364,6 +364,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped}));
+      if(scopeId==='local'&&(payload.length||mediaSummary.created))
+        window.dispatchEvent(new Event('loc-local-scope-data-changed'));
       setRows([]);
       writeCooldown.start();
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
