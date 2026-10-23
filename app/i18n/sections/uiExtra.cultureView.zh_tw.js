@@ -16,7 +16,7 @@ export default {
   "theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag": "第一條河道依序為定錨點、事件、風格標籤、時期。點選紀錄直接編輯；未定錨的風格可從「新增 → 風格標籤」表單選取。",
   "style": "表現風格",
   "noFilter": "不套用",
-  "keywordClass": "關鍵詞 Class",
+  "keywordClass": "關鍵詞組",
   "workClassificationLane": "作品分類河道",
   "expandToCompareWorkVolumeChanges": "需要時再展開比對作品量變化（候選日期，非正式定錨點）",
   "selectAllCandidates": "全選待審候選",
