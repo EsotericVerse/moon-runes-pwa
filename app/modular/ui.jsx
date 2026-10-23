@@ -32,7 +32,7 @@ function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=fa
   </>;
 }
 
-export function FeaturePage({featureId,children,subtitle=null,description=null}){
+export function FeaturePage({featureId,children,titleOverride=null,subtitle=null,description=null}){
   const {scope,scopeId}=useScopeRuntime();
   const copy=useUiCopy();
   const profile=copy.features?.[featureId]||UI_COPY.features?.[featureId]||{title:featureId,subtitle:'',description:''};
@@ -76,7 +76,7 @@ export function FeaturePage({featureId,children,subtitle=null,description=null})
         <FeatureHeroContent
           scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
-          title={shared?.title||fallbackCopy.title}
+          title={titleOverride||shared?.title||fallbackCopy.title}
           subtitle={shared?shared.subtitle:fallbackCopy.subtitle}
           description={shared?shared.description:fallbackCopy.description}
           rich={Boolean(shared)}

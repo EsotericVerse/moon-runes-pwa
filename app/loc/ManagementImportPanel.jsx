@@ -15,9 +15,6 @@ import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
-// A Suno authoring session brings its own BlockNote and Style engine on demand.
-const SunoImport=dynamic(()=>import('./SunoImportPanel'),{loading:()=>null});
-
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
   activity:'activity',media:'media',table:'table','structured-records':'records',document:'document'
@@ -719,7 +716,6 @@ export default function ManagementImportPanel({scopeId,flat=false}){
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
   const [revision,setRevision]=useState(0);
   const [busyCount,setBusyCount]=useState(0);
-  const [sunoOpen,setSunoOpen]=useState(false);
   const setBusy=flag=>setBusyCount(value=>Math.max(0,value+(flag?1:-1)));
   function changeFormat(next){
     if(busyCount)return;
@@ -734,10 +730,5 @@ export default function ManagementImportPanel({scopeId,flat=false}){
     </section>
     <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
     <DuplicateDetection scopeId={scopeId}/>
-    <section className="loc-card">
-      <button type="button" className="loc-button" aria-expanded={sunoOpen}
-        onClick={()=>setSunoOpen(open=>!open)}><UiText id="uiExtra.importUI.sunoImport"/></button>
-      {sunoOpen?<SunoImport scopeId={scopeId}/>:null}
-    </section>
   </div>;
 }

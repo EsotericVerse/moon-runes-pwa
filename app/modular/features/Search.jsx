@@ -24,7 +24,6 @@ import {deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import ScopeLink from '../ScopeLink';
-import ManagementSectionNav from '../ManagementSectionNav';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -34,7 +33,6 @@ import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
 import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry} from '../../loc/scope-data';
-const ManagementArticlePublisher=dynamic(()=>import('../../loc/ManagementArticlePublisher'),{loading:()=>null});
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
@@ -235,7 +233,6 @@ export default function Search({managementMode=false}){
   const account=useAccount();
   const managementAuthorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
-  const [managementSection,setManagementSection]=useState('search');
   const searchParams=useSearchParams();
   const router=useRouter();
   const queryClient=useQueryClient();
@@ -779,38 +776,15 @@ export default function Search({managementMode=false}){
     />
   </FeaturePage>;
 
-  const publishScopeId=scopeId==='loc'?scopeFilter:scopeId;
-  return <FeaturePage featureId="search">
-    {managementMode?<div className="management-workspace">
-      <ManagementSectionNav id="search-management-sections" title="搜尋管理"
-        panelId="search-management-panel" value={managementSection} onChange={setManagementSection}
-        items={[{value:'search',label:'搜尋編輯',description:'搜尋包含禁止公開搜尋的文章，直接展開編輯。'},
-          {value:'publisher',label:'單篇發表',description:'以既有文章編輯器發表一篇作品。'}]}/>
-      <div className="management-workspace-panel" id="search-management-panel" role="region"
-        aria-labelledby={'search-management-sections-option-'+managementSection}>
-      {managementSection==='publisher'?<>
-        {scopeId==='loc'?<div className="scope-search-scope-filter">
-          <label htmlFor="search-publisher-scope">發表到 Scope</label>
-          <select id="search-publisher-scope" value={scopeFilter}
-            onChange={event=>setScopeFilter(event.target.value)}>
-            <option value="">請選擇 Scope</option>
-            {availableScopes.map(item=><option key={item.id} value={item.id}>{scopeLabel(item.id)}</option>)}
-          </select>
-        </div>:null}
-        {publishScopeId&&availableScopes.some(item=>item.id===publishScopeId)?<ManagementArticlePublisher key={publishScopeId} scopeId={publishScopeId}/>:null}
-      </>:null}
-      </div>
-    </div>:null}
-    {(!managementMode||managementSection==='search')?<section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
+  const pageContent=<>
+    <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
-        <label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>
-        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
+        {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
+        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)}
+          placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
-      {!managementMode?<div className="scope-preview-links">
-        <ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>搜尋管理</ScopeLink>
-      </div>:null}
       {scopeId==='loc'?<div className="scope-search-scope-filter">
         <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
         <select id="scope-search-scope" value={scopeFilter}
@@ -823,11 +797,11 @@ export default function Search({managementMode=false}){
       </div>:null}
       <div className="scope-search-advanced">
         <button type="button" className="scope-search-advanced-toggle" aria-expanded={advancedOpen} aria-controls="scope-search-filter-panel" onClick={()=>setAdvancedOpen(value=>!value)}>
-          <span><strong>{t('uiExtra.searchUI.advancedFilters')}</strong><small>{t('uiExtra.searchUI.advancedHelp')}</small></span>
+          <span><strong>{t('uiExtra.searchUI.advancedFilters')}</strong>{!managementMode?<small>{t('uiExtra.searchUI.advancedHelp')}</small>:null}</span>
           <span aria-hidden="true">{advancedOpen?'▴':'▾'}</span>
         </button>
         <div className="scope-search-active-filters" aria-live="polite">
-          {chips.length?chips.map((chip,index)=><span className="scope-search-chip" key={index}>{chip}</span>):<span className="scope-search-chip is-muted">{t('uiExtra.searchUI.noFilters')}</span>}
+          {chips.length?chips.map((chip,index)=><span className="scope-search-chip" key={index}>{chip}</span>):!managementMode?<span className="scope-search-chip is-muted">{t('uiExtra.searchUI.noFilters')}</span>:null}
         </div>
         {advancedOpen?<div id="scope-search-filter-panel" className="scope-search-filter-panel">
           <div role="tablist" className="scope-search-filter-tabs" aria-label={t('uiExtra.searchUI.advancedFilters')}>
@@ -867,6 +841,11 @@ export default function Search({managementMode=false}){
         </div>:null}
       </div>
     {!managementMode?<div className="scope-search-reference-editor">
+      <div className="scope-edit-mode-toggle">
+        <ScopeLink className="loc-button" href={scopeHref(scopeId,'governance/manage/search')}>
+          <UiText id="uiExtra.editBlocks.enterEditMode"/>
+        </ScopeLink>
+      </div>
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
@@ -875,16 +854,16 @@ export default function Search({managementMode=false}){
         slotClassName="scope-search-reference-block"
         editSlotClassName="scope-search-reference-block"
         headingLevel={2}
-        allowEditing
+        allowEditing={false}
         allowDelete={false}
         allowInlineChildAdd
         explicitEditButton
         onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
       />
     </div>:null}
-    </section>:null}
-    {(!managementMode||managementSection==='search')?<div ref={resultsRef} className="scope-search-results">
-    {status?<p className="scope-status">{status}</p>:null}
+    </section>
+    <div ref={resultsRef} className="scope-search-results">
+    {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
     <IncrementalList
@@ -911,7 +890,7 @@ export default function Search({managementMode=false}){
         // Page blocks have no Galaxy attributes. Article editing and typed
         // metadata are available only to authorized Scope managers; guest
         // search and article reading cannot reveal metadata controls.
-        const editable=Boolean(canManageSearchScope(account,row.scopeId)&&
+        const editable=Boolean(managementMode&&canManageSearchScope(account,row.scopeId)&&
           editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
         const draft=editingKey===row.key?editDraft:null;
         return <Fragment key={row.key}>
@@ -972,7 +951,8 @@ export default function Search({managementMode=false}){
         </Fragment>;
       }}
     />
-    </div>:null}
-  </FeaturePage>;
+    </div>
+  </>;
+  return managementMode?pageContent:<FeaturePage featureId="search">{pageContent}</FeaturePage>;
 }
 
