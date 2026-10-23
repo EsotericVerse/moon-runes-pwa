@@ -610,15 +610,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
-    {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<MediaCrossTagStatistics
-      scope={targetScopes[0]}
-      rows={crossTagQuery.data||[]}
-      range={queryRange}
-      zoomLevel={zoomLevel}
-      onZoomLevelChange={setZoomLevel}
-      facetTrend={facetTrend}
-      loadGalaxyStatistics={loadGalaxyStatistics}
-    />:null}
     {mediaDimension&&!mediaLoading&&!mediaError?<MediaFacetStatistics
       key={rankingType}
       rankingType={rankingType}
@@ -636,6 +627,18 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       facetTotals={facetTotals}
       facetTrend={facetTrend}
     />:null}
+    {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<StatisticsDetails
+      summary={<UiText id="uiExtra.statisticsView.crossAdvancedTitle"/>}>
+      {()=> <MediaCrossTagStatistics
+        scope={targetScopes[0]}
+        rows={crossTagQuery.data||[]}
+        range={queryRange}
+        zoomLevel={zoomLevel}
+        onZoomLevelChange={setZoomLevel}
+        facetTrend={facetTrend}
+        loadGalaxyStatistics={loadGalaxyStatistics}
+      />}
+    </StatisticsDetails>:null}
     {styleFilter==='rune66'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
