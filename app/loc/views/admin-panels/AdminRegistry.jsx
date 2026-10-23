@@ -433,7 +433,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
     JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
   const draftDirty=editing&&JSON.stringify(editDraft)!==editBaseline.current;
-  const newMappingDirty=Object.values(newMapping).some(value=>String(value||'').trim());
+  const newMappingDirty=JSON.stringify(newMapping)!==JSON.stringify(EMPTY_MAPPING);
   useEditDockForm({
     isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
     save:async()=>{
