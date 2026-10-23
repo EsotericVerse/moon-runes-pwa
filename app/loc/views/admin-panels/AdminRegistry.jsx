@@ -293,7 +293,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
   </div>;
 }
 
-function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
+function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   const {registry,mappings,setMappings,originalMappings,configs,status,setStatus,refresh}=data;
   const selected=registry.find(row=>row.scope_id===selectedId)||null;
   const config=configs[selectedId]||null;
@@ -438,6 +438,10 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null))
   ));
   const newMappingDirty=JSON.stringify(newMapping)!==JSON.stringify(EMPTY_MAPPING);
+  useEffect(()=>{
+    dirtyRef.current=()=>Boolean(draftDirty||editedMappings.length||newMappingDirty);
+    return ()=>{dirtyRef.current=()=>false;};
+  },[dirtyRef,draftDirty,editedMappings.length,newMappingDirty]);
   useEditDockForm({
     isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
     save:async()=>{
@@ -647,6 +651,9 @@ export default function AdminRegistry(){
   const [deleteBusy,setDeleteBusy]=useState(false);
   const [deleteNotice,setDeleteNotice]=useState('');
   const deleteConfirmRef=useRef(null);
+  const dirtyRef=useRef(()=>false);
+  const confirmDiscard=()=>!dirtyRef.current()||
+    window.confirm('目前有尚未儲存的修改，確定放棄並切換嗎？');
   useEffect(()=>{
     if(deletePending)deleteConfirmRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'});
   },[deletePending]);
@@ -671,7 +678,11 @@ export default function AdminRegistry(){
     }catch(error){setStatus(error?.message||'移動失敗。');refresh();}
   },[registry,setRegistry,setStatus,refresh]);
 
-  const selectNode=useCallback(id=>{setCreateKind('');setSelectedId(id);},[]);
+  const selectNode=useCallback(id=>{
+    if(id===selectedId)return;
+    if(dirtyRef.current()&&!window.confirm('目前有尚未儲存的修改，確定放棄並切換嗎？'))return;
+    setCreateKind('');setSelectedId(id);
+  },[selectedId]);
   const requestDelete=useCallback(id=>{
     if(deleteBusy)return;
     const row=registry.find(item=>item.scope_id===id);
@@ -721,8 +732,8 @@ export default function AdminRegistry(){
         <div><h2><UiText id="uiExtra.adminView.memberRelationshipGraph"/></h2></div>
         <div className="admin-registry-actions">
           <button type="button" className="loc-button" onClick={refresh}><UiText id="uiExtra.adminView.reload"/></button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('scope')}><UiText id="uiExtra.adminView.ddMember"/></button>
-          <button type="button" className="loc-button" onClick={()=>setCreateKind('group')}><UiText id="uiExtra.adminView.ddGroup"/></button>
+          <button type="button" className="loc-button" onClick={()=>{if(confirmDiscard())setCreateKind('scope');}}><UiText id="uiExtra.adminView.ddMember"/></button>
+          <button type="button" className="loc-button" onClick={()=>{if(confirmDiscard())setCreateKind('group');}}><UiText id="uiExtra.adminView.ddGroup"/></button>
         </div>
       </div>
       <DeploymentTree registry={registry} configs={configs} selectedId={selectedId} onSelect={selectNode} onMoveParent={moveParent} onDeleteNode={requestDelete}/>
@@ -737,7 +748,7 @@ export default function AdminRegistry(){
       {deleteNotice?<p className={'scope-status'+(deleteNotice.includes('失敗')?' scope-error':'')} role="status">{deleteNotice}</p>:null}
       {data.status?<p className="scope-status" role="status">{data.status}</p>:null}
       <div className="admin-editor-section" id="admin-scope-editor">
-        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel key={selectedId} data={data} selectedId={selectedId} onDeleted={()=>setSelectedId('')} onDeleteNode={requestDelete}/>}
+        {createKind?<CreateNodePanel data={data} kind={createKind} onClose={()=>setCreateKind('')}/>:<RegistryNodePanel key={selectedId} data={data} selectedId={selectedId} dirtyRef={dirtyRef} onDeleted={()=>setSelectedId('')} onDeleteNode={requestDelete}/>}
       </div>
     </div>
   </section>;
