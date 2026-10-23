@@ -377,7 +377,11 @@ function Board({G,moves,rules,onRestart}){
     }});
   };
   const playResonanceEffect=()=>{
-    if(effectsEnabled)setBattleEffect({key:++effectSequence.current,kind:'resonance'});
+    if(!effectsEnabled)return;
+    // This is a visual cue only: no rune is played or removed for resonance.
+    const rune=rules.cards.find(card=>card.englishName==='Resonance');
+    if(rune)playRuneEffect(rune);
+    else setBattleEffect({key:++effectSequence.current,kind:'resonance'});
   };
   const toggleRune=(playerIndex,id)=>{
     const player=G.players[playerIndex];
