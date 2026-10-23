@@ -28,6 +28,8 @@ jobs:
     # migrating to Ubuntu 26 starting the same week, so this pins the
     # known-good image while that migration rolls out.
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,8 +38,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      - name: Security audit (high and critical)
+      - name: Security audit (moderate, high and critical)
         run: npm run audit:security
+      - name: Test LunaRunes game state transitions
+        run: npm run test:game
       - name: Build Current static export
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
