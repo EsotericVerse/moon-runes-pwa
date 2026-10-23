@@ -361,9 +361,11 @@ export async function selectActiveKeywordClassName(scopeId=''){
   return String(keywordRows?.[0]?.class_name||'').trim();
 }
 
-async function scopeAndConfig(scopeId='lo3rwang'){
+async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const id=normalizeScopeId(scopeId);
-  const scope=await selectManagedScope(id);
+  // Public statistics only read the stored summary/config and public Galaxy attrs.
+  // The writer still resolves the managed Scope with authenticated access.
+  const scope=publicRead?defaultScopeData(id):await selectManagedScope(id);
   if(!scope)throw new Error('找不到 '+id+' Scope');
   const result=await selectAllRows(scope.config,{
     columns:'id,keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime',
@@ -706,7 +708,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
   const key=[normalizedScopeId,String(startDate||''),String(endDate||'')].join('|');
   if(!category&&analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
-    const {scope,config}=await scopeAndConfig(normalizedScopeId);
+    const {scope,config}=await scopeAndConfig(normalizedScopeId,{publicRead:true});
     if(!config.staticstime)return emptyStored(config);
     if(!category&&keywordSummaryRpcInstalled){
       try{
