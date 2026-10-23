@@ -9,6 +9,13 @@ on:
       - 'package-lock.json'
       - 'scripts/test-lunarunes-boardgame.mjs'
       - '.github/workflows/lunarunes-game-ci.yml'
+  pull_request:
+    paths:
+      - 'app/lrunes/game/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/test-lunarunes-boardgame.mjs'
+      - '.github/workflows/lunarunes-game-ci.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,4 +32,12 @@ jobs:
           npm ci --no-audit --no-fund
       - name: Test game rules
         run: npm run test:game
-      # Full app build already runs in the main architecture check; do not duplicate it here.
+      # The main-branch build does not run for an unmerged security patch.
+      # Validate a draft PR before the user considers merging it.
+      - name: Audit dependency security (high and critical)
+        if: github.event_name == 'pull_request'
+        run: npm audit --audit-level=high
+      - name: Build static export on PR
+        if: github.event_name == 'pull_request'
+        run: npm run build
+      # Main pushes continue to use the existing architecture build.
