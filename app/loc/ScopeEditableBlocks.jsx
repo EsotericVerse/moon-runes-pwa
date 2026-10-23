@@ -217,8 +217,9 @@ export default function ScopeEditableBlocks({
             editDock.complete(navigationHref(scopeId,'',native));
           else onEditorExit?.();
         }}
-        onDone={notice=>{
+        onDone={(notice,{switching=false}={})=>{
           setEditMode(false);setMessage(notice);
+          if(switching)return;
           if(editDock?.active&&editDock.scopeId===scopeId){
             const destination=pageName==='search'?'search':pageName==='governance'?'governance':'';
             editDock.complete(navigationHref(scopeId,destination,native));
