@@ -192,8 +192,9 @@ export default function Culture(){
   const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!openPeriod&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
-  // Keyword Class has its own time interval: changing it must not move the
-  // structure river, source-density river, anchor suggestions, or work list.
+  // The lower Culture panel shares one selected interval across the source
+  // classification river, keyword-density river, suggestions, and work list.
+  // The upper Time structure river keeps its own period navigation.
   const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
     :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||selectedWorkPeriod;
   const keywordWindowStart=keywordPeriodKey==='custom'
@@ -203,6 +204,12 @@ export default function Culture(){
   const keywordWindowValid=/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowStart)
     &&/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowEnd)
     &&keywordWindowStart<=keywordWindowEnd;
+  const classificationWindowStart=styleFilter==='rune66'?keywordWindowStart:selectedWindowStart;
+  const classificationWindowEnd=styleFilter==='rune66'?keywordWindowEnd:selectedWindowEnd;
+  const classificationWindowValid=styleFilter!=='rune66'||keywordWindowValid;
+  const classificationPeriodLabel=styleFilter!=='rune66'
+    ?localizedLabelOf(selectedWorkPeriod,0)
+    :keywordPeriodKey==='custom'?'自訂區間':localizedLabelOf(keywordPeriod,0);
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -226,15 +233,15 @@ export default function Culture(){
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
   const sourceSnapshotQuery=useQuery({
-    queryKey:['culture-period-source-snapshot',classificationScope,selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date],
+    queryKey:['culture-period-source-snapshot',classificationScope,classificationWindowStart,classificationWindowEnd],
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       return selectScopePeriodSourceSnapshot(scopeData,{
-      startDate:selectedWorkPeriod?.start_date,
-      endDate:selectedWorkPeriod?.end_date
+        startDate:classificationWindowStart,
+        endDate:classificationWindowEnd
       });
     },
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&!initialPeriodSelectionPending&&Boolean(scopeData),
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&!initialPeriodSelectionPending&&Boolean(scopeData)&&classificationWindowValid,
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
@@ -284,15 +291,15 @@ export default function Culture(){
   const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
   const effectiveCategoryKey=selectedGroup?.category_key||'';
   const periodWorksQuery=useInfiniteQuery({
-    queryKey:['culture-period-works',classificationScope,selectedWorkPeriod?.period||'all',selectedWorkPeriod?.start_date||'',selectedWorkPeriod?.end_date||'',effectiveCategoryKey||'all'],
+    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all'],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
-    enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod),
+    enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
     queryFn:async({pageParam})=>{
       const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
-        startDate:selectedWorkPeriod?.start_date||'',
-        endDate:selectedWorkPeriod?.end_date,
+        startDate:classificationWindowStart,
+        endDate:classificationWindowEnd,
         sourceName:selectedGroup?.source_name||'',
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
@@ -339,7 +346,7 @@ export default function Culture(){
     setFullText('');
     setFullTextError('');
     if(workScrollRef.current)workScrollRef.current.scrollTop=0;
-  },[selectedWorkPeriod?.period,selectedWorkPeriod?.start_date,selectedWorkPeriod?.end_date]);
+  },[classificationWindowStart,classificationWindowEnd]);
 
   useEffect(()=>{
     setFullTextKey('');
@@ -544,7 +551,7 @@ export default function Culture(){
       const beforeCount=Number(item.beforeCount||0);
       const afterCount=Number(item.afterCount||0);
       const strength=Math.min(1,Math.abs(Number(item.afterMean||0)-Number(item.beforeMean||0))/Math.max(1,Number(item.afterMean||0),Number(item.beforeMean||0)));
-      const position=periodPositionRatio(item.date,selectedWindowStart,selectedWindowEnd);
+      const position=periodPositionRatio(item.date,classificationWindowStart,classificationWindowEnd);
       return {
         id:'virtual-anchor:'+item.date,
         entry_id:'virtual-anchor:'+item.date,
@@ -559,7 +566,7 @@ export default function Culture(){
         virtual_anchor:{...item,position_ratio:position,before_ratio:beforeCount/total,after_ratio:afterCount/total,strength_ratio:strength}
       };
     });
-  },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,selectedWindowStart,selectedWindowEnd,l,locale]);
+  },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,classificationWindowStart,classificationWindowEnd,l,locale]);
   // The first river is the one canonical place for existing anchors.
   // The work-classification river compares works with optional *candidate*
   // density dates; never render a second copy of official anchors.
@@ -570,7 +577,7 @@ export default function Culture(){
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
     setAnchorSaveMessage('');
-  },[scopeId,selectedWorkPeriod?.period,riverAnalysis.suggestions]);
+  },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
 
   const toggleVirtualAnchor=date=>{
     setSelectedVirtualAnchorDates(current=>current.includes(date)?current.filter(item=>item!==date):[...current,date].sort());
@@ -893,9 +900,10 @@ export default function Culture(){
                   </>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>{localizedLabelOf(selectedWorkPeriod,0)}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
+                <h3>{classificationPeriodLabel}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
+                {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
+                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!classificationBuckets.length
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 <div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
@@ -922,8 +930,8 @@ export default function Culture(){
                   labelOf={classificationRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
                   mode='source'
-                  windowStart={selectedWindowStart}
-                  windowEnd={selectedWindowEnd}
+                  windowStart={classificationWindowStart}
+                  windowEnd={classificationWindowEnd}
                   hiddenDates={riverAnalysis.hiddenDates}
                   onSelect={item=>{
                     if(item?.entryType==='virtual_anchor'){
@@ -956,7 +964,7 @@ export default function Culture(){
                   />:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
+                {classificationWindowValid&&!sourceSnapshotQuery.isFetching&&!sourceSnapshotQuery.error&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>{selectedGroup?.display_label||UI_COPY.culture.allWorks} · {selectedCount.toLocaleString(locale)}{l.workItemUnit}</summary>
                   {worksOpen?<><header>
@@ -967,7 +975,7 @@ export default function Culture(){
                   <IncrementalList
                     items={visibleWorkRows}
                     batchSize={DEFAULT_LIST_BATCH_SIZE}
-                    resetKey={selectedCategory+'|source'}
+                    resetKey={classificationWindowStart+'|'+classificationWindowEnd+'|'+selectedCategory+'|source'}
                     className='scope-culture-source-work-scroll'
                     externalHasMore={periodWorksPage.hasMore}
                     loading={periodWorksPage.loading}
