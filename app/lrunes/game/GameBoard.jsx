@@ -485,9 +485,24 @@ function OnlineMatch({data,count,code,host,onExit}){
           <Button variant="outlined" onClick={()=>{
             navigator.clipboard?.writeText(code).catch(()=>{});
           }}>複製房間碼</Button>
-          <Button variant="outlined" onClick={()=>{
-            navigator.clipboard?.writeText(LOC_ORIGIN+'/game/room/?room='+code).catch(()=>{});
-          }}>複製跨裝置邀請連結</Button>
+          <Button variant="outlined" onClick={async()=>{
+            const url=LOC_ORIGIN+'/game/room/?room='+code;
+            try{
+              const {Capacitor}=await import('@capacitor/core');
+              if(Capacitor.isNativePlatform()){
+                const {Share}=await import('@capacitor/share');
+                await Share.share({title:'月之符文線上對戰',url,dialogTitle:'邀請玩家加入房間'});
+              }else if(typeof navigator.share==='function'){
+                await navigator.share({title:'月之符文線上對戰',url});
+              }else{
+                await navigator.clipboard.writeText(url);
+              }
+            }catch(error){
+              // Share sheets can be dismissed by the player without changing the room.
+              if(!/cancel|dismiss|abort/i.test(String(error?.message||error)))
+                console.warn('[LunaRunes] 無法分享邀請連結',error);
+            }
+          }}>分享跨裝置邀請連結</Button>
           <Button variant="outlined" onClick={onExit}>離開房間</Button>
         </Stack>
       </Stack>
