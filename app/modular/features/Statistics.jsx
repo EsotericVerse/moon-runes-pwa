@@ -498,18 +498,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const keywordSourcesQuery=useQuery({
     queryKey:['statistics-source-taxonomy'],
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
-    queryFn:async()=>{
-      const [categories,aliases]=await Promise.all([
-        selectRows('silver.statistics_source_categories',{
-          columns:'category_code,display_name,sort_order,enabled',
-          orders:[{column:'sort_order',ascending:true}],limit:250
-        }),
-        selectRows('silver.statistics_source_aliases',{
-          columns:'source_key,category_code',limit:250
-        })
-      ]);
-      return {categories:categories.rows||[],aliases:aliases.rows||[]};
-    },
+    queryFn:async()=> (await loadGalaxyStatistics()).selectSourceTaxonomy(),
     staleTime:5*60_000
   });
   const configuredSources=useMemo(()=>
