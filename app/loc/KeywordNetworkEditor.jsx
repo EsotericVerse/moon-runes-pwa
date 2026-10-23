@@ -14,13 +14,13 @@ function buildGraph(items=[],className='',classId='',expandedGroup='',expandedIt
   const edges=[];
   const meta=new Map();
   const rootId='class:'+String(classId||className||'current');
-  nodes.push({id:rootId,label:className||'Keyword Class',level:0,kind:'class',shape:'ellipse'});
+  nodes.push({id:rootId,label:className?'關鍵詞組：'+className:'關鍵詞組',level:0,kind:'class',shape:'ellipse'});
   meta.set(rootId,{kind:'class',className,classId});
 
   const groups=[...new Set(rows.map(row=>String(row.class_group||'').trim()).filter(Boolean))];
   groups.forEach((group,index)=>{
     const id='group:'+group;
-    nodes.push({id,label:group,level:1,kind:'group',shape:'box'});
+    nodes.push({id,label:[className,group,'群組'].filter(Boolean).join(' '),level:1,kind:'group',shape:'box'});
     edges.push({id:rootId+'>'+id,from:rootId,to:id});
     meta.set(id,{kind:'group',group});
   });
