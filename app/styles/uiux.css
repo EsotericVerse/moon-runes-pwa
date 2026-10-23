@@ -947,7 +947,8 @@ button,a,.loc-control,.loc-button,
     border-radius:var(--loc-ui-radius-md);
   }
   .loc-home-hero-copy>.home-title-row>h1{
-    font-size:clamp(3rem,16vw,4.65rem)!important;
+    font-size:clamp(2rem,8.5vw,3rem)!important;
+    line-height:1.1!important;
   }
   .scope-culture-source-groups{
     grid-template-columns:1fr;
@@ -957,6 +958,87 @@ button,a,.loc-control,.loc-button,
     padding:.7rem .75rem;
   }
   .game-hand{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Shared small-screen reading layout: keep text readable without clamping
+   subtitles, allow cards to shrink, and avoid oversize hero headings. */
+@media(max-width:760px){
+  :root{
+    --loc-type-page-title:clamp(1.9rem,7.5vw,3rem);
+    --loc-type-hero-home-title:clamp(2rem,8.5vw,3.25rem);
+    --loc-type-hero-feature-title:clamp(1.8rem,7vw,2.6rem);
+    --loc-type-home-section-title:clamp(1.3rem,4.5vw,1.65rem);
+    --loc-type-hero-subtitle:clamp(1rem,3.8vw,1.2rem);
+    --loc-type-hero-copy:1rem;
+    --loc-type-body:1rem;
+    --loc-line-body:1.65;
+  }
+  .home-title-row,
+  .scope-hero>.home-title-row{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:.4rem!important;
+    align-items:start!important;
+  }
+  .home-title-row>h1,
+  .scope-hero>.home-title-row>h1{
+    grid-column:1!important;
+    grid-row:auto!important;
+    max-width:100%;
+    min-width:0;
+    overflow-wrap:anywhere;
+    text-wrap:balance;
+  }
+  .home-title-row>.loc-subtitle,
+  .scope-hero>.home-title-row>.scope-subtitle{
+    grid-column:1!important;
+    grid-row:auto!important;
+    display:block;
+    -webkit-line-clamp:unset;
+    line-clamp:unset;
+    overflow:visible;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    max-width:100%;
+    padding:0!important;
+    margin:.2rem 0 0!important;
+  }
+  .scope-feature-hero>.home-title-row>h1,
+  .loc-hero-feature h1{
+    font-size:var(--loc-type-hero-feature-title)!important;
+    line-height:1.12!important;
+  }
+  :is(.loc-view,.scope-page,.scope-content,.loc-card,.loc-panel,.loc-bubble,.scope-card,.scope-inline-card,.scope-feature-card,.scope-editor,.scope-blocknote){
+    min-width:0;
+  }
+  :is(.loc-card,.loc-panel,.loc-bubble,.scope-card,.scope-inline-card,.scope-feature-card,.scope-hero-description,.loc-hero-copy){
+    overflow-wrap:anywhere;
+  }
+  :is(.scope-blocknote,.scope-rich-surface,.loc-home-block__body,.loc-home-block__child-copy) img{
+    max-width:100%;
+    height:auto;
+    object-fit:contain;
+  }
+  .scope-blocknote .bn-editor{
+    min-width:0;
+    max-width:100%;
+  }
+}
+@media(max-width:560px){
+  :root{
+    --loc-type-page-title:clamp(1.75rem,7.6vw,2.5rem);
+    --loc-type-section-title:clamp(1.13rem,4.2vw,1.35rem);
+    --loc-type-body:1rem;
+  }
+  :is(.loc-card,.loc-panel,.scope-card,.scope-feature-card){
+    padding:clamp(.8rem,3.3vw,1rem);
+  }
+  :is(.scope-page-editor,.scope-search-article-editor,.scope-frame-field-grid,.scope-management-fields){
+    min-width:0;
+    max-width:100%;
+  }
+  .scope-management-fields{
+    grid-template-columns:minmax(0,1fr);
+  }
 }
 
 /* Motion/accessibility contract */
