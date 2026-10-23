@@ -6,7 +6,7 @@ import {navigationHref} from '../modular/scope-registry';
 import useNativeNavigation from '../modular/use-native-navigation';
 import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
-import Select from 'react-select';
+import ManagementSectionNav from '../modular/ManagementSectionNav';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
@@ -571,20 +571,13 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
     </div>
     {workspace==='analysis'&&message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
 
-    <div className="scope-stat-controls scope-stat-workspace-switch">
-      <label htmlFor="keyword-workspace-picker">{l.workspace}</label>
-      <Select
-        inputId="keyword-workspace-picker"
-        className="scope-workspace-select"
-        classNamePrefix="scope-workspace-select"
-        unstyled
-        isSearchable={false}
-        options={workspaceOptions}
-        value={workspaceOptions.find(option=>option.value===workspace)}
-        onChange={option=>{const next=option?.value||'analysis';setWorkspace(next);if(next==='manual'||next==='network')chooseGroup('');}}
-        aria-label={l.workspace}
-      />
-    </div>
+    <div className="management-workspace">
+      <ManagementSectionNav id="keyword-workspace-sections" title={l.workspace}
+        panelId="keyword-workspace-panel"
+        items={workspaceOptions} value={workspace}
+        onChange={next=>{setWorkspace(next);if(next==='manual'||next==='network')chooseGroup('');}}/>
+      <div className="management-workspace-panel" id="keyword-workspace-panel"
+        role="region" aria-labelledby={'keyword-workspace-sections-option-'+workspace}>
 
     {workspace==='analysis'?<section className="scope-inline-card">
       <h3>{l.analysisSettings}</h3>
@@ -734,5 +727,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <button type="button" className="loc-button" onClick={()=>newItem('')}>{l.createFirst}</button>
     </div>:null}
     </>:null}
+      </div>
+    </div>
   </section>;
 }
