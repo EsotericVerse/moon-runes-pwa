@@ -25,8 +25,11 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
 
 function GovernanceBlocks({scopeId,native}){
   // Public reading never probes management roles. The management route gates access.
-  const manageHref=scopeId==='loc'?navigationHref('admin','',native):navigationHref(scopeId,'governance/manage',native);
-  const manageLink=<ScopeLink className="loc-button primary" href={manageHref} native={native}>治理管理</ScopeLink>;
+  // LOC keeps its distinct Admin entrance. Other Scope management starts
+  // from the Scope homepage edit mode, not the public Governance page.
+  const manageLink=scopeId==='loc'
+    ?<ScopeLink className="loc-button primary" href={navigationHref('admin','',native)} native={native}>治理管理</ScopeLink>
+    :null;
   return <ScopeEditableBlocks
     scopeId={scopeId}
     page="governance"
