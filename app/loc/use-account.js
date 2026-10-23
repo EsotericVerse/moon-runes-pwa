@@ -1,6 +1,7 @@
 'use client';
 
-import {useCallback,useEffect,useState} from 'react';
+import {useCallback} from 'react';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {z} from 'zod';
 import {getAccountSession,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
@@ -39,79 +40,107 @@ function createScopeAuthorizer(user,permissionRows=[]){
   });
 }
 
-const emptyState={
+// One shared query per identity level for the entire AppShell QueryClient.
+// The public navigation only reads the session; protected views opt into the
+// management query. A permission result is UI state, never a substitute for
+// Supabase RLS / RPC write authorization.
+const SESSION_KEY=['loc-account','session'];
+const MANAGEMENT_KEY=['loc-account','management'];
+const ACCOUNT_CACHE_MS=60_000;
+const emptyState=Object.freeze({
   loading:true,user:null,email:'',role:'',authorizer:null,
   permissionLoading:true,error:'',scopes:[]
-};
+});
+const signedOutState=Object.freeze({...emptyState,loading:false,permissionLoading:false});
+const BLOCKLIST_MESSAGE='此帳號已列入系統黑名單，無法登入 LOC 管理功能。';
+
+function failedState(error){
+  return {...signedOutState,error:String(error?.message||error)};
+}
+
+async function loadSessionAccount(){
+  try{
+    const session=await getAccountSession();
+    const user=session?.user||null;
+    if(!user)return signedOutState;
+    return {...signedOutState,user,email:normalizeAuthEmail(user.email)};
+  }catch(error){
+    return failedState(error);
+  }
+}
+
+async function loadManagementAccount(queryClient){
+  try{
+    const session=await getAccountSession();
+    const user=session?.user||null;
+    if(!user){
+      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      return signedOutState;
+    }
+    const email=normalizeAuthEmail(user.email);
+
+    // A blocked account must not keep a cached session-only identity.
+    if(await isCurrentEmailBlocklisted()){
+      await signOutAccount();
+      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      return failedState(BLOCKLIST_MESSAGE);
+    }
+
+    // The authorization source is silver.loc, not a cached or client-editable
+    // claim. Its row-level policy remains the authority for database writes.
+    let permissions=[];
+    if(email){
+      const {data,error}=await dbAuthRelation('silver.loc')
+        .select('id,email:manage_email,role:manage_role,galaxy:galaxy_table,time:time_table,birthday')
+        .eq('manage_email',email);
+      if(error)throw new Error(error.message||'Management permission read failed');
+      permissions=data||[];
+    }
+    const authorizer=createScopeAuthorizer(user,permissions);
+    return {
+      ...signedOutState,user,email:authorizer.email,
+      role:authorizer.role,authorizer,scopes:scopeDataFromManageRows(permissions)
+    };
+  }catch(error){
+    // Fail closed on authorization failures; never retain stale edit rights.
+    return failedState(error);
+  }
+}
 
 export function useAccount({enabled=true,sessionOnly=false}={}){
-  const [state,setState]=useState(emptyState);
+  const queryClient=useQueryClient();
+  const queryKey=sessionOnly?SESSION_KEY:MANAGEMENT_KEY;
+  const queryFn=useCallback(
+    ()=>sessionOnly?loadSessionAccount():loadManagementAccount(queryClient),
+    [sessionOnly,queryClient]
+  );
+  const query=useQuery({
+    queryKey,queryFn,enabled,
+    staleTime:ACCOUNT_CACHE_MS,
+    refetchOnWindowFocus:true,
+    retry:false
+  });
+  const state=query.data||emptyState;
 
+  // Explicit entry into edit mode always performs a fresh authorization
+  // check, even when another view has populated the shared query cache.
   const refresh=useCallback(async()=>{
-    try{
-      const session=await getAccountSession();
-      const user=session?.user||null;
-      if(!user){
-        setState({...emptyState,loading:false,permissionLoading:false});
-        return null;
-      }
-
-      const email=normalizeAuthEmail(user?.email);
-      // Personalized navigation needs only a session. Management authorization
-      // is intentionally deferred until the protected route or edit action.
-      if(sessionOnly){
-        setState({...emptyState,loading:false,permissionLoading:false,user,email});
-        return user;
-      }
-      // Deny globally before assigning any scope/admin management role.
-      if(await isCurrentEmailBlocklisted()){
-        await signOutAccount();
-        setState({...emptyState,loading:false,permissionLoading:false,error:'此帳號已列入系統黑名單，無法登入 LOC 管理功能。'});
-        return null;
-      }
-      let permissions=[];
-      if(email){
-        // silver.manage 已停用：登入權限改由 silver.loc 的 manage_email/manage_role
-        // 欄位判斷（main index table），回傳形狀跟舊版 silver.manage 查詢完全相同，
-        // 呼叫端（createScopeAuthorizer / scopeDataFromManageRows）不需要改動。
-        const {data,error}=await dbAuthRelation('silver.loc')
-          .select('id,email:manage_email,role:manage_role,galaxy:galaxy_table,time:time_table,birthday')
-          .eq('manage_email',email);
-        if(error)throw new Error(error.message||'Management permission read failed');
-        permissions=data||[];
-      }
-      const authorizer=createScopeAuthorizer(user,permissions);
-      const scopes=scopeDataFromManageRows(permissions);
-      setState({
-        loading:false,
-        user,
-        email:authorizer.email,
-        role:authorizer.role,
-        authorizer,
-        scopes,
-        permissionLoading:false,
-        error:''
-      });
-      return {user,authorizer};
-    }catch(error){
-      setState({...emptyState,loading:false,permissionLoading:false,error:String(error?.message||error)});
-      return null;
-    }
-  },[sessionOnly]);
-
-  useEffect(()=>{if(enabled)refresh()},[enabled,refresh]);
+    const result=await queryClient.fetchQuery({
+      queryKey,queryFn,staleTime:0,retry:false
+    });
+    if(sessionOnly)return result.user||null;
+    return result.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
+  },[queryClient,queryKey,queryFn,sessionOnly]);
 
   const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
   const signOut=useCallback(async()=>{
     await signOutAccount();
-    setState({...emptyState,loading:false,permissionLoading:false});
-  },[]);
-  // `local` is the hidden, device-only Scope (see scope-registry.js /
-  // providers/local-sqlite.mjs): its data never reaches Supabase, so the
-  // normal cloud manage-role check neither applies nor can ever pass for it
-  // (it has no row in silver.loc, and must stay usable without any sign-in
-  // at all -- that's the point of a private, on-device import). It is
-  // always "managed" by whoever is physically using this device/browser.
+    await queryClient.cancelQueries({queryKey:['loc-account']});
+    queryClient.setQueryData(SESSION_KEY,signedOutState);
+    queryClient.setQueryData(MANAGEMENT_KEY,signedOutState);
+  },[queryClient]);
+
+  // The hidden local Scope is device-only and has no cloud management row.
   const canManageScopeSync=useCallback(
     scopeId=>normalizeScopeId(scopeId)==='local'||Boolean(state.authorizer?.canManageScopeSync(scopeId)),
     [state.authorizer]
