@@ -110,6 +110,21 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
   return {text,media};
 }
 
+// Shared public taxonomy reader for Statistics and Search. Never requires
+// management authentication or scans article bodies to populate a filter.
+export async function selectSourceTaxonomy(){
+  const [categories,aliases]=await Promise.all([
+    selectRows('silver.statistics_source_categories',{
+      columns:'category_code,display_name,sort_order,enabled',
+      orders:[{column:'sort_order',ascending:true}],limit:250
+    }),
+    selectRows('silver.statistics_source_aliases',{
+      columns:'source_key,category_code',limit:250
+    })
+  ]);
+  return {categories:categories.rows||[],aliases:aliases.rows||[]};
+}
+
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
   const filters=publicContentFilters([
@@ -318,18 +333,59 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   });
 }
 
-function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter=''}={}){
+// Search selections use the same enabled categories and alias assignments as
+// Statistics. Unmapped or disabled-category aliases belong to Others.
+function resolveSourceSelection(value,taxonomy={}){
+  const selected=String(value||'').trim();
+  if(!selected)return {kind:'all',names:[]};
+  if(!selected.startsWith('category:')){
+    const raw=selected.startsWith('source:')?selected.slice(7):selected;
+    return {kind:raw?'names':'none',names:raw?[raw]:[]};
+  }
+  const code=selected.slice(9).toLowerCase();
+  const categories=taxonomy?.categories||[];
+  const active=new Set(categories.filter(row=>row.enabled!==false)
+    .map(row=>String(row.category_code||'').toLowerCase()));
+  if(!active.has(code))return {kind:'none',names:[]};
+  const aliases=taxonomy?.aliases||[];
+  const rows=aliases.filter(row=>String(row.source_key||'').trim());
+  if(code==='others')return {kind:'others',names:[...new Set(rows
+    .filter(row=>active.has(String(row.category_code||'').toLowerCase())&&
+      String(row.category_code||'').toLowerCase()!=='others')
+    .map(row=>String(row.source_key).trim()))]};
+  const names=[...new Set(rows.filter(row=>String(row.category_code||'').toLowerCase()===code)
+    .map(row=>String(row.source_key).trim()))];
+  return {kind:names.length?'names':'none',names};
+}
+function sourceNameClause(selection){
+  if(selection.kind==='all')return '';
+  // JSON string quoting keeps PostgREST's OR grammar intact for unusual
+  // administrator-configured source names (commas, quotes and parentheses).
+  const item=name=>'source_name.ilike.'+
+    JSON.stringify(String(name).replace(/[\\%_*]/g,'\\function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter=''}={}){'));
+  if(selection.kind==='names')return selection.names.map(item).join(',');
+  if(selection.kind==='others'){
+    if(!selection.names.length)return '';
+    return 'source_name.is.null,and('+selection.names.map(name=>
+      item(name).replace('source_name.ilike.','source_name.not.ilike.')
+    ).join(',')+')';
+  }
+  return '';
+}
+
+function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter='',sourceTaxonomy=null}={}){
   // These filters are applied by the existing Supabase provider, not to a
   // truncated page of client-side search results.
+  const sourceSelection=resolveSourceSelection(sourceFilter,sourceTaxonomy||{});
+  if(sourceSelection.kind==='none')return [];
+  // The admin taxonomy classifies Galaxy source_name, not Galaxy Media
+  // media_type or external URL; do not mislabel media as article sources.
+  if(sourceFilter&&(mediaOnly||contentType==='multimedia'||contentType==='timeline'))return [];
+  const sourceClause=sourceNameClause(sourceSelection);
   const textKindFilters=[
-    ...(sourceFilter?[{column:'source_name',operator:'ilike',value:sourceFilter}]:[]),
     ...(contentType==='lyrics_work'?[{column:'source_name',operator:'ilike',value:'suno'}]:[]),
     ...(contentType==='text_work'?[{column:'source_name',operator:'neq',value:'suno'}]:[])
   ];
-  const mediaDomain={suno:'suno.com',threads:'threads.com',instagram:'instagram.com',facebook:'facebook.com',vocus:'vocus.cc',x:'x.com'};
-  const sourceClause=sourceFilter&&mediaDomain[sourceFilter]
-    ?'media_type.ilike.*'+sourceFilter+'*,url.ilike.*'+mediaDomain[sourceFilter]+'*'
-    :'';
 
   const current=scopeOf(scope);
   const textFilters=includeHiddenText
@@ -341,26 +397,26 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   const textColumns=['uid'];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,authenticated:includeHiddenText,exactColumn:'title'
+    columns:textColumns,searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
   });
   const title=makeProvider({
     id:current.id+':text-title',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,authenticated:includeHiddenText
+    searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const contentExact=makeProvider({
     id:current.id+':text-content-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['content'],dateColumn:'createtime',sortTitle:true,filters:textFilters,authenticated:includeHiddenText,exactColumn:'content'
+    columns:textColumns,searchFields:['content'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'content'
   });
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content','source_name'],dateColumn:'createtime',sortTitle:true,filters:textFilters,authenticated:includeHiddenText
+    searchFields:['content','source_name'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
     columns:['media_id','galaxy_link','media_type','title','url','meta_tags','createtime'],
-    searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime',sourceClause
+    searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime'
   });
   if(mediaOnly||contentType==='multimedia')return [media];
   const timeline=makeProvider({
@@ -370,8 +426,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
   });
   // A single ordinary search includes multimedia: no duplicate search mode.
-  if(contentType==='timeline')return sourceFilter?[]:[timeline];
-  if(contentType==='lyrics_work'||contentType==='text_work')return [titleExact,title,contentExact,content];
+  if(contentType==='timeline')return [timeline];
+  if(sourceFilter||contentType==='lyrics_work'||contentType==='text_work')return [titleExact,title,contentExact,content];
   return [titleExact,title,contentExact,content,media,timeline];
 }
 
@@ -426,14 +482,14 @@ export async function selectStyleKeywordMatches(scopes,query,{signal=null,concur
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',browse=false,signal=null
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,browse=false,signal=null
 }={}){
   const q=String(query||'').trim();
   if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
-  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter}));
+  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy}));
   // Every Scope's title hits are paged before any body matches.
   const providers=browse
     ?scopeProviders.flatMap(group=>
