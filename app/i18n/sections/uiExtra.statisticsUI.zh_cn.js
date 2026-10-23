@@ -5,7 +5,7 @@ export default {
   "mediaPlatform": "多媒体来源统计",
   "mediaStyle": "多媒体风格统计（Meta Tag）",
   "notApplied": "不套用",
-  "keywordClass": "关键词 Class",
+  "keywordClass": "关键词组",
   "loading": "正在读取统计…",
   "noChart": "当前时间范围没有可显示的统计图表。",
   "loadingMediaTags": "正在读取多媒体标签组合…",
