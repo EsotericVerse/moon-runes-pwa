@@ -199,6 +199,10 @@
 .lrg-history-panel{margin-top:14px}
 .lrg-trend{height:300px;margin-top:12px}
 .lrg-docs{margin-top:14px}
+/* Game documentation reuses the shared management navigation without affecting the board. */
+.lrg-document-workspace{margin-top:14px}
+.lrg-document-workspace .lrg-docs{margin-top:0;min-width:0;align-content:start}
+.lrg-document-workspace .management-section-nav{min-width:0}
 
 .lrg-rule-sections{
   display:grid;
