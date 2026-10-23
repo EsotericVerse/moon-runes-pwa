@@ -29,10 +29,6 @@ export default function KeywordSettings(){
     editDock?.begin(scopeId);
   },[authorized,scopeId,params?.get('edit'),editDock?.begin]);
   return <FeaturePage featureId="statics">
-    <section className="loc-card scope-feature-card">
-      <h2><UiText id="uiExtra.keywords.settingsTitle"/></h2>
-      <p className="scope-status"><UiText id="uiExtra.keywords.settingsGuide"/></p>
-    </section>
     {account.loading||account.permissionLoading
       ?<p className="scope-status"><UiText id="uiExtra.keywords.verifyingAccess"/></p>
       :authorized?<KeywordLibraryPanel scopeId={scopeId}/>
