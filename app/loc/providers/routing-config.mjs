@@ -5,8 +5,8 @@ export const DATABASE_ROUTING_CONFIG=Object.freeze({
     'supabase-current':Object.freeze({provider:'supabase',primaryControl:true}),
     'neon-current':Object.freeze({provider:'neon',primaryControl:false})
   }),
-  // Neon is not a compatible read fallback until Supabase/Neon schemas align.
-  blacklist:Object.freeze(['neon-current']),
+  // Allow the configured Neon read-only fallback when the primary read fails.
+  blacklist:Object.freeze([]),
   primaryId:'supabase-current',
   backupId:'neon-current',
   mode:'single'
