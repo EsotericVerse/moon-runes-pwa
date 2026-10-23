@@ -1,6 +1,6 @@
 'use client';
 
-import {useQuery} from '@tanstack/react-query';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {dbPublicClient} from './db-client.mjs';
 import {invalidatePublicScopeMetadata,invalidatePublicThemeSnapshot,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
@@ -39,7 +39,7 @@ async function legacyBootstrap(id,page){
     selectScopeRegistry().catch(()=>[]),
     selectThemeRegistry().catch(()=>[]),
     id?selectScopeConfig(id).catch(()=>null):Promise.resolve(null),
-    id?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
+    id&&page!=='culture'?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
   ]);
   return {
     scope_id:id,page_name:page,config,blocks,registry,page_copy:[],
@@ -48,7 +48,7 @@ async function legacyBootstrap(id,page){
   };
 }
 
-export async function selectAppBootstrap(scopeId,pageName='index'){
+export async function selectAppBootstrap(scopeId,pageName='index',{configHint=null}={}){
   const [,id,page]=appBootstrapKey(scopeId,pageName);
   if(bootstrapRpcInstalled){
     try{
@@ -62,8 +62,9 @@ export async function selectAppBootstrap(scopeId,pageName='index'){
             ?await selectScopeBlocks('loc','index')
             :Array.isArray(site.blocks)?site.blocks:[]]
         :await Promise.all([
-          id?(id==='loc'?Promise.resolve(site.config||null):selectScopeConfig(id)):Promise.resolve(null),
-          id?selectScopeBlocks(id,page):Promise.resolve([])
+          id?(id==='loc'?Promise.resolve(site.config||null)
+            :configHint?Promise.resolve(configHint):selectScopeConfig(id)):Promise.resolve(null),
+          id&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
         ]);
       if(isLocHome)locHomeSnapshotDelivered=true;
       return {
@@ -92,6 +93,22 @@ export function appBootstrapPageCopy(data,scopeId){
 }
 
 export function useAppBootstrap(scopeId,pageName='index',{enabled=true}={}){
+  const queryClient=useQueryClient();
   const key=appBootstrapKey(scopeId,pageName);
-  return useQuery({queryKey:key,queryFn:()=>selectAppBootstrap(scopeId,pageName),staleTime:60_000,enabled});
+  return useQuery({
+    queryKey:key,
+    queryFn:()=>{
+      // Author Home already read this Scope's public Config. Reuse that fresh
+      // React Query value when navigating to Culture; this is NOT an auth grant.
+      // Invalidated or aged entries must never hide a subsequent config update.
+      const homeState=key[2]==='index'?null:queryClient.getQueryState(appBootstrapKey(scopeId,'index'));
+      const freshHome=homeState&&!homeState.isInvalidated
+        &&homeState.dataUpdatedAt>0&&Date.now()-homeState.dataUpdatedAt<60_000;
+      return selectAppBootstrap(scopeId,pageName,{
+        configHint:freshHome?homeState.data?.config:null
+      });
+    },
+    staleTime:60_000,
+    enabled
+  });
 }
