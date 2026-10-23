@@ -840,7 +840,7 @@ export default function Search({managementMode=false}){
           </div>:null}
         </div>:null}
       </div>
-    {!managementMode?<div className="scope-search-reference-editor">
+    {!managementMode&&scopeId!=='loc'?<div className="scope-search-reference-editor">
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
