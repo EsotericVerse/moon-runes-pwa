@@ -265,6 +265,8 @@ export default function Search({managementMode=false}){
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
   const [fullTextRow,setFullTextRow]=useState(null);
+  // A guest can see Edit; authorization is requested only after the click.
+  const [authorizedEditingKey,setAuthorizedEditingKey]=useState('');
   const [fullTextError,setFullTextError]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const searchId=useRef(0);
@@ -622,6 +624,16 @@ export default function Search({managementMode=false}){
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
+      // The public Search/正文 view never probes silver.loc just to show Edit.
+      // Management Search already checks its entrance. Public readers are
+      // verified on the actual Edit action, never on opening article text.
+      if(!managementMode){
+        const verified=await account.refresh();
+        if(!verified?.authorizer?.canManageScopeSync(result.scopeId)){
+          throw new Error('請先登入具有此 Scope 編輯權限的帳號。');
+        }
+        setAuthorizedEditingKey(result.key);
+      }
       const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
         ?fullTextRow
         :null;
@@ -630,7 +642,7 @@ export default function Search({managementMode=false}){
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
         result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:MEDIA_EDITOR_COLUMNS,
-        {authenticated:result.resourceType==='galaxy'&&canManageSearchScope(account,result.scopeId)}
+        {authenticated:result.resourceType==='galaxy'&&(managementMode||!managementMode)}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       const {SearchEditDraft}=await import('./search-edit-draft');
@@ -639,7 +651,10 @@ export default function Search({managementMode=false}){
       if(managementMode)editDock?.begin(scopeId);
     }catch(exception){
       setEditingKey('');
-      setEditError(String(exception?.message||exception||UI_COPY.search.editLoadFailed));
+      setAuthorizedEditingKey('');
+      const message=String(exception?.message||exception||UI_COPY.search.editLoadFailed);
+      setEditError(message);
+      if(!managementMode)setFullTextError(message);
     }
   }
   async function saveEditing(result){
@@ -681,7 +696,7 @@ export default function Search({managementMode=false}){
         setFullText(body);
         setFullTextRow(current=>({...current,...contentPatch,uid:current?.uid||result.editResourceId||result.resourceId}));
       }
-      setEditingKey('');setEditDraft(null);setStatus('');
+      setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');setStatus('');
       // Article save stays on the management-search workspace.
       if(managementMode)editDock?.end();
     }catch(exception){
@@ -698,7 +713,7 @@ export default function Search({managementMode=false}){
       await deleteRows(result.editableTable,{filters:[{column:result.editableIdColumn,operator:'eq',value:result.editResourceId}]});
       setResults(current=>current.filter(item=>item.key!==result.key));
       if(fullTextKey===result.key){setFullTextKey('');setFullText('');setFullTextRow(null);}
-      setEditingKey('');setEditDraft(null);
+      setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');
       setStatus(t('uiExtra.editBlocks.deleted'));
     }catch(exception){
       setEditError(String(exception?.message||exception||t('uiExtra.editBlocks.deleteFailed')));
@@ -911,8 +926,12 @@ export default function Search({managementMode=false}){
         // Page blocks have no Galaxy attributes. Article editing and typed
         // metadata are available only to authorized Scope managers; guest
         // search and article reading cannot reveal metadata controls.
-        const editable=Boolean(managementMode&&canManageSearchScope(account,row.scopeId)&&
-          editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
+        const canOfferEdit=Boolean(editTarget.resourceType==='galaxy'&&editTarget.editableTable&&
+          editTarget.editableIdColumn&&editTarget.editResourceId);
+        const editable=Boolean(
+          (managementMode&&canManageSearchScope(account,row.scopeId)&&editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId)
+          ||(canOfferEdit&&authorizedEditingKey===row.key)
+        );
         const draft=editingKey===row.key?editDraft:null;
         return <Fragment key={row.key}>
           {scopeId==='loc'&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
@@ -938,7 +957,7 @@ export default function Search({managementMode=false}){
           onDraftChange={setEditDraft}
           onSave={()=>saveEditing(editTarget)}
           onDelete={()=>deleteEditing(editTarget)}
-          onCancel={()=>{setEditingKey('');setEditDraft(null);setEditError('')}}
+          onCancel={()=>{setEditingKey('');setEditDraft(null);setAuthorizedEditingKey('');setEditError('')}}
           editBusy={editBusy}
           editError={editError}
           showInlineEditorActions={!editDock?.active}
@@ -964,7 +983,8 @@ export default function Search({managementMode=false}){
               onToggle={()=>toggleFullText(row)}
               showToggle={!searchParams?.get('identity')}
             />
-            {editable?<button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditing(editTarget)}>
+            {fullTextKey===row.key&&canOfferEdit?<button type="button" className="loc-button scope-work-edit-button"
+              onClick={()=>startEditing(editTarget)}>
               <UiText id="uiExtra.editBlocks.edit"/>
             </button>:null}
           </div>:null}
