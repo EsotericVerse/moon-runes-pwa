@@ -51,8 +51,20 @@ export function locHomeBlockClass(slot,scopeId='loc'){
     order===1?'loc-home-block--hero':'',
     order===1&&image.mode==='side'?'loc-home-block--hero-side':'',
     order===1&&image.mode==='side'?'loc-home-block--image-'+(image.position==='left'?'left':'right'):'',
-    order!==1&&image.src?(image.position==='only'?'loc-home-block--image-only':'loc-home-block--with-image loc-home-block--image-'+image.position):''
+    order!==1&&image.src?(image.position==='only'?'loc-home-block--image-only':'loc-home-block--with-image loc-home-block--image-'+image.position):'',
+    order!==1&&image.src&&['left','right'].includes(image.position)&&
+      Number.isFinite(Number(slot?.image?.width))&&Number(slot.image.width)>=160&&Number(slot.image.width)<=800
+      ?'loc-home-block--media-sized':''
   ].filter(Boolean).join(' ');
+}
+
+// The frame owns the width value so CSS Grid can allocate a real media
+// column. A width set only on the child image cannot resize its grid track.
+export function homeBlockMediaStyle(slot,scopeId='loc'){
+  const image=resolveHomeImage(slot,scopeId);
+  return image.src&&Number(slot?.order)!==1
+    ?{'--loc-home-media-max':image.width+'px'}
+    :undefined;
 }
 
 function RichHtml({html,className='',stripImage=false}){

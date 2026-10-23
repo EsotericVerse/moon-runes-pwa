@@ -1,5 +1,5 @@
 import ScopeEditableBlocks from '../ScopeEditableBlocks';
-import LocHomeBlockDisplay,{locHomeBlockClass} from '../LocHomeBlockDisplay';
+import LocHomeBlockDisplay,{locHomeBlockClass,homeBlockMediaStyle} from '../LocHomeBlockDisplay';
 
 export default function AboutView(){
   return <section className="loc-view loc-home">
@@ -14,6 +14,7 @@ export default function AboutView(){
       placeholderFirstOrder={1}
       renderDisplay={LocHomeBlockDisplay}
       resolveSlotClassName={locHomeBlockClass}
+      resolveSlotStyle={homeBlockMediaStyle}
       editSlotClassName="loc-card loc-home-block"
     />
   </section>;
