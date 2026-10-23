@@ -362,7 +362,7 @@ function sourceNameClause(selection){
   // JSON string quoting keeps PostgREST's OR grammar intact for unusual
   // administrator-configured source names (commas, quotes and parentheses).
   const item=name=>'source_name.ilike.'+
-    JSON.stringify(String(name).replace(/[\\%_*]/g,'\\function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter=''}={}){'));
+    JSON.stringify(String(name).replace(/[\\%_*]/g,match=>'\\'+match));
   if(selection.kind==='names')return selection.names.map(item).join(',');
   if(selection.kind==='others'){
     if(!selection.names.length)return '';
