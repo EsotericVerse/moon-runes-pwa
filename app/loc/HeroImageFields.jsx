@@ -1,17 +1,6 @@
 'use client';
 import UiText,{useUiText} from '../i18n/UiText';
-import {BlockNoteContent} from './blocknote-content.mjs';
 import {absoluteImageUrl} from './hero-image.mjs';
-
-// Hero mode: background image or side image (order 1 only).
-export function HeroModeFieldset({draft,name,onChange}){
-  const mode=BlockNoteContent.image.heroImageMode(draft);
-  return <fieldset className="scope-hero-image-mode">
-    <legend><UiText id="uiExtra.editBlocks.heroImageMode"/></legend>
-    <label><input type="radio" name={name} checked={mode==='background'} onChange={()=>onChange('background')}/> <UiText id="uiExtra.editBlocks.background"/></label>
-    <label><input type="radio" name={name} checked={mode==='side'} onChange={()=>onChange('side')}/> <UiText id="uiExtra.editBlocks.beside"/></label>
-  </fieldset>;
-}
 
 // Frame image settings: one image per text box, URL only. `onChange(changes,removeEmbedded)`.
 export function HeroImageFieldset({draft,image,onChange,allowImageOnly=false}){
