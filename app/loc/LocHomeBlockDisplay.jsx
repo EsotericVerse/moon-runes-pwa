@@ -75,7 +75,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
       {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
     </header>:null}
     {!imageOnly?<RichHtml html={slot.text} stripImage className="loc-home-block__body"/>:null}
-    {!imageOnly&&children.length?<div className="loc-home-block__children">
+    {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
         return <article className={'loc-home-block__child '+(card?'loc-home-block__child--card':'loc-home-block__child--bubble')}
