@@ -49,8 +49,6 @@ export function locHomeBlockClass(slot,scopeId='loc'){
     order===1?'loc-hero loc-home-hero':'loc-card',
     'loc-home-block',
     order===1?'loc-home-block--hero':'',
-    order===1&&image.mode==='side'?'loc-home-block--hero-side':'',
-    order===1&&image.mode==='side'?'loc-home-block--image-'+(image.position==='left'?'left':'right'):'',
     order!==1&&image.src?(image.position==='only'?'loc-home-block--image-only':'loc-home-block--with-image loc-home-block--image-'+image.position):'',
     order!==1&&image.src&&['left','right'].includes(image.position)&&
       Number.isFinite(Number(slot?.image?.width))&&Number(slot.image.width)>=160&&Number(slot.image.width)<=800
@@ -133,7 +131,3 @@ export function authorHomeBlockClass(slot){
   return locHomeBlockClass(slot,'lo3rwang');
 }
 
-// Shared by every hero that offers background/side: the extra class for side mode.
-export function heroSideClass(slot,scopeId,sideClass){
-  return resolveHomeImage({...slot,order:1},scopeId).mode==='side'?' '+sideClass:'';
-}
