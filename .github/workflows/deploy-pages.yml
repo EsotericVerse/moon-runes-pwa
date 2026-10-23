@@ -10,6 +10,7 @@ on:
       - "AGENTS.md"
       - "README.md"
       - "docs/**"
+      - "supabase/migrations/**"
   workflow_dispatch:
 
 permissions:
