@@ -102,8 +102,7 @@ export default function AdminReservedScopeIds(){
   if(!allowed)return <section className="loc-card scope-status scope-error" role="alert">只有 Admin 可以編輯保留 Scope ID。</section>;
 
   return <section className="loc-card admin-workspace scope-feature-card">
-    <h2>保留 Scope ID</h2>
-    <p className="scope-status">此清單防止新 Scope 與既有系統路徑重名。訪客可讀取；只有 Admin 可新增或修改備註。為避免意外解除路徑保護，此處不提供刪除。</p>
+    <h2>保留名稱設定</h2>
     <h3>新增保留 ID</h3>
     <div className="scope-management-fields">
       <label><span>Scope ID</span>
