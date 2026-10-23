@@ -5,7 +5,7 @@ export default {
   "mediaPlatform": "メディアプラットフォーム統計",
   "mediaStyle": "メディアスタイル統計（メタタグ）",
   "notApplied": "適用しない",
-  "keywordClass": "キーワード Class",
+  "keywordClass": "キーワードセット",
   "loading": "統計を読み込み中…",
   "noChart": "選択した期間に表示できるグラフがありません。",
   "loadingMediaTags": "メディアタグの組み合わせを読み込み中…",
