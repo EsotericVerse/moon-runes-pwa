@@ -208,7 +208,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     if(!selectedPeriod)return customQueryRange;
     const startDate=String(selectedPeriod.start_date).slice(0,10);
     const endDate=String(selectedPeriod.end_date||queryEndDate).slice(0,10);
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(endDate)||startDate>endDate)return customQueryRange;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||!/^\d{4}-\d{2}-\d{2}$/.test(endDate)||startDate>endDate)return customQueryRange;
     const days=Math.round((Date.parse(endDate+'T00:00:00Z')-Date.parse(startDate+'T00:00:00Z'))/86_400_000);
     return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
       fullHistory:false,canZoomOut:false,canZoomIn:false};
