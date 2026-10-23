@@ -21,7 +21,8 @@ const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
   {value:'analysis',key:'analysisSettings'},
   {value:'manual',key:'manual'},
-  {value:'network',key:'network'}
+  {value:'network',key:'network'},
+  {value:'library',key:'title'}
 ]);
 
 function normalizeKeywordLines(value){
@@ -549,6 +550,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
   dockActions.current={
     save:async()=>{
       if(busy||loading)return false;
+      if(workspace==='library'){
+        setMessage(l.libraryImmediateSave);
+        return false;
+      }
       const success=await (workspace==='analysis'?saveAnalysisSettings():save());
       if(success)editDock?.complete(navigationHref(scopeId,'statics',native));
       return success;
@@ -561,16 +566,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
 
   if(!canEdit)return null;
 
-  return <section className="loc-card scope-feature-card scope-management-workspace">
-    <p className="loc-eyebrow">Keyword Library</p>
-    <h2>{l.title}</h2>
-    <p>{l.description}</p>
-    <div className="scope-stat-controls">
-      <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?l.processing:l.copyRuneButton}</button>
-      <span className="scope-status">{l.copyHint}</span>
-    </div>
-    {workspace==='analysis'&&message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')?'scope-status scope-error':'scope-status'}>{message}</p>:null}
-
+  return <div className="scope-keyword-management">
     <div className="management-workspace">
       <ManagementSectionNav id="keyword-workspace-sections" title={l.workspace}
         panelId="keyword-workspace-panel"
@@ -579,8 +575,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       <div className="management-workspace-panel" id="keyword-workspace-panel"
         role="region" aria-labelledby={'keyword-workspace-sections-option-'+workspace}>
 
-    {workspace==='analysis'?<section className="scope-inline-card">
-      <h3>{l.analysisSettings}</h3>
+    {workspace==='analysis'?<section className="loc-card scope-feature-card">
+       <h2>{l.analysisSettings}</h2>
       <div className="scope-management-fields">
         <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>{
           const nextClassId=event.target.value;
@@ -621,27 +617,40 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
       </div>:null}
     </section>:null}
 
-    {workspace!=='analysis'?<>
+    {workspace==='library'?<section className="loc-card scope-feature-card">
+      <h2>{l.title}</h2>
+      <p>{l.description}</p>
+      <div className="scope-stat-controls">
+        <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?l.processing:l.copyRuneButton}</button>
+      </div>
+      <p className="scope-status">{l.copyHint}</p>
+      <div className="scope-management-fields">
+        <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{setSelectedClass(event.target.value);chooseGroup('');}}>
+          {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
+        </select></label>
+        <label><span>關鍵詞組 UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
+      </div>
+      {selectedClassId?<div className="scope-preview-links">
+        <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
+        <span className="scope-status">scope_id: {scopeId}</span>
+      </div>:null}
+      <div className="scope-stat-controls">
+        <label><span>{l.copyCurrentClass}</span><input value={copyName} placeholder={l.newClassName} onChange={event=>setCopyName(event.target.value)}/></label>
+        <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>{l.copyFullClass}</button>
+      </div>
+    </section>:null}
+
+    {(workspace==='manual'||workspace==='network')?<section className="loc-card scope-feature-card scope-keyword-editor-section">
+    <h2>{workspace==='manual'?l.manual:l.network}</h2>
     <div className="scope-stat-controls">
       <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
       </select></label>
     </div>
-    {selectedClassId?<div className="scope-stat-controls">
-      <label><span>關鍵詞組 UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
-      <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
-      <span className="scope-status">scope_id: {scopeId}</span>
-    </div>:null}
-
-    <div className="scope-stat-controls">
-      <label><span>{l.copyCurrentClass}</span><input value={copyName} placeholder={l.newClassName} onChange={event=>setCopyName(event.target.value)}/></label>
-      <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>{l.copyFullClass}</button>
-    </div>
-
     {loading?<p className="scope-status" role="status">{l.loadingKeywords}</p>:null}
     {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
-    {!loading&&workspace==='network'&&items.length?<div className="scope-keyword-network-layout">
-      <KeywordNetworkEditor
+    {!loading?<div className={workspace==='network'&&items.length?'scope-keyword-network-layout':'scope-keyword-manual-layout'}>
+      {workspace==='network'&&items.length?<KeywordNetworkEditor
         key={selectedClassId||selectedClass}
         items={items}
         className={selectedClass}
@@ -653,10 +662,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         onDeleteKeyword={removeKeyword}
         onDeleteGroup={removeGroup}
         onMessage={setMessage}
-      />
-    </div>:null}
-
-    {!loading?<aside className="scope-management-editor scope-keyword-network-inspector">
+       />:null}
+       <aside className="scope-management-editor scope-keyword-network-inspector">
       <p className="scope-status">{workspace==='manual'?l.manualHint:l.networkHint}</p>
       {workspace==='manual'?<>
         <div className="scope-stat-controls scope-keyword-manual-path">
@@ -720,14 +727,15 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
             {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>{l.deleteItem}</button>:null}
           </div>
         </>}
-        {message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')||message.includes(l.notAllowedWord)||message.includes('0 rows')||message.includes(l.alreadyExistsWord)?'scope-status scope-error':'scope-status'}>{message}</p>:null}
-      </aside>:null}
+       </aside>
+     </div>:null}
     {!loading&&!items.length?<div className="scope-keyword-empty">
       <p className="scope-status">{l.noClassItems}</p>
       <button type="button" className="loc-button" onClick={()=>newItem('')}>{l.createFirst}</button>
     </div>:null}
-    </>:null}
-      </div>
-    </div>
-  </section>;
+    </section>:null}
+       {message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')||message.includes(l.notAllowedWord)||message.includes('0 rows')||message.includes(l.alreadyExistsWord)?'scope-status scope-error':'scope-status'}>{message}</p>:null}
+       </div>
+     </div>
+   </div>;
 }
