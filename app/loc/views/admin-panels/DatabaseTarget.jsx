@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
 import {registerDefaultSection} from '../../../i18n/ui-copy';
@@ -8,6 +8,7 @@ import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
 import {dbAuthClient,dbAuthRelation} from '../../db-client.mjs';
+import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function DatabaseTarget(){
@@ -23,6 +24,7 @@ export default function DatabaseTarget(){
   const [primaryId,setPrimaryId]=useState('');
   const [backupId,setBackupId]=useState('');
   const [routingMode,setRoutingMode]=useState('single');
+  const original=useRef({rows:[],primaryId:'',backupId:'',routingMode:'single'});
   useEffect(()=>{
     let active=true;
     (async()=>{
@@ -31,10 +33,15 @@ export default function DatabaseTarget(){
         .order('provider').order('target_id');
       if(!active)return;
       if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
-      const next=data||[];setRows(next);
-      setPrimaryId(next.find(item=>item.selected)?.target_id||'');
-      setBackupId(next.find(item=>item.backup_selected)?.target_id||'');
-      setRoutingMode(next.find(item=>item.selected)?.routing_mode==='db-managed'?'db-managed':'single');
+      const next=data||[];
+      const nextPrimary=next.find(item=>item.selected)?.target_id||'';
+      const nextBackup=next.find(item=>item.backup_selected)?.target_id||'';
+      const nextMode=next.find(item=>item.selected)?.routing_mode==='db-managed'?'db-managed':'single';
+      original.current={rows:next,primaryId:nextPrimary,backupId:nextBackup,routingMode:nextMode};
+      setRows(next);
+      setPrimaryId(nextPrimary);
+      setBackupId(nextBackup);
+      setRoutingMode(nextMode);
       setSelectedId(current=>next.some(item=>item.target_id===current)?current:(next.find(item=>item.selected)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
@@ -74,7 +81,7 @@ export default function DatabaseTarget(){
     finally{setSaving(false)}
   }
   async function save({switchTarget=false}={}){
-    if(!row||saving)return;
+    if(!row||saving)return false;
     if(switchTarget&&!window.confirm(row.provider==='neon'?'確定切換至 Neon 唯讀備援？此模式不支援備援寫入，管理功能仍由 Supabase 控制。':'確定切換至這個資料庫？請確認目標已完成連線與權限設定。'))return;
     setSaving(true);setStatus('');
     try{
@@ -103,9 +110,30 @@ export default function DatabaseTarget(){
         window.location.reload(); // Prevent mixed cached rows after a global source switch.
       }
       setRevision(v=>v+1);
-    }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');}
+      return true;
+    }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');return false;}
     finally{setSaving(false);}
   }
+  const routingDirty=primaryId!==original.current.primaryId||backupId!==original.current.backupId||routingMode!==original.current.routingMode;
+  const changedRows=rows.filter(item=>JSON.stringify(item)!==JSON.stringify(original.current.rows.find(saved=>saved.target_id===item.target_id)));
+  const unsavedConnections=Boolean(username||password||database);
+  useEditDockForm({
+    isBusy:()=>saving,
+    isDirty:()=>routingDirty||changedRows.length>0||unsavedConnections,
+    save:async()=>{
+      // Applying routing can reload the entire site and must stay an explicit
+      // operation, not an automatic side effect of switching Admin sections.
+      if(routingDirty){
+        setStatus('路由已修改，請先按「套用路由」，或選擇放棄變更。');
+        return false;
+      }
+      if(changedRows.some(item=>item.target_id!==selectedId)){
+        setStatus('其他資料庫仍有未儲存資料，請逐筆儲存後再切換分區。');
+        return false;
+      }
+      return save();
+    }
+  });
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
     <div className="scope-management-fields">

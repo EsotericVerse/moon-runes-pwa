@@ -3,6 +3,7 @@ import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
 import {normalizeUiLocale,UI_LOCALE_OPTIONS} from '../../../i18n/ui-copy';
 import {useCallback,useEffect,useRef,useState} from 'react';
+import {useEditDockForm} from '../../../modular/edit-dock';
 import dynamic from 'next/dynamic';
 import {duplicateDomainLabelError} from '../../../modular/scope-registry';
 import {THEME_SLOTS} from '../../../modular/theme-registry';
@@ -45,6 +46,7 @@ async function readAdminScopeConfig(scopeId,{attempts=7}={}){
 function useAdminScopeData(){
   const [registry,setRegistry]=useState([]);
   const [mappings,setMappings]=useState([]);
+  const [originalMappings,setOriginalMappings]=useState([]);
   const [configs,setConfigs]=useState({});
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
@@ -77,7 +79,9 @@ function useAdminScopeData(){
         // waiting for every independent Scope configuration request.
         if(!active)return;
         setRegistry(registryRows);
-        setMappings(mappingRows.map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)})));
+        const mapped=mappingRows.map(row=>({...row,birthday:String(row.birthday||'').slice(0,10)}));
+        setMappings(mapped);
+        setOriginalMappings(mapped);
         const configRows={};
         const configFailures=[];
         await Promise.all(registryRows.filter(row=>row.scope_kind==='scope').map(async row=>{
@@ -101,7 +105,7 @@ function useAdminScopeData(){
   },[revision]);
 
   return {
-    registry,setRegistry,mappings,setMappings,configs,setConfigs,status,setStatus,
+    registry,setRegistry,mappings,setMappings,originalMappings,configs,setConfigs,status,setStatus,
     refresh:()=>setRevision(value=>value+1)
   };
 }
@@ -283,7 +287,7 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
 }
 
 function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
-  const {registry,mappings,setMappings,configs,status,setStatus,refresh}=data;
+  const {registry,mappings,setMappings,originalMappings,configs,status,setStatus,refresh}=data;
   const selected=registry.find(row=>row.scope_id===selectedId)||null;
   const config=configs[selectedId]||null;
   const scopeMappings=mappings.filter(row=>row.id===selectedId);
@@ -291,17 +295,22 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const pageCopy=scopeMappings[0]||null;
   // Only persist after explicit Save. Clicking another node or Cancel discards this draft.
   const [editDraft,setEditDraft]=useState(null);
+  const editBaseline=useRef('');
   const editing=editDraft?.scopeId===selectedId;
   const current=editing?editDraft.registry:selected;
   const currentConfig=editing?editDraft.config:config;
   const currentCopy=editing?editDraft.pageCopy:pageCopy;
-  const beginEdit=()=>setEditDraft({
-    scopeId:selectedId,
-    registry:{...selected},
-    config:config?{...config}:null,
-    pageCopy:pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null
-  });
-  const cancelEdit=()=>setEditDraft(null);
+  const beginEdit=()=>{
+    const next={
+      scopeId:selectedId,
+      registry:{...selected},
+      config:config?{...config}:null,
+      pageCopy:pageCopy?{Title_TW:pageCopy.Title_TW||'',Desc_TW:pageCopy.Desc_TW||''}:null
+    };
+    editBaseline.current=JSON.stringify(next);
+    setEditDraft(next);
+  };
+  const cancelEdit=()=>{editBaseline.current='';setEditDraft(null);};
   const patchRegistry=(key,value)=>setEditDraft(draft=>draft?.scopeId!==selectedId?draft:{
     ...draft,registry:{...draft.registry,[key]:value}
   });
@@ -330,7 +339,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   const patchMapping=(email,key,value)=>setMappings(rows=>rows.map(row=>row.id===selectedId&&row.email===email?{...row,[key]:value}:row));
 
   async function saveRegistryAndConfig(){
-    if(!editing||!current)return;
+    if(!editing||!current)return false;
     setStatus('');
     try{
       if(current.scope_kind!=='system'){
@@ -370,8 +379,10 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
       }
       setStatus(current.scope_id+' 已更新。');
       setEditDraft(null);
+      editBaseline.current='';
       refresh();
-    }catch(error){setStatus(error?.message||'人員更新失敗。');}
+      return true;
+    }catch(error){setStatus(error?.message||'人員更新失敗。');return false;}
   }
 
   async function saveMapping(row){
@@ -382,8 +393,8 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         time_table:String(row.time||'time').trim()||'time',
         birthday:row.birthday||null
       },{filters:[{column:'id',operator:'eq',value:row.id}]});
-      setStatus('Mapping 已更新。');refresh();
-    }catch(error){setStatus(error?.message||'Mapping 更新失敗。');}
+      setStatus('Mapping 已更新。');refresh();return true;
+    }catch(error){setStatus(error?.message||'Mapping 更新失敗。');return false;}
   }
 
   async function removeMapping(row){
@@ -397,7 +408,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
   }
 
   async function addMapping(){
-    if(!selected||selected.scope_kind!=='scope')return;
+    if(!selected||selected.scope_kind!=='scope')return false;
     setStatus('');
     try{
       const email=String(newMapping.email||'').trim().toLowerCase();
@@ -408,8 +419,8 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
         time_table:String(newMapping.time||'time').trim()||'time',
         birthday:newMapping.birthday||null
       },{filters:[{column:'id',operator:'eq',value:selected.scope_id}]});
-      setNewMapping({...EMPTY_MAPPING});setStatus('Mapping 已新增。');refresh();
-    }catch(error){setStatus(error?.message||'Mapping 新增失敗。');}
+      setNewMapping({...EMPTY_MAPPING});setStatus('Mapping 已新增。');refresh();return true;
+    }catch(error){setStatus(error?.message||'Mapping 新增失敗。');return false;}
   }
 
   if(!selected)return <aside className="admin-context-panel"><p className="scope-status">請選擇人員或群組</p></aside>;
@@ -434,6 +445,21 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode}){
     {label:'狀態',value:selected.active!==false?'啟用':'隱藏'}
   ];
 
+  const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
+    JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
+  const draftDirty=editing&&JSON.stringify(editDraft)!==editBaseline.current;
+  const newMappingDirty=Object.values(newMapping).some(value=>String(value||'').trim());
+  useEditDockForm({
+    isDirty:()=>Boolean(draftDirty||editedMappings.length||newMappingDirty),
+    save:async()=>{
+      if(draftDirty&&await saveRegistryAndConfig()!==true)return false;
+      for(const item of editedMappings){
+        if(await saveMapping(item)!==true)return false;
+      }
+      if(newMappingDirty&&await addMapping()!==true)return false;
+      return true;
+    }
+  });
   return <aside className={'admin-context-panel'+(editing?' is-editing':' is-reading')}>
     <div className="admin-node-heading">
       <div>
@@ -528,7 +554,7 @@ function CreateNodePanel({data,kind='scope',onClose}){
   const groupDomainError=duplicateDomainLabelError(groupDraft.scope_id,groupDraft.route_mode);
 
   async function createScope(){
-    if(creatingScope)return;
+    if(creatingScope)return false;
     setCreatingScope(true);
     setStatus('正在建立人員資料…');
     let provisioned=false;
@@ -565,12 +591,14 @@ function CreateNodePanel({data,kind='scope',onClose}){
       setStatus('人員 '+id+' 已建立。');
       refresh();
       onClose?.();
+      return true;
     }catch(error){
       if(provisioned){
         setStatus('人員 '+id+' 已建立，但後續驗證／設定尚未完成：'+String(error?.message||error)+'。請重新讀取，不要重複建立。');
         refresh();
         onClose?.();
       }else setStatus(error?.message||'人員建立失敗。');
+      return false;
     }finally{setCreatingScope(false);}
   }
 
@@ -585,9 +613,17 @@ function CreateNodePanel({data,kind='scope',onClose}){
         directory:groupDraft.route_mode==='directory'?'/'+id:null,
         parent_scope_id:String(groupDraft.parent_scope_id||'loc').trim()||'loc'
       });
-      setStatus('群組 '+id+' 已建立。');refresh();onClose?.();
-    }catch(error){setStatus(error?.message||'群組建立失敗。');}
+      setStatus('群組 '+id+' 已建立。');refresh();onClose?.();return true;
+    }catch(error){setStatus(error?.message||'群組建立失敗。');return false;}
   }
+  const createDirty=kind==='scope'
+    ?JSON.stringify(scopeDraft)!==JSON.stringify(EMPTY_SCOPE_CREATE)
+    :JSON.stringify(groupDraft)!==JSON.stringify(EMPTY_GROUP_CREATE);
+  useEditDockForm({
+    isBusy:()=>creatingScope,
+    isDirty:()=>createDirty,
+    save:()=>kind==='scope'?createScope():createGroup()
+  });
 
   const parentValue=value=>parentOptions.find(o=>o.value===value)||parentOptions[0]||null;
   return <aside className="admin-context-panel">
