@@ -174,12 +174,14 @@ export function Rune66Summary({analysis}){
   const t=useUiText();
   const [groupPage,setGroupPage]=useState(1);
   const data=analysis||{};
-  const className=String(data.keywordMeta?.class_name||t('uiExtra.statisticsView.classFallback'));
+  const className=String(data.keywordMeta?.class_name||'').trim();
+  const setLabel=className?'關鍵詞組：'+className:t('uiExtra.statisticsView.classFallback');
+  const groupDisplay=group=>[className,classLabel(group,t)].filter(Boolean).join(' ');
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
   if(!data.staticstime)return null;
   if(!data.statisticsEnabled)return <div className="scope-ranking">
-    <div><strong>{className}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
+    <div><strong>{setLabel}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
   </div>;
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
@@ -204,12 +206,12 @@ export function Rune66Summary({analysis}){
         </BarChart>
       </ResponsiveContainer>:null}
       <StatisticsDetails>{()=><>
-    <div className="scope-ranking"><div><strong>{className}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
+    <div className="scope-ranking"><div><strong>{setLabel}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
       <div className="scope-ranking">
         {classRows.map(row=>{
           const count=Number(row.document_count||0);
           const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
-          return <div key={row.group}><strong>{classLabel(row.group,t)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
+          return <div key={row.group}><strong>{groupDisplay(row.group)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
         })}
       </div>
       </>}</StatisticsDetails>
