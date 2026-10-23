@@ -56,11 +56,11 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
+export default function CultureTimelineEditor({scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
   useUiSection('uiExtra.dataErrors');
   const copy=useUiCopy();
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
-  const account=useAccount();
+  const account=useAccount({enabled:false});
   const editDock=useEditDock();
   const native=useNativeNavigation();
   const dockActions=useRef({save:null});
@@ -71,13 +71,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   const runtimeScope=String(scopeId||'').trim();
   const dataScope=runtimeScope;
   const editable=Boolean(dataScope&&dataScope!=='loc');
-  const tableQuery=useQuery({
-    queryKey:['scope-data',dataScope,account.email],
-    enabled:editable&&Boolean(account.user),
-    queryFn:async()=>account.scopeDataFor(dataScope),
-    staleTime:5*60_000
-  });
-  const timeTable=tableQuery.data?.time||'';
+  const timeTable=String(providedTimeTable||'').trim();
   const [draft,setDraft]=useState({...BLANK});
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
@@ -87,7 +81,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
 
   const query=useQuery({
     queryKey:['culture-period-settings',dataScope,timeTable],
-    enabled:editable&&Boolean(account.user&&timeTable),
+    enabled:editable&&Boolean(timeTable),
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,
@@ -172,7 +166,7 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
   // A newly mounted editor resolves its own account permissions asynchronously.
   // Opening the draft before those checks complete must not lose showModal:
   // retry when the authorized dialog actually appears in the DOM.
-  const canRenderEditor=editable&&!account.loading&&!account.permissionLoading&&account.canManageScopeSync(dataScope);
+  const canRenderEditor=editable&&Boolean(timeTable);
   useEffect(()=>{
     if(!formOpen||!canRenderEditor)return undefined;
     const dialog=dialogRef.current;
@@ -294,6 +288,9 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
         }
         payload.anchor_ids=ids;
       }
+      // Only mutations require management authorization; drafts and previews are public.
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(dataScope))throw new Error('此 Scope 沒有儲存權限，請先登入管理帳號。');
       if(selectedId){
         const {record_type,...patch}=payload;
         await updateRows(timeTable,patch,{filters:[
@@ -330,6 +327,8 @@ export default function CultureTimelineEditor({scopeId='',selectedRecordId='',su
     }
     setBusy(true);setMessage('');
     try{
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(dataScope))throw new Error('此 Scope 沒有刪除權限，請先登入管理帳號。');
       await deleteRows(timeTable,{filters:[
         {column:'record_id',operator:'eq',value:selectedId}
       ]});
