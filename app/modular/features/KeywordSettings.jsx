@@ -31,7 +31,7 @@ export default function KeywordSettings(){
   return <FeaturePage featureId="statics">
     {account.loading||account.permissionLoading
       ?<p className="scope-status"><UiText id="uiExtra.keywords.verifyingAccess"/></p>
-      :authorized?<KeywordLibraryPanel scopeId={scopeId}/>
+      :authorized?<KeywordLibraryPanel scopeId={scopeId} account={account}/>
       :<section className="loc-card scope-feature-card"><p className="scope-status"><UiText id="uiExtra.keywords.accessDenied"/></p></section>}
   </FeaturePage>;
 }
