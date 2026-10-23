@@ -1,6 +1,7 @@
 'use client';
 
-import {useEffect,useMemo,useReducer,useState} from 'react';
+import {useEffect,useMemo,useReducer,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {runeImage} from '../rune-directory.mjs';
 import {produce} from 'immer';
 import {useQuery} from '@tanstack/react-query';
@@ -17,6 +18,11 @@ import {useAccount,usePassiveSessionAccount} from '../../loc/use-account';
 import ManagementSectionNav from '../../modular/ManagementSectionNav';
 import {resolveHomeImage} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
+import '../effekseer/effekseer-stage.css';
+
+// Reuse the existing 3D ritual stage only when a tabletop action needs VFX.
+const GameRuneEffect=dynamic(()=>import('../effekseer/EffekseerStage'),{ssr:false});
+const GameResonanceEffect=dynamic(()=>import('../effekseer/EffekseerStage').then(mod=>mod.WaitingEffekseerStage),{ssr:false});
 
 const LABELS=['A','B','C','D'];
 const FALLBACK_THEME={
@@ -354,6 +360,33 @@ function Board({G,moves,rules,onRestart}){
   const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
   const [showScoringHelp,setShowScoringHelp]=useState(false);
+  const [effectsEnabled,setEffectsEnabled]=useState(true);
+  const [battleEffect,setBattleEffect]=useState(null);
+  const effectSequence=useRef(0);
+  useEffect(()=>{
+    if(!battleEffect)return;
+    const timer=setTimeout(()=>setBattleEffect(current=>current?.key===battleEffect.key?null:current),
+      battleEffect.kind==='resonance'?2600:6000);
+    return()=>clearTimeout(timer);
+  },[battleEffect]);
+  const playRuneEffect=(card,appearance='glyph')=>{
+    if(!effectsEnabled||!card)return;
+    setBattleEffect({key:++effectSequence.current,kind:'rune',appearance,rune:{
+      rune_id:card.id,rune_name:card.name,english_name:card.englishName,
+      group_name:card.group
+    }});
+  };
+  const playResonanceEffect=()=>{
+    if(effectsEnabled)setBattleEffect({key:++effectSequence.current,kind:'resonance'});
+  };
+  const toggleRune=(playerIndex,id)=>{
+    const player=G.players[playerIndex];
+    if(player&&!player.selected.includes(id)&&
+      (G.stage==='event'||(G.stage==='opening'&&playerIndex===G.active))){
+      playRuneEffect(player.hand.find(card=>card.id===id));
+    }
+    moves.toggleCard(playerIndex,id);
+  };
   const sensors=useSensors(
     useSensor(PointerSensor,{activationConstraint:{distance:8}}),
     useSensor(TouchSensor,{activationConstraint:{delay:180,tolerance:8}})
@@ -372,7 +405,7 @@ function Board({G,moves,rules,onRestart}){
 
   return <DndContext sensors={sensors} onDragEnd={({active:drag,over})=>{
       if(over?.data.current?.playerIndex===drag.data.current?.playerIndex&&drag.data.current){
-        moves.toggleCard(drag.data.current.playerIndex,drag.data.current.cardId);
+        toggleRune(drag.data.current.playerIndex,drag.data.current.cardId);
       }
     }}>
       <main className="lrg">
@@ -383,6 +416,10 @@ function Board({G,moves,rules,onRestart}){
           </div>
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
             <Chip color="primary" label={'第 '+G.round+' 回合 · '+labelStage(G.stage)}/>
+            <Button size="small" variant="outlined" aria-pressed={effectsEnabled}
+              onClick={()=>{setEffectsEnabled(value=>!value);setBattleEffect(null);}}>
+              3D特效：{effectsEnabled?'開':'關'}
+            </Button>
             <Button variant="outlined" onClick={onRestart}>新遊戲</Button>
           </Stack>
         </Paper>
@@ -437,7 +474,12 @@ function Board({G,moves,rules,onRestart}){
                     {showScoringHelp?<EventScoringHelp data={rules}/>:null}
                   </Box>
                 </Stack>
-                <Button variant="contained" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)} onClick={()=>moves.resolveEvent()}>結算事件</Button>
+                <Button variant="contained" disabled={G.players.some(p=>p.selected.length!==rules.config.eventResponseCards)}
+                  onClick={()=>{
+                    const player=G.players.find(p=>p.selected.length);
+                    playRuneEffect(player?.hand.find(card=>player.selected.includes(card.id)),'card');
+                    moves.resolveEvent();
+                  }}>結算事件</Button>
               </>:null}
 
               {isResonance?<>
@@ -445,14 +487,14 @@ function Board({G,moves,rules,onRestart}){
                 <Typography variant="h5" component="h2">{G.stage==='duel'?'最終決鬥':'共鳴階段'}</Typography>
                 <Typography>輪到 {active.name} 行動。</Typography>
                 <Stack direction={{xs:'column',md:'row'}} spacing={1.25} alignItems={{md:'center'}}>
-                  <Button variant="contained" onClick={()=>{moves.resonance('self');setTarget('');}}>自我共振 {rules.config.resonanceSelf>0?'+':''}{rules.config.resonanceSelf}</Button>
+                  <Button variant="contained" onClick={()=>{playResonanceEffect();moves.resonance('self');setTarget('');}}>自我共振 {rules.config.resonanceSelf>0?'+':''}{rules.config.resonanceSelf}</Button>
                   <FormControl size="small" sx={{minWidth:180}}>
                     <InputLabel id="resonance-target-label">目標玩家</InputLabel>
                     <Select labelId="resonance-target-label" label="目標玩家" value={target} onChange={e=>setTarget(e.target.value)}>
                       {G.players.map((p,i)=>i!==G.active?<MenuItem value={i} key={i} disabled={G.stage==='duel'&&!G.duelists.includes(i)}>{p.name}</MenuItem>:null)}
                     </Select>
                   </FormControl>
-                  <Button disabled={target===''||(G.stage==='duel'&&!G.duelists.includes(Number(target)))} onClick={()=>{moves.resonance('attack',Number(target));setTarget('');}}>干擾 {rules.config.resonanceAttack}</Button>
+                  <Button disabled={target===''||(G.stage==='duel'&&!G.duelists.includes(Number(target)))} onClick={()=>{playResonanceEffect();moves.resonance('attack',Number(target));setTarget('');}}>干擾 {rules.config.resonanceAttack}</Button>
                   {G.stage!=='duel'?<Button disabled={target===''} onClick={()=>moves.toggleCooperation(Number(target))}>建立／解除合作</Button>:null}
                 </Stack>
               </>:null}
@@ -461,7 +503,7 @@ function Board({G,moves,rules,onRestart}){
                 <Typography variant="overline" color="primary">SETUP</Typography>
                 <Typography variant="h5" component="h2">{active.name} 起手設定</Typography>
                 <Typography>選擇 {rules.config.openingDiscard} 張棄牌，保留 {rules.config.handBase} 張。</Typography>
-                <Button variant="contained" disabled={active.selected.length!==rules.config.openingDiscard} onClick={()=>moves.confirmOpening(G.active)}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</Button>
+                <Button variant="contained" disabled={active.selected.length!==rules.config.openingDiscard} onClick={()=>{playRuneEffect(active.hand.find(card=>active.selected.includes(card.id)),'card');moves.confirmOpening(G.active);}}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</Button>
               </>:null}
 
               {done?<>
@@ -480,7 +522,7 @@ function Board({G,moves,rules,onRestart}){
                 <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1.25,height:8,borderRadius:2}}/>
                 <Typography variant="caption" color="text.secondary">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</Typography>
                 <div className="lrg-hand">
-                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} roleName={roleByGroup.get(card.group)||''} groupVisual={groupVisualByGroup.get(card.group)||''} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>moves.toggleCard(i,card.id)}/>)}
+                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} roleName={roleByGroup.get(card.group)||''} groupVisual={groupVisualByGroup.get(card.group)||''} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>toggleRune(i,card.id)}/>)}
                 </div>
                 {!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
               </Paper>)}
@@ -502,6 +544,13 @@ function Board({G,moves,rules,onRestart}){
             <Typography variant="subtitle2">最新紀錄</Typography>
             {G.logs.slice(0,6).map((line,i)=><Typography variant="caption" color="text.secondary" key={i}>{line}</Typography>)}
           </Paper>
+        </div>:null}
+        {battleEffect?<div className="lrg-battle-effect" aria-hidden="true" key={battleEffect.key}>
+          {battleEffect.kind==='rune'?
+            <GameRuneEffect rune={battleEffect.rune} ceremony appearance={battleEffect.appearance}
+              cardSrc={cardSrc(battleEffect.rune)} textureQuality="hd256" quality="balanced" vfxOnly
+              onCeremonyComplete={()=>setBattleEffect(current=>current?.key===battleEffect.key?null:current)}/>:
+            <GameResonanceEffect textureQuality="hd256"/>}
         </div>:null}
       </main>
     </DndContext>;
