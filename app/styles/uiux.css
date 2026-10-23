@@ -1025,23 +1025,11 @@ button,a,.loc-control,.loc-button,
   :is(.loc-card,.loc-panel,.loc-bubble,.scope-card,.scope-inline-card,.scope-feature-card,.scope-hero-description,.loc-hero-copy){
     overflow-wrap:anywhere;
   }
-  :is(.scope-blocknote,.scope-rich-surface,.loc-home-block__body,.loc-home-block__child-copy) img{
-    max-width:100%;
-    height:auto;
-    object-fit:contain;
-  }
-  .scope-blocknote .bn-editor{
-    min-width:0;
-    max-width:100%;
-  }
 }
 @media(max-width:560px){
   :root{
     --loc-type-page-title:clamp(1.75rem,1.4rem + 2vw,2.5rem);
     --loc-type-section-title:clamp(1.15rem,1rem + 1vw,1.35rem);
-  }
-  :is(.loc-card,.loc-panel,.scope-card,.scope-feature-card){
-    padding:clamp(.8rem,3.3vw,1rem);
   }
   :is(.scope-page-editor,.scope-search-article-editor,.scope-frame-field-grid,.scope-management-fields){
     min-width:0;
