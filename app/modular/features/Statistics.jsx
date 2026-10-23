@@ -430,13 +430,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     },
     staleTime:5*60_000
   });
-  const configuredSources=keywordSourcesQuery.data?.categories
-    ?.filter(row=>row.enabled!==false)||[];
+  const configuredSources=useMemo(()=>
+    (keywordSourcesQuery.data?.categories||[]).filter(row=>row.enabled!==false),
+    [keywordSourcesQuery.data]
+  );
   useEffect(()=>{
     if(keywordSourcesQuery.data&&keywordSource&&!configuredSources.some(row=>row.category_code===keywordSource)){
       setKeywordSource('');
     }
-  },[keywordSource,keywordSourcesQuery.data]);
+  },[keywordSource,keywordSourcesQuery.data,configuredSources]);
   const runeQuery=useQuery({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate,
       keywordSource,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
