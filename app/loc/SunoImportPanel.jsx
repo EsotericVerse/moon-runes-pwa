@@ -104,7 +104,7 @@ export default function SunoImportPanel({scopeId}){
     save:()=>save(),
     discard:()=>{setDraft(freshSunoDraft());setStatus('')},
     isDirty:()=>Boolean(
-      draft.title.trim()||draft.lyrics.trim()||draft.stylePrompt.trim()||
+      draft.title.trim()||blocksToPlainText(draft.lyrics).trim()||blocksToPlainText(draft.stylePrompt).trim()||
       blocksToPlainText(draft.lyricsBlocks).trim()||
       blocksToPlainText(draft.stylePromptBlocks).trim()||
       draft.stylePromptPlain.trim()||draft.url.trim()||draft.createdDate||
