@@ -396,7 +396,7 @@
 
 /* Image-only displays the picture as the actual body content, without a hidden
    text measuring layer or a separate, size-driven image column. */
-.loc-next-main[data-loc-view="home"]:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .loc-home>.loc-home-block--image-only{
+.loc-home-block--with-image.loc-home-block--image-only{
   display:block;
 }
 .loc-home-block--image-only>.loc-home-block__body--image{
