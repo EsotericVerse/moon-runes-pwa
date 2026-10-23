@@ -1,3 +1,4 @@
+import {Suspense} from 'react';
 import GlobalSettings from '../loc/GlobalSettings';
 import {locMetadata} from '../seo/metadata';
 
@@ -8,4 +9,8 @@ export const metadata=locMetadata({
   noIndex:true
 });
 
-export default function SettingsPage(){return <GlobalSettings/>;}
+export default function SettingsPage(){
+  return <Suspense fallback={<p role="status">正在載入設定…</p>}>
+    <GlobalSettings/>
+  </Suspense>;
+}
