@@ -12,7 +12,7 @@ import {StatisticsFacets} from '../../../loc/statistics-facets';
 registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
 registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
 registerDefaultSection('uiExtra.statisticsUI',statisticsUIZh);
-import {availableStatisticChartTypes,RUNE_RANKING_PAGE_SIZE,OTHER_RANKING_PAGE_SIZE} from './statistics-time-zoom.mjs';
+import {availableStatisticChartTypes,chartTypeGroups,RUNE_RANKING_PAGE_SIZE,OTHER_RANKING_PAGE_SIZE} from './statistics-time-zoom.mjs';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
 
@@ -41,7 +41,7 @@ export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],t
   const pageSize=scopeId==='lrunes'?RUNE_RANKING_PAGE_SIZE:OTHER_RANKING_PAGE_SIZE;
   const pages=Math.max(1,Math.ceil(displayed.length/pageSize));
   const currentPage=Math.max(1,Math.min(pages,rankingPage));
-  const chartCategories=chosen==='all'?totals.slice(0,6).map(row=>row.term):[chosen];
+  const chartCategories=chosen==='all'?totals.slice(0,4).map(row=>row.term):[chosen];
   const chartRows=useMemo(()=>facetTrend(facetRows,window,chartCategories),[facetRows,window.startDate,window.endDate,window.bucket,chartCategories.join('\u0000')]);
   const bars=(chosen==='all'?totals.slice(0,15):displayed).map(row=>({term:row.term,value:row.item_count}));
   const supported=availableStatisticChartTypes({
@@ -49,6 +49,7 @@ export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],t
     distribution:bars.map(row=>({name:row.term,value:row.value}))
   });
   const chosenChartType=supported.some(([value])=>value===chartType)?chartType:(supported[0]?.[0]||'line');
+  const chartGroups=chartTypeGroups(supported,['line','pie','bar']);
   return <>
     {rankingType==='media_style'&&scopeId==='lo3rwang'&&classes.length?<div className="scope-stat-controls">
       <label><span><UiText id="uiExtra.statisticsUI.mediaStyle"/></span><select className="scope-select" value={styleLevel} onChange={event=>{setStyleLevel(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
@@ -71,13 +72,21 @@ export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],t
       </label>
       <label><span><UiText id="statistics.chart"/></span>
         <select className="scope-select" value={chosenChartType} onChange={event=>onChartTypeChange?.(event.target.value)}>
-          {supported.length?supported.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+          {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
+  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}
+{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
+  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}{!supported.length?<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>:null}
         </select>
       </label>
     </div>
     {!totals.length?<StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
       <p className="scope-status">{UI_COPY.uiExtra.dataErrors.empty}</p>
     </StatisticsChartFrame>:<>
+      {chosen==='all'&&totals.length>chartCategories.length?<p className="scope-status">
+        {t('uiExtra.statisticsView.chartTopN',{count:chartCategories.length})}
+      </p>:null}
       <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-stat">
         <StatisticsMultiChart type={chosenChartType}
           rows={chartRows}

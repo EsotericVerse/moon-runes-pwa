@@ -58,6 +58,14 @@ export function statisticsWeekKey(date){
 
 // Pure chart capability selection is shared by all statistics callers.
 // Chart types are capabilities, not ten interchangeable skins for one number.
+export function chartTypeGroups(available=[],recommended=[]){
+  const keep=new Set(recommended);
+  return {
+    primary:available.filter(([type])=>keep.has(type)),
+    advanced:available.filter(([type])=>!keep.has(type))
+  };
+}
+
 export const STAT_VISUAL_TYPES=Object.freeze([
   'line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'
 ].map(type=>Object.freeze([type,'uiExtra.chartTypes.'+type])));

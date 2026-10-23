@@ -150,8 +150,9 @@ export default function StatisticsMultiChart({
       isAnimationActive={false}/>)}
   </LineChart>;
   if(!usable.length)return <p className="scope-status">{t('uiExtra.chartLabels.noComparable')}</p>;
-  return <div className="scope-multichart" role="group" aria-label={t('uiExtra.chartLabels.chartAria')}>
-    <ResponsiveContainer width="100%" height={height}>{chart}</ResponsiveContainer>
+  return <div className="scope-multichart" role="group" aria-label={t('uiExtra.chartLabels.chartAria')}
+    style={{height:barLayout==='vertical'?height:`min(${height}px, max(300px, 85vw))`}}>
+    <ResponsiveContainer width="100%" height="100%">{chart}</ResponsiveContainer>
     {foldBlank&&gaps.length?<p className="scope-status" role="note">
       {t('uiExtra.chartLabels.gapLabel')}{gaps.map(g=>g.start+'～'+g.end+'（'+(g.days||g.buckets)+' '+(g.days?units.dayUnit:units.periodUnit)+'）').join(t('uiExtra.chartLabels.gapSeparator'))}
     </p>:null}

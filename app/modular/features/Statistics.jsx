@@ -36,7 +36,7 @@ import {StatisticsFacets} from '../../loc/statistics-facets';
 import {scopeHref} from '../scope-registry';
 import ScopeLink from '../ScopeLink';
 const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyStatisticsPanel),{loading:()=>null});
-import {STAT_VISUAL_TYPES,availableStatisticChartTypes} from '../modules/statistics/statistics-time-zoom.mjs';
+import {STAT_VISUAL_TYPES,availableStatisticChartTypes,chartTypeGroups} from '../modules/statistics/statistics-time-zoom.mjs';
 const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
 const Rune66Summary=dynamic(()=>import('../modules/statistics/StatisticsMultiChart').then(m=>m.Rune66Summary),{loading:()=>null});
 const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
@@ -483,6 +483,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     ?{rows:facetData,series:facetNames.map(name=>({key:name,label:name})),distribution:facetDistribution}
     :{rows:basicTrend,series:basicSeries,distribution:basicDistribution,totalKey:rankingType==='total'?'total':''});
   const effectiveChartType=optionsForCurrent.some(([value])=>value===chartType)?chartType:(optionsForCurrent[0]?.[0]||'line');
+  const chartGroups=chartTypeGroups(optionsForCurrent,rankingType==='total'
+    ?['line','composed','bar']:['line','stacked','pie']);
   const styleRange=useMemo(()=>({
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
@@ -571,7 +573,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         時期範圍無法載入，仍可使用自選時間：{featureDataErrorMessage(periodQuery.error,UI_COPY)}
       </span>:null}
       {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
-        {optionsForCurrent.length?optionsForCurrent.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+        {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
+  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}
+{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
+  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}{!optionsForCurrent.length?<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>:null}
       </select></label>:null}
       {!['pie','radar','radial','treemap','scatter'].includes(effectiveChartType)?<label className="scope-setting-toggle">
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <UiText id="uiExtra.statisticsView.foldBlank"/>

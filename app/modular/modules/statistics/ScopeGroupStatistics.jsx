@@ -15,7 +15,7 @@ import {defaultScopeData} from '../../../loc/scope-data';
 import {featureNavigationHref} from '../../feature-navigation';
 import ScopeLink from '../../ScopeLink';
 import {featureDataErrorMessage} from '../../feature-data-state';
-import {availableStatisticChartTypes,statisticsZoomWindow} from './statistics-time-zoom.mjs';
+import {availableStatisticChartTypes,chartTypeGroups,statisticsZoomWindow} from './statistics-time-zoom.mjs';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
 
@@ -111,6 +111,8 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
     rows:trendData,series:locSeries,distribution:locDistribution,totalKey:aggregateType==='total'?'total':''
   });
   const locChartType=locAllowed.some(([value])=>value===chartType)?chartType:(locAllowed[0]?.[0]||'line');
+  const chartGroups=chartTypeGroups(locAllowed,aggregateType==='total'
+    ?['line','composed','bar']:['line','stacked','pie']);
 
   return <section className="scope-stat-section">
     <header className="scope-stat-domain-heading">
@@ -129,7 +131,12 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
       <label>
         <span>{UI_COPY.statistics.chart}</span>
         <select className="scope-select" value={locChartType} onChange={event=>setChartType(event.target.value)}>
-          {locAllowed.length?locAllowed.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>}
+          {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
+  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}
+{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
+  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}{!locAllowed.length?<option value="line"><UiText id="uiExtra.statisticsView.noVisual"/></option>:null}
         </select>
       </label>
     </div>

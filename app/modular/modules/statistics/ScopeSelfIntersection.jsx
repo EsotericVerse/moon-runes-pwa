@@ -10,7 +10,7 @@ import {useMemo,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
-import {availableStatisticChartTypes} from './statistics-time-zoom.mjs';
+import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zoom.mjs';
 import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
@@ -147,6 +147,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const enough=categories.length===numberOfLanes;
   const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
   const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
+  const chartGroups=chartTypeGroups(availableCharts,['line','stacked','scatter']);
 
   return <section className="scope-stat-section scope-self-intersection" aria-label={translateUiField(locale,'作品自交互統計')}>
     <h3><FieldText text="作品自交互統計"/></h3>
@@ -167,7 +168,12 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           </label>
           <label><span><FieldText text="圖表"/></span>
             <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {availableCharts.length?availableCharts.map(([value,label])=><option key={value} value={value}>{t(label)}</option>):<option value="line"><FieldText text="尚無可用圖形"/></option>}
+              {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
+  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}
+{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
+  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}{!availableCharts.length?<option value="line"><FieldText text="尚無可用圖形"/></option>:null}
             </select>
           </label>
           <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>
