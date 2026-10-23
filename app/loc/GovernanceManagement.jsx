@@ -1,9 +1,10 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
@@ -23,6 +24,7 @@ const MANAGEMENT_OPTIONS=Object.freeze([
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
+  const editDock=useEditDock();
   const searchParams=useSearchParams();
   const canManageHere=account.canManageScopeSync(routeScopeId);
   const [section,setSection]=useState(()=>{
@@ -30,6 +32,10 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
     return MANAGEMENT_OPTIONS.some(item=>item.value===initial)?initial:'settings';
   });
   const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
+  useEffect(()=>{
+    if(!account.user||!canManageHere||section!=='governance'||account.permissionLoading)return;
+    if(!editDock?.active||editDock.scopeId!==routeScopeId)editDock?.begin(routeScopeId);
+  },[account.user,account.permissionLoading,canManageHere,section,routeScopeId,editDock?.active,editDock?.scopeId,editDock?.begin]);
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   return <FeaturePage featureId="manage">

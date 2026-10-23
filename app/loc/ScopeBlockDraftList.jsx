@@ -40,6 +40,11 @@ export default function ScopeBlockDraftList({
   const queryClient=useQueryClient();
   const editDock=useEditDock();
   const dockActions=useRef({save:null,discard:null});
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
+  function report(message){
+    setMessage(message);
+    if(inDock)editDock?.setNotice(message);
+  }
   const [drafts,setDrafts]=useState(()=>slots.map(slot=>({
     ...slot,entities:HomeBlock.normalizeEntities(slot.entities),_deleted:false
   })));
@@ -156,29 +161,31 @@ export default function ScopeBlockDraftList({
   }
 
   async function save(){
+    if(busy)return;
     setBusy(true);setMessage('');
+    if(inDock)editDock?.setNotice('');
     const visible=drafts.filter(draft=>!draft._deleted);
     for(const draft of visible){
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft)){
-        setBusy(false);setMessage(t('uiExtra.editBlocks.emptyContent'));return;
+        setBusy(false);report(t('uiExtra.editBlocks.emptyContent'));return;
       }
       if(Array.from(String(draft.title||'')).length>TITLE_LIMIT){
-        setBusy(false);setMessage(t('uiExtra.frameEditor.titleTooLong',{limit:TITLE_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.titleTooLong',{limit:TITLE_LIMIT}));return;
       }
       if(Array.from(String(draft.eyebrow||'')).length>EYEBROW_LIMIT){
-        setBusy(false);setMessage(t('uiExtra.frameEditor.eyebrowTooLong',{limit:EYEBROW_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.eyebrowTooLong',{limit:EYEBROW_LIMIT}));return;
       }
       if(Array.from(String(draft.subtitle||'')).length>SUBTITLE_LIMIT){
-        setBusy(false);setMessage(t('uiExtra.frameEditor.subtitleTooLong',{limit:SUBTITLE_LIMIT}));return;
+        setBusy(false);report(t('uiExtra.frameEditor.subtitleTooLong',{limit:SUBTITLE_LIMIT}));return;
       }
       const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
       if(isHomeFrame&&draft.image?.source==='custom'&&String(draft.image.url||'').trim()&&!BlockNoteContent.image.normalizeImageSource(draft.image.url)){
-        setBusy(false);setMessage(t('uiExtra.frameEditor.imageUrlInvalid'));return;
+        setBusy(false);report(t('uiExtra.frameEditor.imageUrlInvalid'));return;
       }
       const embeddedImages=BlockNoteContent.image.frameImageCount(draft);
-      if(!allowImages&&embeddedImages>0){setBusy(false);setMessage(t('uiExtra.editBlocks.textOnly'));return;}
-      if(embeddedImages>1){setBusy(false);setMessage(t('uiExtra.editBlocks.oneImage'));return;}
-      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft)){setBusy(false);setMessage(t('uiExtra.editBlocks.invalidImage'));return;}
+      if(!allowImages&&embeddedImages>0){setBusy(false);report(t('uiExtra.editBlocks.textOnly'));return;}
+      if(embeddedImages>1){setBusy(false);report(t('uiExtra.editBlocks.oneImage'));return;}
+      if(embeddedImages===1&&!BlockNoteContent.image.firstFrameImageUrl(draft)){setBusy(false);report(t('uiExtra.editBlocks.invalidImage'));return;}
     }
     try{
       const {updateRows,insertRows,deleteRows}=await import('./db-client.mjs');
@@ -218,7 +225,7 @@ export default function ScopeBlockDraftList({
       await refreshBlockQueries();
       onDone(t('uiExtra.editBlocks.saved'));
     }catch(error){
-      setMessage(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
+      report(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
     }finally{
       setBusy(false);
     }
@@ -302,10 +309,10 @@ export default function ScopeBlockDraftList({
   return <>
     <div className="scope-block-draft-toolbar">
       {toolbar}
-      <div className="scope-block-draft-actions">
+      {!inDock?<div className="scope-block-draft-actions">
         <button type="button" className="loc-button primary" disabled={busy} onClick={save}>{busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')}</button>
         <button type="button" className="loc-button" disabled={busy} onClick={()=>{if(window.confirm(t('uiExtra.editBlocks.cancelConfirm')))onCancel();}}><UiText id="uiExtra.editBlocks.cancel"/></button>
-      </div>
+      </div>:null}
     </div>
     {visibleDrafts.map((draft,index)=>renderDraft(draft,index,visibleDrafts))}
     {canAddBlock?<button type="button" className="loc-button scope-add-page-block" onClick={addBlock} disabled={busy}><UiText id="uiExtra.editBlocks.addBlock"/></button>:null}

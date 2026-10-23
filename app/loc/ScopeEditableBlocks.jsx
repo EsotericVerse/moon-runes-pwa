@@ -8,6 +8,8 @@ registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 
 import {useMemo,useState} from 'react';
 import {useEditDock} from '../modular/edit-dock';
+import {navigationHref} from '../modular/scope-registry';
+import useNativeNavigation from '../modular/use-native-navigation';
 import dynamic from 'next/dynamic';
 import {useAppBootstrap} from './app-bootstrap';
 import {useAccount} from './use-account';
@@ -75,6 +77,7 @@ export default function ScopeEditableBlocks({
   const isScopeHomepageBlock=pageName==='index'||(scopeId==='lrunes'&&pageName==='hero');
   const account=useAccount({enabled:allowEditing&&!authorizedByParent&&!isScopeHomepageBlock});
   const editDock=useEditDock();
+  const native=useNativeNavigation();
   // Same (scopeId, pageName) request AppShell already makes for this route's
   // Registry/NAV/Theme bootstrap. React Query serves this from that one call
   // instead of this component re-querying the blocks on its own.
@@ -203,8 +206,19 @@ export default function ScopeEditableBlocks({
         editSlotClassName={editSlotClassName}
         preserveOrder={Boolean(normalizedOrders.length)}
         toolbar={toggleButton}
-        onCancel={()=>{setEditMode(false);editDock?.end();onEditorExit?.()}}
-        onDone={notice=>{setEditMode(false);setMessage(notice);editDock?.end();onEditorExit?.(notice)}}
+        onCancel={()=>{
+          setEditMode(false);
+          if(editDock?.active&&editDock.scopeId===scopeId)
+            editDock.complete(navigationHref(scopeId,'',native));
+          else onEditorExit?.();
+        }}
+        onDone={notice=>{
+          setEditMode(false);setMessage(notice);
+          if(editDock?.active&&editDock.scopeId===scopeId){
+            const destination=pageName==='search'?'search':pageName==='governance'?'governance':'';
+            editDock.complete(navigationHref(scopeId,destination,native));
+          }else onEditorExit?.(notice);
+        }}
       />:slots.flatMap((slot,index)=>{
         const empty=!BlockNoteContent.text.hasBlockNoteFrameContent(slot);
         if(empty&&!canEdit&&slot.order!==placeholderFirstOrder)return [];

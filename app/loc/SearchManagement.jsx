@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import dynamic from 'next/dynamic';
 import Select from 'react-select';
 import {useSearchParams} from 'next/navigation';
@@ -8,6 +8,7 @@ import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
 
 const ManagementSearchWorkspace=dynamic(
   ()=>import('../modular/features/Search'),
@@ -26,6 +27,7 @@ const SECTIONS=Object.freeze([
 export default function SearchManagement(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
+  const editDock=useEditDock();
   const searchParams=useSearchParams();
   const [section,setSection]=useState(()=>{
     const initial=String(searchParams?.get('section')||'');
@@ -35,6 +37,10 @@ export default function SearchManagement(){
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
   const permitted=ready&&Boolean(account.user)&&isContentScope&&account.canManageScopeSync(scopeId);
   const currentSection=SECTIONS.find(option=>option.value===section)||SECTIONS[0];
+  useEffect(()=>{
+    if(!permitted||!['suggestions','publish'].includes(section))return;
+    if(!editDock?.active||editDock.scopeId!==scopeId)editDock?.begin(scopeId);
+  },[permitted,section,scopeId,searchParams,editDock?.active,editDock?.scopeId,editDock?.begin]);
 
   // featureId="search" shares the Scope's existing, database-backed Search Hero.
   // Neither its image nor any of its text is replicated or overridden here.

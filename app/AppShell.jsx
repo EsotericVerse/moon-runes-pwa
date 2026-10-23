@@ -349,11 +349,11 @@ function AppShellInner({children}){
     {id:'time',icon:'culture',label:translateUiField(activeLocale,'時間編輯'),
       href:editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞編輯'),
-      href:editScopeAvailable&&navScopeId!=='lrunes'?navigationHref(navScopeId,'statics/keywords',native):''},
+      href:editScopeAvailable&&navScopeId!=='lrunes'?editTabHref('statics/keywords','edit','1'):''},
     {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'搜尋建議編輯'),
-      href:editScopeAvailable?editTabHref('governance/manage/search','section','suggestions'):''},
+      href:editScopeAvailable?editTabHref('governance/manage/search','section','suggestions')+'&edit=1':''},
     {id:'governance',icon:'governance',label:translateUiField(activeLocale,'治理編輯'),
-      href:editScopeAvailable?editTabHref('governance/manage','section','governance'):''},
+      href:editScopeAvailable?editTabHref('governance/manage','section','governance')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
@@ -417,14 +417,17 @@ function AppShellInner({children}){
     {children}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
       {editingDockVisible?editTabs.map(tab=>tab.action
-        ?<button type="button" key={tab.id} disabled={tab.action==='save'&&!editDock.hasSave}
-          onClick={()=>tab.action==='save'?editDock.save():editDock.discard()}>
+        ?<button type="button" key={tab.id}
+          disabled={editDock.busy}
+          onClick={()=>tab.action==='save'
+            ?editDock.save()
+            :editDock.discard(navigationHref(navScopeId,'',native))}>
           <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
         </button>
-        :tab.href?<ScopeLink key={tab.id} href={tab.href} native={native}
-          onClick={event=>{if(!editDock.canNavigate())event.preventDefault()}}>
+        :tab.href?<button type="button" key={tab.id} disabled={editDock.busy}
+          onClick={()=>editDock.switchTo(tab.href)}>
           <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
-        </ScopeLink>
+        </button>
         :<button type="button" key={tab.id} disabled>
           <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
         </button>)
@@ -435,6 +438,7 @@ function AppShellInner({children}){
         <span>{tab.label}</span>
       </ScopeLink>)}
     </nav>
+    {editingDockVisible&&editDock.notice?<p className="scope-edit-dock-notice" role="alert">{editDock.notice}</p>:null}
     {showHomeEditEntry?<ScopeHomeEditEntry key={scopeId}/>:null}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
