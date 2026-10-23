@@ -57,6 +57,8 @@ const routedAdapter={
 };
 const client=createDatabaseClient(routedAdapter);
 
+// Use the existing public Supabase SDK socket for browser/iOS game rooms.
+export const dbRealtimeClient=adapter.realtimeClient;
 export const dbBackupPublicClient=adapter.backupPublicClient||null;
 export const dbConfiguredPublicClient=adapter.configuredPublicClient||null;
 // Passive Auth events use the configured SDK, not the routed query client.
