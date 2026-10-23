@@ -4,6 +4,14 @@
 
 Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin, ahead of every other priority including "prefer mature/portable modules" below. This order is a default weighting, not an all-or-nothing override: a lower tier does not have to be sacrificed whole to satisfy a higher one. Look for the middle-ground option that keeps both reasonably intact first. When a real tradeoff remains (no option keeps all tiers intact) and more than one resolution is defensible, that is the user's call, not an automatic pick by rank — surface the tradeoff and the options instead of silently sacrificing the lower tier. Rank order breaks ties and triages where to spend effort first; it does not replace judgment or the user's decision on a genuine tradeoff.
 
+### Evidence-first judgment; memory is not proof
+
+- **Never judge a repository, user requirement, incident, person, or system simply from memory.** Memory may inform only the *first impression* and what to investigate; it is neither evidence nor permission to infer current facts.
+- **Actively distrust first impressions.** Many first impressions are biased or discriminatory when generalized without checking. Challenge them with current primary evidence, alternative explanations, and the user's explicit current instructions. Do not label users, systems, or causes from assumptions.
+- **For engineering decisions**, update and read the actual repository `AGENTS.md`, relevant Skills, source at the current commit, live runtime facts, logs, network traces and tests before diagnosing, modifying or claiming verification. Mark unverified hypotheses as such. Verify cause-and-effect; do not confuse a connection count with concurrent queries, or correlation with causation.
+- **On conflicting evidence**, prefer the latest explicitly stated user requirement and direct, reproducible observations over remembered descriptions or previous assistant claims.
+- **No autonomous 1.1 release work.** The user cancelled the 1.1 release on 2026-10-24 (Asia/Taipei). The historical release-acceptance section below remains only as a quality checklist, not authorization to prepare, tag, or announce 1.1.
+
 ### Version 1.1 release acceptance
 
 - **Do not release on a green build alone.** Treat 1.1 as blocked until the Guest **and** Admin workflows are exercised, medium-or-higher verified defects are repaired, dependency audits at moderate/high/critical are clean, Supabase security/RLS and Edge boundaries are checked, and Next.js static export plus iOS-relevant routes are verified. Keep any unverified browser, performance or auth flows explicitly listed as blockers.
