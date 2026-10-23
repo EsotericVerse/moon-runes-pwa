@@ -5,7 +5,7 @@ export default {
   "mediaPlatform": "Media platform statistics",
   "mediaStyle": "Media style statistics (Meta Tag)",
   "notApplied": "No filter",
-  "keywordClass": "Keyword Class",
+  "keywordClass": "Keyword set",
   "loading": "Loading statistics…",
   "noChart": "No chart data available for this period.",
   "loadingMediaTags": "Loading media tag combinations…",
