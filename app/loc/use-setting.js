@@ -5,7 +5,8 @@ import { getSetting, putSetting, deleteSetting } from './user-storage';
 import { useAccount } from './use-account';
 
 export function useSetting(key,initialValue,{delay=350}={}){
-  const account=useAccount();
+  // User preferences need identity only, never Scope administration.
+  const account=useAccount({sessionOnly:true});
   const [value,setValueState]=useState(initialValue);
   const [loading,setLoading]=useState(true);
   const [status,setStatus]=useState('');
