@@ -388,7 +388,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   }
 
   async function runBatch(){
-    if(configDirty){setMessage(l.settingsUnsaved);return;}
+    if(configDirty||draftDirty){setMessage('請先儲存分析設定與關鍵詞草稿，再重新分析。');return;}
     setBusy(true);setMessage('');
     setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
     try{
@@ -616,8 +616,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
-        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||!configDirty} onClick={saveAll}>{l.saveSettings}</button>:null}
-        <button type="button" className="loc-button primary" disabled={busy||configDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
+        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||(!configDirty&&!draftDirty)} onClick={saveAll}>{l.saveSettings}</button>:null}
+        <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
         <button type="button" className="loc-button" disabled={busy||configDirty||!currentClassId} onClick={resetBatch}>{l.resetClassification}</button>
       </div>
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
