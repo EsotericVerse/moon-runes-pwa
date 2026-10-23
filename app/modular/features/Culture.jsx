@@ -316,7 +316,6 @@ export default function Culture(){
   // Do not scan all-time metadata only to immediately scan that period again.
   // The latest period is already derived synchronously from loaded records.
   // Do not hold up the source snapshot waiting for a separate UI selection effect.
-  const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!latestPeriod&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   // The lower Culture panel shares one selected interval across the source
