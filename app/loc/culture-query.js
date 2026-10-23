@@ -7,7 +7,7 @@ import {workDisplayText} from '../modular/work-display-model';
 import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query';
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
-import {defaultScopeData,selectManagedScope,selectManagedScopes} from './scope-data';
+import {selectManagedScope,selectManagedScopes} from './scope-data';
 
 
 
@@ -355,36 +355,17 @@ export async function selectScopeCultureData(scopeId){
     };
   }
 
-  const scope=id==='local'?defaultScopeData(id):await selectManagedScope(id);
+  const scope=await selectManagedScope(id);
   if(!scope)throw new Error('找不到 Scope 資料設定');
   const scopeContext=await selectCultureTimeRows(scope,scope.birthday);
   const parts=cultureParts(scopeContext,scope.id);
   const openRange=openPeriodRangeFromRows(scope.id,scopeContext);
-  // A fresh local import has articles but no Time anchors yet. Provide a
-  // usable work-window derived from real publication dates, not a fabricated
-  // official anchor or a dependency on cloud Scope-management permissions.
-  let localWorkPeriod=null;
-  if(id==='local'&&!parts.eras.length){
-    const first=await Promise.all([scope.galaxy,scope.galaxyMedia].map(table=>
-      selectRows(table,{columns:'createtime',
-        filters:[{column:'createtime',operator:'gt',value:''}],
-        orders:[{column:'createtime',ascending:true}],limit:1
-      })
-    ));
-    const earliest=first.flatMap(result=>(result.rows||[]).map(row=>String(row.createtime||'').slice(0,10)))
-      .filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)).sort()[0]||new Date().toISOString().slice(0,10);
-    localWorkPeriod={
-      era_id:'local-archive',period:'local-archive',scope_id:id,
-      title:'本機全部時期',display_label:'本機全部時期',
-      start_date:earliest,end_date:null,open_end:true,status:'current',order:0
-    };
-  }
   return {
     scopeId:id,
     scope,
-    eras:{eras:localWorkPeriod?[localWorkPeriod]:parts.eras},
-    periods:localWorkPeriod?[localWorkPeriod]:parts.periods,
-    openRanges:openRange?[openRange]:(localWorkPeriod?[localWorkPeriod]:[]),
+    eras:{eras:parts.eras},
+    periods:parts.periods,
+    openRanges:openRange?[openRange]:[],
     scopeRanges:[],
     timelineItems:timelineItems(parts.normalizedContext),
     events:parts.events,
