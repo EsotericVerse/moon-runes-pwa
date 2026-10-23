@@ -231,6 +231,7 @@ export default function Culture(){
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
@@ -301,7 +302,12 @@ export default function Culture(){
   useEffect(()=>{
     if(isAggregateScope||!query.data)return;
     const preferred=periodKey(latestPeriod)||'all';
-    setSelectedPeriodKey(current=>(current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
+    const scopeChanged=periodSelectionScopeRef.current!==scopeId;
+    periodSelectionScopeRef.current=scopeId;
+    // A new Scope always starts at its own latest period; manual selections
+    // within the same Scope are preserved across query refreshes.
+    setSelectedPeriodKey(current=>scopeChanged?preferred:
+      (current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
   },[scopeId,isAggregateScope,query.data,latestPeriod,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
