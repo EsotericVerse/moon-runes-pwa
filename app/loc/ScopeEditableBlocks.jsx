@@ -64,6 +64,7 @@ export default function ScopeEditableBlocks({
   // The actual write is still checked by the database.
   authorizedByParent=false,
   startInEditMode=false,
+  keepEditorOpen=false,
   onEditorExit=null,
   toggleExtra=null,
   onSuggestionClick=null,
@@ -211,6 +212,7 @@ export default function ScopeEditableBlocks({
         preserveOrder={Boolean(normalizedOrders.length)}
         toolbar={toggleButton}
         onCancel={()=>{
+          if(keepEditorOpen){onEditorExit?.();return;}
           setEditMode(false);
           if(editDock?.active&&editDock.scopeId===scopeId){
             const destination=pageName==='search'?'search':pageName==='governance'?'governance':'';
@@ -219,6 +221,7 @@ export default function ScopeEditableBlocks({
         }}
         onDone={(notice,{switching=false}={})=>{
           setMessage(notice);
+          if(keepEditorOpen){if(!switching)onEditorExit?.(notice);return;}
           if(['search','governance'].includes(pageName)&&!switching)return;
           setEditMode(false);
           if(switching)return;
