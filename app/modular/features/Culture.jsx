@@ -79,7 +79,7 @@ function classLabel(value){
 }
 // The articles already contain class_id and group_lists. A tap only changes
 // which projection of those saved attributes is displayed in the same river.
-function keywordDrillRiverItems(rows,{level='source',source='',groupId='',meta={},catalog=[]}={}){
+function keywordDrillRiverItems(rows,{level='group',source='',groupId='',meta={},catalog=[]}={}){
   const classes=meta?.classes||{};
   const className=String(meta?.class_name||'').trim();
   const groupName=String(classes[String(groupId)]||'').trim();
@@ -103,7 +103,7 @@ function keywordDrillRiverItems(rows,{level='source',source='',groupId='',meta={
       add(rowSource,rowSource,day,1);
       continue;
     }
-    if(rowSource!==source)continue;
+    if(source&&rowSource!==source)continue;
     const rowGroup=String(row.class_id||'').trim();
     if(level==='group'){
       const label=String(classes[rowGroup]||'').trim();
@@ -366,25 +366,24 @@ export default function Culture(){
   useEffect(()=>{
     setKeywordDrillSource('');
     setKeywordDrillGroup('');
-  },[scopeId,styleFilter,keywordWindowStart,keywordWindowEnd]);
-  // Source options come from the currently selected period's saved articles.
-  // No new source taxonomy, table or hard-coded vendor names.
-  const keywordSourceOptions=useMemo(()=>[...new Set(
-    (keywordDensityQuery.data||[]).filter(row=>parseGroupLists(row.group_lists)!==false)
-      .map(row=>String(row.source_name||'').trim()||'未分類')
-  )].sort((a,b)=>a.localeCompare(b,locale)),[keywordDensityQuery.data,locale]);
+  },[scopeId]);
+  // Second-river source choices come from the exact Scope source snapshot.
+  // These must be available before choosing a keyword style.
+  const keywordSourceOptions=useMemo(()=>sourceSnapshotQuery.data?.groups||[],[sourceSnapshotQuery.data]);
   const keywordGroupOptions=useMemo(()=>Object.entries(styleQuery.data?.keywordMeta?.classes||{})
     .map(([id,name])=>({id,label:String(name||'').trim()}))
     .filter(item=>item.label).sort((a,b)=>Number(a.id)-Number(b.id)),
   [styleQuery.data?.keywordMeta?.classes]);
-  const keywordDrillLevel=!keywordDrillSource?'source':!keywordDrillGroup?'group':'item';
+  const keywordDrillLevel=keywordDrillGroup?'item':'group';
   const keywordDrillItems=useMemo(()=>keywordDrillRiverItems(keywordDensityQuery.data,{
     level:keywordDrillLevel,source:keywordDrillSource,groupId:keywordDrillGroup,
     meta:styleQuery.data?.keywordMeta,catalog:keywordCatalogQuery.data||[]
   }),[keywordDensityQuery.data,keywordDrillLevel,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordCatalogQuery.data]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
-  const selectedGroup=categoryGroups.find(item=>item.category_key===selectedCategory)||null;
+  const selectedGroup=categoryGroups.find(item=>item.category_key===(
+    keywordDrillSource?'source:'+keywordDrillSource:selectedCategory
+  ))||null;
   const effectiveCategoryKey=selectedGroup?.category_key||'';
   const periodWorksQuery=useInfiniteQuery({
     queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all'],
@@ -604,7 +603,12 @@ export default function Culture(){
     }
   }
 
-  const classificationBuckets=sourceSnapshotQuery.data?.buckets||[];
+  // The source selector drives the SECOND river, whether or not a keyword
+  // style is active. LOC aggregate's own source river is separate.
+  const classificationBuckets=useMemo(()=>(
+    sourceSnapshotQuery.data?.buckets||[]
+  ).filter(item=>!keywordDrillSource||String(item.category||'')===keywordDrillSource),
+  [sourceSnapshotQuery.data,keywordDrillSource]);
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
