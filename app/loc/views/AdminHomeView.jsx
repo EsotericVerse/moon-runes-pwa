@@ -30,7 +30,7 @@ function Login({account}){
   return <FeaturePage featureId="admin">
     <section className="loc-card scope-feature-card">
       <p>{UI_COPY.admin.loginTitle}</p>
-      <ScopeLink className="loc-button primary" href="/settings/">前往設定登入</ScopeLink>
+      <ScopeLink className="loc-button primary" href="/local/settings/?section=account">前往設定登入</ScopeLink>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </FeaturePage>;
@@ -52,7 +52,7 @@ export default function AdminHomeView(){
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
-  if(!account.canManageGlobalSync())return <FeaturePage featureId="admin"><section className="loc-card scope-feature-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/settings/"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></FeaturePage>;
+  if(!account.canManageGlobalSync())return <FeaturePage featureId="admin"><section className="loc-card scope-feature-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/local/settings/?section=account"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></FeaturePage>;
 
   return <FeaturePage featureId="admin">
     <div className="management-workspace">
