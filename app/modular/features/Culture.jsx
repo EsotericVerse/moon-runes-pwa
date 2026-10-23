@@ -728,7 +728,7 @@ export default function Culture(){
     const suggestedDates=new Set(riverAnalysis.suggestions.map(item=>item.date));
     const existingDates=new Set(existingAnchorDates);
     const dates=[...new Set(selectedVirtualAnchorDates)]
-      .filter(date=>/^\\d{4}-\\d{2}-\\d{2}$/.test(date)&&suggestedDates.has(date)&&!existingDates.has(date));
+      .filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)&&suggestedDates.has(date)&&!existingDates.has(date));
     if(!dates.length){setEditError('目前沒有可新增的建議定錨點。');return;}
     setCreatingSuggestedAnchors(true);setEditError('');
     try{
