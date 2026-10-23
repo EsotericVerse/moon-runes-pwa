@@ -258,6 +258,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [foldBlank,setFoldBlank]=useState(true);
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
+  const [keywordSource,setKeywordSource]=useState('');
+  useEffect(()=>{
+    setStyleFilter('none');
+    setKeywordSource('');
+  },[scopeId]);
   // Custom retains the existing one-year default and +/- zoom; periods are
   // canonical dates from the same Time records Culture uses.
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
@@ -408,13 +413,43 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
   }),[queryRange.startDate,queryRange.endDate]);
+  const keywordSourcesQuery=useQuery({
+    queryKey:['statistics-source-taxonomy'],
+    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66',
+    queryFn:async()=>{
+      const [categories,aliases]=await Promise.all([
+        selectRows('silver.statistics_source_categories',{
+          columns:'category_code,display_name,sort_order,enabled',
+          orders:[{column:'sort_order',ascending:true}],limit:250
+        }),
+        selectRows('silver.statistics_source_aliases',{
+          columns:'source_key,category_code',limit:250
+        })
+      ]);
+      return {categories:categories.rows||[],aliases:aliases.rows||[]};
+    },
+    staleTime:5*60_000
+  });
+  const configuredSources=keywordSourcesQuery.data?.categories
+    ?.filter(row=>row.enabled!==false)||[];
+  useEffect(()=>{
+    if(keywordSourcesQuery.data&&keywordSource&&!configuredSources.some(row=>row.category_code===keywordSource)){
+      setKeywordSource('');
+    }
+  },[keywordSource,keywordSourcesQuery.data]);
   const runeQuery=useQuery({
-    queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate],
+    queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate,
+      keywordSource,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({scopeId,...styleRange});
+      return selectKeywordAnalysisSummary({
+        scopeId,...styleRange,sourceCategory:keywordSource,
+        sourceCategories:keywordSourcesQuery.data?.categories||[],
+        sourceAliases:keywordSourcesQuery.data?.aliases||[]
+      });
     },
-    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate),
+    enabled:scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(styleRange.startDate&&styleRange.endDate)
+      &&(!keywordSource||keywordSourcesQuery.isSuccess),
     staleTime:5*60_000
   });
 
@@ -422,14 +457,28 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
+      {scopeId==='lo3rwang'?<label>
+        <span>顯示關鍵字</span>
+        <select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
+          {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
+        </select>
+      </label>:null}
       {!isLrunesDaily?<label>
-        <span>時期範圍</span>
-        <select className="scope-select" aria-label="時期範圍" value={selectedPeriodKey}
+        <span>時期</span>
+        <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
           onChange={event=>setSelectedPeriodKey(event.target.value)}>
           <option value="">自選時間（原有縮放）</option>
           {periods.map(period=><option key={period.record_id||period.period} value={String(period.period||period.era_id||period.record_id)}>
             {period.title||period.name||period.period}
           </option>)}
+        </select>
+      </label>:null}
+      {scopeId==='lo3rwang'&&styleFilter==='rune66'?<label>
+        <span>來源</span>
+        <select className="scope-select" aria-label="關鍵字來源" value={keywordSource}
+          onChange={event=>setKeywordSource(event.target.value)}>
+          <option value="">全部</option>
+          {configuredSources.map(source=><option key={source.category_code} value={source.category_code}>{source.display_name}</option>)}
         </select>
       </label>:null}
       {!isLrunesDaily?<span className="scope-status" role="status">
@@ -445,9 +494,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         <input type="checkbox" checked={foldBlank} onChange={event=>setFoldBlank(event.target.checked)}/> <UiText id="uiExtra.statisticsView.foldBlank"/>
       </label>:null}
       </>:null}
-      {scopeId==='lo3rwang'?<label><span><UiText id="uiExtra.statisticsView.displayStyle"/></span><select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-        {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>{t(item.textKey)}</option>)}
-      </select></label>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
     {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending||adminSourceQuery.isPending)))?<div className="scope-stat-data-pending">
@@ -508,6 +554,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       facetTrend={facetTrend}
     />:null}
     {styleFilter==='rune66'?<>
+      {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data}/>:null}
