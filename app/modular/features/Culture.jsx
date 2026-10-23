@@ -27,7 +27,7 @@ import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline
 
 import {selectGalaxyContent} from '../../loc/galaxy-query';
 
-import {deleteRows,updateRows} from '../../loc/db-client.mjs';
+import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {useAccount} from '../../loc/use-account';
@@ -199,12 +199,14 @@ export default function Culture(){
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
+  const [creatingSuggestedAnchors,setCreatingSuggestedAnchors]=useState(false);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const [fullTextError,setFullTextError]=useState('');
   const [editingWorkKey,setEditingWorkKey]=useState('');
+  const [authorizedWorkKey,setAuthorizedWorkKey]=useState('');
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
@@ -591,8 +593,7 @@ export default function Culture(){
     // anchor_ids. Only a real anchor point can be moved on the river.
     if(row?.entryType!=='anchor'||!row.recordId||!scopeData?.time)return null;
     try{
-      const verified=await account.refresh();
-      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('此 Scope 沒有修改權限，請先登入管理帳號。');
+      // Scope permissions are enforced by the database write RPC.
       const date=dayKeyFromTimelineValue(item?.start);
       if(!date)throw new Error(l.invalidAnchorDate);
       await updateRows(scopeData.time,{
@@ -624,8 +625,7 @@ export default function Culture(){
       }
     }
     try{
-      const verified=await account.refresh();
-      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('此 Scope 沒有刪除權限，請先登入管理帳號。');
+      // Scope permissions are enforced by the database write RPC.
       await deleteRows(scopeData.time,{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
       setSelectedTimelineRecordId('');
       setSelectedTimelineDate('');
@@ -723,12 +723,44 @@ export default function Culture(){
     setSelectedVirtualAnchorDates(current=>current.includes(date)?current.filter(item=>item!==date):[...current,date].sort());
   };
 
+  async function createSelectedSuggestedAnchors(){
+    if(creatingSuggestedAnchors||!scopeData?.time)return;
+    const suggestedDates=new Set(riverAnalysis.suggestions.map(item=>item.date));
+    const existingDates=new Set(existingAnchorDates);
+    const dates=[...new Set(selectedVirtualAnchorDates)]
+      .filter(date=>/^\\d{4}-\\d{2}-\\d{2}$/.test(date)&&suggestedDates.has(date)&&!existingDates.has(date));
+    if(!dates.length){setEditError('目前沒有可新增的建議定錨點。');return;}
+    setCreatingSuggestedAnchors(true);setEditError('');
+    try{
+      // Only this explicitly requested bulk write needs the extra foreground
+      // authorization check. The database RPC remains the final guard.
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('請先登入具備此 Scope 權限的帳號。');
+      const updatedAt=new Date().toISOString();
+      await insertRows(scopeData.time,dates.map(date=>({
+        record_type:'anchor',label:'建議定錨 '+date,
+        resource_id:'anchor:'+globalThis.crypto.randomUUID(),
+        note:null,status:'active',display_order:null,visibility:null,
+        time_date:date,anchor_ids:null,date_status:'exact',year_value:null,
+        updated_at:updatedAt
+      })));
+      setSelectedVirtualAnchorDates([]);
+      await refreshTimelineData();
+    }catch(error){setEditError(String(error?.message||error));}
+    finally{setCreatingSuggestedAnchors(false);}
+  }
+
   async function startEditingWork(work){
     const uid=String(work?.uid||'').trim();
     if(!uid)return;
     const key=String(work?.key||('galaxy:'+uid));
-    setEditingWorkKey(key);setEditDraft(null);setEditError('');
+    setEditingWorkKey(key);setEditDraft(null);setAuthorizedWorkKey('');setEditError('');
     try{
+      // Editing is offered to every reader, but only an authorized Scope
+      // editor may load an editable draft after clicking the button.
+      const verified=await account.refresh();
+      if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('請先登入具有此 Scope 編輯權限的帳號。');
+      setAuthorizedWorkKey(key);
       if(!scopeData)throw new Error(l.sourceUnresolved);
       const {rows=[]}=await selectRows(scopeData.galaxy,{
         columns:'uid,title,content,searchable',
@@ -747,8 +779,9 @@ export default function Culture(){
         hidden:row.searchable===false
       });
     }catch(exception){
-      setEditingWorkKey('');
-      setEditError(String(exception?.message||exception||l.editReadFailed));
+      setEditingWorkKey('');setAuthorizedWorkKey('');
+      const message=String(exception?.message||exception||l.editReadFailed);
+      setEditError(message);setFullTextError(message);
     }
   }
 
@@ -769,7 +802,7 @@ export default function Culture(){
       },{filters:[{column:'uid',operator:'eq',value:uid}]});
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(content);
-      setEditingWorkKey('');setEditDraft(null);
+      setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.saveFailed));
@@ -787,7 +820,7 @@ export default function Culture(){
       await deleteRows(scopeData.galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]});
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key){setFullTextKey('');setFullText('');}
-      setEditingWorkKey('');setEditDraft(null);
+      setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.deleteFailed));
@@ -1055,6 +1088,11 @@ export default function Culture(){
                   ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
+                  <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
+                    onClick={createSelectedSuggestedAnchors}>
+                    {creatingSuggestedAnchors?'正在新增…':'新增選取的建議定錨點（'+selectedVirtualAnchorDates.length+'）'}
+                  </button>
+                  {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
                   <details className='scope-culture-anchor-picker'>
                     <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
                     <div className='scope-culture-anchor-choices'>
@@ -1062,7 +1100,10 @@ export default function Culture(){
                         const route=featureNavigationHref(scopeId,'culture');
                         const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
                         return <div key={item.date} className='scope-status'>
-                          <span>{formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}</span>
+                          <label><input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)}
+                            onChange={()=>toggleVirtualAnchor(item.date)}/>
+                            {formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}
+                          </label>
                           <ScopeLink href={href}>前往時間編輯</ScopeLink>
                         </div>;
                       })}
@@ -1165,7 +1206,7 @@ export default function Culture(){
                     onLoadMore={periodWorksPage.loadNext}
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=>{
-                      const canEditWork=false;
+                      const canEditWork=authorizedWorkKey===workKey;
                       const workKey=String(work.key||('galaxy:'+work.uid));
                       return <Article
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
@@ -1184,7 +1225,7 @@ export default function Culture(){
                       onDraftChange={setEditDraft}
                       onSave={()=>saveEditingWork(work)}
                       onDelete={()=>deleteEditingWork(work)}
-                      onCancel={()=>{setEditingWorkKey('');setEditDraft(null);setEditError('')}}
+                      onCancel={()=>{setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);setEditError('')}}
                       editBusy={editBusy}
                       editError={editError}
                       showHidden
@@ -1197,6 +1238,8 @@ export default function Culture(){
                           content={fullTextKey===work.key?fullText:''}
                           onToggle={()=>toggleWorkContent(work)}
                         />
+                        {fullTextKey===workKey?<button type='button' className='loc-button scope-work-edit-button'
+                          onClick={()=>startEditingWork(work)}>編輯</button>:null}
                         
                       </div>:null}
                     </Article>;

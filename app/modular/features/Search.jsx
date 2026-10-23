@@ -642,7 +642,7 @@ export default function Search({managementMode=false}){
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
         result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:MEDIA_EDITOR_COLUMNS,
-        {authenticated:result.resourceType==='galaxy'&&(managementMode||!managementMode)}
+        {authenticated:result.resourceType==='galaxy'}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       const {SearchEditDraft}=await import('./search-edit-draft');

@@ -15,8 +15,8 @@ export function homeScopeForAccount(value,account,allowedScopeIds=[]){
   const id=validScopeId(value);
   if(!account?.user||id==='loc'||!id)return 'loc';
   const allowed=new Set(allowedScopeIds.map(validScopeId));
-  const own=new Set(account.authorizer?.scopeIds||[]);
-  return allowed.has(id)&&(account.canManageGlobalSync?.()||own.has(id))?id:'loc';
+  // Choosing a PUBLIC homepage is navigation, not Scope management.
+  return allowed.has(id)?id:'loc';
 }
 
 // Per-device setting only: never a cloud Scope and never sent to user_settings.

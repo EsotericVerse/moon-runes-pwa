@@ -1,6 +1,6 @@
 import {navigationHref} from '../modular/scope-registry.js';
 import useNativeNavigation from '../modular/use-native-navigation';
-import {useAccount} from '../loc/use-account';
+import {usePassiveSessionAccount} from '../loc/use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {RUNE_CUSTOM_DRAW_MODES} from './rune-draw-modes.mjs';
 import CustomDrawSelector from './CustomDrawSelector';
@@ -59,7 +59,7 @@ function renderRuneHero(slot,native){
 export default function RunesClient(){
   const native=useNativeNavigation();
   // Only a signed-in state is needed for the daily log navigation.
-  const account=useAccount({sessionOnly:true});
+  const account=usePassiveSessionAccount();
   return <main className="loc-next-main"><section className="loc-view">
     <ScopeEditableBlocks
       scopeId="lrunes"

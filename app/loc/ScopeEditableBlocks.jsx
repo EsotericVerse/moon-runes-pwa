@@ -75,7 +75,9 @@ export default function ScopeEditableBlocks({
   useUiSection('uiExtra.editBlocks');
   const pageName=pageNameOf(page);
   const isScopeHomepageBlock=pageName==='index'||(scopeId==='lrunes'&&pageName==='hero');
-  const account=useAccount({enabled:allowEditing&&!authorizedByParent&&!isScopeHomepageBlock});
+  // Public blocks must not preflight silver.loc; protected parent workspaces
+  // already share the verified account cache when edit controls render.
+  const account=useAccount({enabled:false});
   const editDock=useEditDock();
   const native=useNativeNavigation();
   // Same (scopeId, pageName) request AppShell already makes for this route's

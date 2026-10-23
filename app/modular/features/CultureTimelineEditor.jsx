@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {useAccount} from '../../loc/use-account';
+
 import {useEditDock} from '../edit-dock';
 import {navigationHref} from '../scope-registry';
 import useNativeNavigation from '../use-native-navigation';
@@ -60,7 +60,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   useUiSection('uiExtra.dataErrors');
   const copy=useUiCopy();
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
-  const account=useAccount({enabled:false});
+
   const editDock=useEditDock();
   const native=useNativeNavigation();
   const dockActions=useRef({save:null});
@@ -288,9 +288,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
         }
         payload.anchor_ids=ids;
       }
-      // Only mutations require management authorization; drafts and previews are public.
-      const verified=await account.refresh();
-      if(!verified?.authorizer?.canManageScopeSync(dataScope))throw new Error('此 Scope 沒有儲存權限，請先登入管理帳號。');
+      // The target database RPC authorizes this Scope on the actual write.
       if(selectedId){
         const {record_type,...patch}=payload;
         await updateRows(timeTable,patch,{filters:[
@@ -327,8 +325,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     }
     setBusy(true);setMessage('');
     try{
-      const verified=await account.refresh();
-      if(!verified?.authorizer?.canManageScopeSync(dataScope))throw new Error('此 Scope 沒有刪除權限，請先登入管理帳號。');
+      // The target database RPC authorizes this Scope on the actual write.
       await deleteRows(timeTable,{filters:[
         {column:'record_id',operator:'eq',value:selectedId}
       ]});

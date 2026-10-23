@@ -193,7 +193,8 @@ function settingValue(row,key){
 }
 
 export async function getSetting(key){
-  await requireUser();
+  // Auth identity was already resolved by the on-demand personal-settings flow;
+  // the target relation's RLS limits each reader to their own rows.
   const {data,error}=await apiRelation('user_settings')
     .select('setting_key,text_value,integer_value,updated_at')
     .eq('setting_key',String(key))

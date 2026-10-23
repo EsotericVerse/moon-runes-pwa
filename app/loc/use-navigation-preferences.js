@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useState} from 'react';
-import {useAccount} from './use-account';
+import {usePassiveSessionAccount} from './use-account';
 import {getSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
 const accountNavigation=NavigationPreferences.account;
@@ -9,7 +9,7 @@ const accountNavigation=NavigationPreferences.account;
 
 const INITIAL={home:'loc',favorites:[...accountNavigation.DEFAULT_FAVORITES],folders:[],loading:true,error:''};
 export function useNavigationPreferences(){
-  const account=useAccount({sessionOnly:true});
+  const account=usePassiveSessionAccount();
   const [preferences,setPreferences]=useState(INITIAL);
   const identity=account.user?.id||account.user?.email||'';
   useEffect(()=>{

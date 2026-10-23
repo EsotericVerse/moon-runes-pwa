@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSetting, putSetting, deleteSetting } from './user-storage';
-import { useAccount } from './use-account';
+import { usePassiveSessionAccount } from './use-account';
 
 export function useSetting(key,initialValue,{delay=350}={}){
   // User preferences need identity only, never Scope administration.
-  const account=useAccount({sessionOnly:true});
+  const account=usePassiveSessionAccount();
   const [value,setValueState]=useState(initialValue);
   const [loading,setLoading]=useState(true);
   const [status,setStatus]=useState('');

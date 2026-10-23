@@ -1,9 +1,9 @@
 'use client';
 
-import {useCallback} from 'react';
+import {useCallback,useEffect} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {z} from 'zod';
-import {getAccountSession,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthClient,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
@@ -41,12 +41,14 @@ function createScopeAuthorizer(user,permissionRows=[]){
 }
 
 // One shared query per identity level for the entire AppShell QueryClient.
-// The public navigation only reads the session; protected views opt into the
-// management query. A permission result is UI state, never a substitute for
+// Public navigation observes Auth state without initiating a session or
+// management query. Only protected views opt into management authorization. A permission result is UI state, never a substitute for
 // Supabase RLS / RPC write authorization.
 const SESSION_KEY=['loc-account','session'];
 const MANAGEMENT_KEY=['loc-account','management'];
-const ACCOUNT_CACHE_MS=60_000;
+// A management workspace verifies once on entry. Never re-query on focus or
+// stale-time expiry; explicit refresh and database write authorization remain.
+const ACCOUNT_CACHE_MS=Infinity;
 const emptyState=Object.freeze({
   loading:true,user:null,email:'',role:'',authorizer:null,
   permissionLoading:true,error:'',scopes:[]
@@ -117,7 +119,8 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
   const query=useQuery({
     queryKey,queryFn,enabled,
     staleTime:ACCOUNT_CACHE_MS,
-    refetchOnWindowFocus:true,
+    refetchOnWindowFocus:false,
+    refetchOnReconnect:false,
     retry:false
   });
   const state=query.data||emptyState;
@@ -160,4 +163,26 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     ...state,refresh,signIn,signOut,
     canManageScopeSync,canManageGlobalSync,scopeDataFor
   };
+}
+
+// Listen to the SDK's existing Auth event stream. Public pages never call
+// getSession() or query silver.loc just to resolve navigation/UI state.
+// OAuth and management entries still use the explicit authorization path.
+export function usePassiveSessionAccount(){
+  const account=useAccount({enabled:false,sessionOnly:true});
+  const queryClient=useQueryClient();
+  useEffect(()=>{
+    const listener=dbAuthClient.auth.onAuthStateChange((event,session)=>{
+      const previous=queryClient.getQueryData(SESSION_KEY);
+      const user=session?.user||null;
+      queryClient.setQueryData(SESSION_KEY,user
+        ?{...signedOutState,user,email:normalizeAuthEmail(user.email)}
+        :signedOutState);
+      if(event==='SIGNED_OUT'||(previous?.user?.id&&previous.user.id!==user?.id)){
+        queryClient.removeQueries({queryKey:MANAGEMENT_KEY,exact:true});
+      }
+    });
+    return ()=>listener.data.subscription.unsubscribe();
+  },[queryClient]);
+  return account;
 }

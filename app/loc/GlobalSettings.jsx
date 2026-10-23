@@ -43,10 +43,9 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [requestedScope,setRequestedScope]=useState('');
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
-  // Navigation and account settings need a session only. Scope-specific home
-  // choices and cloud imports need the shared managed-Scope authorization.
-  const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&
-    (section==='home'||section==='files');
+  // The public home selector needs no Scope authorization. Cloud import is
+  // protected and requests management roles only when that section opens.
+  const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&section==='files';
   const managedAccount=useAccount({enabled:needsScopePermission});
   const account=needsScopePermission?managedAccount:prefs.account;
 
@@ -93,14 +92,11 @@ export default function GlobalSettings({initialSection='home'}={}){
   const canManageGlobal=!native&&Boolean(account.user)&&account.canManageGlobalSync();
   const selectedScope=managedScopes.find(item=>item.id===requestedScope)||managedScopes[0]||null;
   const allowedHomes=useMemo(()=>{
-    const allowed=new Set(account.authorizer?.scopeIds||[]);
-    const items=choices.filter(item=>
-      item.id==='loc'||(native&&item.id==='lrunes')||
-      (account.user&&(account.canManageGlobalSync()||allowed.has(item.id)))
-    );
+    // Every public Scope is a valid reading destination, even for Guest.
+    const items=choices.filter(item=>item.id!=='admin'&&item.id!=='local');
     if(native)items.push({id:deviceNavigation.MOBILE_HOME_ID,label:uiT('uiExtra.globalSettings.myPhone')});
     return items;
-  },[choices,native,account.user,account.authorizer]);
+  },[choices,native]);
   const actualHome=native?
     (allowedHomes.some(item=>item.id===home)?home:'loc'):
     accountNavigation.homeScopeForAccount(home,account,allowedHomes.map(item=>item.id));
