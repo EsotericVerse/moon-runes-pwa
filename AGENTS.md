@@ -32,6 +32,13 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
   - Before claiming a fix, build, test or optimization succeeds → `.agents/skills/verification-before-completion/SKILL.md`; collect fresh, relevant proof, not an assumption from code inspection.
 - **Code:** lowest priority; do not open `improve-codebase-architecture` or `code-review-expert` proactively for style or structure — only on explicit request, or for the security checklist use above.
 
+## Critical findings during scoped audits
+
+- **Very serious / immediate-fix authorization.** When a user requests a code or performance audit, if current evidence establishes a **very serious** issue that must be fixed immediately, correct it directly within the user's authorized scope without waiting for another approval. Apply this to the requested version window first (for example, 1.06r through the current `main`); inspect older code only when it is necessary to trace the affected call path or a regression. Do not mislabel theoretical risks, merely large files, or unmeasured micro-optimizations as critical.
+- **Severity must be defensible.** Immediate-fix candidates include a proven security/permission leak, likely data corruption/loss, a reproducibly broken core workflow, or a demonstrated severe performance degradation that materially prevents normal use. Record concrete evidence (affected callers, observable behavior, error/trace/measurement and severity rationale) before changing code; use the root-cause debugging skill. Fix the smallest correct shared cause, not a symptom; preserve independent domain objects and actual permission boundaries.
+- **Automatic action has limits.** Do not silently perform destructive database operations, remove or overwrite user records, weaken security checks, alter user-authored content, or make a genuine Security/Portable/Loading/UI tradeoff for the user. Stop and surface the decision when the safe correction requires one of those actions. For ordinary or uncertain findings, report and prioritize instead of broad refactoring.
+- **Verification and reporting are mandatory.** For an immediate fix, run focused regression checks and applicable build/browser tests, inspect the diff, and verify the outcome with fresh evidence. Commit verified, narrowly scoped increments directly to `main` following Git workflow. Disclose any verification gap, remaining risk or unsuccessful fix; never claim that changing code alone proves the incident is resolved.
+
 ## Git workflow
 
 - No branches, no PRs. Commit directly to `main`.
