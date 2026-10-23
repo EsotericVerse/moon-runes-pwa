@@ -173,8 +173,18 @@ function groupListsOf(classification){
 function enabledCatalogRows(catalogRows){
   return (catalogRows||[]).filter(row=>row?.class_enable!==false&&Number.isInteger(Number(row?.item_no)));
 }
+// Per item: class_group+keyword_sha, not keyword_sha alone. class_group is a
+// plain editable text field (see KeywordLibraryPanel's Group input) that is
+// NOT part of keyword_sha (keyword_sha only hashes `keywords`), but it DOES
+// change which rune group an item's hits count toward -- so a class_group-only
+// edit (no keywords change) must still register as "this item changed" here,
+// the same way a keywords edit does. item_name/class_name/principle are pure
+// display text with no effect on classification output, so they're correctly
+// left out.
 function currentShasOf(catalogRows){
-  return enabledCatalogRows(catalogRows).map(row=>String(row?.keyword_sha||''));
+  return enabledCatalogRows(catalogRows).map(row=>
+    String(row?.class_group||'').trim()+'|'+String(row?.keyword_sha||'')
+  );
 }
 function shasEqual(a,b){
   const listA=Array.isArray(a)?a:[];
@@ -195,7 +205,7 @@ function shasEqual(a,b){
 // unchanged), and is left alone untouched.
 function changedItemNosOf(catalogRows,storedShas){
   const rows=enabledCatalogRows(catalogRows);
-  const currentShas=rows.map(row=>String(row?.keyword_sha||''));
+  const currentShas=currentShasOf(catalogRows);
   if(!Array.isArray(storedShas)||storedShas.length!==currentShas.length)return null;
   const changed=[];
   for(let index=0;index<currentShas.length;index+=1){
