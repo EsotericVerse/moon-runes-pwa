@@ -51,7 +51,7 @@ export function locHomeBlockClass(slot,scopeId='loc'){
     order===1?'loc-home-block--hero':'',
     order===1&&image.mode==='side'?'loc-home-block--hero-side':'',
     order===1&&image.mode==='side'?'loc-home-block--image-'+(image.position==='left'?'left':'right'):'',
-    order!==1&&image.src?'loc-home-block--with-image loc-home-block--image-'+image.position:''
+    order!==1&&image.src?(image.position==='only'?'loc-home-block--image-only':'loc-home-block--with-image loc-home-block--image-'+image.position):''
   ].filter(Boolean).join(' ');
 }
 
@@ -78,12 +78,14 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
     <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
       <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
   </figure>:<article className="loc-home-block__media loc-home-block__media-bubble loc-bubble"
-    style={imageOnly?undefined:{'--loc-home-media-max':image.width+'px'}}>
+    style={{'--loc-home-media-max':image.width+'px'}}>
     <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
   </article>):null;
   return <>
     {header}
-    {imageOnly?<div className="loc-home-block__body loc-home-block__body--image">{media}</div>:body}
+    {imageOnly?<div className="loc-home-block__body loc-home-block__body--image">
+      <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
+    </div>:body}
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
