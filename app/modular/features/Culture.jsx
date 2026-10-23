@@ -133,6 +133,9 @@ export default function Culture(){
   const [worksOpen,setWorksOpen]=useState(false);
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
+  const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
+  const [keywordCustomStart,setKeywordCustomStart]=useState('');
+  const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
   const [anchorSaveBusy,setAnchorSaveBusy]=useState(false);
   const [anchorSaveMessage,setAnchorSaveMessage]=useState('');
@@ -158,6 +161,9 @@ export default function Culture(){
 
   useEffect(()=>{
     setStyleFilter('none');
+    setKeywordPeriodKey('current');
+    setKeywordCustomStart('');
+    setKeywordCustomEnd('');
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
@@ -186,6 +192,17 @@ export default function Culture(){
   const initialPeriodSelectionPending=Boolean(primaryPeriods.length&&!openPeriod&&!selectedPeriodKey);
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
+  // Keyword Class has its own time interval: changing it must not move the
+  // structure river, source-density river, anchor suggestions, or work list.
+  const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
+    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||selectedWorkPeriod;
+  const keywordWindowStart=keywordPeriodKey==='custom'
+    ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
+  const keywordWindowEnd=keywordPeriodKey==='custom'
+    ?keywordCustomEnd:String(keywordPeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
+  const keywordWindowValid=/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowStart)
+    &&/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowEnd)
+    &&keywordWindowStart<=keywordWindowEnd;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -221,12 +238,12 @@ export default function Culture(){
     staleTime:5*60_000
   });
   const styleQuery=useQuery({
-    queryKey:['culture-style-filter','rune66',classificationScope,selectedWindowStart,selectedWindowEnd],
+    queryKey:['culture-style-filter','rune66',classificationScope,keywordWindowStart,keywordWindowEnd],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({startDate:selectedWindowStart,endDate:selectedWindowEnd});
+      return selectKeywordAnalysisSummary({startDate:keywordWindowStart,endDate:keywordWindowEnd});
     },
-    enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&Boolean(selectedWindowStart&&selectedWindowEnd),
+    enabled:!isAggregateScope&&scopeId==='lo3rwang'&&styleFilter==='rune66'&&keywordWindowValid,
     staleTime:5*60_000
   });
   const styleClassRiverItems=useMemo(()=>{
@@ -843,6 +860,37 @@ export default function Culture(){
                       <option value='rune66'><UiText id="uiExtra.cultureView.keywordClass"/></option>
                     </select>
                   </label>:null}
+                  {scopeId==='lo3rwang'&&styleFilter==='rune66'?<>
+                    <label className='scope-culture-period-select'>
+                      <span>時間區間</span>
+                      <select className='scope-select' aria-label='關鍵詞時間區間'
+                        value={keywordPeriodKey} onChange={event=>{
+                          const next=event.target.value;
+                          if(next==='custom'){
+                            if(!keywordCustomStart)setKeywordCustomStart(keywordWindowStart);
+                            if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
+                          }
+                          setKeywordPeriodKey(next);
+                        }}>
+                        <option value='current'>目前檢視時期</option>
+                        <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
+                        {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
+                        <option value='custom'>自訂區間</option>
+                      </select>
+                    </label>
+                    {keywordPeriodKey==='custom'?<>
+                      <label><span>起始日期</span>
+                        <input className='scope-select' aria-label='關鍵詞起始日期' type='date'
+                          value={keywordCustomStart} max={keywordCustomEnd||undefined}
+                          onChange={event=>setKeywordCustomStart(event.target.value)}/>
+                      </label>
+                      <label><span>結束日期</span>
+                        <input className='scope-select' aria-label='關鍵詞結束日期' type='date'
+                          value={keywordCustomEnd} min={keywordCustomStart||undefined}
+                          onChange={event=>setKeywordCustomEnd(event.target.value)}/>
+                      </label>
+                    </>:null}
+                  </>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>{localizedLabelOf(selectedWorkPeriod,0)}｜<UiText id="uiExtra.cultureView.workClassificationLane"/></h3>
@@ -893,17 +941,18 @@ export default function Culture(){
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>表現風格 · {String(styleQuery.data?.keywordMeta?.class_name||'關鍵詞 Class')}</p>
                   <h4>關鍵詞密度時間長河</h4>
-                  {styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
+                  {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
+                  {keywordWindowValid&&styleQuery.isPending?<p className='scope-status'>正在讀取已定錨的關鍵詞 Attr…</p>:null}
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請登入 Statistics 的「關鍵詞設定」重新分析文章。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前有效文章 {Number(styleQuery.data?.keywordDocumentCount||0).toLocaleString()} 篇；必須大於 {Number(styleQuery.data?.keywordMinDocuments||0).toLocaleString()} 篇才啟用關鍵詞統計。</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
+                  {keywordWindowValid&&!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.statisticsEnabled&&styleClassRiverItems.length?<CultureTimeline
                     items={styleClassRiverItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
                     mode='source'
-                    windowStart={selectedWindowStart}
-                    windowEnd={selectedWindowEnd}
+                    windowStart={keywordWindowStart}
+                    windowEnd={keywordWindowEnd}
                   />:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
