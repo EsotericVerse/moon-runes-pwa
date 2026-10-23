@@ -169,6 +169,8 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
           edges:{color:{color:line,highlight:accent,hover:accent}}
         };
       };
+      const initialTheme=themeOptions();
+      let lastThemeSignature=JSON.stringify(initialTheme);
       network=new Network(containerRef.current,{nodes,edges},{
         autoResize:true,
         physics:{enabled:false},
@@ -197,10 +199,19 @@ function DeploymentTree({registry=[],configs={},selectedId='',onSelect,onMovePar
             if(ids.length===1)handlersRef.current.onDeleteNode?.(String(ids[0]));
           }
         },
-        ...themeOptions(),
-        edges:{...themeOptions().edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'horizontal',roundness:.35}}
+        ...initialTheme,
+        edges:{...initialTheme.edges,smooth:{enabled:true,type:'cubicBezier',forceDirection:'horizontal',roundness:.35}}
       });
-      themeObserver=new MutationObserver(()=>network?.setOptions(themeOptions()));
+      // Theme writes can mutate the document root many times without changing
+      // the graph colors. Do not force a Canvas redraw for identical tokens.
+      themeObserver=new MutationObserver(()=>{
+        if(!network)return;
+        const nextTheme=themeOptions();
+        const signature=JSON.stringify(nextTheme);
+        if(signature===lastThemeSignature)return;
+        lastThemeSignature=signature;
+        network.setOptions(nextTheme);
+      });
       themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-theme-id']});
       networkRef.current=network;
       network.fit({animation:false,maxZoomLevel:1});
