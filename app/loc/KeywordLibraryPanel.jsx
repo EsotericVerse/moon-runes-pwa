@@ -350,7 +350,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang'}){
         keyword_min_documents:documents,
         current_keyword_class_id:currentClassId,
         keyword_class_share_enabled:Boolean(shareEnabled),
-        ...(classificationChanged?{staticstime:null,keyword_document_count:0,keyword_meta:{}}:{}),
+        // staticstime:null + keyword_document_count:0 correctly mark the
+        // classification as stale/unverified the moment a setting that
+        // affects it changes (min_chars, current class, default group).
+        // keyword_meta is NOT cleared here: it holds the sha-narrowing
+        // baseline from the last successful run, which is still valid
+        // (none of these settings change keyword content), and wiping it
+        // would force every next reanalysis to do a full scan instead of
+        // a narrowed one -- the same bug already fixed in
+        // markCurrentClassificationStale.
+        ...(classificationChanged?{staticstime:null,keyword_document_count:0}:{}),
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
       if(classificationChanged)await invalidateClassification();
