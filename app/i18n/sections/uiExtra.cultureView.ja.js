@@ -14,7 +14,7 @@ export default {
   "theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag": "最初の系列にはアンカー、イベント、スタイルタグ、時期が並びます。記録を選んで編集できます。",
   "style": "表現スタイル",
   "noFilter": "適用しない",
-  "keywordClass": "キーワード分類",
+  "keywordClass": "キーワードセット",
   "workClassificationLane": "作品分類レーン",
   "expandToCompareWorkVolumeChanges": "必要に応じて作品数の推移を比較（候補日・正式アンカーではありません）",
   "selectAllCandidates": "審査候補をすべて選択",
