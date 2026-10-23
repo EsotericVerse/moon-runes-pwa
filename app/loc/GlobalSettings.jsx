@@ -11,6 +11,7 @@ import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
+import {useAccount} from './use-account';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
@@ -35,7 +36,6 @@ export default function GlobalSettings({initialSection='home'}={}){
   useUiSection('uiExtra.globalSettings');
   const uiT=useUiText();
   const prefs=useNavigationPreferences();
-  const {account}=prefs;
   const [native,setNative]=useState(false);
   const [urlResolved,setUrlResolved]=useState(false);
   const [home,setHome]=useState('loc');
@@ -43,6 +43,12 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [requestedScope,setRequestedScope]=useState('');
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
+  // Navigation and account settings need a session only. Scope-specific home
+  // choices and cloud imports need the shared managed-Scope authorization.
+  const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&
+    (section==='home'||section==='files');
+  const managedAccount=useAccount({enabled:needsScopePermission});
+  const account=needsScopePermission?managedAccount:prefs.account;
 
   useEffect(()=>{
     const isNative=Capacitor.isNativePlatform();
