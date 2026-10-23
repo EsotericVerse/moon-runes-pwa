@@ -429,7 +429,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       </div>:null}
       {message?<p className="scope-status" role="status">{message}</p>:null}
       <div className="scope-tabs">
-        <button type="submit" disabled={busy}>{busy?l.saving:l.save}</button>
+        <button type="submit" disabled={busy}>{busy?l.saving:editDock?.active&&editDock.scopeId===scopeId?'分段儲存':l.save}</button>
         <button type="button" disabled={busy} onClick={cancelEdit}>{l.cancel}</button>
         {selectedId?<button type="button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
       </div>
