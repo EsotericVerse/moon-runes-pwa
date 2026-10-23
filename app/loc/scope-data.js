@@ -20,7 +20,7 @@ const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
 function requiredToken(value,label){
   const token=String(value||'').trim()||label;
-  if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.manage '+label+' 設定無效');
+  if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.loc '+label+' 設定無效');
   return token;
 }
 
@@ -54,7 +54,7 @@ export function scopeDataFromManageRows(rows=[]){
     const next=buildScopeData(row,id);
     const current=scopes.get(id);
     if(current&&(current.galaxy!==next.galaxy||current.time!==next.time)){
-      throw new Error('silver.manage Scope '+id+' 的 galaxy/time 設定不一致');
+      throw new Error('silver.loc Scope '+id+' 的 galaxy/time 設定不一致');
     }
     scopes.set(id,current
       ?{...current,role:current.role==='admin'||next.role==='admin'?'admin':next.role,birthday:current.birthday||next.birthday}
@@ -89,7 +89,7 @@ function normalizeRegistryRow(row){
 }
 
 // silver.scope_registry 已停用：registry 列表改由 read_app_bootstrap RPC
-// 動態組出（來源是 silver.manage 的指向欄位 + 各節點自己的 display_name），
+// 動態組出（來源是 silver.loc 的指向欄位 + 各節點自己的 display_name），
 // 回傳格式跟舊版 scope_registry 查詢完全相同，呼叫端不需要改動。
 async function fetchRegistryRows(){
   const {data,error}=await dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
