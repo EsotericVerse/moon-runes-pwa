@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLunaRunesGame} from '../app/lrunes/game/boardgame-rules.js';
 import {produce} from 'immer';
+import {packTabletopState,unpackTabletopState} from '../app/lrunes/game/use-online-tabletop.js';
 
 const config={playerMin:2,playerMax:4,deMin:0,deMax:8,openingDraw:8,openingDiscard:3,handBase:5,handTempCap:10,eventResponseCards:2,resonanceSelf:1,resonanceAttack:-1};
 const cards=Array.from({length:66},(_,i)=>({id:i+1,name:'Rune '+(i+1),group:'Group '+(i%8),alphaCompatMacro:'macro'+(i%4)}));
@@ -47,4 +48,15 @@ test('local React/Immer move transition preserves the previous game state',()=>{
   const cleared=produce(selected,draft=>game.moves.toggleCard({G:draft},0,id));
   assert.deepEqual(cleared.players[0].selected,[]);
   assert.deepEqual(selected.players[0].selected,[id]);
+});
+
+test('online room snapshot preserves exact cards with smaller Realtime payload',()=>{
+  const game=createLunaRunesGame(rules,4);
+  const original=game.setup();
+  const packed=packTabletopState(original);
+  assert.equal(typeof packed.players[0].hand[0],'number');
+  assert.ok(JSON.stringify(packed).length<JSON.stringify(original).length);
+  assert.deepEqual(unpackTabletopState(packed,rules.cards),original);
+  packed.players[0].hand[0]=999;
+  assert.equal(unpackTabletopState(packed,rules.cards),null);
 });
