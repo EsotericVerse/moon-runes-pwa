@@ -368,3 +368,28 @@
   .lrg-card{transition:none}
 }
 
+/* Tabletop-only overlay: preserve existing 2D/desktop/mobile layout and inputs. */
+.lrg-battle-effect{
+  position:fixed;
+  inset:auto;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(92vw,720px);
+  height:min(56dvh,480px);
+  max-width:100%;
+  overflow:hidden;
+  isolation:isolate;
+  z-index:60;
+  pointer-events:none;
+}
+.lrg-battle-effect,
+.lrg-battle-effect *{pointer-events:none!important}
+.lrg-battle-effect .rune-effekseer-stage{
+  position:absolute;
+  inset:0;
+  background:transparent;
+}
+@media(max-width:600px){
+  .lrg-battle-effect{width:96vw;height:min(47dvh,380px)}
+}
