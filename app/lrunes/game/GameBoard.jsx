@@ -650,7 +650,8 @@ function OnlineMatch({data,count,code,host,onExit}){
           onClick={start}>開始線上對局（{count} 人）</Button>:null}
       </Stack>:null}
     </Paper>
-    {G?<Board G={G} moves={moves} rules={data} remoteEffect={remoteEffect} onRestart={onExit}/>:null}
+    {G&&online&&hostOnline?<Board G={G} moves={moves} rules={data} remoteEffect={remoteEffect} onRestart={onExit}/>:null}
+    {G&&(!online||!hostOnline)?<Alert severity="info" role="status" sx={{m:2}}>牌桌暫停，等待恢復連線後繼續同一場對局。</Alert>:null}
   </div>;
 }
 
