@@ -549,20 +549,28 @@ async function readKeywordClassLocal({p_class_id}){
   const rows=await selectLocal('SELECT * FROM local_keywords WHERE class_id=? ORDER BY order_no,item_no',[classId]);
   return {data:rows.map(decodeRow),error:null};
 }
-// Local equivalent of api.apply_keyword_classification's begin/chunk/finalize
-// state machine, verified 1:1 against the live Postgres function body:
-//  begin    -- clear class_id/group_lists on every local_galaxy row, reset
-//              the `local` settings row's classification counters
-//  chunk    -- UPDATE local_galaxy SET class_id,group_lists per {uid,...} row;
-//              throws if the batch didn't match every uid (same "incomplete" guard)
-//  finalize -- stamp staticstime/keyword_document_count/keyword_meta on `local`
+// Local equivalent of silver.apply_keyword_classification. A failed or
+// interrupted incremental run must retain the last successful classification.
+// begin checks availability without deleting existing classifications;
+// reset is an explicit opt-in wipe; sync removes only records outside the
+// freshly analyzed eligible UID set; finalize validates Class identity.
 async function applyKeywordClassificationLocal({p_rows}={}){
   const mode=String(p_rows?.mode||'').toLowerCase();
   try{
     if(mode==='begin'){
-      const cleared=await runLocal(`UPDATE local_galaxy SET class_id=NULL,group_lists='false' WHERE class_id IS NOT NULL OR group_lists IS NOT 'false'`);
-      await runLocal(`UPDATE local SET staticstime=NULL,keyword_document_count=0,keyword_meta='{}' WHERE id='local'`);
-      return {data:cleared,error:null};
+      // Same as production SQL: never erase the previous successful result
+      // just because a new analysis has started.
+      const config=await selectLocal("SELECT id FROM local WHERE id='local'");
+      if(!config.length)throw new Error('Local Scope config row not found');
+      return {data:0,error:null};
+    }
+    if(mode==='reset'){
+      // Explicit reset only, and both tables change in one local transaction.
+      const changed=await runBatchLocal([
+        {sql:"UPDATE local_galaxy SET class_id=NULL,group_lists='false' WHERE class_id IS NOT NULL OR group_lists IS NOT 'false'",values:[]},
+        {sql:"UPDATE local SET staticstime=NULL,keyword_document_count=0,keyword_meta='{}',updated_at=? WHERE id='local'",values:[new Date().toISOString()]}
+      ]);
+      return {data:changed,error:null};
     }
     if(mode==='chunk'){
       const rows=Array.isArray(p_rows?.rows)?p_rows.rows:[];
@@ -579,12 +587,35 @@ async function applyKeywordClassificationLocal({p_rows}={}){
       if(affected!==statements.length)throw new Error(`keyword classification chunk incomplete: expected ${statements.length}, affected ${affected}`);
       return {data:affected,error:null};
     }
+    if(mode==='sync'){
+      if(!Array.isArray(p_rows?.uids))throw new Error('uids must be an array');
+      // JSON1 binds the entire eligible set as one parameter, avoiding SQL
+      // variable limits and keeping unrelated rows unchanged.
+      const updated=await runLocal(
+        `UPDATE local_galaxy SET class_id=NULL,group_lists='false'
+         WHERE (class_id IS NOT NULL OR group_lists IS NOT 'false')
+           AND NOT EXISTS (
+             SELECT 1 FROM json_each(?) eligible
+             WHERE upper(trim(eligible.value))=local_galaxy.uid
+           )`,
+        [JSON.stringify(p_rows.uids)]
+      );
+      return {data:updated,error:null};
+    }
     if(mode==='finalize'){
       const meta=p_rows?.meta||{};
+      const expectedClass=String(meta.class_id||'');
+      if(!expectedClass)throw new Error('classification metadata class_id is required');
+      const config=await selectLocal("SELECT current_keyword_class_id FROM local WHERE id='local'");
+      if(config.length!==1||String(config[0].current_keyword_class_id||'')!==expectedClass)
+        throw new Error('current keyword Class changed before finalize');
       const countRows=await selectLocal(`SELECT count(*) AS n FROM local_galaxy WHERE group_lists<>'false'`);
       const documentCount=Number(countRows[0]?.n||0);
-      await runLocal(`UPDATE local SET staticstime=?,keyword_document_count=?,keyword_meta=? WHERE id='local'`,
-        [new Date().toISOString(),documentCount,JSON.stringify(meta)]);
+      const now=new Date().toISOString();
+      const updated=await runLocal(
+        `UPDATE local SET staticstime=?,keyword_document_count=?,keyword_meta=?,updated_at=? WHERE id='local'`,
+        [now,documentCount,JSON.stringify(meta),now]);
+      if(updated!==1)throw new Error('Local Scope config row not found');
       return {data:documentCount,error:null};
     }
     throw new Error('unsupported keyword classification mode');
@@ -606,7 +637,8 @@ async function readRune66SummaryLocal({p_start,p_end}){
   const out=[{kind:'eligible',item_key:null,class_id:null,day:'',hit_count:rows.length,document_count:rows.length}];
   const classDay=new Map();
   const items=new Map();
-  const pairList=/^\s*[1-9]\d*:[1-9]\d*(\s*,\s*[1-9]\d*:[1-9]\d*)*\s*$/;
+  // Canonical group_lists allows item 0; match silver.read_rune66_summary.
+  const pairList=/^\s*(0|[1-9]\d*):[1-9]\d*(\s*,\s*(0|[1-9]\d*):[1-9]\d*)*\s*$/;
   for(const row of rows){
     if(row.class_id!==null&&row.class_id!==undefined){
       const key=row.class_id+'|'+(row.d||'');
