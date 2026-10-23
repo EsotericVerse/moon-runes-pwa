@@ -73,11 +73,21 @@ export default function LocKeywordManagement(){
       return false;
     }finally{setBusy(false);}
   }
-  saveRef.current=save;
+  saveRef.current={
+    save,
+    isDirty:()=>JSON.stringify(draft)!==JSON.stringify(
+      original?data.find(row=>keyOf(row)===keyOf(original))||EMPTY:EMPTY
+    ),
+    isBusy:()=>busy
+  };
 
   useEffect(()=>{
     if(!editDock?.active||editDock.scopeId!=='loc')return;
-    return editDock.register({save:()=>saveRef.current()});
+    return editDock.register({
+      save:()=>saveRef.current.save(),
+      isDirty:()=>saveRef.current.isDirty(),
+      isBusy:()=>saveRef.current.isBusy()
+    });
   },[editDock?.active,editDock?.scopeId,editDock?.register]);
 
   async function remove(){
