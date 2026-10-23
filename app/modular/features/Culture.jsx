@@ -702,6 +702,11 @@ export default function Culture(){
       ?riverDensityAnalyzer(secondRiverBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
     [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,secondRiverBuckets,existingAnchorDates]
   );
+  const styleRiverAnalysis=useMemo(
+    ()=>riverDensityAnalyzer&&styleFilter==='rune66'&&keywordDrillItems.length
+      ?riverDensityAnalyzer(keywordDrillItems,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
+    [riverDensityAnalyzer,styleFilter,keywordDrillItems,existingAnchorDates]
+  );
   const locRiverAnalysis=useMemo(
     ()=>riverDensityAnalyzer&&isAggregateScope&&locCombinedSourceRiverItems.length
       ?riverDensityAnalyzer(locCombinedSourceRiverItems,[]):EMPTY_RIVER_ANALYSIS,
@@ -1227,6 +1232,21 @@ export default function Culture(){
                   </div>
                   <h4>{keywordDrillLevel==='group'?'風格群組密度':'風格群組內關鍵詞密度'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
+                  <details className='scope-culture-anchor-picker'>
+                    <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
+                    {styleRiverAnalysis.suggestions.length?<div className='scope-culture-anchor-choices'>
+                      {styleRiverAnalysis.suggestions.map(item=>{
+                        const route=featureNavigationHref(scopeId,'culture');
+                        const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
+                        return <div key={item.date} className='scope-status'>
+                          <strong>{item.date}</strong>
+                          <span>｜前 3 日 {Number(item.beforeCount||0).toLocaleString(locale)} 次／後 3 日 {Number(item.afterCount||0).toLocaleString(locale)} 次</span>
+                          {(item.analysis||[]).length?<span>｜{item.analysis.join(' ')}</span>:null}
+                          <span>｜<ScopeLink href={href}>前往時間編輯，確認定錨點</ScopeLink></span>
+                        </div>;
+                      })}
+                    </div>:<p className='scope-status'>此時間區間暫無足夠的風格密度變化，或分析資料尚在載入。</p>}
+                  </details>
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
