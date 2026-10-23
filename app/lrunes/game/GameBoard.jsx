@@ -13,6 +13,7 @@ import {CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YA
 import {createLunaRunesGame} from './boardgame-rules.js';
 import {loadGameData} from './game-data.js';
 import ScopeEditableBlocks from '../../loc/ScopeEditableBlocks';
+import {useAccount,usePassiveSessionAccount} from '../../loc/use-account';
 import ManagementSectionNav from '../../modular/ManagementSectionNav';
 import {resolveHomeImage,heroSideClass} from '../../loc/LocHomeBlockDisplay';
 import './game-board.css';
@@ -264,8 +265,7 @@ function RuleSections({data,query}){
   </div>;
 }
 
-function DocsPanel({data}){
-  const [section,setSection]=useState('rules');
+function DocsPanel({data,section}){
   const [query,setQuery]=useState('');
   const normalized=query.trim().toLocaleLowerCase('zh-Hant');
   const matches=(...parts)=>!normalized||parts.filter(Boolean).join(' ').toLocaleLowerCase('zh-Hant').includes(normalized);
@@ -273,25 +273,20 @@ function DocsPanel({data}){
   const events=data.events.filter(row=>matches(row.id,row.name,row.description,row.requirement,...row.groups));
   const roles=data.roles.filter(row=>matches(row.group,row.name,row.focus,row.mode,row.intervention,row.tool,row.tagline));
   const actions=data.runeActions.filter(row=>matches(row.name,row.group,row.text,row.kind,row.value));
-  const sections=[
-    {value:'rules',label:'遊戲規則',description:'回合流程、事件判定與四組簡稱'},
-    {value:'events',label:'事件卡 · '+data.events.length,description:'事件條件與卡片內容'},
-    {value:'roles',label:'八職 · '+data.roles.length,description:'職業定位、介入與工具'},
-    {value:'actions',label:'符文行動 · '+data.runeActions.length,description:'各符文的遊戲行動效果'}
-  ];
-  const activeSection=sections.find(item=>item.value===section)||sections[0];
+  const labels={
+    rules:['遊戲規則','回合流程、事件判定與四組簡稱'],
+    events:['事件卡 · '+data.events.length,'事件條件與卡片內容'],
+    roles:['八職 · '+data.roles.length,'職業定位、介入與工具'],
+    actions:['符文行動 · '+data.runeActions.length,'各符文的遊戲行動效果']
+  };
+  const [title,description]=labels[section]||labels.rules;
 
-  return <div className="management-workspace lrg-document-workspace">
-    <ManagementSectionNav id="game-document-sections" title="遊戲資料圖鑑"
-      panelId="game-document-panel" items={sections} value={section} onChange={setSection}/>
-    <Paper component="section" className="management-workspace-panel lrg-docs"
-      id="game-document-panel" role="region"
-      aria-labelledby={'game-document-sections-option-'+activeSection.value}>
+  return <Paper component="section" className="lrg-docs">
       <Stack direction={{xs:'column',sm:'row'}} spacing={1.5}
         justifyContent="space-between" alignItems={{sm:'center'}}>
         <div>
-          <Typography variant="h5" component="h2" fontWeight={700}>{activeSection.label}</Typography>
-          <Typography variant="body2" color="text.secondary">{activeSection.description}</Typography>
+          <Typography variant="h5" component="h2" fontWeight={700}>{title}</Typography>
+          <Typography variant="body2" color="text.secondary">{description}</Typography>
         </div>
         <TextField size="small" label="搜尋遊戲資料" value={query}
           onChange={event=>setQuery(event.target.value)} sx={{width:{xs:'100%',sm:'min(100%,260px)'}}}/>
@@ -307,8 +302,7 @@ function DocsPanel({data}){
     {section==='actions'?<div className="lrg-doc-grid">{actions.map(action=><Paper variant="outlined" className="lrg-doc-item" key={action.runeId}><Stack direction="row" spacing={1}><Chip size="small" label={String(action.runeId).padStart(2,'0')}/><Chip size="small" variant="outlined" label={action.group}/></Stack><Typography fontWeight={800} sx={{mt:1}}>{action.name}</Typography><Typography variant="body2">{action.text}</Typography>{action.kind?<Typography variant="caption" color="text.secondary">{action.kind}{action.value!==null?' '+action.value:''}</Typography>:null}</Paper>)}</div>:null}
 
     {((section==='events'&&!events.length)||(section==='roles'&&!roles.length)||(section==='actions'&&!actions.length))?<Alert severity="info" sx={{mt:2}}>沒有符合的資料。</Alert>:null}
-    </Paper>
-  </div>;
+  </Paper>;
 }
 
 function Board({G,moves,rules,onRestart}){
@@ -471,11 +465,15 @@ function Board({G,moves,rules,onRestart}){
 // Hero copy and image are Scope content (lrunes / page "game"); only the
 // game-data badges below stay fixed UI and wait for SQL.
 const GAME_HERO_DEFAULTS={eyebrow:'LUNARUNES · TABLETOP',title:'月之符文',text:'<p>以 66 枚符文、事件回應、De 與共鳴互動構成的本機多人桌遊。</p>'};
-function GameHomeHero({data=null}){
+function GameHomeHero({data=null,editing=false,onEditorExit=null}){
   return <ScopeEditableBlocks
     scopeId="lrunes"
     page="game"
     adminOnly
+    allowEditing={editing}
+    authorizedByParent={editing}
+    startInEditMode={editing}
+    onEditorExit={onEditorExit}
     orders={[1]}
     slotTag="header"
     slotClassName="lrg-home-hero"
@@ -526,6 +524,32 @@ export default function GameBoard(){
   const {data,error,isLoading}=useQuery({queryKey:['lrunes','game','current'],queryFn:loadGameData,staleTime:60000});
   const [count,setCount]=useState(2);
   const [match,setMatch]=useState(0);
+  const [section,setSection]=useState('play');
+  const [checkingEdit,setCheckingEdit]=useState(false);
+  const [editError,setEditError]=useState('');
+  const session=usePassiveSessionAccount();
+  // Public game views must not fetch management permissions until edit is requested.
+  const management=useAccount({enabled:false});
+  const [authorizedEdit,setAuthorizedEdit]=useState(false);
+  async function chooseSection(next){
+    if(section==='edit'||checkingEdit)return;
+    setEditError('');
+    if(next!=='edit'){setSection(next);return;}
+    setCheckingEdit(true);
+    try{
+      const permission=await management.refresh();
+      if(!permission?.authorizer?.canManageGlobalSync()){
+        setEditError('僅 LOC 管理者可以編輯遊戲首頁 Hero。');
+        return;
+      }
+      setAuthorizedEdit(true);
+      setSection('edit');
+    }catch(error){
+      setEditError('無法驗證管理權限：'+String(error?.message||error));
+    }finally{
+      setCheckingEdit(false);
+    }
+  }
 
   if(isLoading)return <ThemeProvider theme={uiTheme}><main className="lrg lrg-home">
     <GameHomeHero/>
@@ -537,25 +561,48 @@ export default function GameBoard(){
   </main></ThemeProvider>;
   if(match)return <ThemeProvider theme={uiTheme}><LocalMatch key={match} data={data} count={count} onRestart={()=>setMatch(0)}/></ThemeProvider>;
 
+  const sections=[
+    {value:'play',label:'開始遊戲',description:'遊戲介紹與建立本機對局'},
+    {value:'rules',label:'遊戲規則',description:'回合流程、事件判定與四組簡稱'},
+    {value:'events',label:'事件卡 · '+data.events.length,description:'事件條件與卡片內容'},
+    {value:'roles',label:'八職 · '+data.roles.length,description:'職業定位、介入與工具'},
+    {value:'actions',label:'符文行動 · '+data.runeActions.length,description:'各符文的遊戲行動效果'},
+    ...(session.user?[{value:'edit',label:'編輯 Hero',description:'只變更遊戲首頁的文字與主視覺'}]:[])
+  ];
+  const visibleSections=section==='edit'?
+    [{value:'edit',label:'Hero 編輯中',description:'儲存或取消後返回遊戲首頁'}]:sections;
   return <ThemeProvider theme={uiTheme}>
     <main className="lrg lrg-home">
-      <GameHomeHero data={data}/>
-
-      <Paper className="lrg-setup">
-        <Typography variant="h6" component="h2">建立本機對局</Typography>
-        <Typography variant="body2" color="text.secondary">同一裝置依序操作 A–D 玩家，不需要登入，也不寫入私人對局資料。</Typography>
-        <Stack direction={{xs:'column',sm:'row'}} spacing={1.5} alignItems={{sm:'center'}} sx={{mt:2}}>
-          <FormControl size="small" sx={{minWidth:160}}>
-            <InputLabel id="player-count-label">玩家人數</InputLabel>
-            <Select labelId="player-count-label" label="玩家人數" value={count} onChange={e=>setCount(Number(e.target.value))}>
-              {Array.from({length:data.config.playerMax-data.config.playerMin+1},(_,i)=>i+data.config.playerMin).map(n=><MenuItem key={n} value={n}>{n} 人</MenuItem>)}
-            </Select>
-          </FormControl>
-          <Button variant="contained" size="large" onClick={()=>setMatch(x=>x+1)}>開始遊戲</Button>
-        </Stack>
-      </Paper>
-
-      <DocsPanel data={data}/>
+      <div className="management-workspace lrg-home-workspace">
+        <ManagementSectionNav id="game-home-sections" title="遊戲選單"
+          panelId="game-home-panel" items={visibleSections} value={section}
+          onChange={chooseSection}/>
+        <div className="management-workspace-panel lrg-home-panel" id="game-home-panel"
+          role="region" aria-labelledby={'game-home-sections-option-'+section}>
+          {editError?<Alert severity="warning" role="alert">{editError}</Alert>:null}
+          {checkingEdit?<Alert severity="info" role="status">正在驗證 Hero 編輯權限…</Alert>:null}
+          {section==='play'?<>
+            <GameHomeHero data={data}/>
+            <Paper className="lrg-setup">
+              <Typography variant="h6" component="h2">建立本機對局</Typography>
+              <Typography variant="body2" color="text.secondary">同一裝置依序操作 A–D 玩家，不需要登入，也不寫入私人對局資料。</Typography>
+              <Stack direction={{xs:'column',sm:'row'}} spacing={1.5} alignItems={{sm:'center'}} sx={{mt:2}}>
+                <FormControl size="small" sx={{minWidth:160}}>
+                  <InputLabel id="player-count-label">玩家人數</InputLabel>
+                  <Select labelId="player-count-label" label="玩家人數" value={count} onChange={e=>setCount(Number(e.target.value))}>
+                    {Array.from({length:data.config.playerMax-data.config.playerMin+1},(_,i)=>i+data.config.playerMin).map(n=><MenuItem key={n} value={n}>{n} 人</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <Button variant="contained" size="large" onClick={()=>setMatch(x=>x+1)}>開始遊戲</Button>
+              </Stack>
+            </Paper>
+          </>:null}
+          {['rules','events','roles','actions'].includes(section)?
+            <DocsPanel data={data} section={section}/>:null}
+          {section==='edit'&&authorizedEdit?
+            <GameHomeHero data={data} editing onEditorExit={()=>{setAuthorizedEdit(false);setSection('play');}}/>:null}
+        </div>
+      </div>
     </main>
   </ThemeProvider>;
 }
