@@ -83,10 +83,7 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   </article>):null;
   return <>
     {header}
-    {imageOnly?<div className="loc-home-block__image-surface">
-      <div className="loc-home-block__image-measure" aria-hidden="true">{body}</div>
-      {media}
-    </div>:body}
+    {imageOnly?<div className="loc-home-block__body loc-home-block__body--image">{media}</div>:body}
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
