@@ -6,8 +6,7 @@ import {translateUiField,registerDefaultSection} from '../../../i18n/ui-copy';
 import selfIntersectionZh from '../../../i18n/sections/uiExtra.selfIntersection.zh_tw.js';
 registerDefaultSection('uiExtra.selfIntersection',selfIntersectionZh);
 
-import {useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useEffect,useMemo,useState} from 'react';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
 import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zoom.mjs';
@@ -47,26 +46,41 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const [foldBlank,setFoldBlank]=useState(true);
   const start=dateOnly(range?.startDate),end=dateOnly(range?.endDate);
   const valid=Boolean(scope?.id&&scope.galaxy&&scope.galaxyMedia&&start&&end&&start<=end);
-  const query=useQuery({
-    queryKey:['own-scope-source-intersection',scope?.id,start,end],
-    queryFn:()=>selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}),
-    enabled:valid,
-    staleTime:5*60_000
-  });
+  const sourceKey=[scope?.id,start,end].join('|');
+  const [sourceResult,setSourceResult]=useState({key:'',data:[],error:null});
+  useEffect(()=>{
+    if(!valid)return undefined;
+    let active=true;
+    selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}).then(data=>{
+      if(active)setSourceResult({key:sourceKey,data,error:null});
+    }).catch(error=>{
+      if(active)setSourceResult({key:sourceKey,data:[],error});
+    });
+    return ()=>{active=false;};
+  },[sourceKey,valid,scope?.galaxy,scope?.galaxyMedia]);
+  const query=sourceResult.key===sourceKey&&valid
+    ?{data:sourceResult.data,error:sourceResult.error,isPending:false}
+    :{data:[],error:null,isPending:true};
   const rows=query.data||[];
-  const localCatalog=useQuery({
-    queryKey:['own-scope-source-catalog',scope?.id],
-    enabled:valid&&!sharedCatalog,
-    queryFn:async()=>{
+  const [catalogResult,setCatalogResult]=useState({data:null,error:null,isPending:true});
+  useEffect(()=>{
+    if(!valid||sharedCatalog)return undefined;
+    let active=true;
+    (async()=>{
       const {selectRows}=await import('../../../loc/db-query.mjs');
       const [c,a]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
       ]);
       return {categories:c.rows,aliases:a.rows};
-    },
-    staleTime:5*60_000
-  });
+    })().then(data=>{
+      if(active)setCatalogResult({data,error:null,isPending:false});
+    }).catch(error=>{
+      if(active)setCatalogResult({data:null,error,isPending:false});
+    });
+    return ()=>{active=false;};
+  },[valid,Boolean(sharedCatalog)]);
+  const localCatalog=catalogResult;
   const catalog=sharedCatalog||localCatalog;
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
