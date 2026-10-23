@@ -62,7 +62,7 @@ test('Admin consumes site metadata without querying nonexistent admin tables',as
   resolveSite(site);
   const result=await pending;
   assert.equal(result.config,null);
-  assert.deepEqual(result.blocks,[]);
+  assert.equal(result.blocks.length,0);
 });
 
 test('LOC homepage continues to consume its existing site-RPC blocks',async()=>{
