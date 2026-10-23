@@ -1,4 +1,4 @@
-import {sql} from 'kysely';
+import {sql} from 'npm:kysely@0.29.6';
 
 const identifier=/^[a-z][a-z0-9_]*$/i;
 const schemas=new Set(['silver','api']);
