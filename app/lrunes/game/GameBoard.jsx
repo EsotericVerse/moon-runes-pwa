@@ -357,7 +357,7 @@ function DocsPanel({data,section}){
   </Paper>;
 }
 
-function Board({G,moves,rules,onRestart,remoteEffect=null}){
+function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊戲'}){
   const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
   const [showScoringHelp,setShowScoringHelp]=useState(false);
@@ -435,7 +435,7 @@ function Board({G,moves,rules,onRestart,remoteEffect=null}){
               onClick={()=>{setEffectsEnabled(value=>!value);setBattleEffect(null);}}>
               3D特效：{effectsEnabled?'開':'關'}
             </Button>
-            <Button variant="outlined" onClick={onRestart}>新遊戲</Button>
+            <Button variant="outlined" onClick={onRestart}>{restartLabel}</Button>
           </Stack>
         </Paper>
 
@@ -524,7 +524,7 @@ function Board({G,moves,rules,onRestart,remoteEffect=null}){
               {done?<>
                 <Typography variant="overline" color="primary">GAME OVER</Typography>
                 <Typography variant="h4" component="h2">{G.winner!==null?G.players[G.winner].name+' 勝出':'平局'}</Typography>
-                <Button variant="contained" onClick={onRestart}>再玩一次</Button>
+                <Button variant="contained" onClick={onRestart}>{restartLabel==='新遊戲'?'再玩一次':'離開房間'}</Button>
               </>:null}
             </Paper>
 
@@ -650,7 +650,7 @@ function OnlineMatch({data,count,code,host,onExit}){
           onClick={start}>開始線上對局（{count} 人）</Button>:null}
       </Stack>:null}
     </Paper>
-    {G&&online&&hostOnline?<Board G={G} moves={moves} rules={data} remoteEffect={remoteEffect} onRestart={onExit}/>:null}
+    {G&&online&&hostOnline?<Board G={G} moves={moves} rules={data} remoteEffect={remoteEffect} onRestart={onExit} restartLabel="離開房間"/>:null}
     {G&&(!online||!hostOnline)?<Alert severity="info" role="status" sx={{m:2}}>牌桌暫停，等待恢復連線後繼續同一場對局。</Alert>:null}
   </div>;
 }
