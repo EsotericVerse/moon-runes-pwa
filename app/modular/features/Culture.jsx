@@ -368,22 +368,6 @@ export default function Culture(){
   const locIntersectionScopeIds=useMemo(()=>query.data?.intersectionScopeIds||[],[query.data]);
   const locDistributionStart=String(query.data?.intersectionStart||'');
   const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
-  const locScopeTotals=useMemo(()=>{
-    const totals=new Map();
-    for(const item of locScopeDistributionItems){
-      const scope=String(item?.scope_id||'').trim();
-      if(!scope)continue;
-      totals.set(scope,(totals.get(scope)||0)+(Number(item?.item_count)||0));
-    }
-    for(const scopeId of locIntersectionScopeIds){
-      const scope=String(scopeId||'').trim();
-      if(scope&&!totals.has(scope))totals.set(scope,0);
-    }
-    return [...totals.entries()]
-      .map(([scope,count])=>({scope,count}))
-      .sort((a,b)=>a.scope.localeCompare(b.scope));
-  },[locScopeDistributionItems,locIntersectionScopeIds]);
-  const locIntersectionTotal=useMemo(()=>locScopeTotals.reduce((sum,item)=>sum+Number(item.count||0),0),[locScopeTotals]);
   const locScopeRiverItems=useMemo(()=>{
     const perScopeMax=new Map();
     let globalMax=0;
