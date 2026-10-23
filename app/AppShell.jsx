@@ -336,7 +336,10 @@ function AppShellInner({children}){
   if(homeParts.at(-1)==='index.html')homeParts.pop();
   const isScopeHomepage=homeParts.length===0||
     (homeParts.length===1&&(homeParts[0]===scopeId||homeParts[0]==='scope-shell'));
-  const showHomeEditEntry=isScopeHomepage&&editScopeAvailable&&Boolean(scopeId);
+  // LOC's homepage has its own Admin-only editor; individual Scopes have
+  // Scope-only editors. Both entries are visible to guests until clicked.
+  const showHomeEditEntry=isScopeHomepage&&Boolean(scopeId)&&
+    (scopeId==='loc'||editScopeAvailable);
   // Keep existing query parameters (especially dynamic scopeid) on iOS and web.
   const editTabHref=(route,key,value)=>{
     const href=navigationHref(navScopeId,route,native);
