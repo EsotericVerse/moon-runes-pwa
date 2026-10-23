@@ -207,6 +207,7 @@ export default {
     "description": "每套 關鍵詞組 以 UUID 獨立識別，可複製與分享；文章只保存分析後的 class_id 與 group_lists。公開統計直接讀文章 Attr，不會重新跑關鍵詞。",
     "copyHint": "新增獨立 UUID 的 關鍵詞組，不覆蓋既有關鍵詞，也不切換目前使用的 關鍵詞組。",
     "workspace": "關鍵詞工作區",
+    "libraryImmediateSave": "關鍵詞庫的複製操作會立即寫入，沒有其他待儲存的設定。",
     "analysisSettings": "分析設定",
     "activeClass": "目前使用 關鍵詞組",
     "minChars": "最小分析字數",
