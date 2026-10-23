@@ -1036,8 +1036,8 @@ export default function Culture(){
                   <span className='scope-status'><UiText id="uiExtra.cultureView.theFirstRiverShowsAnchorsEventsStyleTagsAndPeriodsSelectARecordToEditItAssignUnanchoredStylesFromAddStyleTag"/></span>
                   </>:null}
                 </div>
-                {timelineItems.length?<CultureTimeline
-                  items={timelineItems}
+                {timelineItems.some(item=>item.entry_type==='period')?<CultureTimeline
+                  items={timelineItems.filter(item=>item.entry_type==='period')}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
@@ -1088,21 +1088,6 @@ export default function Culture(){
                   {keywordClassQuery.error?<span className='scope-status scope-error' role='status'>
                     關鍵詞組讀取失敗：{featureDataErrorMessage(keywordClassQuery.error,UI_COPY)}
                   </span>:null}
-                  <label className='scope-culture-period-select'>
-                    <span>來源</span>
-                    <select className='scope-select' aria-label='來源' value={keywordDrillSource}
-                      disabled={sourceSnapshotQuery.isPending||Boolean(sourceSnapshotQuery.error)}
-                      onChange={event=>{
-                        setKeywordDrillSource(event.target.value);
-                        setSecondRiverMode('source');
-                        setSelectedCategory('');
-                      }}>
-                      <option value=''>全部來源</option>
-                      {keywordSourceOptions.map(source=><option key={source.category_key} value={source.source_name}>
-                        {source.display_label}
-                      </option>)}
-                    </select>
-                  </label>
                   <>
                     <label className='scope-culture-period-select'>
                       <span>時期</span>
@@ -1135,6 +1120,21 @@ export default function Culture(){
                       </label>
                     </>:null}
                   </>
+                  <label className='scope-culture-period-select'>
+                    <span>來源</span>
+                    <select className='scope-select' aria-label='來源' value={keywordDrillSource}
+                      disabled={sourceSnapshotQuery.isPending||Boolean(sourceSnapshotQuery.error)}
+                      onChange={event=>{
+                        setKeywordDrillSource(event.target.value);
+                        setSecondRiverMode('source');
+                        setSelectedCategory('');
+                      }}>
+                      <option value=''>全部來源</option>
+                      {keywordSourceOptions.map(source=><option key={source.category_key} value={source.source_name}>
+                        {source.display_label}
+                      </option>)}
+                    </select>
+                  </label>
                   {!isAggregateScope&&!isLrunesDaily&&!isLocItemView?<label className='scope-culture-period-select'>
                     <span><UiText id="uiExtra.cultureView.style"/></span>
                     <select className='scope-select' value={styleFilter} onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
