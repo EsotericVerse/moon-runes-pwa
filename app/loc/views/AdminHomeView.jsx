@@ -53,7 +53,12 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry');
+  const [section,,hrefFor]=useManagementSection(ADMIN_OPTIONS,'registry');
+  const switchSection=next=>{
+    if(next===section)return;
+    const target=hrefFor(next);
+    if(target)editDock?.switchTo(target,{history:'push'});
+  };
   // The edit flag only restores UI state; it never grants access.
   // A direct Admin visit without the flag keeps the ordinary bottom nav.
   useEffect(()=>{
@@ -68,7 +73,7 @@ export default function AdminHomeView(){
   return <FeaturePage featureId="admin">
     <div className="management-workspace">
       <ManagementSectionNav id="admin-sections" title="管理項目" panelId="admin-management-panel"
-        items={ADMIN_OPTIONS} value={section} onChange={setSection}/>
+        items={ADMIN_OPTIONS} value={section} onChange={switchSection}/>
       <div className="management-workspace-panel" id="admin-management-panel" role="region"
         aria-labelledby={'admin-sections-option-'+selectedOption.value}>
         {section==='registry'?<AdminRegistryPanel/>:null}

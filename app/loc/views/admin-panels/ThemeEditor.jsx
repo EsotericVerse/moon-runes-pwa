@@ -8,6 +8,7 @@ import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {THEME_SLOTS,THEME_TOKEN_KEYS} from '../../../modular/theme-registry';
 import {mergeThemeSlot,THEME_DB_COLUMNS,themeColumnForToken,themeUiId,themeNumber,normalizeThemeHex,deriveThemeTokens} from '../../theme-data';
 import {dbAuthRelation} from '../../db-client.mjs';
+import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function ThemeEditor(){
@@ -76,8 +77,8 @@ export default function ThemeEditor(){
   }
 
   async function save(){
-    if(!draft)return;
-    if(!normalizeThemeHex(draft.identityColor)){setStatus('主色請使用 #RRGGBB 格式。');return;}
+    if(!draft)return false;
+    if(!normalizeThemeHex(draft.identityColor)){setStatus('主色請使用 #RRGGBB 格式。');return false;}
     setStatus('');
     try{
       const existing=rows.find(row=>row.theme_id===themeId)||null;
@@ -95,8 +96,14 @@ export default function ThemeEditor(){
       const {error}=await dbAuthRelation('silver.loc_theme').upsert(payload,{onConflict:'theme_id'});
       if(error)throw new Error(error.message||'Theme 儲存失敗。');
       setStatus((draft.label||'主題')+' 已更新。');setRevision(v=>v+1);
-    }catch(error){setStatus(error?.message||'Theme 儲存失敗。');}
+      return true;
+    }catch(error){setStatus(error?.message||'Theme 儲存失敗。');return false;}
   }
+  const baseline=mergeThemeSlot(themeId,rows.find(row=>row.theme_id===themeId)||null);
+  useEditDockForm({
+    save,
+    isDirty:()=>Boolean(draft&&JSON.stringify(draft)!==JSON.stringify(baseline))
+  });
 
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.themeAppearance"/></h2>

@@ -6,6 +6,7 @@ import UiText from '../../../i18n/UiText';
 import {selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
+import {useEditDockForm} from '../../../modular/edit-dock';
 
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
@@ -56,6 +57,7 @@ function ImageSlot({feature,variant}){
   },[page,order,revision]);
 
   async function save(){
+    if(busy||rows===null)return false;
     setBusy(true);setStatus('');
     try{
       const {updateRows,insertRows}=await import('../../db-client.mjs');
@@ -74,12 +76,17 @@ function ImageSlot({feature,variant}){
       await queryClient.refetchQueries({queryKey:displayQueryKey,type:'active'});
       setStatus('已更新。');
       setRevision(v=>v+1);
+      return true;
     }catch(error){
       setStatus(error?.message||'儲存失敗。');
+      return false;
     }finally{
       setBusy(false);
     }
   }
+
+  const original=rows===null?'':imageUrlOf((rows||[]).find(item=>Number(item.block_order)===order));
+  useEditDockForm({save,isBusy:()=>busy,isDirty:()=>rows!==null&&value.trim()!==String(original||'').trim()});
 
   return <label>
     <span>{variant.label}</span>

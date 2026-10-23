@@ -16,6 +16,7 @@ export function EditDockProvider({children}){
   const [switchTarget,setSwitchTarget]=useState('');
   const [switchError,setSwitchError]=useState('');
   const switchDialog=useRef(null);
+  const switchHistory=useRef('replace');
   const registeredEditors=useRef(new Set());
   const currentEditor=useRef(null);
 
@@ -66,13 +67,14 @@ export function EditDockProvider({children}){
     return unregister;
   },[]);
 
-  const navigate=useCallback(target=>{
+  const navigate=useCallback((target,history='replace')=>{
     if(!target)return;
     const url=new URL(String(target),window.location.href);
     if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)){
       window.location.assign(url.href);
     }else{
-      router.replace(url.pathname+url.search+url.hash);
+      if(history==='push')router.push(url.pathname+url.search+url.hash);
+      else router.replace(url.pathname+url.search+url.hash);
     }
   },[router]);
   const complete=useCallback(target=>{
@@ -107,14 +109,15 @@ export function EditDockProvider({children}){
   const dirtyEditors=useCallback(()=>[...registeredEditors.current].filter(editor=>
     typeof editor.isDirty==='function'&&editor.isDirty()
   ),[]);
-  const switchTo=useCallback(target=>{
+  const switchTo=useCallback((target,{history='replace'}={})=>{
     if(busy||!target)return;
     if([...registeredEditors.current].some(editor=>editor.isBusy?.())){
       setNotice('目前正在儲存，請完成後再切換頁面。');
       return;
     }
+    switchHistory.current=history==='push'?'push':'replace';
     if(!dirtyEditors().length){
-      clearEditor();setNotice('');navigate(target);return;
+      clearEditor();setNotice('');navigate(target,switchHistory.current);return;
     }
     setSwitchError('');
     setSwitchTarget(target);
@@ -124,7 +127,7 @@ export function EditDockProvider({children}){
     if(busy||!switchTarget)return;
     const target=switchTarget;
     setSwitchTarget('');setSwitchError('');
-    clearEditor();setNotice('');navigate(target);
+    clearEditor();setNotice('');navigate(target,switchHistory.current);
   },[busy,switchTarget,clearEditor,navigate]);
   const saveAndSwitch=useCallback(async()=>{
     if(busy||!switchTarget)return;
@@ -141,7 +144,7 @@ export function EditDockProvider({children}){
       }
       setSwitchTarget('');
       clearEditor();setNotice('');
-      navigate(target);
+      navigate(target,switchHistory.current);
     }catch(error){
       setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
     }finally{setBusy(false);}
@@ -168,3 +171,20 @@ export function EditDockProvider({children}){
 }
 
 export function useEditDock(){return useContext(EditDockContext);}
+
+// Registers a real editor with the existing Save / Discard / Cancel dock.
+// Callbacks are kept current without re-registering on every keystroke.
+export function useEditDockForm(actions){
+  const dock=useEditDock();
+  const latest=useRef(actions);
+  latest.current=actions;
+  useEffect(()=>{
+    if(!dock?.register)return;
+    return dock.register({
+      save:options=>latest.current.save?.(options),
+      discard:()=>latest.current.discard?.(),
+      isDirty:()=>Boolean(latest.current.isDirty?.()),
+      isBusy:()=>Boolean(latest.current.isBusy?.())
+    });
+  },[dock?.register]);
+}

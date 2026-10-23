@@ -54,5 +54,11 @@ export function useManagementSection(items,defaultValue='',aliases={}){
     url.searchParams.set('section',next);
     window.history.pushState(null,'',url.pathname+url.search+url.hash);
   },[items]);
-  return [value,setValue];
+  const hrefFor=useCallback(next=>{
+    if(!items.some(item=>item.value===next))return '';
+    const url=new URL(window.location.href);
+    url.searchParams.set('section',next);
+    return url.pathname+url.search+url.hash;
+  },[items]);
+  return [value,setValue,hrefFor];
 }

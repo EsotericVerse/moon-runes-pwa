@@ -6,6 +6,7 @@ import {useUiSection} from '../../../i18n/ui-locale';
 import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {useAccount} from '../../use-account';
 import {dbAuthRelation} from '../../db-client.mjs';
+import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function AdminEmailBlocklist(){
@@ -31,7 +32,7 @@ export default function AdminEmailBlocklist(){
 
   async function add(){
     const value=String(email||'').trim().toLowerCase();
-    if(!/^\S+@\S+\.\S+$/.test(value)){setMessage('Email 格式不正確。');return;}
+    if(!/^\S+@\S+\.\S+$/.test(value)){setMessage('Email 格式不正確。');return false;}
     if(value===String(account.email||'').toLowerCase()){
       setMessage('不可將目前登入的 Admin 帳號加入黑名單。');return;
     }
@@ -41,9 +42,11 @@ export default function AdminEmailBlocklist(){
       if(error)throw new Error(error.message||'新增黑名單失敗');
       setEmail('');setMessage(value+' 已加入系統黑名單。');
       await load();
-    }catch(error){setMessage(String(error?.message||error));}
+      return true;
+    }catch(error){setMessage(String(error?.message||error));return false;}
     finally{setBusy(false);}
   }
+  useEditDockForm({save:add,isDirty:()=>Boolean(email.trim()),isBusy:()=>busy});
   async function remove(value){
     if(!window.confirm('確認將 '+value+' 移出系統黑名單？'))return;
     setBusy(true);setMessage('');
