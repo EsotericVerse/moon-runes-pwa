@@ -54,9 +54,7 @@ export function createSupabaseAdapter({
   });
   const edgeAdmin=createKyselyEdgeClient({url,publishableKey,auth:authenticatedSdk.auth,target,fetch:fetchImpl});
   const edgePublic=createKyselyEdgeClient({url,publishableKey,role:'anon',target,fetch:fetchImpl});
-  const publicRouting={...edgePublic,
-    activeTarget(){return publicSdk.schema('silver').rpc('loc_public_routing_state')}
-  };
+  const publicRouting=edgePublic;
   // Explicit non-primary targets retain the portable Kysely transport.
   if(target!=='configured'&&target!=='supabase'){
     return {publicClient:edgePublic,authClient:edgeAdmin,auth:authenticatedSdk.auth};
