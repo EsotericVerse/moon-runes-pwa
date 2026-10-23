@@ -15,7 +15,7 @@
   backdrop-filter:blur(16px);
   pointer-events:none;
 }
-.scope-feature-dock a{
+.scope-feature-dock a,.scope-feature-dock button{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.3rem;min-width:0;min-height:60px;padding:.45rem .2rem;
   border:1px solid color-mix(in srgb,var(--loc-accent) 27%,var(--loc-line));
@@ -27,8 +27,8 @@
   -webkit-tap-highlight-color:transparent;pointer-events:auto;
   transition:background .16s ease,box-shadow .16s ease,transform .16s ease;
 }
-.scope-feature-dock a svg{flex:none;width:23px;height:23px;}
-.scope-feature-dock a:hover,.scope-feature-dock a:focus-visible{
+.scope-feature-dock a svg,.scope-feature-dock button svg{flex:none;width:23px;height:23px;}
+.scope-feature-dock a:hover,.scope-feature-dock a:focus-visible,.scope-feature-dock button:hover:not(:disabled),.scope-feature-dock button:focus-visible{
   background:color-mix(in srgb,var(--loc-accent) 33%,var(--loc-panel) 67%);
   box-shadow:0 8px 17px rgb(0 0 0 / .26);
 }
@@ -50,10 +50,10 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 .scope-settings-note{color:var(--loc-muted);font-size:.85rem;}
 @media(max-width:560px){
   .scope-feature-dock{gap:4px;padding:.32rem;border-radius:18px;}
-  .scope-feature-dock a{min-height:56px;font-size:.75rem;border-radius:12px;padding:.36rem .03rem;}
-  .scope-feature-dock a svg{width:20px;height:20px;}
+  .scope-feature-dock a,.scope-feature-dock button{min-height:56px;font-size:.75rem;border-radius:12px;padding:.36rem .03rem;}
+  .scope-feature-dock a svg,.scope-feature-dock button svg{width:20px;height:20px;}
 }
-@media(prefers-reduced-motion:reduce){.scope-feature-dock a{transition:none;}}
+@media(prefers-reduced-motion:reduce){.scope-feature-dock a,.scope-feature-dock button{transition:none;}}
 
 .scope-nav-empty{font-style:italic;}
 .scope-settings-options .loc-card form{display:grid;justify-items:start;gap:.7rem;margin-top:.65rem;}
@@ -64,3 +64,6 @@ html{scroll-padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{
   scroll-margin-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));
 }
+
+.scope-feature-dock button{font-family:inherit;cursor:pointer}
+.scope-feature-dock button:disabled{cursor:default;opacity:.48}

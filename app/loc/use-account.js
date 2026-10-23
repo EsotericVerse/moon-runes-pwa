@@ -92,7 +92,7 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
         permissionLoading:false,
         error:''
       });
-      return user;
+      return {user,authorizer};
     }catch(error){
       setState({...emptyState,loading:false,permissionLoading:false,error:String(error?.message||error)});
       return null;

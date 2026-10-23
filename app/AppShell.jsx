@@ -21,6 +21,7 @@ import {useNavigationPreferences} from './loc/use-navigation-preferences';
 import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/scope-registry.js';
 import BottomNavIcon from './modular/BottomNavIcon';
+import {EditDockProvider,useEditDock} from './modular/edit-dock';
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import ScopeLink from './modular/ScopeLink';
 
@@ -223,11 +224,12 @@ export default function AppShell({children}){
   const [client]=useState(()=>new QueryClient({
     defaultOptions:{queries:{staleTime:30_000,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
   }));
-  return <QueryClientProvider client={client}><AppShellInner>{children}</AppShellInner></QueryClientProvider>;
+  return <QueryClientProvider client={client}><EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider></QueryClientProvider>;
 }
 
 function AppShellInner({children}){
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
+  const editDock=useEditDock();
   const queryClient=useQueryClient();
   const localReadyQuery=useQuery({
     queryKey:['local-scope-content-ready'],
@@ -341,6 +343,20 @@ function AppShellInner({children}){
   }));
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
+  const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&navScopeId!=='local'&&!currentScope.aggregateChildren;
+  const editingDockVisible=Boolean(editDock?.active&&editDock.scopeId===navScopeId);
+  const editTabs=[
+    {id:'save',icon:'save',label:translateUiField(activeLocale,'儲存'),action:'save'},
+    {id:'time',icon:'culture',label:translateUiField(activeLocale,'時間編輯'),
+      href:editScopeAvailable?navigationHref(navScopeId,'culture?edit=1',native):''},
+    {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞編輯'),
+      href:editScopeAvailable&&navScopeId!=='lrunes'?navigationHref(navScopeId,'statics/keywords',native):''},
+    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'搜尋建議編輯'),
+      href:editScopeAvailable?navigationHref(navScopeId,'governance/manage/search?section=suggestions',native):''},
+    {id:'governance',icon:'governance',label:translateUiField(activeLocale,'治理編輯'),
+      href:editScopeAvailable?navigationHref(navScopeId,'governance/manage?section=governance',native):''},
+    {id:'cancel',icon:'cancel',label:translateUiField(activeLocale,'放棄'),action:'cancel'}
+  ];
   const featureTabs=[
     {id:'home',icon:'home',label:translateUiField(activeLocale,'首頁'),href:isMyPhone?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
@@ -401,7 +417,19 @@ function AppShellInner({children}){
     </header>
     {children}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
-      {featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
+      {editingDockVisible?editTabs.map(tab=>tab.action
+        ?<button type="button" key={tab.id} disabled={tab.action==='save'&&!editDock.hasSave}
+          onClick={()=>tab.action==='save'?editDock.save():editDock.discard()}>
+          <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
+        </button>
+        :tab.href?<ScopeLink key={tab.id} href={tab.href} native={native}
+          onClick={event=>{if(!editDock.canNavigate())event.preventDefault()}}>
+          <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
+        </ScopeLink>
+        :<button type="button" key={tab.id} disabled>
+          <BottomNavIcon name={tab.icon}/><span>{tab.label}</span>
+        </button>)
+      :featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
           !isSettings&&(tab.id==='home'?!currentFeature:currentFeature===tab.id)?'page':undefined}>
         <BottomNavIcon name={tab.icon}/>

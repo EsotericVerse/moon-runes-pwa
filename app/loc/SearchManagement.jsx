@@ -3,6 +3,7 @@
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import Select from 'react-select';
+import {useSearchParams} from 'next/navigation';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
@@ -25,7 +26,11 @@ const SECTIONS=Object.freeze([
 export default function SearchManagement(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
-  const [section,setSection]=useState('search');
+  const searchParams=useSearchParams();
+  const [section,setSection]=useState(()=>{
+    const initial=String(searchParams?.get('section')||'');
+    return SECTIONS.some(item=>item.value===initial)?initial:'search';
+  });
   const ready=!account.loading&&!account.permissionLoading;
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
   const permitted=ready&&Boolean(account.user)&&isContentScope&&account.canManageScopeSync(scopeId);

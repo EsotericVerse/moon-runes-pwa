@@ -1,6 +1,7 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {useEditDock} from '../modular/edit-dock';
 import dynamic from 'next/dynamic';
 import {useQueryClient} from '@tanstack/react-query';
 import UiText,{useUiText} from '../i18n/UiText';
@@ -37,6 +38,8 @@ export default function ScopeBlockDraftList({
   useUiSection('uiExtra.frameEditor');
   const t=useUiText();
   const queryClient=useQueryClient();
+  const editDock=useEditDock();
+  const dockActions=useRef({save:null,discard:null});
   const [drafts,setDrafts]=useState(()=>slots.map(slot=>({
     ...slot,entities:HomeBlock.normalizeEntities(slot.entities),_deleted:false
   })));
@@ -285,6 +288,15 @@ export default function ScopeBlockDraftList({
       {allowEntities?renderDraftEntities(draft):null}
     </section>;
   }
+
+  dockActions.current={save,discard:onCancel};
+  useEffect(()=>{
+    if(!editDock?.active)return undefined;
+    return editDock.register({
+      save:()=>dockActions.current.save(),
+      discard:()=>dockActions.current.discard()
+    });
+  },[editDock?.active,editDock?.register]);
 
   const visibleDrafts=drafts.filter(draft=>!draft._deleted);
   return <>

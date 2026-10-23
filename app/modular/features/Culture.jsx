@@ -110,13 +110,13 @@ export default function Culture(){
   const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
-  const account=useAccount({enabled:false});
+  const searchParams=useSearchParams();
+  const account=useAccount({enabled:searchParams?.get('edit')==='1'});
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=scopeId==='lrunes'&&lrunesView==='daily';
   const isLocItemView=scopeId==='loc'&&locCultureView==='item';
   const queryClient=useQueryClient();
-  const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
   const query=useQuery({
     queryKey:['culture-timeline',scopeId],
@@ -153,6 +153,13 @@ export default function Culture(){
   // explicit toggle - same reasoning as ScopeEditableBlocks' explicitEditButton:
   // a tap meant to just read the river must never fall straight into edit mode.
   const [timelineEditMode,setTimelineEditMode]=useState(false);
+  useEffect(()=>{
+    if(searchParams?.get('edit')!=='1'){
+      setTimelineEditMode(false);
+      return;
+    }
+    if(account.user&&account.canManageScopeSync(scopeId))setTimelineEditMode(true);
+  },[searchParams,account.user,account.authorizer,scopeId]);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -587,11 +594,11 @@ export default function Culture(){
     setSelectedVirtualAnchorDates(current=>current.includes(date)?current.filter(item=>item!==date):[...current,date].sort());
   };
 
-  async function saveSelectedVirtualAnchors(){
+  async function saveSelectedVirtualAnchors(verifiedByClick=false){
     if(!selectedVirtualAnchorDates.length||anchorSaveBusy)return;
     setAnchorSaveBusy(true);setAnchorSaveMessage('');
     try{
-      if(!account.canManageScopeSync(classificationScope))throw new Error(l.createDenied);
+      if(!verifiedByClick&&!account.canManageScopeSync(classificationScope))throw new Error(l.createDenied);
       const time=scopeData?.time;
       if(!time)throw new Error(l.sourceUnresolved);
       const now=new Date().toISOString();
@@ -918,7 +925,16 @@ export default function Culture(){
                     <div className='scope-preview-links'>
                       <button type='button' className='loc-button' disabled={anchorSaveBusy} onClick={()=>setSelectedVirtualAnchorDates(riverAnalysis.suggestions.map(item=>item.date))}><UiText id="uiExtra.cultureView.selectAllCandidates"/></button>
                       <button type='button' className='loc-button' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={()=>setSelectedVirtualAnchorDates([])}><UiText id="uiExtra.cultureView.clearSelection"/></button>
-                      <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length||!account.canManageScopeSync(classificationScope)} onClick={saveSelectedVirtualAnchors}>
+                      <button type='button' className='loc-button primary' disabled={anchorSaveBusy||!selectedVirtualAnchorDates.length} onClick={async()=>{
+                          const verified=await account.refresh();
+                          if(!verified?.user){
+                            setAnchorSaveMessage('請先登入後建立定錨點。');return;
+                          }
+                          if(!verified.authorizer?.canManageScopeSync(classificationScope)){
+                            setAnchorSaveMessage(l.createDenied);return;
+                          }
+                          await saveSelectedVirtualAnchors(true);
+                        }}>
                         {anchorSaveBusy?UI_COPY.culture.creating:<><UiText id="uiExtra.cultureView.createAfterReview"/> {selectedVirtualAnchorDates.length} <UiText id="uiExtra.cultureView.formalAnchors"/></>}
                       </button>
                     </div>

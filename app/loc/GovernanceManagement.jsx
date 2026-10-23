@@ -2,6 +2,7 @@
 
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
+import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
@@ -22,8 +23,12 @@ const MANAGEMENT_OPTIONS=Object.freeze([
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
+  const searchParams=useSearchParams();
   const canManageHere=account.canManageScopeSync(routeScopeId);
-  const [section,setSection]=useState('settings');
+  const [section,setSection]=useState(()=>{
+    const initial=String(searchParams?.get('section')||'');
+    return MANAGEMENT_OPTIONS.some(item=>item.value===initial)?initial:'settings';
+  });
   const selectedOption=MANAGEMENT_OPTIONS.find(option=>option.value===section)||MANAGEMENT_OPTIONS[0];
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;

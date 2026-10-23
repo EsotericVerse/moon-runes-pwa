@@ -1,5 +1,8 @@
 export default function BottomNavIcon({name}){
   const common={width:23,height:23,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true};
+  if(name==='save')return <svg {...common}><path d="M4 4h14l3 3v14H3V4zM7 4v6h10V4M7 21v-8h10v8"/></svg>;
+  if(name==='cancel')return <svg {...common}><path d="M5 5l14 14M19 5L5 19"/></svg>;
+  if(name==='keywords')return <svg {...common}><path d="M4 7h16M4 12h16M4 17h11M17 15l4 4-4 4"/></svg>;
   if(name==='home')return <svg {...common}><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>;
   if(name==='culture')return <svg {...common}><path d="M6 3h12M6 21h12M8 3v4c0 3 4 4 4 5s-4 2-4 5v4M16 3v4c0 3-4 4-4 5s4 2 4 5v4"/><path d="m9 9 3 3 3-3M9 18h6"/></svg>;
   if(name==='statics')return <svg {...common}><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M3 20h18"/></svg>;
