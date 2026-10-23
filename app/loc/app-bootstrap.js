@@ -38,8 +38,8 @@ async function legacyBootstrap(id,page){
   const [registry,themes,config,blocks]=await Promise.all([
     selectScopeRegistry().catch(()=>[]),
     selectThemeRegistry().catch(()=>[]),
-    id?selectScopeConfig(id).catch(()=>null):Promise.resolve(null),
-    id&&page!=='culture'?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
+    id&&id!=='admin'?selectScopeConfig(id).catch(()=>null):Promise.resolve(null),
+    id&&id!=='admin'&&page!=='culture'?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
   ]);
   return {
     scope_id:id,page_name:page,config,blocks,registry,page_copy:[],
@@ -60,10 +60,10 @@ export async function selectAppBootstrap(scopeId,pageName='index',{configHint=nu
       const [site,scopeReads]=await Promise.all([
         selectPublicSiteBootstrap(),
         isLocHome?Promise.resolve(null):Promise.all([
-          id&&id!=='loc'
+          id&&id!=='loc'&&id!=='admin'
             ?(configHint?Promise.resolve(configHint):selectScopeConfig(id))
             :Promise.resolve(null),
-          id&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
+          id&&id!=='admin'&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
         ])
       ]);
       const [config,blocks]=isLocHome
