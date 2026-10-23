@@ -105,6 +105,19 @@ Security ≫ Portable > Loading = UI > Code. Security is first by a wide margin,
 | `.agents/skills/mcp-builder/SKILL.md` | Build or review an MCP server that lets Claude talk to an external service. Use when adding or auditing a Claude/MCP integration, not for installing third-party MCP servers found online. |
 | `.agents/skills/handoff/SKILL.md` | Compact the current conversation into a handoff document for another agent. |
 
+## External Skills.sh references (runtime-installed, not vendored)
+
+These are **external skill references**, not entries in the repository skill routing table above. Their existence on Skills.sh or a user's local installation does not prove the current agent runtime can read them. Before applying one, discover its installed `SKILL.md` in the active runtime (including local agent skill directories) and read its instructions; if unavailable, use the existing repository skills instead and report the gap. Do not copy or install these skills into this repository merely to satisfy this reference list. Follow existing Security priorities and authorization boundaries.
+
+| External skill (canonical source) | Select when |
+|---|---|
+| [`jezweb/claude-skills@tanstack-query`](https://skills.sh/jezweb/claude-skills/tanstack-query) | React Query v5 cache keys, duplicate requests, concurrent fetch deduplication, lazy/conditional queries, invalidation, and Scope/Registry/Bootstrap data sharing. Public read caches must never be substituted for fresh authorization checks. |
+| [`obra/superpowers@systematic-debugging`](https://skills.sh/obra/superpowers/systematic-debugging) | Reproducing and tracing excessive DB requests, 404/API-key failures, fetch waterfalls, or behavior that crosses multiple components; establish the root cause before editing. |
+| [`wshobson/agents@sql-optimization-patterns`](https://skills.sh/wshobson/agents/sql-optimization-patterns) | Evidence-backed N+1 queries, aggregation/COUNT vs bulk reads, query plans, indexes, and slow SQL; pair with repository Supabase/Postgres guidance before database changes. |
+| [`obra/superpowers@verification-before-completion`](https://skills.sh/obra/superpowers/verification-before-completion) | Every implementation or performance fix: run appropriate current checks and capture real request counts/network traces where relevant before claiming success. Complements `webapp-testing`. |
+
+**LOC Guest browse-path audit:** trace actual requests from LOC Home → Author Home → Culture as Guest; distinguish source routing, public Scope metadata, page blocks, Time data, aggregate counts, optional keyword selectors, and management authorization. Deduplicate only genuinely shared public reads. Defer keyword queries until needed, and prefer existing count/aggregate paths over eager Galaxy content downloads. Preserve independent data semantics and never bypass RLS or write authorization for performance.
+
 ## Completion
 
 - Inspect the final diff and verify that unrelated files were not changed.
