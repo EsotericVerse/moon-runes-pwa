@@ -466,16 +466,20 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
     const source=key.slice(0,split);
     const day=key.slice(split+1);
     const group=groupMap.get(source);
-    if(!group||!group.first_date||!group.last_date)return null;
+    // Date bounds belong to the aggregated daily buckets, not the original
+    // catalog group. Reading group.first_date here discarded every bucket.
+    const firstDate=firstDates.get(source);
+    const lastDate=lastDates.get(source);
+    if(!group||!firstDate||!lastDate)return null;
     return {
       id:'source_name:'+source+':'+day,
       category:source,
-      group_label:source+' · '+group.item_count.toLocaleString()+' 項 · '+group.first_date+' → '+group.last_date,
+      group_label:source+' · '+group.item_count.toLocaleString()+' 項 · '+firstDate+' → '+lastDate,
       start_date:day,
       item_count:count,
       works:[],
-      first_date:group.first_date,
-      last_date:group.last_date,
+      first_date:firstDate,
+      last_date:lastDate,
       density_ratio:count/Math.max(1,maxima.get(source)||1),
       global_density_ratio:count/Math.max(1,globalMaximum),
       display_label:source+' '+count+' 項',
