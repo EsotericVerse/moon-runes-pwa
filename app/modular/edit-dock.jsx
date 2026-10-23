@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext,useCallback,useContext,useMemo,useRef,useState} from 'react';
+import {createContext,useCallback,useContext,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 
 // UI only: a Scope's permission is checked before entering edit mode,
@@ -13,9 +13,21 @@ export function EditDockProvider({children}){
   const [hasSave,setHasSave]=useState(false);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
+  const [switchTarget,setSwitchTarget]=useState('');
+  const [switchError,setSwitchError]=useState('');
+  const switchDialog=useRef(null);
+  const registeredEditors=useRef(new Set());
   const currentEditor=useRef(null);
 
+  useEffect(()=>{
+    const dialog=switchDialog.current;
+    if(!dialog)return;
+    if(switchTarget&&!dialog.open)dialog.showModal();
+    if(!switchTarget&&dialog.open)dialog.close();
+  },[switchTarget]);
+
   const clearEditor=useCallback(()=>{
+    registeredEditors.current.clear();
     currentEditor.current=null;
     setHasSave(false);
   },[]);
@@ -34,7 +46,8 @@ export function EditDockProvider({children}){
   // Each mounted editor supplies the *current page's* save function.
   // Unmounting clears it only if no later editor has replaced it.
   const register=useCallback(actions=>{
-    const editor={save:actions.save,discard:actions.discard};
+    const editor={save:actions.save,discard:actions.discard,isDirty:actions.isDirty,isBusy:actions.isBusy};
+    registeredEditors.current.add(editor);
     const activate=()=>{
       currentEditor.current=editor;
       setHasSave(typeof editor.save==='function');
@@ -44,12 +57,14 @@ export function EditDockProvider({children}){
     // first as default. Focusing another form explicitly replaces Save.
     if(!currentEditor.current)activate();
     const unregister=()=>{
+      registeredEditors.current.delete(editor);
       if(currentEditor.current!==editor)return;
-      clearEditor();
+      currentEditor.current=registeredEditors.current.values().next().value||null;
+      setHasSave(typeof currentEditor.current?.save==='function');
     };
     unregister.activate=activate;
     return unregister;
-  },[clearEditor]);
+  },[]);
 
   const navigate=useCallback(target=>{
     if(!target)return;
@@ -87,19 +102,69 @@ export function EditDockProvider({children}){
     end();
     navigate(target);
   },[busy,end,navigate]);
-  // Shortcut navigation is explicit. Uncommitted drafts do not write.
-  // The next page registers its own save, replacing the previous action.
+  // Every mounted form reports its own unsaved state; a focused form is not
+  // necessarily the only edited one on a management page.
+  const dirtyEditors=useCallback(()=>[...registeredEditors.current].filter(editor=>
+    typeof editor.isDirty==='function'&&editor.isDirty()
+  ),[]);
   const switchTo=useCallback(target=>{
-    if(busy)return;
-    clearEditor();
-    setNotice('');
-    navigate(target);
-  },[busy,clearEditor,navigate]);
+    if(busy||!target)return;
+    if([...registeredEditors.current].some(editor=>editor.isBusy?.())){
+      setNotice('目前正在儲存，請完成後再切換頁面。');
+      return;
+    }
+    if(!dirtyEditors().length){
+      clearEditor();setNotice('');navigate(target);return;
+    }
+    setSwitchError('');
+    setSwitchTarget(target);
+  },[busy,dirtyEditors,clearEditor,navigate]);
+  const cancelSwitch=useCallback(()=>{if(!busy){setSwitchTarget('');setSwitchError('');}},[busy]);
+  const discardAndSwitch=useCallback(()=>{
+    if(busy||!switchTarget)return;
+    const target=switchTarget;
+    setSwitchTarget('');setSwitchError('');
+    clearEditor();setNotice('');navigate(target);
+  },[busy,switchTarget,clearEditor,navigate]);
+  const saveAndSwitch=useCallback(async()=>{
+    if(busy||!switchTarget)return;
+    const target=switchTarget;
+    const editors=dirtyEditors();
+    setBusy(true);setSwitchError('');
+    try{
+      for(const editor of editors){
+        if(typeof editor.save!=='function')throw new Error('目前編輯內容無法儲存，已取消切換。');
+        // A successful save must return true; false/undefined must never
+        // be interpreted as a successful write.
+        const saved=await editor.save({switching:true});
+        if(saved!==true)throw new Error('儲存尚未完成，已保留目前頁面與編輯內容。');
+      }
+      setSwitchTarget('');
+      clearEditor();setNotice('');
+      navigate(target);
+    }catch(error){
+      setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
+    }finally{setBusy(false);}
+  },[busy,switchTarget,dirtyEditors,clearEditor,navigate]);
   const value=useMemo(()=>({
     active:Boolean(scopeId),scopeId,hasSave,busy,notice,begin,end,
     register,save,discard,complete,switchTo,setNotice
   }),[scopeId,hasSave,busy,notice,begin,end,register,save,discard,complete,switchTo]);
-  return <EditDockContext.Provider value={value}>{children}</EditDockContext.Provider>;
+  return <EditDockContext.Provider value={value}>
+    {children}
+    <dialog ref={switchDialog} className="scope-edit-switch-dialog" aria-labelledby="scope-edit-switch-title"
+      aria-describedby="scope-edit-switch-description"
+      onCancel={event=>{if(busy)event.preventDefault();else cancelSwitch();}}>
+      <h2 id="scope-edit-switch-title">有未儲存的編輯內容</h2>
+      <p id="scope-edit-switch-description">切換頁面前，要如何處理目前的變更？</p>
+      {switchError?<p role="alert" className="scope-status scope-error">{switchError}</p>:null}
+      <div className="scope-edit-switch-actions">
+        <button type="button" className="loc-button primary" disabled={busy} onClick={saveAndSwitch}>儲存並切換</button>
+        <button type="button" className="loc-button" disabled={busy} onClick={discardAndSwitch}>放棄變更</button>
+        <button type="button" className="loc-button" disabled={busy} onClick={cancelSwitch}>取消</button>
+      </div>
+    </dialog>
+  </EditDockContext.Provider>;
 }
 
 export function useEditDock(){return useContext(EditDockContext);}
