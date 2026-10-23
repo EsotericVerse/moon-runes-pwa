@@ -68,14 +68,12 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
   const children=HomeBlock.visibleEntities(slot).filter(entity=>entity.title||
     BlockNoteContent.image.stripHeroImageTag(entity.text).replace(/<[^>]*>/g,'').trim());
   const Heading=hero?'h1':'h2';
-  const copy=<>
-    <header className="loc-home-block__header">
-      {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
-      {slot.title?<Heading>{slot.title}</Heading>:null}
-      {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
-    </header>
-    <RichHtml html={slot.text} stripImage className="loc-home-block__body"/>
-  </>;
+  const header=<header className="loc-home-block__header">
+    {slot.eyebrow?<p className="loc-eyebrow">{slot.eyebrow}</p>:null}
+    {slot.title?<Heading>{slot.title}</Heading>:null}
+    {slot.subtitle?<p className="loc-subtitle loc-home-block__subtitle">{HomeBlock.plainBlockLine(slot.subtitle)}</p>:null}
+  </header>;
+  const body=<RichHtml html={slot.text} stripImage className="loc-home-block__body"/>;
   const media=image.src?(hero?<figure className="loc-home-block__media home-hero-visual" aria-label={image.alt}>
     <picture>{image.small?<source media="(max-width: 760px)" srcSet={image.small.src}/>:null}
       <img src={image.src} alt="" aria-hidden="true" loading="lazy" decoding="async"/></picture>
@@ -84,10 +82,11 @@ function SharedHomeBlockDisplay(slot,scopeId='loc'){
     <img src={image.src} alt={image.alt} loading="lazy" decoding="async"/>
   </article>):null;
   return <>
+    {header}
     {imageOnly?<div className="loc-home-block__image-surface">
-      <div className="loc-home-block__image-measure" aria-hidden="true">{copy}</div>
+      <div className="loc-home-block__image-measure" aria-hidden="true">{body}</div>
       {media}
-    </div>:copy}
+    </div>:body}
     {children.length?<div className="loc-home-block__children">
       {children.map((entity,index)=>{
         const card=HomeBlock.childPresentation(entity.title)==='card';
