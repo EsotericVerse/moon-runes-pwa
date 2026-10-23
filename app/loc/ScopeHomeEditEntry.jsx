@@ -36,7 +36,9 @@ export default function ScopeHomeEditEntry(){
       if(pathname?.startsWith('/scope-shell'))query.set('scopeid',scopeId);
       query.set('edit','1');
       editDock?.begin(scopeId);
-      router.push(pathname+'?'+query.toString());
+      // Capacitor serves a static index.html. Navigating that file again would
+      // reload the app and discard the authorized in-memory editing session.
+      if(!/\/index\.html$/i.test(pathname))router.push(pathname+'?'+query.toString());
     }catch(error){
       setMessage(String(error?.message||'無法確認編輯權限。'));
     }finally{
