@@ -84,15 +84,11 @@ function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+' 群組';
 }
-// The articles already contain class_id and group_lists. A tap only changes
-// which projection of those saved attributes is displayed in the same river.
-function keywordDrillRiverItems(rows,{level='group',source='',groupId='',meta={},catalog=[]}={}){
+// Reuse classified articles and their existing group_lists; only display
+// keyword group density, filtering to a chosen group when selected.
+function keywordDrillRiverItems(rows,{source='',groupId='',meta={}}={}){
   const classes=meta?.classes||{};
   const className=String(meta?.class_name||'').trim();
-  const groupName=String(classes[String(groupId)]||'').trim();
-  const knownItems=new Map(catalog
-    .filter(item=>String(item.class_group||'').trim()===groupName)
-    .map(item=>[String(Number(item.item_no)),item]));
   const buckets=new Map(),maximum=new Map();
   const add=(key,label,day,count,order=0)=>{
     if(!key||!label||!count)return;
@@ -106,33 +102,21 @@ function keywordDrillRiverItems(rows,{level='group',source='',groupId='',meta={}
     const hits=parseGroupLists(row.group_lists);
     if(hits===false)continue;
     const rowSource=String(row.source_name||'').trim()||'未分類';
-    if(level==='source'){
-      add(rowSource,rowSource,day,1);
-      continue;
-    }
     if(source&&rowSource!==source)continue;
     const rowGroup=String(row.class_id||'').trim();
-    if(level==='group'){
-      const label=String(classes[rowGroup]||'').trim();
-      if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
-      continue;
-    }
-    if(rowGroup!==String(groupId))continue;
-    for(const [id,rawCount] of Object.entries(hits)){
-      const item=knownItems.get(id);
-      const count=Number(rawCount)||0;
-      if(item&&count>0)add(id,id+' · '+String(item.item_name||id),day,count,Number(item.order_no)||Number(id));
-    }
+    if(groupId&&rowGroup!==String(groupId))continue;
+    const label=String(classes[rowGroup]||'').trim();
+    if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
   }
   return [...buckets.values()].map(({key,label,day,count,order})=>({
-    id:'keyword-density:'+level+':'+key+':'+day,
-    entry_id:'keyword-density:'+level+':'+key+':'+day,
+    id:'keyword-density:group:'+key+':'+day,
+    entry_id:'keyword-density:group:'+key+':'+day,
     entry_type:'keyword_density',
     drill_key:key,
     group_label:label,
     category:label,
     display_label:'',
-    title:day+' · '+label+' · '+count.toLocaleString()+(level==='item'?' 次':' 篇'),
+    title:day+' · '+label+' · '+count.toLocaleString()+' 篇',
     start_date:day,end_date:nextRiverDay(day),
     item_count:count,group_order:order,
     density_ratio:count/Math.max(1,maximum.get(key)||1)
@@ -367,20 +351,6 @@ export default function Culture(){
     },
     staleTime:5*60_000
   });
-  const keywordCatalogQuery=useQuery({
-    queryKey:['culture-keyword-group-items',scopeId,styleQuery.data?.keywordMeta?.class_id||''],
-    enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
-      &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
-    queryFn:async()=>{
-      const {rows}=await selectRows(scopeData.keywords,{
-        columns:'item_no,item_name,class_group,order_no',
-        filters:[{column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)}],
-        limit:1000
-      });
-      return rows;
-    },
-    staleTime:5*60_000
-  });
   useEffect(()=>{
     setKeywordDrillSource('');
     setKeywordDrillGroup('');
@@ -392,11 +362,10 @@ export default function Culture(){
     .map(([id,name])=>({id,label:String(name||'').trim()}))
     .filter(item=>item.label).sort((a,b)=>Number(a.id)-Number(b.id)),
   [styleQuery.data?.keywordMeta?.classes]);
-  const keywordDrillLevel=keywordDrillGroup?'item':'group';
   const keywordDrillItems=useMemo(()=>keywordDrillRiverItems(keywordDensityQuery.data,{
-    level:keywordDrillLevel,source:keywordDrillSource,groupId:keywordDrillGroup,
-    meta:styleQuery.data?.keywordMeta,catalog:keywordCatalogQuery.data||[]
-  }),[keywordDensityQuery.data,keywordDrillLevel,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordCatalogQuery.data]);
+    source:keywordDrillSource,groupId:keywordDrillGroup,
+    meta:styleQuery.data?.keywordMeta
+  }),[keywordDensityQuery.data,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
   const selectedGroup=categoryGroups.find(item=>item.category_key===(
@@ -1092,10 +1061,10 @@ export default function Culture(){
                       {keywordDrillSource?' → '+(keywordDrillGroup
                         ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')
                         :'選擇關鍵詞群組'):''}
-                      {keywordDrillGroup?' → 項目密度':''}
+
                     </span>
                   </div>
-                  <h4>{keywordDrillLevel==='group'?'風格群組密度':'風格群組內關鍵詞密度'}</h4>
+                  <h4>風格群組密度</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
                     <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
@@ -1115,11 +1084,11 @@ export default function Culture(){
                   {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
-                  {(keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled)||(keywordDrillLevel==='item'&&keywordCatalogQuery.isPending)
+                  {keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
                     ?<p className='scope-status' role='status'>正在讀取已儲存的文章屬性…</p>:null}
-                  {keywordDensityQuery.error||keywordCatalogQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error||keywordCatalogQuery.error,UI_COPY)}</p>:null}
-                  {!keywordDensityQuery.isPending&&(keywordDrillLevel!=='item'||!keywordCatalogQuery.isPending)&&!keywordDensityQuery.error&&!keywordCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
-                    key={keywordDrillLevel+'|'+keywordDrillSource+'|'+keywordDrillGroup}
+                  {keywordDensityQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordDensityQuery.error,UI_COPY)}</p>:null}
+                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&keywordDrillItems.length?<CultureTimeline
+                    key={keywordDrillSource+'|'+keywordDrillGroup}
                     items={keywordDrillItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
@@ -1129,12 +1098,10 @@ export default function Culture(){
                     onSelect={item=>{
                       const key=String(item?.raw?.drill_key||'').trim();
                       if(!key)return;
-                      if(keywordDrillLevel==='source')setKeywordDrillSource(key);
-                      else if(keywordDrillLevel==='group')setKeywordDrillGroup(key);
+                      setKeywordDrillGroup(key);
                     }}
                   />:null}
-                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&
-                    (keywordDrillLevel!=='item'||!keywordCatalogQuery.isPending)&&!keywordDrillItems.length
+                  {!keywordDensityQuery.isPending&&!keywordDensityQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
