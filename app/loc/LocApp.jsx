@@ -62,7 +62,6 @@ const HOME_PRELOADERS={
   admin:()=>import('./views/AdminHomeView')
 };
 const FEATURE_FLAGS=Object.freeze({
-  search:'search_able',
   statics:'statistics_able',
   keywords:'statistics_able',
   culture:'culture_able'

@@ -107,6 +107,21 @@ export async function selectScopeRegistry({parentScopeId=null,scopeKind=null}={}
     .sort((a,b)=>a.sort_order-b.sort_order||a.scope_id.localeCompare(b.scope_id));
 }
 
+// LOC's public search registry: registry membership and each tree's search_able
+// are independent of an article's searchable flag.
+export async function selectLocSearchScopes(){
+  const registry=await selectScopeRegistry({scopeKind:'scope'});
+  const scopes=await Promise.all(registry
+    .filter(row=>row.active&&row.scope_id!=='admin')
+    .map(async row=>{
+      const config=await selectScopeConfig(row.scope_id);
+      if(config?.search_able!==true)return null;
+      const scope=defaultScopeData(row.scope_id);
+      return scope?{...scope,display_name:String(config.display_name||row.display_name||row.scope_id).trim()}:null;
+    }));
+  return scopes.filter(Boolean);
+}
+
 export async function selectScopeRegistryEntry(scopeId){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return null;

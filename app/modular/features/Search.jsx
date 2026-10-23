@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 registerDefaultSection('uiExtra.cultureView',cultureViewZh);
 registerDefaultSection('uiExtra.pagination',paginationZh);
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {Fragment,useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useRouter,useSearchParams} from 'next/navigation';
@@ -31,7 +31,7 @@ import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../f
 import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches} from '../../loc/galaxy-query';
-import {defaultScopeData,selectScopeRegistry} from '../../loc/scope-data';
+import {defaultScopeData,selectLocSearchScopes} from '../../loc/scope-data';
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
@@ -212,7 +212,7 @@ function searchHref(scopeId,query,filters={}){
   const params=new URLSearchParams();
   for(const [key,value] of Object.entries({
     type:filters.contentType,source:filters.sourceFilter,
-    from:filters.startDate,to:filters.endDate,period:filters.selectedPeriod
+    from:filters.startDate,to:filters.endDate,period:filters.selectedPeriod,scope:filters.scopeFilter
   })){
     if(value)params.set(key,value);
   }
@@ -238,6 +238,7 @@ export default function Search(){
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
   const [sourceFilter,setSourceFilter]=useState('');
+  const [scopeFilter,setScopeFilter]=useState('');
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
   const [selectedPeriod,setSelectedPeriod]=useState('');
@@ -285,26 +286,35 @@ export default function Search(){
   const loadMoreInFlight=useRef(false);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  // LOC searches all managed Scopes; only other Scope Groups are directory guides.
+  // LOC searches only active content trees with search_able enabled.
+  // A tree's own Search page stays separate from LOC's aggregate scope filter.
   const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
   const scopesQuery=useQuery({
-    queryKey:['search-scope-registry'],
-    queryFn:selectScopeRegistry,
+    queryKey:['loc-searchable-scopes'],
+    queryFn:selectLocSearchScopes,
     enabled:scopeId==='loc'&&!aggregateScopes,
     staleTime:5*60_000
   });
-  const targetScopes=useMemo(()=>{
-    if(scopeId!=='loc')return [defaultScopeData(scopeId)].filter(Boolean);
-    return (scopesQuery.data||[])
-      .filter(item=>item.active&&item.scope_kind==='scope')
-      .map(item=>defaultScopeData(item.scope_id))
-      .filter(Boolean);
-  },[scopeId,scopesQuery.data]);
-  const scopeById=useMemo(()=>new Map(targetScopes.map(item=>[item.id,item])),[targetScopes]);
-  const hiddenScopeIds=useMemo(
-    ()=>targetScopes.filter(item=>canManageSearchScope(account,item.id)).map(item=>item.id),
-    [targetScopes,account.authorizer]
-  );
+  const availableScopes=useMemo(()=>scopeId==='loc'
+    ?(scopesQuery.data||[])
+    :[defaultScopeData(scopeId)].filter(Boolean),[scopeId,scopesQuery.data]);
+  const targetScopes=useMemo(()=>scopeId==='loc'&&scopeFilter
+    ?availableScopes.filter(item=>item.id===scopeFilter)
+    :availableScopes,[scopeId,scopeFilter,availableScopes]);
+  const scopeById=useMemo(()=>new Map(availableScopes.map(item=>[item.id,item])),[availableScopes]);
+  const scopeLabel=id=>{
+    const item=scopeById.get(id);
+    return item?`${item.display_name||id}(${id})`:id;
+  };
+  // Results are displayed per tree, while preserving the existing per-tree
+  // result order and the incremental database pagination.
+  const orderedResults=useMemo(()=>{
+    if(scopeId!=='loc')return results;
+    const order=new Map(availableScopes.map((item,index)=>[item.id,index]));
+    return results.map((row,index)=>({row,index}))
+      .sort((a,b)=>(order.get(a.row.scopeId)??Infinity)-(order.get(b.row.scopeId)??Infinity)||a.index-b.index)
+      .map(item=>item.row);
+  },[results,scopeId,availableScopes]);
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
   const periodScope=scopeId==='loc'
     ?targetScopes.find(item=>item.id==='lo3rwang')||targetScopes[0]
@@ -338,8 +348,16 @@ export default function Search(){
     const q=String(rawQuery||'').trim();
     const options=append&&activeSearchOptionsRef.current
       ?activeSearchOptionsRef.current
-      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,mediaOnly:false,browse});
+      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter,mediaOnly:false,browse});
     if(!q&&!options.browse)return;
+    const searchScopes=scopeId==='loc'&&options.scopeFilter
+      ?availableScopes.filter(item=>item.id===options.scopeFilter)
+      :availableScopes;
+    if(scopeId==='loc'&&options.scopeFilter&&!searchScopes.length){
+      setError(t('uiExtra.searchUI.scopeUnavailable'));return;
+    }
+    const searchCollectionLabel=scopeId==='loc'&&options.scopeFilter
+      ?scopeLabel(options.scopeFilter):collectionLabel;
     if(options.startDate&&options.endDate&&options.startDate>options.endDate){
       setError(t('uiExtra.searchUI.invalidDateRange'));return;
     }
@@ -365,7 +383,7 @@ export default function Search(){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
-      setStatus(UI_COPY.format.searchScope(collectionLabel));
+      setStatus(UI_COPY.format.searchScope(searchCollectionLabel));
     }
     try{
       if(!append){
@@ -402,27 +420,27 @@ export default function Search(){
       const wantsStyleTags=!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
       // Start the primary search first so it takes the first connection slot, then
       // run the cross-Scope style-tag lookup alongside it instead of in front of it.
-      const searchPromise=searchGalaxyRows(targetScopes,q,{
+      const searchPromise=searchGalaxyRows(searchScopes,q,{
         limit:pageSize,
         // Always search article providers, including when the same keyword
         // exactly matches a style tag.
         cursor,
-        mediaOnly:options.mediaOnly,hiddenScopeIds,
+        mediaOnly:options.mediaOnly,
         contentType:options.contentType,sourceFilter:options.sourceFilter,
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         signal
       });
       const stylePromise=wantsStyleTags
         ?queryClient.fetchQuery({
-          queryKey:['search-style-keyword',targetScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
-          queryFn:()=>selectStyleKeywordMatches(targetScopes,q,{signal}),
+          queryKey:['search-style-keyword',searchScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
+          queryFn:()=>selectStyleKeywordMatches(searchScopes,q,{signal}),
           staleTime:60_000
         })
         :Promise.resolve([]);
       const [styleTagMatches,search]=await Promise.all([stylePromise,searchPromise]);
       if(id!==searchId.current)return;
 
-      const searchRows=await hydrateGalaxySearchRows(search.rows||[],targetScopes,hiddenScopeIds,{signal});
+      const searchRows=await hydrateGalaxySearchRows(search.rows||[],searchScopes,[],{signal});
       if(id!==searchId.current)return;
       const textByScope=new Map();
       for(const entry of searchRows){
@@ -460,7 +478,7 @@ export default function Search(){
       setNextCursor(search.nextCursor??null);
       const partial=search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append){
-        setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+collectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+        setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
         scrollToResults();
       }
     }catch(exception){
@@ -538,7 +556,7 @@ export default function Search(){
   }
 
   useEffect(()=>{
-    if((scopeId==='loc'&&!scopesQuery.isSuccess)||account.permissionLoading)return;
+    if(scopeId==='loc'&&!scopesQuery.isSuccess)return;
     const identity=String(searchParams?.get('identity')||'').trim();
     const media=String(searchParams?.get('media')||'').trim();
     if(media){setQuery('');executeMediaIdentity(media);return;}
@@ -549,12 +567,13 @@ export default function Search(){
       sourceFilter:String(searchParams?.get('source')||''),
       startDate:String(searchParams?.get('from')||''),
       endDate:String(searchParams?.get('to')||''),
-      selectedPeriod:String(searchParams?.get('period')||'')
+      selectedPeriod:String(searchParams?.get('period')||''),
+      scopeFilter:String(searchParams?.get('scope')||'')
     };
     setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
-    setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);
+    setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);setScopeFilter(filters.scopeFilter);
     if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
-  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,account.permissionLoading,account.authorizer]);
+  },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data]);
 
 
 
@@ -678,7 +697,7 @@ export default function Search(){
     await executeSearch('',null,{browse:true});
   }
   function clearSearchFilters(){
-    setQuery('');setContentType('');setSourceFilter('');
+    setQuery('');setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
     router.replace(featureNavigationHref(scopeId,'search'));
@@ -696,6 +715,7 @@ export default function Search(){
     ['facebook','Facebook'],['vocus','Vocus'],['x','X']
   ];
   const chips=[
+    scopeId==='loc'&&scopeFilter&&scopeLabel(scopeFilter),
     contentType&&filterTypes.find(([value])=>value===contentType)?.[1],
     sourceFilter&&filterSources.find(([value])=>value===sourceFilter)?.[1],
     startDate&&t('uiExtra.searchUI.startDate')+': '+startDate,
@@ -708,10 +728,10 @@ export default function Search(){
     if(!term)return;
     // Keep the keyword in the URL and input so a style-to-style link is a
     // reproducible next search, not a transient single-page interaction.
-    const url=searchHref(scopeId,term,{contentType,sourceFilter,startDate,endDate,selectedPeriod});
+    const url=searchHref(scopeId,term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter});
     const current=searchHref(scopeId,String(searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
-      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period')
+      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),scopeFilter:searchParams?.get('scope')
     });
     if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
     await executeSearch(term);
@@ -731,9 +751,19 @@ export default function Search(){
       <form className="scope-search-form" onSubmit={runSearch}>
         <label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>
         <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)} placeholder={UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
-        <button type="submit">{UI_COPY.nav.search}</button>
+        <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
+      {scopeId==='loc'?<div className="scope-search-scope-filter">
+        <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
+        <select id="scope-search-scope" value={scopeFilter}
+          disabled={!scopesQuery.isSuccess}
+          onChange={event=>{setSelectedPeriod('');updateSearchFilter(setScopeFilter,event.target.value);}}>
+          <option value="">{t('uiExtra.searchUI.allScopes')}</option>
+          {availableScopes.map(item=><option key={item.id} value={item.id}>{scopeLabel(item.id)}</option>)}
+        </select>
+        {scopesQuery.isError?<span role="alert" className="scope-status scope-error">{t('uiExtra.searchUI.scopeUnavailable')}</span>:null}
+      </div>:null}
       <div className="scope-search-advanced">
         <button type="button" className="scope-search-advanced-toggle" aria-expanded={advancedOpen} aria-controls="scope-search-filter-panel" onClick={()=>setAdvancedOpen(value=>!value)}>
           <span><strong>{t('uiExtra.searchUI.advancedFilters')}</strong><small>{t('uiExtra.searchUI.advancedHelp')}</small></span>
@@ -792,7 +822,7 @@ export default function Search(){
         allowDelete={false}
         allowInlineChildAdd
         explicitEditButton
-        onSuggestionClick={term=>router.push(searchHref(scopeId,term))}
+        onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
       />
     </div>
     </section>
@@ -801,14 +831,14 @@ export default function Search(){
     {error?<p className="scope-status scope-error">{error}</p>:null}
     {loadMoreError?<p role="alert" className="scope-status scope-error">{loadMoreError} <button type="button" className="loc-button" disabled={loadingMore} onClick={loadNextSearch}><UiText id="uiExtra.cultureView.reloadWorks"/></button></p>:null}
     <IncrementalList
-      items={results}
+      items={orderedResults}
       batchSize={pageSize}
-      resetKey={matchedQueryRef.current+'|'+String(browseResults)}
+      resetKey={matchedQueryRef.current+'|'+String(browseResults)+'|'+scopeFilter}
       externalHasMore={hasMore}
       loading={loadingMore}
       error={error||loadMoreError}
       onLoadMore={loadNextSearch}
-      renderItem={row=>{
+      renderItem={(row,index)=>{
         const rowScopeData=account.scopeDataFor(row.scopeId)||defaultScopeData(row.scopeId);
         const editableTable=row.editableTable||(
           row.resourceType==='galaxy'?rowScopeData?.galaxy:
@@ -827,7 +857,10 @@ export default function Search(){
         const editable=Boolean(canManageSearchScope(account,row.scopeId)&&
           editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId);
         const draft=editingKey===row.key?editDraft:null;
-        return <Article
+        return <Fragment key={row.key}>
+          {scopeId==='loc'&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
+            ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
+        <Article
           key={row.key}
           uid={editTarget.editResourceId}
           title={row.title}
@@ -872,7 +905,8 @@ export default function Search(){
             </button>:null}
           </div>:null}
 
-        </Article>;
+        </Article>
+        </Fragment>;
       }}
     />
     </div>
