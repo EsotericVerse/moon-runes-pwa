@@ -505,13 +505,14 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=CultureTimelineModel.decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null}={}){
+export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null,sortDirection='asc'}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
   // Explicitly requested empty source names are valid (e.g. Statistics · Others).
   const rawSources=[...new Set((sourceNames||[]).map(value=>String(value??'').trim()))];
   const rawMedia=[...new Set((mediaTypes||[]).map(value=>String(value||'').trim()).filter(Boolean))];
   const pageSize=Math.max(1,Math.floor(Number(limit)||10));
+  const ascending=sortDirection!=='desc';
   const baseOffset=Math.max(0,Math.floor(Number(offset)||0));
   const cursorGalaxyOffset=Number(cursor?.galaxyOffset);
   const cursorMediaOffset=Number(cursor?.mediaOffset);
@@ -541,7 +542,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     includeGalaxy?selectRows(scope.galaxy,{
       columns:'uid,createtime',
       filters:galaxyFilters,
-      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
+      orders:[{column:'createtime',ascending},{column:'uid',ascending}],
       limit:pageSize,
       offset:galaxyOffset,
       maxLimit:pageSize,
@@ -550,7 +551,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     includeMedia?selectRows(scope.galaxyMedia,{
       columns:'media_id,createtime',
       filters:mediaFilters,
-      orders:[{column:'createtime',ascending:true},{column:'media_id',ascending:true}],
+      orders:[{column:'createtime',ascending},{column:'media_id',ascending}],
       limit:pageSize,
       offset:mediaOffset,
       maxLimit:pageSize,
@@ -586,10 +587,12 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
   while(rows.length<pageSize&&(galaxyIndex<galaxyRows.length||mediaIndex<mediaRows.length)){
     const galaxyRow=galaxyRows[galaxyIndex];
     const mediaRow=mediaRows[mediaIndex];
-    if(!mediaRow||(galaxyRow&&(
-      String(galaxyRow.createtime||'')<String(mediaRow.createtime||'')||
-      (String(galaxyRow.createtime||'')===String(mediaRow.createtime||'')&&String(galaxyRow.entry_id)<=String(mediaRow.entry_id))
-    ))){
+    const dateOrder=galaxyRow&&mediaRow
+      ?String(galaxyRow.createtime||'').localeCompare(String(mediaRow.createtime||'')):0;
+    const idOrder=galaxyRow&&mediaRow
+      ?String(galaxyRow.entry_id).localeCompare(String(mediaRow.entry_id)):0;
+    if(!mediaRow||(galaxyRow&&(ascending?dateOrder<0||dateOrder===0&&idOrder<=0
+      :dateOrder>0||dateOrder===0&&idOrder>=0))){
       rows.push(galaxyRow);
       galaxyIndex+=1;
     }else{
