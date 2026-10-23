@@ -74,7 +74,7 @@ function periodKey(item){
 }
 function classLabel(value){
   const text=String(value||'').trim();
-  return !text?'':text.endsWith('群組')?text:text+'群組';
+  return !text?'':text.endsWith('群組')?text:text+' 群組';
 }
 function formatCultureUi(template,values={}){
   return String(template||'').replace(/\{([a-zA-Z][\w]*)\}/gu,(match,key)=>
