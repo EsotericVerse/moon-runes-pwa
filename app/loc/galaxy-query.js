@@ -297,17 +297,18 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
   const pageSize=Math.max(1,Math.floor(Number(batchSize)||DEFAULT_LIST_BATCH_SIZE));
   return Object.freeze({
     id,table,source,scope,idColumn,columns:outputColumns,searchFields:frozenFields,filters:frozenFilters,
-    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false,signal=null}={}){
+    async search(query,{cursor=0,startDate='',endDate='',and=[],nor=[],source='auto',browse=false,signal=null,sortDirection='asc'}={}){
       const offset=Math.max(0,Math.floor(Number(cursor)||0));
       const activeTable=table;
       const parsed=parseSearchQuery(query);
       // Exact-match stages only apply to a plain keyword or a single "quoted phrase".
       if(!browse&&exactColumn&&!parsed.exact)return {rows:[],hasMore:false,nextCursor:null,totalCount:null,dataSource:source||'auto'};
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
+      const ascending=sortDirection!=='desc';
       const orders=[
-        ...(dateColumn?[{column:dateColumn,ascending:true}]:[]),
-        ...((sortTitle||outputColumns.includes('title'))?[{column:'title',ascending:true}]:[]),
-        ...(idColumn?[{column:idColumn,ascending:true}]:[])
+        ...(dateColumn?[{column:dateColumn,ascending}]:[]),
+        ...((sortTitle||outputColumns.includes('title'))?[{column:'title',ascending}]:[]),
+        ...(idColumn?[{column:idColumn,ascending}]:[])
       ];
 
       // The exact COUNT(*) query can time out on ILIKE against article content.
@@ -484,7 +485,7 @@ export async function selectStyleKeywordMatches(scopes,query,{signal=null,concur
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,browse=false,signal=null
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,browse=false,signal=null,sortDirection='asc'
 }={}){
   const q=String(query||'').trim();
   if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
@@ -508,7 +509,7 @@ export async function searchGalaxyRows(scopes,query,{
   const provider=providers[stage-1];
   if(!provider)return {rows:[],failures,hasMore:false,nextCursor:null};
   try{
-    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse,signal});
+    const result=await provider.search(q,{cursor:sourceOffset,startDate,endDate,and,nor,limit:safeLimit,source:cursor?.source||'auto',browse,signal,sortDirection});
     if(result.hasMore)return {rows:result.rows||[],failures,hasMore:true,nextCursor:{stage,offset:result.nextCursor,source:result.dataSource||cursor?.source||'auto'}};
     const hasMore=stage<providers.length;
     return {rows:result.rows||[],failures,hasMore,nextCursor:hasMore?{stage:stage+1,offset:0,source:'auto'}:null};
