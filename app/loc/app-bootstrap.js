@@ -11,6 +11,10 @@ import {selectThemeRegistry,themeUiId} from './theme-data';
 const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
 const PAGE_NAME=/^[a-z0-9_-]+$/;
 let bootstrapRpcInstalled=true;
+// The site RPC already delivers LOC/index blocks on the first view. On later
+// invalidations (e.g. a successful editor save), refresh only loc_blocks
+// instead of repeating the public Registry/Theme/loc bootstrap.
+let locHomeSnapshotDelivered=false;
 const missingRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
 
 export function appBootstrapKey(scopeId,pageName='index'){
@@ -42,12 +46,17 @@ export async function selectAppBootstrap(scopeId,pageName='index'){
       const site=await selectPublicSiteBootstrap();
       // The LOC homepage is the site snapshot itself. Other pages do not
       // repeat its silver.loc Registry/page-copy/Theme reads.
-      const [config,blocks]=id==='loc'&&page==='index'
-        ?[site.config||null,Array.isArray(site.blocks)?site.blocks:[]]
+      const isLocHome=id==='loc'&&page==='index';
+      const [config,blocks]=isLocHome
+        ?[site.config||null,
+          locHomeSnapshotDelivered
+            ?await selectScopeBlocks('loc','index')
+            :Array.isArray(site.blocks)?site.blocks:[]]
         :await Promise.all([
           id?(id==='loc'?Promise.resolve(site.config||null):selectScopeConfig(id)):Promise.resolve(null),
           id?selectScopeBlocks(id,page):Promise.resolve([])
         ]);
+      if(isLocHome)locHomeSnapshotDelivered=true;
       return {
         scope_id:id,
         page_name:page,

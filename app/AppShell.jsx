@@ -255,10 +255,9 @@ function AppShellInner({children}){
   const [nativeHomepage,setNativeHomepage]=useState('loc');
   const preferences=useNavigationPreferences();
   const [openFolderId,setOpenFolderId]=useState('');
-  // ONE request for this page. The Scope Registry, every registered Scope's
-  // NAV title, the active Themes and this Scope's own config and blocks all
-  // come from it; ThemeSelect and ScopePageCopy below ask for the exact same
-  // (scopeId, pageName) key, so React Query serves them from this one call.
+  // Registry, NAV titles and Themes share one site snapshot across pages.
+  // Scope config and page blocks load separately when first needed.
+  // Components using the same (scopeId, pageName) React Query key share it.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const registryScopes=bootstrap.data?.registry||[];
   const registryLoaded=bootstrap.isSuccess||bootstrap.isError;

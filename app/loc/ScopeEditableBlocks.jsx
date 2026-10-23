@@ -80,9 +80,8 @@ export default function ScopeEditableBlocks({
   const account=useAccount({enabled:false});
   const editDock=useEditDock();
   const native=useNativeNavigation();
-  // Same (scopeId, pageName) request AppShell already makes for this route's
-  // Registry/NAV/Theme bootstrap. React Query serves this from that one call
-  // instead of this component re-querying the blocks on its own.
+  // Shares AppShell's (scopeId, pageName) query, which reuses the global
+  // Registry/Theme snapshot and loads only this Scope's page blocks.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const blocks=bootstrap.data?.blocks;
   // The Scope-specific homepage entry has already verified access.
