@@ -260,7 +260,7 @@ function AppShellInner({children}){
   },[scopeId,host]);
   const currentFeature=featureIdForPath(pathname);
   const pageName=currentFeature||'index';
-  const isSettings=['/settings','/local/setting','/local/settings'].includes(normalizePath(pathname));
+  const isSettings=['/settings','/settings/index.html','/local/setting','/local/setting/index.html','/local/settings','/local/settings/index.html'].includes(normalizePath(pathname));
   const [native,setNative]=useState(false);
   const [mobileFavorite,setMobileFavorite]=useState(true);
   const [nativeHomepage,setNativeHomepage]=useState('loc');
