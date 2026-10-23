@@ -947,7 +947,7 @@ button,a,.loc-control,.loc-button,
     border-radius:var(--loc-ui-radius-md);
   }
   .loc-home-hero-copy>.home-title-row>h1{
-    font-size:clamp(2rem,8.5vw,3rem)!important;
+    font-size:var(--loc-type-hero-home-title)!important;
     line-height:1.1!important;
   }
   .scope-culture-source-groups{
@@ -964,14 +964,18 @@ button,a,.loc-control,.loc-button,
    subtitles, allow cards to shrink, and avoid oversize hero headings. */
 @media(max-width:760px){
   :root{
-    --loc-type-page-title:clamp(1.9rem,7.5vw,3rem);
-    --loc-type-hero-home-title:clamp(2rem,8.5vw,3.25rem);
-    --loc-type-hero-feature-title:clamp(1.8rem,7vw,2.6rem);
-    --loc-type-home-section-title:clamp(1.3rem,4.5vw,1.65rem);
-    --loc-type-hero-subtitle:clamp(1rem,3.8vw,1.2rem);
-    --loc-type-hero-copy:1rem;
-    --loc-type-body:1rem;
+    /* Fluid type between phone and tablet widths; body stays >= 16px. */
+    --loc-type-page-title:clamp(1.875rem,1.4rem + 2.3vw,3rem);
+    --loc-type-section-title:clamp(1.2rem,1rem + 1.2vw,1.65rem);
+    --loc-type-subtitle:clamp(1rem,.94rem + .3vw,1.14rem);
+    --loc-type-body:clamp(1rem,.95rem + .25vw,1.1rem);
+    --loc-type-hero-home-title:clamp(2rem,1.35rem + 3.5vw,3.3rem);
+    --loc-type-hero-feature-title:clamp(1.8rem,1.35rem + 2.2vw,2.7rem);
+    --loc-type-home-section-title:clamp(1.3rem,1.05rem + 1.15vw,1.7rem);
+    --loc-type-hero-subtitle:clamp(1rem,.92rem + .4vw,1.2rem);
+    --loc-type-hero-copy:clamp(1rem,.95rem + .3vw,1.12rem);
     --loc-line-body:1.65;
+    --loc-line-page-title:1.12;
   }
   .home-title-row,
   .scope-hero>.home-title-row{
@@ -1025,9 +1029,8 @@ button,a,.loc-control,.loc-button,
 }
 @media(max-width:560px){
   :root{
-    --loc-type-page-title:clamp(1.75rem,7.6vw,2.5rem);
-    --loc-type-section-title:clamp(1.13rem,4.2vw,1.35rem);
-    --loc-type-body:1rem;
+    --loc-type-page-title:clamp(1.75rem,1.4rem + 2vw,2.5rem);
+    --loc-type-section-title:clamp(1.15rem,1rem + 1vw,1.35rem);
   }
   :is(.loc-card,.loc-panel,.scope-card,.scope-feature-card){
     padding:clamp(.8rem,3.3vw,1rem);
