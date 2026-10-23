@@ -7,7 +7,7 @@ import {useUiSection} from '../../../i18n/ui-locale';
 import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
-import {dbAuthClient,dbAuthRelation} from '../../db-client.mjs';
+import {dbAuthRelation} from '../../db-client.mjs';
 import {DATABASE_ROUTING_CONFIG,resolveDatabaseRouting} from '../../providers/routing-config.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
@@ -20,9 +20,6 @@ export default function DatabaseTarget(){
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
   const [saving,setSaving]=useState(false);
-  const [username,setUsername]=useState('');
-  const [password,setPassword]=useState('');
-  const [database,setDatabase]=useState('');
   const original=useRef({rows:[]});
   useEffect(()=>{
     let active=true;
@@ -45,7 +42,7 @@ export default function DatabaseTarget(){
   const isManaged=row?.target_id==='supabase-current'||row?.target_id==='neon-current';
   const cloud=row?.provider==='supabase'||row?.provider==='neon';
   const patch=(key,value)=>setRows(current=>current.map(item=>item.target_id===selectedId?{...item,[key]:value}:item));
-  const pick=id=>{setSelectedId(id);setPassword('');setUsername('');setDatabase('');setStatus('');};
+  const pick=id=>{setSelectedId(id);setStatus('');};
   const add=()=>{
     const id='target_'+crypto.randomUUID().replaceAll('-','').slice(0,20);
     setRows(current=>[...current,{target_id:id,provider:'custom',engine:'postgres',connection_alias:id,connection_mode:'direct',label:'新資料庫',project_id:'',project_url:'',region:'',selected:false,_new:true}]);
@@ -63,8 +60,9 @@ export default function DatabaseTarget(){
     setSaving(true);setStatus('');
     try{
       const location=normalizeDatabaseLocation(row.provider,row.project_url);
+      // Only non-sensitive target metadata belongs here. The former
+      // save_database_target endpoint is absent; admin RLS secures writes.
       const payload={
-        target_id:row.target_id,
         engine:row.provider==='custom'?row.engine:'postgres',
         provider:row.provider,
         connection_alias:row.connection_alias,
@@ -73,25 +71,24 @@ export default function DatabaseTarget(){
         project_id:row.project_id||null,
         project_url:location.link,
         region:row.region||'',
-        username,
-        database,
-        password,
-        activate:false
+        updated_at:new Date().toISOString()
       };
-      const {error}=await dbAuthClient.schema('silver').rpc('save_database_target',{p_target:payload});
-      if(error)throw new Error(error.message||'資料庫儲存或切換失敗。');
-      setPassword('');setUsername('');setDatabase('');
-      setStatus('連線資料已儲存；資料庫 Routing 仍由 repo config 決定。');
+      const relation=dbAuthRelation('silver.database_targets');
+      const {error}=row._new
+        ?await relation.insert({...payload,target_id:row.target_id,selected:false,
+            backup_selected:false,routing_mode:'single'})
+        :await relation.update(payload).eq('target_id',row.target_id);
+      if(error)throw new Error(error.message||'資料庫目標資訊儲存失敗。');
+      setStatus('目標資訊已儲存（不含連線密碼）；實際 Routing 仍由 repo config 決定，變更需重新部署。');
       setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(error?.message||'儲存失敗，原目標維持不變。');return false;}
     finally{setSaving(false);}
   }
   const changedRows=rows.filter(item=>JSON.stringify(item)!==JSON.stringify(original.current.rows.find(saved=>saved.target_id===item.target_id)));
-  const unsavedConnections=Boolean(username||password||database);
   useEditDockForm({
     isBusy:()=>saving,
-    isDirty:()=>changedRows.length>0||unsavedConnections,
+    isDirty:()=>changedRows.length>0,
     save:async()=>{
       if(changedRows.some(item=>item.target_id!==selectedId)){
         setStatus('其他資料庫仍有未儲存資料，請逐筆儲存後再切換分區。');
@@ -103,7 +100,7 @@ export default function DatabaseTarget(){
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
     <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援：{STATIC_ROUTING.backupId||'停用'}｜黑名單：{DATABASE_ROUTING_CONFIG.blacklist.length?DATABASE_ROUTING_CONFIG.blacklist.join('、'):'無'}</p>
-    <p className="scope-status">資料來源由 repo 的 app/loc/providers/routing-config.mjs 決定，修改需重新部署。管理介面不再執行即時路由切換。</p>
+    <p className="scope-status">資料來源由 repo 的 app/loc/providers/routing-config.mjs 決定，修改需重新部署。此處只編輯非敏感目標資訊，不儲存帳密、不測試連線、也不切換即時路由。</p>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <label><span><UiText id="uiExtra.adminView.savedDatabases"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
@@ -125,9 +122,6 @@ export default function DatabaseTarget(){
       <label><span><UiText id="uiExtra.adminView.databaseEndpoint"/></span><input value={row.project_url||''} onChange={event=>patch('project_url',event.target.value)}
         placeholder={row.provider==='supabase'?'Project ID 或 https://xxx.supabase.co':row.provider==='neon'?'Neon DB Endpoint 或 Data API URL':'db.example.com:5432'}/></label>
       <label><span><UiText id="uiExtra.adminView.regionArea"/></span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
-      <label><span><UiText id="uiExtra.adminView.databaseName"/></span><input value={database} onChange={event=>setDatabase(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':row.provider==='neon'?'neondb':'Database name'}/></label>
-      <label><span><UiText id="uiExtra.adminView.databaseUser"/></span><input value={username} onChange={event=>setUsername(event.target.value)} autoComplete="off" placeholder={row.provider==='supabase'?'postgres':'DB username'}/></label>
-      <label><span><UiText id="uiExtra.adminView.databasePassword"/></span><input type="password" value={password} onChange={event=>setPassword(event.target.value)} autoComplete="new-password" placeholder="已有憑證可留空"/></label>
       <div className="scope-management-wide-field">
         <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}><FieldText text={saving?'儲存中…':'儲存設定'}/></button>
 
