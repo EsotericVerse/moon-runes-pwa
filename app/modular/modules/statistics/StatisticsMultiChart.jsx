@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
+import {useAsyncResource} from '../../../loc/use-async-resource';
 import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
 import {RUNE_RANKING_PAGE_SIZE,availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color,pointColor} from './statistics-time-zoom.mjs';
 export {STAT_VISUAL_TYPES,availableStatisticChartTypes} from './statistics-time-zoom.mjs';
@@ -201,53 +202,115 @@ function groupLabel(value,t){
   const suffix=t('uiExtra.statisticsView.runeSuffix');
   return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.runeSuffix)?text:text+suffix;
 }
-export function Rune66Summary({analysis,range={}}){
+export function Rune66Summary({analysis,range={},scopeId=''}){
   useUiSection('uiExtra.statisticsView');
   const t=useUiText();
-  const [groupPage,setGroupPage]=useState(1);
+  const [page,setPage]=useState(1);
   const [shown,setShown]=useState('group');
   const [chartType,setChartType]=useState('bar');
   const data=analysis||{};
-  const className=String(data.keywordMeta?.class_name||'').trim();
+  const meta=data.keywordMeta||{};
+  const className=String(meta.class_name||'').trim();
   const setLabel=className?'關鍵詞組：'+className:t('uiExtra.statisticsView.classFallback');
   const groupDisplay=group=>[className,classLabel(group,t)].filter(Boolean).join(' ');
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
-    .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
+    .sort((a,b)=>Number(a.class_id)-Number(b.class_id));
   const groupRows=[...(data.runeRanking||[])]
     .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
   const groupHitTotal=groupRows.reduce((sum,row)=>sum+Number(row.count||0),0);
-  const groupPageCount=Math.max(1,Math.ceil(groupRows.length/RUNE_RANKING_PAGE_SIZE));
-  const activeGroupPage=Math.min(groupPage,groupPageCount);
-  const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
+  // The original item ranking is paginated; show a page of bars, not only
+  // page one while quietly hiding the other items in a details block.
+  const standalonePageSize=RUNE_RANKING_PAGE_SIZE;
+  const combinedPageSize=10;
+  const groupCatalog=useAsyncResource({
+    queryKey:['statistics-keyword-item-class-map',scopeId,String(meta.class_id||'')],
+    enabled:shown==='both'&&Boolean(scopeId&&meta.class_id&&data.staticstime),
+    queryFn:async()=>{
+      const [{defaultScopeData},{selectRows}]=await Promise.all([
+        import('../../../loc/scope-data'),
+        import('../../../loc/db-query.mjs')
+      ]);
+      const scope=defaultScopeData(scopeId);
+      if(!scope?.keywords)throw new Error('關鍵詞組 Scope 不存在');
+      const response=await selectRows(scope.keywords,{
+        columns:'item_no,class_group,class_enable',
+        filters:[{column:'class_id',operator:'eq',value:String(meta.class_id)}],
+        limit:500
+      });
+      return response.rows||[];
+    }
+  });
+  // Link each stored item to its OWN Class by the live keyword catalog's
+  // class_group, matching the Class names snapshotted at classification.
+  const classByGroup=new Map(Object.entries(meta.classes||{})
+    .map(([id,label])=>[String(label||'').trim(),Number(id)]));
+  const classByItem=new Map((groupCatalog.data||[])
+    .filter(row=>row.class_enable!==false)
+    .map(row=>[Number(row.item_no),classByGroup.get(String(row.class_group||'').trim())])
+    .filter(([id,groupId])=>Number.isInteger(id)&&Number.isInteger(groupId)));
+  const groupsWithItems=classRows.map(row=>({
+    row,items:groupRows.filter(item=>classByItem.get(Number(item.rune_id))===Number(row.class_id))
+      .sort((a,b)=>Number(b.count||0)-Number(a.count||0)
+        ||Number(b.document_count||0)-Number(a.document_count||0)
+        ||Number(a.rune_id)-Number(b.rune_id))
+  }));
+  const ungrouped=groupRows.filter(item=>!classByItem.has(Number(item.rune_id)));
+  const orderedItems=groupsWithItems.flatMap(group=>group.items.map(item=>({
+    ...item,classification:group.row
+  })));
+  // An unknown catalog mapping must never be silently attributed to a
+  // different Class. Keep it visible as "unassigned" in the final group.
+  const allRanked=[...orderedItems,...ungrouped.map(item=>({...item,classification:null}))];
+  const pageSize=shown==='both'?combinedPageSize:standalonePageSize;
+  const totalItems=shown==='both'?allRanked.length:groupRows.length;
+  const pages=Math.max(1,Math.ceil(totalItems/pageSize));
+  const activePage=Math.min(page,pages);
+  const offset=(activePage-1)*pageSize;
+  const visibleGroupRows=groupRows.slice(offset,offset+pageSize);
+  const visibleCombined=allRanked.slice(offset,offset+combinedPageSize);
   const groupDistribution=classRows.map(row=>({
     key:String(row.class_id),name:classLabel(row.group,t),value:Number(row.document_count)||0
   }));
-  const itemDistribution=groupRows.slice(0,10).map(row=>({
+  const itemDistribution=visibleGroupRows.map(row=>({
     key:String(row.rune_id),name:groupLabel(row.label,t),value:Number(row.count)||0
   }));
-  // Combined mode uses the same measure for both dimensions. An item
-  // may occur repeatedly within an article, but each article counts once.
-  const combinedDistribution=[
-    ...groupDistribution.map((row,index)=>({...row,key:'class:'+row.key,name:'群組 · '+row.name,fill:color(index*2)})),
-    ...groupRows.slice(0,10).map((row,index)=>({
-      key:'item:'+row.rune_id,name:'項目 · '+groupLabel(row.label,t),
-      value:Number(row.document_count)||0,fill:color(index*2+1)
-    })).filter(row=>row.value>0)
-  ];
+  const combinedDistribution=[];
+  let lastGroupId=null;
+  for(const [index,item] of visibleCombined.entries()){
+    const group=item.classification;
+    const groupId=group?String(group.class_id):'unassigned';
+    if(lastGroupId!==groupId){
+      combinedDistribution.push({
+        key:'class:'+groupId,
+        name:group?'Class '+group.class_id+'｜'+classLabel(group.group,t):'未歸類',
+        value:group?Number(group.document_count||0):0,
+        fill:color(combinedDistribution.length)
+      });
+      lastGroupId=groupId;
+    }
+    combinedDistribution.push({
+      key:'item:'+item.rune_id,
+      name:'　↳ '+groupLabel(item.label,t),
+      value:Number(item.document_count)||0,
+      fill:color(combinedDistribution.length)
+    });
+  }
   const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
   const trendSeries=classRows.map(row=>({key:'class_'+row.class_id,label:classLabel(row.group,t)}));
   const renderGroup=shown==='group'||shown==='both';
   const renderItems=shown==='item'||shown==='both';
   const distribution=shown==='both'?combinedDistribution:shown==='group'?groupDistribution:itemDistribution;
-  // Group rows include daily counts, but Item totals do not. No invented trend.
+  // The mixed Class/Item view must retain its hierarchy, which a pie or
+  // unrelated slices cannot express. Standalone views retain chart switching.
   const trendRows=shown==='group'?trend:[];
   const series=shown==='group'?trendSeries:[];
   const options=availableStatisticChartTypes({rows:trendRows,series,distribution})
-    .filter(([kind])=>(shown==='group'&&trendRows.length>0)||['bar','pie','treemap'].includes(kind));
+    .filter(([kind])=>shown==='both'?kind==='bar'
+      :shown==='group'&&trendRows.length>0||['bar','pie','treemap'].includes(kind));
   const actualChart=options.some(([kind])=>kind===chartType)?chartType:(options.find(([kind])=>kind==='bar')?.[0]||options[0]?.[0]||'bar');
   if(!data.staticstime)return null;
   if(!data.statisticsEnabled)return <div className="scope-ranking">
@@ -263,7 +326,7 @@ export function Rune66Summary({analysis,range={}}){
     <h3>關鍵詞分佈統計</h3>
     <div className="scope-stat-controls">
       <label><span>顯示內容</span>
-        <select className="scope-select" value={shown} onChange={event=>setShown(event.target.value)}>
+        <select className="scope-select" value={shown} onChange={event=>{setShown(event.target.value);setPage(1);}}>
           <option value="group">{t('uiExtra.statisticsView.classRuneTitle')}</option>
           <option value="item">{t('uiExtra.statisticsView.runeRankTitle')}</option>
           <option value="both">群組＋項目（同圖）</option>
@@ -271,16 +334,20 @@ export function Rune66Summary({analysis,range={}}){
       </label>
       {options.length?typePicker('關鍵詞統計圖型',actualChart,setChartType,options):null}
     </div>
-    {distribution.length?<StatisticsMultiChart type={actualChart}
+    {shown==='both'&&groupCatalog.isPending?<p className="scope-status" role="status">正在載入關鍵詞項目的 Class 歸屬…</p>:null}
+    {shown==='both'&&groupCatalog.error?<p className="scope-status scope-error" role="alert">群組對應讀取失敗：{String(groupCatalog.error?.message||groupCatalog.error)}</p>:null}
+    {distribution.length&&(shown!=='both'||groupCatalog.isSuccess)?<StatisticsMultiChart type={actualChart}
       rows={trendRows} series={series} distribution={distribution}
       barLayout="vertical" height={Math.max(340,Math.min(24,distribution.length)*36+85)}/>:
       <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
     {shown==='both'?<p className="scope-status" role="note">
-      同圖以涉及作品篇數比較群組與項目，顏色區分兩類；一篇文章可同時屬於某個群組及命中多個項目，各項不能相加當成不同作品總數。
+      依 Class 分組，各組內依關鍵詞命中排行；每頁最多 10 個項目。父群組與子項目皆以涉及作品篇數呈現，不可相加視為不同作品總數。
     </p>:null}
-    {renderItems&&groupRows.length>10?<p className="scope-status">
-      圖中顯示前 10 個關鍵詞項目；完整項目可於下方詳細數據查看。
-    </p>:null}
+    {renderItems&&pages>1?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
+      <button type="button" className="loc-button" disabled={activePage===1} onClick={()=>setPage(activePage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
+      <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activePage,pages,total:totalItems.toLocaleString()}}/></span>
+      <button type="button" className="loc-button" disabled={activePage===pages} onClick={()=>setPage(activePage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
+    </nav>:null}
     {renderGroup?<div className="scope-stat-section">
       <h4><UiText id="uiExtra.statisticsView.classRuneTitle"/></h4>
       <StatisticsDetails>{()=><>
@@ -296,15 +363,11 @@ export function Rune66Summary({analysis,range={}}){
       <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking">
-          {visibleGroupRows.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong>
+          {(shown==='both'?visibleCombined:visibleGroupRows).map(row=><div key={row.rune_id}><strong>{row.classification?'Class '+row.classification.class_id+'｜':''}{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong>
             <span>{t('uiExtra.statisticsView.runeHits',{count:Number(row.count||0).toLocaleString(),ratio:(groupHitTotal>0?100*Number(row.count||0)/groupHitTotal:0).toFixed(1)})}</span>
           </div>)}
         </div>
-        {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
-          <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
-          <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
-          <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
-        </nav>:null}
+
       </>}</StatisticsDetails>
     </div>:null}
   </section>;
