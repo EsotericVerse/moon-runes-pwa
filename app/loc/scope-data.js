@@ -19,6 +19,16 @@ const MANAGE_ROLE_COLUMN='manage_role';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
+// Static GitHub Pages has no Next.js handlers. Public web metadata must use
+// the deployed Cloudflare OpenNext ISR API, regardless of Domain or directory
+// Scope routing. OpenNext/Vercel hosts keep their own same-origin API routes.
+export function locPublicIsrUrl(path){
+  const host=typeof window==='undefined'?'':String(window.location?.hostname||'').toLowerCase();
+  return ['loc.lo3rwang.cc','lrunes.lo3rwang.cc','esotericverse.github.io'].includes(host)
+    ?'https://isr.lo3rwang.cc'+path
+    :path;
+}
+
 function requiredToken(value,label){
   const token=String(value||'').trim()||label;
   if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.loc '+label+' 設定無效');
@@ -126,7 +136,7 @@ export async function revalidateServerMetadata(){
     const {data,error}=await dbAuthClient.auth.getSession();
     const token=data?.session?.access_token;
     if(error||!token)return false;
-    const response=await fetch('/api/loc/revalidate',{
+    const response=await fetch(locPublicIsrUrl('/api/loc/revalidate'),{
       method:'POST',
       headers:{Authorization:`Bearer ${token}`},
       cache:'no-store'
@@ -140,7 +150,7 @@ export async function revalidateServerMetadata(){
 }
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
-  publicSiteBootstrapRequest=fetch('/api/loc/site-bootstrap')
+  publicSiteBootstrapRequest=fetch(locPublicIsrUrl('/api/loc/site-bootstrap'))
     .then(async response=>{
       if(!response.ok)throw new Error('LOC site bootstrap failed: '+response.status);
       return response.json();
@@ -225,8 +235,8 @@ export async function selectManagedScope(scopeId){
 
 
 // Deduplicate simultaneous readers (AppShell, Scope runtime, feature gate).
-// The browser keeps only the in-flight request; Vercel ISR owns the shared
-// 14-day cache for public Config and page blocks.
+// The browser keeps only the in-flight request; Cloudflare OpenNext/R2 (or
+// Vercel backup) owns the shared 14-day cache for public Config and page blocks.
 const scopeConfigInFlight=new Map();
 export function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
@@ -239,7 +249,7 @@ export function selectScopeConfig(scopeId){
       columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
       filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
     }).then(({rows})=>rows[0]||null)
-    :fetch('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config')
+    :fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config'))
     .then(async response=>{
       if(!response.ok)throw new Error('Scope config failed: '+response.status);
       return response.json();
@@ -262,7 +272,7 @@ export async function selectScopeBlocks(scopeId,page='index'){
   const pageName=requested==='home'?'index':requested;
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
   let response=null;
-  if(id!=='local')try{response=await fetch('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName));}
+  if(id!=='local')try{response=await fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName)));}
   catch{/* Static/native builds use the direct public Supabase fallback below. */}
   if(response?.ok){
     try{return await response.json();}catch{/* Fall through to the direct read. */}
