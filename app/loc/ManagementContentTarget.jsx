@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import {useAsyncResource} from './use-async-resource';
 import {selectScopeRegistry,defaultScopeData} from './scope-data';
 import {useAccount} from './use-account';
+import {useEditDock} from '../modular/edit-dock';
 
 // The importer's schema is an ARTICLE/Galaxy schema: only Galaxy tables may
 // be chosen here. Related media always goes to that Scope's Galaxy Media.
@@ -15,6 +16,7 @@ const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loadi
 
 export default function ManagementContentTarget({scopeId,mode='import',globalAdmin=false}){
   const account=useAccount();
+  const editDock=useEditDock();
   const list=useAsyncResource(globalAdmin?['admin-article-table-targets']:null,
     async()=>selectScopeRegistry({scopeKind:'scope'}),{enabled:globalAdmin});
   const [targetId,setTargetId]=useState(globalAdmin?'':scopeId);
@@ -49,8 +51,8 @@ export default function ManagementContentTarget({scopeId,mode='import',globalAdm
       value={selected}
       onChange={option=>{
         if(!option||option.value===targetId)return;
-        if(!window.confirm('切換目標 Table 會重設目前未儲存的輸入，確定切換嗎？'))return;
-        setTargetId(option.value);
+        if(editDock?.active)editDock.switchSection(option.value,setTargetId);
+        else setTargetId(option.value);
       }}
       formatOptionLabel={option=><span>{option.label}（{option.scopeName}）</span>}
     />
