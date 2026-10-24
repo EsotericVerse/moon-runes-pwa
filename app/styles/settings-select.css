@@ -305,3 +305,23 @@
 @media(prefers-reduced-motion:reduce){
   .management-section-nav__item{transition:none;}
 }
+
+
+/* Scope management responds to its actual content width, not just the device viewport.
+   The feature shell may consume horizontal space before this workspace renders. */
+.scope-management-layout{container-type:inline-size;min-width:0;width:100%;}
+.scope-management-layout .management-workspace-panel,
+.scope-management-layout .management-section-nav,
+.scope-management-layout .loc-card{min-width:0;max-width:100%;}
+@container (max-width: 62rem){
+  .scope-management-layout .management-workspace{grid-template-columns:minmax(0,1fr);}
+  .scope-management-layout .management-section-nav{padding:.75rem;}
+  .scope-management-layout .management-section-nav__items{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;}
+  .scope-management-layout .management-section-nav__item{min-height:2.9rem;padding:.65rem .75rem;}
+  .scope-management-layout .management-section-nav__description{display:none;}
+  .scope-management-layout .management-workspace-panel .scope-management-fields,
+  .scope-management-layout .management-workspace-panel .admin-page-copy-fields{grid-template-columns:minmax(0,1fr);}
+}
+@container (max-width: 23rem){
+  .scope-management-layout .management-section-nav__items{grid-template-columns:minmax(0,1fr);}
+}
