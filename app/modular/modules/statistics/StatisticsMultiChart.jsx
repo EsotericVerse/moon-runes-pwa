@@ -220,12 +220,13 @@ export function Rune66Summary({analysis,range={}}){
   }));
   const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
   const trendSeries=classRows.map(row=>({key:'class_'+row.class_id,label:classLabel(row.group,t)}));
-  const groupOptions=availableStatisticChartTypes({rows:trend,series:trendSeries,distribution:groupDistribution});
+  const groupOptions=availableStatisticChartTypes({rows:trend,series:trendSeries,distribution:groupDistribution})
+    .filter(([kind])=>trend.length>0||['bar','pie','treemap'].includes(kind));
   const itemOptions=availableStatisticChartTypes({distribution:itemDistribution})
     .filter(([kind])=>['bar','pie','treemap'].includes(kind));
   const groupType=groupOptions.some(([kind])=>kind===groupChart)?groupChart:groupOptions[0]?.[0]||'bar';
   const itemType=itemOptions.some(([kind])=>kind===itemChart)?itemChart:itemOptions[0]?.[0]||'bar';
-  const groupTypes=groupOptions.filter(([kind])=>kind!=='scatter'||trendSeries.length>=2);
+  const groupTypes=groupOptions;
   const renderGroup=shown==='group'||shown==='both';
   const renderItems=shown==='item'||shown==='both';
   if(!data.staticstime)return null;
