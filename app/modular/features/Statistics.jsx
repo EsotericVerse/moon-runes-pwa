@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.chartTypes',chartTypesZh);
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
 
 // Defer Galaxy's data/query engine until the selected statistics mode needs it.
 const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
@@ -112,7 +112,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
   const [selectedUid,setSelectedUid]=useState('');
   const [articleSort,setArticleSort]=useState('desc');
   const group=Array.isArray(sourceNames);
-  const worksQuery=useInfiniteQuery({
+  const worksQuery=useAsyncInfiniteResource({
     queryKey:['statistics-source-articles',scope.id,startDate,endDate,sourceNames,articleSort],
     initialPageParam:null,
     queryFn:async({pageParam})=>{
@@ -129,9 +129,8 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         hasMore:Number(next.galaxyOffset||0)+Number(next.mediaOffset||0)<Number(index.totalCount||0)};
     },
     getNextPageParam:page=>page.hasMore?page.nextCursor:undefined,
-    staleTime:Infinity
   });
-  const bodyQuery=useQuery({
+  const bodyQuery=useAsyncResource({
     queryKey:['statistics-source-article-body',scope.id,selectedUid],
     enabled:Boolean(selectedUid),
     queryFn:async()=>{
@@ -140,7 +139,6 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
       if(!result)throw new Error('找不到文章內容');
       return workDisplayText(result.content||'');
     },
-    staleTime:Infinity
   });
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
   return <div className="scope-stat-source-works">
@@ -184,7 +182,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
 // A Scope's subgroups only subdivide the Admin-defined Others total.
 // Load on expansion; never turn small-group aliases into global categories.
 function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
-  const groupsQuery=useQuery({
+  const groupsQuery=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
     enabled:Boolean(scopeId),
     queryFn:async()=>{
@@ -202,7 +200,6 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
       ]);
       return {groups:groups.rows||[],aliases:aliases.rows||[]};
     },
-    staleTime:Infinity
   });
   const details=useMemo(()=>{
     const groups=(groupsQuery.data?.groups||[]).filter(item=>item.enabled!==false);
@@ -343,20 +340,19 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
-  const queryClient=useQueryClient();
+  const resourceCache=useResourceCache();
   // The earliest date only widens the zoom-out limit. It arrives with the chart data
   // itself, so the first window (last year) never waits for it.
   const [knownEarliest,setKnownEarliest]=useState('');
   const customQueryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,knownEarliest),
     [zoomLevel,queryEndDate,knownEarliest]);
-  const periodQuery=useQuery({
+  const periodQuery=useAsyncResource({
     queryKey:['culture-timeline',scopeId],
     enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {selectScopeCultureData}=await import('../../loc/culture-query');
       return selectScopeCultureData(scopeId);
     },
-    staleTime:Infinity
   });
   const periods=useMemo(()=>(periodQuery.data?.eras?.eras||[])
     .filter(row=>String(row.scope_id||'')===scopeId&&row.start_date)
@@ -373,51 +369,47 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   },[selectedPeriod,customQueryRange,queryEndDate]);
   const sourceChart=!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(rankingType);
   // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
-  const overview=useQuery({
+  const overview=useAsyncResource({
     queryKey:['scope-overview',scopeId,queryRange.startDate,queryRange.endDate],
     enabled:sourceChart&&Boolean(queryRange.startDate&&queryRange.endDate),
     queryFn:async()=>{
       const {selectScopeOverview}=await loadGalaxyStatistics();
       const data=await selectScopeOverview(targetScopes[0],queryRange);
       // The self-intersection panel reads the same rows; seed its cache so opening it is free.
-      queryClient.setQueryData(['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],data.rows);
+      resourceCache.set(['own-scope-source-intersection',scopeId,queryRange.startDate,queryRange.endDate],data.rows);
       return data;
     },
-    staleTime:Infinity
   });
   // Media charts carry their own facet rows; the earliest date is one small request.
-  const earliestQuery=useQuery({
+  const earliestQuery=useAsyncResource({
     queryKey:['statistics-history-start',scopeId],
     enabled:!isLrunesDaily&&mediaDimension&&!knownEarliest&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {selectScopeEarliest}=await loadGalaxyStatistics();
       return selectScopeEarliest(targetScopes[0]);
     },
-    staleTime:Infinity
   });
   useEffect(()=>{
     const found=overview.data?.earliest||earliestQuery.data||'';
     if(found&&found!==knownEarliest)setKnownEarliest(found);
   },[overview.data,earliestQuery.data,knownEarliest]);
-  const mediaQuery=useQuery({
+  const mediaQuery=useAsyncResource({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
       const {selectMediaStatisticsFacetRows}=await loadGalaxyStatistics();
       return selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange);
     },
     enabled:mediaDimension&&rankingType!=='media_style'&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:Infinity
   });
-  const crossTagQuery=useQuery({
+  const crossTagQuery=useAsyncResource({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
       const {selectMediaCrossTagRows}=await loadGalaxyStatistics();
       return selectMediaCrossTagRows(targetScopes[0],queryRange);
     },
     enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
-    staleTime:Infinity
   });
-  const styleTreeQuery=useQuery({
+  const styleTreeQuery=useAsyncResource({
     queryKey:['music-style-tree',scopeId],
     queryFn:async()=>{
       const {data,error}=await dbPublicClient.schema('silver').rpc('read_music_style_tree');
@@ -425,7 +417,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       return Array.isArray(data)?data:[];
     },
     enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
-    staleTime:Infinity
   });
   const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
@@ -434,7 +425,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     dataUpdatedAt:overview.dataUpdatedAt};
   // Source classification is a capability, not a prerequisite for media charts
   // or the LunaRunes daily page. Load its existing model only for source results.
-  const adminSourceQuery=useQuery({
+  const adminSourceQuery=useAsyncResource({
     queryKey:['administrative-source-trend',scopeId,rankingType,queryRange.startDate,queryRange.endDate,
       queryRange.bucket,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
     enabled:!isLrunesDaily&&!mediaDimension&&sourceRows.isSuccess&&sourceCatalog.isSuccess,
@@ -445,7 +436,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         unit:queryRange.bucket
       });
     },
-    staleTime:Infinity
   });
   const adminSource=adminSourceQuery.data||{rows:[],series:[],distribution:[],total:0};
   const basicTrend=adminSource.rows;
@@ -489,23 +479,21 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
   }),[queryRange.startDate,queryRange.endDate]);
-  const keywordClassQuery=useQuery({
+  const keywordClassQuery=useAsyncResource({
     queryKey:['scope-active-keyword-class-name',scopeId],
     enabled:!isLrunesDaily,
     queryFn:async()=>{
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
     },
-    staleTime:Infinity
   });
   const keywordClassLabel=keywordClassQuery.data
     ?'關鍵詞組：'+keywordClassQuery.data
     :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
-  const keywordSourcesQuery=useQuery({
+  const keywordSourcesQuery=useAsyncResource({
     queryKey:['statistics-source-taxonomy'],
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
     queryFn:async()=> (await loadGalaxyStatistics()).selectSourceTaxonomy(),
-    staleTime:Infinity
   });
   const configuredSources=useMemo(()=>
     (keywordSourcesQuery.data?.categories||[]).filter(row=>row.enabled!==false),
@@ -516,7 +504,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       setKeywordSource('');
     }
   },[keywordSource,keywordSourcesQuery.data,configuredSources]);
-  const runeQuery=useQuery({
+  const runeQuery=useAsyncResource({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate,
       keywordSource,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
     queryFn:async()=>{
@@ -529,7 +517,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     },
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&Boolean(styleRange.startDate&&styleRange.endDate)
       &&(!keywordSource||keywordSourcesQuery.isSuccess),
-    staleTime:Infinity
   });
 
   return <section className="scope-stat-section">

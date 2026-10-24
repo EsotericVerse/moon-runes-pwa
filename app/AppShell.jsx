@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
-import {QueryClient,QueryClientProvider,useQueryClient} from '@tanstack/react-query';
+import {SWRConfig,useSWRConfig} from 'swr';
 import {translateUiField,UI_COPY,UI_LOCALE_OPTIONS,normalizeUiLocale,uiCopy,registerDefaultSection,isSectionLoaded,loadSection} from './i18n/ui-copy';
 import {UiLocaleProvider,useLoadedUiLocale,useUiLocale,useUiSection} from './i18n/ui-locale';
 import FieldText from './i18n/FieldText';
@@ -63,13 +63,6 @@ function DataSourceStatus(){
   </div>;
 }
 
-function shouldRetryQuery(failureCount,error){
-  const cause=error?.cause||error;
-  const message=String(cause?.message||error?.message||'').toLowerCase();
-  if(cause?.status===429||/too many requests|rate.?limit|\b429\b/.test(message))return false;
-  return failureCount<1;
-}
-
 function taipeiHour(date=new Date()){
   try{
     const parts=new Intl.DateTimeFormat('en-US',{
@@ -86,6 +79,21 @@ function taipeiHour(date=new Date()){
 function automaticThemeId(date=new Date()){
   const hour=taipeiHour(date);
   return hour>=6&&hour<18?DAY_THEME_ID:NIGHT_THEME_ID;
+}
+
+function nextThemeChangeDelay(date=new Date()){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:THEME_TIME_ZONE,
+    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'
+  }).formatToParts(date);
+  const value=type=>Number(parts.find(part=>part.type===type)?.value);
+  const year=value('year'),month=value('month'),day=value('day'),hour=value('hour');
+  const nextHour=hour<6?6:hour<18?18:6;
+  const nextDay=hour>=18?day+1:day;
+  // Taipei has a fixed UTC+8 offset. Scheduling the next palette boundary
+  // avoids waking the app every 30 seconds just to rediscover the same theme.
+  const boundary=Date.UTC(year,month-1,nextDay,nextHour)-8*60*60_000;
+  return Math.max(1,boundary-date.getTime()+25);
 }
 
 function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride='',pageName='index'}){
@@ -128,9 +136,16 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
 
   useEffect(()=>{
     if(selectedThemeId!==SYSTEM_THEME_ID||fixedDefaultThemeId||configuredDefaultThemeId)return undefined;
+    let timer;
+    const scheduleNextChange=()=>{
+      timer=window.setTimeout(()=>{
+        setNow(new Date());
+        scheduleNextChange();
+      },nextThemeChangeDelay());
+    };
     setNow(new Date());
-    const timer=window.setInterval(()=>setNow(new Date()),30_000);
-    return ()=>window.clearInterval(timer);
+    scheduleNextChange();
+    return ()=>window.clearTimeout(timer);
   },[selectedThemeId,fixedDefaultThemeId,configuredDefaultThemeId]);
 
   useEffect(()=>{
@@ -224,21 +239,26 @@ function NavTarget({href,label,current=false,native=false}){
 // The provider must sit ABOVE the component that calls useAppBootstrap, so it
 // lives in this thin wrapper (a hook cannot read a provider rendered by itself).
 export default function AppShell({children}){
-  const [client]=useState(()=>new QueryClient({
-    defaultOptions:{queries:{staleTime:Infinity,retry:shouldRetryQuery,refetchOnWindowFocus:false}}
-  }));
-  return <QueryClientProvider client={client}><EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider></QueryClientProvider>;
+  return <SWRConfig value={{
+    // Read when a feature first opens; never poll or revalidate just because
+    // the tab focused/reconnected. Writes trigger explicit mutate calls.
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false,
+    revalidateIfStale:false,
+    refreshInterval:0,
+    shouldRetryOnError:false
+  }}><EditDockProvider><AppShellInner>{children}</AppShellInner></EditDockProvider></SWRConfig>;
 }
 
 function AppShellInner({children}){
-  const queryClient=useQueryClient();
-  // Administrative Scope metadata updates must refresh the same React Query
+  const {mutate}=useSWRConfig();
+  // Administrative Scope metadata updates must refresh the same SWR
   // snapshot consumed by the shell, runtime, and Guest feature pages.
   useEffect(()=>{
-    const refresh=()=>queryClient.invalidateQueries({queryKey:['app-bootstrap']});
+    const refresh=()=>mutate(key=>Array.isArray(key)&&key[0]==='app-bootstrap');
     window.addEventListener('loc-public-scope-metadata-changed',refresh);
     return()=>window.removeEventListener('loc-public-scope-metadata-changed',refresh);
-  },[queryClient]);
+  },[mutate]);
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const editDock=useEditDock();
   // Static export serves the same root HTML on multiple Scope subdomains.
@@ -265,7 +285,7 @@ function AppShellInner({children}){
   const [openFolderId,setOpenFolderId]=useState('');
   // Registry, NAV titles and Themes share one site snapshot across pages.
   // Scope config and page blocks load separately when first needed.
-  // Components using the same (scopeId, pageName) React Query key share it.
+  // Components using the same (scopeId, pageName) SWR key share it.
   const bootstrap=useAppBootstrap(scopeId,pageName);
   const registryScopes=bootstrap.data?.registry||[];
   const registryLoaded=bootstrap.isSuccess||bootstrap.isError;

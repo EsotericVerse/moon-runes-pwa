@@ -1,7 +1,8 @@
 'use client';
 
 import {useState} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource} from '../../use-async-resource';
+import {useSWRConfig} from 'swr';
 import {dbAuthRelation} from '../../db-client.mjs';
 import {useAccount} from '../../use-account';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -12,23 +13,18 @@ const normalizeId=value=>String(value||'').trim().toLowerCase();
 
 export default function AdminReservedScopeIds(){
   const account=useAccount();
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const [newId,setNewId]=useState('');
   const [newNote,setNewNote]=useState('');
   const [notes,setNotes]=useState({});
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const allowed=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const query=useQuery({
-    queryKey:['admin-reserved-scope-ids'],
-    enabled:allowed,
-    queryFn:async()=>{
+  const query=useAsyncResource(['admin-reserved-scope-ids'],async()=>{
       const {data,error}=await dbAuthRelation(TABLE).select('id,note').order('id');
       if(error)throw new Error(error.message||'保留 Scope ID 載入失敗');
       return data||[];
-    },
-    staleTime:60_000
-  });
+  },{enabled:allowed});
   const rows=query.data||[];
   const normalizedNewId=normalizeId(newId);
 
@@ -38,8 +34,7 @@ export default function AdminReservedScopeIds(){
     setMessage('');
     try{
       await write();
-      await queryClient.invalidateQueries({queryKey:['admin-reserved-scope-ids']});
-      await queryClient.invalidateQueries({queryKey:['settings-scope-registry']});
+      await mutate(key=>Array.isArray(key)&&['admin-reserved-scope-ids','settings-scope-registry'].includes(key[0]));
       setMessage('已儲存保留 Scope ID 設定。');
       return true;
     }catch(error){

@@ -6,7 +6,8 @@ import sourceCategoryZh from '../i18n/sections/uiExtra.sourceCategory.zh_tw.js';
 registerDefaultSection('uiExtra.sourceCategory',sourceCategoryZh);
 
 import {useEffect,useRef,useState} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource} from './use-async-resource';
+import {useSWRConfig} from 'swr';
 import {dbAuthRelation} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
@@ -18,24 +19,21 @@ const SOURCE=/^.{1,120}$/;
 const normalize=value=>String(value||'').trim().toLowerCase();
 
 export function useSourceCategories(){
-  return useQuery({
-    queryKey:['statistics-source-categories'],
-    queryFn:async()=>{
+  return useAsyncResource(['statistics-source-categories'],async()=>{
       const [categories,aliases]=await Promise.all([
         dbAuthRelation(CATEGORIES).select('category_code,display_name,sort_order,enabled').order('sort_order'),
         dbAuthRelation(ALIASES).select('source_key,category_code').order('source_key')
       ]);
       if(categories.error||aliases.error)throw new Error(categories.error?.message||aliases.error?.message);
       return {categories:categories.data||[],aliases:aliases.data||[]};
-    },
-    staleTime:60_000
   });
 }
 
 export function AdminSourceCategories(){
   useUiSection('uiExtra.sourceCategory');
   const t=useUiText();
-  const account=useAccount(),query=useSourceCategories(),client=useQueryClient();
+  const account=useAccount(),query=useSourceCategories();
+  const {mutate}=useSWRConfig();
   const editDock=useEditDock();
   const saveRef=useRef(null);
   const [category,setCategory]=useState(''),[title,setTitle]=useState('');
@@ -57,9 +55,7 @@ export function AdminSourceCategories(){
     try{
       await operation();
       await query.refetch();
-      await client.invalidateQueries({queryKey:['statistics-source-taxonomy']});
-      await client.invalidateQueries({queryKey:['own-scope-source-catalog']});
-      await client.invalidateQueries({queryKey:['loc-source-categories']});
+      await mutate(key=>Array.isArray(key)&&['statistics-source-taxonomy','own-scope-source-catalog','loc-source-categories'].includes(key[0]));
       setCategory('');setTitle('');setAlias('');
       return true;
     }catch(error){setNotice(String(error.message||error));return false;}

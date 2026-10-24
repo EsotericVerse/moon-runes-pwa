@@ -44,12 +44,12 @@ jobs:
         run: npm run test:game
       - name: Bootstrap performance and Admin regression tests
         run: npm run test:bootstrap
-      - name: Build Current static export
+      - name: Build Next.js app for Vercel ISR
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
         run: npm run build 2>&1 | tee /tmp/next-build.log
-      - name: Check Guest and Admin static route exports
-        run: node scripts/verify-release-static-export.mjs
+      - name: Verify ISR routes and revalidation window
+        run: node scripts/verify-release-isr.mjs
       - name: Report build failure to job summary
         if: failure()
         run: |
@@ -62,14 +62,6 @@ jobs:
           grep -v '^\s*$' /tmp/next-build.log | tail -n 8 | cut -c1-400 | while IFS= read -r line; do
             echo "::error title=build-tail::${line//%/%25}"
           done
-      - name: Report static server state as annotation
-        if: failure()
-        run: |
-          (python3 -m http.server 4173 --bind 127.0.0.1 -d out >/dev/null 2>&1 &) ; sleep 3
-          CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4173/ || echo curlfail)
-          IDX=$([ -f out/index.html ] && echo yes || echo NO)
-          SIZE=$(du -sm out | cut -f1)
-          echo "::error title=static-server-diag::python=$(python3 --version) GET/=$CODE out/index.html=$IDX out_MB=$SIZE"
       - name: Keep browser screenshots for visual inspection
         if: always()
         uses: actions/upload-artifact@v4

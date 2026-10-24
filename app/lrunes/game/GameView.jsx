@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {runeImage} from '../rune-directory.mjs';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../../loc/use-async-resource';
 import Select from 'react-select';
 import {AnimatePresence,motion} from 'motion/react';
 import {CartesianGrid,Legend,Line,LineChart,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
@@ -468,19 +468,9 @@ function phaseForRound(data,round){
 }
 
 export default function GameView(){
-  const {data,error,isLoading}=useQuery({
-    queryKey:['lrunes','game','current'],
-    queryFn:loadGameData,
-    staleTime:0,
-    gcTime:0,
-    refetchOnMount:'always'
-  });
+  const {data,error,isLoading}=useAsyncResource(['lrunes','game','current'],loadGameData,{revalidateOnMount:true});
 
-  const {data:themeRows=[]}=useQuery({
-    queryKey:['theme-registry'],
-    queryFn:selectThemeRegistry,
-    staleTime:60_000
-  });
+  const {data:themeRows=[]}=useAsyncResource(['theme-registry'],selectThemeRegistry);
 
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);

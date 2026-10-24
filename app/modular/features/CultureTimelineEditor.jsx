@@ -9,7 +9,7 @@ registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 
 import {useEditDock} from '../edit-dock';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -64,7 +64,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
   const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||routeSuggestedAnchorDate||'').slice(0,10);
-  const queryClient=useQueryClient();
+  const resourceCache=useResourceCache();
   const runtimeScope=String(scopeId||'').trim();
   const dataScope=runtimeScope;
   const editable=Boolean(dataScope&&dataScope!=='loc');
@@ -76,7 +76,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const [formOpen,setFormOpen]=useState(false);
   const dialogRef=useRef(null);
 
-  const query=useQuery({
+  const query=useAsyncResource({
     queryKey:['culture-period-settings',dataScope,timeTable],
     enabled:editable&&Boolean(timeTable),
     queryFn:async()=>{
@@ -89,7 +89,6 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       });
       return rows;
     },
-    staleTime:20_000
   });
 
   const rawRows=query.data||[];
@@ -298,8 +297,8 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       }else{
         await insertRows(timeTable,[payload]);
       }
-      await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
-      await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
+      await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
+      await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
       setSelectedId('');
       setDraft({...BLANK});
       setMessage('');
@@ -328,8 +327,8 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       await deleteRows(timeTable,{filters:[
         {column:'record_id',operator:'eq',value:selectedId}
       ]});
-      await queryClient.invalidateQueries({queryKey:['culture-period-settings',dataScope]});
-      await queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]});
+      await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
+      await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
       setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);onClose?.();
     }catch(error){setMessage(error?.message||l.deleteError);}
     finally{setBusy(false);}

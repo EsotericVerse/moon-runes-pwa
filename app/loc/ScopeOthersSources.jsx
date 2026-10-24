@@ -1,7 +1,8 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource} from './use-async-resource';
+import {useSWRConfig} from 'swr';
 import {dbAuthRelation} from './db-client.mjs';
 import {useEditDock} from '../modular/edit-dock';
 
@@ -17,7 +18,7 @@ const errorOf=(result,label)=>{
 };
 
 export default function ScopeOthersSources({scopeId,scopeData=null}){
-  const client=useQueryClient();
+  const {mutate}=useSWRConfig();
   const dock=useEditDock();
   const currentSave=useRef(null);
   const [groupCode,setGroupCode]=useState('');
@@ -28,10 +29,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   const [aliasEdits,setAliasEdits]=useState({});
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const query=useQuery({
-    queryKey:['scope-others-source-configuration',scopeId],
-    enabled:Boolean(scopeId),
-    queryFn:async()=>{
+  const query=useAsyncResource(['scope-others-source-configuration',scopeId],async()=>{
       const results=await Promise.all([
         dbAuthRelation(GROUPS).select('scope_id,group_code,display_name,sort_order,enabled')
           .eq('scope_id',scopeId).order('sort_order').order('group_code'),
@@ -46,14 +44,10 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
         globalAliases:errorOf(results[2],'全域來源'),
         globalCategories:errorOf(results[3],'全域分類')
       };
-    },staleTime:60_000
-  });
+  },{enabled:Boolean(scopeId)});
   // Reuse the existing database-side daily aggregate rather than downloading
   // Galaxy articles simply to discover the raw Others source names.
-  const existingSources=useQuery({
-    queryKey:['scope-others-existing-sources',scopeId,scopeData?.galaxy],
-    enabled:Boolean(scopeId&&scopeData?.galaxy),
-    queryFn:async()=>{
+  const existingSources=useAsyncResource(['scope-others-existing-sources',scopeId,scopeData?.galaxy],async()=>{
       const {selectScopeDailyCounts}=await import('./galaxy-query');
       const {text}=await selectScopeDailyCounts(scopeData,{includeUndated:true});
       const totals=new Map();
@@ -63,8 +57,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       }
       return [...totals].map(([key,count])=>({key,count}))
         .sort((a,b)=>b.count-a.count||a.key.localeCompare(b.key));
-    },staleTime:5*60_000
-  });
+  },{enabled:Boolean(scopeId&&scopeData?.galaxy)});
   const groups=query.data?.groups||[];
   const aliases=query.data?.aliases||[];
   const enabledGlobal=new Set((query.data?.globalCategories||[])
@@ -147,8 +140,8 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
           .eq('scope_id',scopeId).eq('source_key',row.source_key).select('source_key');
         if(!errorOf(updated,'更新來源對應').length)throw Error('更新來源對應未寫入任何資料。');
       }
-      await client.invalidateQueries({queryKey:['scope-others-source-configuration',scopeId]});
-      await client.invalidateQueries({queryKey:['scope-others-source-summary',scopeId]});
+      await mutate(key=>Array.isArray(key)&&key[0]==='scope-others-source-configuration'&&key[1]===scopeId);
+      await mutate(key=>Array.isArray(key)&&key[0]==='scope-others-source-summary'&&key[1]===scopeId);
       setGroupCode('');setGroupName('');setSource('');setSourceGroup('');
       setGroupEdits({});setAliasEdits({});
       setNotice('已儲存此 Scope 的 Others 小分類設定。');

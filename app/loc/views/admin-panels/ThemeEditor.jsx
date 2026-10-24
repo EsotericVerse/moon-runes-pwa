@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {useQueryClient} from '@tanstack/react-query';
+import {useSWRConfig} from 'swr';
 import {invalidateAppBootstrapThemes} from '../../app-bootstrap';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.adminView',adminViewZh);
 
 export default function ThemeEditor(){
   useUiSection('uiExtra.adminView');
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const [rows,setRows]=useState([]);
   const [themeId,setThemeId]=useState(()=>{
     const current=typeof document==='undefined'?'':String(document.documentElement.dataset.themeId||'');
@@ -101,7 +101,7 @@ export default function ThemeEditor(){
       // A successful Admin theme save deliberately refreshes the site palette;
       // browsing Guest pages never refreshes this snapshot.
       invalidateAppBootstrapThemes();
-      await queryClient.invalidateQueries({queryKey:['app-bootstrap']});
+      await mutate(key=>Array.isArray(key)&&key[0]==='app-bootstrap');
       setStatus((draft.label||'主題')+' 已更新。');setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(error?.message||'Theme 儲存失敗。');return false;}
