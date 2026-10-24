@@ -2,44 +2,13 @@
 
 import {useCallback,useEffect} from 'react';
 import {useSWRConfig} from 'swr';
-import {z} from 'zod';
-import {getAccountSession,dbAuthEvents,dbAuthClient,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthEvents,dbAuthClient,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {readAuthorization,setAuthorization,clearAuthorization,createScopeAuthorizer} from './authorization-runtime.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 import {useAsyncResource} from './use-async-resource';
 
-const EmailSchema=z.string().trim().toLowerCase().email();
-const ManageRoleSchema=z.enum(['admin','scope']);
-
-function normalizeAuthEmail(value){
-  const parsed=EmailSchema.safeParse(String(value||'').trim().toLowerCase());
-  return parsed.success?parsed.data:'';
-}
-function normalizeScopeId(value){
-  return String(value||'').trim();
-}
-function normalizeManageRole(value){
-  const parsed=ManageRoleSchema.safeParse(String(value||'').trim());
-  return parsed.success?parsed.data:'';
-}
-function createScopeAuthorizer(user,permissionRows=[]){
-  const email=normalizeAuthEmail(user?.email);
-  const permissions=(Array.isArray(permissionRows)?permissionRows:[]).flatMap(row=>{
-    const rowEmail=normalizeAuthEmail(row?.email);
-    const role=normalizeManageRole(row?.role);
-    const id=normalizeScopeId(row?.id);
-    if(!email||rowEmail!==email||!role||!id)return [];
-    return [{id,email:rowEmail,role}];
-  });
-  const admin=permissions.some(row=>row.role==='admin');
-  const scopes=new Set(permissions.filter(row=>row.role==='scope').map(row=>row.id));
-  return Object.freeze({
-    email,
-    role:admin?'admin':(scopes.size?'scope':''),
-    scopeIds:Object.freeze([...scopes].sort()),
-    canManageGlobalSync:()=>admin,
-    canManageScopeSync:scopeId=>admin||scopes.has(normalizeScopeId(scopeId))
-  });
-}
+const normalizeAuthEmail=value=>String(value||'').trim().toLowerCase();
+const normalizeScopeId=value=>String(value||'').trim().toLowerCase();
 
 // One shared resource per identity level for the current browser runtime.
 // Public navigation observes Auth state without initiating a session or
@@ -55,7 +24,6 @@ const emptyState=Object.freeze({
   permissionLoading:true,error:'',scopes:[]
 });
 const signedOutState=Object.freeze({...emptyState,loading:false,permissionLoading:false});
-const BLOCKLIST_MESSAGE='此帳號已列入系統黑名單，無法登入 LOC 管理功能。';
 
 function failedState(error){
   return {...signedOutState,error:String(error?.message||error)};
@@ -76,7 +44,25 @@ let authRevision=0;
 let authUserId='';
 let authEmail='';
 
+let scopeMetadata=[];
+
+// Permission authority lives in ordinary JS memory, not in a React hook.
+// No TTL, JSON parsing, file I/O or permission SQL on subsequent actions.
+function cachedManagementAccount(){
+  const saved=readAuthorization();
+  if(!saved||!saved.userId||
+    (authUserId&&saved.userId!==authUserId)||
+    (authEmail&&saved.email!==authEmail))return null;
+  const user={id:saved.userId,email:saved.email};
+  const authorizer=createScopeAuthorizer(user);
+  if(!authorizer)return null;
+  return {...signedOutState,user,email:saved.email,
+    role:authorizer.role,authorizer,scopes:scopeMetadata};
+}
+
 async function loadManagementAccount(mutate){
+  const cached=cachedManagementAccount();
+  if(cached)return cached;
   const startedAt=authRevision;
   const obsolete=()=>startedAt!==authRevision;
   try{
@@ -87,38 +73,21 @@ async function loadManagementAccount(mutate){
       void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return signedOutState;
     }
-    const email=normalizeAuthEmail(user.email);
-
-    // A blocked account must not keep a cached session-only identity.
-    const blocked=await isCurrentEmailBlocklisted();
+    // Exactly one authenticated RPC on first access. The database RPC already
+    // includes the blacklist predicate; a second blacklist query is redundant.
+    const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
+    if(error)throw new Error(error.message||'Management permission read failed');
     if(obsolete())return signedOutState;
-    if(blocked){
-      await signOutAccount();
-      authRevision+=1;
-      authUserId='';
-      authEmail='';
-      void mutate(SESSION_KEY,signedOutState,{revalidate:false});
-      return failedState(BLOCKLIST_MESSAGE);
-    }
-
-    // The authorization source is silver.loc, not a cached or client-editable
-    // claim. Its row-level policy remains the authority for database writes.
-    let permissions=[];
-    if(email){
-      // Resolve only this caller's management rows through a protected RPC.
-      // The registry email column is never a public browser SELECT.
-      const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
-      if(error)throw new Error(error.message||'Management permission read failed');
-      permissions=data||[];
-    }
-    if(obsolete())return signedOutState;
-    const authorizer=createScopeAuthorizer(user,permissions);
-    return {
-      ...signedOutState,user,email:authorizer.email,
-      role:authorizer.role,authorizer,scopes:scopeDataFromManageRows(permissions)
-    };
+    const permissions=Array.isArray(data)?data:[];
+    const metadata=scopeDataFromManageRows(permissions);
+    setAuthorization(user,permissions);
+    scopeMetadata=metadata;
+    authUserId=String(user.id);
+    authEmail=normalizeAuthEmail(user.email);
+    return cachedManagementAccount()||signedOutState;
   }catch(error){
-    // Fail closed on authorization failures; never retain stale edit rights.
+    clearAuthorization();
+    scopeMetadata=[];
     return obsolete()?signedOutState:failedState(error);
   }
 }
@@ -136,17 +105,23 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
   const passive=sessionOnly&&!enabled;
   const query=useAsyncResource(queryKey,passive?null:queryFn,{
     enabled:enabled||passive,
-    revalidateOnMount:enabled&&!sessionOnly,
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false,
+    revalidateIfStale:false,
     ...(passive?{fallbackData:signedOutState}:{}),
   });
   const state=query.data||emptyState;
 
-  // Explicit entry into edit mode always performs a fresh authorization
-  // check, even when another view has populated the shared query cache.
+  // An explicit action checks current JS variables on every click. Only a
+  // missing/invalidated snapshot loads one server-verified permission set.
   const refresh=useCallback(async()=>{
+    if(!sessionOnly){
+      const cached=cachedManagementAccount();
+      if(cached)return {user:cached.user,authorizer:cached.authorizer};
+    }
     const result=await mutate(queryKey,()=>queryFn(),{revalidate:false});
-    if(sessionOnly)return result.user||null;
-    return result.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
+    if(sessionOnly)return result?.user||null;
+    return result?.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
   },[mutate,queryKey,queryFn,sessionOnly]);
 
   const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
@@ -155,6 +130,8 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     authRevision+=1;
     authUserId='';
     authEmail='';
+    clearAuthorization();
+    scopeMetadata=[];
     await Promise.all([
       mutate(SESSION_KEY,signedOutState,{revalidate:false}),
       mutate(VERIFIED_SESSION_KEY,signedOutState,{revalidate:false}),
@@ -196,7 +173,11 @@ export function usePassiveSessionAccount(){
       const nextUserId=String(user?.id||'');
       const nextEmail=normalizeAuthEmail(user?.email);
       const identityChanged=authUserId!==nextUserId||authEmail!==nextEmail;
-      if(identityChanged||event==='SIGNED_OUT')authRevision+=1;
+      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+        authRevision+=1;
+        clearAuthorization();
+        scopeMetadata=[];
+      }
       authUserId=nextUserId;
       authEmail=nextEmail;
       // Passive navigation needs only a session ID hint, never an OAuth email.
@@ -208,8 +189,9 @@ export function usePassiveSessionAccount(){
         // Never put the unverified SDK event user into the verified OAuth cache.
         void mutate(VERIFIED_SESSION_KEY,undefined,{revalidate:Boolean(user)});
       }
-      if(identityChanged||event==='SIGNED_OUT'){
-        void mutate(MANAGEMENT_KEY,signedOutState,{revalidate:Boolean(user)});
+      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+        // Clear the old role without launching a permission query from React.
+        void mutate(MANAGEMENT_KEY,undefined,{revalidate:false});
       }
     });
     return ()=>listener.data.subscription.unsubscribe();
