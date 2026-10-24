@@ -53,6 +53,21 @@ export default {
       "title": "Search",
       "subtitle": "Find text, works, media, and runes by keyword.",
       "description": "Results preserve source and relationships so you can return to the full context."
+    },
+    "admin": {
+      "title": "System administration",
+      "subtitle": "",
+      "description": ""
+    },
+    "manage": {
+      "title": "Page controls",
+      "subtitle": "",
+      "description": ""
+    },
+    "setting": {
+      "title": "Personal settings",
+      "subtitle": "",
+      "description": ""
     }
   },
   "scope": {

@@ -1,7 +1,6 @@
-// UI dictionaries: one JSON per language. Galaxy/rune/authored content is never translated.
-// Traditional Chinese is the default and ships with every page. The other
-// three dictionaries are separate chunks, fetched only when that language is
-// actually selected (loadUiLocale).
+// UI dictionaries: one module per language. Galaxy/rune/authored content is never translated.
+// Traditional Chinese is the default. Other language dictionaries are
+// imported only for the selected language (loadUiLocale).
 import zhTw from './zh_tw.js';
 
 function interpolate(template,values={}){
@@ -50,18 +49,20 @@ export function loadUiLocale(locale){
   const value=String(locale||'').trim();
   if(UI_DICTIONARIES[value])return Promise.resolve(UI_DICTIONARIES[value]);
   if(!Object.hasOwn(LOADERS,value))return Promise.resolve(zhHant);
-  // Japanese interface fields fall back to English wording, so load it too.
-  const needs=value==='ja'?['en','ja']:[value];
-  pending[value]??=Promise.all(needs.map(id=>UI_DICTIONARIES[id]?null:LOADERS[id]().then(mod=>{
-    UI_DICTIONARIES[id]=withFormat(mod.default);
-  }))).then(()=>UI_DICTIONARIES[value]);
+  // Only fetch the selected language; other locales stay out of the bundle.
+  pending[value]??=LOADERS[value]().then(mod=>{
+    UI_DICTIONARIES[value]=withFormat(mod.default);
+    return UI_DICTIONARIES[value];
+  }).catch(error=>{
+    delete pending[value]; // A transient chunk failure must not block retries.
+    throw error;
+  });
   return pending[value];
 }
 
-// Strings that belong to one lazily loaded feature (keyword library, private
+// Strings that belong to lazily loaded features (keyword library, private
 // files, timeline editor, item confluence, daily-rune analytics). They live in
-// features.<language>.json and are only imported by those features' own
-// chunks, never by the page shell.
+// features.<language>.js and are fetched on demand, not bundled into the shell.
 const FEATURE_LOADERS={
   'zh-Hans':()=>import('./features.zh_cn.js'),
   en:()=>import('./features.en.js'),
@@ -73,7 +74,10 @@ export function isFeatureCopyLoaded(locale){return Boolean(featureCopy[locale]);
 export function loadFeatureCopy(locale){
   const value=String(locale||'').trim();
   if(featureCopy[value]||!Object.hasOwn(FEATURE_LOADERS,value))return Promise.resolve(featureCopy[value]||null);
-  featurePending[value]??=FEATURE_LOADERS[value]().then(mod=>(featureCopy[value]=mod.default));
+  featurePending[value]??=FEATURE_LOADERS[value]().then(mod=>(featureCopy[value]=mod.default)).catch(error=>{
+    delete featurePending[value];
+    throw error;
+  });
   return featurePending[value];
 }
 // defaults = the Traditional Chinese section, imported by the calling feature.
@@ -252,6 +256,9 @@ export function loadSection(locale,path){
     loadedSectionPaths[locale].add(path);
     bumpSectionVersion();
     return mod.default;
+  }).catch(error=>{
+    delete sectionPending[key];
+    throw error;
   });
   return sectionPending[key];
 }

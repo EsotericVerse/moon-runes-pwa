@@ -53,6 +53,21 @@ export default {
       "title": "検索",
       "subtitle": "キーワードからテキスト、作品、メディアを探します。",
       "description": "検索結果にはソースと関連情報を残し、元の内容を確認できます。"
+    },
+    "admin": {
+      "title": "システム管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "manage": {
+      "title": "ページ管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "setting": {
+      "title": "個人設定",
+      "subtitle": "",
+      "description": ""
     }
   },
   "scope": {

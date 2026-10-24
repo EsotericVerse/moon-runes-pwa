@@ -11,15 +11,16 @@ const UiLocaleContext=createContext(Object.freeze({
 // Fetches the selected language on demand and re-renders once it has arrived.
 export function useLoadedUiLocale(locale){
   const normalized=normalizeUiLocale(locale);
-  const [ready,setReady]=useState(()=>isUiLocaleLoaded(normalized));
+  const [readyLocale,setReadyLocale]=useState(()=>isUiLocaleLoaded(normalized)?normalized:null);
   useEffect(()=>{
-    if(isUiLocaleLoaded(normalized)){setReady(true);return undefined;}
+    if(isUiLocaleLoaded(normalized)){setReadyLocale(normalized);return undefined;}
     let active=true;
-    setReady(false);
-    loadUiLocale(normalized).then(()=>{if(active)setReady(true);});
+    loadUiLocale(normalized)
+      .then(()=>{if(active)setReadyLocale(normalized);})
+      .catch(()=>{if(active)setReadyLocale(null);});
     return ()=>{active=false;};
   },[normalized]);
-  return ready||isUiLocaleLoaded(normalized);
+  return readyLocale===normalized||isUiLocaleLoaded(normalized);
 }
 
 // Bumps whenever any section (search, statistics, uiExtra.editBlocks, …)
@@ -56,7 +57,7 @@ export function useFeatureCopy(section,defaults){
   useEffect(()=>{
     if(isFeatureCopyLoaded(locale))return undefined;
     let active=true;
-    loadFeatureCopy(locale).then(()=>{if(active)refresh(n=>n+1);});
+    loadFeatureCopy(locale).then(()=>{if(active)refresh(n=>n+1);}).catch(()=>{});
     return ()=>{active=false;};
   },[locale]);
   return featureSection(locale,section,defaults);
@@ -66,8 +67,7 @@ export function useUiSection(path){
   const {locale}=useUiLocale();
   useEffect(()=>{
     if(isSectionLoaded(locale,path))return undefined;
-    let active=true;
     loadSection(locale,path).catch(()=>{});
-    return ()=>{active=false;};
+    return undefined;
   },[locale,path]);
 }

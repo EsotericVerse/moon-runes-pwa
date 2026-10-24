@@ -53,6 +53,21 @@ export default {
       "title": "搜索",
       "subtitle": "输入关键字，从文字、作品、多媒体与符文中找到相关内容。",
       "description": "搜索结果会保留原本的来源与关系，方便回到完整内容或延伸查看前后脉络。"
+    },
+    "admin": {
+      "title": "系统管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "manage": {
+      "title": "页面管理",
+      "subtitle": "",
+      "description": ""
+    },
+    "setting": {
+      "title": "个人设置",
+      "subtitle": "",
+      "description": ""
     }
   },
   "scope": {
@@ -75,26 +90,26 @@ export default {
     }
   },
   "work": {
-    "viewLinks": "查看连结",
+    "viewLinks": "查看链接",
     "relatedText": "关联文字",
     "untitled": "未命名作品",
     "hidden": "此项目目前隐藏（仅管理者可见）",
-    "link": "连结",
+    "link": "链接",
     "noBody": "此作品目前没有正文。",
     "loadingBody": "载入全文中…",
     "collapseBody": "收合全文",
     "viewBody": "查看全文"
   },
   "formatMessages": {
-    "searchScope": "搜寻「{label}」资料…",
-    "result": "{label}搜寻「{query}」；先显示本批结果",
+    "searchScope": "搜索「{label}」资料…",
+    "result": "{label}搜索「{query}」；先显示本批结果",
     "more": "，向下滑动可继续载入。",
     "end": "。",
     "relatedText": "关联文字",
     "link": "连结",
-    "songLink": "歌曲连结",
+    "songLink": "歌曲链接",
     "period": "时期",
-    "selected": "已选取｜"
+    "selected": "已选择｜"
   },
   "uiExtra": {}
 };
