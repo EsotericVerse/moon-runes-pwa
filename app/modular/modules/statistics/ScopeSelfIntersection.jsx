@@ -19,7 +19,7 @@ import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statisti
 
 const DAY_MS=86400000;
 const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS,
-  {kind:'keyword_group',label:'關鍵詞群組'},
+  {kind:'keyword_group',label:'關鍵詞組'},
   {kind:'keyword_item',label:'關鍵詞項目'}];
 const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
