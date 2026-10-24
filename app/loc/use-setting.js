@@ -22,7 +22,7 @@ export function useSetting(key,initialValue,{delay=350}={}){
       setLoading(false);
     }).catch(error=>{if(live){setStatus(String(error?.message||error));setLoading(false);}});
     return()=>{live=false;if(timer.current)clearTimeout(timer.current)};
-  },[account.user?.email,key]);
+  },[account.user?.id,key]);
 
   const persist=useCallback(next=>{
     if(!account.user)return;
