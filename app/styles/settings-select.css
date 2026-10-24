@@ -401,6 +401,10 @@
   scroll-snap-align:start;
   touch-action:manipulation;
 }
+.management-workspace:not(.lrg-home-workspace)>.management-section-nav .management-section-nav__item:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:-3px;
+}
 .management-workspace:not(.lrg-home-workspace)>.management-section-nav .management-section-nav__item[aria-pressed="true"]{
   border:0;
   border-bottom:3px solid var(--loc-accent);
