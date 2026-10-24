@@ -6,8 +6,8 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const readJson=file=>JSON.parse(read(file));
 const routes=readJson('.next/server/app-paths-manifest.json');
 
-// Only two public numeric ISR summary families remain. Other reads are
-// static JSON or direct, explicit live queries.
+// ISR is limited to public Culture/Statistics numeric data, including
+// Rune Daily timelines, media facets and chart range metadata.
 const numeric='app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js';
 const invalidation='app/api/loc/revalidate/route.js';
 const appPath=file=>'/'+file.replace(/^app\//,'').replace(/\.js$/,'');
@@ -25,6 +25,8 @@ const source=read(numeric);
 if(!source.includes('unstable_cache(')||!source.includes('read_scope_statistics')
   ||!source.includes('read_scope_overview')||!source.includes("Cache-Control':'no-store"))
   throw Error('Missing shared numeric ISR Data Cache or browser-cache bypass');
+if(!source.includes("'media_style'")||!source.includes("'daily-earliest'")||!source.includes("'earliest'"))
+  throw Error('Numeric ISR misses Media Style or Daily Rune chart data');
 const config=read('app/loc/scope-data.js');
 if(config.includes("locPublicIsrUrl('/api/loc/site-bootstrap')")||
    config.includes("locPublicIsrUrl('/api/loc/scopes/"))
@@ -37,4 +39,4 @@ if(app.includes('locHomeSnapshotDelivered'))
 const worker=read('public/sw.js');
 if(!worker.includes('loc-public-blocks-')||!worker.includes('LOC_BLOCKS_INVALIDATE'))
   throw Error('Static Block Service Worker is incomplete');
-console.log('Verified only Culture/Statistics numeric ISR, and static public Blocks/bootstrap.');
+console.log('Verified Culture/Statistics numeric ISR (including Media Style and Daily Rune), plus public SW Blocks/bootstrap.');
