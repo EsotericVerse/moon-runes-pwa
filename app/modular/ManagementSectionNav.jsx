@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback,useEffect,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 
 /**
@@ -10,9 +10,20 @@ import {useSearchParams} from 'next/navigation';
 export default function ManagementSectionNav({id,title,panelId,items,value,onChange,showDescriptions=false}){
   const activeItem=items.find(item=>item.value===value)||items[0];
   const headingId=id+'-heading';
+  const itemsRef=useRef(null);
+  useEffect(()=>{
+    const list=itemsRef.current;
+    const active=list?.querySelector('[aria-pressed="true"]');
+    if(!list||!active)return;
+    // Reveal the selected tab within this strip only; never scroll the page.
+    const bounds=list.getBoundingClientRect();
+    const target=active.getBoundingClientRect();
+    if(target.left<bounds.left)list.scrollLeft-=bounds.left-target.left;
+    else if(target.right>bounds.right)list.scrollLeft+=target.right-bounds.right;
+  },[value]);
   return <section className="management-section-nav" aria-labelledby={headingId}>
     <h2 className="management-section-nav__title" id={headingId}>{title}</h2>
-    <div className="management-section-nav__items" role="group" aria-label={title}>
+    <div ref={itemsRef} className="management-section-nav__items" role="group" aria-label={title}>
       {items.map(item=>{
         const selected=item.value===activeItem?.value;
         return <button
@@ -21,6 +32,7 @@ export default function ManagementSectionNav({id,title,panelId,items,value,onCha
           type="button"
           className="management-section-nav__item"
           aria-label={item.shortLabel&&item.shortLabel!==item.label?item.label:undefined}
+          title={item.shortLabel&&item.shortLabel!==item.label?item.label:undefined}
           aria-pressed={selected}
           aria-controls={panelId}
           onClick={()=>{if(!selected)onChange(item.value);}}
