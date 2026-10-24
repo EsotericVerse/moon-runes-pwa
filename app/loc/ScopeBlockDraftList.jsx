@@ -61,11 +61,10 @@ export default function ScopeBlockDraftList({
   async function refreshBlockQueries(){
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
-    await Promise.all([
-      mutate(bootstrapKey),
-      mutate(displayKey),
-      revalidateServerMetadata()
-    ]);
+    // Invalidate the server-side ISR cache before requesting fresh public data.
+    // Parallel mutation could otherwise re-fetch a still-cached older version.
+    await revalidateServerMetadata();
+    await Promise.all([mutate(bootstrapKey),mutate(displayKey)]);
   }
 
   function patchDraft(uid,patch){
