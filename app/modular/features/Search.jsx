@@ -868,7 +868,7 @@ export default function Search({managementMode=false}){
       {account.loading||account.permissionLoading
         ?<p role="status">正在確認管理權限…</p>
         :!account.user
-          ?<><p>搜尋管理需要登入。</p><ScopeLink className="loc-button primary" href="/local/settings/?section=account">前往登入</ScopeLink></>
+          ?<p>請先至設定首頁登入，才能使用搜尋管理。</p>
           :<p>目前帳號沒有這個 Scope 的搜尋管理權限。</p>}
     </section>
   </FeaturePage>;
