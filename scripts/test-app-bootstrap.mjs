@@ -180,7 +180,7 @@ test('keyword reset uses paged authorized writes before clearing summary',async(
     return {data:0,error:null};
   };
   const client={schema(){return {from:relation,rpc};}};
-  const auth={getSession(){},signInWithOAuth(){},signOut(){}};
+  const auth={getSession(){},getUser(){},signInWithOAuth(){},signOut(){}};
   const db=createDatabaseClient({publicClient:client,authClient:client,auth});
   const progress=[];
   const changed=await db.resetKeywordClassification('lo3rwang',{onProgress:p=>progress.push(p)});
