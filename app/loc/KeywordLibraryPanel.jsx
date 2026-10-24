@@ -139,7 +139,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,staticstime')
           .eq('id',scopeId)
           .limit(1),
-        selectCount(scopeId+'_galaxy',{
+        selectCount(scopeData.galaxy,{
           idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
         })
       ]);
