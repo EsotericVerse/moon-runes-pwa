@@ -15,13 +15,42 @@ import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zo
 import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
-import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
+import {ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-const DIMENSIONS=[{kind:'group',label:'群組來源分類'},
-  {kind:'others_subgroup',label:'Others 自定義小分類'},...OWN_STAT_DIMENSIONS,
-  {kind:'keyword_group',label:'關鍵詞組'},
-  {kind:'keyword_item',label:'關鍵詞項目'}];
+export const DIMENSION_FILTERS=[
+  {value:'all',label:'全部'}, {value:'source',label:'作品來源'},
+  {value:'media',label:'多媒體'}, {value:'keyword',label:'關鍵詞'}
+];
+export const DIMENSIONS=[
+  {kind:'source',label:'原始作品來源'},
+  {kind:'group',label:'系統分組來源'},
+  {kind:'others_subgroup',label:'個人分組來源'},
+  {kind:'total',label:'作品總量'},
+  {kind:'media_category',label:'音樂／圖片／影片'},
+  {kind:'media',label:'多媒體原始類型'},
+  {kind:'keyword_group',label:'關鍵詞分組'},
+  {kind:'keyword_item',label:'關鍵詞項目'}
+];
+export const LANE_FAMILIES=[
+  {id:'source',label:'原始作品來源',kinds:['source','group','others_subgroup','total']},
+  {id:'media',label:'多媒體來源',kinds:['media_category','media']},
+  {id:'keyword_group',label:'關鍵詞分組',kinds:['keyword_group']},
+  {id:'keyword_item',label:'關鍵詞項目',kinds:['keyword_item']}
+];
+const kindsForDimension=value=>value==='source'?LANE_FAMILIES[0].kinds
+  :value==='media'?LANE_FAMILIES[1].kinds
+  :value==='keyword'?[...LANE_FAMILIES[2].kinds,...LANE_FAMILIES[3].kinds]
+  :DIMENSIONS.map(item=>item.kind);
+const familyForKind=kind=>LANE_FAMILIES.find(item=>item.kinds.includes(kind))?.id||'source';
+export function mediaTypeFamily(raw){
+  const value=String(raw||'').trim().toLowerCase();
+  if(/(?:music|audio|sound|song|suno|mp3|wav|m4a|flac|音樂|歌曲|聲音)/.test(value))return 'music';
+  if(/(?:image|photo|picture|pic|jpg|jpeg|png|webp|gif|圖片|相片|照片|影像)/.test(value))return 'image';
+  if(/(?:video|movie|film|reel|youtube|mp4|影片|視頻|影視)/.test(value))return 'video';
+  return '';
+}
+const MEDIA_GROUP_NAMES={music:'音樂',image:'圖片',video:'影片'};
 const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
   const date=new Date(day+'T00:00:00Z');
@@ -47,6 +76,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
   const [kindFilter,setKindFilter]=useState('all');
+  const [laneFamilies,setLaneFamilies]=useState([]);
   const [chartType,setChartType]=useState('line');
   const [foldBlank,setFoldBlank]=useState(true);
   const start=dateOnly(range?.startDate),end=dateOnly(range?.endDate);
@@ -134,11 +164,23 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       id:'others_subgroup'+String.fromCharCode(0)+id,kind:'others_subgroup',
       name:id==='unclassified'?'Others · 未細分':'Others · '+othersActive.get(id),total
     }));
-    return [...groups,...basic,...others,...keywordGroups,...keywordItems]
-      .filter(item=>kindFilter==='all'||item.kind===kindFilter);
+    const mediaTotals=new Map();
+    for(const row of rows){
+      if(row.kind!=='media')continue;
+      const family=mediaTypeFamily(row.category);
+      if(family)mediaTotals.set(family,(mediaTotals.get(family)||0)+(Number(row.item_count)||0));
+    }
+    const mediaGroups=[...mediaTotals].filter(([,total])=>total>0)
+      .map(([id,total])=>({id:'media_category'+String.fromCharCode(0)+id,
+        kind:'media_category',name:MEDIA_GROUP_NAMES[id],total}));
+    const allowed=new Set(kindsForDimension(kindFilter));
+    return [...groups,...basic,...others,...mediaGroups,...keywordGroups,...keywordItems]
+      .filter(item=>allowed.has(item.kind));
   },[rows,kindFilter,catalog.data,keywords.data,othersConfig.data]);
   const maximumLanes=Math.min(8,categoryList.length);
   const lanes=Math.min(numberOfLanes,Math.max(2,maximumLanes));
+  const availableFamilies=LANE_FAMILIES.filter(family=>
+    categoryList.some(item=>family.kinds.includes(item.kind)));
   const chosen=Array.from({length:lanes},(_,i)=>{
     const id=selected[i];
     if(id&&categoryList.some(c=>c.id===id)&&!selected.slice(0,i).includes(id))return id;
@@ -153,6 +195,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     return output;
   });
   const categories=selection.map(id=>categoryList.find(c=>c.id===id)).filter(Boolean);
+  const shownFamilies=selection.map((id,index)=>{
+    const explicit=laneFamilies[index];
+    return availableFamilies.some(family=>family.id===explicit)
+      ?explicit:familyForKind(categoryList.find(item=>item.id===id)?.kind);
+  });
   const selectedKeywordItems=categories.some(c=>c.kind==='keyword_item');
   // Item-by-day data are not in the summary RPC. Load saved attributes only
   // when an item is actually selected, without reading or analyzing article bodies.
@@ -196,6 +243,9 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]));
         const subgroup=resolveOthers(row.category);
         if(subgroup)ids.push('others_subgroup'+String.fromCharCode(0)+subgroup);
+      }else if(row.kind==='media'){
+        const family=mediaTypeFamily(row.category);
+        if(family)ids.push('media_category'+String.fromCharCode(0)+family);
       }
       for(const id of ids)add(day,id,Number(row.item_count)||0);
     }
