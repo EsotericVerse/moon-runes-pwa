@@ -224,6 +224,7 @@ export default function Culture(){
   const [selectedTimelineRecordId,setSelectedTimelineRecordId]=useState('');
   const [selectedTimelineInfo,setSelectedTimelineInfo]=useState(null);
   const [selectedTimelineDate,setSelectedTimelineDate]=useState('');
+  const [timelineEditorRevision,setTimelineEditorRevision]=useState(0);
   // Opening the time editor is a UI action, not an authorization check.
   // Verify the active user only when a write is actually requested.
   useEffect(()=>{
@@ -595,13 +596,37 @@ export default function Culture(){
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart,l,locale]);
   const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length||query.data?.scopes?.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
 
+  function switchTimelineEditor(target,apply){
+    // Reuse the edit dock's Save / Discard / Cancel safeguard when the
+    // current inline form has unsaved changes. No navigation is involved.
+    if(editDock?.active&&editDock.scopeId===scopeId){
+      editDock.switchSection('time-record:'+target,apply);
+    }else apply();
+  }
+
   function beginTimelineCreation(type,date){
-    // Creation must work even for periods without an exact Gregorian start day.
-    const creationDate=/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))?String(date):new Date().toISOString().slice(0,10);
-    setSelectedTimelineRecordId('');
-    setSuggestedRecordType(type);
-    setSelectedTimelineDate(type==='anchor'?creationDate:'');
-    setSuggestedRequestNonce(value=>value+1);
+    switchTimelineEditor('new-'+type,()=>{
+      // Creation must work even for periods without an exact Gregorian start day.
+      const creationDate=/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))?String(date):new Date().toISOString().slice(0,10);
+      setSelectedTimelineRecordId('');
+      setSelectedTimelineInfo(null);
+      setSuggestedRecordType(type);
+      setSelectedTimelineDate(type==='anchor'?creationDate:'');
+      setSuggestedRequestNonce(value=>value+1);
+      setTimelineEditorRevision(value=>value+1);
+    });
+  }
+
+  function beginTimelineRecordEdit(item,recordId){
+    const id=String(recordId||item?.recordId||'').trim();
+    if(!id)return;
+    switchTimelineEditor('edit-'+id,()=>{
+      setSelectedTimelineInfo(item||null);
+      setSelectedTimelineRecordId(id);
+      setSelectedTimelineDate('');
+      setSuggestedRequestNonce(0);
+      setTimelineEditorRevision(value=>value+1);
+    });
   }
 
   async function refreshTimelineData(){
@@ -978,6 +1003,15 @@ export default function Culture(){
                 </>:<button type='button' className='loc-button' onClick={()=>beginTimelineCreation(timeEditorSection,'')}>＋ {choice.label}</button>}
               </div>
             </div>
+            {Boolean(selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate'))?
+              <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
+                scopeId={scopeId}
+                timeTable={scopeData?.time||''}
+                selectedRecordId={selectedTimelineRecordId}
+                suggestedAnchorDate={selectedTimelineDate}
+                suggestedRecordType={suggestedRecordType}
+                suggestedRequestNonce={suggestedRequestNonce}
+                onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>:null}
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
             {!query.isPending&&!query.error?<CultureTimeline
@@ -989,15 +1023,11 @@ export default function Culture(){
               windowStart={currentStructureStart}
               windowEnd={currentStructureEnd}
               onTimeClick={timeEditorSection==='anchor-style'?date=>beginTimelineCreation('anchor',date):null}
-              onSelect={item=>{
-                setSelectedTimelineInfo(item||null);
-                setSelectedTimelineRecordId(String(item?.recordId||''));
-                setSelectedTimelineDate('');
-              }}
+              onSelect={item=>beginTimelineRecordEdit(item)}
               editable
               onMove={moveTimelineRecord}
               onUpdate={(item,row)=>{
-                if(row?.recordId)setSelectedTimelineRecordId(row.recordId);
+                beginTimelineRecordEdit(item,row?.recordId);
                 return null;
               }}
               onRemove={removeTimelineRecord}
@@ -1006,14 +1036,6 @@ export default function Culture(){
               <strong>{selectedTimelineInfo.content||selectedTimelineInfo.title||'時間紀錄'}</strong>
               <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
             </div>:null}
-            {Boolean(selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate'))?
-              <CultureTimelineEditor scopeId={scopeId}
-                timeTable={scopeData?.time||''}
-                selectedRecordId={selectedTimelineRecordId}
-                suggestedAnchorDate={selectedTimelineDate}
-                suggestedRecordType={suggestedRecordType}
-                suggestedRequestNonce={suggestedRequestNonce}
-                onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSuggestedRequestNonce(0)}}/>:null}
             {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
           </div>
         </div>:null}
