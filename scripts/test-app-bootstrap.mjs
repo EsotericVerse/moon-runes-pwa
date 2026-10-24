@@ -123,14 +123,35 @@ test('author keyword source filters the main chart without changing all-source t
   assert.equal(threads.total,3);
   assert.deepEqual(threads.rows.map(row=>row.total),[2,1]);
   assert.equal(administrativeSourceTrend(raw,taxonomy,range).total,10);
+  const subgroup=administrativeSourceTrend(raw,taxonomy,{...range,sourceCategory:'facebook',sourceNames:['fb']});
+  assert.equal(subgroup.total,4);
+  assert.equal(administrativeSourceTrend(raw,taxonomy,{...range,sourceCategory:'facebook',sourceNames:[]}).total,0);
 });
 
-test('author statistics wires selected keyword source to chart cache and filtered details',()=>{
+test('statistics preserves Admin categories and Scope Others subgroup filters',()=>{
   const code=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
-  assert.match(code,/const activeKeywordSource=styleFilter==='rune66'\?keywordSource:''/);
-  assert.match(code,/queryRange\.bucket,activeKeywordSource,sourceRows\.dataUpdatedAt/);
-  assert.match(code,/unit:queryRange\.bucket,sourceCategory:activeKeywordSource/);
-  assert.match(code,/filteredSource=\{Boolean\(activeKeywordSource\)\}/);
+  assert.match(code,/const activeSourceSelection=styleFilter==='rune66'/);
+  assert.match(code,/queryRange\.bucket,activeSourceSelection,sourceSubgroup/);
+  assert.match(code,/unit:queryRange\.bucket,sourceCategory:activeSourceSelection,sourceNames:selectedRawNames/);
+  assert.match(code,/filteredSource=\{Boolean\(activeSourceSelection\)\}/);
+  assert.match(code,/statistics_scope_others_groups/);
+  assert.match(code,/statistics_scope_others_aliases/);
+  assert.match(code,/Others 自定義小分類/);
+});
+
+test('keyword charts share one canvas and intersections offer at most eight lanes',async()=>{
+  const chart=readFileSync(new URL('../app/modular/modules/statistics/StatisticsMultiChart.jsx',import.meta.url),'utf8');
+  const pane=readFileSync(new URL('../app/modular/modules/statistics/ScopeSelfIntersection.jsx',import.meta.url),'utf8');
+  assert.equal(chart.match(/<StatisticsMultiChart type=\{actualChart\}/g)?.length,1);
+  assert.match(chart,/群組＋項目（同圖）/);
+  assert.match(chart,/value:Number\(row.document_count\)/);
+  assert.match(pane,/maximumLanes=Math.min\(8,categoryList.length\)/);
+  assert.match(pane,/kind:'keyword_group'/);
+  assert.match(pane,/kind:'keyword_item'/);
+  assert.match(pane,/kind:'others_subgroup'/);
+  const {color,normalizeDistribution}=await import('../app/modular/modules/statistics/statistics-time-zoom.mjs');
+  assert.equal(new Set(Array.from({length:8},(_,i)=>color(i))).size,8);
+  assert.equal(normalizeDistribution([{name:'群組',value:3,fill:'#8962e3'}])[0].fill,'#8962e3');
 });
 
 
