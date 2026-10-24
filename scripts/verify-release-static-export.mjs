@@ -16,7 +16,15 @@ const missing=routes.filter(route=>{
   const path=join(root,route,'index.html');
   return !existsSync(path)||!statSync(path).isFile()||statSync(path).size===0;
 });
-if(missing.length){
-  console.error('Missing or empty static exports:',missing.map(route=>'/'+route+'/').join(', '));
+// A build can pass while the PWA runtime files are missing from the published
+// artifact. Verify only actual browser entrypoints, not source-code wording.
+const pwaAssets=['sw.js','manifest.webmanifest'];
+const missingAssets=pwaAssets.filter(file=>{
+  const target=join(root,file);
+  return !existsSync(target)||!statSync(target).isFile()||statSync(target).size===0;
+});
+if(missing.length||missingAssets.length){
+  if(missing.length)console.error('Missing or empty static exports:',missing.map(route=>'/'+route+'/').join(', '));
+  if(missingAssets.length)console.error('Missing or empty PWA assets:',missingAssets.join(', '));
   process.exitCode=1;
-}else console.log('Verified '+routes.length+' Guest and Admin static route exports.');
+}else console.log('Verified '+routes.length+' Guest and Admin static route exports, plus '+pwaAssets.length+' PWA assets.');

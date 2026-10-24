@@ -11,6 +11,7 @@ function createHarness(){
   const requests=[];
   const deleted=[];
   let online=true;
+  let networkHeaders={'content-type':'image/webp'};
   const makeCache=name=>{
     if(!stored.has(name))stored.set(name,new Map());
     const map=stored.get(name);
@@ -41,7 +42,7 @@ function createHarness(){
     fetch:async request=>{
       requests.push(request.url);
       if(!online)throw new Error('network unavailable');
-      return response(request.url.startsWith('https://remote.example')?'opaque':'basic',{'content-type':'image/webp'});
+      return response(request.url.startsWith('https://remote.example')?'opaque':'basic',networkHeaders);
     }
   });
   vm.runInContext(source,context,{filename:'public/sw.js'});
@@ -59,7 +60,8 @@ function createHarness(){
     return {result,handled:Boolean(handled)};
   }
   const req=(url,destination='image',method='GET')=>({url,method,destination});
-  return {dispatch,req,requests,stored,deleted,setOnline:value=>{online=value;}};
+  return {dispatch,req,requests,stored,deleted,setOnline:value=>{online=value;},
+    setResponseHeaders:value=>{networkHeaders=value;}};
 }
 
 test('picture cache: first network hit, repeat without network, and offline reuse',async()=>{
@@ -124,4 +126,22 @@ test('service worker registration only in browser, not Capacitor or HTTP remote'
   assert.match(shell,/navigator\.serviceWorker\.register\('\/sw\.js',\{scope:'\/'\}\)/);
   assert.match(shell,/Capacitor\.isNativePlatform\(\)/);
   assert.match(shell,/location\.protocol!=='https:'/);
+});
+
+test('explicit no-store and private image responses never enter the cache',async()=>{
+  const h=createHarness();
+  const url='https://loc.lo3rwang.cc/pics/cover.webp';
+  for(const policy of ['no-store','private']){
+    h.setResponseHeaders({'content-type':'image/webp','cache-control':policy});
+    await h.dispatch('fetch',h.req(url));
+    await h.dispatch('fetch',h.req(url));
+    assert.equal(h.stored.get('loc-public-images-v1')?.size,0,policy);
+  }
+  assert.deepEqual(h.requests,[url,url,url,url]);
+  // Only a cacheable response may be reused on subsequent navigations.
+  h.setResponseHeaders({'content-type':'image/webp','cache-control':'public, max-age=3600'});
+  await h.dispatch('fetch',h.req(url));
+  h.setOnline(false);
+  assert.ok((await h.dispatch('fetch',h.req(url))).result);
+  assert.equal(h.requests.length,5);
 });
