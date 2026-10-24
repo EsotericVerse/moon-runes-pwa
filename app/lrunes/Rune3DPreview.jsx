@@ -11,12 +11,12 @@ import {selectRows} from '../loc/db-query.mjs';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from './RuneDrawClient';
 import {runeImage,runeName} from './rune-directory.mjs';
+import {runeDrawGroup,runeDrawMotion} from './rune-draw-motion.mjs';
 import RuneCardInfo from './RuneCardInfo';
 import './skin-lab.css';
 import './effekseer/effekseer-stage.css';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
-const CARD_ROTATIONS=[0,90,-90,180];
 const DAILY_FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords';
@@ -79,6 +79,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const [pending,setPending]=useState(null);
   const [transferTarget,setTransferTarget]=useState(null);
   const stageRef=useRef(null),slotRef=useRef(null),resultsRef=useRef(null);
+  const drawStageSize=useRef({width:800,height:520});
   const reducedMotion=useReducedMotion();
   const lock=useRef(false);
   const live=useRef(true);
@@ -144,6 +145,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
     if(lock.current||busy||phase==='waiting'||phase==='drawing'||phase==='revealing'||phase==='transfer'||finished||
       (mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
     lock.current=true;setBusy(true);setError('');
+    const bounds=stageRef.current?.getBoundingClientRect();
+    if(bounds?.width>0&&bounds?.height>0)drawStageSize.current={width:bounds.width,height:bounds.height};
     // Daily is one draw, one direct result; ritual waiting belongs to multi-card duel.
     if(mode!=='daily')setPhase('waiting');
     const started=Date.now();
@@ -215,6 +218,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const detailItem=isList?null:items.find(item=>Number(item.card.rune_id)===Number(selected?.rune_id));
   const details=isList?selected:detailItem?.card;
   const day=mode==='daily'?items[0]:null;
+  const drawMotion=phase==='drawing'&&pending?
+    runeDrawMotion(runeDrawGroup(pending.card),pending.directionIndex,drawStageSize.current,Boolean(reducedMotion)):null;
   return <main className="loc-next-main" data-rune-3d-preview={mode}>
     <div className="loc-panel rune-skin-lab rune-3d-shell">
     {presentationSwitcher}
@@ -251,14 +256,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
             <div className="rune-3d-ritual-status" role="status">月光正在挑選符文……</div></>:null}
           {phase==='drawing'&&pending?<motion.div
             key={'drawn-'+pending.birth} className="rune-3d-drawn-card" aria-hidden="true"
-            initial={reducedMotion?{opacity:0,left:'50%',top:'45%',rotateY:180}:
-              {opacity:0,left:'24%',top:'63%',scale:.8,rotateY:0,rotateZ:-14}}
-            animate={reducedMotion?{opacity:1,left:'50%',top:'45%',rotateY:180}:
-              {opacity:[0,1,1],left:['24%','40%','50%'],top:['63%','37%','45%'],
-                scale:[.8,1.08,1.48],rotateY:[0,35,180],
-                rotateZ:[-14,-5,CARD_ROTATIONS[pending.directionIndex]]}}
-            transition={{duration:reducedMotion?.08:1.08,
-              times:reducedMotion?undefined:[0,.36,1],ease:'easeInOut'}}
+            data-draw-style={runeDrawGroup(pending.card)}
+            initial={drawMotion.initial} animate={drawMotion.animate} transition={drawMotion.transition}
             onAnimationComplete={()=>setPhase(current=>current==='drawing'?'revealing':current)}>
             <div className="rune-3d-drawn-card-back"><span>月</span><small>LunaRunes</small></div>
             <div className="rune-3d-drawn-card-front">
