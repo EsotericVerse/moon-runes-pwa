@@ -6,7 +6,7 @@ import {useEffect,useRef,useState} from 'react';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {THEME_SLOTS} from '../modular/theme-registry';
 import {invalidatePublicScopeMetadata,selectScopeConfig} from './scope-data';
-import {updateRows} from './db-client.mjs';
+import {dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
 import scopeSettingsZh from '../i18n/sections/uiExtra.scopeSettings.zh_tw.js';
@@ -58,12 +58,19 @@ export default function ScopeSettingsPanel({scopeId}){
     setBusy(true);setMessage('');
     try{
       if(!table)throw new Error(uiT('uiExtra.scopeSettings.unavailable'));
+      const nextTheme=String(draft.theme||'system-default');
       await updateRows(table,{
-        theme:String(draft.theme||'system-default'),
+        theme:nextTheme,
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
+      // Management writes are rare. Verify the authoritative value before
+      // claiming success or invalidating public snapshots.
+      const {data,error}=await dbAuthRelation(table).select('theme').eq('id',scopeId).single();
+      if(error)throw new Error(error.message||'無法確認主題是否已儲存。');
+      if(String(data?.theme||'')!==nextTheme)throw new Error('主題未寫入預期值，請重試。');
+      setSavedTheme(nextTheme);
       invalidatePublicScopeMetadata();
-      setSavedTheme(String(draft.theme||'system-default'));
+      if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('loc-scope-theme-saved',{detail:{scopeId,themeId:nextTheme}}));
       setMessage(uiT('uiExtra.scopeSettings.saved'));
       return true;
     }catch(error){
