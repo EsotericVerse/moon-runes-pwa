@@ -731,13 +731,85 @@ export default function Culture(){
       };
     });
   },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,classificationWindowStart,classificationWindowEnd,l,locale]);
-  // The first river is the one canonical place for existing anchors.
-  // The work-classification river compares works with optional *candidate*
-  // density dates; never render a second copy of official anchors.
-  const classificationRiverItems=useMemo(
-    ()=>[...secondRiverBuckets,...virtualAnchorItems],
-    [secondRiverBuckets,virtualAnchorItems]
+  // Source and keyword counts remain separate data projections. The merged
+  // presentation uses one time axis, not a merged Class/source data model.
+  // Source totals are computed from the already-loaded daily source buckets;
+  // no extra Galaxy scan or database request is necessary.
+  const dualSourceRiverItems=useMemo(()=>{
+    const kindBySource=new Map((sourceSnapshotQuery.data?.groups||[]).map(group=>[
+      String(group.source_name||''),group.category_type==='media'?'media':'source'
+    ]));
+    const dailyTotals=new Map();
+    for(const item of secondRiverBuckets){
+      const category=String(item.category||'');
+      const day=String(item.start_date||'').slice(0,10);
+      if(!day)continue;
+      const kind=kindBySource.get(category)||(category.startsWith('媒體 ·')?'media':'source');
+      const key=kind+'|'+day;
+      dailyTotals.set(key,(dailyTotals.get(key)||0)+(Number(item.item_count)||0));
+    }
+    const maxima=new Map();
+    for(const [key,count] of dailyTotals){
+      const kind=key.slice(0,key.indexOf('|'));
+      maxima.set(kind,Math.max(maxima.get(kind)||0,count));
+    }
+    const totalRows=[...dailyTotals].map(([key,count])=>{
+      const separator=key.indexOf('|');
+      const kind=key.slice(0,separator);
+      const day=key.slice(separator+1);
+      const label=kind==='media'?'多媒體':'文字來源';
+      return {
+        id:'dual:source-total:'+key,
+        entry_id:'dual:source-total:'+key,
+        entry_type:'source_total',
+        group_key:'dual:source-total:'+kind,
+        group_label:'來源總類｜'+label,
+        group_order:kind==='source'?0:1,
+        start_date:day,
+        end_date:nextRiverDay(day),
+        item_count:count,
+        density_ratio:count/Math.max(1,maxima.get(kind)||1),
+        display_label:'',
+        title:day+' · '+label+'總量 · '+count.toLocaleString(locale)+' 項'
+      };
+    });
+    const orderedSources=[...new Set(secondRiverBuckets.map(item=>String(item.category||'')))].sort((a,b)=>{
+      const aKind=kindBySource.get(a)||(a.startsWith('媒體 ·')?'media':'source');
+      const bKind=kindBySource.get(b)||(b.startsWith('媒體 ·')?'media':'source');
+      return Number(aKind==='media')-Number(bKind==='media')||a.localeCompare(b,locale);
+    });
+    const sourceOrder=new Map(orderedSources.map((source,index)=>[source,index]));
+    const detailRows=secondRiverBuckets.map(item=>({
+      ...item,
+      id:'dual:'+String(item.id),
+      group_key:'dual:source-category:'+String(item.category||''),
+      group_label:'來源分類｜'+String(item.category||''),
+      group_order:10+(sourceOrder.get(String(item.category||''))||0)
+    }));
+    // Candidate anchors are comparisons, not a second copy of official anchors.
+    const candidateRows=virtualAnchorItems.map(item=>({
+      ...item,group_key:'dual:source:candidates',group_label:'來源｜建議定錨點',group_order:900
+    }));
+    return [...totalRows,...detailRows,...candidateRows];
+  },[secondRiverBuckets,sourceSnapshotQuery.data?.groups,virtualAnchorItems,locale]);
+  const dualKeywordRiverItems=useMemo(()=>keywordDrillItems.map((item,index)=>({
+    ...item,
+    id:'dual:'+String(item.id),
+    group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
+    group_label:(keywordDrillGroup?'Group｜':'Class｜')+String(item.group_label||''),
+    group_order:1000+index
+  })),[keywordDrillItems,keywordDrillGroup]);
+  const dualRiverItems=useMemo(
+    ()=>[...dualSourceRiverItems,...dualKeywordRiverItems],
+    [dualSourceRiverItems,dualKeywordRiverItems]
   );
+  const dualRiverGroups=useMemo(()=>[
+    {id:'dual:section:source',label:'上半｜來源總類／來源分類',order:-10,className:'scope-dual-river-section'},
+    {id:'dual:section:keyword',label:keywordDrillGroup?'下半｜Class 內 Group 列表':'下半｜Class 列表',order:950,className:'scope-dual-river-section'},
+    ...(styleFilter==='none'
+      ?[{id:'dual:keyword:inactive',label:'選取關鍵詞組以顯示 Class',order:1000}]
+      :[])
+  ],[keywordDrillGroup,styleFilter]);
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
   },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
@@ -1116,7 +1188,7 @@ export default function Culture(){
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
-                <h3>第二條河道｜來源作品密度｜{classificationPeriodLabel}</h3>
+                <h3>來源 × Class／Group｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
@@ -1145,29 +1217,38 @@ export default function Culture(){
                     </div>
                   </details>
                 </div>:null}
-                {!riverRangeLoading&&classificationRiverItems.length?<CultureTimeline
-                  items={classificationRiverItems}
-                  labelOf={classificationRiverLabel}
-                  focus={EMPTY_RIVER_FOCUS}
-                  mode='source'
-                  windowStart={classificationWindowStart}
-                  windowEnd={classificationWindowEnd}
-                  hiddenDates={riverAnalysis.hiddenDates}
-                  onSelect={item=>{
-                    if(item?.entryType==='virtual_anchor'){
-                      toggleVirtualAnchor(String(item?.start||'').slice(0,10));
-                      return;
-                    }
-                    const term=String(item?.raw?.category||item?.category||item?.group||'').trim();
-                    if(!term)return;
-                    const key='source:'+term;
-                    if(categoryGroups.some(group=>group.category_key===key)){
-                      setSelectedCategory(key);
-                    }
-                  }}
-                />:null}
+                {classificationWindowValid?<div className='scope-culture-double-river'>
+                  <CultureTimeline
+                    items={dualRiverItems}
+                    extraGroups={dualRiverGroups}
+                    heightVariant='double'
+                    labelOf={classificationRiverLabel}
+                    focus={EMPTY_RIVER_FOCUS}
+                    mode='source'
+                    windowStart={classificationWindowStart}
+                    windowEnd={classificationWindowEnd}
+                    hiddenDates={riverAnalysis.hiddenDates}
+                    onSelect={item=>{
+                      if(item?.entryType==='virtual_anchor'){
+                        toggleVirtualAnchor(String(item?.start||'').slice(0,10));
+                        return;
+                      }
+                      if(item?.entryType==='keyword_density'){
+                        const key=String(item?.raw?.drill_key||'').trim();
+                        if(key&&!keywordDrillGroup)setKeywordDrillGroup(key);
+                        return;
+                      }
+                      if(item?.entryType!=='source')return;
+                      const term=String(item?.raw?.category||'').trim();
+                      const key='source:'+term;
+                      if(term&&categoryGroups.some(group=>group.category_key===key)){
+                        setSelectedCategory(key);
+                      }
+                    }}
+                  />
+                </div>:null}
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>第三條河道｜風格：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
+                  <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
                   <div className='scope-stat-controls'>
                     {keywordDrillGroup?<button type='button' className='loc-button' onClick={()=>setKeywordDrillGroup('')}>← 返回群組總覽</button>
                       :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}
@@ -1177,7 +1258,7 @@ export default function Culture(){
                         :'全部群組'}
                     </span>
                   </div>
-                  <h4>{keywordDrillGroup?'Group 分布｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'風格群組密度'}</h4>
+                  <h4>{keywordDrillGroup?'Class 內 Group 列表｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'Class 列表'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
                     <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
@@ -1202,21 +1283,6 @@ export default function Culture(){
                   {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
                   {keywordRiverError||keywordGroupCatalogQuery.error
                     ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordRiverError||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
-                  {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
-                    &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&keywordDrillItems.length?<CultureTimeline
-                    key={keywordDrillSource+'|'+keywordDrillGroup}
-                    items={keywordDrillItems}
-                    labelOf={emptyRiverLabel}
-                    focus={EMPTY_RIVER_FOCUS}
-                    mode='source'
-                    windowStart={keywordWindowStart}
-                    windowEnd={keywordWindowEnd}
-                    onSelect={item=>{
-                      const key=String(item?.raw?.drill_key||'').trim();
-                      if(!key)return;
-                      if(!keywordDrillGroup)setKeywordDrillGroup(key);
-                    }}
-                  />:null}
                   {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
                     &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
