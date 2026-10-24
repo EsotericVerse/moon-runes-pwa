@@ -56,13 +56,13 @@ test('All lazy-loaded UI sections exist in all four languages and have matching 
 
 test('Interpolated chart labels retain their placeholder in every locale',async()=>{
   const entries=await Promise.all(LOCALES.map(locale=>dictionary('sections/uiExtra.statisticsView.'+locale+'.js')));
-  for(const locale of entries)assert.match(locale.chartTopN,/\\{count\\}/);
+  for(const locale of entries)assert.ok(locale.chartTopN.includes('{count}'));
 });
 
 test('Nondefault core UI packs are imported on demand, not statically bundled',()=>{
   const code=readFileSync(new URL('ui-copy.js',ROOT),'utf8');
   const eager=code.slice(0,code.indexOf('const LOADERS='));
-  assert.match(eager,/import zhTw from '.\\/zh_tw\\.js'/);
+  assert.ok(eager.includes("import zhTw from './zh_tw.js'"));
   assert.doesNotMatch(eager,/import (?:en|ja|zhCn) from/);
   for(const name of ['zh_cn','en','ja'])
     assert.ok(code.includes("import('./"+name+".js')"),name+' needs a dynamic loader');
