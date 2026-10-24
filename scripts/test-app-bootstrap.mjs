@@ -149,9 +149,18 @@ test('keyword charts share one canvas and intersections offer at most eight lane
   assert.match(pane,/kind:'keyword_group'/);
   assert.match(pane,/kind:'keyword_item'/);
   assert.match(pane,/kind:'others_subgroup'/);
-  const {color,normalizeDistribution}=await import('../app/modular/modules/statistics/statistics-time-zoom.mjs');
+  const {color,pointColor,normalizeDistribution}=await import('../app/modular/modules/statistics/statistics-time-zoom.mjs');
   assert.equal(new Set(Array.from({length:8},(_,i)=>color(i))).size,8);
+  assert.equal(new Set(Array.from({length:48},(_,i)=>pointColor(i))).size,48);
+  assert.equal(pointColor(25),pointColor(25));
   assert.equal(normalizeDistribution([{name:'群組',value:3,fill:'#8962e3'}])[0].fill,'#8962e3');
+  // The primary graph uses multiple series; each displayed bar, not merely
+  // each series, needs a Cell with its own color.
+  assert.match(chart,/display\.map\(\(_,j\)=><Cell key=\{j\} fill=\{pointColor\(j\*timeFields\.length\+i\)\}/);
+  assert.match(chart,/composed\.map\(\(_,i\)=><Cell key=\{i\} fill=\{pointColor\(i\)\}/);
+  assert.match(chart,/colorPanel=\{colored\.map\(item=>item\.fill\)\}/);
+  assert.match(chart,/paired\.data\.map\(\(row,i\)=><Cell key=/);
+  assert.match(chart,/fields\.length>1&&!\['bar','composed'\]\.includes\(actual\)/);
 });
 
 
