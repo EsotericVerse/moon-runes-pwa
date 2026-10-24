@@ -194,8 +194,10 @@ export function usePassiveSessionAccount(){
       const identityChanged=authUserId!==nextUserId;
       if(identityChanged||event==='SIGNED_OUT')authRevision+=1;
       authUserId=nextUserId;
-      void mutate(SESSION_KEY,user
-        ?{...signedOutState,user,email:normalizeAuthEmail(user.email)}
+      // Passive navigation needs only a session ID hint, never an OAuth email.
+      // Google provider email is displayed only after Auth.getUser() verifies it.
+      void mutate(SESSION_KEY,nextUserId
+        ?{...signedOutState,user:{id:nextUserId}}
         :signedOutState,{revalidate:false});
       if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
         // Never put the unverified SDK event user into the verified OAuth cache.
