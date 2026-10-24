@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
@@ -14,6 +14,11 @@ export default function ScopeHomeEditEntry(){
   const editDock=useEditDock();
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+
+  useEffect(()=>{
+    if(scopeId!=='local'||!Capacitor.isNativePlatform()||Capacitor.getPlatform()!=='ios')return;
+    if(new URLSearchParams(window.location.search).get('edit')==='1')editDock?.begin('local');
+  },[scopeId,editDock?.begin]);
 
   async function enter(){
     if(busy)return;
