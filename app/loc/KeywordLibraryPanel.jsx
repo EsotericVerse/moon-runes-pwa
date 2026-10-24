@@ -14,6 +14,7 @@ const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null}
 // The vis-network bundle is downloaded/mounted only when its view is chosen.
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
 
+const compactKeywordTitle=label=>String(label||'').replace(/^關鍵詞/,'');
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
@@ -65,7 +66,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>{
     const label=l[option.key]||featureZh.keywordPanel[option.key];
-    return {value:option.value,label,shortLabel:label.replace(/^關鍵詞/,'')};
+    return {value:option.value,label,shortLabel:compactKeywordTitle(label)};
   });
   const editDock=useEditDock();
   const dockActions=useRef({save:null});
@@ -631,7 +632,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     </section>:null}
 
     {workspace==='run'?<section className="loc-card scope-feature-card">
-      <h2>{l.keywordAnalysis}</h2>
+      <h2>{compactKeywordTitle(l.keywordAnalysis)}</h2>
       <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_id===currentClassId)?.class_name||l.activeClassRequired}</p>
       {configDirty||draftDirty?<p className="scope-status">{l.settingsUnsaved}</p>:null}
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
@@ -655,7 +656,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     </section>:null}
 
     {workspace==='library'?<section className="loc-card scope-feature-card">
-      <h2>{l.title}</h2>
+      <h2>{compactKeywordTitle(l.title)}</h2>
       <p>{l.description}</p>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?l.processing:l.copyRuneButton}</button>
@@ -678,7 +679,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     </section>:null}
 
     {(workspace==='manual'||workspace==='network')?<section className="loc-card scope-feature-card scope-keyword-editor-section">
-    <h2>{workspace==='manual'?l.manual:l.network}</h2>
+    <h2>{compactKeywordTitle(workspace==='manual'?l.manual:l.network)}</h2>
     <div className="scope-stat-controls">
       <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
         {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
