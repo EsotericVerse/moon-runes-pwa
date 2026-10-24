@@ -25,7 +25,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
   {value:'featureHero',label:'功能區塊設定',description:'編輯各功能頁的標題、說明與首圖。'},
   {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁。'},
-  {value:'system',label:'系統連線',description:'設定資料庫連線與郵件封鎖名單。'}
+  {value:'system',label:'系統連線',description:'管理資料庫連線、ISR Domain 與郵件封鎖名單。'}
 ]);
 function Login({account}){
   const UI_COPY=useUiCopy();
@@ -41,6 +41,7 @@ function Login({account}){
 const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
 const AdminReservedScopeIds=dynamic(()=>import('./admin-panels/AdminReservedScopeIds'),{loading:PanelLoading});
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
+const IsrDomainTarget=dynamic(()=>import('./admin-panels/IsrDomainTarget'),{loading:PanelLoading});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
 const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
@@ -81,7 +82,7 @@ export default function AdminHomeView(){
         {section==='registry'?<AdminRegistryPanel/>:null}
         {section==='reserved'?<AdminReservedScopeIds/>:null}
         {section==='themes'?<ThemeEditor/>:null}
-        {section==='system'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
+        {section==='system'?<><DatabaseTarget/><IsrDomainTarget/><AdminEmailBlocklist/></>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
         {section==='governance'?<ScopeEditableBlocks key="loc-governance"
           scopeId="loc" page="governance"
