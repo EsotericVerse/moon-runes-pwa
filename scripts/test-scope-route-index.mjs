@@ -81,14 +81,16 @@ test('LOC homepage uses its configured Theme instead of aggregate auto fallback'
     'System default remains independent of a concrete configured Theme');
 });
 
-test('Rune homepage exposes its authorized edit entry above the long card page',()=>{
+test('Rune homepage uses the same authorized edit entry as every other Scope home',()=>{
   const shell=read('app/AppShell.jsx');
   const runes=read('app/lrunes/RunesClient.jsx');
-  assert.ok(runes.includes('import ScopeHomeEditEntry from'));
-  assert.ok(runes.indexOf('<ScopeHomeEditEntry/>')<runes.indexOf('<ScopeEditableBlocks'),
-    'Rune edit entry must not be hidden below the full Rune homepage');
-  assert.ok(shell.includes("showHomeEditEntry&&scopeId!=='lrunes'"),
-    'Do not duplicate the Rune edit entry in the global footer');
+  const shared=read('app/loc/ScopeHomeEditEntry.jsx');
+  assert.ok(shell.includes('{showHomeEditEntry?<ScopeHomeEditEntry key={scopeId}/>:null}'),
+    'Shared homepage edit entry must apply to Rune as well');
+  assert.ok(!runes.includes('ScopeHomeEditEntry'),
+    'Do not insert a second Rune-specific entry into its page');
+  assert.ok(shared.includes('canManageScopeSync(scopeId)'),
+    'Rune editing must use normal Scope permission checks');
   assert.ok(runes.includes('scopeId="lrunes"')&&runes.includes('page="hero"'),
-    'Editing retains the original authorized Rune hero Blocks');
+    'Shared edit mode must retain the Rune-only Hero Blocks');
 });
