@@ -115,6 +115,15 @@ function ThemeSelect({scopeId,scopeMeta=null,copy=UI_COPY,defaultThemeIdOverride
   const configuredDefaultThemeId=configuredTheme===SYSTEM_THEME_ID?'':configuredTheme;
   const [selection,setSelection]=useState(()=>({scopeId,themeId:SYSTEM_THEME_ID}));
   const [now,setNow]=useState(()=>new Date());
+  // Applying a saved Scope default must also clear any temporary footer choice.
+  // Otherwise the local preview can mask a successful database update.
+  useEffect(()=>{
+    const onSaved=event=>{
+      if(event?.detail?.scopeId===scopeId)setSelection({scopeId,themeId:SYSTEM_THEME_ID});
+    };
+    window.addEventListener('loc-scope-theme-saved',onSaved);
+    return()=>window.removeEventListener('loc-scope-theme-saved',onSaved);
+  },[scopeId]);
   const selectedThemeId=selection.scopeId===scopeId?selection.themeId:SYSTEM_THEME_ID;
   const systemDefaultThemeId=fixedDefaultThemeId||configuredDefaultThemeId||automaticThemeId(now);
   const effectiveThemeId=selectedThemeId===SYSTEM_THEME_ID?systemDefaultThemeId:selectedThemeId;
