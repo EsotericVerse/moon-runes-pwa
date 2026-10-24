@@ -657,7 +657,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         />
       </StatisticsChartFrame>
       <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}
-        scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeKeywordSource)}/>}</StatisticsDetails>
+        scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeSourceSelection)}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>rankingType==='media_style'?crossTagQuery.refetch():mediaQuery.refetch()} disabled={mediaFetching}>
