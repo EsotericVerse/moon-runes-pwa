@@ -68,8 +68,7 @@ export default {
   "displayStyle": "Style",
   "keywordSettings": "Keyword settings",
   "groupSourcesShare": "Group source categories · shared statistics",
-  "scopeGroupStatisticsTitle": "Scope Group statistics guide",
-  "scopeGroupStatisticsHelp": "Each Scope runs its own works, source, and 2–4 group interaction statistics. The Group provides navigation only.",
+  "scopeGroupStatisticsTitle": "Group statistics",
   "groupSuffix": " group",
   "runeSuffix": " rune",
   "classWorkCount": "Class work count",
@@ -81,8 +80,9 @@ export default {
   "chartAdvanced": "Advanced charts",
   "chartTopN": "Trend charts initially show the top {count} items; the full list is available in the detailed data below.",
   "crossAdvancedTitle": "Expand Meta Tag cross-analysis (advanced)",
-  "othersBreakdownTitle": "Others subcategories in this Scope",
-  "othersLoading": "Loading subcategories…",
-  "othersUnclassified": "Uncategorized (Others)",
-  "othersEmpty": "No Others sources in this period."
+  "othersAll": "All",
+  "othersCategory": "Other",
+  "othersLoadFailed": "Could not load custom categories: {error}",
+  "othersBreakdownTitle": "Custom categories",
+  "othersUnclassified": "Uncategorized",
 };

@@ -233,7 +233,7 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
   },[groupsQuery.data,rows,catalog,range.startDate,range.endDate,labels.othersUnclassified]);
   return <div className="scope-ranking">
     <h4>{labels.othersBreakdownTitle}</h4>
-    {groupsQuery.isPending?<p className="scope-status">{labels.othersLoading}</p>:null}
+    {groupsQuery.isPending?<p className="scope-status">{copy.common.loading}</p>:null}
     {groupsQuery.error?<p className="scope-status scope-error">
       {featureDataErrorMessage(groupsQuery.error,copy)}
     </p>:null}
@@ -241,7 +241,7 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
       ?details.map(item=><div key={item.key} className="scope-stat-controls">
         <span>{item.label}</span><strong>{item.value.toLocaleString()}</strong>
       </div>)
-      :!groupsQuery.isPending&&!groupsQuery.error?<p className="scope-status">{labels.othersEmpty}</p>:null}
+      :null
   </div>;
 }
 
@@ -605,23 +605,20 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           }}>
           <option value="">全部來源</option>
           {(styleFilter==='rune66'?configuredSources:(sourceCatalog.data?.categories||[]).filter(row=>row.enabled!==false))
-            .map(source=><option key={source.category_code} value={source.category_code}>{source.display_name}</option>)}
+            .map(source=><option key={source.category_code} value={source.category_code}>{source.category_code==='others'?t('uiExtra.statisticsView.othersCategory'):source.display_name}</option>)}
           {!(styleFilter==='rune66'?configuredSources:(sourceCatalog.data?.categories||[]))
-            .some(row=>row.category_code==='others')?<option value="others">Others</option>:null}
+            .some(row=>row.category_code==='others')?<option value="others">{t('uiExtra.statisticsView.othersCategory')}</option>:null}
         </select>
       </label>:null}
       {!isLrunesDaily&&!mediaDimension&&activeSourceSelection==='others'?<label>
-        <span>自定義小分類（Others）</span>
-        <select className="scope-select" aria-label="Others 自定義小分類" value={sourceSubgroup}
+        <span>{t('uiExtra.statisticsView.othersBreakdownTitle')}</span>
+        <select className="scope-select" aria-label={t('uiExtra.statisticsView.othersBreakdownTitle')} value={sourceSubgroup}
           onChange={event=>setSourceSubgroup(event.target.value)}>
-          <option value="">全部 Others</option>
+          <option value="">{t('uiExtra.statisticsView.othersAll')}</option>
           {activeSubgroups.map(group=><option key={group.group_code} value={group.group_code}>{group.display_name}</option>)}
-          <option value="unclassified">未細分（Others）</option>
+          <option value="unclassified">{t('uiExtra.statisticsView.othersUnclassified')}</option>
         </select>
       </label>:null}
-      {!isLrunesDaily?<span className="scope-status" role="status">
-        定義時間區間：{queryRange.startDate||'—'} ～ {queryRange.endDate||'—'}
-      </span>:null}
       {periodQuery.error&&!isLrunesDaily?<span className="scope-status scope-error">
         時期範圍無法載入，仍可使用自選時間：{featureDataErrorMessage(periodQuery.error,UI_COPY)}
       </span>:null}

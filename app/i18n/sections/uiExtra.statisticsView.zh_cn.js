@@ -68,8 +68,7 @@ export default {
   "displayStyle": "表现风格",
   "keywordSettings": "关键词设置",
   "groupSourcesShare": "群组来源分类 · 共享统计",
-  "scopeGroupStatisticsTitle": "Scope Group 统计导航",
-  "scopeGroupStatisticsHelp": "各 Scope 自行进行作品、来源与 2～4 组交互统计；Group 仅提供导航。",
+  "scopeGroupStatisticsTitle": "群组统计",
   "groupSuffix": "群组",
   "runeSuffix": "之符文",
   "classWorkCount": "Class 作品数",
@@ -81,8 +80,9 @@ export default {
   "chartAdvanced": "高级图表",
   "chartTopN": "趋势图先显示前 {count} 项；完整项目可在下方详细数据中查看。",
   "crossAdvancedTitle": "展开 Meta Tag 交叉分析（高级）",
-  "othersBreakdownTitle": "此 Scope 的 Others 子分类",
-  "othersLoading": "正在加载子分类…",
-  "othersUnclassified": "未细分（Others）",
-  "othersEmpty": "此时间范围内没有 Others 来源。"
+  "othersAll": "全部",
+  "othersCategory": "其他",
+  "othersLoadFailed": "自定义分类加载失败：{error}",
+  "othersBreakdownTitle": "自定义分类",
+  "othersUnclassified": "未分类",
 };

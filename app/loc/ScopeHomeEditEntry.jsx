@@ -40,7 +40,7 @@ export default function ScopeHomeEditEntry(){
         ?result.authorizer?.canManageGlobalSync()
         :result.authorizer?.canManageScopeSync(scopeId);
       if(!allowed){
-        setMessage('目前帳號沒有此 Scope 的編輯權限。');
+        setMessage('目前帳號沒有編輯權限。');
         return;
       }
       // The homepage editor is mounted on this same Scope homepage.

@@ -68,8 +68,7 @@ export default {
   "displayStyle": "スタイル",
   "keywordSettings": "キーワード設定",
   "groupSourcesShare": "グループソース分類・公開統計",
-  "scopeGroupStatisticsTitle": "Scope Group 統計ガイド",
-  "scopeGroupStatisticsHelp": "各 Scope が作品・ソース・2～4 組の交互統計を担当します。Group は案内のみを行います。",
+  "scopeGroupStatisticsTitle": "グループ統計",
   "groupSuffix": "グループ",
   "runeSuffix": "のルーン",
   "classWorkCount": "Class 作品数",
@@ -81,8 +80,9 @@ export default {
   "chartAdvanced": "高度なグラフ",
   "chartTopN": "推移グラフには上位 {count} 項目を表示します。すべての項目は下の詳細データで確認できます。",
   "crossAdvancedTitle": "Meta Tag クロス分析を展開（詳細）",
-  "othersBreakdownTitle": "この Scope の Others サブカテゴリ",
-  "othersLoading": "サブカテゴリを読み込み中…",
-  "othersUnclassified": "未分類（Others）",
-  "othersEmpty": "この期間に Others のソースはありません。"
+  "othersAll": "すべて",
+  "othersCategory": "その他",
+  "othersLoadFailed": "カスタム分類を読み込めませんでした：{error}",
+  "othersBreakdownTitle": "カスタム分類",
+  "othersUnclassified": "未分類",
 };

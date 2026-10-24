@@ -71,6 +71,7 @@ function canonicalBucket(day,unit){
 }
 export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
   useUiSection('uiExtra.selfIntersection');
+  useUiSection('uiExtra.statisticsView');
   const {locale,copy}=useUiLocale();
   const t=useUiText();
   const l=copy.uiExtra.selfIntersection;
@@ -353,7 +354,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       {query.isPending||keywords.isPending||othersConfig.isPending?<p className="scope-status">{l.readingSources}</p>:null}
       {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||l.readFailed)}</p>:null}
       {keywords.error?<p className="scope-status scope-error">關鍵詞分佈載入失敗：{String(keywords.error?.message||keywords.error)}</p>:null}
-      {othersConfig.error?<p className="scope-status scope-error">Others 自定義小分類載入失敗：{String(othersConfig.error?.message||othersConfig.error)}</p>:null}
+      {othersConfig.error?<p className="scope-status scope-error">{t('uiExtra.statisticsView.othersLoadFailed',{error:String(othersConfig.error?.message||othersConfig.error)})}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
           <label><span><FieldText text="比較組數"/></span>

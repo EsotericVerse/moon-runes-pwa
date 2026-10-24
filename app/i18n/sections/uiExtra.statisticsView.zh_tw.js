@@ -68,8 +68,7 @@ export default {
   "displayStyle": "表現風格",
   "keywordSettings": "關鍵詞設定",
   "groupSourcesShare": "群組來源分類 · 對外統計開放",
-  "scopeGroupStatisticsTitle": "Scope Group 統計導引",
-  "scopeGroupStatisticsHelp": "各 Scope 自行執行作品、來源及 2～4 組自交互統計；Group 只提供導引。",
+  "scopeGroupStatisticsTitle": "群組統計",
   "groupSuffix": "群組",
   "runeSuffix": "之符文",
   "classWorkCount": "關鍵詞組作品數",
@@ -81,8 +80,9 @@ export default {
   "chartAdvanced": "進階圖表",
   "chartTopN": "趨勢圖先顯示前 {count} 項；完整項目可於下方詳細數據查看。",
   "crossAdvancedTitle": "展開 Meta Tag 交叉分析（進階）",
-  "othersBreakdownTitle": "此 Scope 的 Others 小分類",
-  "othersLoading": "載入小分類…",
-  "othersUnclassified": "未細分（Others）",
-  "othersEmpty": "此區間沒有 Others 來源。"
+  "othersAll": "全部",
+  "othersCategory": "其他",
+  "othersLoadFailed": "自訂分類載入失敗：{error}",
+  "othersBreakdownTitle": "自訂分類",
+  "othersUnclassified": "未分類",
 };

@@ -19,9 +19,9 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'作品來源分類',shortLabel:'來源',description:''},
-  {value:'governance',label:'編輯治理頁面',shortLabel:'治理',description:'編輯此 Scope 治理頁的既有區塊。'},
-  {value:'settings',label:'主題',shortLabel:'主題',description:'選擇這個 Scope 使用的主題。'}
+  {value:'others',label:'自訂分類',shortLabel:'分類',description:''},
+  {value:'governance',label:'編輯治理頁面',shortLabel:'治理',description:''},
+  {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
@@ -46,11 +46,10 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   if(isLoc)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card">
-      <p>LOC 編輯管理已按功能分頁，請前往各自的編輯工作區。</p>
       <div className="scope-stat-controls">
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>來源管理</ScopeLink>
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
-        <ScopeLink className="loc-button" native={native} href={navigationHref('admin','',native)+'?section=featureHero&edit=1'}>編輯治理頁面（Admin）</ScopeLink>
+        <ScopeLink className="loc-button" native={native} href={navigationHref('admin','',native)+'?section=featureHero&edit=1'}>編輯治理頁面</ScopeLink>
       </div>
     </section>
   </FeaturePage>;
@@ -58,7 +57,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
 
     <div className="scope-management-layout">
     <div className="management-workspace">
-      <ManagementSectionNav id="scope-sections" title="Scope 管理" panelId="scope-management-panel"
+      <ManagementSectionNav id="scope-sections" title="管理" panelId="scope-management-panel"
         items={options} value={section} onChange={next=>{
           if(next===section)return;
           if(editDock?.active)editDock.switchSection(next,setSection);

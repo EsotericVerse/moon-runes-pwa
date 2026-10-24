@@ -168,7 +168,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   },[dock?.active,dock?.scopeId,dock?.register,scopeId]);
 
   return <section className="loc-card scope-feature-card">
-    <h2>作品來源分類</h2>
+    <h2>自訂分類</h2>
     {query.isPending?<p className="scope-status" role="status">載入分類…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">{String(query.error.message||query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
