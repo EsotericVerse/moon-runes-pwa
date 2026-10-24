@@ -5,7 +5,7 @@ import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import RuneExtrudedGlyph from './RuneExtrudedGlyph';
-import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
+import {AUTHORED_EFFECT_FILES,CANONICAL_RUNE_ENGLISH,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,groupSummonForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
 import {redirectHd256ParticleTexture} from './hd256-particle-paths.mjs';
@@ -155,10 +155,9 @@ const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
 function drawPreludeForRune(runeId){
-  const summon=groupSummonForRune(runeId);
-  const filename=summon&&AUTHORED_EFFECT_FILES[summon.key];
-  return filename?{key:summon.key,path:SOURCE+filename,
-    tuning:{scale:summon.scale,speed:summon.speed}}:WAITING_AUTHORED_EFFECT;
+  const id=Number(runeId);
+  if(!Number.isInteger(id)||id<1||id>66)return null;
+  return runeEffectFor({english_name:CANONICAL_RUNE_ENGLISH[id]});
 }
 
 function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original',diagnoseAmbient=false}){
@@ -611,8 +610,8 @@ export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='or
 export function WaitingEffekseerStage({textureQuality='original',runeId=null}){
   const reduced=useReducedMotion();
   const selectedEffect=useMemo(()=>drawPreludeForRune(runeId),[runeId]);
-  return <div className="rune-effekseer-stage" data-source="authored-waiting"
-    data-summon-group={groupSummonForRune(runeId)?.group||undefined}>
+  return <div className="rune-effekseer-stage" data-source="authored-rune-prelude"
+    data-effect-key={selectedEffect?.key||undefined}>
     <EffekseerCanvas effect={selectedEffect} reduced={reduced} waiting textureQuality={textureQuality}/>
   </div>;
 }
@@ -625,8 +624,6 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   const profile=runeGlyphProfile(rune);
   const key=String(rune?.rune_id??word)+'-'+word+'-'+replay;
   const effect=useMemo(()=>runeEffectFor(rune),[rune?.english_name]);
-  const groupEffect=useMemo(()=>ceremony?groupEffectFor(rune):null,[ceremony,rune?.rune_id]);
-  const groupStage=useMemo(()=>ceremony?groupStageForRune(rune?.rune_id):null,[ceremony,rune?.rune_id]);
   const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
   const showCard=ceremony&&appearance==='card'&&Boolean(cardSrc);
@@ -639,9 +636,9 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   },[ceremony,reduced,key]);
   return <div className="rune-effekseer-stage" data-source="effekseer" data-rune={word}
     data-ceremony={ceremony?'summoning':undefined}
-    data-quality={quality} data-texture-quality={textureQuality} data-group-stage={groupStage?.style}
+    data-quality={quality} data-texture-quality={textureQuality} data-effect-key={effect?.key||''}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} groupEffect={groupEffect} groupStage={groupStage} reduced={reduced} ceremony={ceremony} quality={quality} textureQuality={textureQuality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} reduced={reduced} ceremony={ceremony} quality={quality} textureQuality={textureQuality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"

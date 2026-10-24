@@ -115,7 +115,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       const id=match?Number(match[1]):null;
       const runeId=match?.[2]!==undefined?Number(match[2]):null;
       setGroupId(id);
-      setFocusId(id!==null&&runeId!==null&&runeNumbersForGroup(id).includes(runeId)?runeId:null);
+      setFocusId(id!==null?(runeId!==null&&runeNumbersForGroup(id).includes(runeId)?runeId:runeNumbersForGroup(id)[0]):null);
       setShowCardInfo(false);
     };
     window.addEventListener('popstate',syncLocation);
@@ -133,8 +133,9 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
   const currentGlyph=current?runeGlyphProfile(current):null;
 
   useEffect(()=>{
-    if(focusId!==null)stageRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
-  },[focusId]);
+    if(current&&stageRef.current)
+      stageRef.current.scrollIntoView({behavior:reducedMotion?'instant':'smooth',block:'center'});
+  },[current?.rune_id,playback,reducedMotion]);
   const jumpTo=rune=>{
     if(!rune||groupId===null)return;
     const runeId=Number(rune.rune_id);
@@ -147,7 +148,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
   const selectGroup=entry=>{
     window.history.pushState({runeCardLevel:'group'},'',
       window.location.pathname+window.location.search+'#group-'+entry.id);
-    setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);
+    setGroupId(entry.id);setFocusId(runeNumbersForGroup(entry.id)[0]);setShowCardInfo(false);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const backToGroups=()=>{
@@ -166,7 +167,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     <header className="rune-3d-header">
       <p className="loc-eyebrow">LUNARUNES · 符文圖鑑</p>
       <h1>{group?group.name+'組 · 3D 符文圖鑑':'六十六枚符文 · 3D 圖鑑'}</h1>
-      <p>{group?'群組畫作展開後，點選符文卡圖，即可觀看該枚符文的 3D Effekseer 顯現。':
+      <p>{group?'先觀看符文的獨立 Effekseer 特效，下方再顯示原始群組畫作與卡片。':
         '以九個群組的原創圖片為入口，展開符文畫廊，不再使用星系式選單。'}</p>
     </header>
     {status==='loading'?<p className="rune-3d-library-message" role="status">正在載入此群組的符文卡片……</p>:null}
@@ -178,55 +179,21 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     {status==='ready'&&group&&error?<p className="rune-3d-atlas-data-warning" role="status">{error}</p>:null}
     {status==='ready'&&!group?<section className="rune-3d-atlas-gallery" aria-label="九大群組原創圖片">
       <RuneArtStage mode="groups" items={groups} onSelect={selectGroup}
-        galleryTitle="九大符文群組" galleryDescription="點選原創畫作，展開群組介紹與符文卡圖。"/>
+        galleryTitle="九大符文群組 · 66 種獨立特效" galleryDescription="九組只是分類，進入群組立即顯示第一枚的 3D 動畫；選擇不同卡片則播放各自的特效。"/>
     </section>:null}
     {status==='ready'&&group?<>
       <nav className="rune-3d-atlas-back" aria-label="返回群組畫廊">
         <button type="button" className="rune-skin-btn" onClick={backToGroups}>← 返回九個群組</button>
         <span>第 {String(group.id).padStart(2,'0')} / 09 組 · {runes.length} 枚</span>
       </nav>
-      <section className="rune-3d-atlas-group-hero" aria-label={group.name+'群組原創畫作與介紹'}>
-        <div className="rune-3d-atlas-group-artwork">
-          <img src={groupImage(group.id)} alt={group.name+'群組原創畫作'} loading="eager" decoding="async"/>
-        </div>
-        <div className="rune-3d-atlas-group-copy">
-          <p className="loc-eyebrow">RUNE GROUP · {String(group.id).padStart(2,'0')} / 09</p>
-          <h2>{group.name}組</h2>
-          {group.english_name?<p className="rune-3d-atlas-group-en">{group.english_name}</p>:null}
-          {group.desc?<p className="rune-3d-atlas-group-description">{group.desc}</p>:null}
-          {group.quality&&group.quality!=='風格特徵'?<p><strong>群組特徵：</strong>{group.quality}</p>:null}
-          {group.style&&group.style!=='style / trait'?<p><strong>風格：</strong>{group.style}</p>:null}
-          <p>本群組收錄 {runes.length} 枚 3D 符文</p>
-        </div>
-      </section>
-      <section className="rune-3d-atlas-gallery" aria-label={group.name+'原創符文卡圖'}>
-        <RuneArtStage mode="runes" items={runes} onSelect={jumpTo}
-          galleryTitle={group.name+' · 符文卡圖'}
-          galleryDescription="符文卡圖、原始敘述與基本屬性均完整呈現；點選卡圖觀看專屬 3D 演出。"
-          runeActionLabel="觀看 3D 顯現"/>
-      </section>
-    </>:null}
-
-    {status==='ready'&&current?<section className="rune-3d-library-manifestation" ref={stageRef}
+    {status==='ready'&&current?<section className="rune-3d-library-manifestation"
       aria-label={runeName(current)+'符文 3D 顯現'}>
       <div className="rune-3d-library-title">
         <h2>{runeName(current)} · {current.english_name}</h2>
         <span>第 {current.rune_id} / 66 枚 · {group.name}</span>
         <span className="rune-3d-toolbar-label">粒子貼圖：{textureQuality==='hd256'?'256':'原始'}</span>
       </div>
-      <div className="rune-3d-atlas-glyph-review" aria-label={runeName(current)+'的 3D 字型檢視'}>
-        <div className={'rune-effekseer-glyph rune-effekseer-glyph--'+currentGlyph.font+' rune-3d-atlas-glyph-model'}
-          data-glyph-family={currentGlyph.family} data-glyph-finish={currentGlyph.finish}
-          style={{'--rune-ink':currentGlyph.ink}}>
-          <RuneExtrudedGlyph key={'preview-'+current.rune_id} word={runeName(current).slice(0,1)} profile={currentGlyph}/>
-        </div>
-        <div className="rune-3d-atlas-glyph-copy">
-          <p className="loc-eyebrow">3D 字型 · 固定檢視</p>
-          <p>字型：{RUNE_GLYPH_STYLES[currentGlyph.family]?.label||currentGlyph.family}</p>
-          <p>正面固定、立體筆畫及側面厚度，可直接比較每枚符文。</p>
-        </div>
-      </div>
-      <div className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
+      <div ref={stageRef} className={'rune-3d-stage rune-3d-atlas-performance'+(showCardInfo?' rune-3d-atlas-performance--reading':'')}>
         <EffekseerStage key={current.rune_id+'-'+playback} rune={current} vfxOnly textureQuality={textureQuality}
           onPlaybackComplete={()=>setShowCardInfo(true)}/>
         {showCardInfo?<motion.div key={'reading-'+current.rune_id+'-'+playback}
@@ -259,6 +226,18 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
           </div>
         </motion.div>:null}
       </div>
+      <div className="rune-3d-atlas-glyph-review" aria-label={runeName(current)+'的 3D 字型檢視'}>
+        <div className={'rune-effekseer-glyph rune-effekseer-glyph--'+currentGlyph.font+' rune-3d-atlas-glyph-model'}
+          data-glyph-family={currentGlyph.family} data-glyph-finish={currentGlyph.finish}
+          style={{'--rune-ink':currentGlyph.ink}}>
+          <RuneExtrudedGlyph key={'preview-'+current.rune_id} word={runeName(current).slice(0,1)} profile={currentGlyph}/>
+        </div>
+        <div className="rune-3d-atlas-glyph-copy">
+          <p className="loc-eyebrow">3D 字型 · 固定檢視</p>
+          <p>字型：{RUNE_GLYPH_STYLES[currentGlyph.family]?.label||currentGlyph.family}</p>
+          <p>正面固定、立體筆畫及側面厚度，可直接比較每枚符文。</p>
+        </div>
+      </div>
       <div className="rune-3d-library-actions">
         <div className="rune-3d-review-stepping" role="group" aria-label="前後符文">
           <button type="button" className="rune-skin-btn" onClick={()=>stepRune(-1)}>← 上一枚</button>
@@ -268,6 +247,27 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
 
       </div>
     </section>:null}
+      <section className="rune-3d-atlas-group-hero" aria-label={group.name+'群組原創畫作與介紹'}>
+        <div className="rune-3d-atlas-group-artwork">
+          <img src={groupImage(group.id)} alt={group.name+'群組原創畫作'} loading="eager" decoding="async"/>
+        </div>
+        <div className="rune-3d-atlas-group-copy">
+          <p className="loc-eyebrow">RUNE GROUP · {String(group.id).padStart(2,'0')} / 09</p>
+          <h2>{group.name}組</h2>
+          {group.english_name?<p className="rune-3d-atlas-group-en">{group.english_name}</p>:null}
+          {group.desc?<p className="rune-3d-atlas-group-description">{group.desc}</p>:null}
+          {group.quality&&group.quality!=='風格特徵'?<p><strong>群組特徵：</strong>{group.quality}</p>:null}
+          {group.style&&group.style!=='style / trait'?<p><strong>風格：</strong>{group.style}</p>:null}
+          <p>本群組收錄 {runes.length} 枚 3D 符文</p>
+        </div>
+      </section>
+      <section className="rune-3d-atlas-gallery" aria-label={group.name+'原創符文卡圖'}>
+        <RuneArtStage mode="runes" items={runes} onSelect={jumpTo}
+          galleryTitle={group.name+' · 符文卡圖'}
+          galleryDescription="每枚卡片皆有自己的魔法特效；點選卡片即可切換上方動畫。"
+          runeActionLabel="觀看 3D 顯現"/>
+      </section>
+    </>:null}
 
     <footer className="rune-3d-footer">
       <nav className="rune-skin-controls" aria-label="符文圖鑑導覽">

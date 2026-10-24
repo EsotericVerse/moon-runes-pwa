@@ -33,3 +33,15 @@ test('3D atlas supports the same #group-6 and rune deep-links as 2D',()=>{
   assert.ok(librarySource.includes("'#group-'+entry.id"));
   assert.ok(librarySource.includes("'#group-'+groupId+'/rune-'+runeId"));
 });
+
+test('3D group entry previews the first rune and scrolls the actual effect into view',()=>{
+  assert.ok(librarySource.includes('setGroupId(entry.id);setFocusId(runeNumbersForGroup(entry.id)[0]);'));
+  assert.ok(librarySource.includes('runeNumbersForGroup(id)[0]'));
+  const stage=librarySource.indexOf('rune-3d-library-manifestation"');
+  const gallery=librarySource.indexOf('<RuneArtStage mode="runes" items={runes}');
+  const canvas=librarySource.indexOf("ref={stageRef} className={'rune-3d-stage");
+  const glyph=librarySource.indexOf('rune-3d-atlas-glyph-review');
+  assert.ok(stage>0&&stage<gallery,'3D spell stage should appear before flat card gallery');
+  assert.ok(canvas>0&&canvas<glyph,'effect canvas should precede static glyph model');
+  assert.ok(librarySource.includes("block:'center'"));
+});

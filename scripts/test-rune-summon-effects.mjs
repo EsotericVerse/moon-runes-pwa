@@ -18,3 +18,13 @@ test('all 66 runes select the correct group for the prelude',()=>{
   assert.equal(groupSummonForRune(67),null);
   assert.equal(groupSummonForRune('bad'),null);
 });
+
+test('draw prelude and reveal play each rune scene, not nine shared group effects',()=>{
+  const source=readFileSync(new URL('../app/lrunes/effekseer/EffekseerStage.jsx',import.meta.url),'utf8');
+  assert.ok(source.includes('return runeEffectFor({english_name:CANONICAL_RUNE_ENGLISH[id]});'));
+  assert.ok(source.includes('data-source="authored-rune-prelude"'));
+  assert.ok(source.includes('data-effect-key={effect?.key'));
+  assert.ok(source.includes('<EffekseerCanvas key={key} effect={effect} reduced={reduced} ceremony={ceremony}'));
+  assert.ok(!source.includes('ceremony?groupEffectFor(rune)'));
+  assert.ok(!source.includes('ceremony?groupStageForRune(rune?.rune_id)'));
+});
