@@ -183,7 +183,7 @@ export default function Culture(){
   const isTimeEditingView=searchParams?.get('edit')==='1';
   const account=useAccount({enabled:false});
   const editDock=useEditDock();
-  const [timeEditorSection,,timeEditorHrefFor]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
+  const [timeEditorSection,setTimeEditorSection]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
@@ -964,13 +964,8 @@ export default function Culture(){
             panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
             value={timeEditorSection} onChange={next=>{
               if(next===timeEditorSection)return;
-              const href=timeEditorHrefFor(next);
-              if(!href)return;
-              const url=new URL(href,window.location.href);
-              url.searchParams.delete('anchorDate');
-              const target=url.pathname+url.search+url.hash;
-              if(editDock?.active)editDock.switchTo(target,{history:'push'});
-              else window.history.pushState(null,'',target);
+              if(editDock?.active)editDock.switchSection(next,setTimeEditorSection);
+              else setTimeEditorSection(next);
             }}/>
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
             aria-labelledby={'time-editor-sections-option-'+choice.value}>
