@@ -237,7 +237,7 @@ export function Rune66Summary({analysis,range={}}){
   const trendRows=shown==='group'?trend:[];
   const series=shown==='group'?trendSeries:[];
   const options=availableStatisticChartTypes({rows:trendRows,series,distribution})
-    .filter(([kind])=>shown==='group'||['bar','pie','treemap'].includes(kind));
+    .filter(([kind])=>(shown==='group'&&trendRows.length>0)||['bar','pie','treemap'].includes(kind));
   const actualChart=options.some(([kind])=>kind===chartType)?chartType:(options.find(([kind])=>kind==='bar')?.[0]||options[0]?.[0]||'bar');
   if(!data.staticstime)return null;
   if(!data.statisticsEnabled)return <div className="scope-ranking">
