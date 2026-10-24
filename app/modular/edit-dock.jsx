@@ -2,6 +2,8 @@
 
 import {createContext,useCallback,useContext,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {Capacitor} from '@capacitor/core';
+import {dbAuthEvents} from '../loc/db-client.mjs';
 
 // UI only: a Scope's permission is checked before entering edit mode,
 // and every write still passes through its existing database authorization.
@@ -46,6 +48,25 @@ export function EditDockProvider({children}){
     setScopeId('');
     setNotice('');
   },[clearEditor]);
+
+  // A Google OAuth account change invalidates all editor UI permissions.
+  // The backend still authorizes each write using the active JWT/RLS.
+  // Device-local SQLite editing is independent of cloud OAuth.
+  const activeScope=useRef('');
+  activeScope.current=scopeId;
+  useEffect(()=>{
+    let lastUserId=null;
+    const subscription=dbAuthEvents.onAuthStateChange((event,session)=>{
+      const userId=String(session?.user?.id||'');
+      const identityChanged=lastUserId!==null&&lastUserId!==userId;
+      lastUserId=userId;
+      const invalidated=event==='SIGNED_OUT'||identityChanged;
+      if(!invalidated)return;
+      if(activeScope.current==='local'&&Capacitor.isNativePlatform())return;
+      end();
+    });
+    return ()=>subscription.data.subscription.unsubscribe();
+  },[end]);
 
   // Each mounted editor supplies the *current page's* save function.
   // Unmounting clears it only if no later editor has replaced it.
