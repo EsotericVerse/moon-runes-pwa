@@ -1,5 +1,4 @@
 'use client';
-import UiText from '../../i18n/UiText';
 import FieldText from '../../i18n/FieldText';
 
 import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
@@ -11,7 +10,6 @@ registerDefaultSection('uiExtra.adminView',adminViewZh);
 import {useEffect} from 'react';
 import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
-import ScopeLink from '../../modular/ScopeLink';
 import {useAccount} from '../use-account';
 import {useEditDock} from '../../modular/edit-dock';
 import {FeaturePage} from '../../modular/ui';
@@ -32,7 +30,7 @@ function Login({account}){
   return <FeaturePage featureId="admin">
     <section className="loc-card scope-feature-card">
       <p>{UI_COPY.admin.loginTitle}</p>
-      <ScopeLink className="loc-button primary" href="/local/settings/?section=account">前往設定登入</ScopeLink>
+      <p>請先至設定首頁登入。</p>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
   </FeaturePage>;
@@ -72,7 +70,7 @@ export default function AdminHomeView(){
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
   if(!account.user)return <Login account={account}/>;
-  if(!account.canManageGlobalSync())return <FeaturePage featureId="admin"><section className="loc-card scope-feature-card"><p>{UI_COPY.admin.denied}</p><ScopeLink href="/local/settings/?section=account"><UiText id="uiExtra.adminView.accountSettings"/></ScopeLink></section></FeaturePage>;
+  if(!account.canManageGlobalSync())return <FeaturePage featureId="admin"><section className="loc-card scope-feature-card"><p>{UI_COPY.admin.denied}</p></section></FeaturePage>;
 
   return <FeaturePage featureId="admin">
     <div className="management-workspace">
