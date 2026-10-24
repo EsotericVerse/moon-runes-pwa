@@ -56,6 +56,15 @@ test('non-LOC public Config and blocks begin alongside site Bootstrap',async()=>
   assert.deepEqual(result.registry,[]);
 });
 
+test('local iPhone Scope reads config and blocks without cloud site bootstrap',async()=>{
+  const {calls,selectAppBootstrap}=await harness();
+  const result=await selectAppBootstrap('local','search');
+  assert.deepEqual(calls,['config:local','blocks:local:search']);
+  assert.equal(result.config.id,'local');
+  assert.equal(result.blocks[0].uid,'local-search');
+  assert.deepEqual(result.registry,[]);
+});
+
 test('Admin consumes site metadata without querying nonexistent admin tables',async()=>{
   const {calls,site,resolveSite,selectAppBootstrap}=await harness();
   const pending=selectAppBootstrap('admin','index');

@@ -18,6 +18,7 @@ export default function MyPhoneHome(){
     {native?<div className="scope-content">
       <section className="loc-card">
         <p className="scope-status">本機資料空間 · SQLite（local）</p>
+        <p>下方保留原始檔案；要將內容疊加入本機 SQLite，請到「設定 → 文件匯入」選 Yes。</p>
         <div className="scope-result-links">
           {[
             {id:'culture',label:'文化'},

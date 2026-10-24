@@ -59,6 +59,11 @@ export function useScopeRuntime(){
       setRegistryRow(null);setRegistryResolved(true);setRegistryError('缺少 Scope ID。');
       return()=>{active=false};
     }
+    if(scopeId==='local'){
+      // Device-local Scope is not registered or authorized through the cloud.
+      setRegistryRow(null);setRegistryResolved(true);setRegistryError('');
+      return()=>{active=false};
+    }
     if(registryCache.has(scopeId)){
       setRegistryRow(registryCache.get(scopeId));setRegistryResolved(true);setRegistryError('');
       return()=>{active=false};

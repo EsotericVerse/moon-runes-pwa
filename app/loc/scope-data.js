@@ -234,7 +234,7 @@ export function selectScopeConfig(scopeId){
   const existing=scopeConfigInFlight.get(scope.id);
   if(existing)return existing;
   // The private 'local' Scope must not try Cloudflare/API metadata first.
-  const request=scope.id==='local'
+  const request=(scope.id==='local'
     ?selectRows(scope.config,{
       columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
       filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
@@ -249,7 +249,7 @@ export function selectScopeConfig(scopeId){
         filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
       });
       return rows[0]||null;
-    }).finally(()=>scopeConfigInFlight.delete(scope.id));
+    })).finally(()=>scopeConfigInFlight.delete(scope.id));
   scopeConfigInFlight.set(scope.id,request);
   return request;
 }
