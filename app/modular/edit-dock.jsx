@@ -55,11 +55,13 @@ export function EditDockProvider({children}){
   const activeScope=useRef('');
   activeScope.current=scopeId;
   useEffect(()=>{
-    let lastUserId=null;
+    let lastIdentity=null;
     const subscription=dbAuthEvents.onAuthStateChange((event,session)=>{
       const userId=String(session?.user?.id||'');
-      const identityChanged=lastUserId!==null&&lastUserId!==userId;
-      lastUserId=userId;
+      const email=String(session?.user?.email||'').trim().toLowerCase();
+      const identity=userId+'|'+email;
+      const identityChanged=lastIdentity!==null&&lastIdentity!==identity;
+      lastIdentity=identity;
       const invalidated=event==='SIGNED_OUT'||identityChanged;
       if(!invalidated)return;
       if(activeScope.current==='local'&&Capacitor.isNativePlatform())return;
