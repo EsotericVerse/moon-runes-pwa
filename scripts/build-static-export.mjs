@@ -18,7 +18,13 @@ function run(command,args,env=process.env){
 fs.renameSync(api,parked);
 try{
   run(npm,['run','prebuild']);
-  run(process.execPath,[path.join(root,'node_modules','next','dist','bin','next'),'build'],{...process.env,LOC_STATIC_EXPORT:'1'});
+  run(process.execPath,[path.join(root,'node_modules','next','dist','bin','next'),'build'],{
+    ...process.env,
+    LOC_STATIC_EXPORT:'1',
+    // One ISR API URL for all Scope domains and directories in static web builds.
+    // Native Capacitor skips it and keeps local/offline data access.
+    NEXT_PUBLIC_LOC_ISR_ORIGIN:process.env.NEXT_PUBLIC_LOC_ISR_ORIGIN||'https://isr.lo3rwang.cc'
+  });
   run(process.execPath,[path.join(root,'scripts','copy-static-assets.mjs')]);
   run(process.execPath,[path.join(root,'scripts','diagnose-effekseer-smoke.mjs')]);
 }finally{
