@@ -10,6 +10,7 @@ import {useMemo,useState} from 'react';
 import {useAsyncResource} from '../../../loc/use-async-resource';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
+import {parseGroupLists} from '../../../loc/group-lists.mjs';
 import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zoom.mjs';
 import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
@@ -17,7 +18,9 @@ import StatisticsDetails from './StatisticsDetails';
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS];
+const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS,
+  {kind:'keyword_group',label:'關鍵詞群組'},
+  {kind:'keyword_item',label:'關鍵詞項目'}];
 const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
   const date=new Date(day+'T00:00:00Z');
@@ -59,6 +62,15 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       return {categories:c.rows,aliases:a.rows};
   });
   const catalog=sharedCatalog||localCatalog;
+  // Read the already-stored keyword summary only when this panel is expanded.
+  const keywords=useAsyncResource({
+    queryKey:['own-scope-keyword-summary',scope?.id,start,end],
+    enabled:valid,
+    queryFn:async()=>{
+      const {selectKeywordAnalysisSummary}=await import('../../../loc/keyword-analysis');
+      return selectKeywordAnalysisSummary({scopeId:scope.id,startDate:start,endDate:end});
+    }
+  });
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
     // The raw source names (including everything inside Others) are counted
@@ -73,8 +85,18 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     const groups=[...grouped].filter(([,total])=>total>0).map(([id,total])=>({
       id:'group\u0000'+id,kind:'group',name:known.find(x=>x.category_code===id)?.display_name||id,total
     }));
-    return [...groups,...basic].filter(item=>kindFilter==='all'||item.kind===kindFilter);
-  },[rows,kindFilter,catalog.data]);
+    const analysis=keywords.data?.statisticsEnabled?keywords.data:null;
+    const keywordGroups=(analysis?.groupTotals||[])
+      .filter(row=>Number(row.document_count||0)>0)
+      .map(row=>({id:'keyword_group'+String.fromCharCode(0)+row.class_id,kind:'keyword_group',
+        name:String(row.group||'')+' 群組',total:Number(row.document_count)||0}));
+    const keywordItems=(analysis?.runeTotals||[])
+      .filter(row=>Number(row.document_count||0)>0)
+      .map(row=>({id:'keyword_item'+String.fromCharCode(0)+row.rune_id,kind:'keyword_item',
+        name:String(row.label||'')+' · '+row.rune_id,total:Number(row.document_count)||0}));
+    return [...groups,...basic,...keywordGroups,...keywordItems]
+      .filter(item=>kindFilter==='all'||item.kind===kindFilter);
+  },[rows,kindFilter,catalog.data,keywords.data]);
   const chosen=Array.from({length:numberOfLanes},(_,i)=>{
     const id=selected[i];
     if(id&&categoryList.some(c=>c.id===id)&&!selected.slice(0,i).includes(id))return id;
@@ -89,10 +111,41 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     return output;
   });
   const categories=selection.map(id=>categoryList.find(c=>c.id===id)).filter(Boolean);
+  const selectedKeywordItems=categories.some(c=>c.kind==='keyword_item');
+  // Item-by-day data are not in the summary RPC. Load saved attributes only
+  // when an item is actually selected, without reading or analyzing article bodies.
+  const keywordItems=useAsyncResource({
+    queryKey:['own-scope-keyword-item-days',scope?.id,start,end],
+    enabled:valid&&selectedKeywordItems,
+    queryFn:async()=>{
+      const {selectAllRows}=await import('../../../loc/db-query.mjs');
+      return (await selectAllRows(scope.galaxy,{
+        columns:'createtime,group_lists',
+        filters:[
+          {column:'searchable',operator:'eq',value:true},
+          {column:'statistics_able',operator:'eq',value:true},
+          {column:'createtime',operator:'gte',value:start+'T00:00:00+08:00'},
+          {column:'createtime',operator:'lte',value:end+'T23:59:59.999+08:00'}
+        ]
+      })).rows;
+    }
+  });
   const unit=['month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
   const calculated=useMemo(()=>{
     if(!valid||!categories.length)return {chart:[],days:[],totals:[]};
     const counts=new Map(), activeDays=new Map();
+    const selectedIds=new Set(categories.map(category=>category.id));
+    const add=(day,id,value)=>{
+      if(!selectedIds.has(id)||!day||day<start||day>end||value<=0)return;
+      const bucket=canonicalBucket(day,unit);
+      if(!bucket)return;
+      const item=counts.get(bucket.key)||{period:bucket.key,start_date:bucket.from,end_date:bucket.to};
+      item[id]=(Number(item[id])||0)+value;
+      counts.set(bucket.key,item);
+      const active=activeDays.get(day)||new Set();
+      active.add(id);
+      activeDays.set(day,active);
+    };
     for(const row of rows){
       const day=dateOnly(row.day);
       const rawId=String(row.kind)+'\u0000'+String(row.category||'');
@@ -100,19 +153,20 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       if(row.kind==='source'){
         ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]));
       }
-      if(!day||day<start||day>end)continue;
-      const bucket=canonicalBucket(day,unit);
-      if(!bucket)continue;
-      const key=bucket.key;
-      const item=counts.get(key)||{period:key,start_date:bucket.from,end_date:bucket.to};
-      const daily=activeDays.get(day)||new Set();
-      for(const id of ids){
-        if(!categories.some(category=>category.id===id))continue;
-        item[id]=(Number(item[id])||0)+(Number(row.item_count)||0);
-        if(Number(row.item_count)>0)daily.add(id);
+      for(const id of ids)add(day,id,Number(row.item_count)||0);
+    }
+    // One Class per article. The existing summary already aggregates by day.
+    for(const row of keywords.data?.classifications||[]){
+      add(dateOnly(row.date),'keyword_group'+String.fromCharCode(0)+row.class_id,Number(row.count)||0);
+    }
+    if(selectedKeywordItems){
+      for(const row of keywordItems.data||[]){
+        const items=parseGroupLists(row.group_lists);
+        if(!items||typeof items!=='object')continue;
+        for(const [id,hits] of Object.entries(items)){
+          if(Number(hits)>0)add(dateOnly(row.createtime),'keyword_item'+String.fromCharCode(0)+id,1);
+        }
       }
-      counts.set(key,item);
-      activeDays.set(day,daily);
     }
     const chart=[];
     for(let date=new Date(start+'T00:00:00Z'),limit=new Date(end+'T00:00:00Z');date<=limit;){
@@ -133,7 +187,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         value:chart.reduce((n,bucket)=>n+Number(bucket[category.id]||0),0)
       }))
     };
-  },[rows,categories.map(c=>c.id).join('\u0000'),start,end,unit,valid,catalog.data]);
+  },[rows,categories.map(c=>c.id).join(String.fromCharCode(0)),start,end,unit,valid,catalog.data,keywords.data,keywordItems.data,selectedKeywordItems]);
   const series=categories.map(c=>({key:c.id,label:c.name}));
   const enough=categories.length===numberOfLanes;
   const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
