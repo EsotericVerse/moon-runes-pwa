@@ -74,6 +74,13 @@ const COLORS=['#8962e3','#e5a13c','#14b8c4','#e75a68','#53bd79','#e37bb8','#468f
   '#52b4a5','#da7550','#7b90e2','#ce637f','#4d9cc9','#bc8050','#80be7b','#d48fb3'];
 export const number=value=>Math.max(0,Number(value)||0);
 export const color=i=>COLORS[i%COLORS.length];
+// Each individual bar/point gets a deterministic color. Extend beyond the
+// fixed 16-color series palette without repeating colors on long timelines.
+export const pointColor=index=>{
+  const i=Math.max(0,Math.floor(Number(index)||0));
+  if(i<COLORS.length)return COLORS[i];
+  return `hsl(${Math.round((i*137.508+25)%360)} 70% ${45+(Math.floor(i/COLORS.length)%3)*5}%)`;
+};
 
 export function nonemptySeries(rows=[],series=[]){
   return (Array.isArray(series)?series:[]).filter(s=>s?.key&&rows.some(row=>number(row[s.key])>0)).slice(0,8);
