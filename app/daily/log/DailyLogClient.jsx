@@ -18,6 +18,7 @@ import {
 } from '../../loc/daily-runes';
 import {selectRows} from '../../loc/db-query.mjs';
 import {useAccount} from '../../loc/use-account';
+import {useResourceCache} from '../../loc/use-async-resource';
 import {listLocalDailyRunes,importLocalDailyTransfer,updateLocalDailyRune,deleteLocalDailyRune} from '../../lrunes/local-rune-sqlite.mjs';
 
 const FIRST_MONTH=2026*12+7;
@@ -65,6 +66,11 @@ function rowKey(row){
 
 export default function DailyLogClient({embedded=false}={}){
   const sessionAccount=useAccount({sessionOnly:true});
+  const resourceCache=useResourceCache();
+  const invalidateDailyCharts=()=>Promise.all([
+    resourceCache.invalidate({queryKey:['lrunes-daily-analytics']}),
+    resourceCache.invalidate({queryKey:['statistics-history-start','daily-rune']})
+  ]);
   const [native,setNative]=useState(false);
   useEffect(()=>{setNative(Capacitor.isNativePlatform());},[]);
   // Reading daily records only needs a session. Fetch the shared Scope
@@ -235,6 +241,7 @@ export default function DailyLogClient({embedded=false}={}){
       setSelectedDate(newForm.recordDate);
       if(nextMonth!==monthValue)setMonthValue(nextMonth);
       else await loadMonth();
+      await invalidateDailyCharts();
       setMessage('已新增每日符文紀錄。');
     }catch(reason){
       setMessage(String(reason?.message||reason||'新增失敗。'));
@@ -261,6 +268,7 @@ export default function DailyLogClient({embedded=false}={}){
       else await updateDailyRuneRecord(editForm);
       await loadMonth();
       setEditingKey('');setEditForm(null);
+      await invalidateDailyCharts();
       setMessage('已更新每日符文紀錄。');
     }catch(reason){
       setMessage(String(reason?.message||reason||'修改失敗。'));
@@ -276,6 +284,7 @@ export default function DailyLogClient({embedded=false}={}){
         recordDate:String(row.record_date).slice(0,10),drawKind:row.draw_kind
       });
       await loadMonth();
+      await invalidateDailyCharts();
       setMessage('已刪除每日符文紀錄。');
     }catch(reason){
       setMessage(String(reason?.message||reason||'刪除失敗。'));
