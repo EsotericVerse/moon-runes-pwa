@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {useSWRConfig} from 'swr';
 import dynamic from 'next/dynamic';
+import Select from 'react-select';
 import UiText from '../../../i18n/UiText';
 import {revalidateServerMetadata,selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
@@ -103,9 +104,7 @@ function ImageSlot({feature,variant,onDirtyChange}){
         disabled={rows===null}
         onChange={event=>setValue(event.target.value)}
       />
-      <button type="button" className="loc-button" disabled={busy||rows===null} onClick={save}>
-        <UiText id="uiExtra.adminView.saveThemeSettings"/>
-      </button>
+
     </div>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </label>;
@@ -130,9 +129,20 @@ export default function FeatureHeroImages(){
   const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
-    <div className="scope-preview-links" role="group" aria-label="功能區塊">
-      {FEATURES.map(item=><button type="button" key={item.id} className={'loc-button'+(item.id===feature.id?' primary':'')}
-        aria-pressed={item.id===feature.id} onClick={()=>selectFeature(item.id)}>{item.label}</button>)}
+    <div className="admin-inline-select">
+      <label htmlFor="admin-feature-block-select">選擇功能</label>
+      <Select
+        inputId="admin-feature-block-select"
+        instanceId="admin-feature-block-select"
+        unstyled
+        className="loc-settings-select"
+        classNamePrefix="loc-settings-select"
+        isSearchable={false}
+        isClearable={false}
+        options={FEATURES.map(item=>({value:item.id,label:item.label}))}
+        value={{value:feature.id,label:feature.label}}
+        onChange={option=>{if(option)selectFeature(option.value);}}
+      />
     </div>
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
@@ -153,6 +163,21 @@ export default function FeatureHeroImages(){
         allowDelete={false}
         allowEntities={false}
       />
+      {feature.id==='governance'?<section className="loc-card">
+        <h3>LOC 治理頁完整區塊</h3>
+        <ScopeEditableBlocks
+          key="loc-governance-full"
+          scopeId="loc"
+          page="governance"
+          className="loc-grid two governance-grid governance-grid-loc"
+          headingLevel={2}
+          allowDelete
+          authorizedByParent
+          startInEditMode
+          keepEditorOpen
+          explicitEditButton
+        />
+      </section>:null}
       <div className="scope-management-fields">
         {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} onDirtyChange={trackDirty} key={feature.id+variant.kind}/>)}
       </div>
