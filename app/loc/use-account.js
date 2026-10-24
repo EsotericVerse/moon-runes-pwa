@@ -3,7 +3,7 @@
 import {useCallback,useEffect} from 'react';
 import {useSWRConfig} from 'swr';
 import {z} from 'zod';
-import {getAccountSession,dbAuthEvents,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
+import {getAccountSession,dbAuthEvents,dbAuthClient,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 import {useAsyncResource} from './use-async-resource';
 
@@ -102,9 +102,9 @@ async function loadManagementAccount(mutate){
     // claim. Its row-level policy remains the authority for database writes.
     let permissions=[];
     if(email){
-      const {data,error}=await dbAuthRelation('silver.loc')
-        .select('id,email:manage_email,role:manage_role,galaxy:galaxy_table,time:time_table,birthday')
-        .eq('manage_email',email);
+      // Resolve only this caller's management rows through a protected RPC.
+      // The registry email column is never a public browser SELECT.
+      const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
       if(error)throw new Error(error.message||'Management permission read failed');
       permissions=data||[];
     }
