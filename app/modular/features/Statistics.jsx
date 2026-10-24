@@ -402,13 +402,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const found=overview.data?.earliest||earliestQuery.data||'';
     if(found&&found!==knownEarliest)setKnownEarliest(found);
   },[overview.data,earliestQuery.data,knownEarliest]);
+  const [crossTagRequested,setCrossTagRequested]=useState(false);
+  useEffect(()=>setCrossTagRequested(false),[scopeId,rankingType]);
   const mediaQuery=useAsyncResource({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
       const {selectMediaStatisticsFacetRows}=await loadGalaxyStatistics();
       return selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange);
     },
-    enabled:mediaDimension&&rankingType!=='media_style'&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
   });
   const crossTagQuery=useAsyncResource({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
@@ -416,7 +418,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {selectMediaCrossTagRows}=await loadGalaxyStatistics();
       return selectMediaCrossTagRows(targetScopes[0],queryRange);
     },
-    enabled:rankingType==='media_style'&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:rankingType==='media_style'&&crossTagRequested&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
   });
   const styleTreeQuery=useAsyncResource({
     queryKey:['music-style-tree',scopeId],
@@ -503,14 +505,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     rawRows:selectedRawNames?(sourceRows.data||[]).filter(row=>row.kind!=='source'||selectedRawNames.includes(String(row.category||'').trim().toLowerCase())):sourceRows.data||[],
     catalog:sourceCatalog.data||{}
   };
-  // Media Style facets and cross-tag relationships are projections of one
-  // identical metadata scan; never fetch the same media corpus twice.
-  const mediaRows=useMemo(()=>rankingType==='media_style'
-    ?(crossTagQuery.data?StatisticsFacets.base.mediaFacetDaily(crossTagQuery.data,'media_style'):[])
-    :(mediaQuery.data||[]),[rankingType,crossTagQuery.data,mediaQuery.data]);
-  const mediaLoading=rankingType==='media_style'?crossTagQuery.isPending:mediaQuery.isPending;
-  const mediaFetching=rankingType==='media_style'?crossTagQuery.isFetching:mediaQuery.isFetching;
-  const mediaError=rankingType==='media_style'?crossTagQuery.error:mediaQuery.error;
+  // The common chart reads the numeric ISR. Advanced cross-tags retain the
+  // original row-level semantics but load only after the user requests them.
+  const mediaRows=mediaQuery.data||[];
+  const mediaLoading=mediaQuery.isPending;
+  const mediaFetching=mediaQuery.isFetching;
+  const mediaError=mediaQuery.error;
   const facetRange=rowsInWindow(mediaRows,queryRange);
   const facetTotalsForOptions=facetTotals(facetRange.rows);
   const facetNames=facetTotalsForOptions.slice(0,6).map(row=>row.term);
@@ -660,19 +660,22 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeSourceSelection)}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>rankingType==='media_style'?crossTagQuery.refetch():mediaQuery.refetch()} disabled={mediaFetching}>
+      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style'&&crossTagRequested)crossTagQuery.refetch();}} disabled={mediaFetching}>
         {mediaFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
     </div>:null}
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
-    {rankingType==='media_style'&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
-    {rankingType==='media_style'&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
+    {rankingType==='media_style'&&crossTagRequested&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
+    {rankingType==='media_style'&&crossTagRequested&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {mediaDimension&&!mediaLoading&&!mediaError?<MediaFacetStatistics
       key={rankingType}
       rankingType={rankingType}
       rows={mediaRows}
       mediaRows={crossTagQuery.data||[]}
       treeRows={styleTreeQuery.data||[]}
+      onRequestRawStyles={()=>setCrossTagRequested(true)}
+      rawStyleLoading={crossTagRequested&&crossTagQuery.isPending}
+      rawStyleError={crossTagQuery.error}
       chartType={chartType}
       onChartTypeChange={setChartType}
       range={queryRange}
@@ -684,17 +687,21 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       facetTotals={facetTotals}
       facetTrend={facetTrend}
     />:null}
-    {rankingType==='media_style'&&!crossTagQuery.isPending&&!crossTagQuery.error?<StatisticsDetails
-      summary={<UiText id="uiExtra.statisticsView.crossAdvancedTitle"/>}>
-      {()=> <MediaCrossTagStatistics
-        scope={targetScopes[0]}
-        rows={crossTagQuery.data||[]}
-        range={queryRange}
-        zoomLevel={zoomLevel}
-        onZoomLevelChange={setZoomLevel}
-        facetTrend={facetTrend}
-        loadGalaxyStatistics={loadGalaxyStatistics}
-      />}
+    {rankingType==='media_style'?<StatisticsDetails
+      summary={<UiText id="uiExtra.statisticsView.crossAdvancedTitle"/>}
+      onOpen={()=>setCrossTagRequested(true)}>
+      {()=>crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>
+        :crossTagQuery.isPending||!crossTagQuery.data
+          ?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>
+          :<MediaCrossTagStatistics
+            scope={targetScopes[0]}
+            rows={crossTagQuery.data}
+            range={queryRange}
+            zoomLevel={zoomLevel}
+            onZoomLevelChange={setZoomLevel}
+            facetTrend={facetTrend}
+            loadGalaxyStatistics={loadGalaxyStatistics}
+          />}
     </StatisticsDetails>:null}
     {styleFilter==='rune66'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
