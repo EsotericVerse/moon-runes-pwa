@@ -199,6 +199,32 @@ test('keyword combined ranking follows actual Class membership and keeps paginat
 });
 
 
+test('self-intersection keeps top four filters and two selectors per comparison item',()=>{
+  const source=readFileSync(new URL('../app/modular/modules/statistics/ScopeSelfIntersection.jsx',import.meta.url),'utf8');
+  const dimensions=source.slice(source.indexOf('export const DIMENSION_FILTERS='),source.indexOf('export const DIMENSIONS='));
+  for(const label of ['全部','作品來源','多媒體','關鍵詞'])assert.ok(dimensions.includes("label:'"+label+"'"));
+  assert.equal((dimensions.match(/label:/g)||[]).length,4);
+  const ui=source.slice(source.indexOf('<div className="scope-self-intersection-comparisons">'),
+    source.indexOf('<div className="scope-stat-controls">',source.indexOf('<div className="scope-self-intersection-comparisons">')));
+  assert.ok(ui.includes('Array.from({length:lanes}'));
+  assert.equal((ui.match(/<select className="scope-select"/g)||[]).length,2);
+  assert.ok(ui.includes('來源類型')&&ui.includes('比較內容'));
+  for(const label of ['原始作品來源','系統分組來源','個人分組來源',
+    '多媒體來源','關鍵詞分組','關鍵詞項目'])
+    assert.ok(source.includes(label));
+  assert.ok(source.includes('maximumLanes=Math.min(8,categoryList.length)'));
+  assert.ok(source.includes("if(!family)return categoryList"));
+  assert.ok(!ui.includes("comparisonDimensions"));
+  const start=source.indexOf('export function mediaTypeFamily(raw)');
+  const end=source.indexOf('const MEDIA_GROUP_NAMES=',start);
+  const family=new Function(source.slice(start,end).replace('export function','function')+
+    'return mediaTypeFamily;')();
+  assert.equal(family('suno'),'music');
+  assert.equal(family('facebook_pic'),'image');
+  assert.equal(family('youtube_video'),'video');
+});
+
+
 // Manual reset must not send tens of thousands of classified rows through a
 // single UPDATE. Exercise the real database client with the existing RPC seam.
 test('keyword reset uses paged authorized writes before clearing summary',async()=>{
