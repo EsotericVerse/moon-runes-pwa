@@ -18,10 +18,10 @@ const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:P
 const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
-  {value:'settings',label:'Scope 主題',description:'選擇這個 Scope 使用的主題。'},
-  {value:'import',label:'資料匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'Others 來源細分',description:'管理此 Scope 專屬的 Others 小分類與來源對應。'},
-  {value:'governance',label:'治理頁編輯',description:'編輯此 Scope 治理頁的既有區塊。'}
+  {value:'import',label:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
+  {value:'others',label:'自訂作品來源',description:'管理此 Scope 專屬的作品來源設定。'},
+  {value:'governance',label:'編輯治理頁面',description:'編輯此 Scope 治理頁的既有區塊。'},
+  {value:'settings',label:'主題',description:'選擇這個 Scope 使用的主題。'}
 ]);
 
 export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
@@ -50,7 +50,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
       <div className="scope-stat-controls">
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>來源管理</ScopeLink>
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
-        <ScopeLink className="loc-button" native={native} href={navigationHref('admin','',native)+'?section=governance&edit=1'}>治理頁編輯（Admin）</ScopeLink>
+        <ScopeLink className="loc-button" native={native} href={navigationHref('admin','',native)+'?section=featureHero&edit=1'}>編輯治理頁面（Admin）</ScopeLink>
       </div>
     </section>
   </FeaturePage>;
@@ -73,7 +73,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
           className="loc-grid two governance-grid"
           headingLevel={2} allowDelete
           authorizedByParent startInEditMode explicitEditButton
-          onEditorExit={()=>setSection('settings')}/>:null}
+          onEditorExit={()=>setSection('import')}/>:null}
       </div>
     </div>
   </FeaturePage>;
