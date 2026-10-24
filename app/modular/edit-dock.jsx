@@ -18,6 +18,8 @@ export function EditDockProvider({children}){
   const switchDialog=useRef(null);
   const switchHistory=useRef('replace');
   const switchScroll=useRef(true);
+  // A management selection changes mounted React content, not the URL route.
+  const pendingSectionAction=useRef(null);
   const registeredEditors=useRef(new Set());
   const currentEditor=useRef(null);
 
@@ -126,6 +128,7 @@ export function EditDockProvider({children}){
   // Every mounted form reports its own unsaved state; a focused form is not
   // necessarily the only edited one on a management page.
   const switchTo=useCallback((target,{history='replace',scroll=true}={})=>{
+    pendingSectionAction.current=null;
     if(busy||!target)return;
     if([...registeredEditors.current].some(editor=>editor.isBusy?.())){
       setNotice('目前正在儲存，請完成後再切換頁面。');
@@ -139,12 +142,36 @@ export function EditDockProvider({children}){
     setSwitchError('');
     setSwitchTarget(target);
   },[busy,dirtyEditors,clearEditor,navigate]);
-  const cancelSwitch=useCallback(()=>{if(!busy){setSwitchTarget('');setSwitchError('');}},[busy]);
+  const switchSection=useCallback((next,commit)=>{
+    if(busy||typeof commit!=='function')return;
+    if([...registeredEditors.current].some(editor=>editor.isBusy?.())){
+      setNotice('目前正在儲存，請完成後再切換。');
+      return;
+    }
+    const apply=()=>commit(next);
+    if(!dirtyEditors().length){
+      pendingSectionAction.current=null;
+      clearEditor();setNotice('');
+      apply();
+      return;
+    }
+    // Reuse the existing Save/Discard/Cancel dialog, without router.push.
+    pendingSectionAction.current=apply;
+    setSwitchError('');
+    setSwitchTarget('management-section:'+String(next));
+  },[busy,dirtyEditors,clearEditor]);
+  const cancelSwitch=useCallback(()=>{
+    if(!busy){pendingSectionAction.current=null;setSwitchTarget('');setSwitchError('');}
+  },[busy]);
   const discardAndSwitch=useCallback(()=>{
     if(busy||!switchTarget)return;
     const target=switchTarget;
+    const action=pendingSectionAction.current;
+    pendingSectionAction.current=null;
     setSwitchTarget('');setSwitchError('');
-    clearEditor();setNotice('');navigate(target,switchHistory.current,switchScroll.current);
+    clearEditor();setNotice('');
+    if(action)action();
+    else navigate(target,switchHistory.current,switchScroll.current);
   },[busy,switchTarget,clearEditor,navigate]);
   const saveAndSwitch=useCallback(async()=>{
     if(busy||!switchTarget)return;
@@ -159,17 +186,20 @@ export function EditDockProvider({children}){
         const saved=await editor.save({switching:true});
         if(saved!==true)throw new Error('儲存尚未完成，已保留目前頁面與編輯內容。');
       }
+      const action=pendingSectionAction.current;
+      pendingSectionAction.current=null;
       setSwitchTarget('');
       clearEditor();setNotice('');
-      navigate(target,switchHistory.current,switchScroll.current);
+      if(action)action();
+      else navigate(target,switchHistory.current,switchScroll.current);
     }catch(error){
       setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
     }finally{setBusy(false);}
   },[busy,switchTarget,dirtyEditors,clearEditor,navigate]);
   const value=useMemo(()=>({
     active:Boolean(scopeId),scopeId,hasSave,busy,notice,begin,end,
-    register,save,discard,complete,switchTo,setNotice
-  }),[scopeId,hasSave,busy,notice,begin,end,register,save,discard,complete,switchTo]);
+    register,save,discard,complete,switchTo,switchSection,setNotice
+  }),[scopeId,hasSave,busy,notice,begin,end,register,save,discard,complete,switchTo,switchSection]);
   return <EditDockContext.Provider value={value}>
     {children}
     <dialog ref={switchDialog} className="scope-edit-switch-dialog" aria-labelledby="scope-edit-switch-title"
