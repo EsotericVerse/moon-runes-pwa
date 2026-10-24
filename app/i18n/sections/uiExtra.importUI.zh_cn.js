@@ -117,6 +117,7 @@ export default {
   "importComplete": "第 {index}／{total} 个文件完成：新增 {count} 条{skipped}。{next}",
   "importFailed": "导入失败。",
   "importRetry": " 可保留该文件并重新执行；系统会再次检查已有 UID。",
+  "writeCooldownActive": "刚执行过大量写入，请在 5 分钟后重试。",
   "fileLabel": "文件：",
   "fileQueue": "（第 {index}／{total} 个文件）｜建议来源：",
   "preview": "JSON 导入预览",

@@ -117,6 +117,7 @@ export default {
   "importComplete": "{index}/{total} 件目のファイルを完了：{count} 件追加{skipped}。{next}",
   "importFailed": "インポートに失敗しました。",
   "importRetry": " このファイルのまま再実行できます。既存 UID を再確認します。",
+  "writeCooldownActive": "大量の書き込みを実行した直後です。5 分後にもう一度お試しください。",
   "fileLabel": "ファイル：",
   "fileQueue": "（{index}/{total} 件目）・推奨ソース：",
   "preview": "JSON インポートのプレビュー",

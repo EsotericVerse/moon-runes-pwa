@@ -1,4 +1,6 @@
 export default {
+  "timelineEdit": "時間編集",
+  "exitTimelineEdit": "時間編集を終了",
   "timelineContent": "タイムラインの項目",
   "dailyRunes": "日次ルーン",
   "worksAndPeriods": "作品と時期",

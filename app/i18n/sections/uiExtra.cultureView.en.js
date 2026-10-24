@@ -1,4 +1,6 @@
 export default {
+  "timelineEdit": "Edit timeline",
+  "exitTimelineEdit": "Exit timeline editing",
   "timelineContent": "Timeline content",
   "dailyRunes": "Daily runes",
   "worksAndPeriods": "Works and periods",

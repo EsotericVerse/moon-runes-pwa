@@ -117,6 +117,7 @@ export default {
   "importComplete": "File {index}/{total} completed: {count} records added{skipped}. {next}",
   "importFailed": "Import failed.",
   "importRetry": " You can keep this file and retry; existing UIDs will be checked again.",
+  "writeCooldownActive": "A bulk write just ran. Please try again in 5 minutes.",
   "fileLabel": "File:",
   "fileQueue": " (file {index}/{total}) · Suggested source:",
   "preview": "JSON import preview",
