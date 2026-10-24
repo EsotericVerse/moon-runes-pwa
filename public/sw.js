@@ -3,13 +3,15 @@
  * Capacitor native is intentionally not controlled by this worker. */
 const IMAGE_CACHE='loc-public-images-v1', IMAGE_PREFIX='loc-public-images-', MAX_IMAGES=200;
 const PAGE_CACHE='loc-public-html-v1', PAGE_PREFIX='loc-public-html-', MAX_PAGES=80;
-const BLOCK_CACHE='loc-public-blocks-v1', BLOCK_PREFIX='loc-public-blocks-', MAX_BLOCKS=200;
+const BLOCK_CACHE='loc-public-blocks-v1';
+const BLOCK_PREFIX='loc-public-blocks-', MAX_BLOCKS=200;
 const BLOCK_AGE='loc-public-block-age-v1', BLOCK_TTL=24*60*60*1000;
 const STATIC_CACHE='loc-public-static-v1', STATIC_PREFIX='loc-public-static-', MAX_STATIC=150;
 const PRIVATE_QUERY=/^(?:token|access_token|auth|authorization|jwt|key|api_key|sig|signature|expires?|policy|credential|x-amz-|x-goog-|x-ms-)/i;
 const PRIVATE_PATH=/(?:^|\/)(?:auth|private|account|user|session)(?:\/|$)/i;
 const IMAGE_EXT=/\.(?:avif|gif|jpe?g|png|svg|webp|bmp|ico)$/i;
-const BLOCK_PATH=/^\/api\/loc\/scopes\/[a-z][a-z0-9]{0,14}\/blocks\/[a-z0-9_-]+\/?$/;
+const BLOCK_PATH=/^\/_loc\/blocks\/[a-z][a-z0-9]{0,14}\/[a-z0-9_-]+\.json$/;
+const METADATA_PATH=/^\/_loc\/(?:site-bootstrap\.json|config\/[a-z][a-z0-9]{0,14}\.json)$/;
 
 function urlFor(request){
   if(request.method!=='GET'||request.headers?.has('authorization'))return null;
@@ -41,8 +43,8 @@ function isPublicHtml(request,url){
   return !url.pathname.startsWith('/api/')&&!url.pathname.startsWith('/_next/');
 }
 function isScopeBlocks(request,url){
-  return (url.origin===self.location.origin||url.protocol==='https:')&&
-    !url.search&&BLOCK_PATH.test(url.pathname)&&
+  return url.origin===self.location.origin&&
+    !url.search&&(BLOCK_PATH.test(url.pathname)||METADATA_PATH.test(url.pathname))&&
     (!request.destination||request.destination==='empty')&&request.credentials!=='include';
 }
 function cacheable(response,type){
@@ -137,7 +139,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
   await self.clients.claim();
 })()));
 self.addEventListener('message',event=>{
-  if(event.data?.type!=='LOC_INVALIDATE_SCOPE_BLOCKS')return;
+  if(event.data?.type!=='LOC_BLOCKS_INVALIDATE')return;
   event.waitUntil((async()=>{
     await Promise.all([caches.delete(BLOCK_CACHE),caches.delete(BLOCK_AGE)]);
     event.ports?.[0]?.postMessage({ok:true});
