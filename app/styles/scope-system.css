@@ -347,6 +347,50 @@
   line-height:1.25;
 }
 
+
+/* Culture's source totals/categories and Class/Group density use ONE time axis.
+   Restrict labels so the timeline retains useful data width on narrow phones. */
+.scope-culture-double-river{min-width:0;max-width:100%;margin:.8rem 0}
+.scope-culture-double-river .scope-period-timeline-wrap,
+.scope-culture-double-river .scope-period-timeline{min-width:0;max-width:100%}
+.scope-culture-double-river .scope-period-timeline-wrap{overflow:hidden}
+.scope-culture-double-river .vis-panel.vis-left{
+  width:clamp(148px,23vw,248px)!important;
+  max-width:248px!important;
+}
+.scope-culture-double-river .vis-labelset .vis-label{
+  width:100%!important;
+  min-width:0;
+}
+.scope-culture-double-river .vis-labelset .vis-label .vis-inner{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  padding:.4rem .55rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.scope-culture-double-river .vis-labelset .vis-label.scope-dual-river-section{
+  border-top:2px solid var(--loc-accent-border);
+  background:var(--loc-panel-2);
+  font-weight:700;
+}
+.scope-culture-double-river .vis-panel.vis-center{overscroll-behavior:contain}
+@media(max-width:760px){
+  .scope-culture-double-river .vis-panel.vis-left{
+    width:clamp(100px,30vw,140px)!important;
+    max-width:140px!important;
+  }
+  .scope-culture-double-river .vis-labelset .vis-label .vis-inner{
+    padding:.4rem .3rem;
+    font-size:.75rem;
+  }
+  .scope-culture-double-river .scope-timeline-controls{
+    gap:.35rem;
+  }
+}
+
 .scope-stat-suggestions{display:grid;gap:.65rem;margin-top:1rem}
 .scope-stat-suggestions>header h3{margin:.15rem 0 0}
 .scope-stat-suggestions>div{display:grid;gap:.5rem}
