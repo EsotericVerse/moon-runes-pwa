@@ -126,8 +126,16 @@ export async function revalidateServerMetadata(){
     const {data,error}=await dbAuthClient.auth.getSession();
     const token=data?.session?.access_token;
     if(error||!token)return false;
-    const response=await fetch('/api/loc/revalidate',{method:'POST',headers:{Authorization:`Bearer ${token}`}});
-    return response.ok;
+    const response=await fetch('/api/loc/revalidate',{
+      method:'POST',
+      headers:{Authorization:`Bearer ${token}`},
+      cache:'no-store'
+    });
+    if(!response.ok)return false;
+    // The server has invalidated the R2-backed metadata tag. Drop the browser's
+    // shared snapshot before any editor-triggered SWR refresh can read it again.
+    publicSiteBootstrapRequest=null;
+    return true;
   }catch{return false;}
 }
 export function selectPublicSiteBootstrap(){
