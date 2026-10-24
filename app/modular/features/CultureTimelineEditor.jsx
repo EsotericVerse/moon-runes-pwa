@@ -14,7 +14,6 @@ import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 import {useEditDock} from '../edit-dock';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
-import BlockNoteEditor from '../../loc/BlockNoteEditor';
 
 
 const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
@@ -28,6 +27,9 @@ const BLANK=Object.freeze({
   anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_description:''
 });
 
+function newDraft(type='anchor'){
+  return {...BLANK,record_type:type,anchor_ids:type==='style_comment'?[]:['0','0']};
+}
 function dateText(value){return value?String(value).slice(0,10):'';}
 function normalizeAnchorIds(value){
   const source=Array.isArray(value)?value:String(value||'').split(',');
@@ -54,7 +56,7 @@ function rowSortDate(row,anchors){
   return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
 }
 
-export default function CultureTimelineEditor({scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,onClose=null}){
+export default function CultureTimelineEditor({scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,defaultRecordType='anchor',onClose=null}){
   useUiSection('uiExtra.dataErrors');
   const copy=useUiCopy();
   const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
@@ -63,18 +65,18 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const dockActions=useRef({save:null});
   const searchParams=useSearchParams();
   const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
-  const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||routeSuggestedAnchorDate||'').slice(0,10);
+  const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||(!selectedRecordId?routeSuggestedAnchorDate:'')||'').slice(0,10);
   const resourceCache=useResourceCache();
   const runtimeScope=String(scopeId||'').trim();
   const dataScope=runtimeScope;
   const editable=Boolean(dataScope&&dataScope!=='loc');
   const timeTable=String(providedTimeTable||'').trim();
-  const [draft,setDraft]=useState({...BLANK});
+  const defaultType=EDITABLE_TYPES.some(([type])=>type===defaultRecordType)?defaultRecordType:'anchor';
+  const [draft,setDraft]=useState(()=>newDraft(defaultType));
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
-  const [formOpen,setFormOpen]=useState(false);
-  const initialDraftRef=useRef({...BLANK});
+  const initialDraftRef=useRef(newDraft(defaultType));
   const inlineSectionRef=useRef(null);
   const nameInputRef=useRef(null);
 
@@ -137,7 +139,6 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       initialDraftRef.current=initial;
       setDraft(initial);
       setMessage('');
-      setFormOpen(true);
     }
   },[selectedRecordId,rawRows]);
 
@@ -146,7 +147,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     const hasAnchorDate=/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate);
     // All three non-anchor types share this editor; the form chooses their
     // required references: period 1–2, event 2, style_comment 1.
-    if(!hasAnchorDate&&(recordType==='anchor'||!suggestedRequestNonce))return;
+    if(selectedRecordId||(!hasAnchorDate&&!suggestedRequestNonce))return;
     setSelectedId('');
     const initial={
       ...BLANK,
@@ -159,43 +160,33 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     initialDraftRef.current=initial;
     setDraft(initial);
     setMessage(recordType==='anchor'?l.inferredAnchor:recordType==='style_comment'?l.styleNeedsAnchor:recordType==='period'?l.periodNeedsAnchor:l.eventNeedsAnchor);
-    setFormOpen(true);
-  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce,l]);
+  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce,selectedRecordId,l]);
 
   // Keep the Time form in document flow, directly beneath its add controls.
   const canRenderEditor=editable&&Boolean(timeTable);
   useEffect(()=>{
-    if(!formOpen||!canRenderEditor)return;
+    // The river remains at the top on initial load; only explicit edits focus the form.
+    if(!canRenderEditor||(!selectedRecordId&&!suggestedRequestNonce))return;
     inlineSectionRef.current?.scrollIntoView({block:'nearest'});
     nameInputRef.current?.focus({preventScroll:true});
-  },[formOpen,canRenderEditor,selectedRecordId,suggestedRequestNonce]);
+  },[canRenderEditor,selectedRecordId,suggestedRequestNonce]);
   useEffect(()=>{
-    if(!formOpen||!editDock?.active||editDock.scopeId!==scopeId)return undefined;
+    if(!editDock?.active||editDock.scopeId!==scopeId)return undefined;
     return editDock.register({
       save:options=>dockActions.current.save(options),
       isDirty:()=>dockActions.current.isDirty(),
       isBusy:()=>dockActions.current.isBusy()
     });
-  },[formOpen,editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
+  },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
 
   if(!canRenderEditor)return null;
 
-  const selectRow=row=>{
-    if(dockActions.current.isDirty?.()){
-      setMessage('請先儲存或取消目前的修改，再切換風格標籤。');
-      return;
-    }
-    const initial=rowDraft(row);
-    initialDraftRef.current=initial;
-    setSelectedId(String(row.record_id));
-    setDraft(initial);
-    setMessage('');
-  };
   const cancelEdit=()=>{
+    const fresh=newDraft(defaultType);
+    initialDraftRef.current=fresh;
     setSelectedId('');
-    setDraft({...BLANK});
+    setDraft(fresh);
     setMessage('');
-    setFormOpen(false);
     onClose?.();
   };
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
@@ -305,10 +296,11 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       }
       await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
       await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
+      const fresh=newDraft(defaultType);
+      initialDraftRef.current=fresh;
       setSelectedId('');
-      setDraft({...BLANK});
-      setMessage('');
-      setFormOpen(false);
+      setDraft(fresh);
+      setMessage('已儲存。');
       onClose?.();
       return true;
     }catch(error){
@@ -335,112 +327,75 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       ]});
       await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
       await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
-      setSelectedId('');setDraft({...BLANK});setMessage('');setFormOpen(false);onClose?.();
+      const fresh=newDraft(defaultType);
+      initialDraftRef.current=fresh;
+      setSelectedId('');setDraft(fresh);setMessage('已刪除。');onClose?.();
     }catch(error){setMessage(error?.message||l.deleteError);}
     finally{setBusy(false);}
   };
 
   dockActions.current={
     save:options=>save({preventDefault(){}},options),
-    isDirty:()=>{
-      return formOpen&&JSON.stringify(draft)!==JSON.stringify(initialDraftRef.current);
-    },
+    isDirty:()=>JSON.stringify(draft)!==JSON.stringify(initialDraftRef.current),
     isBusy:()=>busy
   };
-  if(!formOpen)return null;
-
-  return <section ref={inlineSectionRef} className="loc-card scope-feature-card scope-culture-inline-editor" role="region" aria-label={l.editorTitle}>
-    <h4>{selectedId?'編輯':'新增'}{l[draft.record_type==='style_comment'?'style':draft.record_type]}</h4>
-    {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
+  return <section ref={inlineSectionRef} className="scope-culture-inline-editor" role="region" aria-label={l.editorTitle}>
+    <header className="scope-culture-inline-heading">
+      <h4>{selectedId?'編輯':'新增'}{l[draft.record_type==='style_comment'?'style':draft.record_type]}</h4>
+      {selectedId?<span className="scope-status">目前編輯既有紀錄</span>:null}
+    </header>
+    {query.error?<p className="scope-status scope-error" role="alert">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">{l.duplicateDataPrefix}{duplicateAnchorIds.join('、')}{l.duplicateDataSuffix}</p>:null}
-    {query.isPending?<p className="scope-status">{copy.uiExtra.dataErrors.loading}</p>:null}
-    <form onSubmit={save}>
-      <label><span>{l.type}</span><select className="scope-select" value={draft.record_type} disabled={Boolean(selectedId)} onChange={event=>change('record_type',event.target.value)}>
-        {EDITABLE_TYPES.map(([type,label])=><option key={type} value={type}>{l[label]}</option>)}
-      </select></label>
-      {draft.record_type==='style_comment'?<label><span>{l.styleEditor}</span>
-        <select className="scope-select" value={selectedId||''} onChange={event=>{
-          const row=rawRows.find(item=>item.record_type==='style_comment'&&String(item.record_id)===event.target.value);
-          if(row)selectRow(row);
-          else {
-            if(dockActions.current.isDirty?.()){
-              setMessage('請先儲存或取消目前的修改，再新增其他風格標籤。');
-              return;
-            }
-            const initial={...BLANK,record_type:'style_comment',anchor_ids:[]};
-            initialDraftRef.current=initial;
-            setSelectedId('');
-            setDraft(initial);
-            setMessage('');
-          }
-        }}>
-          <option value="">{l.newStyle}</option>
-          {rawRows.filter(row=>row.record_type==='style_comment')
-            .sort((a,b)=>String(a.label||'').localeCompare(String(b.label||''),'zh-Hant'))
-            .map(row=><option key={row.record_id} value={row.record_id}>
-              {row.label}{row.status==='needs_anchor'?l.pendingAnchor:''}
-            </option>)}
-        </select>
-      </label>:null}
-      <label><span>{draft.record_type==='style_comment'?l.styleName:l.name}</span><input ref={nameInputRef} className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
-      <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
-      {draft.record_type!=='style_comment'?<div className="scope-management-wide-field"><span>{draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span>
-          <BlockNoteEditor editorKey={'timeline-note:'+scopeId+':'+String(selectedId||draft.record_type)}
-            content={draft.note||''} canInsertImage={false} onPlainTextChange={value=>change('note',value)}/>
-        </div>:null}
-      {draft.record_type==='style_comment'?<>
-        <div className="scope-management-wide-field"><span>{l.styleText}</span>
-          <BlockNoteEditor editorKey={'timeline-style:'+scopeId+':'+String(selectedId||'new')}
-            content={draft.style_description||''} canInsertImage={false}
-            onPlainTextChange={value=>change('style_description',value)}/>
-        </div>
-        <label><span>{l.uniqueAnchor}</span>
+    {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
+    <form className="scope-culture-quick-form" onSubmit={save}>
+      <div className="scope-culture-quick-primary">
+        <label className="scope-culture-quick-name">
+          <span>{draft.record_type==='style_comment'?l.styleName:l.name}</span>
+          <input ref={nameInputRef} className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/>
+        </label>
+        {draft.record_type==='anchor'?<>
+          <label><span>{l.date}</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
+          <label><span>{l.unknownDateYear}</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
+        </>:null}
+        {draft.record_type==='style_comment'?<label>
+          <span>{l.uniqueAnchor}</span>
           <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
             <option value="">{l.chooseExisting}</option>
             {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}</option>)}
           </select>
-        </label>
-        <p className="scope-status">{l.styleRule}</p>
-      </>:null}
-      {draft.record_type==='anchor'?<p className="scope-status">{l.anchorRule}</p>:null}
-
-      {draft.record_type==='anchor'?<div className="scope-stat-controls">
-        <label><span>{l.date}</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
-        <label><span>{l.unknownDateYear}</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
-      </div>:null}
-
-      {['period','event'].includes(draft.record_type)?<div className="scope-management-wide-field">
-        <h3>{l.anchor}</h3>
-        <p className="scope-status">{draft.record_type==='period'?l.periodHint:l.eventHint}</p>
+        </label>:null}
+      </div>
+      {['period','event'].includes(draft.record_type)?<div className="scope-culture-quick-anchors">
         {anchorOptions.length===0?<p className="scope-status scope-error">{l.noAnchors}</p>:null}
         {legacyEventUnchanged?<p className="scope-status">{l.legacyPrefix}{legacyEventIds.length}{l.legacySuffix}</p>:null}
-        <div className="scope-management-fields">
-          {chosenAnchorPair.map((anchorId,index)=><label key={index}>
-            <span>{(index===0?l.startAnchor:l.endAnchor)}{draft.record_type==='period'?l.optional:''}</span>
-            <select className="scope-select"
-              aria-label={(index===0?l.chooseStart:l.chooseEnd)}
-              value={anchorId}
-              required={draft.record_type==='event'}
-              onChange={event=>changeAnchor(index,event.target.value)}>
-              <option value="0">{draft.record_type==='period'?l.openEnd:l.chooseFormal}</option>
-              {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>
-                {dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}
-              </option>)}
-            </select>
-            {anchorId!=='0'&&anchors.has(anchorId)?<span className="scope-status">{String(anchors.get(anchorId).note||'')}</span>:null}
-          </label>)}
+        {chosenAnchorPair.map((anchorId,index)=><label key={index}>
+          <span>{index===0?l.startAnchor:l.endAnchor}{draft.record_type==='period'?l.optional:''}</span>
+          <select className="scope-select" aria-label={index===0?l.chooseStart:l.chooseEnd}
+            value={anchorId} required={draft.record_type==='event'} onChange={event=>changeAnchor(index,event.target.value)}>
+            <option value="0">{draft.record_type==='period'?l.openEnd:l.chooseFormal}</option>
+            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}</option>)}
+          </select>
+        </label>)}
+      </div>:null}
+      <label className="scope-culture-quick-notes">
+        <span>{draft.record_type==='style_comment'?l.styleText:draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span>
+        <textarea className="scope-search-input" rows={draft.record_type==='style_comment'?3:2}
+          value={draft.record_type==='style_comment'?draft.style_description||'':draft.note||''}
+          onChange={event=>change(draft.record_type==='style_comment'?'style_description':'note',event.target.value)}/>
+      </label>
+      <details className="scope-culture-quick-extra">
+        <summary>其他設定</summary>
+        <div className="scope-culture-quick-extra-fields">
+          <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
+          {draft.record_type!=='style_comment'?<label><span>{l.status}</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>:null}
+          {draft.record_type==='period'?<label><span>{l.sort}</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
         </div>
-      </div>:null}
-
-      {draft.record_type!=='style_comment'?<div className="scope-stat-controls">
-        <label><span>{l.status}</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>
-        {draft.record_type==='period'?<label><span>{l.sort}</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
-      </div>:null}
-      {message?<p className="scope-status" role="status">{message}</p>:null}
-      <div className="scope-tabs">
-        <button type="submit" disabled={busy}>{busy?l.saving:editDock?.active&&editDock.scopeId===scopeId?'分段儲存':l.save}</button>
-        <button type="button" disabled={busy} onClick={cancelEdit}>{l.cancel}</button>
-        {selectedId?<button type="button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
+      </details>
+      {message?<p className="scope-status" role="status" aria-live="polite">{message}</p>:null}
+      <div className="scope-culture-quick-actions">
+        <button type="submit" className="loc-button" disabled={busy||query.isPending||Boolean(query.error)}>{busy?l.saving:selectedId?'儲存修改':'儲存'+l[draft.record_type==='style_comment'?'style':draft.record_type]}</button>
+        <button type="button" className="loc-button" disabled={busy} onClick={cancelEdit}>{selectedId?l.cancel:'清除'}</button>
+        {selectedId?<button type="button" className="loc-button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
       </div>
     </form>
   </section>;
