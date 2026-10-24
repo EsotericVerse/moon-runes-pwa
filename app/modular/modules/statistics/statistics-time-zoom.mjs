@@ -79,7 +79,7 @@ export function nonemptySeries(rows=[],series=[]){
 }
 export function normalizeDistribution(distribution=[],rows=[],series=[]){
   const supplied=(Array.isArray(distribution)?distribution:[])
-    .map(item=>({name:String(item.name||item.term||''),key:item.key??item.name??item.term,value:number(item.value??item.item_count)}))
+    .map(item=>({name:String(item.name||item.term||''),key:item.key??item.name??item.term,value:number(item.value??item.item_count),...((typeof item.fill==='string'&&/^#[0-9a-fA-F]{6}$/.test(item.fill))?{fill:item.fill}:{})}))
     .filter(item=>item.name&&item.value>0);
   if(supplied.length)return supplied;
   return series.map(s=>({name:s.label||s.key,value:rows.reduce((n,row)=>n+number(row[s.key]),0)}))
