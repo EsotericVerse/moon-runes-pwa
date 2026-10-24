@@ -1,4 +1,5 @@
 import {UI_COPY} from '../i18n/ui-copy.js';
+import {SCOPE_ROUTE_INDEX} from './scope-route-index.js';
 
 // Current Scope registry.
 export const FEATURES=Object.freeze([
@@ -114,46 +115,35 @@ function cleanPath(pathname='/'){
   return value==='/'?'/':value;
 }
 
-// The database Scope Registry is the authority for Domain/Directory values.
-// Next.js still needs a deterministic, static-export fallback before it loads.
-// Such fallback paths are derived from existing app/<scope_id> routes, not a
-// second Domain or display_name configuration.
-let registryRouteRows=new Map();
+// Resolve all public Scope URLs from the generated JS snapshot, not the
+// bootstrap RPC. This is ready before hydration, without SQL/ISR round trips.
+// Updates are made by regenerating scope-route-index.js after an admin edit.
+const registryRouteRows=new Map(SCOPE_ROUTE_INDEX
+  .filter(row=>row.active!==false)
+  .map(row=>[row.scope_id,{
+    domain:String(row.domain||'').trim().toLowerCase(),
+    directory:String(row.directory||'').trim()
+  }]));
 const LOC_FALLBACK_HOST='loc.lo3rwang.cc';
-export function replaceScopeRegistryRouteRows(rows=[]){
-  registryRouteRows.clear();
-  setScopeRegistryRouteRows(rows);
-}
-export function setScopeRegistryRouteRows(rows=[]){
-  for(const row of Array.isArray(rows)?rows:[]){
-    const id=normalizeScopeId(row?.scope_id);
-    if(!id)continue;
-    if(row.active===false){registryRouteRows.delete(id);continue;}
-    registryRouteRows.set(id,{
-      domain:String(row.domain||'').trim().toLowerCase(),
-      directory:String(row.directory||'').trim()
-    });
-  }
-}
 export function resolveScope(host='',pathname='/'){
   const h=cleanHost(host);
-  const segments=cleanPath(pathname).split('/').filter(Boolean);
-  // Next filesystem owns these static mounts; Registry owns their public URLs.
-  if(segments[0]&&segments[0]!=='loc'&&SCOPES[segments[0]])return segments[0];
+  const path=cleanPath(pathname);
+  const segments=path.split('/').filter(Boolean);
+  // Directory routes MUST precede the parent's catch-all Domain route:
+  // loc.lo3rwang.cc/lo3rwang/ is lo3rwang, not loc.
+  for(const [id,row] of registryRouteRows){
+    if(!row.directory||h!==LOC_FALLBACK_HOST)continue;
+    const base=cleanPath(row.directory);
+    if(path===base||path.startsWith(base+'/'))return id;
+  }
   for(const [id,row] of registryRouteRows){
     if(row.domain&&row.domain===h)return id;
-    if(row.directory&&h===LOC_FALLBACK_HOST){
-      const base=cleanPath(row.directory);
-      const path=cleanPath(pathname);
-      if(path===base||path.startsWith(base+'/'))return id;
-    }
   }
-  // Before DB hydration, a subdomain matching an existing static Scope ID
-  // can still be resolved without re-declaring its Domain string in JS.
-  const prefix=h.endsWith('.lo3rwang.cc')?h.slice(0,-'.lo3rwang.cc'.length):'';
-  if(prefix&&SCOPES[prefix]){
-    const authoritative=registryRouteRows.get(prefix);
-    if(!authoritative||authoritative.domain===h)return prefix;
+  // The native static shell has filesystem paths even without public domains.
+  // Never override a declared public Domain with a guessed directory.
+  if(segments[0]&&segments[0]!=='loc'&&SCOPES[segments[0]]){
+    const row=registryRouteRows.get(segments[0]);
+    if(!row?.domain)return segments[0];
   }
   return DEFAULT_SCOPE_ID;
 }
@@ -168,7 +158,7 @@ export function getScope(id){
 export function scopeOrigin(scopeId){
   const id=normalizeScopeId(scopeId);
   const row=registryRouteRows.get(id);
-  // Scope Registry Domain/Directory takes precedence after hydration.
+  // The generated JS route index is authoritative before any network read.
   return row?.domain?'https://'+row.domain:'https://'+LOC_FALLBACK_HOST;
 }
 
