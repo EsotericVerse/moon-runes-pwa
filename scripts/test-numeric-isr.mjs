@@ -7,7 +7,7 @@ import vm from 'node:vm';
 // unstable_cache; the mocked RPC count proves warm hits do not rerun SQL.
 const code=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
 async function harness(){
-  const queries=[],storage=new Map();
+  const queries=[],mediaReads=[],storage=new Map();
   const context=vm.createContext({Response,URL,Date,Promise});
   const values={
     'next/cache':{unstable_cache:(fn,parts)=>async()=>{
@@ -16,15 +16,27 @@ async function harness(){
       return storage.get(key);
     }},
     '../../../../_cors':{withLocCors:r=>r,locCorsPreflight:()=>new Response(null,{status:204})},
+    '../../../../../../loc/statistics-facets':{StatisticsFacets:{base:{mediaFacetDaily:(rows,dimension)=>rows.map(row=>({
+      day:'2026-10-01',category:dimension==='media_type'?row.media_type:'Suno',item_count:1
+    }))}}},
     '../../../../_server':{
       validScopeId:x=>/^[a-z][a-z0-9]{0,14}$/.test(x),
-      createPublicSupabaseClient:()=>({rpc:async(name,args)=>{
+      createPublicSupabaseClient:()=>({
+        from:table=>({
+          select(){return this},order(){return this},range(){return this},gte(){return this},lte(){return this},
+          then(resolve){mediaReads.push(table);resolve({data:[
+            {media_id:1,media_type:'music',createtime:'2026-10-01T10:00:00+08:00'},
+            {media_id:2,media_type:'music',createtime:'2026-10-01T11:00:00+08:00'}
+          ],error:null})}
+        }),
+        rpc:async(name,args)=>{
         queries.push({name,args});
         return {data:name==='read_scope_statistics'
           ?[{day:'2026-10-01',kind:'source',item_count:3}]
           :{earliest:'2025-01-01',rows:[{day:'2026-10-01',item_count:5}],categories:[],aliases:[]},
           error:null};
-      }})
+        }
+      })
     }
   };
   const stubs=new Map(Object.entries(values).map(([name,exports])=>[
@@ -35,7 +47,7 @@ async function harness(){
   const module=new vm.SourceTextModule(code,{context});
   await module.link(name=>stubs.get(name));
   await module.evaluate();
-  return {GET:module.namespace.GET,queries,storage};
+  return {GET:module.namespace.GET,queries,mediaReads,storage};
 }
 const get=(h,id,kind,query='')=>h.GET(
   new Request('https://loc.example/api/loc/scopes/'+id+'/numeric/'+kind+query),
@@ -68,4 +80,18 @@ test('private Scope and invalid numeric requests never execute SQL',async()=>{
     ['lo3rwang','culture','?start=2026-10-01&end=2026-09-01']
   ])assert.equal((await get(h,id,kind,query)).status,400);
   assert.equal(h.queries.length,0);
+});
+
+test('media facet ISR returns counts only and repeats without another SQL scan',async()=>{
+  const h=await harness();
+  const route='?dimension=media_type&start=2026-10-01&end=2026-10-02';
+  const first=await get(h,'lo3rwang','facet',route);
+  assert.equal(first.status,200);
+  assert.deepEqual(await first.json(),[{day:'2026-10-01',category:'music',item_count:2}]);
+  for(let i=0;i<4;i++)assert.equal((await get(h,'lo3rwang','facet',route)).status,200);
+  assert.deepEqual(h.mediaReads,['lo3rwang_galaxy_media']);
+  assert.equal(h.queries.length,0,'Facet payload must not run an unrelated RPC');
+  await get(h,'lo3rwang','facet','?dimension=media_platform&start=2026-10-01&end=2026-10-02');
+  assert.equal(h.mediaReads.length,2,'Different graph dimensions retain independent cache keys');
+  assert.equal((await get(h,'lo3rwang','facet','?dimension=media_style')).status,400);
 });
