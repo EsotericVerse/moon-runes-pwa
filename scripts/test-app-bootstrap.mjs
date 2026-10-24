@@ -213,6 +213,11 @@ test('self-intersection keeps top four filters and two selectors per comparison 
     '多媒體來源','關鍵詞分組','關鍵詞項目'])
     assert.ok(source.includes(label));
   assert.ok(source.includes('maximumLanes=Math.min(8,categoryList.length)'));
+  // These user examples must be selectable without a third dropdown.
+  assert.match(source,/kind:'source_rollup',\s*name:'系統分組來源'/);
+  assert.match(source,/kind:'source_rollup',\s*name:'個人分組來源'/);
+  assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'system')"));
+  assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'personal')"));
   assert.ok(source.includes("if(!family)return categoryList"));
   assert.ok(!ui.includes("comparisonDimensions"));
   const start=source.indexOf('export function mediaTypeFamily(raw)');
