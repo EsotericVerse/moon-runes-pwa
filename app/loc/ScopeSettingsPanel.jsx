@@ -86,7 +86,7 @@ export default function ScopeSettingsPanel({scopeId}){
     <p className="loc-eyebrow"><UiText id="uiExtra.scopeSettings.personalTitle"/></p>
     <h2><UiText id="uiExtra.scopeSettings.miscellaneous"/></h2>
     {loading?<p className="scope-status"><UiText id="common.loading"/></p>:null}
-    {!loading?<form onSubmit={save}>
+    {!loading?<div>
       <div className="scope-management-fields">
         <label>
           <span><UiText id="common.theme"/></span>
@@ -98,7 +98,7 @@ export default function ScopeSettingsPanel({scopeId}){
       </div>
 
       {message?<p className="scope-status" role="status">{message}</p>:null}
-      <div className="scope-tabs"><button type="submit" disabled={busy}><UiText id={busy?'common.saving':'uiExtra.scopeSettings.update'}/></button></div>
-    </form>:null}
+      <p className="scope-status">選擇主題後，使用六大功能列的「儲存」套用。</p>
+    </div>:null}
   </section>;
 }
