@@ -31,6 +31,7 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
+import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -214,6 +215,9 @@ export default function Culture(){
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
+  const [focusedAnchorDate,setFocusedAnchorDate]=useState('');
+  const [openCultureRoots,setOpenCultureRoots]=useState([]);
+  const [selectedRiverGroup,setSelectedRiverGroup]=useState('');
   const [creatingSuggestedAnchors,setCreatingSuggestedAnchors]=useState(false);
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
@@ -243,6 +247,9 @@ export default function Culture(){
     setKeywordPeriodKey('latest');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
+    setOpenCultureRoots([]);
+    setSelectedRiverGroup('');
+    setFocusedAnchorDate('');
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
@@ -282,7 +289,11 @@ export default function Culture(){
   // The lower Culture panel shares one selected interval across the source
   // classification river, keyword-density river, suggestions, and work list.
   // The upper Time structure river keeps its own period navigation.
-  const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
+  const cultureEventOptions=useMemo(()=>(query.data?.timelineItems||[])
+    .filter(item=>item.entry_type==='event'&&item.start_date),[query.data]);
+  const keywordPeriod=keywordPeriodKey.startsWith('event:')
+    ?(cultureEventOptions.find(item=>'event:'+String(item.id||item.entry_id||item.record_id)===keywordPeriodKey)||selectedWorkPeriod)
+    :keywordPeriodKey==='all'?allTimePeriod
     :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod)
     :keywordPeriodKey==='current'?selectedWorkPeriod
     :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||latestPeriod||selectedWorkPeriod;
@@ -297,7 +308,7 @@ export default function Culture(){
   const classificationWindowEnd=keywordWindowEnd;
   const classificationWindowValid=keywordWindowValid;
   const classificationPeriodLabel=keywordPeriodKey==='custom'
-    ?'自訂區間':localizedLabelOf(keywordPeriod,0);
+    ?l.customPeriod:localizedLabelOf(keywordPeriod,0);
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -321,6 +332,19 @@ export default function Culture(){
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
+  const sourceTaxonomy=useAsyncResource({
+    queryKey:['culture-source-classification',scopeId],
+    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&Boolean(scopeData),
+    queryFn:async()=>{
+      const [categories,aliases,groups,groupAliases]=await Promise.all([
+        selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
+        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:1000}),
+        selectRows('silver.statistics_scope_others_groups',{columns:'group_code,display_name,enabled,sort_order',filters:[{column:'scope_id',operator:'eq',value:scopeId}],orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'}),
+        selectRows('silver.statistics_scope_others_aliases',{columns:'source_key,group_code',filters:[{column:'scope_id',operator:'eq',value:scopeId}],limit:500,source:'primary'})
+      ]);
+      return {categories:categories.rows||[],aliases:aliases.rows||[],groups:groups.rows||[],groupAliases:groupAliases.rows||[]};
+    }
+  });
   const sourceSnapshotQuery=useAsyncResource({
     queryKey:['culture-period-source-snapshot','v3',classificationScope,classificationWindowStart,classificationWindowEnd],
     queryFn:async()=>{
@@ -428,10 +452,36 @@ export default function Culture(){
   },[keywordDetailRequested,keywordDensityQuery.data,styleQuery.data?.classifications,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
 
   const categoryGroups=sourceSnapshotQuery.data?.groups||[];
-  const selectedGroup=categoryGroups.find(item=>item.category_key===(
-    keywordDrillSource?'source:'+keywordDrillSource:selectedCategory
-  ))||null;
-  const effectiveCategoryKey=selectedGroup?.category_key||'';
+  const groupedSources=useMemo(()=>{
+    const catalog=sourceTaxonomy.data||{categories:[],aliases:[],groups:[],groupAliases:[]};
+    const system=new Map(catalog.categories.filter(row=>row.enabled!==false)
+      .map(row=>[String(row.category_code),String(row.display_name||row.category_code)]));
+    const custom=new Map(catalog.groups.filter(row=>row.enabled!==false)
+      .map(row=>[String(row.group_code),String(row.display_name||row.group_code)]));
+    const mapped=new Map(catalog.groupAliases.map(row=>[String(row.source_key||'').trim().toLowerCase(),String(row.group_code||'')]));
+    const index=new Map();
+    for(const source of categoryGroups){
+      const raw=String(source.source_name||'');
+      let root='media',code=raw,label=raw.replace(/^媒體 · /u,'');
+      if(source.category_type!=='media'){
+        const systemCode=assignedSource(raw,catalog.aliases,catalog.categories);
+        root=systemCode==='others'?'custom':'system';
+        code=root==='system'?systemCode:mapped.get(raw.toLowerCase())||'unclassified';
+        label=root==='system'?system.get(code)||code:custom.get(code)||l.other;
+      }
+      const key=root+':'+code;
+      if(!index.has(key))index.set(key,{key,root,label,source_name:label,source_names:[],media_types:[],item_count:0});
+      const group=index.get(key);
+      group.item_count+=Number(source.item_count)||0;
+      group.source_names.push(...(source.source_names||[]));
+      group.media_types.push(...(source.media_types||[]));
+    }
+    return [...index.values()].map(group=>({...group,source_names:[...new Set(group.source_names)],media_types:[...new Set(group.media_types)]}));
+  },[categoryGroups,sourceTaxonomy.data,l.other]);
+  const selectedGroup=groupedSources.find(item=>item.key===selectedRiverGroup)
+    ||categoryGroups.find(item=>item.category_key===(keywordDrillSource?'source:'+keywordDrillSource:selectedCategory))
+    ||null;
+  const effectiveCategoryKey=selectedGroup?.category_key||selectedGroup?.key||'';
   const periodWorksQuery=useAsyncInfiniteResource({
     queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
@@ -496,7 +546,7 @@ export default function Culture(){
     setFullText('');
     setFullTextError('');
     if(workScrollRef.current)workScrollRef.current.scrollTop=0;
-  },[selectedCategory]);
+  },[selectedCategory,selectedRiverGroup]);
 
 
   const timelineItems=useMemo(()=>
@@ -748,98 +798,98 @@ export default function Culture(){
         entry_type:'virtual_anchor',
         start_date:item.date,
         title:formatCultureUi(l.candidateTitle,{date:item.date,position:(position*100).toFixed(1),before:beforeCount.toLocaleString(locale),beforeRatio:((beforeCount/total)*100).toFixed(1),after:afterCount.toLocaleString(locale),afterRatio:((afterCount/total)*100).toFixed(1),analysis:(item.analysis||[]).join(' ')}),
-        display_label:selected?'◆':'◇',
+        display_label:'◇',
         group_label:l.candidateAnchor,
         item_count:0,
         className:'scope-virtual-anchor'+(selected?' is-selected':''),
-        style:'--virtual-anchor-strength:'+strength+';font-size:18px;',
+        style:'--virtual-anchor-strength:'+strength+';',
         virtual_anchor:{...item,position_ratio:position,before_ratio:beforeCount/total,after_ratio:afterCount/total,strength_ratio:strength}
       };
     });
   },[riverAnalysis.suggestions,riverAnalysis.totalCount,selectedVirtualAnchorDates,classificationWindowStart,classificationWindowEnd,l,locale]);
-  // Source and keyword counts remain separate data projections. The merged
-  // presentation uses one time axis, not a merged Class/source data model.
-  // Source totals are computed from the already-loaded daily source buckets;
-  // no extra Galaxy scan or database request is necessary.
-  const dualSourceRiverItems=useMemo(()=>{
-    const kindBySource=new Map((sourceSnapshotQuery.data?.groups||[]).map(group=>[
-      String(group.source_name||''),group.category_type==='media'?'media':'source'
-    ]));
-    const dailyTotals=new Map();
-    for(const item of secondRiverBuckets){
-      const category=String(item.category||'');
-      const day=String(item.start_date||'').slice(0,10);
-      if(!day)continue;
-      const kind=kindBySource.get(category)||(category.startsWith('媒體 ·')?'media':'source');
-      const key=kind+'|'+day;
-      dailyTotals.set(key,(dailyTotals.get(key)||0)+(Number(item.item_count)||0));
-    }
-    const maxima=new Map();
-    for(const [key,count] of dailyTotals){
-      const kind=key.slice(0,key.indexOf('|'));
-      maxima.set(kind,Math.max(maxima.get(kind)||0,count));
-    }
-    const totalRows=[...dailyTotals].map(([key,count])=>{
-      const separator=key.indexOf('|');
-      const kind=key.slice(0,separator);
-      const day=key.slice(separator+1);
-      const label=kind==='media'?'多媒體':'文字來源';
-      return {
-        id:'dual:source-total:'+key,
-        entry_id:'dual:source-total:'+key,
-        entry_type:'source_total',
-        group_key:'dual:source-total:'+kind,
-        group_label:'來源總類｜'+label,
-        group_order:kind==='source'?0:1,
-        start_date:day,
-        end_date:nextRiverDay(day),
-        item_count:count,
-        density_ratio:count/Math.max(1,maxima.get(kind)||1),
-        display_label:'',
-        title:day+' · '+label+'總量 · '+count.toLocaleString(locale)+' 項'
-      };
-    });
-    const orderedSources=[...new Set(secondRiverBuckets.map(item=>String(item.category||'')))].sort((a,b)=>{
-      const aKind=kindBySource.get(a)||(a.startsWith('媒體 ·')?'media':'source');
-      const bKind=kindBySource.get(b)||(b.startsWith('媒體 ·')?'media':'source');
-      return Number(aKind==='media')-Number(bKind==='media')||a.localeCompare(b,locale);
-    });
-    const sourceOrder=new Map(orderedSources.map((source,index)=>[source,index]));
-    const detailRows=secondRiverBuckets.map(item=>({
-      ...item,
-      id:'dual:'+String(item.id),
-      group_key:'dual:source-category:'+String(item.category||''),
-      group_label:'來源分類｜'+String(item.group_label||item.category||''),
-      group_order:10+(sourceOrder.get(String(item.category||''))||0)
-    }));
-    // Candidate anchors are comparisons, not a second copy of official anchors.
-    const candidateRows=virtualAnchorItems.map(item=>({
-      ...item,group_key:'dual:source:candidates',group_label:'來源｜建議定錨點',group_order:900
-    }));
-    return [...totalRows,...detailRows,...candidateRows];
-  },[secondRiverBuckets,sourceSnapshotQuery.data?.groups,virtualAnchorItems,locale]);
-  const dualKeywordRiverItems=useMemo(()=>keywordDrillItems.map((item,index)=>({
-    ...item,
-    id:'dual:'+String(item.id),
-    group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
-    group_label:(keywordDrillGroup?'Group｜':'Class｜')+String(item.group_label||''),
-    group_order:1000+(Number(item.group_order)||index)
-  })),[keywordDrillItems,keywordDrillGroup]);
-  // The source half is always visible. The Class/Group half only exists
-  // after the visitor explicitly selects the keyword classification.
+  // Three true parent lanes always exist; children are mounted inside the same
+  // vis-timeline chart only when their parent is expanded.
   const showKeywordRiver=styleFilter==='rune66';
-  const dualRiverItems=useMemo(
-    ()=>showKeywordRiver?[...dualSourceRiverItems,...dualKeywordRiverItems]:dualSourceRiverItems,
-    [dualSourceRiverItems,dualKeywordRiverItems,showKeywordRiver]
-  );
-  const dualRiverGroups=useMemo(()=>[
-    {id:'dual:section:source',label:'來源總類／來源分類',order:-10,className:'scope-dual-river-section'},
-    ...(showKeywordRiver
-      ?[{id:'dual:section:keyword',label:keywordDrillGroup?'Class 內 Group 列表':'Class 列表',order:950,className:'scope-dual-river-section'}]
-      :[])
-  ],[keywordDrillGroup,showKeywordRiver]);
+  const cultureRiver=useMemo(()=>{
+    const roots=[
+      {id:'system',label:l.system,order:0},
+      {id:'custom',label:l.custom,order:300},
+      {id:'media',label:l.media,order:600}
+    ];
+    const bySource=new Map();
+    for(const group of groupedSources){
+      for(const name of group.source_names)bySource.set(name,group);
+      for(const name of group.media_types)bySource.set('媒體 · '+name,group);
+    }
+    const totals=new Map(),subtotals=new Map();
+    const add=(map,key,count)=>map.set(key,(map.get(key)||0)+count);
+    for(const item of secondRiverBuckets){
+      const raw=String(item.category||''),day=String(item.start_date||'').slice(0,10);
+      if(!day)continue;
+      const group=bySource.get(raw);
+      const parent=group?.root||(raw.startsWith('媒體 · ')?'media':'custom');
+      const child=group?.key||parent+':unclassified';
+      const count=Number(item.item_count)||0;
+      add(totals,parent+'\u0000'+day,count);
+      add(subtotals,child+'\u0000'+day,count);
+    }
+    const maximum=map=>{
+      const result=new Map();
+      for(const [key,n] of map){
+        const type=key.slice(0,key.indexOf('\u0000'));
+        result.set(type,Math.max(result.get(type)||0,n));
+      }
+      return result;
+    };
+    const parentMaximum=maximum(totals),childMaximum=maximum(subtotals);
+    const row=(id,day,count,label,order,max,kind)=>({
+      id:'dual:'+id+':'+day,entry_id:'dual:'+id+':'+day,
+      entry_type:kind,group_key:'dual:'+id,group_label:label,group_order:order,
+      start_date:day,end_date:nextRiverDay(day),item_count:count,
+      density_ratio:count/Math.max(1,max),display_label:'',
+      title:day+' · '+label+' · '+count.toLocaleString(locale)
+    });
+    const items=[],groups=[];
+    for(const parent of roots){
+      const expanded=openCultureRoots.includes(parent.id);
+      groups.push({id:'dual:root:'+parent.id,label:parent.label,order:parent.order,
+        className:'scope-dual-river-root',collapsible:true,expanded});
+      for(const [key,count] of totals){
+        const [type,day]=key.split('\u0000');
+        if(type===parent.id)items.push(row('root:'+parent.id,day,count,parent.label,parent.order,parentMaximum.get(parent.id),'source_total'));
+      }
+      if(!expanded)continue;
+      groupedSources.filter(g=>g.root===parent.id)
+        .sort((x,y)=>x.label.localeCompare(y.label,locale))
+        .forEach((group,index)=>{
+          const id='dual:child:'+group.key;
+          groups.push({id,label:group.label,order:parent.order+index+1,
+            className:'scope-dual-river-child',selectable:true});
+          for(const [key,count] of subtotals){
+            const [code,day]=key.split('\u0000');
+            if(code===group.key)items.push({...row('child:'+group.key,day,count,group.label,parent.order+index+1,childMaximum.get(group.key),'source_group'),source_group_code:group.key});
+          }
+        });
+    }
+    if(virtualAnchorItems.length){
+      groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,className:'scope-candidate-lane'});
+      items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
+    }
+    if(showKeywordRiver)items.push(...keywordDrillItems.map((item,index)=>({
+      ...item,id:'dual:'+String(item.id),
+      group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
+      group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
+    })));
+    return {items,groups};
+  },[groupedSources,secondRiverBuckets,openCultureRoots,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
+  const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
+  const anchorInsight=focusedCandidate?{
+    date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
+    after:Number(focusedCandidate.afterCount)||0,reason:(focusedCandidate.analysis||[]).join(' ')
+  }:null;
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
+    setFocusedAnchorDate(current=>riverAnalysis.suggestions.some(item=>item.date===current)?current:'');
   },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
 
   const toggleVirtualAnchor=date=>{
