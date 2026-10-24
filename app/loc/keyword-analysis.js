@@ -377,7 +377,7 @@ async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const scope=publicRead?defaultScopeData(id):await selectManagedScope(id);
   if(!scope)throw new Error('找不到 '+id+' Scope');
   const result=await selectAllRows(scope.config,{
-    columns:'id,keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,keyword_meta,staticstime',
+    columns:'id,keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_meta,staticstime',
     filters:[{column:'id',operator:'eq',value:id}]
   });
   const config=result.rows?.[0]||null;
@@ -428,10 +428,13 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     keywordFingerprint(scope)
   ]);
   if(checkSkippable(config,catalogRows,fingerprint)){
+    const documentCount=await selectCount(scope.galaxy,{
+      idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
+    });
     reportBatchProgress(onProgress,'completed',
-      Number(config.keyword_document_count)||0,Number(config.keyword_document_count)||0,100,
+      documentCount,documentCount,100,
       '關鍵詞庫與文章皆無變動，已略過重新分析');
-    return emptyStored(config,{skipped:true,documentCount:Number(config.keyword_document_count)||0});
+    return emptyStored(config,{skipped:true,documentCount,keywordDocumentCount:documentCount});
   }
 
   // Which items changed since the last successful run (null = can't tell,
@@ -558,15 +561,18 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     throw new Error('關鍵詞批次寫回異常：總計分類文章數 '+written.documentCount+' 超出符合資格文章數 '+eligibleUids.length);
   }
   clearKeywordAnalysisCache();
-  const {data:verifiedRows,error:verificationError}=await dbAuthRelation(scope.config)
-    .select('keyword_document_count,staticstime')
-    .eq('id',normalizedScopeId).limit(1);
+  const [{data:verifiedRows,error:verificationError},verifiedCount]=await Promise.all([
+    dbAuthRelation(scope.config).select('staticstime')
+      .eq('id',normalizedScopeId).limit(1),
+    selectCount(scope.galaxy,{
+      idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
+    })
+  ]);
   if(verificationError)throw new Error('關鍵詞定錨驗證失敗：'+verificationError.message);
   const verified=verifiedRows?.[0];
-  // Compare the fresh read against what finalize itself just returned (not
-  // against eligibleUids.length -- see above), confirming the config row
-  // reflects the same run that just completed.
-  if(!verified?.staticstime||Number(verified.keyword_document_count)!==written.documentCount){
+  // The finalized count comes directly from group_lists, never from a
+  // duplicate Scope config counter. Preserve the final anchor validation.
+  if(!verified?.staticstime||verifiedCount!==written.documentCount){
     throw new Error('關鍵詞定錨驗證失敗：文章數或完成時間不符，統計尚不可公開');
   }
   reportBatchProgress(onProgress,'completed',payloadRows.length,payloadRows.length,100,
@@ -576,7 +582,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     documentCount:documents.length,
     keywordMinChars:minChars,
     keywordMinDocuments:minDocuments,
-    keywordDocumentCount:Number(verified.keyword_document_count),
+    keywordDocumentCount:verifiedCount,
     statisticsEnabled:eligibleUids.length>minDocuments,
     staticstime:verified.staticstime,
     skipped:false
@@ -585,7 +591,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
 
 function emptyStored(config,extra={}){
   const minDocuments=normalizeKeywordMinDocuments(config?.keyword_min_documents);
-  const globalCount=Number(config?.keyword_document_count)||0;
+  const globalCount=Math.max(0,Number(extra?.keywordDocumentCount)||0);
   return {
     documentCount:0,
     classifiedCount:0,
@@ -645,7 +651,7 @@ function aggregateSummaryRpcRows(rows){
   }
   return agg;
 }
-function storedSummary(agg,config){
+function storedSummary(agg,config,globalCount=agg.eligible){
   const meta=config?.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
   const classes=meta.classes&&typeof meta.classes==='object'?meta.classes:{};
   const items=meta.items&&typeof meta.items==='object'?meta.items:{};
@@ -693,7 +699,7 @@ function storedSummary(agg,config){
     }))
     .sort((a,b)=>a.rune_id-b.rune_id);
   const classifiedCount=classifications.reduce((sum,row)=>sum+row.count,0);
-  const base=emptyStored(config);
+  const base=emptyStored(config,{keywordDocumentCount:globalCount});
   return {
     ...base,
     documentCount:agg.eligible,
@@ -719,10 +725,17 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
   const promise=(async()=>{
     const {scope,config}=await scopeAndConfig(normalizedScopeId,{publicRead:true});
     if(!config.staticstime)return emptyStored(config);
+    // A filtered date/source view must still use the unfiltered live
+    // classification total for the minimum-document eligibility gate.
+    const globalCount=(category||startDate||endDate)
+      ?await selectCount(scope.galaxy,{
+        idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
+      })
+      :null;
     if(!category&&keywordSummaryRpcInstalled){
       try{
         const counted=await readRune66Summary(normalizedScopeId,{startDate,endDate});
-        return storedSummary(aggregateSummaryRpcRows(counted),config);
+        return storedSummary(aggregateSummaryRpcRows(counted),config,globalCount??undefined);
       }catch(error){
         if(!['PGRST202','42883'].includes(String(error?.code||'')))throw error;
         keywordSummaryRpcInstalled=false;
@@ -741,7 +754,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
     const classified=category?(rows.rows||[]).filter(row=>
       assignedSource(row.source_name,sourceAliases,sourceCategories)===category
     ):rows.rows||[];
-    return storedSummary(aggregateStoredRows(classified),config);
+    return storedSummary(aggregateStoredRows(classified),config,globalCount??undefined);
   })().catch(error=>{
     if(!category)analysisPromises.delete(key);
     throw error;
