@@ -60,10 +60,8 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
       <ManagementSectionNav id="scope-sections" title="管理項目" panelId="scope-management-panel"
         items={options} value={section} onChange={next=>{
           if(next===section)return;
-          if(!editDock?.active){setSection(next);return;}
-          const url=new URL(window.location.href);
-          url.searchParams.set('section',next);
-          editDock.switchTo(url.pathname+url.search+url.hash);
+          if(editDock?.active)editDock.switchSection(next,setSection);
+          else setSection(next);
         }}/>
       <div className="management-workspace-panel" id="scope-management-panel" role="region"
         aria-labelledby={'scope-sections-option-'+selectedOption.value}>
