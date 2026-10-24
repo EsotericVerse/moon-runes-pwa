@@ -83,16 +83,27 @@ export function EditDockProvider({children}){
   },[end,navigate]);
   const save=useCallback(async({stayInEditMode=false}={})=>{
     if(busy)return;
-    const editor=currentEditor.current;
-    if(typeof editor?.save!=='function'){
+    // A management section can mount independent Database / ISR / Email
+    // editors simultaneously. Save every dirty editor through the existing
+    // six-feature Save action; never silently save just the first mounted one.
+    const dirty=[...registeredEditors.current].filter(editor=>editor.isDirty?.());
+    const editors=dirty.length?dirty:(currentEditor.current?[currentEditor.current]:[]);
+    if(!editors.length||editors.some(editor=>typeof editor.save!=='function')){
       setNotice('這個頁面尚未載入可儲存的編輯內容。');
+      return;
+    }
+    if(editors.some(editor=>editor.isBusy?.())){
+      setNotice('正在儲存其他設定，請完成後再操作。');
       return;
     }
     setBusy(true);
     setNotice('');
     try{
-      const saved=await editor.save();
-      if(saved===true&&stayInEditMode)setNotice('已分段儲存，可繼續編輯。');
+      for(const editor of editors){
+        const saved=await editor.save();
+        if(saved!==true)throw new Error('部分設定未儲存，已保留編輯內容。請檢查各區塊提示。');
+      }
+      if(dirty.length)setNotice(stayInEditMode?'已分段儲存，可繼續編輯。':'目前修改已儲存。');
     }catch(error){
       setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
     }finally{
