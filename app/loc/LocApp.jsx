@@ -113,7 +113,7 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
     }
     // Public Global Settings remains available on Web; the private
     // /local/* feature pages do not. A bookmark must not bypass the menu.
-    router.replace('/local/settings/?section=account');
+    router.replace('/local/settings/');
   },[scopeMeta?.nativeOnly,router]);
   const ActiveView=forcedView==='home'
     ?HOME_VIEWS[scopeId]||GenericScopeHomeView
