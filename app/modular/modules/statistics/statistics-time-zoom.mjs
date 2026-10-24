@@ -70,7 +70,8 @@ export const STAT_VISUAL_TYPES=Object.freeze([
   'line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'
 ].map(type=>Object.freeze([type,'uiExtra.chartTypes.'+type])));
 // Strongly separated hues remain legible across light/dark themes and 8 lanes.
-const COLORS=['#8962e3','#e5a13c','#14b8c4','#e75a68','#53bd79','#e37bb8','#468fe2','#acbd45'];
+const COLORS=['#8962e3','#e5a13c','#14b8c4','#e75a68','#53bd79','#e37bb8','#468fe2','#dbb347',
+  '#52b4a5','#da7550','#7b90e2','#ce637f','#4d9cc9','#bc8050','#80be7b','#d48fb3'];
 export const number=value=>Math.max(0,Number(value)||0);
 export const color=i=>COLORS[i%COLORS.length];
 
