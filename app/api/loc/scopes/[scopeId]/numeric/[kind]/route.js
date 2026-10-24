@@ -16,7 +16,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet','daily','daily-earliest'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='';
   try{
@@ -24,16 +24,55 @@ export async function GET(request,{params}){
     if([...search.keys()].some(key=>!['start','end','undated','dimension'].includes(key)))throw Error('Unknown parameter');
     dimension=search.get('dimension')||'';
     if(kind==='facet'?!['media_type','media_platform'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
-    if(kind==='facet'&&search.has('undated'))throw Error('Unexpected undated');
+    if(['facet','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
+    if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
+    if(kind==='daily-earliest'&&search.size)throw Error('Unexpected date range');
     if(kind==='statistics'&&search.has('undated'))throw Error('Unexpected undated');
     if(search.has('undated')&&!['0','1'].includes(search.get('undated')))throw Error('Invalid undated');
     start=date(search.get('start'));
     end=date(search.get('end'));
     if(start&&end&&start>end)throw Error('Reversed date range');
+    if(kind==='daily'&&(!start||!end))throw Error('Daily Rune range required');
     undated=kind==='culture'&&search.get('undated')==='1';
   }catch{return withLocCors(Response.json({error:'Invalid date range'},{status:400}),request);}
   const read=unstable_cache(async()=>{
     const db=createPublicSupabaseClient();
+    if(kind==='daily-earliest'){
+      const {data,error}=await db.from('lrunes_daily')
+        .select('record_date').order('record_date',{ascending:true}).limit(1);
+      if(error)throw error;
+      return String(data?.[0]?.record_date||'').slice(0,10);
+    }
+    if(kind==='daily'){
+      // Public Time River records and chart inputs only. Never cache private
+      // draw sessions, per-user histories or the full Rune descriptions.
+      const draws=[];
+      for(let from=0;;){
+        const {data,error}=await db.from('lrunes_daily')
+          .select('record_date,draw_kind,rune_number,direction,recorded_phase')
+          .gte('record_date',start).lte('record_date',end)
+          .order('record_date',{ascending:true}).order('draw_kind',{ascending:true})
+          .range(from,from+65534);
+        if(error)throw error;
+        const batch=Array.isArray(data)?data:[];
+        draws.push(...batch);
+        from+=batch.length;
+        if(batch.length<65535)break;
+      }
+      const numbers=[...new Set(draws.map(row=>Number(row.rune_number))
+        .filter(number=>Number.isInteger(number)&&number>=0&&number<=66))];
+      const {data:meta,error:metaError}=numbers.length
+        ?await db.from('runes').select('rune_id,rune_name,moon_phase').in('rune_id',numbers)
+        :{data:[],error:null};
+      if(metaError)throw metaError;
+      const runeMap=new Map((meta||[]).map(row=>[Number(row.rune_id),row]));
+      return draws.map(row=>{
+        const rune=runeMap.get(Number(row.rune_number))||{};
+        return {...row,rune_id:rune.rune_id??row.rune_number,
+          rune_name:rune.rune_name||String(row.rune_number),
+          moon_phase:rune.moon_phase??null};
+      });
+    }
     if(kind==='facet'){
       // The worker caches only per-day counts; public Media rows never leave this server route.
       const totals=new Map();
@@ -75,7 +114,7 @@ export async function GET(request,{params}){
       categories:Array.isArray(data.categories)?data.categories:[],
       aliases:Array.isArray(data.aliases)?data.aliases:[]
     };
-  },['loc-numeric-v2',kind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
+  },['loc-numeric-v3',kind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
     revalidate,tags:[LOC_NUMERIC_CACHE_TAG]
   });
   try{
