@@ -103,7 +103,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     const {clearKeywordAnalysisCache}=await import('./keyword-analysis');
     clearKeywordAnalysisCache();
     await Promise.all([
-      mutate(key=>Array.isArray(key)&&['statistics-style-filter','culture-style-filter','own-scope-keyword-summary','own-scope-keyword-item-days'].includes(key[0]))
+      mutate(key=>Array.isArray(key)&&['statistics-style-filter','culture-style-filter','own-scope-keyword-summary','own-scope-keyword-item-days','statistics-keyword-item-class-map'].includes(key[0]))
     ]);
   }
 
