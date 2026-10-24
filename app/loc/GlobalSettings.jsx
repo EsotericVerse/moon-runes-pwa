@@ -119,6 +119,8 @@ export default function GlobalSettings({initialSection='home'}={}){
   const activeSection=section;
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
+  // Account identity is independent of personal settings and management permission reads.
+  const accountWaiting=Boolean(busy)||account.loading;
 
   async function saveHome(event){
     event.preventDefault();
@@ -195,7 +197,7 @@ export default function GlobalSettings({initialSection='home'}={}){
 
       {activeSection==='account'?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.account"/></h2>
-        {waiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
+        {accountWaiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
           <p>{account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
           <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
         </div>:<button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
