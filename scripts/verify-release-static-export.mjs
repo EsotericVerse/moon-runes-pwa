@@ -5,7 +5,7 @@ import {join} from 'node:path';
 // This checks file generation only; browser behavior and RLS need separate tests.
 const routes=[
   '', 'search', 'culture', 'culture/manage', 'statics', 'statics/manage',
-  'lo3rwang', 'lo3rwang/search',
+  'lo3rwang', 'lo3rwang/search', 'lo3rwang/culture', 'lo3rwang/statics',
   'lrunes', 'lrunes/search', 'lrunes/game', 'game/room',
   'scope-shell', 'scope-shell/search',
   'admin', 'governance/manage', 'governance/manage/search',
