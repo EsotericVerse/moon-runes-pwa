@@ -4,7 +4,7 @@ export default {
   "intersectionRiver": "交會時間長河",
   "combinedSources": "綜合來源",
   "combinedRiver": "綜合來源時間長河",
-  "classificationRiver": "作品分類河道",
+  "classificationRiver": "作品體系展現",
   "structure": "時期・事件・定錨點",
   "period": "時期",
   "allTime": "全部時間",

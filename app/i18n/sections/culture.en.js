@@ -4,7 +4,7 @@ export default {
   "intersectionRiver": "Intersection river",
   "combinedSources": "Combined sources",
   "combinedRiver": "Combined source river",
-  "classificationRiver": "Work classification river",
+  "classificationRiver": "Work Structure Overview",
   "structure": "Periods · Events · Anchors",
   "period": "Period",
   "allTime": "All time",

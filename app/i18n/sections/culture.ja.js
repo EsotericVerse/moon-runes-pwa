@@ -4,7 +4,7 @@ export default {
   "intersectionRiver": "交差タイムライン",
   "combinedSources": "ソースの合計",
   "combinedRiver": "ソース全体のタイムライン",
-  "classificationRiver": "作品分類の系列",
+  "classificationRiver": "作品体系の全体像",
   "structure": "時期・イベント・アンカー",
   "period": "時期",
   "allTime": "全期間",
