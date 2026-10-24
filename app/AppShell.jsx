@@ -343,10 +343,13 @@ function AppShellInner({children}){
   const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
+  const [,refreshFieldLabels]=useState(0);
   useEffect(()=>{
     if(isSectionLoaded(activeLocale,'fields'))return undefined;
     let active=true;
-    loadSection(activeLocale,'fields').catch(()=>{});
+    loadSection(activeLocale,'fields')
+      .then(()=>{if(active)refreshFieldLabels(n=>n+1);})
+      .catch(()=>{});
     return ()=>{active=false;};
   },[activeLocale]);
   const isMyPhone=native&&['/my-phone','/my-phone/index.html'].includes(normalizePath(pathname));
@@ -414,10 +417,10 @@ function AppShellInner({children}){
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
-    {id:'save',icon:'save',label:isFeatureEditMode?'分段儲存':translateUiField(activeLocale,'儲存'),action:'save'},
-    {id:'time',icon:'culture',label:locAdminEdit?'來源管理':translateUiField(activeLocale,'時間編輯'),
+    {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'分段儲存'):translateUiField(activeLocale,'儲存'),action:'save'},
+    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'來源管理'):translateUiField(activeLocale,'時間編輯'),
       href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
-    {id:'keywords',icon:'keywords',label:locAdminEdit?'關鍵詞管理':translateUiField(activeLocale,'關鍵詞編輯'),
+    {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞編輯'),
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
     {id:'suggestions',icon:'search',label:'文章管理',
       href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('governance/manage/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('governance/manage/search','section','search')+'&edit=1':''},

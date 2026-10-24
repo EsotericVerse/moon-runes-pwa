@@ -373,5 +373,10 @@ export default {
   "目前選擇沒有共同出現的標籤組合，請調整任一側標籤。": "No tag combinations overlap in the current selection. Adjust either tag set.",
   "參考語系": "Reference language",
   "僅解釋目前 Meta Tags 中已存在的情緒標籤，不會翻譯、增加或改寫儲存值。": "Explains existing emotion labels in Meta Tags without translating, adding, or changing stored values.",
-  "目前沒有可對照的情緒標籤，保留原始 Meta Tags。": "No matching emotion labels were found. Original Meta Tags are preserved."
+  "目前沒有可對照的情緒標籤，保留原始 Meta Tags。": "No matching emotion labels were found. Original Meta Tags are preserved.",
+  "分段儲存": "Save section",
+  "來源管理": "Source management",
+  "關鍵詞管理": "Keyword management",
+  "時間編輯": "Edit timeline",
+  "關鍵詞編輯": "Edit keywords"
 };
