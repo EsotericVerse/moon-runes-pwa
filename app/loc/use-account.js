@@ -46,6 +46,7 @@ function createScopeAuthorizer(user,permissionRows=[]){
 // management query. Only protected views opt into management authorization. A permission result is UI state, never a substitute for
 // Supabase RLS / RPC write authorization.
 const SESSION_KEY=['loc-account','session'];
+const VERIFIED_SESSION_KEY=['loc-account','verified-google-oauth'];
 const MANAGEMENT_KEY=['loc-account','management'];
 // A management workspace verifies once on entry. Never re-query on focus or
 // stale-time expiry; explicit refresh and database write authorization remain.
@@ -65,7 +66,7 @@ async function loadSessionAccount(){
     const session=await getAccountSession();
     const user=session?.user||null;
     if(!user)return signedOutState;
-    return {...signedOutState,user,email:normalizeAuthEmail(user.email)};
+    return {...signedOutState,user,email:session.oauth.email,oauth:session.oauth};
   }catch(error){
     return failedState(error);
   }
@@ -122,7 +123,7 @@ async function loadManagementAccount(mutate){
 
 export function useAccount({enabled=true,sessionOnly=false}={}){
   const {mutate}=useSWRConfig();
-  const queryKey=sessionOnly?SESSION_KEY:MANAGEMENT_KEY;
+  const queryKey=sessionOnly?(enabled?VERIFIED_SESSION_KEY:SESSION_KEY):MANAGEMENT_KEY;
   const queryFn=useCallback(
     ()=>sessionOnly?loadSessionAccount():loadManagementAccount(mutate),
     [sessionOnly,mutate]
@@ -153,6 +154,7 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     authUserId='';
     await Promise.all([
       mutate(SESSION_KEY,signedOutState,{revalidate:false}),
+      mutate(VERIFIED_SESSION_KEY,signedOutState,{revalidate:false}),
       mutate(MANAGEMENT_KEY,signedOutState,{revalidate:false})
     ]);
   },[mutate]);
@@ -195,6 +197,10 @@ export function usePassiveSessionAccount(){
       void mutate(SESSION_KEY,user
         ?{...signedOutState,user,email:normalizeAuthEmail(user.email)}
         :signedOutState,{revalidate:false});
+      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+        // Never put the unverified SDK event user into the verified OAuth cache.
+        void mutate(VERIFIED_SESSION_KEY,undefined,{revalidate:Boolean(user)});
+      }
       if(identityChanged||event==='SIGNED_OUT'){
         void mutate(MANAGEMENT_KEY,signedOutState,{revalidate:Boolean(user)});
       }
