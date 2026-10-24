@@ -58,7 +58,9 @@ export default function GlobalSettings({initialSection='home'}={}){
   // protected and requests management roles only when that section opens.
   const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&section==='files';
   const managedAccount=useAccount({enabled:needsScopePermission});
-  const account=needsScopePermission?managedAccount:prefs.account;
+  // Only the account panel fetches a server-verified Google OAuth identity.
+  const verifiedGoogleAccount=useAccount({enabled:section==='account',sessionOnly:true});
+  const account=section==='account'?verifiedGoogleAccount:(needsScopePermission?managedAccount:prefs.account);
 
   useEffect(()=>{
     const isNative=Capacitor.isNativePlatform();
@@ -120,7 +122,7 @@ export default function GlobalSettings({initialSection='home'}={}){
   const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
   // Account identity is independent of personal settings and management permission reads.
-  const accountWaiting=Boolean(busy)||account.loading;
+  const accountWaiting=account.loading;
 
   async function saveHome(event){
     event.preventDefault();
@@ -206,11 +208,17 @@ export default function GlobalSettings({initialSection='home'}={}){
 
       {activeSection==='account'?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.account"/></h2>
-        {accountWaiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
-          <p>{account.email||account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
+        {accountWaiting?<div>
+          <p role="status">正在核驗 Google OAuth 身分…</p>
+          {prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
+        </div>:account.user?<div>
+          <p>Google OAuth（已驗證）：{account.email}</p>
           <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
           <button type="button" className="loc-button" disabled={busy} onClick={switchAccount}><UiText id="uiExtra.globalSettings.switchAccount"/></button>
-        </div>:<button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
+        </div>:<div>
+          <button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>
+          {prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
+        </div>}
         {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
       </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}
