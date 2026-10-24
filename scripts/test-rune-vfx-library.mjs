@@ -33,7 +33,8 @@ test('every runtime effect and overlay resolves to a pinned or bundled asset',()
         assert.ok(pinned.has(local.slice('Collections/'.length)),
           `unavailable author asset: ${name} -> ${local}`);
       }else{
-        assert.match(local,/^Resources\\/[^/]+\\.efkefc$/);
+        assert.ok(local.startsWith('Resources/') && local.endsWith('.efkefc'),
+          `invalid bundled effect path: ${local}`);
       }
     }
   }
