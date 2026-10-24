@@ -626,7 +626,7 @@ export default function GameBoard(){
         editing={section==='edit'&&authorizedEdit}
         onEditorExit={()=>{setAuthorizedEdit(false);setSection('play');}}/>
       <div className="management-workspace lrg-home-workspace">
-        <ManagementSectionNav id="game-home-sections" title="遊戲選單"
+        <ManagementSectionNav showDescriptions id="game-home-sections" title="遊戲選單"
           panelId="game-home-panel" items={visibleSections} value={section}
           onChange={chooseSection}/>
         <div className="management-workspace-panel lrg-home-panel" id="game-home-panel"
