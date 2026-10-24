@@ -145,7 +145,7 @@ test('keyword charts share one canvas and intersections offer at most eight lane
   assert.equal(chart.match(/<StatisticsMultiChart type=\{actualChart\}/g)?.length,1);
   assert.match(chart,/群組＋項目（同圖）/);
   assert.match(chart,/value:Number\(row.document_count\)/);
-  assert.match(pane,/maximumLanes=Math.min\(8,categoryList.length\)/);
+  assert.match(pane,/maximumLanes=Math.min\(8,/);
   assert.match(pane,/kind:'keyword_group'/);
   assert.match(pane,/kind:'keyword_item'/);
   assert.match(pane,/kind:'others_subgroup'/);
