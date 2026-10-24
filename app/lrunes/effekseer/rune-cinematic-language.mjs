@@ -19,6 +19,23 @@ export const GROUP_STAGE_LANGUAGE=Object.freeze([
   {group:'無序',style:'displace',cameraX:.29,cameraY:.24,depthKick:1.6,impact:'M:Attack_Impact',impactScale:2.3,impactSpeed:1.72,impactColor:[214,187,248,205]},
   {group:'特殊',style:'threshold',cameraX:.14,cameraY:.13,depthKick:1.8,impact:'T:Light3',impactScale:2.4,impactSpeed:1.35,impactColor:[239,219,250,205]}
 ]);
+/** Nine distinct authored prelude effects. No shared MagicArea beam during Rune drawing. */
+export const GROUP_SUMMON_EFFECTS=Object.freeze([
+  {group:'靈魂',key:'M:Holy1',scale:2,speed:0.76},
+  {group:'連結',key:'M:Magic1_wind',scale:1.95,speed:0.87},
+  {group:'生命',key:'T:Cure6',scale:1.9,speed:0.78},
+  {group:'自然',key:'M:Sylph5',scale:2.15,speed:0.7},
+  {group:'礦物',key:'M:Rock2',scale:2.1,speed:0.8},
+  {group:'元素',key:'M:Wind_Impact',scale:2.25,speed:0.92},
+  {group:'秩序',key:'SAMPLE:Simple_Ring_Shape1',scale:2,speed:0.77},
+  {group:'無序',key:'M:Breakdown',scale:2.05,speed:0.83},
+  {group:'特殊',key:'T:Light3',scale:2.15,speed:0.69}
+]);
+export function groupSummonForRune(runeId){
+  const n=Number(runeId);
+  if(!Number.isInteger(n)||n<1||n>66)return null;
+  return GROUP_SUMMON_EFFECTS[n<=64?Math.floor((n-1)/8):8];
+}
 export const GROUP_IMPACT_AT=0.62;
 export const GROUP_IMPACT_LENGTH=.72;
 export const CINEMATIC_CAMERA_BASE=24;

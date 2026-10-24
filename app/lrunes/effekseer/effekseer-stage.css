@@ -365,6 +365,25 @@
   .rune-3d-drawn-card{will-change:auto}
 }
 
+
+/* Readable rune draw feedback on the intentionally black 3D stage. */
+.rune-3d-ritual-status{color:#fff6de;text-shadow:0 2px 8px #000,0 0 20px #f9d17c9c}
+.rune-3d-ritual-status>span{display:inline-block;padding:12px 22px;
+  border:1px solid #f7dba56b;border-radius:14px;background:rgba(8,13,28,.78);
+  box-shadow:0 12px 28px #0009}
+.rune-3d-tap-to-draw{color:#fff6de;text-shadow:0 2px 6px #000,0 0 16px #f9d17c9c}
+.rune-3d-draw-deck-card,.rune-3d-drawn-card-back{
+  border-color:#f2cf88;background:linear-gradient(135deg,#607ca9,#24395e 57%,#536d99);
+  color:#fff0be;box-shadow:0 0 0 2px #ecd3a447,0 0 30px #779dff65,
+  0 20px 38px #000c,inset 0 0 0 5px #ffedba24}
+.rune-3d-draw-deck-card span,.rune-3d-drawn-card-back span{
+  text-shadow:0 2px 8px #111e40,0 0 15px #ffeab977}
+.rune-3d-drawn-card-front{background:radial-gradient(circle,#334b73,#101c35 80%);
+  border-color:#f3d598;box-shadow:0 0 28px #91b8ff8c,0 15px 34px #000b}
+.rune-3d-drawn-card-front img{filter:brightness(1.2) saturate(1.12)}
+.rune-3d-flying-rune{color:#ffe7ac;text-shadow:0 2px 12px #000,0 0 25px #ffe8ad99}
+.rune-3d-flying-rune img{filter:brightness(1.12) saturate(1.08)}
+
 /* End moonlit authored fog backdrop. */
 
 .rune-3d-library .rune-3d-atlas-gallery{

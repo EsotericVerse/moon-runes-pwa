@@ -77,6 +77,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → drawing → revealing → transfer → ready
   const [pending,setPending]=useState(null);
+  const [summonRuneId,setSummonRuneId]=useState(null);
   const [transferTarget,setTransferTarget]=useState(null);
   const stageRef=useRef(null),slotRef=useRef(null),resultsRef=useRef(null);
   const drawStageSize=useRef({width:800,height:520});
@@ -159,6 +160,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
     const used=new Set(cards.current.map(item=>Number(item.card.rune_id)));
     const remaining=Array.from({length:66},(_,i)=>i+1).filter(id=>!used.has(id));
     const runeNumber=remaining[randomIndex(remaining.length)];
+    setSummonRuneId(runeNumber);
     const directionIndex=randomIndex(4);
     try{
       const rows=await loadDrawCards([{runeNumber,dir:directionIndex+1}],{
@@ -194,7 +196,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   function reset(){
     if(lock.current||busy)return;
     cards.current=[];setItems([]);setReading('');setSelected(null);
-    setPending(null);setTransferTarget(null);setPhase('idle');
+    setPending(null);setSummonRuneId(null);setTransferTarget(null);setPhase('idle');
     setResultOpen(false);setFinished(false);setError('');setMoon(realMoonPhase());
   }
   function finish(){
@@ -252,8 +254,11 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
-          {phase==='waiting'?<><WaitingEffekseerStage textureQuality={textureQuality}/>
-            <div className="rune-3d-ritual-status" role="status">月光正在挑選符文……</div></>:null}
+          {(phase==='waiting'||phase==='drawing')&&summonRuneId?
+            <WaitingEffekseerStage runeId={summonRuneId} textureQuality={textureQuality}/>:null}
+          {phase==='waiting'?<div className="rune-3d-ritual-status" role="status">
+            <span>月光正在挑選符文……</span>
+          </div>:null}
           {phase==='drawing'&&pending?<div className="rune-3d-card-flight-plane" aria-hidden="true">
             <motion.div key={'drawn-'+pending.birth} className="rune-3d-drawn-card"
             data-draw-style={runeDrawGroup(pending.card)}

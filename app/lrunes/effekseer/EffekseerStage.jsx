@@ -7,7 +7,7 @@ import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import RuneExtrudedGlyph from './RuneExtrudedGlyph';
 import {AUTHORED_EFFECT_FILES,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
-import {groupStageForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
+import {groupStageForRune,groupSummonForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
 import {redirectHd256ParticleTexture} from './hd256-particle-paths.mjs';
 import {redirectSoftMatteTexture} from './soft-matte-textures.mjs';
 import {redirectAmbientFogTexture} from './ambient-fog-assets.mjs';
@@ -150,9 +150,16 @@ function groupEffectFor(rune){
   const filename=AUTHORED_EFFECT_FILES[RUNE_GROUP_EFFECT_KEYS[index]];
   return filename?{path:SOURCE+filename,tuning:{scale:1.8,speed:.72}}:null;
 }
+// The older waiting asset remains for the separate board-game Resonance stage.
 const WAITING_AUTHORED_EFFECT=Object.freeze({
   path:SOURCE+AUTHORED_EFFECT_FILES['M:MagicArea'],tuning:{scale:2.2,speed:.8}
 });
+function drawPreludeForRune(runeId){
+  const summon=groupSummonForRune(runeId);
+  const filename=summon&&AUTHORED_EFFECT_FILES[summon.key];
+  return filename?{key:summon.key,path:SOURCE+filename,
+    tuning:{scale:summon.scale,speed:summon.speed}}:WAITING_AUTHORED_EFFECT;
+}
 
 function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original',diagnoseAmbient=false}){
   const canvas=useRef(null);
@@ -394,7 +401,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                 else if(groupStage.style==='weight')groupHandle.setLocation(0,.4-Math.min(1,elapsed)*.4,0);
               }
             }
-            if(!ambient&&elapsed>=(ceremony?8.7:waiting?1.4:4.8)){
+            if(!ambient&&elapsed>=(ceremony?8.7:waiting?(effect.key?2.8:1.4):4.8)){
               // One finite reveal, without a persistent blank WebGL animation loop.
               context.stopAll();
               renderer.clear();
@@ -596,10 +603,12 @@ export function RuneMistBackdrop({phase='idle',quality='high',textureQuality='or
   </>;
 }
 
-export function WaitingEffekseerStage({textureQuality='original'}){
+export function WaitingEffekseerStage({textureQuality='original',runeId=null}){
   const reduced=useReducedMotion();
-  return <div className="rune-effekseer-stage" data-source="authored-waiting">
-    <EffekseerCanvas effect={WAITING_AUTHORED_EFFECT} reduced={reduced} waiting textureQuality={textureQuality}/>
+  const selectedEffect=useMemo(()=>drawPreludeForRune(runeId),[runeId]);
+  return <div className="rune-effekseer-stage" data-source="authored-waiting"
+    data-summon-group={groupSummonForRune(runeId)?.group||undefined}>
+    <EffekseerCanvas effect={selectedEffect} reduced={reduced} waiting textureQuality={textureQuality}/>
   </div>;
 }
 export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,direction=null,ceremony=false,appearance='glyph',cardSrc=null,onCeremonyComplete=null,onPlaybackComplete=null,quality='high',textureQuality='original'}){
