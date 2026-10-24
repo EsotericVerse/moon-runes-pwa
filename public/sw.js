@@ -5,6 +5,7 @@ const IMAGE_CACHE='loc-public-images-v1', IMAGE_PREFIX='loc-public-images-', MAX
 const PAGE_CACHE='loc-public-html-v1', PAGE_PREFIX='loc-public-html-', MAX_PAGES=80;
 const BLOCK_CACHE='loc-public-blocks-v1', BLOCK_PREFIX='loc-public-blocks-', MAX_BLOCKS=200;
 const BLOCK_AGE='loc-public-block-age-v1', BLOCK_TTL=24*60*60*1000;
+const STATIC_CACHE='loc-public-static-v1', STATIC_PREFIX='loc-public-static-', MAX_STATIC=150;
 const PRIVATE_QUERY=/^(?:token|access_token|auth|authorization|jwt|key|api_key|sig|signature|expires?|policy|credential|x-amz-|x-goog-|x-ms-)/i;
 const PRIVATE_PATH=/(?:^|\/)(?:auth|private|account|user|session)(?:\/|$)/i;
 const IMAGE_EXT=/\.(?:avif|gif|jpe?g|png|svg|webp|bmp|ico)$/i;
@@ -22,6 +23,11 @@ function isImage(request,url){
   if(request.destination!=='image')return false;
   if(url.origin===self.location.origin)return /^\/(?:pics|assets|vendor)\//.test(url.pathname);
   return url.protocol==='https:'&&!PRIVATE_PATH.test(url.pathname)&&IMAGE_EXT.test(url.pathname);
+}
+function isStaticAsset(request,url){
+  return url.origin===self.location.origin&&!url.search&&
+    /^\/_next\/static\/.+\.(?:js|css)$/.test(url.pathname)&&
+    ['script','style',''].includes(request.destination||'');
 }
 function isPublicHtml(request,url){
   if(url.origin!==self.location.origin||request.mode!=='navigate'||PRIVATE_PATH.test(url.pathname))return false;
@@ -59,6 +65,15 @@ async function keep(cache,request,response,limit){
   const removed=keys.slice(0,Math.max(0,keys.length-limit));
   await Promise.all(removed.map(key=>cache.delete(key)));
   return removed;
+}
+async function staticStrategy(event){
+  const request=event.request;
+  let cache;
+  try{cache=await caches.open(STATIC_CACHE);const hit=await cache.match(request);if(hit)return hit;}catch{}
+  const response=await fetch(request);
+  if(cache&&cacheable(response,/^(?:text\/css|(?:text|application)\/javascript)(?:;|$)/i))
+    event.waitUntil(keep(cache,request,response.clone(),MAX_STATIC).catch(()=>{}));
+  return response;
 }
 async function imageStrategy(event){
   const request=event.request;
@@ -116,7 +131,8 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
   await Promise.all(names.filter(name=>
     (name.startsWith(IMAGE_PREFIX)&&name!==IMAGE_CACHE)||
     (name.startsWith(PAGE_PREFIX)&&name!==PAGE_CACHE)||
-    (name.startsWith(BLOCK_PREFIX)&&name!==BLOCK_CACHE&&name!==BLOCK_AGE)
+    (name.startsWith(BLOCK_PREFIX)&&name!==BLOCK_CACHE&&name!==BLOCK_AGE)||
+    (name.startsWith(STATIC_PREFIX)&&name!==STATIC_CACHE)
   ).map(name=>caches.delete(name)));
   await self.clients.claim();
 })()));
@@ -130,7 +146,8 @@ self.addEventListener('message',event=>{
 self.addEventListener('fetch',event=>{
   const request=event.request,url=urlFor(request);
   if(!url)return;
-  if(isImage(request,url))event.respondWith(imageStrategy(event));
+  if(isStaticAsset(request,url))event.respondWith(staticStrategy(event));
+  else if(isImage(request,url))event.respondWith(imageStrategy(event));
   else if(isPublicHtml(request,url))event.respondWith(htmlStrategy(event));
   else if(isScopeBlocks(request,url))event.respondWith(blocksStrategy(event));
 });
