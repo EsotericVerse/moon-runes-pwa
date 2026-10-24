@@ -1,11 +1,19 @@
 'use client';
 
 import {FeaturePage} from '../../modular/ui';
+import {Capacitor} from '@capacitor/core';
+import {useEffect,useState} from 'react';
+import dynamic from 'next/dynamic';
+import PanelLoading from '../PanelLoading';
+
+const LocalDatabaseImport=dynamic(()=>import('../LocalDatabaseImport'),{loading:PanelLoading});
+const PrivateLocalFiles=dynamic(()=>import('../PrivateLocalFiles'),{loading:PanelLoading});
 
 export default function LocalSettingView(){
-  return <FeaturePage featureId="setting">
-    <section className="loc-card scope-feature-card">
-      <p className="scope-status">本機資料的匯入／匯出／清除功能尚未實作，目前只有頁面版型。</p>
-    </section>
+  const [native,setNative]=useState(false);
+  useEffect(()=>setNative(Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'),[]);
+  return <FeaturePage featureId="governance">
+    {native?<><LocalDatabaseImport/><PrivateLocalFiles/></>:
+      <section className="loc-card"><p>本機管理僅在 iOS App 提供。</p></section>}
   </FeaturePage>;
 }

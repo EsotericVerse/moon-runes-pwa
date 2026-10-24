@@ -484,7 +484,10 @@ async function managementWriteLocal(payload){
     if(op==='insert'){
       const list=Array.isArray(rows)?rows:[];
       if(!list.length)return {data:{count:0},error:null};
-      const statements=list.map(row=>{
+      const statements=list.map(input=>{
+        // PostgreSQL fills UpdateTime on import; SQLite needs the same value.
+        const row=name==='local_galaxy'&&input.UpdateTime==null
+          ?{...input,UpdateTime:new Date().toISOString()}:input;
         const columns=Object.keys(row);
         return {sql:'INSERT INTO '+quoteIdent(name)+' ('+columns.map(quoteIdent).join(',')+') VALUES ('+columns.map(()=>'?').join(',')+')',
           values:columns.map(c=>toSqlValue(row[c]))};

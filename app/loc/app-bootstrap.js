@@ -49,6 +49,15 @@ async function legacyBootstrap(id,page){
 
 export async function selectAppBootstrap(scopeId,pageName='index',{configHint=null}={}){
   const [,id,page]=appBootstrapKey(scopeId,pageName);
+  if(id==='local'){
+    // Local scope is self-contained; never require a cloud site-bootstrap
+    // request for Culture/Statistics/Search/Management on an offline iPhone.
+    const [config,blocks]=await Promise.all([
+      configHint?Promise.resolve(configHint):selectScopeConfig('local'),
+      page==='culture'?Promise.resolve([]):selectScopeBlocks('local',page)
+    ]);
+    return {scope_id:id,page_name:page,config,blocks,registry:[],page_copy:[],theme_list:[],themes:[]};
+  }
   if(bootstrapRpcInstalled){
     try{
       // The site snapshot and this Scope's public Config/blocks are

@@ -263,8 +263,13 @@ function AppShellInner({children}){
   // snapshot consumed by the shell, runtime, and Guest feature pages.
   useEffect(()=>{
     const refresh=()=>mutate(key=>Array.isArray(key)&&key[0]==='app-bootstrap');
+    const refreshLocal=()=>mutate(key=>Array.isArray(key)&&key.some(part=>part==='local'||(typeof part==='string'&&part.startsWith('silver.local_'))));
     window.addEventListener('loc-public-scope-metadata-changed',refresh);
-    return()=>window.removeEventListener('loc-public-scope-metadata-changed',refresh);
+    window.addEventListener('loc-local-data-changed',refreshLocal);
+    return()=>{
+      window.removeEventListener('loc-public-scope-metadata-changed',refresh);
+      window.removeEventListener('loc-local-data-changed',refreshLocal);
+    };
   },[mutate]);
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
   const editDock=useEditDock();
@@ -332,7 +337,10 @@ function AppShellInner({children}){
     loadSection(activeLocale,'fields').catch(()=>{});
     return ()=>{active=false;};
   },[activeLocale]);
-  const navScopeId=scopeId==='local'?'loc':currentScope.featureScope||scopeId;
+  const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
+  // My Phone and every /local/* route use the same on-device SQLite Scope.
+  const localWorkspace=native&&(isMyPhone||scopeId==='local');
+  const navScopeId=localWorkspace?'local':currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
@@ -363,7 +371,6 @@ function AppShellInner({children}){
     ...folder,links:folder.scopes.filter(id=>!native||id!=='lrunes').map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
   }));
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
-  const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
   const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&navScopeId!=='local'&&!currentScope.aggregateChildren;
   // A Scope homepage may live at /, /scopeid/, /scope-shell/ or /scopeid/index.html.
   const homeParts=String(pathname||'/').split('/').filter(Boolean);
@@ -405,11 +412,11 @@ function AppShellInner({children}){
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
-    {id:'home',icon:'home',label:translateUiField(activeLocale,'首頁'),href:isMyPhone?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
+    {id:'home',icon:localWorkspace?'phone':'home',label:translateUiField(activeLocale,'首頁'),href:localWorkspace?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
       return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
-        href:isMyPhone?deviceNavigation.mobileHomeHref(true)+'#'+id:navigationHref(navScopeId,feature.path,native)};
+        href:navigationHref(navScopeId,feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
   ];
@@ -463,7 +470,7 @@ function AppShellInner({children}){
       </div>:null}
     </header>
     {children}
-    <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={scopeId}>
+    <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={localWorkspace?'local':scopeId}>
       {editingDockVisible?editTabs.map(tab=>tab.action
         ?<button type="button" key={tab.id}
           disabled={editDock.busy}
@@ -482,7 +489,7 @@ function AppShellInner({children}){
         </button>)
       :featureTabs.map(tab=><ScopeLink key={tab.id} href={tab.href} native={native}
         aria-current={tab.id==='settings'?isSettings?'page':undefined:
-          !isSettings&&(tab.id==='home'?isScopeHomepage:currentFeature===tab.id)?'page':undefined}>
+          !isSettings&&(tab.id==='home'?(localWorkspace?(isMyPhone||isScopeHomepage):isScopeHomepage):currentFeature===tab.id)?'page':undefined}>
         <BottomNavIcon name={tab.icon}/>
         <span>{tab.label}</span>
       </ScopeLink>)}

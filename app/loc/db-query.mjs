@@ -58,6 +58,16 @@ function resultError(result,table,source){
 }
 export async function executePublicRead(table,buildQuery,{source='auto',authenticated=false,signal=null}={}){
   if(signal?.aborted)throw abortError();
+  // Device data must never require a cloud routing decision or fall back to
+  // Supabase/Neon. The routed DB client sends these relations to local SQLite.
+  if(/^silver\.local(?:_[a-z0-9_]+)?$/.test(String(table))){
+    const localClient=authenticated?dbAuthClient:dbPublicClient;
+    const result=await withSignal(buildQuery(publicRelation(localClient,table)),signal);
+    if(signal?.aborted)throw abortError();
+    const failure=resultError(result,table,'local');
+    if(failure)throw failure;
+    return {...result,__dataSource:'local'};
+  }
   const routing=await selectedDatabaseRouting(dbConfiguredPublicClient);
   if(signal?.aborted)throw abortError();
   // Hidden Galaxy rows require the signed-in SDK and server-enforced Scope RLS.

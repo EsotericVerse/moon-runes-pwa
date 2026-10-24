@@ -12,6 +12,8 @@ import {useDeferredValue,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {insertRows,dbAuthRelation,updateRows,deleteRows,findGalaxyDuplicates} from './db-client.mjs';
 import {useAccount} from './use-account';
+import {Capacitor} from '@capacitor/core';
+import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -254,7 +256,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
-  const account=useAccount();
+  const nativeLocal=scopeId==='local'&&Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios';
+  const account=useAccount({enabled:!nativeLocal});
   const [fileName,setFileName]=useState('');
   const [archiveDetection,setArchiveDetection]=useState(null);
   const [rows,setRows]=useState([]);
@@ -278,7 +281,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       invalid:normalized.filter(item=>item.error)
     };
   },[rows,deferredSource,format.fields,locale]);
-  if(!account.canManageScopeSync(scopeId))return null;
+  if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
@@ -336,7 +339,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
-      const scope=account.scopeDataFor(scopeId);
+      const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       const unique=[],seenUid=new Set();
@@ -365,6 +368,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped}));
       setRows([]);
+      if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
       writeCooldown.start();
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);onBusyChange?.(false);}
@@ -728,7 +732,7 @@ export default function ManagementImportPanel({scopeId,flat=false}){
       <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
       <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
     </section>
-    <ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
-    <DuplicateDetection scopeId={scopeId}/>
+    {scopeId!=='local'?<><ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
+    <DuplicateDetection scopeId={scopeId}/></>:null}
   </div>;
 }

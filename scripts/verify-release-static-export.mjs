@@ -9,7 +9,7 @@ const routes=[
   'lrunes', 'lrunes/search', 'lrunes/game', 'game/room',
   'scope-shell', 'scope-shell/search',
   'admin', 'governance/manage', 'governance/manage/search',
-  'local/settings'
+  'local/settings', 'local/governance'
 ];
 const root=process.argv[2]||'out';
 const missing=routes.filter(route=>{
