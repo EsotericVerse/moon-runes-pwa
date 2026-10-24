@@ -144,7 +144,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       await mutate(key=>Array.isArray(key)&&key[0]==='scope-others-source-summary'&&key[1]===scopeId);
       setGroupCode('');setGroupName('');setSource('');setSourceGroup('');
       setGroupEdits({});setAliasEdits({});
-      setNotice('已儲存此 Scope 的 Others 小分類設定。');
+      setNotice('來源分類已儲存。');
       return true;
     }catch(error){
       const message=String(error?.message||error||'儲存失敗');
@@ -165,8 +165,8 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   },[dock?.active,dock?.scopeId,dock?.register,scopeId]);
 
   return <section className="loc-card scope-feature-card">
-    <h2>Others 來源小分類</h2>
-    <p className="scope-status">只管理 {scopeId} 的 Others 來源；Admin 大分類不會被更動。填寫或修改後使用底部「儲存」。</p>
+    <h2>其他作品來源分類</h2>
+    <p className="scope-status">將尚未歸入主要來源的作品整理成自己的分類；不影響其他資料空間或全站主要分類。</p>
     {query.isPending?<p className="scope-status" role="status">載入小分類設定…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">{String(query.error.message||query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
@@ -178,7 +178,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
           <input value={groupName} maxLength={80} placeholder="例如：部落格"
             onChange={event=>setGroupName(event.target.value)}/></label>
       </div>
-      <h3>已建立的小分類</h3>
+      <h3>已建立的分類</h3>
       {groups.length?<div className="admin-source-category-grid">
         {groups.map(row=><article className="admin-source-category-card" key={row.group_code}>
           <strong>{row.group_code}</strong>
@@ -191,12 +191,12 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
             <option value="enabled">啟用</option><option value="disabled">停用</option>
           </select></label>
         </article>)}
-      </div>:<p className="scope-status">尚未建立此 Scope 的 Others 小分類。</p>}
-      <h3>來源歸屬</h3>
+      </div>:<p className="scope-status">尚未建立分類。</p>}
+      <h3>將來源加入分類</h3>
       {existingSources.isPending?<p className="scope-status" role="status">正在讀取此 Scope 既有來源…</p>:null}
       {existingSources.error?<p className="scope-status scope-error" role="alert">既有來源清單讀取失敗：{String(existingSources.error.message||existingSources.error)}；仍可手動輸入來源。</p>:null}
       <div className="scope-management-fields">
-        <label><span>從現有 Others 來源選取</span>
+        <label><span>從現有其他來源選取</span>
           <select className="scope-select" value="" disabled={!othersSourceOptions.length}
             onChange={event=>setSource(event.target.value)}>
             <option value="">選擇來源（或手動輸入）</option>
@@ -205,7 +205,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
             </option>)}
           </select></label>
         <label><span>原始來源</span>
-          <input value={source} maxLength={120} placeholder="輸入 Others 底下的來源名稱"
+          <input value={source} maxLength={120} placeholder="輸入作品的來源名稱"
             onChange={event=>setSource(event.target.value)}/></label>
         <label><span>歸入小分類</span><select className="scope-select" value={sourceGroup}
           onChange={event=>setSourceGroup(event.target.value)}>
@@ -217,7 +217,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       {aliases.length?<div className="admin-source-alias-grid">
         {aliases.map(row=><article className="admin-source-alias-card" key={row.source_key}>
           <strong>{row.source_key}</strong>
-          <label><span>Others 小分類</span><select className="scope-select"
+          <label><span>所屬分類</span><select className="scope-select"
             value={aliasEdits[row.source_key]??row.group_code}
             disabled={!belongsToOthers(row.source_key)}
             onChange={event=>setAliasEdits(v=>({...v,[row.source_key]:event.target.value}))}>
