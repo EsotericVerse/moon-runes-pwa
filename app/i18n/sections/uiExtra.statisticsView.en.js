@@ -80,5 +80,9 @@ export default {
   "chartPrimary": "Common charts",
   "chartAdvanced": "Advanced charts",
   "chartTopN": "Trend charts initially show the top {count} items; the full list is available in the detailed data below.",
-  "crossAdvancedTitle": "Expand Meta Tag cross-analysis (advanced)"
+  "crossAdvancedTitle": "Expand Meta Tag cross-analysis (advanced)",
+  "othersBreakdownTitle": "Others subcategories in this Scope",
+  "othersLoading": "Loading subcategories…",
+  "othersUnclassified": "Uncategorized (Others)",
+  "othersEmpty": "No Others sources in this period."
 };

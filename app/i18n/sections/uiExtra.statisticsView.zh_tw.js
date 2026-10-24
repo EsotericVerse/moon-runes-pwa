@@ -80,5 +80,9 @@ export default {
   "chartPrimary": "常用圖表",
   "chartAdvanced": "進階圖表",
   "chartTopN": "趨勢圖先顯示前 {count} 項；完整項目可於下方詳細數據查看。",
-  "crossAdvancedTitle": "展開 Meta Tag 交叉分析（進階）"
+  "crossAdvancedTitle": "展開 Meta Tag 交叉分析（進階）",
+  "othersBreakdownTitle": "此 Scope 的 Others 小分類",
+  "othersLoading": "載入小分類…",
+  "othersUnclassified": "未細分（Others）",
+  "othersEmpty": "此區間沒有 Others 來源。"
 };

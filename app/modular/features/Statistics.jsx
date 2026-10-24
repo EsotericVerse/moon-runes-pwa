@@ -1,6 +1,6 @@
 'use client';
 
-import {UI_COPY,registerDefaultSection} from '../../i18n/ui-copy';
+import {registerDefaultSection} from '../../i18n/ui-copy';
 import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import UiText,{useUiText} from '../../i18n/UiText';
 import statisticsZh from '../../i18n/sections/statistics.zh_tw.js';
@@ -182,6 +182,9 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
 // A Scope's subgroups only subdivide the Admin-defined Others total.
 // Load on expansion; never turn small-group aliases into global categories.
 function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
+  useUiSection('uiExtra.statisticsView');
+  const copy=useUiCopy();
+  const labels=copy.uiExtra.statisticsView||statisticsViewZh;
   const groupsQuery=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
     enabled:Boolean(scopeId),
@@ -225,20 +228,20 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
       value:counts.get(group.group_code)||0
     })).filter(group=>group.value);
     const remaining=[...unassigned.values()].reduce((n,v)=>n+v,0);
-    if(remaining)result.push({key:'unclassified',label:'未細分（Others）',value:remaining});
+    if(remaining)result.push({key:'unclassified',label:labels.othersUnclassified,value:remaining});
     return result.sort((a,b)=>b.value-a.value||a.label.localeCompare(b.label));
-  },[groupsQuery.data,rows,catalog,range.startDate,range.endDate]);
+  },[groupsQuery.data,rows,catalog,range.startDate,range.endDate,labels.othersUnclassified]);
   return <div className="scope-ranking">
-    <h4>此 Scope 的 Others 小分類</h4>
-    {groupsQuery.isPending?<p className="scope-status">載入小分類…</p>:null}
+    <h4>{labels.othersBreakdownTitle}</h4>
+    {groupsQuery.isPending?<p className="scope-status">{labels.othersLoading}</p>:null}
     {groupsQuery.error?<p className="scope-status scope-error">
-      {featureDataErrorMessage(groupsQuery.error,UI_COPY)}
+      {featureDataErrorMessage(groupsQuery.error,copy)}
     </p>:null}
     {!groupsQuery.isPending&&!groupsQuery.error&&details.length
       ?details.map(item=><div key={item.key} className="scope-stat-controls">
         <span>{item.label}</span><strong>{item.value.toLocaleString()}</strong>
       </div>)
-      :!groupsQuery.isPending&&!groupsQuery.error?<p className="scope-status">此區間沒有 Others 來源。</p>:null}
+      :!groupsQuery.isPending&&!groupsQuery.error?<p className="scope-status">{labels.othersEmpty}</p>:null}
   </div>;
 }
 

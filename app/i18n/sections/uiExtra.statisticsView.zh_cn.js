@@ -80,5 +80,9 @@ export default {
   "chartPrimary": "常用图表",
   "chartAdvanced": "高级图表",
   "chartTopN": "趋势图先显示前 {count} 项；完整项目可在下方详细数据中查看。",
-  "crossAdvancedTitle": "展开 Meta Tag 交叉分析（高级）"
+  "crossAdvancedTitle": "展开 Meta Tag 交叉分析（高级）",
+  "othersBreakdownTitle": "此 Scope 的 Others 子分类",
+  "othersLoading": "正在加载子分类…",
+  "othersUnclassified": "未细分（Others）",
+  "othersEmpty": "此时间范围内没有 Others 来源。"
 };

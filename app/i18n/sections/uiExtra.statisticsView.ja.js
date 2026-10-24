@@ -80,5 +80,9 @@ export default {
   "chartPrimary": "よく使うグラフ",
   "chartAdvanced": "高度なグラフ",
   "chartTopN": "推移グラフには上位 {count} 項目を表示します。すべての項目は下の詳細データで確認できます。",
-  "crossAdvancedTitle": "Meta Tag クロス分析を展開（詳細）"
+  "crossAdvancedTitle": "Meta Tag クロス分析を展開（詳細）",
+  "othersBreakdownTitle": "この Scope の Others サブカテゴリ",
+  "othersLoading": "サブカテゴリを読み込み中…",
+  "othersUnclassified": "未分類（Others）",
+  "othersEmpty": "この期間に Others のソースはありません。"
 };
