@@ -50,7 +50,12 @@ test('directory Scope wins over its parent domain before bootstrap/SQL',async()=
   assert.equal(h.resolveScope('loc.lo3rwang.cc','/lo3rwang/'),'lo3rwang');
   assert.equal(h.resolveScope('loc.lo3rwang.cc','/lo3rwang/search/'),'lo3rwang');
   assert.equal(h.resolveScope('lrunes.lo3rwang.cc','/lo3rwang/'),'lrunes');
-  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/'),'loc');
+  // LOC-hosted built-in /lrunes application must keep its own Scope identity.
+  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/'),'lrunes');
+  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/card/list/?d=3d'),'lrunes');
+  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/governance/manage/'),'lrunes');
+  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes-other/'),'loc');
+  assert.equal(h.resolveScope('lrunes.lo3rwang.cc','/'),'lrunes');
   assert.equal(h.resolveScope('localhost','/lrunes/'),'lrunes');
   assert.equal(h.scopeHref('lo3rwang','search'),'https://loc.lo3rwang.cc/lo3rwang/search/');
   assert.equal(h.scopeHref('lrunes','search'),'https://lrunes.lo3rwang.cc/search/');

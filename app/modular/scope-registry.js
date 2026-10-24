@@ -136,6 +136,12 @@ export function resolveScope(host='',pathname='/'){
     const base=cleanPath(row.directory);
     if(path===base||path.startsWith(base+'/'))return id;
   }
+  // The published LOC origin also carries a real /lrunes/* Next.js mount.
+  // This is an explicit built-in application alias, NOT an inferred Scope
+  // Directory: it must resolve to lrunes for theme, editor and permissions
+  // even while the canonical registered Domain is lrunes.lo3rwang.cc.
+  if(h===LOC_FALLBACK_HOST&&(path==='/lrunes'||path.startsWith('/lrunes/')))
+    return 'lrunes';
   for(const [id,row] of registryRouteRows){
     if(row.domain&&row.domain===h)return id;
   }
