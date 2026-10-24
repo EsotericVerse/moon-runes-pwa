@@ -76,5 +76,9 @@ export default {
   "groupWorks": "{count} works · {ratio}%",
   "runeHits": "{count} hits · {ratio}%",
   "totalWithCount": "{count} items",
-  "foldBlank": "Collapse empty periods"
+  "foldBlank": "Collapse empty periods",
+  "chartPrimary": "Common charts",
+  "chartAdvanced": "Advanced charts",
+  "chartTopN": "Trend charts initially show the top {count} items; the full list is available in the detailed data below.",
+  "crossAdvancedTitle": "Expand Meta Tag cross-analysis (advanced)"
 };

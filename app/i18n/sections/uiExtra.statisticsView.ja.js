@@ -76,5 +76,9 @@ export default {
   "groupWorks": "{count} 件・{ratio}%",
   "runeHits": "{count} 回・{ratio}%",
   "totalWithCount": "{count} 件",
-  "foldBlank": "空白期間を折りたたむ"
+  "foldBlank": "空白期間を折りたたむ",
+  "chartPrimary": "よく使うグラフ",
+  "chartAdvanced": "高度なグラフ",
+  "chartTopN": "推移グラフには上位 {count} 項目を表示します。すべての項目は下の詳細データで確認できます。",
+  "crossAdvancedTitle": "Meta Tag クロス分析を展開（詳細）"
 };

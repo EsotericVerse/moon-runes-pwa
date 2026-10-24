@@ -1,4 +1,5 @@
 export default {
+  "groupGuide": "來源大分類僅由系統管理員設定；每位成員可在統計頁管理自己的來源標籤。",
   "groupTitle": "來源設定",
   "code": "分類代碼",
   "name": "分類名稱",

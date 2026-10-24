@@ -76,5 +76,9 @@ export default {
   "groupWorks": "{count} 篇 · {ratio}%",
   "runeHits": "{count} 次 · {ratio}%",
   "totalWithCount": "{count} 项",
-  "foldBlank": "折叠空白时间"
+  "foldBlank": "折叠空白时间",
+  "chartPrimary": "常用图表",
+  "chartAdvanced": "高级图表",
+  "chartTopN": "趋势图先显示前 {count} 项；完整项目可在下方详细数据中查看。",
+  "crossAdvancedTitle": "展开 Meta Tag 交叉分析（高级）"
 };
