@@ -75,7 +75,7 @@ test('Statistics results are cached separately for each Scope and date range',as
 test('private Scope and invalid numeric requests never execute SQL',async()=>{
   const h=await harness();
   for(const [id,kind,query] of [
-    ['local','statistics',''],['lrunes','statistics',''],
+    ['local','statistics',''],['admin','statistics',''],
     ['lo3rwang','statistics','?start=invalid'],['lo3rwang','search',''],
     ['lo3rwang','culture','?start=2026-10-01&end=2026-09-01']
   ])assert.equal((await get(h,id,kind,query)).status,400);
@@ -94,4 +94,19 @@ test('media facet ISR returns counts only and repeats without another SQL scan',
   await get(h,'lo3rwang','facet','?dimension=media_platform&start=2026-10-01&end=2026-10-02');
   assert.equal(h.mediaReads.length,2,'Different graph dimensions retain independent cache keys');
   assert.equal((await get(h,'lo3rwang','facet','?dimension=media_style')).status,400);
+});
+
+test('ordinary Rune Culture/Statistics charts use the public numeric ISR without changing daily Rune analytics',async()=>{
+  const h=await harness();
+  const culture=await get(h,'lrunes','culture','?start=2026-01-01&end=2026-10-25');
+  const statistics=await get(h,'lrunes','statistics','?start=2026-01-01&end=2026-10-25');
+  assert.equal(culture.status,200);
+  assert.equal(statistics.status,200);
+  await get(h,'lrunes','statistics','?start=2026-01-01&end=2026-10-25');
+  assert.deepEqual(h.queries.map(x=>x.name),['read_scope_statistics','read_scope_overview']);
+  const client=readFileSync(new URL('../app/loc/numeric-isr-client.js',import.meta.url),'utf8');
+  assert.match(client,/scopeId!=='local'/);
+  assert.ok(!client.includes("scopeId!=='lrunes'"));
+  const daily=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  assert.ok(daily.includes("const isLrunesDaily="));
 });
