@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import {usePathname} from 'next/navigation';
-import {featureIdForPath,getScope,isKnownScope,normalizeScopeId,resolveScope,setScopeRegistryRouteRows} from './scope-registry';
+import {featureIdForPath,getScope,isKnownScope,normalizeScopeId,resolveScope} from './scope-registry';
 import {selectScopeRegistryEntry} from '../loc/scope-data';
 import {useAppBootstrap} from '../loc/app-bootstrap';
 
@@ -73,7 +73,6 @@ export function useScopeRuntime(){
     setRegistryError('');
     selectScopeRegistryEntry(scopeId).then(row=>{
       if(!active)return;
-      if(row)setScopeRegistryRouteRows([row]);
       registryCache.set(scopeId,row||null);
       setRegistryRow(row||null);setRegistryResolved(true);
     }).catch(error=>{
