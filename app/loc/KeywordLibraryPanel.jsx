@@ -7,6 +7,7 @@ import featureZh from '../i18n/features.zh_tw.js';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 import dynamic from 'next/dynamic';
 import {useSWRConfig} from 'swr';
+import {selectCount} from './db-query.mjs';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 
@@ -119,7 +120,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     // finalize RPC (reset mode, or a successful run) should ever replace it.
     await updateRows(CONFIG_TABLE,{
       staticstime:null,
-      keyword_document_count:0,
       updated_at:new Date().toISOString()
     },{filters:[{column:'id',operator:'eq',value:scopeId}]});
     await invalidateClassification();
@@ -129,16 +129,19 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
-      const [keywordResult,configResult]=await Promise.all([
+      const [keywordResult,configResult,documentCount]=await Promise.all([
         dbAuthRelation(TABLE)
           .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
           .order('class_name',{ascending:true})
           .order('order_no',{ascending:true})
           .order('item_no',{ascending:true}),
         dbAuthRelation(CONFIG_TABLE)
-          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,keyword_document_count,staticstime')
+          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,staticstime')
           .eq('id',scopeId)
-          .limit(1)
+          .limit(1),
+        selectCount(scopeId+'_galaxy',{
+          idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
+        })
       ]);
       if(keywordResult.error)throw new Error(keywordResult.error.message||l.libraryReadError);
       if(configResult.error)throw new Error(configResult.error.message||l.settingsReadError);
@@ -150,7 +153,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const nextMinDocuments=Number.isInteger(configuredDocuments)&&configuredDocuments>=0?configuredDocuments:DEFAULT_KEYWORD_MIN_DOCUMENTS;
       const nextCurrentClassId=String(config.current_keyword_class_id||'');
       const nextShareEnabled=Boolean(config.keyword_class_share_enabled);
-      const nextDocumentCount=Math.max(0,Number(config.keyword_document_count)||0);
+      const nextDocumentCount=Math.max(0,Number(documentCount)||0);
       const nextStaticstime=String(config.staticstime||'');
 
       const next=keywordResult.data||[];
@@ -347,7 +350,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           keyword_min_documents:documents,
           current_keyword_class_id:currentClassId,
           keyword_class_share_enabled:Boolean(shareEnabled),
-          ...(classificationChanged?{staticstime:null,keyword_document_count:0}:{}),
+          ...(classificationChanged?{staticstime:null}:{}),
           updated_at:new Date().toISOString()
         },{filters:[{column:'id',operator:'eq',value:scopeId}]});
         settingsWritten=true;
