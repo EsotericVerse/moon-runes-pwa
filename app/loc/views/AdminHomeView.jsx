@@ -26,10 +26,8 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'themes',label:'主題顏色設定',description:'調整網站主題和色彩。'}
 ]);
 function Login({account}){
-  const UI_COPY=useUiCopy();
   return <FeaturePage featureId="admin">
     <section className="loc-card scope-feature-card">
-      <p>{UI_COPY.admin.loginTitle}</p>
       <p>請先至設定首頁登入。</p>
       {account.error?<p className="scope-status scope-error">{account.error}</p>:null}
     </section>
