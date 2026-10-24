@@ -40,11 +40,9 @@ export default function ScopeBlockEditorSession({
   async function refreshBlockQueries(){
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
-    await Promise.all([
-      mutate(bootstrapKey),
-      mutate(displayKey),
-      revalidateServerMetadata()
-    ]);
+    // Wait for the protected ISR invalidation before reloading SWR readers.
+    await revalidateServerMetadata();
+    await Promise.all([mutate(bootstrapKey),mutate(displayKey)]);
   }
   const cancel=()=>onClose();
   const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
