@@ -28,7 +28,7 @@ function solidMaterials(profile,word){
   const spectrum=word==='彩';
   const stone=profile.finish==='stone';
   const glass=profile.finish==='glass';
-  const ink=word==='火'?'#ffae52':profile.ink;
+  const ink=profile.ink;
   const face=new THREE.MeshPhysicalMaterial({
     color:spectrum?'#ffffff':ink,
     vertexColors:spectrum,

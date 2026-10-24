@@ -242,7 +242,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       <div className="rune-3d-atlas-glyph-review" aria-label={runeName(current)+'的 3D 字型檢視'}>
         <div className={'rune-effekseer-glyph rune-effekseer-glyph--'+currentGlyph.font+' rune-3d-atlas-glyph-model'}
           data-glyph-family={currentGlyph.family} data-glyph-finish={currentGlyph.finish}
-          style={{'--rune-ink':currentGlyph.ink}}>
+          style={{'--rune-ink':currentGlyph.ink}} data-glyph-ink={currentGlyph.ink}>
           <RuneExtrudedGlyph key={'preview-'+current.rune_id} word={runeName(current).slice(0,1)} profile={currentGlyph}/>
         </div>
         <div className="rune-3d-atlas-glyph-copy">

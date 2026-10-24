@@ -11,7 +11,7 @@
 .rune-effekseer-glyph-position{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;z-index:2}
 .rune-effekseer-glyph{pointer-events:auto;appearance:none;background:transparent;border:0;cursor:pointer;line-height:1;
  font-size:clamp(64px,12vw,116px);font-weight:400;font-synthesis:none;color:var(--rune-ink,var(--loc-text));filter:drop-shadow(0 3px 4px color-mix(in srgb,var(--loc-panel) 80%,transparent));
- text-shadow:0 0 2px color-mix(in srgb,var(--loc-gold) 55%,transparent),0 10px 22px color-mix(in srgb,var(--loc-panel) 70%,transparent);min-width:1.3em;min-height:1.2em;text-align:center}
+ text-shadow:0 0 2px color-mix(in srgb,var(--rune-ink,var(--loc-text)) 40%,transparent),0 10px 22px color-mix(in srgb,var(--loc-panel) 70%,transparent);min-width:1.3em;min-height:1.2em;text-align:center}
 .rune-effekseer-glyph:focus-visible{outline:3px solid var(--loc-gold);outline-offset:8px;border-radius:16px}
 .rune-effekseer-glyph{position:relative;display:inline-flex;justify-content:center;align-items:center;overflow:visible}
 .rune-3d-glyph-canvas{
@@ -47,7 +47,7 @@
  background:linear-gradient(100deg,#ff6374 4%,#ffb34f 19%,#fce87a 33%,#64eeb4 49%,#72c5ff 65%,#aa91ff 81%,#ef7ecc 97%);
  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.rune-effekseer-stage[data-rune="火"] .rune-effekseer-glyph{color:var(--loc-gold);text-shadow:0 2px 1px color-mix(in srgb,var(--loc-danger) 55%,transparent),0 9px 16px color-mix(in srgb,var(--loc-danger) 40%,transparent)}
+.rune-effekseer-stage[data-rune="火"] .rune-effekseer-glyph{color:var(--rune-ink,var(--loc-text));text-shadow:0 2px 1px color-mix(in srgb,var(--rune-ink,var(--loc-danger)) 55%,transparent),0 9px 16px color-mix(in srgb,var(--rune-ink,var(--loc-danger)) 40%,transparent)}
 .rune-effekseer-stage[data-rune="火"] .rune-effekseer-meaning-icon{filter:sepia(1) saturate(5) hue-rotate(338deg) brightness(1.3) drop-shadow(0 4px 9px color-mix(in srgb,var(--loc-danger) 50%,transparent))}
 .rune-effekseer-stage[data-rune="鏡"] .rune-effekseer-meaning-icon{filter:sepia(.2) saturate(1.4) hue-rotate(160deg) brightness(1.5) drop-shadow(0 4px 9px color-mix(in srgb,var(--loc-accent) 50%,transparent))}
 .rune-effekseer-stage[data-rune="根"] .rune-effekseer-meaning-icon{transform-origin:center top}

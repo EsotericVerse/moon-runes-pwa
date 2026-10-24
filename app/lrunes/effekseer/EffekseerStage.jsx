@@ -632,7 +632,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"
           className={showCard?'rune-effekseer-ceremony-card':'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
-          data-glyph-family={profile.family} data-glyph-finish={profile.finish} data-glyph-motion={letterMotion.style}
+          data-glyph-family={profile.family} data-glyph-finish={profile.finish} data-glyph-motion={letterMotion.style} data-glyph-ink={profile.ink}
           style={{'--rune-ink':profile.ink}}
           aria-label={onGlyphClick?'查看 '+word+' 之符文':word+'符文特效展示'}
           onClick={onGlyphClick} disabled={!onGlyphClick}
