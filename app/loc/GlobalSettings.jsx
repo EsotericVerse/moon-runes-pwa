@@ -25,6 +25,7 @@ const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import {NavigationPreferences} from '../modular/navigation-preferences';
+import {getScope} from '../modular/scope-registry';
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
 const option=(value,label,description)=>({value,label,description});
@@ -76,20 +77,22 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[native,prefs.home,prefs.loading,account.user?.id]);
 
   const choices=useMemo(()=>{
-    const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')},{id:'local',label:uiT('uiExtra.globalSettings.localScope')}];
+    const baseChoices=[{id:'lrunes',label:uiT('nav.lunarunes')},{id:'lo3rwang',label:uiT('uiExtra.globalSettings.authorHome')},{id:'loc',label:uiT('uiExtra.globalSettings.locHome')}];
+    // A Web visitor must not reach the device-only SQLite Scope from Settings.
+    if(native)baseChoices.push({id:'local',label:uiT('uiExtra.globalSettings.localScope')});
     const found=new Map(baseChoices.map(item=>[item.id,item]));
     for(const row of registry){
-      if(!row?.scope_id||row.scope_id==='admin')continue;
+      if(!row?.scope_id||row.scope_id==='admin'||(!native&&getScope(row.scope_id).nativeOnly))continue;
       found.set(row.scope_id,{
         id:row.scope_id,
         label:baseChoices.find(item=>item.id===row.scope_id)?.label||row.display_name||row.scope_id
       });
     }
     return [...found.values()];
-  },[registry,uiT('common.language')]);
+  },[registry,native,uiT('common.language')]);
   const managedScopes=useMemo(()=>{
     const cloudManaged=!native&&account.user?choices.filter(item=>item.id!=='local'&&account.canManageScopeSync(item.id)):[];
-    const local=choices.find(item=>item.id==='local');
+    const local=native?choices.find(item=>item.id==='local'):null;
     return local?[...cloudManaged,local]:cloudManaged;
   },[choices,native,account.user,account.authorizer]);
   const canManageGlobal=!native&&Boolean(account.user)&&account.canManageGlobalSync();

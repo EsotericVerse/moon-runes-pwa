@@ -203,3 +203,19 @@ test('keyword reset reports progress and editing notice remains inside the dock'
   assert.ok(css.includes('.scope-feature-dock .scope-edit-dock-notice{'));
   assert.ok(css.includes('overflow-wrap:anywhere'));
 });
+
+
+test('Web Settings cannot navigate into the iOS-only local Scope',()=>{
+  const settings=readFileSync(new URL('../app/loc/GlobalSettings.jsx',import.meta.url),'utf8');
+  const shell=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
+  const locApp=readFileSync(new URL('../app/loc/LocApp.jsx',import.meta.url),'utf8');
+  const scopeRegistry=readFileSync(new URL('../app/modular/scope-registry.js',import.meta.url),'utf8');
+  assert.ok(scopeRegistry.includes('nativeOnly:true'));
+  assert.ok(settings.includes("if(native)baseChoices.push({id:'local'"));
+  assert.ok(settings.includes("(!native&&getScope(row.scope_id).nativeOnly)"));
+  assert.ok(settings.includes("const local=native?choices.find(item=>item.id==='local'):null;"));
+  assert.ok(shell.includes("const navScopeId=!native&&currentScope.nativeOnly?'loc'"));
+  assert.ok(shell.includes("(native||!getScope(id).nativeOnly)"));
+  assert.ok(locApp.includes("router.replace('/local/settings/?section=account')"));
+  assert.ok(locApp.includes("if(scopeMeta?.nativeOnly&&!nativeOnlyReady)"));
+});

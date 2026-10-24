@@ -7,7 +7,9 @@ import featureZh from '../i18n/sections/uiExtra.feature.zh_tw.js';
 registerDefaultSection('uiExtra.feature',featureZh);
 
 import dynamic from 'next/dynamic';
-import {Suspense,useEffect} from 'react';
+import {Suspense,useEffect,useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {Capacitor} from '@capacitor/core';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
 import {useAppBootstrap} from './app-bootstrap';
@@ -101,6 +103,18 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
   const runtime=useScopeRuntime();
   const scopeId=forcedScope||runtime.scopeId;
   const scopeMeta=forcedScope&&runtime.scopeId!==forcedScope?getScope(forcedScope):runtime.scope;
+  const router=useRouter();
+  const [nativeOnlyReady,setNativeOnlyReady]=useState(false);
+  useEffect(()=>{
+    if(!scopeMeta?.nativeOnly)return;
+    if(Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'){
+      setNativeOnlyReady(true);
+      return;
+    }
+    // Public Global Settings remains available on Web; the private
+    // /local/* feature pages do not. A bookmark must not bypass the menu.
+    router.replace('/local/settings/?section=account');
+  },[scopeMeta?.nativeOnly,router]);
   const ActiveView=forcedView==='home'
     ?HOME_VIEWS[scopeId]||GenericScopeHomeView
     :VIEWS[forcedView]||AboutView;
@@ -110,13 +124,19 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
     ['statics','culture','governance'].includes(forcedView));
 
   useEffect(()=>{
+    if(scopeMeta?.nativeOnly&&!nativeOnlyReady)return;
     const preload=forcedView==='home'
       ?HOME_PRELOADERS[scopeId]||(()=>import('./views/GenericScopeHomeView'))
       :VIEW_PRELOADERS[forcedView]||HOME_PRELOADERS.loc;
     preload().catch(()=>{});
     if(groupOverviewView)import('./ScopeGroupOverview').catch(()=>{});
-  },[forcedView,scopeId,groupOverviewView]);
+  },[forcedView,scopeId,groupOverviewView,scopeMeta?.nativeOnly,nativeOnlyReady]);
 
+  if(scopeMeta?.nativeOnly&&!nativeOnlyReady){
+    return <main className="scope-main"><section className="scope-page">
+      <p className="scope-status" role="status">此本機資料工作區僅在 iOS App 提供。網頁版正在返回設定。</p>
+    </section></main>;
+  }
   if(!forcedScope&&runtime.dynamic&&!runtime.registryResolved){
     return <div className="loc-next-main" data-loc-scope={scopeId}><div className="loc-loading"><UiText id="uiExtra.feature.registryLoading"/></div></div>;
   }

@@ -346,7 +346,9 @@ function AppShellInner({children}){
   const isMyPhone=native&&['/my-phone','/my-phone/index.html'].includes(normalizePath(pathname));
   // My Phone and every /local/* route use the same on-device SQLite Scope.
   const localWorkspace=native&&(isMyPhone||scopeId==='local');
-  const navScopeId=localWorkspace?'local':currentScope.featureScope||scopeId;
+  // /local/settings is the public Global Settings URL, not permission to
+  // enter the device-only /local workspace from a Web browser.
+  const navScopeId=!native&&currentScope.nativeOnly?'loc':localWorkspace?'local':currentScope.featureScope||scopeId;
   const gameThemeDefault=/(^|\/)game\/?$/.test(String(pathname||''))?'theme-4':'';
 
   useEffect(()=>{
@@ -357,7 +359,7 @@ function AppShellInner({children}){
   const scopeNavLabel=item=>navDisplayNames[item.id]||item.nav.label;
   const registryMap=new Map(registryScopes.map(item=>[item.scope_id,item]));
   const layout=accountNavigation.folders.visibleFavoriteLayout(preferences.favorites,preferences.folders);
-  const favoriteLinks=layout.direct.filter(id=>!native||id!=='lrunes').map(id=>{
+  const favoriteLinks=layout.direct.filter(id=>(!native||id!=='lrunes')&&(native||!getScope(id).nativeOnly)).map(id=>{
     const builtIn=NAV_SCOPES.find(item=>item.id===id);
     const active=registryMap.get(id);
     if(!builtIn&&!active)return null;
@@ -374,7 +376,7 @@ function AppShellInner({children}){
     return builtIn?scopeNavLabel(builtIn):(navDisplayNames[id]||id);
   };
   const visibleFolders=layout.directories.map(folder=>({
-    ...folder,links:folder.scopes.filter(id=>!native||id!=='lrunes').map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
+    ...folder,links:folder.scopes.filter(id=>(!native||id!=='lrunes')&&(native||!getScope(id).nativeOnly)).map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
   }));
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
   const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&!currentScope.aggregateChildren;
