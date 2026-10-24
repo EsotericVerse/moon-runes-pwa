@@ -118,7 +118,8 @@ export default function ScopeBlockEditorSession({
   }
 
   async function moveBlock(direction){
-    if(!draft?.stored||busy||normalizedOrders.length)return;
+    if(!draft?.stored||busy||normalizedOrders.length||
+      !HomeBlock.canSwapHomeBlockPositions(pageName,movableSlots,movableIndex,movableIndex+direction))return;
     setBusy(true);setMessage(t('uiExtra.editBlocks.moving'));
     try{
       const {moveScopeBlock}=await import('./db-client.mjs');
@@ -230,9 +231,9 @@ export default function ScopeBlockEditorSession({
   return <>
           <ObjectEditor mode="actions" actionClassName="scope-inline-editbar" actions={[
             {key:'save',primary:true,disabled:busy,onClick:save,label:busy?t('uiExtra.editBlocks.saving'):t('uiExtra.editBlocks.save')},
-            ...(slot.stored&&movableSlots.length>1?[
-              {key:'up',disabled:busy||movableIndex<=0,onClick:()=>moveBlock(-1),label:<UiText id="uiExtra.editBlocks.moveUp"/>},
-              {key:'down',disabled:busy||movableIndex>=movableSlots.length-1,onClick:()=>moveBlock(1),label:<UiText id="uiExtra.editBlocks.moveDown"/>}
+            ...(slot.stored&&movableSlots.length>1&&!HomeBlock.isPinnedHomeHero(pageName,slot)?[
+              {key:'up',disabled:busy||!HomeBlock.canSwapHomeBlockPositions(pageName,movableSlots,movableIndex,movableIndex-1),onClick:()=>moveBlock(-1),label:<UiText id="uiExtra.editBlocks.moveUp"/>},
+              {key:'down',disabled:busy||!HomeBlock.canSwapHomeBlockPositions(pageName,movableSlots,movableIndex,movableIndex+1),onClick:()=>moveBlock(1),label:<UiText id="uiExtra.editBlocks.moveDown"/>}
             ]:[]),
             ...(allowDelete?[{key:'delete',danger:true,disabled:busy,onClick:remove,label:<UiText id="uiExtra.editBlocks.remove"/>}]:[]),
             {key:'cancel',disabled:busy,onClick:cancel,label:<UiText id="uiExtra.editBlocks.cancel"/>}

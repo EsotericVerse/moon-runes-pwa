@@ -136,7 +136,7 @@ export default function ScopeBlockDraftList({
       const visible=current.filter(draft=>!draft._deleted);
       const index=visible.findIndex(draft=>draft.uid===uid);
       const target=index+direction;
-      if(index<0||target<0||target>=visible.length)return current;
+      if(!HomeBlock.canSwapHomeBlockPositions(pageName,visible,index,target))return current;
       const reordered=[...visible];
       [reordered[index],reordered[target]]=[reordered[target],reordered[index]];
       const deleted=current.filter(draft=>draft._deleted);
@@ -253,10 +253,11 @@ export default function ScopeBlockDraftList({
   function renderDraft(draft,index,visibleDrafts){
     const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
     const image=isHomeFrame?resolveHomeImage(draft,scopeId):null;
+    const pinnedHero=HomeBlock.isPinnedHomeHero(pageName,draft);
     return <section className={(editSlotClassName||slotClassName)+' scope-editable-block scope-block-draft'} key={draft.uid}>
       <div className="scope-inline-editbar">
-        {visibleDrafts.length>1?<button type="button" className="loc-button" disabled={busy||index===0} onClick={()=>moveBlock(draft.uid,-1)}><UiText id="uiExtra.editBlocks.moveUp"/></button>:null}
-        {visibleDrafts.length>1?<button type="button" className="loc-button" disabled={busy||index===visibleDrafts.length-1} onClick={()=>moveBlock(draft.uid,1)}><UiText id="uiExtra.editBlocks.moveDown"/></button>:null}
+        {visibleDrafts.length>1&&!pinnedHero?<button type="button" className="loc-button" disabled={busy||!HomeBlock.canSwapHomeBlockPositions(pageName,visibleDrafts,index,index-1)} onClick={()=>moveBlock(draft.uid,-1)}><UiText id="uiExtra.editBlocks.moveUp"/></button>:null}
+        {visibleDrafts.length>1&&!pinnedHero?<button type="button" className="loc-button" disabled={busy||!HomeBlock.canSwapHomeBlockPositions(pageName,visibleDrafts,index,index+1)} onClick={()=>moveBlock(draft.uid,1)}><UiText id="uiExtra.editBlocks.moveDown"/></button>:null}
         {allowDelete?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>toggleDelete(draft.uid)}><UiText id="uiExtra.editBlocks.remove"/></button>:null}
       </div>
       <ObjectEditor mode="scope" fields={[

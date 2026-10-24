@@ -230,6 +230,17 @@
   gap:.35rem;
   margin:0;
 }
+.scope-editable-block:is(.is-editing,.scope-block-draft) .scope-inline-editbar{
+  max-width:calc(100% - .7rem);
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  padding:.25rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius-sm);
+  background:var(--loc-panel-strong);
+  color:var(--loc-text);
+  box-shadow:0 6px 18px rgb(0 0 0 / .22);
+}
 .scope-inline-editbar .loc-button{
   min-height:2rem;
   padding:.28rem .58rem;
@@ -237,6 +248,11 @@
 }
 .scope-editable-block.is-editing,
 .scope-editable-block.scope-block-draft{padding-top:2.7rem}
+/* Editor-only surface must not expose controls against dark Hero artwork. */
+.scope-editable-block.scope-block-draft{
+  background:var(--loc-panel-strong);
+  color:var(--loc-text);
+}
 .scope-edit-mode-toggle{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-bottom:1rem}
 .scope-block-draft-toolbar{
   display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-bottom:1rem;

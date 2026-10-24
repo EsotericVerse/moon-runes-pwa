@@ -36,6 +36,16 @@ export function normalizeHomeBlockEntities(value){
 }
 
 
+// Block 1 is the fixed homepage Hero; ordinary frames may only reorder below it.
+export function isPinnedHomeHero(pageName,block){
+  return ['index','hero'].includes(String(pageName||'').toLowerCase())&&Number(block?.order)===1;
+}
+export function canSwapHomeBlockPositions(pageName,blocks,fromIndex,toIndex){
+  if(!Array.isArray(blocks)||!Number.isInteger(fromIndex)||!Number.isInteger(toIndex)||
+      fromIndex<0||toIndex<0||fromIndex>=blocks.length||toIndex>=blocks.length)return false;
+  return !isPinnedHomeHero(pageName,blocks[fromIndex])&&!isPinnedHomeHero(pageName,blocks[toIndex]);
+}
+
 export const HOME_BLOCK_LIMIT=8;
 
 // VARCHAR headings are plain strings; remove only legacy markup wrappers.
@@ -178,6 +188,8 @@ export const HomeBlock=Object.freeze({
   createUid:createHomeBlockUid,
   normalizeEntities:normalizeHomeBlockEntities,
   limit:HOME_BLOCK_LIMIT,
+  isPinnedHomeHero,
+  canSwapHomeBlockPositions,
   rows:homeBlockRows,
   visibleEntities:visibleHomeEntities,
   stripLocHomeEditorPlaceholders,

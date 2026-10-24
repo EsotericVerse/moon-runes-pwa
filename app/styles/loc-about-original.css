@@ -115,10 +115,16 @@
 .loc-home-block__child--card{background:var(--loc-panel)}
 .loc-home-block__child--bubble{background:var(--loc-surface-soft)}
 .loc-home-block__child>h3{
-  margin:0 0 .6rem;
+  margin:0 0 .55rem;
   color:var(--loc-text);
   font-size:1rem;
   font-weight:700;
+}
+/* A faint shadow line distinguishes a titled child card from its body. */
+.loc-home-block__child--card>h3+.loc-home-block__child-copy:not(:empty){
+  padding-top:.6rem;
+  border-top:1px solid color-mix(in srgb,var(--loc-line) 70%,transparent);
+  box-shadow:inset 0 5px 7px -8px color-mix(in srgb,var(--loc-text) 36%,transparent);
 }
 .loc-home-block__media{margin:0;min-width:0;max-width:var(--loc-home-media-max,100%)}
 .loc-home-block__media img{display:block;width:100%;height:auto;object-fit:contain}
@@ -196,8 +202,8 @@
   display:block;
   width:100%;
   height:100%;
-  object-fit:cover;
-  object-position:center;
+  object-fit:contain;
+  object-position:center center;
 }
 .loc-home-block--hero>.loc-home-block__media img{
   filter:brightness(.5);
@@ -324,7 +330,7 @@
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])[data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media img{
   filter:none;
   mask-image:none;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center center;
 }
 /* The former author's editorial gradient shades copy without blacking out

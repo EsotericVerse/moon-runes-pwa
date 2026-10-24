@@ -496,9 +496,10 @@ button,a,.loc-control,.loc-button,
   background-image:
     linear-gradient(90deg,rgba(3,6,15,.94) 0%,rgba(3,6,15,.82) 36%,rgba(3,6,15,.34) 72%,rgba(3,6,15,.22) 100%),
     var(--scope-feature-hero-image);
-  background-position:center;
-  background-repeat:no-repeat;
-  background-size:cover;
+  background-position:center center,center center;
+  background-repeat:no-repeat,no-repeat;
+  /* Overlay fills the Hero while the original artwork fits without cropping. */
+  background-size:100% 100%,contain;
 }
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"],[data-loc-scope="admin"],[data-loc-scope="local"])
   .scope-feature-hero--artwork:not(.is-editing){
