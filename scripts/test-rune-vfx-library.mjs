@@ -9,6 +9,7 @@ import {EFFECT_ASSET_BLOBS} from './rune-effekseer-asset-manifest.mjs';
 
 const drawable=CANONICAL_RUNE_ENGLISH.filter(name=>name!=='Virtue');
 const pinned=new Set(EFFECT_ASSET_BLOBS.map(asset=>asset.target));
+const mxsPaths=Object.values(AUTHORED_EFFECT_FILES).filter(path=>path.startsWith('Collections/MAGICALxSPIRAL/MxS_'));
 
 test('all 66 drawable runes use different complete authored scenes',()=>{
   assert.equal(drawable.length,66);
@@ -47,4 +48,10 @@ test('Flame has a dedicated authored fireball layer',()=>{
   const flame=runeEffectFor({english_name:'Flame'});
   assert.ok(flame.overlays.some(layer=>layer.role==='flame-projectile'
     && layer.key==='G:ef_fire01_projectile'));
+});
+
+test('every expanded MAGICAL X SPIRAL effect is pinned without duplicate entries',()=>{
+  assert.equal(pinned.size,EFFECT_ASSET_BLOBS.length);
+  assert.ok(mxsPaths.length>=78);
+  for(const path of mxsPaths)assert.ok(pinned.has(path.slice('Collections/'.length)),`Missing MxS scene: ${path}`);
 });
