@@ -20,6 +20,7 @@ export default {
   "favorites": "我的收藏",
   "login": "登录",
   "logout": "退出登录",
+  "switchAccount": "切换 Google 账号",
   "manageFeature": "管理功能",
   "openSystemSettings": "打开系统设置",
   "loading": "加载中…",

@@ -20,6 +20,7 @@ export default {
   "favorites": "お気に入り",
   "login": "ログイン",
   "logout": "ログアウト",
+  "switchAccount": "Google アカウントを切り替え",
   "manageFeature": "管理機能",
   "openSystemSettings": "システム設定を開く",
   "loading": "読み込み中…",

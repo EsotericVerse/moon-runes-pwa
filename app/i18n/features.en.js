@@ -219,6 +219,8 @@ export default {
     "workspace": "Keyword workspace",
     "libraryImmediateSave": "Library copy actions are saved immediately; there are no other settings to save here.",
     "analysisSettings": "Analysis settings",
+    "basicSettings": "Basic keyword settings",
+    "keywordAnalysis": "Keyword analysis",
     "activeClass": "Active Class",
     "minChars": "Minimum analysis characters",
     "minDocuments": "Minimum articles for statistics",
