@@ -25,6 +25,6 @@ test('CSS contains eight published Theme palettes',()=>{
   const css=read('app/styles/published-themes.css');
   for(let id=1;id<=8;id++){
     assert.ok(css.includes('[data-theme-id="theme-'+id+'"]'));
-    assert.equal((css.match(new RegExp('\\\\-\\\\-loc-panel-2:', 'g'))||[]).length,8);
+    assert.equal(css.split('--loc-panel-2:').length-1,8);
   }
 });
