@@ -45,11 +45,10 @@ export default function GlobalSettings({initialSection='home'}={}){
     option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription')),
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'))]:[]),
     ...(native||prefs.account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'))]:[]),
-    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription')),
-    option('account',uiT('uiExtra.globalSettings.account'),uiT('uiExtra.globalSettings.accountDescription'))
+    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription'))
   ];
   // favorites is the legacy URL alias for the public home/settings panel.
-  const [section,setSection]=useManagementSection(sections,initialSection,{favorites:'home'});
+  const [section,setSection]=useManagementSection(sections,initialSection,{favorites:'home',account:'home'});
 
   const [requestedScope,setRequestedScope]=useState('');
   const [busy,setBusy]=useState(false);
@@ -58,9 +57,9 @@ export default function GlobalSettings({initialSection='home'}={}){
   // protected and requests management roles only when that section opens.
   const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&section==='files';
   const managedAccount=useAccount({enabled:needsScopePermission});
-  // Only the account panel fetches a server-verified Google OAuth identity.
-  const verifiedGoogleAccount=useAccount({enabled:section==='account',sessionOnly:true});
-  const account=section==='account'?verifiedGoogleAccount:(needsScopePermission?managedAccount:prefs.account);
+  // Settings home is the sole Google OAuth entry; protected sections keep their own authorization.
+  const verifiedGoogleAccount=useAccount({enabled:section==='home',sessionOnly:true});
+  const account=section==='home'?verifiedGoogleAccount:(needsScopePermission?managedAccount:prefs.account);
 
   useEffect(()=>{
     const isNative=Capacitor.isNativePlatform();
@@ -71,7 +70,7 @@ export default function GlobalSettings({initialSection='home'}={}){
     setUrlResolved(true);
   },[]);
   const registryQuery=useAsyncResource(['settings-scope-registry'],selectScopeRegistry,
-    {enabled:!native&&urlResolved&&section!=='account'});
+    {enabled:!native&&urlResolved});
   const registry=registryQuery.data||[];
   useEffect(()=>{
     if(prefs.loading)return;
@@ -151,16 +150,8 @@ export default function GlobalSettings({initialSection='home'}={}){
     catch(error){setStatus(String(error?.message||error));setBusy(false);}
   }
   function login(){
-    void account.signIn(new URL('/local/settings/?section=account',window.location.href).href)
+    void account.signIn(new URL('/local/settings/',window.location.href).href)
       .catch(error=>setStatus(String(error?.message||error)));
-  }
-  async function switchAccount(){
-    setBusy(true);setStatus('');
-    try{
-      await account.signOut();
-      await account.signIn(new URL('/local/settings/?section=account',window.location.href).href);
-    }catch(error){setStatus(String(error?.message||error));}
-    finally{setBusy(false);}
   }
 
   return <FeaturePage featureId="setting">
@@ -170,7 +161,16 @@ export default function GlobalSettings({initialSection='home'}={}){
         onChange={next=>{setSection(next);setStatus('');}}/>
       <div className="management-workspace-panel" id="settings-management-panel" role="region"
         aria-labelledby={'settings-sections-option-'+activeSection}>
-      {activeSection==='home'?<section className="loc-card">
+      {activeSection==='home'?<div className="loc-settings-panel-group">
+        <section className="loc-card">
+          <h2><UiText id="uiExtra.globalSettings.account"/></h2>
+          {accountWaiting?<p role="status">正在核驗 Google OAuth 身分…</p>:account.user?<div>
+            <p>Google OAuth（已驗證）：{account.email}</p>
+            <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
+          </div>:<button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
+          {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
+        </section>
+        <section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>
         <form onSubmit={saveHome} className="scope-stat-controls">
           <label><span><UiText id="uiExtra.globalSettings.defaultHome"/></span>
@@ -187,7 +187,8 @@ export default function GlobalSettings({initialSection='home'}={}){
             {favoriteItems.map(item=><span key={item.id} className="scope-settings-favorite-item">{item.label}</span>)}
           </div>
         </div>
-      </section>:null}
+      </section>
+      </div>:null}
 
       {activeSection==='files'&&!native?<div className="loc-settings-panel-group">
         {account.user?managedScopes.length?<>
@@ -197,7 +198,7 @@ export default function GlobalSettings({initialSection='home'}={}){
             onChange={item=>setRequestedScope(item?.value||'')}/>:null}
           {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
         </>:<p className="loc-card"><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
-        <button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
+        <p className="loc-card">請先在設定首頁登入，才能使用雲端匯入。</p>}
       </div>:null}
 
       {native&&activeSection==='files'?<LocalDatabaseImport/>:null}
@@ -206,21 +207,6 @@ export default function GlobalSettings({initialSection='home'}={}){
       {/* Device management never mounts website Scope/Article/Admin capabilities. */}
       {native&&activeSection==='manage'?<PrivateLocalFiles/>:null}
 
-      {activeSection==='account'?<section className="loc-card">
-        <h2><UiText id="uiExtra.globalSettings.account"/></h2>
-        {accountWaiting?<div>
-          <p role="status">正在核驗 Google OAuth 身分…</p>
-          {prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
-        </div>:account.user?<div>
-          <p>Google OAuth（已驗證）：{account.email}</p>
-          <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
-          <button type="button" className="loc-button" disabled={busy} onClick={switchAccount}><UiText id="uiExtra.globalSettings.switchAccount"/></button>
-        </div>:<div>
-          <button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>
-          {prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
-        </div>}
-        {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
-      </section>:null}
       {status?<p role="status" className="scope-status">{status}</p>:null}
       </div>
     </div>
