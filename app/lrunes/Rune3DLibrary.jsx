@@ -55,33 +55,40 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     setTextureQuality(new URLSearchParams(window.location.search).get('texture')==='hd256'?'hd256':'original');
   },[]);
   const reducedMotion=useReducedMotion();
-  const [status,setStatus]=useState('loading');
+  const [status,setStatus]=useState('ready');
   const [error,setError]=useState('');
   const [reload,setReload]=useState(0);
   const stageRef=useRef(null);
 
+  // Keep 3D catalog reads as targeted as the working 2D catalog: selecting a
+  // group requests only that group's rune IDs. A missing rune outside the
+  // selected group must not blank the entire atlas.
   useEffect(()=>{
     let active=true;
+    if(groupId===null){
+      setAllRunes([]);setStatus('ready');setError('');
+      return()=>{active=false;};
+    }
+    const ids=runeNumbersForGroup(groupId);
+    setAllRunes([]);setStatus('loading');setError('');
     selectRows('silver.runes',{
       columns:RUNE_COLUMNS,
+      filters:[{column:'rune_id',operator:'in',value:ids}],
       orders:[{column:'rune_id',ascending:true}],
-      limit:67,offset:0
+      limit:ids.length,offset:0
     }).then(({rows})=>{
       if(!active)return;
-      const next=(rows||[]).filter(rune=>{
-        const id=Number(rune.rune_id);
-        return Number.isInteger(id)&&id>=0&&id<=66;
-      });
-      const ids=new Set(next.map(rune=>Number(rune.rune_id)));
-      if(next.length!==67||ids.size!==67){
-        throw Error('符文資料不完整：目前讀取 '+ids.size+' / 67');
-      }
-      setAllRunes(next);setError('');setStatus('ready');
+      const byId=new Map((rows||[]).map(rune=>[Number(rune.rune_id),rune]));
+      const next=ids.map(id=>byId.get(id)).filter(Boolean);
+      if(!next.length)throw Error('此群組未取得任何符文卡片');
+      setAllRunes(next);
+      setError(next.length===ids.length?'':'此群組目前只讀取到 '+next.length+' / '+ids.length+' 枚符文');
+      setStatus('ready');
     }).catch(err=>{
       if(active){setError(String(err?.message||err));setStatus('error');}
     });
     return()=>{active=false;};
-  },[reload]);
+  },[groupId,reload]);
 
   useEffect(()=>{
     let active=true;
@@ -100,6 +107,25 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       desc:cleanse(row?.desc),quality:cleanse(row?.quality),style:cleanse(row?.style),
       runeslist:runeNumbersForGroup(entry.id)};
   });
+  // 2D and 3D share #group-N[/rune-N] so changing presentation
+  // preserves the selected group and supports bookmarked group URLs.
+  useEffect(()=>{
+    const syncLocation=()=>{
+      const match=/^#group-([1-9])(?:\/rune-(\d{1,2}))?$/.exec(window.location.hash);
+      const id=match?Number(match[1]):null;
+      const runeId=match?.[2]!==undefined?Number(match[2]):null;
+      setGroupId(id);
+      setFocusId(id!==null&&runeId!==null&&runeNumbersForGroup(id).includes(runeId)?runeId:null);
+      setShowCardInfo(false);
+    };
+    window.addEventListener('popstate',syncLocation);
+    window.addEventListener('hashchange',syncLocation);
+    syncLocation();
+    return()=>{
+      window.removeEventListener('popstate',syncLocation);
+      window.removeEventListener('hashchange',syncLocation);
+    };
+  },[]);
   const group=groups.find(item=>item.id===groupId)||null;
   const runes=group?allRunes.filter(rune=>inGroup(rune,group)):[];
   const current=focusId===null?null:runes.find(rune=>Number(rune.rune_id)===focusId)||null;
@@ -110,16 +136,22 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     if(focusId!==null)stageRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
   },[focusId]);
   const jumpTo=rune=>{
-    if(!rune)return;
+    if(!rune||groupId===null)return;
+    const runeId=Number(rune.rune_id);
+    window.history.pushState({runeCardLevel:'rune'},'',
+      window.location.pathname+window.location.search+'#group-'+groupId+'/rune-'+runeId);
     setShowCardInfo(false);
     setPlayback(n=>n+1);
-    setFocusId(Number(rune.rune_id));
+    setFocusId(runeId);
   };
   const selectGroup=entry=>{
+    window.history.pushState({runeCardLevel:'group'},'',
+      window.location.pathname+window.location.search+'#group-'+entry.id);
     setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
   const backToGroups=()=>{
+    window.history.pushState({},'',window.location.pathname+window.location.search);
     setGroupId(null);setFocusId(null);setShowCardInfo(false);
     window.scrollTo?.({top:0,behavior:'smooth'});
   };
@@ -137,12 +169,13 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       <p>{group?'群組畫作展開後，點選符文卡圖，即可觀看該枚符文的 3D Effekseer 顯現。':
         '以九個群組的原創圖片為入口，展開符文畫廊，不再使用星系式選單。'}</p>
     </header>
-    {status==='loading'?<p className="rune-3d-library-message" role="status">正在載入六十六枚符文……</p>:null}
+    {status==='loading'?<p className="rune-3d-library-message" role="status">正在載入此群組的符文卡片……</p>:null}
     {status==='error'?<div className="rune-3d-library-message" role="alert">
-      <p>符文資料無法完整載入：{error}</p>
+      <p>群組符文卡片無法載入：{error}</p>
       <button type="button" className="rune-skin-btn" onClick={()=>{setStatus('loading');setReload(n=>n+1);}}>重新載入</button>
     </div>:null}
     {groupError?<p className="rune-3d-atlas-data-warning" role="status">{groupError}（原創群組畫作仍可瀏覽）</p>:null}
+    {status==='ready'&&group&&error?<p className="rune-3d-atlas-data-warning" role="status">{error}</p>:null}
     {status==='ready'&&!group?<section className="rune-3d-atlas-gallery" aria-label="九大群組原創圖片">
       <RuneArtStage mode="groups" items={groups} onSelect={selectGroup}
         galleryTitle="九大符文群組" galleryDescription="點選原創畫作，展開群組介紹與符文卡圖。"/>
