@@ -635,6 +635,9 @@
 .scope-culture-river-toolbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.4rem 0 .6rem}
 .scope-culture-river-toolbar h3{margin:0 .5rem 0 0}
 .scope-culture-river-selectors{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.scope-culture-time-picker{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;min-width:0}
+.scope-culture-time-picker label{min-width:0}
+.scope-culture-time-picker select{max-width:min(250px,42vw)}
 .scope-culture-river-selectors label{display:flex;align-items:center;gap:.35rem;min-width:0;font-size:.88rem}
 .scope-culture-river-selectors select{max-width:min(260px,45vw)}
 .scope-culture-double-river .vis-label.scope-dual-river-root{background:color-mix(in srgb,var(--loc-panel-2) 80%,var(--loc-accent) 8%);font-weight:700}
