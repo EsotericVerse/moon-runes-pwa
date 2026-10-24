@@ -783,7 +783,7 @@ export default function Culture(){
       ...item,
       id:'dual:'+String(item.id),
       group_key:'dual:source-category:'+String(item.category||''),
-      group_label:'來源分類｜'+String(item.category||''),
+      group_label:'來源分類｜'+String(item.group_label||item.category||''),
       group_order:10+(sourceOrder.get(String(item.category||''))||0)
     }));
     // Candidate anchors are comparisons, not a second copy of official anchors.
