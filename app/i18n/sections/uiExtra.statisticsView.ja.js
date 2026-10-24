@@ -37,7 +37,7 @@ export default {
   "facetItem": "項目",
   "facetAllClasses": "すべてのクラス",
   "memberCrossTitle": "メンバー交差統計",
-  "selfIntersectionTitle": "作品内の交差統計",
+  "selfIntersectionTitle": "高度な統計分析",
   "memberCrossLanes": "比較グループ数",
   "memberCrossChart": "グラフ",
   "memberCrossGroupUnit": " 組",

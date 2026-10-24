@@ -537,3 +537,97 @@
 .scope-data-source-details>summary{width:max-content;max-width:100%;min-height:32px;display:flex;align-items:center;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--loc-muted)}
 .scope-data-source-details>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px;border-radius:3px}
 .scope-data-source-values{display:flex;flex-wrap:wrap;gap:.35rem .8rem;padding:.3rem 0 .15rem}
+
+
+/* Advanced statistics: each comparison is a compact group of real tabs,
+   never a long mixed select/list. Rows contain a category and its own items. */
+.scope-self-intersection-kind-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+  padding-bottom:.75rem;
+  border-bottom:1px solid var(--loc-ui-hairline,var(--loc-line));
+}
+.scope-self-intersection-category-groups{
+  display:grid;
+  gap:.65rem;
+  padding-top:.8rem;
+  min-width:0;
+}
+.scope-self-stat-group{
+  display:grid;
+  grid-template-columns:minmax(5.8rem,auto) minmax(0,1fr);
+  align-items:start;
+  column-gap:.65rem;
+  row-gap:.35rem;
+  min-width:0;
+}
+.scope-self-stat-group-header{
+  display:flex;
+  align-items:center;
+  min-width:0;
+}
+.scope-self-stat-group-label{
+  display:block;
+  color:var(--scope-muted,var(--loc-muted));
+  font-size:.9rem;
+  font-weight:700;
+}
+.scope-self-stat-item-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.4rem;
+  min-width:0;
+}
+.scope-self-stat-tab,.scope-self-stat-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:2.75rem;
+  max-width:100%;
+  padding:.53rem .75rem;
+  font:inherit;
+  font-size:.9rem;
+  font-weight:650;
+  line-height:1.3;
+  text-align:center;
+  overflow-wrap:anywhere;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-sm,10px);
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+  color:var(--scope-text,var(--loc-text));
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.scope-self-stat-chip{
+  font-size:.86rem;
+  font-weight:550;
+  background:var(--loc-ui-panel,var(--loc-panel));
+}
+.scope-self-stat-tab[aria-pressed="true"],
+.scope-self-stat-chip[aria-pressed="true"]{
+  border-color:var(--loc-accent);
+  background:var(--loc-accent-surface,var(--loc-ui-accent-soft));
+  color:var(--loc-heading);
+  box-shadow:inset 0 -3px 0 var(--loc-accent);
+}
+.scope-self-stat-tab:hover,.scope-self-stat-chip:hover{
+  border-color:var(--loc-accent);
+}
+.scope-self-stat-tab:focus-visible,.scope-self-stat-chip:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:2px;
+}
+.scope-self-stat-empty{
+  padding:.6rem 0;
+  font-size:.85rem;
+  color:var(--scope-muted,var(--loc-muted));
+}
+@media(max-width:560px){
+  .scope-self-intersection-comparisons{grid-template-columns:minmax(0,1fr)}
+  .scope-self-intersection-lane{padding:.65rem}
+  .scope-self-stat-group{grid-template-columns:minmax(0,1fr)}
+  .scope-self-stat-group-header{padding-bottom:.05rem}
+  .scope-self-stat-tab,.scope-self-stat-chip{min-height:2.75rem;padding:.5rem .7rem}
+}

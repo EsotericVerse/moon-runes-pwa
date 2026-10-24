@@ -199,27 +199,30 @@ test('keyword combined ranking follows actual Class membership and keeps paginat
 });
 
 
-test('self-intersection keeps top four filters and two selectors per comparison item',()=>{
+test('advanced statistics uses grouped category tabs and real keyword group membership',()=>{
   const source=readFileSync(new URL('../app/modular/modules/statistics/ScopeSelfIntersection.jsx',import.meta.url),'utf8');
   const dimensions=source.slice(source.indexOf('export const DIMENSION_FILTERS='),source.indexOf('export const DIMENSIONS='));
-  for(const label of ['全部','作品來源','多媒體','關鍵詞'])assert.ok(dimensions.includes("label:'"+label+"'"));
-  assert.equal((dimensions.match(/label:/g)||[]).length,4);
+  for(const label of ['作品來源','多媒體','關鍵詞'])assert.ok(dimensions.includes("label:'"+label+"'"));
+  assert.equal((dimensions.match(/label:/g)||[]).length,3);
   const ui=source.slice(source.indexOf('<div className="scope-self-intersection-comparisons">'),
     source.indexOf('<div className="scope-stat-controls">',source.indexOf('<div className="scope-self-intersection-comparisons">')));
   assert.ok(ui.includes('Array.from({length:lanes}'));
-  assert.equal((ui.match(/<select className="scope-select"/g)||[]).length,2);
-  assert.ok(ui.includes('來源類型')&&ui.includes('比較內容'));
-  for(const label of ['原始作品來源','系統分組來源','個人分組來源',
-    '多媒體來源','關鍵詞分組','關鍵詞項目'])
-    assert.ok(source.includes(label));
-  assert.ok(source.includes('maximumLanes=Math.min(8,categoryList.length)'));
-  // These user examples must be selectable without a third dropdown.
-  assert.match(source,/kind:'source_rollup',\s*name:'系統分組來源'/);
-  assert.match(source,/kind:'source_rollup',\s*name:'個人分組來源'/);
+  assert.equal((ui.match(/<select className="scope-select"/g)||[]).length,0);
+  assert.ok(ui.includes('scope-self-intersection-kind-tabs'));
+  assert.ok(ui.includes('scope-self-stat-item-tabs'));
+  assert.ok(ui.includes('aria-pressed={chosenId===item.id}'));
+  assert.ok(source.includes('scope-advanced-keyword-catalog'));
+  assert.ok(source.includes("columns:'class_group,item_no,item_name,class_enable'"));
+  assert.ok(source.includes('item.group===group.group'));
+  assert.ok(source.includes("dimensionForKind(item.kind)===shownKinds[index]"));
+  assert.ok(source.includes('keywordTabAvailable'));
+  assert.ok(source.includes('const hitGroups=new Set()'));
+  assert.ok(source.includes('for(const group of hitGroups)add('));
+  assert.ok(source.includes('maximumLanes=Math.min(8,'));
+  assert.ok(source.includes("kind:'source_rollup'"));
+  assert.ok(source.includes("name:'系統分類'"));
+  assert.ok(source.includes("name:'個人分類'"));
   assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'system')"));
-  assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'personal')"));
-  assert.ok(source.includes("if(!family)return categoryList"));
-  assert.ok(!ui.includes("comparisonDimensions"));
   const start=source.indexOf('export function mediaTypeFamily(raw)');
   const end=source.indexOf('const MEDIA_GROUP_NAMES=',start);
   const family=new Function(source.slice(start,end).replace('export function','function')+
@@ -227,8 +230,8 @@ test('self-intersection keeps top four filters and two selectors per comparison 
   assert.equal(family('suno'),'music');
   assert.equal(family('facebook_pic'),'image');
   assert.equal(family('youtube_video'),'video');
+  assert.equal(family('instagram'),'', 'An unspecific platform must not be guessed as image/video');
 });
-
 
 // Manual reset must not send tens of thousands of classified rows through a
 // single UPDATE. Exercise the real database client with the existing RPC seam.

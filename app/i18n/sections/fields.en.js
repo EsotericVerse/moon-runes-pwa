@@ -305,7 +305,7 @@ export default {
   "所屬人員交互統計": "Member comparison statistics",
   "比較組數": "Comparison groups",
   "全部作品": "All works",
-  "作品自交互統計": "Work intersection statistics",
+  "作品自交互統計": "Advanced statistics",
   "交互組數": "Intersection groups",
   "組": "groups",
   "圖表時間縮放": "Chart time zoom",

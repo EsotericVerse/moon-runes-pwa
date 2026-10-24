@@ -1,8 +1,8 @@
 'use client';
 import FieldText from '../../../i18n/FieldText';
 import {useUiLocale,useUiSection} from '../../../i18n/ui-locale';
-import {useUiText} from '../../../i18n/UiText';
-import {translateUiField,registerDefaultSection} from '../../../i18n/ui-copy';
+import UiText,{useUiText} from '../../../i18n/UiText';
+import {registerDefaultSection} from '../../../i18n/ui-copy';
 import selfIntersectionZh from '../../../i18n/sections/uiExtra.selfIntersection.zh_tw.js';
 registerDefaultSection('uiExtra.selfIntersection',selfIntersectionZh);
 
@@ -18,32 +18,32 @@ import StatisticsDetails from './StatisticsDetails';
 import {ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-export const DIMENSION_FILTERS=[
-  {value:'all',label:'全部'}, {value:'source',label:'作品來源'},
-  {value:'media',label:'多媒體'}, {value:'keyword',label:'關鍵詞'}
-];
-export const DIMENSIONS=[
+// One dimension tab per comparison lane. Keyword tab appears only if stored
+// statistics contain actual keyword hits in the selected date range.
+export const DIMENSION_FILTERS=Object.freeze([
+  {value:'source',label:'作品來源'},
+  {value:'media',label:'多媒體'},
+  {value:'keyword',label:'關鍵詞'}
+]);
+export const DIMENSIONS=Object.freeze([
   {kind:'source',label:'原始作品來源'},
-  {kind:'source_rollup',label:'來源分組總覽'},
+  {kind:'source_rollup',label:'系統／個人分類'},
   {kind:'group',label:'系統分組來源'},
   {kind:'others_subgroup',label:'個人分組來源'},
-  {kind:'total',label:'作品總量'},
   {kind:'media_category',label:'音樂／圖片／影片'},
-  {kind:'media',label:'多媒體原始類型'},
-  {kind:'keyword_group',label:'關鍵詞分組'},
+  {kind:'media',label:'多媒體來源'},
+  {kind:'keyword_all',label:'全部關鍵詞'},
+  {kind:'keyword_group',label:'關鍵詞群組'},
+  {kind:'keyword_group_items',label:'群組內關鍵詞'},
   {kind:'keyword_item',label:'關鍵詞項目'}
-];
-export const LANE_FAMILIES=[
-  {id:'source',label:'原始作品來源',kinds:['source_rollup','source','group','others_subgroup','total']},
-  {id:'media',label:'多媒體來源',kinds:['media_category','media']},
-  {id:'keyword_group',label:'關鍵詞分組',kinds:['keyword_group']},
-  {id:'keyword_item',label:'關鍵詞項目',kinds:['keyword_item']}
-];
-const kindsForDimension=value=>value==='source'?LANE_FAMILIES[0].kinds
-  :value==='media'?LANE_FAMILIES[1].kinds
-  :value==='keyword'?[...LANE_FAMILIES[2].kinds,...LANE_FAMILIES[3].kinds]
-  :DIMENSIONS.map(item=>item.kind);
-const familyForKind=kind=>LANE_FAMILIES.find(item=>item.kinds.includes(kind))?.id||'source';
+]);
+export const LANE_FAMILIES=Object.freeze([
+  {id:'source',label:'作品來源',kinds:['source_rollup','source','group','others_subgroup']},
+  {id:'media',label:'多媒體',kinds:['media_category','media']},
+  {id:'keyword',label:'關鍵詞',kinds:['keyword_all','keyword_group','keyword_group_items','keyword_item']}
+]);
+const dimensionForKind=kind=>LANE_FAMILIES.find(item=>item.kinds.includes(kind))?.id||'source';
+const metricId=(kind,value)=>kind+String.fromCharCode(0)+value;
 export function mediaTypeFamily(raw){
   const value=String(raw||'').trim().toLowerCase();
   if(/(?:music|audio|sound|song|suno|mp3|wav|m4a|flac|音樂|歌曲|聲音)/.test(value))return 'music';
@@ -76,8 +76,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const l=copy.uiExtra.selfIntersection;
   const [numberOfLanes,setNumberOfLanes]=useState(2);
   const [selected,setSelected]=useState([]);
-  const [kindFilter,setKindFilter]=useState('all');
-  const [laneFamilies,setLaneFamilies]=useState([]);
+  const [laneKinds,setLaneKinds]=useState([]);
   const [chartType,setChartType]=useState('line');
   const [foldBlank,setFoldBlank]=useState(true);
   const start=dateOnly(range?.startDate),end=dateOnly(range?.endDate);
@@ -132,10 +131,41 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       return selectKeywordAnalysisSummary({scopeId:scope.id,startDate:start,endDate:end});
     }
   });
+  const keywordTabAvailable=Boolean(keywords.data?.statisticsEnabled&&
+    (keywords.data?.runeTotals||[]).some(item=>Number(item.document_count)>0));
+  const availableKinds=useMemo(()=>[
+    ...(rows.some(row=>row.kind==='source'&&Number(row.item_count)>0)?['source']:[]),
+    ...(rows.some(row=>row.kind==='media'&&Number(row.item_count)>0)?['media']:[]),
+    ...(keywordTabAvailable?['keyword']:[])
+  ],[rows,keywordTabAvailable]);
+  const maximumLanes=Math.min(8,Math.max(0,
+    rows.filter(row=>Number(row.item_count)>0).length+
+    (keywords.data?.runeTotals||[]).filter(row=>Number(row.document_count)>0).length));
+  const lanes=Math.min(numberOfLanes,Math.max(2,maximumLanes));
+  const shownKinds=Array.from({length:lanes},(_,index)=>
+    availableKinds.includes(laneKinds[index])?laneKinds[index]:
+    availableKinds[index%Math.max(1,availableKinds.length)]||'source');
+  const keywordModeActive=shownKinds.includes('keyword')&&keywordTabAvailable;
+  // Resolve Class -> group -> item from the current Scope's *real* keyword
+  // catalog. Stored aggregate metadata has item labels but no group mapping.
+  const keywordCatalog=useAsyncResource({
+    queryKey:['scope-advanced-keyword-catalog',scope?.id,keywords.data?.keywordMeta?.class_id],
+    enabled:valid&&keywordModeActive&&Boolean(scope?.keywords&&keywords.data?.keywordMeta?.class_id),
+    queryFn:async()=>{
+      const {selectAllRows}=await import('../../../loc/db-query.mjs');
+      return (await selectAllRows(scope.keywords,{
+        columns:'class_group,item_no,item_name,class_enable',
+        filters:[{column:'class_id',operator:'eq',value:keywords.data.keywordMeta.class_id}],
+        orders:[{column:'order_no',ascending:true}]
+      })).rows;
+    }
+  });
+  const keywordItemGroup=useMemo(()=>new Map((keywordCatalog.data||[])
+    .filter(item=>item.class_enable!==false&&String(item.class_group||'').trim())
+    .map(item=>[String(Number(item.item_no)),String(item.class_group).trim()])),
+  [keywordCatalog.data]);
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
-    // The raw source names (including everything inside Others) are counted
-    // live from the data; Admin's groups sit on top of them.
     const basic=ownScopeCategoryCatalog(rows);
     const grouped=new Map();
     for(const row of rows){
@@ -144,17 +174,26 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       grouped.set(id,(grouped.get(id)||0)+(Number(row.item_count)||0));
     }
     const groups=[...grouped].filter(([,total])=>total>0).map(([id,total])=>({
-      id:'group\u0000'+id,kind:'group',name:known.find(x=>x.category_code===id)?.display_name||id,total
+      id:metricId('group',id),kind:'group',name:known.find(x=>x.category_code===id)?.display_name||id,total
     }));
     const analysis=keywords.data?.statisticsEnabled?keywords.data:null;
     const keywordGroups=(analysis?.groupTotals||[])
       .filter(row=>Number(row.document_count||0)>0)
-      .map(row=>({id:'keyword_group'+String.fromCharCode(0)+row.class_id,kind:'keyword_group',
-        name:String(row.group||'')+' 群組',total:Number(row.document_count)||0}));
+      .map(row=>({id:metricId('keyword_group',row.class_id),kind:'keyword_group',
+        group:String(row.group||'').trim(),name:String(row.group||'').trim(),total:Number(row.document_count)||0}));
     const keywordItems=(analysis?.runeTotals||[])
       .filter(row=>Number(row.document_count||0)>0)
-      .map(row=>({id:'keyword_item'+String.fromCharCode(0)+row.rune_id,kind:'keyword_item',
-        name:String(row.label||'')+' · '+row.rune_id,total:Number(row.document_count)||0}));
+      .map(row=>({id:metricId('keyword_item',row.rune_id),kind:'keyword_item',
+        group:keywordItemGroup.get(String(row.rune_id))||'',
+        name:String(row.label||row.rune_id),total:Number(row.document_count)||0}));
+    const keywordGroupsItems=keywordGroups.filter(group=>
+      keywordItems.some(item=>item.group===group.group))
+      .map(group=>({id:metricId('keyword_group_items',group.group),
+        kind:'keyword_group_items',group:group.group,name:'群組內關鍵詞',total:0}));
+    const keywordAll=keywordTabAvailable?[{
+      id:metricId('keyword_all','all'),kind:'keyword_all',
+      name:'全部關鍵詞',total:0
+    }]:[];
     const othersCounts=new Map();
     for(const row of rows){
       if(row.kind!=='source')continue;
@@ -162,11 +201,9 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       if(group)othersCounts.set(group,(othersCounts.get(group)||0)+(Number(row.item_count)||0));
     }
     const others=[...othersCounts].filter(([,count])=>count>0).map(([id,total])=>({
-      id:'others_subgroup'+String.fromCharCode(0)+id,kind:'others_subgroup',
-      name:id==='unclassified'?'Others · 未細分':'Others · '+othersActive.get(id),total
+      id:metricId('others_subgroup',id),kind:'others_subgroup',
+      name:id==='unclassified'?'未分類':othersActive.get(id)||id,total
     }));
-    // A direct "原始作品來源 → 系統/個人分組來源" pair is itself a
-    // selectable measure; individual Admin/Scope group measures remain below.
     let systemTotal=0,personalTotal=0;
     for(const row of rows){
       if(row.kind!=='source')continue;
@@ -175,34 +212,26 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       else if(resolveOthers(row.category)!=='unclassified')personalTotal+=amount;
     }
     const rollups=[
-      {id:'source_rollup'+String.fromCharCode(0)+'system',kind:'source_rollup',
-        name:'系統分組來源',total:systemTotal},
-      {id:'source_rollup'+String.fromCharCode(0)+'personal',kind:'source_rollup',
-        name:'個人分組來源',total:personalTotal}
+      {id:metricId('source_rollup','system'),kind:'source_rollup',
+        name:'系統分類',total:systemTotal},
+      {id:metricId('source_rollup','personal'),kind:'source_rollup',
+        name:'個人分類',total:personalTotal}
     ].filter(item=>item.total>0);
     const mediaTotals=new Map();
     for(const row of rows){
       if(row.kind!=='media')continue;
-      const family=mediaTypeFamily(row.category);
-      if(family)mediaTotals.set(family,(mediaTotals.get(family)||0)+(Number(row.item_count)||0));
+      const family=mediaTypeFamily(row.category)||'other';
+      mediaTotals.set(family,(mediaTotals.get(family)||0)+(Number(row.item_count)||0));
     }
     const mediaGroups=[...mediaTotals].filter(([,total])=>total>0)
-      .map(([id,total])=>({id:'media_category'+String.fromCharCode(0)+id,
-        kind:'media_category',name:MEDIA_GROUP_NAMES[id],total}));
-    const allowed=new Set(kindsForDimension(kindFilter));
-    return [...rollups,...groups,...basic,...others,...mediaGroups,...keywordGroups,...keywordItems]
-      .filter(item=>allowed.has(item.kind));
-  },[rows,kindFilter,catalog.data,keywords.data,othersConfig.data]);
-  const maximumLanes=Math.min(8,categoryList.length);
-  const lanes=Math.min(numberOfLanes,Math.max(2,maximumLanes));
-  const availableFamilies=LANE_FAMILIES.filter(family=>
-    categoryList.some(item=>family.kinds.includes(item.kind)));
-  const candidatesForLane=index=>{
-    const family=laneFamilies[index];
-    if(!family)return categoryList;
-    const kinds=LANE_FAMILIES.find(item=>item.id===family)?.kinds||[];
-    return categoryList.filter(item=>kinds.includes(item.kind));
-  };
+      .map(([id,total])=>({id:metricId('media_category',id),
+        kind:'media_category',name:MEDIA_GROUP_NAMES[id]||'其他媒體',family:id,total}));
+    return [...rollups,...groups,...basic,...others,...mediaGroups,
+      ...keywordAll,...keywordGroups,...keywordGroupsItems,...keywordItems];
+  },[rows,catalog.data,keywords.data,othersConfig.data,keywordItemGroup,keywordTabAvailable]);
+  const candidatesForLane=index=>categoryList.filter(item=>
+    dimensionForKind(item.kind)===shownKinds[index]&&
+    !['group','others_subgroup','total'].includes(item.kind));
   const chosen=Array.from({length:lanes},(_,index)=>{
     const candidates=candidatesForLane(index);
     const id=selected[index];
@@ -210,8 +239,6 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     const reserved=new Set(selected.filter((_,position)=>position!==index));
     return candidates.find(item=>!reserved.has(item.id))?.id||'';
   });
-  // Do not silently select an unrelated category when a chosen family runs
-  // out of available values; the visitor can change that lane's first select.
   const used=new Set();
   const selection=chosen.map((id,index)=>{
     const options=candidatesForLane(index);
@@ -220,17 +247,12 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     return output;
   });
   const categories=selection.map(id=>categoryList.find(c=>c.id===id)).filter(Boolean);
-  const shownFamilies=selection.map((id,index)=>{
-    const explicit=laneFamilies[index];
-    return availableFamilies.some(family=>family.id===explicit)
-      ?explicit:familyForKind(categoryList.find(item=>item.id===id)?.kind);
-  });
-  const selectedKeywordItems=categories.some(c=>c.kind==='keyword_item');
+  const selectedKeywordItems=categories.some(item=>['keyword_all','keyword_group_items','keyword_item'].includes(item.kind));
   // Item-by-day data are not in the summary RPC. Load saved attributes only
   // when an item is actually selected, without reading or analyzing article bodies.
   const keywordItems=useAsyncResource({
     queryKey:['own-scope-keyword-item-days',scope?.id,start,end],
-    enabled:valid&&selectedKeywordItems,
+    enabled:valid&&keywordModeActive&&selectedKeywordItems,
     queryFn:async()=>{
       const {selectAllRows}=await import('../../../loc/db-query.mjs');
       return (await selectAllRows(scope.galaxy,{
@@ -286,9 +308,18 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       for(const row of keywordItems.data||[]){
         const items=parseGroupLists(row.group_lists);
         if(!items||typeof items!=='object')continue;
-        for(const [id,hits] of Object.entries(items)){
-          if(Number(hits)>0)add(dateOnly(row.createtime),'keyword_item'+String.fromCharCode(0)+id,1);
+        const hits=Object.keys(items).filter(id=>Number(items[id])>0);
+        if(!hits.length)continue;
+        const day=dateOnly(row.createtime);
+        add(day,metricId('keyword_all','all'),1);
+        const hitGroups=new Set();
+        for(const id of hits){
+          add(day,metricId('keyword_item',id),1);
+          const group=keywordItemGroup.get(String(Number(id)));
+          if(group)hitGroups.add(group);
         }
+        // Each article counts ONCE for an entire group's item union.
+        for(const group of hitGroups)add(day,metricId('keyword_group_items',group),1);
       }
     }
     const chart=[];
@@ -310,82 +341,103 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         value:chart.reduce((n,bucket)=>n+Number(bucket[category.id]||0),0)
       }))
     };
-  },[rows,categories.map(c=>c.id).join(String.fromCharCode(0)),start,end,unit,valid,catalog.data,othersConfig.data,keywords.data,keywordItems.data,selectedKeywordItems]);
+  },[rows,categories.map(c=>c.id).join(String.fromCharCode(0)),start,end,unit,valid,catalog.data,othersConfig.data,keywords.data,keywordItems.data,selectedKeywordItems,keywordItemGroup]);
   const series=categories.map(c=>({key:c.id,label:c.name}));
   const enough=maximumLanes>=2&&categories.length===lanes;
   const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
   const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
   const chartGroups=chartTypeGroups(availableCharts,['line','stacked','scatter']);
 
-  return <section className="scope-stat-section scope-self-intersection" aria-label={translateUiField(locale,'作品自交互統計')}>
-    <h3><FieldText text="作品自交互統計"/></h3>
+  return <section className="scope-stat-section scope-self-intersection" aria-label={t('uiExtra.statisticsView.selfIntersectionTitle')}>
+    <h3><UiText id="uiExtra.statisticsView.selfIntersectionTitle"/></h3>
       {query.isPending||keywords.isPending||othersConfig.isPending?<p className="scope-status">{l.readingSources}</p>:null}
       {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||l.readFailed)}</p>:null}
       {keywords.error?<p className="scope-status scope-error">關鍵詞分佈載入失敗：{String(keywords.error?.message||keywords.error)}</p>:null}
       {othersConfig.error?<p className="scope-status scope-error">Others 自定義小分類載入失敗：{String(othersConfig.error?.message||othersConfig.error)}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
-          <label><span><FieldText text="交互組數"/></span>
+          <label><span><FieldText text="比較組數"/></span>
             <select className="scope-select" value={lanes} onChange={e=>{setNumberOfLanes(Number(e.target.value));setSelected([])}}>
               {Array.from({length:Math.max(0,maximumLanes-1)},(_,i)=>i+2).map(n=><option key={n} value={n}>{n}{l.groupUnit}</option>)}
               {maximumLanes<2?<option value={2}>可比較項目不足</option>:null}
             </select>
           </label>
-          <label><span>比較維度</span>
-            <select className="scope-select" aria-label="比較維度" value={kindFilter}
-              onChange={e=>{setKindFilter(e.target.value);setSelected([]);setLaneFamilies([])}}>
-              {DIMENSION_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-            </select>
-          </label>
         </div>
         <div className="scope-self-intersection-comparisons">
           {Array.from({length:lanes},(_,index)=>{
-            const family=shownFamilies[index];
-            const candidateGroups=DIMENSIONS.filter(dimension=>
-              LANE_FAMILIES.find(entry=>entry.id===family)?.kinds.includes(dimension.kind));
-            return <div className="scope-self-intersection-lane" key={index}>
+            const kind=shownKinds[index];
+            const chosenId=selection[index]||'';
+            const selectMetric=id=>setSelected(previous=>{
+              const next=[...selection];next[index]=id;return next;
+            });
+            const switchKind=nextKind=>{
+              setLaneKinds(previous=>{
+                const next=[...shownKinds];next[index]=nextKind;return next;
+              });
+              setSelected(previous=>{
+                const next=[...selection];next[index]='';return next;
+              });
+            };
+            const sourceItems=categoryList.filter(item=>item.kind==='source');
+            const systems=sourceItems.filter(item=>
+              assignedSource(item.raw,catalog.data?.aliases||[],catalog.data?.categories||[])!=='others');
+            const personals=sourceItems.filter(item=>resolveOthers(item.raw)&&resolveOthers(item.raw)!=='unclassified');
+            const unclassified=sourceItems.filter(item=>resolveOthers(item.raw)==='unclassified');
+            const sourceGroups=[
+              {name:l.systemCategory,item:categoryList.find(c=>c.id===metricId('source_rollup','system')),items:systems},
+              {name:l.personalCategory,item:categoryList.find(c=>c.id===metricId('source_rollup','personal')),items:personals},
+              {name:l.uncategorized,item:null,items:unclassified}
+            ].filter(group=>group.item||group.items.length);
+            const mediaGroups=categoryList.filter(item=>item.kind==='media_category')
+              .sort((a,b)=>['music','image','video','other'].indexOf(a.family)-['music','image','video','other'].indexOf(b.family))
+              .map(group=>({name:group.family==='music'?l.music:group.family==='image'?l.image:group.family==='video'?l.video:l.otherMedia,item:group,items:categoryList.filter(item=>
+                item.kind==='media'&&(mediaTypeFamily(item.raw)||'other')===group.family)}));
+            const groupTabs=categoryList.filter(item=>item.kind==='keyword_group')
+              .map(group=>({name:group.name,item:group,
+                items:categoryList.filter(item=>
+                  (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group===group.group)}));
+            const groups=kind==='source'?sourceGroups:kind==='media'?mediaGroups:groupTabs;
+            const allKeywords=categoryList.find(item=>item.kind==='keyword_all');
+            return <section className="scope-self-intersection-lane" key={index}
+              aria-label={l.comparisonItem+' '+(index+1)}>
               <strong>{l.comparisonItem} {index+1}</strong>
-              <div className="scope-self-intersection-lane-selectors">
-                <label><span>來源類型</span>
-                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 來源類型'}
-                    value={family} onChange={event=>{
-                      const nextFamily=event.target.value;
-                      setLaneFamilies(previous=>{
-                        const next=[...previous];next[index]=nextFamily;return next;
-                      });
-                      const used=new Set(selection.filter((_,position)=>position!==index));
-                      const available=categoryList.filter(item=>
-                        LANE_FAMILIES.find(entry=>entry.id===nextFamily)?.kinds.includes(item.kind));
-                      setSelected(previous=>{
-                        const next=[...selection];
-                        next[index]=available.find(item=>!used.has(item.id))?.id||'';
-                        return next;
-                      });
-                    }}>
-                    {availableFamilies.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
-                  </select>
-                </label>
-                <label><span>比較內容</span>
-                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 比較內容'}
-                    value={selection[index]||''} onChange={event=>{
-                      setSelected(previous=>{
-                        const next=[...selection];next[index]=event.target.value;return next;
-                      });
-                    }}>
-                    {!selection[index]?<option value="">請選擇比較內容</option>:null}
-                    {candidateGroups.map(dimension=>{
-                      const options=categoryList.filter(item=>item.kind===dimension.kind&&
-                        !selection.some((chosen,position)=>position!==index&&chosen===item.id));
-                      return options.length?<optgroup key={dimension.kind} label={dimension.label}>
-                        {options.map(item=><option key={item.id} value={item.id}>
-                          {item.name}（{item.total.toLocaleString()}）
-                        </option>)}
-                      </optgroup>:null;
-                    })}
-                  </select>
-                </label>
+              <div className="scope-self-intersection-kind-tabs" role="group"
+                aria-label={l.comparisonItem+' '+(index+1)+' 類型'}>
+                {DIMENSION_FILTERS.filter(tab=>availableKinds.includes(tab.value)).map(tab=>
+                  <button type="button" className="scope-self-stat-tab" key={tab.value}
+                    aria-pressed={kind===tab.value} onClick={()=>switchKind(tab.value)}>
+                    {tab.value==='source'?l.sourceTab:tab.value==='media'?l.mediaTab:l.keywordTab}
+                  </button>)}
               </div>
-            </div>;
+              <div className="scope-self-intersection-category-groups">
+                {kind==='keyword'&&allKeywords?<div className="scope-self-stat-group">
+                  <button type="button" className="scope-self-stat-tab"
+                    aria-pressed={chosenId===allKeywords.id}
+                    onClick={()=>selectMetric(allKeywords.id)}>{l.allKeywords}</button>
+                </div>:null}
+                {groups.map((group,gIndex)=><div className="scope-self-stat-group" key={gIndex}>
+                  <div className="scope-self-stat-group-header">
+                    {group.item?<button type="button" className="scope-self-stat-tab"
+                      aria-pressed={chosenId===group.item.id}
+                      onClick={()=>selectMetric(group.item.id)}>{group.name}</button>
+                    :<span className="scope-self-stat-group-label">{group.name}</span>}
+                  </div>
+                  <div className="scope-self-stat-item-tabs" role="group" aria-label={group.name}>
+                    {group.items.map(item=><button type="button" key={item.id}
+                      className="scope-self-stat-chip"
+                      aria-pressed={chosenId===item.id}
+                      onClick={()=>selectMetric(item.id)}>{item.kind==='keyword_group_items'?l.groupItems:item.name}</button>)}
+                    {!group.items.length?<span className="scope-self-stat-empty">
+                      {kind==='keyword'&&keywordCatalog.isPending?'正在讀取組內項目…':l.noSelectableSource}
+                    </span>:null}
+                  </div>
+                </div>)}
+                {kind==='keyword'&&keywordCatalog.error?<p role="alert" className="scope-status scope-error">
+                  組內關鍵詞讀取失敗：{String(keywordCatalog.error?.message||keywordCatalog.error)}
+                </p>:null}
+                {!groups.length&&kind!=='keyword'?<p className="scope-status">{l.noSelectableSource}</p>:null}
+              </div>
+            </section>;
           })}
         </div>
         <div className="scope-stat-controls">

@@ -37,7 +37,7 @@ export default {
   "facetItem": "项目",
   "facetAllClasses": "全部分类",
   "memberCrossTitle": "成员交互统计",
-  "selfIntersectionTitle": "作品自交互统计",
+  "selfIntersectionTitle": "深度进阶统计",
   "memberCrossLanes": "比较组数",
   "memberCrossChart": "图表",
   "memberCrossGroupUnit": "组",

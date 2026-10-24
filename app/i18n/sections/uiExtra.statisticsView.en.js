@@ -37,7 +37,7 @@ export default {
   "facetItem": "Item",
   "facetAllClasses": "All classes",
   "memberCrossTitle": "Member intersections",
-  "selfIntersectionTitle": "Work intersection statistics",
+  "selfIntersectionTitle": "Advanced statistics",
   "memberCrossLanes": "Comparison groups",
   "memberCrossChart": "Chart",
   "memberCrossGroupUnit": " groups",
