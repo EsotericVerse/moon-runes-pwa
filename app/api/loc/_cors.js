@@ -1,9 +1,12 @@
-// Public read endpoints support the independent GitHub Pages frontend.
-// Only approved LOC origins may read cross-origin responses; never allow
-// cross-origin credentials or weaken the authenticated invalidation RPC.
+import {SCOPE_ROUTE_INDEX} from '../../modular/scope-route-index';
+
+// The same generated public route index drives browser navigation and CORS.
+// Published GET data are public, but the protected POST still authenticates
+// the caller independently of the Origin and never accepts credentials by CORS.
 const PUBLIC_WEB_ORIGINS=new Set([
-  'https://loc.lo3rwang.cc',
-  'https://esotericverse.github.io'
+  'https://esotericverse.github.io',
+  ...SCOPE_ROUTE_INDEX.filter(row=>row.active!==false&&row.domain)
+    .map(row=>'https://'+row.domain)
 ]);
 
 export function withLocCors(response,request,{methods='GET, OPTIONS'}={}){
