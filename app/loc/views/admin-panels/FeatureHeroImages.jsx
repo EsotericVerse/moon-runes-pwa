@@ -2,7 +2,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {useSWRConfig} from 'swr';
 import dynamic from 'next/dynamic';
-import Select from 'react-select';
 import UiText from '../../../i18n/UiText';
 import {revalidateServerMetadata,selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
@@ -129,20 +128,11 @@ export default function FeatureHeroImages(){
   const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
-    <div className="admin-inline-select">
-      <label htmlFor="admin-feature-block-select">選擇功能</label>
-      <Select
-        inputId="admin-feature-block-select"
-        instanceId="admin-feature-block-select"
-        unstyled
-        className="loc-settings-select"
-        classNamePrefix="loc-settings-select"
-        isSearchable={false}
-        isClearable={false}
-        options={FEATURES.map(item=>({value:item.id,label:item.label}))}
-        value={{value:feature.id,label:feature.label}}
-        onChange={option=>{if(option)selectFeature(option.value);}}
-      />
+    <div className="scope-preview-links" role="group" aria-label="功能區塊">
+      {FEATURES.map(item=><button type="button" key={item.id}
+        className={'loc-button'+(item.id===feature.id?' primary':'')}
+        aria-pressed={item.id===feature.id}
+        onClick={()=>selectFeature(item.id)}>{item.label}</button>)}
     </div>
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
