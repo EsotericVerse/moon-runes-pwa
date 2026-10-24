@@ -502,7 +502,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function signInWithGoogle(callbackURL){
     const target=String(callbackURL||'').trim();
     if(!target)throw new Error('Google sign-in callback URL is required');
-    const {error}=await auth.signInWithOAuth({provider:'google',options:{redirectTo:target}});
+    const {error}=await auth.signInWithOAuth({provider:'google',options:{redirectTo:target,queryParams:{prompt:'select_account'}}});
     if(error)throw new Error(error.message||'Google sign-in failed');
   }
 
