@@ -70,7 +70,7 @@ export default function StatisticsMultiChart({
     <Tooltip contentStyle={TOOLTIP}/>
     {fields.length>1&&actual!=='composed'?<Legend wrapperStyle={{fontSize:12}}/>:null}
   </>);
-  const colored=categories.map((item,i)=>({...item,fill:color(i)}));
+  const colored=categories.map((item,i)=>({...item,fill:item.fill||color(i)}));
   const comparison=useMemo(()=>radarPeriodComparison(time,fields),[time,fields]);
   const coverage=useMemo(()=>activePeriodCoverage(time,fields),[time,fields]);
   const paired=useMemo(()=>scatterPair(time,fields),[time,fields]);
@@ -138,7 +138,9 @@ export default function StatisticsMultiChart({
     <Tooltip contentStyle={TOOLTIP}/>
     <Bar dataKey="value" fill="var(--loc-accent)" maxBarSize={28}
       cursor={onCategoryClick?'pointer':undefined}
-      onClick={onCategoryClick?(_,index)=>onCategoryClick(colored[index]?.key):undefined}/>
+      onClick={onCategoryClick?(_,index)=>onCategoryClick(colored[index]?.key):undefined}>
+      {colored.map(item=><Cell key={item.key} fill={item.fill}/>)}
+    </Bar>
   </BarChart>;
   else if(actual==='bar')chart=<BarChart data={display} margin={margin}>
     {axes}{timeFields.map((f,i)=><Bar key={f.key} dataKey={f.key} name={f.label} fill={color(i)} maxBarSize={32}/>)}
@@ -194,8 +196,7 @@ export function Rune66Summary({analysis,range={}}){
   const t=useUiText();
   const [groupPage,setGroupPage]=useState(1);
   const [shown,setShown]=useState('group');
-  const [groupChart,setGroupChart]=useState('bar');
-  const [itemChart,setItemChart]=useState('bar');
+  const [chartType,setChartType]=useState('bar');
   const data=analysis||{};
   const className=String(data.keywordMeta?.class_name||'').trim();
   const setLabel=className?'關鍵詞組：'+className:t('uiExtra.statisticsView.classFallback');
@@ -218,17 +219,26 @@ export function Rune66Summary({analysis,range={}}){
   const itemDistribution=groupRows.slice(0,10).map(row=>({
     key:String(row.rune_id),name:groupLabel(row.label,t),value:Number(row.count)||0
   }));
+  // Combined mode uses the same measure for both dimensions. An item
+  // may occur repeatedly within an article, but each article counts once.
+  const combinedDistribution=[
+    ...groupDistribution.map(row=>({...row,key:'class:'+row.key,name:'群組 · '+row.name,fill:color(0)})),
+    ...groupRows.slice(0,10).map(row=>({
+      key:'item:'+row.rune_id,name:'項目 · '+groupLabel(row.label,t),
+      value:Number(row.document_count)||0,fill:color(1)
+    })).filter(row=>row.value>0)
+  ];
   const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
   const trendSeries=classRows.map(row=>({key:'class_'+row.class_id,label:classLabel(row.group,t)}));
-  const groupOptions=availableStatisticChartTypes({rows:trend,series:trendSeries,distribution:groupDistribution})
-    .filter(([kind])=>trend.length>0||['bar','pie','treemap'].includes(kind));
-  const itemOptions=availableStatisticChartTypes({distribution:itemDistribution})
-    .filter(([kind])=>['bar','pie','treemap'].includes(kind));
-  const groupType=groupOptions.some(([kind])=>kind===groupChart)?groupChart:groupOptions[0]?.[0]||'bar';
-  const itemType=itemOptions.some(([kind])=>kind===itemChart)?itemChart:itemOptions[0]?.[0]||'bar';
-  const groupTypes=groupOptions;
   const renderGroup=shown==='group'||shown==='both';
   const renderItems=shown==='item'||shown==='both';
+  const distribution=shown==='both'?combinedDistribution:shown==='group'?groupDistribution:itemDistribution;
+  // Group rows include daily counts, but Item totals do not. No invented trend.
+  const trendRows=shown==='group'?trend:[];
+  const series=shown==='group'?trendSeries:[];
+  const options=availableStatisticChartTypes({rows:trendRows,series,distribution})
+    .filter(([kind])=>shown==='group'||['bar','pie','treemap'].includes(kind));
+  const actualChart=options.some(([kind])=>kind===chartType)?chartType:(options.find(([kind])=>kind==='bar')?.[0]||options[0]?.[0]||'bar');
   if(!data.staticstime)return null;
   if(!data.statisticsEnabled)return <div className="scope-ranking">
     <div><strong>{setLabel}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
@@ -246,18 +256,23 @@ export function Rune66Summary({analysis,range={}}){
         <select className="scope-select" value={shown} onChange={event=>setShown(event.target.value)}>
           <option value="group">{t('uiExtra.statisticsView.classRuneTitle')}</option>
           <option value="item">{t('uiExtra.statisticsView.runeRankTitle')}</option>
-          <option value="both">群組與項目一起顯示</option>
+          <option value="both">群組＋項目（同圖）</option>
         </select>
       </label>
+      {options.length?typePicker('關鍵詞統計圖型',actualChart,setChartType,options):null}
     </div>
+    {distribution.length?<StatisticsMultiChart type={actualChart}
+      rows={trendRows} series={series} distribution={distribution}
+      barLayout="vertical" height={Math.max(340,Math.min(24,distribution.length)*36+85)}/>:
+      <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
+    {shown==='both'?<p className="scope-status" role="note">
+      同圖以涉及作品篇數比較群組與項目，顏色區分兩類；一篇文章可同時屬於某個群組及命中多個項目，各項不能相加當成不同作品總數。
+    </p>:null}
+    {renderItems&&groupRows.length>10?<p className="scope-status">
+      圖中顯示前 10 個關鍵詞項目；完整項目可於下方詳細數據查看。
+    </p>:null}
     {renderGroup?<div className="scope-stat-section">
-      <div className="scope-stat-controls">
-        <h4><UiText id="uiExtra.statisticsView.classRuneTitle"/></h4>
-        {groupTypes.length?typePicker('關鍵詞群組圖型',groupType,setGroupChart,groupTypes):null}
-      </div>
-      {groupDistribution.length?<StatisticsMultiChart type={groupType} rows={trend} series={trendSeries}
-        distribution={groupDistribution} barLayout="vertical" height={Math.max(280,Math.min(8,classRows.length)*40+95)}/>:
-        <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
+      <h4><UiText id="uiExtra.statisticsView.classRuneTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking"><div><strong>{setLabel}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
         <div className="scope-ranking">
@@ -268,14 +283,7 @@ export function Rune66Summary({analysis,range={}}){
       </>}</StatisticsDetails>
     </div>:null}
     {renderItems?<div className="scope-stat-section">
-      <div className="scope-stat-controls">
-        <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
-        {itemOptions.length?typePicker('關鍵詞項目圖型',itemType,setItemChart,itemOptions):null}
-      </div>
-      {itemDistribution.length?<StatisticsMultiChart type={itemType} distribution={itemDistribution}
-        barLayout="vertical" height={Math.max(320,itemDistribution.length*38+65)}/>:
-        <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
-      {groupRows.length>10?<p className="scope-status">圖中顯示命中數前 10 項；完整資料可在下方展開查看。</p>:null}
+      <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking">
           {visibleGroupRows.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong>
