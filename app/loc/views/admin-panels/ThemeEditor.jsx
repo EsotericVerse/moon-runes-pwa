@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import Select from 'react-select';
 import {useSWRConfig} from 'swr';
 import {invalidateAppBootstrapThemes} from '../../app-bootstrap';
 import UiText from '../../../i18n/UiText';
@@ -109,12 +110,27 @@ export default function ThemeEditor(){
   const baseline=mergeThemeSlot(themeId,rows.find(row=>row.theme_id===themeId)||null);
   useEditDockForm({
     save,
-    isDirty:()=>Boolean(draft&&JSON.stringify(draft)!==JSON.stringify(baseline))
+    isDirty:()=>Boolean(draft&&JSON.stringify(draft)!==JSON.stringify(baseline)),
+    discard:()=>setDraft(baseline)
   });
 
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.themeAppearance"/></h2>
-    <div className="admin-inline-select"><label><span><UiText id="uiExtra.adminView.editingTheme"/></span><select className="admin-native-select" value={themeId} onChange={e=>setThemeId(e.target.value||'theme-7')}>{options.map(option=><option value={option.value} key={option.value}><FieldText text={option.label}/></option>)}</select></label></div>
+    <div className="admin-inline-select">
+      <label htmlFor="admin-theme-select"><UiText id="uiExtra.adminView.editingTheme"/></label>
+      <Select
+        inputId="admin-theme-select" instanceId="admin-theme-select"
+        unstyled className="loc-settings-select" classNamePrefix="loc-settings-select"
+        isSearchable={false} isClearable={false}
+        options={options} value={options.find(option=>option.value===themeId)||null}
+        onChange={option=>{
+          if(!option||option.value===themeId)return;
+          if(draft&&JSON.stringify(draft)!==JSON.stringify(baseline)&&
+             !window.confirm('目前的主題草稿尚未儲存，確定放棄再切換？'))return;
+          setThemeId(option.value);
+        }}
+      />
+    </div>
     {draft?<>
       <div className="scope-management-fields">
         <label><span><UiText id="uiExtra.adminView.name"/></span><input value={draft.label||''} onChange={e=>setDraft(v=>({...v,label:e.target.value}))}/></label>
@@ -152,7 +168,7 @@ export default function ThemeEditor(){
         })}
         </div>
       </details>
-      <button type="button" className="loc-button primary" onClick={save}><UiText id="uiExtra.adminView.saveThemeSettings"/></button>
+      <p className="scope-status">修改後請使用六大功能列的「儲存」。</p>
     </>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
