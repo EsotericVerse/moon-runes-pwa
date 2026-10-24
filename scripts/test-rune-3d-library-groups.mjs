@@ -18,3 +18,18 @@ test('canonical groups include all 67 catalog cards (including rune zero)',()=>{
   assert.match(directorySource,/const start=\(id-1\)\*8\+1/);
   assert.match(directorySource,/Array\.from\(\{length:8\}/);
 });
+
+test('3D atlas fetches only selected group IDs just like the 2D catalog',()=>{
+  assert.match(librarySource,/filters:\\[\\{column:'rune_id',operator:'in',value:ids\\}\\]/);
+  assert.match(librarySource,/limit:ids\\.length,offset:0/);
+  assert.doesNotMatch(librarySource,/limit:67,offset:0/);
+  assert.doesNotMatch(librarySource,/next\\.length!==67/);
+});
+
+test('2D to 3D switch preserves group deep-links including group six',()=>{
+  assert.match(librarySource,/window\\.location\\.hash/);
+  assert.match(librarySource,/addEventListener\\('hashchange',syncLocation\\)/);
+  assert.match(librarySource,/addEventListener\\('popstate',syncLocation\\)/);
+  assert.match(librarySource,/'#group-'\\+entry\\.id/);
+  assert.match(librarySource,/'#group-'\\+groupId\\+'\\/rune-'\\+runeId/);
+});
