@@ -14,7 +14,7 @@ const MEDIA_KINDS=Object.freeze([
   {value:'suno',label:'Suno 音樂'}
 ]);
 
-export default function ManagementMediaWorkspace({scopeId}){
+export default function ManagementMediaWorkspace({scopeId,dockScopeId=scopeId}){
   const [kind,setKind]=useState('media');
   const editDock=useEditDock();
   function choose(next){
@@ -29,7 +29,7 @@ export default function ManagementMediaWorkspace({scopeId}){
         aria-pressed={item.value===kind}
         onClick={()=>choose(item.value)}>{item.label}</button>)}
     </div>
-    {kind==='media'?<ManagementMediaPublisher scopeId={scopeId}/>:
-      <SunoImportPanel scopeId={scopeId}/>}
+    {kind==='media'?<ManagementMediaPublisher scopeId={scopeId} dockScopeId={dockScopeId}/>:
+      <SunoImportPanel scopeId={scopeId} dockScopeId={dockScopeId}/>}
   </section>;
 }
