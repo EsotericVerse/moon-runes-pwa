@@ -28,11 +28,11 @@ function createHarness(){
     delete:async name=>stored.delete(name)
   };
   const response=(type='basic',headers={})=>({
-    type,ok:true,headers:{get:name=>headers[name.toLowerCase()]??null},
+    type,ok:true,status:200,redirected:false,headers:{get:name=>headers[name.toLowerCase()]??null},
     clone(){return response(type,headers);}
   });
   const context=vm.createContext({
-    URL,Promise,Request,caches:cacheStorage,
+    URL,Promise,Request,Response,caches:cacheStorage,
     self:{
       location:{origin:'https://loc.lo3rwang.cc'},
       addEventListener:(name,fn)=>listeners.set(name,fn),
