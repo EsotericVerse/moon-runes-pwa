@@ -5,12 +5,12 @@ import {useAsyncResource} from './use-async-resource';
 import {useSWRConfig} from 'swr';
 import {dbAuthRelation} from './db-client.mjs';
 import {useEditDock} from '../modular/edit-dock';
+import {createUid8} from './uid';
 
 const GROUPS='silver.statistics_scope_others_groups';
 const ALIASES='silver.statistics_scope_others_aliases';
 const GLOBAL_CATEGORIES='silver.statistics_source_categories';
 const GLOBAL_ALIASES='silver.statistics_source_aliases';
-const CODE=/^[a-z][a-z0-9_-]{0,63}$/;
 const sourceKey=value=>String(value||'').trim().toLowerCase();
 const errorOf=(result,label)=>{
   if(result.error)throw new Error(label+'：'+result.error.message);
@@ -21,7 +21,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   const {mutate}=useSWRConfig();
   const dock=useEditDock();
   const currentSave=useRef(null);
-  const [groupCode,setGroupCode]=useState('');
+  const [groupCode,setGroupCode]=useState(()=>`c${createUid8().toLowerCase()}`);
   const [groupName,setGroupName]=useState('');
   const [source,setSource]=useState('');
   const [sourceGroup,setSourceGroup]=useState('');
@@ -70,8 +70,8 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
     .filter(item=>belongsToOthers(item.key))
     .filter(item=>!aliases.some(row=>sourceKey(row.source_key)===item.key)),
   [existingSources.data,query.data,aliases]);
-  const newGroupKey=sourceKey(groupCode);
-  const stagedGroup=CODE.test(newGroupKey)&&groupName.trim()&&!groups.some(row=>row.group_code===newGroupKey)
+  const newGroupKey=groupCode;
+  const stagedGroup=groupName.trim()&&!groups.some(row=>row.group_code===newGroupKey)
     ?[{group_code:newGroupKey,display_name:groupName.trim(),enabled:true}]:[];
   const availableGroups=[...groups.filter(row=>(groupEdits[row.group_code]?.enabled??row.enabled)!==false),...stagedGroup];
   const changedGroups=groups.filter(row=>{
@@ -81,52 +81,55 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   });
   const changedAliases=aliases.filter(row=>aliasEdits[row.source_key]&&aliasEdits[row.source_key]!==row.group_code);
   const key=sourceKey(source);
-  const canAddGroup=Boolean(groupCode.trim()||groupName.trim());
+  const canAddGroup=Boolean(groupName.trim());
   const canMap=Boolean(key);
   const hasChanges=canAddGroup||canMap||changedGroups.length>0||changedAliases.length>0;
 
   async function save(){
     if(busy||query.isPending||query.error)return false;
-    if(!hasChanges){setNotice('目前沒有待儲存的變更。');return false;}
+    if(!hasChanges){setNotice('目前沒有待儲存的變更。');return true;}
     setBusy(true);
     setNotice('');
     try{
       // Validate the complete draft before sending any writes, so a bad
       // alias cannot leave a newly created category behind on failure.
       const allowedKeys=new Set(availableGroups.map(row=>row.group_code));
+      const existingNames=new Set(groups.map(row=>String(row.display_name||'').trim().toLocaleLowerCase()));
       for(const row of changedGroups){
         const name=String(groupEdits[row.group_code].display_name??row.display_name).trim();
-        if(!name||name.length>80)throw Error('小分類名稱不可空白或超過 80 字。');
+        if(!name||name.length>80)throw Error('分類名稱不可空白或超過 80 字。');
       }
       if(canMap){
         if(key.length>120||!belongsToOthers(key))throw Error('來源名稱無效或已由 Admin 指定其他大分類。');
-        if(!allowedKeys.has(sourceGroup))throw Error('請先選擇要歸入的小分類。');
+        if(!allowedKeys.has(sourceGroup))throw Error('請先選擇分類。');
       }
       for(const row of changedAliases){
         if(!allowedKeys.has(aliasEdits[row.source_key])||!belongsToOthers(row.source_key))
-          throw Error('來源對應包含已停用的小分類或 Admin 已指定的來源。');
+          throw Error('部分來源無法指定到目前選取的分類。');
       }
       if(canAddGroup){
-        if(!CODE.test(newGroupKey)||!groupName.trim()||groupName.trim().length>80)
-          throw Error('小分類代碼須為 1–64 字小寫英數，名稱不可空白或超過 80 字。');
-        if(groups.some(row=>row.group_code===newGroupKey))throw Error('小分類代碼已存在。');
+        if(!groupName.trim()||groupName.trim().length>80)
+          throw Error('分類名稱不可空白或超過 80 字。');
+        if(existingNames.has(groupName.trim().toLocaleLowerCase()))
+          throw Error('分類名稱已存在。');
+        if(groups.some(row=>row.group_code===newGroupKey))throw Error('分類識別碼重複，請重試。');
         const result=await dbAuthRelation(GROUPS)
           .insert({scope_id:scopeId,group_code:newGroupKey,display_name:groupName.trim()});
-        errorOf(result,'新增小分類');
+        errorOf(result,'新增分類');
       }
       for(const row of changedGroups){
         const change=groupEdits[row.group_code];
         const name=String(change.display_name??row.display_name).trim();
-        if(!name||name.length>80)throw Error('小分類名稱不可空白或超過 80 字。');
+        if(!name||name.length>80)throw Error('分類名稱不可空白或超過 80 字。');
         const update=await dbAuthRelation(GROUPS)
           .update({display_name:name,enabled:change.enabled??row.enabled})
           .eq('scope_id',scopeId).eq('group_code',row.group_code).select('group_code');
-        if(!errorOf(update,'更新小分類').length)throw Error('更新小分類未寫入任何資料。');
+        if(!errorOf(update,'更新分類').length)throw Error('更新分類未寫入任何資料。');
       }
       if(canMap){
         if(key.length>120)throw Error('來源名稱不可超過 120 字。');
         if(!belongsToOthers(key))throw Error('這個來源已由 Admin 指定到其他大分類，不能在 Others 重新歸類。');
-        if(!allowedKeys.has(sourceGroup))throw Error('請先選擇要歸入的小分類。');
+        if(!allowedKeys.has(sourceGroup))throw Error('請先選擇分類。');
         const result=await dbAuthRelation(ALIASES)
           .upsert({scope_id:scopeId,source_key:key,group_code:sourceGroup},
             {onConflict:'scope_id,source_key'}).select('source_key');
@@ -134,7 +137,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       }
       for(const row of changedAliases){
         const target=aliasEdits[row.source_key];
-        if(!allowedKeys.has(target))throw Error('小分類已停用，不能指定來源。');
+        if(!allowedKeys.has(target))throw Error('分類已停用，不能指定來源。');
         if(!belongsToOthers(row.source_key))throw Error('全域大分類已有指定，不能變更該來源。');
         const updated=await dbAuthRelation(ALIASES).update({group_code:target})
           .eq('scope_id',scopeId).eq('source_key',row.source_key).select('source_key');
@@ -142,7 +145,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       }
       await mutate(key=>Array.isArray(key)&&key[0]==='scope-others-source-configuration'&&key[1]===scopeId);
       await mutate(key=>Array.isArray(key)&&key[0]==='scope-others-source-summary'&&key[1]===scopeId);
-      setGroupCode('');setGroupName('');setSource('');setSourceGroup('');
+      setGroupCode(`c${createUid8().toLowerCase()}`);setGroupName('');setSource('');setSourceGroup('');
       setGroupEdits({});setAliasEdits({});
       setNotice('來源分類已儲存。');
       return true;
@@ -165,23 +168,18 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
   },[dock?.active,dock?.scopeId,dock?.register,scopeId]);
 
   return <section className="loc-card scope-feature-card">
-    <h2>其他作品來源分類</h2>
-    <p className="scope-status">將尚未歸入主要來源的作品整理成自己的分類；不影響其他資料空間或全站主要分類。</p>
-    {query.isPending?<p className="scope-status" role="status">載入小分類設定…</p>:null}
+    <h2>作品來源分類</h2>
+    {query.isPending?<p className="scope-status" role="status">載入分類…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">{String(query.error.message||query.error)}</p>:null}
     {!query.isPending&&!query.error?<>
       <div className="scope-management-fields">
-        <label><span>新增小分類代碼</span>
-          <input value={groupCode} maxLength={64} placeholder="例如：blog"
-            onChange={event=>setGroupCode(event.target.value)}/></label>
-        <label><span>小分類名稱</span>
-          <input value={groupName} maxLength={80} placeholder="例如：部落格"
+        <label><span>新增分類</span>
+          <input value={groupName} maxLength={80} placeholder="輸入分類名稱"
             onChange={event=>setGroupName(event.target.value)}/></label>
       </div>
       <h3>已建立的分類</h3>
       {groups.length?<div className="admin-source-category-grid">
         {groups.map(row=><article className="admin-source-category-card" key={row.group_code}>
-          <strong>{row.group_code}</strong>
           <label><span>名稱</span><input maxLength={80}
             value={groupEdits[row.group_code]?.display_name??row.display_name}
             onChange={event=>setGroupEdits(v=>({...v,[row.group_code]:{...v[row.group_code],display_name:event.target.value}}))}/></label>
@@ -192,7 +190,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
           </select></label>
         </article>)}
       </div>:<p className="scope-status">尚未建立分類。</p>}
-      <h3>將來源加入分類</h3>
+      <h3>來源歸類</h3>
       {existingSources.isPending?<p className="scope-status" role="status">正在讀取此 Scope 既有來源…</p>:null}
       {existingSources.error?<p className="scope-status scope-error" role="alert">既有來源清單讀取失敗：{String(existingSources.error.message||existingSources.error)}；仍可手動輸入來源。</p>:null}
       <div className="scope-management-fields">
@@ -207,13 +205,13 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
         <label><span>原始來源</span>
           <input value={source} maxLength={120} placeholder="輸入作品的來源名稱"
             onChange={event=>setSource(event.target.value)}/></label>
-        <label><span>歸入小分類</span><select className="scope-select" value={sourceGroup}
+        <label><span>分類</span><select className="scope-select" value={sourceGroup}
           onChange={event=>setSourceGroup(event.target.value)}>
-          <option value="">選擇小分類</option>
+          <option value="">選擇分類</option>
           {availableGroups.map(row=><option key={row.group_code} value={row.group_code}>{row.display_name}</option>)}
         </select></label>
       </div>
-      {canMap&&!belongsToOthers(key)?<p className="scope-status scope-error">此來源已由 Admin 歸到其他大分類，不能在這裡細分。</p>:null}
+      {canMap&&!belongsToOthers(key)?<p className="scope-status scope-error">這個來源已有全站分類，無法在此重新指定。</p>:null}
       {aliases.length?<div className="admin-source-alias-grid">
         {aliases.map(row=><article className="admin-source-alias-card" key={row.source_key}>
           <strong>{row.source_key}</strong>
@@ -225,7 +223,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
           </select></label>
           {!belongsToOthers(row.source_key)?<span className="scope-status">Admin 已將此來源調整到其他大分類</span>:null}
         </article>)}
-      </div>:<p className="scope-status">尚未設定來源對應；未指定者維持 Others。</p>}
+      </div>:null}}
       {notice?<p className="scope-status" role="status">{notice}</p>:null}
       {busy?<p className="scope-status" role="status">正在儲存…</p>:null}
     </>:null}
