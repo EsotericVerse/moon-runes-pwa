@@ -6,6 +6,56 @@ import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
 const file=(name,body,size=Buffer.byteLength(body))=>({name,size,text:async()=>body});
 
+const binaryFile=(name,bytes)=>{
+  const data=Buffer.from(bytes);
+  return {
+    name,size:data.byteLength,
+    arrayBuffer:async()=>data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),
+    text:async()=>data.toString('utf8')
+  };
+};
+
+test('Traditional Chinese selector reads both UTF-8 and Big5, preserving English',async()=>{
+  const utf8='# 繁體中文和 English 混合\n\n正常文字';
+  const [unicode]=await parseUniversalImportFile(binaryFile('utf8.md',Buffer.from(utf8,'utf8')),{importLocale:'zh-Hant'});
+  assert.equal(unicode.title,'繁體中文和 English 混合');
+  assert.equal(unicode.content,utf8);
+  assert.equal(unicode.language,undefined);
+  // # 繁體中文，Hello！ encoded in Big5.
+  const legacy=Buffer.concat([Buffer.from('# '),Buffer.from('c163c5e9a4a4a4e5a14148656c6c6fa149','hex')]);
+  const [big5]=await parseUniversalImportFile(binaryFile('big5.md',legacy),{importLocale:'zh-Hant'});
+  assert.equal(big5.title,'繁體中文，Hello！');
+  assert.equal(big5.content,'# 繁體中文，Hello！');
+});
+
+test('Simplified Chinese selector reads UTF-8 and GB18030 without language tagging',async()=>{
+  const utf8='# 简体中文和 English 混合';
+  const [unicode]=await parseUniversalImportFile(binaryFile('utf8.md',Buffer.from(utf8,'utf8')),{importLocale:'zh-Hans'});
+  assert.equal(unicode.title,'简体中文和 English 混合');
+  assert.equal(unicode.content,utf8);
+  // # 简体中文，Hello！ encoded in GB18030.
+  const legacy=Buffer.concat([Buffer.from('# '),Buffer.from('bcf2cce5d6d0cec4a3ac48656c6c6fa3a1','hex')]);
+  const [gb18030]=await parseUniversalImportFile(binaryFile('gb18030.md',legacy),{importLocale:'zh-Hans'});
+  assert.equal(gb18030.title,'简体中文，Hello！');
+  assert.equal(gb18030.content,'# 简体中文，Hello！');
+  assert.equal(gb18030.language,undefined);
+});
+
+test('Big5 and UTF-8 versions of the same document share one content-derived UID',async()=>{
+  const txt='# 繁體中文，Hello！';
+  const old=Buffer.concat([Buffer.from('# '),Buffer.from('c163c5e9a4a4a4e5a14148656c6c6fa149','hex')]);
+  const [a]=await parseUniversalImportFile(binaryFile('old.md',old),{importLocale:'zh-Hant'});
+  const [b]=await parseUniversalImportFile(binaryFile('new.md',Buffer.from(txt,'utf8')),{importLocale:'zh-Hant'});
+  assert.equal(a.uid,b.uid);
+});
+
+test('UTF-16 with BOM is decoded before legacy fallback',async()=>{
+  const text='# 混合 English';
+  const fileBody=Buffer.concat([Buffer.from([0xff,0xfe]),Buffer.from(text,'utf16le')]);
+  const [row]=await parseUniversalImportFile(binaryFile('utf16.md',fileBody),{importLocale:'zh-Hant'});
+  assert.equal(row.content,text);
+});
+
 test('Galaxy Markdown v1 preserves headings and content while mapping metadata',async()=>{
   const text=[
     '---','loc_format: galaxy-md/v1','title: "時空靈魂震盪論"',
