@@ -1,4 +1,6 @@
 export default {
+  "importLanguage": "匯入語系",
+  "importLanguageHint": "預設繁體中文。先辨識 UTF-8，必要時以所選語系解讀舊式文字編碼；不會翻譯內容，也不會記錄文章語系。",
   "invalidMediaId": "media_id 格式無效。",
   "existingMediaFailed": "無法檢查既有媒體。",
   "mediaIdCompareFailed": "無法比對媒體 ID。",
