@@ -1,4 +1,4 @@
-name: Publish LOC 1.1 RC1
+name: Publish LOC 1.1 RC2
 on:
   push:
     branches: [main]
@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish-rc:
-    if: "${{ github.event.head_commit.message == 'chore(release): prepare LOC 1.1 RC and IPA' }}"
+    if: "${{ github.event.head_commit.message == 'chore(release): fix Rune zero asset check and prepare LOC 1.1 RC2 IPA' }}"
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
@@ -42,8 +42,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(node -p 'require("./package.json").version')" = '1.1.0-rc.1'
-          if gh release view v1.1.0-rc.1 >/dev/null 2>&1; then
+          test "$(node -p 'require("./package.json").version')" = '1.1.0-rc.2'
+          if gh release view v1.1.0-rc.2 >/dev/null 2>&1; then
             echo 'Release tag already exists. Refusing to replace an immutable RC.'
             exit 1
           fi
@@ -51,12 +51,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v1.1.0-rc.1 \
+          gh release create v1.1.0-rc.2 \
             --target "$GITHUB_SHA" \
-            --title "LOC 1.1 RC1 — Release Candidate" \
-            --notes-file docs/releases/LOC-1.1.0-rc.1.md \
+            --title "LOC 1.1 RC2 — Release Candidate" \
+            --notes-file docs/releases/LOC-1.1.0-rc.2.md \
             --prerelease
       - name: Dispatch frozen unsigned iPhone IPA build
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run ios-device-build.yml --ref v1.1.0-rc.1 -f release_tag=v1.1.0-rc.1
+        run: gh workflow run ios-device-build.yml --ref v1.1.0-rc.2 -f release_tag=v1.1.0-rc.2
