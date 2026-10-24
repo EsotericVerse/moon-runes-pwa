@@ -1,6 +1,7 @@
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
+import {assertAuthorizationForTable,clearAuthorization} from './authorization-runtime.mjs';
 
 // Shared by the keyword-classification read (paging the document scan) and
 // write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
@@ -37,9 +38,19 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data?.[0]||null;
   }
 
+  function preflightWrite(table){
+    // JS-only first gate; local SQLite is an independent device-private scope.
+    // The database RPC/RLS is always the second, authoritative gate.
+    if(typeof window!=='undefined')assertAuthorizationForTable(table);
+  }
   async function managementWrite(payload){
+    preflightWrite(payload?.p_table);
     const {data,error}=await authClient.schema('silver').rpc('management_write',payload);
     if(error)throw new Error(error.message||'Management write failed');
+    if(payload?.p_table==='silver.loc'&&(
+      payload.p_operation!=='update'||
+      ['id','email','manage_role'].some(key=>Object.hasOwn(payload.p_values||{},key))
+    ))clearAuthorization();
     return data||{count:0};
   }
 
@@ -100,6 +111,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function keywordClassificationWrite(scopeId,payload){
     const scope=normalizeScopeId(scopeId);
+    preflightWrite('silver.'+scope+'_keywords');
     const {data,error}=await authClient.schema('silver').rpc('apply_keyword_classification',{
       p_scope_id:scope,
       p_rows:payload
@@ -350,6 +362,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword library operation');
+    preflightWrite('silver.'+scope+'_keywords');
     const relation=dbAuthRelation(`silver.${scope}_keywords`);
     const className=String(item?.class_name||'').trim();
     const classId=String(item?.class_id||'').trim();
@@ -387,6 +400,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const target=String(targetClassName||'').trim();
     if(!source||!target)throw new Error('Class 名稱不可為空');
     if(source===target)throw new Error('新 Class 名稱必須不同');
+    preflightWrite('silver.'+scope+'_keywords');
     const relation=dbAuthRelation(`silver.${scope}_keywords`);
     const {data:existing,error:existingError}=await relation.select('keyword_id').eq('class_name',target).limit(1);
     if(existingError)throw new Error(existingError.message||'Keyword class check failed');
@@ -437,6 +451,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function copyRune66KeywordClass(scopeId){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
+    preflightWrite('silver.'+scope+'_keywords');
     const {data,error}=await authClient.schema('silver').rpc('copy_rune66_keyword_class',{p_scope_id:scope});
     if(error)throw new Error(error.message||'符文66複製失敗。');
     return data||{};
@@ -447,6 +462,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const page=String(pageName||'').trim().toLowerCase();
     const blockUid=String(uid||'').trim();
     if(!scope||!page||!(/^[A-Za-z0-9]{8}$/.test(blockUid))||![1,-1].includes(direction))throw new Error('無效的區塊移動參數。');
+    preflightWrite('silver.'+scope+'_blocks');
     const {data,error}=await authClient.schema('silver').rpc('move_scope_block',{
       p_scope_id:scope,p_page_name:page,p_uid:blockUid,p_direction:direction
     });
@@ -457,13 +473,16 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function deleteScope(scopeId){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
+    preflightWrite('silver.loc');
     const {data,error}=await authClient.schema('silver').rpc('delete_scope',{p_scope_id:scope});
     if(error)throw new Error(error.message||'Scope 刪除失敗。');
+    clearAuthorization();
     return data||{};
   }
 
   async function provisionScope(values={}){
     const scopeId=normalizeScopeId(values.scope_id);
+    preflightWrite('silver.loc');
     const payload={
       p_scope_id:scopeId,
       p_display_name:String(values.display_name||'').trim(),
@@ -477,6 +496,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     };
     const {data,error}=await authClient.schema('silver').rpc('provision_scope',payload);
     if(error)throw new Error(error.message||'Scope provisioning failed');
+    clearAuthorization();
     return data||{};
   }
 
@@ -484,12 +504,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
     if(!['create_group','update'].includes(op))throw new Error('Unsupported Scope Registry operation');
+    preflightWrite('silver.loc');
     const {data,error}=await authClient.schema('silver').rpc('manage_scope_registry',{
       p_operation:op,
       p_scope_id:scope,
       p_values:values&&typeof values==='object'?values:{}
     });
     if(error)throw new Error(error.message||'Scope Registry management failed');
+    if(['email','manage_role','role','scopeid','id'].some(key=>Object.hasOwn(values||{},key)))clearAuthorization();
     return data||{};
   }
 
@@ -517,7 +539,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function signOutAccount(){
-    const {error}=await auth.signOut();
+    const {error}=await auth.signOut({scope:'local'});
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
