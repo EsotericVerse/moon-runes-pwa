@@ -1187,6 +1187,46 @@ export default function Culture(){
                   </label>:null}
                   {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
                 </div>
+                {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
+                  <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
+                  <div className='scope-stat-controls'>
+                    {keywordDrillGroup?<button type='button' className='loc-button' onClick={()=>setKeywordDrillGroup('')}>← 返回群組總覽</button>
+                      :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}
+                    <span className='scope-status' aria-live='polite'>
+                      {classificationPeriodLabel} → {keywordDrillSource||'全部來源'} → {keywordDrillGroup
+                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')+' · Group 分布'
+                        :'全部群組'}
+                    </span>
+                  </div>
+                  <h4>{keywordDrillGroup?'Class 內 Group 列表｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'Class 列表'}</h4>
+                  {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
+                  {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
+                    <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
+                    {styleRiverAnalysis.suggestions.length?<div className='scope-culture-anchor-choices'>
+                      {styleRiverAnalysis.suggestions.map(item=>{
+                        const route=featureNavigationHref(scopeId,'culture');
+                        const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
+                        return <div key={item.date} className='scope-status'>
+                          <strong>{item.date}</strong>
+                          <span>｜前 3 日 {Number(item.beforeCount||0).toLocaleString(locale)} 次／後 3 日 {Number(item.afterCount||0).toLocaleString(locale)} 次</span>
+                          {(item.analysis||[]).length?<span>｜{item.analysis.join(' ')}</span>:null}
+                          <span>｜<ScopeLink href={href}>前往時間編輯，確認定錨點</ScopeLink></span>
+                        </div>;
+                      })}
+                    </div>:<p className='scope-status'>此時間區間暫無足夠的風格密度變化，或分析資料尚在載入。</p>}
+                  </details>:null}
+                  {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
+                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
+                  {keywordDetailRequested&&keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
+                    ?<p className='scope-status' role='status'>正在讀取所選來源／群組的文章屬性…</p>:null}
+                  {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
+                  {keywordRiverError||keywordGroupCatalogQuery.error
+                    ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordRiverError||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
+                  {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
+                    &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
+                    ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
+                </section>:null}
                 <p className='loc-eyebrow'>{UI_COPY.culture.classificationRiver}</p>
                 <h3>來源 × Class／Group｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
@@ -1247,46 +1287,6 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
-                  <div className='scope-stat-controls'>
-                    {keywordDrillGroup?<button type='button' className='loc-button' onClick={()=>setKeywordDrillGroup('')}>← 返回群組總覽</button>
-                      :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}
-                    <span className='scope-status' aria-live='polite'>
-                      {classificationPeriodLabel} → {keywordDrillSource||'全部來源'} → {keywordDrillGroup
-                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')+' · Group 分布'
-                        :'全部群組'}
-                    </span>
-                  </div>
-                  <h4>{keywordDrillGroup?'Class 內 Group 列表｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'Class 列表'}</h4>
-                  {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
-                  {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
-                    <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
-                    {styleRiverAnalysis.suggestions.length?<div className='scope-culture-anchor-choices'>
-                      {styleRiverAnalysis.suggestions.map(item=>{
-                        const route=featureNavigationHref(scopeId,'culture');
-                        const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
-                        return <div key={item.date} className='scope-status'>
-                          <strong>{item.date}</strong>
-                          <span>｜前 3 日 {Number(item.beforeCount||0).toLocaleString(locale)} 次／後 3 日 {Number(item.afterCount||0).toLocaleString(locale)} 次</span>
-                          {(item.analysis||[]).length?<span>｜{item.analysis.join(' ')}</span>:null}
-                          <span>｜<ScopeLink href={href}>前往時間編輯，確認定錨點</ScopeLink></span>
-                        </div>;
-                      })}
-                    </div>:<p className='scope-status'>此時間區間暫無足夠的風格密度變化，或分析資料尚在載入。</p>}
-                  </details>:null}
-                  {styleQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(styleQuery.error,UI_COPY)}</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&!styleQuery.data?.staticstime?<p className='scope-status'>關鍵詞尚未定錨；請先於關鍵詞設定完成分析。</p>:null}
-                  {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
-                  {keywordDetailRequested&&keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
-                    ?<p className='scope-status' role='status'>正在讀取所選來源／群組的文章屬性…</p>:null}
-                  {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
-                  {keywordRiverError||keywordGroupCatalogQuery.error
-                    ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordRiverError||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
-                  {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
-                    &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
-                    ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
-                </section>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
