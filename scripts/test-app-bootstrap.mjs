@@ -62,7 +62,8 @@ test('local iPhone Scope reads config and blocks without cloud site bootstrap',a
   assert.deepEqual(calls,['config:local','blocks:local:search']);
   assert.equal(result.config.id,'local');
   assert.equal(result.blocks[0].uid,'local-search');
-  assert.deepEqual(result.registry,[]);
+  // This array originates in vm.SourceTextModule's separate realm.
+  assert.equal(result.registry.length,0);
 });
 
 test('Admin consumes site metadata without querying nonexistent admin tables',async()=>{
