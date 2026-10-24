@@ -127,7 +127,15 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     ()=>sessionOnly?loadSessionAccount():loadManagementAccount(mutate),
     [sessionOnly,mutate]
   );
-  const query=useAsyncResource(queryKey,queryFn,{enabled,revalidateOnMount:enabled&&!sessionOnly});
+  // Passive identity must subscribe to auth-event cache updates without making
+  // a session/network request. A null SWR key unsubscribes and leaves Settings
+  // permanently stuck in emptyState.loading=true.
+  const passive=sessionOnly&&!enabled;
+  const query=useAsyncResource(queryKey,passive?null:queryFn,{
+    enabled:enabled||passive,
+    revalidateOnMount:enabled&&!sessionOnly,
+    ...(passive?{fallbackData:signedOutState}:{}),
+  });
   const state=query.data||emptyState;
 
   // Explicit entry into edit mode always performs a fresh authorization
