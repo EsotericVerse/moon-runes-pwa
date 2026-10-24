@@ -10,7 +10,7 @@ import {useAccount} from './use-account';
 // The importer's schema is an ARTICLE/Galaxy schema: only Galaxy tables may
 // be chosen here. Related media always goes to that Scope's Galaxy Media.
 // Never accept an arbitrary table identifier typed by the browser.
-const ManagementMediaPublisher=dynamic(()=>import('./ManagementMediaPublisher'),{loading:()=>null});
+const ManagementMediaWorkspace=dynamic(()=>import('./ManagementMediaWorkspace'),{loading:()=>null});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:()=>null});
 
 export default function ManagementContentTarget({scopeId,mode='import',globalAdmin=false}){
@@ -57,7 +57,7 @@ export default function ManagementContentTarget({scopeId,mode='import',globalAdm
     {list.error?<p className="scope-status scope-error" role="alert">{String(list.error.message||list.error)}</p>:null}
     {globalAdmin&&list.isPending?<p className="scope-status" role="status">正在讀取可管理資料表…</p>:null}
     {selected?<div key={selected.value+':'+mode}>
-      {mode==='media'?<ManagementMediaPublisher scopeId={selected.value}/>:
+      {mode==='media'?<ManagementMediaWorkspace scopeId={selected.value}/>:
         <ManagementImportPanel scopeId={selected.value}/>}
     </div>:null}
     {!selected&&!list.isPending?<p className="scope-status">目前沒有可匯入的目標 Table。</p>:null}
