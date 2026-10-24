@@ -7,7 +7,7 @@ import {useSearchParams} from 'next/navigation';
  * In-page management navigator.
  * In-page horizontal tabs are React selection UI, NOT a Next.js route transition.
  */
-export default function ManagementSectionNav({id,title,panelId,items,value,onChange}){
+export default function ManagementSectionNav({id,title,panelId,items,value,onChange,showDescriptions=false}){
   const activeItem=items.find(item=>item.value===value)||items[0];
   const headingId=id+'-heading';
   return <section className="management-section-nav" aria-labelledby={headingId}>
@@ -26,6 +26,7 @@ export default function ManagementSectionNav({id,title,panelId,items,value,onCha
           onClick={()=>{if(!selected)onChange(item.value);}}
         >
           <span className="management-section-nav__label">{item.shortLabel||item.label}</span>
+          {showDescriptions&&item.description?<span className="management-section-nav__description">{item.description}</span>:null}
         </button>;
       })}
     </div>
