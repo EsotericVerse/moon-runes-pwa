@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
-import {RUNE_RANKING_PAGE_SIZE,availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color} from './statistics-time-zoom.mjs';
+import {RUNE_RANKING_PAGE_SIZE,availableStatisticChartTypes,nonemptySeries,normalizeDistribution,movingAverage,scatterPair,radarPeriodComparison,activePeriodCoverage,number,color,pointColor} from './statistics-time-zoom.mjs';
 export {STAT_VISUAL_TYPES,availableStatisticChartTypes} from './statistics-time-zoom.mjs';
 import {useUiLocale,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
@@ -68,9 +68,9 @@ export default function StatisticsMultiChart({
     <XAxis dataKey="period" tick={{fill:TEXT,fontSize:11}} angle={-20} textAnchor="end" height={64} interval="preserveStartEnd" stroke={GRID}/>
     <YAxis tick={{fill:TEXT,fontSize:11}} allowDecimals={false} stroke={GRID}/>
     <Tooltip contentStyle={TOOLTIP}/>
-    {fields.length>1&&actual!=='composed'?<Legend wrapperStyle={{fontSize:12}}/>:null}
+    {fields.length>1&&!['bar','composed'].includes(actual)?<Legend wrapperStyle={{fontSize:12}}/>:null}
   </>);
-  const colored=categories.map((item,i)=>({...item,fill:item.fill||color(i)}));
+  const colored=categories.map((item,i)=>({...item,fill:item.fill||pointColor(i)}));
   const comparison=useMemo(()=>radarPeriodComparison(time,fields),[time,fields]);
   const coverage=useMemo(()=>activePeriodCoverage(time,fields),[time,fields]);
   const paired=useMemo(()=>scatterPair(time,fields),[time,fields]);
@@ -87,7 +87,10 @@ export default function StatisticsMultiChart({
     </Pie>
   </PieChart>;
   else if(actual==='treemap')chart=<Treemap data={colored.map(item=>({...item,size:item.value}))}
-    dataKey="size" nameKey="name" stroke="var(--loc-bg)" fill={color(0)} aspectRatio={4/3}><Tooltip contentStyle={TOOLTIP}/></Treemap>;
+    dataKey="size" nameKey="name" stroke="var(--loc-bg)" fill={pointColor(0)}
+    colorPanel={colored.map(item=>item.fill)} aspectRatio={4/3}>
+      <Tooltip contentStyle={TOOLTIP}/>
+    </Treemap>;
   else if(actual==='radar'&&comparison)chart=<RadarChart data={comparison} outerRadius="67%">
     <PolarGrid stroke={GRID}/><PolarAngleAxis dataKey="name" tick={{fill:TEXT,fontSize:11}}/>
     <PolarRadiusAxis domain={[0,100]} tick={{fill:TEXT,fontSize:10}}/>
@@ -112,7 +115,9 @@ export default function StatisticsMultiChart({
         <div>{paired.x.label}: {payload[0]?.payload?.x}</div>
         <div>{paired.y.label}: {payload[0]?.payload?.y}</div>
       </div>:null}/>
-    <Scatter name={paired.x.label+' × '+paired.y.label} data={paired.data} fill={color(0)}/>
+    <Scatter name={paired.x.label+' × '+paired.y.label} data={paired.data} fill={pointColor(0)}>
+      {paired.data.map((row,i)=><Cell key={row.period||i} fill={pointColor(i)}/>)}
+    </Scatter>
   </ScatterChart>;
   else if(actual==='composed')chart=<ComposedChart data={composed} margin={margin}>
     <CartesianGrid stroke={GRID} strokeDasharray="3 3"/>
@@ -120,7 +125,7 @@ export default function StatisticsMultiChart({
     <YAxis tick={{fill:TEXT,fontSize:11}} allowDecimals={false} stroke={GRID}/>
     <Tooltip contentStyle={TOOLTIP}/><Legend/>
     <Bar dataKey="__stat_total" name={t('uiExtra.chartLabels.periodTotal')} fill={color(0)} opacity={.8} maxBarSize={30}>
-      {composed.map((_,i)=><Cell key={i} fill={color(i)}/>)}
+      {composed.map((_,i)=><Cell key={i} fill={pointColor(i)}/>)}
     </Bar>
     <Line dataKey="__stat_average" name={t('uiExtra.chartLabels.movingAverage')} stroke={color(3)} strokeWidth={3} strokeDasharray="8 4" dot={false} connectNulls={false}/>
   </ComposedChart>;
@@ -147,7 +152,7 @@ export default function StatisticsMultiChart({
   </BarChart>;
   else if(actual==='bar')chart=<BarChart data={display} margin={margin}>
     {axes}{timeFields.map((f,i)=><Bar key={f.key} dataKey={f.key} name={f.label} fill={color(i)} maxBarSize={32}>
-      {timeFields.length===1?display.map((_,j)=><Cell key={j} fill={color(j)}/>):null}
+      {display.map((_,j)=><Cell key={j} fill={pointColor(j*timeFields.length+i)}/>)}
     </Bar>)}
   </BarChart>;
   else chart=<LineChart data={display} margin={margin}>
