@@ -779,6 +779,7 @@ export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
 }
 export async function selectScopeEarliest(scope){
   const current=scopeOf(scope);
+  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'earliest');
   try{
     return await readScopeEarliest(current.id);
   }catch(error){
