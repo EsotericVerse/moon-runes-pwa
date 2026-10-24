@@ -4,7 +4,6 @@ import {useEffect} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
-import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 
@@ -26,7 +25,7 @@ export default function LocManagementWorkspace({featureId,navId,item,children}){
   </FeaturePage>;
   if(!account.user)return <FeaturePage featureId={featureId}>
     <section className="loc-card scope-feature-card">
-      <ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink>
+      <p>請先至設定首頁登入。</p>
     </section>
   </FeaturePage>;
   if(!canManage)return <FeaturePage featureId={featureId}>
