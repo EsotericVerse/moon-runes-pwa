@@ -55,11 +55,13 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,,hrefFor]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database',governance:'featureHero'});
+  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database',governance:'featureHero'});
   const switchSection=next=>{
     if(next===section)return;
-    const target=hrefFor(next);
-    if(target)editDock?.switchTo(target,{history:'push',scroll:false});
+    // No Next.js navigation: update the right-hand panel immediately in React.
+    // The EditDock still guards unsaved drafts before applying the selection.
+    if(editDock?.active)editDock.switchSection(next,setSection);
+    else setSection(next);
   };
   // The edit flag only restores UI state; it never grants access.
   // A direct Admin visit without the flag keeps the ordinary bottom nav.
