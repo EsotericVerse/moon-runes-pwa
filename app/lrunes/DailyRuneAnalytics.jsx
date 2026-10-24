@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {selectDailyRuneRange,selectFirstDailyRuneDate} from '../loc/daily-runes';
+import {readNumericIsr,usesNumericIsr} from '../loc/numeric-isr-client';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import CultureTimeline from '../modular/modules/culture-timeline/CultureTimeline';
 import {availableStatisticChartTypes} from '../modular/modules/statistics/statistics-time-zoom.mjs';
@@ -59,7 +60,9 @@ function resolveRange(mode,customFrom,customTo){
 function useDailyRuneWindow(mode,customFrom,customTo){
   const range=useMemo(()=>resolveRange(mode,customFrom,customTo),[mode,customFrom,customTo]);
   const query=useAsyncResource(['lrunes-daily-analytics',range?.startDate,range?.endDate],
-    ()=>selectDailyRuneRange(range),{enabled:Boolean(range)});
+    ()=>usesNumericIsr('lrunes')
+      ?readNumericIsr('lrunes','daily',range)
+      :selectDailyRuneRange(range),{enabled:Boolean(range)});
   const draws=useMemo(()=>normalizeDailyDraws(query.data||[],date=>
     realMoonPhase(new Date(date+PHASE_DATE_TIME))
   ),[query.data]);
@@ -135,7 +138,8 @@ export function LrunesDailyStatisticsPanel(){
   const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   const [zoomLevel,setZoomLevel]=useState(0);
   const today=useMemo(()=>todayInTaipei(),[]);
-  const earliest=useAsyncResource(['statistics-history-start','daily-rune'],selectFirstDailyRuneDate);
+  const earliest=useAsyncResource(['statistics-history-start','daily-rune'],()=>
+    usesNumericIsr('lrunes')?readNumericIsr('lrunes','daily-earliest'):selectFirstDailyRuneDate());
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today,earliest.data||''),
     [zoomLevel,today,earliest.data]);
   const [analysisMode,setAnalysisMode]=useState('rune');
