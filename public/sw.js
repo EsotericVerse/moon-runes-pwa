@@ -145,7 +145,8 @@ self.addEventListener('message',event=>{
   event.waitUntil((async()=>{
     const url=new URL('/_loc/blocks/'+match[1]+'/'+match[2]+'.json',self.location.origin).href;
     const [blocks,age]=await Promise.all([caches.open(BLOCK_CACHE),caches.open(BLOCK_AGE)]);
-    await Promise.all([blocks.delete(url),age.delete(url)]);
+    const request=new Request(url);
+    await Promise.all([blocks.delete(request),age.delete(request)]);
     event.ports?.[0]?.postMessage({ok:true});
   })());
 });
