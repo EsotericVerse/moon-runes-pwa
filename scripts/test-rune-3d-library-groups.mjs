@@ -34,14 +34,18 @@ test('3D atlas supports the same #group-6 and rune deep-links as 2D',()=>{
   assert.ok(librarySource.includes("'#group-'+groupId+'/rune-'+runeId"));
 });
 
-test('3D group entry previews the first rune and scrolls the actual effect into view',()=>{
-  assert.ok(librarySource.includes('setGroupId(entry.id);setFocusId(runeNumbersForGroup(entry.id)[0]);'));
-  assert.ok(librarySource.includes('runeNumbersForGroup(id)[0]'));
+test('3D group entry shows its group introduction and cards without an automatic rune jump',()=>{
+  assert.ok(librarySource.includes('setGroupId(entry.id);setFocusId(null);setShowCardInfo(false);'));
+  assert.ok(!librarySource.includes('setFocusId(runeNumbersForGroup(entry.id)[0])'));
+  assert.ok(!librarySource.includes('runeNumbersForGroup(id)[0]'));
+  assert.ok(librarySource.includes('setFocusId(id!==null&&runeId!==null&&runeNumbersForGroup(id).includes(runeId)?runeId:null);'));
+  const hero=librarySource.indexOf('rune-3d-atlas-group-hero"');
   const stage=librarySource.indexOf('rune-3d-library-manifestation"');
   const gallery=librarySource.indexOf('<RuneArtStage mode="runes" items={runes}');
   const canvas=librarySource.indexOf("ref={stageRef} className={'rune-3d-stage");
   const glyph=librarySource.indexOf('rune-3d-atlas-glyph-review');
-  assert.ok(stage>0&&stage<gallery,'3D spell stage should appear before flat card gallery');
-  assert.ok(canvas>0&&canvas<glyph,'effect canvas should precede static glyph model');
-  assert.ok(librarySource.includes("block:'center'"));
+  assert.ok(hero>=0&&hero<stage&&stage<gallery,'group introduction must precede an explicitly chosen rune effect');
+  assert.ok(canvas>=0&&canvas<glyph,'actual effect canvas still precedes 3D glyph inspection');
+  assert.ok(librarySource.includes('if(current&&stageRef.current)'),'only an explicitly selected card may scroll to its effect');
+  assert.ok(librarySource.includes("block:'center'"),'selected rune scrolls to the effect, not section header');
 });
