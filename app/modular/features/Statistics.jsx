@@ -500,7 +500,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       return {term:row.name,item_count:row.value,category,sourceNames};
     }),
     startDate:queryRange.startDate,endDate:queryRange.endDate,
-    rawRows:sourceRows.data||[],catalog:sourceCatalog.data||{}
+    rawRows:selectedRawNames?(sourceRows.data||[]).filter(row=>row.kind!=='source'||selectedRawNames.includes(String(row.category||'').trim().toLowerCase())):sourceRows.data||[],
+    catalog:sourceCatalog.data||{}
   };
   // Media Style facets and cross-tag relationships are projections of one
   // identical metadata scan; never fetch the same media corpus twice.
@@ -546,7 +547,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     [keywordSourcesQuery.data]
   );
   useEffect(()=>{
-    if(keywordSourcesQuery.data&&keywordSource&&!configuredSources.some(row=>row.category_code===keywordSource)){
+    if(keywordSourcesQuery.data&&keywordSource&&keywordSource!=='others'&&!configuredSources.some(row=>row.category_code===keywordSource)){
       setKeywordSource('');
     }
   },[keywordSource,keywordSourcesQuery.data,configuredSources]);
