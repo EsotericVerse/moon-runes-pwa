@@ -16,10 +16,11 @@ const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:fal
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
-  {value:'analysis',key:'analysisSettings'},
+  {value:'analysis',key:'basicSettings'},
+  {value:'run',key:'keywordAnalysis'},
   {value:'manual',key:'manual'},
-  {value:'network',key:'network'},
-  {value:'library',key:'title'}
+  {value:'library',key:'title'},
+  {value:'network',key:'network'}
 ]);
 
 function normalizeKeywordLines(value){
@@ -618,9 +619,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         </select></label>
       </div>
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
+      {!editDock?.active?<div className="scope-preview-links">
+        <button type="button" className="loc-button" disabled={busy||(!configDirty&&!draftDirty)} onClick={saveAll}>{l.saveSettings}</button>
+      </div>:null}
+    </section>:null}
+
+    {workspace==='run'?<section className="loc-card scope-feature-card">
+      <h2>{l.keywordAnalysis}</h2>
+      <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_id===currentClassId)?.class_name||l.activeClassRequired}</p>
+      {configDirty||draftDirty?<p className="scope-status">{l.settingsUnsaved}</p>:null}
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       <div className="scope-preview-links">
-        {!editDock?.active?<button type="button" className="loc-button" disabled={busy||(!configDirty&&!draftDirty)} onClick={saveAll}>{l.saveSettings}</button>:null}
         <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
         <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassId} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
       </div>
