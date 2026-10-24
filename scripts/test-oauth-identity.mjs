@@ -57,22 +57,22 @@ const fakeAuth=(user=validUser(),getUserError=null)=>({
   }
 });
 test('production contract verifies JWT with Auth.getUser and returns parsed OAuth email',async()=>{
-  const read=makeSessionReader(fakeAuth(),parseVerifiedGoogleOAuthUser);
+  const read=makeSessionReader(fakeAuth());
   const result=await read();
   assert.equal(result.oauth.provider,'google');
   assert.equal(result.oauth.email,'owner@example.com');
   assert.equal(result.user.email,result.oauth.email);
 });
 test('production contract denies user.email if Auth.getUser fails',async()=>{
-  const read=makeSessionReader(fakeAuth(null,{message:'invalid JWT'}),parseVerifiedGoogleOAuthUser);
+  const read=makeSessionReader(fakeAuth(null,{message:'invalid JWT'}));
   await assert.rejects(read(),/invalid JWT/);
 });
 test('production contract denies mismatching OAuth user ID',async()=>{
-  const read=makeSessionReader(fakeAuth({...validUser(),id:'other-user'}),parseVerifiedGoogleOAuthUser);
+  const read=makeSessionReader(fakeAuth({...validUser(),id:'other-user'}));
   await assert.rejects(read(),/Session 不一致/);
 });
 test('production contract denies missing Google identity from verified user',async()=>{
-  const read=makeSessionReader(fakeAuth({...validUser(),identities:[]}),parseVerifiedGoogleOAuthUser);
+  const read=makeSessionReader(fakeAuth({...validUser(),identities:[]}));
   await assert.rejects(read(),/Google OAuth/);
 });
 test('settings account panel subscribes to verified session instead of passive cache',()=>{
