@@ -336,7 +336,8 @@
 .rune-3d-draw-deck-card span{font:600 clamp(3.7rem,7vw,5.5rem)/1 "Noto Serif TC",serif}
 .rune-3d-draw-deck-card small{font:600 .7rem/1.2 system-ui,sans-serif;letter-spacing:.19em}
 .rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-draw-deck{opacity:.55}
-.rune-3d-drawn-card{position:absolute;left:50%;top:45%;z-index:8;translate:-50% -50%;
+.rune-3d-card-flight-plane{position:absolute;inset:0;z-index:8;pointer-events:none;perspective:900px}
+.rune-3d-drawn-card{position:absolute;left:50%;top:45%;z-index:1;translate:-50% -50%;
   width:clamp(118px,17vw,188px);aspect-ratio:1;pointer-events:none;
   transform-style:preserve-3d;will-change:transform,opacity}
 .rune-3d-drawn-card-back,.rune-3d-drawn-card-front{position:absolute;inset:0;
@@ -354,7 +355,7 @@
 .rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-night-moon{opacity:0}
 .rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-foreground-mist{opacity:.18}
 @media(max-width:700px){
-  .rune-3d-draw-deck{left:24%;top:61%;width:clamp(108px,30vw,142px)}
+  .rune-3d-draw-deck{left:24%;top:63%;width:clamp(108px,30vw,142px)}
   .rune-3d-drawn-card{width:clamp(108px,30vw,142px)}
   .rune-3d-tap-to-draw{align-items:end;padding-bottom:clamp(112px,25%,160px);
     font-size:clamp(1.1rem,5.5vw,1.65rem);text-align:center}

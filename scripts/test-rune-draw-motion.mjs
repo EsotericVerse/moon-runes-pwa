@@ -13,7 +13,9 @@ test('nine rune groups have distinct choreographies ending at the same reveal po
     assert.equal(animate.y.at(-1),0);
     assert.equal(animate.rotateY.at(-1)%360,180);
     assert.equal(animate.rotateZ.at(-1),0);
-    for(const field of ['x','y','scale','rotateY','rotateZ'])assert.equal(animate[field].length,4);
+    for(const field of ['x','y','z','rotateX','scale','rotateY','rotateZ'])assert.equal(animate[field].length,4);
+    assert.equal(animate.z.at(-1),0);
+    assert.equal(animate.rotateX.at(-1),0);
     return JSON.stringify({animate,transition});
   });
   assert.equal(new Set(signatures).size,9);
@@ -26,10 +28,17 @@ test('orientations affect only final facing, not the group motion',()=>{
     assert.equal(r.animate.x.at(-1),0);
   }
 });
+test('same-group runes have deterministic but distinguishable flights',()=>{
+  const motions=Array.from({length:8},(_,i)=>runeDrawMotion('靈魂',0,{width:800,height:520},false,i+1));
+  assert.equal(new Set(motions.map(m=>JSON.stringify(m.animate.x)+m.transition.duration)).size,8);
+  for(const m of motions){assert.equal(m.name,'浮現');assert.equal(m.animate.rotateY.at(-1)%360,180);}
+});
 test('reduced motion is brief and travel-free',()=>{
   for(const group of groups){const r=runeDrawMotion(group,3,{width:640,height:400},true);
     assert.equal(r.transition.duration,.05);
     assert.equal(r.animate.x,0);
+    assert.equal(r.animate.z,0);
+    assert.equal(r.animate.rotateX,0);
     assert.equal(r.animate.rotateZ,180);
   }
 });

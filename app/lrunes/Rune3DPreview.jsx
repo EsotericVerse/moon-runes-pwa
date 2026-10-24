@@ -219,7 +219,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const details=isList?selected:detailItem?.card;
   const day=mode==='daily'?items[0]:null;
   const drawMotion=phase==='drawing'&&pending?
-    runeDrawMotion(runeDrawGroup(pending.card),pending.directionIndex,drawStageSize.current,Boolean(reducedMotion)):null;
+    runeDrawMotion(runeDrawGroup(pending.card),pending.directionIndex,drawStageSize.current,Boolean(reducedMotion),pending.card.rune_id):null;
   return <main className="loc-next-main" data-rune-3d-preview={mode}>
     <div className="loc-panel rune-skin-lab rune-3d-shell">
     {presentationSwitcher}
@@ -254,8 +254,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
         <>
           {phase==='waiting'?<><WaitingEffekseerStage textureQuality={textureQuality}/>
             <div className="rune-3d-ritual-status" role="status">月光正在挑選符文……</div></>:null}
-          {phase==='drawing'&&pending?<motion.div
-            key={'drawn-'+pending.birth} className="rune-3d-drawn-card" aria-hidden="true"
+          {phase==='drawing'&&pending?<div className="rune-3d-card-flight-plane" aria-hidden="true">
+            <motion.div key={'drawn-'+pending.birth} className="rune-3d-drawn-card"
             data-draw-style={runeDrawGroup(pending.card)}
             initial={drawMotion.initial} animate={drawMotion.animate} transition={drawMotion.transition}
             onAnimationComplete={()=>setPhase(current=>current==='drawing'?'revealing':current)}>
@@ -263,7 +263,8 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
             <div className="rune-3d-drawn-card-front">
               <img src={runeImage(pending.card)} alt=""/>
             </div>
-          </motion.div>:null}
+            </motion.div>
+          </div>:null}
           {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
             rune={pending.card} direction={pending.direction} ceremony
             appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
