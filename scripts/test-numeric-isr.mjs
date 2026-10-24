@@ -39,7 +39,8 @@ async function harness(){
         }),
         rpc:async(name,args)=>{
         queries.push({name,args});
-        return {data:name==='read_scope_statistics'
+        return {data:name==='read_scope_earliest'?'2025-01-01'
+          :name==='read_scope_statistics'
           ?[{day:'2026-10-01',kind:'source',item_count:3}]
           :{earliest:'2025-01-01',rows:[{day:'2026-10-01',item_count:5}],categories:[],aliases:[]},
           error:null};
@@ -156,4 +157,16 @@ test('daily Rune earliest date shares ISR and invalid routes cannot read SQL',as
   const ui=readFileSync(new URL('../app/lrunes/DailyRuneAnalytics.jsx',import.meta.url),'utf8');
   assert.ok(ui.includes("readNumericIsr('lrunes','daily',range)"));
   assert.ok(ui.includes("readNumericIsr('lrunes','daily-earliest')"));
+});
+
+test('statistics media earliest date uses one cached RPC across repeated openings',async()=>{
+  const h=await harness();
+  for(let i=0;i<5;i++){
+    const response=await get(h,'lo3rwang','earliest');
+    assert.equal(response.status,200);
+    assert.equal(await response.json(),'2025-01-01');
+  }
+  assert.deepEqual(h.queries.map(row=>row.name),['read_scope_earliest']);
+  const client=readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
+  assert.ok(client.includes("if(usesNumericIsr(current.id))return readNumericIsr(current.id,'earliest')"));
 });
