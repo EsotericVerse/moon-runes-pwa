@@ -302,35 +302,62 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
               {maximumLanes<2?<option value={2}>可比較項目不足</option>:null}
             </select>
           </label>
-          <label><span>{l.comparisonDimensions}</span>
-            <select className="scope-select" value={kindFilter} onChange={e=>{setKindFilter(e.target.value);setSelected([])}}>
-              <option value="all">{l.allCategories}</option>
-              {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}>{translateUiField(locale,item.label)}</option>)}
+          <label><span>比較維度</span>
+            <select className="scope-select" aria-label="比較維度" value={kindFilter}
+              onChange={e=>{setKindFilter(e.target.value);setSelected([]);setLaneFamilies([])}}>
+              {DIMENSION_FILTERS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </label>
         </div>
-        <div className="scope-stat-controls">
-          {Array.from({length:lanes},(_,index)=><label key={index}>
-            <span>{l.comparisonItem} {index+1}</span>
-            <select className="scope-select" value={selection[index]||''} onChange={e=>{
-              setSelected(prev=>{
-                const next=Array.from({length:lanes},(_,i)=>selection[i]||'');
-                next[index]=e.target.value;
-                return next;
-              });
-            }}>
-              {!selection[index]?<option value="">{l.noSelectableSource}</option>:null}
-              {DIMENSIONS.map(dimension=>{
-                const options=categoryList.filter(category=>category.kind===dimension.kind&&
-                  !selection.some((chosen,i)=>i!==index&&chosen===category.id));
-                return options.length?<optgroup key={dimension.kind} label={translateUiField(locale,dimension.label)}>
-                  {options.map(category=><option key={category.id} value={category.id}>
-                    {category.name}（{category.total.toLocaleString()}）
-                  </option>)}
-                </optgroup>:null;
-              })}
-            </select>
-          </label>)}
+        <div className="scope-self-intersection-comparisons">
+          {Array.from({length:lanes},(_,index)=>{
+            const family=shownFamilies[index];
+            const candidateGroups=DIMENSIONS.filter(dimension=>
+              LANE_FAMILIES.find(entry=>entry.id===family)?.kinds.includes(dimension.kind));
+            return <div className="scope-self-intersection-lane" key={index}>
+              <strong>{l.comparisonItem} {index+1}</strong>
+              <div className="scope-self-intersection-lane-selectors">
+                <label><span>來源類型</span>
+                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 來源類型'}
+                    value={family} onChange={event=>{
+                      const nextFamily=event.target.value;
+                      setLaneFamilies(previous=>{
+                        const next=[...previous];next[index]=nextFamily;return next;
+                      });
+                      const used=new Set(selection.filter((_,position)=>position!==index));
+                      const available=categoryList.filter(item=>
+                        LANE_FAMILIES.find(entry=>entry.id===nextFamily)?.kinds.includes(item.kind));
+                      setSelected(previous=>{
+                        const next=[...selection];
+                        next[index]=available.find(item=>!used.has(item.id))?.id||'';
+                        return next;
+                      });
+                    }}>
+                    {availableFamilies.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}
+                  </select>
+                </label>
+                <label><span>比較內容</span>
+                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 比較內容'}
+                    value={selection[index]||''} onChange={event=>{
+                      setSelected(previous=>{
+                        const next=[...selection];next[index]=event.target.value;return next;
+                      });
+                    }}>
+                    {!selection[index]?<option value="">請選擇比較內容</option>:null}
+                    {candidateGroups.map(dimension=>{
+                      const options=categoryList.filter(item=>item.kind===dimension.kind&&
+                        !selection.some((chosen,position)=>position!==index&&chosen===item.id));
+                      return options.length?<optgroup key={dimension.kind} label={dimension.label}>
+                        {options.map(item=><option key={item.id} value={item.id}>
+                          {item.name}（{item.total.toLocaleString()}）
+                        </option>)}
+                      </optgroup>:null;
+                    })}
+                  </select>
+                </label>
+              </div>
+            </div>;
+          })}
         </div>
         <div className="scope-stat-controls">
           <label><span><FieldText text="圖表"/></span>
