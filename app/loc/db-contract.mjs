@@ -1,5 +1,6 @@
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
+import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
 
 // Shared by the keyword-classification read (paging the document scan) and
 // write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
@@ -22,7 +23,7 @@ function validateGalaxyWrite(table,values){
 }
 
 export function createDatabaseClient({publicClient,authClient,auth}){
-    if(!publicClient?.schema||!authClient?.schema||!auth?.getSession||!auth?.signInWithOAuth||!auth?.signOut){
+    if(!publicClient?.schema||!authClient?.schema||!auth?.getSession||!auth?.getUser||!auth?.signInWithOAuth||!auth?.signOut){
       throw new Error('Database adapter must implement public/authenticated clients and the account boundary');
     }
   function dbAuthRelation(table){
@@ -496,7 +497,16 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const {data,error}=await auth.getSession();
     if(error)throw new Error(error.message||'Account session failed');
     const session=data?.session||null;
-    return session?.user?{session,user:session.user}:null;
+    if(!session?.user)return null;
+    // A persisted session's user/email are local data, not verified OAuth claims.
+    // Ask Supabase Auth to validate the access token and return current identities.
+    const {data:verified,error:verifyError}=await auth.getUser(session.access_token);
+    if(verifyError)throw new Error(verifyError.message||'Google OAuth verification failed');
+    const user=verified?.user;
+    if(!user?.id||String(user.id)!==String(session.user.id))
+      throw new Error('OAuth 使用者與目前 Session 不一致，已拒絕授權。');
+    const oauth=parseVerifiedGoogleOAuthUser(user);
+    return {session,user:{...user,email:oauth.email},oauth};
   }
 
   async function signInWithGoogle(callbackURL){
