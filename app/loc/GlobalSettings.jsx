@@ -6,7 +6,7 @@ import globalSettingsZh from '../i18n/sections/uiExtra.globalSettings.zh_tw.js';
 registerDefaultSection('uiExtra.globalSettings',globalSettingsZh);
 
 import {useEffect,useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from './use-async-resource';
 import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
@@ -66,12 +66,8 @@ export default function GlobalSettings({initialSection='home'}={}){
     if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
   },[]);
-  const registryQuery=useQuery({
-    queryKey:['settings-scope-registry'],
-    queryFn:selectScopeRegistry,
-    enabled:!native&&urlResolved&&section!=='account',
-    staleTime:5*60_000
-  });
+  const registryQuery=useAsyncResource(['settings-scope-registry'],selectScopeRegistry,
+    {enabled:!native&&urlResolved&&section!=='account'});
   const registry=registryQuery.data||[];
   useEffect(()=>{
     if(prefs.loading)return;

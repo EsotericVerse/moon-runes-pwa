@@ -1,9 +1,9 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {useQueryClient} from '@tanstack/react-query';
+import {useSWRConfig} from 'swr';
 import dynamic from 'next/dynamic';
 import UiText from '../../../i18n/UiText';
-import {selectScopeBlocks} from '../../scope-data';
+import {revalidateServerMetadata,selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -32,7 +32,7 @@ function pageFor(kind,feature){return kind+'_'+feature.id;}
 function ImageSlot({feature,variant,onDirtyChange}){
   const page=pageFor(variant.kind,feature);
   const order=1;
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const displayQueryKey=['scope-blocks','loc',page];
   const [rows,setRows]=useState(null);
   const [value,setValue]=useState('');
@@ -72,8 +72,8 @@ function ImageSlot({feature,variant,onDirtyChange}){
         const {error}=await insertRows(table,[{page_name:page,block_order:order,block_image:image}]);
         if(error)throw new Error(error.message||'儲存失敗。');
       }
-      await queryClient.invalidateQueries({queryKey:displayQueryKey});
-      await queryClient.refetchQueries({queryKey:displayQueryKey,type:'active'});
+      await revalidateServerMetadata();
+      await mutate(displayQueryKey);
       setStatus('已更新。');
       setRevision(v=>v+1);
       return true;

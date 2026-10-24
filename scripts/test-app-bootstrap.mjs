@@ -16,7 +16,7 @@ async function harness(){
   const site={config:{id:'loc',theme:'theme-7'},blocks:[{uid:'loc-block'}],registry:[],page_copy:[],themes:[],theme_list:[]};
   const context=vm.createContext({Promise,Date});
   const stub={
-    '@tanstack/react-query':{useQuery:()=>{},useQueryClient:()=>{}},
+    './use-async-resource':{useAsyncResource:()=>({})},
     './db-client.mjs':{dbPublicClient:{}},
     './scope-data':{
       invalidatePublicScopeMetadata:()=>{},

@@ -6,7 +6,7 @@ import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 import dynamic from 'next/dynamic';
-import {useQueryClient} from '@tanstack/react-query';
+import {useSWRConfig} from 'swr';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 
@@ -64,7 +64,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
   const editDock=useEditDock();
   const dockActions=useRef({save:null});
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const scopeData=account.scopeDataFor(scopeId);
   const TABLE=scopeData?.keywords||'';
   const CONFIG_TABLE=scopeData?.config||'';
@@ -100,8 +100,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     const {clearKeywordAnalysisCache}=await import('./keyword-analysis');
     clearKeywordAnalysisCache();
     await Promise.all([
-      queryClient.invalidateQueries({queryKey:['statistics-style-filter'],refetchType:'all'}),
-      queryClient.invalidateQueries({queryKey:['culture-style-filter'],refetchType:'all'})
+      mutate(key=>Array.isArray(key)&&['statistics-style-filter','culture-style-filter'].includes(key[0]))
     ]);
   }
 

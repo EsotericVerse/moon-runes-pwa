@@ -1,6 +1,6 @@
 'use client';
 
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from './use-async-resource';
 import UiText,{useUiText} from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {useUiSection} from '../i18n/ui-locale';
@@ -18,11 +18,7 @@ export default function ScopeGroupOverview({scopeId='loc',featureId='search',tit
   useUiSection('uiExtra.scopeGroup');
   const t=useUiText();
   const native=useNativeNavigation();
-  const query=useQuery({
-    queryKey:['scope-group-overview',scopeId],
-    queryFn:()=>selectScopeGroupChildren(scopeId),
-    staleTime:5*60_000
-  });
+  const query=useAsyncResource(['scope-group-overview',scopeId],()=>selectScopeGroupChildren(scopeId));
   const scopes=query.data||[];
   const featurePath=FEATURE_PATH[featureId]||'';
   const featureLabel=t(FEATURE_LABEL[featureId]||'uiExtra.scopeGroup.unknownFeature');

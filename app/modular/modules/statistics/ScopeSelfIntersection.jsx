@@ -7,7 +7,7 @@ import selfIntersectionZh from '../../../i18n/sections/uiExtra.selfIntersection.
 registerDefaultSection('uiExtra.selfIntersection',selfIntersectionZh);
 
 import {useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../../../loc/use-async-resource';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
 import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zoom.mjs';
@@ -47,25 +47,16 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const [foldBlank,setFoldBlank]=useState(true);
   const start=dateOnly(range?.startDate),end=dateOnly(range?.endDate);
   const valid=Boolean(scope?.id&&scope.galaxy&&scope.galaxyMedia&&start&&end&&start<=end);
-  const query=useQuery({
-    queryKey:['own-scope-source-intersection',scope?.id,start,end],
-    queryFn:()=>selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}),
-    enabled:valid,
-    staleTime:5*60_000
-  });
+  const query=useAsyncResource(valid?['own-scope-source-intersection',scope?.id,start,end]:null,
+    ()=>selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}));
   const rows=query.data||[];
-  const localCatalog=useQuery({
-    queryKey:['own-scope-source-catalog',scope?.id],
-    enabled:valid&&!sharedCatalog,
-    queryFn:async()=>{
+  const localCatalog=useAsyncResource(valid&&!sharedCatalog?['own-scope-source-catalog',scope?.id]:null,async()=>{
       const {selectRows}=await import('../../../loc/db-query.mjs');
       const [c,a]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
       ]);
       return {categories:c.rows,aliases:a.rows};
-    },
-    staleTime:5*60_000
   });
   const catalog=sharedCatalog||localCatalog;
   const categoryList=useMemo(()=>{

@@ -17,7 +17,7 @@ registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {Fragment,useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 import {useRouter,useSearchParams} from 'next/navigation';
 
 import {deleteRows,updateRows} from '../../loc/db-client.mjs';
@@ -237,17 +237,16 @@ export default function Search({managementMode=false}){
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
   const router=useRouter();
-  const queryClient=useQueryClient();
+  const resourceCache=useResourceCache();
   const [query,setQuery]=useState('');
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
   const [sourceFilter,setSourceFilter]=useState('');
-  const sourceTaxonomyQuery=useQuery({
+  const sourceTaxonomyQuery=useAsyncResource({
     queryKey:['statistics-source-taxonomy'],
     queryFn:selectSourceTaxonomy,
     enabled:advancedOpen&&advancedTab==='source'||sourceFilter.startsWith('category:'),
-    staleTime:Infinity
   });
   const [scopeFilter,setScopeFilter]=useState('');
   const [startDate,setStartDate]=useState('');
@@ -305,11 +304,10 @@ export default function Search({managementMode=false}){
   // LOC searches only active content trees with search_able enabled.
   // A tree's own Search page stays separate from LOC's aggregate scope filter.
   const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
-  const scopesQuery=useQuery({
+  const scopesQuery=useAsyncResource({
     queryKey:managementMode?['management-search-scopes',account.email]:['loc-searchable-scopes'],
     queryFn:managementMode?()=>selectScopeRegistry({scopeKind:'scope'}):selectLocSearchScopes,
     enabled:scopeId==='loc'&&!aggregateScopes&&(!managementMode||managementAuthorized),
-    staleTime:Infinity
   });
   const availableScopes=useMemo(()=>{
     if(scopeId!=='loc')return [account.scopeDataFor(scopeId)||defaultScopeData(scopeId)].filter(Boolean);
@@ -350,7 +348,7 @@ export default function Search({managementMode=false}){
   const periodScope=scopeId==='loc'
     ?targetScopes.find(item=>item.id==='lo3rwang')||targetScopes[0]
     :targetScopes[0];
-  const periodsQuery=useQuery({
+  const periodsQuery=useAsyncResource({
     queryKey:['search-period-options',periodScope?.id],
     enabled:advancedOpen&&advancedTab==='time'&&!aggregateScopes&&Boolean(periodScope?.time),
     queryFn:async()=>{
@@ -360,7 +358,6 @@ export default function Search({managementMode=false}){
       return rows.filter(row=>row.entry_type==='period'&&row.start_date)
         .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
     },
-    staleTime:Infinity
   });
 
   async function loadGalaxyDetail(result){
@@ -398,7 +395,6 @@ export default function Search({managementMode=false}){
     const controller=beginRequest();
     const {signal}=controller;
     // A fresh search supersedes any in-flight style-keyword fetch for the same key.
-    if(!append)queryClient.cancelQueries({queryKey:['search-style-keyword']});
     setError('');
     if(append){
       setLoadMoreError('');
@@ -420,10 +416,9 @@ export default function Search({managementMode=false}){
       // The category is a semantic database filter, not a literal
       // source_name. Fetch the same cached taxonomy before searching.
       const sourceTaxonomy=String(options.sourceFilter||'').startsWith('category:')
-        ?await queryClient.fetchQuery({
+        ?await resourceCache.getOrLoad({
           queryKey:['statistics-source-taxonomy'],
           queryFn:selectSourceTaxonomy,
-          staleTime:Infinity
         })
         :null;
       if(id!==searchId.current)return;
@@ -473,10 +468,9 @@ export default function Search({managementMode=false}){
       // Style tags enhance results, but their optional request must never
       // discard valid text/media hits when its own service fails.
       const stylePromise=wantsStyleTags
-        ?queryClient.fetchQuery({
+        ?resourceCache.getOrLoad({
           queryKey:['search-style-keyword',searchScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
           queryFn:()=>selectStyleKeywordMatches(searchScopes,q,{signal}),
-          staleTime:60_000
         }).then(rows=>({rows,failed:false}),error=>{
           if(isAbortError(error)||signal.aborted)throw error;
           return {rows:[],failed:true};

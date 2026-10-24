@@ -3,7 +3,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../loc/use-async-resource';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/db-contract.mjs';
@@ -48,18 +48,10 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   // every Scope) and LOC's own hero image override, so loc viewers need only
   // this one query; a non-loc Scope view also needs its own scope_<feature>
   // row for its image override (that row never carries text).
-  const groupHeroQuery=useQuery({
-    queryKey:['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
-    queryFn:()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),
-    staleTime:Infinity,
-    enabled:sharedEnabled||hasFeatureHero
-  });
-  const scopeHeroImageQuery=useQuery({
-    queryKey:['scope-blocks','loc','scope_'+featureId],
-    queryFn:()=>selectScopeBlocks('loc','scope_'+featureId),
-    staleTime:Infinity,
-    enabled:hasFeatureHero&&scopeId!=='loc'
-  });
+  const groupHeroQuery=useAsyncResource(['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
+    ()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),{enabled:sharedEnabled||hasFeatureHero});
+  const scopeHeroImageQuery=useAsyncResource(['scope-blocks','loc','scope_'+featureId],
+    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:hasFeatureHero&&scopeId!=='loc'});
   const heroImageRow=(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
   const heroImageOverride=heroImageUrlOf(heroImageRow);
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;

@@ -2,7 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
-import {dbPublicClient} from './db-client.mjs';
+import {dbAuthClient,dbPublicClient} from './db-client.mjs';
 
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
 // app-bootstrap request (see app/loc/app-bootstrap.js); there is no
@@ -108,22 +108,39 @@ let publicSiteBootstrapRequest=null;
 // runtime Registry caches. Ordinary Guest navigation is unaffected.
 export function invalidatePublicThemeSnapshot(){
   publicSiteBootstrapRequest=null;
+  void revalidateServerMetadata();
 }
 // Only explicit admin metadata refreshes invalidate the public client snapshot.
 // Guest navigation shares the same promise and never preflights authorization.
 export function invalidatePublicScopeMetadata(){
   managedScopesRequest=null;
   publicSiteBootstrapRequest=null;
+  void revalidateServerMetadata();
   if(typeof window!=='undefined'){
     window.dispatchEvent(new Event('loc-public-scope-metadata-changed'));
   }
 }
+export async function revalidateServerMetadata(){
+  try{
+    const {data,error}=await dbAuthClient.auth.getSession();
+    const token=data?.session?.access_token;
+    if(error||!token)return false;
+    const response=await fetch('/api/loc/revalidate',{method:'POST',headers:{Authorization:`Bearer ${token}`}});
+    return response.ok;
+  }catch{return false;}
+}
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
-  publicSiteBootstrapRequest=dbPublicClient.schema('silver')
-    .rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'})
-    .then(({data,error})=>{
-      if(error)throw error;
+  publicSiteBootstrapRequest=fetch('/api/loc/site-bootstrap')
+    .then(async response=>{
+      if(!response.ok)throw new Error('LOC site bootstrap failed: '+response.status);
+      return response.json();
+    }).catch(async error=>{
+      // Static/native builds have no Next server. Preserve their existing
+      // direct public read while deployed web traffic uses the ISR endpoint.
+      const {data,error:rpcError}=await dbPublicClient.schema('silver')
+        .rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
+      if(rpcError)throw error;
       return data||{};
     }).catch(error=>{
       publicSiteBootstrapRequest=null;
@@ -199,19 +216,25 @@ export async function selectManagedScope(scopeId){
 
 
 // Deduplicate simultaneous readers (AppShell, Scope runtime, feature gate).
-// Keep no long-lived result cache: DB changes can be picked up on next read.
+// The browser keeps only the in-flight request; Vercel ISR owns the shared
+// 14-day cache for public Config and page blocks.
 const scopeConfigInFlight=new Map();
 export function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
   if(!scope)return Promise.resolve(null);
   const existing=scopeConfigInFlight.get(scope.id);
   if(existing)return existing;
-  const request=selectRows(scope.config,{
-    columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
-    filters:[{column:'id',operator:'eq',value:scope.id}],
-    limit:1,
-    offset:0
-  }).then(({rows})=>rows[0]||null).finally(()=>scopeConfigInFlight.delete(scope.id));
+  const request=fetch('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config')
+    .then(async response=>{
+      if(!response.ok)throw new Error('Scope config failed: '+response.status);
+      return response.json();
+    }).catch(async()=>{
+      const {rows}=await selectRows(scope.config,{
+        columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
+        filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
+      });
+      return rows[0]||null;
+    }).finally(()=>scopeConfigInFlight.delete(scope.id));
   scopeConfigInFlight.set(scope.id,request);
   return request;
 }
@@ -223,13 +246,16 @@ export async function selectScopeBlocks(scopeId,page='index'){
   const requested=String(page||'index').trim().toLowerCase();
   const pageName=requested==='home'?'index':requested;
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
-  const table=`silver.${id}_blocks`;
-  const {rows}=await selectRows(table,{
+  let response=null;
+  try{response=await fetch('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName));}
+  catch{/* Static/native builds use the direct public Supabase fallback below. */}
+  if(response?.ok){
+    try{return await response.json();}catch{/* Fall through to the direct read. */}
+  }
+  const {rows}=await selectRows(`silver.${id}_blocks`,{
     columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
     filters:[{column:'page_name',operator:'eq',value:pageName}],
-    orders:[{column:'block_order',ascending:true}],
-    limit:DB_QUERY_BATCH_SIZE,
-    offset:0
+    orders:[{column:'block_order',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
   });
   return rows||[];
 }

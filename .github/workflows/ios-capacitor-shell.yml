@@ -33,7 +33,7 @@ jobs:
         run: npm run test:bootstrap
       - name: Build LOC static web assets
         run: |
-          npm run build
+          npm run build:static
           test -f out/index.html
       - name: Check Guest and Admin static route exports
         run: node scripts/verify-release-static-export.mjs

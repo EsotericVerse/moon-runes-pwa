@@ -16,7 +16,7 @@ registerDefaultSection('uiExtra.pagination',paginationZh);
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
-import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
 import ManagementSectionNav,{useManagementSection} from '../ManagementSectionNav';
@@ -188,16 +188,15 @@ export default function Culture(){
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
   const isLocItemView=scopeId==='loc'&&locCultureView==='item';
-  const queryClient=useQueryClient();
+  const resourceCache=useResourceCache();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  const query=useQuery({
+  const query=useAsyncResource({
     queryKey:['culture-timeline',scopeId],
     queryFn:async()=>{
       const {selectScopeCultureData}=await import('../../loc/culture-query');
       return selectScopeCultureData(scopeId);
     },
     enabled:!isLrunesDaily&&!isLocItemView,
-    staleTime:Infinity
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
@@ -325,7 +324,7 @@ export default function Culture(){
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
-  const sourceSnapshotQuery=useQuery({
+  const sourceSnapshotQuery=useAsyncResource({
     queryKey:['culture-period-source-snapshot','v3',classificationScope,classificationWindowStart,classificationWindowEnd],
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
@@ -335,9 +334,8 @@ export default function Culture(){
       });
     },
     enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid,
-    staleTime:Infinity
   });
-  const keywordClassQuery=useQuery({
+  const keywordClassQuery=useAsyncResource({
     queryKey:['scope-active-keyword-class-name',scopeId],
     // Opening/focusing the style selector is the first reason to look up
     // the active Class. Ordinary Time River viewing performs no keyword SQL.
@@ -346,18 +344,16 @@ export default function Culture(){
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
     },
-    staleTime:Infinity
   });
   const keywordClassLabel=keywordClassQuery.data?'關鍵詞組：'+keywordClassQuery.data
     :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
-  const styleQuery=useQuery({
+  const styleQuery=useAsyncResource({
     queryKey:['culture-style-filter','rune66',classificationScope,keywordWindowStart,keywordWindowEnd],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
       return selectKeywordAnalysisSummary({scopeId,startDate:keywordWindowStart,endDate:keywordWindowEnd});
     },
     enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&keywordWindowValid,
-    staleTime:Infinity
   });
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
@@ -365,7 +361,7 @@ export default function Culture(){
   // Existing SQL summary covers the overview. Drill-down fetches only the
   // requested source and/or class, without eagerly reading all Galaxy attrs.
   const keywordDetailRequested=Boolean(keywordDrillSource||keywordDrillGroup);
-  const keywordDensityQuery=useQuery({
+  const keywordDensityQuery=useAsyncResource({
     queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd,keywordDrillSource,keywordDrillGroup],
     enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
@@ -383,7 +379,6 @@ export default function Culture(){
       });
       return rows;
     },
-    staleTime:Infinity
   });
   const keywordRiverPending=keywordDetailRequested?keywordDensityQuery.isPending:styleQuery.isPending;
   const keywordRiverError=keywordDetailRequested?keywordDensityQuery.error:null;
@@ -407,7 +402,7 @@ export default function Culture(){
   [styleQuery.data?.keywordMeta?.classes]);
   // Fetch Group names/membership only after the user opens a specific Class.
   // The initial Class-density river never downloads the Group catalog.
-  const keywordGroupCatalogQuery=useQuery({
+  const keywordGroupCatalogQuery=useAsyncResource({
     queryKey:['culture-keyword-group-catalog',scopeId,styleQuery.data?.keywordMeta?.class_id||'',keywordDrillGroup],
     enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
       &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
@@ -424,7 +419,6 @@ export default function Culture(){
       });
       return rows;
     },
-    staleTime:Infinity
   });
   const keywordDrillItems=useMemo(()=>{
     if(keywordDetailRequested&&!keywordDensityQuery.data)return [];
@@ -441,7 +435,7 @@ export default function Culture(){
     keywordDrillSource?'source:'+keywordDrillSource:selectedCategory
   ))||null;
   const effectiveCategoryKey=selectedGroup?.category_key||'';
-  const periodWorksQuery=useInfiniteQuery({
+  const periodWorksQuery=useAsyncInfiniteResource({
     queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
@@ -612,9 +606,9 @@ export default function Culture(){
 
   async function refreshTimelineData(){
     await Promise.all([
-      queryClient.invalidateQueries({queryKey:['culture-timeline',scopeId]}),
-      queryClient.invalidateQueries({queryKey:['culture-period-settings',scopeId]}),
-      queryClient.invalidateQueries({queryKey:['search-style-keyword']})
+      resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-settings',scopeId]}),
+      resourceCache.invalidate({queryKey:['search-style-keyword']})
     ]);
   }
   async function moveTimelineRecord(item,row){

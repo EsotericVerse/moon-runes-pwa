@@ -3,6 +3,9 @@ import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
 import {faviconForScope} from './site-favicons';
 
+// ISR: render a stable public shell and refresh it at most every 14 days.
+export const revalidate=1209600;
+
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
   title:'LOC 月典',
@@ -19,8 +22,7 @@ export const viewport={width:'device-width',initialScale:1,viewportFit:'cover'};
 const AUTO_DAY_THEME_ID='theme-7';
 const AUTO_NIGHT_THEME_ID='theme-1';
 const GAME_BOOTSTRAP_THEME_ID='theme-4';
-// Static export can only mark the initial color scheme. The exact canonical
-// palette and per-Scope default are loaded once from PostgreSQL in AppShell.
+// The exact canonical palette and per-Scope default are loaded on demand in AppShell.
 const NATIVE_STATIC_ROUTE_SCRIPT=`(()=>{try{
   if(window.location.protocol!=='capacitor:')return;
   const {pathname,search,hash}=window.location;

@@ -4,7 +4,7 @@ import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useFeatureCopy} from '../i18n/ui-locale';
 import featureZh from '../i18n/features.zh_tw.js';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../loc/use-async-resource';
 import {
   Bar,BarChart,CartesianGrid,ComposedChart,LabelList,Line,
   ResponsiveContainer,Tooltip,XAxis,YAxis
@@ -58,12 +58,8 @@ function resolveRange(mode,customFrom,customTo){
 }
 function useDailyRuneWindow(mode,customFrom,customTo){
   const range=useMemo(()=>resolveRange(mode,customFrom,customTo),[mode,customFrom,customTo]);
-  const query=useQuery({
-    queryKey:['lrunes-daily-analytics',range?.startDate,range?.endDate],
-    queryFn:()=>selectDailyRuneRange(range),
-    enabled:Boolean(range),
-    staleTime:60_000
-  });
+  const query=useAsyncResource(['lrunes-daily-analytics',range?.startDate,range?.endDate],
+    ()=>selectDailyRuneRange(range),{enabled:Boolean(range)});
   const draws=useMemo(()=>normalizeDailyDraws(query.data||[],date=>
     realMoonPhase(new Date(date+PHASE_DATE_TIME))
   ),[query.data]);
@@ -139,11 +135,7 @@ export function LrunesDailyStatisticsPanel(){
   const text=useFeatureCopy('dailyRune',featureZh.dailyRune);
   const [zoomLevel,setZoomLevel]=useState(0);
   const today=useMemo(()=>todayInTaipei(),[]);
-  const earliest=useQuery({
-    queryKey:['statistics-history-start','daily-rune'],
-    queryFn:selectFirstDailyRuneDate,
-    staleTime:5*60_000
-  });
+  const earliest=useAsyncResource(['statistics-history-start','daily-rune'],selectFirstDailyRuneDate);
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,today,earliest.data||''),
     [zoomLevel,today,earliest.data]);
   const [analysisMode,setAnalysisMode]=useState('rune');

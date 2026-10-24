@@ -6,7 +6,7 @@ import statisticsViewZh from '../../../i18n/sections/uiExtra.statisticsView.zh_t
 registerDefaultSection('uiExtra.statisticsView',statisticsViewZh);
 
 import {useMemo} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useAsyncResource,useResourceCache} from '../../../loc/use-async-resource';
 import {defaultScopeData} from '../../../loc/scope-data';
 import {selectDailyRuneRange} from '../../../loc/daily-runes';
 import {normalizeDailyDraws} from '../../../lrunes/daily-analytics-model.mjs';
@@ -26,7 +26,7 @@ export default function LocMemberIntersection({
 }){
   useUiSection('uiExtra.statisticsView');
   const t=useUiText();
-  const queryClient=useQueryClient();
+  const resourceCache=useResourceCache();
   // The time range identifies the returned dataset. Choices live in the LOC
   // parent, so remounting one range cannot silently reset selected comparisons.
   const rangeKey=startDate+'|'+endDate;
@@ -49,7 +49,7 @@ export default function LocMemberIntersection({
     return {person,metric:candidate.metric|| (person==='lrunes'?'daily':'total')};
   });
   const chosenIds=[...new Set(lanes.map(lane=>lane.person).filter(Boolean))];
-  const fetched=useQuery({
+  const fetched=useAsyncResource({
     queryKey:['loc-member-cross',startDate,endDate,chosenIds.join('|'),lanes.some(x=>x.metric.startsWith('daily'))],
     enabled:Boolean(loadGalaxyStatistics&&startDate&&endDate&&chosenIds.length),
     queryFn:async()=>{
@@ -57,17 +57,15 @@ export default function LocMemberIntersection({
         // Only the Scopes chosen in the lanes are read, and only now that the panel is open.
         const scope=scopes.find(item=>item.id===id);
         const rows=scope
-          ?await queryClient.fetchQuery({
+          ?await resourceCache.getOrLoad({
             queryKey:['own-scope-source-intersection',id,startDate,endDate],
             queryFn:async()=>(await loadGalaxyStatistics()).selectScopeSourceBreakdownRows(scope,{startDate,endDate}),
-            staleTime:5*60_000
           })
           :[];
         const daily=id==='lrunes'&&lanes.some(lane=>lane.person===id&&lane.metric.startsWith('daily'))
-          ?await queryClient.fetchQuery({
+          ?await resourceCache.getOrLoad({
             queryKey:['loc-member-daily-runes',startDate,endDate],
             queryFn:()=>selectDailyRuneRange({startDate,endDate}),
-            staleTime:5*60_000
           })
           :[];
         const draws=id==='lrunes'
@@ -77,7 +75,6 @@ export default function LocMemberIntersection({
       }));
       return {rangeKey,datasets:new Map(pairs)};
     },
-    staleTime:5*60_000
   });
   const hasCurrentData=fetched.data?.rangeKey===rangeKey;
   const datasets=hasCurrentData?fetched.data.datasets:new Map();

@@ -4,7 +4,7 @@ import {translateUiField} from '../../i18n/ui-copy';
 import featureZh from '../../i18n/features.zh_tw.js';
 
 import {useEffect,useMemo,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../../loc/use-async-resource';
 import {selectManagedScopes} from '../../loc/scope-data';
 import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
 import {realMoonPhase} from '../../loc/model/moon-phase';
@@ -78,11 +78,7 @@ export default function LocItemConfluence(){
   const [laneB,setLaneB]=useState(()=>defaultLane('','galaxy:all'));
   const [selectedDay,setSelectedDay]=useState('');
   const [page,setPage]=useState(1);
-  const scopesQuery=useQuery({
-    queryKey:['managed-scopes'],
-    queryFn:selectManagedScopes,
-    staleTime:5*60_000
-  });
+  const scopesQuery=useAsyncResource(['managed-scopes'],selectManagedScopes);
   const scopes=scopesQuery.data||EMPTY_SCOPES;
   const range=useMemo(()=>validateItemConfluenceRange(startDate,endDate),[startDate,endDate]);
   const selectionA=useMemo(()=>validateItemLane(laneA,scopes),[laneA,scopes]);
@@ -90,15 +86,12 @@ export default function LocItemConfluence(){
   const valid=range.valid&&selectionA.valid&&selectionB.valid;
   const selectedA=scopes.find(scope=>scope.id===laneA.scopeId)||null;
   const selectedB=scopes.find(scope=>scope.id===laneB.scopeId)||null;
-  const query=useQuery({
-    queryKey:['loc-item-confluence',range.startDate,range.endDate,laneA.scopeId,laneA.source,laneA.exact,laneB.scopeId,laneB.source,laneB.exact],
-    queryFn:()=>Promise.all([
+  const query=useAsyncResource(valid&&selectedA&&selectedB
+    ?['loc-item-confluence',range.startDate,range.endDate,laneA.scopeId,laneA.source,laneA.exact,laneB.scopeId,laneB.source,laneB.exact]
+    :null,()=>Promise.all([
       selectLocItemDailySeries({scope:selectedA,lane:laneA,startDate:range.startDate,endDate:range.endDate,knownScopes:scopes}),
       selectLocItemDailySeries({scope:selectedB,lane:laneB,startDate:range.startDate,endDate:range.endDate,knownScopes:scopes})
-    ]),
-    enabled:valid&&Boolean(selectedA&&selectedB),
-    staleTime:60_000
-  });
+    ]));
   const labels=useMemo(()=>[laneA,laneB].map(lane=>{
     const label=itemLaneDescription(lane);
     const option=ITEM_LANE_OPTIONS.find(item=>item.value===lane.source);

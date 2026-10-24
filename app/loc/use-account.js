@@ -1,10 +1,11 @@
 'use client';
 
 import {useCallback,useEffect} from 'react';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useSWRConfig} from 'swr';
 import {z} from 'zod';
 import {getAccountSession,dbAuthEvents,dbAuthRelation,isCurrentEmailBlocklisted,signInWithGoogle,signOutAccount} from './db-client.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
+import {useAsyncResource} from './use-async-resource';
 
 const EmailSchema=z.string().trim().toLowerCase().email();
 const ManageRoleSchema=z.enum(['admin','scope']);
@@ -40,7 +41,7 @@ function createScopeAuthorizer(user,permissionRows=[]){
   });
 }
 
-// One shared query per identity level for the entire AppShell QueryClient.
+// One shared resource per identity level for the current browser runtime.
 // Public navigation observes Auth state without initiating a session or
 // management query. Only protected views opt into management authorization. A permission result is UI state, never a substitute for
 // Supabase RLS / RPC write authorization.
@@ -48,7 +49,6 @@ const SESSION_KEY=['loc-account','session'];
 const MANAGEMENT_KEY=['loc-account','management'];
 // A management workspace verifies once on entry. Never re-query on focus or
 // stale-time expiry; explicit refresh and database write authorization remain.
-const ACCOUNT_CACHE_MS=Infinity;
 const emptyState=Object.freeze({
   loading:true,user:null,email:'',role:'',authorizer:null,
   permissionLoading:true,error:'',scopes:[]
@@ -71,20 +71,30 @@ async function loadSessionAccount(){
   }
 }
 
-async function loadManagementAccount(queryClient){
+let authRevision=0;
+let authUserId='';
+
+async function loadManagementAccount(mutate){
+  const startedAt=authRevision;
+  const obsolete=()=>startedAt!==authRevision;
   try{
     const session=await getAccountSession();
     const user=session?.user||null;
+    if(obsolete())return signedOutState;
     if(!user){
-      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return signedOutState;
     }
     const email=normalizeAuthEmail(user.email);
 
     // A blocked account must not keep a cached session-only identity.
-    if(await isCurrentEmailBlocklisted()){
+    const blocked=await isCurrentEmailBlocklisted();
+    if(obsolete())return signedOutState;
+    if(blocked){
       await signOutAccount();
-      queryClient.setQueryData(SESSION_KEY,signedOutState);
+      authRevision+=1;
+      authUserId='';
+      void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return failedState(BLOCKLIST_MESSAGE);
     }
 
@@ -98,6 +108,7 @@ async function loadManagementAccount(queryClient){
       if(error)throw new Error(error.message||'Management permission read failed');
       permissions=data||[];
     }
+    if(obsolete())return signedOutState;
     const authorizer=createScopeAuthorizer(user,permissions);
     return {
       ...signedOutState,user,email:authorizer.email,
@@ -105,43 +116,38 @@ async function loadManagementAccount(queryClient){
     };
   }catch(error){
     // Fail closed on authorization failures; never retain stale edit rights.
-    return failedState(error);
+    return obsolete()?signedOutState:failedState(error);
   }
 }
 
 export function useAccount({enabled=true,sessionOnly=false}={}){
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const queryKey=sessionOnly?SESSION_KEY:MANAGEMENT_KEY;
   const queryFn=useCallback(
-    ()=>sessionOnly?loadSessionAccount():loadManagementAccount(queryClient),
-    [sessionOnly,queryClient]
+    ()=>sessionOnly?loadSessionAccount():loadManagementAccount(mutate),
+    [sessionOnly,mutate]
   );
-  const query=useQuery({
-    queryKey,queryFn,enabled,
-    staleTime:ACCOUNT_CACHE_MS,
-    refetchOnWindowFocus:false,
-    refetchOnReconnect:false,
-    retry:false
-  });
+  const query=useAsyncResource(queryKey,queryFn,{enabled,revalidateOnMount:enabled&&!sessionOnly});
   const state=query.data||emptyState;
 
   // Explicit entry into edit mode always performs a fresh authorization
   // check, even when another view has populated the shared query cache.
   const refresh=useCallback(async()=>{
-    const result=await queryClient.fetchQuery({
-      queryKey,queryFn,staleTime:0,retry:false
-    });
+    const result=await mutate(queryKey,()=>queryFn(),{revalidate:false});
     if(sessionOnly)return result.user||null;
     return result.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
-  },[queryClient,queryKey,queryFn,sessionOnly]);
+  },[mutate,queryKey,queryFn,sessionOnly]);
 
   const signIn=useCallback(callbackURL=>signInWithGoogle(String(callbackURL||'').trim()),[]);
   const signOut=useCallback(async()=>{
     await signOutAccount();
-    await queryClient.cancelQueries({queryKey:['loc-account']});
-    queryClient.setQueryData(SESSION_KEY,signedOutState);
-    queryClient.setQueryData(MANAGEMENT_KEY,signedOutState);
-  },[queryClient]);
+    authRevision+=1;
+    authUserId='';
+    await Promise.all([
+      mutate(SESSION_KEY,signedOutState,{revalidate:false}),
+      mutate(MANAGEMENT_KEY,signedOutState,{revalidate:false})
+    ]);
+  },[mutate]);
 
   // The hidden local Scope is device-only and has no cloud management row.
   const canManageScopeSync=useCallback(
@@ -170,19 +176,22 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
 // OAuth and management entries still use the explicit authorization path.
 export function usePassiveSessionAccount(){
   const account=useAccount({enabled:false,sessionOnly:true});
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   useEffect(()=>{
     const listener=dbAuthEvents.onAuthStateChange((event,session)=>{
-      const previous=queryClient.getQueryData(SESSION_KEY);
       const user=session?.user||null;
-      queryClient.setQueryData(SESSION_KEY,user
+      const nextUserId=String(user?.id||'');
+      const identityChanged=authUserId!==nextUserId;
+      if(identityChanged||event==='SIGNED_OUT')authRevision+=1;
+      authUserId=nextUserId;
+      void mutate(SESSION_KEY,user
         ?{...signedOutState,user,email:normalizeAuthEmail(user.email)}
-        :signedOutState);
-      if(event==='SIGNED_OUT'||(previous?.user?.id&&previous.user.id!==user?.id)){
-        queryClient.removeQueries({queryKey:MANAGEMENT_KEY,exact:true});
+        :signedOutState,{revalidate:false});
+      if(identityChanged||event==='SIGNED_OUT'){
+        void mutate(MANAGEMENT_KEY,signedOutState,{revalidate:Boolean(user)});
       }
     });
     return ()=>listener.data.subscription.unsubscribe();
-  },[queryClient]);
+  },[mutate]);
   return account;
 }

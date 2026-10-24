@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQuery} from '@tanstack/react-query';
+import {useAsyncResource} from '../../../loc/use-async-resource';
 import {UI_COPY,registerDefaultSection} from '../../../i18n/ui-copy';
 import {useUiCopy,useUiSection} from '../../../i18n/ui-locale';
 import UiText,{useUiText} from '../../../i18n/UiText';
@@ -42,14 +42,9 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
   const zoomRange=useMemo(()=>statisticsZoomWindow(zoomLevel,endDate,knownEarliest),
     [zoomLevel,endDate,knownEarliest]);
   const {startDate,endDate:rangeEndDate,bucket}=zoomRange;
-  const locQuery=useQuery({
-    queryKey:['loc-statistics',startDate,rangeEndDate],
-    enabled:Boolean(startDate&&rangeEndDate),
-    queryFn:async()=>{
+  const locQuery=useAsyncResource(startDate&&rangeEndDate?['loc-statistics',startDate,rangeEndDate]:null,async()=>{
       const {selectLocStatistics}=await loadGalaxyStatistics();
       return selectLocStatistics({startDate,endDate:rangeEndDate});
-    },
-    staleTime:5*60_000
   });
   useEffect(()=>{
     const found=locQuery.data?.earliest||'';

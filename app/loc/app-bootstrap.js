@@ -1,13 +1,12 @@
 'use client';
 
-import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {dbPublicClient} from './db-client.mjs';
+import {useAsyncResource} from './use-async-resource';
 import {invalidatePublicScopeMetadata,invalidatePublicThemeSnapshot,selectPublicSiteBootstrap,selectScopeBlocks,selectScopeConfig,selectScopeRegistry} from './scope-data';
 import {selectThemeRegistry,themeUiId} from './theme-data';
 
 // Shared public site snapshot (Registry/Theme/page copy) is fetched once per
 // client runtime. Each Scope page fetches only its own config and page blocks.
-// React Query deduplicates consumers of the same (scopeId, pageName) key.
+// SWR deduplicates consumers of the same (scopeId, pageName) key.
 const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
 const PAGE_NAME=/^[a-z0-9_-]+$/;
 let bootstrapRpcInstalled=true;
@@ -99,22 +98,6 @@ export function appBootstrapPageCopy(data,scopeId){
 }
 
 export function useAppBootstrap(scopeId,pageName='index',{enabled=true}={}){
-  const queryClient=useQueryClient();
   const key=appBootstrapKey(scopeId,pageName);
-  return useQuery({
-    queryKey:key,
-    queryFn:()=>{
-      // Author Home already read this Scope's public Config. Reuse that fresh
-      // React Query value when navigating to Culture; this is NOT an auth grant.
-      // Invalidated or aged entries must never hide a subsequent config update.
-      const homeState=key[2]==='index'?null:queryClient.getQueryState(appBootstrapKey(scopeId,'index'));
-      const freshHome=homeState&&!homeState.isInvalidated
-        &&homeState.dataUpdatedAt>0&&Date.now()-homeState.dataUpdatedAt<60_000;
-      return selectAppBootstrap(scopeId,pageName,{
-        configHint:freshHome?homeState.data?.config:null
-      });
-    },
-    staleTime:Infinity,
-    enabled
-  });
+  return useAsyncResource(key,()=>selectAppBootstrap(scopeId,pageName),{enabled});
 }

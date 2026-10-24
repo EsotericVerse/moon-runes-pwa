@@ -4,7 +4,7 @@
 // search suggestion block. Mounted only after an authorized edit action.
 import {useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useQueryClient} from '@tanstack/react-query';
+import {useSWRConfig} from 'swr';
 import UiText,{useUiText} from '../i18n/UiText';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {useUiSection} from '../i18n/ui-locale';
@@ -18,6 +18,7 @@ import {resolveHomeImage} from './LocHomeBlockDisplay';
 import {isHomeFrameFor} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
+import {revalidateServerMetadata} from './scope-data';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -30,7 +31,7 @@ export default function ScopeBlockEditorSession({
   useUiSection('uiExtra.editBlocks');
   useUiSection('uiExtra.frameEditor');
   const t=useUiText();
-  const queryClient=useQueryClient();
+  const {mutate}=useSWRConfig();
   const [draft,setDraft]=useState(()=>({...initial,entities:HomeBlock.normalizeEntities(initial.entities)}));
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
@@ -40,12 +41,9 @@ export default function ScopeBlockEditorSession({
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
     await Promise.all([
-      queryClient.invalidateQueries({queryKey:bootstrapKey}),
-      queryClient.invalidateQueries({queryKey:displayKey})
-    ]);
-    await Promise.all([
-      queryClient.refetchQueries({queryKey:bootstrapKey,type:'active'}),
-      queryClient.refetchQueries({queryKey:displayKey,type:'active'})
+      mutate(bootstrapKey),
+      mutate(displayKey),
+      revalidateServerMetadata()
     ]);
   }
   const cancel=()=>onClose();
