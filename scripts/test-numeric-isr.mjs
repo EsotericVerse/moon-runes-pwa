@@ -102,7 +102,12 @@ test('media facet ISR returns counts only and repeats without another SQL scan',
   assert.equal(h.queries.length,0,'Facet payload must not run an unrelated RPC');
   await get(h,'lo3rwang','facet','?dimension=media_platform&start=2026-10-01&end=2026-10-02');
   assert.equal(h.mediaReads.length,2,'Different graph dimensions retain independent cache keys');
-  assert.equal((await get(h,'lo3rwang','facet','?dimension=media_style')).status,400);
+  const style=await get(h,'lo3rwang','facet','?dimension=media_style&start=2026-10-01&end=2026-10-02');
+  assert.equal(style.status,200);
+  assert.deepEqual(await style.json(),[{day:'2026-10-01',category:'Suno',item_count:2}]);
+  for(let i=0;i<3;i++)assert.equal((await get(h,'lo3rwang','facet','?dimension=media_style&start=2026-10-01&end=2026-10-02')).status,200);
+  assert.equal(h.mediaReads.length,3,'Media style numeric chart is cached, separate from type/platform');
+  assert.equal((await get(h,'lo3rwang','facet','?dimension=unknown')).status,400);
 });
 
 test('ordinary Rune Culture/Statistics charts also use the public numeric ISR',async()=>{
@@ -169,4 +174,14 @@ test('statistics media earliest date uses one cached RPC across repeated opening
   assert.deepEqual(h.queries.map(row=>row.name),['read_scope_earliest']);
   const client=readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
   assert.ok(client.includes("if(usesNumericIsr(current.id))return readNumericIsr(current.id,'earliest')"));
+});
+
+test('media style chart uses numeric ISR; raw cross-tag scan is explicitly on demand',()=>{
+  const view=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  const model=readFileSync(new URL('../app/modular/modules/statistics/MediaFacetStatistics.jsx',import.meta.url),'utf8');
+  assert.ok(view.includes('const mediaRows=mediaQuery.data||[];'));
+  assert.ok(view.includes("enabled:rankingType==='media_style'&&crossTagRequested"));
+  assert.ok(view.includes('onOpen={()=>setCrossTagRequested(true)}'));
+  assert.ok(view.includes('onRequestRawStyles={()=>setCrossTagRequested(true)}'));
+  assert.ok(model.includes("if(next!=='tags')onRequestRawStyles?.()"));
 });
