@@ -70,10 +70,8 @@ export default function SearchManagement(){
         panelId="management-search-panel" items={options}
         value={activeSection} onChange={next=>{
           if(next===activeSection)return;
-          if(!editDock?.active){setSection(next);return;}
-          const url=new URL(window.location.href);
-          url.searchParams.set('section',next);
-          editDock.switchTo(url.pathname+url.search+url.hash,{scroll:false});
+          if(editDock?.active)editDock.switchSection(next,setSection);
+          else setSection(next);
         }}/>
       <div id="management-search-panel" className="management-workspace-panel" role="region"
         aria-labelledby={'management-search-sections-option-'+currentSection.value}>
