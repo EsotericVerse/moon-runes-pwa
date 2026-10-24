@@ -86,9 +86,11 @@ async function loadManagementAccount(mutate){
     authEmail=normalizeAuthEmail(user.email);
     return cachedManagementAccount()||signedOutState;
   }catch(error){
+    // An older request must not erase a newer account's verified grants.
+    if(obsolete())return signedOutState;
     clearAuthorization();
     scopeMetadata=[];
-    return obsolete()?signedOutState:failedState(error);
+    return failedState(error);
   }
 }
 
@@ -173,7 +175,7 @@ export function usePassiveSessionAccount(){
       const nextUserId=String(user?.id||'');
       const nextEmail=normalizeAuthEmail(user?.email);
       const identityChanged=authUserId!==nextUserId||authEmail!==nextEmail;
-      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+      if(identityChanged||event==='SIGNED_OUT'){
         authRevision+=1;
         clearAuthorization();
         scopeMetadata=[];
@@ -185,11 +187,11 @@ export function usePassiveSessionAccount(){
       void mutate(SESSION_KEY,nextUserId
         ?{...signedOutState,user:{id:nextUserId}}
         :signedOutState,{revalidate:false});
-      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+      if(identityChanged||event==='SIGNED_OUT'){
         // Never put the unverified SDK event user into the verified OAuth cache.
         void mutate(VERIFIED_SESSION_KEY,undefined,{revalidate:Boolean(user)});
       }
-      if(identityChanged||event==='SIGNED_OUT'||event==='SIGNED_IN'){
+      if(identityChanged||event==='SIGNED_OUT'){
         // Clear the old role without launching a permission query from React.
         void mutate(MANAGEMENT_KEY,undefined,{revalidate:false});
       }
