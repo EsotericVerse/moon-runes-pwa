@@ -136,7 +136,8 @@ export default function StatisticsMultiChart({
     layout="vertical" margin={{top:10,right:20,bottom:14,left:6}}>
     <CartesianGrid strokeDasharray="3 3" stroke={GRID}/>
     <XAxis type="number" allowDecimals={false} tick={{fill:TEXT}}/>
-    <YAxis dataKey="name" type="category" width={190} tick={{fill:TEXT,fontSize:11}}/>
+    <YAxis dataKey="name" type="category" width={150} tick={{fill:TEXT,fontSize:11}}
+      tickFormatter={value=>String(value).length>12?String(value).slice(0,11)+'…':String(value)}/>
     <Tooltip contentStyle={TOOLTIP}/>
     <Bar dataKey="value" fill="var(--loc-accent)" maxBarSize={28}
       cursor={onCategoryClick?'pointer':undefined}
@@ -226,10 +227,10 @@ export function Rune66Summary({analysis,range={}}){
   // Combined mode uses the same measure for both dimensions. An item
   // may occur repeatedly within an article, but each article counts once.
   const combinedDistribution=[
-    ...groupDistribution.map(row=>({...row,key:'class:'+row.key,name:'群組 · '+row.name,fill:color(0)})),
-    ...groupRows.slice(0,10).map(row=>({
+    ...groupDistribution.map((row,index)=>({...row,key:'class:'+row.key,name:'群組 · '+row.name,fill:color(index*2)})),
+    ...groupRows.slice(0,10).map((row,index)=>({
       key:'item:'+row.rune_id,name:'項目 · '+groupLabel(row.label,t),
-      value:Number(row.document_count)||0,fill:color(1)
+      value:Number(row.document_count)||0,fill:color(index*2+1)
     })).filter(row=>row.value>0)
   ];
   const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
