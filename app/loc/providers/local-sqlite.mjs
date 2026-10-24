@@ -28,9 +28,6 @@ const SCHEMA=`
 CREATE TABLE IF NOT EXISTS local (
   id TEXT PRIMARY KEY NOT NULL,
   email TEXT,
-  period TEXT,
-  period_start TEXT,
-  period_end TEXT,
   style INTEGER,
   theme TEXT NOT NULL DEFAULT 'theme-7',
   search_able INTEGER NOT NULL DEFAULT 1,
