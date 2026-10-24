@@ -295,8 +295,8 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         if(assigned==='others'&&subgroup&&subgroup!=='unclassified')
           ids.push('source_rollup'+String.fromCharCode(0)+'personal');
       }else if(row.kind==='media'){
-        const family=mediaTypeFamily(row.category);
-        if(family)ids.push('media_category'+String.fromCharCode(0)+family);
+        const family=mediaTypeFamily(row.category)||'other';
+        ids.push('media_category'+String.fromCharCode(0)+family);
       }
       for(const id of ids)add(day,id,Number(row.item_count)||0);
     }
