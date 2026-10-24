@@ -45,8 +45,8 @@ function DataSourceStatus({local=false}){
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
   if(local)return <div className="scope-data-source-global">
     <details className="scope-data-source-details">
-      <summary>本機資料來源</summary>
-      <div className="scope-data-source-values"><span>目前使用：SQLite（local，本機檔案）</span></div>
+      <summary>{section.localTitle||UI_COPY.uiExtra.dataSourceStatus.localTitle}</summary>
+      <div className="scope-data-source-values"><span>{section.localActive||UI_COPY.uiExtra.dataSourceStatus.localActive}</span></div>
     </details>
   </div>;
   const current=status.unavailable
