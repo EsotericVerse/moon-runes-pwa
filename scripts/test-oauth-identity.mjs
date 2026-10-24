@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import {parseVerifiedGoogleOAuthUser} from '../app/loc/oauth-identity.mjs';
 import {createDatabaseClient} from '../app/loc/db-contract.mjs';
+import {setAuthorization,readAuthorization,clearAuthorization,canAuthorizeScope,canAuthorizeGlobal,createScopeAuthorizer,assertAuthorizationForTable} from '../app/loc/authorization-runtime.mjs';
 
 const validUser=(provider='google',oauthEmail='owner@example.com')=>({
   id:'supabase-user-1',email:'owner@example.com',
@@ -37,9 +38,9 @@ test('Google identity belonging to different Supabase user is rejected',()=>{
   const u=validUser();u.identities[0].user_id='other-user';
   assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/Google OAuth/);
 });
-test('Google identity without provider ID is rejected',()=>{
-  const u=validUser();u.identities[0].provider_id='';
-  assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/識別碼/);
+test('Google identity without optional provider ID remains verified',()=>{
+  const u=validUser();delete u.identities[0].provider_id;
+  assert.equal(parseVerifiedGoogleOAuthUser(u).email,'owner@example.com');
 });
 
 // Run the real production database client with simulated Auth API responses.
@@ -83,4 +84,27 @@ test('settings account panel subscribes to verified session instead of passive c
   assert.ok(settings.includes("useAccount({enabled:section==='account',sessionOnly:true})"));
   assert.ok(settings.includes('Google OAuth（已驗證）：{account.email}'));
   assert.ok(!settings.includes('account.email||account.user.email'));
+});
+
+test('pure JS permissions use only scopeid/email/role and are cleared on logout',()=>{
+  const user={id:'supabase-user-1',email:'owner@example.com'};
+  try{
+    setAuthorization(user,[
+      {id:'lo3rwang',email:'owner@example.com',role:'scope',galaxy:'private-metadata'},
+      {id:'other',email:'not-owner@example.com',role:'admin'}
+    ]);
+    assert.deepEqual(readAuthorization().entries,[{scopeid:'lo3rwang',email:'owner@example.com',role:'scope'}]);
+    assert.equal(canAuthorizeScope('lo3rwang'),true);
+    assert.equal(canAuthorizeGlobal(),false);
+    assert.equal(canAuthorizeScope('other'),false);
+    assert.equal(createScopeAuthorizer({id:'other-user',email:user.email}),null);
+    assert.doesNotThrow(()=>assertAuthorizationForTable('silver.lo3rwang_galaxy'));
+    assert.throws(()=>assertAuthorizationForTable('silver.other_galaxy'),/沒有此 Scope/);
+    assert.throws(()=>assertAuthorizationForTable('silver.loc'),/沒有此 Scope/);
+    setAuthorization(user,[{id:'loc',email:user.email,role:'admin'}]);
+    assert.equal(canAuthorizeGlobal(),true);
+    assert.doesNotThrow(()=>assertAuthorizationForTable('silver.loc'));
+  }finally{clearAuthorization();}
+  assert.equal(readAuthorization(),null);
+  assert.equal(canAuthorizeScope('lo3rwang'),false);
 });
