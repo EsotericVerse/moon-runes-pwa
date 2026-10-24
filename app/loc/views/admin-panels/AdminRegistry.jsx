@@ -12,7 +12,7 @@ import {THEME_SLOTS} from '../../../modular/theme-registry';
 const ObjectEditor=dynamic(()=>import('../../BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {ScopeFeatureToggles} from '../../../modular/ui';
 import {
-  deleteScope,dbAuthRelation,manageScopeRegistry,provisionScope,updateRows
+  deleteScope,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,updateRows
 } from '../../db-client.mjs';
 
 const EMPTY_SCOPE_CREATE={scope_id:'',email:'',locale:'zh-Hant',route_mode:'directory'};
@@ -58,9 +58,9 @@ function useAdminScopeData(){
     let active=true;
     (async()=>{
       try{
-        const locResult=await dbAuthRelation('silver.loc')
-          .select('id,display_name,manage_email,manage_role,domain,directory,parent_scope_id,active,sort_order,galaxy_table,time_table,birthday,title_tw,desc_tw')
-          .order('sort_order',{ascending:true}).order('id',{ascending:true});
+        // Management-only fields are returned by an admin-authorized RPC,
+        // never from the public Registry's email column.
+        const locResult=await dbAuthClient.schema('silver').rpc('read_scope_registry_admin');
         if(locResult.error)throw new Error(locResult.error.message||'人員目錄讀取失敗。');
 
         const locRows=locResult.data||[];
@@ -72,8 +72,8 @@ function useAdminScopeData(){
           domain:row.domain,directory:row.directory,parent_scope_id:row.parent_scope_id,
           active:row.active,sort_order:row.sort_order
         }));
-        const mappingRows=locRows.filter(row=>row.manage_email).map(row=>({
-          id:row.id,email:row.manage_email,role:row.manage_role,
+        const mappingRows=locRows.filter(row=>row.email).map(row=>({
+          id:row.id,email:row.email,role:row.manage_role,
           galaxy:row.galaxy_table,time:row.time_table,
           birthday:row.birthday,
           Title_TW:row.title_tw,Desc_TW:row.desc_tw
@@ -412,7 +412,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
     if(!window.confirm('移除 '+row.email+'？'))return;
     try{
       await updateRows('silver.loc',{
-        manage_email:null,manage_role:null
+        email:null,manage_role:null
       },{filters:[{column:'id',operator:'eq',value:row.id}]});
       setStatus('Mapping 已移除。');refresh();
     }catch(error){setStatus(error?.message||'Mapping 刪除失敗。');}
@@ -425,7 +425,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
       const email=String(newMapping.email||'').trim().toLowerCase();
       if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
       await updateRows('silver.loc',{
-        manage_email:email,manage_role:'scope',
+        email:email,manage_role:'scope',
         galaxy_table:String(newMapping.galaxy||'galaxy').trim()||'galaxy',
         time_table:String(newMapping.time||'time').trim()||'time',
         birthday:newMapping.birthday||null

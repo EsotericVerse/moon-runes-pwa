@@ -16,8 +16,8 @@ export async function POST(request){
   const {data:authData,error:authError}=await client.auth.getUser(token);
   const email=String(authData?.user?.email||'').trim().toLowerCase();
   if(authError||!email)return Response.json({error:'Authentication required'},{status:401});
-  const {data:roles,error:roleError}=await client.from('loc')
-    .select('manage_role').eq('manage_email',email).in('manage_role',['admin','scope']).limit(1);
+  // Check permissions server-side without selecting registry emails publicly.
+  const {data:roles,error:roleError}=await client.rpc('get_my_scope_management');
   if(roleError||!roles?.length)return Response.json({error:'Metadata management permission required'},{status:403});
   revalidateTag(LOC_PUBLIC_CACHE_TAG,{expire:0});
   return new Response(null,{status:204});

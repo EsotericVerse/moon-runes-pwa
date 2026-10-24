@@ -14,7 +14,7 @@ export function createPublicSupabaseClient(){
 
 export async function readPublicScopeConfig(scopeId){
   const client=createPublicSupabaseClient();
-  const {data,error}=await client.from(scopeId)
+  const {data,error}=await client.from(scopeId==='loc'?'loc_config':scopeId)
     .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
     .eq('id',scopeId).limit(1).maybeSingle();
   if(error)throw error;
