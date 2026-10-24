@@ -261,7 +261,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
         <div className="rune-3d-moon-orbit" aria-hidden="true">
           <div className="rune-3d-moon-orbit-track">
             {orbitGlyphs.map((glyph,index)=><span key={index}
-              className="rune-3d-moon-orbit-glyph" style={{'--orbit-index':index}}>{glyph}</span>)}
+              className="rune-3d-moon-orbit-glyph" style={{'--orbit-angle':(index*90)+'deg'}}>{glyph}</span>)}
           </div>
         </div>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}

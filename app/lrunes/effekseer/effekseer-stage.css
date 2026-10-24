@@ -429,13 +429,13 @@
 .rune-3d-moon-orbit-glyph{position:absolute;left:50%;top:50%;
   color:#f6e5b7;font:600 clamp(1.1rem,2.3vw,1.8rem)/1.2 "Noto Serif TC",serif;
   text-shadow:0 0 13px #dcb5ffb8,0 1px 5px #000;
-  transform:translate(-50%,-50%) rotate(calc(var(--orbit-index)*90deg))
+  transform:translate(-50%,-50%) rotate(var(--orbit-angle))
     translateY(calc(clamp(78px,12vw,144px)*-1));}
 @keyframes rune-moon-orbit{to{transform:rotate(360deg)}}
 @media(max-width:700px){
   .rune-3d-moon-orbit{left:74%;top:23%;width:clamp(145px,40vw,210px)}
   .rune-3d-moon-orbit-glyph{font-size:1.12rem;
-    transform:translate(-50%,-50%) rotate(calc(var(--orbit-index)*90deg))
+    transform:translate(-50%,-50%) rotate(var(--orbit-angle))
       translateY(calc(clamp(68px,20vw,105px)*-1))}
   .rune-3d-ritual-ready{inset:2% 3% 35%}
   .rune-3d-ritual-ready .rune-3d-ritual-actions{width:100%}
