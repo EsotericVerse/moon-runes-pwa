@@ -230,12 +230,6 @@ export default function Culture(){
   useEffect(()=>{
     if(isTimeEditingView&&scopeId&&scopeId!=='loc')editDock?.begin(scopeId);
   },[isTimeEditingView,scopeId,editDock?.begin]);
-  useEffect(()=>{
-    setSelectedTimelineRecordId('');
-    setSelectedTimelineInfo(null);
-    setSelectedTimelineDate('');
-    setSuggestedRequestNonce(0);
-  },[timeEditorSection]);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -991,8 +985,17 @@ export default function Culture(){
             panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
             value={timeEditorSection} onChange={next=>{
               if(next===timeEditorSection)return;
-              if(editDock?.active)editDock.switchSection(next,setTimeEditorSection);
-              else setTimeEditorSection(next);
+              const apply=()=>{
+                setTimeEditorSection(next);
+                setSelectedTimelineRecordId('');
+                setSelectedTimelineInfo(null);
+                setSelectedTimelineDate('');
+                setSuggestedRecordType(next==='anchor-style'?'anchor':next);
+                setSuggestedRequestNonce(0);
+                setTimelineEditorRevision(value=>value+1);
+              };
+              if(editDock?.active)editDock.switchSection(next,apply);
+              else apply();
             }}/>
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
             aria-labelledby={'time-editor-sections-option-'+choice.value}>
