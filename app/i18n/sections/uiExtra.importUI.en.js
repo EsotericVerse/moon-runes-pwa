@@ -1,4 +1,6 @@
 export default {
+  "importLanguage": "Import language",
+  "importLanguageHint": "Traditional Chinese by default. Decode UTF-8 first, then try the selected language's legacy text encoding if needed. No translation or stored language tag.",
   "invalidMediaId": "Invalid media_id format.",
   "existingMediaFailed": "Unable to check existing media.",
   "mediaIdCompareFailed": "Unable to match media IDs.",
