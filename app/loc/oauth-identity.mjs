@@ -12,7 +12,7 @@ export function parseVerifiedGoogleOAuthUser(user){
     throw new Error('Google OAuth Email 與 Supabase 帳號不一致，已拒絕管理授權。');
   if(identity.identity_data?.email_verified!==true)
     throw new Error('Google OAuth Email 尚未驗證，已拒絕管理授權。');
-  if(!String(identity.provider_id||'').trim())
-    throw new Error('Google OAuth 缺少提供者識別碼，已拒絕管理授權。');
-  return Object.freeze({provider:'google',email,providerId:String(identity.provider_id),userId:String(user.id)});
+  // Supabase Auth has already verified the JWT and Google-linked identity.
+  // provider_id may be omitted by the Auth response; it is not the login gate.
+  return Object.freeze({provider:'google',email,providerId:String(identity.provider_id||''),userId:String(user.id)});
 }
