@@ -51,7 +51,7 @@ function isInteractiveTarget(target){
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
 const TIME_EDITOR_SECTIONS=Object.freeze([
-  {value:'anchor-style',label:'定錨點／風格標籤',description:'編輯日期定錨點與依附定錨點的風格標籤。'},
+  {value:'anchor-style',label:'定錨點／風格標籤',shortLabel:'定錨／風格',description:'編輯日期定錨點與依附定錨點的風格標籤。'},
   {value:'event',label:'事件',description:'編輯以正式定錨點界定的事件。'},
   {value:'period',label:'時期',description:'編輯時期與起訖定錨點。'}
 ]);
