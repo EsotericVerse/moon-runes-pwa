@@ -300,6 +300,7 @@ export default {
     "analysisInterrupted": "Analysis interrupted; check the error below and retry",
     "batchError": "Keyword batch analysis failed.",
     "resetClassification": "Reset & rebuild (manual)",
+    "resetInProgress": "Clearing article classifications, please wait…",
     "confirmReset": "Clear every article's Class/group classification? The keyword library itself is untouched, but you'll need to click \"Re-analyze\" again to rebuild the results.",
     "resetDone": "Article classifications cleared; click \"Re-analyze\" to rebuild them.",
     "resetError": "Failed to reset classification.",

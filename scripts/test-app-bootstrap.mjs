@@ -122,3 +122,74 @@ test('author statistics wires selected keyword source to chart cache and filtere
   assert.match(code,/unit:queryRange\.bucket,sourceCategory:activeKeywordSource/);
   assert.match(code,/filteredSource=\{Boolean\(activeKeywordSource\)\}/);
 });
+
+
+// Manual reset must not send tens of thousands of classified rows through a
+// single UPDATE. Exercise the real database client with the existing RPC seam.
+test('keyword reset uses paged authorized writes before clearing summary',async()=>{
+  const {createDatabaseClient}=await import('../app/loc/db-contract.mjs');
+  const rows=Array.from({length:1510},(_,i)=>({
+    uid:String(i+1).padStart(8,'0'),class_id:1,group_lists:'1'
+  }));
+  const calls=[];
+  const relation=name=>({
+    select(columns,options={}){
+      if(name==='loc'){
+        assert.equal(columns,'galaxy_table');
+        return {eq(){return this;},async limit(){return {data:[{galaxy_table:'galaxy'}],error:null};}};
+      }
+      assert.equal(name,'lo3rwang_galaxy');
+      if(options.head)return Promise.resolve({count:rows.length,error:null});
+      let cursor='';
+      return {
+        order(){return this;},
+        gt(column,value){assert.equal(column,'uid');cursor=value;return this;},
+        async limit(size){return {data:rows.filter(row=>row.uid>cursor).slice(0,size),error:null};}
+      };
+    }
+  });
+  const rpc=async(name,payload)=>{
+    if(name==='management_write'){
+      assert.equal(payload.p_table,'silver.lo3rwang');
+      assert.deepEqual(payload.p_values.keyword_meta,{});
+      calls.push('stale');
+      return {data:{count:1},error:null};
+    }
+    assert.equal(name,'apply_keyword_classification');
+    const {mode,rows:chunk}=payload.p_rows;
+    calls.push(mode);
+    if(mode==='chunk'){
+      assert.ok(chunk.length<=750);
+      for(const item of chunk){
+        const row=rows.find(row=>row.uid===item.uid);
+        row.class_id=null;row.group_lists='false';
+      }
+      return {data:chunk.length,error:null};
+    }
+    if(mode==='reset')assert.ok(rows.every(row=>row.class_id==null&&row.group_lists==='false'));
+    return {data:0,error:null};
+  };
+  const client={schema(){return {from:relation,rpc};}};
+  const auth={getSession(){},signInWithOAuth(){},signOut(){}};
+  const db=createDatabaseClient({publicClient:client,authClient:client,auth});
+  const progress=[];
+  const changed=await db.resetKeywordClassification('lo3rwang',{onProgress:p=>progress.push(p)});
+  assert.equal(changed,1510);
+  assert.deepEqual(calls,['begin','stale','chunk','chunk','chunk','reset']);
+  assert.equal(progress.at(-1).phase,'completed');
+  assert.equal(progress.at(-1).completed,1510);
+});
+
+test('keyword reset reports progress and editing notice remains inside the dock',()=>{
+  const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
+  const shell=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../app/styles/bottom-navigation.css',import.meta.url),'utf8');
+  assert.ok(panel.includes("setResetProgress({phase:'reading',completed:0,total:0})"));
+  assert.ok(panel.includes("resetProgress?l.resetInProgress:l.resetClassification"));
+  assert.ok(panel.includes('aria-busy="true"'));
+  const notice=shell.indexOf('className="scope-edit-dock-notice"');
+  assert.ok(notice>0);
+  assert.ok(shell.indexOf('</nav>',notice)>notice);
+  assert.ok(css.includes('.scope-feature-dock .scope-edit-dock-notice{'));
+  assert.ok(css.includes('overflow-wrap:anywhere'));
+});

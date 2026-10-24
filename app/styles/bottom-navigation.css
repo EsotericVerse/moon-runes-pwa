@@ -53,6 +53,16 @@
   background:var(--loc-accent);
   box-shadow:0 0 6px var(--loc-accent);
 }
+/* Keep edit/save/import notices inside the six-feature dock, wrapping
+   long messages instead of leaving an unframed paragraph below the bar. */
+.scope-feature-dock .scope-edit-dock-notice{
+  grid-column:1 / -1;
+  margin:0;padding:.45rem .65rem;min-width:0;max-width:100%;
+  border:1px solid var(--loc-line);border-radius:12px;
+  background:var(--loc-panel);color:var(--loc-text);
+  font-size:.83rem;line-height:1.4;text-align:center;
+  overflow-wrap:anywhere;white-space:normal;pointer-events:auto;
+}
 body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 /* Embedded Daily Rune test surface precedes the ordinary Global Settings cards. */
 .scope-settings-daily-test{display:grid;gap:.7rem;min-width:0;}

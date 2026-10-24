@@ -91,6 +91,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [busy,setBusy]=useState(false);
   const [savingStage,setSavingStage]=useState('');
   const [batchProgress,setBatchProgress]=useState(null);
+  const [resetProgress,setResetProgress]=useState(null);
   const [message,setMessage]=useState('');
   const [workspace,setWorkspace]=useState('analysis');
 
@@ -418,16 +419,20 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   // slate is wanted instead of the incremental narrowed reanalysis above.
   // Does not re-run analysis by itself; press 重新分析 afterward.
   async function resetBatch(){
+    if(busy||loading||configDirty||draftDirty)return;
     if(!window.confirm(l.confirmReset))return;
-    setBusy(true);setMessage('');
+    setBusy(true);setMessage('');setBatchProgress(null);
+    setResetProgress({phase:'reading',completed:0,total:0});
     try{
-      await resetKeywordClassification(scopeId);
+      await resetKeywordClassification(scopeId,{onProgress:setResetProgress});
       await invalidateClassification();
       await load('',selectedClass);
       setMessage(l.resetDone);
     }catch(error){
-      setMessage(String(error?.message||error||l.resetError));
+      await invalidateClassification().catch(()=>{});
+      setMessage(l.resetError+' '+String(error?.message||error));
     }finally{
+      setResetProgress(null);
       setBusy(false);
     }
   }
@@ -617,8 +622,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <div className="scope-preview-links">
         {!editDock?.active?<button type="button" className="loc-button" disabled={busy||(!configDirty&&!draftDirty)} onClick={saveAll}>{l.saveSettings}</button>:null}
         <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
-        <button type="button" className="loc-button" disabled={busy||configDirty||!currentClassId} onClick={resetBatch}>{l.resetClassification}</button>
+        <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassId} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
       </div>
+      {resetProgress?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true">
+        <span className="scope-keyword-saving-spinner" aria-hidden="true"/>
+        {l.resetInProgress}{resetProgress.total>0?' '+Math.min(resetProgress.completed,resetProgress.total).toLocaleString()+' / '+resetProgress.total.toLocaleString()+l.articleUnit:''}
+      </p>:null}
       {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
         <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>
         <div className="scope-keyword-batch-progress-bar" role="progressbar"
@@ -747,7 +756,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <button type="button" className="loc-button" onClick={()=>newItem('')}>{l.createFirst}</button>
     </div>:null}
     </section>:null}
-       {message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')||message.includes(l.notAllowedWord)||message.includes('0 rows')||message.includes(l.alreadyExistsWord)?'scope-status scope-error':'scope-status'}>{message}</p>:null}
+       {message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')||message.includes(l.notAllowedWord)||message.includes('0 rows')||message.includes('timeout')||message.includes(l.alreadyExistsWord)?'scope-status scope-error':'scope-status'}>{message}</p>:null}
        </div>
      </div>
    </div>;

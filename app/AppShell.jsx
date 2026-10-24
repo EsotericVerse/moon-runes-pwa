@@ -479,8 +479,8 @@ function AppShellInner({children}){
         <BottomNavIcon name={tab.icon}/>
         <span>{tab.label}</span>
       </ScopeLink>)}
+      {editingDockVisible&&editDock.notice?<p className="scope-edit-dock-notice" role="status" aria-live="polite">{editDock.notice}</p>:null}
     </nav>
-    {editingDockVisible&&editDock.notice?<p className="scope-edit-dock-notice" role="alert">{editDock.notice}</p>:null}
     {showHomeEditEntry?<ScopeHomeEditEntry key={scopeId}/>:null}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">

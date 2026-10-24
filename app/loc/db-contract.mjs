@@ -7,6 +7,9 @@ import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
 // costs -- but keeping one tuned number instead of two that drift apart
 // under separate testing is less confusing to reason about and re-tune.
 export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
+// Reset changes potentially tens of thousands of classified rows; keep each
+// authorized database write comfortably below the 30s statement timeout.
+const KEYWORD_RESET_BATCH_SIZE=750;
 
 // The existing management-write boundary enforces Galaxy metadata rules
 // consistently for publisher, search, culture and import paths.
@@ -173,9 +176,69 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   // only -- keyword library rows are untouched). Use when the keyword
   // library changed enough that a clean slate is wanted; an ordinary
   // runKeywordAnalysisBatch no longer wipes anything on its own.
-  async function resetKeywordClassification(scopeId){
+  async function resetKeywordClassification(scopeId,{onProgress}={}){
     const scope=normalizeScopeId(scopeId);
-    return keywordClassificationWrite(scope,{mode:'reset'});
+    // The original reset mode remains the final authority for clearing the
+    // stored summary. The bulk of the work uses existing authorized chunks
+    // rather than one full-table UPDATE which can exceed statement_timeout.
+    await keywordClassificationWrite(scope,{mode:'begin'});
+    onProgress?.({phase:'reading',completed:0,total:0});
+    const {data:scopeRows,error:scopeError}=await authClient.schema('silver').from('loc')
+      .select('galaxy_table').eq('id',scope).limit(1);
+    if(scopeError)throw new Error(scopeError.message||'Scope mapping read failed');
+    if(!scopeRows?.length)throw new Error('Scope mapping not found');
+    const suffix=String(scopeRows[0].galaxy_table||'galaxy').trim();
+    if(!/^[a-z][a-z0-9_]{0,40}$/.test(suffix))throw new Error('Invalid Galaxy table mapping');
+    const galaxy=authClient.schema('silver').from(scope+'_'+suffix);
+    const {count:total,error:countError}=await galaxy.select('uid',{count:'exact',head:true});
+    if(countError)throw new Error(countError.message||'Galaxy row count failed');
+    const totalRows=Math.max(0,Number(total)||0);
+
+    // Manual reset is deliberately destructive. Before any chunk writes,
+    // mark the previous classification stale and discard the narrowing SHA
+    // baseline: an interrupted reset must be recoverable by a FULL analysis.
+    const stale=await managementWrite({
+      p_table:'silver.'+scope,p_operation:'update',p_rows:null,
+      p_values:{staticstime:null,keyword_document_count:0,keyword_meta:{}},
+      p_filters:[{column:'id',operator:'eq',value:scope}]
+    });
+    if(Number(stale?.count||0)!==1)throw new Error('Scope classification reset could not mark results stale');
+
+    let completed=0;
+    let changed=0;
+    let cursor='';
+    try{
+      for(;;){
+        let query=galaxy.select('uid,class_id,group_lists')
+          .order('uid',{ascending:true});
+        if(cursor)query=query.gt('uid',cursor);
+        const {data,error}=await query.limit(KEYWORD_RESET_BATCH_SIZE);
+        if(error)throw new Error(error.message||'Galaxy classification page read failed');
+        const page=data||[];
+        if(!page.length)break;
+        const updates=page
+          .filter(row=>row.class_id!=null||row.group_lists!=='false')
+          .map(row=>({uid:row.uid,class_id:null,group_lists:'false'}));
+        if(updates.length)changed+=await keywordClassificationWrite(scope,{mode:'chunk',rows:updates});
+        completed+=page.length;
+        cursor=String(page[page.length-1].uid||'');
+        if(!cursor)throw new Error('Galaxy classification paging returned an empty uid');
+        onProgress?.({phase:'clearing',completed,total:totalRows});
+        if(page.length<KEYWORD_RESET_BATCH_SIZE)break;
+      }
+      onProgress?.({phase:'finalizing',completed,total:totalRows});
+      // This last reset is now a near-no-op Galaxy UPDATE. It still clears
+      // stored counts/meta and catches rows newly classified during paging.
+      const remainder=await keywordClassificationWrite(scope,{mode:'reset'});
+      onProgress?.({phase:'completed',completed:totalRows,total:totalRows});
+      return changed+remainder;
+    }catch(error){
+      if(completed>0)throw new Error(
+        '清空尚未完成（已檢查 '+completed.toLocaleString()+' 篇）。' +
+        '部分分類可能已清空，請重新執行清空或完整重新分析。'+String(error?.message||error)
+      );
+      throw error;
+    }
   }
 
   async function readKeywordClass(scopeId,classId){

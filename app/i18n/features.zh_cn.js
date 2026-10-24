@@ -299,6 +299,7 @@ export default {
     "analysisInterrupted": "分析中断；请查看下方错误后重新执行",
     "batchError": "关键词批次分析失败。",
     "resetClassification": "清空重建（手动）",
+    "resetInProgress": "正在清空文章分类，请稍候…",
     "confirmReset": "确定要清空所有文章的 Class/群组分类吗？关键词库本身不受影响，但需要重新按「重新分析」才会补回分类结果。",
     "resetDone": "已清空文章分类，请按「重新分析」重新建立。",
     "resetError": "清空分类失败。",
