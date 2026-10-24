@@ -16,6 +16,7 @@ import './skin-lab.css';
 import './effekseer/effekseer-stage.css';
 
 const DIRECTIONS=['正位','半正位','半逆位','逆位'];
+const CARD_ROTATIONS=[0,90,-90,180];
 const DAILY_FIELDS=[['sit_q','狀況形容'],['sit_a','狀況表達'],['daily_r','每日占卜提醒'],['daily_g','每日占卜引導'],['daily_b','每日占卜祝福']];
 const GROUP_COLUMNS='group_id,english_name,desc,quality,style,runeslist';
 const RUNE_COLUMNS='rune_id,rune_name,english_name,totem,group_name,moon_phase,card_attr,rune_description,archetype,char_action,positive_keywords,negative_keywords';
@@ -74,7 +75,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
     setTextureQuality(query.get('texture')==='original'?'original':'hd256');
     setDiagnoseAmbient(query.get('fog_preview')==='1');
   },[]);
-  const [phase,setPhase]=useState('idle'); // idle → waiting → revealing → transfer → ready
+  const [phase,setPhase]=useState('idle'); // idle → waiting → drawing → revealing → transfer → ready
   const [pending,setPending]=useState(null);
   const [transferTarget,setTransferTarget]=useState(null);
   const stageRef=useRef(null),slotRef=useRef(null),resultsRef=useRef(null);
@@ -140,7 +141,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   },[mode,group]);
 
   async function drawOne(){
-    if(lock.current||busy||phase==='waiting'||phase==='revealing'||phase==='transfer'||finished||
+    if(lock.current||busy||phase==='waiting'||phase==='drawing'||phase==='revealing'||phase==='transfer'||finished||
       (mode==='daily'&&cards.current.length)||(mode==='duel'&&cards.current.length>=11))return;
     lock.current=true;setBusy(true);setError('');
     // Daily is one draw, one direct result; ritual waiting belongs to multi-card duel.
@@ -176,9 +177,9 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
           setPhase('ready');
           setResultOpen(true);
         }else{
-          const remainingWait=Math.max(0,1000-(Date.now()-started));
+          const remainingWait=Math.max(0,380-(Date.now()-started));
           if(remainingWait)await new Promise(resolve=>setTimeout(resolve,remainingWait));
-          if(live.current){setPending(item);setPhase('revealing');}
+          if(live.current){setPending(item);setPhase('drawing');}
         }
       }
     }catch(e){if(live.current){
@@ -239,18 +240,38 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
         <span className="rune-skin-moon rune-3d-night-moon"/>
       </div>:null}
       {!isList?<RuneMistBackdrop phase={phase} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>:null}
+      {mode==='duel'&&['idle','waiting','ready'].includes(phase)?
+        <div className="rune-3d-draw-deck" aria-hidden="true">
+          <div className="rune-3d-draw-deck-card"><span>月</span><small>LunaRunes</small></div>
+        </div>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
         <>
           {phase==='waiting'?<><WaitingEffekseerStage textureQuality={textureQuality}/>
-            <div className="rune-3d-ritual-status" role="status">正在喚醒符文……</div></>:null}
+            <div className="rune-3d-ritual-status" role="status">月光正在挑選符文……</div></>:null}
+          {phase==='drawing'&&pending?<motion.div
+            key={'drawn-'+pending.birth} className="rune-3d-drawn-card" aria-hidden="true"
+            initial={reducedMotion?{opacity:0,left:'50%',top:'45%',rotateY:180}:
+              {opacity:0,left:'24%',top:'63%',scale:.8,rotateY:0,rotateZ:-14}}
+            animate={reducedMotion?{opacity:1,left:'50%',top:'45%',rotateY:180}:
+              {opacity:[0,1,1],left:['24%','40%','50%'],top:['63%','37%','45%'],
+                scale:[.8,1.08,1.48],rotateY:[0,35,180],
+                rotateZ:[-14,-5,CARD_ROTATIONS[pending.directionIndex]]}}
+            transition={{duration:reducedMotion?.08:1.08,
+              times:reducedMotion?undefined:[0,.36,1],ease:'easeInOut'}}
+            onAnimationComplete={()=>setPhase(current=>current==='drawing'?'revealing':current)}>
+            <div className="rune-3d-drawn-card-back"><span>月</span><small>LunaRunes</small></div>
+            <div className="rune-3d-drawn-card-front">
+              <img src={runeImage(pending.card)} alt=""/>
+            </div>
+          </motion.div>:null}
           {phase==='revealing'&&pending?<EffekseerStage key={pending.birth}
             rune={pending.card} direction={pending.direction} ceremony
             appearance={ceremonySubject} cardSrc={runeImage(pending.card)}
             textureQuality={textureQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
             onGlyphClick={()=>{}}/>:null}
           {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
-            onClick={drawOne} disabled={busy}>點選畫面抽牌</button>:null}
+            onClick={drawOne} disabled={busy}>輕觸牌庫，召喚符文</button>:null}
           {phase==='transfer'&&pending&&transferTarget?
             <motion.div className="rune-3d-flying-rune" aria-hidden="true"
               initial={{x:0,y:0,scale:1,opacity:1}}

@@ -319,6 +319,51 @@
 @media(prefers-reduced-motion:reduce){
  .rune-3d-mist-backdrop{transition:none;will-change:auto}
 }
+
+/* Physical draw: CSS 3D card travel uses Motion; licensed Effekseer handles VFX. */
+.rune-3d-draw-deck{position:absolute;left:24%;top:63%;z-index:3;
+  width:clamp(118px,17vw,188px);aspect-ratio:1;pointer-events:none;
+  transform:translate(-50%,-50%) perspective(650px) rotateX(11deg) rotateZ(-14deg);
+  opacity:.96;transition:opacity .25s ease}
+.rune-3d-draw-deck:before,.rune-3d-draw-deck:after{content:"";position:absolute;inset:0;
+  border-radius:15px;border:1px solid var(--loc-gold-border-soft);background:var(--loc-panel-2)}
+.rune-3d-draw-deck:before{transform:translate(9px,10px)}
+.rune-3d-draw-deck:after{transform:translate(5px,5px)}
+.rune-3d-draw-deck-card{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;border:2px solid var(--loc-gold-border);
+  border-radius:15px;background:linear-gradient(135deg,#161c31,#07090f 66%,#141c32);
+  color:var(--loc-gold);box-shadow:0 20px 35px #0008,inset 0 0 0 6px #cba76516}
+.rune-3d-draw-deck-card span{font:600 clamp(3.7rem,7vw,5.5rem)/1 "Noto Serif TC",serif}
+.rune-3d-draw-deck-card small{font:600 .7rem/1.2 system-ui,sans-serif;letter-spacing:.19em}
+.rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-draw-deck{opacity:.55}
+.rune-3d-drawn-card{position:absolute;left:50%;top:45%;z-index:8;translate:-50% -50%;
+  width:clamp(118px,17vw,188px);aspect-ratio:1;pointer-events:none;
+  transform-style:preserve-3d;will-change:transform,opacity}
+.rune-3d-drawn-card-back,.rune-3d-drawn-card-front{position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:8px;overflow:hidden;border-radius:15px;border:2px solid var(--loc-gold-border);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 16px 36px #0009}
+.rune-3d-drawn-card-back{color:var(--loc-gold);
+  background:linear-gradient(135deg,#161c31,#07090f 66%,#141c32)}
+.rune-3d-drawn-card-back span{font:600 clamp(3.7rem,7vw,5.5rem)/1 "Noto Serif TC",serif}
+.rune-3d-drawn-card-back small{font:600 .7rem/1.2 system-ui,sans-serif;letter-spacing:.19em}
+.rune-3d-drawn-card-front{transform:rotateY(180deg);background:#05070e}
+.rune-3d-drawn-card-front img{display:block;width:100%;height:100%;object-fit:contain}
+.rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-mist-backdrop{
+  opacity:.34;transform:translate3d(1%,-1%,0) scale(1.12)}
+.rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-night-moon{opacity:0}
+.rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-foreground-mist{opacity:.18}
+@media(max-width:700px){
+  .rune-3d-draw-deck{left:24%;top:61%;width:clamp(108px,30vw,142px)}
+  .rune-3d-drawn-card{width:clamp(108px,30vw,142px)}
+  .rune-3d-tap-to-draw{align-items:end;padding-bottom:clamp(112px,25%,160px);
+    font-size:clamp(1.1rem,5.5vw,1.65rem);text-align:center}
+}
+@media(prefers-reduced-motion:reduce){
+  .rune-3d-draw-deck{transition:none}
+  .rune-3d-drawn-card{will-change:auto}
+}
+
 /* End moonlit authored fog backdrop. */
 
 .rune-3d-library .rune-3d-atlas-gallery{
