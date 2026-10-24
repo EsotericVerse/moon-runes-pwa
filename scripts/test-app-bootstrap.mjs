@@ -216,6 +216,6 @@ test('Web Settings cannot navigate into the iOS-only local Scope',()=>{
   assert.ok(settings.includes("const local=native?choices.find(item=>item.id==='local'):null;"));
   assert.ok(shell.includes("const navScopeId=!native&&currentScope.nativeOnly?'loc'"));
   assert.ok(shell.includes("(native||!getScope(id).nativeOnly)"));
-  assert.ok(locApp.includes("router.replace('/local/settings/?section=account')"));
+  assert.ok(locApp.includes("router.replace('/local/settings/')"));
   assert.ok(locApp.includes("if(scopeMeta?.nativeOnly&&!nativeOnlyReady)"));
 });
