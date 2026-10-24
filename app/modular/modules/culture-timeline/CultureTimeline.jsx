@@ -125,7 +125,12 @@ export default function CultureTimeline({
   fixedMax='',
   hiddenDates=EMPTY_HIDDEN_DATES,
   extraGroups=EMPTY_EXTRA_GROUPS,
-  heightVariant='default'
+  heightVariant='default',
+  onGroupToggle=null,
+  onGroupSelect=null,
+  anchorInsight=null,
+  anchorLabels=null,
+  onAnchorClose=null
 }){
   useUiSection('uiExtra.cultureTimeline');
   const {locale,copy}=useUiLocale();
@@ -137,6 +142,8 @@ export default function CultureTimeline({
   const doubleRiverWindowRef=useRef(null);
   const [selectedRowId,setSelectedRowId]=useState('');
   const onSelectRef=useRef(onSelect);
+  const onGroupToggleRef=useRef(onGroupToggle);
+  const onGroupSelectRef=useRef(onGroupSelect);
   const onTimeClickRef=useRef(onTimeClick);
   const onBoundaryNavigateRef=useRef(onBoundaryNavigate);
   const onAddRef=useRef(onAdd);
@@ -151,13 +158,15 @@ export default function CultureTimeline({
   const groupCount=Math.max(new Set([...rows.map(row=>row.group),...extraGroups.map(group=>group.id)].filter(Boolean)).size,hasTimeKinds&&!editable?4:0);
   const compactGroupCount=Math.max(1,groupCount||rows.length);
   const timelineMinHeight=heightVariant==='double'
-    ?Math.max(520,Math.min(760,180+compactGroupCount*36))
+    ?Math.max(320,152+compactGroupCount*48)
     :Math.max(180,96+compactGroupCount*46);
   const timelineMaxHeight=heightVariant==='double'
-    ?Math.max(720,Math.min(1000,240+compactGroupCount*64))
+    ?Math.max(timelineMinHeight+60,210+compactGroupCount*66)
     :Math.max(360,Math.min(760,180+compactGroupCount*92));
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
+  useEffect(()=>{onGroupToggleRef.current=onGroupToggle},[onGroupToggle]);
+  useEffect(()=>{onGroupSelectRef.current=onGroupSelect},[onGroupSelect]);
   useEffect(()=>{onTimeClickRef.current=onTimeClick},[onTimeClick]);
   useEffect(()=>{onBoundaryNavigateRef.current=onBoundaryNavigate},[onBoundaryNavigate]);
   useEffect(()=>{onAddRef.current=onAdd},[onAdd]);
@@ -199,13 +208,26 @@ export default function CultureTimeline({
         const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
         const defaultOrder=standardTimeKinds.indexOf(kind);
         const extra=additionalGroups.get(id);
-        const content=extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id);
+        const label=extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id);
+        let content=label;
+        if(extra?.collapsible||extra?.selectable){
+          const button=document.createElement('button');
+          button.type='button';
+          button.className='scope-river-group-button';
+          button.textContent=extra.collapsible?(extra.expanded?'−  ':'＋  ')+label:label;
+          button.setAttribute('aria-label',label);
+          if(extra.collapsible){
+            button.setAttribute('aria-expanded',String(Boolean(extra.expanded)));
+            button.addEventListener('click',()=>onGroupToggleRef.current?.(id));
+          }else button.addEventListener('click',()=>onGroupSelectRef.current?.(id));
+          content=button;
+        }
         return {
           id,
           content,
           order:Number.isFinite(extra?.order)?extra.order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index,
           ...(extra?.className?{className:extra.className}:{}),
-          title:content
+          title:label
         };
       })):null;
       const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
@@ -335,6 +357,16 @@ export default function CultureTimeline({
     };
   },[rows,extraGroups,hasTimeKinds,timelineMinHeight,timelineMaxHeight,heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
 
+  // One noninteractive time marker extends across every visible group.
+  useEffect(()=>{
+    const timeline=timelineRef.current;
+    if(!ready||!timeline||!anchorInsight?.date)return;
+    const markerId='culture-candidate-focus';
+    try{timeline.addCustomTime(new Date(anchorInsight.date+'T12:00:00'),markerId);}
+    catch{return;}
+    return()=>{try{timeline.removeCustomTime(markerId);}catch{/* Already destroyed. */}};
+  },[ready,anchorInsight?.date]);
+
   // Explicit alternatives to gestures, available on touch, mouse, and keyboard.
   function changeWindow(action){
     const timeline=timelineRef.current;
@@ -379,6 +411,12 @@ export default function CultureTimeline({
     </label>:null}
     {chartError?<p className='scope-status'><FieldText text="圖表載入失敗，以下改用清單顯示。"/></p>:null}
     <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-tap':'none'} className='scope-period-timeline' role='region' aria-label={t(mode==='overview'?'所有時期與定錨點時間長河':'時間長河')} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
+    {anchorInsight?<aside className='scope-candidate-insight' role='status' aria-live='polite'>
+      <button className='scope-candidate-insight-close' type='button' onClick={onAnchorClose} aria-label={anchorLabels?.close||'Close'}>×</button>
+      <strong>{anchorLabels?.date||'Date'}：{anchorInsight.date}</strong>
+      <div>{anchorLabels?.before||'Before'}：{anchorInsight.before.toLocaleString(locale)} · {anchorLabels?.after||'After'}：{anchorInsight.after.toLocaleString(locale)}</div>
+      {anchorInsight.reason?<p>{anchorLabels?.reason||'Reason'}：{anchorInsight.reason}</p>:null}
+    </aside>:null}
     {chartError?<ol className='scope-list'>
       {fallbackRows.map(row=><li key={row.id}><strong>{row.content}</strong>{row.group?<span> · {groupLabel(row.group)}</span>:null}<span> · {dateLabel(row.start)}</span>{row.title?<p>{row.title}</p>:null}</li>)}
     </ol>:null}

@@ -631,3 +631,22 @@
   .scope-self-stat-group-header{padding-bottom:.05rem}
   .scope-self-stat-tab,.scope-self-stat-chip{min-height:2.75rem;padding:.5rem .7rem}
 }
+
+.scope-culture-river-toolbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.4rem 0 .6rem}
+.scope-culture-river-toolbar h3{margin:0 .5rem 0 0}
+.scope-culture-river-selectors{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.scope-culture-river-selectors label{display:flex;align-items:center;gap:.35rem;min-width:0;font-size:.88rem}
+.scope-culture-river-selectors select{max-width:min(260px,45vw)}
+.scope-culture-double-river .vis-label.scope-dual-river-root{background:color-mix(in srgb,var(--loc-panel-2) 80%,var(--loc-accent) 8%);font-weight:700}
+.scope-culture-double-river .vis-label.scope-dual-river-child .vis-inner{padding-left:1.4rem}
+.scope-culture-double-river .scope-river-group-button{appearance:none;border:0;background:none;color:inherit;cursor:pointer;text-align:left;font:inherit;font-weight:inherit;width:100%;padding:.35rem .1rem;white-space:normal;overflow-wrap:anywhere}
+.scope-culture-double-river .scope-river-group-button:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-2px;border-radius:3px}
+.scope-culture-double-river .vis-label.scope-candidate-lane,.scope-culture-double-river .vis-group.scope-candidate-lane{background:color-mix(in srgb,var(--loc-accent) 6%,var(--loc-panel))!important;min-height:52px}
+.scope-culture-double-river .vis-label.scope-candidate-lane{border-top:1px solid color-mix(in srgb,var(--loc-accent) 22%,transparent)}
+.scope-culture-double-river .vis-custom-time{width:1px!important;background:color-mix(in srgb,var(--loc-accent) 52%,transparent)!important;pointer-events:none;z-index:2}
+.scope-culture-double-river .vis-custom-time .vis-custom-time-marker{display:none!important}
+.scope-culture-double-river .scope-period-timeline-wrap{position:relative}
+.scope-candidate-insight{position:relative;max-width:380px;margin:.5rem 0 .2rem auto;padding:.7rem 2.2rem .7rem .8rem;border:1px solid color-mix(in srgb,var(--loc-accent) 25%,var(--loc-line));background:var(--loc-panel);border-radius:var(--loc-radius-sm);box-shadow:0 5px 18px #0001;font-size:.85rem;line-height:1.5}
+.scope-candidate-insight p{margin:.25rem 0 0;color:var(--loc-muted)}
+.scope-candidate-insight-close{position:absolute;top:.25rem;right:.35rem;min-width:32px;min-height:32px;border:0;background:transparent;color:var(--loc-text);cursor:pointer;font-size:1.2rem}
+@media(max-width:760px){.scope-culture-river-selectors{width:100%}.scope-culture-river-selectors label{flex:1 1 160px}.scope-culture-river-selectors select{max-width:100%;min-width:0}.scope-candidate-insight{max-width:100%}}

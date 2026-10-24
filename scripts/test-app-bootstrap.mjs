@@ -136,7 +136,7 @@ test('statistics preserves Admin categories and Scope Others subgroup filters',(
   assert.match(code,/filteredSource=\{Boolean\(activeSourceSelection\)\}/);
   assert.match(code,/statistics_scope_others_groups/);
   assert.match(code,/statistics_scope_others_aliases/);
-  assert.match(code,/Others 自定義小分類/);
+  assert.match(code,/uiExtra\.statisticsView\.othersBreakdownTitle/);
 });
 
 test('keyword charts share one canvas and intersections offer at most eight lanes',async()=>{
