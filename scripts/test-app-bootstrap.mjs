@@ -332,3 +332,15 @@ test('Settings document import is iOS only, and the existing importer uses local
   assert.match(panel,/scopeId==='local'&&Capacitor\.isNativePlatform\(\)&&Capacitor\.getPlatform\(\)==='ios'/);
   assert.match(dbClient,/if\(name==='local'\|\|name\.startsWith\('local_'\)\)return true/);
 });
+
+test('LOC public search is global and does not enumerate Scope IDs in its UI',()=>{
+  const search=readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  assert.match(search,/const locPublicSearch=scopeId==='loc'&&!managementMode/);
+  assert.match(search,/const searchScopes=scopeId==='loc'&&managementMode&&options\.scopeFilter/);
+  assert.match(search,/scopeFilter:managementMode\?String\(searchParams\?\.get\('scope'\)\|\|''\):''/);
+  assert.match(search,/scopeId==='loc'&&managementMode\?<div className="scope-search-scope-filter">/);
+  assert.match(search,/scopeId=\{locPublicSearch\?'':row\.scopeId\}/);
+  assert.match(search,/return label&&label!==id\?label:''/);
+  assert.match(search,/searchGalaxyRows\(searchScopes,q,/);
+  assert.match(search,/queryFn:managementMode\?\(\)=>selectScopeRegistry\(\{scopeKind:'scope'\}\):selectLocSearchScopes/);
+});
