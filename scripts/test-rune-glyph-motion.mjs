@@ -122,7 +122,7 @@ test('soft forms do not lurch while heavy forms land without rubber-like rebound
   assert.ok(stone.y[0]<-25&&stone.y[4]<=6,'Stone impact should not bounce high');
   assert.ok(illness.scale[0]===1&&illness.scale.at(-1)<.8);
   assert.ok(Math.max(...illness.x.map(Math.abs))<=3,'Illness trembles, not shakes violently');
-  const stage=readFileSync(new URL('../app/lrunes/effekseer/EffekseerStage.jsx',import.meta.url'),'utf8');
+  const stage=readFileSync(new URL('../app/lrunes/effekseer/EffekseerStage.jsx',import.meta.url),'utf8');
   assert.ok(stage.includes('times:letterMotion.times||GLYPH_MOTION_TIMES'));
   assert.ok(stage.includes('ease:letterMotion.ease'));
   assert.ok(stage.includes('4.2*(letterMotion.durationFactor||1)'));
