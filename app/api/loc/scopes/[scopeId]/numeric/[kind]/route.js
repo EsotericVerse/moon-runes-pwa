@@ -16,7 +16,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','lrunes','admin'].includes(scopeId)||!['culture','statistics','facet'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='';
   try{
