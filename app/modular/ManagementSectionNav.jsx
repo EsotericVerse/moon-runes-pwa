@@ -5,7 +5,7 @@ import {useSearchParams} from 'next/navigation';
 
 /**
  * In-page management navigator.
- * The left text list is React selection UI, NOT a Next.js route transition.
+ * In-page horizontal tabs are React selection UI, NOT a Next.js route transition.
  */
 export default function ManagementSectionNav({id,title,panelId,items,value,onChange}){
   const activeItem=items.find(item=>item.value===value)||items[0];
@@ -20,12 +20,12 @@ export default function ManagementSectionNav({id,title,panelId,items,value,onCha
           id={id+'-option-'+item.value}
           type="button"
           className="management-section-nav__item"
+          aria-label={item.shortLabel&&item.shortLabel!==item.label?item.label:undefined}
           aria-pressed={selected}
           aria-controls={panelId}
           onClick={()=>{if(!selected)onChange(item.value);}}
         >
-          <span className="management-section-nav__label">{item.label}</span>
-          {item.description?<span className="management-section-nav__description">{item.description}</span>:null}
+          <span className="management-section-nav__label">{item.shortLabel||item.label}</span>
         </button>;
       })}
     </div>
