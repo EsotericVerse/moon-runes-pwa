@@ -308,7 +308,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         import_uid:createUid8()
       }));
       setRows(prepared);
-      setSource(sourceSuggestion(file.name));
+      // Galaxy Markdown metadata suggests an initial source; the user may override it.
+      setSource(String(list[0]?.source_name||'').trim()||sourceSuggestion(file.name));
       setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
     }catch(error){
       setRows([]);
