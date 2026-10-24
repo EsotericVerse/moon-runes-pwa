@@ -9,7 +9,7 @@
     "build": "next build",
     "build:static": "node scripts/build-static-export.mjs",
     "test:game": "node --test scripts/test-lunarunes-boardgame.mjs",
-    "test:bootstrap": "node --experimental-vm-modules --test scripts/test-app-bootstrap.mjs scripts/test-isr-client-cache.mjs",
+    "test:bootstrap": "node --experimental-vm-modules --test scripts/test-app-bootstrap.mjs scripts/test-isr-client-cache.mjs scripts/test-image-service-worker.mjs",
     "audit:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {
