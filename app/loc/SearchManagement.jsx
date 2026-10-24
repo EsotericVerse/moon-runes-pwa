@@ -16,17 +16,14 @@ const ManagementSearchWorkspace=dynamic(
 );
 const ScopeEditableBlocks=dynamic(()=>import('./ScopeEditableBlocks'),{loading:()=>null});
 const ManagementArticlePublisher=dynamic(()=>import('./ManagementArticlePublisher'),{loading:()=>null});
-const ManagementMediaPublisher=dynamic(()=>import('./ManagementMediaPublisher'),{loading:()=>null});
+const ManagementMediaWorkspace=dynamic(()=>import('./ManagementMediaWorkspace'),{loading:()=>null});
 const ManagementContentTarget=dynamic(()=>import('./ManagementContentTarget'),{loading:()=>null});
-const SunoImportPanel=dynamic(()=>import('./SunoImportPanel'),{loading:()=>null});
 
 const SECTIONS=Object.freeze([
-  {value:'search',label:'管理搜尋'},
-  {value:'suggestions',label:'建議搜尋的編輯'},
-  {value:'publish',label:'文章發表'},
-  {value:'media',label:'多媒體發表'},
-  {value:'import',label:'資料匯入'},
-  {value:'suno',label:'Suno 寫入'}
+  {value:'search',label:'文章管理搜尋'},
+  {value:'publish',label:'發表文章'},
+  {value:'media',label:'發表多媒體'},
+  {value:'suggestions',label:'編輯建議搜尋'}
 ]);
 
 export default function SearchManagement(){
@@ -39,12 +36,12 @@ export default function SearchManagement(){
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
   const permitted=ready&&Boolean(account.user)&&
     (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
-  const options=isLocAdmin?SECTIONS.filter(item=>['search','media','import'].includes(item.value)):SECTIONS;
+  const options=isLocAdmin?SECTIONS.filter(item=>['search','media'].includes(item.value)):SECTIONS;
   const [activeSection,setSection]=useManagementSection(options,'search');
   const editRequested=searchParams?.get('edit')==='1';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
-    if(!permitted||(!editRequested&&!['suggestions','publish','media','import','suno'].includes(activeSection)))return;
+    if(!permitted||(!editRequested&&!['suggestions','publish','media'].includes(activeSection)))return;
     editDock?.begin(scopeId);
   },[permitted,editRequested,activeSection,scopeId,editDock?.begin]);
 
@@ -86,9 +83,7 @@ export default function SearchManagement(){
         authorizedByParent startInEditMode onEditorExit={()=>setSection('search')}/>
     </section>:null}
     {activeSection==='publish'?<ManagementArticlePublisher scopeId={scopeId}/>:null}
-    {activeSection==='media'?(isLocAdmin?<ManagementContentTarget scopeId={scopeId} mode="media" globalAdmin/>:<ManagementMediaPublisher scopeId={scopeId}/>):null}
-    {activeSection==='import'?<ManagementContentTarget scopeId={scopeId} mode="import" globalAdmin={isLocAdmin}/>:null}
-    {activeSection==='suno'?<SunoImportPanel scopeId={scopeId}/>:null}
+    {activeSection==='media'?(isLocAdmin?<ManagementContentTarget scopeId={scopeId} mode="media" globalAdmin/>:<ManagementMediaWorkspace scopeId={scopeId}/>):null}
       </div>
     </div>
   </FeaturePage>;
