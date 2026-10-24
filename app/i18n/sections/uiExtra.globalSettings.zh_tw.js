@@ -21,6 +21,7 @@ export default {
   "noImportScopes": "沒有可匯入的空間。",
   "login": "登入",
   "logout": "登出",
+  "switchAccount": "切換 Google 帳號",
   "manageFeature": "管理功能",
   "openSystemSettings": "開啟系統設定",
   "loading": "載入中…",
