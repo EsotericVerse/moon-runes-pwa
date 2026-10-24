@@ -149,7 +149,16 @@ export default function GlobalSettings({initialSection='home'}={}){
     catch(error){setStatus(String(error?.message||error));setBusy(false);}
   }
   function login(){
-    account.signIn(new URL('/local/settings/?section=account',window.location.href).href);
+    void account.signIn(new URL('/local/settings/?section=account',window.location.href).href)
+      .catch(error=>setStatus(String(error?.message||error)));
+  }
+  async function switchAccount(){
+    setBusy(true);setStatus('');
+    try{
+      await account.signOut();
+      await account.signIn(new URL('/local/settings/?section=account',window.location.href).href);
+    }catch(error){setStatus(String(error?.message||error));}
+    finally{setBusy(false);}
   }
 
   return <FeaturePage featureId="setting">
@@ -198,8 +207,9 @@ export default function GlobalSettings({initialSection='home'}={}){
       {activeSection==='account'?<section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.account"/></h2>
         {accountWaiting?<p><UiText id="uiExtra.globalSettings.loading"/></p>:account.user?<div>
-          <p>{account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
+          <p>{account.email||account.user.email||uiT('uiExtra.globalSettings.signedIn')}</p>
           <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
+          <button type="button" className="loc-button" disabled={busy} onClick={switchAccount}><UiText id="uiExtra.globalSettings.switchAccount"/></button>
         </div>:<button type="button" className="loc-button primary" onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
         {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
       </section>:null}
