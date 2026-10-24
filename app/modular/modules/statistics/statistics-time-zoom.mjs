@@ -69,7 +69,8 @@ export function chartTypeGroups(available=[],recommended=[]){
 export const STAT_VISUAL_TYPES=Object.freeze([
   'line','bar','pie','area','stacked','composed','scatter','radar','radial','treemap'
 ].map(type=>Object.freeze([type,'uiExtra.chartTypes.'+type])));
-const COLORS=['#7562cf','#5f8fd3','#5db0a6','#d69b55','#cc6f7d','#9a7bc1','#6f9f77','#c49a3f'];
+// Strongly separated hues remain legible across light/dark themes and 8 lanes.
+const COLORS=['#8962e3','#e5a13c','#14b8c4','#e75a68','#53bd79','#e37bb8','#468fe2','#acbd45'];
 export const number=value=>Math.max(0,Number(value)||0);
 export const color=i=>COLORS[i%COLORS.length];
 
