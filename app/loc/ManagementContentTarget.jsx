@@ -57,7 +57,7 @@ export default function ManagementContentTarget({scopeId,mode='import',globalAdm
     {list.error?<p className="scope-status scope-error" role="alert">{String(list.error.message||list.error)}</p>:null}
     {globalAdmin&&list.isPending?<p className="scope-status" role="status">正在讀取可管理資料表…</p>:null}
     {selected?<div key={selected.value+':'+mode}>
-      {mode==='media'?<ManagementMediaWorkspace scopeId={selected.value}/>:
+      {mode==='media'?<ManagementMediaWorkspace scopeId={selected.value} dockScopeId={globalAdmin?scopeId:selected.value}/>:
         <ManagementImportPanel scopeId={selected.value}/>}
     </div>:null}
     {!selected&&!list.isPending?<p className="scope-status">目前沒有可匯入的目標 Table。</p>:null}
