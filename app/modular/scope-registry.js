@@ -143,7 +143,7 @@ export function resolveScope(host='',pathname='/'){
   // Never override a declared public Domain with a guessed directory.
   if(segments[0]&&segments[0]!=='loc'&&SCOPES[segments[0]]){
     const row=registryRouteRows.get(segments[0]);
-    if(!row?.domain)return segments[0];
+    if(!row?.domain||h==='localhost'||h==='127.0.0.1'||!h)return segments[0];
   }
   return DEFAULT_SCOPE_ID;
 }
