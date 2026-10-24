@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
-import vm from 'node:vm';
 import {parseVerifiedGoogleOAuthUser} from '../app/loc/oauth-identity.mjs';
+import {createDatabaseClient} from '../app/loc/db-contract.mjs';
 
 const validUser=(provider='google',oauthEmail='owner@example.com')=>({
   id:'supabase-user-1',email:'owner@example.com',
@@ -29,6 +29,10 @@ test('unverified OAuth identity email is rejected',()=>{
   const u=validUser();u.identities[0].identity_data.email_verified=false;
   assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/尚未驗證/);
 });
+test('missing Google email_verified claim is rejected',()=>{
+  const u=validUser();delete u.identities[0].identity_data.email_verified;
+  assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/尚未驗證/);
+});
 test('Google identity belonging to different Supabase user is rejected',()=>{
   const u=validUser();u.identities[0].user_id='other-user';
   assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/Google OAuth/);
@@ -38,17 +42,12 @@ test('Google identity without provider ID is rejected',()=>{
   assert.throws(()=>parseVerifiedGoogleOAuthUser(u),/識別碼/);
 });
 
-// Simulate the production session method, not an independently rewritten copy.
-// This exercises both the Auth.getUser() boundary and Google identity parsing.
-const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
-const start=contract.indexOf('  async function getAccountSession(){');
-const end=contract.indexOf('\n  async function signInWithGoogle(',start);
-assert.ok(start>=0&&end>start,'getAccountSession must remain available for security tests');
-const sessionMethod=contract.slice(start,end);
-const makeSessionReader=vm.runInNewContext(
-  '(function(auth,parseVerifiedGoogleOAuthUser){'+sessionMethod+';return getAccountSession;})',
-  {Error,Object,String}
-);
+// Run the real production database client with simulated Auth API responses.
+const makeSessionReader=(auth)=>createDatabaseClient({
+  publicClient:{schema:()=>({})},
+  authClient:{schema:()=>({})},
+  auth:{...auth,signInWithOAuth:async()=>({error:null}),signOut:async()=>({error:null})}
+}).getAccountSession;
 const session={user:{id:'supabase-user-1',email:'owner@example.com'},access_token:'oauth-jwt'};
 const fakeAuth=(user=validUser(),getUserError=null)=>({
   getSession:async()=>({data:{session},error:null}),
