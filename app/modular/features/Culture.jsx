@@ -797,7 +797,7 @@ export default function Culture(){
     id:'dual:'+String(item.id),
     group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
     group_label:(keywordDrillGroup?'Group｜':'Class｜')+String(item.group_label||''),
-    group_order:1000+index
+    group_order:1000+(Number(item.group_order)||index)
   })),[keywordDrillItems,keywordDrillGroup]);
   const dualRiverItems=useMemo(
     ()=>[...dualSourceRiverItems,...dualKeywordRiverItems],
