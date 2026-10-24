@@ -8,7 +8,7 @@ const readSiteBootstrap=unstable_cache(async()=>{
   const {data,error}=await client.rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
   if(error)throw error;
   return data||{};
-},['loc-site-bootstrap-v1'],{revalidate:LOC_ISR_SECONDS,tags:[LOC_PUBLIC_CACHE_TAG]});
+},['loc-site-bootstrap-v2'],{revalidate:LOC_ISR_SECONDS,tags:[LOC_PUBLIC_CACHE_TAG]});
 
 export async function GET(){
   try{return Response.json(await readSiteBootstrap());}
