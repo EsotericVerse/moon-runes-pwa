@@ -24,10 +24,18 @@ async function harness(){
       createPublicSupabaseClient:()=>({
         from:table=>({
           select(){return this},order(){return this},range(){return this},gte(){return this},lte(){return this},
-          then(resolve){mediaReads.push(table);resolve({data:[
-            {media_id:1,media_type:'music',createtime:'2026-10-01T10:00:00+08:00'},
-            {media_id:2,media_type:'music',createtime:'2026-10-01T11:00:00+08:00'}
-          ],error:null})}
+          in(){return this},limit(){return this},
+          then(resolve){
+            mediaReads.push(table);
+            const data=table==='lrunes_daily'
+              ?[{record_date:'2026-10-01',draw_kind:'main',rune_number:1,direction:'正位',recorded_phase:'滿月'},
+                {record_date:'2026-10-02',draw_kind:'supplement',rune_number:2,direction:'逆位',recorded_phase:'下弦'}]
+              :table==='runes'
+                ?[{rune_id:1,rune_name:'月',moon_phase:2},{rune_id:2,rune_name:'心',moon_phase:1}]
+                :[{media_id:1,media_type:'music',createtime:'2026-10-01T10:00:00+08:00'},
+                  {media_id:2,media_type:'music',createtime:'2026-10-01T11:00:00+08:00'}];
+            resolve({data,error:null});
+          }
         }),
         rpc:async(name,args)=>{
         queries.push({name,args});
@@ -96,7 +104,7 @@ test('media facet ISR returns counts only and repeats without another SQL scan',
   assert.equal((await get(h,'lo3rwang','facet','?dimension=media_style')).status,400);
 });
 
-test('ordinary Rune Culture/Statistics charts use the public numeric ISR without changing daily Rune analytics',async()=>{
+test('ordinary Rune Culture/Statistics charts also use the public numeric ISR',async()=>{
   const h=await harness();
   const culture=await get(h,'lrunes','culture','?start=2026-01-01&end=2026-10-25');
   const statistics=await get(h,'lrunes','statistics','?start=2026-01-01&end=2026-10-25');
@@ -109,4 +117,40 @@ test('ordinary Rune Culture/Statistics charts use the public numeric ISR without
   assert.ok(!client.includes("scopeId!=='lrunes'"));
   const daily=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   assert.ok(daily.includes("const isLrunesDaily="));
+});
+
+test('daily Rune Culture and Statistics reuse one cached public record set per date range',async()=>{
+  const h=await harness();
+  const url='?start=2026-10-01&end=2026-10-02';
+  const response=await get(h,'lrunes','daily',url);
+  assert.equal(response.status,200);
+  assert.deepEqual(await response.json(),[
+    {record_date:'2026-10-01',draw_kind:'main',rune_number:1,direction:'正位',
+      recorded_phase:'滿月',rune_id:1,rune_name:'月',moon_phase:2},
+    {record_date:'2026-10-02',draw_kind:'supplement',rune_number:2,direction:'逆位',
+      recorded_phase:'下弦',rune_id:2,rune_name:'心',moon_phase:1}
+  ]);
+  for(let i=0;i<4;i++)assert.equal((await get(h,'lrunes','daily',url)).status,200);
+  assert.deepEqual(h.mediaReads,['lrunes_daily','runes'],
+    'Warm ISR hits must not query either the Daily table or Rune catalog');
+  await get(h,'lrunes','daily','?start=2026-10-02&end=2026-10-03');
+  assert.equal(h.mediaReads.length,4,'A new date range has its own cached payload');
+});
+
+test('daily Rune earliest date shares ISR and invalid routes cannot read SQL',async()=>{
+  const h=await harness();
+  const result=await get(h,'lrunes','daily-earliest');
+  assert.equal(result.status,200);
+  assert.equal(await result.json(),'2026-10-01');
+  await get(h,'lrunes','daily-earliest');
+  assert.deepEqual(h.mediaReads,['lrunes_daily']);
+  for(const [id,kind,query] of [
+    ['local','daily','?start=2026-10-01&end=2026-10-02'],
+    ['lo3rwang','daily','?start=2026-10-01&end=2026-10-02'],
+    ['lrunes','daily',''],['lrunes','daily-earliest','?start=2026-10-01']
+  ])assert.equal((await get(h,id,kind,query)).status,400);
+  assert.equal(h.mediaReads.length,1);
+  const ui=readFileSync(new URL('../app/lrunes/DailyRuneAnalytics.jsx',import.meta.url),'utf8');
+  assert.ok(ui.includes("readNumericIsr('lrunes','daily',range)"));
+  assert.ok(ui.includes("readNumericIsr('lrunes','daily-earliest')"));
 });
