@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DailyRuneCalendar from '../../lrunes/DailyRuneCalendar';
+import {dailyRecordSlots,availableDailyRuneKind} from './daily-record-slots.mjs';
 import {Capacitor} from '@capacitor/core';
 import DailyRuneTransfer from '../../lrunes/DailyRuneTransfer';
 import ContextReturnNav from '../../modular/ContextReturnNav';
@@ -100,6 +101,23 @@ export default function DailyLogClient({embedded=false}={}){
   const canWrite=native||(canViewDetails&&managementAccount.canManageScopeSync('lrunes'));
   // Calendar dates remain public in the UI; no rune data is queried without login.
   const visibleRows=canViewDetails?rows:EMPTY_ROWS;
+  // Settings and the standalone log must share identical editing permissions.
+  const selectedMonthReady=canViewDetails&&!loading&&!error&&
+    monthValueOf(newForm.recordDate)===monthValue;
+  const occupiedSlots=useMemo(
+    ()=>dailyRecordSlots(visibleRows,newForm.recordDate),
+    [visibleRows,newForm.recordDate]
+  );
+  const dateIsFull=selectedMonthReady&&occupiedSlots.main&&occupiedSlots.supplement;
+  const kindOccupied=selectedMonthReady&&occupiedSlots[newForm.drawKind];
+
+  useEffect(()=>{
+    if(!canWrite||!selectedMonthReady)return;
+    setNewForm(current=>{
+      const kind=availableDailyRuneKind(visibleRows,current.recordDate,current.drawKind);
+      return kind===current.drawKind?current:{...current,drawKind:kind};
+    });
+  },[canWrite,selectedMonthReady,visibleRows,newForm.recordDate]);
 
   const loadMonth=useCallback(async()=>{
     const request=++monthRequest.current;
@@ -230,6 +248,8 @@ export default function DailyLogClient({embedded=false}={}){
     event.preventDefault();
     setSaving(true);setMessage('');
     try{
+      if(!canWrite)throw new Error('目前沒有新增每日符文的權限。');
+      if(kindOccupied)throw new Error('該日期已經有此類紀錄。請選擇尚未使用的類別或其他日期。');
       if(native){
         const result=await importLocalDailyTransfer([{
           record_date:newForm.recordDate,draw_kind:newForm.drawKind,
@@ -386,17 +406,23 @@ export default function DailyLogClient({embedded=false}={}){
 
     {canViewDetails?<DailyRuneTransfer cloudCanManage={canViewDetails&&!native}
       onImported={()=>{loadMonth();window.dispatchEvent(new CustomEvent('loc-rune-local-changed'));}}/>:null}
-    {!embedded&&canWrite?<section className="loc-card">
+    {canWrite?<section className="loc-card">
       <p className="loc-eyebrow">手動紀錄</p>
       <h2>人工新增紀錄</h2>
       <form className="scope-stat-controls" onSubmit={addRecord}>
-        <label><span>日期</span><input className="scope-select" type="date" min="2026-08-01" value={newForm.recordDate} onChange={event=>setNewForm(current=>({...current,recordDate:event.target.value}))}/></label>
-        <label><span>種類</span><select className="scope-select" value={newForm.drawKind} onChange={event=>setNewForm(current=>({...current,drawKind:event.target.value}))}><option value="main">主抽</option><option value="supplement">補抽</option></select></label>
+        <label><span>日期</span><input className="scope-select" type="date" min="2026-08-01" value={newForm.recordDate} onChange={event=>{
+          const date=event.target.value;
+          setNewForm(current=>({...current,recordDate:date}));
+          if(/^\d{4}-\d{2}-\d{2}$/.test(date))setMonthValue(monthValueOf(date));
+        }}/></label>
+        <label><span>種類</span><select className="scope-select" value={newForm.drawKind} onChange={event=>setNewForm(current=>({...current,drawKind:event.target.value}))}><option value="main" disabled={selectedMonthReady&&occupiedSlots.main}>主抽{selectedMonthReady&&occupiedSlots.main?'（已有紀錄）':''}</option><option value="supplement" disabled={selectedMonthReady&&occupiedSlots.supplement}>補抽{selectedMonthReady&&occupiedSlots.supplement?'（已有紀錄）':''}</option></select></label>
         <label><span>符文</span><select className="scope-select" value={newForm.runeNumber} onChange={event=>setNewForm(current=>({...current,runeNumber:event.target.value}))}>{runes.map(row=><option value={row.rune_id} key={row.rune_id}>{row.rune_id}｜{row.rune_name}</option>)}</select></label>
         <label><span>方向</span><select className="scope-select" value={newForm.direction} onChange={event=>setNewForm(current=>({...current,direction:event.target.value}))}>{DIRECTIONS.map(value=><option value={value} key={value}>{value}</option>)}</select></label>
-        <button className="loc-button" type="submit" disabled={saving||!runes.length}>{saving?'儲存中…':'新增紀錄'}</button>
+        <button className="loc-button" type="submit" disabled={saving||loading||!runes.length||dateIsFull||kindOccupied}>{saving?'儲存中…':'新增紀錄'}</button>
       </form>
-      {message?<p className="scope-status">{message}</p>:null}
+      {dateIsFull?<p className="scope-status" role="status">這一天的主抽和補抽都已有紀錄，請選擇其他日期，或編輯既有紀錄。</p>:null}
+      {selectedMonthReady&&!dateIsFull&&occupiedSlots.main?<p className="scope-status">這一天已有主抽，可新增補抽。</p>:null}
+      {message?<p className="scope-status" role="status">{message}</p>:null}
     </section>:null}
 
     {canViewDetails&&error?<p role="alert" className="loc-status">{error}<button className="loc-button" type="button" onClick={loadMonth}>重新讀取</button></p>:null}
