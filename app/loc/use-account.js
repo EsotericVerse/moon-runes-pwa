@@ -74,6 +74,7 @@ async function loadSessionAccount(){
 
 let authRevision=0;
 let authUserId='';
+let authEmail='';
 
 async function loadManagementAccount(mutate){
   const startedAt=authRevision;
@@ -95,6 +96,7 @@ async function loadManagementAccount(mutate){
       await signOutAccount();
       authRevision+=1;
       authUserId='';
+      authEmail='';
       void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return failedState(BLOCKLIST_MESSAGE);
     }
@@ -152,6 +154,7 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     await signOutAccount();
     authRevision+=1;
     authUserId='';
+    authEmail='';
     await Promise.all([
       mutate(SESSION_KEY,signedOutState,{revalidate:false}),
       mutate(VERIFIED_SESSION_KEY,signedOutState,{revalidate:false}),
@@ -191,9 +194,11 @@ export function usePassiveSessionAccount(){
     const listener=dbAuthEvents.onAuthStateChange((event,session)=>{
       const user=session?.user||null;
       const nextUserId=String(user?.id||'');
-      const identityChanged=authUserId!==nextUserId;
+      const nextEmail=normalizeAuthEmail(user?.email);
+      const identityChanged=authUserId!==nextUserId||authEmail!==nextEmail;
       if(identityChanged||event==='SIGNED_OUT')authRevision+=1;
       authUserId=nextUserId;
+      authEmail=nextEmail;
       // Passive navigation needs only a session ID hint, never an OAuth email.
       // Google provider email is displayed only after Auth.getUser() verifies it.
       void mutate(SESSION_KEY,nextUserId
