@@ -17,7 +17,7 @@ import {refreshSunoStyleMetaTags} from './suno-style-meta-tags.mjs';
 import BlockNoteEditor from './BlockNoteEditor';
 import {blocksToPlainText,hasBlockNoteContent,plainTextToBlocks} from './blocknote-content.mjs';
 
-export default function SunoImportPanel({scopeId}){
+export default function SunoImportPanel({scopeId,dockScopeId=scopeId}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const UI_COPY=useUiCopy();
@@ -26,7 +26,7 @@ export default function SunoImportPanel({scopeId}){
   const editDock=useEditDock();
   const activateDock=useRef(()=>{});
   const dockActions=useRef({save:null,discard:null});
-  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===dockScopeId);
   const freshSunoDraft=()=>({title:'',lyrics:'',lyricsBlocks:plainTextToBlocks(''),stylePrompt:'',stylePromptBlocks:plainTextToBlocks(''),stylePromptPlain:'',editorKey:createUid8(),url:'',createdDate:'',metaTags:'',metaTagsEdited:false,source_id:'',target_id:'',ref_id:''});
   const [draft,setDraft]=useState(freshSunoDraft);
   const [status,setStatus]=useState('');const [busy,setBusy]=useState(false);
