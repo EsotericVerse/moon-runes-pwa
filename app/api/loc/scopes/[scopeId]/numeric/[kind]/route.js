@@ -23,7 +23,7 @@ export async function GET(request,{params}){
     const search=new URL(request.url).searchParams;
     if([...search.keys()].some(key=>!['start','end','undated','dimension'].includes(key)))throw Error('Unknown parameter');
     dimension=search.get('dimension')||'';
-    if(kind==='facet'?!['media_type','media_platform'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
+    if(kind==='facet'?!['media_type','media_platform','media_style'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
     if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
     if(['earliest','daily-earliest'].includes(kind)&&search.size)throw Error('Unexpected date range');
