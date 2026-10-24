@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
-    "prebuild": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs && node scripts/generate-public-blocks.mjs",
+    "prebuild": "node scripts/prepare-effekseer-wasm.mjs && node scripts/prepare-rune-effekseer-assets.mjs && node scripts/prepare-rune-fog-hd.mjs && node scripts/prepare-rune-effekseer-hd256.mjs && node scripts/prepare-rune-effekseer-soft-matte.mjs && node scripts/prepare-rune-semantic-icons.mjs",
     "dev": "next dev",
     "build": "next build",
     "build:static": "node scripts/build-static-export.mjs",
     "test:game": "node --test scripts/test-lunarunes-boardgame.mjs scripts/test-rune-vfx-library.mjs scripts/test-rune-3d-library-groups.mjs scripts/test-rune-summon-effects.mjs scripts/test-rune-glyph-motion.mjs",
-    "test:bootstrap": "node --experimental-vm-modules --test scripts/test-app-bootstrap.mjs scripts/test-isr-client-cache.mjs scripts/test-numeric-isr.mjs scripts/test-scope-route-index.mjs scripts/test-image-service-worker.mjs scripts/test-oauth-identity.mjs scripts/test-galaxy-markdown-import.mjs scripts/test-daily-rune-log.mjs scripts/test-home-block-order.mjs scripts/test-ui-locales.mjs",
+    "test:bootstrap": "node --experimental-vm-modules --test scripts/test-app-bootstrap.mjs scripts/test-isr-client-cache.mjs scripts/test-numeric-isr.mjs scripts/test-scope-route-index.mjs scripts/test-image-service-worker.mjs scripts/test-oauth-identity.mjs scripts/test-galaxy-markdown-import.mjs scripts/test-daily-rune-log.mjs scripts/test-home-block-order.mjs scripts/test-ui-locales.mjs scripts/test-published-scope-snapshots.mjs",
     "sync:scope-routes": "node scripts/sync-scope-route-index.mjs",
-    "audit:security": "npm audit --audit-level=moderate"
+    "audit:security": "npm audit --audit-level=moderate",
+    "sync:public": "node scripts/generate-public-blocks.mjs"
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",

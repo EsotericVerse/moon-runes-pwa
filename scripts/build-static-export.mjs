@@ -15,8 +15,8 @@ function run(command,args,env=process.env){
   if(result.status!==0)throw new Error(`${command} ${args.join(' ')} failed with status ${result.status}`);
 }
 
-// Publish static Blocks while app/api/loc/_server.js is still available.
-// The export itself parks API routes only AFTER its prebuild succeeds.
+// Public JS/CSS snapshots are explicitly published and committed beforehand.
+// Static exports must never read Supabase simply to build app assets.
 run(npm,['run','prebuild']);
 fs.renameSync(api,parked);
 try{

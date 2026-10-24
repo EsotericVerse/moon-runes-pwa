@@ -4,6 +4,9 @@
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
 import {dbAuthEvents,dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
+import {SCOPE_ROUTE_INDEX} from '../modular/scope-route-index.js';
+import {PUBLISHED_SITE_BOOTSTRAP} from '../modular/published-site-bootstrap.js';
+import {loadPublishedBlocks} from '../modular/published-blocks/index.js';
 
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
 // app-bootstrap request (see app/loc/app-bootstrap.js); there is no
@@ -152,21 +155,14 @@ export async function revalidateServerMetadata(){
 }
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
-  // Static public metadata, generated at publish time with the Blocks.
-  // Never invoke a paid Worker or Supabase on repeat ordinary page views.
-  // After an editor update this browser uses the live public RPC until publish.
+  // Normal visitor path is a JS module, no fetch, JSON parsing, Worker or SQL.
+  // After an authorized editor change, the current editor sees live data until publication.
   publicSiteBootstrapRequest=(editedPublicMetadata
     ?dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'})
       .then(({data,error})=>{if(error)throw error;return {...(data||{}),blocks:[]};})
-    :fetch('/_loc/site-bootstrap.json').then(async response=>{
-      if(!response.ok)throw Error('Public snapshot unavailable: '+response.status);
-      return response.json();
-    }).catch(async()=>{
-      const {data,error}=await dbPublicClient.schema('silver')
-        .rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
-      if(error)throw error;
-      return {...(data||{}),blocks:[]};
-    })).catch(error=>{publicSiteBootstrapRequest=null;throw error;});
+    :Promise.resolve({...PUBLISHED_SITE_BOOTSTRAP,
+      config:SCOPE_ROUTE_INDEX.find(row=>row.scope_id==='loc')?.config||null}
+    )).catch(error=>{publicSiteBootstrapRequest=null;throw error;});
   return publicSiteBootstrapRequest;
 }
 
@@ -245,17 +241,13 @@ export function selectScopeConfig(scopeId){
   if(!scope)return Promise.resolve(null);
   const existing=scopeConfigInFlight.get(scope.id);
   if(existing)return existing;
-  // Private 'local' never reads the network. Ordinary public scopes use
-  // published static configuration; edits in this browser bypass the snapshot.
+  // The published route entry also holds its public Config, one shared JS source.
   const live=()=>selectRows(scope.config,{
     columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
     filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
   }).then(({rows})=>rows[0]||null);
-  const request=scope.id==='local'||editedPublicMetadata?live()
-    :fetch('/_loc/config/'+scope.id+'.json').then(async response=>{
-      if(!response.ok)throw Error('Static Scope config '+response.status);
-      return response.json();
-    }).catch(live);
+  const request=scope.id==='local'||editedPublicMetadata?live():
+    Promise.resolve(SCOPE_ROUTE_INDEX.find(row=>row.scope_id===scope.id)?.config||null);
   if(scope.id!=='local')scopeConfigInFlight.set(scope.id,request);
   return request;
 }
@@ -282,11 +274,11 @@ export async function selectScopeBlocks(scopeId,page='index'){
   if(id!=='local'&&scopeBlocksRequests.has(key))return scopeBlocksRequests.get(key);
   const request=(async()=>{
     if(id!=='local'&&!locallyEditedBlocks.has(key)){
-      try{
-        const response=await fetch('/_loc/blocks/'+encodeURIComponent(id)+'/'+encodeURIComponent(pageName)+'.json');
-        if(response.ok)return await response.json();
-      }catch{/* No static publication yet or offline: retain the direct provider. */}
+      // Literal dynamic imports are split into immutable, content-hashed JS chunks.
+      // Missing published pages are empty; never silently scan the database.
+      return loadPublishedBlocks(id,pageName);
     }
+    // Device-local data and authorized in-session edits still use the active provider.
     const {rows}=await selectRows(`silver.${id}_blocks`,{
       columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
       filters:[{column:'page_name',operator:'eq',value:pageName}],

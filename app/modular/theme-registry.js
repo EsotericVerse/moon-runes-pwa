@@ -1,3 +1,4 @@
+import {PUBLISHED_THEME_META} from './published-theme-meta.js';
 export const THEME_TOKEN_KEYS=[
   '--loc-bg','--loc-panel','--loc-panel-2','--loc-panel-strong','--loc-panel-nav','--loc-panel-tab','--loc-rune-bg','--loc-rune-selected-bg',
   '--loc-line','--loc-line-soft','--loc-line-softer','--loc-line-faint','--loc-text','--loc-muted','--loc-heading','--loc-accent','--loc-gold','--loc-danger',
@@ -6,13 +7,10 @@ export const THEME_TOKEN_KEYS=[
   '--loc-primary-start','--loc-primary-end','--loc-body-glow','--loc-body-mid','--loc-hero-start','--loc-hero-end','--loc-shadow','--loc-shadow-card'
 ];
 
-const THEME_META=[
-  ['theme-1','靈魂'],['theme-2','連結'],['theme-3','生命'],['theme-4','自然'],
-  ['theme-5','礦物'],['theme-6','元素'],['theme-7','秩序'],['theme-8','無序']
-];
+const THEME_META=PUBLISHED_THEME_META;
 
 export const THEME_SLOTS=Object.freeze(
-  THEME_META.map(([id,label],index)=>Object.freeze({id,label,order:index+1}))
+  THEME_META.map(([id,label,scheme,styleKey],index)=>Object.freeze({id,label,scheme,styleKey,order:index+1}))
 );
 
 // Emergency fallback only. Canonical theme attributes are loaded from silver.loc_theme.
@@ -37,7 +35,11 @@ export function getThemeSlot(id){
   return {
     ...EMERGENCY_THEME,
     id:meta?.id||EMERGENCY_THEME.id,
-    label:meta?.label||EMERGENCY_THEME.label
+    label:meta?.label||EMERGENCY_THEME.label,
+    scheme:meta?.scheme||EMERGENCY_THEME.scheme,
+    styleKey:meta?.styleKey||EMERGENCY_THEME.styleKey,
+    // Normal themes use CSS. Inline tokens exist only for authorized live previews.
+    tokens:{}
   };
 }
 
