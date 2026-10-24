@@ -134,6 +134,7 @@ export default function CultureTimeline({
   const t=text=>translateUiField(locale,text);
   const containerRef=useRef(null);
   const timelineRef=useRef(null);
+  const doubleRiverWindowRef=useRef(null);
   const [selectedRowId,setSelectedRowId]=useState('');
   const onSelectRef=useRef(onSelect);
   const onTimeClickRef=useRef(onTimeClick);
@@ -214,8 +215,13 @@ export default function CultureTimeline({
         Number.isFinite(Date.parse(windowStart))&&
         Number.isFinite(Date.parse(windowEnd))&&
         Date.parse(windowEnd)>=Date.parse(windowStart));
+      const windowKey=[windowStart,windowEnd,fixedMin,fixedMax].join('|');
+      // Keyword drill-down re-creates the visible groups, but it must not
+      // reset the shared camera or disorient the source river above it.
+      const priorWindow=heightVariant==='double'&&doubleRiverWindowRef.current?.key===windowKey
+        ?doubleRiverWindowRef.current.range:null;
       instance=new Timeline(containerRef.current,data,groups,{
-        ...(hasSelectedWindow?{start:windowStart,end:windowEnd}:{}),
+        ...(hasSelectedWindow?{start:priorWindow?.start||windowStart,end:priorWindow?.end||windowEnd}:{}),
         autoResize:true,
         minHeight:timelineMinHeight+'px',
         maxHeight:timelineMaxHeight+'px',
@@ -304,7 +310,7 @@ export default function CultureTimeline({
         onTimeClickRef.current(year+'-'+month+'-'+day);
       });
       if(hasSelectedWindow){
-        instance.setWindow(windowStart,windowEnd,{animation:false});
+        instance.setWindow(priorWindow?.start||windowStart,priorWindow?.end||windowEnd,{animation:false});
       }else{
         instance.fit({animation:false});
       }
@@ -315,10 +321,18 @@ export default function CultureTimeline({
     }
     return()=>{
       cancelled=true;
+      if(instance&&heightVariant==='double'){
+        try{
+          doubleRiverWindowRef.current={
+            key:[windowStart,windowEnd,fixedMin,fixedMax].join('|'),
+            range:instance.getWindow()
+          };
+        }catch{doubleRiverWindowRef.current=null;}
+      }
       if(timelineRef.current===instance)timelineRef.current=null;
       if(instance)instance.destroy();
     };
-  },[rows,extraGroups,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
+  },[rows,extraGroups,hasTimeKinds,timelineMinHeight,timelineMaxHeight,heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
 
   // Explicit alternatives to gestures, available on touch, mouse, and keyboard.
   function changeWindow(action){
