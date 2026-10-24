@@ -213,6 +213,7 @@ export default function Culture(){
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
+  const [cultureTimeKind,setCultureTimeKind]=useState('period');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -246,6 +247,7 @@ export default function Culture(){
     setStyleFilter('none');
     setKeywordOptionsScope('');
     setKeywordPeriodKey('latest');
+    setCultureTimeKind('period');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
     setOpenCultureRoots([]);
@@ -292,24 +294,26 @@ export default function Culture(){
   // The upper Time structure river keeps its own period navigation.
   const cultureEventOptions=useMemo(()=>(query.data?.timelineItems||[])
     .filter(item=>item.entry_type==='event'&&item.start_date),[query.data]);
-  const keywordPeriod=keywordPeriodKey.startsWith('event:')
-    ?(cultureEventOptions.find(item=>'event:'+String(item.id||item.entry_id||item.record_id)===keywordPeriodKey)||selectedWorkPeriod)
+  // The first selector chooses Period or Event. The second selector shows
+  // records only from that kind; their date windows must stay distinct.
+  const keywordPeriod=cultureTimeKind==='event'
+    ?cultureEventOptions.find(item=>'event:'+String(item.id||item.entry_id||item.record_id)===keywordPeriodKey)||null
     :keywordPeriodKey==='all'?allTimePeriod
     :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod)
     :keywordPeriodKey==='current'?selectedWorkPeriod
     :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||latestPeriod||selectedWorkPeriod;
-  const keywordWindowStart=keywordPeriodKey==='custom'
+  const keywordWindowStart=keywordPeriodKey==='custom'&&cultureTimeKind==='period'
     ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
-  const keywordWindowEnd=keywordPeriodKey==='custom'
-    ?keywordCustomEnd:String(keywordPeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
+  const keywordWindowEnd=keywordPeriodKey==='custom'&&cultureTimeKind==='period'
+    ?keywordCustomEnd:String(keywordPeriod?.end_date||(cultureTimeKind==='event'?keywordPeriod?.start_date:'')||new Date().toISOString().slice(0,10)).slice(0,10);
   const keywordWindowValid=/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowStart)
     &&/^\d{4}-\d{2}-\d{2}$/.test(keywordWindowEnd)
     &&keywordWindowStart<=keywordWindowEnd;
   const classificationWindowStart=keywordWindowStart;
   const classificationWindowEnd=keywordWindowEnd;
   const classificationWindowValid=keywordWindowValid;
-  const classificationPeriodLabel=keywordPeriodKey==='custom'
-    ?l.customPeriod:localizedLabelOf(keywordPeriod,0);
+  const classificationPeriodLabel=keywordPeriodKey==='custom'&&cultureTimeKind==='period'
+    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.eventOption;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -329,6 +333,7 @@ export default function Culture(){
     if(matched){
       appliedDateNavigationRef.current=navigationKey;
       setSelectedPeriodKey(periodKey(matched));
+      setCultureTimeKind('period');
       setKeywordPeriodKey(periodKey(matched));
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
@@ -1179,8 +1184,8 @@ export default function Culture(){
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
-                  windowStart={(keywordPeriodKey==='custom'||keywordPeriodKey.startsWith('event:'))&&keywordWindowValid?keywordWindowStart:currentStructureStart}
-                  windowEnd={(keywordPeriodKey==='custom'||keywordPeriodKey.startsWith('event:'))&&keywordWindowValid?keywordWindowEnd:currentStructureEnd}
+                  windowStart={(keywordPeriodKey==='custom'||cultureTimeKind==='event')&&keywordWindowValid?keywordWindowStart:currentStructureStart}
+                  windowEnd={(keywordPeriodKey==='custom'||cultureTimeKind==='event')&&keywordWindowValid?keywordWindowEnd:currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
                   editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
@@ -1195,31 +1200,53 @@ export default function Culture(){
                 <div className='scope-culture-river-toolbar'>
                   <h3>{UI_COPY.culture.classificationRiver}｜{classificationPeriodLabel}</h3>
                   <div className='scope-culture-river-selectors'>
-                    <label><span>{l.periodLabel}</span>
-                      <select className='scope-select' aria-label={l.periodLabel} value={keywordPeriodKey}
-                        onChange={event=>{
-                          const next=event.target.value;
-                          if(next==='custom'){
-                            if(!keywordCustomStart)setKeywordCustomStart(keywordWindowStart);
-                            if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
-                          }
-                          setKeywordPeriodKey(next);
-                          if(next==='latest')setSelectedPeriodKey(periodKey(latestPeriod)||'all');
-                          else if(next==='all'||next.startsWith('event:'))setSelectedPeriodKey('all');
-                          else if(next!=='custom')setSelectedPeriodKey(next);
-                        }}>
-                        <option value='latest'>{l.recentPeriod}</option>
-                        <option value='all'>{l.allPeriods}</option>
-                        <optgroup label={l.period}>
-                          {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
-                        </optgroup>
-                        {cultureEventOptions.length?<optgroup label={l.eventOption}>
-                          {cultureEventOptions.map(event=><option key={event.id||event.entry_id||event.record_id}
-                            value={'event:'+String(event.id||event.entry_id||event.record_id)}>{localizedLabelOf(event,0)}</option>)}
-                        </optgroup>:null}
-                        <option value='custom'>{l.customPeriod}</option>
-                      </select>
-                    </label>
+                    <div className='scope-culture-time-picker'>
+                      <label>
+                        <select className='scope-select' aria-label={l.periodLabel} value={cultureTimeKind}
+                          onChange={event=>{
+                            const kind=event.target.value;
+                            setCultureTimeKind(kind);
+                            if(kind==='event'){
+                              setKeywordPeriodKey(cultureEventOptions.length
+                                ?'event:'+String(cultureEventOptions[0].id||cultureEventOptions[0].entry_id||cultureEventOptions[0].record_id):'');
+                            }else{
+                              setKeywordPeriodKey('latest');
+                              setSelectedPeriodKey(periodKey(latestPeriod)||'all');
+                            }
+                          }}>
+                          <option value='period'>{l.period}</option>
+                          <option value='event'>{l.eventOption}</option>
+                        </select>
+                      </label>
+                      <span aria-hidden='true'>：</span>
+                      <label>
+                        <select className='scope-select' aria-label={cultureTimeKind==='event'?l.eventOption:l.period}
+                          value={keywordPeriodKey} onChange={event=>{
+                            const next=event.target.value;
+                            if(cultureTimeKind==='period'&&next==='custom'){
+                              if(!keywordCustomStart)setKeywordCustomStart(keywordWindowStart);
+                              if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
+                            }
+                            setKeywordPeriodKey(next);
+                            if(cultureTimeKind==='event')return;
+                            if(next==='latest')setSelectedPeriodKey(periodKey(latestPeriod)||'all');
+                            else if(next==='all')setSelectedPeriodKey('all');
+                            else if(next!=='custom')setSelectedPeriodKey(next);
+                          }}>
+                          {cultureTimeKind==='event'
+                            ?(cultureEventOptions.length
+                              ?cultureEventOptions.map(item=><option key={item.id||item.entry_id||item.record_id}
+                                  value={'event:'+String(item.id||item.entry_id||item.record_id)}>{localizedLabelOf(item,0)}</option>)
+                              :<option value=''>{l.eventOption}</option>)
+                            :<>
+                              <option value='latest'>{l.recentPeriod}</option>
+                              <option value='all'>{l.allPeriods}</option>
+                              {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
+                              <option value='custom'>{l.customPeriod}</option>
+                            </>}
+                        </select>
+                      </label>
+                    </div>
                     <label><span>{l.styleLabel}</span>
                       <select className='scope-select' aria-label={l.styleLabel} value={styleFilter}
                         onFocus={()=>setKeywordOptionsScope(scopeId)}
@@ -1231,7 +1258,7 @@ export default function Culture(){
                         </option>
                       </select>
                     </label>
-                    {keywordPeriodKey==='custom'?<>
+                    {cultureTimeKind==='period'&&keywordPeriodKey==='custom'?<>
                       <label><span>{l.period}</span><input className='scope-select' aria-label={l.customPeriod} type='date'
                         value={keywordCustomStart} max={keywordCustomEnd||undefined}
                         onChange={event=>setKeywordCustomStart(event.target.value)}/></label>
