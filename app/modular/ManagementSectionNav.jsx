@@ -1,62 +1,62 @@
 'use client';
 
-import {useCallback} from 'react';
+import {useCallback,useEffect,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
-import Select from 'react-select';
 
-/** Visible in-page navigation for management workspaces. */
-export default function ManagementSectionNav({
-  id,
-  title,
-  panelId,
-  items,
-  value,
-  onChange
-}){
+/**
+ * In-page management navigator.
+ * The left text list is React selection UI, NOT a Next.js route transition.
+ */
+export default function ManagementSectionNav({id,title,panelId,items,value,onChange}){
   const activeItem=items.find(item=>item.value===value)||items[0];
   const headingId=id+'-heading';
-
-  const options=items.map(item=>({
-    value:item.value,label:item.label,description:item.description||''
-  }));
   return <section className="management-section-nav" aria-labelledby={headingId}>
     <h2 className="management-section-nav__title" id={headingId}>{title}</h2>
-    <label className="management-section-nav__select-label" htmlFor={id+'-select'}>管理功能</label>
-    <Select
-      inputId={id+'-select'}
-      instanceId={id+'-select'}
-      unstyled
-      className="loc-settings-select"
-      classNamePrefix="loc-settings-select"
-      isClearable={false}
-      isSearchable={items.length>8}
-      options={options}
-      value={options.find(item=>item.value===activeItem?.value)||options[0]||null}
-      onChange={item=>{if(item&&item.value!==activeItem?.value)onChange(item.value);}}
-      aria-label={title}
-      noOptionsMessage={()=>'沒有管理功能'}
-    />
-    <span className="management-section-nav__description" id={id+'-option-'+activeItem?.value}>
-      {activeItem?.description||activeItem?.label}
-    </span>
+    <div className="management-section-nav__items" role="group" aria-label={title}>
+      {items.map(item=>{
+        const selected=item.value===activeItem?.value;
+        return <button
+          key={item.value}
+          id={id+'-option-'+item.value}
+          type="button"
+          className="management-section-nav__item"
+          aria-pressed={selected}
+          aria-controls={panelId}
+          onClick={()=>{if(!selected)onChange(item.value);}}
+        >
+          <span className="management-section-nav__label">{item.label}</span>
+          {item.description?<span className="management-section-nav__description">{item.description}</span>:null}
+        </button>;
+      })}
+    </div>
   </section>;
 }
 
-// Shared URL state for Admin, Scope management, article management and Settings.
-// Native History API updates Next.js useSearchParams without a route remount,
-// retaining edit=1, scopeid, and any other existing query parameters.
+// The component's React state is the source of truth, so section clicks do
+// not navigate or remount the page (and therefore do not jump to the Hero).
+// The History API only mirrors selection for deep links/back-forward support.
 export function useManagementSection(items,defaultValue='',aliases={}){
   const searchParams=useSearchParams();
-  const requested=searchParams?.get('section')||'';
-  const normalized=aliases[requested]||requested;
-  const fallback=items.some(item=>item.value===defaultValue)?defaultValue:items[0]?.value||'';
-  const value=items.some(item=>item.value===normalized)?normalized:fallback;
+  const resolve=raw=>{
+    const requested=aliases[raw]||raw;
+    const fallback=items.some(item=>item.value===defaultValue)?defaultValue:items[0]?.value||'';
+    return items.some(item=>item.value===requested)?requested:fallback;
+  };
+  const [value,setLocalValue]=useState(()=>resolve(searchParams?.get('section')||''));
+  useEffect(()=>{
+    const sync=()=>setLocalValue(resolve(new URL(window.location.href).searchParams.get('section')||''));
+    window.addEventListener('popstate',sync);
+    return ()=>window.removeEventListener('popstate',sync);
+  });
   const setValue=useCallback(next=>{
     if(!items.some(item=>item.value===next))return;
+    // Update the UI immediately; no router.push/replace, no scroll reset.
+    setLocalValue(next);
     const url=new URL(window.location.href);
-    if(url.searchParams.get('section')===next)return;
-    url.searchParams.set('section',next);
-    window.history.pushState(null,'',url.pathname+url.search+url.hash);
+    if(url.searchParams.get('section')!==next){
+      url.searchParams.set('section',next);
+      window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
+    }
   },[items]);
   const hrefFor=useCallback(next=>{
     if(!items.some(item=>item.value===next))return '';
