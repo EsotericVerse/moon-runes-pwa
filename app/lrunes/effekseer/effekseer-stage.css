@@ -10,7 +10,7 @@
 .rune-effekseer-canvas{pointer-events:none}
 .rune-effekseer-glyph-position{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;z-index:2}
 .rune-effekseer-glyph{pointer-events:auto;appearance:none;background:transparent;border:0;cursor:pointer;line-height:1;
- font-size:clamp(86px,17.6vw,176px);font-weight:400;font-synthesis:none;color:var(--rune-ink,var(--loc-text));filter:drop-shadow(0 3px 4px color-mix(in srgb,var(--loc-panel) 80%,transparent));
+ font-size:clamp(64px,12vw,116px);font-weight:400;font-synthesis:none;color:var(--rune-ink,var(--loc-text));filter:drop-shadow(0 3px 4px color-mix(in srgb,var(--loc-panel) 80%,transparent));
  text-shadow:0 0 2px color-mix(in srgb,var(--loc-gold) 55%,transparent),0 10px 22px color-mix(in srgb,var(--loc-panel) 70%,transparent);min-width:1.3em;min-height:1.2em;text-align:center}
 .rune-effekseer-glyph:focus-visible{outline:3px solid var(--loc-gold);outline-offset:8px;border-radius:16px}
 .rune-effekseer-glyph{position:relative;display:inline-flex;justify-content:center;align-items:center;overflow:visible}
@@ -89,7 +89,7 @@
 .rune-3d-daily-fields{display:grid;gap:12px}.rune-3d-daily-fields article{border:1px solid var(--loc-line-soft);padding:12px;border-radius:12px}
 .rune-3d-daily-fields h3{margin:0 0 6px}.rune-3d-daily-fields p{margin:0}
 @media(max-width:640px){.rune-effekseer-gesture{left:calc(50% + 24vw);top:23%}.rune-effekseer-replay{right:8px;top:8px}.rune-3d-stage{height:58dvh;min-height:385px}.rune-3d-duel-action-dock{grid-template-columns:repeat(2,1fr)}
-.rune-3d-duel-action--finish{grid-column:1/-1}.rune-effekseer-glyph{font-size:clamp(86px,24.8vw,136px)}}
+.rune-3d-duel-action--finish{grid-column:1/-1}.rune-effekseer-glyph{font-size:clamp(62px,18vw,100px)}}
 @media(prefers-reduced-motion:reduce){.rune-effekseer-stage{scroll-behavior:auto}}
 
 /* Actual Rune manifestation catalogue: glyph identity precedes the single VFX stage. */
@@ -508,7 +508,7 @@
   background:var(--loc-panel);color:var(--loc-text);
 }
 .rune-3d-library .rune-3d-atlas-glyph-model{
-  flex:0 0 auto;font-size:clamp(96px,12.8vw,140px);
+  flex:0 0 auto;font-size:clamp(72px,8.6vw,104px);
   min-width:1.42em;min-height:1.35em;
   cursor:default;pointer-events:none;filter:none;
 }
@@ -521,7 +521,7 @@
 }
 @media(max-width:620px){
  .rune-3d-library .rune-3d-atlas-glyph-review{gap:0;padding:12px 16px;text-align:center}
- .rune-3d-library .rune-3d-atlas-glyph-model{font-size:clamp(92px,23.2vw,120px)}
+ .rune-3d-library .rune-3d-atlas-glyph-model{font-size:clamp(70px,17vw,92px)}
  .rune-3d-library .rune-3d-atlas-glyph-copy{flex-basis:100%;max-width:none}
 }
 

@@ -5,6 +5,7 @@ import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import * as THREE from 'three';
 import {runeGlyphProfile} from './rune-glyph-library.mjs';
 import RuneExtrudedGlyph from './RuneExtrudedGlyph';
+import {GLYPH_MOTION_TIMES,runeGlyphMotionFor} from './rune-glyph-motion.mjs';
 import {AUTHORED_EFFECT_FILES,CANONICAL_RUNE_ENGLISH,runeEffectFor} from './rune-effect-library.mjs';
 import {runeIconFor} from './rune-semantic-icons.mjs';
 import {groupStageForRune,groupSummonForRune,cinematicCameraPose,GROUP_IMPACT_AT} from './rune-cinematic-language.mjs';
@@ -39,16 +40,6 @@ function readyRuntime(){
     catch(error){reject(error);}
   })).catch(error=>{wasmPromise=null;throw error;});
   return wasmPromise;
-}
-function animationFor(word){
-  // Text motion is handled by the existing Motion library; VFX are from Effekseer.
-  if(word==='無')return{opacity:[0,1,0,0],scale:[.96,1,1,1]};
-  if(word==='虛')return{opacity:[0,.9,.7,0],scale:[1.3,1,.42,0]};
-  if(word==='辰')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
-  if(word==='時')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
-  if(word==='緣')return{opacity:[0,1,1,0],y:[12,0,0,-7]};
-  if(word==='幻')return{opacity:[0,1,.65,0],filter:['blur(12px)','blur(0px)','blur(5px)','blur(14px)']};
-  return{opacity:[0,1,1,0],scale:[.76,1.04,1,.97],y:[28,0,0,-9]};
 }
 // These small semantic illustrations use the existing Motion library and Unicode
 // pictograms. They are not particle systems or replacements for authored VFX.
@@ -120,19 +111,16 @@ function nameOf(rune){return String(rune?.rune_name||rune?.totem||'光').replace
  * Never create a custom aura/emitter/shader or a second invented effects layer.
  */
 export const RITUAL_DURATION=4.8;
-export const RITUAL_GLYPH_MOTION=Object.freeze({
-  opacity:[0,1,1,1,1,1,1],
-  scale:[.58,1.68,2.0,2.0,1.92,1.08,1],
-  y:[28,0,0,0,0,0,0]
-});
-export const RITUAL_KEYFRAMES=Object.freeze([0,.13,.3,.53,.70,.91,1]);
+export const RITUAL_KEYFRAMES=GLYPH_MOTION_TIMES;
 const smoothstep=t=>{const x=Math.max(0,Math.min(1,t));return x*x*(3-2*x);};
-function ritualCameraDistance(t){
-  // 24 is the original stage distance; 10.8 creates a broad authored-VFX shot.
-  if(t<.63)return 24-(24-10.8)*smoothstep(t/.63);
-  if(t<3.1)return 10.8;
-  if(t<4.4)return 10.8+(24-10.8)*smoothstep((t-3.1)/1.3);
-  return 24; // visible, deliberate return to the original stage composition
+function ritualCameraDistance(t,runeId){
+  // Replace the identical dramatic push-in (24 to 10.8) on every rune
+  // with five subtle camera passes. The glyph movement provides variety.
+  const id=Number(runeId);
+  const mode=(Number.isInteger(id)&&id>=1&&id<=66?id-1:0)%5;
+  const approach=smoothstep(t/.9)*(1-smoothstep((t-3.05)/1.35));
+  const distances=[23.4,25.6,22.5,24,23.1];
+  return 24+(distances[mode]-24)*approach;
 }
 
 
@@ -160,7 +148,7 @@ function drawPreludeForRune(runeId){
   return runeEffectFor({english_name:CANONICAL_RUNE_ENGLISH[id]});
 }
 
-function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original',diagnoseAmbient=false}){
+function EffekseerCanvas({effect,runeId,reduced,onReady,onPlaybackComplete,ceremony=false,groupEffect=null,groupStage=null,waiting=false,ambient=false,ambientDepth='rear',ambientPaused=false,quality='high',textureQuality='original',diagnoseAmbient=false}){
   const canvas=useRef(null);
   const onPlaybackCompleteRef=useRef(onPlaybackComplete);
   onPlaybackCompleteRef.current=onPlaybackComplete;
@@ -378,7 +366,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
               }catch(error){if(active)setStatus('霧氣重播失敗：'+String(error?.message||error));}
             }
             if(ceremony){
-              const pose=cinematicCameraPose(elapsed,groupStage,ritualCameraDistance(elapsed));
+              const pose=cinematicCameraPose(elapsed,groupStage,ritualCameraDistance(elapsed,runeId));
               camera.position.set(pose.x,pose.y,pose.z);
               camera.lookAt(0,0,0);
               camera.updateMatrixWorld();
@@ -573,7 +561,7 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
       try{context?.release();}catch{}
       try{renderer?.dispose();}catch{}
     };
-  },[effect,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,textureQuality,diagnoseAmbient]);
+  },[effect,runeId,reduced,ceremony,groupEffect,groupStage,waiting,ambient,ambientDepth,quality,textureQuality,diagnoseAmbient]);
   return <div className="rune-effekseer-canvas-wrap">
     <canvas ref={canvas} className="rune-effekseer-canvas" aria-hidden="true"/>
     {(!ambient||diagnoseAmbient)&&status?<p className={'rune-effekseer-status'+(diagnoseAmbient?' rune-effekseer-fog-diagnostic':'')} role="status">{status}</p>:null}
@@ -627,6 +615,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
   const semanticIcon=runeIconFor(rune);
   const visualReady=reduced||!effect||visibleKey===key;
   const showCard=ceremony&&appearance==='card'&&Boolean(cardSrc);
+  const letterMotion=useMemo(()=>runeGlyphMotionFor(rune,{ceremony}),[rune?.rune_id,word,ceremony]);
   useEffect(()=>{completedRef.current=false;},[key]);
   useEffect(()=>{
     if(ceremony&&reduced&&!completedRef.current){
@@ -638,17 +627,17 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
     data-ceremony={ceremony?'summoning':undefined}
     data-quality={quality} data-texture-quality={textureQuality} data-effect-key={effect?.key||''}
     data-direction={direction==='正位'?'upright':direction==='半正位'?'semi-upright':direction==='半逆位'?'semi-reversed':direction==='逆位'?'reversed':undefined}>
-    <EffekseerCanvas key={key} effect={effect} reduced={reduced} ceremony={ceremony} quality={quality} textureQuality={textureQuality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
+    <EffekseerCanvas key={key} effect={effect} runeId={rune?.rune_id} reduced={reduced} ceremony={ceremony} quality={quality} textureQuality={textureQuality} onPlaybackComplete={onPlaybackComplete} onReady={()=>setVisibleKey(key)}/>
     <div className="rune-effekseer-glyph-position">
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"
           className={showCard?'rune-effekseer-ceremony-card':'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
-          data-glyph-family={profile.family} data-glyph-finish={profile.finish}
+          data-glyph-family={profile.family} data-glyph-finish={profile.finish} data-glyph-motion={letterMotion.style}
           style={{'--rune-ink':profile.ink}}
           aria-label={onGlyphClick?'查看 '+word+' 之符文':word+'符文特效展示'}
           onClick={onGlyphClick} disabled={!onGlyphClick}
-          initial={reduced?false:{opacity:0,scale:.75}}
-          animate={reduced?{opacity:1,scale:1}:ceremony?RITUAL_GLYPH_MOTION:animationFor(word)}
+          initial={reduced?false:{opacity:0}}
+          animate={reduced?{opacity:1,scale:1}:letterMotion.frames}
           onAnimationComplete={()=>{
             if(ceremony&&!completedRef.current){
               completedRef.current=true;
@@ -656,7 +645,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
             }
           }}
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
-          transition={ceremony?{duration:reduced?0:RITUAL_DURATION,times:RITUAL_KEYFRAMES,ease:'easeInOut'}:{duration:reduced?0:4.2,times:[0,.17,.78,1],ease:'easeInOut'}}>
+          transition={{duration:reduced?0:ceremony?RITUAL_DURATION:4.2,times:GLYPH_MOTION_TIMES,ease:'easeInOut'}}>
           {showCard?<img className="rune-effekseer-ceremony-card-image" src={cardSrc} alt={word+'符文卡面'}/>:
             <><RuneExtrudedGlyph word={word} profile={profile}/>
               {direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}</>}
