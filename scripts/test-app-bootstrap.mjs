@@ -347,3 +347,19 @@ test('LOC public search is global and does not enumerate Scope IDs in its UI',()
   assert.match(search,/searchGalaxyRows\(searchScopes,q,/);
   assert.match(search,/queryFn:managementMode\?\(\)=>selectScopeRegistry\(\{scopeKind:'scope'\}\):selectLocSearchScopes/);
 });
+
+test('Culture river keeps three collapsed parents, expandable child lanes and touch candidate details',()=>{
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const river=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
+  assert.match(culture,/openCultureRoots.*useState/);
+  assert.match(culture,/id:'system',label:l\.system/);
+  assert.match(culture,/id:'custom',label:l\.custom/);
+  assert.match(culture,/id:'media',label:l\.media/);
+  assert.match(culture,/onGroupToggle=\{id=>/);
+  assert.match(culture,/anchorInsight=\{anchorInsight\}/);
+  assert.match(culture,/setFocusedAnchorDate\(date\)/);
+  assert.match(river,/button\.setAttribute\('aria-expanded'/);
+  assert.match(river,/onGroupToggleRef\.current/);
+  assert.match(river,/addCustomTime\(/);
+  assert.match(river,/scope-candidate-insight/);
+});

@@ -57,6 +57,7 @@ const TIME_EDITOR_SECTIONS=Object.freeze([
   {value:'period',label:'時期',description:'編輯時期與起訖定錨點。'}
 ]);
 const EMPTY_RIVER_FOCUS=Object.freeze({});
+const EMPTY_CULTURE_GROUPS=Object.freeze([]);
 const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
 function classificationRiverLabel(item){
@@ -334,7 +335,7 @@ export default function Culture(){
 
   const sourceTaxonomy=useAsyncResource({
     queryKey:['culture-source-classification',scopeId],
-    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&Boolean(scopeData),
+    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&scopeId!=='local'&&Boolean(scopeData),
     queryFn:async()=>{
       const [categories,aliases,groups,groupAliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
@@ -451,7 +452,7 @@ export default function Culture(){
     });
   },[keywordDetailRequested,keywordDensityQuery.data,styleQuery.data?.classifications,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
 
-  const categoryGroups=sourceSnapshotQuery.data?.groups||[];
+  const categoryGroups=sourceSnapshotQuery.data?.groups||EMPTY_CULTURE_GROUPS;
   const groupedSources=useMemo(()=>{
     const catalog=sourceTaxonomy.data||{categories:[],aliases:[],groups:[],groupAliases:[]};
     const system=new Map(catalog.categories.filter(row=>row.enabled!==false)
@@ -463,6 +464,10 @@ export default function Culture(){
     for(const source of categoryGroups){
       const raw=String(source.source_name||'');
       let root='media',code=raw,label=raw.replace(/^媒體 · /u,'');
+      const type=label.toLowerCase();
+      if(type==='music'||type==='audio')label=l.mediaMusic;
+      else if(type==='image'||type==='photo')label=l.mediaImage;
+      else if(type==='video'||type==='movie')label=l.mediaVideo;
       if(source.category_type!=='media'){
         const systemCode=assignedSource(raw,catalog.aliases,catalog.categories);
         root=systemCode==='others'?'custom':'system';
@@ -477,7 +482,7 @@ export default function Culture(){
       group.media_types.push(...(source.media_types||[]));
     }
     return [...index.values()].map(group=>({...group,source_names:[...new Set(group.source_names)],media_types:[...new Set(group.media_types)]}));
-  },[categoryGroups,sourceTaxonomy.data,l.other]);
+  },[categoryGroups,sourceTaxonomy.data,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
   const selectedGroup=groupedSources.find(item=>item.key===selectedRiverGroup)
     ||categoryGroups.find(item=>item.category_key===(keywordDrillSource?'source:'+keywordDrillSource:selectedCategory))
     ||null;
