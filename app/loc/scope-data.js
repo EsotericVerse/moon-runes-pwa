@@ -3,6 +3,7 @@
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
 import {dbAuthClient,dbPublicClient} from './db-client.mjs';
+import {Capacitor} from '@capacitor/core';
 
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
 // app-bootstrap request (see app/loc/app-bootstrap.js); there is no
@@ -19,14 +20,14 @@ const MANAGE_ROLE_COLUMN='manage_role';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
-// Static GitHub Pages has no Next.js handlers. Public web metadata must use
-// the deployed Cloudflare OpenNext ISR API, regardless of Domain or directory
-// Scope routing. OpenNext/Vercel hosts keep their own same-origin API routes.
+// One deployment-level ISR API origin. Scope Domain/Directory URLs NEVER
+// select an ISR server; static export supplies this via its build environment.
+// Next.js ISR hosts leave it unset and use their own relative API handlers.
+// Native Capacitor retains offline/local database access, not cloud ISR.
 export function locPublicIsrUrl(path){
-  const host=typeof window==='undefined'?'':String(window.location?.hostname||'').toLowerCase();
-  return ['loc.lo3rwang.cc','lrunes.lo3rwang.cc','esotericverse.github.io'].includes(host)
-    ?'https://isr.lo3rwang.cc'+path
-    :path;
+  const origin=String(process.env.NEXT_PUBLIC_LOC_ISR_ORIGIN||'').trim().replace(/\/+$/,'');
+  if(!origin||Capacitor.isNativePlatform())return path;
+  return origin+path;
 }
 
 function requiredToken(value,label){
@@ -126,6 +127,8 @@ export function invalidatePublicThemeSnapshot(){
 export function invalidatePublicScopeMetadata(){
   managedScopesRequest=null;
   publicSiteBootstrapRequest=null;
+  scopeConfigInFlight.clear();
+  scopeBlocksRequests.clear();
   void revalidateServerMetadata();
   if(typeof window!=='undefined'){
     window.dispatchEvent(new Event('loc-public-scope-metadata-changed'));
@@ -145,6 +148,8 @@ export async function revalidateServerMetadata(){
     // The server has invalidated the R2-backed metadata tag. Drop the browser's
     // shared snapshot before any editor-triggered SWR refresh can read it again.
     publicSiteBootstrapRequest=null;
+    scopeConfigInFlight.clear();
+    scopeBlocksRequests.clear();
     return true;
   }catch{return false;}
 }
@@ -234,9 +239,9 @@ export async function selectManagedScope(scopeId){
 }
 
 
-// Deduplicate simultaneous readers (AppShell, Scope runtime, feature gate).
-// The browser keeps only the in-flight request; Cloudflare OpenNext/R2 (or
-// Vercel backup) owns the shared 14-day cache for public Config and page blocks.
+// One per-session public metadata request, read only when its feature opens.
+// Cloudflare OpenNext/R2 (or Vercel backup) provides cross-user 14-day ISR.
+// Authorized metadata writes explicitly clear these per-session snapshots.
 const scopeConfigInFlight=new Map();
 export function selectScopeConfig(scopeId){
   const scope=defaultScopeData(scopeId);
@@ -259,28 +264,36 @@ export function selectScopeConfig(scopeId){
         filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
       });
       return rows[0]||null;
-    })).finally(()=>scopeConfigInFlight.delete(scope.id));
+    }));
   scopeConfigInFlight.set(scope.id,request);
   return request;
 }
 
 
+const scopeBlocksRequests=new Map();
 export async function selectScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return [];
   const requested=String(page||'index').trim().toLowerCase();
   const pageName=requested==='home'?'index':requested;
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
-  let response=null;
-  if(id!=='local')try{response=await fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName)));}
-  catch{/* Static/native builds use the direct public Supabase fallback below. */}
-  if(response?.ok){
-    try{return await response.json();}catch{/* Fall through to the direct read. */}
-  }
-  const {rows}=await selectRows(`silver.${id}_blocks`,{
-    columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
-    filters:[{column:'page_name',operator:'eq',value:pageName}],
-    orders:[{column:'block_order',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
-  });
-  return rows||[];
+  const key=id+':'+pageName;
+  if(scopeBlocksRequests.has(key))return scopeBlocksRequests.get(key);
+  const request=(async()=>{
+    let response=null;
+    if(id!=='local')try{
+      response=await fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName)));
+    }catch{/* Native/offline fallback retains its direct public read. */}
+    if(response?.ok){
+      try{return await response.json();}catch{/* Fall through to direct read. */}
+    }
+    const {rows}=await selectRows(`silver.${id}_blocks`,{
+      columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
+      filters:[{column:'page_name',operator:'eq',value:pageName}],
+      orders:[{column:'block_order',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
+    });
+    return rows||[];
+  })().catch(error=>{scopeBlocksRequests.delete(key);throw error;});
+  scopeBlocksRequests.set(key,request);
+  return request;
 }
