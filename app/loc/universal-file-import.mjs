@@ -8,6 +8,54 @@ const DOCUMENT_FORMATS=new Set(['docx','pptx','pdf','odt','odp','odg','rtf','md'
 const MAX_DOCUMENT_BYTES=128*1024*1024;
 const forbiddenHeaders=new Set(['__proto__','prototype','constructor']);
 
+// The selected *import language* is only an encoding fallback hint. It is
+// never stored on Galaxy rows and never converts the article's language.
+// A UTF-8 file wins for every language, including Traditional Chinese.
+const LEGACY_TEXT_ENCODINGS=Object.freeze({
+  'zh-Hant':'big5','zh-Hans':'gb18030',en:'windows-1252',ja:'shift_jis'
+});
+const TEXT_DOCUMENT_TYPES=new Set(['csv','tsv','html','htm','tex']);
+export async function decodeImportText(file,importLocale='zh-Hant'){
+  if(typeof file?.arrayBuffer!=='function')return file.text();
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  const decoder=(label)=>new TextDecoder(label,{fatal:true}).decode(bytes);
+  try{
+    if(bytes[0]===0xff&&bytes[1]===0xfe)return decoder('utf-16le');
+    if(bytes[0]===0xfe&&bytes[1]===0xff)return decoder('utf-16be');
+    // UTF-16 without BOM: consider the regular alternating NUL pattern.
+    if(bytes.length>=12){
+      let even=0,odd=0;
+      const limit=Math.min(bytes.length,2048);
+      const pairs=Math.floor(limit/2);
+      for(let i=0;i<pairs*2;i+=2){
+        if(bytes[i]===0)even++;
+        if(bytes[i+1]===0)odd++;
+      }
+      if(odd>pairs*0.4&&even<pairs*0.05)return decoder('utf-16le');
+      if(even>pairs*0.4&&odd<pairs*0.05)return decoder('utf-16be');
+    }
+    return decoder('utf-8');
+  }catch(utf8Error){
+    try{
+      const text=decoder(LEGACY_TEXT_ENCODINGS[importLocale]||'big5');
+      if(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text.slice(0,16000)))
+        throw new Error('文件含有不正常的控制字元');
+      return text;
+    }catch{
+      throw new Error('檔案無法以 UTF-8 或選定語系的舊式編碼正確解讀；請確認匯入語系及來源。');
+    }
+  }
+}
+async function normalizedTextDocument(file,importLocale,type){
+  const content=await decodeImportText(file,importLocale);
+  // The standard file parser expects UTF-8 for textual Office-adjacent types.
+  // Keep its existing format parsing, after safely transcoding the text.
+  return new File([content],file.name,{
+    type:type==='csv'?'text/csv':type==='tsv'?'text/tab-separated-values':
+      type==='html'||type==='htm'?'text/html':'text/plain'
+  });
+}
+
 function extensionOf(name){
   return String(name||'').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase()||'';
 }
@@ -57,7 +105,7 @@ export function officeTableRows(ast){
   return output;
 }
 
-// Galaxy Markdown v1 is a UTF-8 Markdown document with optional, scalar YAML
+// Galaxy Markdown v1 is a Markdown document with optional, scalar YAML
 // frontmatter. Retain Markdown as the article body instead of flattening it
 // through the generic document extractor (which discards formatting).
 const GALAXY_MARKDOWN_FORMAT='galaxy-md/v1';
@@ -125,8 +173,8 @@ async function stableMarkdownUid(source){
   for(const part of hash.slice(0,5))value=(value<<8n)|BigInt(part);
   return value.toString(32).toUpperCase().padStart(8,'0');
 }
-export async function parseGalaxyMarkdownFile(file){
-  const original=await file.text();
+export async function parseGalaxyMarkdownFile(file,{importLocale='zh-Hant'}={}){
+  const original=await decodeImportText(file,importLocale);
   const {fields,body}=markdownFrontmatter(original);
   const content=body.trim();
   if(!content)throw new Error('Markdown 文件沒有正文內容。');
@@ -151,17 +199,17 @@ export async function parseGalaxyMarkdownFile(file){
   }];
 }
 
-export async function parseUniversalImportFile(file,{recordPath='',officeParser}={}){
+export async function parseUniversalImportFile(file,{recordPath='',officeParser,importLocale='zh-Hant'}={}){
   if(!file||typeof file.name!=='string')throw new Error('請選擇有效的匯入檔案。');
   const type=extensionOf(file.name);
   if(type==='json'){
-    const parsed=JSON.parse(await file.text());
+    const parsed=JSON.parse(await decodeImportText(file,importLocale));
     return importRowsFromJson(parsed,recordPath);
   }
   if(type==='md'){
     if(!Number.isFinite(file.size)||file.size<=0||file.size>MAX_DOCUMENT_BYTES)
       throw new Error('Markdown 文件為空或超過 128 MiB 單檔上限。');
-    return parseGalaxyMarkdownFile(file);
+    return parseGalaxyMarkdownFile(file,{importLocale});
   }
   if(!TABLE_FORMATS.has(type)&&!DOCUMENT_FORMATS.has(type))
     throw new Error('不支援的文件格式：'+(type||'未知'));
@@ -173,7 +221,8 @@ export async function parseUniversalImportFile(file,{recordPath='',officeParser}
   const options=type==='tsv'?{fileType:'csv',csvDelimiter:'\t'}:
     type==='htm'?{fileType:'html'}:
     type==='csv'||type==='md'||type==='html'||type==='tex'?{fileType:type}:{};
-  const ast=await parser.parseOffice(file,options);
+  const input=TEXT_DOCUMENT_TYPES.has(type)?await normalizedTextDocument(file,importLocale,type):file;
+  const ast=await parser.parseOffice(input,options);
   if(TABLE_FORMATS.has(type))return officeTableRows(ast);
   const result=await ast.to('text');
   const content=String(result?.value||'').trim();
