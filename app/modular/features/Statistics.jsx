@@ -700,7 +700,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
-      {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data} range={queryRange}/>:null}
+      {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data} range={queryRange} scopeId={scopeId}/>:null}
     </>:null}
     {!isLrunesDaily&&Boolean(targetScopes[0])?<StatisticsDetails
       summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}>
