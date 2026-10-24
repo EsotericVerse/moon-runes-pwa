@@ -18,12 +18,12 @@ import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
 
 const ADMIN_OPTIONS=Object.freeze([
-  {value:'registry',label:'群組與人員',description:'管理群組、人員及所屬關係。'},
-  {value:'database',label:'資料庫設定',description:'資料庫連線與郵件封鎖名單。'},
-  {value:'isr',label:'ISR 設定',description:'管理 ISR 網域與手動選用的平台。'},
-  {value:'reserved',label:'保留名稱設定',description:'查看系統保留名稱並編輯備註。'},
-  {value:'featureHero',label:'功能區塊設定',description:'編輯功能頁與 LOC 治理頁區塊。'},
-  {value:'themes',label:'主題顏色設定',description:'調整網站主題和色彩。'}
+  {value:'registry',label:'群組與人員',shortLabel:'人員',description:'管理群組、人員及所屬關係。'},
+  {value:'database',label:'資料庫設定',shortLabel:'資料庫',description:'資料庫連線與郵件封鎖名單。'},
+  {value:'isr',label:'ISR 設定',shortLabel:'ISR',description:'管理 ISR 網域與手動選用的平台。'},
+  {value:'reserved',label:'保留名稱設定',shortLabel:'保留名稱',description:'查看系統保留名稱並編輯備註。'},
+  {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁與 LOC 治理頁區塊。'},
+  {value:'themes',label:'主題顏色設定',shortLabel:'配色',description:'調整網站主題和色彩。'}
 ]);
 function Login({account}){
   return <FeaturePage featureId="admin">
