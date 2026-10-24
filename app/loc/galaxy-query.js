@@ -9,6 +9,7 @@ import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
+import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
 import {selectFirstDailyRuneDate} from './daily-runes';
 
 function unique(values=[]){
@@ -64,6 +65,8 @@ const missingStatisticsRpc=error=>['PGRST202','42883'].includes(String(error?.co
 let statisticsRpcInstalled=true;
 async function scopeStatisticsRows(scope,{startDate='',endDate='',includeUndated=false}={}){
   const current=scopeOf(scope);
+  // The browser only receives the cached numeric payload; repeat views do not rerun SQL.
+  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'culture',{startDate,endDate,includeUndated});
   if(!statisticsRpcInstalled)return null;
   try{
     return await readScopeStatistics(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated});
@@ -756,6 +759,7 @@ export async function selectFirstScopeStatisticsDate(scope){
 // serve while the functions are not installed (for example on a backup database).
 export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
+  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'statistics',{startDate,endDate});
   try{
     return await readScopeOverview(current.id,{startDate,endDate});
   }catch(error){

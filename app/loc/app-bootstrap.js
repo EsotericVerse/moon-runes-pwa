@@ -10,17 +10,11 @@ import {selectThemeRegistry,themeUiId} from './theme-data';
 const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
 const PAGE_NAME=/^[a-z0-9_-]+$/;
 let bootstrapRpcInstalled=true;
-// The site RPC already delivers LOC/index blocks on the first view. On later
-// invalidations (e.g. a successful editor save), refresh only loc_blocks
-// instead of repeating the public Registry/Theme/loc bootstrap.
-let locHomeSnapshotDelivered=false;
 // The public snapshot is long-lived until an explicit Admin Registry refresh.
 export function invalidateAppBootstrapMetadata(){
-  locHomeSnapshotDelivered=false;
   invalidatePublicScopeMetadata();
 }
 export function invalidateAppBootstrapThemes(){
-  locHomeSnapshotDelivered=false;
   invalidatePublicThemeSnapshot();
 }
 const missingRpc=error=>['PGRST202','42883'].includes(String(error?.code||''));
@@ -38,7 +32,7 @@ async function legacyBootstrap(id,page){
     selectScopeRegistry().catch(()=>[]),
     selectThemeRegistry().catch(()=>[]),
     id&&id!=='admin'?selectScopeConfig(id).catch(()=>null):Promise.resolve(null),
-    id&&id!=='admin'&&page!=='culture'?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
+    id&&id!=='admin'?selectScopeBlocks(id,page).catch(()=>[]):Promise.resolve([])
   ]);
   return {
     scope_id:id,page_name:page,config,blocks,registry,page_copy:[],
@@ -54,33 +48,24 @@ export async function selectAppBootstrap(scopeId,pageName='index',{configHint=nu
     // request for Culture/Statistics/Search/Management on an offline iPhone.
     const [config,blocks]=await Promise.all([
       configHint?Promise.resolve(configHint):selectScopeConfig('local'),
-      page==='culture'?Promise.resolve([]):selectScopeBlocks('local',page)
+      selectScopeBlocks('local',page)
     ]);
     return {scope_id:id,page_name:page,config,blocks,registry:[],page_copy:[],theme_list:[],themes:[]};
   }
   if(bootstrapRpcInstalled){
     try{
-      // The site snapshot and this Scope's public Config/blocks are
-      // independent reads. Start them together instead of waiting for the
-      // Registry/Theme RPC before issuing the Scope requests (a waterfall).
-      // LOC/index alone uses the blocks already returned by that RPC.
-      const isLocHome=id==='loc'&&page==='index';
-      const [site,scopeReads]=await Promise.all([
+      // Blocks are independent static JSON snapshots, never read from the site
+      // metadata RPC or its former ISR endpoint. Start both reads together.
+      const [site,[scopeConfig,blocks]]=await Promise.all([
         selectPublicSiteBootstrap(),
-        isLocHome?Promise.resolve(null):Promise.all([
+        Promise.all([
           id&&id!=='loc'&&id!=='admin'
             ?(configHint?Promise.resolve(configHint):selectScopeConfig(id))
             :Promise.resolve(null),
-          id&&id!=='admin'&&page!=='culture'?selectScopeBlocks(id,page):Promise.resolve([])
+          id&&id!=='admin'?selectScopeBlocks(id,page):Promise.resolve([])
         ])
       ]);
-      const [config,blocks]=isLocHome
-        ?[site.config||null,
-          locHomeSnapshotDelivered
-            ?await selectScopeBlocks('loc','index')
-            :Array.isArray(site.blocks)?site.blocks:[]]
-        :[id==='loc'?site.config||null:scopeReads[0],scopeReads[1]];
-      if(isLocHome)locHomeSnapshotDelivered=true;
+      const config=id==='loc'?site.config||null:scopeConfig;
       return {
         scope_id:id,
         page_name:page,

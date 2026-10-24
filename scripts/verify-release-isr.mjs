@@ -2,40 +2,39 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root=process.cwd();
-const readJson=file=>JSON.parse(fs.readFileSync(path.join(root,file),'utf8'));
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
-const manifest=readJson('.next/prerender-manifest.json');
-const appPaths=readJson('.next/server/app-paths-manifest.json');
-const expected=1209600;
+const readJson=file=>JSON.parse(read(file));
+const routes=readJson('.next/server/app-paths-manifest.json');
 
-// The shell is prerendered. Route handlers can be dynamic while the READS
-// inside unstable_cache still have the full 14-day persistent Data Cache.
-// Do not demand a prerender-manifest entry for dynamic Route Handlers.
-if(manifest.routes?.['/']?.initialRevalidateSeconds!==expected){
-  throw new Error('LOC shell prerender TTL must remain 14 days');
+// Only two public numeric ISR summary families remain. Other reads are
+// static JSON or direct, explicit live queries.
+const numeric='app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js';
+const invalidation='app/api/loc/revalidate/route.js';
+const appPath=file=>'/'+file.replace(/^app\//,'').replace(/\.js$/,'');
+for(const name of [numeric,invalidation]){
+  if(!routes[appPath(name)])throw Error('Missing Next route '+name);
 }
-
-const server=read('app/api/loc/_server.js');
-if(!/LOC_ISR_SECONDS\s*=\s*1209600/.test(server))
-  throw new Error('ISR metadata Data Cache TTL is not 14 days');
-
-for(const file of [
+for(const route of [
   'app/api/loc/site-bootstrap/route.js',
   'app/api/loc/scopes/[scopeId]/config/route.js',
   'app/api/loc/scopes/[scopeId]/blocks/[pageName]/route.js'
 ]){
-  const appPath='/'+file.replace(/^app\//,'').replace(/\.js$/,'');
-  if(!appPaths[appPath])throw new Error('Missing Next API route: '+appPath);
-  const source=read(file);
-  if(!/unstable_cache\s*\(/.test(source)||!/revalidate:\s*LOC_ISR_SECONDS/.test(source))
-    throw new Error('Missing 14-day cached database read in '+file);
-  if(!/tags:\s*\[LOC_PUBLIC_CACHE_TAG\]/.test(source))
-    throw new Error('Missing on-demand invalidation tag in '+file);
+  if(fs.existsSync(path.join(root,route)))throw Error('Legacy ISR route still present: '+route);
 }
-if(!appPaths['/api/loc/revalidate/route'])
-  throw new Error('Missing authenticated metadata invalidation route');
-const invalidation=read('app/api/loc/revalidate/route.js');
-if(!invalidation.includes('revalidateTag(LOC_PUBLIC_CACHE_TAG,{expire:0})'))
-  throw new Error('Missing authorized cache invalidation');
-
-console.log('Verified 14-day shell ISR, 14-day cached API data, and authorized tag invalidation.');
+const source=read(numeric);
+if(!source.includes('unstable_cache(')||!source.includes('read_scope_statistics')
+  ||!source.includes('read_scope_overview')||!source.includes("Cache-Control':'no-store"))
+  throw Error('Missing shared numeric ISR Data Cache or browser-cache bypass');
+const config=read('app/loc/scope-data.js');
+if(config.includes("locPublicIsrUrl('/api/loc/site-bootstrap')")||
+   config.includes("locPublicIsrUrl('/api/loc/scopes/"))
+  throw Error('Non-numeric ISR reference remains in scope-data');
+if(!config.includes('/_loc/blocks/')||!config.includes('/_loc/site-bootstrap.json'))
+  throw Error('Missing static Blocks/bootstrap data sources');
+const app=read('app/loc/app-bootstrap.js');
+if(app.includes('locHomeSnapshotDelivered'))
+  throw Error('LOC home still consumes site RPC Blocks');
+const worker=read('public/sw.js');
+if(!worker.includes('loc-public-blocks-')||!worker.includes('LOC_BLOCKS_INVALIDATE'))
+  throw Error('Static Block Service Worker is incomplete');
+console.log('Verified only Culture/Statistics numeric ISR, and static public Blocks/bootstrap.');

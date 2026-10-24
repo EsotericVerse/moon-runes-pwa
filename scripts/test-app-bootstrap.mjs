@@ -76,14 +76,14 @@ test('Admin consumes site metadata without querying nonexistent admin tables',as
   assert.equal(result.blocks.length,0);
 });
 
-test('LOC homepage continues to consume its existing site-RPC blocks',async()=>{
+test('LOC homepage gets published Blocks independently of the shared metadata',async()=>{
   const {calls,site,resolveSite,selectAppBootstrap}=await harness();
   const pending=selectAppBootstrap('loc','index');
-  assert.deepEqual(calls,['site']);
+  assert.deepEqual(calls,['site','blocks:loc:index']);
   resolveSite(site);
   const result=await pending;
   assert.equal(result.config.id,'loc');
-  assert.equal(result.blocks[0].uid,'loc-block');
+  assert.equal(result.blocks[0].uid,'loc-index');
 });
 
 // Regression: choosing a keyword source must update the main time series and

@@ -18,7 +18,7 @@ import {resolveHomeImage} from './LocHomeBlockDisplay';
 import {isHomeFrameFor} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
-import {revalidateServerMetadata} from './scope-data';
+import {invalidateScopeBlockPage} from './scope-data';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -40,8 +40,7 @@ export default function ScopeBlockEditorSession({
   async function refreshBlockQueries(){
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
-    // Wait for the protected ISR invalidation before reloading SWR readers.
-    if(scopeId!=='local')await revalidateServerMetadata();
+    invalidateScopeBlockPage(scopeId,pageName);
     await Promise.all([mutate(bootstrapKey),mutate(displayKey)]);
   }
   const cancel=()=>onClose();

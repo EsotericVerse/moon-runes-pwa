@@ -26,6 +26,7 @@ const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTim
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 
 import {selectGalaxyContent} from '../../loc/galaxy-query';
+import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
@@ -626,6 +627,9 @@ export default function Culture(){
   }
 
   async function refreshTimelineData(){
+    // An authorized Time edit invalidates the server-side numeric cache before
+    // SWR retries. The SQL fallback is deliberately not used for public ISR.
+    if(scopeId!=='local'&&scopeId!=='lrunes')await revalidateServerMetadata();
     await Promise.all([
       resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-period-settings',scopeId]}),

@@ -15,9 +15,11 @@ function run(command,args,env=process.env){
   if(result.status!==0)throw new Error(`${command} ${args.join(' ')} failed with status ${result.status}`);
 }
 
+// Publish static Blocks while app/api/loc/_server.js is still available.
+// The export itself parks API routes only AFTER its prebuild succeeds.
+run(npm,['run','prebuild']);
 fs.renameSync(api,parked);
 try{
-  run(npm,['run','prebuild']);
   run(process.execPath,[path.join(root,'node_modules','next','dist','bin','next'),'build'],{
     ...process.env,
     LOC_STATIC_EXPORT:'1',

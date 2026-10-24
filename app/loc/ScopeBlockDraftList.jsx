@@ -17,7 +17,7 @@ import {resolveHomeImage} from './LocHomeBlockDisplay';
 import {isHomeFrameFor} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
-import {revalidateServerMetadata} from './scope-data';
+import {invalidateScopeBlockPage} from './scope-data';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -61,9 +61,9 @@ export default function ScopeBlockDraftList({
   async function refreshBlockQueries(){
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
-    // Invalidate the server-side ISR cache before requesting fresh public data.
-    // Parallel mutation could otherwise re-fetch a still-cached older version.
-    await revalidateServerMetadata();
+    // The edited browser reads back its latest write; static public snapshots
+    // are updated at the next published build, without any ISR request.
+    invalidateScopeBlockPage(scopeId,pageName);
     await Promise.all([mutate(bootstrapKey),mutate(displayKey)]);
   }
 

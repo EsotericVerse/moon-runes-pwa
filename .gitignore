@@ -19,3 +19,7 @@ public/vendor/effekseer/Collections/
 
 # Verified vendor artwork copied from licensed Game-Icons.net at build time
 public/vendor/rune-semantic-icons/
+
+# Built/published public snapshots are generated, never manually committed.
+/public/_loc/
+/public/_loc-building/

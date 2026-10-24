@@ -5,7 +5,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 import {useEffect,useRef,useState} from 'react';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import {THEME_SLOTS} from '../modular/theme-registry';
-import {revalidateServerMetadata,selectScopeConfig} from './scope-data';
+import {invalidatePublicScopeMetadata,selectScopeConfig} from './scope-data';
 import {updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
@@ -62,7 +62,7 @@ export default function ScopeSettingsPanel({scopeId}){
         theme:String(draft.theme||'system-default'),
         updated_at:new Date().toISOString()
       },{filters:[{column:'id',operator:'eq',value:scopeId}]});
-      await revalidateServerMetadata();
+      invalidatePublicScopeMetadata();
       setSavedTheme(String(draft.theme||'system-default'));
       setMessage(uiT('uiExtra.scopeSettings.saved'));
       return true;

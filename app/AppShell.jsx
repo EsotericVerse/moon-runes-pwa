@@ -259,8 +259,8 @@ export default function AppShell({children}){
 function AppShellInner({children}){
   const {mutate}=useSWRConfig();
   useEffect(()=>{
-    // Public image cache only. HTML, ISR, API and authenticated data are not
-    // handled by this worker. Native Capacitor uses its own WebView runtime.
+    // Public Blocks, images and versioned static assets only. Authenticated
+    // reads, SQL, searches and ISR numerics never enter the browser cache.
     if(Capacitor.isNativePlatform()||!('serviceWorker' in navigator))return;
     if(location.protocol!=='https:'&&location.hostname!=='localhost')return;
     navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{});

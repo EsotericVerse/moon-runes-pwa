@@ -2,7 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
-import {dbAuthClient,dbPublicClient} from './db-client.mjs';
+import {dbAuthEvents,dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
 
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
@@ -116,27 +116,28 @@ function normalizeRegistryRow(row){
 // One public site snapshot per client runtime (including concurrent mounts).
 // Registry, theme catalogue and page-copy are shared by all Scope pages.
 let publicSiteBootstrapRequest=null;
+let editedPublicMetadata=false;
 // Theme writes invalidate only the site snapshot, not Scope metadata or
 // runtime Registry caches. Ordinary Guest navigation is unaffected.
 export function invalidatePublicThemeSnapshot(){
+  editedPublicMetadata=true;
   publicSiteBootstrapRequest=null;
-  void revalidateServerMetadata();
 }
 // Only explicit admin metadata refreshes invalidate the public client snapshot.
 // Guest navigation shares the same promise and never preflights authorization.
 export function invalidatePublicScopeMetadata(){
+  editedPublicMetadata=true;
   managedScopesRequest=null;
   publicSiteBootstrapRequest=null;
   scopeConfigInFlight.clear();
   scopeBlocksRequests.clear();
-  void revalidateServerMetadata();
   if(typeof window!=='undefined'){
     window.dispatchEvent(new Event('loc-public-scope-metadata-changed'));
   }
 }
 export async function revalidateServerMetadata(){
   try{
-    const {data,error}=await dbAuthClient.auth.getSession();
+    const {data,error}=await dbAuthEvents.getSession();
     const token=data?.session?.access_token;
     if(error||!token)return false;
     const response=await fetch(locPublicIsrUrl('/api/loc/revalidate'),{
@@ -145,31 +146,27 @@ export async function revalidateServerMetadata(){
       cache:'no-store'
     });
     if(!response.ok)return false;
-    // The server has invalidated the R2-backed metadata tag. Drop the browser's
-    // shared snapshot before any editor-triggered SWR refresh can read it again.
-    publicSiteBootstrapRequest=null;
-    scopeConfigInFlight.clear();
-    scopeBlocksRequests.clear();
+    // Only the numeric Culture/Statistics tag is invalidated on the server.
     return true;
   }catch{return false;}
 }
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
-  publicSiteBootstrapRequest=fetch(locPublicIsrUrl('/api/loc/site-bootstrap'))
-    .then(async response=>{
-      if(!response.ok)throw new Error('LOC site bootstrap failed: '+response.status);
+  // Static public metadata, generated at publish time with the Blocks.
+  // Never invoke a paid Worker or Supabase on repeat ordinary page views.
+  // After an editor update this browser uses the live public RPC until publish.
+  publicSiteBootstrapRequest=(editedPublicMetadata
+    ?dbPublicClient.schema('silver').rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'})
+      .then(({data,error})=>{if(error)throw error;return {...(data||{}),blocks:[]};})
+    :fetch('/_loc/site-bootstrap.json').then(async response=>{
+      if(!response.ok)throw Error('Public snapshot unavailable: '+response.status);
       return response.json();
-    }).catch(async error=>{
-      // Static/native builds have no Next server. Preserve their existing
-      // direct public read while deployed web traffic uses the ISR endpoint.
-      const {data,error:rpcError}=await dbPublicClient.schema('silver')
+    }).catch(async()=>{
+      const {data,error}=await dbPublicClient.schema('silver')
         .rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
-      if(rpcError)throw error;
-      return data||{};
-    }).catch(error=>{
-      publicSiteBootstrapRequest=null;
-      throw error;
-    });
+      if(error)throw error;
+      return {...(data||{}),blocks:[]};
+    })).catch(error=>{publicSiteBootstrapRequest=null;throw error;});
   return publicSiteBootstrapRequest;
 }
 
@@ -248,29 +245,33 @@ export function selectScopeConfig(scopeId){
   if(!scope)return Promise.resolve(null);
   const existing=scopeConfigInFlight.get(scope.id);
   if(existing)return existing;
-  // The private 'local' Scope must not try Cloudflare/API metadata first.
-  const request=(scope.id==='local'
-    ?selectRows(scope.config,{
-      columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
-      filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
-    }).then(({rows})=>rows[0]||null)
-    :fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config'))
-    .then(async response=>{
-      if(!response.ok)throw new Error('Scope config failed: '+response.status);
+  // Private 'local' never reads the network. Ordinary public scopes use
+  // published static configuration; edits in this browser bypass the snapshot.
+  const live=()=>selectRows(scope.config,{
+    columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
+    filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
+  }).then(({rows})=>rows[0]||null);
+  const request=scope.id==='local'||editedPublicMetadata?live()
+    :fetch('/_loc/config/'+scope.id+'.json').then(async response=>{
+      if(!response.ok)throw Error('Static Scope config '+response.status);
       return response.json();
-    }).catch(async()=>{
-      const {rows}=await selectRows(scope.config,{
-        columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
-        filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
-      });
-      return rows[0]||null;
-    }));
+    }).catch(live);
   if(scope.id!=='local')scopeConfigInFlight.set(scope.id,request);
   return request;
 }
 
 
 const scopeBlocksRequests=new Map();
+const locallyEditedBlocks=new Set();
+export function invalidateScopeBlockPage(scopeId,page='index'){
+  const id=String(scopeId||'').trim().toLowerCase();
+  const pageName=String(page||'index').trim().toLowerCase().replace(/^home$/,'index');
+  const key=id+':'+pageName;
+  scopeBlocksRequests.delete(key);
+  locallyEditedBlocks.add(key);
+  if(typeof navigator!=='undefined'&&navigator.serviceWorker?.controller)
+    navigator.serviceWorker.controller.postMessage({type:'LOC_BLOCKS_INVALIDATE',key});
+}
 export async function selectScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return [];
@@ -280,12 +281,11 @@ export async function selectScopeBlocks(scopeId,page='index'){
   const key=id+':'+pageName;
   if(id!=='local'&&scopeBlocksRequests.has(key))return scopeBlocksRequests.get(key);
   const request=(async()=>{
-    let response=null;
-    if(id!=='local')try{
-      response=await fetch(locPublicIsrUrl('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName)));
-    }catch{/* Native/offline fallback retains its direct public read. */}
-    if(response?.ok){
-      try{return await response.json();}catch{/* Fall through to direct read. */}
+    if(id!=='local'&&!locallyEditedBlocks.has(key)){
+      try{
+        const response=await fetch('/_loc/blocks/'+encodeURIComponent(id)+'/'+encodeURIComponent(pageName)+'.json');
+        if(response.ok)return await response.json();
+      }catch{/* No static publication yet or offline: retain the direct provider. */}
     }
     const {rows}=await selectRows(`silver.${id}_blocks`,{
       columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',

@@ -32,7 +32,7 @@ function createHarness(){
     clone(){return response(type,headers);}
   });
   const context=vm.createContext({
-    URL,Promise,caches:cacheStorage,
+    URL,Promise,Request,caches:cacheStorage,
     self:{
       location:{origin:'https://loc.lo3rwang.cc'},
       addEventListener:(name,fn)=>listeners.set(name,fn),
@@ -50,7 +50,7 @@ function createHarness(){
     const pending=[];
     let handled;
     const event={
-      request,
+      request,data:name==='message'?request:undefined,
       respondWith:value=>{handled=Promise.resolve(value);},
       waitUntil:value=>pending.push(Promise.resolve(value))
     };
@@ -144,4 +144,40 @@ test('explicit no-store and private image responses never enter the cache',async
   h.setOnline(false);
   assert.ok((await h.dispatch('fetch',h.req(url))).result);
   assert.equal(h.requests.length,5);
+});
+
+test('static published Blocks and site metadata cache locally without another fetch',async()=>{
+  const h=createHarness();
+  h.setResponseHeaders({'content-type':'application/json','cache-control':'public, max-age=600'});
+  const blocks=h.req('https://loc.lo3rwang.cc/_loc/blocks/lrunes/index.json','');
+  const site=h.req('https://loc.lo3rwang.cc/_loc/site-bootstrap.json','');
+  await h.dispatch('fetch',blocks);
+  await h.dispatch('fetch',site);
+  await h.dispatch('fetch',blocks);
+  await h.dispatch('fetch',site);
+  assert.equal(h.requests.length,2);
+  assert.ok([...h.stored.keys()].some(k=>k.startsWith('loc-public-blocks-')));
+});
+test('editing invalidates one static Block cache entry without affecting other data',async()=>{
+  const h=createHarness();
+  h.setResponseHeaders({'content-type':'application/json'});
+  const req=h.req('https://loc.lo3rwang.cc/_loc/blocks/lo3rwang/index.json','');
+  await h.dispatch('fetch',req);
+  await h.dispatch('message',{type:'LOC_BLOCKS_INVALIDATE',key:'lo3rwang:index'});
+  await h.dispatch('fetch',req);
+  assert.deepEqual(h.requests,[req.url,req.url]);
+});
+test('search, numeric ISR, authenticated routes and game API are never intercepted',async()=>{
+  const h=createHarness();
+  for(const url of [
+    '/api/loc/scopes/lo3rwang/numeric/statistics',
+    '/rest/v1/rpc/read_scope_statistics',
+    '/search?q=test','/governance/manage',
+    '/lrunes/game/api/room',
+    '/auth/session'
+  ]){
+    const result=await h.dispatch('fetch',h.req('https://loc.lo3rwang.cc'+url,''));
+    assert.equal(result.handled,false,url);
+  }
+  assert.equal(h.requests.length,0);
 });

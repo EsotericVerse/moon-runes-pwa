@@ -3,7 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {useSWRConfig} from 'swr';
 import dynamic from 'next/dynamic';
 import UiText from '../../../i18n/UiText';
-import {revalidateServerMetadata,selectScopeBlocks} from '../../scope-data';
+import {invalidateScopeBlockPage,selectScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -72,7 +72,7 @@ function ImageSlot({feature,variant,onDirtyChange}){
         const {error}=await insertRows(table,[{page_name:page,block_order:order,block_image:image}]);
         if(error)throw new Error(error.message||'儲存失敗。');
       }
-      await revalidateServerMetadata();
+      invalidateScopeBlockPage('loc',page);
       await mutate(displayQueryKey);
       setStatus('已更新。');
       setRevision(v=>v+1);

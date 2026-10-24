@@ -3,8 +3,8 @@ import AppShell from './AppShell';
 import {LOC_ORIGIN} from './seo/metadata';
 import {faviconForScope} from './site-favicons';
 
-// ISR: render a stable public shell and refresh it at most every 14 days.
-export const revalidate=1209600;
+// The public shell is static. Only Culture/Statistics numeric APIs use ISR.
+export const dynamic='force-static';
 
 export const metadata = {
   metadataBase:new URL(LOC_ORIGIN),
