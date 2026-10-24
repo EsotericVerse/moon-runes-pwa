@@ -1,0 +1,79 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {webcrypto} from 'node:crypto';
+import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
+
+if(!globalThis.crypto)globalThis.crypto=webcrypto;
+const file=(name,body,size=Buffer.byteLength(body))=>({name,size,text:async()=>body});
+
+test('Galaxy Markdown v1 preserves headings and content while mapping metadata',async()=>{
+  const text=[
+    '---','loc_format: galaxy-md/v1','title: "時空靈魂震盪論"',
+    'created_at: 2026-10-24','source_name: ChatGPT','source_place: 台灣',
+    'searchable: true','statistics_able: false','---','',
+    '# 原始標題','','**內文** 與 [連結](https://example.com)。','','- A','- B'
+  ].join('\n');
+  const rows=await parseUniversalImportFile(file('essay.md',text));
+  assert.equal(rows.length,1);
+  const row=rows[0];
+  assert.equal(row.title,'時空靈魂震盪論');
+  assert.equal(row.createtime,'2026-10-24');
+  assert.equal(row.source_name,'ChatGPT');
+  assert.equal(row.source_place,'台灣');
+  assert.equal(row.searchable,true);
+  assert.equal(row.statistics_able,false);
+  assert.match(row.content,/# 原始標題\n\n\*\*內文\*\*/);
+  assert.match(row.uid,/^[0-9A-V]{8}$/);
+  assert.equal((await parseUniversalImportFile(file('essay.md',text)))[0].uid,row.uid);
+});
+
+test('ordinary Markdown without metadata imports with H1 title and repeat-safe UID',async()=>{
+  const doc='# 我的筆記\n\n## 子標題\n\n保留 **強調**。\n';
+  const [first]=await parseUniversalImportFile(file('notes.md',doc));
+  const [again]=await parseUniversalImportFile(file('renamed.md',doc));
+  assert.equal(first.title,'我的筆記');
+  assert.equal(first.uid,again.uid);
+  assert.equal(first.content,doc.trim());
+  assert.equal(first.createtime,null);
+  const [modified]=await parseUniversalImportFile(file('notes.md',doc+'增加一行\n'));
+  assert.notEqual(modified.uid,first.uid);
+});
+
+test('Markdown respects a supplied stable UID even when content changes',async()=>{
+  const mk=body=>file('essay.md','---\nuid: AB12CD34\n---\n'+body);
+  const [first]=await parseUniversalImportFile(mk('# 初稿'));
+  const [revised]=await parseUniversalImportFile(mk('# 修訂'));
+  assert.equal(first.uid,'AB12CD34');
+  assert.equal(revised.uid,'AB12CD34');
+});
+
+test('CRLF and UTF-8 BOM are handled without losing Markdown',async()=>{
+  const doc='\uFEFF---\r\ntitle: "摘要"\r\ncreated_at: "2026-10-24T09:00:00+08:00"\r\n---\r\n\r\n# 內容\r\n\r\n一段話';
+  const [row]=await parseUniversalImportFile(file('a.md',doc));
+  assert.equal(row.title,'摘要');
+  assert.equal(row.createtime,'2026-10-24T09:00:00+08:00');
+  assert.equal(row.content,'# 內容\n\n一段話');
+});
+
+test('bad explicit metadata is rejected rather than silently substituted',async()=>{
+  await assert.rejects(parseUniversalImportFile(file('bad.md','---\nloc_format: galaxy-md/v2\n---\n# txt')),/不支援/);
+  await assert.rejects(parseUniversalImportFile(file('bad.md','---\nuid: bad-id\n---\n# txt')),/uid/);
+  await assert.rejects(parseUniversalImportFile(file('bad.md','---\nsearchable: maybe\n---\n# txt')),/true 或 false/);
+  await assert.rejects(parseUniversalImportFile(file('bad.md','---\ncreated_at: nonsense\n---\n# txt')),/created_at/);
+  await assert.rejects(parseUniversalImportFile(file('bad.md','---\nloc_format: galaxy-md\/v1\n# no end')),/缺少結束/);
+  await assert.rejects(parseUniversalImportFile(file('empty.md','')),/為空/);
+});
+
+test('non-Galaxy markdown with a horizontal rule is preserved',async()=>{
+  const doc='---\n# Not frontmatter\n\n正文';
+  const [row]=await parseUniversalImportFile(file('ordinary.md',doc));
+  assert.equal(row.content,doc);
+  assert.equal(row.title,'Not frontmatter');
+});
+
+test('document size limit and JSON import remain unchanged',async()=>{
+  await assert.rejects(parseUniversalImportFile(file('huge.md','# a',128*1024*1024+1)),/超過/);
+  const json='[{"title":"舊資料","content":"文字"}]';
+  const rows=await parseUniversalImportFile(file('archive.json',json));
+  assert.deepEqual(rows,[{title:'舊資料',content:'文字'}]);
+});
