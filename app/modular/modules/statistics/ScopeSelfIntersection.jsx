@@ -181,16 +181,25 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const lanes=Math.min(numberOfLanes,Math.max(2,maximumLanes));
   const availableFamilies=LANE_FAMILIES.filter(family=>
     categoryList.some(item=>family.kinds.includes(item.kind)));
-  const chosen=Array.from({length:lanes},(_,i)=>{
-    const id=selected[i];
-    if(id&&categoryList.some(c=>c.id===id)&&!selected.slice(0,i).includes(id))return id;
-    return categoryList.find(c=>!selected.slice(0,i).includes(c.id)&&!selected.slice(0,i).includes(c.id)&&!selected.slice(i+1,lanes).includes(c.id))?.id||categoryList[i]?.id||'';
+  const candidatesForLane=index=>{
+    const family=laneFamilies[index];
+    if(!family)return categoryList;
+    const kinds=LANE_FAMILIES.find(item=>item.id===family)?.kinds||[];
+    return categoryList.filter(item=>kinds.includes(item.kind));
+  };
+  const chosen=Array.from({length:lanes},(_,index)=>{
+    const candidates=candidatesForLane(index);
+    const id=selected[index];
+    if(id&&candidates.some(item=>item.id===id)&&!selected.slice(0,index).includes(id))return id;
+    const reserved=new Set(selected.filter((_,position)=>position!==index));
+    return candidates.find(item=>!reserved.has(item.id))?.id||'';
   });
-  // When a category disappears after filtering, re-base to distinct available sources.
+  // Do not silently select an unrelated category when a chosen family runs
+  // out of available values; the visitor can change that lane's first select.
   const used=new Set();
-  const selection=chosen.map((id,i)=>{
-    let output=id;
-    if(used.has(output))output=categoryList.find(c=>!used.has(c.id))?.id||'';
+  const selection=chosen.map((id,index)=>{
+    const options=candidatesForLane(index);
+    const output=id&&!used.has(id)?id:options.find(item=>!used.has(item.id))?.id||'';
     if(output)used.add(output);
     return output;
   });
