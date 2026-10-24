@@ -164,10 +164,9 @@ export default function GlobalSettings({initialSection='home'}={}){
       {activeSection==='home'?<div className="loc-settings-panel-group">
         <section className="loc-card">
           <h2><UiText id="uiExtra.globalSettings.account"/></h2>
-          {accountWaiting?<p role="status">正在核驗 Google OAuth 身分…</p>:account.user?<div>
-            <p>Google OAuth（已驗證）：{account.email}</p>
-            <button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>
-          </div>:<button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>}
+          {accountWaiting?<p role="status">正在核驗 Google OAuth 身分…</p>:account.user?<p>Google OAuth（已驗證）：{account.email}</p>:null}
+          {!accountWaiting&&!account.user?<button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>:null}
+          {account.user||prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
           {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
         </section>
         <section className="loc-card">
