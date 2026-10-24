@@ -363,3 +363,13 @@ test('Culture river keeps three collapsed parents, expandable child lanes and to
   assert.match(river,/addCustomTime\(/);
   assert.match(river,/scope-candidate-insight/);
 });
+
+test('Culture period and event selectors expose different second-option catalogs',()=>{
+  const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.match(source,/value=\{cultureTimeKind\}/);
+  assert.match(source,/setCultureTimeKind\(kind\)/);
+  assert.match(source,/cultureTimeKind==='event'/);
+  assert.match(source,/cultureEventOptions\.map\(item=><option/);
+  assert.match(source,/primaryPeriods\.map\(item=><option/);
+  assert.doesNotMatch(source,/<optgroup label=\{l\.eventOption\}>/);
+});
