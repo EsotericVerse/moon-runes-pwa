@@ -2,6 +2,7 @@
 
 import {useUiCopy,useUiLocale,useUiSection} from '../i18n/ui-locale';
 import UiText,{useUiText} from '../i18n/UiText';
+import {UI_LOCALE_OPTIONS} from '../i18n/ui-copy';
 import {registerDefaultSection} from '../i18n/ui-copy';
 import managementZh from '../i18n/sections/management.zh_tw.js';
 import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
@@ -264,6 +265,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
+  const [importLocale,setImportLocale]=useState('zh-Hant');
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
@@ -283,7 +285,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   },[rows,deferredSource,format.fields,locale]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
-  async function loadQueuedFile(file,index,total){
+  async function loadQueuedFile(file,index,total,language=importLocale){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
@@ -291,7 +293,8 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     }
     const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
     const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
-    if(isZip){setBusy(true);setStatus(t('uiExtra.importUI.zipInspecting'));}
+    setBusy(true);
+    if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
         const {detectZipArchiveSource}=await import('./private-archive-universal.mjs');
@@ -302,7 +305,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
-      const list=await parseUniversalImportFile(file,{recordPath:format.recordPath});
+      const list=await parseUniversalImportFile(file,{recordPath:format.recordPath,importLocale:language});
       const prepared=list.map(row=>({
         raw:row,
         import_uid:createUid8()
@@ -315,7 +318,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       setRows([]);
       setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }finally{
-      if(isZip)setBusy(false);
+      setBusy(false);
     }
   }
   async function chooseFile(event){
@@ -374,8 +377,20 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);onBusyChange?.(false);}
   }
+  async function chooseImportLocale(event){
+    if(busy)return;
+    const next=event.target.value;
+    setImportLocale(next);
+    if(queue.length)await loadQueuedFile(queue[queueIndex],queueIndex,queue.length,next);
+  }
   const pending=queue.length>queueIndex+1;
   return <div className="scope-import-body">
+    <label><UiText id="uiExtra.importUI.importLanguage"/>
+      <select className="scope-select" value={importLocale} disabled={busy} onChange={chooseImportLocale}>
+        {UI_LOCALE_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
+    <p className="scope-status"><UiText id="uiExtra.importUI.importLanguageHint"/></p>
     <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):suggested}</strong></p>:null}
     <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
