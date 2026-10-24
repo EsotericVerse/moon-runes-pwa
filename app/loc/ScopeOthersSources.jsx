@@ -39,7 +39,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
         dbAuthRelation(GLOBAL_CATEGORIES).select('category_code,enabled')
       ]);
       return {
-        groups:errorOf(results[0],'小分類'),
+        groups:errorOf(results[0],'分類'),
         aliases:errorOf(results[1],'來源對應'),
         globalAliases:errorOf(results[2],'全域來源'),
         globalCategories:errorOf(results[3],'全域分類')
@@ -100,7 +100,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
         if(!name||name.length>80)throw Error('分類名稱不可空白或超過 80 字。');
       }
       if(canMap){
-        if(key.length>120||!belongsToOthers(key))throw Error('來源名稱無效或已由 Admin 指定其他大分類。');
+        if(key.length>120||!belongsToOthers(key))throw Error('此來源已存在全站分類，不能重新指定。');
         if(!allowedKeys.has(sourceGroup))throw Error('請先選擇分類。');
       }
       for(const row of changedAliases){
@@ -128,7 +128,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       }
       if(canMap){
         if(key.length>120)throw Error('來源名稱不可超過 120 字。');
-        if(!belongsToOthers(key))throw Error('這個來源已由 Admin 指定到其他大分類，不能在 Others 重新歸類。');
+        if(!belongsToOthers(key))throw Error('此來源已存在全站分類，不能重新指定。');
         if(!allowedKeys.has(sourceGroup))throw Error('請先選擇分類。');
         const result=await dbAuthRelation(ALIASES)
           .upsert({scope_id:scopeId,source_key:key,group_code:sourceGroup},
@@ -138,7 +138,7 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
       for(const row of changedAliases){
         const target=aliasEdits[row.source_key];
         if(!allowedKeys.has(target))throw Error('分類已停用，不能指定來源。');
-        if(!belongsToOthers(row.source_key))throw Error('全域大分類已有指定，不能變更該來源。');
+        if(!belongsToOthers(row.source_key))throw Error('此來源已存在全站分類，不能重新指定。');
         const updated=await dbAuthRelation(ALIASES).update({group_code:target})
           .eq('scope_id',scopeId).eq('source_key',row.source_key).select('source_key');
         if(!errorOf(updated,'更新來源對應').length)throw Error('更新來源對應未寫入任何資料。');
@@ -191,11 +191,11 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
         </article>)}
       </div>:<p className="scope-status">尚未建立分類。</p>}
       <h3>來源歸類</h3>
-      {existingSources.isPending?<p className="scope-status" role="status">正在讀取此 Scope 既有來源…</p>:null}
-      {existingSources.error?<p className="scope-status scope-error" role="alert">既有來源清單讀取失敗：{String(existingSources.error.message||existingSources.error)}；仍可手動輸入來源。</p>:null}
+      {existingSources.isPending?<p className="scope-status" role="status">正在讀取既有來源…</p>:null}
+      {existingSources.error?<p className="scope-status scope-error" role="alert">來源清單讀取失敗：{String(existingSources.error.message||existingSources.error)}；仍可手動輸入來源。</p>:null}
       <div className="scope-management-fields">
-        <label><span>從現有其他來源選取</span>
-          <select className="scope-select" value="" disabled={!othersSourceOptions.length}
+        <label><span>現有來源</span>
+          <select className="scope-select" value={othersSourceOptions.some(item=>item.key===key)?key:""} disabled={!othersSourceOptions.length}
             onChange={event=>setSource(event.target.value)}>
             <option value="">選擇來源（或手動輸入）</option>
             {othersSourceOptions.map(item=><option key={item.key} value={item.key}>
@@ -221,9 +221,9 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
             onChange={event=>setAliasEdits(v=>({...v,[row.source_key]:event.target.value}))}>
             {groups.map(group=><option key={group.group_code} value={group.group_code}>{group.display_name}</option>)}
           </select></label>
-          {!belongsToOthers(row.source_key)?<span className="scope-status">Admin 已將此來源調整到其他大分類</span>:null}
+          {!belongsToOthers(row.source_key)?<span className="scope-status">此來源由全站分類管理</span>:null}
         </article>)}
-      </div>:null}}
+      </div>:null}
       {notice?<p className="scope-status" role="status">{notice}</p>:null}
       {busy?<p className="scope-status" role="status">正在儲存…</p>:null}
     </>:null}
