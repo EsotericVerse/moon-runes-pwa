@@ -595,7 +595,7 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
   }
   // Only the numbers for public charts are persisted in server ISR.
   // Advanced Style cross-tag relationships still require their own raw metadata.
-  if(usesNumericIsr(current.id)&&dimension!=='media_style')
+  if(usesNumericIsr(current.id))
     return readNumericIsr(current.id,'facet',{startDate,endDate,dimension});
   const filters=timeFilters('createtime',startDate,endDate);
   const columns='media_id,media_type,url,source_place,meta_tags,createtime';
