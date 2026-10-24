@@ -16,7 +16,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet','daily','daily-earliest'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet','earliest','daily','daily-earliest'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='';
   try{
@@ -24,9 +24,9 @@ export async function GET(request,{params}){
     if([...search.keys()].some(key=>!['start','end','undated','dimension'].includes(key)))throw Error('Unknown parameter');
     dimension=search.get('dimension')||'';
     if(kind==='facet'?!['media_type','media_platform'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
-    if(['facet','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
+    if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
-    if(kind==='daily-earliest'&&search.size)throw Error('Unexpected date range');
+    if(['earliest','daily-earliest'].includes(kind)&&search.size)throw Error('Unexpected date range');
     if(kind==='statistics'&&search.has('undated'))throw Error('Unexpected undated');
     if(search.has('undated')&&!['0','1'].includes(search.get('undated')))throw Error('Invalid undated');
     start=date(search.get('start'));
@@ -37,6 +37,11 @@ export async function GET(request,{params}){
   }catch{return withLocCors(Response.json({error:'Invalid date range'},{status:400}),request);}
   const read=unstable_cache(async()=>{
     const db=createPublicSupabaseClient();
+    if(kind==='earliest'){
+      const {data,error}=await db.rpc('read_scope_earliest',{p_scope_id:scopeId});
+      if(error)throw error;
+      return String(data||'').slice(0,10);
+    }
     if(kind==='daily-earliest'){
       const {data,error}=await db.from('lrunes_daily')
         .select('record_date').order('record_date',{ascending:true}).limit(1);
@@ -114,7 +119,7 @@ export async function GET(request,{params}){
       categories:Array.isArray(data.categories)?data.categories:[],
       aliases:Array.isArray(data.aliases)?data.aliases:[]
     };
-  },['loc-numeric-v3',kind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
+  },['loc-numeric-v4',kind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
     revalidate,tags:[LOC_NUMERIC_CACHE_TAG]
   });
   try{
