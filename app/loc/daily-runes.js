@@ -1,6 +1,7 @@
 import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectRows} from './db-query.mjs';
 import {realMoonPhase} from './model/moon-phase';
+import {revalidateServerMetadata} from './scope-data';
 
 
 async function attachRuneMeta(rows){
@@ -173,6 +174,9 @@ export async function insertDailyRuneRecord({recordDate,drawKind,runeNumber,dire
     throw new Error(error.message||'每日符文紀錄新增失敗');
   }
   const attached=await attachRuneMeta(data||[]);
+  // A successful public Daily write invalidates the same numeric ISR used
+  // by Culture and Statistics. The native SQLite adapter remains separate.
+  await revalidateServerMetadata();
   return attached[0]||null;
 }
 
@@ -194,6 +198,7 @@ export async function updateDailyRuneRecord({recordDate,drawKind,runeNumber,dire
   if(error)throw new Error(error.message||'每日符文紀錄修改失敗');
   if(!data?.length)throw new Error('找不到紀錄或目前沒有修改權限。');
   const attached=await attachRuneMeta(data);
+  await revalidateServerMetadata();
   return attached[0]||null;
 }
 
@@ -209,5 +214,6 @@ export async function deleteDailyRuneRecord({recordDate,drawKind}={}){
     .select('record_date,draw_kind');
   if(error)throw new Error(error.message||'每日符文紀錄刪除失敗');
   if(!data?.length)throw new Error('找不到紀錄或目前沒有刪除權限。');
+  await revalidateServerMetadata();
   return data[0];
 }
