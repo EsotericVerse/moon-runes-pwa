@@ -74,7 +74,9 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const [formOpen,setFormOpen]=useState(false);
-  const dialogRef=useRef(null);
+  const initialDraftRef=useRef({...BLANK});
+  const inlineSectionRef=useRef(null);
+  const nameInputRef=useRef(null);
 
   const query=useAsyncResource({
     queryKey:['culture-period-settings',dataScope,timeTable],
@@ -131,7 +133,9 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     const row=rawRows.find(item=>String(item.record_id)===id);
     if(row){
       setSelectedId(id);
-      setDraft(rowDraft(row));
+      const initial=rowDraft(row);
+      initialDraftRef.current=initial;
+      setDraft(initial);
       setMessage('');
       setFormOpen(true);
     }
@@ -144,31 +148,27 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     // required references: period 1–2, event 2, style_comment 1.
     if(!hasAnchorDate&&(recordType==='anchor'||!suggestedRequestNonce))return;
     setSelectedId('');
-    setDraft({
+    const initial={
       ...BLANK,
       record_type:recordType,
       time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
       // No date is inferred from the river: the user picks the anchor(s).
       anchor_ids:recordType==='style_comment'?[]:['0','0'],
       note:''
-    });
+    };
+    initialDraftRef.current=initial;
+    setDraft(initial);
     setMessage(recordType==='anchor'?l.inferredAnchor:recordType==='style_comment'?l.styleNeedsAnchor:recordType==='period'?l.periodNeedsAnchor:l.eventNeedsAnchor);
     setFormOpen(true);
   },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce,l]);
 
-  // Native showModal puts this form in the browser top layer rather than
-  // letting a non-modal open dialog disappear below the vis-timeline canvas.
-  // It must be a hook, before the conditional return, to support repeated adds.
-  // A newly mounted editor resolves its own account permissions asynchronously.
-  // Opening the draft before those checks complete must not lose showModal:
-  // retry when the authorized dialog actually appears in the DOM.
+  // Keep the Time form in document flow, directly beneath its add controls.
   const canRenderEditor=editable&&Boolean(timeTable);
   useEffect(()=>{
-    if(!formOpen||!canRenderEditor)return undefined;
-    const dialog=dialogRef.current;
-    if(dialog&&!dialog.open)dialog.showModal();
-    return()=>{if(dialog?.open)dialog.close();};
-  },[formOpen,canRenderEditor]);
+    if(!formOpen||!canRenderEditor)return;
+    inlineSectionRef.current?.scrollIntoView({block:'nearest'});
+    nameInputRef.current?.focus({preventScroll:true});
+  },[formOpen,canRenderEditor,selectedRecordId,suggestedRequestNonce]);
   useEffect(()=>{
     if(!formOpen||!editDock?.active||editDock.scopeId!==scopeId)return undefined;
     return editDock.register({
@@ -181,8 +181,14 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   if(!canRenderEditor)return null;
 
   const selectRow=row=>{
+    if(dockActions.current.isDirty?.()){
+      setMessage('請先儲存或取消目前的修改，再切換風格標籤。');
+      return;
+    }
+    const initial=rowDraft(row);
+    initialDraftRef.current=initial;
     setSelectedId(String(row.record_id));
-    setDraft(rowDraft(row));
+    setDraft(initial);
     setMessage('');
   };
   const cancelEdit=()=>{
@@ -337,16 +343,14 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   dockActions.current={
     save:options=>save({preventDefault(){}},options),
     isDirty:()=>{
-      if(!formOpen)return false;
-      const original=selectedId?rowDraft(rawRows.find(row=>String(row.record_id)===selectedId)):BLANK;
-      return JSON.stringify(draft)!==JSON.stringify(original);
+      return formOpen&&JSON.stringify(draft)!==JSON.stringify(initialDraftRef.current);
     },
     isBusy:()=>busy
   };
   if(!formOpen)return null;
 
-  return <dialog ref={dialogRef} aria-label={l.editorTitle} className="scope-culture-timeline-dialog" onCancel={event=>{event.preventDefault();cancelEdit();}}>
-    <section className="loc-card scope-feature-card scope-culture-inline-editor">
+  return <section ref={inlineSectionRef} className="loc-card scope-feature-card scope-culture-inline-editor" role="region" aria-label={l.editorTitle}>
+    <h4>{selectedId?'編輯':'新增'}{l[draft.record_type==='style_comment'?'style':draft.record_type]}</h4>
     {query.error?<p className="scope-status scope-error">{query.error.message}</p>:null}
     {duplicateAnchorIds.length?<p className="scope-status scope-error">{l.duplicateDataPrefix}{duplicateAnchorIds.join('、')}{l.duplicateDataSuffix}</p>:null}
     {query.isPending?<p className="scope-status">{copy.uiExtra.dataErrors.loading}</p>:null}
@@ -359,8 +363,14 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
           const row=rawRows.find(item=>item.record_type==='style_comment'&&String(item.record_id)===event.target.value);
           if(row)selectRow(row);
           else {
+            if(dockActions.current.isDirty?.()){
+              setMessage('請先儲存或取消目前的修改，再新增其他風格標籤。');
+              return;
+            }
+            const initial={...BLANK,record_type:'style_comment',anchor_ids:[]};
+            initialDraftRef.current=initial;
             setSelectedId('');
-            setDraft({...BLANK,record_type:'style_comment',anchor_ids:[]});
+            setDraft(initial);
             setMessage('');
           }
         }}>
@@ -372,7 +382,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
             </option>)}
         </select>
       </label>:null}
-      <label><span>{draft.record_type==='style_comment'?l.styleName:l.name}</span><input className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
+      <label><span>{draft.record_type==='style_comment'?l.styleName:l.name}</span><input ref={nameInputRef} className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/></label>
       <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
       {draft.record_type!=='style_comment'?<div className="scope-management-wide-field"><span>{draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span>
           <BlockNoteEditor editorKey={'timeline-note:'+scopeId+':'+String(selectedId||draft.record_type)}
@@ -433,6 +443,5 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
         {selectedId?<button type="button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
       </div>
     </form>
-    </section>
-  </dialog>;
+  </section>;
 }
