@@ -199,12 +199,13 @@ export default function CultureTimeline({
         const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
         const defaultOrder=standardTimeKinds.indexOf(kind);
         const extra=additionalGroups.get(id);
+        const content=extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id);
         return {
           id,
-          content:extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id),
+          content,
           order:Number.isFinite(extra?.order)?extra.order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index,
           ...(extra?.className?{className:extra.className}:{}),
-          ...(extra?.label?{title:extra.label}:{})
+          title:content
         };
       })):null;
       const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
