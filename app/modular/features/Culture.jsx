@@ -799,17 +799,19 @@ export default function Culture(){
     group_label:(keywordDrillGroup?'Group｜':'Class｜')+String(item.group_label||''),
     group_order:1000+(Number(item.group_order)||index)
   })),[keywordDrillItems,keywordDrillGroup]);
+  // The source half is always visible. The Class/Group half only exists
+  // after the visitor explicitly selects the keyword classification.
+  const showKeywordRiver=styleFilter==='rune66';
   const dualRiverItems=useMemo(
-    ()=>[...dualSourceRiverItems,...dualKeywordRiverItems],
-    [dualSourceRiverItems,dualKeywordRiverItems]
+    ()=>showKeywordRiver?[...dualSourceRiverItems,...dualKeywordRiverItems]:dualSourceRiverItems,
+    [dualSourceRiverItems,dualKeywordRiverItems,showKeywordRiver]
   );
   const dualRiverGroups=useMemo(()=>[
-    {id:'dual:section:source',label:'上半｜來源總類／來源分類',order:-10,className:'scope-dual-river-section'},
-    {id:'dual:section:keyword',label:keywordDrillGroup?'下半｜Class 內 Group 列表':'下半｜Class 列表',order:950,className:'scope-dual-river-section'},
-    ...(styleFilter==='none'
-      ?[{id:'dual:keyword:inactive',label:'選取關鍵詞組以顯示 Class',order:1000}]
+    {id:'dual:section:source',label:'來源總類／來源分類',order:-10,className:'scope-dual-river-section'},
+    ...(showKeywordRiver
+      ?[{id:'dual:section:keyword',label:keywordDrillGroup?'Class 內 Group 列表':'Class 列表',order:950,className:'scope-dual-river-section'}]
       :[])
-  ],[keywordDrillGroup,styleFilter]);
+  ],[keywordDrillGroup,showKeywordRiver]);
   useEffect(()=>{
     setSelectedVirtualAnchorDates(current=>current.filter(date=>riverAnalysis.suggestions.some(item=>item.date===date)));
   },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
