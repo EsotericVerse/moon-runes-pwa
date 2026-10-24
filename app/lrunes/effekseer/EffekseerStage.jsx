@@ -632,7 +632,7 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
       <AnimatePresence mode="wait">
         {visualReady?<motion.button key={key} type="button"
           className={showCard?'rune-effekseer-ceremony-card':'rune-effekseer-glyph rune-effekseer-glyph--'+profile.font}
-          data-glyph-family={profile.family} data-glyph-finish={profile.finish} data-glyph-motion={letterMotion.style} data-glyph-ink={profile.ink}
+          data-glyph-family={profile.family} data-glyph-finish={profile.finish} data-glyph-motion={letterMotion.style} data-glyph-weight={letterMotion.weight||'measured'} data-glyph-ink={profile.ink}
           style={{'--rune-ink':profile.ink}}
           aria-label={onGlyphClick?'查看 '+word+' 之符文':word+'符文特效展示'}
           onClick={onGlyphClick} disabled={!onGlyphClick}
@@ -645,7 +645,8 @@ export default function EffekseerStage({rune,onGlyphClick,vfxOnly=false,directio
             }
           }}
           exit={{opacity:0,transition:{duration:reduced?0:.12}}}
-          transition={{duration:reduced?0:ceremony?RITUAL_DURATION:4.2,times:GLYPH_MOTION_TIMES,ease:'easeInOut'}}>
+          transition={{duration:reduced?0:ceremony?RITUAL_DURATION:4.2*(letterMotion.durationFactor||1),
+            times:letterMotion.times||GLYPH_MOTION_TIMES,ease:letterMotion.ease||'easeInOut'}}> 
           {showCard?<img className="rune-effekseer-ceremony-card-image" src={cardSrc} alt={word+'符文卡面'}/>:
             <><RuneExtrudedGlyph word={word} profile={profile}/>
               {direction?<span className="rune-direction-stroke" aria-hidden="true">{word}</span>:null}</>}

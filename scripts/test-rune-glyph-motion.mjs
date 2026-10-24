@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
-  GLYPH_MOTION_STYLES,GLYPH_MOTION_TIMES,RUNE_GLYPH_MOTION_BY_ID,
+  GLYPH_MOTION_STYLES,GLYPH_MOTION_TIMES,RUNE_GLYPH_MOTION_BY_ID,RUNE_KINETIC_TIMING,
   RUNE_GLYPH_MOTION_PRESETS,runeGlyphMotionFor
 } from '../app/lrunes/effekseer/rune-glyph-motion.mjs';
 import {RUNE_GLYPH_INKS,runeGlyphProfile} from '../app/lrunes/effekseer/rune-glyph-library.mjs';
@@ -84,4 +84,46 @@ test('letter size stays moderate on desktop/mobile and in the atlas',()=>{
   for(const token of ['clamp(64px,12vw,116px)','clamp(62px,18vw,100px)',
     'clamp(72px,8.6vw,104px)','clamp(70px,17vw,92px)'])
     assert.ok(css.includes(token),token);
+});
+
+test('all 66 runes explicitly choose a meaningful kinetic weight and its time curve',()=>{
+  const weights=Object.keys(RUNE_KINETIC_TIMING);
+  assert.equal(weights.length,9);
+  for(let id=1;id<=66;id++){
+    const motion=runeGlyphMotionFor({rune_id:id});
+    const preset=RUNE_GLYPH_MOTION_PRESETS[id];
+    assert.ok(weights.includes(preset.weight),`rune ${id} lacks a reviewed weight`);
+    assert.equal(motion.weight,preset.weight);
+    assert.deepEqual(motion.times,RUNE_KINETIC_TIMING[preset.weight].times);
+    assert.ok(motion.times.every((n,i)=>i===0||n>motion.times[i-1]),
+      `rune ${id} has a malformed time curve`);
+    assert.ok(motion.durationFactor>=.85&&motion.durationFactor<=1.15);
+  }
+  assert.equal(runeGlyphMotionFor({rune_id:27}).weight,'ethereal');
+  assert.equal(runeGlyphMotionFor({rune_id:19}).weight,'fragile');
+  assert.equal(runeGlyphMotionFor({rune_id:31}).weight,'impact');
+  assert.equal(runeGlyphMotionFor({rune_id:37}).weight,'impact');
+  assert.equal(runeGlyphMotionFor({rune_id:22}).weight,'tender');
+  assert.equal(runeGlyphMotionFor({rune_id:43}).weight,'fluid');
+});
+
+test('soft forms do not lurch while heavy forms land without rubber-like rebound',()=>{
+  const leaf=runeGlyphMotionFor({rune_id:27}).frames;
+  const love=runeGlyphMotionFor({rune_id:22}).frames;
+  const blessing=runeGlyphMotionFor({rune_id:57}).frames;
+  const fruit=runeGlyphMotionFor({rune_id:31}).frames;
+  const stone=runeGlyphMotionFor({rune_id:37}).frames;
+  const illness=runeGlyphMotionFor({rune_id:19}).frames;
+  assert.ok(Math.max(...leaf.rotate.map(Math.abs))<=8,'Leaf should flutter, not thrash');
+  assert.ok(Math.max(...leaf.x.map(Math.abs))<=14,'Leaf must feel weightless');
+  assert.ok(Math.max(...love.x.map(Math.abs))<=12,'Love is a soft approach');
+  assert.ok(Math.abs(blessing.y[0])<=18,'Blessing is a gentle descent');
+  assert.ok(fruit.y[0]<-25&&fruit.y[4]<=6,'Fruit falls and settles heavily');
+  assert.ok(stone.y[0]<-25&&stone.y[4]<=6,'Stone impact should not bounce high');
+  assert.ok(illness.scale[0]===1&&illness.scale.at(-1)<.8);
+  assert.ok(Math.max(...illness.x.map(Math.abs))<=3,'Illness trembles, not shakes violently');
+  const stage=readFileSync(new URL('../app/lrunes/effekseer/EffekseerStage.jsx',import.meta.url'),'utf8');
+  assert.ok(stage.includes('times:letterMotion.times||GLYPH_MOTION_TIMES'));
+  assert.ok(stage.includes('ease:letterMotion.ease'));
+  assert.ok(stage.includes('4.2*(letterMotion.durationFactor||1)'));
 });
