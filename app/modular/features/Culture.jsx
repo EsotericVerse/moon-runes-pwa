@@ -621,6 +621,8 @@ export default function Culture(){
     const id=String(recordId||item?.recordId||'').trim();
     if(!id)return;
     switchTimelineEditor('edit-'+id,()=>{
+      const recordType=String(item?.entryType||item?.raw?.entry_type||'');
+      if(recordType==='anchor'||recordType==='style_comment')setSuggestedRecordType(recordType);
       setSelectedTimelineInfo(item||null);
       setSelectedTimelineRecordId(id);
       setSelectedTimelineDate('');
@@ -996,22 +998,7 @@ export default function Culture(){
             aria-labelledby={'time-editor-sections-option-'+choice.value}>
             <div className='scope-culture-timeline-tools'>
               <h3>{choice.label}｜時間長河</h3>
-              <div className='scope-stat-controls'>
-                {timeEditorSection==='anchor-style'?<>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('anchor',currentStructureStart)}>＋ 定錨點</button>
-                  <button type='button' className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>＋ 風格標籤</button>
-                </>:<button type='button' className='loc-button' onClick={()=>beginTimelineCreation(timeEditorSection,'')}>＋ {choice.label}</button>}
-              </div>
             </div>
-            {Boolean(selectedTimelineRecordId||selectedTimelineDate||suggestedRequestNonce||searchParams?.get('anchorDate'))?
-              <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
-                scopeId={scopeId}
-                timeTable={scopeData?.time||''}
-                selectedRecordId={selectedTimelineRecordId}
-                suggestedAnchorDate={selectedTimelineDate}
-                suggestedRecordType={suggestedRecordType}
-                suggestedRequestNonce={suggestedRequestNonce}
-                onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>:null}
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
             {!query.isPending&&!query.error?<CultureTimeline
@@ -1036,6 +1023,23 @@ export default function Culture(){
               <strong>{selectedTimelineInfo.content||selectedTimelineInfo.title||'時間紀錄'}</strong>
               <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
             </div>:null}
+            <div className='scope-culture-time-input-area'>
+              {timeEditorSection==='anchor-style'?<div className='scope-culture-record-kind' role='group' aria-label='新增或編輯類型'>
+                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='anchor':suggestedRecordType!=='style_comment'}
+                  className='loc-button' onClick={()=>beginTimelineCreation('anchor','')}>定錨點</button>
+                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='style_comment':suggestedRecordType==='style_comment'}
+                  className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>風格標籤</button>
+              </div>:null}
+              <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
+                scopeId={scopeId}
+                timeTable={scopeData?.time||''}
+                selectedRecordId={selectedTimelineRecordId}
+                suggestedAnchorDate={selectedTimelineDate}
+                suggestedRecordType={suggestedRecordType}
+                defaultRecordType={timeEditorSection==='anchor-style'?(suggestedRecordType==='style_comment'?'style_comment':'anchor'):timeEditorSection}
+                suggestedRequestNonce={suggestedRequestNonce}
+                onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>
+            </div>
             {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
           </div>
         </div>:null}
