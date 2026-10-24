@@ -46,6 +46,21 @@ export function canAuthorizeGlobal(){
   return Boolean(email&&entries?.some(row=>row.email===email&&row.role==='admin'));
 }
 
+export function createScopeAuthorizer(user){
+  const current=readAuthorization();
+  if(!current||current.userId!==String(user?.id||'')||
+    current.email!==normalizeEmail(user?.email))return null;
+  const scopes=[...new Set(current.entries.filter(row=>row.role==='scope').map(row=>row.scopeid))].sort();
+  const admin=canAuthorizeGlobal();
+  return Object.freeze({
+    email:current.email,
+    role:admin?'admin':(scopes.length?'scope':''),
+    scopeIds:Object.freeze(scopes),
+    canManageGlobalSync:canAuthorizeGlobal,
+    canManageScopeSync:canAuthorizeScope
+  });
+}
+
 export function assertAuthorizationForTable(table){
   // The hidden device-only SQLite scope has its own independent local write path.
   const name=String(table||'').trim().toLowerCase();
