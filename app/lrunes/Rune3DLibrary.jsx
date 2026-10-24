@@ -98,7 +98,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
     const row=groupRows.find(value=>groupIndex(value)===entry.id-1);
     return {...entry,english_name:cleanse(row?.english_name),
       desc:cleanse(row?.desc),quality:cleanse(row?.quality),style:cleanse(row?.style),
-      runeslist:Array.from({length:entry.end-entry.start+1},(_,index)=>entry.start+index)};
+      runeslist:runeNumbersForGroup(entry.id)};
   });
   const group=groups.find(item=>item.id===groupId)||null;
   const runes=group?allRunes.filter(rune=>inGroup(rune,group)):[];
@@ -179,7 +179,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
       <div className="rune-3d-library-title">
         <h2>{runeName(current)} · {current.english_name}</h2>
         <span>第 {current.rune_id} / 66 枚 · {group.name}</span>
-        <span className="rune-3d-toolbar-label">粒子貼圖：256</span>
+        <span className="rune-3d-toolbar-label">粒子貼圖：{textureQuality==='hd256'?'256':'原始'}</span>
       </div>
       <div className="rune-3d-atlas-glyph-review" aria-label={runeName(current)+'的 3D 字型檢視'}>
         <div className={'rune-effekseer-glyph rune-effekseer-glyph--'+currentGlyph.font+' rune-3d-atlas-glyph-model'}
