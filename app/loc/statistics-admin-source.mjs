@@ -10,8 +10,9 @@ function bucket(d,unit){
   }
   return d;
 }
-export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day'}={}){
+export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day',sourceCategory=''}={}){
   const start=day(startDate),end=day(endDate);
+  const selectedSource=String(sourceCategory||'').trim().toLowerCase();
   const categories=(taxonomy.categories||[]).filter(c=>c.enabled!==false);
   const aliases=taxonomy.aliases||[];
   if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end){
@@ -30,9 +31,13 @@ export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDa
     if(date<start||date>end||!count)continue;
     const group=bucket(date,unit),item=data.get(group);
     if(!item)continue;
-    if(record.kind==='total')item.total+=count;
+    // Total rows include multimedia, so only use them for the unfiltered view.
+    // A chosen source is defined by the matching text source rows alone.
+    if(record.kind==='total'&&!selectedSource)item.total+=count;
     if(record.kind!=='source')continue;
     const category=assignedSource(record.category,aliases,categories);
+    if(selectedSource&&category!==selectedSource)continue;
+    if(selectedSource)item.total+=count;
     const key='category_'+category;
     item[key]=(item[key]||0)+count;
     totals.set(category,(totals.get(category)||0)+count);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import vm from 'node:vm';
+import {administrativeSourceTrend} from '../app/loc/statistics-admin-source.mjs';
 
 // Test the real public bootstrap entry without loading browser-only SDKs.
 // Mock only its database seams; assert the publicly observable requests and
@@ -73,4 +74,51 @@ test('LOC homepage continues to consume its existing site-RPC blocks',async()=>{
   const result=await pending;
   assert.equal(result.config.id,'loc');
   assert.equal(result.blocks[0].uid,'loc-block');
+});
+
+// Regression: choosing a keyword source must update the main time series and
+// the total without counting multimedia from unrelated source categories.
+test('author keyword source filters the main chart without changing all-source totals',()=>{
+  const taxonomy={
+    categories:[
+      {category_code:'facebook',display_name:'Facebook',enabled:true},
+      {category_code:'threads',display_name:'Threads',enabled:true}
+    ],
+    aliases:[
+      {source_key:'FB',category_code:'facebook'},
+      {source_key:'Threads',category_code:'threads'}
+    ]
+  };
+  const raw=[
+    {day:'2026-10-21',kind:'total',category:'文字作品',item_count:5},
+    {day:'2026-10-21',kind:'total',category:'多媒體',item_count:2},
+    {day:'2026-10-21',kind:'source',category:'FB',item_count:3},
+    {day:'2026-10-21',kind:'source',category:'Threads',item_count:2},
+    {day:'2026-10-22',kind:'total',category:'文字作品',item_count:2},
+    {day:'2026-10-22',kind:'total',category:'多媒體',item_count:1},
+    {day:'2026-10-22',kind:'source',category:'fb',item_count:1},
+    {day:'2026-10-22',kind:'source',category:'Threads',item_count:1}
+  ];
+  const range={startDate:'2026-10-21',endDate:'2026-10-22'};
+  const all=administrativeSourceTrend(raw,taxonomy,range);
+  assert.equal(all.total,10);
+  assert.equal(all.series.length,2);
+  const facebook=administrativeSourceTrend(raw,taxonomy,{...range,sourceCategory:'facebook'});
+  assert.equal(facebook.total,4);
+  assert.deepEqual(facebook.rows.map(row=>row.total),[3,1]);
+  assert.deepEqual(facebook.rows.map(row=>row.category_facebook),[3,1]);
+  assert.deepEqual(facebook.series,[{key:'category_facebook',label:'Facebook'}]);
+  assert.deepEqual(facebook.distribution,[{name:'Facebook',value:4}]);
+  const threads=administrativeSourceTrend(raw,taxonomy,{...range,sourceCategory:'threads'});
+  assert.equal(threads.total,3);
+  assert.deepEqual(threads.rows.map(row=>row.total),[2,1]);
+  assert.equal(administrativeSourceTrend(raw,taxonomy,range).total,10);
+});
+
+test('author statistics wires selected keyword source to chart cache and filtered details',()=>{
+  const code=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  assert.match(code,/const activeKeywordSource=styleFilter==='rune66'\\?keywordSource:''/);
+  assert.match(code,/queryRange\\.bucket,activeKeywordSource,sourceRows\\.dataUpdatedAt/);
+  assert.match(code,/unit:queryRange\\.bucket,sourceCategory:activeKeywordSource/);
+  assert.match(code,/filteredSource=\\{Boolean\\(activeKeywordSource\\)\\}/);
 });

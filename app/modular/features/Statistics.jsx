@@ -242,10 +242,11 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
   </div>;
 }
 
-function SummaryList({rankingType,summary,scope,range}){
+function SummaryList({rankingType,summary,scope,range,filteredSource=false}){
   const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
-    ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total,sourceNames:null}]
+    ?[{term:UI_COPY.statistics.totalSource,item_count:summary.total,
+      sourceNames:filteredSource?summary.sources.flatMap(row=>row.sourceNames||[]):null}]
     :summary.sources;
   return <div className="scope-ranking">
     {rows.map(row=><div key={row.category||row.term} style={{display:'block'}}>
@@ -254,9 +255,11 @@ function SummaryList({rankingType,summary,scope,range}){
           {row.category==='others'?<ScopeOthersBreakdown
             scopeId={scope.id} rows={summary.rawRows||[]}
             catalog={summary.catalog||{}} range={range}/>:null}
-          <SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
-            scope={scope} startDate={range.startDate} endDate={range.endDate}
-            sourceNames={row.sourceNames}/>
+          {filteredSource&&rankingType==='total'&&!row.sourceNames?.length
+            ?<p className="scope-status">所選來源在此區間沒有作品。</p>
+            :<SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
+              scope={scope} startDate={range.startDate} endDate={range.endDate}
+              sourceNames={row.sourceNames}/>} 
         </>}
       </StatisticsDetails>
     </div>)}
@@ -367,6 +370,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
       fullHistory:false,canZoomOut:false,canZoomIn:false};
   },[selectedPeriod,customQueryRange,queryEndDate]);
+  // Source selection also filters the main trend; disabling keywords restores all-source totals.
+  const activeKeywordSource=styleFilter==='rune66'?keywordSource:'';
   const sourceChart=!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(rankingType);
   // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
   const overview=useAsyncResource({
@@ -427,13 +432,13 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // or the LunaRunes daily page. Load its existing model only for source results.
   const adminSourceQuery=useAsyncResource({
     queryKey:['administrative-source-trend',scopeId,rankingType,queryRange.startDate,queryRange.endDate,
-      queryRange.bucket,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
+      queryRange.bucket,activeKeywordSource,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
     enabled:!isLrunesDaily&&!mediaDimension&&sourceRows.isSuccess&&sourceCatalog.isSuccess,
     queryFn:async()=>{
       const {administrativeSourceTrend}=await import('../../loc/statistics-admin-source.mjs');
       return administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
         startDate:queryRange.startDate,endDate:queryRange.endDate,
-        unit:queryRange.bucket
+        unit:queryRange.bucket,sourceCategory:activeKeywordSource
       });
     },
   });
@@ -594,7 +599,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         />
       </StatisticsChartFrame>
       <StatisticsDetails>{()=> <SummaryList rankingType={rankingType} summary={sourceSummary}
-        scope={targetScopes[0]} range={queryRange}/>}</StatisticsDetails>
+        scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeKeywordSource)}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
       <button type="button" className="loc-button" onClick={()=>rankingType==='media_style'?crossTagQuery.refetch():mediaQuery.refetch()} disabled={mediaFetching}>
