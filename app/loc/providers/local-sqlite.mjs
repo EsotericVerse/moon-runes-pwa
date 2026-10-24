@@ -34,16 +34,12 @@ CREATE TABLE IF NOT EXISTS local (
   statistics_able INTEGER NOT NULL DEFAULT 1,
   culture_able INTEGER NOT NULL DEFAULT 1,
   sources TEXT NOT NULL DEFAULT '["facebook","threads","ig","x","others"]',
-  source_counts TEXT NOT NULL DEFAULT '{"x":0,"ig":0,"others":0,"threads":0,"facebook":0}',
   updated_at TEXT NOT NULL,
-  media_count INTEGER NOT NULL DEFAULT 0,
-  media_counts TEXT NOT NULL DEFAULT '{}',
   keyword_min_chars INTEGER NOT NULL DEFAULT 32,
   keyword_min_documents INTEGER NOT NULL DEFAULT 100,
   staticstime TEXT,
   current_keyword_class_id TEXT,
   keyword_class_share_enabled INTEGER NOT NULL DEFAULT 0,
-  keyword_document_count INTEGER NOT NULL DEFAULT 0,
   keyword_meta TEXT NOT NULL DEFAULT '{}',
   display_name TEXT NOT NULL DEFAULT 'local',
   search_intro TEXT NOT NULL DEFAULT '',
@@ -463,7 +459,7 @@ function queryBuilder(table){
 // JSON/boolean columns round-trip through TEXT/INTEGER in SQLite; decode the
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
-const JSON_COLUMNS=new Set(['sources','source_counts','media_counts','keyword_meta','search_aliases',
+const JSON_COLUMNS=new Set(['sources','keyword_meta','search_aliases',
   'target_id','media_link','anchor_ids','keywords','runeslist','rune_references']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
@@ -565,7 +561,7 @@ async function applyKeywordClassificationLocal({p_rows}={}){
       // Explicit reset only, and both tables change in one local transaction.
       const changed=await runBatchLocal([
         {sql:"UPDATE local_galaxy SET class_id=NULL,group_lists='false' WHERE class_id IS NOT NULL OR group_lists IS NOT 'false'",values:[]},
-        {sql:"UPDATE local SET staticstime=NULL,keyword_document_count=0,keyword_meta='{}',updated_at=? WHERE id='local'",values:[new Date().toISOString()]}
+        {sql:"UPDATE local SET staticstime=NULL,keyword_meta='{}',updated_at=? WHERE id='local'",values:[new Date().toISOString()]}
       ]);
       return {data:changed,error:null};
     }
@@ -610,8 +606,8 @@ async function applyKeywordClassificationLocal({p_rows}={}){
       const documentCount=Number(countRows[0]?.n||0);
       const now=new Date().toISOString();
       const updated=await runLocal(
-        `UPDATE local SET staticstime=?,keyword_document_count=?,keyword_meta=?,updated_at=? WHERE id='local'`,
-        [now,documentCount,JSON.stringify(meta),now]);
+        `UPDATE local SET staticstime=?,keyword_meta=?,updated_at=? WHERE id='local'`,
+        [now,JSON.stringify(meta),now]);
       if(updated!==1)throw new Error('Local Scope config row not found');
       return {data:documentCount,error:null};
     }
