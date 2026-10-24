@@ -712,16 +712,16 @@ function storedSummary(agg,config,globalCount=agg.eligible){
   };
 }
 
-export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate='',sourceCategory='',sourceCategories=[],sourceAliases=[]}={}){
+export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate='',sourceCategory='',sourceCategories=[],sourceAliases=[],sourceNames=null}={}){
   const normalizedScopeId=normalizeScopeId(scopeId);
   const category=String(sourceCategory||'').trim().toLowerCase();
-  if(category&&!sourceCategories.some(row=>row.category_code===category&&row.enabled!==false)){
+  if(category&&category!=='others'&&!sourceCategories.some(row=>row.category_code===category&&row.enabled!==false)){
     throw new Error('指定的來源分類不存在或已停用');
   }
   // Only unfiltered summaries use the existing RPC and promise cache.
   // A selected category needs the original source_name on each saved Attr.
   const key=[normalizedScopeId,String(startDate||''),String(endDate||'')].join('|');
-  if(!category&&analysisPromises.has(key))return analysisPromises.get(key);
+  if(!category&&!Array.isArray(sourceNames)&&analysisPromises.has(key))return analysisPromises.get(key);
   const promise=(async()=>{
     const {scope,config}=await scopeAndConfig(normalizedScopeId,{publicRead:true});
     if(!config.staticstime)return emptyStored(config);
@@ -732,7 +732,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
         idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
       })
       :null;
-    if(!category&&keywordSummaryRpcInstalled){
+    if(!category&&!Array.isArray(sourceNames)&&keywordSummaryRpcInstalled){
       try{
         const counted=await readRune66Summary(normalizedScopeId,{startDate,endDate});
         return storedSummary(aggregateSummaryRpcRows(counted),config,globalCount??undefined);
@@ -742,7 +742,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
       }
     }
     const rows=await selectAllRows(scope.galaxy,{
-      columns:category?'uid,createtime,class_id,group_lists,source_name':'uid,createtime,class_id,group_lists',
+      columns:category||Array.isArray(sourceNames)?'uid,createtime,class_id,group_lists,source_name':'uid,createtime,class_id,group_lists',
       filters:[
         {column:'searchable',operator:'eq',value:true},
         {column:'statistics_able',operator:'eq',value:true},
@@ -751,15 +751,17 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
       ],
       orders:[{column:'createtime',ascending:true}]
     });
-    const classified=category?(rows.rows||[]).filter(row=>
-      assignedSource(row.source_name,sourceAliases,sourceCategories)===category
+    const allowed=Array.isArray(sourceNames)?new Set(sourceNames.map(name=>String(name||'').trim().toLowerCase())):null;
+    const classified=category||allowed?(rows.rows||[]).filter(row=>
+      (!category||assignedSource(row.source_name,sourceAliases,sourceCategories)===category)
+      &&(!allowed||allowed.has(String(row.source_name||'').trim().toLowerCase()))
     ):rows.rows||[];
     return storedSummary(aggregateStoredRows(classified),config,globalCount??undefined);
   })().catch(error=>{
-    if(!category)analysisPromises.delete(key);
+    if(!category&&!Array.isArray(sourceNames))analysisPromises.delete(key);
     throw error;
   });
-  if(!category)analysisPromises.set(key,promise);
+  if(!category&&!Array.isArray(sourceNames))analysisPromises.set(key,promise);
   return promise;
 }
 
