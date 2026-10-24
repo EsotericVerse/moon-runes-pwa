@@ -18,7 +18,6 @@ export default {
   "chooseSettings": "选择设置功能",
   "defaultHome": "默认首页",
   "favorites": "我的收藏",
-  "noImportScopes": "没有可导入的空间。",
   "login": "登录",
   "logout": "退出登录",
   "manageFeature": "管理功能",
@@ -32,7 +31,6 @@ export default {
   "manageMenuDescription": "管理手机菜单与保存在本机的文件。",
   "dailyRune": "每日符文记录",
   "dailyRuneDescription": "查看每日符文记录。",
-  "documentImportDescription": "将文章与数据导入可管理的 Scope。",
+  "documentImportDescription": "将文件内容导入本机 SQLite，不会写入云端 Scope。",
   "accountDescription": "查看登录状态与账号信息。",
-  "importScope": "导入目标 Scope",
 };

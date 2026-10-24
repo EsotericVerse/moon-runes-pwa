@@ -309,9 +309,26 @@ test('Web Settings cannot navigate into the iOS-only local Scope',()=>{
   assert.ok(scopeRegistry.includes('nativeOnly:true'));
   assert.ok(settings.includes("if(native)baseChoices.push({id:'local'"));
   assert.ok(settings.includes("(!native&&getScope(row.scope_id).nativeOnly)"));
-  assert.ok(settings.includes("const local=native?choices.find(item=>item.id==='local'):null;"));
+  assert.ok(settings.includes("...(native&&Capacitor.getPlatform()==='ios'?[option('files'"));
+  assert.ok(settings.includes("native&&Capacitor.getPlatform()==='ios'&&activeSection==='files'?<LocalDatabaseImport/>"));
+  assert.ok(!settings.includes('const managedScopes='));
+  assert.ok(!settings.includes('loc-import-scope'));
+  assert.ok(!settings.includes('ManagementImportPanel'));
   assert.ok(shell.includes("const navScopeId=!native&&currentScope.nativeOnly?'loc'"));
   assert.ok(shell.includes("(native||!getScope(id).nativeOnly)"));
   assert.ok(locApp.includes("router.replace('/local/settings/')"));
   assert.ok(locApp.includes("if(scopeMeta?.nativeOnly&&!nativeOnlyReady)"));
+});
+
+test('Settings document import is iOS only, and the existing importer uses local SQLite',()=>{
+  const settings=readFileSync(new URL('../app/loc/GlobalSettings.jsx',import.meta.url),'utf8');
+  const localImport=readFileSync(new URL('../app/loc/LocalDatabaseImport.jsx',import.meta.url),'utf8');
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const dbClient=readFileSync(new URL('../app/loc/db-client.mjs',import.meta.url),'utf8');
+  assert.match(settings,/native&&Capacitor\.getPlatform\(\)==='ios'\?\[option\('files'/);
+  assert.doesNotMatch(settings,/activeSection==='files'&&!native/);
+  assert.doesNotMatch(settings,/loc-import-scope|requestedScope|managedScopes|ManagementImportPanel/);
+  assert.match(localImport,/importChoice==='yes'\?<ManagementImportPanel scopeId="local"\/>/);
+  assert.match(panel,/scopeId==='local'&&Capacitor\.isNativePlatform\(\)&&Capacitor\.getPlatform\(\)==='ios'/);
+  assert.match(dbClient,/if\(name==='local'\|\|name\.startsWith\('local_'\)\)return true/);
 });

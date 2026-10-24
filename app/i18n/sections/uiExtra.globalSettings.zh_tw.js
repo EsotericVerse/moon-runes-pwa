@@ -18,7 +18,6 @@ export default {
   "chooseSettings": "選擇設定功能",
   "defaultHome": "預設首頁",
   "favorites": "我的最愛",
-  "noImportScopes": "沒有可匯入的空間。",
   "login": "登入",
   "logout": "登出",
   "switchAccount": "切換 Google 帳號",
@@ -33,7 +32,6 @@ export default {
   "manageMenuDescription": "管理手機選單與儲存在本機的檔案。",
   "dailyRune": "每日符文紀錄",
   "dailyRuneDescription": "查看每日符文紀錄。",
-  "documentImportDescription": "將文章與資料匯入可管理的 Scope。",
+  "documentImportDescription": "將文件內容匯入本機 SQLite，不會寫入雲端 Scope。",
   "accountDescription": "查看登入狀態與帳號資訊。",
-  "importScope": "匯入目標 Scope",
 };

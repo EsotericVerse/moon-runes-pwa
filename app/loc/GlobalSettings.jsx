@@ -7,7 +7,6 @@ registerDefaultSection('uiExtra.globalSettings',globalSettingsZh);
 
 import {useEffect,useMemo,useState} from 'react';
 import {useAsyncResource} from './use-async-resource';
-import Select from 'react-select';
 import dynamic from 'next/dynamic';
 import {Capacitor} from '@capacitor/core';
 import {useNavigationPreferences} from './use-navigation-preferences';
@@ -18,7 +17,6 @@ import PanelLoading from './PanelLoading';
 // The home/account Settings screens never download import or management editors.
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
 const LocalDatabaseImport=dynamic(()=>import('./LocalDatabaseImport'),{loading:PanelLoading});
-const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 // 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
 // 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
 const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:PanelLoading});
@@ -29,11 +27,6 @@ import {getScope} from '../modular/scope-registry';
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
 const option=(value,label,description)=>({value,label,description});
-const selectProps={
-  unstyled:true,isSearchable:false,
-  className:'loc-settings-select',classNamePrefix:'loc-settings-select'
-};
-
 export default function GlobalSettings({initialSection='home'}={}){
   useUiSection('uiExtra.globalSettings');
   const uiT=useUiText();
@@ -45,28 +38,20 @@ export default function GlobalSettings({initialSection='home'}={}){
     option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription')),
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'))]:[]),
     ...(native||prefs.account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'))]:[]),
-    option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription'))
+    ...(native&&Capacitor.getPlatform()==='ios'?[option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription'))]:[])
   ];
   // favorites is the legacy URL alias for the public home/settings panel.
   const [section,setSection]=useManagementSection(sections,initialSection,{favorites:'home',account:'home'});
 
-  const [requestedScope,setRequestedScope]=useState('');
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
-  // The public home selector needs no Scope authorization. Cloud import is
-  // protected and requests management roles only when that section opens.
-  const needsScopePermission=!native&&urlResolved&&Boolean(prefs.account.user)&&section==='files';
-  const managedAccount=useAccount({enabled:needsScopePermission});
   // Settings home is the sole Google OAuth entry; protected sections keep their own authorization.
   const verifiedGoogleAccount=useAccount({enabled:section==='home',sessionOnly:true});
-  const account=section==='home'?verifiedGoogleAccount:(needsScopePermission?managedAccount:prefs.account);
+  const account=section==='home'?verifiedGoogleAccount:prefs.account;
 
   useEffect(()=>{
     const isNative=Capacitor.isNativePlatform();
     setNative(isNative);
-    const params=new URLSearchParams(window.location.search);
-    const scope=params.get('scopeid');
-    if(scope&&/^[a-z0-9_-]{1,64}$/i.test(scope))setRequestedScope(scope);
     setUrlResolved(true);
   },[]);
   const registryQuery=useAsyncResource(['settings-scope-registry'],selectScopeRegistry,
@@ -91,13 +76,6 @@ export default function GlobalSettings({initialSection='home'}={}){
     }
     return [...found.values()];
   },[registry,native,uiT('common.language')]);
-  const managedScopes=useMemo(()=>{
-    const cloudManaged=!native&&account.user?choices.filter(item=>item.id!=='local'&&account.canManageScopeSync(item.id)):[];
-    const local=native?choices.find(item=>item.id==='local'):null;
-    return local?[...cloudManaged,local]:cloudManaged;
-  },[choices,native,account.user,account.authorizer]);
-  const canManageGlobal=!native&&Boolean(account.user)&&account.canManageGlobalSync();
-  const selectedScope=managedScopes.find(item=>item.id===requestedScope)||managedScopes[0]||null;
   const allowedHomes=useMemo(()=>{
     // Every public Scope is a valid reading destination, even for Guest.
     const items=choices.filter(item=>item.id!=='admin'&&item.id!=='local');
@@ -118,7 +96,6 @@ export default function GlobalSettings({initialSection='home'}={}){
   },[native,prefs.favorites.join(','),choices]);
 
   const activeSection=section;
-  const scopeOptions=managedScopes.map(item=>option(item.id,item.label));
   const waiting=Boolean(busy)||prefs.loading||account.loading||account.permissionLoading;
   // Account identity is independent of personal settings and management permission reads.
   const accountWaiting=account.loading;
@@ -189,18 +166,8 @@ export default function GlobalSettings({initialSection='home'}={}){
       </section>
       </div>:null}
 
-      {activeSection==='files'&&!native?<div className="loc-settings-panel-group">
-        {account.user?managedScopes.length?<>
-          {scopeOptions.length>1?<Select {...selectProps} aria-label={uiT('uiExtra.globalSettings.importScope')} inputId="loc-import-scope"
-            instanceId="loc-import-scope" options={scopeOptions}
-            value={scopeOptions.find(item=>item.value===selectedScope?.id)||null}
-            onChange={item=>setRequestedScope(item?.value||'')}/>:null}
-          {selectedScope?<ManagementImportPanel key={selectedScope.id} scopeId={selectedScope.id}/>:null}
-        </>:<p className="loc-card"><UiText id="uiExtra.globalSettings.noImportScopes"/></p>:
-        <p className="loc-card">請先在設定首頁登入，才能使用雲端匯入。</p>}
-      </div>:null}
-
-      {native&&activeSection==='files'?<LocalDatabaseImport/>:null}
+      {/* iOS-only document import; cloud Scope imports remain in Scope management. */}
+      {native&&Capacitor.getPlatform()==='ios'&&activeSection==='files'?<LocalDatabaseImport/>:null}
       {activeSection==='dailyRune'?<DailyLogClient embedded/>:null}
 
       {/* Device management never mounts website Scope/Article/Admin capabilities. */}

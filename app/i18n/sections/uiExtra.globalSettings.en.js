@@ -18,7 +18,6 @@ export default {
   "chooseSettings": "Select settings section",
   "defaultHome": "Default homepage",
   "favorites": "Favorites",
-  "noImportScopes": "No accessible Scopes available for importing.",
   "login": "Sign in",
   "logout": "Sign out",
   "manageFeature": "Management feature",
@@ -32,7 +31,6 @@ export default {
   "manageMenuDescription": "Manage the menu and files stored on this device.",
   "dailyRune": "Daily rune log",
   "dailyRuneDescription": "View your daily rune records.",
-  "documentImportDescription": "Import articles and data into a managed Scope.",
+  "documentImportDescription": "Import document content into this device's SQLite database, not a cloud Scope.",
   "accountDescription": "Check your sign-in and account status.",
-  "importScope": "Import destination Scope",
 };

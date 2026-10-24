@@ -18,7 +18,6 @@ export default {
   "chooseSettings": "設定項目を選択",
   "defaultHome": "既定のホーム",
   "favorites": "お気に入り",
-  "noImportScopes": "取り込みできる Scope がありません。",
   "login": "ログイン",
   "logout": "ログアウト",
   "manageFeature": "管理機能",
@@ -32,7 +31,6 @@ export default {
   "manageMenuDescription": "メニューと端末内のファイルを管理します。",
   "dailyRune": "毎日のルーン記録",
   "dailyRuneDescription": "毎日のルーン記録を確認します。",
-  "documentImportDescription": "管理対象の Scope に記事やデータを取り込みます。",
+  "documentImportDescription": "書類の内容をこの端末の SQLite に取り込みます。クラウドの Scope には書き込みません。",
   "accountDescription": "ログインとアカウントの状態を確認します。",
-  "importScope": "取り込み先の Scope",
 };
