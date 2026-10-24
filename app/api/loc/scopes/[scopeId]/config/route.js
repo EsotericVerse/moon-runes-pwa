@@ -6,7 +6,7 @@ export const revalidate=1209600;
 export async function GET(_request,{params}){
   const {scopeId}=await params;
   if(!validScopeId(scopeId))return Response.json({error:'Invalid Scope ID'},{status:400});
-  const readConfig=unstable_cache(()=>readPublicScopeConfig(scopeId),['loc-scope-config-v2',scopeId],{
+  const readConfig=unstable_cache(()=>readPublicScopeConfig(scopeId),['loc-scope-config-v3',scopeId],{
     revalidate:LOC_ISR_SECONDS,tags:[LOC_PUBLIC_CACHE_TAG]
   });
   try{return Response.json(await readConfig());}
