@@ -241,7 +241,7 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
       ?details.map(item=><div key={item.key} className="scope-stat-controls">
         <span>{item.label}</span><strong>{item.value.toLocaleString()}</strong>
       </div>)
-      :null
+      :null}
   </div>;
 }
 
