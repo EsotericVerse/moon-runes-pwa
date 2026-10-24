@@ -114,7 +114,10 @@ test('ordinary Rune Culture/Statistics charts also use the public numeric ISR',a
   assert.deepEqual(h.queries.map(x=>x.name),['read_scope_statistics','read_scope_overview']);
   const client=readFileSync(new URL('../app/loc/numeric-isr-client.js',import.meta.url),'utf8');
   assert.match(client,/scopeId!=='local'/);
-  assert.ok(!client.includes("scopeId!=='lrunes'"));
+  // The general client must accept lrunes culture/statistics.
+  // Restricting "daily" and "daily-earliest" to lrunes is correct and independent.
+  assert.ok(client.includes("scopeId!=='local'&&scopeId!=='admin'"));
+  assert.ok(client.includes("['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes'"));
   const daily=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   assert.ok(daily.includes("const isLrunesDaily="));
 });
