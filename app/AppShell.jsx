@@ -500,7 +500,7 @@ function AppShellInner({children}){
       </ScopeLink>)}
       {editingDockVisible&&editDock.notice?<p className="scope-edit-dock-notice" role="status" aria-live="polite">{editDock.notice}</p>:null}
     </nav>
-    {showHomeEditEntry&&scopeId!=='lrunes'?<ScopeHomeEditEntry key={scopeId}/>:null}
+    {showHomeEditEntry?<ScopeHomeEditEntry key={scopeId}/>:null}
     <footer className="scope-footer" data-scope={scopeId}>
       <div className="scope-footer-row">
         <a href="mailto:sopa2306@gmail.com">{copy.nav.contact}</a>
