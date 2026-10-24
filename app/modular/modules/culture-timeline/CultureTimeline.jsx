@@ -14,6 +14,7 @@ import {CultureTimelineModel} from './culture-timeline-model';
 const EMPTY_ITEMS=Object.freeze([]);
 const EMPTY_FOCUS=Object.freeze({});
 const EMPTY_HIDDEN_DATES=Object.freeze([]);
+const EMPTY_EXTRA_GROUPS=Object.freeze([]);
 function defaultTimelineLabel(item,index){
   return item?.display_label||item?.name||item?.title||item?.period||'項目 '+(index+1);
 }
@@ -122,7 +123,9 @@ export default function CultureTimeline({
   onBoundaryNavigate=null,
   fixedMin='',
   fixedMax='',
-  hiddenDates=EMPTY_HIDDEN_DATES
+  hiddenDates=EMPTY_HIDDEN_DATES,
+  extraGroups=EMPTY_EXTRA_GROUPS,
+  heightVariant='default'
 }){
   useUiSection('uiExtra.cultureTimeline');
   const {locale,copy}=useUiLocale();
@@ -144,10 +147,14 @@ export default function CultureTimeline({
   const rows=useMemo(()=>timelineRows(items,labelOf===defaultTimelineLabel?(item,index)=>item?.display_label||item?.name||item?.title||item?.period||labels.item+' '+(index+1):labelOf,focus,labels),[items,labelOf,focus,labels]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const hasTimeKinds=mode==='overview'&&rows.some(row=>String(row.group||'').startsWith('kind:'));
-  const groupCount=Math.max(new Set(rows.map(row=>row.group).filter(Boolean)).size,hasTimeKinds&&!editable?4:0);
+  const groupCount=Math.max(new Set([...rows.map(row=>row.group),...extraGroups.map(group=>group.id)].filter(Boolean)).size,hasTimeKinds&&!editable?4:0);
   const compactGroupCount=Math.max(1,groupCount||rows.length);
-  const timelineMinHeight=Math.max(180,96+compactGroupCount*46);
-  const timelineMaxHeight=Math.max(360,Math.min(760,180+compactGroupCount*92));
+  const timelineMinHeight=heightVariant==='double'
+    ?Math.max(520,Math.min(760,180+compactGroupCount*36))
+    :Math.max(180,96+compactGroupCount*46);
+  const timelineMaxHeight=heightVariant==='double'
+    ?Math.max(720,Math.min(1000,240+compactGroupCount*64))
+    :Math.max(360,Math.min(760,180+compactGroupCount*92));
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
   useEffect(()=>{onTimeClickRef.current=onTimeClick},[onTimeClick]);
@@ -164,7 +171,7 @@ export default function CultureTimeline({
     let boundaryChangeSent=false;
     timelineRef.current=null;
     setChartError(false);
-    if(!containerRef.current||(!rows.length&&!editable)){setReady(false);return()=>{cancelled=true};}
+    if(!containerRef.current||(!rows.length&&!editable&&!extraGroups.length)){setReady(false);return()=>{cancelled=true};}
     setReady(false);
     try{
       if(cancelled||!containerRef.current)return()=>{cancelled=true};
@@ -180,18 +187,23 @@ export default function CultureTimeline({
       const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
       const standardTimeKinds=Object.keys(timeGroupLabels);
       const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
-      const groupIds=hasTimeKinds
+      const additionalGroups=new Map(extraGroups.filter(group=>group?.id).map(group=>[String(group.id),group]));
+      const ordinaryGroupIds=hasTimeKinds
         ?[...standardTimeKinds.filter(kind=>!editable||foundGroups.includes('kind:'+kind)).map(kind=>'kind:'+kind),...foundGroups.filter(id=>!String(id).startsWith('kind:'))]
         :foundGroups;
+      const groupIds=[...new Set([...ordinaryGroupIds,...additionalGroups.keys()])];
       const groups=groupIds.length?new DataSet(groupIds.map((id,index)=>{
         const members=rows.filter(row=>row.group===id);
         const explicit=members.map(row=>row.groupOrder).filter(Number.isFinite);
         const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
         const defaultOrder=standardTimeKinds.indexOf(kind);
+        const extra=additionalGroups.get(id);
         return {
           id,
-          content:members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id),
-          order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index
+          content:extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id),
+          order:Number.isFinite(extra?.order)?extra.order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index,
+          ...(extra?.className?{className:extra.className}:{}),
+          ...(extra?.label?{title:extra.label}:{})
         };
       })):null;
       const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
@@ -306,7 +318,7 @@ export default function CultureTimeline({
       if(timelineRef.current===instance)timelineRef.current=null;
       if(instance)instance.destroy();
     };
-  },[rows,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
+  },[rows,extraGroups,hasTimeKinds,timelineMinHeight,timelineMaxHeight,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
 
   // Explicit alternatives to gestures, available on touch, mouse, and keyboard.
   function changeWindow(action){
@@ -333,7 +345,7 @@ export default function CultureTimeline({
     onSelectRef.current?.(row);
   }
 
-  if(!rows.length&&!editable)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label={t('時間長河')}/><p><FieldText text={mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}/></p></div>;
+  if(!rows.length&&!editable&&!extraGroups.length)return <div className='scope-period-timeline-wrap scope-period-timeline-empty'><div className='scope-period-timeline scope-period-timeline-empty-line' role='region' aria-label={t('時間長河')}/><p><FieldText text={mode==='overview'?'尚未設定時期，目前以「所有」總覽顯示。':'目前時期尚無可顯示的時間資料。'}/></p></div>;
 
   return <div className='scope-period-timeline-wrap'>
     <div className='scope-timeline-controls' role='group' aria-label={t('時間長河操作')}>
