@@ -1,7 +1,7 @@
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
-import {assertAuthorizationForTable,clearAuthorization} from './authorization-runtime.mjs';
+import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from './authorization-runtime.mjs';
 
 // Shared by the keyword-classification read (paging the document scan) and
 // write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
@@ -43,14 +43,27 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // The database RPC/RLS is always the second, authoritative gate.
     if(typeof window!=='undefined')assertAuthorizationForTable(table);
   }
+  function invalidateRelevantAuthorization(scopeid,newEmail=''){
+    const saved=readAuthorization();
+    if(!saved)return;
+    const changed=String(scopeid||'').trim().toLowerCase();
+    const targetEmail=String(newEmail||'').trim().toLowerCase();
+    if((changed&&saved.entries.some(row=>row.scopeid===changed))||
+      (targetEmail&&targetEmail===saved.email))clearAuthorization();
+  }
   async function managementWrite(payload){
     preflightWrite(payload?.p_table);
     const {data,error}=await authClient.schema('silver').rpc('management_write',payload);
     if(error)throw new Error(error.message||'Management write failed');
-    if(payload?.p_table==='silver.loc'&&(
-      payload.p_operation!=='update'||
-      ['id','email','manage_role'].some(key=>Object.hasOwn(payload.p_values||{},key))
-    ))clearAuthorization();
+    if(payload?.p_table==='silver.loc'){
+      const values=payload.p_values||{};
+      const isAuthorityChange=payload.p_operation!=='update'||
+        ['id','email','manage_role'].some(key=>Object.hasOwn(values,key));
+      if(isAuthorityChange){
+        const scopeFilter=(payload.p_filters||[]).find(filter=>filter?.column==='id');
+        invalidateRelevantAuthorization(scopeFilter?.value,values.email);
+      }
+    }
     return data||{count:0};
   }
 
@@ -476,7 +489,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     preflightWrite('silver.loc');
     const {data,error}=await authClient.schema('silver').rpc('delete_scope',{p_scope_id:scope});
     if(error)throw new Error(error.message||'Scope 刪除失敗。');
-    clearAuthorization();
+    invalidateRelevantAuthorization(scope);
     return data||{};
   }
 
@@ -496,7 +509,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     };
     const {data,error}=await authClient.schema('silver').rpc('provision_scope',payload);
     if(error)throw new Error(error.message||'Scope provisioning failed');
-    clearAuthorization();
+    invalidateRelevantAuthorization(scopeId,values.email);
     return data||{};
   }
 
@@ -511,7 +524,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       p_values:values&&typeof values==='object'?values:{}
     });
     if(error)throw new Error(error.message||'Scope Registry management failed');
-    if(['email','manage_role','role','scopeid','id'].some(key=>Object.hasOwn(values||{},key)))clearAuthorization();
+    if(['email','manage_role','role','scopeid','id'].some(key=>Object.hasOwn(values||{},key)))
+      invalidateRelevantAuthorization(scope,values.email);
     return data||{};
   }
 
