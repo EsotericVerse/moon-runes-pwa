@@ -160,7 +160,25 @@ export default function StatisticsMultiChart({
   </div>;
 }
 
-// Optional Rune66 view shares the same lazily loaded Recharts renderer.
+// Saved keyword classifications are sufficient to build group trends.
+// Item totals have no dated breakdown in this response; never fabricate one.
+function keywordGroupTrend(classifications=[],groups=[],bucket='month'){
+  const known=new Set(groups.map(row=>String(row.class_id)));
+  const dates=new Map();
+  for(const row of classifications){
+    const day=String(row?.date||'').slice(0,10);
+    const id=String(row?.class_id??'');
+    const count=Number(row?.count)||0;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!known.has(id)||count<=0)continue;
+    const key=bucket==='day'?day:bucket==='week'
+      ?(()=>{const d=new Date(day+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);})()
+      :day.slice(0,7);
+    if(!dates.has(key))dates.set(key,{period:key});
+    const result=dates.get(key);
+    result['class_'+id]=(result['class_'+id]||0)+count;
+  }
+  return [...dates.values()].sort((a,b)=>a.period.localeCompare(b.period));
+}
 function classLabel(value,t){
   const text=String(value||'').trim();
   const suffix=t('uiExtra.statisticsView.groupSuffix');
@@ -171,20 +189,19 @@ function groupLabel(value,t){
   const suffix=t('uiExtra.statisticsView.runeSuffix');
   return !text?'':text.endsWith(suffix)||text.endsWith(UI_COPY.uiExtra.statisticsView.runeSuffix)?text:text+suffix;
 }
-export function Rune66Summary({analysis}){
+export function Rune66Summary({analysis,range={}}){
   useUiSection('uiExtra.statisticsView');
   const t=useUiText();
   const [groupPage,setGroupPage]=useState(1);
+  const [shown,setShown]=useState('group');
+  const [groupChart,setGroupChart]=useState('bar');
+  const [itemChart,setItemChart]=useState('bar');
   const data=analysis||{};
   const className=String(data.keywordMeta?.class_name||'').trim();
   const setLabel=className?'關鍵詞組：'+className:t('uiExtra.statisticsView.classFallback');
   const groupDisplay=group=>[className,classLabel(group,t)].filter(Boolean).join(' ');
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
-  if(!data.staticstime)return null;
-  if(!data.statisticsEnabled)return <div className="scope-ranking">
-    <div><strong>{setLabel}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
-  </div>;
   const classRows=[...(data.groupTotals||[])]
     .filter(row=>Number(row.document_count||0)>0)
     .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)||Number(a.order||0)-Number(b.order||0));
@@ -195,55 +212,81 @@ export function Rune66Summary({analysis}){
   const groupPageCount=Math.max(1,Math.ceil(groupRows.length/RUNE_RANKING_PAGE_SIZE));
   const activeGroupPage=Math.min(groupPage,groupPageCount);
   const visibleGroupRows=groupRows.slice((activeGroupPage-1)*RUNE_RANKING_PAGE_SIZE,activeGroupPage*RUNE_RANKING_PAGE_SIZE);
-  return <div className="scope-rune66-summary">
-    <section className="scope-card">
-      <h3><UiText id="uiExtra.statisticsView.classRuneTitle"/></h3>
-      {classRows.length?<ResponsiveContainer width="100%" height={360}>
-        <BarChart data={classRows.map(row=>({label:classLabel(row.group,t),value:Number(row.document_count)||0}))} margin={{top:8,right:18,bottom:28,left:8}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis dataKey="label" tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <YAxis tick={{fill:CHART_TEXT}} stroke={CHART_GRID}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" name={t('uiExtra.statisticsView.classWorkCount')} fill={CHART_ACCENT} radius={[4,4,0,0]}/>
-        </BarChart>
-      </ResponsiveContainer>:null}
-      <StatisticsDetails>{()=><>
-    <div className="scope-ranking"><div><strong>{setLabel}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
-      <div className="scope-ranking">
-        {classRows.map(row=>{
-          const count=Number(row.document_count||0);
-          const ratio=classifiedTotal>0?(count/classifiedTotal)*100:0;
-          return <div key={row.group}><strong>{groupDisplay(row.group)}</strong><span>{t('uiExtra.statisticsView.groupWorks',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
-        })}
-      </div>
-      </>}</StatisticsDetails>
-    </section>
-    <section className="scope-card">
-      <h3><UiText id="uiExtra.statisticsView.runeRankTitle"/></h3>
-      {groupRows.length?<ResponsiveContainer width="100%" height={Math.max(250,Math.min(10,groupRows.length)*36+60)}>
-        <BarChart data={groupRows.slice(0,10).map(row=>({label:groupLabel(row.label,t),value:Number(row.count)||0}))} layout="vertical" margin={{top:8,right:18,bottom:12,left:8}}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID}/>
-          <XAxis type="number" allowDecimals={false} tick={{fill:CHART_TEXT}}/>
-          <YAxis type="category" dataKey="label" width={100} tick={{fill:CHART_TEXT,fontSize:11}}/>
-          <Tooltip contentStyle={CHART_TOOLTIP}/>
-          <Bar dataKey="value" fill={CHART_ACCENT} radius={[0,4,4,0]}/>
-        </BarChart>
-      </ResponsiveContainer>:null}
-      <StatisticsDetails>{()=><>
-      <div className="scope-ranking">
-        {visibleGroupRows.map(row=>{
-          const count=Number(row.count||0);
-          const ratio=groupHitTotal>0?(count/groupHitTotal)*100:0;
-          return <div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong><span>{t('uiExtra.statisticsView.runeHits',{count:count.toLocaleString(),ratio:ratio.toFixed(1)})}</span></div>;
-        })}
-      </div>
-      {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
-        <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
-        <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
-        <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
-      </nav>:null}
-      </>}</StatisticsDetails>
-    </section>
+  const groupDistribution=classRows.map(row=>({
+    key:String(row.class_id),name:classLabel(row.group,t),value:Number(row.document_count)||0
+  }));
+  const itemDistribution=groupRows.slice(0,10).map(row=>({
+    key:String(row.rune_id),name:groupLabel(row.label,t),value:Number(row.count)||0
+  }));
+  const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
+  const trendSeries=classRows.map(row=>({key:'class_'+row.class_id,label:classLabel(row.group,t)}));
+  const groupOptions=availableStatisticChartTypes({rows:trend,series:trendSeries,distribution:groupDistribution});
+  const itemOptions=availableStatisticChartTypes({distribution:itemDistribution})
+    .filter(([kind])=>['bar','pie','treemap'].includes(kind));
+  const groupType=groupOptions.some(([kind])=>kind===groupChart)?groupChart:groupOptions[0]?.[0]||'bar';
+  const itemType=itemOptions.some(([kind])=>kind===itemChart)?itemChart:itemOptions[0]?.[0]||'bar';
+  const groupTypes=groupOptions.filter(([kind])=>kind!=='scatter'||trendSeries.length>=2);
+  const renderGroup=shown==='group'||shown==='both';
+  const renderItems=shown==='item'||shown==='both';
+  if(!data.staticstime)return null;
+  if(!data.statisticsEnabled)return <div className="scope-ranking">
+    <div><strong>{setLabel}</strong><span>{globalCount.toLocaleString()} / {minDocuments.toLocaleString()}</span></div>
   </div>;
+  const typePicker=(id,selected,onSelect,options)=><label>
+    <span>{t('uiExtra.statisticsView.chart')}</span>
+    <select className="scope-select" aria-label={id} value={selected} onChange={event=>onSelect(event.target.value)}>
+      {options.map(([kind,label])=><option key={kind} value={kind}>{t(label)}</option>)}
+    </select>
+  </label>;
+  return <section className="scope-rune66-summary scope-card">
+    <h3>關鍵詞分佈統計</h3>
+    <div className="scope-stat-controls">
+      <label><span>顯示內容</span>
+        <select className="scope-select" value={shown} onChange={event=>setShown(event.target.value)}>
+          <option value="group">{t('uiExtra.statisticsView.classRuneTitle')}</option>
+          <option value="item">{t('uiExtra.statisticsView.runeRankTitle')}</option>
+          <option value="both">群組與項目一起顯示</option>
+        </select>
+      </label>
+    </div>
+    {renderGroup?<div className="scope-stat-section">
+      <div className="scope-stat-controls">
+        <h4><UiText id="uiExtra.statisticsView.classRuneTitle"/></h4>
+        {groupTypes.length?typePicker('關鍵詞群組圖型',groupType,setGroupChart,groupTypes):null}
+      </div>
+      {groupDistribution.length?<StatisticsMultiChart type={groupType} rows={trend} series={trendSeries}
+        distribution={groupDistribution} barLayout="vertical" height={Math.max(280,Math.min(8,classRows.length)*40+95)}/>:
+        <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
+      <StatisticsDetails>{()=><>
+        <div className="scope-ranking"><div><strong>{setLabel}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
+        <div className="scope-ranking">
+          {classRows.map(row=><div key={row.group}><strong>{groupDisplay(row.group)}</strong>
+            <span>{t('uiExtra.statisticsView.groupWorks',{count:Number(row.document_count||0).toLocaleString(),ratio:(classifiedTotal>0?100*Number(row.document_count||0)/classifiedTotal:0).toFixed(1)})}</span>
+          </div>)}
+        </div>
+      </>}</StatisticsDetails>
+    </div>:null}
+    {renderItems?<div className="scope-stat-section">
+      <div className="scope-stat-controls">
+        <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
+        {itemOptions.length?typePicker('關鍵詞項目圖型',itemType,setItemChart,itemOptions):null}
+      </div>
+      {itemDistribution.length?<StatisticsMultiChart type={itemType} distribution={itemDistribution}
+        barLayout="vertical" height={Math.max(320,itemDistribution.length*38+65)}/>:
+        <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
+      {groupRows.length>10?<p className="scope-status">圖中顯示命中數前 10 項；完整資料可在下方展開查看。</p>:null}
+      <StatisticsDetails>{()=><>
+        <div className="scope-ranking">
+          {visibleGroupRows.map(row=><div key={row.rune_id}><strong>{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong>
+            <span>{t('uiExtra.statisticsView.runeHits',{count:Number(row.count||0).toLocaleString(),ratio:(groupHitTotal>0?100*Number(row.count||0)/groupHitTotal:0).toFixed(1)})}</span>
+          </div>)}
+        </div>
+        {groupRows.length>RUNE_RANKING_PAGE_SIZE?<nav className="scope-stat-controls" aria-label={t('uiExtra.statisticsView.groupPageNav')}>
+          <button type="button" className="loc-button" disabled={activeGroupPage===1} onClick={()=>setGroupPage(activeGroupPage-1)}><UiText id="uiExtra.statisticsView.previous"/></button>
+          <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activeGroupPage,pages:groupPageCount,total:groupRows.length.toLocaleString()}}/></span>
+          <button type="button" className="loc-button" disabled={activeGroupPage===groupPageCount} onClick={()=>setGroupPage(activeGroupPage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
+        </nav>:null}
+      </>}</StatisticsDetails>
+    </div>:null}
+  </section>;
 }
-
