@@ -77,6 +77,7 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
   const initialDraftRef=useRef(newDraft(defaultType));
+  const initializedRequestRef=useRef('');
   const inlineSectionRef=useRef(null);
   const nameInputRef=useRef(null);
 
@@ -134,13 +135,14 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     if(!id||!rawRows.length)return;
     const row=rawRows.find(item=>String(item.record_id)===id);
     if(row){
+      if(selectedId===id&&dockActions.current.isDirty?.())return;
       setSelectedId(id);
       const initial=rowDraft(row);
       initialDraftRef.current=initial;
       setDraft(initial);
       setMessage('');
     }
-  },[selectedRecordId,rawRows]);
+  },[selectedRecordId,selectedId,rawRows]);
 
   useEffect(()=>{
     const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
@@ -148,6 +150,11 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
     // All three non-anchor types share this editor; the form chooses their
     // required references: period 1–2, event 2, style_comment 1.
     if(selectedRecordId||(!hasAnchorDate&&!suggestedRequestNonce))return;
+    const requestKey=suggestedRequestNonce
+      ?'requested:'+suggestedRequestNonce+':'+recordType+':'+effectiveSuggestedAnchorDate
+      :'route:'+recordType+':'+effectiveSuggestedAnchorDate;
+    if(initializedRequestRef.current===requestKey)return;
+    initializedRequestRef.current=requestKey;
     setSelectedId('');
     const initial={
       ...BLANK,
