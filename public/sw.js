@@ -140,8 +140,12 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 })()));
 self.addEventListener('message',event=>{
   if(event.data?.type!=='LOC_BLOCKS_INVALIDATE')return;
+  const match=/^([a-z][a-z0-9]{0,14}):([a-z0-9_-]+)$/.exec(String(event.data.key||''));
+  if(!match)return;
   event.waitUntil((async()=>{
-    await Promise.all([caches.delete(BLOCK_CACHE),caches.delete(BLOCK_AGE)]);
+    const url=new URL('/_loc/blocks/'+match[1]+'/'+match[2]+'.json',self.location.origin).href;
+    const [blocks,age]=await Promise.all([caches.open(BLOCK_CACHE),caches.open(BLOCK_AGE)]);
+    await Promise.all([blocks.delete(url),age.delete(url)]);
     event.ports?.[0]?.postMessage({ok:true});
   })());
 });
