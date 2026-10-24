@@ -91,8 +91,8 @@ export default function StatisticsMultiChart({
   else if(actual==='radar'&&comparison)chart=<RadarChart data={comparison} outerRadius="67%">
     <PolarGrid stroke={GRID}/><PolarAngleAxis dataKey="name" tick={{fill:TEXT,fontSize:11}}/>
     <PolarRadiusAxis domain={[0,100]} tick={{fill:TEXT,fontSize:10}}/>
-    <Radar name={t('uiExtra.chartLabels.firstHalf')} dataKey="early" stroke={color(0)} fill={color(0)} fillOpacity={.2}/>
-    <Radar name={t('uiExtra.chartLabels.lastHalf')} dataKey="late" stroke={color(1)} fill={color(1)} fillOpacity={.2}/>
+    <Radar name={t('uiExtra.chartLabels.firstHalf')} dataKey="early" stroke={color(0)} fill={color(0)} strokeWidth={3} fillOpacity={.10}/>
+    <Radar name={t('uiExtra.chartLabels.lastHalf')} dataKey="late" stroke={color(3)} fill={color(3)} strokeDasharray="7 4" strokeWidth={3} fillOpacity={.10}/>
     <Legend/><Tooltip contentStyle={TOOLTIP} formatter={v=>Number(v).toFixed(1)+'%'}/>
   </RadarChart>;
   else if(actual==='radial'&&coverage)chart=<RadialBarChart data={coverage} innerRadius="16%" outerRadius="82%" startAngle={90} endAngle={-270}>
@@ -119,8 +119,10 @@ export default function StatisticsMultiChart({
     <XAxis dataKey="period" tick={{fill:TEXT,fontSize:11}} angle={-20} textAnchor="end" height={64} interval="preserveStartEnd" stroke={GRID}/>
     <YAxis tick={{fill:TEXT,fontSize:11}} allowDecimals={false} stroke={GRID}/>
     <Tooltip contentStyle={TOOLTIP}/><Legend/>
-    <Bar dataKey="__stat_total" name={t('uiExtra.chartLabels.periodTotal')} fill={color(0)} opacity={.65} maxBarSize={30}/>
-    <Line dataKey="__stat_average" name={t('uiExtra.chartLabels.movingAverage')} stroke={color(2)} strokeWidth={3} dot={false} connectNulls={false}/>
+    <Bar dataKey="__stat_total" name={t('uiExtra.chartLabels.periodTotal')} fill={color(0)} opacity={.8} maxBarSize={30}>
+      {composed.map((_,i)=><Cell key={i} fill={color(i)}/>)}
+    </Bar>
+    <Line dataKey="__stat_average" name={t('uiExtra.chartLabels.movingAverage')} stroke={color(3)} strokeWidth={3} strokeDasharray="8 4" dot={false} connectNulls={false}/>
   </ComposedChart>;
   else if(actual==='stacked')chart=<AreaChart data={display} margin={margin}>
     {axes}{fields.map((f,i)=><Area key={f.key} type="linear" dataKey={f.key} name={f.label} stackId="parts"
@@ -143,7 +145,9 @@ export default function StatisticsMultiChart({
     </Bar>
   </BarChart>;
   else if(actual==='bar')chart=<BarChart data={display} margin={margin}>
-    {axes}{timeFields.map((f,i)=><Bar key={f.key} dataKey={f.key} name={f.label} fill={color(i)} maxBarSize={32}/>)}
+    {axes}{timeFields.map((f,i)=><Bar key={f.key} dataKey={f.key} name={f.label} fill={color(i)} maxBarSize={32}>
+      {timeFields.length===1?display.map((_,j)=><Cell key={j} fill={color(j)}/>):null}
+    </Bar>)}
   </BarChart>;
   else chart=<LineChart data={display} margin={margin}>
     {axes}{timeFields.map((f,i)=><Line key={f.key} type="linear" dataKey={f.key} name={f.label}
