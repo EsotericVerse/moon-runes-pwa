@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {GROUP_SUMMON_EFFECTS,groupSummonForRune} from '../app/lrunes/effekseer/rune-cinematic-language.mjs';
 import {AUTHORED_EFFECT_FILES} from '../app/lrunes/effekseer/rune-effect-library.mjs';
 
