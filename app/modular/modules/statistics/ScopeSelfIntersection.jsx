@@ -18,7 +18,8 @@ import StatisticsDetails from './StatisticsDetails';
 import {OWN_STAT_DIMENSIONS,ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
 
 const DAY_MS=86400000;
-const DIMENSIONS=[{kind:'group',label:'群組來源分類'},...OWN_STAT_DIMENSIONS,
+const DIMENSIONS=[{kind:'group',label:'群組來源分類'},
+  {kind:'others_subgroup',label:'Others 自定義小分類'},...OWN_STAT_DIMENSIONS,
   {kind:'keyword_group',label:'關鍵詞組'},
   {kind:'keyword_item',label:'關鍵詞項目'}];
 const dateOnly=v=>String(v||'').slice(0,10);
@@ -62,6 +63,35 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       return {categories:c.rows,aliases:a.rows};
   });
   const catalog=sharedCatalog||localCatalog;
+  const othersConfig=useAsyncResource({
+    queryKey:['scope-others-source-summary',scope?.id],
+    enabled:valid,
+    queryFn:async()=>{
+      const {selectRows}=await import('../../../loc/db-query.mjs');
+      const [groups,aliases]=await Promise.all([
+        selectRows('silver.statistics_scope_others_groups',{
+          columns:'group_code,display_name,enabled,sort_order',
+          filters:[{column:'scope_id',operator:'eq',value:scope.id}],
+          orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'
+        }),
+        selectRows('silver.statistics_scope_others_aliases',{
+          columns:'source_key,group_code',
+          filters:[{column:'scope_id',operator:'eq',value:scope.id}],
+          limit:500,source:'primary'
+        })
+      ]);
+      return {groups:groups.rows||[],aliases:aliases.rows||[]};
+    }
+  });
+  const othersActive=useMemo(()=>new Map((othersConfig.data?.groups||[])
+    .filter(row=>row.enabled!==false).map(row=>[row.group_code,row.display_name])),[othersConfig.data]);
+  const othersAliases=useMemo(()=>new Map((othersConfig.data?.aliases||[])
+    .map(row=>[String(row.source_key||'').trim().toLowerCase(),row.group_code])),[othersConfig.data]);
+  const resolveOthers=(source)=>{
+    if(assignedSource(source,catalog.data?.aliases||[],catalog.data?.categories||[])!=='others')return '';
+    const group=othersAliases.get(String(source||'').trim().toLowerCase())||'';
+    return group&&othersActive.has(group)?group:'unclassified';
+  };
   // Read the already-stored keyword summary only when this panel is expanded.
   const keywords=useAsyncResource({
     queryKey:['own-scope-keyword-summary',scope?.id,start,end],
@@ -94,13 +124,25 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       .filter(row=>Number(row.document_count||0)>0)
       .map(row=>({id:'keyword_item'+String.fromCharCode(0)+row.rune_id,kind:'keyword_item',
         name:String(row.label||'')+' · '+row.rune_id,total:Number(row.document_count)||0}));
-    return [...groups,...basic,...keywordGroups,...keywordItems]
+    const othersCounts=new Map();
+    for(const row of rows){
+      if(row.kind!=='source')continue;
+      const group=resolveOthers(row.category);
+      if(group)othersCounts.set(group,(othersCounts.get(group)||0)+(Number(row.item_count)||0));
+    }
+    const others=[...othersCounts].filter(([,count])=>count>0).map(([id,total])=>({
+      id:'others_subgroup'+String.fromCharCode(0)+id,kind:'others_subgroup',
+      name:id==='unclassified'?'Others · 未細分':'Others · '+othersActive.get(id),total
+    }));
+    return [...groups,...basic,...others,...keywordGroups,...keywordItems]
       .filter(item=>kindFilter==='all'||item.kind===kindFilter);
-  },[rows,kindFilter,catalog.data,keywords.data]);
-  const chosen=Array.from({length:numberOfLanes},(_,i)=>{
+  },[rows,kindFilter,catalog.data,keywords.data,othersConfig.data]);
+  const maximumLanes=Math.min(8,categoryList.length);
+  const lanes=Math.min(numberOfLanes,Math.max(2,maximumLanes));
+  const chosen=Array.from({length:lanes},(_,i)=>{
     const id=selected[i];
     if(id&&categoryList.some(c=>c.id===id)&&!selected.slice(0,i).includes(id))return id;
-    return categoryList.find(c=>!selected.slice(0,i).includes(c.id)&&!selected.slice(0,i).includes(c.id)&&!selected.slice(i+1,numberOfLanes).includes(c.id))?.id||categoryList[i]?.id||'';
+    return categoryList.find(c=>!selected.slice(0,i).includes(c.id)&&!selected.slice(0,i).includes(c.id)&&!selected.slice(i+1,lanes).includes(c.id))?.id||categoryList[i]?.id||'';
   });
   // When a category disappears after filtering, re-base to distinct available sources.
   const used=new Set();
@@ -152,6 +194,8 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       const ids=[rawId];
       if(row.kind==='source'){
         ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]));
+        const subgroup=resolveOthers(row.category);
+        if(subgroup)ids.push('others_subgroup'+String.fromCharCode(0)+subgroup);
       }
       for(const id of ids)add(day,id,Number(row.item_count)||0);
     }
@@ -187,23 +231,25 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
         value:chart.reduce((n,bucket)=>n+Number(bucket[category.id]||0),0)
       }))
     };
-  },[rows,categories.map(c=>c.id).join(String.fromCharCode(0)),start,end,unit,valid,catalog.data,keywords.data,keywordItems.data,selectedKeywordItems]);
+  },[rows,categories.map(c=>c.id).join(String.fromCharCode(0)),start,end,unit,valid,catalog.data,othersConfig.data,keywords.data,keywordItems.data,selectedKeywordItems]);
   const series=categories.map(c=>({key:c.id,label:c.name}));
-  const enough=categories.length===numberOfLanes;
+  const enough=maximumLanes>=2&&categories.length===lanes;
   const availableCharts=availableStatisticChartTypes({rows:calculated.chart,series,distribution:calculated.totals});
   const shownChartType=availableCharts.some(([id])=>id===chartType)?chartType:(availableCharts[0]?.[0]||'line');
   const chartGroups=chartTypeGroups(availableCharts,['line','stacked','scatter']);
 
   return <section className="scope-stat-section scope-self-intersection" aria-label={translateUiField(locale,'作品自交互統計')}>
     <h3><FieldText text="作品自交互統計"/></h3>
-      {query.isPending||keywords.isPending?<p className="scope-status">{l.readingSources}</p>:null}
+      {query.isPending||keywords.isPending||othersConfig.isPending?<p className="scope-status">{l.readingSources}</p>:null}
       {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||l.readFailed)}</p>:null}
       {keywords.error?<p className="scope-status scope-error">關鍵詞分佈載入失敗：{String(keywords.error?.message||keywords.error)}</p>:null}
+      {othersConfig.error?<p className="scope-status scope-error">Others 自定義小分類載入失敗：{String(othersConfig.error?.message||othersConfig.error)}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
           <label><span><FieldText text="交互組數"/></span>
-            <select className="scope-select" value={numberOfLanes} onChange={e=>{setNumberOfLanes(Number(e.target.value));setSelected([])}}>
-              {[2,3,4].map(n=><option key={n} value={n}>{n}{l.groupUnit}</option>)}
+            <select className="scope-select" value={lanes} onChange={e=>{setNumberOfLanes(Number(e.target.value));setSelected([])}}>
+              {Array.from({length:Math.max(0,maximumLanes-1)},(_,i)=>i+2).map(n=><option key={n} value={n}>{n}{l.groupUnit}</option>)}
+              {maximumLanes<2?<option value={2}>可比較項目不足</option>:null}
             </select>
           </label>
           <label><span>{l.comparisonDimensions}</span>
@@ -214,11 +260,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
           </label>
         </div>
         <div className="scope-stat-controls">
-          {Array.from({length:numberOfLanes},(_,index)=><label key={index}>
+          {Array.from({length:lanes},(_,index)=><label key={index}>
             <span>{l.comparisonItem} {index+1}</span>
             <select className="scope-select" value={selection[index]||''} onChange={e=>{
               setSelected(prev=>{
-                const next=Array.from({length:numberOfLanes},(_,i)=>selection[i]||'');
+                const next=Array.from({length:lanes},(_,i)=>selection[i]||'');
                 next[index]=e.target.value;
                 return next;
               });
@@ -263,7 +309,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString(locale)}{l.recordUnit}</span></div>)}
           </div>
           </>}</StatisticsDetails>
-        </div>:!enough?<p className="scope-status">{l.notEnoughSources.replace('{count}',numberOfLanes)}</p>:null}
+        </div>:!enough?<p className="scope-status">{l.notEnoughSources.replace('{count}',lanes)}</p>:null}
       </div>:null}
   </section>;
 }
