@@ -19,8 +19,8 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'作品來源分類',shortLabel:'來源分類',description:''},
-  {value:'governance',label:'編輯治理頁面',shortLabel:'治理編輯',description:'編輯此 Scope 治理頁的既有區塊。'},
+  {value:'others',label:'作品來源分類',shortLabel:'來源',description:''},
+  {value:'governance',label:'編輯治理頁面',shortLabel:'治理',description:'編輯此 Scope 治理頁的既有區塊。'},
   {value:'settings',label:'主題',shortLabel:'主題',description:'選擇這個 Scope 使用的主題。'}
 ]);
 

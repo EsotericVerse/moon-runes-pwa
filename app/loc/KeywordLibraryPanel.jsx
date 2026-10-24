@@ -15,6 +15,12 @@ const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null}
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
 
 const compactKeywordTitle=label=>String(label||'').replace(/^關鍵詞/,'');
+const KEYWORD_TAB_LABELS=Object.freeze({
+  'zh-Hant':{analysis:'基本',run:'分析',manual:'群組',library:'分類',network:'關聯圖'},
+  'zh-Hans':{analysis:'基础',run:'分析',manual:'分组',library:'分类',network:'关联图'},
+  en:{analysis:'Basic',run:'Analyze',manual:'Groups',library:'Library',network:'Network'},
+  ja:{analysis:'基本',run:'分析',manual:'グループ',library:'分類',network:'関連図'}
+});
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
@@ -66,7 +72,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const {locale}=useUiLocale();
   const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>{
     const label=l[option.key]||featureZh.keywordPanel[option.key];
-    return {value:option.value,label,shortLabel:compactKeywordTitle(label)};
+    return {value:option.value,label,shortLabel:KEYWORD_TAB_LABELS[locale]?.[option.value]||compactKeywordTitle(label)};
   });
   const editDock=useEditDock();
   const dockActions=useRef({save:null});
