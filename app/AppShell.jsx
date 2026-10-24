@@ -38,11 +38,17 @@ const NAV_SCOPES=Object.values(SCOPES)
   .filter(scope=>scope.nav)
   .sort((a,b)=>String(a.nav.position).localeCompare(String(b.nav.position))||Number(a.nav.order||0)-Number(b.nav.order||0));
 
-function DataSourceStatus(){
+function DataSourceStatus({local=false}){
   const {copy}=useUiLocale();
   useUiSection('uiExtra.dataSourceStatus');
   const section=copy.uiExtra.dataSourceStatus||{};
   const status=useSyncExternalStore(subscribeDbSourceStatus,getDbSourceStatus,getDbSourceStatus);
+  if(local)return <div className="scope-data-source-global">
+    <details className="scope-data-source-details">
+      <summary>本機資料來源</summary>
+      <div className="scope-data-source-values"><span>目前使用：SQLite（local，本機檔案）</span></div>
+    </details>
+  </div>;
   const current=status.unavailable
     ?`${section.unavailable||''}`
     :status.degraded
@@ -415,7 +421,7 @@ function AppShellInner({children}){
     {id:'home',icon:localWorkspace?'phone':'home',label:translateUiField(activeLocale,'首頁'),href:localWorkspace?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
-      return {id,icon:id,label:copy.features?.[id]?.title||feature.label,
+      return {id,icon:id,label:localWorkspace&&id==='governance'?'管理':copy.features?.[id]?.title||feature.label,
         href:navigationHref(navScopeId,feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
@@ -506,7 +512,7 @@ function AppShellInner({children}){
           onChange={locale=>setManualLocale({scopeId,locale:normalizeUiLocale(locale)})}
         />
       </div>
-      <DataSourceStatus/>
+      <DataSourceStatus local={localWorkspace}/>
     </footer>
   </UiLocaleProvider>;
 }
