@@ -34,7 +34,7 @@ export default function ManagementMediaPublisher({scopeId}){
   const account=useAccount();
   const editDock=useEditDock();
   const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
-  const dockActions=useRef({save:null,isDirty:null,isBusy:null});
+  const dockActions=useRef({save:null,discard:null,isDirty:null,isBusy:null});
   const [draft,setDraft]=useState(blankMedia);
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
@@ -42,6 +42,7 @@ export default function ManagementMediaPublisher({scopeId}){
     if(!inDock)return undefined;
     return editDock.register({
       save:()=>dockActions.current.save(),
+      discard:()=>dockActions.current.discard(),
       isDirty:()=>dockActions.current.isDirty(),
       isBusy:()=>dockActions.current.isBusy()
     });
@@ -87,6 +88,7 @@ export default function ManagementMediaPublisher({scopeId}){
   }
   dockActions.current={
     save:()=>save(),
+    discard:()=>{setDraft(blankMedia());setStatus('');},
     isDirty:()=>Object.keys(blankMedia()).some(key=>draft[key]!==blankMedia()[key]),
     isBusy:()=>busy
   };
@@ -107,7 +109,7 @@ export default function ManagementMediaPublisher({scopeId}){
       <label><span><UiText id="uiExtra.importUI.mediaTitle"/></span><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label><span><UiText id="uiExtra.importUI.mediaExternalUrlLabel"/></span><input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>
       <label><span><UiText id="uiExtra.importUI.mediaTagsLabel"/></span><input value={draft.meta_tags} onChange={e=>change('meta_tags',e.target.value)} placeholder={t('uiExtra.importUI.tagHint')} required/></label>
-      <button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>
+      {!inDock?<button type="submit" disabled={busy}>{busy?UI_COPY.common.saving:UI_COPY.management.addMedia}</button>:null}
       {status?<p className="scope-status">{status}</p>:null}
     </form>
   </section>;
