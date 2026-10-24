@@ -233,6 +233,9 @@ export default function Search({managementMode=false}){
   const {scopeId,scope}=useScopeRuntime();
   const editDock=useEditDock();
   const account=useAccount({enabled:managementMode});
+  // LOC's public Search is global. Only the separate authorized management
+  // workspace may narrow the query to a specific Scope.
+  const locPublicSearch=scopeId==='loc'&&!managementMode;
   const managementAuthorized=Boolean(managementMode&&account.user&&!account.loading&&!account.permissionLoading&&
     (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
@@ -301,8 +304,8 @@ export default function Search({managementMode=false}){
   const loadMoreInFlight=useRef(false);
   const matchedQueryRef=useRef('');
   const pageSize=DEFAULT_LIST_BATCH_SIZE;
-  // LOC searches only active content trees with search_able enabled.
-  // A tree's own Search page stays separate from LOC's aggregate scope filter.
+  // LOC searches across every active, search-enabled public content tree.
+  // The Scope registry is an internal query input, never a public search filter.
   const aggregateScopes=Boolean(scope?.aggregateChildren&&scopeId!=='loc');
   const scopesQuery=useAsyncResource({
     queryKey:managementMode?['management-search-scopes',account.email]:['loc-searchable-scopes'],
@@ -319,12 +322,18 @@ export default function Search({managementMode=false}){
         return data?{...data,display_name:String(item.display_name||item.scope_id)}:null;
       }).filter(Boolean);
   },[scopeId,scopesQuery.data,managementMode,account.authorizer]);
-  const targetScopes=useMemo(()=>scopeId==='loc'&&scopeFilter
+  const targetScopes=useMemo(()=>scopeId==='loc'&&managementMode&&scopeFilter
     ?availableScopes.filter(item=>item.id===scopeFilter)
-    :availableScopes,[scopeId,scopeFilter,availableScopes]);
+    :availableScopes,[scopeId,managementMode,scopeFilter,availableScopes]);
   const scopeById=useMemo(()=>new Map(availableScopes.map(item=>[item.id,item])),[availableScopes]);
   const scopeLabel=id=>{
     const item=scopeById.get(id);
+    // A result may show its published source name, never an inventory of IDs.
+    // Management pages can identify only the Scopes their user can manage.
+    if(locPublicSearch){
+      const label=String(item?.display_name||'').trim();
+      return label&&label!==id?label:'';
+    }
     return item?`${item.display_name||id}(${id})`:id;
   };
   // Keep LOC's per-Scope sections and style suggestions, then order the
@@ -376,15 +385,15 @@ export default function Search({managementMode=false}){
     const q=String(rawQuery||'').trim();
     const options=append&&activeSearchOptionsRef.current
       ?activeSearchOptionsRef.current
-      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter,mediaOnly:false,browse,sortDirection:articleSort});
+      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',mediaOnly:false,browse,sortDirection:articleSort});
     if(!q&&!options.browse)return;
-    const searchScopes=scopeId==='loc'&&options.scopeFilter
+    const searchScopes=scopeId==='loc'&&managementMode&&options.scopeFilter
       ?availableScopes.filter(item=>item.id===options.scopeFilter)
       :availableScopes;
-    if(scopeId==='loc'&&options.scopeFilter&&!searchScopes.length){
+    if(scopeId==='loc'&&managementMode&&options.scopeFilter&&!searchScopes.length){
       setError(t('uiExtra.searchUI.scopeUnavailable'));return;
     }
-    const searchCollectionLabel=scopeId==='loc'&&options.scopeFilter
+    const searchCollectionLabel=scopeId==='loc'&&managementMode&&options.scopeFilter
       ?scopeLabel(options.scopeFilter):collectionLabel;
     if(options.startDate&&options.endDate&&options.startDate>options.endDate){
       setError(t('uiExtra.searchUI.invalidDateRange'));return;
@@ -620,10 +629,11 @@ export default function Search({managementMode=false}){
       startDate:String(searchParams?.get('from')||''),
       endDate:String(searchParams?.get('to')||''),
       selectedPeriod:String(searchParams?.get('period')||''),
-      scopeFilter:String(searchParams?.get('scope')||'')
+      scopeFilter:managementMode?String(searchParams?.get('scope')||''):''
     };
     setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
-    setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);setScopeFilter(filters.scopeFilter);
+    setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);
+    if(managementMode)setScopeFilter(filters.scopeFilter);
     if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,managementMode,managementAuthorized]);
 
@@ -811,7 +821,7 @@ export default function Search({managementMode=false}){
       ?sourceFilter.slice(9):sourceFilter.replace(/^source:/,'')]);
   }
   const chips=[
-    scopeId==='loc'&&scopeFilter&&scopeLabel(scopeFilter),
+    scopeId==='loc'&&managementMode&&scopeFilter&&scopeLabel(scopeFilter),
     contentType&&filterTypes.find(([value])=>value===contentType)?.[1],
     sourceFilter&&filterSources.find(([value])=>value===sourceFilter)?.[1],
     startDate&&t('uiExtra.searchUI.startDate')+': '+startDate,
@@ -834,10 +844,10 @@ export default function Search({managementMode=false}){
     if(!term)return;
     // Keep the keyword in the URL and input so a style-to-style link is a
     // reproducible next search, not a transient single-page interaction.
-    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter});
+    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter:managementMode?scopeFilter:''});
     const current=workspaceSearchHref(String(searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
-      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),scopeFilter:searchParams?.get('scope')
+      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),scopeFilter:managementMode?searchParams?.get('scope'):''
     });
     if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
     await executeSearch(term);
@@ -890,7 +900,7 @@ export default function Search({managementMode=false}){
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
-      {scopeId==='loc'?<div className="scope-search-scope-filter">
+      {scopeId==='loc'&&managementMode?<div className="scope-search-scope-filter">
         <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
         <select id="scope-search-scope" value={scopeFilter}
           disabled={!scopesQuery.isSuccess}
@@ -1018,7 +1028,7 @@ export default function Search({managementMode=false}){
         );
         const draft=editingKey===row.key?editDraft:null;
         return <Fragment key={row.key}>
-          {scopeId==='loc'&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
+          {scopeId==='loc'&&scopeLabel(row.scopeId)&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
         <Article
           key={row.key}
@@ -1027,7 +1037,7 @@ export default function Search({managementMode=false}){
           uid={editTarget.editResourceId}
           title={row.title}
           source={row.styleTagMatch?'':row.source}
-          scopeId={row.scopeId}
+          scopeId={locPublicSearch?'':row.scopeId}
           date={row.date}
           body={draft?'':row.resourceType==='galaxy_media'?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
