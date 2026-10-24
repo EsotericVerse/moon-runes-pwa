@@ -1,12 +1,17 @@
 name: LOC iOS Device Unsigned IPA
-run-name: LOC iOS IPA · main · ${{ github.sha }}
+run-name: LOC iOS IPA · ${{ github.ref_name }} · ${{ github.sha }}
 
 # Manual only: no new IPA until requested by the owner.
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Attach unsigned IPA to this existing RC prerelease (optional)'
+        required: false
+        type: string
 
 permissions:
-  contents: read
+  contents: write
 
 # Keep only the newest main build when several app commits land together.
 concurrency:
@@ -20,6 +25,8 @@ jobs:
     steps:
       - name: Checkout LOC
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -73,8 +80,8 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/loc-ios-device-build" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            MARKETING_VERSION=1.0.1 \
-            CURRENT_PROJECT_VERSION=10 \
+            MARKETING_VERSION=1.1.0 \
+            CURRENT_PROJECT_VERSION=11 \
             build
       - name: Package and verify unsigned IPA
         shell: bash
@@ -89,8 +96,8 @@ jobs:
           version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Info.plist")
           build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")
           icon=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName' "$app/Info.plist")
-          test "$version" = '1.0.1'
-          test "$build" = '10'
+          test "$version" = '1.1.0'
+          test "$build" = '11'
           test "$icon" = 'AppIcon'
           xcrun lipo -archs "$app/App" | tr ' ' '\n' | grep -qx arm64
           bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
@@ -98,11 +105,11 @@ jobs:
           stage="$RUNNER_TEMP/loc-ios-package"
           mkdir -p "$stage/Payload" "$GITHUB_WORKSPACE/dist"
           ditto "$app" "$stage/Payload/App.app"
-          (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-1.0.1-device-unsigned.ipa" Payload)
-          unzip -t "$GITHUB_WORKSPACE/dist/LOC-1.0.1-device-unsigned.ipa" | tail -1
+          (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/LOC-1.1.0-rc.1-device-unsigned.ipa" Payload)
+          unzip -t "$GITHUB_WORKSPACE/dist/LOC-1.1.0-rc.1-device-unsigned.ipa" | tail -1
           python3 - <<'PY'
           from zipfile import ZipFile
-          with ZipFile('dist/LOC-1.0.1-device-unsigned.ipa') as archive:
+          with ZipFile('dist/LOC-1.1.0-rc.1-device-unsigned.ipa') as archive:
               paths=archive.namelist()
               assert all(name.isascii() for name in paths), 'Unicode filenames remain inside IPA'
               prefix='Payload/App.app/public/assets/lunarunes/cards/'
@@ -111,22 +118,27 @@ jobs:
               assert actual==expected, f'Expected 66 ASCII-named card images, got {len(actual)}'
               print('IPA verified: ASCII-only paths and 66 numeric card images')
           PY
-          test -s "$GITHUB_WORKSPACE/dist/LOC-1.0.1-device-unsigned.ipa"
+          test -s "$GITHUB_WORKSPACE/dist/LOC-1.1.0-rc.1-device-unsigned.ipa"
           echo "Unsigned IPA generated. It must be signed on the user's machine; this CI artifact is NOT directly installable."
       - name: Upload unsigned IPA artifact
         id: ipa_upload
         uses: actions/upload-artifact@v4
         with:
-          name: LOC-1.0.1-main-${{ github.run_number }}-unsigned
-          path: dist/LOC-1.0.1-device-unsigned.ipa
+          name: LOC-1.1.0-RC1-${{ github.run_number }}-unsigned
+          path: dist/LOC-1.1.0-rc.1-device-unsigned.ipa
           retention-days: 14
           if-no-files-found: error
+      - name: Attach unsigned IPA to the 1.1 RC prerelease
+        if: ${{ inputs.release_tag == 'v1.1.0-rc.1' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload '${{ inputs.release_tag }}' dist/LOC-1.1.0-rc.1-device-unsigned.ipa --clobber
       - name: Publish build summary and artifact link
         env:
           ARTIFACT_URL: ${{ steps.ipa_upload.outputs.artifact-url }}
         run: |
           {
-            echo '## LOC iOS device test build (main)'
+            echo '## LOC 1.1 RC iOS device test build (unsigned)'
             echo "- Source branch: \`$GITHUB_REF_NAME\`"
             echo "- Commit: \`$GITHUB_SHA\`"
             echo "- [Download IPA Artifact]($ARTIFACT_URL)"

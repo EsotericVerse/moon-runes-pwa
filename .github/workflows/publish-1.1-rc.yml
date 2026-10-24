@@ -1,0 +1,62 @@
+name: Publish LOC 1.1 RC1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - '.github/workflows/publish-1.1-rc.yml'
+
+jobs:
+  publish-rc:
+    if: github.event.head_commit.message == 'chore(release): prepare LOC 1.1 RC and IPA'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout frozen RC source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Lockfile install
+        run: npm ci --no-audit --no-fund
+      - name: Dependency security gate
+        run: npm run audit:security
+      - name: Game regression checks
+        run: npm run test:game
+      - name: Bootstrap, ISR and public image checks
+        run: npm run test:bootstrap
+      - name: Build server-side Next.js / ISR
+        run: npm run build
+      - name: Check ISR paths and 14-day revalidation
+        run: node scripts/verify-release-isr.mjs
+      - name: Confirm tag belongs to a reviewed commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node -p 'require("./package.json").version')" = '1.1.0-rc.1'
+          if gh release view v1.1.0-rc.1 >/dev/null 2>&1; then
+            echo 'Release tag already exists. Refusing to replace an immutable RC.'
+            exit 1
+          fi
+      - name: Publish GitHub pre-release (never stable)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.1.0-rc.1 \
+            --target "$GITHUB_SHA" \
+            --title "LOC 1.1 RC1 — Release Candidate" \
+            --notes-file docs/releases/LOC-1.1.0-rc.1.md \
+            --prerelease
+      - name: Dispatch frozen unsigned iPhone IPA build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ios-device-build.yml --ref v1.1.0-rc.1 -f release_tag=v1.1.0-rc.1
