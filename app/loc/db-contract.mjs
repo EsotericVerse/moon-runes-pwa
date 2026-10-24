@@ -199,7 +199,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // baseline: an interrupted reset must be recoverable by a FULL analysis.
     const stale=await managementWrite({
       p_table:'silver.'+scope,p_operation:'update',p_rows:null,
-      p_values:{staticstime:null,keyword_document_count:0,keyword_meta:{}},
+      p_values:{staticstime:null,keyword_meta:{}},
       p_filters:[{column:'id',operator:'eq',value:scope}]
     });
     if(Number(stale?.count||0)!==1)throw new Error('Scope classification reset could not mark results stale');
