@@ -1,4 +1,6 @@
 export default {
+  "importLanguage": "取り込み言語",
+  "importLanguageHint": "既定は繁体字中国語。UTF-8 を優先し、必要に応じて選択言語の旧式文字コードを使用します。翻訳や言語タグの保存はしません。",
   "invalidMediaId": "media_id の形式が無効です。",
   "existingMediaFailed": "既存のメディアを確認できません。",
   "mediaIdCompareFailed": "メディア ID を照合できません。",
