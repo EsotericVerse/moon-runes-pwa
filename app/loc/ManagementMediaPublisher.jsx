@@ -26,14 +26,14 @@ function mediaIso(value){
 // 新增多媒體 belongs with publishing content (it creates a Galaxy Media
 // record the same way publishing an article creates a Galaxy record), not
 // with 資料匯入 (batch/file import of existing external data).
-export default function ManagementMediaPublisher({scopeId}){
+export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const account=useAccount();
   const editDock=useEditDock();
-  const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
+  const inDock=Boolean(editDock?.active&&editDock.scopeId===dockScopeId);
   const dockActions=useRef({save:null,discard:null,isDirty:null,isBusy:null});
   const [draft,setDraft]=useState(blankMedia);
   const [status,setStatus]=useState('');
