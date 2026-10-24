@@ -5,9 +5,10 @@ import {locPublicIsrUrl} from './scope-data';
 
 const SCOPE=/^[a-z][a-z0-9]{0,14}$/;
 
-// Private local SQLite and Rune-specific modes retain their own providers.
+// Private device-local SQLite stays independent; Rune-specific Daily analytics
+// never call this generic chart adapter and retain their own data provider.
 export function usesNumericIsr(scopeId){
-  return SCOPE.test(String(scopeId||''))&&scopeId!=='local'&&scopeId!=='lrunes'
+  return SCOPE.test(String(scopeId||''))&&scopeId!=='local'&&scopeId!=='admin'
     &&!Capacitor.isNativePlatform();
 }
 
