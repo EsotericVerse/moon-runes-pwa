@@ -19,7 +19,7 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'import',label:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'自訂作品來源',description:'管理此 Scope 專屬的作品來源設定。'},
+  {value:'others',label:'其他來源分類',description:'整理這個資料空間內尚未歸類的作品來源。'},
   {value:'governance',label:'編輯治理頁面',description:'編輯此 Scope 治理頁的既有區塊。'},
   {value:'settings',label:'主題',description:'選擇這個 Scope 使用的主題。'}
 ]);
@@ -36,7 +36,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(isLoc||!account.user||!canManageHere||(!editRequested&&!['governance','others'].includes(section))||account.permissionLoading)return;
+    if(isLoc||!account.user||!canManageHere||(!editRequested&&!['governance','others','settings'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -56,6 +56,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   </FeaturePage>;
   return <FeaturePage featureId="manage">
 
+    <div className="scope-management-layout">
     <div className="management-workspace">
       <ManagementSectionNav id="scope-sections" title="管理項目" panelId="scope-management-panel"
         items={options} value={section} onChange={next=>{
@@ -75,6 +76,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
           authorizedByParent startInEditMode explicitEditButton
           onEditorExit={()=>setSection('import')}/>:null}
       </div>
+    </div>
     </div>
   </FeaturePage>;
 }
