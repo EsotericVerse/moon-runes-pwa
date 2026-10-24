@@ -134,7 +134,7 @@ export default function Rune3DLibrary({presentationSwitcher=null}){
 
   useEffect(()=>{
     if(current&&stageRef.current)
-      stageRef.current.scrollIntoView({behavior:reducedMotion?'instant':'smooth',block:'center'});
+      stageRef.current.scrollIntoView({behavior:reducedMotion?'auto':'smooth',block:'center'});
   },[current?.rune_id,playback,reducedMotion]);
   const jumpTo=rune=>{
     if(!rune||groupId===null)return;
