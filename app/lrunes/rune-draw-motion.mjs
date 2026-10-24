@@ -12,6 +12,22 @@ const PATHS=Object.freeze({
   '特殊':{name:'異相',times:[0,0.27,0.76,1],z:[0,135,180,0],pitch:[-21,33,-26,0],duration:1.55,x:[-.26,-.04,.09,0],y:[.18,-.18,-.11,0],scale:[.81,1.19,1.55,1.46],flip:[0,165,290,540],tilt:[-14,-6,14,0]}
 });
 const DIRECTIONS=Object.freeze([0,90,-90,180]);
+// Some groups manifest from moonlight; others physically draw from the deck.
+// This is presentation only: game probability, orientation and Rune identity are unchanged.
+const MOON_ORIGIN_GROUPS=new Set(['靈魂','生命','自然','元素','無序','特殊']);
+const ORBIT_GLYPHS=Object.freeze({
+  '靈魂':['靈','魂','憶','鏡'],
+  '連結':['向','斷','封','鍊'],
+  '生命':['生','心','愛','語'],
+  '自然':['樹','花','根','種'],
+  '礦物':['金','玉','晶','石'],
+  '元素':['光','水','火','雷'],
+  '秩序':['日','月','星','時'],
+  '無序':['福','禍','夢','幻'],
+  '特殊':['玄','命','玄','命']
+});
+export function runeDrawOrbitGlyphs(group){return ORBIT_GLYPHS[group]||[];}
+export function runeDrawAppearance(group){return MOON_ORIGIN_GROUPS.has(group)?'moon':'deck';}
 const GROUPS=Object.freeze(['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊']);
 
 /** Respect the canonical eight groups of eight, plus rune 65/66. */
@@ -27,9 +43,10 @@ export function runeDrawGroup(rune){
 export function runeDrawMotion(group,directionIndex,{width=800,height=520}={},reduced=false,runeId=null){
   const path=PATHS[group]||PATHS['特殊'];
   const direction=DIRECTIONS[directionIndex]??0;
+  const appearance=runeDrawAppearance(group);
   if(reduced){
     return {
-      name:path.name,
+      name:path.name,appearance,
       initial:{opacity:0,x:0,y:0,z:0,scale:1,rotateX:0,rotateY:180,rotateZ:direction},
       animate:{opacity:1,x:0,y:0,z:0,scale:1,rotateX:0,rotateY:180,rotateZ:direction},
       transition:{duration:.05}
@@ -37,13 +54,18 @@ export function runeDrawMotion(group,directionIndex,{width=800,height=520}={},re
   }
   const id=Number(runeId);
   const variation=Number.isInteger(id)&&id>=1&&id<=66?((id-1)%8-3.5):0;
-  const x=path.x.map((n,i)=>Math.round((n+(i===1?variation*.006:0))*width));
-  const y=path.y.map((n,i)=>Math.round((n+(i===2?variation*.005:0))*height));
+  const moon=appearance==='moon';
+  const x=path.x.map((n,i)=>Math.round((moon?([.23,.15+path.x[1]*.19,.055+path.x[2]*.17,0][i]):n)
+    *width+(i===1?variation*.006*width:0)));
+  const y=path.y.map((n,i)=>Math.round((moon?([-.23,-.15+path.y[1]*.25,-.04+path.y[2]*.24,0][i]):n)
+    *height+(i===2?variation*.005*height:0)));
+  const scale=moon?[.18,Math.max(.55,path.scale[1]*.72),path.scale[2],path.scale[3]]:path.scale;
+  const flip=moon?[180,220+path.flip[1]*.2,180+path.flip[2]*.09,path.flip[3]]:path.flip;
   const rotateZ=[...path.tilt.slice(0,-1),direction];
   return {
-    name:path.name,
-    initial:{opacity:0,x:x[0],y:y[0],z:path.z[0],scale:path.scale[0],rotateX:path.pitch[0],rotateY:path.flip[0],rotateZ:rotateZ[0]},
-    animate:{opacity:[0,1,1,1],x,y,z:path.z,scale:path.scale,rotateX:path.pitch,rotateY:path.flip,rotateZ},
+    name:path.name,appearance,
+    initial:{opacity:0,x:x[0],y:y[0],z:path.z[0],scale:scale[0],rotateX:path.pitch[0],rotateY:flip[0],rotateZ:rotateZ[0]},
+    animate:{opacity:[0,1,1,1],x,y,z:path.z,scale,rotateX:path.pitch,rotateY:flip,rotateZ},
     transition:{duration:Math.max(.75,path.duration+variation*.012),times:path.times,ease:'easeInOut'}
   };
 }

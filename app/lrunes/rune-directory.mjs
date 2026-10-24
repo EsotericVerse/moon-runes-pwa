@@ -17,6 +17,9 @@ export function groupImage(id){return GROUP_IMAGE_BY_ID[String(id).padStart(2,'0
 // list thumbnails. Rendering quality must not depend on stretched previews.
 export function groupPreviewImage(id){return groupImage(id);}
 
+// Official 月之符文 identity, not the LOC app emblem nor Rune 50 artwork.
+export const RUNE_CARD_BACK_IMAGE=LOC_ORIGIN+'/assets/site/icons/lrunes-favicon.png';
+
 export function runeName(card){return String(card?.rune_name||'').replace(/之符文$/,'').trim();}
 // Rune ID is the only canonical image identity on both Web and iOS.
 export function runeImage(card){

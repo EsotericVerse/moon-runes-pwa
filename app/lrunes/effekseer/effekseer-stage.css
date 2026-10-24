@@ -384,6 +384,69 @@
 .rune-3d-flying-rune{color:#ffe7ac;text-shadow:0 2px 12px #000,0 0 25px #ffe8ad99}
 .rune-3d-flying-rune img{filter:brightness(1.12) saturate(1.08)}
 
+
+/* The completed ceremony uses explicit, high-contrast content on its black stage. */
+.rune-3d-shell .rune-3d-stage .rune-3d-ritual-ready .rune-3d-ritual-title{
+  color:#fff3d9;text-shadow:0 2px 8px #000,0 0 17px #d7ad6680;
+  background:rgba(7,14,28,.73);border:1px solid #f0d59b55;
+  padding:8px 16px;border-radius:13px;line-height:1.55}
+.rune-3d-shell .rune-3d-stage .rune-3d-ritual-ready .rune-3d-ritual-instructions{
+  color:#e8eaf4;max-width:54ch;text-shadow:0 2px 5px #000;
+  background:rgba(7,14,28,.79);border-radius:12px;padding:8px 13px;
+  line-height:1.55}
+.rune-3d-ritual-ready .rune-3d-ritual-actions{gap:10px;max-width:min(94%,700px)}
+.rune-3d-shell .rune-3d-ritual-actions button{
+  min-height:52px;border:1px solid #e6d29b8c;color:#f8f4ec;
+  background:rgba(16,29,52,.96);text-shadow:0 1px 3px #0007}
+.rune-3d-shell .rune-3d-ritual-actions button[data-action="finish"]{
+  color:#17182a;background:#f3d184;border-color:#ffe4aa;text-shadow:none}
+.rune-3d-shell .rune-3d-ritual-actions button[data-action="restart"]{
+  color:#f1d7d1;background:rgba(23,26,43,.92);border-color:#a58b86}
+.rune-3d-shell .rune-3d-ritual-actions button:disabled{
+  color:#a6adbc;background:rgba(20,25,37,.85);border-color:#545866;
+  opacity:.67;cursor:not-allowed}
+.rune-3d-ritual-actions button:focus-visible{outline:3px solid #fff1bb;outline-offset:3px}
+/* Card backs show the dedicated LunaRunes emblem, never plain 月 text. */
+.rune-3d-draw-deck-card,.rune-3d-drawn-card-back{gap:7px}
+.rune-3d-card-back-emblem{display:block;object-fit:contain;flex:none;
+  width:clamp(52px,8vw,84px);height:clamp(52px,8vw,84px);
+  filter:drop-shadow(0 1px 11px #fce9a780)}
+.rune-3d-draw-deck-card small,.rune-3d-drawn-card-back small{
+  color:#fff4d8;font-size:clamp(.72rem,1.2vw,.93rem);letter-spacing:.14em;
+  text-shadow:0 1px 5px #000}
+.rune-3d-drawn-card[data-draw-origin="moon"] .rune-3d-drawn-card-back{display:none}
+/* Existing moon and authored nine-group Effekseer effects share the summoning stage. */
+.rune-3d-stage[data-ritual-phase="waiting"] .rune-3d-night-backdrop .rune-3d-night-moon{opacity:.52}
+.rune-3d-stage[data-ritual-phase="drawing"] .rune-3d-night-backdrop .rune-3d-night-moon{opacity:.76}
+.rune-3d-stage[data-ritual-phase="revealing"] .rune-3d-night-backdrop .rune-3d-night-moon{opacity:.18}
+.rune-3d-stage[data-ritual-phase="transfer"] .rune-3d-night-backdrop .rune-3d-night-moon{opacity:.38}
+.rune-3d-stage[data-ritual-phase="ready"] .rune-3d-night-backdrop .rune-3d-night-moon{opacity:.74}
+.rune-3d-moon-orbit{position:absolute;z-index:3;left:73%;top:22%;
+  width:clamp(180px,25vw,308px);aspect-ratio:1;
+  transform:translate(-50%,-50%);pointer-events:none;opacity:.87}
+.rune-3d-moon-orbit-track{position:absolute;inset:0;
+  animation:rune-moon-orbit 19s linear infinite}
+.rune-3d-moon-orbit-glyph{position:absolute;left:50%;top:50%;
+  color:#f6e5b7;font:600 clamp(1.1rem,2.3vw,1.8rem)/1.2 "Noto Serif TC",serif;
+  text-shadow:0 0 13px #dcb5ffb8,0 1px 5px #000;
+  transform:translate(-50%,-50%) rotate(calc(var(--orbit-index)*90deg))
+    translateY(calc(clamp(78px,12vw,144px)*-1));}
+@keyframes rune-moon-orbit{to{transform:rotate(360deg)}}
+@media(max-width:700px){
+  .rune-3d-moon-orbit{left:74%;top:23%;width:clamp(145px,40vw,210px)}
+  .rune-3d-moon-orbit-glyph{font-size:1.12rem;
+    transform:translate(-50%,-50%) rotate(calc(var(--orbit-index)*90deg))
+      translateY(calc(clamp(68px,20vw,105px)*-1))}
+  .rune-3d-ritual-ready{inset:2% 3% 35%}
+  .rune-3d-ritual-ready .rune-3d-ritual-actions{width:100%}
+  .rune-3d-shell .rune-3d-ritual-actions button{flex:1 1 calc(50% - 6px);font-size:.88rem}
+  .rune-3d-shell .rune-3d-ritual-actions button[data-action="restart"]{flex-basis:100%}
+  .rune-3d-card-back-emblem{width:54px;height:54px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rune-3d-moon-orbit-track{animation:none}
+}
+
 /* End moonlit authored fog backdrop. */
 
 .rune-3d-library .rune-3d-atlas-gallery{

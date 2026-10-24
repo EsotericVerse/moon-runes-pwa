@@ -10,8 +10,8 @@ import ScopeLink from '../modular/ScopeLink';
 import {selectRows} from '../loc/db-query.mjs';
 import {realMoonPhase} from '../loc/model/moon-phase';
 import {randomIndex,loadDrawCards,buildFixedReading} from './RuneDrawClient';
-import {runeImage,runeName} from './rune-directory.mjs';
-import {runeDrawGroup,runeDrawMotion} from './rune-draw-motion.mjs';
+import {runeImage,runeName,RUNE_CARD_BACK_IMAGE} from './rune-directory.mjs';
+import {runeDrawGroup,runeDrawMotion,runeDrawOrbitGlyphs} from './rune-draw-motion.mjs';
 import RuneCardInfo from './RuneCardInfo';
 import './skin-lab.css';
 import './effekseer/effekseer-stage.css';
@@ -222,6 +222,9 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const day=mode==='daily'?items[0]:null;
   const drawMotion=phase==='drawing'&&pending?
     runeDrawMotion(runeDrawGroup(pending.card),pending.directionIndex,drawStageSize.current,Boolean(reducedMotion),pending.card.rune_id):null;
+  const orbitGroup=summonRuneId?runeDrawGroup({rune_id:summonRuneId}):
+    items.length?runeDrawGroup(items[items.length-1].card):null;
+  const orbitGlyphs=orbitGroup?runeDrawOrbitGlyphs(orbitGroup):[];
   return <main className="loc-next-main" data-rune-3d-preview={mode}>
     <div className="loc-panel rune-skin-lab rune-3d-shell">
     {presentationSwitcher}
@@ -249,7 +252,17 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
       {!isList?<RuneMistBackdrop phase={phase} textureQuality={textureQuality} diagnoseAmbient={diagnoseAmbient}/>:null}
       {mode==='duel'&&['idle','waiting','ready'].includes(phase)?
         <div className="rune-3d-draw-deck" aria-hidden="true">
-          <div className="rune-3d-draw-deck-card"><span>月</span><small>LunaRunes</small></div>
+          <div className="rune-3d-draw-deck-card">
+            <img className="rune-3d-card-back-emblem" src={RUNE_CARD_BACK_IMAGE} alt="" draggable="false"/>
+            <small>月之符文</small>
+          </div>
+        </div>:null}
+      {mode==='duel'&&orbitGlyphs.length>0&&['waiting','drawing','ready'].includes(phase)?
+        <div className="rune-3d-moon-orbit" aria-hidden="true">
+          <div className="rune-3d-moon-orbit-track">
+            {orbitGlyphs.map((glyph,index)=><span key={index}
+              className="rune-3d-moon-orbit-glyph" style={{'--orbit-index':index}}>{glyph}</span>)}
+          </div>
         </div>:null}
       {isList?(presented?<EffekseerStage rune={presented} textureQuality={textureQuality}
         onGlyphClick={()=>choose(presented)}/>:<div className="rune-3d-awaiting">請選擇符文</div>):
@@ -261,10 +274,13 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
           </div>:null}
           {phase==='drawing'&&pending?<div className="rune-3d-card-flight-plane" aria-hidden="true">
             <motion.div key={'drawn-'+pending.birth} className="rune-3d-drawn-card"
-            data-draw-style={runeDrawGroup(pending.card)}
+            data-draw-style={runeDrawGroup(pending.card)} data-draw-origin={drawMotion.appearance}
             initial={drawMotion.initial} animate={drawMotion.animate} transition={drawMotion.transition}
             onAnimationComplete={()=>setPhase(current=>current==='drawing'?'revealing':current)}>
-            <div className="rune-3d-drawn-card-back"><span>月</span><small>LunaRunes</small></div>
+            <div className="rune-3d-drawn-card-back">
+              <img className="rune-3d-card-back-emblem" src={RUNE_CARD_BACK_IMAGE} alt="" draggable="false"/>
+              <small>月之符文</small>
+            </div>
             <div className="rune-3d-drawn-card-front">
               <img src={runeImage(pending.card)} alt=""/>
             </div>
@@ -276,7 +292,7 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
             textureQuality={textureQuality} vfxOnly onCeremonyComplete={()=>setPhase(current=>current==='revealing'?'transfer':current)}
             onGlyphClick={()=>{}}/>:null}
           {phase==='idle'?<button type="button" className="rune-3d-tap-to-draw"
-            onClick={drawOne} disabled={busy}>輕觸牌庫，召喚符文</button>:null}
+            onClick={drawOne} disabled={busy}>輕觸畫面，召喚符文</button>:null}
           {phase==='transfer'&&pending&&transferTarget?
             <motion.div className="rune-3d-flying-rune" aria-hidden="true"
               initial={{x:0,y:0,scale:1,opacity:1}}
@@ -286,22 +302,25 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
               {ceremonySubject==='card'?<img src={runeImage(pending.card)} alt=""/>:
                 <span>{runeName(pending.card)}</span>}
             </motion.div>:null}
-          {phase==='ready'&&mode==='duel'&&!finished&&items.length<11?
-            <button type="button" className="rune-3d-continue-hitarea"
-              onClick={drawOne} aria-label="點選舞台繼續抽牌" disabled={busy}/>:null}
           {phase==='ready'?<div className="rune-3d-ritual-ready" role="group"
             aria-label="本次召喚完成後的操作">
             <p className="rune-3d-ritual-title">召喚完成，{items.length} 枚符文</p>
             <p className="rune-3d-ritual-instructions">
               {mode==='daily'?'今日符文已抽取完成。每日指引已自動顯示，可隨時重新查看。':
-                finished||items.length>=11?
-                  '點選下方抽牌結果區觀看符文細節，或點選「觀看籤詩」閱讀本次指引。':
-                  '點選下方抽牌結果區觀看符文細節；輕觸舞台畫面任一空白處繼續抽牌，或點選「觀看籤詩」結束占卜並閱讀指引。'}
+                finished?'抽牌已結束，可重新查看籤詩或重新開始。':
+                items.length>=11?'已抽滿 11 枚符文，請查看籤詩或重新開始。':
+                '請選擇繼續抽牌、停止抽牌看籤詩，或重新開始；下方也能查看每枚符文的細節。'}
             </p>
             <div className="rune-3d-ritual-actions">
-              {mode!=='daily'?<button type="button" onClick={reset}>重新開始</button>:null}
-              <button type="button" onClick={()=>mode==='daily'?setResultOpen(true):finish()}>
-                {mode==='daily'?'重新查看今日指引':'觀看籤詩'}</button>
+              {mode==='duel'?<>
+                <button type="button" data-action="continue" onClick={drawOne}
+                  disabled={busy||finished||items.length>=11}>繼續抽牌</button>
+                <button type="button" data-action="finish" onClick={finish}
+                  disabled={busy}>停止抽牌看籤詩</button>
+                <button type="button" data-action="restart" onClick={reset}
+                  disabled={busy}>重新開始抽牌</button>
+              </>:<button type="button" data-action="finish"
+                onClick={()=>setResultOpen(true)}>重新查看今日指引</button>}
             </div>
           </div>:null}
           {items.length>0||phase==='transfer'?<div className="rune-3d-result-shelf"
