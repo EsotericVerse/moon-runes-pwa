@@ -412,9 +412,9 @@ function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊�
         {battleEffect?<div className="lrg-battle-effect" aria-hidden="true" key={battleEffect.key}>
           {battleEffect.kind==='rune'?
             <GameRuneEffect rune={battleEffect.rune} ceremony appearance={battleEffect.appearance}
-              cardSrc={cardSrc(battleEffect.rune)} textureQuality="hd256" quality="balanced" vfxOnly
+              cardSrc={cardSrc(battleEffect.rune)} textureQuality="original" quality="high" vfxOnly
               onCeremonyComplete={()=>setBattleEffect(current=>current?.key===battleEffect.key?null:current)}/>:
-            <GameResonanceEffect textureQuality="hd256"/>}
+            <GameResonanceEffect textureQuality="original"/>}
         </div>:null}
       </main>
     </DndContext>;

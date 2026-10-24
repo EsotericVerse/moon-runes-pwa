@@ -65,14 +65,14 @@ export default function Rune3DPreview({mode='duel',presentationSwitcher=null}){
   const [sample,setSample]=useState(null);
   const [focusedRune,setFocusedRune]=useState(null);
   const [ceremonySubject,setCeremonySubject]=useState('glyph');
-  const [textureQuality,setTextureQuality]=useState('hd256');
+  const [textureQuality,setTextureQuality]=useState('original');
   // Opt-in QA only: ?fog_preview=1 exposes native fog loading/alpha readings.
   const [diagnoseAmbient,setDiagnoseAmbient]=useState(false);
   // The licensed Effekseer smoke scene is now part of the main 3D draw stage.
   // No hidden runtime toggle: the black stage masks dark-matte sprite edges.
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
-    setTextureQuality(query.get('texture')==='original'?'original':'hd256');
+    setTextureQuality(query.get('texture')==='hd256'?'hd256':'original');
     setDiagnoseAmbient(query.get('fog_preview')==='1');
   },[]);
   const [phase,setPhase]=useState('idle'); // idle → waiting → drawing → revealing → transfer → ready

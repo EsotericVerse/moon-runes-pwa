@@ -1,0 +1,49 @@
+/** Structural regression checks; animation fidelity/density still require visual QA on real devices. */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  AUTHORED_EFFECT_FILES,CANONICAL_RUNE_ENGLISH,RUNE_EFFECT_KEYS,
+  RUNE_VFX_OVERLAYS,runeEffectFor
+} from '../app/lrunes/effekseer/rune-effect-library.mjs';
+import {EFFECT_ASSET_BLOBS} from './rune-effekseer-asset-manifest.mjs';
+
+const drawable=CANONICAL_RUNE_ENGLISH.filter(name=>name!=='Virtue');
+const pinned=new Set(EFFECT_ASSET_BLOBS.map(asset=>asset.target));
+
+test('all 66 drawable runes use different complete authored scenes',()=>{
+  assert.equal(drawable.length,66);
+  const keys=drawable.map(name=>RUNE_EFFECT_KEYS[name]);
+  assert.ok(keys.every(Boolean),'all drawable runes need an effect');
+  assert.equal(new Set(keys).size,66,'main scenes must not be recycled');
+  for(const key of keys){
+    assert.ok(AUTHORED_EFFECT_FILES[key],`missing authored file for ${key}`);
+    assert.doesNotMatch(key,/^(?:S:|SAMPLE:|B:|NS:)/,
+      `a bare shader, basic or tutorial demo is not a finished rune scene: ${key}`);
+  }
+});
+
+test('every runtime effect and overlay resolves to a pinned or bundled asset',()=>{
+  for(const name of drawable){
+    const runtime=runeEffectFor({english_name:name});
+    assert.ok(runtime?.path,`unmapped ${name}`);
+    assert.equal(runtime.path,'/vendor/effekseer/'+AUTHORED_EFFECT_FILES[RUNE_EFFECT_KEYS[name]]);
+    for(const item of [runtime,...runtime.overlays]){
+      const local=item.path.replace('/vendor/effekseer/','');
+      if(local.startsWith('Collections/')){
+        assert.ok(pinned.has(local.slice('Collections/'.length)),
+          `unavailable author asset: ${name} -> ${local}`);
+      }else{
+        assert.match(local,/^Resources\\/[^/]+\\.efkefc$/);
+      }
+    }
+  }
+  for(const name of Object.keys(RUNE_VFX_OVERLAYS)){
+    assert.ok(drawable.includes(name),`overlay on unknown rune: ${name}`);
+  }
+});
+
+test('Flame has a dedicated authored fireball layer',()=>{
+  const flame=runeEffectFor({english_name:'Flame'});
+  assert.ok(flame.overlays.some(layer=>layer.role==='flame-projectile'
+    && layer.key==='G:ef_fire01_projectile'));
+});

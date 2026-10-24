@@ -294,6 +294,11 @@ function EffekseerCanvas({effect,reduced,onReady,onPlaybackComplete,ceremony=fal
                      other.setScale(1.65,1.65,1.65);
                      other.setRotation(0,0,overlay.role==='cross-forward'?Math.PI/4:-Math.PI/4);
                      other.setAllColor(255,70,78,255);
+                   }else if(overlay.role==='flame-projectile'){
+                     // A separately authored fireball gives Flame a defined luminous core.
+                     // Keep the artist's native palette; no synthetic particle emitters.
+                     other.setScale(1.35,1.35,1.35);
+                     other.setSpeed(.9);
                    }else if(overlay.role==='jade-reflection'){
                      other.setScale(1.04,.9,1.04);
                      other.setAllColor(150,234,186,132);
