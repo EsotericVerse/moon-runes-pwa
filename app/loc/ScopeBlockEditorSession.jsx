@@ -41,7 +41,7 @@ export default function ScopeBlockEditorSession({
     const bootstrapKey=appBootstrapKey(scopeId,pageName);
     const displayKey=['scope-blocks',scopeId,pageName];
     // Wait for the protected ISR invalidation before reloading SWR readers.
-    await revalidateServerMetadata();
+    if(scopeId!=='local')await revalidateServerMetadata();
     await Promise.all([mutate(bootstrapKey),mutate(displayKey)]);
   }
   const cancel=()=>onClose();

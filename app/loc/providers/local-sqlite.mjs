@@ -157,6 +157,17 @@ CREATE TABLE IF NOT EXISTS runes_group (
   style TEXT NOT NULL,
   runeslist TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS local_blocks (
+  uid TEXT PRIMARY KEY NOT NULL,
+  page_name TEXT NOT NULL,
+  block_eyebrow TEXT,
+  block_title TEXT,
+  block_subtitle TEXT,
+  block_text TEXT,
+  block_order INTEGER NOT NULL DEFAULT 1,
+  block_entity TEXT,
+  block_image TEXT
+);
 CREATE TABLE IF NOT EXISTS local_file_meta (
   format TEXT PRIMARY KEY NOT NULL,
   version INTEGER NOT NULL
@@ -459,7 +470,7 @@ function queryBuilder(table){
 // JSON/boolean columns round-trip through TEXT/INTEGER in SQLite; decode the
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
-const JSON_COLUMNS=new Set(['sources','keyword_meta','search_aliases',
+const JSON_COLUMNS=new Set(['sources','keyword_meta','search_aliases','block_entity','block_image',
   'target_id','media_link','anchor_ids','keywords','runeslist','rune_references']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);

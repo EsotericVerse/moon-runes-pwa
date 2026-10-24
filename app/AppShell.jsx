@@ -337,7 +337,7 @@ function AppShellInner({children}){
     loadSection(activeLocale,'fields').catch(()=>{});
     return ()=>{active=false;};
   },[activeLocale]);
-  const isMyPhone=native&&normalizePath(pathname)==='/my-phone';
+  const isMyPhone=native&&['/my-phone','/my-phone/index.html'].includes(normalizePath(pathname));
   // My Phone and every /local/* route use the same on-device SQLite Scope.
   const localWorkspace=native&&(isMyPhone||scopeId==='local');
   const navScopeId=localWorkspace?'local':currentScope.featureScope||scopeId;
@@ -371,7 +371,7 @@ function AppShellInner({children}){
     ...folder,links:folder.scopes.filter(id=>!native||id!=='lrunes').map(id=>({id,label:navLabel(id)})).filter(item=>item.label)
   }));
   const openFolder=visibleFolders.find(folder=>folder.id===openFolderId)||null;
-  const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&navScopeId!=='local'&&!currentScope.aggregateChildren;
+  const editScopeAvailable=navScopeId!=='loc'&&navScopeId!=='admin'&&!currentScope.aggregateChildren;
   // A Scope homepage may live at /, /scopeid/, /scope-shell/ or /scopeid/index.html.
   const homeParts=String(pathname||'/').split('/').filter(Boolean);
   if(homeParts.at(-1)==='index.html')homeParts.pop();
@@ -380,7 +380,7 @@ function AppShellInner({children}){
   // LOC's homepage has its own Admin-only editor; individual Scopes have
   // Scope-only editors. Both entries are visible to guests until clicked.
   const showHomeEditEntry=isScopeHomepage&&Boolean(scopeId)&&
-    (scopeId==='loc'||editScopeAvailable);
+    (scopeId==='loc'||(editScopeAvailable&&(!currentScope.nativeOnly||native)));
   // Keep existing query parameters (especially dynamic scopeid) on iOS and web.
   const editTabHref=(route,key,value)=>{
     const href=navigationHref(navScopeId,route,native);

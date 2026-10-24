@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
+import {Capacitor} from '@capacitor/core';
 
 // This control is shown only at the bottom of an individual Scope homepage.
 // No identity or management query runs until the visitor selects it.
@@ -19,6 +20,12 @@ export default function ScopeHomeEditEntry(){
     setBusy(true);
     setMessage('');
     try{
+      // Native device-local edits never require a cloud login; only the
+      // local SQLite adapter may receive writes for this hidden Scope.
+      if(scopeId==='local'&&Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'){
+        editDock?.begin('local');
+        return;
+      }
       const result=await account.refresh();
       if(!result?.user){
         setMessage('請先登入，才能進入編輯模式。');

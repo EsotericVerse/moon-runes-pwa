@@ -233,7 +233,13 @@ export function selectScopeConfig(scopeId){
   if(!scope)return Promise.resolve(null);
   const existing=scopeConfigInFlight.get(scope.id);
   if(existing)return existing;
-  const request=fetch('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config')
+  // The private 'local' Scope must not try Cloudflare/API metadata first.
+  const request=scope.id==='local'
+    ?selectRows(scope.config,{
+      columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
+      filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
+    }).then(({rows})=>rows[0]||null)
+    :fetch('/api/loc/scopes/'+encodeURIComponent(scope.id)+'/config')
     .then(async response=>{
       if(!response.ok)throw new Error('Scope config failed: '+response.status);
       return response.json();
@@ -256,7 +262,7 @@ export async function selectScopeBlocks(scopeId,page='index'){
   const pageName=requested==='home'?'index':requested;
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
   let response=null;
-  try{response=await fetch('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName));}
+  if(id!=='local')try{response=await fetch('/api/loc/scopes/'+encodeURIComponent(id)+'/blocks/'+encodeURIComponent(pageName));}
   catch{/* Static/native builds use the direct public Supabase fallback below. */}
   if(response?.ok){
     try{return await response.json();}catch{/* Fall through to the direct read. */}
