@@ -24,6 +24,7 @@ export const DIMENSION_FILTERS=[
 ];
 export const DIMENSIONS=[
   {kind:'source',label:'原始作品來源'},
+  {kind:'source_rollup',label:'來源分組總覽'},
   {kind:'group',label:'系統分組來源'},
   {kind:'others_subgroup',label:'個人分組來源'},
   {kind:'total',label:'作品總量'},
@@ -33,7 +34,7 @@ export const DIMENSIONS=[
   {kind:'keyword_item',label:'關鍵詞項目'}
 ];
 export const LANE_FAMILIES=[
-  {id:'source',label:'原始作品來源',kinds:['source','group','others_subgroup','total']},
+  {id:'source',label:'原始作品來源',kinds:['source_rollup','source','group','others_subgroup','total']},
   {id:'media',label:'多媒體來源',kinds:['media_category','media']},
   {id:'keyword_group',label:'關鍵詞分組',kinds:['keyword_group']},
   {id:'keyword_item',label:'關鍵詞項目',kinds:['keyword_item']}
@@ -164,6 +165,21 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       id:'others_subgroup'+String.fromCharCode(0)+id,kind:'others_subgroup',
       name:id==='unclassified'?'Others · 未細分':'Others · '+othersActive.get(id),total
     }));
+    // A direct "原始作品來源 → 系統/個人分組來源" pair is itself a
+    // selectable measure; individual Admin/Scope group measures remain below.
+    let systemTotal=0,personalTotal=0;
+    for(const row of rows){
+      if(row.kind!=='source')continue;
+      const amount=Number(row.item_count)||0;
+      if(assignedSource(row.category,aliases,known)!=='others')systemTotal+=amount;
+      else if(resolveOthers(row.category)!=='unclassified')personalTotal+=amount;
+    }
+    const rollups=[
+      {id:'source_rollup'+String.fromCharCode(0)+'system',kind:'source_rollup',
+        name:'系統分組來源',total:systemTotal},
+      {id:'source_rollup'+String.fromCharCode(0)+'personal',kind:'source_rollup',
+        name:'個人分組來源',total:personalTotal}
+    ].filter(item=>item.total>0);
     const mediaTotals=new Map();
     for(const row of rows){
       if(row.kind!=='media')continue;
@@ -174,7 +190,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       .map(([id,total])=>({id:'media_category'+String.fromCharCode(0)+id,
         kind:'media_category',name:MEDIA_GROUP_NAMES[id],total}));
     const allowed=new Set(kindsForDimension(kindFilter));
-    return [...groups,...basic,...others,...mediaGroups,...keywordGroups,...keywordItems]
+    return [...rollups,...groups,...basic,...others,...mediaGroups,...keywordGroups,...keywordItems]
       .filter(item=>allowed.has(item.kind));
   },[rows,kindFilter,catalog.data,keywords.data,othersConfig.data]);
   const maximumLanes=Math.min(8,categoryList.length);
@@ -249,9 +265,13 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       const rawId=String(row.kind)+'\u0000'+String(row.category||'');
       const ids=[rawId];
       if(row.kind==='source'){
-        ids.push('group\u0000'+assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]));
+        const assigned=assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]);
+        ids.push('group\u0000'+assigned);
+        if(assigned!=='others')ids.push('source_rollup'+String.fromCharCode(0)+'system');
         const subgroup=resolveOthers(row.category);
         if(subgroup)ids.push('others_subgroup'+String.fromCharCode(0)+subgroup);
+        if(assigned==='others'&&subgroup&&subgroup!=='unclassified')
+          ids.push('source_rollup'+String.fromCharCode(0)+'personal');
       }else if(row.kind==='media'){
         const family=mediaTypeFamily(row.category);
         if(family)ids.push('media_category'+String.fromCharCode(0)+family);
