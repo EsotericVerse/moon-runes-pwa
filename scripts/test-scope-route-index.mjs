@@ -72,3 +72,23 @@ test('ISR CORS public origins come only from the JS route file',async()=>{
   const denied=new Request('https://isr.lo3rwang.cc/api/loc/site-bootstrap',{headers:{Origin:'https://malicious.example'}});
   assert.equal(cors.locCorsPreflight(denied).status,403);
 });
+
+test('LOC homepage uses its configured Theme instead of aggregate auto fallback',()=>{
+  const shell=read('app/AppShell.jsx');
+  assert.ok(shell.includes("(scope.id==='loc'||!scope.aggregateChildren)"),
+    'LOC is a Group but still owns its own configured Theme in loc_config');
+  assert.ok(shell.includes('const configuredDefaultThemeId=configuredTheme===SYSTEM_THEME_ID?'),
+    'System default remains independent of a concrete configured Theme');
+});
+
+test('Rune homepage exposes its authorized edit entry above the long card page',()=>{
+  const shell=read('app/AppShell.jsx');
+  const runes=read('app/lrunes/RunesClient.jsx');
+  assert.ok(runes.includes('import ScopeHomeEditEntry from'));
+  assert.ok(runes.indexOf('<ScopeHomeEditEntry/>')<runes.indexOf('<ScopeEditableBlocks'),
+    'Rune edit entry must not be hidden below the full Rune homepage');
+  assert.ok(shell.includes("showHomeEditEntry&&scopeId!=='lrunes'"),
+    'Do not duplicate the Rune edit entry in the global footer');
+  assert.ok(runes.includes('scopeId="lrunes"')&&runes.includes('page="hero"'),
+    'Editing retains the original authorized Rune hero Blocks');
+});
