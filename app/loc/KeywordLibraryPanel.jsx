@@ -62,7 +62,7 @@ function formatStaticTime(value,l,locale){
 export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const l=useFeatureCopy('keywordPanel',featureZh.keywordPanel);
   const {locale}=useUiLocale();
-  const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]}));
+  const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>({value:option.value,label:l[option.key]||featureZh.keywordPanel[option.key]}));
   const editDock=useEditDock();
   const dockActions=useRef({save:null});
   const {mutate}=useSWRConfig();
