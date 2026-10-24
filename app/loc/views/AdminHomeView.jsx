@@ -21,11 +21,11 @@ import PanelLoading from '../PanelLoading';
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'群組與人員',description:'管理群組、人員及所屬關係。'},
-  {value:'reserved',label:'保留名稱設定',description:'管理禁止作為 Scope 名稱的系統保留路徑。'},
-  {value:'themes',label:'主題與色彩',description:'調整網站主題外觀和色彩。'},
-  {value:'featureHero',label:'功能區塊設定',description:'編輯各功能頁的標題、說明與首圖。'},
-  {value:'governance',label:'治理頁編輯',description:'維護 LOC 治理頁。'},
-  {value:'system',label:'系統連線',description:'管理資料庫連線、ISR Domain 與郵件封鎖名單。'}
+  {value:'database',label:'資料庫設定',description:'資料庫連線與郵件封鎖名單。'},
+  {value:'isr',label:'ISR 設定',description:'管理 ISR 網域與手動選用的平台。'},
+  {value:'reserved',label:'保留名稱設定',description:'查看系統保留名稱並編輯備註。'},
+  {value:'featureHero',label:'功能區塊設定',description:'編輯功能頁與 LOC 治理頁區塊。'},
+  {value:'themes',label:'主題顏色設定',description:'調整網站主題和色彩。'}
 ]);
 function Login({account}){
   const UI_COPY=useUiCopy();
@@ -45,7 +45,6 @@ const IsrDomainTarget=dynamic(()=>import('./admin-panels/IsrDomainTarget'),{load
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
 const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
-const ScopeEditableBlocks=dynamic(()=>import('../ScopeEditableBlocks'),{loading:PanelLoading});
 
 export default function AdminHomeView(){
   useUiSection('admin');
@@ -56,11 +55,11 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,,hrefFor]=useManagementSection(ADMIN_OPTIONS,'registry');
+  const [section,,hrefFor]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database',governance:'featureHero'});
   const switchSection=next=>{
     if(next===section)return;
     const target=hrefFor(next);
-    if(target)editDock?.switchTo(target,{history:'push'});
+    if(target)editDock?.switchTo(target,{history:'push',scroll:false});
   };
   // The edit flag only restores UI state; it never grants access.
   // A direct Admin visit without the flag keeps the ordinary bottom nav.
@@ -82,13 +81,10 @@ export default function AdminHomeView(){
         {section==='registry'?<AdminRegistryPanel/>:null}
         {section==='reserved'?<AdminReservedScopeIds/>:null}
         {section==='themes'?<ThemeEditor/>:null}
-        {section==='system'?<><DatabaseTarget/><IsrDomainTarget/><AdminEmailBlocklist/></>:null}
+        {section==='database'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
+        {section==='isr'?<IsrDomainTarget/>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
-        {section==='governance'?<ScopeEditableBlocks key="loc-governance"
-          scopeId="loc" page="governance"
-          className="loc-grid two governance-grid governance-grid-loc"
-          headingLevel={2} allowDelete
-          authorizedByParent startInEditMode explicitEditButton/>:null}
+
       </div>
     </div>
   </FeaturePage>;
