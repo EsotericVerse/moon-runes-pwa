@@ -265,7 +265,7 @@ export function selectScopeConfig(scopeId){
       });
       return rows[0]||null;
     }));
-  scopeConfigInFlight.set(scope.id,request);
+  if(scope.id!=='local')scopeConfigInFlight.set(scope.id,request);
   return request;
 }
 
@@ -278,7 +278,7 @@ export async function selectScopeBlocks(scopeId,page='index'){
   const pageName=requested==='home'?'index':requested;
   if(!/^[a-z0-9_-]+$/.test(pageName))throw new Error('Page name 無效');
   const key=id+':'+pageName;
-  if(scopeBlocksRequests.has(key))return scopeBlocksRequests.get(key);
+  if(id!=='local'&&scopeBlocksRequests.has(key))return scopeBlocksRequests.get(key);
   const request=(async()=>{
     let response=null;
     if(id!=='local')try{
@@ -294,6 +294,6 @@ export async function selectScopeBlocks(scopeId,page='index'){
     });
     return rows||[];
   })().catch(error=>{scopeBlocksRequests.delete(key);throw error;});
-  scopeBlocksRequests.set(key,request);
+  if(id!=='local')scopeBlocksRequests.set(key,request);
   return request;
 }
