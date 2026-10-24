@@ -317,6 +317,7 @@ export default function Culture(){
     if(matched){
       appliedDateNavigationRef.current=navigationKey;
       setSelectedPeriodKey(periodKey(matched));
+      setKeywordPeriodKey(periodKey(matched));
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
@@ -1117,21 +1118,14 @@ export default function Culture(){
 
             </>:<>
               <section className='scope-card scope-culture-structure-river'>
-                <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>{UI_COPY.culture.structure}</h3>
-                <div className='scope-culture-timeline-tools'>
-                  <label><span><UiText id="uiExtra.cultureView.periodRange"/></span><select className='scope-select' value={selectedPeriodKey||periodKey(selectedWorkPeriod)} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                    <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
-                    {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
-                  </select></label>
-                </div>
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
-                  windowStart={currentStructureStart}
-                  windowEnd={currentStructureEnd}
+                  windowStart={keywordPeriodKey==='custom'&&keywordWindowValid?keywordCustomStart:currentStructureStart}
+                  windowEnd={keywordPeriodKey==='custom'&&keywordWindowValid?keywordCustomEnd:currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
                   editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
@@ -1158,9 +1152,12 @@ export default function Culture(){
                             if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
                           }
                           setKeywordPeriodKey(next);
+                          // Both timeline panels follow the same period selection.
+                          if(next==='latest')setSelectedPeriodKey(periodKey(latestPeriod)||'all');
+                          else if(next==='all')setSelectedPeriodKey('all');
+                          else if(next!=='custom')setSelectedPeriodKey(next);
                         }}>
                         <option value='latest'>最近的時期{latestPeriod?'：'+localizedLabelOf(latestPeriod,0):''}</option>
-                        <option value='current'>目前檢視時期</option>
                         <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
                         {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
                         <option value='custom'>自訂區間</option>
@@ -1316,8 +1313,7 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
+                                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
