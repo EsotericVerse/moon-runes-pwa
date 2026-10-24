@@ -18,7 +18,7 @@ import StatisticsDetails from './StatisticsDetails';
 
 const StatisticsMultiChart=dynamic(()=>import('./StatisticsMultiChart'),{loading:()=>null});
 
-export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange,rowsInWindow,facetTotals,facetTrend}){
+export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],treeRows=[],onRequestRawStyles=null,rawStyleLoading=false,rawStyleError=null,chartType='line',onChartTypeChange,range={},scopeId,foldBlank=false,zoomLevel=0,onZoomLevelChange,rowsInWindow,facetTotals,facetTrend}){
   useUiSection('uiExtra.statisticsView');
   useUiSection('uiExtra.dataErrors');
   useUiSection('uiExtra.statisticsUI');
@@ -52,7 +52,7 @@ export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],t
   const chartGroups=chartTypeGroups(supported,['line','pie','bar']);
   return <>
     {rankingType==='media_style'&&scopeId==='lo3rwang'&&classes.length?<div className="scope-stat-controls">
-      <label><span><UiText id="uiExtra.statisticsUI.mediaStyle"/></span><select className="scope-select" value={styleLevel} onChange={event=>{setStyleLevel(event.target.value);setSelectedTag('all');setRankingPage(1);}}>
+      <label><span><UiText id="uiExtra.statisticsUI.mediaStyle"/></span><select className="scope-select" value={styleLevel} onChange={event=>{const next=event.target.value;setStyleLevel(next);setSelectedTag('all');setRankingPage(1);if(next!=='tags')onRequestRawStyles?.();}}>
         <option value="tags"><UiText id="uiExtra.statisticsView.facetTags"/></option>
         <option value="class"><UiText id="uiExtra.statisticsView.facetClass"/></option>
         <option value="group"><UiText id="uiExtra.statisticsView.facetGroup"/></option>
@@ -63,6 +63,8 @@ export default function MediaFacetStatistics({rankingType,rows=[],mediaRows=[],t
         {classes.map(name=><option key={name} value={name}>{name}</option>)}
       </select></label>:null}
     </div>:null}
+    {rankingType==='media_style'&&styleLevel!=='tags'&&rawStyleLoading?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
+    {rankingType==='media_style'&&styleLevel!=='tags'&&rawStyleError?<p className="scope-status scope-error">{String(rawStyleError?.message||rawStyleError)}</p>:null}
     <div className="scope-stat-controls">
       <label><span><UiText id={rankingType==='media_style'?'uiExtra.statisticsView.selectMeta':'uiExtra.statisticsView.selectItem'}/></span>
         <select className="scope-select" value={chosen} onChange={event=>{setSelectedTag(event.target.value);setRankingPage(1);}}>
