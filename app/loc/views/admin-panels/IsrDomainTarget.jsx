@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import Select from 'react-select';
 import {dbAuthRelation} from '../../db-client.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 import {MAX_ISR_DOMAINS,normalizeIsrDomains} from '../../providers/isr-domains.mjs';
@@ -103,19 +104,25 @@ export default function IsrDomainTarget(){
     <p className="scope-status">保存 ISR 部署網站的名稱與 HTTPS 網址。選用完全手動，不會自動切換、重新部署、改動 DNS 或資料庫來源。</p>
     {!loaded?<p role="status" className="scope-status">{status||'正在載入 ISR Domain…'}</p>:<>
       <div className="scope-management-fields">
-        <label><span>手動選用的 ISR</span>
-          <select className="admin-native-select" value={selected}
-            disabled={busy} onChange={event=>{setSelected(event.target.value);setStatus('');}}>
-            {domains.map(item=><option key={item.id} value={item.id}>
-              {item.label||item.id}
-            </option>)}
-          </select>
-        </label>
+        <label htmlFor="admin-isr-domain-select"><span>手動選用的 ISR</span></label>
+        <Select
+          inputId="admin-isr-domain-select"
+          instanceId="admin-isr-domain-select"
+          className="loc-settings-select"
+          classNamePrefix="loc-settings-select"
+          unstyled
+          isSearchable={domains.length>5}
+          isClearable={false}
+          isDisabled={busy}
+          options={domains.map(item=>({value:item.id,label:item.label||item.id}))}
+          value={domains.map(item=>({value:item.id,label:item.label||item.id})).find(option=>option.value===selected)||null}
+          onChange={option=>{if(option){setSelected(option.value);setStatus('');}}}
+          aria-label="手動選用 ISR 平台"
+        />
       </div>
       <h3>已儲存的 ISR Domain（{domains.length} / {MAX_ISR_DOMAINS}）</h3>
       {domains.map(item=><div className="scope-management-fields" key={item.id}>
-        <label><span>識別 ID</span><input value={item.id} maxLength={32}
-          disabled={busy} onChange={event=>patch(item.id,'id',event.target.value)}/></label>
+        <p className="scope-status">ISR ID：{item.id}{item.id===selected?'（目前選用）':''}</p>
         <label><span>平台／名稱</span><input value={item.label} maxLength={80}
           disabled={busy} onChange={event=>patch(item.id,'label',event.target.value)}/></label>
         <label><span>ISR Domain</span><input type="url" value={item.origin} maxLength={512}
@@ -128,12 +135,9 @@ export default function IsrDomainTarget(){
       </div>)}
       <div className="scope-management-wide-field">
         <button type="button" className="loc-button" disabled={busy||domains.length>=MAX_ISR_DOMAINS} onClick={add}>新增 ISR Domain</button>
-        <button type="button" className="loc-button primary" disabled={busy||!dirty} onClick={save}>
-          {busy?'儲存中…':'儲存 ISR 設定'}
-        </button>
-        <button type="button" className="loc-button" disabled={busy||dirty} onClick={openSelected}>開啟所選 ISR 測試站</button>
+<button type="button" className="loc-button" disabled={busy||dirty} onClick={openSelected}>開啟所選 ISR 測試站</button>
       </div>
-      <p className="scope-status">這裡保存手動選用的目標；正式網站流量入口仍由 DNS／網域路由獨立控制。</p>
+      <p className="scope-status">修改後請按六大功能列既有的「儲存」。僅保存手動選用的目標；正式網站流量入口仍由 DNS／網域路由獨立控制。</p>
       {status?<p role="status" className="scope-status">{status}</p>:null}
     </>}
   </section>;
