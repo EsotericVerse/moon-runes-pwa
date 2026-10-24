@@ -76,14 +76,20 @@ test('production contract denies missing Google identity from verified user',asy
   const read=makeSessionReader(fakeAuth({...validUser(),identities:[]}));
   await assert.rejects(read(),/Google OAuth/);
 });
-test('settings account panel subscribes to verified session instead of passive cache',()=>{
+test('Settings home owns the sole OAuth login action and verifies session',()=>{
   const account=readFileSync(new URL('../app/loc/use-account.js',import.meta.url),'utf8');
   const settings=readFileSync(new URL('../app/loc/GlobalSettings.jsx',import.meta.url),'utf8');
   assert.ok(account.includes('VERIFIED_SESSION_KEY'));
   assert.ok(account.includes('sessionOnly?(enabled?VERIFIED_SESSION_KEY:SESSION_KEY)'));
-  assert.ok(settings.includes("useAccount({enabled:section==='account',sessionOnly:true})"));
+  assert.ok(settings.includes("useAccount({enabled:section==='home',sessionOnly:true})"));
   assert.ok(settings.includes('Google OAuth（已驗證）：{account.email}'));
   assert.ok(!settings.includes('account.email||account.user.email'));
+  assert.equal(settings.match(/onClick=\{login\}/g)?.length,1);
+  assert.equal(settings.match(/onClick=\{logout\}/g)?.length,1);
+  assert.ok(!settings.includes("activeSection==='account'"));
+  const editEntry=readFileSync(new URL('../app/loc/ScopeHomeEditEntry.jsx',import.meta.url),'utf8');
+  assert.ok(!editEntry.includes('section=account'));
+  assert.ok(editEntry.includes('請先登入，才能進入編輯模式。'));
 });
 
 test('pure JS permissions use only scopeid/email/role and are cleared on logout',()=>{
