@@ -167,6 +167,34 @@ test('editing invalidates one static Block cache entry without affecting other d
   await h.dispatch('fetch',req);
   assert.deepEqual(h.requests,[req.url,req.url]);
 });
+test('invalidating one Scope Block preserves other Scope caches',async()=>{
+  const h=createHarness();
+  h.setResponseHeaders({'content-type':'application/json'});
+  const first=h.req('https://loc.lo3rwang.cc/_loc/blocks/lo3rwang/index.json','');
+  const second=h.req('https://loc.lo3rwang.cc/_loc/blocks/lrunes/hero.json','');
+  await h.dispatch('fetch',first);
+  await h.dispatch('fetch',second);
+  await h.dispatch('message',{type:'LOC_BLOCKS_INVALIDATE',key:'lo3rwang:index'});
+  await h.dispatch('fetch',first);
+  await h.dispatch('fetch',second);
+  assert.deepEqual(h.requests,[first.url,second.url,first.url]);
+});
+
+test('public home and governance HTML work offline, but search navigation never caches',async()=>{
+  const h=createHarness();
+  h.setResponseHeaders({'content-type':'text/html'});
+  const home={...h.req('https://loc.lo3rwang.cc/','document'),mode:'navigate'};
+  const manage={...h.req('https://loc.lo3rwang.cc/governance/manage/','document'),mode:'navigate'};
+  const search={...h.req('https://loc.lo3rwang.cc/search/','document'),mode:'navigate'};
+  await h.dispatch('fetch',home);
+  await h.dispatch('fetch',manage);
+  assert.equal((await h.dispatch('fetch',search)).handled,false);
+  h.setOnline(false);
+  assert.ok((await h.dispatch('fetch',home)).result);
+  assert.ok((await h.dispatch('fetch',manage)).result);
+  assert.equal(h.requests.length,4);
+});
+
 test('search, numeric ISR, authenticated routes and game API are never intercepted',async()=>{
   const h=createHarness();
   for(const url of [
