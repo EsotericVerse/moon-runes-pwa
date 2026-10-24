@@ -10,9 +10,10 @@ function bucket(d,unit){
   }
   return d;
 }
-export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day',sourceCategory=''}={}){
+export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDate='',unit='day',sourceCategory='',sourceNames=null}={}){
   const start=day(startDate),end=day(endDate);
   const selectedSource=String(sourceCategory||'').trim().toLowerCase();
+  const allowedNames=Array.isArray(sourceNames)?new Set(sourceNames.map(v=>String(v||'').trim().toLowerCase())):null;
   const categories=(taxonomy.categories||[]).filter(c=>c.enabled!==false);
   const aliases=taxonomy.aliases||[];
   if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end){
@@ -37,6 +38,7 @@ export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDa
     if(record.kind!=='source')continue;
     const category=assignedSource(record.category,aliases,categories);
     if(selectedSource&&category!==selectedSource)continue;
+    if(allowedNames&&!allowedNames.has(String(record.category||'').trim().toLowerCase()))continue;
     if(selectedSource)item.total+=count;
     const key='category_'+category;
     item[key]=(item[key]||0)+count;
