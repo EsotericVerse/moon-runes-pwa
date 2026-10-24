@@ -164,6 +164,41 @@ test('keyword charts share one canvas and intersections offer at most eight lane
 });
 
 
+test('keyword combined ranking follows actual Class membership and keeps pagination',()=>{
+  const source=readFileSync(new URL('../app/modular/modules/statistics/StatisticsMultiChart.jsx',import.meta.url),'utf8');
+  const start=source.indexOf('  const classByGroup=new Map(');
+  const end=source.indexOf('  const trend=keywordGroupTrend(',start);
+  assert.ok(start>0&&end>start,'grouped ranking model must exist');
+  const model=new Function('meta','groupCatalog','classRows','groupRows','shown','page',
+    'standalonePageSize','combinedPageSize','groupLabel','t','color','classLabel',
+    source.slice(start,end)+
+    'return {pages,visibleCombined,visibleGroupRows,combinedDistribution};');
+  const meta={classes:{'7':'秩序','2':'連結'}};
+  const groupCatalog={data:Array.from({length:12},(_,i)=>({
+    item_no:i+1,class_group:i<8?'秩序':'連結',class_enable:true
+  }))};
+  const classRows=[
+    {class_id:7,group:'秩序',document_count:20},
+    {class_id:2,group:'連結',document_count:10}
+  ];
+  const groupRows=Array.from({length:12},(_,i)=>({
+    rune_id:i+1,label:'符文'+(i+1),count:100-i,document_count:50-i
+  }));
+  const select=(shown,page)=>model(meta,groupCatalog,classRows,groupRows,shown,page,8,10,
+    label=>label,value=>value,index=>'color'+index,label=>label);
+  const first=select('both',1),second=select('both',2);
+  assert.equal(first.visibleCombined.length,10);
+  assert.equal(second.visibleCombined.length,2);
+  assert.equal(first.visibleCombined[0].classification.class_id,7);
+  assert.equal(first.visibleCombined[8].classification.class_id,2);
+  assert.match(first.combinedDistribution[0].name,/Class 7/);
+  assert.match(second.combinedDistribution[0].name,/Class 2/);
+  assert.equal([...first.visibleCombined,...second.visibleCombined].length,12);
+  assert.equal(select('item',1).visibleGroupRows.length,8);
+  assert.equal(select('item',2).visibleGroupRows.length,4);
+});
+
+
 // Manual reset must not send tens of thousands of classified rows through a
 // single UPDATE. Exercise the real database client with the existing RPC seam.
 test('keyword reset uses paged authorized writes before clearing summary',async()=>{
