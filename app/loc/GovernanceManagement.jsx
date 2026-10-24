@@ -42,7 +42,7 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
   </FeaturePage>;
-  if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><ScopeLink className="loc-button primary" href="/local/settings/?section=account">請先登入</ScopeLink></section></FeaturePage>;
+  if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>請先至設定首頁登入。</p></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有治理管理權限。</p></section></FeaturePage>;
   if(isLoc)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card">
