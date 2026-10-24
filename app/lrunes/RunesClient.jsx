@@ -8,7 +8,6 @@ import RuneIntroSection from './RuneIntroSection';
 import {HomeBlock} from '../loc/home-block-model';
 import {resolveHomeImage,RunesHomeBlockDisplay,locHomeBlockClass,homeBlockMediaStyle} from '../loc/LocHomeBlockDisplay';
 import ScopeEditableBlocks from '../loc/ScopeEditableBlocks';
-import ScopeHomeEditEntry from '../loc/ScopeHomeEditEntry';
 
 const runeHref=(path,native)=>navigationHref('lrunes',path,native);
 
@@ -62,8 +61,6 @@ export default function RunesClient(){
   // Only a signed-in state is needed for the daily log navigation.
   const account=usePassiveSessionAccount();
   return <main className="loc-next-main"><section className="loc-view">
-    {/* Keep the edit entry visible beside the Rune homepage, not below its long content. */}
-    <ScopeHomeEditEntry/>
     <ScopeEditableBlocks
       scopeId="lrunes"
       page="hero"
