@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
+import Select from 'react-select';
 import UiText from '../../../i18n/UiText';
 import FieldText from '../../../i18n/FieldText';
 import {registerDefaultSection} from '../../../i18n/ui-copy';
@@ -137,9 +138,22 @@ export default function DatabaseTarget(){
     <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援：{STATIC_ROUTING.backupId||'停用'}</p>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
-      <label><span><UiText id="uiExtra.adminView.savedDatabases"/></span><select className="admin-native-select" value={selectedId} onChange={event=>pick(event.target.value)}>
-        {rows.map(item=><option key={item.target_id} value={item.target_id}>{item.label||item.target_id}</option>)}
-      </select></label>
+      <div>
+        <label htmlFor="admin-database-target-select"><UiText id="uiExtra.adminView.savedDatabases"/></label>
+        <Select
+          inputId="admin-database-target-select"
+          instanceId="admin-database-target-select"
+          unstyled
+          className="loc-settings-select"
+          classNamePrefix="loc-settings-select"
+          isSearchable={rows.length>5}
+          isClearable={false}
+          isDisabled={saving}
+          options={rows.map(item=>({value:item.target_id,label:item.label||item.target_id}))}
+          value={rows.map(item=>({value:item.target_id,label:item.label||item.target_id})).find(option=>option.value===selectedId)||null}
+          onChange={option=>{if(option)pick(option.value);}}
+        />
+      </div>
       <button type="button" className="loc-button" onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
     </div>
     {row?<div className="scope-management-fields">
@@ -159,12 +173,11 @@ export default function DatabaseTarget(){
         placeholder={row.provider==='supabase'?'Project ID 或 https://xxx.supabase.co':row.provider==='neon'?'Neon DB Endpoint 或 Data API URL':'db.example.com:5432'}/></label>
       <label><span><UiText id="uiExtra.adminView.regionArea"/></span><input value={row.region||''} onChange={event=>patch('region',event.target.value)} placeholder="例如 ap-southeast-1、eastus"/></label>
       <div className="scope-management-wide-field">
-        <button type="button" className="loc-button primary" onClick={()=>save()} disabled={saving}><FieldText text={saving?'儲存中…':'儲存設定'}/></button>
-
         <button type="button" className="loc-button" onClick={remove} disabled={saving||protectedTarget}
           title={protectedTarget?'主要或備援資料庫使用中，不可刪除':undefined}><UiText id="uiExtra.adminView.delete"/></button>
       </div>
     </div>:null}
+    <p className="scope-status">修改資料庫設定後，使用六大功能列既有的「儲存」。</p>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
