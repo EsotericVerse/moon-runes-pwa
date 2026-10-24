@@ -117,8 +117,8 @@ test('author keyword source filters the main chart without changing all-source t
 
 test('author statistics wires selected keyword source to chart cache and filtered details',()=>{
   const code=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
-  assert.match(code,/const activeKeywordSource=styleFilter==='rune66'\\?keywordSource:''/);
-  assert.match(code,/queryRange\\.bucket,activeKeywordSource,sourceRows\\.dataUpdatedAt/);
-  assert.match(code,/unit:queryRange\\.bucket,sourceCategory:activeKeywordSource/);
-  assert.match(code,/filteredSource=\\{Boolean\\(activeKeywordSource\\)\\}/);
+  assert.match(code,/const activeKeywordSource=styleFilter==='rune66'\?keywordSource:''/);
+  assert.match(code,/queryRange\.bucket,activeKeywordSource,sourceRows\.dataUpdatedAt/);
+  assert.match(code,/unit:queryRange\.bucket,sourceCategory:activeKeywordSource/);
+  assert.match(code,/filteredSource=\{Boolean\(activeKeywordSource\)\}/);
 });
