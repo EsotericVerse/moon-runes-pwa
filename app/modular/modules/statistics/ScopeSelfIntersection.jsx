@@ -196,8 +196,9 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
 
   return <section className="scope-stat-section scope-self-intersection" aria-label={translateUiField(locale,'作品自交互統計')}>
     <h3><FieldText text="作品自交互統計"/></h3>
-      {query.isPending?<p className="scope-status">{l.readingSources}</p>:null}
+      {query.isPending||keywords.isPending?<p className="scope-status">{l.readingSources}</p>:null}
       {query.error||catalog.error?<p className="scope-status scope-error">{String(query.error?.message||catalog.error?.message||l.readFailed)}</p>:null}
+      {keywords.error?<p className="scope-status scope-error">關鍵詞分佈載入失敗：{String(keywords.error?.message||keywords.error)}</p>:null}
       {!query.isPending&&!catalog.isPending&&!query.error&&!catalog.error?<div className="scope-self-intersection-content">
         <div className="scope-stat-controls">
           <label><span><FieldText text="交互組數"/></span>
@@ -211,17 +212,6 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
               {DIMENSIONS.map(item=><option key={item.kind} value={item.kind}>{translateUiField(locale,item.label)}</option>)}
             </select>
           </label>
-          <label><span><FieldText text="圖表"/></span>
-            <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
-              {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
-  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
-</optgroup>:null}
-{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
-  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
-</optgroup>:null}{!availableCharts.length?<option value="line"><FieldText text="尚無可用圖形"/></option>:null}
-            </select>
-          </label>
-          <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>
         </div>
         <div className="scope-stat-controls">
           {Array.from({length:numberOfLanes},(_,index)=><label key={index}>
@@ -246,18 +236,34 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             </select>
           </label>)}
         </div>
-        {enough?<div>
+        <div className="scope-stat-controls">
+          <label><span><FieldText text="圖表"/></span>
+            <select className="scope-select" value={chartType} onChange={e=>setChartType(e.target.value)}>
+              {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
+  {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}
+{chartGroups.advanced.length?<optgroup label={t('uiExtra.statisticsView.chartAdvanced')}>
+  {chartGroups.advanced.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
+</optgroup>:null}{!availableCharts.length?<option value="line"><FieldText text="尚無可用圖形"/></option>:null}
+            </select>
+          </label>
+          <label className="scope-setting-toggle"><input type="checkbox" checked={foldBlank} onChange={e=>setFoldBlank(e.target.checked)}/> {l.foldEmptyTime}</label>
+        </div>
+        {selectedKeywordItems&&keywordItems.isPending?<p className="scope-status" role="status">正在讀取關鍵詞項目的每日統計…</p>:null}
+        {selectedKeywordItems&&keywordItems.error?<p role="alert" className="scope-status scope-error">{String(keywordItems.error?.message||keywordItems.error)}</p>:null}
+        {enough&&(!selectedKeywordItems||keywordItems.isSuccess)?<div>
           <StatisticsChartFrame level={zoomLevel} onChange={onZoomLevelChange} range={range} idPrefix="scope-self-stat">
             <StatisticsMultiChart type={shownChartType} rows={calculated.chart} series={series}
               distribution={calculated.totals} foldBlank={foldBlank} height={410}/>
           </StatisticsChartFrame>
+          <p className="scope-status">交互以「同日活躍」計算；關鍵詞群組與項目統一使用作品篇數，同日出現不代表同篇文章同時命中。</p>
           <StatisticsDetails>{()=><>
           <div className="scope-ranking">
             <div><strong>{l.activeDays}</strong><span>{calculated.days.toLocaleString(locale)}{l.dayUnit}</span></div>
             {calculated.totals.map(item=><div key={item.name}><strong>{item.name}</strong><span>{item.value.toLocaleString(locale)}{l.recordUnit}</span></div>)}
           </div>
           </>}</StatisticsDetails>
-        </div>:<p className="scope-status">{l.notEnoughSources.replace('{count}',numberOfLanes)}</p>}
+        </div>:!enough?<p className="scope-status">{l.notEnoughSources.replace('{count}',numberOfLanes)}</p>:null}
       </div>:null}
   </section>;
 }
