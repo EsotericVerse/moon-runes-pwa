@@ -602,7 +602,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         role="region" aria-labelledby={'keyword-workspace-sections-option-'+workspace}>
 
     {workspace==='analysis'?<section className="loc-card scope-feature-card">
-       <h2>{l.analysisSettings}</h2>
+       <h2>{compactKeywordTitle(l.basicSettings)}</h2>
       <div className="scope-management-fields">
         <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>{
           const nextClassId=event.target.value;

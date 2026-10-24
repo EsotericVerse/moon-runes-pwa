@@ -35,7 +35,7 @@ export default function LocManagementWorkspace({featureId,navId,item,children}){
   const panelId=navId+'-panel';
   return <FeaturePage featureId={featureId}>
     <div className="management-workspace">
-      <ManagementSectionNav id={navId} title="管理項目" panelId={panelId}
+      <ManagementSectionNav id={navId} title={item.label} panelId={panelId}
         items={[item]} value={item.value} onChange={()=>{}}/>
       <div className="management-workspace-panel" id={panelId} role="region"
         aria-labelledby={navId+'-option-'+item.value}>

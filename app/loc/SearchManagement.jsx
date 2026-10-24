@@ -19,10 +19,10 @@ const ManagementMediaWorkspace=dynamic(()=>import('./ManagementMediaWorkspace'),
 const ManagementContentTarget=dynamic(()=>import('./ManagementContentTarget'),{loading:()=>null});
 
 const SECTIONS=Object.freeze([
-  {value:'search',label:'文章管理搜尋',shortLabel:'搜尋'},
-  {value:'publish',label:'發表文章',shortLabel:'文章'},
-  {value:'media',label:'發表多媒體',shortLabel:'媒體'},
-  {value:'suggestions',label:'編輯建議搜尋',shortLabel:'建議'}
+  {value:'search',label:'文章管理搜尋',shortLabel:'文章搜尋'},
+  {value:'publish',label:'發表文章',shortLabel:'發表文章'},
+  {value:'media',label:'發表多媒體',shortLabel:'發表媒體'},
+  {value:'suggestions',label:'編輯建議搜尋',shortLabel:'建議搜尋'}
 ]);
 
 export default function SearchManagement(){

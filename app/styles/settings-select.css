@@ -51,15 +51,8 @@
 .management-section-nav__label{font-size:.96rem;font-weight:700;line-height:1.35;}
 .management-section-nav__description{color:var(--loc-muted);font-size:.78rem;line-height:1.45;}
 .management-workspace-panel{display:grid;align-content:start;gap:1rem;}
-/* Time editing is a true two-card workspace: left navigator, right river + form. */
-.scope-time-edit-workspace>.management-workspace-panel{
-  min-width:0;
-  padding:clamp(.75rem,1.65vw,1.15rem);
-  border:1px solid var(--loc-ui-hairline,var(--loc-line));
-  border-radius:var(--loc-ui-radius-lg,18px);
-  background:var(--loc-ui-panel,var(--loc-panel));
-  gap:.75rem;
-}
+/* Time editing keeps its river/editor spacing within the shared management card. */
+.scope-time-edit-workspace>.management-workspace-panel{gap:.75rem;}
 .scope-time-edit-workspace .scope-culture-timeline-tools{margin:0}
 .scope-time-edit-workspace .scope-culture-time-input-area{margin-top:0}
 .scope-time-edit-workspace .scope-culture-inline-editor{
@@ -342,11 +335,10 @@
   min-width:0;
   max-width:100%;
   margin:0;
-  padding:0;
-  border:0;
-  border-bottom:1px solid var(--loc-ui-hairline,var(--loc-line));
-  border-radius:0;
-  background:transparent;
+  padding:clamp(.6rem,1.5vw,.9rem);
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg,18px);
+  background:var(--loc-ui-panel,var(--loc-panel));
 }
 .management-workspace:not(.lrg-home-workspace)>.management-section-nav .management-section-nav__title{
   position:absolute;
@@ -416,10 +408,17 @@
   line-height:1.35;
   font-weight:700;
 }
+/* All management content gets the same backing panel, including editors
+   whose individual sections are not .loc-card elements. */
 .management-workspace:not(.lrg-home-workspace)>.management-workspace-panel{
   width:100%;
   min-width:0;
   max-width:100%;
+  padding:clamp(.75rem,1.65vw,1.15rem);
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-lg,18px);
+  background:var(--loc-ui-panel,var(--loc-panel));
+  gap:clamp(.75rem,1.25vw,1rem);
 }
 @media (max-width:540px){
   .management-workspace:not(.lrg-home-workspace)>.management-section-nav .management-section-nav__item{
