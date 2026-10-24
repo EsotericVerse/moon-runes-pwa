@@ -1174,8 +1174,8 @@ export default function Culture(){
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
-                  windowStart={keywordPeriodKey==='custom'&&keywordWindowValid?keywordCustomStart:currentStructureStart}
-                  windowEnd={keywordPeriodKey==='custom'&&keywordWindowValid?keywordCustomEnd:currentStructureEnd}
+                  windowStart={(keywordPeriodKey==='custom'||keywordPeriodKey.startsWith('event:'))&&keywordWindowValid?keywordWindowStart:currentStructureStart}
+                  windowEnd={(keywordPeriodKey==='custom'||keywordPeriodKey.startsWith('event:'))&&keywordWindowValid?keywordWindowEnd:currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
                   editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
@@ -1187,82 +1187,55 @@ export default function Culture(){
               </section>
 
               {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
-                <div className='scope-stat-controls'>
-                  {keywordOptionsScope===scopeId&&keywordClassQuery.error?<span className='scope-status scope-error' role='status'>
-                    關鍵詞組讀取失敗：{featureDataErrorMessage(keywordClassQuery.error,UI_COPY)}
-                  </span>:null}
-                  <>
-                    <label className='scope-culture-period-select'>
-                      <span>時期</span>
-                      <select className='scope-select' aria-label='時期'
-                        value={keywordPeriodKey} onChange={event=>{
+                <div className='scope-culture-river-toolbar'>
+                  <h3>{UI_COPY.culture.classificationRiver}｜{classificationPeriodLabel}</h3>
+                  <div className='scope-culture-river-selectors'>
+                    <label><span>{l.periodLabel}</span>
+                      <select className='scope-select' aria-label={l.periodLabel} value={keywordPeriodKey}
+                        onChange={event=>{
                           const next=event.target.value;
                           if(next==='custom'){
                             if(!keywordCustomStart)setKeywordCustomStart(keywordWindowStart);
                             if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
                           }
                           setKeywordPeriodKey(next);
-                          // Both timeline panels follow the same period selection.
                           if(next==='latest')setSelectedPeriodKey(periodKey(latestPeriod)||'all');
-                          else if(next==='all')setSelectedPeriodKey('all');
+                          else if(next==='all'||next.startsWith('event:'))setSelectedPeriodKey('all');
                           else if(next!=='custom')setSelectedPeriodKey(next);
                         }}>
-                        <option value='latest'>最近的時期{latestPeriod?'：'+localizedLabelOf(latestPeriod,0):''}</option>
-                        <option value='all'><UiText id="uiExtra.cultureView.allPeriods"/></option>
-                        {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
-                        <option value='custom'>自訂區間</option>
+                        <option value='latest'>{l.recentPeriod}</option>
+                        <option value='all'>{l.allPeriods}</option>
+                        <optgroup label={l.period}>
+                          {primaryPeriods.map(period=><option key={periodKey(period)} value={periodKey(period)}>{localizedLabelOf(period,0)}</option>)}
+                        </optgroup>
+                        {cultureEventOptions.length?<optgroup label={l.eventOption}>
+                          {cultureEventOptions.map(event=><option key={event.id||event.entry_id||event.record_id}
+                            value={'event:'+String(event.id||event.entry_id||event.record_id)}>{localizedLabelOf(event,0)}</option>)}
+                        </optgroup>:null}
+                        <option value='custom'>{l.customPeriod}</option>
+                      </select>
+                    </label>
+                    <label><span>{l.styleLabel}</span>
+                      <select className='scope-select' aria-label={l.styleLabel} value={styleFilter}
+                        onFocus={()=>setKeywordOptionsScope(scopeId)}
+                        onPointerDown={()=>setKeywordOptionsScope(scopeId)}
+                        onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
+                        <option value='none'>{l.noStyle}</option>
+                        <option value='rune66' disabled={!keywordClassQuery.data}>
+                          {keywordClassQuery.data?keywordClassQuery.data:l.keywordStyle}
+                        </option>
                       </select>
                     </label>
                     {keywordPeriodKey==='custom'?<>
-                      <label><span>起始日期</span>
-                        <input className='scope-select' aria-label='時間區間起始日期' type='date'
-                          value={keywordCustomStart} max={keywordCustomEnd||undefined}
-                          onChange={event=>setKeywordCustomStart(event.target.value)}/>
-                      </label>
-                      <label><span>結束日期</span>
-                        <input className='scope-select' aria-label='時間區間結束日期' type='date'
-                          value={keywordCustomEnd} min={keywordCustomStart||undefined}
-                          onChange={event=>setKeywordCustomEnd(event.target.value)}/>
-                      </label>
+                      <label><span>{l.period}</span><input className='scope-select' aria-label={l.customPeriod} type='date'
+                        value={keywordCustomStart} max={keywordCustomEnd||undefined}
+                        onChange={event=>setKeywordCustomStart(event.target.value)}/></label>
+                      <label><span>～</span><input className='scope-select' aria-label={l.customPeriod} type='date'
+                        value={keywordCustomEnd} min={keywordCustomStart||undefined}
+                        onChange={event=>setKeywordCustomEnd(event.target.value)}/></label>
                     </>:null}
-                  </>
-                  <label className='scope-culture-period-select'>
-                    <span>來源</span>
-                    <select className='scope-select' aria-label='來源' value={keywordDrillSource}
-                      disabled={sourceSnapshotQuery.isPending||Boolean(sourceSnapshotQuery.error)}
-                      onChange={event=>{
-                        setKeywordDrillSource(event.target.value);
-                        setSelectedCategory('');
-                      }}>
-                      <option value=''>全部來源</option>
-                      {sourceOptionGroups.map(group=><optgroup key={group.label} label={group.label}>
-                        {group.items.map(source=><option key={source.category_key} value={source.source_name}>
-                          {source.display_label}
-                        </option>)}
-                      </optgroup>)}
-                    </select>
-                  </label>
-                  {!isAggregateScope&&!isLrunesDaily&&!isLocItemView?<label className='scope-culture-period-select'>
-                    <span><UiText id="uiExtra.cultureView.style"/></span>
-                    <select className='scope-select' value={styleFilter}
-                      onFocus={()=>setKeywordOptionsScope(scopeId)}
-                      onPointerDown={()=>setKeywordOptionsScope(scopeId)}
-                      onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
-                      <option value='none'><UiText id="uiExtra.cultureView.noFilter"/></option>
-                      <option value='rune66' disabled={!keywordClassQuery.data}>{keywordOptionsScope===scopeId?keywordClassLabel:'關鍵詞組（點選載入）'}</option>
-                    </select>
-                  </label>:null}
-                  {styleFilter==='rune66'&&Boolean(styleQuery.data?.keywordMeta?.classes)?<label className='scope-culture-period-select'>
-                    <span>風格群組</span>
-                    <select className='scope-select' aria-label='風格群組' value={keywordDrillGroup}
-                      onChange={event=>setKeywordDrillGroup(event.target.value)}>
-                      <option value=''>全部群組</option>
-                      {keywordGroupOptions.map(group=><option key={group.id} value={group.id}>
-                        {[String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'').trim(),group.label,'群組'].filter(Boolean).join(' ')}
-                      </option>)}
-                    </select>
-                  </label>:null}
-                  {riverRangeLoading?<span className='scope-status' role='status' aria-live='polite'>Loading...</span>:null}
+                  </div>
+                  {riverRangeLoading?<span className='scope-status' role='status'>{UI_COPY.common.loading}</span>:null}
                 </div>
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
@@ -1304,7 +1277,6 @@ export default function Culture(){
                     &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
-                <h3>{UI_COPY.culture.classificationRiver}｜{classificationPeriodLabel}</h3>
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
@@ -1335,8 +1307,20 @@ export default function Culture(){
                 </div>:null}
                 {classificationWindowValid?<div className='scope-culture-double-river'>
                   <CultureTimeline
-                    items={dualRiverItems}
-                    extraGroups={dualRiverGroups}
+                    items={cultureRiver.items}
+                    extraGroups={cultureRiver.groups}
+                    onGroupToggle={id=>setOpenCultureRoots(current=>{
+                      const key=id.replace('dual:root:','');
+                      return current.includes(key)?current.filter(value=>value!==key):[...current,key];
+                    })}
+                    onGroupSelect={id=>{
+                      const key=id.replace('dual:child:','');
+                      setSelectedRiverGroup(current=>current===key?'':key);
+                      setSelectedCategory('');
+                    }}
+                    anchorInsight={anchorInsight}
+                    anchorLabels={{date:l.candidateDate,before:l.candidateBefore,after:l.candidateAfter,reason:l.candidateReason,close:l.candidateClose}}
+                    onAnchorClose={()=>setFocusedAnchorDate('')}
                     heightVariant='double'
                     labelOf={classificationRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
@@ -1346,7 +1330,9 @@ export default function Culture(){
                     hiddenDates={riverAnalysis.hiddenDates}
                     onSelect={item=>{
                       if(item?.entryType==='virtual_anchor'){
-                        toggleVirtualAnchor(String(item?.start||'').slice(0,10));
+                        const date=String(item?.start||'').slice(0,10);
+                        setFocusedAnchorDate(date);
+                        toggleVirtualAnchor(date);
                         return;
                       }
                       if(item?.entryType==='keyword_density'){
@@ -1354,10 +1340,16 @@ export default function Culture(){
                         if(key&&!keywordDrillGroup)setKeywordDrillGroup(key);
                         return;
                       }
+                      if(item?.entryType==='source_group'){
+                        setSelectedRiverGroup(String(item.raw?.source_group_code||''));
+                        setSelectedCategory('');
+                        return;
+                      }
                       if(item?.entryType!=='source')return;
                       const term=String(item?.raw?.category||'').trim();
                       const key='source:'+term;
                       if(term&&categoryGroups.some(group=>group.category_key===key)){
+                        setSelectedRiverGroup('');
                         setSelectedCategory(key);
                       }
                     }}
