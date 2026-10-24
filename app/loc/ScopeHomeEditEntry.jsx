@@ -5,7 +5,6 @@ import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
-import ScopeLink from '../modular/ScopeLink';
 
 // This control is shown only at the bottom of an individual Scope homepage.
 // No identity or management query runs until the visitor selects it.
@@ -60,6 +59,5 @@ export default function ScopeHomeEditEntry(){
     <button type="button" className="loc-button" disabled={busy}
       onClick={enter}>{busy?'正在確認權限…':'進入編輯模式'}</button>
     {message?<p className="scope-status" role="status">{message}</p>:null}
-    {message.includes('請先登入')?<ScopeLink className="loc-button primary" href="/local/settings/?section=account">前往登入</ScopeLink>:null}
   </div>;
 }
