@@ -216,8 +216,8 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   const globalCount=Math.max(0,Number(data.keywordDocumentCount||0));
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
   const classRows=[...(data.groupTotals||[])]
-    .filter(row=>Number(row.document_count||0)>0)
-    .sort((a,b)=>Number(a.class_id)-Number(b.class_id));
+    .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)
+      ||Number(a.class_id)-Number(b.class_id));
   const groupRows=[...(data.runeRanking||[])]
     .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
@@ -272,7 +272,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   const offset=(activePage-1)*pageSize;
   const visibleGroupRows=groupRows.slice(offset,offset+pageSize);
   const visibleCombined=allRanked.slice(offset,offset+combinedPageSize);
-  const groupDistribution=classRows.map(row=>({
+  const groupDistribution=classRows.filter(row=>Number(row.document_count||0)>0).map(row=>({
     key:String(row.class_id),name:classLabel(row.group,t),value:Number(row.document_count)||0
   }));
   const itemDistribution=visibleGroupRows.map(row=>({
@@ -280,7 +280,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   }));
   const combinedDistribution=[];
   let lastGroupId=null;
-  for(const [index,item] of visibleCombined.entries()){
+  for(const item of visibleCombined){
     const group=item.classification;
     const groupId=group?String(group.class_id):'unassigned';
     if(lastGroupId!==groupId){
@@ -294,7 +294,8 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     }
     combinedDistribution.push({
       key:'item:'+item.rune_id,
-      name:'　↳ '+groupLabel(item.label,t),
+      name:(group&&Number(group.document_count||0)<=0?
+        'Class '+group.class_id+'｜':'　↳ ')+groupLabel(item.label,t),
       value:Number(item.document_count)||0,
       fill:color(combinedDistribution.length)
     });
@@ -336,10 +337,11 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     </div>
     {shown==='both'&&groupCatalog.isPending?<p className="scope-status" role="status">正在載入關鍵詞項目的 Class 歸屬…</p>:null}
     {shown==='both'&&groupCatalog.error?<p className="scope-status scope-error" role="alert">群組對應讀取失敗：{String(groupCatalog.error?.message||groupCatalog.error)}</p>:null}
-    {distribution.length&&(shown!=='both'||groupCatalog.isSuccess)?<StatisticsMultiChart type={actualChart}
-      rows={trendRows} series={series} distribution={distribution}
-      barLayout="vertical" height={Math.max(340,Math.min(24,distribution.length)*36+85)}/>:
-      <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
+    {shown==='both'&&!groupCatalog.isSuccess?null:
+      distribution.length?<StatisticsMultiChart type={actualChart}
+        rows={trendRows} series={series} distribution={distribution}
+        barLayout="vertical" height={Math.max(340,Math.min(24,distribution.length)*36+85)}/>:
+        <p className="scope-status">{t('uiExtra.statisticsView.noVisual')}</p>}
     {shown==='both'?<p className="scope-status" role="note">
       依 Class 分組，各組內依關鍵詞命中排行；每頁最多 10 個項目。父群組與子項目皆以涉及作品篇數呈現，不可相加視為不同作品總數。
     </p>:null}
@@ -348,7 +350,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
       <span className="scope-status" aria-live="polite"><UiText id="uiExtra.statisticsView.pageTotal" params={{page:activePage,pages,total:totalItems.toLocaleString()}}/></span>
       <button type="button" className="loc-button" disabled={activePage===pages} onClick={()=>setPage(activePage+1)}><UiText id="uiExtra.statisticsView.next"/></button>
     </nav>:null}
-    {renderGroup?<div className="scope-stat-section">
+    {shown==='group'?<div className="scope-stat-section">
       <h4><UiText id="uiExtra.statisticsView.classRuneTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking"><div><strong>{setLabel}</strong><span>{t('uiExtra.statisticsView.classifiedCount',{total:Number(data.documentCount||0).toLocaleString(),classified:classifiedTotal.toLocaleString(),unclassified:Number(data.unclassifiedCount||0).toLocaleString()})}</span></div></div>
@@ -359,7 +361,18 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
         </div>
       </>}</StatisticsDetails>
     </div>:null}
-    {renderItems?<div className="scope-stat-section">
+    {shown==='both'&&groupCatalog.isSuccess?<StatisticsDetails>{()=><div className="scope-ranking">
+      {visibleCombined.map((item,index)=>{
+        const group=item.classification;
+        const previous=visibleCombined[index-1]?.classification;
+        const isStart=index===0||String(group?.class_id||'')!==String(previous?.class_id||'');
+        return <div key={'keyword-detail:'+item.rune_id}>
+          {isStart?<strong>{group?'Class '+group.class_id+'｜'+classLabel(group.group,t):'未歸類'}</strong>:null}
+          <span>　↳ {groupLabel(item.label,t)} · {Number(item.count||0).toLocaleString()} 次</span>
+        </div>;
+      })}
+    </div>}</StatisticsDetails>:null}
+    {shown==='item'?<div className="scope-stat-section">
       <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking">
