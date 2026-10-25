@@ -60,7 +60,7 @@ async function emptyIsrHarness({registered=true}={}){
   const route=read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js')
     .replace(/^import .+;\s*$/gm,'')
     .replace(/^export (const|async function|function) /gm,'$1 ');
-  vm.runInContext(route+'\\nglobalThis.__emptyScopeGet=GET;',context);
+  vm.runInContext(route+'\nglobalThis.__emptyScopeGet=GET;',context);
   return {
     tableCalls,rpcCalls,
     get:async(kind,query='')=>{
