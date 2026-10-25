@@ -146,6 +146,10 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
     scopeId=>normalizeScopeId(scopeId)==='local'||Boolean(state.authorizer?.canManageScopeSync(scopeId)),
     [state.authorizer]
   );
+  const canManageGroupSync=useCallback(
+    groupId=>Boolean(state.authorizer?.canManageGroupSync(groupId)),
+    [state.authorizer]
+  );
   const canManageGlobalSync=useCallback(
     ()=>Boolean(state.authorizer?.canManageGlobalSync()),
     [state.authorizer]
@@ -159,7 +163,7 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
 
   return {
     ...state,refresh,signIn,signOut,
-    canManageScopeSync,canManageGlobalSync,scopeDataFor
+    canManageScopeSync,canManageGroupSync,canManageGlobalSync,scopeDataFor
   };
 }
 
