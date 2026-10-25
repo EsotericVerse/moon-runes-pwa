@@ -924,3 +924,35 @@
 .scope-edit-switch-actions{display:flex;gap:.6rem;flex-wrap:wrap}
 .scope-edit-switch-actions>button{flex:1 1 8rem;min-height:2.7rem}
 .scope-edit-switch-actions>button:focus-visible{outline:2px solid var(--loc-accent);outline-offset:3px}
+
+
+/* Search and Governance are two light React labels below the same Search Hero.
+   Switching never puts their page bodies side-by-side. */
+.scope-search-view-labels{
+  display:flex;
+  align-items:center;
+  gap:.3rem;
+  margin:0 0 1rem;
+  border-bottom:1px solid var(--loc-line);
+}
+.scope-search-view-labels>span{color:var(--loc-muted)}
+.scope-search-view-labels>button{
+  min-height:44px;
+  padding:.65rem .85rem;
+  border:0;
+  border-bottom:2px solid transparent;
+  background:transparent;
+  color:var(--loc-muted);
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.scope-search-view-labels>button[aria-pressed="true"]{
+  color:var(--loc-heading);
+  border-bottom-color:var(--loc-accent);
+}
+.scope-search-view-labels>button:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:-2px;
+}
+.scope-search-view-panel{min-width:0}
