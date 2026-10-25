@@ -1013,6 +1013,30 @@
 }
 .loc-trace-intro h2{margin:.2rem 0 0}
 .loc-trace-intro>.scope-status{max-width:37rem;margin:.25rem 0}
+/* Public Trace: select city/county first, then one real spatial anchor.
+   No walls of station shortcuts; on phones the controls stack vertically. */
+.loc-trace-hierarchy{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.65rem .8rem;
+  align-items:end;
+  padding:.8rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-radius);
+  background:var(--loc-ui-panel-soft);
+}
+.loc-trace-hierarchy>label,
+.loc-trace-saved-route-picker>label{display:grid;gap:.3rem;min-width:0;font-weight:600}
+.loc-trace-hierarchy select,.loc-trace-saved-route-picker select{
+  width:100%;min-width:0;min-height:44px;
+}
+.loc-trace-hierarchy>.scope-status{grid-column:1/-1;margin:0}
+.loc-trace-saved-route-picker{
+  display:grid;gap:.35rem;padding:.6rem .8rem;
+  border:1px solid var(--loc-line);border-radius:var(--loc-radius);
+}
+.loc-trace-saved-route-picker>.scope-status{margin:0}
+@media(max-width:680px){.loc-trace-hierarchy{grid-template-columns:minmax(0,1fr)}}
 .loc-trace-controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 .loc-trace-controls>.loc-button{
   min-height:44px;
