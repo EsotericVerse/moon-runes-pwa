@@ -17,7 +17,7 @@ export function GET(){
     '/',
     '/statics',
     '/culture',
-    '/governance',
+    '/trace',
     '/list',
     '/game',
     '/daily/log',
