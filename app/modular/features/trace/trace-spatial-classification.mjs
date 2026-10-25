@@ -1,3 +1,4 @@
+import {TRACE_OTHER_COUNTY_ID,validTraceCountyId} from './trace-county-id.mjs';
 // Shared spatial navigation model for Trace management and the public map.
 // Geographic county grouping is a UI projection, never a write to the source
 // anchor; valid overseas coordinates stay in Other, while missing or invalid
@@ -26,4 +27,22 @@ export function classifyTraceAnchors(anchors=[],countyForCoordinates=null){
     ||String(a.uid||'').localeCompare(String(b.uid||'')));
   return new Map([...regions].sort(([a],[b])=>
     a===TRACE_OTHER_REGION?1:b===TRACE_OTHER_REGION?-1:a.localeCompare(b,'zh-Hant')));
+}
+
+
+// Route composer: indexed/stored county IDs, not re-running large polygon
+// classification or using the user-visible name as a stable key.
+export function groupTraceAnchorsByCountyId(anchors=[]){
+  const regions=new Map();
+  for(const anchor of anchors||[]){
+    if(!locatableTraceAnchor(anchor))continue;
+    const code=validTraceCountyId(anchor.county_id)?anchor.county_id:TRACE_OTHER_COUNTY_ID;
+    if(!regions.has(code))regions.set(code,[]);
+    regions.get(code).push(anchor);
+  }
+  for(const entries of regions.values())entries.sort((a,b)=>
+    String(a.title||'').localeCompare(String(b.title||''),'zh-Hant')
+    ||String(a.uid||'').localeCompare(String(b.uid||'')));
+  return new Map([...regions].sort(([a],[b])=>
+    a===TRACE_OTHER_COUNTY_ID?1:b===TRACE_OTHER_COUNTY_ID?-1:a.localeCompare(b)));
 }
