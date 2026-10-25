@@ -48,3 +48,9 @@ export function groupedTraceDays(rows=[]){
     return {day:key.slice(0,sep),category:key.slice(sep+1),item_count};
   });
 }
+
+export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片']);
+export function traceMediaMatches(articles=[],media=[]){
+  const linked=new Set(media.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean));
+  return articles.filter(row=>linked.has(String(row.uid||'').trim()));
+}
