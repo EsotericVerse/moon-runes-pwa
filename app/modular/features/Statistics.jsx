@@ -30,6 +30,7 @@ import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui'
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
+import {publishedSourceCategoryCatalog} from '../published-source-taxonomy.js';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
@@ -386,48 +387,48 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
+  // Public Scopes have a published JS category snapshot. Reuse it in Culture
+  // and Statistics; never schedule a separate classification request to draw
+  // an already ISR-cached chart. Only an unknown Scope falls back to txt_class.
+  const publishedCatalog=useMemo(()=>publishedSourceCategoryCatalog(scopeId),[scopeId]);
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
-    enabled:sourceChart&&Boolean(scopeId),
-    queryFn:async()=>readPersonalSourceClasses(scopeId)
+    enabled:sourceChart&&Boolean(scopeId)&&!publishedCatalog,
+    queryFn:async()=>readPersonalSourceClasses(scopeId),
+    revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const sourceCatalog={
-    isPending:(overview.isPending||othersConfig.isPending)&&sourceChart,
-    isSuccess:overview.isSuccess&&othersConfig.isSuccess,
-    error:othersConfig.error,
-    data:overview.data?{
-      categories:[...(overview.data.categories||[]),
-        ...(othersConfig.data?.groups||[]).map(group=>({
-          category_code:group.group_code,display_name:group.display_name,enabled:true
-        }))],
-      aliases:[...(overview.data.aliases||[]),
-        ...(othersConfig.data?.aliases||[]).map(item=>({
-          source_key:item.source_key,category_code:item.group_code
-        }))]
-    }:undefined,
-    dataUpdatedAt:Math.max(overview.dataUpdatedAt||0,othersConfig.dataUpdatedAt||0)
-  };
+  const sourceCatalog=useMemo(()=>{
+    const ready=Boolean(publishedCatalog||othersConfig.isSuccess);
+    const dynamic=othersConfig.data;
+    return {
+      isPending:(overview.isPending||!ready)&&sourceChart,
+      isSuccess:overview.isSuccess&&ready,
+      error:publishedCatalog?null:othersConfig.error,
+      data:overview.data?(publishedCatalog||{
+        categories:[...(overview.data.categories||[]),
+          ...(dynamic?.groups||[]).map(group=>({
+            category_code:group.group_code,display_name:group.display_name,enabled:true
+          }))],
+        aliases:[...(overview.data.aliases||[]),
+          ...(dynamic?.aliases||[]).map(item=>({
+            source_key:item.source_key,category_code:item.group_code
+          }))]
+      }):undefined,
+      dataUpdatedAt:Math.max(overview.dataUpdatedAt||0,publishedCatalog?0:othersConfig.dataUpdatedAt||0)
+    };
+  },[publishedCatalog,overview.isPending,overview.isSuccess,overview.data,overview.dataUpdatedAt,
+    othersConfig.isSuccess,othersConfig.data,othersConfig.error,othersConfig.dataUpdatedAt,sourceChart]);
   const selectedRawNames=null;
   // Numeric counts come from ISR. Category bucketing is tiny synchronous
   // presentation work, not an independent remote resource: avoid a second SWR
   // suspense/loading cycle after the cached numeric response arrives.
   const adminSource=useMemo(()=>{
-    if(isLrunesDaily||mediaDimension||!overview.isSuccess||!othersConfig.isSuccess)return null;
-    const taxonomy={
-      categories:[...(overview.data?.categories||[]),
-        ...(othersConfig.data?.groups||[]).map(group=>({
-          category_code:group.group_code,display_name:group.display_name,enabled:true
-        }))],
-      aliases:[...(overview.data?.aliases||[]),
-        ...(othersConfig.data?.aliases||[]).map(item=>({
-          source_key:item.source_key,category_code:item.group_code
-        }))]
-    };
-    return administrativeSourceTrend(overview.data?.rows||[],taxonomy,{
+    if(isLrunesDaily||mediaDimension||!sourceCatalog.isSuccess)return null;
+    return administrativeSourceTrend(overview.data?.rows||[],sourceCatalog.data||{},{
       startDate:queryRange.startDate,endDate:queryRange.endDate,
       unit:queryRange.bucket,sourceCategory:activeSourceSelection,sourceNames:selectedRawNames
     });
-  },[isLrunesDaily,mediaDimension,overview.isSuccess,overview.data,othersConfig.isSuccess,othersConfig.data,
+  },[isLrunesDaily,mediaDimension,sourceCatalog.isSuccess,sourceCatalog.data,overview.data,
     queryRange.startDate,queryRange.endDate,queryRange.bucket,activeSourceSelection]);
   const adminSourceReady=Boolean(adminSource);
   const resolvedAdminSource=adminSource||{rows:[],series:[],distribution:[],total:0};
