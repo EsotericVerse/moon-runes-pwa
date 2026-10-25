@@ -185,6 +185,8 @@ test('empty Time and optional Event or Keywords do not block page usage',()=>{
   assert.match(culture,/optionalTimeRangeUnfilled/);
   assert.match(culture,/尚未選擇時間範圍/);
   assert.match(statistics,/periodQuery\.data!==undefined/);
+  assert.match(statistics,/scopeId!=='loc'&&Boolean\(targetScopes\[0\]\)/);
+  assert.match(statistics,/scopeId==='loc'\|\|periodQuery\.data!==undefined/);
   assert.match(statistics,/periods\.length\?'最新時期':'未設定時期（預設時間）'/);
   assert.match(trace,/periods\.length\?'最新時期':'未設定時期（不限日期）'/);
   assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
