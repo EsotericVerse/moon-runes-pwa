@@ -5,6 +5,7 @@ export default {
   "invalidMediaId": "媒體 ID 格式無效。",
   "mediaManageDenied": "沒有編輯媒體的權限。",
   "mediaAttributes": "媒體屬性",
+  "checkInPlace": "打卡地點",
   "editMedia": "編輯媒體：{id}",
   "styleRecommendations": "風格標籤推薦",
   "stylePeriod": "所屬時期：",
