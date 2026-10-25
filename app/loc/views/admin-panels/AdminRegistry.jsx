@@ -64,7 +64,7 @@ function useAdminScopeData(){
         if(locResult.error)throw new Error(locResult.error.message||'人員目錄讀取失敗。');
 
         const locRows=locResult.data||[];
-        const scopeKindOf=role=>role==='group'?'group':role==='system'?'system':'scope';
+        const scopeKindOf=role=>role==='group'?'group':(role==='system'||role==='admin')?'system':'scope';
         const registryRows=locRows.map(row=>({
           scope_id:row.id,
           display_name:row.display_name,
@@ -315,7 +315,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   const cancelEdit=()=>{
     setEditDraft(null);
     setMappings(rows=>rows.map(row=>row.id!==selectedId?row:
-      originalMappings.find(saved=>saved.id===row.id&&saved.email===row.email)||row));
+      originalMappings.find(saved=>saved.id===row.id)||row));
     setNewMapping({...EMPTY_MAPPING});
   };
   const patchRegistry=(key,value)=>setEditDraft(draft=>{
@@ -347,7 +347,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
       directory:mode==='directory'?base.registry.directory||'/'+base.registry.scope_id:null
     }};
   });
-  const patchMapping=(email,key,value)=>setMappings(rows=>rows.map(row=>row.id===selectedId&&row.email===email?{...row,[key]:value}:row));
+  const patchMapping=(id,key,value)=>setMappings(rows=>rows.map(row=>row.id===id?{...row,[key]:value}:row));
 
   async function saveRegistryAndConfig(){
     if(!selected||!current)return false;
@@ -370,7 +370,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
         if(!String(currentCopy.Title_TW||'').trim())throw new Error('NAV 中文名稱不可空白。');
         if(String(currentCopy.Title_TW||'')!==String(pageCopy?.Title_TW||'')||
           String(currentCopy.Desc_TW||'')!==String(pageCopy?.Desc_TW||'')){
-          await updateRows('silver.loc',{
+          await updateRows('silver.manage',{
             title_tw:String(currentCopy.Title_TW||'').trim(),
             desc_tw:String(currentCopy.Desc_TW||'').trim()
           },{filters:[{column:'id',operator:'eq',value:current.scope_id}]});
@@ -399,7 +399,10 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   async function saveMapping(row){
     setStatus('');
     try{
-      await updateRows('silver.loc',{
+      const email=String(row.email||'').trim().toLowerCase();
+      if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
+      await updateRows('silver.manage',{
+        email,
         galaxy_table:String(row.galaxy||'galaxy').trim()||'galaxy',
         time_table:String(row.time||'time').trim()||'time',
         birthday:row.birthday||null
@@ -411,7 +414,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   async function removeMapping(row){
     if(!window.confirm('移除 '+row.email+'？'))return;
     try{
-      await updateRows('silver.loc',{
+      await updateRows('silver.manage',{
         email:null,manage_role:null
       },{filters:[{column:'id',operator:'eq',value:row.id}]});
       setStatus('Mapping 已移除。');refresh();
@@ -424,7 +427,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
     try{
       const email=String(newMapping.email||'').trim().toLowerCase();
       if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('Email 格式不正確。');
-      await updateRows('silver.loc',{
+      await updateRows('silver.manage',{
         email:email,manage_role:'scope',
         galaxy_table:String(newMapping.galaxy||'galaxy').trim()||'galaxy',
         time_table:String(newMapping.time||'time').trim()||'time',
@@ -435,7 +438,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   }
 
   const editedMappings=scopeMappings.filter(row=>JSON.stringify(row)!==
-    JSON.stringify(originalMappings.find(old=>old.id===row.id&&old.email===row.email)));
+    JSON.stringify(originalMappings.find(old=>old.id===row.id)));
   const draftDirty=Boolean(currentDraft&&(
     JSON.stringify(currentDraft.registry)!==JSON.stringify(selected)||
     (currentDraft.config!==null&&JSON.stringify(currentDraft.config)!==JSON.stringify(config))||
@@ -509,22 +512,22 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
           onClick:()=>onDeleteNode?.(current.scope_id),label:<UiText id="uiExtra.adminView.delete"/>}]:[])
       ]}/>
 
-      {selected.scope_kind==='scope'?<details className="admin-node-mapping">
+      {scopeMappings.length||selected.scope_kind==='scope'?<details className="admin-node-mapping">
       <summary><UiText id="uiExtra.adminView.administratorMapping"/>（{scopeMappings.length}）</summary>
-      {scopeMappings.map(row=><article className="scope-inline-card" key={row.email}>
-        <strong>{row.email}</strong>
+      {scopeMappings.map(row=><article className="scope-inline-card" key={row.id}>
+        <label><span>管理者 Email</span><input type="email" value={row.email||''} onChange={e=>patchMapping(row.id,'email',e.target.value)}/></label>
         <div className="scope-management-fields">
-          <label><span><UiText id="uiExtra.adminView.galaxyTable"/></span><input value={row.galaxy||'galaxy'} onChange={e=>patchMapping(row.email,'galaxy',e.target.value)}/></label>
-          <label><span><UiText id="uiExtra.adminView.timeTable"/></span><input value={row.time||'time'} onChange={e=>patchMapping(row.email,'time',e.target.value)}/></label>
-          <label><span><UiText id="uiExtra.adminView.birthdayMapping"/></span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.email,'birthday',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.galaxyTable"/></span><input value={row.galaxy||'galaxy'} onChange={e=>patchMapping(row.id,'galaxy',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.timeTable"/></span><input value={row.time||'time'} onChange={e=>patchMapping(row.id,'time',e.target.value)}/></label>
+          <label><span><UiText id="uiExtra.adminView.birthdayMapping"/></span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.id,'birthday',e.target.value)}/></label>
         </div>
         <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><UiText id="uiExtra.adminView.saveMapping"/></button><button type="button" onClick={()=>removeMapping(row)}><UiText id="uiExtra.adminView.remove"/></button></div>
       </article>)}
-      <details>
+      {selected.scope_kind==='scope'?<details>
         <summary><UiText id="uiExtra.adminView.addAdministrator"/></summary>
         <label><span>Email</span><input type="email" value={newMapping.email} onChange={e=>setNewMapping(v=>({...v,email:e.target.value}))}/></label>
         <button type="button" className="loc-button" onClick={addMapping}><UiText id="uiExtra.adminView.add"/></button>
-      </details>
+      </details>:null}
     </details>:null}
 
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -718,7 +721,7 @@ export default function AdminRegistry(){
       if(result?.deleted!==true||result?.scope_id!==id){
         throw new Error('刪除 RPC 未回傳正確的完成確認。');
       }
-      const {data:remaining,error:verifyError}=await dbAuthRelation('silver.loc')
+      const {data:remaining,error:verifyError}=await dbAuthRelation('silver.manage')
         .select('id').eq('id',id).limit(1);
       if(verifyError)throw new Error('刪除已執行，但 Registry 驗證失敗：'+verifyError.message);
       if(remaining?.length)throw new Error('資料庫仍存在 '+id+'，已取消前端成功提示。');
