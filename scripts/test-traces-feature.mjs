@@ -12,7 +12,7 @@ test('Trace owns its route and Hero; explanatory Blocks remain in Search',()=>{
   const blocks=read('app/modular/features/TraceBlocks.jsx');
   assert.match(app,/trace:Trace/);
   assert.match(feature,/<FeaturePage featureId="trace">/);
-  assert.match(feature,/<TraceMap\/>/);
+  assert.match(feature,/<TraceMap spatialData=/);
   assert.match(search,/import\('\.\/TraceBlocks'\)/);
   assert.match(blocks,/page="trace"/);
   assert.match(blocks,/trace-grid/);
@@ -76,7 +76,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
   assert.match(editor,/if\(name\)setTitle\(current=>current\.trim\(\)\?current:name\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
-  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,radiusMeters=500,focusLocation=null,spatialData=null\}\)/);
+  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,onAnchorSelect=null,radiusMeters=500,focusLocation=null,spatialData=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
   assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
@@ -177,4 +177,24 @@ test('Trace anchor quick-location button uses current place name and previews wi
   assert.ok(editor.includes('setQuickCandidates([]);setQuickNotice('),'new place name clears stale candidates');
   assert.ok(react.includes('{!selectingLocation?<><form'),'editor does not show duplicate place-search form');
   assert.ok(styles.includes('.loc-trace-quick-field'),'inline control has responsive layout');
+});
+
+test('Public trace map opens existing LOC article search using saved anchors and source_place only',()=>{
+  const feature=read('app/modular/features/Trace.jsx');
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
+  const search=read('app/modular/features/Search.jsx');
+  const provider=read('app/loc/galaxy-query.js');
+  const nav=read('app/modular/feature-navigation.js');
+  assert.match(feature,/readTraceData\(scopeId\)/);
+  assert.match(feature,/onAnchorSelect=\{anchor=>/);
+  assert.match(feature,/featureNavigationHref\('loc','search',\{place\}\)/);
+  assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
+  assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
+  assert.match(search,/setPlaceOnly\(Boolean\(place\)\)/);
+  assert.match(search,/placeOnly:Boolean\(options\.placeOnly\)/);
+  assert.match(provider,/searchFields:\['source_place'\]/);
+  assert.match(nav,/place:NavigationValue\.optional\(\)/);
+  assert.match(search,/<IncrementalList/);
+  assert.doesNotMatch(feature,/searchGalaxyRows\(/);
 });
