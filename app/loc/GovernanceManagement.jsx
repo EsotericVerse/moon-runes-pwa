@@ -19,7 +19,6 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
   {value:'others',label:'自訂分類',shortLabel:'分類',description:''},
-  {value:'governance',label:'編輯治理頁面',shortLabel:'治理',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
@@ -34,12 +33,8 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
   const editRequested=searchParams?.get('edit')==='1';
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
-  // Keep the existing management menu and its Governance entry as a deep link,
-  // but edit the original governance blocks only in Search's advanced workspace.
-  const governanceSearchHref=navigationHref(routeScopeId,'governance/manage/search',native);
-  const governanceEditHref=governanceSearchHref+(governanceSearchHref.includes('?')?'&':'?')+'section=governance&edit=1';
   useEffect(()=>{
-    if(isLoc||!account.user||!canManageHere||(!editRequested&&!['governance','others','settings'].includes(section))||account.permissionLoading)return;
+    if(isLoc||!account.user||!canManageHere||(!editRequested&&!['others','settings'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -52,7 +47,6 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
       <div className="scope-stat-controls">
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>來源管理</ScopeLink>
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
-        <ScopeLink className="loc-button" native={native} href={governanceEditHref}>編輯治理頁面</ScopeLink>
       </div>
     </section>
   </FeaturePage>;
@@ -71,11 +65,6 @@ export default function GovernanceManagement({scopeId:routeScopeId='loc'}){
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
         {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
-        {section==='governance'?<section className="loc-card scope-feature-card">
-          <ScopeLink className="loc-button" native={native} href={governanceEditHref}>
-            前往搜尋進階編輯 · 治理
-          </ScopeLink>
-        </section>:null}
       </div>
     </div>
     </div>
