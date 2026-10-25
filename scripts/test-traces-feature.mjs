@@ -126,3 +126,28 @@ test('Check-in backfill uses only empty source_place and user-confirmed date ran
   assert.match(trace,/常用 Facebook 打卡名稱/);
   assert.doesNotMatch(editor,/selectAllRows\(|insertRows\(|updateRows\(/);
 });
+
+
+test('Trace geocoding resolves unique check-in names only on demand and inserts only verified anchors',()=>{
+  const manager=read('app/loc/ScopeManagement.jsx');
+  const geocode=read('app/loc/TracePlaceGeocoder.jsx');
+  const trace=read('app/modular/features/trace/trace-data.js');
+  assert.ok(manager.includes("section==='traceGeocode'&&routeScopeId!=='loc'"));
+  assert.ok(manager.includes("section==='placeFill'&&routeScopeId!=='loc'"),'preserve date-range place filling');
+  assert.ok(manager.includes("dynamic(()=>import('./TracePlaceGeocoder')"));
+  assert.ok(geocode.includes(".select('source_place')"));
+  assert.ok(geocode.includes(".not('source_place','is',null)"));
+  assert.ok(geocode.includes(".neq('source_place','')"));
+  assert.ok(geocode.includes("new Map()"),'deduplicate place names in memory');
+  assert.ok(geocode.includes("MIN_SEARCH_GAP_MS=1250"));
+  assert.ok(geocode.includes("localStorage.setItem"));
+  assert.ok(geocode.includes("policyAccepted"),'require informed geocoder consent');
+  assert.ok(geocode.includes("window.confirm("),'batch writes require explicit confirmation');
+  assert.ok(geocode.includes("found[item.name]?.status==='review'"),'ambiguous places need review');
+  assert.ok(geocode.includes("addTraceAnchorsBatch({scopeId,places:payload})"));
+  assert.doesNotMatch(geocode,/updateRows\(|deleteRows\(|\.update\(/);
+  assert.ok(trace.includes("const previous=await readTraceData(id)"),'re-read existing anchors before writing');
+  assert.ok(trace.includes("pending.slice(offset,offset+80)"),'bounded bulk inserts');
+  assert.ok(trace.includes("dbAuthRelation(relation(id)).insert(chunk)"),'existing authenticated RLS write path');
+  assert.ok(!trace.includes("update silver.")&&!geocode.includes("update silver."),'never modify Galaxy schema or article fields');
+});
