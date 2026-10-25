@@ -5,7 +5,7 @@ import {SCOPE_ROUTE_INDEX} from './scope-route-index.js';
 export const FEATURES=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
   Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
-  Object.freeze({id:'governance',label:UI_COPY.features.governance.title,path:'governance'}),
+  Object.freeze({id:'governance',label:UI_COPY.features.traces.title,path:'governance'}),
   Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
 ]);
 
