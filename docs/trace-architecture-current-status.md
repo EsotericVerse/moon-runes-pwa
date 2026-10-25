@@ -93,13 +93,29 @@
 4. **不可在 P0 驗收之前再擴充功能。** 使用者明確同意恢復修改後才開始，並將「完成／未驗證／失敗」分別回報。
 5. **驗收必須包含實際使用者操作與重新讀取。** 靜態原始碼查核不是瀏覽器或真實寫入驗收。
 
-## 6. 暫停狀態
+## 6. 2026-10-25 P0 實作進度（仍待真人操作驗收）
 
-- 程式修改：**暫停**。
+- **已修改程式（GitHub `main`）：** `TraceManagement.jsx` 的 LOC 痕跡圖編輯器改為選擇有寫入權限的作品 Scope；建立路線時使用該 Scope 原生的錨點與寫入路徑，避免 LOC 彙整資料的 `source_scope` 被錯當成原生 LOC 錨點。
+- **寫入確認：** `addTraceMap/updateTraceMap` 回應 UID 後，`MapEditor` 再執行 `reload()`，核對來源 Scope、UID、名稱、說明及 `anchor_uids` 站點順序。未確認時保留輸入，避免再次點擊重複 insert。
+- **刪除目標：** 依所選痕跡圖的 `source_scope` 刪除，而非一律寫向彙整 `loc_trace`。
+- **展示更新：** 確認成功後呼叫既有公開數值快取失效流程並清理 SWR 資源；沒有修改 ISR 設計、Supabase 表格或 RLS。
+- **驗證證據：** 以最新程式擷取原始 `save` handler 並注入模擬讀寫，測過新增、編輯、權限寫入失敗、首次重讀未命中、SWR 快取更新失敗，並執行新增回歸檢查，共 6 個案例通過。**這些不是實際瀏覽器登入、真實 DB 寫入或手機操作驗證。**
+- **驗收狀態：** P0-01 的 LOC Scope 不一致原因已有可重現根據、程式修復已提交；P0-02～P0-07 尚未實際驗收，全部維持未勾選。不要把程式提交誤認為產品可用。
+
+## 7. 接下來的驗收界線
+
+- 先執行 P0 端到端：實際登入後新增一條路線、重新整理、在公開地圖讀取、編輯更新及刪除測試路線。
+- 未通過前，不啟動 P1/P2 或額外部署、資料整併／效能作業。
+- Supabase 只做過唯讀的結構、RLS 及已有路線數量核對；未對生產資料新增測試路線。
+- Neon、Vercel 未使用，沒有人工觸發 GitHub Actions。
+
+## 8. 目前工作狀態
+
+- 程式修改：**僅限 P0 基本路線儲存阻塞與驗收修補**。
 - Supabase／Neon 寫入與結構變更：**暫停**。
 - Cloudflare／Vercel 部署及 ISR 優化：**暫停**。
 - 現行基本 UI 完成狀態：**未通過使用者驗收**。
-- 本文件用途：下次工作恢復時的**現況與 TODO 對照表**；沒有任何勾選表示已經完工。
+- 本文件用途：正在執行的**現況與 TODO 對照表**；沒有任何勾選表示已經完工。
 
 ---
 **相關參考**：`AGENTS.md`、`.agents/skills/systematic-debugging/SKILL.md`、`.agents/skills/ui-ux-pro-max/SKILL.md`、`.agents/skills/webapp-testing/SKILL.md`、`.agents/skills/verification-before-completion/SKILL.md`。
