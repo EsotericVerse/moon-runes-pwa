@@ -128,15 +128,14 @@ test('author keyword source filters the main chart without changing all-source t
   assert.equal(administrativeSourceTrend(raw,taxonomy,{...range,sourceCategory:'facebook',sourceNames:[]}).total,0);
 });
 
-test('statistics preserves Admin categories and Scope Others subgroup filters',()=>{
+test('statistics uses one flat source selector and no retired classification tables',()=>{
   const code=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  const editor=readFileSync(new URL('../app/loc/FlatClassificationEditor.jsx',import.meta.url),'utf8');
   assert.match(code,/const activeSourceSelection=styleFilter==='rune66'/);
-  assert.match(code,/queryRange\.bucket,activeSourceSelection,sourceSubgroup/);
-  assert.match(code,/unit:queryRange\.bucket,sourceCategory:activeSourceSelection,sourceNames:selectedRawNames/);
-  assert.match(code,/filteredSource=\{Boolean\(activeSourceSelection\)\}/);
-  assert.match(code,/statistics_scope_others_groups/);
-  assert.match(code,/statistics_scope_others_aliases/);
-  assert.match(code,/uiExtra\.statisticsView\.othersBreakdownTitle/);
+  assert.match(code,/作品／個人分類/);
+  assert.doesNotMatch(code,/sourceSubgroup|statistics_scope_others_groups|statistics_scope_others_aliases/);
+  assert.match(editor,/update\\(\\{txt_class:names\\}\\)/);
+  assert.doesNotMatch(editor,/group_code|category_code|source_key/);
 });
 
 test('keyword charts share one canvas and intersections offer at most eight lanes',async()=>{
