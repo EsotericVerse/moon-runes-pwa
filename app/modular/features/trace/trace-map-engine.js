@@ -1,6 +1,7 @@
 // First-party React Trace loads MapLibre from the project's pinned npm package.
-// Only public demonstration anchors are used; Galaxy and device locations are
-// never read or sent to the mapping/route services.
+// Public sample anchors are isolated from Galaxy. Deliberate place-search terms
+// go only to the chosen geocoding service; map tiles do not receive article bodies
+// or device geolocation. Route demonstrations use sample coordinates only.
 import {Map,Marker,Popup,NavigationControl,LngLatBounds,setWorkerUrl} from 'maplibre-gl';
 
 // MapLibre 6 ESM requires a same-origin worker under Next.js Turbopack.
@@ -17,12 +18,21 @@ export const EXAMPLE_ANCHORS=Object.freeze([
 ]);
 
 function ringAround({lng,lat},meters){
-  const segments=18;
-  const latStep=meters/111320;
-  const lngStep=meters/(111320*Math.cos(lat*Math.PI/180));
-  const ring=Array.from({length:segments},(_,i)=>{
-    const radians=2*Math.PI*i/segments;
-    return [lng+lngStep*Math.cos(radians),lat+latStep*Math.sin(radians)];
+  // Great-circle bearings preserve meters across latitudes; a radius is an
+  // approximate query footprint, not a precision claim about check-ins.
+  const earthRadius=6371008.8;
+  const distance=Math.min(Math.PI,meters/earthRadius);
+  const lat0=lat*Math.PI/180;
+  const lng0=lng*Math.PI/180;
+  const ring=Array.from({length:48},(_,i)=>{
+    const bearing=2*Math.PI*i/48;
+    const targetLat=Math.asin(Math.sin(lat0)*Math.cos(distance)
+      +Math.cos(lat0)*Math.sin(distance)*Math.cos(bearing));
+    const targetLng=lng0+Math.atan2(
+      Math.sin(bearing)*Math.sin(distance)*Math.cos(lat0),
+      Math.cos(distance)-Math.sin(lat0)*Math.sin(targetLat));
+    const degrees=targetLng*180/Math.PI;
+    return [((degrees+540)%360)-180,targetLat*180/Math.PI];
   });
   ring.push(ring[0]);
   return ring;
