@@ -408,7 +408,8 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.match(editor,/classification-inline__actions/);
   assert.match(editor,/type="submit"/);
   assert.match(editor,/\.update\(\{txt_class:names\}\)/);
-  assert.match(editor,/canManageGlobalSync\(\)/);
+  assert.match(editor,/canManageGroupSync\('loc'\)/);
+  assert.match(editor,/update_group_txt_class/);
   assert.match(editor,/canManageScopeSync\(scopeId\)/);
   assert.match(editor,/作品分類/);
   assert.match(editor,/個人分類/);
@@ -425,7 +426,7 @@ test('Scope import keeps one action row and no Source Refresh or data reorganiza
   assert.doesNotMatch(panel,/function SourceRefresh|function DuplicateDetection|findGalaxyDuplicates/);
 });
 
-test('LOC member and work management owns member registry and reserved names; media target is fixed',()=>{
+test('LOC group member editing and system Admin panels are disjoint; media target is fixed',()=>{
   const page=readFileSync(new URL('../app/loc/LocSourceManagement.jsx',import.meta.url),'utf8');
   const admin=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
   const target=readFileSync(new URL('../app/loc/ManagementContentTarget.jsx',import.meta.url),'utf8');
@@ -433,9 +434,12 @@ test('LOC member and work management owns member registry and reserved names; me
   const publicSearch=readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
   const zh=readFileSync(new URL('../app/i18n/zh_tw.js',import.meta.url),'utf8');
   assert.match(page,/人員作品管理/);
-  assert.match(page,/views\/admin-panels\/AdminRegistry/);
-  assert.match(page,/views\/admin-panels\/AdminReservedScopeIds/);
-  assert.doesNotMatch(admin,/section==='registry'|section==='reserved'/);
+  assert.match(page,/LocGroupMemberList/);
+  assert.doesNotMatch(page,/admin-panels\/AdminRegistry|AdminReservedScopeIds/);
+  assert.match(admin,/section==='registry'/);
+  assert.match(admin,/section==='reserved'/);
+  assert.match(admin,/section==='blocklist'/);
+  assert.doesNotMatch(admin,/TraceManagementPanel/);
   assert.match(target,/AUTHOR_SCOPE_ID='lo3rwang'/);
   assert.match(target,/scopeData\?\.galaxyMedia/);
   assert.doesNotMatch(target,/目標 Table|<Select|selectScopeRegistry/);
