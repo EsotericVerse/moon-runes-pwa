@@ -1,6 +1,7 @@
 export default {
   "dailyRune": "每日符文",
   "sourceGroup": "群組來源分類",
+  "place": "地點",
   "mediaType": "多媒體類型",
   "mediaPlatform": "多媒體來源統計",
   "mediaStyle": "音樂曲風統計",
