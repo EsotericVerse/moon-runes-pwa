@@ -1522,7 +1522,8 @@ export default function Culture(){
                       }
                       if(item?.entryType==='keyword_density'){
                         const key=String(item?.raw?.drill_key||'').trim();
-                        if(key&&!keywordDrillGroup)setKeywordDrillGroup(key);
+                        if(key&&keywordGroupOptions.some(group=>group.id===key))
+                          setKeywordDrillGroup(current=>current===key?'':key);
                         return;
                       }
                       if(item?.entryType==='source_group'){
