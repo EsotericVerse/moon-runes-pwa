@@ -52,12 +52,16 @@ jobs:
         run: |
           echo '## Build failure output' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 /tmp/next-build.log >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/next-build.log ]; then
+            tail -n 200 /tmp/next-build.log >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Build was not started. See the earlier failed test or setup step.' >> "$GITHUB_STEP_SUMMARY"
+          fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Probe out/ with tar
-        if: always()
+        if: success()
         run: |
           tar -cf /dev/null --dereference --hard-dereference out 2>/tmp/tar.err; RC=$?
           echo "::notice title=tar-probe::rc=$RC $(head -c 300 /tmp/tar.err | tr '\n' ' ')"
