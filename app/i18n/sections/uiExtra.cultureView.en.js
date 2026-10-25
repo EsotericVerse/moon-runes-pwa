@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "No data is available for the selected time range.",
-  "system": "Work group categories",
-  "custom": "Custom work categories",
+  "system": "Work categories",
+  "custom": "Personal categories",
   "media": "Multimedia",
   "other": "Uncategorized",
   "candidateDate": "Suggested date",
