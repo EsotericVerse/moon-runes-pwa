@@ -1229,3 +1229,30 @@
   .loc-trace-saved-map-body .scope-stat-controls>.loc-button{flex:1 1 10rem}
   .loc-trace-route-composer{padding:.7rem}
 }
+
+
+/* Full Trace map viewing: no loss of selected route, time filter or article
+   state; the switch remains above the map and is always touch accessible. */
+.loc-next-main:has(.loc-trace-panel.is-map-only){
+  width:min(1920px,calc(100% - 1rem));
+}
+.loc-trace-panel.is-map-only{padding:clamp(.3rem,.7vw,.75rem)}
+.loc-trace-panel.is-map-only .loc-trace-intro,
+.loc-trace-panel.is-map-only .loc-trace-location-search,
+.loc-trace-panel.is-map-only .loc-trace-location-results,
+.loc-trace-panel.is-map-only .loc-trace-hierarchy,
+.loc-trace-panel.is-map-only .loc-trace-saved-route-picker,
+.loc-trace-panel.is-map-only .loc-trace-controls,
+.loc-trace-panel.is-map-only .loc-trace-mobile-map-tools,
+.loc-trace-panel.is-map-only .loc-trace-resize-tools,
+.loc-trace-panel.is-map-only .loc-trace-map-status,
+.loc-trace-panel.is-map-only .loc-trace-map-note{display:none}
+.loc-trace-panel.is-map-only .loc-trace-map-frame{
+  width:100%!important;min-width:0;height:min(88svh,1100px)!important;
+  max-height:95svh;min-height:360px;margin-inline:0;
+}
+@media(max-width:680px){
+  .loc-trace-panel.is-map-only .loc-trace-map-frame{
+    height:82svh!important;min-height:320px;
+  }
+}
