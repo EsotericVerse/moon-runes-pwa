@@ -51,9 +51,13 @@ export async function readTraceData(scopeId){
   // This does not run on every autocomplete keystroke.
   const rows=[],pageSize=800;
   for(let offset=0;;offset+=pageSize){
-    const result=await dbPublicClient.schema('silver').from(id+'_trace')
+    let request=dbPublicClient.schema('silver').from(id+'_trace')
       .select(columns).order('created_at',{ascending:true})
-      .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
+      .order('uid',{ascending:true});
+    // The LOC union can contain the same UID in different Scopes; stable
+    // pagination must include scope_id as the final tie-breaker.
+    if(union)request=request.order('scope_id',{ascending:true});
+    const result=await request.range(offset,offset+pageSize-1);
     const batch=verified(result,id+' 痕跡讀取')||[];
     rows.push(...batch.map(row=>({...row,source_scope:union?row.scope_id:id})));
     if(batch.length<pageSize)break;
