@@ -66,7 +66,7 @@ export default function Article({uid,title,source='',scopeId='',date='',checkInP
   // The same saved media relationship links externally in view mode, but opens
   // the existing scoped Galaxy Media attribute editor while an article is edited.
   const mediaEditHref=id=>managerMode
-    ?scopeHref(mediaScopeId,'governance/manage/search')+'?media='+encodeURIComponent(id)
+    ?scopeHref(mediaScopeId,mediaScopeId==='loc'?'admin/search':'manage/search')+'?media='+encodeURIComponent(id)
     :galaxyMediaHref(mediaScopeId,id);
   const mediaEditLinks=editingReady&&mediaScopeId?links
     .filter(link=>String(link?.id||'').startsWith('media:'))
