@@ -2,9 +2,8 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
-
-const MODULE_SRC='/trace-map.mjs';
-const MAP_CSS='https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.css';
+import {createTraceMap} from './trace-map-engine';
+import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
 // the same public sample anchors in each language; not Galaxy places.
 const DEMO_PLACES=[
@@ -95,47 +94,29 @@ export default function TraceMap(){
   const [selected,setSelected]=useState('');
   const [status,setStatus]=useState('loading');
 
+  // TraceMap itself is a client-only, lazily loaded feature chunk: MapLibre is
+  // initialized exactly once per mount and cleaned up on navigation/unmount.
+  // No CDN script, global namespace, or secondary lifecycle is needed.
   useEffect(()=>{
     let active=true;
-    let insertedScript=null;
-    let insertedStyles=null;
-    const init=()=>{
-      if(!active||!containerRef.current||!window.LOCTraceMapModule||mapRef.current)return;
-      try{
-        mapRef.current=window.LOCTraceMapModule.createTraceMap(containerRef.current,{
-          onSelect:id=>{if(active)setSelected(id);},
-          onStatus:code=>{
-            if(!active)return;
-            setStatus(code);
-            if(code==='ready')setReady(true);
-          }
-        });
-      }catch{
-        setStatus('initError');
-      }
-    };
-    if(!document.querySelector('link[data-loc-trace-map-style]')){
-      insertedStyles=document.createElement('link');
-      insertedStyles.rel='stylesheet';
-      insertedStyles.href=MAP_CSS;
-      insertedStyles.dataset.locTracesMapStyle='1';
-      document.head.appendChild(insertedStyles);
-    }
-    if(window.LOCTraceMapModule)init();
-    else{
-      insertedScript=document.createElement('script');
-      insertedScript.type='module';
-      insertedScript.src=MODULE_SRC;
-      insertedScript.addEventListener('load',init,{once:true});
-      insertedScript.addEventListener('error',()=>{if(active)setStatus('moduleError')},{once:true});
-      document.head.appendChild(insertedScript);
+    let instance=null;
+    try{
+      instance=createTraceMap(containerRef.current,{
+        onSelect:id=>{if(active)setSelected(id);},
+        onStatus:code=>{
+          if(!active)return;
+          setStatus(code);
+          if(code==='ready')setReady(true);
+        }
+      });
+      mapRef.current=instance;
+    }catch{
+      if(active)setStatus('initError');
     }
     return ()=>{
       active=false;
-      mapRef.current?.destroy();
-      mapRef.current=null;
-      insertedScript?.remove();
-      insertedStyles?.remove();
+      instance?.destroy();
+      if(mapRef.current===instance)mapRef.current=null;
     };
   },[]);
 
