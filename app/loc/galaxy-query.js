@@ -2,6 +2,7 @@
 
 
 import {StatisticsFacets} from './statistics-facets';
+import {sourceTaxonomyFromArrays} from './source-classification.mjs';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
@@ -119,16 +120,10 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
 // Shared public taxonomy reader for Statistics and Search. Never requires
 // management authentication or scans article bodies to populate a filter.
 export async function selectSourceTaxonomy(){
-  const [categories,aliases]=await Promise.all([
-    selectRows('silver.statistics_source_categories',{
-      columns:'category_code,display_name,sort_order,enabled',
-      orders:[{column:'sort_order',ascending:true}],limit:250
-    }),
-    selectRows('silver.statistics_source_aliases',{
-      columns:'source_key,category_code',limit:250
-    })
-  ]);
-  return {categories:categories.rows||[],aliases:aliases.rows||[]};
+  const {rows}=await selectRows('silver.loc',{
+    columns:'txt_class',filters:[{column:'id',operator:'eq',value:'loc'}],limit:1
+  });
+  return sourceTaxonomyFromArrays(rows[0]?.txt_class||[]);
 }
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
