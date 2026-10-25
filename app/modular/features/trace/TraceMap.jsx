@@ -108,11 +108,13 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   anchorSelectRef.current=onAnchorSelect;
   const selectingLocation=typeof onLocationPick==='function';
   const [resolveCounty,setResolveCounty]=useState(null);
+  const [countyLookupFailed,setCountyLookupFailed]=useState(false);
   const [county,setCounty]=useState('');
   const [anchorUid,setAnchorUid]=useState('');
   const savedAnchors=spatialData?.anchors||[];
-  const groups=useMemo(()=>classifyTraceAnchors(savedAnchors,resolveCounty),
-    [spatialData?.anchors,resolveCounty]);
+  const groups=useMemo(()=>!resolveCounty&&!countyLookupFailed?new Map()
+    :classifyTraceAnchors(savedAnchors,resolveCounty),
+    [spatialData?.anchors,resolveCounty,countyLookupFailed]);
   const counties=useMemo(()=>[...groups.keys()],[groups]);
   const regionAnchors=groups.get(county)||[];
   const savedMaps=spatialData?.maps||[];
@@ -121,7 +123,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     let active=true;
     import('./trace-county-lookup.mjs').then(module=>{
       if(active)setResolveCounty(()=>module.countyForCoordinates);
-    }).catch(()=>{ /* The uncategorized region remains usable without boundaries. */ });
+    }).catch(()=>{if(active)setCountyLookupFailed(true);});
     return()=>{active=false;};
   },[selectingLocation,spatialData?.anchors]);
   useEffect(()=>{
@@ -278,7 +280,8 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         <select className="scope-select" value={county}
           onChange={event=>{setCounty(event.target.value);setAnchorUid('');}}
           disabled={!counties.length}>
-          <option value="">{counties.length?'請選縣市':'尚無空間定錨點'}</option>
+          <option value="">{counties.length?'請選縣市'
+             :!resolveCounty&&!countyLookupFailed&&savedAnchors.some(locatableTraceAnchor)?'正在整理縣市…':'尚無空間定錨點'}</option>
           {counties.map(name=><option key={name} value={name}>{name}（{groups.get(name)?.length||0}）</option>)}
         </select>
       </label>
