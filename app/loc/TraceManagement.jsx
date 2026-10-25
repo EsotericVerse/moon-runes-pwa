@@ -1,13 +1,14 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {
-  TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
+  TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,
+  addTraceMap,updateTraceMap,deleteTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
 
 const TraceOrganizer=dynamic(()=>import('./TraceOrganizer'),{loading:()=> <p className="scope-status">正在整理空間定錨點…</p>});
@@ -167,23 +168,86 @@ function AnchorEditor({scopeId,spatial,reload}){
 }
 
 function MapEditor({scopeId,spatial,reload}){
+  const anchors=useMemo(()=>spatial.anchors.filter(row=>row.source_scope===scopeId),[spatial.anchors,scopeId]);
+  const maps=useMemo(()=>spatial.maps.filter(row=>row.source_scope===scopeId),[spatial.maps,scopeId]);
+  const anchorById=useMemo(()=>new Map(anchors.map(item=>[item.uid,item])),[anchors]);
+  const [countyLookup,setCountyLookup]=useState(null);
+  const [countyError,setCountyError]=useState('');
+  useEffect(()=>{
+    if(!anchors.length)return undefined;
+    let active=true;
+    import('../modular/features/trace/trace-county-lookup.mjs')
+      .then(module=>{if(active){setCountyLookup(()=>module.countyForCoordinates);setCountyError('');}})
+      .catch(error=>{if(active)setCountyError('縣市對照載入失敗：'+String(error?.message||error));});
+    return()=>{active=false;};
+  },[anchors.length]);
+  const grouped=useMemo(()=>{
+    const output=new Map();
+    for(const anchor of anchors){
+      const county=countyLookup?countyLookup(anchor.longitude,anchor.latitude):'未判定／其他地區';
+      if(!output.has(county))output.set(county,[]);
+      output.get(county).push(anchor);
+    }
+    for(const group of output.values())group.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'zh-Hant'));
+    return output;
+  },[anchors,countyLookup]);
+  const counties=useMemo(()=>[...grouped.keys()].sort((a,b)=>
+    a==='未判定／其他地區'?1:b==='未判定／其他地區'?-1:a.localeCompare(b,'zh-Hant')),[grouped]);
+  const [county,setCounty]=useState('');
+  const [pointUid,setPointUid]=useState('');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [selected,setSelected]=useState([]);
+  const [editingUid,setEditingUid]=useState('');
+  const [editorOpen,setEditorOpen]=useState(()=>!spatial.maps.some(row=>row.source_scope===scopeId));
+  const [expandedIds,setExpandedIds]=useState([]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const anchors=spatial.anchors.filter(row=>row.source_scope===scopeId);
-  const dirty=Boolean(title||description||selected.length);
+  const [noticeError,setNoticeError]=useState(false);
+  const available=useMemo(()=>(grouped.get(county)||[]).filter(row=>!selected.includes(row.uid)),[grouped,county,selected]);
+  const dirty=editorOpen&&Boolean(editingUid||title||description||selected.length);
+  const reset=()=>{
+    setTitle('');setDescription('');setSelected([]);setEditingUid('');
+    setCounty('');setPointUid('');
+  };
+  const beginNew=()=>{
+    reset();setEditorOpen(true);setNotice('');setNoticeError(false);
+  };
+  const edit=map=>{
+    setEditingUid(map.uid);
+    setTitle(String(map.title||''));
+    setDescription(String(map.description||''));
+    setSelected(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
+    setCounty('');setPointUid('');setEditorOpen(true);
+    setNotice('');setNoticeError(false);
+  };
   const save=async()=>{
-    if(busy)return false;
-    setBusy(true);setNotice('');
+    if(busy||!editorOpen)return false;
+    setBusy(true);setNotice('');setNoticeError(false);
     try{
-      await addTraceMap({scopeId,title,description,anchorUids:selected,anchors});
+      const input={scopeId,title,description,anchorUids:selected,anchors};
+      if(editingUid)await updateTraceMap({...input,uid:editingUid});
+      else await addTraceMap(input);
       await reload();
-      setTitle('');setDescription('');setSelected([]);
-      setNotice('痕跡圖已儲存，並保留所選空間定錨點的連接順序。');
+      const changed=Boolean(editingUid);
+      reset();
+      setEditorOpen(false);
+      setNotice(changed?'痕跡圖已更新，所有站點順序與文字皆已儲存。':'已新增一張痕跡圖。');
       return true;
-    }catch(error){setNotice(String(error?.message||'新增痕跡圖失敗。'));return false;}
+    }catch(error){
+      setNoticeError(true);setNotice(String(error?.message||error));return false;
+    }finally{setBusy(false);}
+  };
+  const remove=async map=>{
+    if(busy||!window.confirm('確定要永久刪除「'+map.title+'」這張痕跡圖？只會刪除這張路線，不會刪除空間定錨點或文章。'))return;
+    setBusy(true);setNotice('');setNoticeError(false);
+    try{
+      await deleteTraceMap({scopeId,uid:map.uid});
+      await reload();
+      setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
+      if(editingUid===map.uid){reset();setEditorOpen(false);}
+      setNotice('已刪除該張痕跡圖；所有原始定錨點與作品不受影響。');
+    }catch(error){setNoticeError(true);setNotice(String(error?.message||error));}
     finally{setBusy(false);}
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
@@ -194,34 +258,118 @@ function MapEditor({scopeId,spatial,reload}){
       const arr=[...ids];[arr[index],arr[next]]=[arr[next],arr[index]];return arr;
     });
   };
-  return <section className="loc-card scope-feature-card">
-    <h3>新增痕跡圖</h3>
-    <p className="scope-status">從本 Scope 的空間定錨點選出至少兩處，依顯示順序連成痕跡圖。LOC Group 讀取其他 Scope 的痕跡圖，但不會把它們複製進 LOC。</p>
-    <div className="scope-management-fields">
-      <label>痕跡圖名稱<input maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
-      <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
-    </div>
-    <div className="loc-trace-anchor-choices" role="group" aria-label="選擇空間定錨點">
-      {anchors.map(anchor=><label key={anchor.uid}>
-        <input type="checkbox" disabled={busy} checked={selected.includes(anchor.uid)}
-          onChange={e=>setSelected(ids=>e.target.checked?[...ids,anchor.uid]:ids.filter(uid=>uid!==anchor.uid))}/>
-        <span>{anchor.title}</span>
-      </label>)}
-      {!anchors.length?<p className="scope-status">目前沒有空間定錨點，請先新增空間定錨點。</p>:null}
-    </div>
-    <h4>連接順序</h4>
-    <ol className="loc-trace-selection-order">
-      {selected.map((uid,index)=>{
-        const item=anchors.find(row=>row.uid===uid);
-        return <li key={uid}>
-          <span>{item?.title||uid}</span>
-          <button className="loc-button" type="button" disabled={busy||index===0} onClick={()=>shift(index,-1)} aria-label={'將'+(item?.title||uid)+'上移'}>↑</button>
-          <button className="loc-button" type="button" disabled={busy||index===selected.length-1} onClick={()=>shift(index,1)} aria-label={'將'+(item?.title||uid)+'下移'}>↓</button>
-        </li>;
-      })}
-    </ol>
-    <div className="scope-stat-controls"><button type="button" className="loc-button primary" disabled={busy||!title.trim()||selected.length<2} onClick={save}>新增痕跡圖</button></div>
-    {notice?<p role="status" className="scope-status">{notice}</p>:null}
+  const addToQueue=()=>{
+    if(!pointUid||selected.includes(pointUid)||selected.length>=80)return;
+    if(!anchorById.has(pointUid))return;
+    setSelected(ids=>[...ids,pointUid]);
+    setPointUid('');
+  };
+  const setAllExpanded=open=>setExpandedIds(open?maps.map(map=>map.uid):[]);
+  return <section className="loc-card scope-feature-card loc-trace-map-manager">
+    <header className="loc-trace-map-manager-heading">
+      <div><h3>痕跡圖管理</h3>
+        <p className="scope-status">每張痕跡圖是一條獨立路線，完整保存名稱、說明與站點順序；可建立多張。</p>
+      </div>
+      <button type="button" className="loc-button" disabled={busy}
+        onClick={()=>editorOpen&& !editingUid ?setEditorOpen(false):beginNew()}>
+        {editorOpen&&!editingUid?'收合新增表單':'新增一張痕跡圖'}
+      </button>
+    </header>
+    {maps.length?<div className="loc-trace-saved-maps">
+      <div className="loc-trace-map-manager-heading">
+        <h4>已儲存的痕跡圖（{maps.length}）</h4>
+        <div className="scope-stat-controls">
+          <button type="button" className="loc-button" onClick={()=>setAllExpanded(true)}>全部展開</button>
+          <button type="button" className="loc-button" onClick={()=>setAllExpanded(false)}>全部收合</button>
+        </div>
+      </div>
+      {maps.map(map=><details className="loc-trace-saved-map" key={map.uid}
+        open={expandedIds.includes(map.uid)} onToggle={event=>{
+          const isOpen=event.currentTarget.open;
+          setExpandedIds(ids=>isOpen
+            ?ids.includes(map.uid)?ids:[...ids,map.uid]
+            :ids.includes(map.uid)?ids.filter(id=>id!==map.uid):ids);
+        }}>
+        <summary>{map.title||'未命名痕跡圖'}
+          <span className="scope-status">{Array.isArray(map.anchor_uids)?map.anchor_uids.length:0} 站</span>
+        </summary>
+        <div className="loc-trace-saved-map-body">
+          {map.description?<p className="loc-trace-route-description">{map.description}</p>:null}
+          <ol className="loc-trace-selection-order">
+            {(Array.isArray(map.anchor_uids)?map.anchor_uids:[]).map((uid,index)=>{
+              const anchor=anchorById.get(uid);
+              return <li key={uid+':'+index}><span>{anchor?.title||'原始定錨點 '+uid+'（目前無法對應）'}</span></li>;
+            })}
+          </ol>
+          <div className="scope-stat-controls">
+            <button type="button" className="loc-button" disabled={busy} onClick={()=>edit(map)}>編輯這張痕跡圖</button>
+            <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(map)}>刪除這張痕跡圖</button>
+          </div>
+        </div>
+      </details>)}
+    </div>:<p className="scope-status">目前還沒有痕跡圖；可以建立第一條路線。</p>}
+    {editorOpen?<form className="loc-trace-route-composer" onSubmit={event=>{event.preventDefault();save();}}>
+      <h4>{editingUid?'編輯痕跡圖':'新增痕跡圖'}</h4>
+      <div className="scope-management-fields">
+        <label>痕跡圖名稱
+          <input maxLength={120} value={title} onChange={event=>setTitle(event.target.value)}
+            placeholder="例如：童年的南北旅程" disabled={busy} required/>
+        </label>
+        <label>路線故事／說明
+          <textarea maxLength={2000} rows={3} value={description}
+            onChange={event=>setDescription(event.target.value)} disabled={busy}/>
+        </label>
+      </div>
+      <div className="loc-trace-route-pickers" role="group" aria-label="依縣市選取路線站點">
+        <label>縣市
+          <select className="scope-select" value={county} disabled={busy||!counties.length}
+            onChange={event=>{setCounty(event.target.value);setPointUid('');}}>
+            <option value="">請選擇縣市</option>
+            {counties.map(name=><option key={name} value={name}>{name}（{grouped.get(name)?.length||0}）</option>)}
+          </select>
+        </label>
+        <label>空間定錨點
+          <select className="scope-select" value={pointUid} disabled={busy||!county||!available.length}
+            onChange={event=>setPointUid(event.target.value)}>
+            <option value="">{!county?'先選縣市':available.length?'選擇定錨點':'此縣市沒有可加入的定錨點'}</option>
+            {available.map(anchor=><option key={anchor.uid} value={anchor.uid}>{anchor.title}</option>)}
+          </select>
+        </label>
+        <button className="loc-button" type="button" disabled={busy||!pointUid||selected.length>=80}
+          onClick={addToQueue}>加入佇列</button>
+      </div>
+      {countyError?<p className="scope-status scope-error" role="alert">{countyError}</p>:null}
+      {!countyLookup&&anchors.length&&!countyError?<p className="scope-status" role="status">正在整理縣市對照…</p>:null}
+      <p className="scope-status">縣市由座標近似對照，僅用於選單整理，不修改原始地名與座標。邊界或海外地點可在「未判定／其他地區」找到。</p>
+      {!anchors.length?<p className="scope-status">尚未建立空間定錨點；新增地點後即可排入路線。</p>:null}
+      <h4>路線佇列（{selected.length}／80）</h4>
+      {selected.length?<ol className="loc-trace-selection-order">
+        {selected.map((uid,index)=>{
+          const anchor=anchorById.get(uid);
+          return <li key={uid}>
+            <span>{anchor?.title||'原始定錨點 '+uid+'（目前無法對應）'}</span>
+            <div className="loc-trace-route-queue-actions">
+              <button className="loc-button" type="button" disabled={busy||index===0}
+                onClick={()=>shift(index,-1)} aria-label={'將'+(anchor?.title||uid)+'上移'}>↑</button>
+              <button className="loc-button" type="button" disabled={busy||index===selected.length-1}
+                onClick={()=>shift(index,1)} aria-label={'將'+(anchor?.title||uid)+'下移'}>↓</button>
+              <button className="loc-button" type="button" disabled={busy}
+                onClick={()=>setSelected(ids=>ids.filter(id=>id!==uid))}
+                aria-label={'從佇列移除'+(anchor?.title||uid)}>移除</button>
+            </div>
+          </li>;
+        })}
+      </ol>:<p className="scope-status">佇列尚無站點。請依序加入至少兩個地點。</p>}
+      <div className="scope-stat-controls">
+        <button type="submit" className="loc-button primary"
+          disabled={busy||!title.trim()||selected.length<2||selected.length>80}>
+          {busy?'儲存中…':editingUid?'儲存痕跡圖修改':'儲存新痕跡圖'}
+        </button>
+        <button type="button" className="loc-button" disabled={busy}
+          onClick={()=>{reset();setEditorOpen(false);}}>取消並收合</button>
+      </div>
+    </form>:null}
+    {notice?<p role={noticeError?'alert':'status'} className={'scope-status'+(noticeError?' scope-error':'')}>{notice}</p>:null}
   </section>;
 }
 
