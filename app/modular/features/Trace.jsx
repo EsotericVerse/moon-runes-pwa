@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 import {useAsyncResource} from '../../loc/use-async-resource';
-import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
+import {traceWindow} from './trace/trace-panel-filters.mjs';
 import {
   readDefaultTraceRoute,setDefaultTraceRoute,chooseDefaultTraceRoute,
   TRACE_DEFAULT_ROUTE_CHANGED
@@ -30,8 +30,21 @@ export default function Trace({scopeId='loc'}){
   const [mapOnly,setMapOnly]=useState(false);
   const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
   const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
-  const [periodKey,setPeriodKey]=useState('latest');
+  const [routeListOpen,setRouteListOpen]=useState(false);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
+  const [reportTab,setReportTab]=useState('articles');
+  const [reportSettingsOpen,setReportSettingsOpen]=useState(false);
+  const [timeWindow,setTimeWindow]=useState('3m');
+  const [customStart,setCustomStart]=useState('');
+  const [customEnd,setCustomEnd]=useState('');
+  const [sourceDraft,setSourceDraft]=useState('');
+  const [sourceName,setSourceName]=useState('');
+  const dateRange=useMemo(()=>traceWindow(timeWindow,new Date(),
+    {start:customStart,end:customEnd}),[timeWindow,customStart,customEnd]);
+  const choosePlace=anchor=>{
+    if(!anchor?.uid)return;
+    setSelectedPlace(anchor);setReportTab('articles');
+  };
 
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
@@ -50,27 +63,10 @@ export default function Trace({scopeId='loc'}){
     if(setDefaultTraceRoute(periodScopeId,value))setCurrentTraceChoice(value);
   };
 
-  const periodsQuery=useAsyncResource({
-    queryKey:['culture-time-periods',periodScopeId],
-    enabled:supported&&Boolean(periodScopeId),
-    queryFn:async()=>{
-      if(usesNumericIsr(periodScopeId))return readNumericIsr(periodScopeId,'periods');
-      const {selectScopeCultureData}=await import('../../loc/culture-query');
-      return (await selectScopeCultureData(periodScopeId)).eras?.eras||[];
-    },
-    revalidateOnFocus:false,revalidateOnReconnect:false
-  });
-  const periods=useMemo(()=>(periodsQuery.data||[])
-    .filter(row=>row.start_date)
-    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
-      ||Number(a.order||0)-Number(b.order||0)),[periodsQuery.data]);
-  const selectedPeriod=periodKey==='latest'?periods.at(-1):
-    periods.find(period=>String(period.period||period.era_id||period.record_id)===periodKey);
-
   // Phase 1: load the light index, never all historical check-ins at startup.
   const traceIndex=useAsyncResource({
     queryKey:traceMapIndexKey(periodScopeId),
-    enabled:supported,
+    enabled:supported&&routeListOpen,
     queryFn:()=>readTraceMapIndex(periodScopeId),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
@@ -88,25 +84,24 @@ export default function Trace({scopeId='loc'}){
     queryKey:currentMap
       ?traceCurrentKey(periodScopeId,currentMap)
       :traceAllAnchorsKey(periodScopeId),
-    enabled:supported&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
+    enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
       ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids)
       :readAllTraceAnchors(periodScopeId),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const spatialData=useMemo(()=>{
-    if(traceIndex.data===undefined)return null;
+    if(!routeListOpen||traceIndex.data===undefined)return {anchors:[],maps:[]};
     if(!showingAll&&!currentMap)return {anchors:[],maps:[]};
     if(anchorsQuery.data===undefined)return null;
     return {anchors:anchorsQuery.data,
       maps:showingAll?traceIndex.data:[currentMap]};
-  },[traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
+  },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
-  const reportPlace=selectedAvailable?selectedPlace:currentMap;
-  const selectedResource=reportPlace?(reportPlace.trace_type+':'+reportPlace.uid):'';
+  const reportPlace=selectedAvailable?selectedPlace:null;
 
   return <FeaturePage featureId="trace">
     <div className="scope-stat-controls" role="group" aria-label="痕跡選擇與展示模式">
@@ -117,12 +112,14 @@ export default function Trace({scopeId='loc'}){
       {supported&&scopeId==='loc'?<label>
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
-          onChange={event=>{setLocPeriodScope(event.target.value);setPeriodKey('latest');setSelectedPlace(null);}}>
+          onChange={event=>{setLocPeriodScope(event.target.value);setSelectedPlace(null);}}>
           <option value="lo3rwang">作者作品</option>
           <option value="lrunes">月之符文</option>
         </select>
       </label>:null}
-      {supported?<label>
+      {supported&&!routeListOpen?<button type="button" className="loc-button"
+        onClick={()=>setRouteListOpen(true)}>載入痕跡圖</button>:null}
+      {supported&&routeListOpen?<label>
         <span>Current 痕跡（空間時期）</span>
         <select className="scope-select"
           value={showingAll?'all':currentMap?.uid||''}
@@ -135,6 +132,8 @@ export default function Trace({scopeId='loc'}){
           <option value="all">全部定錨點（手動載入）</option>
         </select>
       </label>:null}
+      {currentMap&&routeListOpen?<button type="button" className="loc-button"
+        onClick={()=>choosePlace(currentMap)}>查看整張路線內容</button>:null}
     </div>
     {supported&&traceIndex.isPending?<p className="scope-status" role="status">正在載入痕跡列表…</p>:null}
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
@@ -148,55 +147,51 @@ export default function Trace({scopeId='loc'}){
       尚未建立痕跡圖。請在管理頁建立一組站點路線，或手動選擇「全部定錨點」。
     </p>:null}
 
-    {!mapOnly&&supported?<div className="scope-stat-controls" role="group" aria-label="時間時期">
-      <label>
-        <span>時間時期</span>
-        <select className="scope-select" value={periodKey}
-          onChange={event=>setPeriodKey(event.target.value)}>
-          <option value="latest">{periods.length?'最新時期':'未設定時期（不限日期）'}</option>
-          <option value="all">全部時期</option>
-          {periods.map(period=><option key={period.record_id||period.period}
-            value={String(period.period||period.era_id||period.record_id)}>
-            {period.title||period.name||period.period}
-          </option>)}
-        </select>
-      </label>
-      {periodsQuery.isPending?<span className="scope-status" role="status">正在載入時期…</span>:null}
-      {!periodsQuery.isPending&&!periodsQuery.error&&!periods.length?<span className="scope-status">尚未建立時間時期；可直接使用痕跡。</span>:null}
-      {periodsQuery.error?<span className="scope-status scope-error" role="alert">
-        時期讀取失敗：{String(periodsQuery.error.message||periodsQuery.error)}
-      </span>:null}
-      <p className="scope-status">痕跡控制地點與路線；時間時期篩選文章。各地點的造訪時間獨立記錄，不能以旅程起訖推定停留期間。</p>
+    {!mapOnly&&reportPlace?<div className="loc-trace-report-toolbar" role="group" aria-label="地點內容框">
+      <strong>{reportPlace.title}</strong>
+      <div className="scope-stat-controls" role="group" aria-label="地點呈現模式">
+        {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
+          <button type="button" key={item.value} className="loc-button"
+            aria-pressed={reportTab===item.value}
+            onClick={()=>setReportTab(item.value)}>{item.label}</button>)}
+        <button type="button" className="loc-button"
+          aria-expanded={reportSettingsOpen}
+          onClick={()=>setReportSettingsOpen(value=>!value)}>設定</button>
+        <button type="button" className="loc-button"
+          onClick={()=>setSelectedPlace(null)}>收合內容</button>
+      </div>
+      {reportSettingsOpen?<div className="loc-trace-report-settings">
+        <label>時間
+          <select className="scope-select" value={timeWindow} onChange={event=>setTimeWindow(event.target.value)}>
+            <option value="3m">最近三個月（預設）</option>
+            <option value="12m">最近一年</option>
+            <option value="all">全部時間</option>
+            <option value="custom">自訂日期</option>
+          </select>
+        </label>
+        {timeWindow==='custom'?<>
+          <label>開始日期<input type="date" value={customStart} onChange={event=>setCustomStart(event.target.value)}/></label>
+          <label>結束日期<input type="date" value={customEnd} onChange={event=>setCustomEnd(event.target.value)}/></label>
+        </>:null}
+        <form onSubmit={event=>{event.preventDefault();setSourceName(sourceDraft.trim());}}>
+          <label>作品來源／分類
+            <input type="search" value={sourceDraft} onChange={event=>setSourceDraft(event.target.value)}
+              placeholder="例如 Threads（留空＝全部）"/>
+          </label>
+          <button type="submit" className="loc-button">套用來源</button>
+          {sourceName?<button type="button" className="loc-button"
+            onClick={()=>{setSourceName('');setSourceDraft('');}}>清除來源</button>:null}
+        </form>
+        <p className="scope-status">來源只比對實際作品的 source_name，不會把別的來源算進 Threads。三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
+      </div>:null}
     </div>:null}
 
     <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker
       selectedRouteUid={currentMap?.uid||''}
-      onAnchorSelect={anchor=>{if(anchor?.uid)setSelectedPlace(anchor);}}/>
+      onAnchorSelect={choosePlace}/>
 
-    {!mapOnly?<><div className="scope-stat-controls" role="group" aria-label="地圖下方報表選擇">
-      <label><span>Current 痕跡內的站點／痕跡圖</span>
-        <select className="scope-select" value={selectedResource}
-          onChange={event=>{
-            const [type,uid]=event.target.value.split(':');
-            const resource=(type==='map'?spatialData?.maps:spatialData?.anchors)
-              ?.find(item=>item.uid===uid)||null;
-            setSelectedPlace(resource);
-          }}>
-          <option value="">從地圖選擇地點</option>
-          {(spatialData?.maps||[]).length?<optgroup label="痕跡圖">
-            {spatialData.maps.map(map=><option key={'map:'+map.uid} value={'map:'+map.uid}>
-              {map.title}（{map.anchor_uids?.length||0} 站）</option>)}
-          </optgroup>:null}
-          <optgroup label="空間定錨點">
-            {(spatialData?.anchors||[]).map(anchor=><option key={'anchor:'+anchor.uid}
-              value={'anchor:'+anchor.uid}>{anchor.title}</option>)}
-          </optgroup>
-        </select>
-      </label>
-    </div>
-    <TracePlaceResults key={periodScopeId} place={reportPlace}
+    {!mapOnly&&reportPlace?<TracePlaceResults place={reportPlace}
       anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
-      period={periodKey==='all'?null:selectedPeriod||null}/>
-    </>:null}
+      tab={reportTab} sourceName={sourceName} dateRange={dateRange}/>:null}
   </FeaturePage>;
 }
