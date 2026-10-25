@@ -46,9 +46,6 @@ function AnchorEditor({scopeId,spatial,reload}){
       setLongitude(String(Math.round(lng*1e6)/1e6));
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
-    <div className="scope-stat-controls">
-      <button type="button" className="loc-button primary" disabled={busy||!title.trim()||!validCoordinates(longitude,latitude)} onClick={save}>新增空間定錨點</button>
-    </div>
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }
