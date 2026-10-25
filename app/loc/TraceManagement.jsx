@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
+import {useAccount} from './use-account';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
@@ -196,8 +197,26 @@ function AnchorEditor({scopeId,spatial,reload}){
 }
 
 function MapEditor({scopeId,spatial,reload}){
-  const anchors=useMemo(()=>spatial.anchors.filter(row=>row.source_scope===scopeId),[spatial.anchors,scopeId]);
-  const maps=useMemo(()=>spatial.maps.filter(row=>row.source_scope===scopeId),[spatial.maps,scopeId]);
+  const account=useAccount();
+  const cache=useResourceCache();
+  // LOC is a READ union. The actual write table must be the selected source
+  // Scope so the saved route refers to anchors it is authorized to own.
+  const editableScopes=useMemo(()=>{
+    if(scopeId!=='loc')return [scopeId];
+    const sources=[...new Set([...spatial.anchors,...spatial.maps]
+      .map(row=>String(row.source_scope||'').trim()))];
+    return sources.filter(source=>source==='loc'
+      ?account.canManageGroupSync('loc')
+      :TRACE_SCOPES.includes(source)&&account.canManageScopeSync(source));
+  },[scopeId,spatial.anchors,spatial.maps,account.canManageScopeSync,account.canManageGroupSync]);
+  const [routeScopeId,setRouteScopeId]=useState('lo3rwang');
+  const writeScopeId=scopeId==='loc'
+    ?editableScopes.includes(routeScopeId)?routeScopeId:editableScopes[0]||''
+    :scopeId;
+  const anchors=useMemo(()=>spatial.anchors.filter(row=>row.source_scope===writeScopeId),
+    [spatial.anchors,writeScopeId]);
+  const maps=useMemo(()=>spatial.maps.filter(row=>row.source_scope===writeScopeId),
+    [spatial.maps,writeScopeId]);
   const anchorById=useMemo(()=>new Map(anchors.map(item=>[item.uid,item])),[anchors]);
   const [countyLookup,setCountyLookup]=useState(null);
   const [countyError,setCountyError]=useState('');
@@ -232,16 +251,28 @@ function MapEditor({scopeId,spatial,reload}){
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [noticeError,setNoticeError]=useState(false);
+  const pendingSavedRef=useRef(null);
   const available=useMemo(()=>(grouped.get(county)||[]).filter(row=>!selected.includes(row.uid)),[grouped,county,selected]);
   const dirty=editorOpen&&Boolean(editingUid||title||description||selected.length);
   const reset=()=>{
     setTitle('');setDescription('');setSelected([]);setEditingUid('');
     setCounty('');setPointUid('');
+    pendingSavedRef.current=null;
+  };
+  const changeSource=source=>{
+    if(source===writeScopeId||busy)return;
+    if(dirty&&!window.confirm('切換作品範圍會放棄目前尚未儲存的路線佇列與文字，確定切換？'))return;
+    reset();setRouteScopeId(source);setEditorOpen(false);
+    setNotice('');setNoticeError(false);
   };
   const beginNew=()=>{
+    if(dirty&&!window.confirm('放棄目前尚未儲存的路線修改，重新建立一張？'))return;
     reset();setEditorOpen(true);setNotice('');setNoticeError(false);
   };
   const edit=map=>{
+    if(dirty&&!window.confirm('編輯其他路線會放棄目前未儲存的修改，確定切換？'))return;
+    pendingSavedRef.current=null;
+    if(scopeId==='loc')setRouteScopeId(map.source_scope);
     setEditingUid(map.uid);
     setTitle(String(map.title||''));
     setDescription(String(map.description||''));
@@ -253,14 +284,38 @@ function MapEditor({scopeId,spatial,reload}){
     if(busy||!editorOpen)return false;
     setBusy(true);setNotice('');setNoticeError(false);
     try{
-      const input={scopeId,title,description,anchorUids:selected,anchors};
-      if(editingUid)await updateTraceMap({...input,uid:editingUid});
-      else await addTraceMap(input);
-      await reload();
+      if(!writeScopeId)throw Error('目前沒有可編輯的作品範圍。請先切換至具備管理權限的 Scope。');
+      const input={scopeId:writeScopeId,title,description,anchorUids:selected,anchors};
+      // If the insert succeeded but readback failed, never create a second
+      // route on another Save click. The next click retries confirmation.
+      let saved=pendingSavedRef.current;
+      if(saved&&(saved.scopeId!==writeScopeId||saved.editUid!==editingUid))
+        throw Error('上次寫入仍在確認中，請重新讀取頁面後檢查結果，避免重複新增。');
+      if(!saved){
+        const written=editingUid
+          ?await updateTraceMap({...input,uid:editingUid})
+          :await addTraceMap(input);
+        if(!written?.uid)throw Error('寫入沒有回傳痕跡圖 UID，無法確認是否成功。');
+        saved={uid:written.uid,scopeId:writeScopeId,editUid:editingUid};
+        pendingSavedRef.current=saved;
+      }
+      const fresh=await reload();
+      const confirmed=Array.isArray(fresh?.maps)?fresh.maps.find(row=>row.uid===saved.uid
+        &&row.source_scope===writeScopeId):null;
+      if(!confirmed||confirmed.title!==title.trim()
+        ||String(confirmed.description||'')!==description.trim()
+        ||JSON.stringify(confirmed.anchor_uids||[])!==JSON.stringify(selected))
+        throw Error('已收到寫入回應，但重新讀取尚未確認完整路線；保留原本佇列，請勿重複新增，可再次按儲存重試確認。');
       const changed=Boolean(editingUid);
+      setExpandedIds(ids=>ids.includes(saved.uid)?ids:[...ids,saved.uid]);
       reset();
       setEditorOpen(false);
-      setNotice(changed?'痕跡圖已更新，所有站點順序與文字皆已儲存。':'已新增一張痕跡圖。');
+      // Refresh existing public numeric tags only after a verified write;
+      // this is not an ISR architecture or database schema change.
+      const refreshed=await revalidateServerMetadata();
+      await cache.invalidate({queryKey:traceKey('loc')});
+      setNotice((changed?'痕跡圖已更新並重新讀取確認。':'已新增痕跡圖並重新讀取確認。')
+        +(refreshed?'':'公開地圖快取可能仍是舊資料，可稍後重新整理。'));
       return true;
     }catch(error){
       setNoticeError(true);setNotice(String(error?.message||error));return false;
@@ -298,11 +353,24 @@ function MapEditor({scopeId,spatial,reload}){
       <div><h3>痕跡圖管理</h3>
         <p className="scope-status">每張痕跡圖是一條獨立路線，完整保存名稱、說明與站點順序；可建立多張。</p>
       </div>
-      <button type="button" className="loc-button" disabled={busy}
+      <button type="button" className="loc-button" disabled={busy||!writeScopeId}
         onClick={()=>editorOpen&& !editingUid ?setEditorOpen(false):beginNew()}>
         {editorOpen&&!editingUid?'收合新增表單':'新增一張痕跡圖'}
       </button>
     </header>
+    {scopeId==='loc'?<div className="scope-management-fields">
+      <label>可編輯的作品範圍
+        <select className="scope-select" value={writeScopeId} disabled={busy||!editableScopes.length}
+          onChange={event=>changeSource(event.target.value)}>
+          {!editableScopes.length?<option value="">沒有可編輯的作品範圍</option>:null}
+          {editableScopes.map(source=><option key={source} value={source}>
+            {source==='lo3rwang'?'作者作品':source==='lrunes'?'月之符文':'LOC 自有錨點'}
+          </option>)}
+        </select>
+      </label>
+      <p className="scope-status">LOC 顯示跨 Scope 的定錨點，但路線必須寫回所選作品的原始 Scope。</p>
+    </div>:null}
+    {!writeScopeId?<p className="scope-status" role="status">這裡尚無有權管理且有資料的作品範圍，請先到對應作品頁建立空間定錨點。</p>:null}
     {maps.length?<div className="loc-trace-saved-maps">
       <div className="loc-trace-map-manager-heading">
         <h4>已儲存的痕跡圖（{maps.length}）</h4>
@@ -390,7 +458,7 @@ function MapEditor({scopeId,spatial,reload}){
       </ol>:<p className="scope-status">佇列尚無站點。請依序加入至少兩個地點。</p>}
       <div className="scope-stat-controls">
         <button type="submit" className="loc-button primary"
-          disabled={busy||!title.trim()||selected.length<2||selected.length>80}>
+          disabled={busy||!writeScopeId||!title.trim()||selected.length<2||selected.length>80}>
           {busy?'儲存中…':editingUid?'儲存痕跡圖修改':'儲存新痕跡圖'}
         </button>
         <button type="button" className="loc-button" disabled={busy}
