@@ -1075,3 +1075,21 @@
 .loc-trace-quick-results{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
 .loc-trace-quick-results>.loc-button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}
 @media(max-width:520px){.loc-trace-quick-field{grid-template-columns:minmax(0,1fr)}.loc-trace-quick-field>.loc-button{width:100%}}
+
+
+/* Trace entry points and the shared LOC Search article backfill controls. */
+.loc-trace-start-points{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.65rem 0}
+.loc-trace-start-points>.scope-status{flex:0 0 100%;margin:0}
+.loc-trace-start-points>.loc-button{min-height:44px}
+.scope-search-place-mode{display:flex;flex-wrap:wrap;gap:.5rem;margin:.65rem 0}
+.scope-search-place-mode>.loc-button[aria-pressed="true"]{border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft);font-weight:700}
+.loc-search-bulk-panel{margin:.8rem 0;padding:clamp(.8rem,2vw,1.1rem);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-ui-panel-soft)}
+.loc-search-bulk-panel h3{margin:0 0 .35rem}
+.loc-search-bulk-controls{display:flex;flex-wrap:wrap;align-items:end;gap:.6rem;margin-top:.65rem}
+.loc-search-bulk-controls>label{display:grid;gap:.3rem;min-width:min(100%,240px);flex:1 1 240px}
+.loc-search-bulk-controls>label>input{min-width:0;width:100%;padding:.55rem .7rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit}
+.loc-search-bulk-controls>.scope-status{flex:1 1 100%;margin:.15rem 0}
+.loc-search-bulk-controls>.loc-button{min-height:44px}
+.loc-search-bulk-article-choice{display:flex;align-items:center;gap:.55rem;margin:.85rem 0 .25rem;padding:.65rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-ui-panel-soft);font-size:.92rem}
+.loc-search-bulk-article-choice>input{width:18px;height:18px;accent-color:var(--loc-accent)}
+@media(max-width:520px){.loc-search-bulk-controls>.loc-button{flex:1 1 100%}}
