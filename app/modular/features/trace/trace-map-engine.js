@@ -54,7 +54,7 @@ function pickedArea(lng,lat,radius){
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(a=>a.trace_type==='anchor'&&Number.isFinite(Number(a.longitude))&&Number.isFinite(Number(a.latitude)))
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),radius_m:a.radius_m||500},
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
       geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
 }
 function emptyRoute(){
@@ -67,7 +67,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,radiusMeters=500,anchors=[]}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,radiusMeters=500,anchors=[]}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -168,6 +168,19 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     map.addLayer({id:'loc-trace-saved-point-labels',type:'symbol',source:'loc-trace-saved-anchors',
       minzoom:12,layout:{'text-field':['get','title'],'text-size':12,'text-offset':[0,1.2],'text-anchor':'top',
         'text-allow-overlap':false},paint:{'text-color':'#ebfff8','text-halo-color':'#122d39','text-halo-width':1.5}});
+    if(typeof onAnchorSelect==='function'){
+      const chooseAnchor=event=>{
+        const props=event.features?.[0]?.properties;
+        if(props?.title)onAnchorSelect({
+          title:props.title,uid:props.uid,source_scope:props.source_scope,radius_m:props.radius_m
+        });
+      };
+      for(const layer of ['loc-trace-saved-point-layer','loc-trace-saved-point-labels']){
+        map.on('click',layer,chooseAnchor);
+        map.on('mouseenter',layer,()=>{map.getCanvas().style.cursor='pointer';});
+        map.on('mouseleave',layer,()=>{map.getCanvas().style.cursor='';});
+      }
+    }
     map.addSource('loc-trace-picked-area',{type:'geojson',data:pickedArea(NaN,NaN,radius)});
     map.addLayer({id:'loc-trace-picked-fill',type:'fill',source:'loc-trace-picked-area',
       paint:{'fill-color':'#f7ba66','fill-opacity':0.14}});
