@@ -51,6 +51,12 @@ function pickedArea(lng,lat,radius){
     type:'Feature',properties:{radius_m:radius},geometry:{type:'Polygon',coordinates:[ringAround({lng,lat},radius)]}
   }]:[]};
 }
+function existingAnchorPoints(anchors){
+  return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
+    .filter(a=>a.trace_type==='anchor'&&Number.isFinite(Number(a.longitude))&&Number.isFinite(Number(a.latitude)))
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),radius_m:a.radius_m||500},
+      geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
+}
 function emptyRoute(){
   return {type:'FeatureCollection',features:[]};
 }
@@ -61,7 +67,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,radiusMeters=500}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,radiusMeters=500,anchors=[]}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -71,8 +77,13 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let pickedMarker=null;
   let pickedPosition=null;
   let radius=Number(radiusMeters)||500;
+  let savedAnchors=anchors;
   function refreshRadius(){
     if(loaded&&pickedPosition)map.getSource('loc-trace-picked-area')?.setData(pickedArea(pickedPosition.lng,pickedPosition.lat,radius));
+  }
+  function setAnchors(next){
+    savedAnchors=Array.isArray(next)?next:[];
+    if(loaded)map.getSource('loc-trace-saved-anchors')?.setData(existingAnchorPoints(savedAnchors));
   }
   function setRadius(value){
     const n=Number(value);
@@ -125,7 +136,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     const zoom=Math.max(2,Math.min(16,14.5-Math.log2(Math.max(radius,100)/500)));
     map.flyTo({center:[lng,lat],zoom,pitch:59,bearing:-23,essential:true});
     if(canPickLocation)pickLocation(lng,lat,name);
-    else new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
+    else {pickedPosition={lng,lat};refreshRadius();}
+    if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
   }
   function overview(){
     if(removed)return;
@@ -149,6 +161,13 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         'fill-extrusion-base':0
       }
     });
+    map.addSource('loc-trace-saved-anchors',{type:'geojson',data:existingAnchorPoints(savedAnchors)});
+    map.addLayer({id:'loc-trace-saved-point-layer',type:'circle',source:'loc-trace-saved-anchors',
+      paint:{'circle-radius':6,'circle-color':'#6ce4ce','circle-opacity':0.95,
+        'circle-stroke-width':1.5,'circle-stroke-color':'#153739'}});
+    map.addLayer({id:'loc-trace-saved-point-labels',type:'symbol',source:'loc-trace-saved-anchors',
+      minzoom:12,layout:{'text-field':['get','title'],'text-size':12,'text-offset':[0,1.2],'text-anchor':'top',
+        'text-allow-overlap':false},paint:{'text-color':'#ebfff8','text-halo-color':'#122d39','text-halo-width':1.5}});
     map.addSource('loc-trace-picked-area',{type:'geojson',data:pickedArea(NaN,NaN,radius)});
     map.addLayer({id:'loc-trace-picked-fill',type:'fill',source:'loc-trace-picked-area',
       paint:{'fill-color':'#f7ba66','fill-opacity':0.14}});
@@ -217,5 +236,5 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,setRadius,overview,showRoadRoute,destroy};
+  return {focus,focusCoordinates,setRadius,setAnchors,overview,showRoadRoute,destroy};
 }
