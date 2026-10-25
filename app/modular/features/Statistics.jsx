@@ -562,14 +562,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending||!adminSourceReady)))?<div className="scope-stat-data-pending">
+    {((mediaDimension&&mediaLoading)||(!mediaDimension&&!sourceRows.error&&!sourceCatalog.error&&(sourceRows.isPending||sourceCatalog.isPending||!adminSourceReady)))?<div className="scope-stat-data-pending">
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
     {earliestQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliestQuery.error,UI_COPY)}</p>:null}
     {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
-    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error&&adminSourceReady?<>
+    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
