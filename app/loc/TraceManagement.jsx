@@ -97,10 +97,8 @@ function AnchorEditor({scopeId,spatial,reload}){
       if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500});
       else await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
-      await Promise.all([
-        cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
-        revalidateServerMetadata()
-      ]);
+      await revalidateServerMetadata();
+      await cache.invalidate({queryKey:['loc-place-summary',scopeId]});
       setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新。':'空間定錨點已儲存。');
