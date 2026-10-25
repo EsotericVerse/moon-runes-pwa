@@ -109,7 +109,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     points.forEach((place,index)=>{
       if(!place)return;
       const coordinates=[Number(place.longitude),Number(place.latitude)];
-      features.push({type:'Feature',properties:{order:index+1,title:String(place.title||'')},
+      features.push({type:'Feature',properties:{order:index+1,title:String(place.title||''),
+        uid:String(place.uid||''),source_scope:String(place.source_scope||'')},
         geometry:{type:'Point',coordinates}});
       const previous=points[index-1];
       if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
@@ -310,6 +311,23 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       layout:{'text-field':['to-string',['get','order']],'text-size':12,
         'text-allow-overlap':true},
       paint:{'text-color':'#30253e'}});
+    // Saved route markers render over the source anchor dots; make either
+    // visible geometry selectable and keep the full original anchor data.
+    if(typeof onAnchorSelect==='function'){
+      const clickSavedStop=event=>{
+        const props=event.features?.[0]?.properties;
+        const anchor=savedAnchors.find(row=>String(row.uid)===String(props?.uid||'')
+          &&String(row.source_scope||'')===String(props?.source_scope||''));
+        if(!anchor)return;
+        centerIfFar(anchor.longitude,anchor.latitude);
+        onAnchorSelect(anchor);
+      };
+      for(const layer of ['loc-trace-user-route-stops','loc-trace-user-route-order']){
+        map.on('click',layer,clickSavedStop);
+        map.on('mouseenter',layer,()=>{map.getCanvas().style.cursor='pointer';});
+        map.on('mouseleave',layer,()=>{map.getCanvas().style.cursor='';});
+      }
+    }
     map.addSource('loc-trace-route',{type:'geojson',data:emptyRoute()});
     map.addLayer({
       id:'loc-trace-route-line',type:'line',source:'loc-trace-route',
