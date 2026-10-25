@@ -115,7 +115,8 @@ test('public Trace reads fresh maps and a complete inline three-tab report',()=>
   const results=read('app/modular/features/trace/TracePlaceResults.jsx');
   const editor=read('app/loc/TraceManagement.jsx');
   const css=read('app/styles/features.css');
-  assert.match(page,/useAsyncResource\(traceKey\(scopeId\),\(\)=>readTraceData\(scopeId\)/);
+  assert.match(page,/enabled:supported&&routeListOpen/);
+  assert.match(page,/readTraceMapIndex\(periodScopeId\)/);
   assert.doesNotMatch(page,/readNumericIsr\(scopeId,'traces'\)/);
   assert.match(results,/<CultureTimeline items=\{riverRows\}/);
   assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
