@@ -11,7 +11,7 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 // Reproduce a *configured* Scope whose Galaxy, Galaxy Media, Time and Keyword
 // tables all exist, but contain zero rows. Missing tables, broken SQL and
 // missing permissions must still surface as real errors.
-async function emptyIsrHarness({registered=true}={}){
+async function emptyIsrHarness({registered=true,timeRows=[]}={}){
   const tableCalls=[],rpcCalls=[];
   const data={rows:[],earliest:'',categories:[],aliases:[]};
   const emptyResult={data:[],error:null};
@@ -27,7 +27,10 @@ async function emptyIsrHarness({registered=true}={}){
       if(name!=='manage')throw Error('Unexpected maybeSingle '+name);
       return {data:registered?{time_table:null,birthday:null}:null,error:null};
     },
-    then(resolve,reject){return Promise.resolve(emptyResult).then(resolve,reject);}
+    then(resolve,reject){
+      const rows=name==='lo3rwang_time'?timeRows:[];
+      return Promise.resolve({data:rows,error:null}).then(resolve,reject);
+    }
   });
   const client={
     from(name){
@@ -110,6 +113,53 @@ test('unregistered Scope still errors; zero rows must not hide missing Registry'
   const h=await emptyIsrHarness({registered:false});
   const response=await h.get('periods');
   assert.equal(response.status,502);
+});
+
+test('Period without any time anchors or birthday is optional, not a 500 error',async()=>{
+  const h=await emptyIsrHarness({timeRows:[{
+    record_id:'period-only',record_type:'period',resource_id:'p1',
+    anchor_ids:['missing-anchor','0'],label:'未定日期的時期',display_order:1
+  }]});
+  const response=await h.get('periods');
+  assert.equal(response.status,200);
+  // Without a resolved boundary, do not fabricate a calendar date.
+  assert.deepEqual(Array.from(response.body),[]);
+});
+
+test('No work categories or personal categories preserves raw sources',()=>{
+  const {categories,aliases,groups,groupAliases}=sourceTaxonomyFromArrays([],[]);
+  assert.deepEqual({categories,aliases,groups,groupAliases},{
+    categories:[],aliases:[],groups:[],groupAliases:[]
+  });
+  // Work classification and personal classification may be empty separately.
+  assert.deepEqual(sourceTaxonomyFromArrays(['facebook'],[]).groups,[]);
+  assert.deepEqual(sourceTaxonomyFromArrays([],['suno']).categories,[]);
+  const rows=[
+    {kind:'source',category:'unknown-source',day:'2026-10-25',item_count:3},
+    {kind:'total',category:'文字作品',day:'2026-10-25',item_count:3}
+  ];
+  const roots=summarizeCultureRiverRoots(rows,{categories,aliases});
+  assert.deepEqual(roots.rootBuckets,[{category:'custom',start_date:'2026-10-25',item_count:3}]);
+  assert.equal(roots.groups[0].source_name,'unknown-source');
+  assert.equal(selectCultureRiverChildren(rows,{categories,aliases},['custom']).length,1);
+  const stats=administrativeSourceTrend(rows,{categories,aliases},{
+    startDate:'2026-10-25',endDate:'2026-10-25',unit:'day'
+  });
+  assert.equal(stats.total,3);
+  assert.equal(stats.distribution[0]?.name,'未分類');
+  assert.equal(stats.distribution[0]?.value,3);
+});
+
+test('No spatial anchors, no saved route maps and no keyword groups are valid',()=>{
+  const traceData=read('app/modular/features/trace/trace-data.js');
+  const trace=read('app/modular/features/Trace.jsx');
+  const culture=read('app/loc/culture-query.js');
+  const classification=read('app/loc/source-classification.mjs');
+  assert.match(traceData,/anchors:rows\.filter\(row=>row\.trace_type==='anchor'\)/);
+  assert.match(traceData,/maps:rows\.filter\(row=>row\.trace_type==='map'\)/);
+  assert.match(trace,/if\(!data\|\|scopeId!=='loc'\)return data/);
+  assert.match(culture,/const anchors=new Map\(all\.filter\(row=>row\.entry_type==='anchor'\)/);
+  assert.match(classification,/sourceTaxonomyFromArrays\(systemNames=\[\],personalNames=\[\]\)/);
 });
 
 test('empty classifications and source counts are valid presentation inputs',()=>{
