@@ -66,6 +66,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   const editor=read('app/loc/TraceManagement.jsx');
   const scope=read('app/loc/ScopeManagement.jsx');
   const admin=read('app/loc/views/AdminHomeView.jsx');
+  const traceRoute=read('app/trace/manage/page.jsx');
   assert.match(editor,/onLocationPick=\{\(\{lng,lat\}\)=>\{/);
   assert.match(react,/export default function TraceMap\(\{onLocationPick=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
@@ -75,7 +76,8 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(engine,/pickedMarker\?\.remove\(\)/);
   assert.match(editor,/新增空間定錨點/);
   assert.match(scope,/shortLabel:'空間定錨點'/);
-  assert.match(admin,/shortLabel:'空間定錨點'/);
+  assert.doesNotMatch(admin,/shortLabel:'空間定錨點'/);
+  assert.match(traceRoute,/forcedView="manage" forcedScope="loc"/);
 });
 
 test('Only canonical public Trace and management routes exist',()=>{
@@ -84,6 +86,7 @@ test('Only canonical public Trace and management routes exist',()=>{
     'app/lo3rwang/trace/page.jsx','app/scope-shell/trace/page.jsx'
   ])assert.match(read(path),/forcedView="trace"/,path);
   for(const path of [
+    'app/trace/manage/page.jsx',
     'app/lrunes/manage/page.jsx','app/lo3rwang/manage/page.jsx',
     'app/scope-shell/manage/page.jsx'
   ])assert.match(read(path),/forcedView="manage"/,path);
