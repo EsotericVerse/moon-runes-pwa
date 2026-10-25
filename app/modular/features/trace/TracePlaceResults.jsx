@@ -136,7 +136,8 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     <header className="loc-trace-works-title">
       <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
       <span className="scope-status">{isMap?(place.anchor_uids?.length||0)+' 站 · ':''}
-        {tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
+        {!enabled?'沒有可對應的打卡地點'
+          :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
           :(numeric.data?verified.total+' 篇已確認打卡文章':'數值圖表')}
       </span>
     </header>
@@ -146,6 +147,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
     </div>
     <p className="scope-status">文章依原始打卡與已核對的同址別名關聯；尚未核准補寫的 Google Timeline 候選不計入已確認篇數。</p>
+    {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有可對應的原始打卡名稱，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
     {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有符合這個時期的已確認打卡文章。</p>:null}
