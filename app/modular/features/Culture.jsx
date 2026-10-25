@@ -1406,11 +1406,11 @@ export default function Culture(){
                       :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}
                     <span className='scope-status' aria-live='polite'>
                       {classificationPeriodLabel} → {keywordDrillSource||'全部來源'} → {keywordDrillGroup
-                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')+' · Group 分布'
+                        ?String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組')+' · 符文列表'
                         :'全部群組'}
                     </span>
                   </div>
-                  <h4>{keywordDrillGroup?'Class 內 Group 列表｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'Class 列表'}</h4>
+                  <h4>{keywordDrillGroup?'符文列表｜'+String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'):'符文群組（點選河道左側名稱展開）'}</h4>
                   {!keywordWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間。</p>:null}
                   {styleRiverAnalysis.suggestions.length>0?<details className='scope-culture-anchor-picker'>
                     <summary>風格密度建議定錨點：{styleRiverAnalysis.suggestions.length} 個（點開查看）</summary>
@@ -1432,7 +1432,7 @@ export default function Culture(){
                   {!styleQuery.isPending&&!styleQuery.error&&styleQuery.data?.staticstime&&!styleQuery.data?.statisticsEnabled?<p className='scope-status'>目前關鍵詞統計尚未啟用。</p>:null}
                   {keywordDetailRequested&&keywordDensityQuery.isPending&&styleQuery.data?.statisticsEnabled
                     ?<p className='scope-status' role='status'>正在讀取所選來源／群組的文章屬性…</p>:null}
-                  {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的 Group 分布…</p>:null}
+                  {keywordDrillGroup&&keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入所選群組的符文列表…</p>:null}
                   {keywordRiverError||keywordGroupCatalogQuery.error
                     ?<p className='scope-status scope-error'>{featureDataErrorMessage(keywordRiverError||keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
                   {!keywordRiverPending&&(!keywordDrillGroup||!keywordGroupCatalogQuery.isPending)
