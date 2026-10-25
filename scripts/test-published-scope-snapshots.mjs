@@ -34,7 +34,9 @@ test('Culture classification is a published JS module, not a mandatory four-quer
   const taxonomy=read('app/modular/published-source-taxonomy.js');
   const culture=read('app/modular/features/Culture.jsx');
   assert.match(taxonomy,/PUBLISHED_SOURCE_TAXONOMY/);
-  for(const id of ['loc','lrunes','lo3rwang'])assert.ok(taxonomy.includes('"'+id+'":'));
+  for(const id of ['loc','lrunes','lo3rwang'])assert.match(taxonomy,new RegExp(id+':\\\\{system:'));
+  assert.match(taxonomy,/PUBLISHED_SOURCE_LISTS/);
+  assert.doesNotMatch(taxonomy,/statistics_source_categories|statistics_scope_others_groups/);
   assert.match(culture,/if\(published\)return published/);
   assert.match(culture,/openCultureRoots\.length>0/);
   assert.match(culture,/culture-children/);
