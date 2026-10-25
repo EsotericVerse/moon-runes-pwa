@@ -33,7 +33,7 @@ import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../f
 import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
 import {resolveGalaxyExternalLinks,searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSourceTaxonomy} from '../../loc/galaxy-query';
-import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry} from '../../loc/scope-data';
+import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry,revalidateServerMetadata} from '../../loc/scope-data';
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
 import {requireGalaxyContent,resolveGalaxyTitle,assertPlainGalaxyAttributes} from '../../loc/content-policy';
@@ -938,6 +938,8 @@ export default function Search({managementMode=false}){
       });
       if(error)throw Error(error.message||'批次補寫失敗');
       if(apply){
+        await revalidateServerMetadata();
+        await resourceCache.invalidate({queryKey:['loc-place-summary',target[0].scopeId]});
         const filled=new Set(target.map(row=>row.scopeId+':'+row.uid));
         setResults(current=>current.map(row=>filled.has(row.scopeId+':'+row.resourceId)&&!row.checkInPlace
           ?{...row,checkInPlace:bulkPlace.trim()}:row));
