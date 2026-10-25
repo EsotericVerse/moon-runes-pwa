@@ -82,7 +82,7 @@ export default {
   "crossAdvancedTitle": "展开 Meta Tag 交叉分析（高级）",
   "othersAll": "全部",
   "othersCategory": "其他",
-  "othersLoadFailed": "自定义分类加载失败：{error}",
-  "othersBreakdownTitle": "自定义分类",
+  "othersLoadFailed": "作品自定义分类加载失败：{error}",
+  "othersBreakdownTitle": "作品自定义分类",
   "othersUnclassified": "未分类",
 };
