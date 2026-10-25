@@ -4,6 +4,7 @@ import {useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
+import {dbAuthClient} from './db-client.mjs';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
@@ -20,6 +21,13 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const dirty=Boolean(title||description||longitude||latitude);
+  const popular=useAsyncResource(['trace-place-names',scopeId],async()=>{
+    const {data,error}=await dbAuthClient.schema('silver').rpc('trace_place_suggestions',{
+      p_scope_id:scopeId,p_limit:50
+    });
+    if(error)throw new Error(error.message||'打卡名稱讀取失敗');
+    return data||[];
+  },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
   const save=async()=>{
     if(busy)return false;
     setBusy(true);setNotice('');
@@ -37,13 +45,29 @@ function AnchorEditor({scopeId,spatial,reload}){
     <h3>新增空間定錨點</h3>
     <p className="scope-status">請直接在地圖上點選位置（或點車站快捷位置），經緯度會自動填入；橘色圖釘可拖曳調整。不會修改 Galaxy 打卡欄位。</p>
     <div className="scope-management-fields">
-      <label>空間定錨點名稱<input type="text" maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder="例如：起點" disabled={busy}/></label>
+      <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
+        value={title} onChange={e=>setTitle(e.target.value)}
+        placeholder="選既有 Facebook 打卡名稱，或自行輸入" disabled={busy}/>
+        <datalist id={'trace-place-'+scopeId}>
+          {(popular.data||[]).map(item=><option key={item.name} value={item.name}/>)}
+        </datalist>
+      </label>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
     </div>
+    {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
+      <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
+      {popular.data.slice(0,10).map(item=><button className="loc-button" type="button"
+        key={item.name} disabled={busy} onClick={()=>setTitle(item.name)}>
+        {item.name}（{item.article_count}）
+      </button>)}
+    </div>:null}
+    {popular.error?<p role="status" className="scope-status scope-error">
+      打卡名稱讀取失敗：{String(popular.error.message||popular.error)}
+    </p>:null}
     <TraceMap spatialData={spatial} onLocationPick={({lng,lat,name})=>{
-      if(name)setTitle(name);
+      if(name)setTitle(current=>current.trim()?current:name);
       setLongitude(String(Math.round(lng*1e6)/1e6));
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
