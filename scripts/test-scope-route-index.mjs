@@ -33,7 +33,7 @@ async function load(sourceText,entry){
   return registry.namespace;
 }
 
-test('every active silver.loc Scope has a public JS routing record',async()=>{
+test('every active silver.manage Scope has a public JS routing record',async()=>{
   const routes=await load(indexSource,'scope-route-index');
   const all=routes.SCOPE_ROUTE_INDEX;
   assert.deepEqual(Array.from(all.map(row=>row.scope_id)).sort(),['lo3rwang','loc','lrunes']);
@@ -76,7 +76,7 @@ test('ISR CORS public origins come only from the JS route file',async()=>{
 test('LOC homepage uses its configured Theme instead of aggregate auto fallback',()=>{
   const shell=read('app/AppShell.jsx');
   assert.ok(shell.includes("(scope.id==='loc'||!scope.aggregateChildren)"),
-    'LOC is a Group but still owns its own configured Theme in loc_config');
+    'LOC is a Group but still owns its own configured Theme in silver.loc');
   assert.ok(shell.includes('const configuredDefaultThemeId=configuredTheme===SYSTEM_THEME_ID?'),
     'System default remains independent of a concrete configured Theme');
 });
