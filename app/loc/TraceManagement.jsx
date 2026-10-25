@@ -7,6 +7,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
+import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,
   addTraceMap,updateTraceMap,deleteTraceMap,validCoordinates
@@ -36,6 +37,16 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
+  const duplicateCandidates=useMemo(()=>{
+    if(!title.trim()||!validCoordinates(longitude,latitude))return [];
+    return findAnchorWriteMatches({
+      uid:'__incoming__',source_scope:scopeId,trace_type:'anchor',title,
+      description,longitude,latitude
+    },ownAnchors.filter(row=>row.uid!==editingUid));
+  },[spatial.anchors,scopeId,editingUid,title,description,longitude,latitude]);
+  const closeCandidates=duplicateCandidates.filter(item=>
+    item.type==='near-unverified'||item.type==='same-address'
+    ||item.type==='address-coordinate-conflict'||item.type==='same-name-different-location');
   const pickExisting=uid=>{
     quickRequest.current+=1;
     setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
@@ -91,17 +102,20 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(busy||quickBusy)return false;
     setBusy(true);setNotice('');
     try{
-      if(!editingUid&&ownAnchors.some(row=>String(row.title||'').trim()===title.trim())){
-        throw new Error('已有同名空間定錨點，請先從上方選擇編輯既有紀錄，避免重複建立。');
-      }
-      if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500});
-      else await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
+      if(closeCandidates.some(item=>item.type==='near-unverified')&&!window.confirm(
+        '附近已有位置接近、但尚未證明同址的定錨點。確定要保留為獨立地點？寫入後可至「整理空間定錨點」進一步核對。'
+      ))return false;
+      const saved=editingUid
+        ?await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500})
+        :await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
       await revalidateServerMetadata();
       await cache.invalidate({queryKey:['loc-place-summary',scopeId]});
       setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
-      setNotice(editingUid?'空間定錨點已更新。':'空間定錨點已儲存。');
+      setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
+        :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
+        :'空間定錨點已儲存，已完成新增前重複檢查。');
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
@@ -143,6 +157,16 @@ function AnchorEditor({scopeId,spatial,reload}){
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
       <label>周圍搜尋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} placeholder="500" onChange={e=>setRadius(e.target.value)} disabled={busy}/></label>
     </div>
+    {closeCandidates.length?<div className="scope-card" role="status">
+      <strong>儲存前：附近／同址檢查（{closeCandidates.length} 組）</strong>
+      {closeCandidates.slice(0,5).map(item=><p key={item.b.uid} className="scope-status">
+        {item.b.title} · {item.meters??'未知'} 公尺 · {item.safeReuse
+          ?'完整地址相同，儲存時沿用原定錨點'
+          :item.type==='near-unverified'?'附近候選；需核對是否不同地點'
+          :item.type==='address-coordinate-conflict'?'地址相同但座標衝突，需先整理'
+          :'請確認是否為同一地點'}
+      </p>)}
+    </div>:null}
     {quickNotice?<p className="scope-status" role="status" aria-live="polite">{quickNotice}</p>:null}
     {quickCandidates.length?<div className="loc-trace-quick-results" role="group" aria-label="地點候選">
       {quickCandidates.map((candidate,index)=><button key={index} className="loc-button" type="button"
