@@ -956,6 +956,14 @@ export default function Search({managementMode=false}){
         <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)}
           placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
+        {managementMode?<button type="button" className="loc-button" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
+          onClick={()=>{
+            setPlaceOnly(false);
+            executeSearch('',null,{browse:true,overrideOptions:{
+              contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',
+              placeOnly:false,mediaOnly:false,browse:true,sortDirection:articleSort
+            }});
+          }}>瀏覽文章列表（不需輸入關鍵詞）</button>:null}
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
       <div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
