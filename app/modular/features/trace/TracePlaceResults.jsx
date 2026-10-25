@@ -183,12 +183,18 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       }))
       .sort((a,b)=>a.when.localeCompare(b.when));
   },[isMap,place,anchors,targetScope]);
-  const visitRiver=useMemo(()=>visits.map(visit=>({
+  const visibleVisits=useMemo(()=>visits.filter(visit=>{
+    // The contents of the favorite frame share one date filter, including
+    // independently recorded visit timestamps (which are not article dates).
+    const day=new Date(Date.parse(visit.when)+8*3600000).toISOString().slice(0,10);
+    return (!startDate||day>=startDate)&&(!endDate||day<=endDate);
+  }),[visits,startDate,endDate]);
+  const visitRiver=useMemo(()=>visibleVisits.map(visit=>({
     id:'trace-visit:'+visit.id,entry_id:'trace-visit:'+visit.id,
     entry_type:'spatial_visit',group_key:'trace-visits',group_label:'實際造訪時間',
     group_order:0,start_date:visit.when,
     title:visit.title+' · '+visit.label
-  })),[visits]);
+  })),[visibleVisits]);
   const listTotal=selectedMediaType?mediaFiltered.data?.length:list.data?.pages?.[0]?.total;
   // Present the same vis-timeline river used by Culture. Aggregate by month
   // so a 20-year personal history remains navigable without thousands of
@@ -231,18 +237,18 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     </header>
     {!sourceFilter&&!selectedMediaType?<div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
       <p className="scope-status">
-        {visits.length?'已保存 '+visits.length+' 次具體造訪時間；各站獨立記錄。'
+        {visibleVisits.length?'已保存 '+visibleVisits.length+' 次具體造訪時間；各站獨立記錄。'
           :'目前沒有可確認的造訪時刻；不會以整趟旅程起訖日期代替各站時間。'}
       </p>
-      {visits.length?<p className="scope-status">時間統一換算為臺灣時區顯示；境外地點的當地時間，須另依原始時區或航班文件確認。</p>:null}
-      {visits.length?<ol className="loc-trace-selection-order">
-        {(showAllVisits?visits:visits.slice(0,12)).map(visit=><li key={visit.id}>
+      {visibleVisits.length?<p className="scope-status">時間統一換算為臺灣時區顯示；境外地點的當地時間，須另依原始時區或航班文件確認。</p>:null}
+      {visibleVisits.length?<ol className="loc-trace-selection-order">
+        {(showAllVisits?visibleVisits:visibleVisits.slice(0,12)).map(visit=><li key={visit.id}>
           <span>{visit.label} · {visit.title}</span>
         </li>)}
       </ol>:null}
-      {visits.length>12?<button className="loc-button" type="button"
+      {visibleVisits.length>12?<button className="loc-button" type="button"
         onClick={()=>setShowAllVisits(value=>!value)}>
-        {showAllVisits?'收合造訪時間':'顯示全部 '+visits.length+' 次造訪時間'}
+        {showAllVisits?'收合造訪時間':'顯示全部 '+visibleVisits.length+' 次造訪時間'}
       </button>:null}
     </div>:null}
     {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
@@ -262,7 +268,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
         onClick={()=>selectedMediaType?setVisibleCount(n=>n+PAGE_SIZE):list.fetchNextPage()}>
         {!selectedMediaType&&list.isFetchingNextPage?'載入中…':'載入更多文章'}
       </button>:null}
-    {tab==='timeline'&&(summary.data||(!sourceFilter&&!selectedMediaType&&visits.length>0))?<div className="loc-trace-works-timeline" aria-label="按真實造訪時間排列的時間長河">
+    {tab==='timeline'&&(summary.data||(!sourceFilter&&!selectedMediaType&&visibleVisits.length>0))?<div className="loc-trace-works-timeline" aria-label="按真實造訪時間排列的時間長河">
       {riverItems.length?<CultureTimeline items={riverItems}
         extraGroups={[
           ...(!sourceFilter&&!selectedMediaType&&visitRiver.length?[{id:'trace-visits',label:'實際造訪時間',order:0,selectable:false}]:[]),
