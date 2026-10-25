@@ -1,16 +1,8 @@
 name: Deploy Main Next to GitHub Pages
 
+# Cost control: no automatic rebuild of the public website on each commit.
+# Manually run this workflow only for an intentional GitHub Pages deployment.
 on:
-  push:
-    branches:
-      - "main"
-  # Workflow-only maintenance should not rebuild/deploy the public website.
-    paths-ignore:
-      - ".github/workflows/**"
-      - "AGENTS.md"
-      - "README.md"
-      - "docs/**"
-      - "supabase/migrations/**"
   workflow_dispatch:
 
 permissions:
