@@ -119,7 +119,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     });
   },[verified.months,name]);
   const chartRows=useMemo(()=>verified.months.map(([month,count])=>({
-    month,value:count
+    period:month.replace('-', '/'),start_date:month+'-01',value:count
   })),[verified.months]);
   const chartDistribution=useMemo(()=>verified.places.map(([placeName,count])=>({
     name:placeName,value:count
