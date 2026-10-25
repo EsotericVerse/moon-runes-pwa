@@ -48,6 +48,67 @@ export async function readTraceData(scopeId){
     maps:rows.filter(row=>row.trace_type==='map')
   };
 }
+
+/**
+ * A saved trace map is the spatial counterpart of a Time period.
+ * Its ordered anchor_uids are the membership list; do not invent a second
+ * grouping table, or collapse distinct check-ins at the same coordinates.
+ * The index is small. Only the current trace's anchors are read on demand.
+ */
+export const traceMapIndexKey=scopeId=>['trace-map-index',scopeId];
+export const traceCurrentKey=(scopeId,route)=>[
+  'trace-current',scopeId,route.uid,(route.anchor_uids||[]).join(',')
+];
+export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
+
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at';
+
+export async function readTraceMapIndex(scopeId){
+  const id=sourceId(scopeId);
+  const union=id==='loc';
+  const columns='uid,trace_type,title,description,anchor_uids,created_at'+(union?',scope_id':'');
+  const result=await dbPublicClient.schema('silver').from(id+'_trace')
+    .select(columns).eq('trace_type','map')
+    .order('created_at',{ascending:false}).limit(2000);
+  return (verified(result,'痕跡列表讀取')||[])
+    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+}
+
+export async function readCurrentTraceAnchors(scopeId,anchorUids=[]){
+  const id=sourceId(scopeId);
+  const ids=[...new Set((Array.isArray(anchorUids)?anchorUids:[])
+    .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))];
+  if(ids.length>80)throw Error('單張痕跡圖的站點超過上限。');
+  if(!ids.length)return [];
+  const union=id==='loc';
+  const result=await dbPublicClient.schema('silver').from(id+'_trace')
+    .select(TRACE_DISPLAY_COLUMNS+(union?',scope_id':''))
+    .eq('trace_type','anchor').in('uid',ids).limit(80);
+  const found=(verified(result,'Current 痕跡錨點讀取')||[])
+    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+  const byUid=new Map(found.map(row=>[row.uid,row]));
+  // Preserve route order; never silently replace missing anchors.
+  return ids.map(uid=>byUid.get(uid)).filter(Boolean);
+}
+
+// "All anchors" is an explicit choice, not an eager bootstrap dependency.
+// Paginate: a single 2,000-row cap would silently hide old check-ins.
+export async function readAllTraceAnchors(scopeId){
+  const id=sourceId(scopeId),union=id==='loc',pageSize=800;
+  const rows=[];
+  for(let offset=0;;offset+=pageSize){
+    const result=await dbPublicClient.schema('silver').from(id+'_trace')
+      .select(TRACE_DISPLAY_COLUMNS+(union?',scope_id':''))
+      .eq('trace_type','anchor')
+      .order('created_at',{ascending:true}).order('uid',{ascending:true})
+      .range(offset,offset+pageSize-1);
+    const batch=verified(result,'全部痕跡錨點讀取')||[];
+    rows.push(...batch.map(row=>({...row,source_scope:union?row.scope_id:id})));
+    if(batch.length<pageSize)break;
+  }
+  return rows;
+}
+
 // Used for both interactive edits and bulk geocoding. All comparisons are
 // based on the source Scope, never the LOC-wide materialized union.
 const normalizedName=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,'').toLowerCase();
