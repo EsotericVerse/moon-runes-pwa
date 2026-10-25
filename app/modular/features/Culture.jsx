@@ -774,8 +774,9 @@ export default function Culture(){
   async function refreshTimelineData(){
     // An authorized Time edit invalidates the server-side numeric cache before
     // SWR retries. The SQL fallback is deliberately not used for public ISR.
-    if(scopeId!=='local'&&scopeId!=='lrunes')await revalidateServerMetadata();
+    if(scopeId!=='local')await revalidateServerMetadata();
     await Promise.all([
+      resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-period-settings',scopeId]}),
       resourceCache.invalidate({queryKey:['search-style-keyword']})
