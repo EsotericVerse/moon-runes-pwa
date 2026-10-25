@@ -43,7 +43,11 @@ export default function Trace({scopeId='loc'}){
       ||Number(a.order||0)-Number(b.order||0)),[periodsQuery.data]);
   const selectedPeriod=periodKey==='latest'?periods.at(-1):
     periods.find(period=>String(period.period||period.era_id||period.record_id)===periodKey);
-  const traces=useAsyncResource(traceKey(scopeId),()=>usesNumericIsr(scopeId)?readNumericIsr(scopeId,'traces'):readTraceData(scopeId),{
+  // Trace is an interactive editor-facing feature: a newly saved route must
+  // appear on the very next visit. Keep its small public anchor/route list in
+  // SWR rather than reading the hour-long Culture/Statistics numeric ISR.
+  // Galaxy article bodies are still fetched only after a place is selected.
+  const traces=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
     enabled:supported,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   // Anchors identify places, not visits. Apply the Period only to an on-demand
