@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-resource';
 import {selectRows} from '../../../loc/db-query.mjs';
 import {defaultScopeData} from '../../../loc/scope-data';
@@ -8,8 +9,10 @@ import {readNumericIsr,usesNumericIsr} from '../../../loc/numeric-isr-client';
 import {traceArticlePlaces} from './trace-article-places.mjs';
 import {ArticleSortSelect,WorkSummaryCard,WorkFullText} from '../../ui';
 
+const CultureTimeline=dynamic(()=>import('../../modules/culture-timeline/CultureTimeline'),{loading:()=> <p className="scope-status">正在開啟時間長河…</p>});
+const StatisticsMultiChart=dynamic(()=>import('../../modules/statistics/StatisticsMultiChart'),{loading:()=> <p className="scope-status">正在開啟統計圖…</p>});
 const PAGE_SIZE=40;
-const TABS=[{id:'articles',label:'文章列表'},{id:'timeline',label:'時間長河'},{id:'statistics',label:'基本報表'}];
+const TABS=[{id:'articles',label:'文章列表'},{id:'timeline',label:'時間長河'},{id:'statistics',label:'統計圖'}];
 const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
 
 function TraceWork({row,scope}){
@@ -39,6 +42,7 @@ function TraceWork({row,scope}){
 export default function TracePlaceResults({place=null,anchors=[],scopeId='',period=null}){
   const [tab,setTab]=useState('articles');
   const [sort,setSort]=useState('desc');
+  const [chartType,setChartType]=useState('bar');
   const name=String(place?.title||'').trim();
   const isMap=place?.trace_type==='map';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
@@ -99,9 +103,30 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       total:[...places.values()].reduce((total,n)=>total+n,0)};
   },[numeric.data,placesKey]);
   const listTotal=list.data?.pages?.[0]?.total;
+  // Present the same vis-timeline river used by Culture. Aggregate by month
+  // so a 20-year personal history remains navigable without thousands of
+  // individual glyphs. Each range is article density, NOT an inferred visit.
+  const riverRows=useMemo(()=>{
+    const peak=Math.max(1,...verified.months.map(([,count])=>count));
+    return verified.months.map(([month,count])=>{
+      const after=new Date(month+'-01T00:00:00Z');
+      after.setUTCMonth(after.getUTCMonth()+1);
+      return {id:'trace-month:'+month,entry_id:'trace-month:'+month,
+        entry_type:'place_density',group_key:'trace-density',group_label:name,
+        group_order:0,start_date:month+'-01',end_date:after.toISOString().slice(0,10),
+        item_count:count,density_ratio:count/peak,
+        title:month+' · '+count+' 篇有打卡地點的文章'};
+    });
+  },[verified.months,name]);
+  const chartRows=useMemo(()=>verified.months.map(([month,count])=>({
+    month,value:count
+  })),[verified.months]);
+  const chartDistribution=useMemo(()=>verified.places.map(([placeName,count])=>({
+    name:placeName,value:count
+  })),[verified.places]);
 
   if(!name)return <section className="loc-card loc-trace-works" aria-label="地圖下方文章報表">
-    <h2>文章列表／時間長河／基本報表</h2>
+    <h2>文章列表／時間長河／統計圖</h2>
     <p className="scope-status">選擇一個空間定錨點，或一張痕跡圖，再選時期；報表在這裡展開，不會跳到搜尋。</p>
   </section>;
   const loading=tab==='articles'?list.isPending:numeric.isPending;
@@ -112,7 +137,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
       <span className="scope-status">{isMap?(place.anchor_uids?.length||0)+' 站 · ':''}
         {tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
-          :(numeric.data?verified.total+' 篇已確認打卡文章':'基本報表')}
+          :(numeric.data?verified.total+' 篇已確認打卡文章':'數值圖表')}
       </span>
     </header>
     <div className="loc-trace-works-tabs" role="group" aria-label="雙定錨基本報表">
@@ -132,24 +157,27 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       {list.isFetchingNextPage?'載入中…':'載入更多文章'}
     </button>:null}
     {tab!=='articles'&&!usesNumericIsr(targetScope)?<p className="scope-status">本機版保留文章列表；雲端數值 ISR 不用於私人 SQLite。</p>:null}
-    {tab==='timeline'&&numeric.data?<div className="loc-trace-works-timeline" aria-label="按月份排列的文章時間長河">
-      {verified.months.length?verified.months.map(([month,count])=><div className="loc-trace-month" key={month}>
-        <strong>{month}</strong><span>{count} 篇文章</span>
-      </div>):<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
+    {tab==='timeline'&&numeric.data?<div className="loc-trace-works-timeline" aria-label="按月份排列的真正時間長河">
+      {riverRows.length?<CultureTimeline items={riverRows}
+        extraGroups={[{id:'trace-density',label:name,order:0,selectable:false}]}
+        labelOf={()=>''} mode="source" heightVariant="double"
+        windowStart={startDate} windowEnd={endDate}
+      />:<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
+      <p className="scope-status">河道顯示文章的月份密度，不會將文字紀錄推定為實際造訪日期。</p>
     </div>:null}
-    {tab==='statistics'&&numeric.data?<div className="loc-trace-works-stat" aria-label="地點與文章基本統計">
-      <h3>地點與文章</h3>
-      {verified.places.length?verified.places.map(([placeName,count])=><div className="loc-trace-stat-row" key={placeName}>
-        <span>{placeName}</span><div className="loc-trace-stat-track">
-          <span style={{width:(count/Math.max(1,verified.total)*100)+'%'}}/>
-        </div><strong>{count}</strong>
-      </div>):<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
-      <h3>每月文章數</h3>
-      {verified.months.map(([month,count])=><div className="loc-trace-stat-row" key={month}>
-        <time>{month}</time><div className="loc-trace-stat-track">
-          <span style={{width:(count/maxMonth*100)+'%'}}/>
-        </div><strong>{count}</strong>
-      </div>)}
+    {tab==='statistics'&&numeric.data?<div className="loc-trace-works-stat" aria-label="地點與文章統計圖">
+      {verified.total?<><label>圖表
+        <select className="scope-select" value={chartType}
+          onChange={event=>setChartType(event.target.value)}>
+          <option value="bar">長條圖</option>
+          <option value="line">折線圖</option>
+          <option value="pie">圓餅圖</option>
+        </select>
+      </label>
+      <StatisticsMultiChart type={chartType} rows={chartRows}
+        series={[{key:'value',label:'文章篇數'}]}
+        distribution={chartDistribution.length>1?chartDistribution:verified.months.map(([month,count])=>({name:month,value:count}))}
+        height={400}/></>:<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
     </div>:null}
   </section>;
 }
