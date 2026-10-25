@@ -416,7 +416,7 @@ function AppShellInner({children}){
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
     {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'分段儲存'):translateUiField(activeLocale,'儲存'),action:'save'},
-    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'來源管理'):translateUiField(activeLocale,'時間編輯'),
+    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'作品分類'):translateUiField(activeLocale,'時間編輯'),
       href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞編輯'),
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
