@@ -19,6 +19,7 @@ const TracePlaceResults=dynamic(()=>import('./trace/TracePlaceResults'),{
 
 export default function Trace({scopeId='loc'}){
   const [selectedPlace,setSelectedPlace]=useState(null);
+  const [selectedResource,setSelectedResource]=useState('');
   const supported=TRACE_SCOPES.includes(scopeId);
   // LOC displays a union of published spatial anchors, but Periods belong to
   // individual Scopes. Never invent a combined LOC timeline.
@@ -42,7 +43,7 @@ export default function Trace({scopeId='loc'}){
       ||Number(a.order||0)-Number(b.order||0)),[periodsQuery.data]);
   const selectedPeriod=periodKey==='latest'?periods.at(-1):
     periods.find(period=>String(period.period||period.era_id||period.record_id)===periodKey);
-  const traces=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
+  const traces=useAsyncResource(traceKey(scopeId),()=>usesNumericIsr(scopeId)?readNumericIsr(scopeId,'traces'):readTraceData(scopeId),{
     enabled:supported,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   // Anchors identify places, not visits. Apply the Period only to an on-demand
@@ -59,7 +60,7 @@ export default function Trace({scopeId='loc'}){
       {scopeId==='loc'?<label>
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
-          onChange={event=>{setLocPeriodScope(event.target.value);setPeriodKey('latest');setSelectedPlace(null);}}>
+          onChange={event=>{setLocPeriodScope(event.target.value);setPeriodKey('latest');setSelectedPlace(null);setSelectedResource('');}}>
           <option value="lo3rwang">作者作品</option>
           <option value="lrunes">月之符文</option>
         </select>
@@ -81,12 +82,38 @@ export default function Trace({scopeId='loc'}){
       {periodsQuery.error?<span className="scope-status scope-error" role="alert">
         時期讀取失敗：{String(periodsQuery.error.message||periodsQuery.error)}
       </span>:null}
-      <p className="scope-status">時期只篩選下方單一地點的文章；空間定錨點不等於該時期曾造訪。</p>
+      <p className="scope-status">時期只篩選下方所選定錨點或痕跡圖的文章；空間定錨點不等於該時期曾造訪。</p>
     </div>:null}
     <TraceMap spatialData={spatialData} onAnchorSelect={anchor=>{
-      if(String(anchor?.title||'').trim())setSelectedPlace(anchor);
+      if(String(anchor?.uid||'').trim()){
+        setSelectedPlace(anchor);
+        setSelectedResource('anchor:'+anchor.uid);
+      }
     }}/>
-    <TracePlaceResults place={selectedPlace} scopeId={periodScopeId}
+    <div className="scope-stat-controls" role="group" aria-label="地圖下方報表選擇">
+      <label><span>空間定錨點／痕跡圖</span>
+        <select className="scope-select" value={selectedResource}
+          onChange={event=>{
+            const value=event.target.value;
+            setSelectedResource(value);
+            const [type,uid]=value.split(':');
+            setSelectedPlace((type==='map'?spatialData?.maps:spatialData?.anchors)
+              ?.find(item=>item.uid===uid)||null);
+          }}>
+          <option value="">從地圖選定錨點，或選擇痕跡圖</option>
+          {(spatialData?.maps||[]).length?<optgroup label="痕跡圖">
+            {spatialData.maps.map(item=><option key={'map:'+item.uid} value={'map:'+item.uid}>
+              {item.title}（{item.anchor_uids?.length||0} 站）</option>)}
+          </optgroup>:null}
+          <optgroup label="空間定錨點">
+            {(spatialData?.anchors||[]).map(item=><option key={'anchor:'+item.uid}
+              value={'anchor:'+item.uid}>{item.title}</option>)}
+          </optgroup>
+        </select>
+      </label>
+    </div>
+    <TracePlaceResults key={periodScopeId} place={selectedPlace}
+      anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
       period={periodKey==='all'?null:selectedPeriod||null}/>
     {supported&&traces.isPending?<p className="scope-status" role="status">正在載入已建立的空間定錨點…</p>:null}
     {supported&&traces.error?<p className="scope-status scope-error" role="alert">空間定錨點讀取失敗：{String(traces.error.message||traces.error)}</p>:null}

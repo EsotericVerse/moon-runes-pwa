@@ -18,7 +18,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest','periods','places'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest','periods','places','traces'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='',roots=[];
   try{
@@ -35,7 +35,7 @@ export async function GET(request,{params}){
     if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
     if(kind==='loc-statistics'&&scopeId!=='loc')throw Error('LOC aggregate Scope only');
-    if(['earliest','daily-earliest','periods'].includes(kind)&&search.size)throw Error('Unexpected date range');
+    if(['earliest','daily-earliest','periods','traces'].includes(kind)&&search.size)throw Error('Unexpected date range');
     if(['statistics','loc-statistics'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(search.has('undated')&&!['0','1'].includes(search.get('undated')))throw Error('Invalid undated');
     start=date(search.get('start'));
@@ -153,6 +153,18 @@ export async function GET(request,{params}){
           rune_name:rune.rune_name||String(row.rune_number),
           moon_phase:rune.moon_phase??null};
       });
+    }
+    if(kind==='traces'){
+      // ISR includes public Trace metadata; no private Timeline coordinates
+      // or full Galaxy article bodies can enter this payload.
+      const fields='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at'
+        +(scopeId==='loc'?',scope_id':'');
+      const {data,error}=await db.from(scopeId+'_trace').select(fields)
+        .order('created_at',{ascending:true}).limit(2000);
+      if(error)throw error;
+      const rows=(data||[]).map(row=>({...row,source_scope:scopeId==='loc'?row.scope_id:scopeId}));
+      return {anchors:rows.filter(row=>row.trace_type==='anchor'),
+        maps:rows.filter(row=>row.trace_type==='map')};
     }
     if(kind==='places'){
       // One indexed database-side GROUP BY. Never fetch all article bodies or

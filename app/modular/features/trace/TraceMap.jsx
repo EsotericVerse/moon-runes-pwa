@@ -232,7 +232,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
         locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
       ):(onAnchorSelect&&spatialData?.anchors?.length?
-        '點擊地圖上的綠色空間定錨點，直接使用 LOC 搜尋查看該地點的文章列表；不必先懂經緯度。':copy.intro)}</p>
+        '點擊地圖上的綠色空間定錨點，直接在地圖下方查看文章列表、時間長河及基本報表，不跳搜尋頁。':copy.intro)}</p>
     </header>
     {!selectingLocation?<><form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
       <label htmlFor="trace-geocode-query">{geo.label}</label>
@@ -246,7 +246,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
       {matches.map((item,index)=><button type="button" className="loc-button" key={index}
         disabled={!ready} onClick={()=>mapRef.current?.focusCoordinates({...item,radius_m:radiusMeters})}>{item.label}</button>)}
     </div>:null}</>:null}
-    {!selectingLocation&&onAnchorSelect&&spatialData?.anchors?.length?<div className="loc-trace-start-points" role="group" aria-label="從已有地點開始搜尋文章">
+    {!selectingLocation&&onAnchorSelect&&spatialData?.anchors?.length?<div className="loc-trace-start-points" role="group" aria-label="從已有地點查看文章">
       <p className="scope-status">從這裡開始：點選已建立的地點，查看它的打卡文章。</p>
       {[...new Map(spatialData.anchors.filter(anchor=>anchor.trace_type==='anchor').map(anchor=>[anchor.source_scope+':'+anchor.title,anchor])).values()]
         .slice(0,12).map(anchor=><button className="loc-button" type="button"
