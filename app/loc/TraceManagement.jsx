@@ -42,7 +42,8 @@ function AnchorEditor({scopeId,spatial,reload}){
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
     </div>
-    <TraceMap spatialData={spatial} onLocationPick={({lng,lat})=>{
+    <TraceMap spatialData={spatial} onLocationPick={({lng,lat,name})=>{
+      if(name)setTitle(name);
       setLongitude(String(Math.round(lng*1e6)/1e6));
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
