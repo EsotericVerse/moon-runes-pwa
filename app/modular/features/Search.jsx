@@ -142,6 +142,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   return {
     key:identity?[scope,source,identity].join(':'):[source,scope,title].join('-'),
     source:displaySource,title:String(title),
+    checkInPlace:isGalaxy?String(row.source_place||'').trim():'',
     date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
     styleTagMatch:Boolean(row.style_keyword_tag),
@@ -1039,6 +1040,7 @@ export default function Search({managementMode=false}){
           source={row.styleTagMatch?'':row.source}
           scopeId={locPublicSearch?'':row.scopeId}
           date={row.date}
+          checkInPlace={row.checkInPlace}
           body={draft?'':row.resourceType==='galaxy_media'?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
