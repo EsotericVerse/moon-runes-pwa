@@ -97,9 +97,15 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(Number.isFinite(n)&&n>=10&&n<=20000000){radius=n;refreshRadius();}
   }
   const canPickLocation=typeof onLocationPick==='function';
+  // On touch devices one-finger swipes should scroll the *page*, not
+  // accidentally trap the user inside this tall map. Two fingers can still
+  // pan, rotate and pinch-zoom it; desktop mouse dragging stays unchanged.
+  const touchDevice=typeof window!=='undefined'
+    &&Boolean(window.matchMedia?.('(pointer:coarse)').matches);
   const map=new Map({
     container,style:STYLE,center:[121.4647,25.0187],
     zoom:12.8,pitch:59,bearing:-23,
+    cooperativeGestures:touchDevice,
     antialias:true,attributionControl:true
   });
   map.addControl(new NavigationControl({showCompass:true,showZoom:true}),'top-right');
