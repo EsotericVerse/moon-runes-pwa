@@ -25,6 +25,7 @@ import BottomNavIcon from './modular/BottomNavIcon';
 import {EditDockProvider,useEditDock} from './modular/edit-dock';
 // Only individual Scope homepages download the opt-in management entry.
 const ScopeHomeEditEntry=dynamic(()=>import('./loc/ScopeHomeEditEntry'),{loading:()=>null});
+const AdminEditSystemButton=dynamic(()=>import('./loc/AdminEditSystemButton'),{loading:()=>null});
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import ScopeLink from './modular/ScopeLink';
 
@@ -415,16 +416,17 @@ function AppShellInner({children}){
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
-    {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'分段儲存'):translateUiField(activeLocale,'儲存'),action:'save'},
-    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'人員作品管理'):translateUiField(activeLocale,'時間編輯'),
+    {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'暫存'):translateUiField(activeLocale,'儲存'),action:'save'},
+    ...(locAdminEdit?[{id:'system',widget:'system'}]:[]),
+    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'人員作品管理'):translateUiField(activeLocale,'設立定錨'),
       href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
-    {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞編輯'),
+    {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞'),
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
-    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':'痕跡管理',
+    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':'痕跡製作',
       href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
-        ?editTabHref('admin','section','traceAnchor')+'&edit=1'
+        ?editTabHref('trace/manage','section','traceAnchor')+'&edit=1'
         :editScopeAvailable?editTabHref('manage','section','traceAnchor')+'&edit=1':''},
-    {id:'suggestions',icon:'search',label:'文章管理',
+    {id:'suggestions',icon:'search',label:'搜尋文章管理',
       href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
@@ -489,7 +491,9 @@ function AppShellInner({children}){
     </header>
     {children}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={localWorkspace?'local':scopeId}>
-      {editingDockVisible?editTabs.map(tab=>tab.action
+      {editingDockVisible?editTabs.map(tab=>tab.widget==='system'
+        ?<AdminEditSystemButton key="system" href={editTabHref('admin','edit','1')}/>
+        :tab.action
         ?<button type="button" key={tab.id}
           disabled={editDock.busy}
           onClick={()=>tab.action==='save'
