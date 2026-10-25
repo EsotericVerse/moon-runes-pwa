@@ -633,7 +633,8 @@ export default function Search({managementMode=false}){
     const media=String(searchParams?.get('media')||'').trim();
     if(media){setQuery('');executeMediaIdentity(media);return;}
     const place=String(searchParams?.get('place')||'').trim();
-    if(place)setBulkPlace(place);
+    const fillPlace=String(searchParams?.get('fill_place')||place||'').trim();
+    if(fillPlace)setBulkPlace(fillPlace);
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     const filters={
@@ -807,7 +808,7 @@ export default function Search({managementMode=false}){
     await executeSearch('',null,{browse:true});
   }
   function clearSearchFilters(){
-    setQuery('');setPlaceOnly(false);setContentType('');setSourceFilter('');setScopeFilter('');
+    setQuery('');setPlaceOnly(false);setBulkPlace('');setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
     router.replace(managementMode?scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'):featureNavigationHref(scopeId,'search'));
@@ -851,6 +852,7 @@ export default function Search({managementMode=false}){
     for(const [key,value] of normal.searchParams){
       if(key!=='scopeid')manager.searchParams.set(key,value);
     }
+    if(bulkPlace.trim())manager.searchParams.set('fill_place',bulkPlace.trim());
     return manager.href;
   }
   async function runSearch(event){
@@ -963,6 +965,14 @@ export default function Search({managementMode=false}){
           onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
       </div>
       {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 source_place；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
+      {placeOnly&&!managementMode?<div className="loc-search-next-step">
+        <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
+        <button type="button" className="loc-button" onClick={()=>{
+          const target=new URL(scopeHref('loc','admin/search'));
+          target.searchParams.set('fill_place',query.trim());
+          router.push(target.href);
+        }}>下一步：從文章列表批次補寫地點（需管理權限）</button>
+      </div>:null}
       {scopeId==='loc'&&managementMode?<div className="scope-search-scope-filter">
         <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
         <select id="scope-search-scope" value={scopeFilter}
@@ -1054,7 +1064,7 @@ export default function Search({managementMode=false}){
     </section>
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
-    {managementMode&&(results.length>0||selectedPlaceArticles.length>0)?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
+    {managementMode&&(results.length>0||selectedPlaceArticles.length>0||bulkPlace.trim())?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
       <h3>從搜尋文章列表批次補寫地點</h3>
       <p className="scope-status">在下方文章旁勾選「補寫打卡地點」，一次最多 200 篇且限同一個 Scope；原本有 source_place 的文章無法勾選。不會改動文章內容。</p>
       <div className="loc-search-bulk-controls">
