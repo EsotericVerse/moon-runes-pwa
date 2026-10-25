@@ -33,7 +33,7 @@ function AnchorEditor({scopeId,spatial,reload}){
   const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
   const pickExisting=uid=>{
     quickRequest.current+=1;
-    setQuickCandidates([]);setQuickNotice('');
+    setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
     const anchor=ownAnchors.find(row=>row.uid===uid);
     setEditingUid(anchor?.uid||'');
     setTitle(anchor?.title||'');
@@ -144,7 +144,11 @@ function AnchorEditor({scopeId,spatial,reload}){
     {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
       <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
       {popular.data.slice(0,10).map(item=><button className="loc-button" type="button"
-        key={item.name} disabled={busy} onClick={()=>setTitle(item.name)}>
+        key={item.name} disabled={busy} onClick={()=>{
+          quickRequest.current+=1;
+          setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
+          setTitle(item.name);
+        }}>
         {item.name}（{item.article_count}）
       </button>)}
     </div>:null}
