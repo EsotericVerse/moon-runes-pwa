@@ -30,7 +30,7 @@ const SearchManagement=dynamic(()=>import('./SearchManagement'),{loading});
 const Trace=dynamic(()=>import('../modular/features/Trace'),{loading});
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
-const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
+const ManagementView=dynamic(()=>import('./ScopeManagement'),{loading});
 const SourceManagementView=dynamic(()=>import('./LocSourceManagement'),{loading});
 const KeywordManagementView=dynamic(()=>import('./LocKeywordManagementPage'),{loading});
 const LocalSettingView=dynamic(()=>import('./views/LocalSettingView'),{loading});
@@ -61,7 +61,7 @@ const VIEW_PRELOADERS={
   search:()=>import('../modular/features/Search'),
   searchManage:()=>import('./SearchManagement'),
   trace:()=>import('../modular/features/Trace'),
-  manage:()=>import('./GovernanceManagement'),
+  manage:()=>import('./ScopeManagement'),
   sourceManage:()=>import('./LocSourceManagement'),
   keywordManage:()=>import('./LocKeywordManagementPage'),
   setting:()=>import('./views/LocalSettingView')
