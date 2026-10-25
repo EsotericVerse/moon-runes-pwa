@@ -246,7 +246,7 @@ function MapEditor({scopeId,spatial,reload}){
   const [description,setDescription]=useState('');
   const [selected,setSelected]=useState([]);
   const [editingUid,setEditingUid]=useState('');
-  const [editorOpen,setEditorOpen]=useState(()=>!spatial.maps.some(row=>row.source_scope===scopeId));
+  const [editorOpen,setEditorOpen]=useState(()=>!spatial.maps.length);
   const [expandedIds,setExpandedIds]=useState([]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
@@ -313,7 +313,10 @@ function MapEditor({scopeId,spatial,reload}){
       // Refresh existing public numeric tags only after a verified write;
       // this is not an ISR architecture or database schema change.
       const refreshed=await revalidateServerMetadata();
-      await cache.invalidate({queryKey:traceKey('loc')});
+      try{await cache.invalidate({queryKey:traceKey('loc')});}catch{
+        // The fresh readback already verified persistence. Do not relabel
+        // a successful database write as a save failure due to SWR refresh.
+      }
       setNotice((changed?'痕跡圖已更新並重新讀取確認。':'已新增痕跡圖並重新讀取確認。')
         +(refreshed?'':'公開地圖快取可能仍是舊資料，可稍後重新整理。'));
       return true;
@@ -325,11 +328,17 @@ function MapEditor({scopeId,spatial,reload}){
     if(busy||!window.confirm('確定要永久刪除「'+map.title+'」這張痕跡圖？只會刪除這張路線，不會刪除空間定錨點或文章。'))return;
     setBusy(true);setNotice('');setNoticeError(false);
     try{
-      await deleteTraceMap({scopeId,uid:map.uid});
-      await reload();
+      await deleteTraceMap({scopeId:map.source_scope,uid:map.uid});
+      const fresh=await reload();
+      if(!Array.isArray(fresh?.maps)||fresh.maps.some(row=>row.uid===map.uid
+        &&row.source_scope===map.source_scope))
+        throw Error('已收到刪除回應，但重新讀取仍顯示此路線。請勿重複操作。');
       setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
       if(editingUid===map.uid){reset();setEditorOpen(false);}
-      setNotice('已刪除該張痕跡圖；所有原始定錨點與作品不受影響。');
+      const refreshed=await revalidateServerMetadata();
+      try{await cache.invalidate({queryKey:traceKey('loc')});}catch{}
+      setNotice('已刪除該張痕跡圖並重新讀取確認；原始定錨點與文章均未刪除。'
+        +(refreshed?'':'公開地圖快取可能尚未更新。'));
     }catch(error){setNoticeError(true);setNotice(String(error?.message||error));}
     finally{setBusy(false);}
   };
