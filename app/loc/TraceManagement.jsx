@@ -434,8 +434,10 @@ function MapEditor({scopeId,spatial,reload}){
             {available.map(anchor=><option key={anchor.uid} value={anchor.uid}>{anchor.title}</option>)}
           </select>
         </label>
-        <button className="loc-button" type="button" disabled={busy||!pointUid||selected.length>=80}
-          onClick={addToQueue}>加入佇列</button>
+        <button className="loc-button loc-trace-route-add" type="button"
+          aria-label="將選取的定錨點加入路線佇列"
+          title="加入路線佇列" disabled={busy||!pointUid||selected.length>=80}
+          onClick={addToQueue}>＋</button>
       </div>
       {countyError?<p className="scope-status scope-error" role="alert">{countyError}</p>:null}
       {!countyLookup&&anchors.length&&!countyError?<p className="scope-status" role="status">正在整理縣市對照…</p>:null}
