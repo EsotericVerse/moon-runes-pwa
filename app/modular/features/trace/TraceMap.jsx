@@ -23,7 +23,7 @@ const STRINGS={
   'zh-Hant':{
     label:'地理痕跡示範',eyebrow:'痕跡 · 空間定錨',title:'地理定位與路線',
     intro:'這是地圖模組展示；地點為板橋一帶的示例，並非你的 Galaxy 打卡紀錄。',
-    controls:'地圖操作',all:'全部定錨點',examples:'查看示例地點',resizeHint:'桌機可拖曳地圖右下角調整寬度與高度。',hide:'隱藏路線',show:'展示道路路線',busy:'規劃路線中…',
+    controls:'地圖操作',all:'全部定錨點',examples:'查看示例地點',expandMap:'放大地圖',collapseMap:'收合地圖',mobileGestureHint:'單指滑動頁面，雙指移動或縮放地圖。',resizeHint:'桌機可拖曳地圖右下角調整寬度與高度。',hide:'隱藏路線',show:'展示道路路線',busy:'規劃路線中…',
     map:'可縮放、旋轉、傾斜的板橋地圖示範',
     note:'紫色立體柱是空間定錨示例，不代表真實建物或資料量。道路線僅為路網建議，不代表實際歷史行程。底圖採用 OpenFreeMap／OpenStreetMap，規劃示例路線時使用公開 OSRM 測試服務。',
     status:{
@@ -41,7 +41,7 @@ const STRINGS={
   'zh-Hans':{
     label:'地理痕迹演示',eyebrow:'痕迹 · 空间定锚',title:'地理定位与路线',
     intro:'这是地图模块演示；地点为板桥一带的示例，并非你的 Galaxy 打卡记录。',
-    controls:'地图操作',all:'全部定锚点',examples:'查看示例地点',resizeHint:'在电脑上可拖动地图右下角调整宽度和高度。',hide:'隐藏路线',show:'演示道路路线',busy:'正在规划路线…',
+    controls:'地图操作',all:'全部定锚点',examples:'查看示例地点',expandMap:'放大地图',collapseMap:'收起地图',mobileGestureHint:'单指滚动页面，双指移动或缩放地图。',resizeHint:'在电脑上可拖动地图右下角调整宽度和高度。',hide:'隐藏路线',show:'演示道路路线',busy:'正在规划路线…',
     map:'可缩放、旋转、倾斜的板桥地图演示',
     note:'紫色立体柱为空间定锚示例，不代表真实建筑物或数据量。路线仅为道路规划建议，不代表实际历史行程。底图来自 OpenFreeMap／OpenStreetMap，规划示例路线时使用公开 OSRM 测试服务。',
     status:{
@@ -59,7 +59,7 @@ const STRINGS={
   en:{
     label:'Geographic traces demonstration',eyebrow:'Traces · Spatial anchors',title:'Places and routes',
     intro:'Map demonstration with sample locations around Banqiao. These are not your Galaxy check-ins.',
-    controls:'Map controls',all:'All anchors',examples:'Show sample places',resizeHint:'On desktop, drag the bottom-right corner to resize the map.',hide:'Hide route',show:'Plan sample road route',busy:'Planning route…',
+    controls:'Map controls',all:'All anchors',examples:'Show sample places',expandMap:'Expand map',collapseMap:'Collapse map',mobileGestureHint:'One finger scrolls the page; two fingers move or zoom the map.',resizeHint:'On desktop, drag the bottom-right corner to resize the map.',hide:'Hide route',show:'Plan sample road route',busy:'Planning route…',
     map:'Interactive tiltable map of Banqiao',
     note:'Purple 3D pillars represent sample anchors, not buildings or data volume. The line is a proposed road route, not a recorded trip. Tiles: OpenFreeMap / OpenStreetMap; example route: public OSRM test server.',
     status:{
@@ -77,7 +77,7 @@ const STRINGS={
   ja:{
     label:'地理的な軌跡のデモ',eyebrow:'軌跡 · 空間アンカー',title:'場所とルート',
     intro:'板橋周辺の地点を使った地図デモです。Galaxy の実際のチェックイン履歴ではありません。',
-    controls:'地図操作',all:'すべてのアンカー',examples:'サンプル地点を表示',resizeHint:'デスクトップでは地図の右下隅をドラッグしてサイズを変更できます。',hide:'ルートを隠す',show:'道路ルートを表示',busy:'ルート計算中…',
+    controls:'地図操作',all:'すべてのアンカー',examples:'サンプル地点を表示',expandMap:'地図を広げる',collapseMap:'地図を縮める',mobileGestureHint:'1本指でページをスクロール、2本指で地図を移動・拡大縮小します。',resizeHint:'デスクトップでは地図の右下隅をドラッグしてサイズを変更できます。',hide:'ルートを隠す',show:'道路ルートを表示',busy:'ルート計算中…',
     map:'板橋周辺の傾斜・回転・拡大可能な地図',
     note:'紫色の立体柱はアンカーの例であり、建物や記録件数を表しません。線は推奨道路ルートで、実際の移動履歴ではありません。地図は OpenFreeMap / OpenStreetMap、ルート計算は公開 OSRM テストサービスを使用します。',
     status:{
@@ -110,6 +110,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
   const [selected,setSelected]=useState('');
+  const [expandedMap,setExpandedMap]=useState(false);
   const [status,setStatus]=useState('loading');
   const [placeQuery,setPlaceQuery]=useState('');
   const [matches,setMatches]=useState([]);
@@ -270,8 +271,15 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
         {routeBusy?copy.busy:routeVisible?copy.hide:copy.show}
       </button>
     </div>
-    <div className="loc-trace-map-frame" ref={containerRef}
+    <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
       role="application" aria-label={copy.map}/>
+    <div className="loc-trace-mobile-map-tools">
+      <button type="button" className="loc-button" aria-pressed={expandedMap}
+        onClick={()=>setExpandedMap(value=>!value)}>
+        {expandedMap?copy.collapseMap:copy.expandMap}
+      </button>
+      <span className="scope-status">{copy.mobileGestureHint}</span>
+    </div>
     <div className="loc-trace-resize-tools">
       <span className="scope-status loc-trace-resize-hint">{copy.resizeHint}</span>
       <button type="button" className="loc-trace-resize-grip"
