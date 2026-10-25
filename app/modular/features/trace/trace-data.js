@@ -50,7 +50,7 @@ export async function readTraceData(scopeId){
 }
 // Used for both interactive edits and bulk geocoding. All comparisons are
 // based on the source Scope, never the LOC-wide materialized union.
-const normalizedName=value=>String(value||'').normalize('NFKC').trim().replace(/\\s+/g,'').toLowerCase();
+const normalizedName=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,'').toLowerCase();
 function comparableAnchors(data,scopeId,excludeUid=''){
   return (data?.anchors||[]).filter(row=>row.source_scope===scopeId&&row.uid!==excludeUid);
 }
@@ -81,10 +81,13 @@ async function reuseExistingAnchor({scopeId,candidate,existing}){
   // This exact, reviewed postal address agrees within 60 meters. The existing
   // anchor is retained, with the incoming check-in name preserved as an alias.
   // Do not touch Galaxy, map anchor_uids, coordinates, or an existing title.
-  const names=[...oldNote.matchAll(/(?:打卡別名|歷史名稱)[：:]\\s*([^。\\n]+)/g)]
+  const names=[...oldNote.matchAll(/(?:打卡別名|歷史名稱)[：:]\s*([^。\n]+)/g)]
     .flatMap(match=>match[1].split(/[、，,|]/).map(s=>normalizedName(s)));
   if(names.includes(normalizedName(name)))return {uid:existing.uid,reused:true};
-  const note=oldNote+(oldNote?'\\n':'')+'打卡別名：'+name+'。';
+  const provenance=String(candidate.description||'').trim();
+  const extra=provenance&&provenance!==oldNote&&!oldNote.includes(provenance)
+    ?'\n合併來源說明（'+name+'）：'+provenance:'';
+  const note=oldNote+(oldNote?'\n':'')+'打卡別名：'+name+'。'+extra;
   if(note.length>2000)throw Error('同址別名說明會超過 2000 字，請先在整理頁處理。');
   let request=dbAuthRelation(relation(scopeId)).update({description:note})
     .eq('uid',existing.uid).eq('trace_type','anchor').eq('description',oldNote);
@@ -155,7 +158,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       // inserted with the primary title.
       const original=sameBatch.reuse;
       const addition='打卡別名：'+data.title+'。';
-      const updated=String(original.description||'')+(original.description?'\\n':'')+addition;
+      const updated=String(original.description||'')+(original.description?'\n':'')+addition;
       if(updated.length>2000)throw Error('批次同址別名過多，無法安全保留完整名稱。');
       original.description=updated;skipped++;duplicatesInBatch++;continue;
     }
