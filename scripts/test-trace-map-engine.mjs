@@ -15,7 +15,8 @@ function setup({anchors=[],onAnchorSelect=()=>{}}={}){
   }
   class FakeMap {
     constructor(options){this.options=options;this.sources={};this.layers=[];
-      this.callbacks={};this.bounds=[];this.fly=[];maps.push(this);}
+      this.callbacks={};this.bounds=[];this.fly=[];this.ease=[];
+      this.center=options.center;maps.push(this);}
     addControl(){}
     once(name,fn){this.callbacks[name]=fn;}
     on(name,layer,fn){if(typeof layer==='function'){fn=layer;layer='';}
@@ -23,10 +24,13 @@ function setup({anchors=[],onAnchorSelect=()=>{}}={}){
     addSource(id,value){this.sources[id]={...value,setData:data=>{this.sources[id].data=data;}};}
     addLayer(value){this.layers.push(value);}
     getSource(id){return this.sources[id];}
-    getContainer(){return {clientWidth:1200};}
-    getCanvas(){return {style:{cursor:''}};}
+    getContainer(){return {clientWidth:1200,clientHeight:800};}
+    getCanvas(){return {clientWidth:1200,clientHeight:800,style:{cursor:''}};}
+    project([lng,lat]){return {x:600+(lng-this.center[0])*1000,
+      y:400+(lat-this.center[1])*1000};}
     fitBounds(bounds,options){this.bounds.push({points:bounds.points,options});}
-    flyTo(options){this.fly.push(options);}
+    flyTo(options){this.fly.push(options);this.center=options.center;}
+    easeTo(options){this.ease.push(options);this.center=options.center;}
     resize(){}
     remove(){this.removed=true;}
   }
@@ -73,5 +77,44 @@ test('pin clicks preserve full original record including historical place names'
   map.callbacks['click|loc-trace-saved-point-layer']({
     features:[{properties:{uid:anchors[0].uid,source_scope:'lo3rwang'}}]});
   assert.equal(selected?.description,'歷史名稱：舊站名。');
+  instance.destroy();
+});
+
+test('Banqiao Station is the origin; reloading anchors never resets the user's view',()=>{
+  const {instance,map}=setup({anchors:[]});
+  assert.deepEqual(map.options.center,[121.4638,25.0143]);
+  assert.equal(map.fly.length,0);
+  instance.setAnchors(anchors);
+  assert.equal(map.fly.length,0);
+  assert.equal(map.bounds.length,0);
+  instance.goOrigin();
+  assert.deepEqual(map.fly.at(-1).center,[121.4638,25.0143]);
+  instance.destroy();
+});
+
+test('clicking a far saved pin recenters only once; its original data reaches the report',()=>{
+  let selected=null;
+  const {instance,map}=setup({anchors,onAnchorSelect:anchor=>{selected=anchor;}});
+  const event={features:[{properties:{uid:anchors[0].uid,source_scope:'lo3rwang'}}]};
+  map.callbacks['click|loc-trace-saved-point-layer'](event);
+  assert.equal(map.ease.length,1);
+  assert.deepEqual(map.ease[0].center,[anchors[0].longitude,anchors[0].latitude]);
+  assert.equal(selected.description,'歷史名稱：舊站名。');
+  map.callbacks['click|loc-trace-saved-point-layer'](event);
+  assert.equal(map.ease.length,1,'already centered — do not interrupt user zoom');
+  instance.destroy();
+});
+
+test('numbered route stops are also clickable even when they overlap source pin',()=>{
+  let selected=null;
+  const {instance,map}=setup({anchors,onAnchorSelect:anchor=>{selected=anchor;}});
+  const route={uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',
+    anchor_uids:anchors.map(row=>row.uid)};
+  instance.setSavedRoute(route);
+  map.callbacks['click|loc-trace-user-route-stops']({
+    features:[{properties:{uid:anchors[1].uid,source_scope:'lo3rwang'}}]});
+  assert.equal(selected.uid,anchors[1].uid);
+  assert.equal(map.sources['loc-trace-user-routes'].data.features
+    .filter(row=>row.geometry.type==='Point').length,3);
   instance.destroy();
 });
