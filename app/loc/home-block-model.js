@@ -121,12 +121,12 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
 // only ever carries that Scope-view's image override, never text.
 // LunaRunes uses the same database-backed read-only feature headers as every
 // other public Scope; only LOC admins edit the shared group_<feature> copy.
-// admin / manage / setting (the /admin, each Scope's own /governance/manage,
+// admin / manage / setting (the /admin, each Scope's own /manage,
 // and the local Scope's /local/setting pages) join this same hero template,
 // but each is its own independent featureId -- they never share text or an
 // image with each other or with the four above. None of them ever renders
 // under scopeId==='loc' (loc's own management entry point is /admin itself,
-// never /governance/manage; /admin and /local/setting are each pinned to
+// never /manage; /admin and /local/setting are each pinned to
 // exactly one fixed Scope), so unlike the four above, none of them needs
 // the group_<feature>/scope_<feature> two-slot split -- one image each,
 // via shouldUseSingleFeatureHeroImage below.
@@ -134,7 +134,7 @@ export const FEATURE_HERO_ORDER=Object.freeze({
   culture:1,
   statics:2,
   search:3,
-  governance:4,
+  trace:4,
   admin:5,
   manage:6,
   setting:7
@@ -168,7 +168,7 @@ export function shouldUseSharedFeatureHero(scopeId,featureId){
   // Only the four public LunaRunes features opt back into the same DB-backed
   // group_<feature> copy used by every other Scope. Keep other rune surfaces
   // unchanged. FeaturePage already loads the corresponding image slot.
-  return scopeId!=='lrunes'||['culture','statics','search','governance'].includes(id);
+  return scopeId!=='lrunes'||['culture','statics','search','trace'].includes(id);
 }
 
 // Three fixed personal signs; no public editor, image field, or DB setting can select them.
