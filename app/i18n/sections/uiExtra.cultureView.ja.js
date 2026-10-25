@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "選択した期間にはデータがありません。",
-  "system": "大分類",
-  "custom": "カスタム分類",
+  "system": "作品グループ分類",
+  "custom": "作品カスタム分類",
   "media": "マルチメディア",
   "other": "未分類",
   "candidateDate": "候補日",
@@ -38,7 +38,7 @@ export default {
   "style": "表現スタイル",
   "noFilter": "適用しない",
   "keywordClass": "キーワードセット",
-  "workClassificationLane": "作品分類レーン",
+  "workClassificationLane": "作品グループ分類レーン",
   "expandToCompareWorkVolumeChanges": "必要に応じて作品数の推移を比較（候補日・正式アンカーではありません）",
   "selectAllCandidates": "審査候補をすべて選択",
   "clearSelection": "選択を解除",
