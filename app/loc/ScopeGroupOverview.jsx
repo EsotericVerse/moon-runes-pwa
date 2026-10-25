@@ -12,7 +12,7 @@ import ScopeLink from '../modular/ScopeLink';
 registerDefaultSection('uiExtra.scopeGroup',scopeGroupZh);
 
 const FEATURE_PATH=Object.freeze({search:'search',statics:'statics',culture:'culture',trace:'trace'});
-const FEATURE_LABEL=Object.freeze({search:'nav.search',statics:'features.statics.title',culture:'features.culture.title',trace:'features.traces.title'});
+const FEATURE_LABEL=Object.freeze({search:'nav.search',statics:'features.statics.title',culture:'features.culture.title',trace:'features.trace.title'});
 
 export default function ScopeGroupOverview({scopeId='loc',featureId='search',title='',description=''}){
   useUiSection('uiExtra.scopeGroup');
