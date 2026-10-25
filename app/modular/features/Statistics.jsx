@@ -58,6 +58,7 @@ const STAT_TYPE_KEYS=Object.freeze({
   daily_rune:'uiExtra.statisticsUI.dailyRune',
   total:'statistics.totalSource',
   source:'uiExtra.statisticsUI.sourceGroup',
+  place:'uiExtra.statisticsUI.place',
   media_type:'uiExtra.statisticsUI.mediaType',
   media_platform:'uiExtra.statisticsUI.mediaPlatform',
   media_style:'uiExtra.statisticsUI.mediaStyle'
@@ -264,7 +265,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
       if(!value||value===active)return;
       router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
     }}>
-      {types.map(value=><option key={value} value={value}>{value==='place'?'地點':t(STAT_TYPE_KEYS[value]||value)}</option>)}
+      {types.map(value=><option key={value} value={value}>{t(STAT_TYPE_KEYS[value]||value)}</option>)}
     </select>
   </label>;
 }
