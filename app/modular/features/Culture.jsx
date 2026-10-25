@@ -343,6 +343,9 @@ export default function Culture(){
   const classificationWindowStart=keywordWindowStart;
   const classificationWindowEnd=keywordWindowEnd;
   const classificationWindowValid=keywordWindowValid;
+  // No Event rows or an unfilled custom range is a normal configuration
+  // state, not an invalid date. Only malformed/inverted supplied dates err.
+  const optionalTimeRangeUnfilled=!keywordWindowStart||!keywordWindowEnd;
   const classificationPeriodLabel=keywordPeriodKey==='custom'&&cultureTimeKind==='period'
     ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.eventOption;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
@@ -1472,7 +1475,8 @@ export default function Culture(){
                     &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
-                {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
+                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
+                {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
                 {[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
                   .filter(Boolean).map((error,index)=><p key={index} className='scope-status scope-error' role='alert'>
