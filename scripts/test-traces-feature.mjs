@@ -73,7 +73,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(react,/export default function TraceMap\(\{onLocationPick=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
   assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
-  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat\)/);
+  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
   assert.match(engine,/pickedMarker\.on\('dragend'/);
   assert.match(engine,/pickedMarker\?\.remove\(\)/);
   assert.match(editor,/新增空間定錨點/);
