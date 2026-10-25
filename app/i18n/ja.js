@@ -45,7 +45,7 @@ export default {
       "description": "タイムラインに作品とソースを日付順に表示し、アンカーで時期を区切って比較します。"
     },
     "trace": {
-      "detailsLabel": "データの説明",
+      "detailsLabel": "ガバナンス原則",
       "title": "軌跡",
       "subtitle": "実際の地図で空間アンカーとルートを表示します。",
       "description": "実際の地図で空間アンカーとルートを表示します。"
