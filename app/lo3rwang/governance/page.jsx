@@ -2,8 +2,8 @@ import LocApp from '../../loc/LocApp';
 import {authorMetadata} from '../../seo/metadata';
 
 export const metadata=authorMetadata({
-  title:'作品來源與著作權｜Lucas Oscar Wang 政德',
-  description:'說明 Lucas Oscar Wang 政德作品的來源、版本、署名與著作權原則。',
+  title:'痕跡｜Lucas Oscar Wang 政德',
+  description:'地理空間定錨與路線展示。',
   path:'/lo3rwang/governance/'
 });
 
