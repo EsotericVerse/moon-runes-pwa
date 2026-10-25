@@ -412,6 +412,9 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   }
 
   async function removeMapping(row){
+    if(['admin','loc'].includes(row.id)){
+      setStatus('內建系統與群組身分不能移除；請修改 Email。');return;
+    }
     if(!window.confirm('移除 '+row.email+'？'))return;
     try{
       await updateRows('silver.manage',{
@@ -521,7 +524,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
           <label><span><UiText id="uiExtra.adminView.timeTable"/></span><input value={row.time||'time'} onChange={e=>patchMapping(row.id,'time',e.target.value)}/></label>
           <label><span><UiText id="uiExtra.adminView.birthdayMapping"/></span><input type="date" value={row.birthday||''} onChange={e=>patchMapping(row.id,'birthday',e.target.value)}/></label>
         </div>
-        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><UiText id="uiExtra.adminView.saveMapping"/></button><button type="button" onClick={()=>removeMapping(row)}><UiText id="uiExtra.adminView.remove"/></button></div>
+        <div className="scope-tabs"><button type="button" onClick={()=>saveMapping(row)}><UiText id="uiExtra.adminView.saveMapping"/></button><button type="button" disabled={['admin','loc'].includes(row.id)} onClick={()=>removeMapping(row)}><UiText id="uiExtra.adminView.remove"/></button></div>
       </article>)}
       {selected.scope_kind==='scope'?<details>
         <summary><UiText id="uiExtra.adminView.addAdministrator"/></summary>
