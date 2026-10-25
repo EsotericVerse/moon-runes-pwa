@@ -180,11 +180,11 @@ test('activation removes legacy JSON Block caches but keeps current static cache
   assert.equal(h.stored.has('loc-public-static-v1'),true);
 });
 
-test('public home and governance HTML work offline, but search navigation never caches',async()=>{
+test('public home and manage HTML work offline, but search navigation never caches',async()=>{
   const h=createHarness();
   h.setResponseHeaders({'content-type':'text/html'});
   const home={...h.req('https://loc.lo3rwang.cc/','document'),mode:'navigate'};
-  const manage={...h.req('https://loc.lo3rwang.cc/governance/manage/','document'),mode:'navigate'};
+  const manage={...h.req('https://loc.lo3rwang.cc/manage/manage/','document'),mode:'navigate'};
   const search={...h.req('https://loc.lo3rwang.cc/search/','document'),mode:'navigate'};
   await h.dispatch('fetch',home);
   await h.dispatch('fetch',manage);
@@ -200,7 +200,7 @@ test('search, numeric ISR, authenticated routes and game API are never intercept
   for(const url of [
     '/api/loc/scopes/lo3rwang/numeric/statistics',
     '/rest/v1/rpc/read_scope_statistics',
-    '/search?q=test','/governance/manage',
+    '/search?q=test','/manage/manage',
     '/lrunes/game/api/room',
     '/auth/session'
   ]){
