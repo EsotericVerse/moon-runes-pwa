@@ -924,37 +924,3 @@
 .scope-edit-switch-actions{display:flex;gap:.6rem;flex-wrap:wrap}
 .scope-edit-switch-actions>button{flex:1 1 8rem;min-height:2.7rem}
 .scope-edit-switch-actions>button:focus-visible{outline:2px solid var(--loc-accent);outline-offset:3px}
-
-
-/* Public Search keeps its search workflow on the left and reads existing
-   Scope governance blocks on the right. Narrow/mobile screens stack the rail. */
-.scope-search-governance-layout{
-  display:grid;
-  grid-template-columns:minmax(0,1.7fr) minmax(16rem,.75fr);
-  gap:clamp(.85rem,2vw,1.5rem);
-  align-items:start;
-}
-.scope-search-governance-main,.scope-search-governance-aside{min-width:0}
-.scope-search-governance-aside{
-  display:grid;
-  gap:.75rem;
-  border-left:1px solid var(--loc-line);
-  padding-left:clamp(.75rem,1.7vw,1.25rem);
-}
-.scope-search-governance-aside>h2{margin:0;font-size:1.15rem}
-.scope-search-governance-blocks{
-  display:grid;
-  grid-template-columns:minmax(0,1fr);
-  gap:.75rem;
-  align-items:start;
-}
-.scope-search-governance-blocks>.scope-editable-block{height:auto}
-@media(max-width:1023px){
-  .scope-search-governance-layout{grid-template-columns:minmax(0,1fr)}
-  .scope-search-governance-aside{
-    border-left:0;
-    border-top:1px solid var(--loc-line);
-    padding-left:0;
-    padding-top:1rem;
-  }
-}
