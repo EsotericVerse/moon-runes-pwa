@@ -426,3 +426,64 @@
     padding:.55rem .7rem;
   }
 }
+
+
+/* Inline classification editors: one surface, direct fields, one save action.
+   Admin and Scope have separate data models; only layout rules are shared. */
+.classification-inline{min-width:0;display:grid;gap:1rem}
+.classification-inline__header{display:grid;gap:.35rem}
+.classification-inline__header h2{margin:0;color:var(--loc-heading)}
+.classification-inline__header p{margin:0;color:var(--loc-muted);line-height:1.6}
+.classification-inline form{display:grid;gap:1rem;min-width:0}
+.classification-inline__list{display:grid;gap:0;border-top:1px solid var(--loc-ui-hairline,var(--loc-line))}
+.classification-inline__row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;gap:.55rem 1rem;min-width:0;
+  padding:.8rem 0;border-bottom:1px solid var(--loc-ui-hairline,var(--loc-line));
+}
+.classification-inline__row--personal{grid-template-columns:minmax(0,1fr) minmax(7.5rem,9rem) auto}
+.classification-inline__row--new{
+  grid-template-columns:minmax(0,1fr);
+  padding:.9rem 0;
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+  border-radius:var(--loc-ui-radius-sm,10px);
+  padding-inline:.8rem;
+}
+.classification-inline__field{display:grid;gap:.32rem;min-width:0}
+.classification-inline__field>span{color:var(--loc-heading);font-weight:650;font-size:.9rem;overflow-wrap:anywhere}
+.classification-inline__field :is(input,select){
+  width:100%;min-width:0;min-height:44px;padding:.55rem .72rem;
+  font:inherit;color:var(--loc-text);background:var(--loc-panel);
+  border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm,10px);
+}
+.classification-inline__field :is(input,select):focus-visible{
+  outline:2px solid var(--loc-accent);outline-offset:2px;
+}
+.classification-inline__code{font-size:.78rem;color:var(--loc-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.classification-inline__actions{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
+.classification-inline__actions>.loc-button{min-height:44px}
+.classification-inline__details{
+  padding:.8rem;border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:var(--loc-ui-radius-sm,10px);min-width:0;
+}
+.classification-inline__details>summary{cursor:pointer;color:var(--loc-heading);font-weight:700;min-height:44px;display:list-item;align-content:center}
+.classification-inline__details>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px}
+.classification-inline__details-body{display:grid;gap:1rem;padding:.6rem 0 .25rem;min-width:0}
+.classification-inline__assignment{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(9rem,13rem);
+  gap:.65rem;align-items:center;min-width:0;
+}
+.classification-inline__assignment>span{overflow-wrap:anywhere;min-width:0}
+.classification-inline__assignment>.classification-inline__field{align-self:start}
+.classification-inline__assignments{display:grid;gap:.5rem;min-width:0}
+.classification-inline__assignment .scope-select{width:100%;min-width:0;min-height:44px}
+@media(max-width:580px){
+  .classification-inline__row,.classification-inline__row--personal{
+    grid-template-columns:minmax(0,1fr);
+    gap:.45rem;
+  }
+  .classification-inline__row--new{padding:.8rem}
+  .classification-inline__code{order:-1}
+  .classification-inline__assignment{grid-template-columns:minmax(0,1fr)}
+  .classification-inline__actions>.loc-button{flex:1 1 auto}
+}
