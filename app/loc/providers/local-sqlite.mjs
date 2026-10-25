@@ -21,6 +21,7 @@
 //     a reused rune-draw interface can resolve rune numbers to names/meanings
 //     fully offline.
 import {Capacitor} from '@capacitor/core';
+import {sourceTaxonomyFromArrays} from '../source-classification.mjs';
 
 const DATABASE_NAME='loc_local_scope';
 const MARKER='loc.local.scope.sqlite.v1';
@@ -531,26 +532,49 @@ async function managementWriteLocal(payload){
 // ({day,kind,category,item_count} rows) computed over local_galaxy instead
 // of the dynamic cross-table Postgres aggregation.
 async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
-  const where=[];
-  const params=[];
+  const where=[],params=[];
   if(p_start){where.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
   if(p_end){where.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
   if(!p_include_undated)where.push('createtime IS NOT NULL');
-  const whereSql=where.length?' WHERE '+where.join(' AND '):'';
-  const sql=`SELECT date(createtime, '+8 hours') AS day, 'article' AS kind, coalesce(source_name,'未分類') AS category, count(*) AS item_count
-    FROM local_galaxy${whereSql} GROUP BY day, category ORDER BY day`;
-  const rows=await selectLocal(sql,params);
-  return {data:rows.map(r=>({day:r.day,kind:r.kind,category:r.category,item_count:Number(r.item_count)})),error:null};
+  const articleWhere=['statistics_able=1',...where].join(' AND ');
+  const mediaWhere=where.length?' WHERE '+where.join(' AND '):'';
+  const [text,media]=await Promise.all([
+    selectLocal(`SELECT date(createtime, '+8 hours') AS day,
+      'source' AS kind, coalesce(source_name,'') AS category, count(*) AS item_count
+      FROM local_galaxy WHERE ${articleWhere} GROUP BY day,category ORDER BY day`,params),
+    selectLocal(`SELECT date(createtime, '+8 hours') AS day,
+      'media' AS kind, coalesce(media_type,'') AS category, count(*) AS item_count
+      FROM local_galaxy_media${mediaWhere} GROUP BY day,category ORDER BY day`,params)
+  ]);
+  const rows=[...text,...media].map(row=>({
+    day:row.day||'',kind:row.kind,category:row.category||'',item_count:Number(row.item_count)||0
+  }));
+  const daily=new Map();
+  for(const row of rows){
+    const key=row.day+'|'+(row.kind==='media'?'多媒體':'文字作品');
+    daily.set(key,(daily.get(key)||0)+row.item_count);
+  }
+  for(const [key,count] of daily){
+    const mark=key.indexOf('|');
+    rows.push({day:key.slice(0,mark),kind:'total',category:key.slice(mark+1),item_count:count});
+  }
+  return {data:rows,error:null};
 }
 async function readScopeEarliestLocal(){
   const rows=await selectLocal("SELECT min(date(createtime, '+8 hours')) AS earliest FROM local_galaxy WHERE createtime IS NOT NULL");
   return {data:rows[0]?.earliest||null,error:null};
 }
 async function readScopeOverviewLocal({p_start,p_end}){
-  const stats=await readScopeStatisticsLocal({p_start,p_end,p_include_undated:false});
-  const earliest=await readScopeEarliestLocal();
-  const categories=[...new Set((stats.data||[]).map(r=>r.category))];
-  return {data:{earliest:earliest.data,rows:stats.data,categories,aliases:[]},error:null};
+  const [stats,earliest,settings]=await Promise.all([
+    readScopeStatisticsLocal({p_start,p_end,p_include_undated:false}),
+    readScopeEarliestLocal(),
+    selectLocal("SELECT txt_class FROM local WHERE id='local' LIMIT 1")
+  ]);
+  let values=[];
+  try{values=JSON.parse(settings[0]?.txt_class||'[]');}catch{/* Default to an empty list. */}
+  const taxonomy=sourceTaxonomyFromArrays(values);
+  return {data:{earliest:earliest.data,rows:stats.data,
+    categories:taxonomy.categories,aliases:taxonomy.aliases},error:null};
 }
 
 // Local equivalent of api.read_keyword_class: no scope_id, no share-permission
