@@ -212,3 +212,37 @@ test('Search recommendations execute real queries and only suggest loaded place 
   assert.match(blocks,/blocksToPlainText\(html\)\.split/);
   assert.match(blocks,/!slot\.entities\.some\(entity=>recommendationTerm\(entity\.text\)\)/);
 });
+
+test('Trace shares cached Time-period navigation with Culture and Statistics',()=>{
+  const trace=read('app/modular/features/Trace.jsx');
+  const culture=read('app/modular/features/Culture.jsx');
+  const stats=read('app/modular/features/Statistics.jsx');
+  assert.match(trace,/queryKey:\['culture-time-periods',periodScopeId\]/);
+  assert.match(trace,/readNumericIsr\(periodScopeId,'periods'\)/);
+  assert.match(trace,/\[periodKey,setPeriodKey\]=useState\('latest'\)/);
+  assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
+  assert.match(trace,/from:String\(range\.start_date\|\|''\)/);
+  assert.match(trace,/onAnchorSelect=\{anchor=>/);
+  assert.match(trace,/空間定錨點不代表該時期曾造訪/);
+  assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
+  assert.match(stats,/queryKey:\['culture-time-periods',scopeId\]/);
+});
+
+test('Culture and Statistics share only published flat classification lists',()=>{
+  const catalog=read('app/modular/published-source-taxonomy.js');
+  const culture=read('app/modular/features/Culture.jsx');
+  const stats=read('app/modular/features/Statistics.jsx');
+  const sourceNames=read('app/loc/source-classification.mjs');
+  assert.match(catalog,/publishedSourceCategoryCatalog/);
+  assert.match(catalog,/SOURCE_DISPLAY_ALIASES/);
+  assert.match(catalog,/'其他':'others'/);
+  assert.match(catalog,/'方格子vocus':'vocus'/);
+  assert.match(catalog,/'無名wretch':'wretch'/);
+  assert.match(culture,/const publishedTaxonomy=useMemo\(\(\)=>publishedSourceTaxonomy\(scopeId\),\[scopeId\]\)/);
+  assert.match(culture,/enabled:!publishedTaxonomy/);
+  assert.match(stats,/publishedSourceCategoryCatalog\(scopeId\)/);
+  assert.match(stats,/enabled:sourceChart&&Boolean\(scopeId\)&&!publishedCatalog/);
+  assert.match(stats,/if\(isLrunesDaily\|\|mediaDimension\|\|!sourceCatalog.isSuccess\)return null/);
+  assert.match(sourceNames,/sourceTaxonomyFromArrays/);
+  assert.doesNotMatch(catalog,/statistics_source_categories|statistics_scope_others_groups/);
+});
