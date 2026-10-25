@@ -301,16 +301,14 @@ function MapEditor({scopeId,spatial,reload}){
       setExpandedIds(ids=>ids.includes(saved.uid)?ids:[...ids,saved.uid]);
       reset();
       setEditorOpen(false);
-      // Refresh existing public numeric tags only after a verified write;
-      // this is not an ISR architecture or database schema change.
-      const refreshed=await revalidateServerMetadata();
+      // Routes are read directly with SWR, not numeric ISR. Persistence is
+      // already confirmed above; never report failure because a secondary
+      // mounted public view could not refresh.
+      let refreshOk=true;
       try{await Promise.all([...new Set(['loc',writeScopeId])].map(id=>
-        cache.invalidate({queryKey:traceKey(id)})));}catch{
-        // The fresh readback already verified persistence. Do not relabel
-        // a successful database write as a save failure due to SWR refresh.
-      }
+        cache.revalidate({queryKey:traceKey(id)})));}catch{refreshOk=false;}
       setNotice((changed?'痕跡圖已更新並重新讀取確認。':'已新增痕跡圖並重新讀取確認。')
-        +(refreshed?'':'公開地圖快取可能仍是舊資料，可稍後重新整理。'));
+        +(refreshOk?'':'其他已開啟的地圖可能需要重新整理。'));
       return true;
     }catch(error){
       setNoticeError(true);setNotice(String(error?.message||error));return false;
@@ -327,11 +325,11 @@ function MapEditor({scopeId,spatial,reload}){
         throw Error('已收到刪除回應，但重新讀取仍顯示此路線。請勿重複操作。');
       setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
       if(editingUid===map.uid){reset();setEditorOpen(false);}
-      const refreshed=await revalidateServerMetadata();
+      let refreshOk=true;
       try{await Promise.all([...new Set(['loc',map.source_scope])].map(id=>
-        cache.invalidate({queryKey:traceKey(id)})));}catch{}
+        cache.revalidate({queryKey:traceKey(id)})));}catch{refreshOk=false;}
       setNotice('已刪除該張痕跡圖並重新讀取確認；原始定錨點與文章均未刪除。'
-        +(refreshed?'':'公開地圖快取可能尚未更新。'));
+        +(refreshOk?'':'其他已開啟的地圖可能需要重新整理。'));
     }catch(error){setNoticeError(true);setNotice(String(error?.message||error));}
     finally{setBusy(false);}
   };
