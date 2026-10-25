@@ -181,6 +181,17 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
 }
 // A Scope's subgroups only subdivide the Admin-defined Others total.
 // Load on expansion; never turn small-group aliases into global categories.
+async function readPersonalSourceClasses(scopeId){
+  const {publishedSourceTaxonomy}=await import('../published-source-taxonomy.js');
+  const published=publishedSourceTaxonomy(scopeId);
+  if(published)return {groups:published.groups||[],aliases:published.groupAliases||[]};
+  const {sourceTaxonomyFromArrays}=await import('../../loc/source-classification.mjs');
+  const {rows}=await selectRows('silver.'+scopeId,{
+    columns:'txt_class',filters:[{column:'id',operator:'eq',value:scopeId}],limit:1
+  });
+  const mapped=sourceTaxonomyFromArrays([],rows[0]?.txt_class||[]);
+  return {groups:mapped.groups,aliases:mapped.groupAliases};
+}
 function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
   useUiSection('uiExtra.statisticsView');
   const copy=useUiCopy();
@@ -188,21 +199,7 @@ function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
   const groupsQuery=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
     enabled:Boolean(scopeId),
-    queryFn:async()=>{
-      const [groups,aliases]=await Promise.all([
-        selectRows('silver.statistics_scope_others_groups',{
-          columns:'group_code,display_name,enabled,sort_order',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-          orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'
-        }),
-        selectRows('silver.statistics_scope_others_aliases',{
-          columns:'source_key,group_code',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-          limit:500,source:'primary'
-        })
-      ]);
-      return {groups:groups.rows||[],aliases:aliases.rows||[]};
-    },
+    queryFn:async()=>readPersonalSourceClasses(scopeId)
   });
   const details=useMemo(()=>{
     const groups=(groupsQuery.data?.groups||[]).filter(item=>item.enabled!==false);
@@ -444,22 +441,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Do not promote these local subgroup codes into global Admin categories.
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
-    enabled:sourceChart&&activeSourceSelection==='others',
-    queryFn:async()=>{
-      const [groups,aliases]=await Promise.all([
-        selectRows('silver.statistics_scope_others_groups',{
-          columns:'group_code,display_name,enabled,sort_order',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-          orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'
-        }),
-        selectRows('silver.statistics_scope_others_aliases',{
-          columns:'source_key,group_code',
-          filters:[{column:'scope_id',operator:'eq',value:scopeId}],
-          limit:500,source:'primary'
-        })
-      ]);
-      return {groups:groups.rows||[],aliases:aliases.rows||[]};
-    }
+    enabled:sourceChart&&Boolean(scopeId),
+    queryFn:async()=>readPersonalSourceClasses(scopeId)
   });
   const activeSubgroups=(othersConfig.data?.groups||[]).filter(row=>row.enabled!==false);
   const subgroupMap=new Map((othersConfig.data?.aliases||[])
