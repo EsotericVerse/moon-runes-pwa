@@ -44,15 +44,11 @@ export default {
       "subtitle": "把作品放回时间顺序，观察不同时期的累积与变化。",
       "description": "时间长河依日期呈现作品与来源；定锚点用来切分时期，方便比较前后差异。"
     },
-    "traces": {
+    "trace": {
+      "detailsLabel": "资料说明",
       "title": "痕迹",
       "subtitle": "以真实地理位置查看空间定锚点与路线。",
       "description": "以真实地理位置查看空间定锚点与路线。"
-    },
-    "governance": {
-      "title": "治理",
-      "subtitle": "说明使用原则、权利边界与管理方式。",
-      "description": "治理页整理这个区域的基本原则、著作权与授权方式。"
     },
     "search": {
       "title": "搜索",
@@ -81,7 +77,7 @@ export default {
       "ranking": "总排行榜",
       "statics": "用图表查看作品数量、来源比例与时间变化。",
       "culture": "把作品放回时间顺序，观察不同时期的累积与变化。",
-      "governance": "说明月典的使用原则、权利边界与管理方式。",
+      "trace": "查看与整理各 Scope 的数据脉络。",
       "search": "从关键字找到月典中的文字、作品、多媒体与相关内容。"
     },
     "author": {
@@ -90,7 +86,7 @@ export default {
       "search": "从关键字、作品、来源或日期找到相关内容，再查看前后脉络。"
     },
     "admin": {
-      "label": "治理管理",
+      "label": "系统管理",
       "ranking": "排行榜"
     }
   },
