@@ -420,10 +420,12 @@ function AppShellInner({children}){
       href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞編輯'),
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
+    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':'痕跡管理',
+      href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
+        ?editTabHref('admin','section','traceAnchor')+'&edit=1'
+        :editScopeAvailable?editTabHref('manage','section','traceAnchor')+'&edit=1':''},
     {id:'suggestions',icon:'search',label:'文章管理',
       href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
-    {id:'manage',icon:'settings',label:'管理選單',
-      href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit?navigationHref('loc','admin',native)+'?edit=1':editScopeAvailable?editTabHref('manage','section','settings')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
