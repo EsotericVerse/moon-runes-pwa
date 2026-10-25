@@ -43,7 +43,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTracesMap(container,{onStatus=()=>{}}={}){
+export function createTracesMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -62,9 +62,10 @@ export function createTracesMap(container,{onStatus=()=>{}}={}){
     const place=EXAMPLE_ANCHORS.find(item=>item.id===id);
     if(!place)return;
     map.flyTo({center:[place.lng,place.lat],zoom:15.1,pitch:65,bearing:-23,essential:true});
+    onSelect(place.id);
     new Popup({closeButton:true,offset:24})
       .setLngLat([place.lng,place.lat])
-      .setText(place.name+'｜空間定錨示例（非 Galaxy 打卡紀錄）')
+      .setText(place.name)
       .addTo(map);
   }
   function overview(){
@@ -105,10 +106,10 @@ export function createTracesMap(container,{onStatus=()=>{}}={}){
       return new Marker({element:button,anchor:'bottom',offset:[0,-13]})
         .setLngLat([place.lng,place.lat]).addTo(map);
     });
-    status('已顯示真實地理位置的立體定錨點；座標及高度為展示用。');
+    status('ready');
   });
   map.on('error',event=>{
-    if(!loaded)status('底圖可能暫時無法載入，請確認網路與地圖服務。');
+    if(!loaded)status('mapError');
   });
 
   async function showRoadRoute(){
@@ -116,10 +117,10 @@ export function createTracesMap(container,{onStatus=()=>{}}={}){
     if(routeActive){
       map.getSource('loc-traces-route')?.setData(emptyRoute());
       routeActive=false;
-      status('已隱藏路線，保留空間定錨點。');
+      status('routeHidden');
       return false;
     }
-    status('正在讀取示例路網路線…');
+    status('routeLoading');
     try{
       // The public OSRM demo is used only after an explicit route click. It
       // receives the three public example coordinates, never user locations.
@@ -134,10 +135,10 @@ export function createTracesMap(container,{onStatus=()=>{}}={}){
       if(removed)return false;
       map.getSource('loc-traces-route')?.setData(routeGeometry(coordinates));
       routeActive=true;
-      status('橘線是路網建議路線，不代表使用者曾走過或造訪。');
+      status('routeReady');
       return true;
     }catch(error){
-      if(!removed&&error?.name!=='AbortError')status('暫時無法取得路網路線；未顯示虛構道路。');
+      if(!removed&&error?.name!=='AbortError')status('routeError');
       return false;
     }
   }
