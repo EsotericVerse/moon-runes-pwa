@@ -538,7 +538,7 @@ export default function Culture(){
       else if(type==='video'||type==='movie')label=l.mediaVideo;
       if(source.category_type!=='media'){
         const systemCode=assignedSource(raw,catalog.aliases,catalog.categories);
-        root=systemCode==='others'?'custom':'system';
+        root=systemCode==='unclassified'?'custom':'system';
         code=root==='system'?systemCode:mapped.get(raw.toLowerCase())||'unclassified';
         label=root==='system'?system.get(code)||code:custom.get(code)||l.other;
       }
