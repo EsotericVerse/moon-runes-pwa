@@ -27,9 +27,9 @@ export const DIMENSION_FILTERS=Object.freeze([
 ]);
 export const DIMENSIONS=Object.freeze([
   {kind:'source',label:'原始作品來源'},
-  {kind:'source_rollup',label:'系統／個人分類'},
-  {kind:'group',label:'系統分組來源'},
-  {kind:'others_subgroup',label:'個人分組來源'},
+  {kind:'source_rollup',label:'作品群組分類／作品自訂分類'},
+  {kind:'group',label:'作品群組分類'},
+  {kind:'others_subgroup',label:'作品自訂分類'},
   {kind:'media_category',label:'音樂／圖片／影片'},
   {kind:'media',label:'多媒體來源'},
   {kind:'keyword_all',label:'全部關鍵詞'},
@@ -206,9 +206,9 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     }
     const rollups=[
       {id:metricId('source_rollup','system'),kind:'source_rollup',
-        name:'系統分類',total:systemTotal},
+        name:'作品群組分類',total:systemTotal},
       {id:metricId('source_rollup','personal'),kind:'source_rollup',
-        name:'個人分類',total:personalTotal}
+        name:'作品自訂分類',total:personalTotal}
     ].filter(item=>item.total>0);
     const mediaTotals=new Map();
     for(const row of rows){
