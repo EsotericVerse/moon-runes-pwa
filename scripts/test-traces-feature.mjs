@@ -198,3 +198,17 @@ test('Public trace map opens existing LOC article search using saved anchors and
   assert.match(search,/<IncrementalList/);
   assert.doesNotMatch(feature,/searchGalaxyRows\(/);
 });
+
+
+test('Search recommendations execute real queries and only suggest loaded place names',()=>{
+  const search=read('app/modular/features/Search.jsx');
+  const blocks=read('app/loc/ScopeEditableBlocks.jsx');
+  assert.match(search,/function searchFromSuggestion\(/);
+  assert.match(search,/onSuggestionClick=\{term=>searchFromSuggestion\(term\)\}/);
+  assert.match(search,/executeSearch\(term,null,\{overrideOptions:/);
+  assert.match(search,/suggestedPlaces=useMemo\(/);
+  assert.match(search,/searchFromSuggestion\(place,\{placeOnly:true/);
+  assert.match(search,/<datalist id="scope-search-loaded-titles">/);
+  assert.match(blocks,/blocksToPlainText\(html\)\.split/);
+  assert.match(blocks,/!slot\.entities\.some\(entity=>recommendationTerm\(entity\.text\)\)/);
+});
