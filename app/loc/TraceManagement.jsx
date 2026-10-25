@@ -9,7 +9,8 @@ import {useAccount} from './use-account';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
-import {classifyTraceAnchors} from '../modular/features/trace/trace-spatial-classification.mjs';
+import {groupTraceAnchorsByCountyId} from '../modular/features/trace/trace-spatial-classification.mjs';
+import {traceCountyName} from '../modular/features/trace/trace-county-id.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute} from '../modular/features/trace/trace-route-preference.mjs';
 import {
   TRACE_SCOPES,traceKey,traceMapIndexKey,traceAllAnchorsKey,
@@ -241,21 +242,15 @@ function MapEditor({scopeId,spatial,reload}){
     setNotice('已將「'+map.title+'」設為此瀏覽器的預設痕跡圖。');
   };
   const anchorById=useMemo(()=>new Map(anchors.map(item=>[item.uid,item])),[anchors]);
-  const [countyLookup,setCountyLookup]=useState(null);
-  const [countyError,setCountyError]=useState('');
-  useEffect(()=>{
-    if(!anchors.length)return undefined;
-    let active=true;
-    import('../modular/features/trace/trace-county-lookup.mjs')
-      .then(module=>{if(active){setCountyLookup(()=>module.countyForCoordinates);setCountyError('');}})
-      .catch(error=>{if(active)setCountyError('縣市對照載入失敗：'+String(error?.message||error));});
-    return()=>{active=false;};
-  },[anchors.length]);
-  const grouped=useMemo(()=>!countyLookup&&!countyError?new Map():classifyTraceAnchors(anchors,countyLookup),
-    [anchors,countyLookup,countyError]);
-  const counties=useMemo(()=>[...grouped.keys()],[grouped]);
+  // The persisted county_id is the first-stage autocomplete filter.
+  // No 139 kB county polygon lookup or thousands of <option> nodes at mount.
+  const grouped=useMemo(()=>groupTraceAnchorsByCountyId(anchors),[anchors]);
+  const counties=useMemo(()=>[...grouped.keys()].map(id=>({
+    id,label:traceCountyName(id),count:grouped.get(id)?.length||0
+  })),[grouped]);
   const [county,setCounty]=useState('');
   const [pointUid,setPointUid]=useState('');
+  const [pointQuery,setPointQuery]=useState('');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [selected,setSelected]=useState([]);
@@ -267,10 +262,19 @@ function MapEditor({scopeId,spatial,reload}){
   const [noticeError,setNoticeError]=useState(false);
   const pendingSavedRef=useRef(null);
   const available=useMemo(()=>(grouped.get(county)||[]).filter(row=>!selected.includes(row.uid)),[grouped,county,selected]);
+  const matches=useMemo(()=>{
+    const term=pointQuery.trim().normalize('NFKC').toLocaleLowerCase('zh-Hant');
+    if(!term)return [];
+    return available.filter(row=>String(row.title||'').normalize('NFKC')
+      .toLocaleLowerCase('zh-Hant').includes(term)).slice(0,8);
+  },[available,pointQuery]);
+  // One unique match completes automatically; collisions require an explicit UID choice.
+  const completionUid=pointUid&&matches.some(row=>row.uid===pointUid)
+    ?pointUid:matches.length===1?matches[0].uid:'';
   const dirty=editorOpen&&Boolean(editingUid||title||description||selected.length);
   const reset=()=>{
     setTitle('');setDescription('');setSelected([]);setEditingUid('');
-    setCounty('');setPointUid('');
+    setCounty('');setPointUid('');setPointQuery('');
     pendingSavedRef.current=null;
   };
   const changeSource=source=>{
@@ -291,7 +295,7 @@ function MapEditor({scopeId,spatial,reload}){
     setTitle(String(map.title||''));
     setDescription(String(map.description||''));
     setSelected(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
-    setCounty('');setPointUid('');setEditorOpen(true);
+    setCounty('');setPointUid('');setPointQuery('');setEditorOpen(true);
     setNotice('');setNoticeError(false);
   };
   const save=async()=>{
@@ -375,10 +379,11 @@ function MapEditor({scopeId,spatial,reload}){
     });
   };
   const addToQueue=()=>{
-    if(!pointUid||selected.includes(pointUid)||selected.length>=80)return;
-    if(!anchorById.has(pointUid))return;
-    setSelected(ids=>[...ids,pointUid]);
-    setPointUid('');
+    if(!completionUid||selected.includes(completionUid)||selected.length>=80)return;
+    const anchor=anchorById.get(completionUid);
+    if(!anchor||anchor.county_id!==county)return;
+    setSelected(ids=>[...ids,completionUid]);
+    setPointUid('');setPointQuery('');
   };
   const setAllExpanded=open=>setExpandedIds(open?maps.map(map=>map.uid):[]);
   return <section className="loc-card scope-feature-card loc-trace-map-manager">
@@ -458,26 +463,40 @@ function MapEditor({scopeId,spatial,reload}){
       <div className="loc-trace-route-pickers" role="group" aria-label="依縣市選取路線站點">
         <label>縣市
           <select className="scope-select" value={county} disabled={busy||!counties.length}
-            onChange={event=>{setCounty(event.target.value);setPointUid('');}}>
-            <option value="">{!countyLookup&&!countyError&&anchors.length?"正在整理縣市…":"請選擇縣市"}</option>
-            {counties.map(name=><option key={name} value={name}>{name}（{grouped.get(name)?.length||0}）</option>)}
+            onChange={event=>{setCounty(event.target.value);setPointUid('');setPointQuery('');}}>
+            <option value="">請選擇縣市</option>
+            {counties.map(item=><option key={item.id} value={item.id}>
+              {item.label}（{item.count}）
+            </option>)}
           </select>
         </label>
-        <label>空間定錨點
-          <select className="scope-select" value={pointUid} disabled={busy||!county||!available.length}
-            onChange={event=>setPointUid(event.target.value)}>
-            <option value="">{!county?'先選縣市':available.length?'選擇定錨點':'此縣市沒有可加入的定錨點'}</option>
-            {available.map(anchor=><option key={anchor.uid} value={anchor.uid}>{anchor.title}</option>)}
-          </select>
-        </label>
+        <div className="loc-trace-route-autocomplete">
+          <label htmlFor="trace-route-anchor-query">空間定錨點自動完成</label>
+          <input id="trace-route-anchor-query" className="scope-select" type="search" autoComplete="off"
+            role="combobox" aria-autocomplete="list"
+            aria-expanded={Boolean(pointQuery.trim()&&matches.length)}
+            aria-controls="trace-route-anchor-matches"
+            placeholder={county?'輸入名稱，例如：小柏':'請先選縣市'}
+            value={pointQuery} disabled={busy||!county||!available.length}
+            onChange={event=>{setPointQuery(event.target.value);setPointUid('');}}/>
+          {county&&pointQuery.trim()?<div id="trace-route-anchor-matches"
+            className="loc-trace-route-suggestions" role="listbox" aria-label="符合的空間定錨點">
+            {matches.length?matches.map(anchor=><button key={anchor.uid}
+              type="button" className="loc-button" role="option"
+              aria-selected={completionUid===anchor.uid}
+              onClick={()=>{setPointUid(anchor.uid);setPointQuery(anchor.title);}}>
+              <span>{anchor.title}</span>
+              <small>UID {anchor.uid} · {Number(anchor.latitude).toFixed(4)}, {Number(anchor.longitude).toFixed(4)}</small>
+            </button>):<span className="scope-status">此縣市沒有符合名稱的定錨點</span>}
+            {matches.length===8?<span className="scope-status">只顯示前八筆，請繼續輸入以縮小範圍。</span>:null}
+          </div>:null}
+        </div>
         <button className="loc-button loc-trace-route-add" type="button"
-          aria-label="將選取的定錨點加入路線佇列"
-          title="加入路線佇列" disabled={busy||!pointUid||selected.length>=80}
+          aria-label="將自動完成的定錨點 UID 加入路線佇列"
+          title="加入路線佇列" disabled={busy||!completionUid||selected.length>=80}
           onClick={addToQueue}>＋</button>
       </div>
-      {countyError?<p className="scope-status scope-error" role="alert">{countyError}</p>:null}
-      {!countyLookup&&anchors.length&&!countyError?<p className="scope-status" role="status">正在整理縣市對照…</p>:null}
-      <p className="scope-status">縣市由座標近似對照，僅用於選單整理，不修改原始地名與座標。邊界或海外地點可在「未判定／其他地區」找到。</p>
+      <p className="scope-status">依儲存的縣市 ID 篩選既有定錨點，以 UID 加入路線；同名店可依座標與 UID 區分，歷史地點不合併。縣市未判定的地點可在「未判定／其他地區」找到。</p>
       {!anchors.length?<p className="scope-status">尚未建立空間定錨點；新增地點後即可排入路線。</p>:null}
       <h4>路線佇列（{selected.length}／80）</h4>
       {selected.length?<ol className="loc-trace-selection-order">
