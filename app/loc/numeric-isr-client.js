@@ -14,8 +14,9 @@ export function usesNumericIsr(scopeId){
 
 export async function readNumericIsr(scopeId,kind,{startDate='',endDate='',includeUndated=false,dimension='',roots=[]}={}){
   if(!usesNumericIsr(scopeId))throw new Error('Numeric ISR is not enabled for this Scope');
-  if(!['culture','culture-roots','culture-children','statistics','facet','earliest','daily','daily-earliest'].includes(kind))throw new Error('Unsupported numeric ISR kind');
+  if(!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest'].includes(kind))throw new Error('Unsupported numeric ISR kind');
   if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw new Error('Daily Rune analytics belongs to lrunes');
+  if(kind==='loc-statistics'&&scopeId!=='loc')throw new Error('LOC aggregate analytics belongs to loc');
   if(kind==='facet'&&!['media_type','media_platform','media_style'].includes(dimension))throw new Error('Unsupported media chart dimension');
   const params=new URLSearchParams();
   if(startDate)params.set('start',String(startDate).slice(0,10));
