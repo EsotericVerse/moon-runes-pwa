@@ -11,6 +11,7 @@ import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {groupTraceAnchorsByCountyId} from '../modular/features/trace/trace-spatial-classification.mjs';
 import {traceCountyName} from '../modular/features/trace/trace-county-id.mjs';
+import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../modular/features/trace/trace-anchor-autocomplete.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute} from '../modular/features/trace/trace-route-preference.mjs';
 import {
   TRACE_SCOPES,traceKey,traceMapIndexKey,traceAllAnchorsKey,
@@ -262,15 +263,11 @@ function MapEditor({scopeId,spatial,reload}){
   const [noticeError,setNoticeError]=useState(false);
   const pendingSavedRef=useRef(null);
   const available=useMemo(()=>(grouped.get(county)||[]).filter(row=>!selected.includes(row.uid)),[grouped,county,selected]);
-  const matches=useMemo(()=>{
-    const term=pointQuery.trim().normalize('NFKC').toLocaleLowerCase('zh-Hant');
-    if(!term)return [];
-    return available.filter(row=>String(row.title||'').normalize('NFKC')
-      .toLocaleLowerCase('zh-Hant').includes(term)).slice(0,8);
-  },[available,pointQuery]);
+  const matches=useMemo(()=>
+    traceAnchorSuggestions(available,county,pointQuery,selected,8),
+  [available,county,pointQuery,selected]);
   // One unique match completes automatically; collisions require an explicit UID choice.
-  const completionUid=pointUid&&matches.some(row=>row.uid===pointUid)
-    ?pointUid:matches.length===1?matches[0].uid:'';
+  const completionUid=traceAnchorCompletionUid(matches,pointUid);
   const dirty=editorOpen&&Boolean(editingUid||title||description||selected.length);
   const reset=()=>{
     setTitle('');setDescription('');setSelected([]);setEditingUid('');
