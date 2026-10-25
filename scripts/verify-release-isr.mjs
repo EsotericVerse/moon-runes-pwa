@@ -31,12 +31,22 @@ const config=read('app/loc/scope-data.js');
 if(config.includes("locPublicIsrUrl('/api/loc/site-bootstrap')")||
    config.includes("locPublicIsrUrl('/api/loc/scopes/"))
   throw Error('Non-numeric ISR reference remains in scope-data');
-if(!config.includes('/_loc/blocks/')||!config.includes('/_loc/site-bootstrap.json'))
-  throw Error('Missing static Blocks/bootstrap data sources');
+// Public Bootstrap and Config are JS snapshots, and page Blocks are lazy JS
+// chunks. Only Culture/Statistics numeric APIs belong behind ISR.
+if(!config.includes('PUBLISHED_SITE_BOOTSTRAP')||!config.includes('SCOPE_ROUTE_INDEX')||
+   !config.includes('loadPublishedBlocks(id,pageName)'))
+  throw Error('Missing published JS Bootstrap/Config/Blocks data sources');
+const routesConfig=read('app/modular/scope-route-index.js');
+if(!routesConfig.includes('SCOPE_ROUTE_INDEX')||!routesConfig.includes('"config":'))
+  throw Error('Scope Routes and Config must share one public JS module');
+const publishedBlocks=read('app/modular/published-blocks/index.js');
+if(!publishedBlocks.includes('()=>import('))
+  throw Error('Scope Blocks must use page-level JS lazy imports');
 const app=read('app/loc/app-bootstrap.js');
 if(app.includes('locHomeSnapshotDelivered'))
   throw Error('LOC home still consumes site RPC Blocks');
 const worker=read('public/sw.js');
-if(!worker.includes('loc-public-blocks-')||!worker.includes('LOC_BLOCKS_INVALIDATE'))
-  throw Error('Static Block Service Worker is incomplete');
-console.log('Verified Culture/Statistics numeric ISR (including Media Style and Daily Rune), plus public SW Blocks/bootstrap.');
+if(!worker.includes('isStaticAsset(request,url)')||!worker.includes('staticStrategy(event)')||
+   !worker.includes('_next\\/static'))
+  throw Error('Service Worker must cache published Next.js JS/CSS assets');
+console.log('Verified Culture/Statistics numeric ISR and published JS/CSS Scope metadata and Blocks.');
