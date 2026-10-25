@@ -134,7 +134,7 @@ test('statistics uses one flat source selector and no retired classification tab
   assert.match(code,/const activeSourceSelection=styleFilter==='rune66'/);
   assert.match(code,/作品／個人分類/);
   assert.doesNotMatch(code,/sourceSubgroup|statistics_scope_others_groups|statistics_scope_others_aliases/);
-  assert.match(editor,/update\\(\\{txt_class:names\\}\\)/);
+  assert.match(editor,/update\(\{txt_class:names\}\)/);
   assert.doesNotMatch(editor,/group_code|category_code|source_key/);
 });
 
