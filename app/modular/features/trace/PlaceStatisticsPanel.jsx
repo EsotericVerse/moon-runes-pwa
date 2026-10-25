@@ -18,7 +18,7 @@ export default function PlaceStatisticsPanel({scopeId,range={}}){
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const model=useMemo(()=>summarizePlaceStatistics(query.data||{},{
-    bucket:range.bucket==='day'?'day':'month',limit:10
+    bucket:['day','week','month'].includes(range.bucket)?range.bucket:'month',limit:10
   }),[query.data,range.bucket]);
   return <section aria-label="地點統計" className="scope-stat-place">
     {query.isPending?<p className="scope-status" role="status">正在取得 ISR 地點統計…</p>:null}
