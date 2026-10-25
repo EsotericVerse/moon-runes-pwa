@@ -457,6 +457,27 @@ export default function CultureTimeline({
     }
   },[rows,extraGroups,hasTimeKinds,editable,heightVariant,ready,timelineMinHeight,timelineMaxHeight,labels]);
 
+  // vis-timeline can accept a DataSet update while its virtualized range
+  // items are not yet painted. Detect a genuinely blank numeric river using
+  // already-loaded rows and expose the existing accessible list fallback.
+  // No additional API/database request is made by this visual health check.
+  useEffect(()=>{
+    if(heightVariant!=='double'||!ready||!rows.some(row=>row.entryType==='source_total'))return;
+    let cancelled=false;
+    let frame=0;
+    const painted=()=>Array.from(containerRef.current?.querySelectorAll('.vis-item.scope-period-density.vis-range')||[])
+      .some(element=>element.getBoundingClientRect().width>0&&element.getBoundingClientRect().height>0);
+    const timer=window.setTimeout(()=>{
+      if(cancelled||!timelineRef.current||painted())return;
+      // One recovery redraw if a ready timeline has source rows but no bars.
+      timelineRef.current.redraw();
+      frame=window.requestAnimationFrame(()=>{
+        if(!cancelled&&!painted())setChartError(true);
+      });
+    },350);
+    return()=>{cancelled=true;window.clearTimeout(timer);if(frame)window.cancelAnimationFrame(frame);};
+  },[heightVariant,ready,rows]);
+
   // Density analysis is lazy-loaded after first paint. Updating the source
   // river's hidden date ranges must not destroy/recreate the entire chart.
   useEffect(()=>{
@@ -524,7 +545,7 @@ export default function CultureTimeline({
         {rows.map(row=><option key={row.id} value={row.id}>{String(row.start||'').slice(0,10)} · {row.content||row.title||row.entryType||labels.record}</option>)}
       </select>
     </label>:null}
-    {chartError?<p className='scope-status'><FieldText text="圖表載入失敗，以下改用清單顯示。"/></p>:null}
+    {chartError?<p className='scope-status' role='alert'><FieldText text="河道已有統計資料，但圖表沒有正常繪製；以下保留日期與筆數清單。"/></p>:null}
     <div ref={containerRef} data-anchor-gesture={onTimeClick?'double-tap':'none'} className='scope-period-timeline' role='region' aria-label={t(mode==='overview'?'所有時期與定錨點時間長河':'時間長河')} style={{'--scope-period-timeline-min-height':timelineMinHeight+'px'}}/>
     {anchorInsight?<aside className='scope-candidate-insight' role='status' aria-live='polite'>
       <button className='scope-candidate-insight-close' type='button' onClick={onAnchorClose} aria-label={anchorLabels?.close||'Close'}>×</button>
