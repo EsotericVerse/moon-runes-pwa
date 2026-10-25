@@ -358,21 +358,25 @@ export default function Culture(){
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
 
-  const sourceTaxonomy=useAsyncResource({
+  // A published flat classification is a JS value, not an async database
+  // resource. Culture and Statistics use the exact same public source catalog.
+  const publishedTaxonomy=useMemo(()=>publishedSourceTaxonomy(scopeId),[scopeId]);
+  const sourceTaxonomyQuery=useAsyncResource({
     queryKey:['culture-source-classification',scopeId],
-    enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&scopeId!=='local'&&Boolean(scopeData),
+    enabled:!publishedTaxonomy&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
+      &&scopeId!=='local'&&Boolean(scopeData),
     queryFn:async()=>{
-      const published=publishedSourceTaxonomy(scopeId);
-      if(published)return published; // Known public Scopes: no four classification SQL calls.
       const scopes=scopeId==='loc'?['loc']:['loc',scopeId];
       const [global,personal]=await Promise.all(scopes.map(id=>selectRows('silver.'+id,{
         columns:'txt_class',filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
       })));
       return sourceTaxonomyFromArrays(global.rows?.[0]?.txt_class||[],
         scopeId==='loc'?[]:personal?.rows?.[0]?.txt_class||[]);
-    }
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const stagedSourceRiver=usesNumericIsr(scopeId)&&Boolean(publishedSourceTaxonomy(scopeId));
+  const sourceTaxonomy=publishedTaxonomy||sourceTaxonomyQuery.data;
+  const stagedSourceRiver=usesNumericIsr(scopeId)&&Boolean(publishedTaxonomy);
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
   const sourceRootQuery=useAsyncResource({
     queryKey:['culture-period-roots','v1',classificationScope,classificationWindowStart,classificationWindowEnd],
@@ -543,7 +547,7 @@ export default function Culture(){
 
   const categoryGroups=sourceRootQuery.data?.groups||sourceSnapshotQuery.data?.groups||EMPTY_CULTURE_GROUPS;
   const groupedSources=useMemo(()=>{
-    const catalog=sourceTaxonomy.data||publishedSourceTaxonomy(scopeId)||{categories:[],aliases:[],groups:[],groupAliases:[]};
+    const catalog=sourceTaxonomy||{categories:[],aliases:[],groups:[],groupAliases:[]};
     const system=new Map(catalog.categories.filter(row=>row.enabled!==false)
       .map(row=>[String(row.category_code),String(row.display_name||row.category_code)]));
     const custom=new Map(catalog.groups.filter(row=>row.enabled!==false)
@@ -571,7 +575,7 @@ export default function Culture(){
       group.media_types.push(...(source.media_types||[]));
     }
     return [...index.values()].map(group=>({...group,source_names:[...new Set(group.source_names)],media_types:[...new Set(group.media_types)]}));
-  },[categoryGroups,sourceTaxonomy.data,scopeId,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
+  },[categoryGroups,sourceTaxonomy,scopeId,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
   const selectedGroup=groupedSources.find(item=>item.key===selectedRiverGroup)
     ||categoryGroups.find(item=>item.category_key===(keywordDrillSource?'source:'+keywordDrillSource:selectedCategory))
     ||null;
