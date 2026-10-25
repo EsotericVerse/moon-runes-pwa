@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
 import {searchTracePlaces} from './trace-geocoding';
@@ -94,7 +94,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radiusMeters=500,focusLocation=null,spatialData=null}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
@@ -106,6 +106,42 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
   const anchorSelectRef=useRef(onAnchorSelect);
   anchorSelectRef.current=onAnchorSelect;
   const selectingLocation=typeof onLocationPick==='function';
+  const [resolveCounty,setResolveCounty]=useState(null);
+  const [county,setCounty]=useState('');
+  const [anchorUid,setAnchorUid]=useState('');
+  const savedAnchors=spatialData?.anchors||[];
+  const validPoint=anchor=>anchor?.trace_type==='anchor'
+    &&anchor.longitude!=null&&anchor.latitude!=null
+    &&String(anchor.longitude).trim()!==''&&String(anchor.latitude).trim()!==''
+    &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude))
+    &&Math.abs(Number(anchor.longitude))<=180&&Math.abs(Number(anchor.latitude))<=90;
+  const groups=useMemo(()=>{
+    const map=new Map();
+    for(const anchor of savedAnchors){
+      if(!validPoint(anchor))continue;
+      const region=resolveCounty?resolveCounty(anchor.longitude,anchor.latitude):'未判定／其他地區';
+      if(!map.has(region))map.set(region,[]);
+      map.get(region).push(anchor);
+    }
+    for(const items of map.values())items.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'zh-Hant'));
+    return map;
+  },[spatialData?.anchors,resolveCounty]);
+  const counties=useMemo(()=>[...groups.keys()].sort((a,b)=>
+    a==='未判定／其他地區'?1:b==='未判定／其他地區'?-1:a.localeCompare(b,'zh-Hant')),[groups]);
+  const regionAnchors=groups.get(county)||[];
+  const savedMaps=spatialData?.maps||[];
+  useEffect(()=>{
+    if(selectingLocation||!savedAnchors.some(validPoint))return undefined;
+    let active=true;
+    import('./trace-county-lookup.mjs').then(module=>{
+      if(active)setResolveCounty(()=>module.countyForCoordinates);
+    }).catch(()=>{ /* The uncategorized region remains usable without boundaries. */ });
+    return()=>{active=false;};
+  },[selectingLocation,spatialData?.anchors]);
+  useEffect(()=>{
+    setCounty('');
+    setAnchorUid('');
+  },[spatialData?.anchors]);
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
@@ -159,7 +195,11 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
   },[]);
 
   useEffect(()=>{mapRef.current?.setRadius(radiusMeters);},[radiusMeters]);
-  useEffect(()=>{mapRef.current?.setAnchors(spatialData?.anchors||[]);},[spatialData]);
+  useEffect(()=>{
+    mapRef.current?.setAnchors(spatialData?.anchors||[]);
+    mapRef.current?.setSavedRoute(
+      (spatialData?.maps||[]).find(map=>map.uid===selectedRouteUid)||null);
+  },[spatialData,selectedRouteUid]);
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
@@ -246,12 +286,49 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
       {matches.map((item,index)=><button type="button" className="loc-button" key={index}
         disabled={!ready} onClick={()=>mapRef.current?.focusCoordinates({...item,radius_m:radiusMeters})}>{item.label}</button>)}
     </div>:null}</>:null}
-    {!selectingLocation&&onAnchorSelect&&spatialData?.anchors?.length?<div className="loc-trace-start-points" role="group" aria-label="從已有地點查看文章">
-      <p className="scope-status">從這裡開始：點選已建立的地點，查看它的打卡文章。</p>
-      {[...new Map(spatialData.anchors.filter(anchor=>anchor.trace_type==='anchor').map(anchor=>[anchor.source_scope+':'+anchor.title,anchor])).values()]
-        .slice(0,12).map(anchor=><button className="loc-button" type="button"
-          key={anchor.source_scope+':'+anchor.uid}
-          onClick={()=>onAnchorSelect(anchor)}>{anchor.title} · 查看文章</button>)}
+    {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="縣市與空間定錨點">
+      <label>行政區（縣市）
+        <select className="scope-select" value={county}
+          onChange={event=>{setCounty(event.target.value);setAnchorUid('');}}
+          disabled={!counties.length}>
+          <option value="">{counties.length?'請選縣市':'尚無空間定錨點'}</option>
+          {counties.map(name=><option key={name} value={name}>{name}（{groups.get(name)?.length||0}）</option>)}
+        </select>
+      </label>
+      <label>空間定錨點
+        <select className="scope-select" value={anchorUid}
+          disabled={!county||!regionAnchors.length}
+          onChange={event=>{
+            const uid=event.target.value;
+            setAnchorUid(uid);
+            const anchor=regionAnchors.find(item=>String(item.uid)===uid);
+            if(!anchor)return;
+            mapRef.current?.focusCoordinates({
+              longitude:anchor.longitude,latitude:anchor.latitude,
+              name:anchor.title,radius_m:anchor.radius_m
+            });
+            onAnchorSelect?.(anchor);
+          }}>
+          <option value="">{!county?'先選縣市':'請選定錨點'}</option>
+          {regionAnchors.map(anchor=><option key={anchor.uid} value={anchor.uid}>{anchor.title}</option>)}
+        </select>
+      </label>
+      <p className="scope-status">只列出已儲存且有有效座標的定錨點。選擇後在地圖定位，下方顯示該地點文章；不會跳頁。</p>
+    </div>:null}
+    {!selectingLocation&&savedMaps.length?<div className="loc-trace-saved-route-picker">
+      <label>痕跡圖（已儲存路線）
+        <select className="scope-select" value={selectedRouteUid}
+          onChange={event=>{
+            const route=savedMaps.find(map=>map.uid===event.target.value)||null;
+            onRouteSelect?.(route);
+            mapRef.current?.setSavedRoute(route);
+          }}>
+          <option value="">不顯示路線</option>
+          {savedMaps.map(route=><option key={route.uid} value={route.uid}>
+            {route.title}（{route.anchor_uids?.length||0} 站）</option>)}
+        </select>
+      </label>
+      <p className="scope-status">依你儲存的站點順序畫出連線與站序；連線不代表實際走過的道路。</p>
     </div>:null}
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
@@ -260,16 +337,16 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
           &&String(anchor.longitude).trim()!==''&&String(anchor.latitude).trim()!==''
           &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude))
           &&Math.abs(Number(anchor.longitude))<=180&&Math.abs(Number(anchor.latitude))<=90)
-          ?copy.all:copy.examples}
+          ?copy.all:(selectingLocation?copy.examples:copy.all)}
       </button>
-      {DEMO_PLACES.map(place=><button key={place.id} type="button" aria-pressed={selected===place.id}
+      {selectingLocation?<>{DEMO_PLACES.map(place=><button key={place.id} type="button" aria-pressed={selected===place.id}
         className="loc-button" onClick={()=>{setSelected(place.id);mapRef.current?.focus(place.id);}} disabled={!ready}>
         {place.name}
       </button>)}
       <button type="button" className="loc-button" aria-pressed={routeVisible}
         disabled={!ready||routeBusy} onClick={toggleRoute}>
         {routeBusy?copy.busy:routeVisible?copy.hide:copy.show}
-      </button>
+      </button></>:null}
     </div>
     <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
       role="application" aria-label={copy.map}/>
