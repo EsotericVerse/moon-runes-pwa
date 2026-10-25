@@ -1,41 +1,43 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 
-const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const pathOf=path=>new URL('../'+path,import.meta.url);
+const read=path=>readFileSync(pathOf(path),'utf8');
 
-test('Traces reuses existing Governance Hero while legal Blocks stay in Search',()=>{
+test('Trace owns its route and Hero; explanatory Blocks remain in Search',()=>{
   const app=read('app/loc/LocApp.jsx');
   const feature=read('app/modular/features/Trace.jsx');
   const search=read('app/modular/features/Search.jsx');
-  const legal=read('app/modular/features/GovernanceLegal.jsx');
+  const blocks=read('app/modular/features/TraceBlocks.jsx');
   assert.match(app,/trace:Trace/);
-  assert.match(feature,/<FeaturePage featureId="governance">/);
+  assert.match(feature,/<FeaturePage featureId="trace">/);
   assert.match(feature,/<TraceMap\/>/);
-  assert.match(search,/import\('\.\/GovernanceLegal'\)/);
-  assert.match(legal,/page="governance"/);
-  assert.match(legal,/loc-grid two governance-grid/);
+  assert.match(search,/import\('\.\/TraceBlocks'\)/);
+  assert.match(blocks,/page="trace"/);
+  assert.match(blocks,/trace-grid/);
   assert.doesNotMatch(feature,/ScopeEditableBlocks|selectGalaxy|updateRows/);
 });
 
-test('Public feature is Trace at /trace while management paths remain separate',()=>{
+test('Navigation places Trace before Search and gives it an independent icon',()=>{
   const registry=read('app/modular/scope-registry.js');
   const shell=read('app/AppShell.jsx');
   const icons=read('app/modular/BottomNavIcon.jsx');
-  assert.match(registry,/id:'trace'.*traces.*path:'trace'/);
+  assert.match(registry,/id:'trace'.*path:'trace'/);
   assert.match(shell,/\['culture','statics','trace','search'\]/);
-  assert.match(shell,/localWorkspace\?'governance':'traces'/);
-  assert.match(icons,/if\(name==='traces'\)/);
+  assert.match(icons,/if\(name==='trace'\)/);
+  assert.match(shell,/editTabHref\('manage\/search'/);
+  assert.match(shell,/editTabHref\('admin\/search'/);
   for(const [file,label] of [
     ['zh_tw.js','痕跡'],['zh_cn.js','痕迹'],['en.js','Traces'],['ja.js','軌跡']
   ]){
     const locale=read('app/i18n/'+file);
-    const traces=locale.split('"traces": {')[1]?.split('},')[0]||'';
-    assert.ok(traces.includes('"title": "'+label+'"'),file+' traces title');
+    const section=locale.split('"trace": {')[1]?.split('},')[0]||'';
+    assert.ok(section.includes('"title": "'+label+'"'),file+' trace title');
   }
 });
 
-test('Demo renders geo-anchored 3D markers and on-demand road route without touching Galaxy',()=>{
+test('Trace map uses real tile/road APIs only for marked example anchors',()=>{
   const map=read('public/trace-map.mjs');
   const react=read('app/modular/features/trace/TraceMap.jsx');
   assert.match(map,/maplibre-gl@6\.15\.0/);
@@ -45,29 +47,31 @@ test('Demo renders geo-anchored 3D markers and on-demand road route without touc
   assert.match(map,/async function showRoadRoute\(/);
   assert.match(map,/router\.project-osrm\.org/);
   assert.doesNotMatch(map,/selectRows\(|updateRows\(|insertRows\(|deleteRows\(/);
-  assert.match(react,/MapLibre/);
   assert.match(react,/示例/);
   assert.match(react,/routeBusy/);
 });
 
-test('Canonical trace pages exist for all public mounts; old bookmarks are noindexed',()=>{
+test('Only canonical public Trace and management routes exist',()=>{
   for(const path of [
     'app/trace/page.jsx','app/lrunes/trace/page.jsx',
     'app/lo3rwang/trace/page.jsx','app/scope-shell/trace/page.jsx'
-  ]){
-    assert.match(read(path),/forcedView="trace"/,path);
-  }
+  ])assert.match(read(path),/forcedView="trace"/,path);
   for(const path of [
-    'app/governance/page.jsx','app/lrunes/governance/page.jsx',
-    'app/lo3rwang/governance/page.jsx','app/scope-shell/governance/page.jsx'
-  ]){
-    assert.match(read(path),/forcedView="trace"/,path);
-    assert.match(read(path),/index:false/,path);
-  }
-  const sitemap=read('app/sitemap.js');
-  assert.match(sitemap,/\/trace/);
-  assert.doesNotMatch(sitemap,/['"]\/governance['"]/);
-  const shell=read('app/AppShell.jsx');
-  assert.match(shell,/governance\/manage\/search/);
-  assert.match(shell,/governance\/manage/);
+    'app/lrunes/manage/page.jsx','app/lo3rwang/manage/page.jsx',
+    'app/scope-shell/manage/page.jsx'
+  ])assert.match(read(path),/forcedView="manage"/,path);
+  for(const path of [
+    'app/lrunes/manage/search/page.jsx','app/lo3rwang/manage/search/page.jsx',
+    'app/scope-shell/manage/search/page.jsx','app/admin/search/page.jsx'
+  ])assert.match(read(path),/forcedView="searchManage"/,path);
+  assert.match(read('app/admin/page.jsx'),/forcedScope="admin"/);
+  for(const prefix of [
+    'app/governance','app/lrunes/governance',
+    'app/lo3rwang/governance','app/scope-shell/governance','app/local/governance'
+  ])assert.ok(!existsSync(pathOf(prefix+'/page.jsx')),prefix+' must be absent');
+  assert.match(read('app/sitemap.js'),/\/trace/);
+  const core=read('app/modular/published-blocks/index.js');
+  assert.match(core,/"loc:trace"/);
+  assert.match(core,/"loc:scope_trace"/);
+  assert.doesNotMatch(core,/governance/);
 });
