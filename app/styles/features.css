@@ -989,6 +989,14 @@
 .scope-search-view-panel{min-width:0}
 
 
+/* A desktop Trace map benefits from a wider canvas than article reading.
+   Expand only the Trace page: other feature widths and mobile breakpoints stay
+   unchanged. Keep map/content within the existing viewport at all sizes. */
+@media (min-width:900px){
+  .loc-next-main:has(.loc-trace-panel){
+    width:min(1680px,calc(100% - clamp(1rem,3vw,3rem)));
+  }
+}
 /* Trace / spatial anchoring demonstration (the legacy trace Hero is
    unchanged). The map is not a 3D terrain; only the anchor symbols extrude. */
 .loc-trace-panel{
@@ -1017,13 +1025,25 @@
 }
 .loc-trace-map-frame{
   position:relative;
+  box-sizing:border-box;
   width:100%;
-  height:clamp(370px,55vh,650px);
+  height:clamp(460px,68svh,820px);
+  min-width:min(380px,100%);
+  min-height:340px;
+  max-width:100%;
+  max-height:min(95svh,1150px);
   overflow:hidden;
   border:1px solid var(--loc-line);
   border-radius:var(--loc-radius);
   background:var(--loc-panel);
   isolation:isolate;
+}
+@media (min-width:900px) and (pointer:fine){
+  .loc-trace-map-frame{resize:both}
+}
+.loc-trace-resize-hint{margin:0;display:none;font-size:.84rem}
+@media (min-width:900px) and (pointer:fine){
+  .loc-trace-resize-hint{display:block}
 }
 .loc-trace-map-frame .maplibregl-map{
   width:100%;
@@ -1050,7 +1070,15 @@
 .loc-trace-map-status{margin:0}
 .loc-trace-map-note{margin:0;font-size:.84rem;line-height:1.65}
 @media(max-width:680px){
-  .loc-trace-map-frame{height:clamp(330px,49vh,520px)}
+  /* Use almost all available card width on narrow phones; no horizontal
+     scrolling or desktop-only resize grip. */
+  .loc-trace-map-frame{
+    width:calc(100% + 1.5rem);
+    max-width:calc(100% + 1.5rem);
+    margin-inline:-.75rem;
+    height:clamp(400px,62svh,690px);
+    resize:none;
+  }
   .loc-trace-controls{gap:.35rem}
   .loc-trace-controls>.loc-button{padding:.55rem .7rem}
 }
