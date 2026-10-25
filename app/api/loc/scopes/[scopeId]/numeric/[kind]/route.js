@@ -18,7 +18,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest','periods'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest','periods','places'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='',roots=[];
   try{
@@ -153,6 +153,25 @@ export async function GET(request,{params}){
           rune_name:rune.rune_name||String(row.rune_number),
           moon_phase:rune.moon_phase??null};
       });
+    }
+    if(kind==='places'){
+      // One indexed database-side GROUP BY. Never fetch all article bodies or
+      // send private text to the ISR cache. Unanchored source_place is valid.
+      const {data,error}=await db.rpc('read_scope_place_statistics',{
+        p_scope_id:scopeId,p_start:start,p_end:end
+      });
+      if(error)throw error;
+      if(!Array.isArray(data))throw Error('Invalid place numeric result');
+      // Anchor identity is a separate optional signal, never a prerequisite
+      // for a textual check-in place to appear in Culture or Statistics.
+      let anchors=[];
+      if(['lo3rwang','lrunes'].includes(scopeId)){
+        const readAnchors=await db.from(scopeId+'_trace')
+          .select('uid,title').eq('trace_type','anchor').limit(10000);
+        if(readAnchors.error)throw readAnchors.error;
+        anchors=(readAnchors.data||[]).map(row=>({uid:row.uid,title:row.title}));
+      }
+      return {rows:data,anchors};
     }
     if(kind==='facet'){
       // The worker caches only per-day counts; public Media rows never leave this server route.
