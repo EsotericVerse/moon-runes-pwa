@@ -30,7 +30,7 @@ export default function Trace({scopeId='loc'}){
   const [mapOnly,setMapOnly]=useState(false);
   const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
   const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
-  const [routeListOpen,setRouteListOpen]=useState(false);
+  const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState('articles');
   const [reportSettingsOpen,setReportSettingsOpen]=useState(false);
@@ -104,7 +104,9 @@ export default function Trace({scopeId='loc'}){
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
-  const reportPlace=selectedAvailable?selectedPlace:null;
+  // A Frame is the spatial context. Its article/culture/statistics panel
+  // appears below the map without an extra click or a search-page route.
+  const reportPlace=selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null);
 
   return <FeaturePage featureId="trace">
     <div className="scope-stat-controls" role="group" aria-label="痕跡選擇與展示模式">
@@ -135,8 +137,6 @@ export default function Trace({scopeId='loc'}){
           <option value="all">全部定錨點（手動載入）</option>
         </select>
       </label>:null}
-      {currentMap&&routeListOpen?<button type="button" className="loc-button"
-        onClick={()=>choosePlace(currentMap)}>查看整張路線內容</button>:null}
     </div>
     {supported&&traceIndex.isPending?<p className="scope-status" role="status">正在載入痕跡列表…</p>:null}
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
@@ -160,8 +160,8 @@ export default function Trace({scopeId='loc'}){
         <button type="button" className="loc-button"
           aria-expanded={reportSettingsOpen}
           onClick={()=>setReportSettingsOpen(value=>!value)}>設定</button>
-        <button type="button" className="loc-button"
-          onClick={()=>setSelectedPlace(null)}>收合內容</button>
+        {selectedPlace?<button type="button" className="loc-button"
+          onClick={()=>setSelectedPlace(null)}>回到整張路線</button>:null}
       </div>
       {reportSettingsOpen?<div className="loc-trace-report-settings">
         <label>時間
