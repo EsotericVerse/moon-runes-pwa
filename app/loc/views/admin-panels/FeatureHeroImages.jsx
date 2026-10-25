@@ -14,7 +14,7 @@ const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},
   {id:'search',label:'搜尋'},
-  {id:'governance',label:'痕跡'},
+  {id:'trace',label:'痕跡'},
   {id:'admin',label:'系統管理'},
   {id:'manage',label:'頁面控管'},
   {id:'setting',label:'個人設定'}
@@ -153,21 +153,6 @@ export default function FeatureHeroImages(){
         allowDelete={false}
         allowEntities={false}
       />
-      {feature.id==='governance'?<section className="loc-card">
-        <h3>LOC 治理頁完整區塊</h3>
-        <ScopeEditableBlocks
-          key="loc-governance-full"
-          scopeId="loc"
-          page="governance"
-          className="loc-grid two governance-grid governance-grid-loc"
-          headingLevel={2}
-          allowDelete
-          authorizedByParent
-          startInEditMode
-          keepEditorOpen
-          explicitEditButton
-        />
-      </section>:null}
       <div className="scope-management-fields">
         {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=><ImageSlot feature={feature} variant={variant} onDirtyChange={trackDirty} key={feature.id+variant.kind}/>)}
       </div>
