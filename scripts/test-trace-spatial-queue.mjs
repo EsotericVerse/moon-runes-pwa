@@ -10,7 +10,7 @@ test('spatial grouping is county → anchors and never displays an all-anchor li
   const list=[anchor('AAAAAAAA','老家',120.3,22.6),anchor('BBBBBBBB','車站',121.5,25),
     anchor('CCCCCCCC','海外站點',-118.24,34.05)];
   const groups=classifyTraceAnchors(list,(lng,lat)=>lng<0?TRACE_OTHER_REGION:fakeCounty(lng,lat));
-  assert.deepEqual([...groups.keys()],['新北市','高雄市',TRACE_OTHER_REGION]);
+  assert.deepEqual([...groups.keys()],['高雄市','新北市',TRACE_OTHER_REGION]);
   assert.deepEqual(groups.get('新北市').map(x=>x.uid),['BBBBBBBB']);
   assert.deepEqual(groups.get('高雄市').map(x=>x.uid),['AAAAAAAA']);
   assert.deepEqual(groups.get(TRACE_OTHER_REGION).map(x=>x.uid),['CCCCCCCC']);
