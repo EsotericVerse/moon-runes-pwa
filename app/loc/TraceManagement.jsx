@@ -114,16 +114,22 @@ function AnchorEditor({scopeId,spatial,reload}){
         :await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
       await revalidateServerMetadata();
-      await Promise.all([
-        cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
-        cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
-        cache.invalidate({queryKey:['trace-current',scopeId]})
-      ]);
+      // The database write has already succeeded; a secondary cache
+      // refresh failure must not invite a duplicate insert on retry.
+      let anchorCacheSynced=true;
+      try{
+        await Promise.all([
+          cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
+          cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
+          cache.invalidate({queryKey:['trace-current',scopeId]})
+        ]);
+      }catch{anchorCacheSynced=false;}
       setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
         :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
-        :'空間定錨點已儲存，已完成新增前重複檢查。');
+        :'空間定錨點已儲存，已完成新增前重複檢查。'
+        +(anchorCacheSynced?'':'部分已開啟的痕跡快取可能需要重新整理。'));
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
