@@ -146,38 +146,38 @@ test('explicit no-store and private image responses never enter the cache',async
   assert.equal(h.requests.length,5);
 });
 
-test('static published Blocks and site metadata cache locally without another fetch',async()=>{
+test('published content-hashed JS/CSS is cached without a second fetch',async()=>{
   const h=createHarness();
-  h.setResponseHeaders({'content-type':'application/json','cache-control':'public, max-age=600'});
-  const blocks=h.req('https://loc.lo3rwang.cc/_loc/blocks/lrunes/index.json','');
-  const site=h.req('https://loc.lo3rwang.cc/_loc/site-bootstrap.json','');
-  await h.dispatch('fetch',blocks);
-  await h.dispatch('fetch',site);
-  await h.dispatch('fetch',blocks);
-  await h.dispatch('fetch',site);
+  for(const [path,mime,destination] of [
+    ['/_next/static/chunks/abc123.js','application/javascript','script'],
+    ['/_next/static/css/def456.css','text/css','style']
+  ]){
+    h.setResponseHeaders({'content-type':mime,'cache-control':'public,max-age=31536000,immutable'});
+    const url='https://loc.lo3rwang.cc'+path;
+    await h.dispatch('fetch',h.req(url,destination));
+    await h.dispatch('fetch',h.req(url,destination));
+  }
   assert.equal(h.requests.length,2);
-  assert.ok([...h.stored.keys()].some(k=>k.startsWith('loc-public-blocks-')));
+  assert.equal(h.stored.get('loc-public-static-v1').size,2);
 });
-test('editing invalidates one static Block cache entry without affecting other data',async()=>{
+test('retired JSON Blocks and Bootstrap URLs no longer intercept',async()=>{
   const h=createHarness();
-  h.setResponseHeaders({'content-type':'application/json'});
-  const req=h.req('https://loc.lo3rwang.cc/_loc/blocks/lo3rwang/index.json','');
-  await h.dispatch('fetch',req);
-  await h.dispatch('message',{type:'LOC_BLOCKS_INVALIDATE',key:'lo3rwang:index'});
-  await h.dispatch('fetch',req);
-  assert.deepEqual(h.requests,[req.url,req.url]);
+  for(const url of [
+    'https://loc.lo3rwang.cc/_loc/blocks/lo3rwang/index.json',
+    'https://loc.lo3rwang.cc/_loc/config/lo3rwang.json',
+    'https://loc.lo3rwang.cc/_loc/site-bootstrap.json'
+  ])assert.equal((await h.dispatch('fetch',h.req(url,''))).handled,false,url);
+  assert.deepEqual(h.requests,[]);
 });
-test('invalidating one Scope Block preserves other Scope caches',async()=>{
+test('activation removes legacy JSON Block caches but keeps current static cache',async()=>{
   const h=createHarness();
-  h.setResponseHeaders({'content-type':'application/json'});
-  const first=h.req('https://loc.lo3rwang.cc/_loc/blocks/lo3rwang/index.json','');
-  const second=h.req('https://loc.lo3rwang.cc/_loc/blocks/lrunes/hero.json','');
-  await h.dispatch('fetch',first);
-  await h.dispatch('fetch',second);
-  await h.dispatch('message',{type:'LOC_BLOCKS_INVALIDATE',key:'lo3rwang:index'});
-  await h.dispatch('fetch',first);
-  await h.dispatch('fetch',second);
-  assert.deepEqual(h.requests,[first.url,second.url,first.url]);
+  h.stored.set('loc-public-blocks-v1',new Map());
+  h.stored.set('loc-public-block-age-v1',new Map());
+  h.stored.set('loc-public-static-v1',new Map());
+  await h.dispatch('activate');
+  assert.equal(h.stored.has('loc-public-blocks-v1'),false);
+  assert.equal(h.stored.has('loc-public-block-age-v1'),false);
+  assert.equal(h.stored.has('loc-public-static-v1'),true);
 });
 
 test('public home and governance HTML work offline, but search navigation never caches',async()=>{

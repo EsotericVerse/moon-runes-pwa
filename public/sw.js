@@ -1,18 +1,13 @@
-/* LOC PWA: public app HTML, Scope Blocks, and public images.
+/* LOC PWA: public app HTML, immutable JS/CSS, and public images.
  * Search documents/results, SQL, private API data and authentication are never cached.
  * Capacitor native is intentionally not controlled by this worker. */
 const IMAGE_CACHE='loc-public-images-v1', IMAGE_PREFIX='loc-public-images-', MAX_IMAGES=200;
 const PAGE_CACHE='loc-public-html-v1', PAGE_PREFIX='loc-public-html-', MAX_PAGES=80;
-const BLOCK_CACHE='loc-public-blocks-v1';
-const BLOCK_PREFIX='loc-public-blocks-', MAX_BLOCKS=200;
-const BLOCK_AGE='loc-public-block-age-v1', BLOCK_TTL=24*60*60*1000;
 const STATIC_CACHE='loc-public-static-v1', STATIC_PREFIX='loc-public-static-', MAX_STATIC=150;
+const LEGACY_BLOCK_PREFIX='loc-public-block';
 const PRIVATE_QUERY=/^(?:token|access_token|auth|authorization|jwt|key|api_key|sig|signature|expires?|policy|credential|x-amz-|x-goog-|x-ms-)/i;
 const PRIVATE_PATH=/(?:^|\/)(?:auth|private|account|user|session)(?:\/|$)/i;
 const IMAGE_EXT=/\.(?:avif|gif|jpe?g|png|svg|webp|bmp|ico)$/i;
-const BLOCK_PATH=/^\/_loc\/blocks\/[a-z][a-z0-9]{0,14}\/[a-z0-9_-]+\.json$/;
-const METADATA_PATH=/^\/_loc\/(?:site-bootstrap\.json|config\/[a-z][a-z0-9]{0,14}\.json)$/;
-
 function urlFor(request){
   if(request.method!=='GET'||request.headers?.has('authorization'))return null;
   let url;
@@ -41,11 +36,6 @@ function isPublicHtml(request,url){
       !/^[a-z][a-z0-9]{0,14}$/.test(url.searchParams.get('scopeid')||''))return false;
   }
   return !url.pathname.startsWith('/api/')&&!url.pathname.startsWith('/_next/');
-}
-function isScopeBlocks(request,url){
-  return url.origin===self.location.origin&&
-    !url.search&&(BLOCK_PATH.test(url.pathname)||METADATA_PATH.test(url.pathname))&&
-    (!request.destination||request.destination==='empty')&&request.credentials!=='include';
 }
 function cacheable(response,type){
   if(!response||!response.ok||response.status!==200||response.redirected)return false;
@@ -100,61 +90,21 @@ async function htmlStrategy(event){
     throw error;
   }
 }
-async function blocksStrategy(event){
-  const request=event.request;
-  let cache,age,hit;
-  try{
-    [cache,age]=await Promise.all([caches.open(BLOCK_CACHE),caches.open(BLOCK_AGE)]);
-    hit=await cache.match(request);
-    if(hit){
-      const marker=await age.match(request);
-      const stamp=marker?Number(await marker.text()):0;
-      if(stamp&&Date.now()-stamp<BLOCK_TTL)return hit;
-    }
-  }catch{}
-  try{
-    const response=await fetch(request);
-    if(cache&&cacheable(response,/^application\/json(?:;|$)/i)){
-      event.waitUntil((async()=>{
-        const removed=await keep(cache,request,response.clone(),MAX_BLOCKS);
-        if(age){
-          await age.put(request,new Response(String(Date.now())));
-          await Promise.all(removed.map(key=>age.delete(key)));
-        }
-      })().catch(()=>{}));
-    }
-    if(hit&&response.status>=500)return hit;
-    return response;
-  }catch(error){if(hit)return hit;throw error;}
-}
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   const names=await caches.keys();
   await Promise.all(names.filter(name=>
     (name.startsWith(IMAGE_PREFIX)&&name!==IMAGE_CACHE)||
     (name.startsWith(PAGE_PREFIX)&&name!==PAGE_CACHE)||
-    (name.startsWith(BLOCK_PREFIX)&&name!==BLOCK_CACHE&&name!==BLOCK_AGE)||
+    name.startsWith(LEGACY_BLOCK_PREFIX)||
     (name.startsWith(STATIC_PREFIX)&&name!==STATIC_CACHE)
   ).map(name=>caches.delete(name)));
   await self.clients.claim();
 })()));
-self.addEventListener('message',event=>{
-  if(event.data?.type!=='LOC_BLOCKS_INVALIDATE')return;
-  const match=/^([a-z][a-z0-9]{0,14}):([a-z0-9_-]+)$/.exec(String(event.data.key||''));
-  if(!match)return;
-  event.waitUntil((async()=>{
-    const url=new URL('/_loc/blocks/'+match[1]+'/'+match[2]+'.json',self.location.origin).href;
-    const [blocks,age]=await Promise.all([caches.open(BLOCK_CACHE),caches.open(BLOCK_AGE)]);
-    const request=new Request(url);
-    await Promise.all([blocks.delete(request),age.delete(request)]);
-    event.ports?.[0]?.postMessage({ok:true});
-  })());
-});
 self.addEventListener('fetch',event=>{
   const request=event.request,url=urlFor(request);
   if(!url)return;
   if(isStaticAsset(request,url))event.respondWith(staticStrategy(event));
   else if(isImage(request,url))event.respondWith(imageStrategy(event));
   else if(isPublicHtml(request,url))event.respondWith(htmlStrategy(event));
-  else if(isScopeBlocks(request,url))event.respondWith(blocksStrategy(event));
 });

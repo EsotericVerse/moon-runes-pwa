@@ -261,8 +261,6 @@ export function invalidateScopeBlockPage(scopeId,page='index'){
   const key=id+':'+pageName;
   scopeBlocksRequests.delete(key);
   locallyEditedBlocks.add(key);
-  if(typeof navigator!=='undefined'&&navigator.serviceWorker?.controller)
-    navigator.serviceWorker.controller.postMessage({type:'LOC_BLOCKS_INVALIDATE',key});
 }
 export async function selectScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();

@@ -10,7 +10,6 @@ import {
   applyDe,draw,evaluateAlphaEvent,finishOpening,freshPlayer,loadGameData,shuffle
 } from './game-data';
 import {getThemeSlot,THEME_SLOTS} from '../../modular/theme-registry';
-import {mergeThemeSlot,selectThemeRegistry} from '../../loc/theme-data';
 const gameHeroAsset={src:'/pics/LunaRunesGame.jpg'};
 
 const NAMES=['A','B','C','D'];
@@ -470,7 +469,6 @@ function phaseForRound(data,round){
 export default function GameView(){
   const {data,error,isLoading}=useAsyncResource(['lrunes','game','current'],loadGameData,{revalidateOnMount:true});
 
-  const {data:themeRows=[]}=useAsyncResource(['theme-registry'],selectThemeRegistry);
 
   const [state,setState]=useState(null);
   const [playerCount,setPlayerCount]=useState(2);
@@ -483,15 +481,9 @@ export default function GameView(){
   const event=state?.eventDeck?.length?state.eventDeck[state.eventIndex%state.eventDeck.length]:null;
   const eventThemeId=GAME_THEME_BY_GROUP[event?.groups?.[0]]||GAME_THEME_DEFAULT;
   const effectiveGameThemeId=gameThemeId===GAME_THEME_AUTO?eventThemeId:gameThemeId;
-  const gameTheme=useMemo(()=>{
-    const override=(Array.isArray(themeRows)?themeRows:[]).find(row=>row.theme_id===effectiveGameThemeId)||null;
-    return override?mergeThemeSlot(effectiveGameThemeId,override):getThemeSlot(effectiveGameThemeId);
-  },[effectiveGameThemeId,themeRows]);
-  // getThemeSlot is an emergency fallback with an Order palette, not the
-  // canonical Nature palette. Inherit the root while Theme DB is loading,
-  // rather than briefly painting the game with an unrelated light palette.
-  const hasCanonicalGameTheme=Array.isArray(themeRows)&&themeRows.some(row=>row.theme_id===effectiveGameThemeId);
-  const gameThemeStyle=useMemo(()=>hasCanonicalGameTheme?({...gameTheme.tokens,colorScheme:gameTheme.scheme}):undefined,[gameTheme,hasCanonicalGameTheme]);
+  // Published CSS provides all 43 palette tokens on the game container, independently
+  // of the page's selected theme; only the tiny metadata lookup remains in JS.
+  const gameTheme=useMemo(()=>getThemeSlot(effectiveGameThemeId),[effectiveGameThemeId]);
   const allOpened=state?.players.every(player=>!player.opening);
   const phaseLabel=state?.phase==='event'?'事件':state?.phase==='duel'?'決鬥':'共鳴';
 
@@ -700,7 +692,7 @@ export default function GameView(){
 
   const roundBadge=data.rounds.map(item=>phaseMark(item.phase)).join('-');
 
-  if(!state)return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
+  if(!state)return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme}>
     <header className="loc-hero game-hero game-home-hero">
       <img
         className="game-home-hero-image"
@@ -763,7 +755,7 @@ export default function GameView(){
     </>}
   </section>;
 
-  return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme} style={gameThemeStyle}>
+  return <section className="loc-view loc-game game-shell" data-game-theme={gameTheme.id} data-game-scheme={gameTheme.scheme}>
     <header className="loc-hero loc-hero-context game-compact-hero">
       <div><p className="loc-eyebrow">月之符文遊戲</p><h1>月之符文遊戲</h1><p>{status}｜{state.result}</p></div>
       <DeMeter value={Math.max(...state.players.map(player=>player.de))} max={data.config.deMax}/>

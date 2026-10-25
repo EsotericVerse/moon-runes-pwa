@@ -1,14 +1,13 @@
 // Explicit PUBLIC content publishing only. Never call from prebuild or on a visit.
 // Run npm run sync:public after authorized public content/config/theme edits,
 // review generated files, commit and deploy normally (no build-time SQL).
-import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createPublicSupabaseClient} from '../app/api/loc/_server.js';
 import {THEME_TOKEN_KEYS} from '../app/modular/theme-registry.js';
+import {publishPublicFiles} from './publish-public-files.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const target=relative=>path.join(root,relative);
 const validScope=/^[a-z][a-z0-9]{0,14}$/;
 const validPage=/^[a-z0-9_-]+$/;
 const encode=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
@@ -48,7 +47,7 @@ const palettes=themes.map(theme=>{
       throw Error('Unsafe Theme token '+id+' '+key);
     return '  '+key+':'+value+';';
   });
-  return ':root[data-theme-id="theme-'+id+'"]{\n  color-scheme:'+(theme.scheme==='dark'?'dark':'light')+';\n'+declarations.join('\n')+'\n}';
+  return ':root[data-theme-id="theme-'+id+'"],.game-shell[data-game-theme="theme-'+id+'"]{\n  color-scheme:'+(theme.scheme==='dark'?'dark':'light')+';\n'+declarations.join('\n')+'\n}';
 });
 const themeMeta=themes.map(t=>({theme_id:t.theme_id,theme_name:t.theme_name,theme_order:t.theme_order}));
 const bootstrap={scope_id:'loc',page_name:'index',registry:site.registry,page_copy:site.page_copy||[],theme_list:themeMeta,themes:[],blocks:[]};
@@ -71,20 +70,7 @@ entries.push(['app/modular/published-blocks/index.js',
   '  const key=String(scopeId||\'\')+\':\'+String(pageName||\'index\');\n'+
   '  const load=Object.prototype.hasOwnProperty.call(LOADERS,key)?LOADERS[key]:null;\n'+
   '  return load?(await load()).default:[];\n}\n']);
-// All reads and validation succeed before mutating any published files.
-const blocksDir=target('app/modular/published-blocks');
-const tempDir=target('app/modular/published-blocks-staging');
-fs.rmSync(tempDir,{recursive:true,force:true});
-fs.mkdirSync(tempDir,{recursive:true});
-try{
-  for(const [file,content] of entries){
-    const dest=file.startsWith('app/modular/published-blocks/')
-      ?path.join(tempDir,file.slice('app/modular/published-blocks/'.length))
-      :target(file);
-    fs.mkdirSync(path.dirname(dest),{recursive:true});
-    fs.writeFileSync(dest,content,'utf8');
-  }
-  fs.rmSync(blocksDir,{recursive:true,force:true});
-  fs.renameSync(tempDir,blocksDir);
-  console.log('[public] '+routes.length+' Scope routes + Config, '+allBlocks.size+' page JS modules, '+themes.length+' CSS palettes. Commit generated files before deploying.');
-}catch(error){fs.rmSync(tempDir,{recursive:true,force:true});throw error;}
+// Generate all files in staging; if installation fails, roll back each moved
+// file and the entire Blocks directory. No partial publication survives errors.
+publishPublicFiles(root,entries);
+console.log('[public] '+routes.length+' Scope routes + Config, '+allBlocks.size+' page JS modules, '+themes.length+' CSS palettes. Commit generated files before deploying.');

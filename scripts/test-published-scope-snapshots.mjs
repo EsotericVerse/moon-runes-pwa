@@ -25,6 +25,7 @@ test('CSS contains eight published Theme palettes',()=>{
   const css=read('app/styles/published-themes.css');
   for(let id=1;id<=8;id++){
     assert.ok(css.includes('[data-theme-id="theme-'+id+'"]'));
+    assert.ok(css.includes('.game-shell[data-game-theme="theme-'+id+'"]'));
     assert.equal(css.split('--loc-panel-2:').length-1,8);
   }
 });
