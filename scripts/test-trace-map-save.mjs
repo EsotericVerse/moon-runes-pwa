@@ -28,7 +28,8 @@ test('Trace save result is confirmed by a fresh read before clearing the story a
 test('a successful route edit refreshes public Trace without changing database policy',()=>{
   const src=read('app/loc/TraceManagement.jsx');
   assert.match(src,/revalidateServerMetadata\(\)/);
-  assert.match(src,/cache\.invalidate\(\{queryKey:traceKey\('loc'\)\}\)/);
+  assert.match(src,/\['loc',writeScopeId\]/);
+  assert.match(src,/cache\.invalidate\(\{queryKey:traceKey\(id\)\}\)/);
   assert.match(src,/row\.source_scope===writeScopeId/);
   assert.match(src,/deleteTraceMap\(\{scopeId:map\.source_scope,uid:map\.uid\}\)/);
   assert.match(read('app/modular/features/trace/TraceMap.jsx'),/selectedRouteUid/);
@@ -105,4 +106,19 @@ test('actual handler preserves draft on rejected write, and cache failure does n
   assert.equal(await cached.save(),true);
   assert.equal(cached.written[0].type,'update');
   assert.equal(cached.resets,1);
+});
+
+test('public Trace reads fresh maps and a complete inline three-tab report',()=>{
+  const page=read('app/modular/features/Trace.jsx');
+  const results=read('app/modular/features/trace/TracePlaceResults.jsx');
+  const editor=read('app/loc/TraceManagement.jsx');
+  const css=read('app/styles/features.css');
+  assert.match(page,/useAsyncResource\(traceKey\(scopeId\),\(\)=>readTraceData\(scopeId\)/);
+  assert.doesNotMatch(page,/readNumericIsr\(scopeId,'traces'\)/);
+  assert.match(results,/<CultureTimeline items=\{riverRows\}/);
+  assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
+  assert.match(results,/沒有可對應的打卡地點/);
+  assert.match(editor,/aria-expanded=\{expandedIds\.includes\(map\.uid\)\}/);
+  assert.match(css,/\.loc-trace-route-pickers\{display:grid/);
+  assert.match(css,/\.loc-trace-route-queue-actions>\.loc-button\{min-width:44px/);
 });
