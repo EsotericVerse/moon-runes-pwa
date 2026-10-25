@@ -84,12 +84,18 @@ export default function Trace({scopeId='loc'}){
       </span>:null}
       <p className="scope-status">時期只篩選下方所選定錨點或痕跡圖的文章；空間定錨點不等於該時期曾造訪。</p>
     </div>:null}
-    <TraceMap spatialData={spatialData} onAnchorSelect={anchor=>{
-      if(String(anchor?.uid||'').trim()){
-        setSelectedPlace(anchor);
-        setSelectedResource('anchor:'+anchor.uid);
-      }
-    }}/>
+    <TraceMap spatialData={spatialData}
+      selectedRouteUid={selectedResource.startsWith('map:')?selectedResource.slice(4):''}
+      onAnchorSelect={anchor=>{
+        if(String(anchor?.uid||'').trim()){
+          setSelectedPlace(anchor);
+          setSelectedResource('anchor:'+anchor.uid);
+        }
+      }}
+      onRouteSelect={map=>{
+        setSelectedPlace(map||null);
+        setSelectedResource(map?.uid?'map:'+map.uid:'');
+      }}/>
     <div className="scope-stat-controls" role="group" aria-label="地圖下方報表選擇">
       <label><span>空間定錨點／痕跡圖</span>
         <select className="scope-select" value={selectedResource}
