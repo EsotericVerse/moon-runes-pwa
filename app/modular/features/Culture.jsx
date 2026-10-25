@@ -1402,7 +1402,7 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
+                {(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:<span/>}
@@ -1462,7 +1462,7 @@ export default function Culture(){
                   />
                   {!periodWorksPage.loading&&!periodWorksPage.error&&!visibleWorkRows.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                   </>:null}
-                </details>
+                </details>:null}
               </section>:null}
             </>}
       </>:null}
