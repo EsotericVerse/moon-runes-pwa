@@ -18,8 +18,8 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
-  {value:'traceAnchor',label:'新增定錨點',shortLabel:'定錨點',description:'建立具座標的空間定錨點。'},
-  {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'依序組合此 Scope 的定錨點。'},
+  {value:'traceAnchor',label:'新增空間定錨點',shortLabel:'空間定錨點',description:'建立具座標的空間定錨點。'},
+  {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'依序組合此 Scope 的空間定錨點。'},
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
   {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
