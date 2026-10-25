@@ -199,6 +199,13 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
       {matches.map((item,index)=><button type="button" className="loc-button" key={index}
         disabled={!ready} onClick={()=>mapRef.current?.focusCoordinates({...item,radius_m:radiusMeters})}>{item.label}</button>)}
     </div>:null}</>:null}
+    {!selectingLocation&&onAnchorSelect&&spatialData?.anchors?.length?<div className="loc-trace-start-points" role="group" aria-label="從已有地點開始搜尋文章">
+      <p className="scope-status">從這裡開始：點選已建立的地點，查看它的打卡文章。</p>
+      {[...new Map(spatialData.anchors.filter(anchor=>anchor.trace_type==='anchor').map(anchor=>[anchor.source_scope+':'+anchor.title,anchor])).values()]
+        .slice(0,12).map(anchor=><button className="loc-button" type="button"
+          key={anchor.source_scope+':'+anchor.uid}
+          onClick={()=>onAnchorSelect(anchor)}>{anchor.title} · 查看文章</button>)}
+    </div>:null}
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
         {copy.all}
