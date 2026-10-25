@@ -14,7 +14,7 @@ export default {
   "virtualAnchorHelp": "点时间长河上的 ◇ 或下方日期可查看并选取切点；虚拟点不会写入资料库。",
   "showAllWorks": "显示全部作品",
   "editing": "编辑中",
-  "noPeriodClassification": "目前没有此时期的作品分类资料。",
+  "noPeriodClassification": "目前没有此时期的作品群组分类资料。",
   "selectedPrefix": "已选取｜",
   "creating": "建立中…",
   "viewMode": "检视模式"
