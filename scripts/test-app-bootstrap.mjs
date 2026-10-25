@@ -363,6 +363,32 @@ test('Culture river keeps three collapsed parents, expandable child lanes and to
   assert.match(river,/scope-candidate-insight/);
 });
 
+test('Culture and Statistics use a shared ISR Period index as primary navigation',()=>{
+  const route=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
+  const adapter=readFileSync(new URL('../app/loc/numeric-isr-client.js',import.meta.url),'utf8');
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
+  assert.match(route,/if\(kind==='periods'\)\{/);
+  assert.match(route,/\.select\('time_table,birthday'\)/);
+  assert.match(route,/\.in\('record_type',\['anchor','period'\]\)/);
+  assert.match(route,/last==='0'\?null:previousDay\(/);
+  assert.match(route,/revalidate,tags:\[LOC_NUMERIC_CACHE_TAG\]/);
+  assert.match(adapter,/'daily-earliest','periods'/);
+  assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
+  assert.match(culture,/queryFn:\(\)=>readNumericIsr\(scopeId,'periods'\)/);
+  assert.match(culture,/periodIsrEnabled&&!periodNavigationQuery\.error/);
+  assert.match(stats,/queryKey:\['culture-time-periods',scopeId\]/);
+  assert.match(stats,/readNumericIsr\(scopeId,'periods'\)/);
+  assert.match(stats,/\[selectedPeriodKey,setSelectedPeriodKey\]=useState\('latest'\)/);
+  assert.match(stats,/sourceChart&&periodNavigationReady/);
+  assert.match(stats,/mediaDimension&&periodNavigationReady/);
+  assert.doesNotMatch(stats,/periodOptionsRequested/);
+  assert.match(editor,/revalidateServerMetadata\(\)/);
+  assert.match(editor,/resourceCache\.invalidate\(\{queryKey:\['culture-time-periods',scopeId\]\}\)/);
+  assert.match(culture,/resourceCache\.invalidate\(\{queryKey:\['culture-time-periods',scopeId\]\}\)/);
+});
+
 test('Culture period and event selectors expose different second-option catalogs',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(source,/value=\{cultureTimeKind\}/);
