@@ -7,6 +7,9 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
     const category=String(row.category||'').trim(),day=String(row.day||'').slice(0,10),count=Number(row.item_count)||0;
     if(count<=0)continue;
     const isMedia=row.kind==='media';if(isMedia&&!category)continue;
+    // Count only records with an actual date in the selected interval.
+    // Undated results must not create clickable but empty child lanes.
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     const raw=isMedia?'媒體 · '+category:category;
     const root=isMedia?'media':assignedSource(category,taxonomy.aliases||[],taxonomy.categories||[])==='others'?'custom':'system';
     const key=(isMedia?'media:':'source:')+category;
@@ -15,7 +18,6 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
       display_label:raw,item_count:0,source_names:isMedia?[]:[category],media_types:isMedia?[category]:[]
     };
     group.item_count+=count;groups.set(key,group);
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     const bucketKey=root+'\u0000'+day;
     daily.set(bucketKey,(daily.get(bucketKey)||0)+count);
   }
