@@ -14,7 +14,7 @@ export default {
   "virtualAnchorHelp": "タイムライン上の◇または下の日付から分割点を選択できます。仮アンカーはデータベースに書き込みません。",
   "showAllWorks": "すべての作品を表示",
   "editing": "編集中",
-  "noPeriodClassification": "この時期の作品分類データはありません。",
+  "noPeriodClassification": "この時期の作品グループ分類データはありません。",
   "selectedPrefix": "選択済み｜",
   "creating": "作成中…",
   "viewMode": "表示モード"
