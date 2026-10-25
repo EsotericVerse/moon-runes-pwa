@@ -21,7 +21,7 @@ const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'traceAnchor',label:'新增空間定錨點',shortLabel:'空間定錨點',description:'建立具座標的空間定錨點。'},
   {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'依序組合此 Scope 的空間定錨點。'},
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
+  {value:'others',label:'作品自訂分類',shortLabel:'作品自訂分類',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
@@ -48,7 +48,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   if(isLoc)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card">
       <div className="scope-stat-controls">
-        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>作品分類</ScopeLink>
+        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>作品群組分類</ScopeLink>
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
       </div>
     </section>
