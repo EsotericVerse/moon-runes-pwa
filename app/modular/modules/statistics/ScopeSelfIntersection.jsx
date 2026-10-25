@@ -86,32 +86,24 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     ()=>selectScopeSourceBreakdownRows(scope,{startDate:start,endDate:end}));
   const rows=query.data||[];
   const localCatalog=useAsyncResource(valid&&!sharedCatalog?['own-scope-source-catalog',scope?.id]:null,async()=>{
-      const {selectRows}=await import('../../../loc/db-query.mjs');
-      const [c,a]=await Promise.all([
-        selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
-      ]);
-      return {categories:c.rows,aliases:a.rows};
+    const {selectSourceTaxonomy}=await import('../../../loc/galaxy-query');
+    return selectSourceTaxonomy();
   });
   const catalog=sharedCatalog||localCatalog;
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scope?.id],
     enabled:valid,
     queryFn:async()=>{
+      const {publishedSourceTaxonomy}=await import('../../published-source-taxonomy.js');
+      const published=publishedSourceTaxonomy(scope.id);
+      if(published)return {groups:published.groups||[],aliases:published.groupAliases||[]};
       const {selectRows}=await import('../../../loc/db-query.mjs');
-      const [groups,aliases]=await Promise.all([
-        selectRows('silver.statistics_scope_others_groups',{
-          columns:'group_code,display_name,enabled,sort_order',
-          filters:[{column:'scope_id',operator:'eq',value:scope.id}],
-          orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'
-        }),
-        selectRows('silver.statistics_scope_others_aliases',{
-          columns:'source_key,group_code',
-          filters:[{column:'scope_id',operator:'eq',value:scope.id}],
-          limit:500,source:'primary'
-        })
-      ]);
-      return {groups:groups.rows||[],aliases:aliases.rows||[]};
+      const {sourceTaxonomyFromArrays}=await import('../../../loc/source-classification.mjs');
+      const {rows}=await selectRows('silver.'+scope.id,{
+        columns:'txt_class',filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
+      });
+      const list=sourceTaxonomyFromArrays([],rows[0]?.txt_class||[]);
+      return {groups:list.groups,aliases:list.groupAliases};
     }
   });
   const othersActive=useMemo(()=>new Map((othersConfig.data?.groups||[])
