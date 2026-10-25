@@ -376,7 +376,10 @@ test('Culture period and event selectors expose different second-option catalogs
 
 test('Culture river hides zero-count parents, folds singleton children and renders a localized empty state',()=>{
   const code=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(code,/if\(!activeRoots\.has\(parent\.id\)\)continue/);
+  assert.match(code,/if\(!activeRoots\.has\(parent\.id\)\|\|parentCount<=0\)continue/);
+  assert.match(code,/label:numberedLabel\(label,parentCount\)/);
+  assert.match(code,/if\(count<=0\)return/);
+  assert.match(code,/label:numberedLabel\(group\.label,count\)/);
   assert.match(code,/const onlyChild=members\.length===1\?members\[0\]:null/);
   assert.match(code,/collapsible:members\.length!==1/);
   assert.match(code,/label=onlyChild\?\.label\|\|parent\.label/);
@@ -388,6 +391,12 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/groups\.update\(changedGroups\)/);
   assert.match(river,/data\.update\(changedRows\)/);
   assert.match(river,/heightVariant==='double'\?null:rows/);
+  assert.match(river,/const visibleItems=useMemo/);
+  assert.match(river,/visibleGroups\.has\(String\(item\?\.group_key\|\|''\)\)/);
+  assert.match(river,/Number\(item\?\.item_count\)>0/);
+  assert.doesNotMatch(river,/Math\.max\(320,152\+compactGroupCount\*48\)/);
+  assert.match(river,/if\(obsoleteGroups\.length\)\{/);
+  assert.match(river,/timeline\.redraw\(\)/);
 });
 
 test('Admin and Scope classification forms allow direct editing without a two-pane selector',()=>{
