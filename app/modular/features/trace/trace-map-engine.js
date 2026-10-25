@@ -51,9 +51,16 @@ function pickedArea(lng,lat,radius){
     type:'Feature',properties:{radius_m:radius},geometry:{type:'Polygon',coordinates:[ringAround({lng,lat},radius)]}
   }]:[]};
 }
+function isValidSavedAnchor(anchor){
+  if(anchor?.trace_type!=='anchor')return false;
+  if(anchor.longitude==null||anchor.latitude==null)return false;
+  if(String(anchor.longitude).trim()===''||String(anchor.latitude).trim()==='')return false;
+  const lng=Number(anchor.longitude),lat=Number(anchor.latitude);
+  return Number.isFinite(lng)&&Number.isFinite(lat)&&Math.abs(lng)<=180&&Math.abs(lat)<=90;
+}
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
-    .filter(a=>a.trace_type==='anchor'&&Number.isFinite(Number(a.longitude))&&Number.isFinite(Number(a.latitude)))
+    .filter(isValidSavedAnchor)
     .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
       geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
 }
@@ -144,10 +151,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     // "All anchors" means the saved markers currently displayed by Trace,
     // not the three Banqiao demonstration stations.
     const visibleAnchors=(Array.isArray(savedAnchors)?savedAnchors:[])
-      .filter(anchor=>anchor.trace_type==='anchor')
-      .map(anchor=>({lng:Number(anchor.longitude),lat:Number(anchor.latitude)}))
-      .filter(place=>Number.isFinite(place.lng)&&Number.isFinite(place.lat)
-        &&Math.abs(place.lng)<=180&&Math.abs(place.lat)<=90);
+      .filter(isValidSavedAnchor)
+      .map(anchor=>({lng:Number(anchor.longitude),lat:Number(anchor.latitude)}));
     if(visibleAnchors.length===1){
       map.flyTo({center:[visibleAnchors[0].lng,visibleAnchors[0].lat],zoom:12.5,
         pitch:45,bearing:0,essential:true});
