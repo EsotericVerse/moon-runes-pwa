@@ -4,6 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
 import {searchTracePlaces} from './trace-geocoding';
+import {classifyTraceAnchors,locatableTraceAnchor} from './trace-spatial-classification.mjs';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
 // the same public sample anchors in each language; not Galaxy places.
@@ -110,28 +111,13 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   const [county,setCounty]=useState('');
   const [anchorUid,setAnchorUid]=useState('');
   const savedAnchors=spatialData?.anchors||[];
-  const validPoint=anchor=>anchor?.trace_type==='anchor'
-    &&anchor.longitude!=null&&anchor.latitude!=null
-    &&String(anchor.longitude).trim()!==''&&String(anchor.latitude).trim()!==''
-    &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude))
-    &&Math.abs(Number(anchor.longitude))<=180&&Math.abs(Number(anchor.latitude))<=90;
-  const groups=useMemo(()=>{
-    const map=new Map();
-    for(const anchor of savedAnchors){
-      if(!validPoint(anchor))continue;
-      const region=resolveCounty?resolveCounty(anchor.longitude,anchor.latitude):'未判定／其他地區';
-      if(!map.has(region))map.set(region,[]);
-      map.get(region).push(anchor);
-    }
-    for(const items of map.values())items.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'zh-Hant'));
-    return map;
-  },[spatialData?.anchors,resolveCounty]);
-  const counties=useMemo(()=>[...groups.keys()].sort((a,b)=>
-    a==='未判定／其他地區'?1:b==='未判定／其他地區'?-1:a.localeCompare(b,'zh-Hant')),[groups]);
+  const groups=useMemo(()=>classifyTraceAnchors(savedAnchors,resolveCounty),
+    [spatialData?.anchors,resolveCounty]);
+  const counties=useMemo(()=>[...groups.keys()],[groups]);
   const regionAnchors=groups.get(county)||[];
   const savedMaps=spatialData?.maps||[];
   useEffect(()=>{
-    if(selectingLocation||!savedAnchors.some(validPoint))return undefined;
+    if(selectingLocation||!savedAnchors.some(locatableTraceAnchor))return undefined;
     let active=true;
     import('./trace-county-lookup.mjs').then(module=>{
       if(active)setResolveCounty(()=>module.countyForCoordinates);
