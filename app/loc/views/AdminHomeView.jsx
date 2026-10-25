@@ -18,6 +18,8 @@ import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
 
 const ADMIN_OPTIONS=Object.freeze([
+  {value:'traceAnchor',label:'新增定錨點',shortLabel:'定錨點',description:'新增 LOC 自己的空間定錨點。'},
+  {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'連接 LOC 的定錨點，作為一張痕跡圖。'},
   {value:'registry',label:'群組與人員',shortLabel:'人員',description:'管理群組、人員及所屬關係。'},
   {value:'database',label:'資料庫設定',shortLabel:'資料庫',description:'資料庫連線與郵件封鎖名單。'},
   {value:'isr',label:'ISR 設定',shortLabel:'ISR',description:'管理 ISR 網域與手動選用的平台。'},
@@ -41,6 +43,7 @@ const IsrDomainTarget=dynamic(()=>import('./admin-panels/IsrDomainTarget'),{load
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
 const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
+const TraceManagementPanel=dynamic(()=>import('../TraceManagement'),{loading:PanelLoading});
 
 export default function AdminHomeView(){
   useUiSection('admin');
@@ -82,6 +85,8 @@ export default function AdminHomeView(){
         {section==='database'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
         {section==='isr'?<IsrDomainTarget/>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
+        {section==='traceAnchor'?<TraceManagementPanel scopeId="loc" mode="anchor"/>:null}
+        {section==='traceMap'?<TraceManagementPanel scopeId="loc" mode="map"/>:null}
 
       </div>
     </div>
