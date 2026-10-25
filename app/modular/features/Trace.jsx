@@ -1,5 +1,6 @@
 'use client';
 
+import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter} from 'next/navigation';
 import {FeaturePage} from '../ui';
@@ -7,10 +8,11 @@ import {featureNavigationHref} from '../feature-navigation';
 import {navigationHref} from '../scope-registry';
 import useNativeNavigation from '../use-native-navigation';
 import {useAsyncResource} from '../../loc/use-async-resource';
+import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
 import {TRACE_SCOPES,traceKey,readTraceData} from './trace/trace-data';
 
-// Preserve the Trace Hero. Load saved anchors independently of the map engine;
-// this does not fetch article bodies or instantiate a second search system.
+// Preserve the Trace Hero. Fetch the same public Time-period index as Culture
+// and Statistics immediately, independently from the client-only map engine.
 const TraceMap=dynamic(()=>import('./trace/TraceMap'),{
   ssr:false,
   loading:()=> <p className="scope-status" role="status">正在載入痕跡地圖…</p>
@@ -20,15 +22,82 @@ export default function Trace({scopeId='loc'}){
   const router=useRouter();
   const native=useNativeNavigation();
   const supported=TRACE_SCOPES.includes(scopeId);
+  // LOC displays a union of published spatial anchors, but Periods belong to
+  // individual Scopes. Never invent a combined LOC timeline.
+  const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
+  const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
+  const [periodKey,setPeriodKey]=useState('latest');
+  const periodsQuery=useAsyncResource({
+    queryKey:['culture-time-periods',periodScopeId],
+    enabled:supported&&Boolean(periodScopeId),
+    queryFn:async()=>{
+      if(usesNumericIsr(periodScopeId))return readNumericIsr(periodScopeId,'periods');
+      // Keep native/local providers independent of the Cloudflare worker.
+      const {selectScopeCultureData}=await import('../../loc/culture-query');
+      return (await selectScopeCultureData(periodScopeId)).eras?.eras||[];
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const periods=useMemo(()=>(periodsQuery.data||[])
+    .filter(row=>row.start_date)
+    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
+      ||Number(a.order||0)-Number(b.order||0)),[periodsQuery.data]);
+  const selectedPeriod=periodKey==='latest'?periods.at(-1):
+    periods.find(period=>String(period.period||period.era_id||period.record_id)===periodKey);
   const traces=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
     enabled:supported,revalidateOnFocus:false,revalidateOnReconnect:false
   });
+  // Anchor records describe places, NOT dates of visits. Selecting a Period
+  // must never pretend a place was visited in that interval. Restrict the
+  // linked article search by Period, while map pins remain spatial anchors.
+  const spatialData=useMemo(()=>{
+    const data=traces.data||null;
+    if(!data||scopeId!=='loc')return data;
+    return {...data,
+      anchors:(data.anchors||[]).filter(anchor=>anchor.source_scope===periodScopeId),
+      maps:(data.maps||[]).filter(map=>map.source_scope===periodScopeId)};
+  },[traces.data,scopeId,periodScopeId]);
   return <FeaturePage featureId="trace">
-    <TraceMap spatialData={traces.data||null} onAnchorSelect={anchor=>{
+    {supported?<div className="scope-stat-controls" role="group" aria-label="軌跡時期">
+      {scopeId==='loc'?<label>
+        <span>作品範圍</span>
+        <select className="scope-select" value={locPeriodScope}
+          onChange={event=>{setLocPeriodScope(event.target.value);setPeriodKey('latest');}}>
+          <option value="lo3rwang">作者作品</option>
+          <option value="lrunes">月之符文</option>
+        </select>
+      </label>:null}
+      <label>
+        <span>時期</span>
+        <select className="scope-select" value={periodKey}
+          onChange={event=>setPeriodKey(event.target.value)}>
+          <option value="latest">最新時期</option>
+          <option value="all">全部時期</option>
+          {periods.map(period=><option key={period.record_id||period.period}
+            value={String(period.period||period.era_id||period.record_id)}>
+            {period.title||period.name||period.period}
+          </option>)}
+        </select>
+      </label>
+      {periodsQuery.isPending?<span className="scope-status" role="status">正在載入時期…</span>:null}
+      {periodsQuery.error?<span className="scope-status scope-error" role="alert">
+        時期讀取失敗：{String(periodsQuery.error.message||periodsQuery.error)}
+      </span>:null}
+      <p className="scope-status">時期套用於地點的文章搜尋；空間定錨點不代表該時期曾造訪。</p>
+    </div>:null}
+    <TraceMap spatialData={spatialData} onAnchorSelect={anchor=>{
       const place=String(anchor?.title||'').trim();
-      if(place)router.push(native
-        ?navigationHref('loc','search',true)+'?place='+encodeURIComponent(place)
-        :featureNavigationHref('loc','search',{place}));
+      if(!place)return;
+      const range=periodKey==='all'?null:selectedPeriod;
+      const query={place,...(range?{
+        from:String(range.start_date||'').slice(0,10),
+        ...(range.end_date?{to:String(range.end_date).slice(0,10)}:{})
+      }:{})};
+      if(native){
+        const params=new URLSearchParams(query);
+        router.push(navigationHref('loc','search',true)+'?'+params.toString());
+      }else if(range)router.push(featureNavigationHref('loc','search',query));
+      else router.push(featureNavigationHref('loc','search',{place}));
     }}/>
     {supported&&traces.isPending?<p className="scope-status" role="status">正在載入已建立的空間定錨點…</p>:null}
     {supported&&traces.error?<p className="scope-status scope-error" role="alert">空間定錨點讀取失敗：{String(traces.error.message||traces.error)}</p>:null}
