@@ -1,4 +1,5 @@
 export default {
+  "noDataInPeriod": "No data is available for the selected time range.",
   "system": "Main categories",
   "custom": "Custom categories",
   "media": "Multimedia",

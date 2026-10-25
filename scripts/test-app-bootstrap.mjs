@@ -373,3 +373,19 @@ test('Culture period and event selectors expose different second-option catalogs
   assert.match(source,/primaryPeriods\.map\(item=><option/);
   assert.doesNotMatch(source,/<optgroup label=\{l\.eventOption\}>/);
 });
+
+test('Culture river hides zero-count parents, folds singleton children and renders a localized empty state',()=>{
+  const code=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.match(code,/if\(!activeRoots\.has\(parent\.id\)\)continue/);
+  assert.match(code,/const onlyChild=members\.length===1\?members\[0\]:null/);
+  assert.match(code,/collapsible:members\.length>1/);
+  assert.match(code,/label=onlyChild\?\.label\|\|parent\.label/);
+  assert.match(code,/!cultureRiver\.hasSourceData/);
+  assert.match(code,/noDataInPeriod/);
+  const river=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
+  assert.match(river,/timelineDataRef=useRef\(null\)/);
+  assert.match(river,/timelineGroupsRef=useRef\(null\)/);
+  assert.match(river,/groups\.update\(changedGroups\)/);
+  assert.match(river,/data\.update\(changedRows\)/);
+  assert.match(river,/heightVariant==='double'\?null:rows/);
+});

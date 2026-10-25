@@ -1,4 +1,5 @@
 export default {
+  "noDataInPeriod": "该时间区间内没有数据。",
   "system": "大分类",
   "custom": "自定义分类",
   "media": "多媒体",

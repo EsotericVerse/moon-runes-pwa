@@ -1,4 +1,5 @@
 export default {
+  "noDataInPeriod": "選択した期間にはデータがありません。",
   "system": "大分類",
   "custom": "カスタム分類",
   "media": "マルチメディア",

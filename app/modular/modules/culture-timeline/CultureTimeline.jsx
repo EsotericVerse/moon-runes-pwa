@@ -104,6 +104,48 @@ function settle(handler,item,row,callback,defaultValue=null){
   }).catch(()=>callback(null));
 }
 
+
+// Generate labels as vis-timeline group content; handlers always read the
+// latest callbacks. This is shared by initial mount and in-place expansion.
+function makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef){
+      const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
+      const standardTimeKinds=Object.keys(timeGroupLabels);
+      const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
+      const additionalGroups=new Map(extraGroups.filter(group=>group?.id).map(group=>[String(group.id),group]));
+      const ordinaryGroupIds=hasTimeKinds
+        ?[...standardTimeKinds.filter(kind=>!editable||foundGroups.includes('kind:'+kind)).map(kind=>'kind:'+kind),...foundGroups.filter(id=>!String(id).startsWith('kind:'))]
+        :foundGroups;
+      const groupIds=[...new Set([...ordinaryGroupIds,...additionalGroups.keys()])];
+      return groupIds.map((id,index)=>{
+        const members=rows.filter(row=>row.group===id);
+        const explicit=members.map(row=>row.groupOrder).filter(Number.isFinite);
+        const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
+        const defaultOrder=standardTimeKinds.indexOf(kind);
+        const extra=additionalGroups.get(id);
+        const label=extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id);
+        let content=label;
+        if(extra?.collapsible||extra?.selectable){
+          const button=document.createElement('button');
+          button.type='button';
+          button.className='scope-river-group-button';
+          button.textContent=extra.collapsible?(extra.expanded?'−  ':'＋  ')+label:label;
+          button.setAttribute('aria-label',label);
+          if(extra.collapsible){
+            button.setAttribute('aria-expanded',String(Boolean(extra.expanded)));
+            button.addEventListener('click',()=>onGroupToggleRef.current?.(id));
+          }else button.addEventListener('click',()=>onGroupSelectRef.current?.(id));
+          content=button;
+        }
+        return {
+          id,
+          content,
+          order:Number.isFinite(extra?.order)?extra.order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index,
+          ...(extra?.className?{className:extra.className}:{}),
+          title:label
+        };
+      });
+
+}
 export default function CultureTimeline({
   items=EMPTY_ITEMS,
   labelOf=defaultTimelineLabel,
@@ -139,6 +181,8 @@ export default function CultureTimeline({
   const t=text=>translateUiField(locale,text);
   const containerRef=useRef(null);
   const timelineRef=useRef(null);
+  const timelineDataRef=useRef(null);
+  const timelineGroupsRef=useRef(null);
   const doubleRiverWindowRef=useRef(null);
   const [selectedRowId,setSelectedRowId]=useState('');
   const onSelectRef=useRef(onSelect);
@@ -194,43 +238,11 @@ export default function CultureTimeline({
         }
       }:row);
       const data=new DataSet(dataRows);
-      const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
-      const standardTimeKinds=Object.keys(timeGroupLabels);
-      const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
-      const additionalGroups=new Map(extraGroups.filter(group=>group?.id).map(group=>[String(group.id),group]));
-      const ordinaryGroupIds=hasTimeKinds
-        ?[...standardTimeKinds.filter(kind=>!editable||foundGroups.includes('kind:'+kind)).map(kind=>'kind:'+kind),...foundGroups.filter(id=>!String(id).startsWith('kind:'))]
-        :foundGroups;
-      const groupIds=[...new Set([...ordinaryGroupIds,...additionalGroups.keys()])];
-      const groups=groupIds.length?new DataSet(groupIds.map((id,index)=>{
-        const members=rows.filter(row=>row.group===id);
-        const explicit=members.map(row=>row.groupOrder).filter(Number.isFinite);
-        const kind=String(id).startsWith('kind:')?String(id).slice(5):'';
-        const defaultOrder=standardTimeKinds.indexOf(kind);
-        const extra=additionalGroups.get(id);
-        const label=extra?.label||members.find(row=>row.groupContent)?.groupContent||timeGroupLabels[kind]||groupLabel(id);
-        let content=label;
-        if(extra?.collapsible||extra?.selectable){
-          const button=document.createElement('button');
-          button.type='button';
-          button.className='scope-river-group-button';
-          button.textContent=extra.collapsible?(extra.expanded?'−  ':'＋  ')+label:label;
-          button.setAttribute('aria-label',label);
-          if(extra.collapsible){
-            button.setAttribute('aria-expanded',String(Boolean(extra.expanded)));
-            button.addEventListener('click',()=>onGroupToggleRef.current?.(id));
-          }else button.addEventListener('click',()=>onGroupSelectRef.current?.(id));
-          content=button;
-        }
-        return {
-          id,
-          content,
-          order:Number.isFinite(extra?.order)?extra.order:explicit.length?Math.min(...explicit):defaultOrder>=0?defaultOrder:100+index,
-          ...(extra?.className?{className:extra.className}:{}),
-          title:label
-        };
-      })):null;
-      const rowById=id=>dataRows.find(row=>row.id===String(id))||null;
+      const groupRows=makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef);
+      const groups=groupRows.length?new DataSet(groupRows):null;
+      timelineDataRef.current=data;
+      timelineGroupsRef.current=groups;
+      const rowById=id=>data.get(String(id))||null;
       // Supply the selected camera range at construction time. Otherwise the
       // timeline may auto-fit all periods during its first layout after an
       // immediate setWindow(), making a chosen period appear to snap back.
@@ -352,10 +364,70 @@ export default function CultureTimeline({
           };
         }catch{doubleRiverWindowRef.current=null;}
       }
-      if(timelineRef.current===instance)timelineRef.current=null;
+      if(timelineRef.current===instance){
+        timelineRef.current=null;
+        timelineDataRef.current=null;
+        timelineGroupsRef.current=null;
+      }
       if(instance)instance.destroy();
     };
-  },[rows,extraGroups,hasTimeKinds,timelineMinHeight,timelineMaxHeight,heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,hiddenDates,editable,locale,labels,timelineLocale]);
+  },[heightVariant==='double'?null:rows,heightVariant==='double'?null:extraGroups,
+    hasTimeKinds,heightVariant==='double'?null:timelineMinHeight,
+    heightVariant==='double'?null:timelineMaxHeight,
+    Boolean(rows.length||editable||extraGroups.length),
+    heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,
+    hiddenDates,editable,locale,labels,timelineLocale]);
+
+  // When a group opens, mutate existing datasets instead of destroying and
+  // recreating vis-timeline. Preserve camera zoom, pan and touch scroll.
+  useEffect(()=>{
+    if(heightVariant!=='double'||!ready)return;
+    const timeline=timelineRef.current,data=timelineDataRef.current;
+    if(!timeline||!data)return;
+    const nextRows=rows.map(row=>editable?{
+      ...row,editable:{updateTime:row.entryType==='anchor',updateGroup:false,remove:Boolean(row.recordId)}
+    }:row);
+    const nextGroups=makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef);
+    const groups=timelineGroupsRef.current;
+    try{
+      if(groups){
+        const existingGroupIds=new Set(groups.getIds());
+        const wantedGroups=new Set(nextGroups.map(group=>group.id));
+        const changedGroups=nextGroups.filter(group=>{
+          const old=groups.get(group.id);
+          return !old||old.title!==group.title||old.order!==group.order
+            ||old.className!==group.className
+            ||String(old.content?.textContent??old.content)!==String(group.content?.textContent??group.content);
+        });
+        if(changedGroups.length)groups.update(changedGroups);
+        const previousRowIds=new Set(data.getIds());
+        const incoming=new Set(nextRows.map(row=>row.id));
+        const obsoleteRows=[...previousRowIds].filter(id=>!incoming.has(id));
+        if(obsoleteRows.length)data.remove(obsoleteRows);
+        const changedRows=nextRows.filter(row=>{
+          const old=data.get(row.id);
+          return !old||old.group!==row.group||old.start!==row.start||old.end!==row.end
+            ||old.content!==row.content||old.title!==row.title
+            ||old.className!==row.className||old.style!==row.style
+            ||old.workCount!==row.workCount||old.status!==row.status;
+        });
+        if(changedRows.length)data.update(changedRows);
+        const obsoleteGroups=[...existingGroupIds].filter(id=>!wantedGroups.has(id));
+        if(obsoleteGroups.length)groups.remove(obsoleteGroups);
+      }else if(nextGroups.length){
+        const newGroups=new DataSet(nextGroups);
+        timeline.setGroups(newGroups);
+        timelineGroupsRef.current=newGroups;
+        const previousRowIds=new Set(data.getIds());
+        data.remove([...previousRowIds].filter(id=>!nextRows.some(row=>row.id===id)));
+        data.update(nextRows);
+      }
+      timeline.setOptions({minHeight:timelineMinHeight+'px',maxHeight:timelineMaxHeight+'px'});
+    }catch(error){
+      console.error('Culture river in-place group update failed',error);
+      setChartError(true);
+    }
+  },[rows,extraGroups,hasTimeKinds,editable,heightVariant,ready,timelineMinHeight,timelineMaxHeight,labels]);
 
   // One noninteractive time marker extends across every visible group.
   useEffect(()=>{

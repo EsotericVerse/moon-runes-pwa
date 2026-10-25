@@ -860,26 +860,37 @@ export default function Culture(){
       title:day+' · '+label+' · '+count.toLocaleString(locale)
     });
     const items=[],groups=[];
+    const activeChildren=new Set([...subtotals].filter(([,count])=>count>0)
+      .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
+    const activeRoots=new Set([...totals].filter(([,count])=>count>0)
+      .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
     for(const parent of roots){
-      const expanded=openCultureRoots.includes(parent.id);
-      groups.push({id:'dual:root:'+parent.id,label:parent.label,order:parent.order,
-        className:'scope-dual-river-root',collapsible:true,expanded});
+      // Hide zero-count parent lanes in the requested interval entirely.
+      if(!activeRoots.has(parent.id))continue;
+      const members=groupedSources.filter(g=>g.root===parent.id&&activeChildren.has(g.key))
+        .sort((a,b)=>a.label.localeCompare(b.label,locale));
+      const expanded=members.length>1&&openCultureRoots.includes(parent.id);
+      const onlyChild=members.length===1?members[0]:null;
+      // A lone child *is* the visible river: do not draw its parent's
+      // identical total and force an unnecessary second lane on expansion.
+      const label=onlyChild?.label||parent.label;
+      groups.push({id:'dual:root:'+parent.id,label,order:parent.order,
+        className:'scope-dual-river-root',collapsible:members.length>1,
+        selectable:Boolean(onlyChild),sourceKey:onlyChild?.key||'',expanded});
       for(const [key,count] of totals){
         const [type,day]=key.split('\u0000');
-        if(type===parent.id)items.push(row('root:'+parent.id,day,count,parent.label,parent.order,parentMaximum.get(parent.id),'source_total'));
+        if(type===parent.id&&count>0)items.push(row('root:'+parent.id,day,count,label,parent.order,parentMaximum.get(parent.id),'source_total'));
       }
       if(!expanded)continue;
-      groupedSources.filter(g=>g.root===parent.id)
-        .sort((x,y)=>x.label.localeCompare(y.label,locale))
-        .forEach((group,index)=>{
-          const id='dual:child:'+group.key;
-          groups.push({id,label:group.label,order:parent.order+index+1,
-            className:'scope-dual-river-child',selectable:true});
-          for(const [key,count] of subtotals){
-            const [code,day]=key.split('\u0000');
-            if(code===group.key)items.push({...row('child:'+group.key,day,count,group.label,parent.order+index+1,childMaximum.get(group.key),'source_group'),source_group_code:group.key});
-          }
-        });
+      members.forEach((group,index)=>{
+        const id='dual:child:'+group.key;
+        groups.push({id,label:group.label,order:parent.order+index+1,
+          className:'scope-dual-river-child',selectable:true,sourceKey:group.key});
+        for(const [key,count] of subtotals){
+          const [code,day]=key.split('\u0000');
+          if(code===group.key&&count>0)items.push({...row('child:'+group.key,day,count,group.label,parent.order+index+1,childMaximum.get(group.key),'source_group'),source_group_code:group.key});
+        }
+      });
     }
     if(virtualAnchorItems.length){
       groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,className:'scope-candidate-lane'});
@@ -890,7 +901,7 @@ export default function Culture(){
       group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
       group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
     })));
-    return {items,groups};
+    return {items,groups,hasSourceData:activeRoots.size>0};
   },[groupedSources,secondRiverBuckets,openCultureRoots,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
@@ -1337,7 +1348,11 @@ export default function Culture(){
                     </div>
                   </details>
                 </div>:null}
-                {classificationWindowValid?<div className='scope-culture-double-river'>
+                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error
+                  &&sourceSnapshotQuery.data&&!cultureRiver.hasSourceData
+                  ?<div className='scope-card scope-status scope-culture-no-data' role='status'>{l.noDataInPeriod}</div>:null}
+                {classificationWindowValid&&(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)
+                  ?<div className='scope-culture-double-river'>
                   <CultureTimeline
                     items={cultureRiver.items}
                     extraGroups={cultureRiver.groups}
@@ -1346,7 +1361,8 @@ export default function Culture(){
                       return current.includes(key)?current.filter(value=>value!==key):[...current,key];
                     })}
                     onGroupSelect={id=>{
-                      const key=id.replace('dual:child:','');
+                      const key=cultureRiver.groups.find(group=>group.id===id)?.sourceKey
+                        ||id.replace('dual:child:','');
                       setSelectedRiverGroup(current=>current===key?'':key);
                       setSelectedCategory('');
                     }}
@@ -1387,7 +1403,6 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!categoryGroups.length?<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>:null}
                 <details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
