@@ -6,8 +6,8 @@ const lower=value=>String(value||'').trim().toLowerCase();
 // source names inside Others are counted live from the data, never stored.
 export function assignedSource(value,aliases=[],categories=[]){
   const mapping=aliases.find(row=>lower(row.source_key)===lower(value));
-  const category=lower(mapping?.category_code||'others');
-  return categories.some(row=>row.category_code===category&&row.enabled!==false)?category:'others';
+  const category=lower(mapping?.category_code||'unclassified');
+  return categories.some(row=>row.category_code===category&&row.enabled!==false)?category:'unclassified';
 }
 export function availableMemberMeasures(datasets=[],categories=[]){
   const media=new Set();
@@ -18,7 +18,7 @@ export function availableMemberMeasures(datasets=[],categories=[]){
     {id:'total',name:'全部作品'},
     {id:'text',name:'文字作品'},
     {id:'multimedia',name:'多媒體'},
-    ...categories.filter(x=>x.enabled!==false).map(row=>({id:'source:'+row.category_code,name:'群組來源分類 · '+row.display_name})),
+    ...categories.filter(x=>x.enabled!==false).map(row=>({id:'source:'+row.category_code,name:'作品分類 · '+row.display_name})),
     ...[...media].sort().map(id=>({id:'media:'+id,name:'多媒體類型 · '+id})),
     {id:'daily',name:'每日符文'},
     {id:'daily:kind:main',name:'每日符文 · 主抽'},
