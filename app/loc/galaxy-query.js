@@ -377,7 +377,7 @@ function sourceNameClause(selection){
   return '';
 }
 
-function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter='',sourceTaxonomy=null}={}){
+function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false}={}){
   // These filters are applied by the existing Supabase provider, not to a
   // truncated page of client-side search results.
   const sourceSelection=resolveSourceSelection(sourceFilter,sourceTaxonomy||{});
@@ -399,6 +399,13 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // when the result is explicitly opened or edited.
   // Match with narrow, bounded UID-only pages; hydrate display fields later.
   const textColumns=['uid'];
+  // Existing LOC search provider, narrowed to Galaxy's check-in field only.
+  // No article body is fetched by this search stage.
+  if(placeOnly)return [makeProvider({
+    id:current.id+':source-place',table:current.galaxy,source:current.id+' 打卡地點',scope:current,idColumn:'uid',
+    columns:textColumns,searchFields:['source_place'],dateColumn:'createtime',
+    sortTitle:false,filters:textFilters,authenticated:includeHiddenText
+  })];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
@@ -486,14 +493,14 @@ export async function selectStyleKeywordMatches(scopes,query,{signal=null,concur
 }
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,browse=false,signal=null,sortDirection='asc'
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false,browse=false,signal=null,sortDirection='asc'
 }={}){
   const q=String(query||'').trim();
   if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
-  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy}));
+  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy,placeOnly}));
   // Every Scope's title hits are paged before any body matches.
   const providers=browse
     ?scopeProviders.flatMap(group=>
