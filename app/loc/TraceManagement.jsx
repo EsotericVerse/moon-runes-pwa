@@ -9,7 +9,7 @@ import {
 } from '../modular/features/trace/trace-data';
 
 const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
-  ssr:false,loading:()=> <p className="scope-status" role="status">正在開啟定錨地圖…</p>
+  ssr:false,loading:()=> <p className="scope-status" role="status">正在開啟空間定錨地圖…</p>
 });
 
 function AnchorEditor({scopeId,spatial,reload}){
@@ -27,17 +27,17 @@ function AnchorEditor({scopeId,spatial,reload}){
       await addTraceAnchor({scopeId,title,description,longitude,latitude});
       await reload();
       setTitle('');setDescription('');setLongitude('');setLatitude('');
-      setNotice('定錨點已儲存，痕跡地圖會顯示新位置。');
+      setNotice('空間定錨點已儲存。');
       return true;
-    }catch(error){setNotice(String(error?.message||'新增定錨點失敗。'));return false;}
+    }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card">
-    <h3>新增定錨點</h3>
-    <p className="scope-status">在地圖上點選位置，或直接輸入經緯度。這是獨立的空間資料，不會修改 Galaxy 打卡欄位。</p>
+    <h3>新增空間定錨點</h3>
+    <p className="scope-status">請直接在地圖上點選位置（或點車站快捷位置），經緯度會自動填入；橘色圖釘可拖曳調整。不會修改 Galaxy 打卡欄位。</p>
     <div className="scope-management-fields">
-      <label>定錨點名稱<input type="text" maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder="例如：起點" disabled={busy}/></label>
+      <label>空間定錨點名稱<input type="text" maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder="例如：起點" disabled={busy}/></label>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
@@ -47,7 +47,7 @@ function AnchorEditor({scopeId,spatial,reload}){
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
     <div className="scope-stat-controls">
-      <button type="button" className="loc-button primary" disabled={busy||!title.trim()||!validCoordinates(longitude,latitude)} onClick={save}>新增定錨點</button>
+      <button type="button" className="loc-button primary" disabled={busy||!title.trim()||!validCoordinates(longitude,latitude)} onClick={save}>新增空間定錨點</button>
     </div>
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
@@ -68,7 +68,7 @@ function MapEditor({scopeId,spatial,reload}){
       await addTraceMap({scopeId,title,description,anchorUids:selected,anchors});
       await reload();
       setTitle('');setDescription('');setSelected([]);
-      setNotice('痕跡圖已儲存，路線會依選取的定錨點順序連線。');
+      setNotice('痕跡圖已儲存，並保留所選空間定錨點的連接順序。');
       return true;
     }catch(error){setNotice(String(error?.message||'新增痕跡圖失敗。'));return false;}
     finally{setBusy(false);}
@@ -83,18 +83,18 @@ function MapEditor({scopeId,spatial,reload}){
   };
   return <section className="loc-card scope-feature-card">
     <h3>新增痕跡圖</h3>
-    <p className="scope-status">從本 Scope 的定錨點選出至少兩處，依顯示順序連成痕跡圖。LOC Group 讀取其他 Scope 的痕跡圖，但不會把它們複製進 LOC。</p>
+    <p className="scope-status">從本 Scope 的空間定錨點選出至少兩處，依顯示順序連成痕跡圖。LOC Group 讀取其他 Scope 的痕跡圖，但不會把它們複製進 LOC。</p>
     <div className="scope-management-fields">
       <label>痕跡圖名稱<input maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
     </div>
-    <div className="loc-trace-anchor-choices" role="group" aria-label="選擇定錨點">
+    <div className="loc-trace-anchor-choices" role="group" aria-label="選擇空間定錨點">
       {anchors.map(anchor=><label key={anchor.uid}>
         <input type="checkbox" disabled={busy} checked={selected.includes(anchor.uid)}
           onChange={e=>setSelected(ids=>e.target.checked?[...ids,anchor.uid]:ids.filter(uid=>uid!==anchor.uid))}/>
         <span>{anchor.title}</span>
       </label>)}
-      {!anchors.length?<p className="scope-status">目前沒有定錨點，請先新增定錨點。</p>:null}
+      {!anchors.length?<p className="scope-status">目前沒有空間定錨點，請先新增空間定錨點。</p>:null}
     </div>
     <h4>連接順序</h4>
     <ol className="loc-trace-selection-order">
@@ -120,7 +120,7 @@ export default function TraceManagementPanel({scopeId,mode='anchor'}){
     enabled,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   if(!enabled)return <p className="scope-status">此 Scope 尚未配置痕跡資料表。</p>;
-  if(query.isPending)return <p className="scope-status" role="status">正在載入定錨點與痕跡圖…</p>;
+  if(query.isPending)return <p className="scope-status" role="status">正在載入空間定錨點與痕跡圖…</p>;
   if(query.error)return <p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>;
   const spatial=query.data||{anchors:[],maps:[]};
   return mode==='map'
