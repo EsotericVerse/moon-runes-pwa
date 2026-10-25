@@ -1,6 +1,11 @@
 'use client';
 
 import {useEffect,useState} from 'react';
+import UiText from '../i18n/UiText';
+import {useUiSection} from '../i18n/ui-locale';
+import {registerDefaultSection} from '../i18n/ui-copy';
+import editBlocksZh from '../i18n/sections/uiExtra.editBlocks.zh_tw.js';
+registerDefaultSection('uiExtra.editBlocks',editBlocksZh);
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
@@ -9,6 +14,7 @@ import {Capacitor} from '@capacitor/core';
 // This control is shown only at the bottom of an individual Scope homepage.
 // No identity or management query runs until the visitor selects it.
 export default function ScopeHomeEditEntry(){
+  useUiSection('uiExtra.editBlocks');
   const {scopeId}=useScopeRuntime();
   const account=useAccount({enabled:false});
   const editDock=useEditDock();
@@ -33,14 +39,14 @@ export default function ScopeHomeEditEntry(){
       }
       const result=await account.refresh();
       if(!result?.user){
-        setMessage('請先登入，才能進入編輯模式。');
+        setMessage('uiExtra.editBlocks.signInToEnterEditMode');
         return;
       }
       const allowed=scopeId==='loc'
         ?result.authorizer?.canManageGlobalSync()
         :result.authorizer?.canManageScopeSync(scopeId);
       if(!allowed){
-        setMessage('目前帳號沒有編輯權限。');
+        setMessage('uiExtra.editBlocks.editPermissionDenied');
         return;
       }
       // The homepage editor is mounted on this same Scope homepage.
@@ -48,7 +54,7 @@ export default function ScopeHomeEditEntry(){
       // This also preserves the dynamic Scope shell's existing scopeid query.
       editDock?.begin(scopeId);
     }catch(error){
-      setMessage(String(error?.message||'無法確認編輯權限。'));
+      setMessage(String(error?.message||'uiExtra.editBlocks.editPermissionCheckFailed'));
     }finally{
       setBusy(false);
     }
@@ -57,7 +63,7 @@ export default function ScopeHomeEditEntry(){
   if(editDock?.active&&editDock.scopeId===scopeId)return null;
   return <div className="scope-home-edit-entry">
     <button type="button" className="loc-button" disabled={busy}
-      onClick={enter}>{busy?'正在確認權限…':'進入編輯模式'}</button>
-    {message?<p className="scope-status" role="status">{message}</p>:null}
+      onClick={enter}><UiText id={busy?'uiExtra.editBlocks.checkingEditPermission':'uiExtra.editBlocks.enterEditMode'}/></button>
+    {message?<p className="scope-status" role="status"><UiText id={message}/></p>:null}
   </div>;
 }

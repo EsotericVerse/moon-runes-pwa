@@ -1,4 +1,8 @@
 export default {
+  "checkingEditPermission": "Checking edit permissions…",
+  "signInToEnterEditMode": "Sign in to enter edit mode.",
+  "editPermissionDenied": "This account does not have permission to edit.",
+  "editPermissionCheckFailed": "Unable to verify edit permissions.",
   "edit": "Edit",
   "enterEditMode": "Enter edit mode",
   "exitEditMode": "Exit edit mode",

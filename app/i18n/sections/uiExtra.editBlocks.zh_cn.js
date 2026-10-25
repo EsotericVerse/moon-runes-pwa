@@ -1,4 +1,8 @@
 export default {
+  "checkingEditPermission": "正在确认权限…",
+  "signInToEnterEditMode": "请先登录，才能进入编辑模式。",
+  "editPermissionDenied": "当前账号没有编辑权限。",
+  "editPermissionCheckFailed": "无法确认编辑权限。",
   "edit": "编辑",
   "enterEditMode": "进入编辑模式",
   "exitEditMode": "结束编辑模式",

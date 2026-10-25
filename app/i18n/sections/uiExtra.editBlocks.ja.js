@@ -1,4 +1,8 @@
 export default {
+  "checkingEditPermission": "編集権限を確認中…",
+  "signInToEnterEditMode": "編集モードに入るにはログインしてください。",
+  "editPermissionDenied": "このアカウントには編集権限がありません。",
+  "editPermissionCheckFailed": "編集権限を確認できませんでした。",
   "edit": "編集",
   "enterEditMode": "編集モードに入る",
   "exitEditMode": "編集モードを終了",

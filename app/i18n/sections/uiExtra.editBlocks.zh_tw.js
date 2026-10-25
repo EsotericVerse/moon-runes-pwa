@@ -1,4 +1,8 @@
 export default {
+  "checkingEditPermission": "正在確認權限…",
+  "signInToEnterEditMode": "請先登入，才能進入編輯模式。",
+  "editPermissionDenied": "目前帳號沒有編輯權限。",
+  "editPermissionCheckFailed": "無法確認編輯權限。",
   "edit": "編輯",
   "enterEditMode": "進入編輯模式",
   "exitEditMode": "結束編輯模式",

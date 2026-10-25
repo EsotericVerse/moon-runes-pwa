@@ -89,7 +89,10 @@ test('Settings home owns the sole OAuth login action and verifies session',()=>{
   assert.ok(!settings.includes("activeSection==='account'"));
   const editEntry=readFileSync(new URL('../app/loc/ScopeHomeEditEntry.jsx',import.meta.url),'utf8');
   assert.ok(!editEntry.includes('section=account'));
-  assert.ok(editEntry.includes('請先登入，才能進入編輯模式。'));
+  assert.ok(editEntry.includes('uiExtra.editBlocks.signInToEnterEditMode'));
+  assert.ok(editEntry.includes("uiExtra.editBlocks.enterEditMode"));
+  assert.ok(editEntry.includes("useUiSection('uiExtra.editBlocks')"));
+  assert.ok(!editEntry.includes("onClick={enter}>{busy?'正在確認權限…':'進入編輯模式'}</button>"));
 });
 
 test('pure JS permissions use only scopeid/email/role and are cleared on logout',()=>{
