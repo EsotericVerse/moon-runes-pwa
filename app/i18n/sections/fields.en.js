@@ -379,6 +379,7 @@ export default {
   "作品群組分類": "Work group categories",
   "作品自訂分類": "Custom work categories",
   "治理原則": "Governance principles",
+  "人員作品管理": "Member and work management",
   "關鍵詞管理": "Keyword management",
   "時間編輯": "Edit timeline",
   "關鍵詞編輯": "Edit keywords"
