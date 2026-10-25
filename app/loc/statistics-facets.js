@@ -19,22 +19,12 @@ export function mediaDay(value){
   return formatted.year+'-'+formatted.month+'-'+formatted.day;
 }
 function isHost(host,domain){return host===domain||host.endsWith('.'+domain);}
-function sourceFromMetadata(row={}){
-  const type=tagKey(row.media_type);
-  const place=tagKey(row.source_place);
-  const hint=type+' '+place;
-  if(/\bsuno\b/u.test(hint))return 'Suno';
-  if(/\bvocus\b/u.test(hint))return 'Vocus';
-  if(/instagram|reels|\big\b/u.test(hint))return /reels/u.test(hint)?'IG Reels':'Instagram';
-  if(/youtube|youtu\.be/u.test(hint))return 'YouTube';
-  if(/threads/u.test(hint))return 'Threads';
-  if(/facebook|\bfb\b/u.test(hint))return 'Facebook';
-  if(/tiktok/u.test(hint))return 'TikTok';
-  return '其他／無法辨識';
-}
+// A check-in place is not a publishing platform. Classify media only from
+// its URL host/path; neither media_type nor source_place can prove a platform.
+const UNKNOWN_MEDIA_PLATFORM='其他／無法辨識';
 export function mediaPlatform(row={}){
   const raw=plainText(row.url);
-  if(!raw)return sourceFromMetadata(row);
+  if(!raw)return UNKNOWN_MEDIA_PLATFORM;
   try{
     const url=new URL(/^https?:\/\//iu.test(raw)?raw:'https://'+raw);
     const host=url.hostname.toLowerCase();
@@ -51,9 +41,9 @@ export function mediaPlatform(row={}){
     if(isHost(host,'soundcloud.com'))return 'SoundCloud';
     if(host&&host.includes('.'))return host.replace(/^www\./u,'');
   }catch{
-    // Invalid URL: use canonical media metadata instead of throwing.
+    // Invalid URL is not evidence of a publishing platform.
   }
-  return sourceFromMetadata(row);
+  return UNKNOWN_MEDIA_PLATFORM;
 }
 export function mediaStyleTags(value){
   const pieces=Array.isArray(value)?value:plainText(value).split(/[,，、;；\n\r|]+/u);
