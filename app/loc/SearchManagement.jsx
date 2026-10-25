@@ -23,7 +23,7 @@ const SECTIONS=Object.freeze([
   {value:'publish',label:'發表文章',shortLabel:'文章'},
   {value:'media',label:'發表多媒體',shortLabel:'媒體'},
   {value:'suggestions',label:'編輯建議搜尋',shortLabel:'建議'},
-  {value:'trace',label:'資料說明編輯',shortLabel:'說明'}
+  {value:'trace',label:'治理原則',shortLabel:'治理原則'}
 ]);
 
 export default function SearchManagement(){
