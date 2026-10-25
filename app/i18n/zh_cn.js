@@ -45,7 +45,7 @@ export default {
       "description": "时间长河依日期呈现作品与来源；定锚点用来切分时期，方便比较前后差异。"
     },
     "trace": {
-      "detailsLabel": "资料说明",
+      "detailsLabel": "治理原则",
       "title": "痕迹",
       "subtitle": "以真实地理位置查看空间定锚点与路线。",
       "description": "以真实地理位置查看空间定锚点与路线。"
