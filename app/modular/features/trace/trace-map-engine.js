@@ -140,10 +140,26 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
   }
   function overview(){
-    if(removed)return;
+    if(removed||!loaded)return;
+    // "All anchors" means the saved markers currently displayed by Trace,
+    // not the three Banqiao demonstration stations.
+    const visibleAnchors=(Array.isArray(savedAnchors)?savedAnchors:[])
+      .filter(anchor=>anchor.trace_type==='anchor')
+      .map(anchor=>({lng:Number(anchor.longitude),lat:Number(anchor.latitude)}))
+      .filter(place=>Number.isFinite(place.lng)&&Number.isFinite(place.lat)
+        &&Math.abs(place.lng)<=180&&Math.abs(place.lat)<=90);
+    if(visibleAnchors.length===1){
+      map.flyTo({center:[visibleAnchors[0].lng,visibleAnchors[0].lat],zoom:12.5,
+        pitch:45,bearing:0,essential:true});
+      return;
+    }
+    const points=visibleAnchors.length?visibleAnchors:EXAMPLE_ANCHORS;
     const bounds=new LngLatBounds();
-    EXAMPLE_ANCHORS.forEach(place=>bounds.extend([place.lng,place.lat]));
-    map.fitBounds(bounds,{padding:68,pitch:59,bearing:-23,maxZoom:13.7,duration:500});
+    points.forEach(place=>bounds.extend([place.lng,place.lat]));
+    // Map padding scales with its actual dimensions, including after resizing.
+    map.fitBounds(bounds,{padding:Math.max(30,Math.min(80,Math.round(map.getContainer().clientWidth*.045))),
+      pitch:visibleAnchors.length?45:59,bearing:visibleAnchors.length?0:-23,
+      maxZoom:visibleAnchors.length?14:13.7,duration:500});
   }
 
   map.once('load',()=>{
@@ -249,5 +265,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,setRadius,setAnchors,overview,showRoadRoute,destroy};
+  return {focus,focusCoordinates,setRadius,setAnchors,overview,showRoadRoute,
+    resize:()=>{if(!removed)map.resize();},destroy};
 }
