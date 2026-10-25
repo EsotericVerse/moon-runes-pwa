@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import {parseVerifiedGoogleOAuthUser} from '../app/loc/oauth-identity.mjs';
 import {createDatabaseClient} from '../app/loc/db-contract.mjs';
-import {setAuthorization,readAuthorization,clearAuthorization,canAuthorizeScope,canAuthorizeGlobal,createScopeAuthorizer,assertAuthorizationForTable} from '../app/loc/authorization-runtime.mjs';
+import {setAuthorization,readAuthorization,clearAuthorization,canAuthorizeScope,canAuthorizeGlobal,canAuthorizeGroup,createScopeAuthorizer,assertAuthorizationForTable} from '../app/loc/authorization-runtime.mjs';
 
 const validUser=(provider='google',oauthEmail='owner@example.com')=>({
   id:'supabase-user-1',email:'owner@example.com',
@@ -110,8 +110,14 @@ test('pure JS permissions use only scopeid/email/role and are cleared on logout'
     assert.doesNotThrow(()=>assertAuthorizationForTable('silver.lo3rwang_galaxy'));
     assert.throws(()=>assertAuthorizationForTable('silver.other_galaxy'),/沒有此 Scope/);
     assert.throws(()=>assertAuthorizationForTable('silver.loc'),/沒有此 Scope/);
-    setAuthorization(user,[{id:'loc',email:user.email,role:'admin'}]);
+    setAuthorization(user,[{id:'loc',email:user.email,role:'group'}]);
+    assert.equal(canAuthorizeGroup('loc'),true);
+    assert.equal(canAuthorizeGlobal(),false);
+    assert.doesNotThrow(()=>assertAuthorizationForTable('silver.loc'));
+    assert.throws(()=>assertAuthorizationForTable('silver.manage'),/沒有此 Scope/);
+    setAuthorization(user,[{id:'admin',email:user.email,role:'admin'}]);
     assert.equal(canAuthorizeGlobal(),true);
+    assert.doesNotThrow(()=>assertAuthorizationForTable('silver.manage'));
     assert.doesNotThrow(()=>assertAuthorizationForTable('silver.loc'));
   }finally{clearAuthorization();}
   assert.equal(readAuthorization(),null);
