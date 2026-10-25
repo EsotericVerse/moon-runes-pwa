@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
+import {traceCountyId,traceCountyName} from '../app/modular/features/trace/trace-county-id.mjs';
+import {groupTraceAnchorsByCountyId} from '../app/modular/features/trace/trace-spatial-classification.mjs';
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+
+const sample=[
+ {uid:'AAAA0001',trace_type:'anchor',county_id:'TW-NWT',title:'小柏小傑',latitude:25.0,longitude:121.4},
+ {uid:'AAAA0002',trace_type:'anchor',county_id:'TW-NWT',title:'小柏小傑',latitude:25.1,longitude:121.5},
+ {uid:'BBBB0001',trace_type:'anchor',county_id:'TW-TPE',title:'小柏小傑',latitude:25.06,longitude:121.5},
+ {uid:'CCCC0001',trace_type:'anchor',county_id:'TW-NWT',title:'板橋車站',latitude:25.0,longitude:121.4}
+];
+
+test('county IDs roundtrip with stable ISO identifiers, independent of labels',()=>{
+ assert.equal(traceCountyId('新北市'),'TW-NWT');
+ assert.equal(traceCountyId('台北市'),'TW-TPE');
+ assert.equal(traceCountyName('TW-NWT'),'新北市');
+ assert.equal(traceCountyId('somewhere'),null);
+});
+test('same-name collisions stay distinct, never automatically choose first',()=>{
+ const matches=traceAnchorSuggestions(sample,'TW-NWT','小柏');
+ assert.deepEqual(matches.map(x=>x.uid),['AAAA0001','AAAA0002']);
+ assert.equal(traceAnchorCompletionUid(matches), '');
+ assert.equal(traceAnchorCompletionUid(matches,'AAAA0002'),'AAAA0002');
+ assert.equal(traceAnchorCompletionUid(matches,'BBBB0001'),'');
+});
+test('county partition precedes completion; query matches substrings and caps suggestions',()=>{
+ assert.deepEqual(traceAnchorSuggestions(sample,'TW-TPE','小柏').map(x=>x.uid),['BBBB0001']);
+ assert.equal(traceAnchorCompletionUid(traceAnchorSuggestions(sample,'TW-TPE','小柏')),'BBBB0001');
+ assert.deepEqual(traceAnchorSuggestions(sample,'TW-NWT','板',[],8).map(x=>x.uid),['CCCC0001']);
+ assert.equal(traceAnchorSuggestions(sample,'TW-NWT','').length,0);
+ assert.equal(traceAnchorSuggestions(sample,'TW-NWT','小柏',[],1).length,1);
+ assert.deepEqual(traceAnchorSuggestions(sample,'TW-NWT','小柏',['AAAA0001']).map(x=>x.uid),['AAAA0002']);
+});
+test('county grouping retains distinct UIDs and does not silently merge same names',()=>{
+ const groups=groupTraceAnchorsByCountyId(sample);
+ assert.equal(groups.get('TW-NWT').length,3);
+ assert.equal(groups.get('TW-TPE').length,1);
+ assert.notEqual(groups.get('TW-NWT')[0].uid,groups.get('TW-NWT')[1].uid);
+});
+test('code saves ordered station UIDs and stores county_id on every anchor write path',()=>{
+ const manager=read('app/loc/TraceManagement.jsx');
+ const storage=read('app/modular/features/trace/trace-data.js');
+ assert.match(manager,/traceAnchorSuggestions\(available,county,pointQuery,selected,8\)/);
+ assert.match(manager,/traceAnchorCompletionUid\(matches,pointUid\)/);
+ assert.match(manager,/selected\.includes\(completionUid\)/);
+ assert.match(manager,/setSelected\(ids=>\[\.\.\.ids,completionUid\]\)/);
+ assert.match(storage,/county_id:await countyIdAt\(longitude,latitude\)/);
+ assert.match(storage,/county_id:traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
+ assert.match(storage,/anchor_uids:chosen/);
+});
