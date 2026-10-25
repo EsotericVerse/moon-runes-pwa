@@ -53,7 +53,7 @@ const anchors=[
 ];
 test('saved route plots all numbered stops and preserves segment order',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
   const features=map.sources['loc-trace-user-routes'].data.features;
   assert.deepEqual(features.filter(f=>f.geometry.type==='Point')
     .map(f=>f.properties.order),[1,2,3]);
@@ -63,7 +63,7 @@ test('saved route plots all numbered stops and preserves segment order',()=>{
 });
 test('clearing route removes line and no saved anchors never shows sample markers',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
   instance.setSavedRoute(null);
   assert.deepEqual(map.sources['loc-trace-user-routes'].data.features,[]);
   assert.equal(map.sources['loc-trace-extrusions'],undefined);
@@ -80,7 +80,7 @@ test('pin clicks preserve full original record including historical place names'
   instance.destroy();
 });
 
-test('Banqiao Station is the origin; reloading anchors never resets the user's view',()=>{
+test('Banqiao Station is the origin; reloading anchors never resets the viewport',()=>{
   const {instance,map}=setup({anchors:[]});
   assert.deepEqual(map.options.center,[121.4638,25.0143]);
   assert.equal(map.fly.length,0);
