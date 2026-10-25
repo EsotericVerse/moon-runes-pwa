@@ -98,7 +98,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   }
   function savedRoutePoints(route=selectedSavedRoute){
     if(!Array.isArray(route?.anchor_uids))return [];
-    const byId=new Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
+    const byId=new globalThis.Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
     return route.anchor_uids.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
