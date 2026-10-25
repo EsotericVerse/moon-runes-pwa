@@ -150,7 +150,9 @@ export default function ScopeEditableBlocks({
   }
   function cancel(){setEditingSlot(null);setMessage('');}
   function recommendationTerm(raw){
-    return String(raw||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/\s+/g,' ').trim();
+    // Multi-paragraph editor content may contain descriptions after the keyword.
+    const html=String(raw||'').replace(/<br\b[^>]*>|<\/(?:p|div|li|h[1-6])\s*>/gi,'\n');
+    return BlockNoteContent.text.blocksToPlainText(html).split(/\r?\n/).map(line=>line.trim()).find(Boolean)||'';
   }
   function selectSuggestion(text){
     if(typeof onSuggestionClick==='function'){
@@ -247,7 +249,9 @@ export default function ScopeEditableBlocks({
           key={slot.uid||'order:'+slot.order}
           data-page-name={pageName}
           data-block-order={slot.order}
-          onClick={onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
+          onClick={onSuggestionClick&&!slot.entities.some(entity=>recommendationTerm(entity.text))
+          ?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}
+          :undefined}
         >
           {typeof renderDisplay==='function'
             ?renderDisplay(slot)
@@ -287,7 +291,9 @@ export default function ScopeEditableBlocks({
         data-page-name={pageName}
         data-block-order={slot.order}
         onClickCapture={canEdit&&!active?event=>{if(!isInteractiveContentTarget(event.target))begin(slot)}:undefined}
-        onClick={!active&&onSuggestionClick?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}:undefined}
+        onClick={!active&&onSuggestionClick&&!slot.entities.some(entity=>recommendationTerm(entity.text))
+          ?event=>{if(!isInteractiveContentTarget(event.target))selectSuggestion(slot.text||slot.subtitle||slot.title)}
+          :undefined}
       >
         {active?<ScopeBlockEditorSession
           key={editingSlot.uid}
