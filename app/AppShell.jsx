@@ -412,8 +412,8 @@ function AppShellInner({children}){
   const featureEditReturn=editSegments.includes('culture')?'culture'
     :editSegments.includes('statics')&&(editSegments.includes('keywords')||editSegments.includes('manage'))?'statics'
     :editSegments.includes('governance')&&editSegments.includes('manage')&&editSegments.includes('search')?'search'
-    :editSegments.includes('admin')&&editSection==='governance'?'governance'
-    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSection==='governance'?'governance'
+    :editSegments.includes('admin')&&editSection==='governance'?'trace'
+    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSection==='governance'?'trace'
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
@@ -430,10 +430,11 @@ function AppShellInner({children}){
   ];
   const featureTabs=[
     {id:'home',icon:localWorkspace?'phone':'home',label:translateUiField(activeLocale,'首頁'),href:localWorkspace?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
-    ...['culture','statics','search','governance'].map(id=>{
+    ...['culture','statics','trace','search'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
-      return {id,icon:id==='governance'&&!localWorkspace?'traces':id,label:localWorkspace&&id==='governance'?'管理':id==='governance'?(copy.features?.traces?.title||feature.label):(copy.features?.[id]?.title||feature.label),
-        href:navigationHref(navScopeId,feature.path,native)};
+      return {id,icon:id==='trace'?(localWorkspace?'governance':'traces'):id,
+        label:localWorkspace&&id==='trace'?'管理':id==='trace'?(copy.features?.traces?.title||feature.label):(copy.features?.[id]?.title||feature.label),
+        href:navigationHref(navScopeId,localWorkspace&&id==='trace'?'governance':feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
   ];
