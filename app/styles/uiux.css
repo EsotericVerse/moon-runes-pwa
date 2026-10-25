@@ -348,12 +348,12 @@ button,a,.loc-control,.loc-button,
 }
 
 /* All seven LOC feature Heroes use one typography scale. This includes the
-   three management pages and keeps them aligned with culture/statics/search/governance. */
+   three management pages and keeps them aligned with culture/statics/search/trace. */
 .scope-feature-hero:is(
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
-  .scope-feature-hero--governance,
+  .scope-feature-hero--trace,
   .scope-feature-hero--admin,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
@@ -366,7 +366,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
-  .scope-feature-hero--governance,
+  .scope-feature-hero--trace,
   .scope-feature-hero--admin,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
@@ -377,7 +377,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
-  .scope-feature-hero--governance,
+  .scope-feature-hero--trace,
   .scope-feature-hero--admin,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
@@ -390,7 +390,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
-  .scope-feature-hero--governance,
+  .scope-feature-hero--trace,
   .scope-feature-hero--admin,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
@@ -399,7 +399,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--culture,
   .scope-feature-hero--statics,
   .scope-feature-hero--search,
-  .scope-feature-hero--governance,
+  .scope-feature-hero--trace,
   .scope-feature-hero--admin,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
@@ -535,11 +535,11 @@ button,a,.loc-control,.loc-button,
 .scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/scope-culture.jpg')}
 .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/scope-statics.jpg')}
 .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/scope-search.jpg')}
-.scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
+.scope-feature-hero--trace{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--culture{--scope-feature-hero-image:url('../../pics/LOC-culture.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--statics{--scope-feature-hero-image:url('../../pics/LOC-statics.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/LOC-search.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--governance{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--trace{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
 .scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-manage.jpg')}
 .scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/local-setting.jpg')}
