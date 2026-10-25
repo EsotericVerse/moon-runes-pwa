@@ -200,7 +200,6 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
         onClick={()=>setShowAllVisits(value=>!value)}>
         {showAllVisits?'收合造訪時間':'顯示全部 '+visits.length+' 次造訪時間'}
       </button>:null}
-    </div>
     </div>:null}
     {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
     {sourceFilter?<p className="scope-status">作品來源：{sourceFilter}（僅計入符合此來源的文章與數值）</p>:null}
