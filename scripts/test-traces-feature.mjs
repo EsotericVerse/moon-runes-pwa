@@ -82,5 +82,7 @@ test('Only canonical public Trace and management routes exist',()=>{
   const core=read('app/modular/published-blocks/index.js');
   assert.match(core,/"loc:trace"/);
   assert.match(core,/"loc:scope_trace"/);
-  assert.doesNotMatch(core,/governance/);
+  // The previous group_governance data key remains a compatibility alias for
+  // the Trace Hero. It is not a public governance route or a second page.
+  assert.match(core,/"loc:group_governance"/);
 });
