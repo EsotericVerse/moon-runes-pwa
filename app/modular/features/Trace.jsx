@@ -20,6 +20,7 @@ const TracePlaceResults=dynamic(()=>import('./trace/TracePlaceResults'),{
 export default function Trace({scopeId='loc'}){
   const [selectedPlace,setSelectedPlace]=useState(null);
   const [selectedResource,setSelectedResource]=useState('');
+  const [mapOnly,setMapOnly]=useState(false);
   const supported=TRACE_SCOPES.includes(scopeId);
   // LOC displays a union of published spatial anchors, but Periods belong to
   // individual Scopes. Never invent a combined LOC timeline.
@@ -60,7 +61,13 @@ export default function Trace({scopeId='loc'}){
       maps:(data.maps||[]).filter(map=>map.source_scope===periodScopeId)};
   },[traces.data,scopeId,periodScopeId]);
   return <FeaturePage featureId="trace">
-    {supported?<div className="scope-stat-controls" role="group" aria-label="軌跡時期">
+    <div className="scope-stat-controls" role="group" aria-label="痕跡地圖展示模式">
+      <button type="button" className="loc-button" aria-pressed={mapOnly}
+        onClick={()=>setMapOnly(value=>!value)}>
+        {mapOnly?'返回完整痕跡操作':'純地圖展示（收合其他區域）'}
+      </button>
+    </div>
+    {!mapOnly&&supported?<div className="scope-stat-controls" role="group" aria-label="軌跡時期">
       {scopeId==='loc'?<label>
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
@@ -88,7 +95,7 @@ export default function Trace({scopeId='loc'}){
       </span>:null}
       <p className="scope-status">時期只篩選下方所選定錨點或痕跡圖的文章；空間定錨點不等於該時期曾造訪。</p>
     </div>:null}
-    <TraceMap spatialData={spatialData}
+    <TraceMap mapOnly={mapOnly} spatialData={spatialData}
       selectedRouteUid={selectedResource.startsWith('map:')?selectedResource.slice(4):''}
       onAnchorSelect={anchor=>{
         if(String(anchor?.uid||'').trim()){
@@ -100,7 +107,7 @@ export default function Trace({scopeId='loc'}){
         setSelectedPlace(map||null);
         setSelectedResource(map?.uid?'map:'+map.uid:'');
       }}/>
-    <div className="scope-stat-controls" role="group" aria-label="地圖下方報表選擇">
+    {!mapOnly?<><div className="scope-stat-controls" role="group" aria-label="地圖下方報表選擇">
       <label><span>空間定錨點／痕跡圖</span>
         <select className="scope-select" value={selectedResource}
           onChange={event=>{
@@ -125,6 +132,7 @@ export default function Trace({scopeId='loc'}){
     <TracePlaceResults key={periodScopeId} place={selectedPlace}
       anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
       period={periodKey==='all'?null:selectedPeriod||null}/>
+    </>:null}
     {supported&&traces.isPending?<p className="scope-status" role="status">正在載入已建立的空間定錨點…</p>:null}
     {supported&&traces.error?<p className="scope-status scope-error" role="alert">空間定錨點讀取失敗：{String(traces.error.message||traces.error)}</p>:null}
   </FeaturePage>;
