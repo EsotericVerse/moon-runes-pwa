@@ -30,6 +30,7 @@ import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui'
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
+import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {useAccount} from '../../loc/use-account';
 import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
@@ -401,30 +402,38 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     dataUpdatedAt:Math.max(overview.dataUpdatedAt||0,othersConfig.dataUpdatedAt||0)
   };
   const selectedRawNames=null;
-  // Source classification is a capability, not a prerequisite for media charts
-  // or the LunaRunes daily page. Load its existing model only for source results.
-  const adminSourceQuery=useAsyncResource({
-    queryKey:['administrative-source-trend',scopeId,rankingType,queryRange.startDate,queryRange.endDate,
-      queryRange.bucket,activeSourceSelection,othersConfig.dataUpdatedAt,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
-    enabled:!isLrunesDaily&&!mediaDimension&&sourceRows.isSuccess&&sourceCatalog.isSuccess,
-    queryFn:async()=>{
-      const {administrativeSourceTrend}=await import('../../loc/statistics-admin-source.mjs');
-      return administrativeSourceTrend(sourceRows.data||[],sourceCatalog.data||{},{
-        startDate:queryRange.startDate,endDate:queryRange.endDate,
-        unit:queryRange.bucket,sourceCategory:activeSourceSelection,sourceNames:selectedRawNames
-      });
-    },
-  });
-  const adminSource=adminSourceQuery.data||{rows:[],series:[],distribution:[],total:0};
-  const basicTrend=adminSource.rows;
-  const basicSeries=adminSource.series;
-  const basicDistribution=adminSource.distribution;
+  // Numeric counts come from ISR. Category bucketing is tiny synchronous
+  // presentation work, not an independent remote resource: avoid a second SWR
+  // suspense/loading cycle after the cached numeric response arrives.
+  const adminSource=useMemo(()=>{
+    if(isLrunesDaily||mediaDimension||!overview.isSuccess||!othersConfig.isSuccess)return null;
+    const taxonomy={
+      categories:[...(overview.data?.categories||[]),
+        ...(othersConfig.data?.groups||[]).map(group=>({
+          category_code:group.group_code,display_name:group.display_name,enabled:true
+        }))],
+      aliases:[...(overview.data?.aliases||[]),
+        ...(othersConfig.data?.aliases||[]).map(item=>({
+          source_key:item.source_key,category_code:item.group_code
+        }))]
+    };
+    return administrativeSourceTrend(overview.data?.rows||[],taxonomy,{
+      startDate:queryRange.startDate,endDate:queryRange.endDate,
+      unit:queryRange.bucket,sourceCategory:activeSourceSelection,sourceNames:selectedRawNames
+    });
+  },[isLrunesDaily,mediaDimension,overview.isSuccess,overview.data,othersConfig.isSuccess,othersConfig.data,
+    queryRange.startDate,queryRange.endDate,queryRange.bucket,activeSourceSelection]);
+  const adminSourceReady=Boolean(adminSource);
+  const resolvedAdminSource=adminSource||{rows:[],series:[],distribution:[],total:0};
+  const basicTrend=resolvedAdminSource.rows;
+  const basicSeries=resolvedAdminSource.series;
+  const basicDistribution=resolvedAdminSource.distribution;
   // The existing source breakdown already drives the chart and its summary.
   // Do not re-scan Galaxy and Galaxy Media in a second trend query.
-  const sourceSummary={total:adminSource.total,
-    sources:adminSource.distribution.map((row,index)=>{
+  const sourceSummary={total:resolvedAdminSource.total,
+    sources:resolvedAdminSource.distribution.map((row,index)=>{
       // Category codes and labels share the same order in administrativeSourceTrend.
-      const category=String(adminSource.series[index]?.key||'').replace(/^category_/,'');
+      const category=String(resolvedAdminSource.series[index]?.key||'').replace(/^category_/,'');
       const sourceNames=[...new Set((sourceRows.data||[])
         .filter(entry=>entry.kind==='source'&&assignedSource(entry.category,
           sourceCatalog.data?.aliases||[],sourceCatalog.data?.categories||[])===category)
@@ -553,14 +562,14 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending||adminSourceQuery.isPending)))?<div className="scope-stat-data-pending">
+    {((mediaDimension&&mediaLoading)||(!mediaDimension&&(sourceRows.isPending||sourceCatalog.isPending||!adminSourceReady)))?<div className="scope-stat-data-pending">
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
     {earliestQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliestQuery.error,UI_COPY)}</p>:null}
-    {!mediaDimension&&(sourceRows.error||sourceCatalog.error||adminSourceQuery.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error||adminSourceQuery.error,UI_COPY)}</p>:null}
+    {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
-    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&!adminSourceQuery.isPending&&!sourceRows.error&&!sourceCatalog.error&&!adminSourceQuery.error?<>
+    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error&&adminSourceReady?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
