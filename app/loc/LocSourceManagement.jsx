@@ -9,7 +9,7 @@ const WorkClassificationPage=dynamic(
   {loading:PanelLoading}
 );
 const SOURCE_ITEM=Object.freeze({
-  value:'works',label:'作品分類',description:'管理 Admin 的全站作品分類'
+  value:'works',label:'作品群組分類',description:'管理 Admin 的全站作品群組分類'
 });
 
 export default function LocSourceManagement(){
