@@ -59,7 +59,10 @@ export async function GET(request,{params}){
       const {data:scope,error:scopeError}=await db.from('manage')
         .select('time_table,birthday').eq('id',scopeId).eq('manage_role','scope').maybeSingle();
       if(scopeError)throw scopeError;
-      const suffix=String(scope?.time_table||'').trim();
+      if(!scope)throw Error('Unknown Scope');
+      // time_table is an optional registry override, not a prerequisite
+      // for using an otherwise empty silver.{scope}_time table.
+      const suffix=String(scope.time_table||'time').trim();
       if(!/^[a-z][a-z0-9_]*$/.test(suffix))throw Error('Invalid registered Time table');
       const {data,error}=await db.from(scopeId+'_'+suffix)
         .select('record_id,record_type,resource_id,label,display_order,status,anchor_ids,time_date,date_status,year_value')
