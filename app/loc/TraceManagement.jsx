@@ -10,6 +10,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {classifyTraceAnchors} from '../modular/features/trace/trace-spatial-classification.mjs';
+import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute} from '../modular/features/trace/trace-route-preference.mjs';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,
   addTraceMap,updateTraceMap,deleteTraceMap,validCoordinates
@@ -218,6 +219,16 @@ function MapEditor({scopeId,spatial,reload}){
     [spatial.anchors,writeScopeId]);
   const maps=useMemo(()=>spatial.maps.filter(row=>row.source_scope===writeScopeId),
     [spatial.maps,writeScopeId]);
+  const [preferredRouteUid,setPreferredRouteUid]=useState('');
+  useEffect(()=>{setPreferredRouteUid(readDefaultTraceRoute(writeScopeId));},[writeScopeId]);
+  const defaultRouteUid=chooseDefaultTraceRoute(maps,writeScopeId,preferredRouteUid)?.uid||'';
+  const markDefault=map=>{
+    if(busy||!setDefaultTraceRoute(map.source_scope,map.uid)){
+      setNoticeError(true);setNotice('無法保存此瀏覽器的預設路線偏好。');return;
+    }
+    setPreferredRouteUid(map.uid);setNoticeError(false);
+    setNotice('已將「'+map.title+'」設為此瀏覽器的預設痕跡圖。');
+  };
   const anchorById=useMemo(()=>new Map(anchors.map(item=>[item.uid,item])),[anchors]);
   const [countyLookup,setCountyLookup]=useState(null);
   const [countyError,setCountyError]=useState('');
@@ -324,6 +335,10 @@ function MapEditor({scopeId,spatial,reload}){
       if(!Array.isArray(fresh?.maps)||fresh.maps.some(row=>row.uid===map.uid
         &&row.source_scope===map.source_scope))
         throw Error('已收到刪除回應，但重新讀取仍顯示此路線。請勿重複操作。');
+      if(readDefaultTraceRoute(map.source_scope)===map.uid){
+        clearDefaultTraceRoute(map.source_scope,map.uid);
+        setPreferredRouteUid('');
+      }
       setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
       if(editingUid===map.uid){reset();setEditorOpen(false);}
       let refreshOk=true;
@@ -388,7 +403,7 @@ function MapEditor({scopeId,spatial,reload}){
             ?ids.filter(id=>id!==map.uid):[...ids,map.uid])}>
           <span aria-hidden="true">{expandedIds.includes(map.uid)?'▾':'▸'}</span>
           <span>{map.title||'未命名痕跡圖'}</span>
-          <span className="scope-status">{Array.isArray(map.anchor_uids)?map.anchor_uids.length:0} 站</span>
+          <span className="scope-status">{map.uid===defaultRouteUid?'預設 · ':''}{Array.isArray(map.anchor_uids)?map.anchor_uids.length:0} 站</span>
         </button>
         {expandedIds.includes(map.uid)?<div className="loc-trace-saved-map-body"
           id={'trace-map-details-'+map.source_scope+'-'+map.uid}>
@@ -400,6 +415,10 @@ function MapEditor({scopeId,spatial,reload}){
             })}
           </ol>
           <div className="scope-stat-controls">
+            <button type="button" className="loc-button" disabled={busy||map.uid===defaultRouteUid}
+              aria-pressed={map.uid===defaultRouteUid} onClick={()=>markDefault(map)}>
+              {map.uid===defaultRouteUid?'目前預設':'設為預設'}
+            </button>
             <button type="button" className="loc-button" disabled={busy} onClick={()=>edit(map)}>編輯這張痕跡圖</button>
             <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(map)}>刪除這張痕跡圖</button>
           </div>
