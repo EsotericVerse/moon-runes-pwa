@@ -378,7 +378,7 @@ export default {
   "作品分類": "Work categories",
   "個人分類": "Personal categories",
   "來源管理": "Work categories",
-  "作品群組分類": "Work group categories",
+  "作品群組分類": "Work categories",
   "作品自訂分類": "Personal categories",
   "治理原則": "Governance principles",
   "人員作品管理": "Member and work management",
