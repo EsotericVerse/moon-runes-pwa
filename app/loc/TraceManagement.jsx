@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient} from './db-client.mjs';
+import TraceBatchEditor from './TraceBatchEditor';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
@@ -21,6 +22,7 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
   const [radius,setRadius]=useState('');
+  const [focusLocation,setFocusLocation]=useState(null);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
@@ -32,11 +34,12 @@ function AnchorEditor({scopeId,spatial,reload}){
     setLongitude(anchor?.longitude==null?'':String(anchor.longitude));
     setLatitude(anchor?.latitude==null?'':String(anchor.latitude));
     setRadius(anchor?.radius_m==null?'500':String(anchor.radius_m));
+    if(anchor?.longitude!=null&&anchor?.latitude!=null)setFocusLocation({longitude:anchor.longitude,latitude:anchor.latitude,name:anchor.title,radius_m:anchor.radius_m||500});
     setNotice('');
   };
   const popular=useAsyncResource(['trace-place-names',scopeId],async()=>{
     const {data,error}=await dbAuthClient.schema('silver').rpc('trace_place_suggestions',{
-      p_scope_id:scopeId,p_limit:50
+      p_scope_id:scopeId,p_limit:500
     });
     if(error)throw new Error(error.message||'打卡名稱讀取失敗');
     return data||[];
@@ -95,11 +98,12 @@ function AnchorEditor({scopeId,spatial,reload}){
     {popular.error?<p role="status" className="scope-status scope-error">
       打卡名稱讀取失敗：{String(popular.error.message||popular.error)}
     </p>:null}
-    <TraceMap spatialData={spatial} onLocationPick={({lng,lat,name})=>{
+    <TraceMap spatialData={spatial} radiusMeters={Number(radius)||500} focusLocation={focusLocation} onLocationPick={({lng,lat,name})=>{
       if(name)setTitle(current=>current.trim()?current:name);
       setLongitude(String(Math.round(lng*1e6)/1e6));
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
+    {scopeId!=='loc'?<TraceBatchEditor scopeId={scopeId} existing={spatial.anchors} places={popular.data||[]} radius={radius||500} reload={reload} onPreview={setFocusLocation}/>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }
