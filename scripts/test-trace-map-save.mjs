@@ -27,9 +27,10 @@ test('Trace save result is confirmed by a fresh read before clearing the story a
 
 test('a successful route edit refreshes public Trace without changing database policy',()=>{
   const src=read('app/loc/TraceManagement.jsx');
-  assert.match(src,/revalidateServerMetadata\(\)/);
-  assert.match(src,/\['loc',writeScopeId\]/);
-  assert.match(src,/cache\.invalidate\(\{queryKey:traceKey\(id\)\}\)/);
+  const mapEditor=src.slice(src.indexOf('function MapEditor('));
+  assert.doesNotMatch(mapEditor,/revalidateServerMetadata\(\)/);
+  assert.match(mapEditor,/\['loc',writeScopeId\]/);
+  assert.match(mapEditor,/cache\.revalidate\(\{queryKey:traceKey\(id\)\}\)/);
   assert.match(src,/row\.source_scope===writeScopeId/);
   assert.match(src,/deleteTraceMap\(\{scopeId:map\.source_scope,uid:map\.uid\}\)/);
   assert.match(read('app/modular/features/trace/TraceMap.jsx'),/selectedRouteUid/);
@@ -67,8 +68,8 @@ function actualRouteSaveHarness({firstReadMiss=false,writeFails=false,cacheFails
         anchor_uids:['ABC12345','DEF67890']}]};
     },
     setExpandedIds:()=>{},reset:()=>{resets++;pendingSavedRef.current=null;},
-    setEditorOpen:()=>{},revalidateServerMetadata:async()=>true,
-    cache:{invalidate:async()=>{if(cacheFails)throw Error('cache temporarily unavailable');}},
+    setEditorOpen:()=>{},
+    cache:{revalidate:async()=>{if(cacheFails)throw Error('cache temporarily unavailable');}},
     traceKey:scope=>['scope-trace',scope]
   };
   const keys=Object.keys(args);
@@ -106,6 +107,7 @@ test('actual handler preserves draft on rejected write, and cache failure does n
   assert.equal(await cached.save(),true);
   assert.equal(cached.written[0].type,'update');
   assert.equal(cached.resets,1);
+  assert.match(cached.messages.at(-1),/已更新並重新讀取確認/);
 });
 
 test('public Trace reads fresh maps and a complete inline three-tab report',()=>{
