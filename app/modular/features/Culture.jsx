@@ -1484,7 +1484,7 @@ export default function Culture(){
                 {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
-                {styleFilter!=='trace'?[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
+                {styleFilter!=='trace'&&[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
                   .filter(Boolean).map((error,index)=><p key={index} className='scope-status scope-error' role='alert'>
                     {featureDataErrorMessage(error,UI_COPY)}</p>)}
                 {styleFilter!=='trace'&&stagedSourceRiver&&openCultureRoots.length>0&&
