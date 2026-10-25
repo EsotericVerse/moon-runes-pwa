@@ -47,6 +47,8 @@ async function harness(){
         rpc:async(name,args)=>{
         queries.push({name,args});
         return {data:name==='read_scope_earliest'?'2025-01-01'
+          :name==='read_loc_statistics'
+          ?{earliest:'2023-01-01',scopes:[{scope_id:'lo3rwang',display_name:'作者'}],rows:[{scope_id:'lo3rwang',day:'2026-10-01',item_count:3}]}
           :name==='read_scope_statistics'
           ?[{day:'2026-10-01',kind:'source',item_count:3}]
           :{earliest:'2025-01-01',rows:[{day:'2026-10-01',item_count:5}],categories:[],aliases:[]},
@@ -88,6 +90,34 @@ test('Statistics results are cached separately for each Scope and date range',as
   await get(h,'loc','statistics');
   assert.deepEqual(h.queries.map(x=>x.name),['read_scope_overview','read_scope_overview']);
 });
+test('LOC group statistics ISR lazily loads one shared numeric snapshot',async()=>{
+  const h=await harness(),query='?start=2026-01-01&end=2026-10-01';
+  for(let i=0;i<5;i++){
+    const response=await get(h,'loc','loc-statistics',query);
+    assert.equal(response.status,200);
+    const data=await response.json();
+    assert.equal(data.earliest,'2023-01-01');
+    assert.equal(data.rows[0].scope_id,'lo3rwang');
+  }
+  assert.deepEqual(h.queries.map(x=>x.name),['read_loc_statistics']);
+  await get(h,'loc','loc-statistics','?start=2026-01-02&end=2026-10-01');
+  assert.equal(h.queries.length,2);
+  assert.equal((await get(h,'lo3rwang','loc-statistics',query)).status,400);
+  assert.equal((await get(h,'loc','loc-statistics',query+'&undated=1')).status,400);
+  assert.equal(h.queries.length,2,'Invalid LOC routes must not query SQL');
+});
+
+test('Statistics and Culture optional queries stay off until selected',()=>{
+  const statistics=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.ok(statistics.includes('enabled:periodOptionsRequested&&!isLrunesDaily'));
+  assert.ok(statistics.includes("enabled:!isLrunesDaily&&styleFilter==='rune66'"));
+  assert.ok(statistics.includes('onFocus={()=>setPeriodOptionsRequested(true)}'));
+  assert.ok(culture.includes("enabled:sourceChildrenEnabled&&openCultureRoots.includes('system')"));
+  assert.ok(culture.includes("enabled:sourceChildrenEnabled&&openCultureRoots.includes('custom')"));
+  assert.ok(culture.includes("enabled:sourceChildrenEnabled&&openCultureRoots.includes('media')"));
+});
+
 test('private Scope and invalid numeric requests never execute SQL',async()=>{
   const h=await harness();
   for(const [id,kind,query] of [
