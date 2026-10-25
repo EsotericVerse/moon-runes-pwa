@@ -9,6 +9,7 @@ import {useAccount} from './use-account';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
+import {classifyTraceAnchors} from '../modular/features/trace/trace-spatial-classification.mjs';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,
   addTraceMap,updateTraceMap,deleteTraceMap,validCoordinates
@@ -228,18 +229,8 @@ function MapEditor({scopeId,spatial,reload}){
       .catch(error=>{if(active)setCountyError('縣市對照載入失敗：'+String(error?.message||error));});
     return()=>{active=false;};
   },[anchors.length]);
-  const grouped=useMemo(()=>{
-    const output=new Map();
-    for(const anchor of anchors){
-      const county=countyLookup?countyLookup(anchor.longitude,anchor.latitude):'未判定／其他地區';
-      if(!output.has(county))output.set(county,[]);
-      output.get(county).push(anchor);
-    }
-    for(const group of output.values())group.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'zh-Hant'));
-    return output;
-  },[anchors,countyLookup]);
-  const counties=useMemo(()=>[...grouped.keys()].sort((a,b)=>
-    a==='未判定／其他地區'?1:b==='未判定／其他地區'?-1:a.localeCompare(b,'zh-Hant')),[grouped]);
+  const grouped=useMemo(()=>classifyTraceAnchors(anchors,countyLookup),[anchors,countyLookup]);
+  const counties=useMemo(()=>[...grouped.keys()],[grouped]);
   const [county,setCounty]=useState('');
   const [pointUid,setPointUid]=useState('');
   const [title,setTitle]=useState('');
