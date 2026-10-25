@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeAnchorAddress,anchorAddress,countyOfAnchor,groupAnchorsByCounty,organizeAnchorCandidates} from '../app/modular/features/trace/trace-organizer.mjs';
+import {readFileSync} from 'node:fs';
+import {normalizeAnchorAddress,anchorAddress,countyOfAnchor,groupAnchorsByCounty,organizeAnchorCandidates,findAnchorWriteMatches} from '../app/modular/features/trace/trace-organizer.mjs';
 const item=(uid,title,description,latitude,longitude)=>({
   uid,title,description,latitude,longitude,source_scope:'lo3rwang',trace_type:'anchor'
 });
@@ -35,4 +36,40 @@ test('region organizer groups and preserves labels',()=>{
   assert.equal(anchorAddress({description:'店址。地址：新北市板橋區文化路1號。'}),'新北市板橋區文化路1號');
   const groups=groupAnchorsByCounty([item('AAA00001','臺南車站','',22.9969,120.213),item('BBB00002','福隆海水浴場','',25.02,121.945)]);
   assert.deepEqual(groups.map(g=>g.county),['新北市','臺南市']);
+});
+
+test('recurrent pre-write check reuses only a corroborated address within 60 meters',()=>{
+  const original=item('AAA00001','板橋車站','地址：新北市板橋區縣民大道二段7號。',25.014,121.463);
+  const same={...item('__incoming__','高鐵板橋站','地址：新北市板橋區縣民大道二段7號。',25.01403,121.463)};
+  assert.equal(findAnchorWriteMatches(same,[original])[0].safeReuse,true);
+  const far={...same,latitude:25.0163};
+  assert.equal(findAnchorWriteMatches(far,[original])[0].safeReuse,false);
+  assert.equal(findAnchorWriteMatches(far,[original])[0].type,'same-address');
+});
+test('postal-address evidence cannot be replaced with wide search-radius overlap',()=>{
+  const a=item('AAA00001','隔壁商店 A','',25.01,121.5);
+  const b=item('__incoming__','隔壁商店 B','',25.01009,121.5);
+  a.radius_m=5000;b.radius_m=5000;
+  const candidates=findAnchorWriteMatches(b,[a]);
+  assert.equal(candidates[0].type,'near-unverified');
+  assert.equal(candidates[0].safeReuse,false);
+  assert.equal(findAnchorWriteMatches(b,[{...a,source_scope:'lrunes'}]).length,0);
+});
+test('an exact coordinate with different full addresses cannot silently reuse anchor',()=>{
+  const a=item('AAA00001','店 A','地址：新北市三重區忠孝路1號。',25.01,121.5);
+  const b=item('__incoming__','店 B','地址：新北市三重區忠孝路3號。',25.01,121.5);
+  const [match]=findAnchorWriteMatches(b,[a]);
+  assert.equal(match.type,'near-different-address');
+  assert.equal(match.canMerge,false);
+  assert.equal(match.safeReuse,false);
+});
+test('batch and single Trace writes share the duplicate preflight and preserve route UIDs',()=>{
+  const file=readFileSync(new URL('../app/modular/features/trace/trace-data.js',import.meta.url),'utf8');
+  assert.match(file,/inspectTraceAnchorBeforeWrite\(\{scopeId:id,anchor:data\}\)/);
+  assert.match(file,/const previous=await readTraceData\(id\)/);
+  assert.match(file,/classifyNewAnchor\(data,known\)/);
+  assert.match(file,/reuseExistingAnchor\(/);
+  assert.match(file,/organizeAnchorCandidates\(comparableAnchors\(current,id\)\)/);
+  assert.match(file,/reviewCount,reviewPreview,auditError/);
+  assert.doesNotMatch(file,/\.delete\(\)/);
 });
