@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "該時間區間內沒有資料。",
-  "system": "大分類",
-  "custom": "自訂分類",
+  "system": "作品群組分類",
+  "custom": "作品自訂分類",
   "media": "多媒體",
   "other": "未分類",
   "candidateDate": "建議日期",
@@ -38,7 +38,7 @@ export default {
   "style": "表現風格",
   "noFilter": "不套用",
   "keywordClass": "關鍵詞組",
-  "workClassificationLane": "作品分類河道",
+  "workClassificationLane": "作品群組分類河道",
   "expandToCompareWorkVolumeChanges": "需要時再展開比對作品量變化（候選日期，非正式定錨點）",
   "selectAllCandidates": "全選待審候選",
   "clearSelection": "清除選取",
