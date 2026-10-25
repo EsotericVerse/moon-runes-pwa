@@ -229,7 +229,8 @@ function MapEditor({scopeId,spatial,reload}){
       .catch(error=>{if(active)setCountyError('縣市對照載入失敗：'+String(error?.message||error));});
     return()=>{active=false;};
   },[anchors.length]);
-  const grouped=useMemo(()=>classifyTraceAnchors(anchors,countyLookup),[anchors,countyLookup]);
+  const grouped=useMemo(()=>!countyLookup&&!countyError?new Map():classifyTraceAnchors(anchors,countyLookup),
+    [anchors,countyLookup,countyError]);
   const counties=useMemo(()=>[...grouped.keys()],[grouped]);
   const [county,setCounty]=useState('');
   const [pointUid,setPointUid]=useState('');
@@ -421,7 +422,7 @@ function MapEditor({scopeId,spatial,reload}){
         <label>縣市
           <select className="scope-select" value={county} disabled={busy||!counties.length}
             onChange={event=>{setCounty(event.target.value);setPointUid('');}}>
-            <option value="">請選擇縣市</option>
+            <option value="">{!countyLookup&&!countyError&&anchors.length?"正在整理縣市…":"請選擇縣市"}</option>
             {counties.map(name=><option key={name} value={name}>{name}（{grouped.get(name)?.length||0}）</option>)}
           </select>
         </label>
