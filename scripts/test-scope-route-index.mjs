@@ -11,9 +11,9 @@ const corsSource=read('app/api/loc/_cors.js');
 const stubUi={
   features:{
     statics:{title:'Statistics'},culture:{title:'Culture'},
-    governance:{title:'Governance'},search:{title:'Search'}
+    trace:{title:'Trace'},search:{title:'Search'}
   },
-  scope:{loc:{statics:'',culture:'',governance:'',search:''},author:{search:''}},
+  scope:{loc:{statics:'',culture:'',trace:'',search:''},author:{search:''}},
   nav:{home:'Home',lunarunes:'Runes',author:'Author'}
 };
 
@@ -53,7 +53,7 @@ test('directory Scope wins over its parent domain before bootstrap/SQL',async()=
   // LOC-hosted built-in /lrunes application must keep its own Scope identity.
   assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/'),'lrunes');
   assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/card/list/?d=3d'),'lrunes');
-  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/governance/manage/'),'lrunes');
+  assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes/manage/'),'lrunes');
   assert.equal(h.resolveScope('loc.lo3rwang.cc','/lrunes-other/'),'loc');
   assert.equal(h.resolveScope('lrunes.lo3rwang.cc','/'),'lrunes');
   assert.equal(h.resolveScope('localhost','/lrunes/'),'lrunes');
