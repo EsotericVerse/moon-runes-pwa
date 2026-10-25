@@ -32,6 +32,7 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
+import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
 import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
 import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
@@ -347,13 +348,12 @@ export default function Culture(){
     queryFn:async()=>{
       const published=publishedSourceTaxonomy(scopeId);
       if(published)return published; // Known public Scopes: no four classification SQL calls.
-      const [categories,aliases,groups,groupAliases]=await Promise.all([
-        selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-        selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:1000}),
-        selectRows('silver.statistics_scope_others_groups',{columns:'group_code,display_name,enabled,sort_order',filters:[{column:'scope_id',operator:'eq',value:scopeId}],orders:[{column:'sort_order',ascending:true}],limit:500,source:'primary'}),
-        selectRows('silver.statistics_scope_others_aliases',{columns:'source_key,group_code',filters:[{column:'scope_id',operator:'eq',value:scopeId}],limit:500,source:'primary'})
-      ]);
-      return {categories:categories.rows||[],aliases:aliases.rows||[],groups:groups.rows||[],groupAliases:groupAliases.rows||[]};
+      const scopes=scopeId==='loc'?['loc']:['loc',scopeId];
+      const [global,personal]=await Promise.all(scopes.map(id=>selectRows('silver.'+id,{
+        columns:'txt_class',filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
+      })));
+      return sourceTaxonomyFromArrays(global.rows?.[0]?.txt_class||[],
+        scopeId==='loc'?[]:personal?.rows?.[0]?.txt_class||[]);
     }
   });
   const stagedSourceRiver=usesNumericIsr(scopeId)&&Boolean(publishedSourceTaxonomy(scopeId));
