@@ -9,14 +9,13 @@ registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useMemo,useRef,useState} from 'react';
-import dynamic from 'next/dynamic';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
-import {hasIrrecoverableEncoding,isPureUrlContent,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
+import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
   activity:'activity',media:'media',table:'table','structured-records':'records',document:'document'
@@ -159,7 +158,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
   </details>;
 }
 
-// Shared idempotent media attachment write for fresh imports and source refresh.
+// Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
 async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
