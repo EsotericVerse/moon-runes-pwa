@@ -348,7 +348,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Media charts carry their own facet rows; the earliest date is one small request.
   const earliestQuery=useAsyncResource({
     queryKey:['statistics-history-start',scopeId],
-    enabled:!isLrunesDaily&&mediaDimension&&periodNavigationReady&&selectedPeriodKey===''&&!knownEarliest&&Boolean(targetScopes[0]),
+    enabled:!isLrunesDaily&&mediaDimension&&periodNavigationReady&&!selectedPeriod&&!knownEarliest&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {selectScopeEarliest}=await loadGalaxyStatistics();
       return selectScopeEarliest(targetScopes[0]);
@@ -530,7 +530,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         <span>時期</span>
         <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
           onChange={event=>setSelectedPeriodKey(event.target.value)}>
-          <option value="latest">最新時期</option>
+          <option value="latest">{periods.length?'最新時期':'未設定時期（預設時間）'}</option>
           <option value="">自選時間（原有縮放）</option>
           {periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
           {periods.map(period=><option key={period.record_id||period.period} value={String(period.period||period.era_id||period.record_id)}>
