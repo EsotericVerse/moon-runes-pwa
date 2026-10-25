@@ -426,9 +426,10 @@ function MapEditor({scopeId,spatial,reload}){
             })}
           </ol>
           <div className="scope-stat-controls">
-            <button type="button" className="loc-button" disabled={busy||map.uid===defaultRouteUid}
-              aria-pressed={map.uid===defaultRouteUid} onClick={()=>markDefault(map)}>
-              {map.uid===defaultRouteUid?'目前預設':'設為預設'}
+            <button type="button" className="loc-button" disabled={busy||map.uid===preferredRouteUid}
+              aria-pressed={map.uid===preferredRouteUid} onClick={()=>markDefault(map)}>
+              {map.uid===preferredRouteUid?'目前預設':map.uid===defaultRouteUid
+                ?'固定為預設（目前自動）':'設為預設'}
             </button>
             <button type="button" className="loc-button" disabled={busy} onClick={()=>edit(map)}>編輯這張痕跡圖</button>
             <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(map)}>刪除這張痕跡圖</button>
