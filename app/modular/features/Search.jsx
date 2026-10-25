@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 import {useRouter,useSearchParams} from 'next/navigation';
 
-import {deleteRows,updateRows} from '../../loc/db-client.mjs';
+import {dbAuthClient,deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import ScopeLink from '../ScopeLink';
@@ -247,6 +247,11 @@ export default function Search({managementMode=false}){
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
   const [placeOnly,setPlaceOnly]=useState(false);
+  const [selectedPlaceArticles,setSelectedPlaceArticles]=useState([]);
+  const [bulkPlace,setBulkPlace]=useState('');
+  const [bulkPreview,setBulkPreview]=useState(null);
+  const [bulkBusy,setBulkBusy]=useState(false);
+  const [bulkNotice,setBulkNotice]=useState('');
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
@@ -424,6 +429,7 @@ export default function Search({managementMode=false}){
       setHasMore(false);
       setNextCursor(null);
       setResults([]);
+      setSelectedPlaceArticles([]);setBulkPreview(null);setBulkNotice('');
       setStatus(UI_COPY.format.searchScope(searchCollectionLabel));
     }
     try{
@@ -627,6 +633,7 @@ export default function Search({managementMode=false}){
     const media=String(searchParams?.get('media')||'').trim();
     if(media){setQuery('');executeMediaIdentity(media);return;}
     const place=String(searchParams?.get('place')||'').trim();
+    if(place)setBulkPlace(place);
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     const filters={
@@ -790,7 +797,7 @@ export default function Search({managementMode=false}){
     setLoadingMore(false);
     matchedQueryRef.current='';
     activeSearchOptionsRef.current=null;
-    setResults([]);setHasMore(false);setNextCursor(null);setBrowseResults(false);
+    setResults([]);setSelectedPlaceArticles([]);setBulkPreview(null);setBulkNotice('');setHasMore(false);setNextCursor(null);setBrowseResults(false);
     setLoadMoreError('');setError('');setStatus(UI_COPY.search.start);
   }
   function updateSearchFilter(setter,value){
@@ -881,6 +888,46 @@ export default function Search({managementMode=false}){
       isBusy:()=>dockActions.current.isBusy()
     });
   },[managementMode,editingKey,Boolean(editDraft),editDock?.active,editDock?.register]);
+
+  const selectedScope=selectedPlaceArticles[0]?.scopeId||'';
+  const selectedSignature=selectedPlaceArticles.map(row=>row.scopeId+':'+row.uid).sort().join('|')+'|'+bulkPlace.trim();
+  const validBulkPlace=bulkPlace.trim().length>0&&bulkPlace.trim().length<=200;
+  const selectedPreview=bulkPreview?.signature===selectedSignature?bulkPreview.data:null;
+  function togglePlaceArticle(row,checked){
+    setBulkPreview(null);setBulkNotice('');
+    setSelectedPlaceArticles(current=>{
+      if(!checked)return current.filter(item=>item.uid!==row.resourceId||item.scopeId!==row.scopeId);
+      if(current.length>=200||current.length&&current[0].scopeId!==row.scopeId)return current;
+      if(current.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId))return current;
+      return [...current,{uid:row.resourceId,scopeId:row.scopeId,title:row.title}];
+    });
+  }
+  async function saveSelectedPlaces(apply=false){
+    if(!managementMode||bulkBusy||!selectedPlaceArticles.length||!validBulkPlace)return;
+    if(apply&&(!selectedPreview||Number(selectedPreview.eligible)<1))return;
+    if(apply&&!window.confirm('確認將 '+selectedPreview.eligible+' 篇文章的空白 source_place 補寫為「'+bulkPlace.trim()+'」？原有打卡紀錄不會覆蓋。'))return;
+    const snapshot=selectedSignature;
+    const target=selectedPlaceArticles.slice();
+    setBulkBusy(true);setBulkNotice('');
+    try{
+      const {data,error}=await dbAuthClient.schema('silver').rpc('batch_fill_galaxy_source_place',{
+        p_scope_id:target[0].scopeId,p_uids:target.map(row=>row.uid),p_place:bulkPlace.trim(),
+        p_apply:apply,p_expected_count:apply?Number(selectedPreview.eligible):null
+      });
+      if(error)throw Error(error.message||'批次補寫失敗');
+      if(apply){
+        const filled=new Set(target.map(row=>row.scopeId+':'+row.uid));
+        setResults(current=>current.map(row=>filled.has(row.scopeId+':'+row.resourceId)&&!row.checkInPlace
+          ?{...row,checkInPlace:bulkPlace.trim()}:row));
+        setSelectedPlaceArticles([]);setBulkPreview(null);
+        setBulkNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 source_place，原有非空白地點未覆蓋。');
+      }else{
+        setBulkPreview({signature:snapshot,data});
+        setBulkNotice('目前選取 '+Number(data?.selected||0)+' 篇，其中空白可補寫 '+Number(data?.eligible||0)+' 篇。');
+      }
+    }catch(error){setBulkPreview(null);setBulkNotice('批次操作失敗：'+String(error.message||error));}
+    finally{setBulkBusy(false);}
+  }
 
   if(managementMode&&!managementAuthorized)return <FeaturePage featureId="search">
     <section className="loc-card scope-feature-card">
@@ -1007,6 +1054,23 @@ export default function Search({managementMode=false}){
     </section>
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
+    {managementMode&&(results.length>0||selectedPlaceArticles.length>0)?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
+      <h3>從搜尋文章列表批次補寫地點</h3>
+      <p className="scope-status">在下方文章旁勾選「補寫打卡地點」，一次最多 200 篇且限同一個 Scope；原本有 source_place 的文章無法勾選。不會改動文章內容。</p>
+      <div className="loc-search-bulk-controls">
+        <label>地點標籤<input type="text" maxLength={200} value={bulkPlace}
+          onChange={event=>{setBulkPlace(event.target.value);setBulkPreview(null);setBulkNotice('');}}
+          placeholder="例如：板橋車站" disabled={bulkBusy}/></label>
+        <span className="scope-status" aria-live="polite">已勾選 {selectedPlaceArticles.length} 篇{selectedScope?' · '+scopeLabel(selectedScope):''}</span>
+        <button type="button" className="loc-button" disabled={bulkBusy||!selectedPlaceArticles.length||!validBulkPlace}
+          onClick={()=>saveSelectedPlaces(false)}>預覽批次補寫</button>
+        <button type="button" className="loc-button primary" disabled={bulkBusy||!selectedPreview||Number(selectedPreview.eligible)<1}
+          onClick={()=>saveSelectedPlaces(true)}>{bulkBusy?'寫入中…':'確認補寫 '+Number(selectedPreview?.eligible||0)+' 篇'}</button>
+        <button type="button" className="loc-button" disabled={bulkBusy||!selectedPlaceArticles.length}
+          onClick={()=>{setSelectedPlaceArticles([]);setBulkPreview(null);setBulkNotice('');}}>清除勾選</button>
+      </div>
+      {bulkNotice?<p className="scope-status" role="status">{bulkNotice}</p>:null}
+    </section>:null}
     {results.length||hasMore?<div style={{display:'flex',justifyContent:'flex-end',marginBottom:'.5rem'}}>
       <ArticleSortSelect value={articleSort} onChange={changeArticleSort} disabled={Boolean(editingKey)}/>
     </div>:null}
@@ -1044,6 +1108,13 @@ export default function Search({managementMode=false}){
         );
         const draft=editingKey===row.key?editDraft:null;
         return <Fragment key={row.key}>
+          {managementMode&&row.resourceType==='galaxy'&&canManageSearchScope(account,row.scopeId)?
+            <label className="loc-search-bulk-article-choice">
+              <input type="checkbox" checked={selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
+                disabled={bulkBusy||Boolean(row.checkInPlace)||(Boolean(selectedScope)&&selectedScope!==row.scopeId)||selectedPlaceArticles.length>=200&&!selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
+                onChange={event=>togglePlaceArticle(row,event.target.checked)}/>
+              {row.checkInPlace?'已有打卡地點：'+row.checkInPlace:'補寫打卡地點'}
+            </label>:null}
           {scopeId==='loc'&&scopeLabel(row.scopeId)&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
         <Article
