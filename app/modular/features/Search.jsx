@@ -975,7 +975,7 @@ export default function Search({managementMode=false}){
     const key=contentType==='multimedia'?'suggestionsMedia'
       :contentType==='lyrics_work'?'suggestionsLyrics'
       :contentType==='text_work'?'suggestionsText':'suggestionsAll';
-    return String(t('uiExtra.searchUI.'+key)||'').split('\\n')
+    return String(t('uiExtra.searchUI.'+key)||'').split('\n')
       .map(line=>line.split('|')[0].trim()).filter(Boolean).slice(0,6);
   },[contentType,t]);
   function followSearchSuggestion(term,patch={}){
