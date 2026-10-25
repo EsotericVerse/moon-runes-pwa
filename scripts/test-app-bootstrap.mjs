@@ -398,6 +398,16 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/timeline\.redraw\(\)/);
 });
 
+test('Culture only loads management permissions in time edit mode and gates its editor',()=>{
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.match(culture,/const isTimeEditingView=searchParams\?\.get\('edit'\)==='1'/);
+  assert.match(culture,/useAccount\(\{enabled:isTimeEditingView\}\)/);
+  assert.match(culture,/const permissionPending=account\.loading\|\|account\.permissionLoading/);
+  assert.match(culture,/const editorAuthorized=Boolean\(account\.user&&account\.canManageScopeSync\(scopeId\)\)/);
+  assert.match(culture,/editorAvailable&&!permissionPending&&editorAuthorized\?<div/);
+  assert.doesNotMatch(culture,/useAccount\(\{enabled:false\}\)/);
+});
+
 test('Admin and Scope classification forms share direct one-level txt_class editor',()=>{
   const work=readFileSync(new URL('../app/loc/WorkClassificationPage.jsx',import.meta.url),'utf8');
   const personal=readFileSync(new URL('../app/loc/ScopeOthersSources.jsx',import.meta.url),'utf8');
