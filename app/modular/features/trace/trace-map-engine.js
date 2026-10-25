@@ -244,9 +244,13 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(typeof onAnchorSelect==='function'){
       const chooseAnchor=event=>{
         const props=event.features?.[0]?.properties;
-        if(props?.title)onAnchorSelect({
-          title:props.title,uid:props.uid,source_scope:props.source_scope,radius_m:props.radius_m
-        });
+        if(!props?.uid)return;
+        // Pass the complete saved row: its original description contains
+        // reviewed aliases required by the inline article list. GeoJSON
+        // presentation properties alone omit that contextual information.
+        const anchor=savedAnchors.find(row=>String(row.uid)===String(props.uid)
+          &&String(row.source_scope||'')===String(props.source_scope||''));
+        if(anchor)onAnchorSelect(anchor);
       };
       for(const layer of ['loc-trace-saved-point-layer','loc-trace-saved-point-labels']){
         map.on('click',layer,chooseAnchor);
