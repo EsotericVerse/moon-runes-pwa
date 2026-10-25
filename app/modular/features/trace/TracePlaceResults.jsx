@@ -131,7 +131,6 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   </section>;
   const loading=tab==='articles'?list.isPending:numeric.isPending;
   const error=tab==='articles'?list.error:numeric.error;
-  const maxMonth=Math.max(1,...verified.months.map(([,n])=>n));
   return <section className="loc-card loc-trace-works" aria-label={name+'文章報表'}>
     <header className="loc-trace-works-title">
       <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
