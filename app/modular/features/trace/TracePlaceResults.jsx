@@ -119,7 +119,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
           id:stop.uid+':'+stopIndex+':'+visitIndex,uid:stop.uid,
           title:String(stop.title||''),when:exact.toISOString(),
           label:exact.toLocaleString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',
-            month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
+            month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+'（臺灣時間）'
         }];
       }))
       .sort((a,b)=>a.when.localeCompare(b.when));
@@ -174,6 +174,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
         {visits.length?'已保存 '+visits.length+' 次具體造訪時間；各站獨立記錄。'
           :'目前沒有可確認的造訪時刻；不會以整趟旅程起訖日期代替各站時間。'}
       </p>
+      {visits.length?<p className="scope-status">時間統一換算為臺灣時區顯示；境外地點的當地時間，須另依原始時區或航班文件確認。</p>:null}
       {visits.length?<ol className="loc-trace-selection-order">
         {(showAllVisits?visits:visits.slice(0,12)).map(visit=><li key={visit.id}>
           <span>{visit.label} · {visit.title}</span>
