@@ -78,11 +78,11 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
   map.once('load',()=>{
     if(removed)return;
     loaded=true;
-    map.addSource('loc-traces-extrusions',{type:'geojson',data:pillarGeojson(EXAMPLE_ANCHORS)});
+    map.addSource('loc-trace-extrusions',{type:'geojson',data:pillarGeojson(EXAMPLE_ANCHORS)});
     map.addLayer({
-      id:'loc-traces-3d-anchors',
+      id:'loc-trace-3d-anchors',
       type:'fill-extrusion',
-      source:'loc-traces-extrusions',
+      source:'loc-trace-extrusions',
       paint:{
         'fill-extrusion-color':'#b9a6f6',
         'fill-extrusion-opacity':0.8,
@@ -90,16 +90,16 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
         'fill-extrusion-base':0
       }
     });
-    map.addSource('loc-traces-route',{type:'geojson',data:emptyRoute()});
+    map.addSource('loc-trace-route',{type:'geojson',data:emptyRoute()});
     map.addLayer({
-      id:'loc-traces-route-line',type:'line',source:'loc-traces-route',
+      id:'loc-trace-route-line',type:'line',source:'loc-trace-route',
       layout:{'line-cap':'round','line-join':'round'},
       paint:{'line-color':'#f7ba66','line-width':5,'line-opacity':0.95}
     });
     markers=EXAMPLE_ANCHORS.map(place=>{
       const button=document.createElement('button');
       button.type='button';
-      button.className='loc-traces-anchor-marker';
+      button.className='loc-trace-anchor-marker';
       button.textContent=place.name;
       button.setAttribute('aria-label','查看'+place.name+'空間定錨示例');
       button.addEventListener('click',()=>focus(place.id));
@@ -115,7 +115,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
   async function showRoadRoute(){
     if(removed||!loaded)return false;
     if(routeActive){
-      map.getSource('loc-traces-route')?.setData(emptyRoute());
+      map.getSource('loc-trace-route')?.setData(emptyRoute());
       routeActive=false;
       status('routeHidden');
       return false;
@@ -133,7 +133,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
       const coordinates=payload.routes?.[0]?.geometry?.coordinates;
       if(!Array.isArray(coordinates)||coordinates.length<2)throw new Error('沒有可用的道路路線');
       if(removed)return false;
-      map.getSource('loc-traces-route')?.setData(routeGeometry(coordinates));
+      map.getSource('loc-trace-route')?.setData(routeGeometry(coordinates));
       routeActive=true;
       status('routeReady');
       return true;
