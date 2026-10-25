@@ -98,15 +98,16 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   return {count,skipped:list.length-pending.length};
 }
 
-export async function updateTraceAnchor({scopeId,uid,title,description='',longitude,latitude}){
+export async function updateTraceAnchor({scopeId,uid,title,description='',longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   const anchorId=String(uid||'').trim();
   if(!/^[A-Za-z0-9]{8}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
+  if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const changes={
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
-    longitude:Number(longitude),latitude:Number(latitude)
+    longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m)
   };
   let request=dbAuthRelation(relation(id)).update(changes)
     .eq('uid',anchorId).eq('trace_type','anchor');
