@@ -380,7 +380,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             };
             const sourceItems=categoryList.filter(item=>item.kind==='source');
             const systems=sourceItems.filter(item=>
-              assignedSource(item.raw,catalog.data?.aliases||[],catalog.data?.categories||[])!=='unclassified');
+              !resolveOthers(item.raw)&&assignedSource(item.raw,catalog.data?.aliases||[],catalog.data?.categories||[])!=='unclassified');
             const personals=sourceItems.filter(item=>resolveOthers(item.raw)&&resolveOthers(item.raw)!=='unclassified');
             const unclassified=sourceItems.filter(item=>resolveOthers(item.raw)==='unclassified');
             const sourceGroups=[
