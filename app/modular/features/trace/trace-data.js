@@ -3,8 +3,9 @@
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
 import {createUid8} from '../../../loc/uid';
 
-// Exactly one table per registered Scope. LOC aggregates by reading each table,
-// but stores only LOC-authored entries in loc_trace. No cross-Scope writes.
+// Exactly one source table per Scope. Source-table SQL triggers mirror changes
+// into loc_trace (scope_id + uid); LOC reads this one materialized union directly.
+// Only writes made with scopeId='loc' may target LOC's native rows.
 export const TRACE_SCOPES=Object.freeze(['loc','lo3rwang','lrunes']);
 export const traceKey=scopeId=>['scope-trace',scopeId];
 function sourceId(value){
@@ -34,14 +35,12 @@ function descriptionText(value){
 }
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
-  const sources=id==='loc'?TRACE_SCOPES:[id];
-  const perScope=await Promise.all(sources.map(async source=>{
-    const result=await dbPublicClient.schema('silver').from(source+'_trace')
-      .select('uid,trace_type,title,description,longitude,latitude,anchor_uids,created_at')
-      .order('created_at',{ascending:true}).limit(2000);
-    return (verified(result,source+' 痕跡讀取')||[]).map(row=>({...row,source_scope:source}));
-  }));
-  const rows=perScope.flat();
+  const union=id==='loc';
+  const columns='uid,trace_type,title,description,longitude,latitude,anchor_uids,created_at'+(union?',scope_id':'');
+  const result=await dbPublicClient.schema('silver').from(id+'_trace')
+    .select(columns).order('created_at',{ascending:true}).limit(2000);
+  const rows=(verified(result,id+' 痕跡讀取')||[])
+    .map(row=>({...row,source_scope:union?row.scope_id:id}));
   return {
     anchors:rows.filter(row=>row.trace_type==='anchor'),
     maps:rows.filter(row=>row.trace_type==='map')
