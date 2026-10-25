@@ -46,24 +46,42 @@ function distance(a,b){
   return Math.round(2*6371008.8*Math.asin(Math.min(1,Math.sqrt(Math.sin(dLat/2)**2+
     Math.cos(latA)*Math.cos(latB)*Math.sin(lngDiff/2)**2))));
 }
+// Shared matching rule for organizer, pre-insert checks and bulk audits.
+// radius_m is a search radius, NOT proof that two businesses are identical.
+function compareAnchorPair(a,b){
+  if(a.source_scope!==b.source_scope)return null;
+  const aa=anchorAddress(a),ba=anchorAddress(b);
+  const match=aa&&ba&&normalizeAnchorAddress(aa)===normalizeAnchorAddress(ba);
+  const both=Boolean(aa&&ba);
+  const valid=[a.latitude,a.longitude,b.latitude,b.longitude]
+    .every(v=>v!=null&&String(v).trim()!==''&&Number.isFinite(Number(v)));
+  const meters=valid?distance(a,b):null;
+  const nameMatch=String(a.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase()
+    ===String(b.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase();
+  let type='';
+  if(match)type=meters!==null&&meters>350?'address-coordinate-conflict':'same-address';
+  else if(meters!==null&&meters<=80)type=both?'near-different-address':'near-unverified';
+  else if(nameMatch)type='same-name-different-location';
+  if(!type)return null;
+  return {key:[a.uid,b.uid].sort().join(':'),a,b,address:match?aa:'',meters,type,
+    canMerge:type==='same-address'||type==='near-unverified',
+    // Extremely conservative unattended reuse: same complete postal address
+    // and coordinates agree within 60 m. All other suggestions require review.
+    safeReuse:Boolean(match&&meters!==null&&meters<=60)};
+}
+export function findAnchorWriteMatches(anchor,existing=[]){
+  const incoming={...anchor,uid:'__incoming__',trace_type:'anchor'};
+  return (Array.isArray(existing)?existing:[])
+    .filter(row=>row?.trace_type==='anchor')
+    .map(row=>compareAnchorPair(incoming,row))
+    .filter(Boolean);
+}
 export function organizeAnchorCandidates(anchors){
   const list=(anchors||[]).filter(a=>a.trace_type==='anchor');
   const results=[];
   for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
-    const a=list[i],b=list[j];
-    if(a.source_scope!==b.source_scope)continue;
-    const aa=anchorAddress(a),ba=anchorAddress(b);
-    const match=aa&&ba&&normalizeAnchorAddress(aa)===normalizeAnchorAddress(ba);
-    const both=Boolean(aa&&ba);
-    const valid=[a.latitude,a.longitude,b.latitude,b.longitude].every(v=>v!=null&&Number.isFinite(Number(v)));
-    const meters=valid?distance(a,b):null;
-    const nameMatch=String(a.title||'').replace(/\s/g,'')===String(b.title||'').replace(/\s/g,'');
-    let type='';
-    if(match)type=meters!==null&&meters>350?'address-coordinate-conflict':'same-address';
-    else if(meters!==null&&meters<=80)type=both?'near-different-address':'near-unverified';
-    else if(nameMatch)type='same-name-different-location';
-    if(type)results.push({key:[a.uid,b.uid].sort().join(':'),a,b,address:match?aa:'',meters,type,
-      canMerge:type==='same-address'||type==='near-unverified'});
+    const candidate=compareAnchorPair(list[i],list[j]);
+    if(candidate)results.push(candidate);
   }
   return results.sort((a,b)=>{
     const priority={'same-address':0,'near-unverified':1,'address-coordinate-conflict':2,'near-different-address':3,'same-name-different-location':4};
