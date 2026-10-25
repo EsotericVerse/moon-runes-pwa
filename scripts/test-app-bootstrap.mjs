@@ -402,6 +402,27 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/timeline\.redraw\(\)/);
 });
 
+test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../app/styles/scope-system.css',import.meta.url),'utf8');
+  assert.match(culture,/const keywordDetailRequested=Boolean\(keywordDrillSource\)/,
+    'opening a Rune group alone must not scan every Galaxy article');
+  assert.match(culture,/enabled:styleFilter==='rune66'&&Boolean\(keywordDrillGroup\)/,
+    'fetch Rune catalog only after a group is expanded');
+  assert.match(culture,/columns:'item_no,item_name,order_no,class_group'/);
+  assert.match(culture,/limit:16/,'Rune group query must be bounded');
+  assert.match(culture,/revalidateOnFocus:false/);
+  assert.match(culture,/keywordCounts\.set\(key,\(keywordCounts\.get\(key\)\|\|0\)\+\(Number\(item\.item_count\)\|\|0\)\)/,
+    'use real daily category counts to show clickable group labels');
+  assert.match(culture,/id:'dual:keyword:'\+group\.id/);
+  assert.match(culture,/collapsible:true,expanded:keywordDrillGroup===group\.id/);
+  assert.match(culture,/id\.startsWith\('dual:keyword:'\)/);
+  assert.match(culture,/showKeywordRiver&&keywordDrillGroup\?<section className='scope-culture-rune-list'/);
+  assert.match(culture,/keywordGroupCatalogQuery\.data\.map\(rune=>/);
+  assert.match(culture,/styleQuery\.data\?\.runeTotals\|\|\[\]/);
+  assert.match(css,/\.scope-culture-rune-list ul\{list-style:none/);
+});
+
 test('Culture only loads management permissions in time edit mode and gates its editor',()=>{
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(culture,/const isTimeEditingView=searchParams\?\.get\('edit'\)==='1'/);
