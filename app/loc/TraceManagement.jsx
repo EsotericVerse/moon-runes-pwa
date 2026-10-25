@@ -1,13 +1,9 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useState} from 'react';
 import dynamic from 'next/dynamic';
-import {FeaturePage} from '../modular/ui';
-import {useScopeRuntime} from '../modular/use-scope-runtime';
-import {useAccount} from './use-account';
-import {useEditDock,useEditDockForm} from '../modular/edit-dock';
+import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
-import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
@@ -15,10 +11,6 @@ import {
 const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
   ssr:false,loading:()=> <p className="scope-status" role="status">正在開啟定錨地圖…</p>
 });
-const OPTIONS=[
-  {value:'anchor',label:'新增定錨點',shortLabel:'新增定錨點'},
-  {value:'map',label:'新增痕跡圖',shortLabel:'新增痕跡圖'}
-];
 
 function AnchorEditor({scopeId,spatial,reload}){
   const [title,setTitle]=useState('');
@@ -120,39 +112,18 @@ function MapEditor({scopeId,spatial,reload}){
   </section>;
 }
 
-export default function TraceManagement({scopeId:providedScopeId}){
-  const runtime=useScopeRuntime();
-  const scopeId=providedScopeId||runtime.scopeId;
-  const account=useAccount();
-  const dock=useEditDock();
-  const [section,setSection]=useManagementSection(OPTIONS,'anchor');
-  const authorized=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
-    TRACE_SCOPES.includes(scopeId)&&
-    (scopeId==='loc'?account.canManageGlobalSync():account.canManageScopeSync(scopeId)));
+// Embedded under the existing /manage (Scope) or /admin (LOC) routes.
+// The parent manager owns authorization, edit mode and tab navigation.
+export default function TraceManagementPanel({scopeId,mode='anchor'}){
+  const enabled=TRACE_SCOPES.includes(scopeId);
   const query=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
-    enabled:authorized,revalidateOnFocus:false,revalidateOnReconnect:false
+    enabled,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  useEffect(()=>{
-    if(authorized&&(!dock?.active||dock.scopeId!==scopeId))dock?.begin(scopeId);
-  },[authorized,scopeId,dock?.active,dock?.scopeId,dock?.begin]);
-  if(account.loading||account.permissionLoading)return <FeaturePage featureId="trace"><p className="scope-status">正在確認痕跡管理權限…</p></FeaturePage>;
-  if(!authorized)return <FeaturePage featureId="trace"><p className="scope-status">目前帳號沒有此 Scope 的痕跡管理權限，或此 Scope 尚未配置痕跡資料表。</p></FeaturePage>;
+  if(!enabled)return <p className="scope-status">此 Scope 尚未配置痕跡資料表。</p>;
+  if(query.isPending)return <p className="scope-status" role="status">正在載入定錨點與痕跡圖…</p>;
+  if(query.error)return <p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>;
   const spatial=query.data||{anchors:[],maps:[]};
-  return <FeaturePage featureId="trace">
-    <div className="management-workspace">
-      <ManagementSectionNav id="trace-management" title="痕跡管理" panelId="trace-management-panel"
-        items={OPTIONS} value={section} onChange={next=>{
-          if(next===section)return;
-          if(dock?.active)dock.switchSection(next,setSection);
-          else setSection(next);
-        }}/>
-      <div id="trace-management-panel" className="management-workspace-panel">
-        {query.isPending?<p className="scope-status">正在載入定錨點與痕跡圖…</p>
-        :query.error?<p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>
-        :section==='anchor'
-          ?<AnchorEditor key={scopeId+'-anchor'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
-          :<MapEditor key={scopeId+'-map'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>}
-      </div>
-    </div>
-  </FeaturePage>;
+  return mode==='map'
+    ?<MapEditor key={scopeId+'-map'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
+    :<AnchorEditor key={scopeId+'-anchor'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>;
 }
