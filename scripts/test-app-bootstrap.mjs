@@ -396,6 +396,8 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.doesNotMatch(river,/Math\.max\(320,152\+compactGroupCount\*48\)/);
   assert.match(river,/if\(obsoleteGroups\.length\)groups\.remove\(obsoleteGroups\)/);
   assert.match(river,/if\(changedGroups\.length\|\|changedRows\.length\|\|obsoleteRows\.length\|\|obsoleteGroups\.length\)/);
+  assert.match(river,/\.vis-item\.scope-period-density\.vis-range/);
+  assert.match(river,/if\(!cancelled&&!painted\(\)\)setChartError\(true\)/);
   assert.match(river,/timeline\.redraw\(\)/);
   assert.match(river,/timeline\.redraw\(\)/);
 });
