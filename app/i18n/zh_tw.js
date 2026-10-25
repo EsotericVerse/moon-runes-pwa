@@ -45,7 +45,7 @@ export default {
       "description": "時間長河依日期呈現作品與來源；定錨點用來切分時期，方便比較前後差異。"
     },
     "trace": {
-      "detailsLabel": "資料說明",
+      "detailsLabel": "治理原則",
       "title": "痕跡",
       "subtitle": "以真實地理位置觀看空間定錨點與路線。",
       "description": "以真實地理位置觀看空間定錨點與路線。"
