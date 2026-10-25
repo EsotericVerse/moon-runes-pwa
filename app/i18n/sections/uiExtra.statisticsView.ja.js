@@ -82,7 +82,7 @@ export default {
   "crossAdvancedTitle": "Meta Tag クロス分析を展開（詳細）",
   "othersAll": "すべて",
   "othersCategory": "その他",
-  "othersLoadFailed": "カスタム分類を読み込めませんでした：{error}",
-  "othersBreakdownTitle": "カスタム分類",
+  "othersLoadFailed": "作品カスタム分類を読み込めませんでした：{error}",
+  "othersBreakdownTitle": "作品カスタム分類",
   "othersUnclassified": "未分類",
 };
