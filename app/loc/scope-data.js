@@ -11,12 +11,12 @@ import {loadPublishedBlocks} from '../modular/published-blocks/index.js';
 // Public page copy (Title_TW/Desc_TW) now travels inside the shared
 // app-bootstrap request (see app/loc/app-bootstrap.js); there is no
 // standalone per-page RPC call for it any more.
-// silver.manage 已停用：管理權限改由 silver.loc（main index table）的
+// silver.manage 為最高權限與 Registry 主表，silver.loc 為 LOC 本身設定；管理授權由
 // email/manage_role/galaxy_table/time_table/birthday 欄位提供，
 // 公開查詢絕不包含 email；權限驗證由受保護的管理 RPC 提供。
 // 以下只對非機密欄位使用 PostgREST alias，
 // buildScopeData/scopeDataFromManageRows 完全不需要改動。
-export const MANAGE_TABLE='silver.loc';
+export const MANAGE_TABLE='silver.manage';
 const MANAGE_COLUMNS='id,role:manage_role,galaxy:galaxy_table,time:time_table,birthday';
 const MANAGE_ROLE_COLUMN='manage_role';
 
@@ -45,7 +45,7 @@ function buildScopeData(row,id){
   const galaxy=`silver.${id}_${galaxySuffix}`;
   return {
     id,
-    config:id==='loc'?'silver.loc_config':`silver.${id}`,
+    config:`silver.${id}`,
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
@@ -86,7 +86,7 @@ export function selectManagedScopes(){
   if(managedScopesRequest)return managedScopesRequest;
   managedScopesRequest=selectRows(MANAGE_TABLE,{
     columns:MANAGE_COLUMNS,
-    filters:[{column:MANAGE_ROLE_COLUMN,operator:'in',value:['admin','scope']}],
+    filters:[{column:MANAGE_ROLE_COLUMN,operator:'in',value:['scope']}],
     orders:[{column:'id',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,
     offset:0
