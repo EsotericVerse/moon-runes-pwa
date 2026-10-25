@@ -866,8 +866,39 @@
   .scope-frame-image-fields .scope-frame-image-url{grid-column:1/-1}
 }
 
-/* Import page: one primary card, secondary tools as collapsible rows. */
+/* Scope import: one primary action row with a collapsed format guide. */
 .scope-import-body{display:grid;gap:.8rem;min-width:0}
+.scope-import-primary-row{
+  display:grid;
+  grid-template-columns:minmax(9rem,1fr) minmax(15rem,1.8fr) max-content;
+  align-items:end;gap:.75rem;min-width:0
+}
+.scope-import-primary-row>label{min-width:0}
+.scope-import-primary-row .scope-select,
+.scope-import-primary-row input[type=file]{
+  box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:44px
+}
+.scope-import-primary-row>button{min-height:44px;white-space:nowrap;align-self:end}
+.scope-import-primary-row input[type=file]{padding:.45rem .6rem}
+.scope-import-primary-row input[type=file]::file-selector-button{padding:.35rem .65rem}
+.scope-import-format{min-width:0;max-width:100%}
+.scope-import-format>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  min-height:44px;list-style:none;cursor:pointer;font-weight:650
+}
+.scope-import-format>summary::-webkit-details-marker{display:none}
+.scope-import-format>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px}
+.scope-import-format-mark::before{content:'+';display:block;font-size:1.3rem;line-height:1}
+.scope-import-format[open] .scope-import-format-mark::before{content:'−'}
+.scope-import-format[open]>.scope-management-fields{margin-top:.7rem}
+@media(max-width:700px){
+  .scope-import-primary-row{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:.55rem}
+  .scope-import-primary-row>button{grid-column:1/-1;width:100%}
+}
+@media(max-width:390px){
+  .scope-import-primary-row{grid-template-columns:minmax(0,1fr)}
+  .scope-import-primary-row>button{grid-column:auto}
+}
 .scope-import-body>h3{margin:0}
 .scope-import-body label{display:grid;gap:.35rem}
 .scope-import-facts{display:grid;gap:.4rem 1rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));margin:0}
