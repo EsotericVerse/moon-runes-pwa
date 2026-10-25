@@ -2,6 +2,7 @@
 
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
 import {createUid8} from '../../../loc/uid';
+import {traceCountyId} from './trace-county-id.mjs';
 import {anchorAddress,findAnchorWriteMatches,normalizeAnchorAddress,organizeAnchorCandidates} from './trace-organizer.mjs';
 
 // Exactly one source table per Scope. Source-table SQL triggers mirror changes
@@ -15,6 +16,12 @@ function sourceId(value){
   return id;
 }
 const relation=id=>'silver.'+sourceId(id)+'_trace';
+// County IDs are derived once on writes, not computed for every keystroke in
+// the route composer. Unknown/border/overseas coordinates remain NULL.
+async function countyIdAt(longitude,latitude){
+  const {countyForCoordinates}=await import('./trace-county-lookup.mjs');
+  return traceCountyId(countyForCoordinates(longitude,latitude));
+}
 function verified(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);
   return result.data;
@@ -38,7 +45,7 @@ function descriptionText(value){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id'+(union?',scope_id':'');
   const result=await dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).order('created_at',{ascending:true}).limit(2000);
   const rows=(verified(result,id+' 痕跡讀取')||[])
@@ -61,7 +68,7 @@ export const traceCurrentKey=(scopeId,route)=>[
 ];
 export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times';
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id';
 
 export async function readTraceMapIndex(scopeId){
   const id=sourceId(scopeId);
@@ -170,7 +177,8 @@ export async function addTraceAnchor({scopeId,title,description='',longitude,lat
   const data={
     uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
-    source_scope:id
+    source_scope:id,
+    county_id:await countyIdAt(longitude,latitude)
   };
   const {byName,reuse,conflicts,matches}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
   if(distinctTitleOrThrow(data,byName,matches))return {uid:byName.uid,reused:true};
@@ -189,6 +197,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   if(!list.length)throw Error('沒有已核對的座標可以儲存。');
   if(list.length>2000)throw Error('單次匯入超過安全上限。');
   const previous=await readTraceData(id);
+  const {countyForCoordinates}=await import('./trace-county-lookup.mjs');
   const known=comparableAnchors(previous,id);
   const pending=[],reuseQueue=[];
   let skipped=0,duplicatesInBatch=0;
@@ -197,6 +206,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       title:verifiedText(place.title,'打卡地點名稱'),
       description:descriptionText(place.description||''),
       longitude:Number(place.longitude),latitude:Number(place.latitude),
+      county_id:traceCountyId(countyForCoordinates(place.longitude,place.latitude)),
       radius_m:Number(place.radius_m??500)};
     if(!validCoordinates(place.longitude,place.latitude))
       throw Error(data.title+' 的經緯度無效，請先確認候選位置。');
@@ -262,7 +272,8 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
   const changes={
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
-    longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m)
+    longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
+    county_id:await countyIdAt(longitude,latitude)
   };
   const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
     anchor:{...changes,source_scope:id,trace_type:'anchor'},excludeUid:anchorId});
