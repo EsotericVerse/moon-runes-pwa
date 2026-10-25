@@ -125,6 +125,7 @@ export function WorkSummaryCard({
   source='',
   scopeId='',
   date='',
+  checkIn='',
   body='',
   hidden=false,
   relationLinks=[],
@@ -147,6 +148,7 @@ export function WorkSummaryCard({
         {kicker?<p className="loc-eyebrow scope-card-kicker">{kicker}</p>:null}
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
         {titleEditor||<strong>{title??copy.work.untitled}</strong>}
+        {checkIn?<p className="scope-work-checkin">{checkIn}</p>:null}
       </div>
       {date||actions?<div className="scope-work-summary-actions">{date?<time>{date}</time>:null}{actions}</div>:null}
     </header>
