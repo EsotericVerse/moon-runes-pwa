@@ -39,6 +39,7 @@ export default function Trace({scopeId='loc'}){
   const [customEnd,setCustomEnd]=useState('');
   const [sourceDraft,setSourceDraft]=useState('');
   const [sourceName,setSourceName]=useState('');
+  const [mediaType,setMediaType]=useState('');
   const dateRange=useMemo(()=>traceWindow(timeWindow,new Date(),
     {start:customStart,end:customEnd}),[timeWindow,customStart,customEnd]);
   const choosePlace=anchor=>{
@@ -184,7 +185,16 @@ export default function Trace({scopeId='loc'}){
           {sourceName?<button type="button" className="loc-button"
             onClick={()=>{setSourceName('');setSourceDraft('');}}>清除來源</button>:null}
         </form>
-        <p className="scope-status">來源只比對實際作品的 source_name，不會把別的來源算進 Threads。三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
+        <label>媒體類型
+          <select className="scope-select" value={mediaType}
+            onChange={event=>setMediaType(event.target.value)}>
+            <option value="">全部媒體</option>
+            <option value="音樂">音樂</option>
+            <option value="圖片">圖片</option>
+            <option value="影片">影片</option>
+          </select>
+        </label>
+        <p className="scope-status">來源對應作品的 source_name（例如 Threads）；媒體類型對應 galaxy_media.media_type。兩者可交叉篩選，三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
       </div>:null}
     </div>:null}
 
@@ -194,6 +204,6 @@ export default function Trace({scopeId='loc'}){
 
     {!mapOnly&&reportPlace?<TracePlaceResults place={reportPlace}
       anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
-      tab={reportTab} sourceName={sourceName} dateRange={dateRange}/>:null}
+      tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>:null}
   </FeaturePage>;
 }
