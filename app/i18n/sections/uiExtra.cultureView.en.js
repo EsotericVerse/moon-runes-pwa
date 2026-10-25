@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "No data is available for the selected time range.",
-  "system": "Main categories",
-  "custom": "Custom categories",
+  "system": "Work group categories",
+  "custom": "Custom work categories",
   "media": "Multimedia",
   "other": "Uncategorized",
   "candidateDate": "Suggested date",
@@ -38,7 +38,7 @@ export default {
   "style": "Style",
   "noFilter": "No filter",
   "keywordClass": "Keyword set",
-  "workClassificationLane": "Work classification lane",
+  "workClassificationLane": "Work group classification lane",
   "expandToCompareWorkVolumeChanges": "Expand to compare work volume changes (candidate dates, not official anchors)",
   "selectAllCandidates": "Select all candidates",
   "clearSelection": "Clear selection",
