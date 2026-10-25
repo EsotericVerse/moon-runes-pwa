@@ -162,3 +162,19 @@ test('Trace geocoding resolves unique check-in names only on demand and inserts 
   assert.ok(trace.includes("dbAuthRelation(relation(id)).insert(chunk)"),'existing authenticated RLS write path');
   assert.ok(!trace.includes("update silver.")&&!geocode.includes("update silver."),'never modify Galaxy schema or article fields');
 });
+
+
+test('Trace anchor quick-location button uses current place name and previews without auto-writing',()=>{
+  const editor=read('app/loc/TraceManagement.jsx');
+  const react=read('app/modular/features/trace/TraceMap.jsx');
+  const styles=read('app/styles/features.css');
+  assert.ok(editor.includes('onClick={quickLocate}'),'one quick-location button');
+  assert.ok(editor.includes("searchTracePlaces(query)"),'lookup uses selected check-in name');
+  assert.ok(editor.includes('exactTracePlaceMatch(query,found[0])'),'only exact single result auto-selects');
+  assert.ok(editor.includes('setQuickCandidates(found)'),'ambiguous results are presented to user');
+  assert.ok(editor.includes('setFocusLocation({longitude:lng,latitude:lat,name:query,radius_m:Number(radius)||500})'));
+  assert.ok(editor.includes("setQuickNotice('已快速移至"),'preview is not a silent save');
+  assert.ok(editor.includes('setQuickCandidates([]);setQuickNotice('),'new place name clears stale candidates');
+  assert.ok(react.includes('{!selectingLocation?<><form'),'editor does not show duplicate place-search form');
+  assert.ok(styles.includes('.loc-trace-quick-field'),'inline control has responsive layout');
+});
