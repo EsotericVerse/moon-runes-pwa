@@ -5,7 +5,7 @@ import {SCOPE_ROUTE_INDEX} from './scope-route-index.js';
 export const FEATURES=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
   Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
-  Object.freeze({id:'governance',label:UI_COPY.features.traces?.title||'痕跡',path:'governance'}),
+  Object.freeze({id:'trace',label:UI_COPY.features.traces?.title||'痕跡',path:'trace'}),
   Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
 ]);
 
@@ -205,6 +205,7 @@ export function featureHref(scopeId,featureId){
 
 export function featureIdForPath(pathname='/'){
   // Deep routes retain the correct parent feature in the shared dock.
+  // Legacy /governance/manage is a private management route, not Trace.
   const segments=String(pathname||'/').split('?')[0].split('/').filter(Boolean);
   return FEATURES.find(item=>segments.includes(item.path))?.id||null;
 }
