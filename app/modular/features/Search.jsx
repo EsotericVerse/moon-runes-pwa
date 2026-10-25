@@ -363,6 +363,16 @@ export default function Search({managementMode=false}){
       return date?(articleSort==='desc'?-date:date):a.index-b.index;
     }).map(item=>item.row);
   },[results,scopeId,availableScopes,articleSort]);
+  // Suggestions come from loaded results only; do not imply a database-wide ranking.
+  const suggestedPlaces=useMemo(()=>[...new Set(results
+    .filter(row=>row.resourceType==='galaxy')
+    .map(row=>String(row.checkInPlace||'').trim())
+    .filter(Boolean))].slice(0,4),[results]);
+  const suggestedTitles=useMemo(()=>[...new Set(results
+    .filter(row=>row.resourceType==='galaxy')
+    .map(row=>String(row.title||'').trim())
+    .filter(title=>title&&title.length<=80))].slice(0,8),[results]);
+  const advancedRef=useRef(null);
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
   const periodScope=scopeId==='loc'
     ?targetScopes.find(item=>item.id==='lo3rwang')||targetScopes[0]
@@ -855,20 +865,30 @@ export default function Search({managementMode=false}){
     if(bulkPlace.trim())manager.searchParams.set('fill_place',bulkPlace.trim());
     return manager.href;
   }
-  async function runSearch(event){
-    event.preventDefault();
-    const term=String(query||'').trim();
+  function searchFromSuggestion(raw,overrides={}){
+    const term=String(raw||'').trim();
     if(!term)return;
-    // Keep the keyword in the URL and input so a style-to-style link is a
-    // reproducible next search, not a transient single-page interaction.
-    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter:managementMode?scopeFilter:'',placeOnly});
+    const filters={
+      contentType,sourceFilter,startDate,endDate,selectedPeriod,
+      scopeFilter:managementMode?scopeFilter:'',placeOnly,...overrides
+    };
+    const url=workspaceSearchHref(term,filters);
     const current=workspaceSearchHref(String(searchParams?.get('place')||searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
       startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),
       scopeFilter:managementMode?searchParams?.get('scope'):'',placeOnly:Boolean(searchParams?.get('place'))
     });
-    if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
-    await executeSearch(term,null,{overrideOptions:{contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',placeOnly,mediaOnly:false,browse:false,sortDirection:articleSort}});
+    if(url!==current||searchParams?.get('identity')){
+      router.push(url,{scroll:false});
+      return;
+    }
+    // Next.js does not remount for an identical URL; repeated suggestions must still search.
+    setQuery(term);
+    void executeSearch(term,null,{overrideOptions:{...filters,mediaOnly:false,browse:false,sortDirection:articleSort}});
+  }
+  function runSearch(event){
+    event.preventDefault();
+    searchFromSuggestion(query);
   }
 
   dockActions.current={
@@ -953,8 +973,12 @@ export default function Search({managementMode=false}){
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
-        <input id="scope-search-query" value={query} onChange={event=>setQuery(event.target.value)}
+        <input id="scope-search-query" list={suggestedTitles.length?'scope-search-loaded-titles':undefined}
+          value={query} onChange={event=>setQuery(event.target.value)}
           placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
+        {suggestedTitles.length?<datalist id="scope-search-loaded-titles">
+          {suggestedTitles.map(title=><option key={title} value={title}/>)}
+        </datalist>:null}
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         {managementMode?<button type="button" className="loc-button" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
           onClick={()=>{
@@ -991,7 +1015,7 @@ export default function Search({managementMode=false}){
         </select>
         {scopesQuery.isError?<span role="alert" className="scope-status scope-error">{t('uiExtra.searchUI.scopeUnavailable')}</span>:null}
       </div>:null}
-      <div className="scope-search-advanced">
+      <div className="scope-search-advanced" ref={advancedRef}>
         <button type="button" className="scope-search-advanced-toggle" aria-expanded={advancedOpen} aria-controls="scope-search-filter-panel" onClick={()=>setAdvancedOpen(value=>!value)}>
           <span><strong>{t('uiExtra.searchUI.advancedFilters')}</strong>{!managementMode?<small>{t('uiExtra.searchUI.advancedHelp')}</small>:null}</span>
           <span aria-hidden="true">{advancedOpen?'▴':'▾'}</span>
@@ -1053,7 +1077,7 @@ export default function Search({managementMode=false}){
           </div>:null}
         </div>:null}
       </div>
-    {!managementMode&&scopeId!=='loc'?<div className="scope-search-reference-editor">
+    {!managementMode?<div className="scope-search-reference-editor">
       <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
@@ -1066,12 +1090,35 @@ export default function Search({managementMode=false}){
         allowDelete={false}
         allowInlineChildAdd
         explicitEditButton
-        onSuggestionClick={term=>router.push(searchHref(scopeId,term,{scopeFilter}))}
+        onSuggestionClick={term=>searchFromSuggestion(term)}
       />
     </div>:null}
     </section>
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
+    {!managementMode&&results.length>0&&!browseResults&&matchedQueryRef.current?<section className="scope-search-next-step"
+      aria-label={t('uiExtra.searchUI.followupSearch')}>
+      <p className="scope-status">{t('uiExtra.searchUI.followupSearch')}</p>
+      <div className="scope-search-place-mode">
+        {!placeOnly?<button type="button" className="loc-button"
+          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:true,contentType:'',sourceFilter:''})}>
+          {t('uiExtra.searchUI.searchPlaceOnly')}
+        </button>:<button type="button" className="loc-button"
+          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:false})}>
+          {UI_COPY.search.allContent}
+        </button>}
+        {suggestedPlaces.filter(place=>!placeOnly||place!==matchedQueryRef.current).map(place=>
+          <button key={place} type="button" className="loc-button"
+            onClick={()=>searchFromSuggestion(place,{placeOnly:true,contentType:'',sourceFilter:''})}>
+            {t('uiExtra.searchUI.checkInPlace')}：{place}
+          </button>)}
+        <button type="button" className="loc-button" onClick={()=>{
+          setAdvancedOpen(true);setAdvancedTab('time');
+          advancedRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+        }}>{t('uiExtra.searchUI.filterTime')}</button>
+      </div>
+      {suggestedPlaces.length?<p className="scope-status">{t('uiExtra.searchUI.loadedPageSuggestions')}</p>:null}
+    </section>:null}
     {managementMode&&(results.length>0||selectedPlaceArticles.length>0||bulkPlace.trim())?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
       <h3>從搜尋文章列表批次補寫地點</h3>
       <p className="scope-status">在下方文章旁勾選「補寫打卡地點」，一次最多 200 篇且限同一個 Scope；原本有 source_place 的文章無法勾選。不會改動文章內容。</p>
