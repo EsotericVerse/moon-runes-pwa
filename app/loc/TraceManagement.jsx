@@ -390,17 +390,18 @@ function MapEditor({scopeId,spatial,reload}){
           <button type="button" className="loc-button" onClick={()=>setAllExpanded(false)}>全部收合</button>
         </div>
       </div>
-      {maps.map(map=><details className="loc-trace-saved-map" key={map.uid}
-        open={expandedIds.includes(map.uid)} onToggle={event=>{
-          const isOpen=event.currentTarget.open;
-          setExpandedIds(ids=>isOpen
-            ?ids.includes(map.uid)?ids:[...ids,map.uid]
-            :ids.includes(map.uid)?ids.filter(id=>id!==map.uid):ids);
-        }}>
-        <summary>{map.title||'未命名痕跡圖'}
+      {maps.map(map=><div className="loc-trace-saved-map" key={map.uid}>
+        <button type="button" className="loc-trace-saved-map-summary"
+          aria-expanded={expandedIds.includes(map.uid)}
+          aria-controls={'trace-map-details-'+map.source_scope+'-'+map.uid}
+          onClick={()=>setExpandedIds(ids=>ids.includes(map.uid)
+            ?ids.filter(id=>id!==map.uid):[...ids,map.uid])}>
+          <span aria-hidden="true">{expandedIds.includes(map.uid)?'▾':'▸'}</span>
+          <span>{map.title||'未命名痕跡圖'}</span>
           <span className="scope-status">{Array.isArray(map.anchor_uids)?map.anchor_uids.length:0} 站</span>
-        </summary>
-        <div className="loc-trace-saved-map-body">
+        </button>
+        {expandedIds.includes(map.uid)?<div className="loc-trace-saved-map-body"
+          id={'trace-map-details-'+map.source_scope+'-'+map.uid}>
           {map.description?<p className="loc-trace-route-description">{map.description}</p>:null}
           <ol className="loc-trace-selection-order">
             {(Array.isArray(map.anchor_uids)?map.anchor_uids:[]).map((uid,index)=>{
@@ -412,8 +413,8 @@ function MapEditor({scopeId,spatial,reload}){
             <button type="button" className="loc-button" disabled={busy} onClick={()=>edit(map)}>編輯這張痕跡圖</button>
             <button type="button" className="loc-button" disabled={busy} onClick={()=>remove(map)}>刪除這張痕跡圖</button>
           </div>
-        </div>
-      </details>)}
+        </div>:null}
+      </div>)}
     </div>:<p className="scope-status">目前還沒有痕跡圖；可以建立第一條路線。</p>}
     {editorOpen?<form className="loc-trace-route-composer" onSubmit={event=>{event.preventDefault();save();}}>
       <h4>{editingUid?'編輯痕跡圖':'新增痕跡圖'}</h4>
