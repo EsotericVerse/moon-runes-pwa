@@ -5,7 +5,7 @@ import {SCOPE_ROUTE_INDEX} from './scope-route-index.js';
 export const FEATURES=Object.freeze([
   Object.freeze({id:'statics',label:UI_COPY.features.statics.title,path:'statics'}),
   Object.freeze({id:'culture',label:UI_COPY.features.culture.title,path:'culture'}),
-  Object.freeze({id:'trace',label:UI_COPY.features.traces?.title||'痕跡',path:'trace'}),
+  Object.freeze({id:'trace',label:UI_COPY.features.trace?.title||'痕跡',path:'trace'}),
   Object.freeze({id:'search',label:UI_COPY.features.search.title,path:'search'})
 ]);
 
@@ -17,7 +17,7 @@ export const SCOPES=Object.freeze({
     featureSubtitles:Object.freeze({
       statics:UI_COPY.scope.loc.statics,
       culture:UI_COPY.scope.loc.culture,
-      governance:UI_COPY.scope.loc.governance,
+      trace:UI_COPY.scope.loc.trace,
       search:UI_COPY.scope.loc.search
     }),
     nav:Object.freeze({position:'after',order:2,label:UI_COPY.nav.home}),
@@ -29,7 +29,7 @@ export const SCOPES=Object.freeze({
     featureSubtitles:Object.freeze({
       statics:'查看月之符文相關資料的數量、來源與時間變化。',
       culture:'把月之符文相關紀錄放回時間順序，觀察不同時期的變化。',
-      governance:'說明月之符文的使用原則、權利邊界與管理方式。',
+      trace:'查看月之符文相關的空間位置與定錨示例。',
       search:'從符文名稱、關鍵字或相關文字找到對應內容。'
     }),
     nav:Object.freeze({position:'before',order:1,label:UI_COPY.nav.lunarunes}),
@@ -205,7 +205,7 @@ export function featureHref(scopeId,featureId){
 
 export function featureIdForPath(pathname='/'){
   // Deep routes retain the correct parent feature in the shared dock.
-  // Legacy /governance/manage is a private management route, not Trace.
+  // Management routes remain independent of the Trace feature.
   const segments=String(pathname||'/').split('?')[0].split('/').filter(Boolean);
   return FEATURES.find(item=>segments.includes(item.path))?.id||null;
 }
