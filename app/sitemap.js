@@ -12,12 +12,12 @@ export default function sitemap(){
     '/',
     '/statics',
     '/culture',
-    '/governance',
+    '/trace',
     '/lo3rwang',
     '/lo3rwang/work',
     '/lo3rwang/other',
     '/lo3rwang/statics',
     '/lo3rwang/culture',
-    '/lo3rwang/governance'
+    '/lo3rwang/trace'
   ].map(path=>({url:url(path)}));
 }
