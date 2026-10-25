@@ -23,7 +23,7 @@ const SECTIONS=Object.freeze([
   {value:'publish',label:'發表文章',shortLabel:'文章'},
   {value:'media',label:'發表多媒體',shortLabel:'媒體'},
   {value:'suggestions',label:'編輯建議搜尋',shortLabel:'建議'},
-  {value:'governance',label:'治理頁面編輯',shortLabel:'治理'}
+  {value:'trace',label:'資料說明編輯',shortLabel:'說明'}
 ]);
 
 export default function SearchManagement(){
@@ -36,12 +36,12 @@ export default function SearchManagement(){
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
   const permitted=ready&&Boolean(account.user)&&
     (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
-  const options=isLocAdmin?SECTIONS.filter(item=>['search','media','governance'].includes(item.value)):SECTIONS;
+  const options=isLocAdmin?SECTIONS.filter(item=>['search','media','trace'].includes(item.value)):SECTIONS;
   const [activeSection,setSection]=useManagementSection(options,'search');
   const editRequested=searchParams?.get('edit')==='1';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
   useEffect(()=>{
-    if(!permitted||(!editRequested&&!['suggestions','publish','media','governance'].includes(activeSection)))return;
+    if(!permitted||(!editRequested&&!['suggestions','publish','media','trace'].includes(activeSection)))return;
     editDock?.begin(scopeId);
   },[permitted,editRequested,activeSection,scopeId,editDock?.begin]);
 
@@ -82,9 +82,9 @@ export default function SearchManagement(){
         allowInlineChildAdd explicitEditButton
         authorizedByParent startInEditMode onEditorExit={()=>setSection('search')}/>
     </section>:null}
-    {activeSection==='governance'?<ScopeEditableBlocks key={scopeId+'-governance'}
-      scopeId={scopeId} page="governance"
-      className={'loc-grid two governance-grid'+(scopeId==='loc'?' governance-grid-loc':'')}
+    {activeSection==='trace'?<ScopeEditableBlocks key={scopeId+'-trace'}
+      scopeId={scopeId} page="trace"
+      className={'loc-grid two trace-grid'+(scopeId==='loc'?' trace-grid-loc':'')}
       headingLevel={2} allowDelete
       authorizedByParent startInEditMode explicitEditButton
       onEditorExit={()=>setSection('search')}/>:null}
