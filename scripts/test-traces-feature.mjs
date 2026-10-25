@@ -246,3 +246,54 @@ test('Culture and Statistics share only published flat classification lists',()=
   assert.match(sourceNames,/sourceTaxonomyFromArrays/);
   assert.doesNotMatch(catalog,/statistics_source_categories|statistics_scope_others_groups/);
 });
+
+test('Trace overview fits every saved spatial anchor, not just the three Banqiao demos',()=>{
+  const source=read('app/modular/features/trace/trace-map-engine.js');
+  const overview=source.match(/^  function overview\(\)\{[\s\S]*?^  \}\n(?=\n  map\.once)/m)?.[0];
+  assert.ok(overview,'overview function must be present in the map engine');
+  class Bounds {
+    constructor(){this.points=[];}
+    extend(point){this.points.push(point);}
+  }
+  const example=[{lng:121.46,lat:25.01},{lng:121.47,lat:25.03}];
+  const run=anchors=>{
+    const calls=[];
+    const map={
+      getContainer:()=>({clientWidth:1300}),
+      fitBounds:(bounds,opts)=>calls.push({kind:'bounds',points:bounds.points,opts}),
+      flyTo:opts=>calls.push({kind:'single',opts})
+    };
+    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded',overview+'; return overview;');
+    go(map,Bounds,anchors,example,false,true)();
+    return calls[0];
+  };
+  assert.deepEqual(run([
+    {trace_type:'anchor',longitude:121.5,latitude:25.1},
+    {trace_type:'anchor',longitude:120.2,latitude:22.9}
+  ]).points,[[121.5,25.1],[120.2,22.9]]);
+  assert.deepEqual(run([
+    {trace_type:'anchor',longitude:121.5,latitude:25.1}
+  ]).opts.center,[121.5,25.1]);
+  assert.deepEqual(run([]).points,[[121.46,25.01],[121.47,25.03]]);
+});
+
+test('Trace desktop map widens, resizes with mouse or keyboard, and stays phone responsive',()=>{
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
+  const css=read('app/styles/features.css');
+  assert.match(css,/\.loc-next-main:has\(\.loc-trace-panel\)/);
+  assert.match(css,/width:min\(1680px/);
+  assert.match(css,/\.loc-trace-resize-tools\{display:none\}/);
+  assert.match(css,/\(min-width:900px\) and \(pointer:fine\)/);
+  assert.match(css,/\.loc-trace-map-frame\{[\s\S]*?height:clamp\(460px,68svh,820px\)/);
+  assert.match(css,/@media\(max-width:680px\)/);
+  assert.match(css,/height:clamp\(400px,62svh,690px\)/);
+  assert.match(map,/ResizeObserver\(\(\)=>mapRef\.current\?\.resize\(\)\)/);
+  assert.match(engine,/resize:\(\)=>\{if\(!removed\)map\.resize\(\);\}/);
+  assert.match(map,/onPointerDown=\{startMapResize\}/);
+  assert.match(map,/onPointerMove=\{moveMapResize\}/);
+  assert.match(map,/onPointerUp=\{stopMapResize\}/);
+  assert.match(map,/onKeyDown=\{keyboardMapResize\}/);
+  assert.match(map,/spatialData\?\.anchors\?\.some\(/);
+  assert.match(map,/copy\.all:copy\.examples/);
+});
