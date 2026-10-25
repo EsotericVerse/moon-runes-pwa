@@ -38,12 +38,12 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const isLoc=routeScopeId==='loc';
   const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):
-    MANAGEMENT_OPTIONS.filter(option=>option.value!=='placeFill'||['lo3rwang','lrunes'].includes(routeScopeId));
+    MANAGEMENT_OPTIONS.filter(option=>!['placeFill','traceGeocode'].includes(option.value)||['lo3rwang','lrunes'].includes(routeScopeId));
   const editRequested=searchParams?.get('edit')==='1';
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap','placeFill'].includes(section))||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap','placeFill','traceGeocode'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
