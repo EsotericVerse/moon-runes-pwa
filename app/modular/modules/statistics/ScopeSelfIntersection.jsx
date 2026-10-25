@@ -111,7 +111,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const othersAliases=useMemo(()=>new Map((othersConfig.data?.aliases||[])
     .map(row=>[String(row.source_key||'').trim().toLowerCase(),row.group_code])),[othersConfig.data]);
   const resolveOthers=(source)=>{
-    if(assignedSource(source,catalog.data?.aliases||[],catalog.data?.categories||[])!=='others')return '';
+    if(assignedSource(source,catalog.data?.aliases||[],catalog.data?.categories||[])!=='unclassified')return '';
     const group=othersAliases.get(String(source||'').trim().toLowerCase())||'';
     return group&&othersActive.has(group)?group:'unclassified';
   };
@@ -201,7 +201,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     for(const row of rows){
       if(row.kind!=='source')continue;
       const amount=Number(row.item_count)||0;
-      if(assignedSource(row.category,aliases,known)!=='others')systemTotal+=amount;
+      if(assignedSource(row.category,aliases,known)!=='unclassified')systemTotal+=amount;
       else if(resolveOthers(row.category)!=='unclassified')personalTotal+=amount;
     }
     const rollups=[
@@ -282,10 +282,10 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       if(row.kind==='source'){
         const assigned=assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]);
         ids.push('group\u0000'+assigned);
-        if(assigned!=='others')ids.push('source_rollup'+String.fromCharCode(0)+'system');
+        if(assigned!=='unclassified')ids.push('source_rollup'+String.fromCharCode(0)+'system');
         const subgroup=resolveOthers(row.category);
         if(subgroup)ids.push('others_subgroup'+String.fromCharCode(0)+subgroup);
-        if(assigned==='others'&&subgroup&&subgroup!=='unclassified')
+        if(assigned==='unclassified'&&subgroup&&subgroup!=='unclassified')
           ids.push('source_rollup'+String.fromCharCode(0)+'personal');
       }else if(row.kind==='media'){
         const family=mediaTypeFamily(row.category)||'other';
@@ -373,7 +373,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             };
             const sourceItems=categoryList.filter(item=>item.kind==='source');
             const systems=sourceItems.filter(item=>
-              assignedSource(item.raw,catalog.data?.aliases||[],catalog.data?.categories||[])!=='others');
+              assignedSource(item.raw,catalog.data?.aliases||[],catalog.data?.categories||[])!=='unclassified');
             const personals=sourceItems.filter(item=>resolveOthers(item.raw)&&resolveOthers(item.raw)!=='unclassified');
             const unclassified=sourceItems.filter(item=>resolveOthers(item.raw)==='unclassified');
             const sourceGroups=[
