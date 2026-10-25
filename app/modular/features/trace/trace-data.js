@@ -95,6 +95,22 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   return {count,skipped:list.length-pending.length};
 }
 
+export async function updateTraceAnchor({scopeId,uid,title,description='',longitude,latitude}){
+  const id=sourceId(scopeId);
+  const anchorId=String(uid||'').trim();
+  if(!/^[A-Za-z0-9]{8}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
+  if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
+  const changes={
+    title:verifiedText(title,'定錨點名稱'),
+    description:descriptionText(description),
+    longitude:Number(longitude),latitude:Number(latitude)
+  };
+  const result=await dbAuthRelation(relation(id)).update(changes)
+    .eq('uid',anchorId).eq('trace_type','anchor')
+    .select('uid').single();
+  return verified(result,'更新定錨點');
+}
+
 export async function addTraceMap({scopeId,title,description='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const chosen=Array.isArray(anchorUids)?anchorUids:[];
