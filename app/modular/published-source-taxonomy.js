@@ -1,3 +1,13 @@
-// Published public source classifications; refreshed by npm run sync:public.
-export const PUBLISHED_SOURCE_TAXONOMY=Object.freeze({"loc":{"categories":[{"enabled":true,"display_name":"Facebook","category_code":"facebook"},{"enabled":true,"display_name":"Threads","category_code":"threads"},{"enabled":true,"display_name":"Instagram","category_code":"instagram"},{"enabled":true,"display_name":"其他","category_code":"others"}],"aliases":[{"source_key":"facebook","category_code":"facebook"},{"source_key":"fb","category_code":"facebook"},{"source_key":"threads","category_code":"threads"},{"source_key":"instagram","category_code":"instagram"},{"source_key":"ig","category_code":"instagram"},{"source_key":"reels","category_code":"instagram"}],"groups":[],"groupAliases":[]},"lo3rwang":{"categories":[{"enabled":true,"display_name":"Facebook","category_code":"facebook"},{"enabled":true,"display_name":"Threads","category_code":"threads"},{"enabled":true,"display_name":"Instagram","category_code":"instagram"},{"enabled":true,"display_name":"其他","category_code":"others"}],"aliases":[{"source_key":"facebook","category_code":"facebook"},{"source_key":"fb","category_code":"facebook"},{"source_key":"threads","category_code":"threads"},{"source_key":"instagram","category_code":"instagram"},{"source_key":"ig","category_code":"instagram"},{"source_key":"reels","category_code":"instagram"}],"groups":[],"groupAliases":[]},"lrunes":{"categories":[{"enabled":true,"display_name":"Facebook","category_code":"facebook"},{"enabled":true,"display_name":"Threads","category_code":"threads"},{"enabled":true,"display_name":"Instagram","category_code":"instagram"},{"enabled":true,"display_name":"其他","category_code":"others"}],"aliases":[{"source_key":"facebook","category_code":"facebook"},{"source_key":"fb","category_code":"facebook"},{"source_key":"threads","category_code":"threads"},{"source_key":"instagram","category_code":"instagram"},{"source_key":"ig","category_code":"instagram"},{"source_key":"reels","category_code":"instagram"}],"groups":[],"groupAliases":[]}});
-export function publishedSourceTaxonomy(scopeId){return Object.prototype.hasOwnProperty.call(PUBLISHED_SOURCE_TAXONOMY,scopeId)?PUBLISHED_SOURCE_TAXONOMY[scopeId]:null;}
+// Flat public source classification, published with Scope Config.
+import {sourceTaxonomyFromArrays} from '../loc/source-classification.mjs';
+export const PUBLISHED_SOURCE_LISTS=Object.freeze({
+  loc:{system:['facebook','threads','instagram'],personal:[]},
+  lo3rwang:{system:['facebook','threads','instagram'],personal:['suno','kkcity','others','vocus','ptt','wretch','pixnet','personal']},
+  lrunes:{system:['facebook','threads','instagram'],personal:['vocus','others','suno']}
+});
+export const PUBLISHED_SOURCE_TAXONOMY=Object.freeze(Object.fromEntries(
+  Object.entries(PUBLISHED_SOURCE_LISTS).map(([id,lists])=>[id,sourceTaxonomyFromArrays(lists.system,lists.personal)])
+));
+export function publishedSourceTaxonomy(scopeId){
+  return Object.prototype.hasOwnProperty.call(PUBLISHED_SOURCE_TAXONOMY,scopeId)?PUBLISHED_SOURCE_TAXONOMY[scopeId]:null;
+}
