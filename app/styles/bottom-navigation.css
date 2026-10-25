@@ -15,6 +15,9 @@
   backdrop-filter:blur(16px);
   pointer-events:none;
 }
+.scope-feature-dock:has(.scope-edit-system-button){
+  grid-template-columns:repeat(7,minmax(0,1fr));
+}
 .scope-feature-dock a,.scope-feature-dock button{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:.3rem;min-width:0;min-height:60px;padding:.45rem .2rem;
@@ -78,6 +81,8 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 @media(max-width:560px){
   .scope-feature-dock{gap:4px;padding:.32rem;border-radius:18px;}
   .scope-feature-dock a,.scope-feature-dock button{min-height:56px;font-size:.75rem;border-radius:12px;padding:.36rem .03rem;}
+  .scope-feature-dock:has(.scope-edit-system-button) a,
+  .scope-feature-dock:has(.scope-edit-system-button) button{font-size:.7rem;}
   .scope-feature-dock a svg,.scope-feature-dock button svg{width:20px;height:20px;}
 }
 @media(prefers-reduced-motion:reduce){.scope-feature-dock a,.scope-feature-dock button{transition:none;}}
