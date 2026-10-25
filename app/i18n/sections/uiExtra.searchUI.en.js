@@ -5,6 +5,7 @@ export default {
   "invalidMediaId": "Invalid media ID format.",
   "mediaManageDenied": "You do not have permission to edit this media.",
   "mediaAttributes": "Media attributes",
+  "checkInPlace": "Check-in location",
   "editMedia": "Edit media: {id}",
   "styleRecommendations": "Recommended style tags",
   "stylePeriod": "Period:",
