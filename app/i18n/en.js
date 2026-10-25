@@ -44,6 +44,11 @@ export default {
       "subtitle": "Place works back on the timeline to observe accumulation and change.",
       "description": "The time river shows works and sources by date; anchors divide periods for comparison."
     },
+    "traces": {
+      "title": "Traces",
+      "subtitle": "Explore spatial anchors and routes on a real map.",
+      "description": "Explore spatial anchors and routes on a real map."
+    },
     "governance": {
       "title": "Governance",
       "subtitle": "Usage principles, rights boundaries, and management.",
