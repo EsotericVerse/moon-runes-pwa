@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 import {useAsyncResource} from '../../loc/use-async-resource';
@@ -27,6 +27,8 @@ const TracePlaceResults=dynamic(()=>import('./trace/TracePlaceResults'),{
 export default function Trace({scopeId='loc'}){
   const supported=TRACE_SCOPES.includes(scopeId);
   const [selectedPlace,setSelectedPlace]=useState(null);
+  const reportTopRef=useRef(null);
+  const [scrollRequest,setScrollRequest]=useState(0);
   const [mapOnly,setMapOnly]=useState(false);
   const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
   const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
@@ -34,7 +36,8 @@ export default function Trace({scopeId='loc'}){
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState('articles');
   const [reportSettingsOpen,setReportSettingsOpen]=useState(false);
-  const [timeWindow,setTimeWindow]=useState('3m');
+  // Historical Frames should not default to hiding older check-in articles.
+  const [timeWindow,setTimeWindow]=useState('all');
   const [customStart,setCustomStart]=useState('');
   const [customEnd,setCustomEnd]=useState('');
   const [sourceDraft,setSourceDraft]=useState('');
@@ -44,9 +47,11 @@ export default function Trace({scopeId='loc'}){
     {start:customStart,end:customEnd}),[timeWindow,customStart,customEnd]);
   const choosePlace=anchor=>{
     if(!anchor?.uid)return;
-    // Switching pins replaces content without resetting the chosen mode.
-    // The first selection still defaults to articles through reportTab state.
+    // The map's selected anchor is a Frame drill-down, not a Search navigation.
+    setMapOnly(false);
+    setReportTab('articles');
     setSelectedPlace(anchor);
+    setScrollRequest(value=>value+1);
   };
 
   // Reuse the route preference from the existing management editor. "All"
@@ -107,6 +112,17 @@ export default function Trace({scopeId='loc'}){
   // A Frame is the spatial context. Its article/culture/statistics panel
   // appears below the map without an extra click or a search-page route.
   const reportPlace=selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null);
+  // On phones, point selection reveals the existing in-page report area,
+  // which shows its Loading state while Galaxy metadata is fetched.
+  useEffect(()=>{
+    if(!scrollRequest||!reportPlace||mapOnly)return;
+    if(window.matchMedia?.('(max-width: 720px)')?.matches){
+      reportTopRef.current?.scrollIntoView({
+        behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',
+        block:'start'
+      });
+    }
+  },[scrollRequest,reportPlace,mapOnly]);
 
   return <FeaturePage featureId="trace">
     <div className="scope-stat-controls" role="group" aria-label="痕跡選擇與展示模式">
@@ -122,8 +138,6 @@ export default function Trace({scopeId='loc'}){
           <option value="lrunes">月之符文</option>
         </select>
       </label>:null}
-      {supported&&!routeListOpen?<button type="button" className="loc-button"
-        onClick={()=>setRouteListOpen(true)}>載入痕跡圖</button>:null}
       {supported&&routeListOpen?<label>
         <span>Current 痕跡（空間時期）</span>
         <select className="scope-select"
@@ -150,7 +164,11 @@ export default function Trace({scopeId='loc'}){
       尚未建立痕跡圖。請在管理頁建立一組站點路線，或手動選擇「全部定錨點」。
     </p>:null}
 
-    {!mapOnly&&reportPlace?<div className="loc-trace-report-toolbar" role="group" aria-label="地點內容框">
+    <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker
+      selectedRouteUid={currentMap?.uid||''}
+      onAnchorSelect={choosePlace}/>
+
+    {!mapOnly&&reportPlace?<div ref={reportTopRef} className="loc-trace-report-toolbar" role="group" aria-label="地圖下方目前地點內容框">
       <strong>{reportPlace.title}</strong>
       <div className="scope-stat-controls" role="group" aria-label="地點呈現模式">
         {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
@@ -198,9 +216,7 @@ export default function Trace({scopeId='loc'}){
       </div>:null}
     </div>:null}
 
-    <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker
-      selectedRouteUid={currentMap?.uid||''}
-      onAnchorSelect={choosePlace}/>
+
 
     {!mapOnly&&reportPlace?<TracePlaceResults place={reportPlace}
       anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
