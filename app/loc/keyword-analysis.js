@@ -123,7 +123,7 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   };
 }
 
-// Canonical, eternal class_group order per https://loc.lo3rwang.cc/lrunes/governance/
+// Canonical, eternal class_group order per https://lrunes.lo3rwang.cc/trace/
 // (靈魂1-8, 連結9-16, 生命17-24, 自然25-32, 礦物33-40, 元素41-48, 秩序49-56,
 // 無序57-64, 特殊0/65/66). item_no/order_no are fixed data and must never be
 // edited to "fix" class_id -- class_id is derived purely from this list, not
