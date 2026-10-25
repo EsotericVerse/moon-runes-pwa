@@ -1065,3 +1065,13 @@
 .loc-trace-location-search input{flex:1 1 220px;min-width:0;max-width:100%;padding:.65rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit}
 .loc-trace-location-results{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .7rem}
 .loc-trace-location-results .loc-button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}
+
+
+/* One-click spatial locator beside the existing anchor-name field. */
+.loc-trace-quick-field{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.55rem;align-items:end;min-width:0}
+.loc-trace-quick-field>label{display:grid;gap:.32rem;min-width:0;padding:.65rem .8rem;border:1px solid color-mix(in srgb,var(--loc-accent) 42%,var(--loc-line));border-radius:var(--loc-ui-radius-sm);background:var(--loc-ui-accent-soft)}
+.loc-trace-quick-field>label>input{width:100%;min-width:0;padding:.5rem .55rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit}
+.loc-trace-quick-field>.loc-button{min-height:44px;white-space:nowrap}
+.loc-trace-quick-results{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.loc-trace-quick-results>.loc-button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}
+@media(max-width:520px){.loc-trace-quick-field{grid-template-columns:minmax(0,1fr)}.loc-trace-quick-field>.loc-button{width:100%}}
