@@ -27,7 +27,8 @@ const STRINGS={
       routeHidden:'已隱藏路線，保留空間定錨點。',
       routeLoading:'正在讀取示例路網路線…',
       routeReady:'橘線是路網建議路線，不代表使用者曾走過或造訪。',
-      routeError:'暫時無法取得路網路線；未顯示虛構道路。'
+      routeError:'暫時無法取得路網路線；未顯示虛構道路。',
+      locationPicked:'已選取位置，座標已自動填入上方欄位；也可以拖動橘色圖釘微調。'
     }
   },
   'zh-Hans':{
@@ -44,7 +45,8 @@ const STRINGS={
       routeHidden:'已隐藏路线，保留空间定锚点。',
       routeLoading:'正在获取示例道路路线…',
       routeReady:'橙线是道路规划建议，不代表真实走过的路线。',
-      routeError:'暂时无法获取道路路线；不会显示虚构道路。'
+      routeError:'暂时无法获取道路路线；不会显示虚构道路。',
+      locationPicked:'已选取位置，坐标已自动填写；也可以拖动橙色图钉微调。'
     }
   },
   en:{
@@ -61,7 +63,8 @@ const STRINGS={
       routeHidden:'Route hidden; sample anchors remain.',
       routeLoading:'Finding a sample road route…',
       routeReady:'The orange line is a suggested road route, not a recorded journey.',
-      routeError:'Road routing is currently unavailable. No invented road was drawn.'
+      routeError:'Road routing is currently unavailable. No invented road was drawn.',
+      locationPicked:'Location selected. Coordinates filled above. Drag the orange pin to adjust.'
     }
   },
   ja:{
@@ -78,16 +81,20 @@ const STRINGS={
       routeHidden:'ルートを非表示にしました。',
       routeLoading:'サンプル道路ルートを取得しています…',
       routeReady:'オレンジの線は推奨道路ルートで、実際の移動記録ではありません。',
-      routeError:'道路ルートを取得できません。架空の道路は表示しません。'
+      routeError:'道路ルートを取得できません。架空の道路は表示しません。',
+      locationPicked:'位置を選択しました。座標は自動入力済みです。オレンジ色のピンをドラッグして調整できます。'
     }
   }
 };
 
-export default function TraceMap(){
+export default function TraceMap({onLocationPick=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const containerRef=useRef(null);
   const mapRef=useRef(null);
+  const locationPickRef=useRef(onLocationPick);
+  locationPickRef.current=onLocationPick;
+  const selectingLocation=typeof onLocationPick==='function';
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
@@ -103,6 +110,7 @@ export default function TraceMap(){
     try{
       instance=createTraceMap(containerRef.current,{
         onSelect:id=>{if(active)setSelected(id);},
+        onLocationPick:selectingLocation?coords=>{if(active)locationPickRef.current?.(coords);}:null,
         onStatus:code=>{
           if(!active)return;
           setStatus(code);
@@ -136,7 +144,12 @@ export default function TraceMap(){
         <p className="loc-eyebrow">{copy.eyebrow}</p>
         <h2>{copy.title}</h2>
       </div>
-      <p className="scope-status">{copy.intro}</p>
+      <p className="scope-status">{selectingLocation?(
+        locale==='zh-Hans'?'点击地图选择空间定锚点，或点击下方车站示例；经纬度将自动填写。':
+        locale==='en'?'Click any map location or a sample station to fill in coordinates automatically.':
+        locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
+        '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
+      ):copy.intro}</p>
     </header>
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
