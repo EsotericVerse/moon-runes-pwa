@@ -378,7 +378,7 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   const code=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(code,/if\(!activeRoots\.has\(parent\.id\)\)continue/);
   assert.match(code,/const onlyChild=members\.length===1\?members\[0\]:null/);
-  assert.match(code,/collapsible:members\.length>1/);
+  assert.match(code,/collapsible:members\.length!==1/);
   assert.match(code,/label=onlyChild\?\.label\|\|parent\.label/);
   assert.match(code,/!cultureRiver\.hasSourceData/);
   assert.match(code,/noDataInPeriod/);
@@ -388,6 +388,21 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/groups\.update\(changedGroups\)/);
   assert.match(river,/data\.update\(changedRows\)/);
   assert.match(river,/heightVariant==='double'\?null:rows/);
+});
+
+test('Admin and Scope classification forms allow direct editing without a two-pane selector',()=>{
+  const work=readFileSync(new URL('../app/loc/WorkClassificationPage.jsx',import.meta.url),'utf8');
+  const personal=readFileSync(new URL('../app/loc/ScopeOthersSources.jsx',import.meta.url),'utf8');
+  for(const code of [work,personal]){
+    assert.match(code,/classification-inline__list/);
+    assert.match(code,/classification-inline__actions/);
+    assert.match(code,/type="submit"/);
+    assert.doesNotMatch(code,/classification-page__layout/);
+    assert.doesNotMatch(code,/classification-page__choice/);
+  }
+  assert.match(work,/canManageGlobalSync/);
+  assert.match(personal,/canManageScopeSync/);
+  assert.match(personal,/enabled:allowed&&showAssignments/);
 });
 
 test('Culture second river waits for its first source snapshot and avoids lazy density remounts',()=>{
