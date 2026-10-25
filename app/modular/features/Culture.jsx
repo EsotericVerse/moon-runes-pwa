@@ -395,7 +395,7 @@ export default function Culture(){
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
   const sourceRootQuery=useAsyncResource({
     queryKey:['culture-period-roots','v1',classificationScope,classificationWindowStart,classificationWindowEnd],
-    enabled:stagedSourceRiver&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope
+    enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
       const args={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
@@ -410,7 +410,7 @@ export default function Culture(){
   });
   // Each clicked parent owns a separate SWR key. Opening another parent does
   // not refetch the first one's detail; closing a parent only hides its rows.
-  const sourceChildrenEnabled=stagedSourceRiver&&!isLrunesDaily&&!isLocItemView
+  const sourceChildrenEnabled=stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
     &&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid&&Boolean(sourceRootQuery.data);
   const loadSourceChildren=async root=>{
     const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
@@ -449,7 +449,7 @@ export default function Culture(){
   // The initial overview never depends on it.
   const sourceSnapshotQuery=useAsyncResource({
     queryKey:['culture-period-source-snapshot','v5',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
+    enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
@@ -599,7 +599,7 @@ export default function Culture(){
     queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
-    enabled:worksOpen&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
+    enabled:worksOpen&&styleFilter!=='trace'&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
     queryFn:async({pageParam})=>{
       const {selectScopePeriodWorkIndex,selectScopePeriodWorkDetails}=await import('../../loc/culture-query');
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
@@ -875,7 +875,7 @@ export default function Culture(){
   const [riverDensityAnalyzer,setRiverDensityAnalyzer]=useState(null);
   const needsRiverDensity=Boolean(
     isAggregateScope?locCombinedSourceRiverItems.length:
-      !isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
+      styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
   );
   useEffect(()=>{
     if(!needsRiverDensity||riverDensityAnalyzer)return undefined;
@@ -1437,7 +1437,7 @@ export default function Culture(){
                         onChange={event=>setKeywordCustomEnd(event.target.value)}/></label>
                     </>:null}
                   </div>
-                  {riverRangeLoading?<span className='scope-status' role='status'>{UI_COPY.common.loading}</span>:null}
+                  {styleFilter!=='trace'&&riverRangeLoading?<span className='scope-status' role='status'>{UI_COPY.common.loading}</span>:null}
                 </div>
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
