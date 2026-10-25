@@ -4,7 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {executePublicRead} from './db-query.mjs';
 import {useAsyncResource} from './use-async-resource';
 import {useAccount} from './use-account';
-import {traceKey,readTraceData,addTraceAnchorsBatch} from '../modular/features/trace/trace-data';
+import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modular/features/trace/trace-data';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -82,6 +82,7 @@ export default function TracePlaceGeocoder({scopeId}){
   const [page,setPage]=useState(0);
   const [running,setRunning]=useState(false);
   const [policyAccepted,setPolicyAccepted]=useState(false);
+  const [radius,setRadius]=useState('500');
   const [saving,setSaving]=useState(false);
   const [processed,setProcessed]=useState(0);
   const [notice,setNotice]=useState('');
@@ -175,13 +176,15 @@ export default function TracePlaceGeocoder({scopeId}){
   };
   async function saveReady(){
     if(running||saving||!ready.length)return;
+    if(!validRadius(radius)){setFailure('搜尋半徑請設定為 10 公尺至 20,000 公里。');return;}
     const payload=ready.map(item=>({
       title:item.name,
       longitude:found[item.name].choices[found[item.name].selected].longitude,
-      latitude:found[item.name].choices[found[item.name].selected].latitude
+      latitude:found[item.name].choices[found[item.name].selected].latitude,
+      radius_m:Number(radius)
     }));
     const names=previewEnds(payload).map(item=>item.name).join('\n');
-    if(!window.confirm('即將在 '+scopeId+' 新增 '+payload.length+' 個空間定錨點，保留 Galaxy 原本的打卡名稱與文章內容。\n\n'+names+'\n\n確定寫入？'))return;
+    if(!window.confirm('即將在 '+scopeId+' 新增 '+payload.length+' 個空間定錨點，半徑 '+radius+' 公尺，保留 Galaxy 原本的打卡名稱與文章內容。\n\n'+names+'\n\n確定寫入？'))return;
     setSaving(true);setFailure('');setNotice('');
     try{
       const result=await addTraceAnchorsBatch({scopeId,places:payload});
@@ -208,11 +211,12 @@ export default function TracePlaceGeocoder({scopeId}){
         <input type="checkbox" checked={policyAccepted} onChange={event=>setPolicyAccepted(event.target.checked)}/>
         <span>我了解查詢會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
       </label>
+      <div className="scope-management-fields"><label>批次定錨的涵蓋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} onChange={event=>setRadius(event.target.value)} disabled={running||saving}/></label></div>
       <div className="scope-stat-controls">
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchNext}>查詢接下來 20 處</button>
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchAll}>查詢其餘地點</button>
         {running?<button className="loc-button" type="button" onClick={()=>{stopRef.current=true;requestRef.current?.abort()}}>停止</button>:null}
-        <button className="loc-button primary" type="button" disabled={running||saving||!ready.length} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
+        <button className="loc-button primary" type="button" disabled={running||saving||!ready.length||!validRadius(radius)} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
       </div>
       <p role="status" className="scope-status">
         {running?'已完成本次 '+processed+' 處；可停止並從本機快取續查。':'每次按鈕操作才查詢，不會在開啟頁面時自動查位置。'}
