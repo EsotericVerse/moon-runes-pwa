@@ -28,8 +28,9 @@ test('Sixth feature becomes Traces without changing the scope route',()=>{
   for(const [file,label] of [
     ['zh_tw.js','痕跡'],['zh_cn.js','痕迹'],['en.js','Traces'],['ja.js','軌跡']
   ]){
-    const locale=JSON.parse(read('app/i18n/'+file).replace(/^\s*\/\/[^\n]*\n/gm,''));
-    assert.equal(locale.features.traces.title,label);
+    const locale=read('app/i18n/'+file);
+    const traces=locale.split('"traces": {')[1]?.split('},')[0]||'';
+    assert.ok(traces.includes('"title": "'+label+'"'),file+' traces title');
   }
 });
 
