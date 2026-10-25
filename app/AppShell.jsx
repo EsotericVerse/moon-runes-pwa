@@ -432,7 +432,7 @@ function AppShellInner({children}){
     {id:'home',icon:localWorkspace?'phone':'home',label:translateUiField(activeLocale,'首頁'),href:localWorkspace?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','search','governance'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
-      return {id,icon:id,label:localWorkspace&&id==='governance'?'管理':copy.features?.[id]?.title||feature.label,
+      return {id,icon:id==='governance'&&!localWorkspace?'traces':id,label:localWorkspace&&id==='governance'?'管理':id==='governance'?(copy.features?.traces?.title||feature.label):(copy.features?.[id]?.title||feature.label),
         href:navigationHref(navScopeId,feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
