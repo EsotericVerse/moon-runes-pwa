@@ -62,6 +62,8 @@ test('Trace mounts installed MapLibre from a lazy React chunk with Next.js ESM w
   assert.match(react,/focusCoordinates/);
   assert.match(engine,/loc-trace-picked-area/);
   assert.match(engine,/setRadius/);
+  assert.match(engine,/setAnchors/);
+  assert.match(engine,/loc-trace-saved-anchors/);
 });
 
 test('Trace management selects spatial coordinates from map clicks and sample stations',()=>{
@@ -74,7 +76,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
   assert.match(editor,/if\(name\)setTitle\(current=>current\.trim\(\)\?current:name\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
-  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,radiusMeters=500,focusLocation=null\}\)/);
+  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,radiusMeters=500,focusLocation=null,spatialData=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
   assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
