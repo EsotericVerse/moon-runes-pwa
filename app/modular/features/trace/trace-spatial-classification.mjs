@@ -1,6 +1,7 @@
 // Shared spatial navigation model for Trace management and the public map.
 // Geographic county grouping is a UI projection, never a write to the source
-// anchor; missing / overseas coordinates must remain navigable as names.
+// anchor; valid overseas coordinates stay in Other, while missing or invalid
+// coordinates are excluded from route stop selection (never silently geocoded).
 export const TRACE_OTHER_REGION='未判定／其他地區';
 export function locatableTraceAnchor(anchor){
   if(anchor?.trace_type!=='anchor')return false;
@@ -13,8 +14,8 @@ export function locatableTraceAnchor(anchor){
 export function classifyTraceAnchors(anchors=[],countyForCoordinates=null){
   const regions=new Map();
   for(const anchor of Array.isArray(anchors)?anchors:[]){
-    if(anchor?.trace_type!=='anchor')continue;
-    const region=locatableTraceAnchor(anchor)&&typeof countyForCoordinates==='function'
+    if(!locatableTraceAnchor(anchor))continue;
+    const region=typeof countyForCoordinates==='function'
       ?String(countyForCoordinates(anchor.longitude,anchor.latitude)||TRACE_OTHER_REGION)
       :TRACE_OTHER_REGION;
     if(!regions.has(region))regions.set(region,[]);
