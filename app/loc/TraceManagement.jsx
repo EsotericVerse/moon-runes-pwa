@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient} from './db-client.mjs';
-import TraceBatchEditor from './TraceBatchEditor';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
@@ -37,7 +36,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(anchor?.longitude!=null&&anchor?.latitude!=null)setFocusLocation({longitude:anchor.longitude,latitude:anchor.latitude,name:anchor.title,radius_m:anchor.radius_m||500});
     setNotice('');
   };
-  const popular=useAsyncResource(['trace-place-names',scopeId],async()=>{
+  const popular=useAsyncResource(['trace-place-names',scopeId,500],async()=>{
     const {data,error}=await dbAuthClient.schema('silver').rpc('trace_place_suggestions',{
       p_scope_id:scopeId,p_limit:500
     });
@@ -103,7 +102,6 @@ function AnchorEditor({scopeId,spatial,reload}){
       setLongitude(String(Math.round(lng*1e6)/1e6));
       setLatitude(String(Math.round(lat*1e6)/1e6));
     }}/>
-    {scopeId!=='loc'?<TraceBatchEditor scopeId={scopeId} existing={spatial.anchors} places={popular.data||[]} radius={radius||500} reload={reload} onPreview={setFocusLocation}/>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
 }
