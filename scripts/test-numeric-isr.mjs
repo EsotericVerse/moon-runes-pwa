@@ -16,6 +16,13 @@ async function harness(){
       return storage.get(key);
     }},
     '../../../../_cors':{withLocCors:r=>r,locCorsPreflight:()=>new Response(null,{status:204})},
+    '../../../../../../modular/published-source-taxonomy.js':{publishedSourceTaxonomy:()=>({
+      categories:[{category_code:'facebook',enabled:true}],aliases:[{source_key:'facebook',category_code:'facebook'}]
+    })},
+    '../../../../../../loc/culture-river-roots.mjs':{selectCultureRiverChildren:(rows,taxonomy,roots)=>roots.includes('system')?rows.filter(x=>x.kind==='source'):[],summarizeCultureRiverRoots:rows=>({
+      rootBuckets:rows.filter(x=>x.kind==='source').map(x=>({category:'system',start_date:x.day,item_count:x.item_count})),
+      groups:rows.filter(x=>x.kind==='source').map(x=>({source_name:x.category||'facebook',item_count:x.item_count}))
+    })},
     '../../../../../../loc/statistics-facets':{StatisticsFacets:{base:{mediaFacetDaily:(rows,dimension)=>rows.map(row=>({
       day:'2026-10-01',category:dimension==='media_type'?row.media_type:'Suno',item_count:1
     }))}}},
@@ -184,4 +191,26 @@ test('media style chart uses numeric ISR; raw cross-tag scan is explicitly on de
   assert.ok(view.includes('onOpen={()=>setCrossTagRequested(true)}'));
   assert.ok(view.includes('onRequestRawStyles={()=>setCrossTagRequested(true)}'));
   assert.ok(model.includes("if(next!=='tags')onRequestRawStyles?.()"));
+});
+
+test('initial compact Culture roots and later detail reuse the SAME ISR SQL result',async()=>{
+  const h=await harness(),q='?start=2026-01-01&end=2026-10-01&undated=1';
+  const root=await get(h,'lo3rwang','culture-roots',q);
+  assert.equal(root.status,200);
+  assert.equal((await root.json()).rootBuckets[0].item_count,3);
+  const detail=await get(h,'lo3rwang','culture',q);
+  assert.equal(detail.status,200);
+  assert.equal((await detail.json()).length,1);
+  assert.equal(h.queries.length,1);
+  assert.equal(h.queries[0].args.p_include_undated,true);
+});
+
+test('opening one classified root requests only its children, with no new SQL',async()=>{
+  const h=await harness(),q='?start=2026-01-01&end=2026-10-01&undated=1';
+  await get(h,'lo3rwang','culture-roots',q);
+  const details=await get(h,'lo3rwang','culture-children',q+'&roots=system');
+  assert.equal(details.status,200);
+  assert.equal((await details.json()).length,1);
+  assert.equal(h.queries.length,1);
+  assert.equal((await get(h,'lo3rwang','culture-children',q+'&roots=invalid')).status,400);
 });

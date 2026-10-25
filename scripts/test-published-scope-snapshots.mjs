@@ -29,3 +29,15 @@ test('CSS contains eight published Theme palettes',()=>{
     assert.equal(css.split('--loc-panel-2:').length-1,8);
   }
 });
+
+test('Culture classification is a published JS module, not a mandatory four-query startup',()=>{
+  const taxonomy=read('app/modular/published-source-taxonomy.js');
+  const culture=read('app/modular/features/Culture.jsx');
+  assert.match(taxonomy,/PUBLISHED_SOURCE_TAXONOMY/);
+  for(const id of ['loc','lrunes','lo3rwang'])assert.ok(taxonomy.includes('"'+id+'":'));
+  assert.match(culture,/if\(published\)return published/);
+  assert.match(culture,/openCultureRoots\.length>0/);
+  assert.match(culture,/culture-children/);
+  assert.match(culture,/culture-roots/);
+  assert.match(culture,/selectedRiverGroup\+'\|'\+'source'/);
+});

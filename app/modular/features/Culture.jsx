@@ -32,6 +32,8 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
+import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
+import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -342,6 +344,8 @@ export default function Culture(){
     queryKey:['culture-source-classification',scopeId],
     enabled:!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&scopeId!=='local'&&Boolean(scopeData),
     queryFn:async()=>{
+      const published=publishedSourceTaxonomy(scopeId);
+      if(published)return published; // Known public Scopes: no four classification SQL calls.
       const [categories,aliases,groups,groupAliases]=await Promise.all([
         selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
         selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:1000}),
@@ -351,16 +355,31 @@ export default function Culture(){
       return {categories:categories.rows||[],aliases:aliases.rows||[],groups:groups.rows||[],groupAliases:groupAliases.rows||[]};
     }
   });
+  const stagedSourceRiver=usesNumericIsr(scopeId)&&Boolean(publishedSourceTaxonomy(scopeId));
+  const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
+  const sourceRootQuery=useAsyncResource({
+    queryKey:['culture-period-roots','v1',classificationScope,classificationWindowStart,classificationWindowEnd],
+    enabled:stagedSourceRiver&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope
+      &&Boolean(scopeData)&&classificationWindowValid,
+    queryFn:()=>readNumericIsr(scopeId,'culture-roots',{
+      startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true
+    })
+  });
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v3',classificationScope,classificationWindowStart,classificationWindowEnd],
+    queryKey:['culture-period-source-snapshot','v4',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
-      return selectScopePeriodSourceSnapshot(scopeData,{
-        startDate:classificationWindowStart,
-        endDate:classificationWindowEnd
-      });
+      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
+      if(stagedSourceRiver){
+        const numericRows=await readNumericIsr(scopeId,'culture-children',{
+          ...range,includeUndated:true,roots:expandedSourceRoots
+        });
+        return selectScopePeriodSourceSnapshot(scopeData,{...range,numericRows});
+      }
+      return selectScopePeriodSourceSnapshot(scopeData,range);
     },
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid,
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
+      &&(!stagedSourceRiver||openCultureRoots.length>0),
   });
   const keywordClassQuery=useAsyncResource({
     queryKey:['scope-active-keyword-class-name',scopeId],
@@ -384,7 +403,9 @@ export default function Culture(){
   });
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
-  const riverRangeLoading=classificationWindowValid&&(sourceSnapshotQuery.isPending||sourceSnapshotQuery.isFetching);
+  const riverRangeLoading=classificationWindowValid&&(stagedSourceRiver
+    ?sourceRootQuery.isPending||sourceRootQuery.isFetching
+    :sourceSnapshotQuery.isPending||sourceSnapshotQuery.isFetching);
   // Existing SQL summary covers the overview. Drill-down fetches only the
   // requested source and/or class, without eagerly reading all Galaxy attrs.
   const keywordDetailRequested=Boolean(keywordDrillSource||keywordDrillGroup);
@@ -415,7 +436,7 @@ export default function Culture(){
   },[scopeId]);
   // Second-river source choices come from the exact Scope source snapshot.
   // These must be available before choosing a keyword style.
-  const keywordSourceOptions=useMemo(()=>sourceSnapshotQuery.data?.groups||[],[sourceSnapshotQuery.data]);
+  const keywordSourceOptions=useMemo(()=>sourceRootQuery.data?.groups||sourceSnapshotQuery.data?.groups||[],[sourceRootQuery.data,sourceSnapshotQuery.data]);
   // Keep raw source values intact for river filtering; simply separate text
   // platforms from media and sort each group instead of ranking by volume.
   const sourceOptionGroups=useMemo(()=>[
@@ -457,9 +478,9 @@ export default function Culture(){
     });
   },[keywordDetailRequested,keywordDensityQuery.data,styleQuery.data?.classifications,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
 
-  const categoryGroups=sourceSnapshotQuery.data?.groups||EMPTY_CULTURE_GROUPS;
+  const categoryGroups=sourceRootQuery.data?.groups||sourceSnapshotQuery.data?.groups||EMPTY_CULTURE_GROUPS;
   const groupedSources=useMemo(()=>{
-    const catalog=sourceTaxonomy.data||{categories:[],aliases:[],groups:[],groupAliases:[]};
+    const catalog=sourceTaxonomy.data||publishedSourceTaxonomy(scopeId)||{categories:[],aliases:[],groups:[],groupAliases:[]};
     const system=new Map(catalog.categories.filter(row=>row.enabled!==false)
       .map(row=>[String(row.category_code),String(row.display_name||row.category_code)]));
     const custom=new Map(catalog.groups.filter(row=>row.enabled!==false)
@@ -487,7 +508,7 @@ export default function Culture(){
       group.media_types.push(...(source.media_types||[]));
     }
     return [...index.values()].map(group=>({...group,source_names:[...new Set(group.source_names)],media_types:[...new Set(group.media_types)]}));
-  },[categoryGroups,sourceTaxonomy.data,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
+  },[categoryGroups,sourceTaxonomy.data,scopeId,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
   const selectedGroup=groupedSources.find(item=>item.key===selectedRiverGroup)
     ||categoryGroups.find(item=>item.category_key===(keywordDrillSource?'source:'+keywordDrillSource:selectedCategory))
     ||null;
@@ -754,6 +775,8 @@ export default function Culture(){
   ).filter(item=>!keywordDrillSource||String(item.category||'')===keywordDrillSource),
   [sourceSnapshotQuery.data,keywordDrillSource]);
   const secondRiverBuckets=classificationBuckets;
+  const initialRootBuckets=sourceRootQuery.data?.rootBuckets||EMPTY_CULTURE_GROUPS;
+  const densityInputBuckets=stagedSourceRiver?initialRootBuckets:secondRiverBuckets;
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
@@ -767,7 +790,7 @@ export default function Culture(){
   const [riverDensityAnalyzer,setRiverDensityAnalyzer]=useState(null);
   const needsRiverDensity=Boolean(
     isAggregateScope?locCombinedSourceRiverItems.length:
-      !isLrunesDaily&&!isLocItemView&&secondRiverBuckets.length
+      !isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
   );
   useEffect(()=>{
     if(!needsRiverDensity||riverDensityAnalyzer)return undefined;
@@ -780,9 +803,9 @@ export default function Culture(){
     return ()=>{active=false;};
   },[needsRiverDensity,riverDensityAnalyzer]);
   const riverAnalysis=useMemo(
-    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&secondRiverBuckets.length
-      ?riverDensityAnalyzer(secondRiverBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
-    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,secondRiverBuckets,existingAnchorDates]
+    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
+      ?riverDensityAnalyzer(densityInputBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
+    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,densityInputBuckets,existingAnchorDates]
   );
   const styleRiverAnalysis=useMemo(
     ()=>riverDensityAnalyzer&&styleFilter==='rune66'&&keywordDrillItems.length
@@ -833,6 +856,11 @@ export default function Culture(){
     }
     const totals=new Map(),subtotals=new Map();
     const add=(map,key,count)=>map.set(key,(map.get(key)||0)+count);
+    // The first paint uses compact root summaries; child data is requested on expand.
+    for(const item of initialRootBuckets){
+      const day=String(item.start_date||'').slice(0,10);
+      if(day&&item.item_count>0)add(totals,String(item.category)+'\u0000'+day,Number(item.item_count));
+    }
     for(const item of secondRiverBuckets){
       const raw=String(item.category||''),day=String(item.start_date||'').slice(0,10);
       if(!day)continue;
@@ -840,7 +868,7 @@ export default function Culture(){
       const parent=group?.root||(raw.startsWith('媒體 · ')?'media':'custom');
       const child=group?.key||parent+':unclassified';
       const count=Number(item.item_count)||0;
-      add(totals,parent+'\u0000'+day,count);
+      if(!stagedSourceRiver)add(totals,parent+'\u0000'+day,count);
       add(subtotals,child+'\u0000'+day,count);
     }
     const maximum=map=>{
@@ -902,7 +930,7 @@ export default function Culture(){
       group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
     })));
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,openCultureRoots,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
+  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
@@ -1321,7 +1349,10 @@ export default function Culture(){
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
+                {sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
+                {stagedSourceRiver&&openCultureRoots.length>0&&sourceSnapshotQuery.isPending
+                  ?<p className='scope-status' role='status'>正在讀取展開河道的細部分布…</p>:null}
                 {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
@@ -1346,14 +1377,15 @@ export default function Culture(){
                     </div>
                   </details>
                 </div>:null}
-                {classificationWindowValid&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data
+                {classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                  &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)
                   &&!cultureRiver.hasSourceData
                   ?<div className='scope-card scope-status scope-culture-no-data' role='status'>{l.noDataInPeriod}</div>:null}
                 {/* Never mount vis-timeline over an empty/pending source snapshot:
                     on first entry it otherwise creates an unready chart and then
                     replaces its DOM while groups and density analysis arrive. */}
-                {classificationWindowValid&&!sourceSnapshotQuery.error
-                  &&sourceSnapshotQuery.data&&cultureRiver.hasSourceData
+                {classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                  &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData
                   ?<div className='scope-culture-double-river'>
                   <CultureTimeline
                     items={cultureRiver.items}
@@ -1367,6 +1399,7 @@ export default function Culture(){
                         ||id.replace('dual:child:','');
                       setSelectedRiverGroup(current=>current===key?'':key);
                       setSelectedCategory('');
+                      setWorksOpen(true);
                     }}
                     anchorInsight={anchorInsight}
                     anchorLabels={{date:l.candidateDate,before:l.candidateBefore,after:l.candidateAfter,reason:l.candidateReason,close:l.candidateClose}}
@@ -1393,6 +1426,7 @@ export default function Culture(){
                       if(item?.entryType==='source_group'){
                         setSelectedRiverGroup(String(item.raw?.source_group_code||''));
                         setSelectedCategory('');
+                        setWorksOpen(true);
                         return;
                       }
                       if(item?.entryType!=='source')return;
@@ -1405,7 +1439,8 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                {(!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
+                {(!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                  &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:<span/>}
@@ -1416,7 +1451,7 @@ export default function Culture(){
                   <IncrementalList
                     items={visibleWorkRows}
                     batchSize={DEFAULT_LIST_BATCH_SIZE}
-                    resetKey={classificationWindowStart+'|'+classificationWindowEnd+'|'+selectedCategory+'|source|'+articleSort}
+                    resetKey={classificationWindowStart+'|'+classificationWindowEnd+'|'+selectedCategory+'|'+selectedRiverGroup+'|source|'+articleSort}
                     className='scope-culture-source-work-scroll'
                     externalHasMore={periodWorksPage.hasMore}
                     loading={periodWorksPage.loading}

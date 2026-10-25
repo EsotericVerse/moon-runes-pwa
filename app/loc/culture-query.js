@@ -376,12 +376,17 @@ export async function selectScopeCultureData(scopeId){
   };
 }
 
-export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null}={}){
+export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null,numericRows=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
   // The database counts per day and category (undated rows included, day ''); category
   // totals and daily density are two projections of the same exact counts.
-  const counted=await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true,requireAggregate:true});
+  const counted=Array.isArray(numericRows)
+    ?{
+      text:numericRows.filter(row=>row.kind==='source').map(row=>({day:row.day,category:row.category,item_count:row.item_count})),
+      media:numericRows.filter(row=>row.kind==='media').map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
+    }
+    :await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true,requireAggregate:true});
   const summarize=(rows,includeEmpty)=>{
     const catalog=new Map(),daily=[];
     for(const row of rows){

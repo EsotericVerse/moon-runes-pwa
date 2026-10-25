@@ -2,6 +2,8 @@ import {unstable_cache} from 'next/cache';
 import {withLocCors,locCorsPreflight} from '../../../../_cors';
 import {createPublicSupabaseClient,validScopeId} from '../../../../_server';
 import {StatisticsFacets} from '../../../../../../loc/statistics-facets';
+import {publishedSourceTaxonomy} from '../../../../../../modular/published-source-taxonomy.js';
+import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../../../../../../loc/culture-river-roots.mjs';
 
 // Only public numeric summaries are cached; not Blocks, search or row contents.
 export const revalidate=3600;
@@ -16,12 +18,18 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','statistics','facet','earliest','daily','daily-earliest'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','facet','earliest','daily','daily-earliest'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
-  let start,end,undated,dimension='';
+  let start,end,undated,dimension='',roots=[];
   try{
     const search=new URL(request.url).searchParams;
-    if([...search.keys()].some(key=>!['start','end','undated','dimension'].includes(key)))throw Error('Unknown parameter');
+    if([...search.keys()].some(key=>!['start','end','undated','dimension','roots'].includes(key)))throw Error('Unknown parameter');
+    if(kind!=='culture-children'&&search.has('roots'))throw Error('Unexpected roots');
+    if(kind==='culture-children'){
+      const parts=String(search.get('roots')||'').split(',');
+      if(!parts.length||parts.some(v=>!['system','custom','media'].includes(v))||new Set(parts).size!==parts.length)throw Error('Invalid root list');
+      roots=parts;
+    }
     dimension=search.get('dimension')||'';
     if(kind==='facet'?!['media_type','media_platform','media_style'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
     if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
@@ -33,9 +41,12 @@ export async function GET(request,{params}){
     end=date(search.get('end'));
     if(start&&end&&start>end)throw Error('Reversed date range');
     if(kind==='daily'&&(!start||!end))throw Error('Daily Rune range required');
-    undated=kind==='culture'&&search.get('undated')==='1';
+    undated=['culture','culture-roots','culture-children'].includes(kind)&&search.get('undated')==='1';
   }catch{return withLocCors(Response.json({error:'Invalid date range'},{status:400}),request);}
+  // Both responses share the same ISR result, so expansion never doubles SQL.
+  const cachedKind=['culture-roots','culture-children'].includes(kind)?'culture':kind;
   const read=unstable_cache(async()=>{
+    const kind=cachedKind;
     const db=createPublicSupabaseClient();
     if(kind==='earliest'){
       const {data,error}=await db.rpc('read_scope_earliest',{p_scope_id:scopeId});
@@ -119,11 +130,15 @@ export async function GET(request,{params}){
       categories:Array.isArray(data.categories)?data.categories:[],
       aliases:Array.isArray(data.aliases)?data.aliases:[]
     };
-  },['loc-numeric-v4',kind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
+  },['loc-numeric-v4',cachedKind,scopeId,start||'',end||'',undated?'1':'0',dimension],{
     revalidate,tags:[LOC_NUMERIC_CACHE_TAG]
   });
   try{
-    return withLocCors(Response.json(await read(),{headers:{
+    const result=await read();
+    const taxonomy=publishedSourceTaxonomy(scopeId)||{};
+    const payload=kind==='culture-roots'?summarizeCultureRiverRoots(result,taxonomy)
+      :kind==='culture-children'?selectCultureRiverChildren(result,taxonomy,roots):result;
+    return withLocCors(Response.json(payload,{headers:{
       'Cache-Control':'no-store',
       'X-LOC-Numeric-ISR':'server-cache'
     }}),request);
