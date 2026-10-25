@@ -12,7 +12,8 @@ test('Trace owns its route and Hero; explanatory Blocks remain in Search',()=>{
   const blocks=read('app/modular/features/TraceBlocks.jsx');
   assert.match(app,/trace:Trace/);
   assert.match(feature,/<FeaturePage featureId="trace">/);
-  assert.match(feature,/<TraceMap spatialData=/);
+  assert.match(feature,/<TraceMap mapOnly=/);
+  assert.match(feature,/enabled:supported&&routeListOpen/);
   assert.match(search,/import\('\.\/TraceBlocks'\)/);
   assert.match(blocks,/page="trace"/);
   assert.match(blocks,/trace-grid/);
@@ -179,24 +180,24 @@ test('Trace anchor quick-location button uses current place name and previews wi
   assert.ok(styles.includes('.loc-trace-quick-field'),'inline control has responsive layout');
 });
 
-test('Public Trace keeps anchor and route results inline rather than navigating to Search',()=>{
+test('Public Trace presents on-demand selected-place articles / Culture / Statistics',()=>{
   const feature=read('app/modular/features/Trace.jsx');
   const map=read('app/modular/features/trace/TraceMap.jsx');
   const engine=read('app/modular/features/trace/trace-map-engine.js');
   const results=read('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(feature,/readTraceData\(scopeId\)/);
-  assert.match(feature,/onAnchorSelect=\{anchor=>/);
-  assert.match(feature,/onRouteSelect=\{map=>/);
-  assert.match(feature,/<TracePlaceResults/);
+  assert.match(feature,/readTraceMapIndex\(periodScopeId\)/);
+  assert.match(feature,/onAnchorSelect=\{choosePlace\}/);
+  assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
+  assert.match(feature,/\{value:'articles',label:'文章列表'\}/);
+  assert.match(feature,/\{value:'timeline',label:'文化'\}/);
+  assert.match(feature,/\{value:'statistics',label:'統計'\}/);
   assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
   assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
-  assert.match(map,/selectedRouteUid/);
-  assert.match(results,/文章列表/);
-  assert.match(results,/時間長河/);
-  assert.match(results,/基本報表/);
+  assert.match(results,/traceArticleFilters\(sourcePlaces,/);
+  assert.match(results,/<CultureTimeline items=\{riverItems\}/);
+  assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
   assert.doesNotMatch(feature,/featureNavigationHref|router\.push/);
 });
-
 
 test('Search recommendations execute real queries and only suggest loaded place names',()=>{
   const search=read('app/modular/features/Search.jsx');
@@ -211,17 +212,20 @@ test('Search recommendations execute real queries and only suggest loaded place 
   assert.match(blocks,/!slot\.entities\.some\(entity=>recommendationTerm\(entity\.text\)\)/);
 });
 
-test('Trace shares cached Time-period navigation with Culture and Statistics',()=>{
+test('Trace loads only the station origin initially; content frames default to three months',()=>{
   const trace=read('app/modular/features/Trace.jsx');
+  const panel=read('app/modular/features/trace/TracePlaceResults.jsx');
+  const filters=read('app/modular/features/trace/trace-panel-filters.mjs');
   const culture=read('app/modular/features/Culture.jsx');
   const stats=read('app/modular/features/Statistics.jsx');
-  assert.match(trace,/queryKey:\['culture-time-periods',periodScopeId\]/);
-  assert.match(trace,/readNumericIsr\(periodScopeId,'periods'\)/);
-  assert.match(trace,/\[periodKey,setPeriodKey\]=useState\('latest'\)/);
-  assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
-  assert.match(trace,/period=\{periodKey==='all'\?null:selectedPeriod\|\|null\}/);
-  assert.match(trace,/onAnchorSelect=\{anchor=>/);
-  assert.match(trace,/空間定錨點不代表該時期曾造訪/);
+  assert.match(trace,/\[routeListOpen,setRouteListOpen\]=useState\(false\)/);
+  assert.match(trace,/enabled:supported&&routeListOpen/);
+  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('3m'\)/);
+  assert.match(trace,/\[reportTab,setReportTab\]=useState\('articles'\)/);
+  assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
+  assert.match(filters,/traceWindow\(window='3m'/);
+  assert.match(panel,/source_name/);
+  assert.match(panel,/sourceFilter/);
   assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
   assert.match(stats,/queryKey:\['culture-time-periods',scopeId\]/);
 });
