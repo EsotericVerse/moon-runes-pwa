@@ -519,6 +519,20 @@ button,a,.loc-control,.loc-button,
   text-shadow:0 2px 14px rgba(0,0,0,.55);
 }
 
+/* System management follows the full LOC homepage Hero scale; keep its
+   artwork un-cropped and preserve its existing design and typography. */
+.loc-next-main[data-loc-scope="admin"] .scope-feature-hero--admin{
+  min-height:clamp(430px,50vw,620px);
+  padding:clamp(1.6rem,4vw,3.75rem);
+  border-radius:var(--loc-ui-radius-xl);
+}
+@media(max-width:760px){
+  .loc-next-main[data-loc-scope="admin"] .scope-feature-hero--admin{
+    min-height:clamp(460px,118vw,570px);
+    padding:1.35rem;
+  }
+}
+
 /* Management entry pages share one composition: left-aligned content,
    centered vertically in the artwork frame, for every Scope route. */
 .scope-feature-hero--artwork:is(.scope-feature-hero--admin,.scope-feature-hero--manage,.scope-feature-hero--setting):not(.is-editing){
