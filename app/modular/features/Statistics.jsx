@@ -192,56 +192,6 @@ async function readPersonalSourceClasses(scopeId){
   const mapped=sourceTaxonomyFromArrays([],rows[0]?.txt_class||[]);
   return {groups:mapped.groups,aliases:mapped.groupAliases};
 }
-function ScopeOthersBreakdown({scopeId,rows=[],catalog={},range}){
-  useUiSection('uiExtra.statisticsView');
-  const copy=useUiCopy();
-  const labels=copy.uiExtra.statisticsView||statisticsViewZh;
-  const groupsQuery=useAsyncResource({
-    queryKey:['scope-others-source-summary',scopeId],
-    enabled:Boolean(scopeId),
-    queryFn:async()=>readPersonalSourceClasses(scopeId)
-  });
-  const details=useMemo(()=>{
-    const groups=(groupsQuery.data?.groups||[]).filter(item=>item.enabled!==false);
-    const active=new Map(groups.map(group=>[group.group_code,group.display_name]));
-    const aliases=new Map((groupsQuery.data?.aliases||[])
-      .map(item=>[String(item.source_key||'').trim().toLowerCase(),item.group_code]));
-    const counts=new Map(),unassigned=new Map();
-    for(const row of rows){
-      if(row.kind!=='source'||!row.category)continue;
-      if(String(row.day||'').slice(0,10)<range.startDate||
-         String(row.day||'').slice(0,10)>range.endDate)continue;
-      if(assignedSource(row.category,catalog.aliases||[],catalog.categories||[])!=='others')continue;
-      const amount=Number(row.item_count)||0;
-      if(!amount)continue;
-      const name=String(row.category).trim();
-      const category=aliases.get(name.toLowerCase());
-      if(category&&active.has(category))counts.set(category,(counts.get(category)||0)+amount);
-      else unassigned.set(name,(unassigned.get(name)||0)+amount);
-    }
-    const result=groups.map(group=>({
-      key:group.group_code,
-      label:group.display_name,
-      value:counts.get(group.group_code)||0
-    })).filter(group=>group.value);
-    const remaining=[...unassigned.values()].reduce((n,v)=>n+v,0);
-    if(remaining)result.push({key:'unclassified',label:labels.othersUnclassified,value:remaining});
-    return result.sort((a,b)=>b.value-a.value||a.label.localeCompare(b.label));
-  },[groupsQuery.data,rows,catalog,range.startDate,range.endDate,labels.othersUnclassified]);
-  return <div className="scope-ranking">
-    <h4>{labels.othersBreakdownTitle}</h4>
-    {groupsQuery.isPending?<p className="scope-status">{copy.common.loading}</p>:null}
-    {groupsQuery.error?<p className="scope-status scope-error">
-      {featureDataErrorMessage(groupsQuery.error,copy)}
-    </p>:null}
-    {!groupsQuery.isPending&&!groupsQuery.error&&details.length
-      ?details.map(item=><div key={item.key} className="scope-stat-controls">
-        <span>{item.label}</span><strong>{item.value.toLocaleString()}</strong>
-      </div>)
-      :null}
-  </div>;
-}
-
 function SummaryList({rankingType,summary,scope,range,filteredSource=false}){
   const UI_COPY=useUiCopy();
   const rows=rankingType==='total'
@@ -252,9 +202,7 @@ function SummaryList({rankingType,summary,scope,range,filteredSource=false}){
     {rows.map(row=><div key={row.category||row.term} style={{display:'block'}}>
       <StatisticsDetails className="scope-stat-details" summary={<><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>}>
         {()=> <>
-          {row.category==='others'?<ScopeOthersBreakdown
-            scopeId={scope.id} rows={summary.rawRows||[]}
-            catalog={summary.catalog||{}} range={range}/>:null}
+          {null
           {filteredSource&&rankingType==='total'&&!row.sourceNames?.length
             ?<p className="scope-status">所選來源在此區間沒有作品。</p>
             :<SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
@@ -333,12 +281,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [styleFilter,setStyleFilter]=useState('none');
   const [keywordSource,setKeywordSource]=useState('');
   const [sourceGroup,setSourceGroup]=useState('');
-  const [sourceSubgroup,setSourceSubgroup]=useState('');
-  useEffect(()=>{
+    useEffect(()=>{
     setStyleFilter('none');
     setKeywordSource('');
     setSourceGroup('');
-    setSourceSubgroup('');
   },[scopeId]);
   // Custom retains the existing one-year default and +/- zoom; periods are
   // canonical dates from the same Time records Culture uses.
@@ -377,7 +323,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
       fullHistory:false,canZoomOut:false,canZoomIn:false};
   },[selectedPeriod,customQueryRange,queryEndDate]);
-  // Global source category and per-Scope Others subgroup stay distinct.
+  // Both editors store flat names. Show one direct source choice, not a group tree.
   const activeSourceSelection=styleFilter==='rune66'?keywordSource:rankingType==='source'?sourceGroup:'';
   const sourceChart=!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(rankingType);
   // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
@@ -434,36 +380,33 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
-  const sourceCatalog={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:null,
-    data:overview.data?{categories:overview.data.categories,aliases:overview.data.aliases}:undefined,
-    dataUpdatedAt:overview.dataUpdatedAt};
-  // Use the same Scope-owned Others taxonomy as the management and summary panels.
-  // Do not promote these local subgroup codes into global Admin categories.
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
     enabled:sourceChart&&Boolean(scopeId),
     queryFn:async()=>readPersonalSourceClasses(scopeId)
   });
-  const activeSubgroups=(othersConfig.data?.groups||[]).filter(row=>row.enabled!==false);
-  const subgroupMap=new Map((othersConfig.data?.aliases||[])
-    .map(row=>[String(row.source_key||'').trim().toLowerCase(),row.group_code]));
-  const activeSubgroupCodes=new Set(activeSubgroups.map(row=>row.group_code));
-  const selectedRawNames=useMemo(()=>{
-    if(activeSourceSelection!=='others'||!sourceSubgroup||!othersConfig.data)return null;
-    return [...new Set((sourceRows.data||[]).filter(row=>row.kind==='source'&&
-      assignedSource(row.category,sourceCatalog.data?.aliases||[],sourceCatalog.data?.categories||[])==='others')
-      .map(row=>String(row.category||'').trim().toLowerCase()).filter(Boolean))]
-      .filter(name=>{
-        const code=subgroupMap.get(name)||'';
-        const resolved=activeSubgroupCodes.has(code)?code:'unclassified';
-        return resolved===sourceSubgroup;
-      });
-  },[sourceRows.data,sourceCatalog.data,othersConfig.data,sourceSubgroup,activeSourceSelection]);
+  const sourceCatalog={
+    isPending:(overview.isPending||othersConfig.isPending)&&sourceChart,
+    isSuccess:overview.isSuccess&&othersConfig.isSuccess,
+    error:othersConfig.error,
+    data:overview.data?{
+      categories:[...(overview.data.categories||[]),
+        ...(othersConfig.data?.groups||[]).map(group=>({
+          category_code:group.group_code,display_name:group.display_name,enabled:true
+        }))],
+      aliases:[...(overview.data.aliases||[]),
+        ...(othersConfig.data?.aliases||[]).map(item=>({
+          source_key:item.source_key,category_code:item.group_code
+        }))]
+    }:undefined,
+    dataUpdatedAt:Math.max(overview.dataUpdatedAt||0,othersConfig.dataUpdatedAt||0)
+  };
+  const selectedRawNames=null;
   // Source classification is a capability, not a prerequisite for media charts
   // or the LunaRunes daily page. Load its existing model only for source results.
   const adminSourceQuery=useAsyncResource({
     queryKey:['administrative-source-trend',scopeId,rankingType,queryRange.startDate,queryRange.endDate,
-      queryRange.bucket,activeSourceSelection,sourceSubgroup,othersConfig.dataUpdatedAt,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
+      queryRange.bucket,activeSourceSelection,othersConfig.dataUpdatedAt,sourceRows.dataUpdatedAt,sourceCatalog.dataUpdatedAt],
     enabled:!isLrunesDaily&&!mediaDimension&&sourceRows.isSuccess&&sourceCatalog.isSuccess,
     queryFn:async()=>{
       const {administrativeSourceTrend}=await import('../../loc/statistics-admin-source.mjs');
@@ -528,23 +471,19 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     ?'關鍵詞組：'+keywordClassQuery.data
     :styleFilter!=='rune66'?'關鍵詞組'
       :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
-  const keywordSourcesQuery=useAsyncResource({
-    queryKey:['statistics-source-taxonomy'],
-    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
-    queryFn:async()=> (await loadGalaxyStatistics()).selectSourceTaxonomy(),
-  });
+  const keywordSourcesQuery=sourceCatalog;
   const configuredSources=useMemo(()=>
     (keywordSourcesQuery.data?.categories||[]).filter(row=>row.enabled!==false),
     [keywordSourcesQuery.data]
   );
   useEffect(()=>{
-    if(keywordSourcesQuery.data&&keywordSource&&keywordSource!=='others'&&!configuredSources.some(row=>row.category_code===keywordSource)){
+    if(keywordSourcesQuery.data&&keywordSource&&keywordSource!=='unclassified'&&!configuredSources.some(row=>row.category_code===keywordSource)){
       setKeywordSource('');
     }
   },[keywordSource,keywordSourcesQuery.data,configuredSources]);
   const runeQuery=useAsyncResource({
     queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate,
-      keywordSource,sourceSubgroup,othersConfig.dataUpdatedAt,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
+      keywordSource,othersConfig.dataUpdatedAt,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
       return selectKeywordAnalysisSummary({
@@ -586,27 +525,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         </select>
       </label>:null}
       {!isLrunesDaily&&!mediaDimension&&(rankingType==='source'||styleFilter==='rune66')?<label>
-        <span>來源大分類</span>
-        <select className="scope-select" aria-label="來源大分類" value={activeSourceSelection}
+        <span>作品／個人分類</span>
+        <select className="scope-select" aria-label="作品／個人分類" value={activeSourceSelection}
           onChange={event=>{
             if(styleFilter==='rune66')setKeywordSource(event.target.value);
             else setSourceGroup(event.target.value);
-            setSourceSubgroup('');
           }}>
           <option value="">全部來源</option>
           {(styleFilter==='rune66'?configuredSources:(sourceCatalog.data?.categories||[]).filter(row=>row.enabled!==false))
-            .map(source=><option key={source.category_code} value={source.category_code}>{source.category_code==='others'?t('uiExtra.statisticsView.othersCategory'):source.display_name}</option>)}
-          {!(styleFilter==='rune66'?configuredSources:(sourceCatalog.data?.categories||[]))
-            .some(row=>row.category_code==='others')?<option value="others">{t('uiExtra.statisticsView.othersCategory')}</option>:null}
-        </select>
-      </label>:null}
-      {!isLrunesDaily&&!mediaDimension&&activeSourceSelection==='others'?<label>
-        <span>{t('uiExtra.statisticsView.othersBreakdownTitle')}</span>
-        <select className="scope-select" aria-label={t('uiExtra.statisticsView.othersBreakdownTitle')} value={sourceSubgroup}
-          onChange={event=>setSourceSubgroup(event.target.value)}>
-          <option value="">{t('uiExtra.statisticsView.othersAll')}</option>
-          {activeSubgroups.map(group=><option key={group.group_code} value={group.group_code}>{group.display_name}</option>)}
-          <option value="unclassified">{t('uiExtra.statisticsView.othersUnclassified')}</option>
+            .map(source=><option key={source.category_code} value={source.category_code}>{source.display_name}</option>)}
+          <option value="unclassified">未分類</option>
         </select>
       </label>:null}
       {periodQuery.error&&!isLrunesDaily?<span className="scope-status scope-error">
