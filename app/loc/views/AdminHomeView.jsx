@@ -22,7 +22,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'database',label:'資料庫設定',shortLabel:'資料庫',description:'資料庫連線與郵件封鎖名單。'},
   {value:'isr',label:'ISR 設定',shortLabel:'ISR',description:'管理 ISR 網域與手動選用的平台。'},
   {value:'reserved',label:'保留名稱設定',shortLabel:'保留',description:'查看系統保留名稱並編輯備註。'},
-  {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁與 LOC 治理頁區塊。'},
+  {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁 Hero 與展示資源。'},
   {value:'themes',label:'主題顏色設定',shortLabel:'配色',description:'調整網站主題和色彩。'}
 ]);
 function Login({account}){
@@ -51,7 +51,7 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database',governance:'featureHero'});
+  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database'});
   const switchSection=next=>{
     if(next===section)return;
     // No Next.js navigation: update the right-hand panel immediately in React.
