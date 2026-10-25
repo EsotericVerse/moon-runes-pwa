@@ -14,7 +14,7 @@ const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},
   {id:'search',label:'搜尋'},
-  {id:'governance',label:'治理'},
+  {id:'governance',label:'痕跡'},
   {id:'admin',label:'系統管理'},
   {id:'manage',label:'頁面控管'},
   {id:'setting',label:'個人設定'}
