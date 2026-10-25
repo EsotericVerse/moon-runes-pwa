@@ -1322,8 +1322,6 @@ export default function Culture(){
                 </section>:null}
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&!secondRiverBuckets.length
-                  ?<p className='scope-status'>{UI_COPY.culture.noPeriodClassification}</p>:null}
                 {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
@@ -1351,7 +1349,8 @@ export default function Culture(){
                 {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error
                   &&sourceSnapshotQuery.data&&!cultureRiver.hasSourceData
                   ?<div className='scope-card scope-status scope-culture-no-data' role='status'>{l.noDataInPeriod}</div>:null}
-                {classificationWindowValid&&(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)
+                {classificationWindowValid&&!sourceSnapshotQuery.error
+                  &&(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)
                   ?<div className='scope-culture-double-river'>
                   <CultureTimeline
                     items={cultureRiver.items}
