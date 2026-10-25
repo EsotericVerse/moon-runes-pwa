@@ -969,6 +969,26 @@ export default function Search({managementMode=false}){
     />
   </FeaturePage>;
 
+  // Suggested terms are curated examples, not unverified live popularity rankings.
+  // Reuse URL-driven search so history, filters and the existing provider stay authoritative.
+  const suggestedTerms=useMemo(()=>{
+    const key=contentType==='multimedia'?'suggestionsMedia'
+      :contentType==='lyrics_work'?'suggestionsLyrics'
+      :contentType==='text_work'?'suggestionsText':'suggestionsAll';
+    return String(t('uiExtra.searchUI.'+key)||'').split('\\n')
+      .map(line=>line.split('|')[0].trim()).filter(Boolean).slice(0,6);
+  },[contentType,t]);
+  function followSearchSuggestion(term,patch={}){
+    const text=String(term||'').trim();
+    if(!text)return;
+    const next={
+      contentType,sourceFilter,startDate,endDate,selectedPeriod,
+      scopeFilter:managementMode?scopeFilter:'',placeOnly,...patch
+    };
+    const href=workspaceSearchHref(text,next);
+    router.push(href,{scroll:false});
+  }
+
   const pageContent=<>
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
@@ -990,6 +1010,28 @@ export default function Search({managementMode=false}){
           }}>瀏覽文章列表（不需輸入關鍵詞）</button>:null}
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
+      {!managementMode&&suggestedTerms.length?<div className="scope-search-suggestions" aria-label="建議搜尋">
+        <span className="scope-status">建議搜尋</span>
+        <div className="scope-search-active-filters">
+          {suggestedTerms.map(term=><button key={term} type="button" className="loc-button"
+            onClick={()=>followSearchSuggestion(term,{placeOnly:false})}>{term}</button>)}
+        </div>
+      </div>:null}
+      {!managementMode&&results.length>0&&matchedQueryRef.current?<div className="scope-search-suggestions" aria-label="延伸搜尋">
+        <span className="scope-status">延伸搜尋（保留原本的時間與來源條件）</span>
+        <div className="scope-search-active-filters">
+          <button type="button" className="loc-button"
+            onClick={()=>followSearchSuggestion(matchedQueryRef.current,{placeOnly:!placeOnly})}>
+            {placeOnly?'搜尋全部內容':'只查打卡地點'}
+          </button>
+          {contentType!=='multimedia'?<button type="button" className="loc-button"
+            onClick={()=>followSearchSuggestion(matchedQueryRef.current,{contentType:'multimedia',placeOnly:false,sourceFilter:''})}>搜尋多媒體</button>:null}
+          {contentType!=='text_work'?<button type="button" className="loc-button"
+            onClick={()=>followSearchSuggestion(matchedQueryRef.current,{contentType:'text_work',placeOnly:false})}>搜尋文字作品</button>:null}
+          <button type="button" className="loc-button"
+            onClick={()=>{setAdvancedOpen(true);setAdvancedTab('time');}}>限定時間</button>
+        </div>
+      </div>:null}
       <div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
         <button type="button" className="loc-button" aria-pressed={!placeOnly}
           onClick={()=>{setPlaceOnly(false);resetSearchState();}}>全部內容</button>
