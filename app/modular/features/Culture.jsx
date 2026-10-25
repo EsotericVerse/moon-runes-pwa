@@ -261,11 +261,26 @@ export default function Culture(){
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
+  // Culture's primary Period navigation reads the shared, server-cached
+  // public Time index immediately. The original Time request still supplies
+  // Events, Anchors and the first river without delaying Period selection.
+  const periodIsrEnabled=usesNumericIsr(scopeId)&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView;
+  const periodNavigationQuery=useAsyncResource({
+    queryKey:['culture-time-periods',scopeId],
+    enabled:periodIsrEnabled,
+    queryFn:()=>readNumericIsr(scopeId,'periods'),
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false
+  });
   const openRows=useMemo(()=>(query.data?.openRanges||[])
     .filter(item=>isAggregateScope||String(item?.scope_id||'')===scopeId),[isAggregateScope,scopeId,query.data]);
   const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
 
-  const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
+  const allPeriods=useMemo(()=>sortPeriods(
+    periodIsrEnabled&&!periodNavigationQuery.error
+      ?periodNavigationQuery.data||[]
+      :query.data?.eras?.eras||[]
+  ),[periodIsrEnabled,periodNavigationQuery.data,periodNavigationQuery.error,query.data]);
   const classificationScope=scopeId;
   const scopeData=query.data?.scope||null;
   // Use a stable periods array: date-navigation effects must not re-run just
@@ -276,7 +291,7 @@ export default function Culture(){
   const latestPeriod=primaryPeriods.at(-1)||null;
   const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope,UI_COPY.culture.allTime),[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
   useEffect(()=>{
-    if(isAggregateScope||!query.data)return;
+    if(isAggregateScope||!primaryPeriods.length)return;
     const preferred=periodKey(latestPeriod)||'all';
     const scopeChanged=periodSelectionScopeRef.current!==scopeId;
     periodSelectionScopeRef.current=scopeId;
@@ -284,7 +299,7 @@ export default function Culture(){
     // within the same Scope are preserved across query refreshes.
     setSelectedPeriodKey(current=>scopeChanged?preferred:
       (current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
-  },[scopeId,isAggregateScope,query.data,latestPeriod,primaryPeriods]);
+  },[scopeId,isAggregateScope,latestPeriod,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||latestPeriod||allTimePeriod);
