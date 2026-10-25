@@ -1,5 +1,6 @@
 export default {
   "importLanguage": "匯入語系",
+  "fileSource": "選擇檔案來源",
   "importLanguageHint": "預設繁體中文。先辨識 UTF-8，必要時以所選語系解讀舊式文字編碼；不會翻譯內容，也不會記錄文章語系。",
   "invalidMediaId": "media_id 格式無效。",
   "existingMediaFailed": "無法檢查既有媒體。",
@@ -99,7 +100,7 @@ export default {
     "meta_tags": "媒體標籤",
     "rune_references": "符文參照"
   },
-  "formatSummary": "格式設定",
+  "formatSummary": "建議格式",
   "recordPath": "資料陣列路徑（預設支援根陣列／items／posts／data／records）",
   "recordPathHint": "例如 result.entries；留空自動辨識",
   "batchSize": "每批寫入筆數",
