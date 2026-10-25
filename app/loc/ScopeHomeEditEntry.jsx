@@ -43,7 +43,7 @@ export default function ScopeHomeEditEntry(){
         return;
       }
       const allowed=scopeId==='loc'
-        ?result.authorizer?.canManageGlobalSync()
+        ?result.authorizer?.canManageGroupSync('loc')
         :result.authorizer?.canManageScopeSync(scopeId);
       if(!allowed){
         setMessage('uiExtra.editBlocks.editPermissionDenied');
