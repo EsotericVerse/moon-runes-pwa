@@ -22,10 +22,10 @@ export default function GenericScopeHomeView(){
   const native=useNativeNavigation();
   const {scopeId,scope,registryRow}=useScopeRuntime();
   if(scope?.aggregateChildren){
-    return <FeaturePage featureId="governance" subtitle={scope.label}>
+    return <FeaturePage featureId="trace" subtitle={scope.label}>
       <ScopeGroupOverview
         scopeId={scopeId}
-        featureId="governance"
+        featureId="trace"
         title={scope.label+' · Scope Group'}
         description={t('uiExtra.genericScope.guide')}
       />
@@ -40,7 +40,7 @@ export default function GenericScopeHomeView(){
         <ScopeLink href={navigationHref(scopeId,'search',native)} native={native}><UiText id="nav.search"/></ScopeLink>
         <ScopeLink href={navigationHref(scopeId,'statics',native)} native={native}><UiText id="features.statics.title"/></ScopeLink>
         <ScopeLink href={navigationHref(scopeId,'culture',native)} native={native}><UiText id="features.culture.title"/></ScopeLink>
-        <ScopeLink href={navigationHref(scopeId,'governance',native)} native={native}><UiText id="features.traces.title"/></ScopeLink>
+        <ScopeLink href={navigationHref(scopeId,'trace',native)} native={native}><UiText id="features.traces.title"/></ScopeLink>
         <ScopeLink href={navigationHref(scopeId,'governance/manage',native)} native={native}><UiText id="common.management"/></ScopeLink>
       </div>
     </section>
