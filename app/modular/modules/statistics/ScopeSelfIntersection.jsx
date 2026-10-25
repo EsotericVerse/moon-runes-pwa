@@ -27,9 +27,9 @@ export const DIMENSION_FILTERS=Object.freeze([
 ]);
 export const DIMENSIONS=Object.freeze([
   {kind:'source',label:'原始作品來源'},
-  {kind:'source_rollup',label:'作品群組分類／作品自訂分類'},
-  {kind:'group',label:'作品群組分類'},
-  {kind:'others_subgroup',label:'作品自訂分類'},
+  {kind:'source_rollup',label:'作品／個人分類'},
+  {kind:'group',label:'作品分類'},
+  {kind:'others_subgroup',label:'個人分類'},
   {kind:'media_category',label:'音樂／圖片／影片'},
   {kind:'media',label:'多媒體來源'},
   {kind:'keyword_all',label:'全部關鍵詞'},
@@ -111,9 +111,10 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const othersAliases=useMemo(()=>new Map((othersConfig.data?.aliases||[])
     .map(row=>[String(row.source_key||'').trim().toLowerCase(),row.group_code])),[othersConfig.data]);
   const resolveOthers=(source)=>{
-    if(assignedSource(source,catalog.data?.aliases||[],catalog.data?.categories||[])!=='unclassified')return '';
     const group=othersAliases.get(String(source||'').trim().toLowerCase())||'';
-    return group&&othersActive.has(group)?group:'unclassified';
+    if(group&&othersActive.has(group))return group;
+    return assignedSource(source,catalog.data?.aliases||[],catalog.data?.categories||[])==='unclassified'
+      ?'unclassified':'';
   };
   // Read the already-stored keyword summary only when this panel is expanded.
   const keywords=useAsyncResource({
@@ -164,6 +165,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     for(const row of rows){
       if(row.kind!=='source')continue;
       const id=assignedSource(row.category,aliases,known);
+      if(id==='unclassified'||othersActive.has(id))continue;
       grouped.set(id,(grouped.get(id)||0)+(Number(row.item_count)||0));
     }
     const groups=[...grouped].filter(([,total])=>total>0).map(([id,total])=>({
@@ -201,14 +203,15 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     for(const row of rows){
       if(row.kind!=='source')continue;
       const amount=Number(row.item_count)||0;
-      if(assignedSource(row.category,aliases,known)!=='unclassified')systemTotal+=amount;
-      else if(resolveOthers(row.category)!=='unclassified')personalTotal+=amount;
+      const personal=resolveOthers(row.category);
+      if(personal&&personal!=='unclassified')personalTotal+=amount;
+      else if(!personal&&assignedSource(row.category,aliases,known)!=='unclassified')systemTotal+=amount;
     }
     const rollups=[
       {id:metricId('source_rollup','system'),kind:'source_rollup',
-        name:'作品群組分類',total:systemTotal},
+        name:'作品分類',total:systemTotal},
       {id:metricId('source_rollup','personal'),kind:'source_rollup',
-        name:'作品自訂分類',total:personalTotal}
+        name:'個人分類',total:personalTotal}
     ].filter(item=>item.total>0);
     const mediaTotals=new Map();
     for(const row of rows){
@@ -281,12 +284,16 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       const ids=[rawId];
       if(row.kind==='source'){
         const assigned=assignedSource(row.category,catalog.data?.aliases||[],catalog.data?.categories||[]);
-        ids.push('group\u0000'+assigned);
-        if(assigned!=='unclassified')ids.push('source_rollup'+String.fromCharCode(0)+'system');
-        const subgroup=resolveOthers(row.category);
-        if(subgroup)ids.push('others_subgroup'+String.fromCharCode(0)+subgroup);
-        if(assigned==='unclassified'&&subgroup&&subgroup!=='unclassified')
+        const personal=resolveOthers(row.category);
+        if(personal&&personal!=='unclassified'){
+          ids.push('others_subgroup'+String.fromCharCode(0)+personal);
           ids.push('source_rollup'+String.fromCharCode(0)+'personal');
+        }else if(!personal&&assigned!=='unclassified'){
+          ids.push('group\u0000'+assigned);
+          ids.push('source_rollup'+String.fromCharCode(0)+'system');
+        }else if(personal==='unclassified'){
+          ids.push('others_subgroup'+String.fromCharCode(0)+'unclassified');
+        }
       }else if(row.kind==='media'){
         const family=mediaTypeFamily(row.category)||'other';
         ids.push('media_category'+String.fromCharCode(0)+family);
