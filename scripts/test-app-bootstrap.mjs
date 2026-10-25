@@ -460,3 +460,17 @@ test('Culture second river waits for its first source snapshot and avoids lazy d
   assert.match(river,/timeline\.setOptions\(\{hiddenDates:/);
   assert.match(river,/appliedHiddenDatesRef\.current=hiddenDates/);
 });
+
+
+test('Scope editor uses time/spatial anchor labels and preserves LOC group labels',()=>{
+  const shell=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
+  const dock=readFileSync(new URL('../app/modular/edit-dock.jsx',import.meta.url),'utf8');
+  assert.match(shell,/locAdminEdit\?translateUiField\(activeLocale,'人員作品管理'\):translateUiField\(activeLocale,'時間定錨'\)/);
+  assert.match(shell,/locAdminEdit\?'痕跡製作':'空間定錨'/);
+  assert.match(shell,/translateUiField\(activeLocale,'關鍵詞'\)/);
+  assert.match(shell,/translateUiField\(activeLocale,'暫存'\)/);
+  assert.doesNotMatch(shell,/translateUiField\(activeLocale,'設立定錨'\)/);
+  assert.doesNotMatch(shell,/translateUiField\(activeLocale,'痕跡管理'\)/);
+  assert.match(dock,/已暫存，可繼續編輯/);
+  assert.doesNotMatch(dock,/已分段儲存/);
+});
