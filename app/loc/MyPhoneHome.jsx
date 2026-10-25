@@ -24,7 +24,7 @@ export default function MyPhoneHome(){
             {id:'culture',label:'文化'},
             {id:'statics',label:'統計'},
             {id:'search',label:'搜尋'},
-            {id:'governance',label:'管理'}
+            {id:'manage',label:'管理'}
           ].map(item=><ScopeLink key={item.id} native href={navigationHref('local',item.id,true)}>{item.label}</ScopeLink>)}
         </div>
         <p><ScopeLink native href={navigationHref('local','',true)+'?edit=1'}>進入本機編輯模式</ScopeLink></p>
