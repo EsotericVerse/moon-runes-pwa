@@ -1,18 +1,8 @@
 name: Next Architecture Build
 
+# Cost control: expensive full app build is manual only.
+# Run from Actions when doing a deliberate release or architecture verification.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'app/**'
-      - 'assets/**'
-      - 'public/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.mjs'
-      - '.github/workflows/next-architecture.yml'
   workflow_dispatch:
 
 concurrency:
