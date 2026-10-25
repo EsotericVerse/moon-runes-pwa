@@ -46,10 +46,18 @@ export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
   const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id'+(union?',scope_id':'');
-  const result=await dbPublicClient.schema('silver').from(id+'_trace')
-    .select(columns).order('created_at',{ascending:true}).limit(2000);
-  const rows=(verified(result,id+' 痕跡讀取')||[])
-    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+  // Read only when the selected Trace screen mounts. A former 2,000-row cap
+  // silently hid historical places as imports grew; bounded pages preserve all.
+  // This does not run on every autocomplete keystroke.
+  const rows=[],pageSize=800;
+  for(let offset=0;;offset+=pageSize){
+    const result=await dbPublicClient.schema('silver').from(id+'_trace')
+      .select(columns).order('created_at',{ascending:true})
+      .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
+    const batch=verified(result,id+' 痕跡讀取')||[];
+    rows.push(...batch.map(row=>({...row,source_scope:union?row.scope_id:id})));
+    if(batch.length<pageSize)break;
+  }
   return {
     anchors:rows.filter(row=>row.trace_type==='anchor'),
     maps:rows.filter(row=>row.trace_type==='map')
