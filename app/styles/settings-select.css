@@ -430,34 +430,58 @@
 
 /* Inline classification editors: one surface, direct fields, one save action.
    Admin and Scope have separate data models; only layout rules are shared. */
-.classification-inline{min-width:0;display:grid;gap:1rem}
+.classification-inline{min-width:0;display:grid;gap:1rem;container:classification-inline / inline-size}
 .classification-inline__header{display:grid;gap:.35rem}
 .classification-inline__header h2{margin:0;color:var(--loc-heading)}
 .classification-inline__header p{margin:0;color:var(--loc-muted);line-height:1.6}
 .classification-inline form{display:grid;gap:1rem;min-width:0}
-.classification-inline__list{display:grid;gap:0;border-top:1px solid var(--loc-ui-hairline,var(--loc-line))}
+.classification-inline__list{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.5rem;min-width:0;align-items:start;
+}
 .classification-inline__row{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;
-  align-items:center;gap:.55rem 1rem;min-width:0;
-  padding:.8rem 0;border-bottom:1px solid var(--loc-ui-hairline,var(--loc-line));
-}
-.classification-inline__row--personal{grid-template-columns:minmax(0,1fr) minmax(7.5rem,9rem) auto}
-.classification-inline__row--new{
-  grid-template-columns:minmax(0,1fr);
-  padding:.9rem 0;
-  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
+  display:grid;gap:.38rem;min-width:0;
+  padding:.5rem;border:1px solid var(--loc-ui-hairline,var(--loc-line));
   border-radius:var(--loc-ui-radius-sm,10px);
-  padding-inline:.8rem;
+  background:var(--loc-ui-panel-soft,var(--loc-panel-2));
 }
-.classification-inline__field{display:grid;gap:.32rem;min-width:0}
-.classification-inline__field>span{color:var(--loc-heading);font-weight:650;font-size:.9rem;overflow-wrap:anywhere}
+.classification-inline__field{
+  display:grid;grid-template-columns:auto minmax(0,1fr);
+  gap:.35rem;align-items:center;min-width:0;
+}
+.classification-inline__field>span{
+  color:var(--loc-muted);font-weight:650;font-size:.75rem;
+  font-variant-numeric:tabular-nums;
+}
 .classification-inline__field :is(input,select){
-  width:100%;min-width:0;min-height:44px;padding:.55rem .72rem;
+  width:100%;min-width:0;min-height:36px;padding:.34rem .5rem;
   font:inherit;color:var(--loc-text);background:var(--loc-panel);
   border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm,10px);
 }
-.classification-inline__field :is(input,select):focus-visible{
+.classification-inline__field :is(input,select):focus-visible,
+.classification-inline__controls button:focus-visible{
   outline:2px solid var(--loc-accent);outline-offset:2px;
+}
+.classification-inline__controls{display:flex;gap:.16rem;justify-content:flex-end;min-width:0}
+.classification-inline__controls button{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 1 32px;min-width:25px;height:32px;padding:0;
+  border:1px solid var(--loc-ui-hairline,var(--loc-line));
+  border-radius:6px;background:var(--loc-panel);
+  color:var(--loc-heading);font:inherit;cursor:pointer;
+}
+.classification-inline__controls button:hover:not(:disabled){
+  border-color:var(--loc-accent);color:var(--loc-accent);
+}
+.classification-inline__controls button:disabled{opacity:.3;cursor:default}
+.classification-inline__controls .classification-inline__remove{
+  margin-left:auto;color:var(--loc-danger,#af4848);
+}
+@container classification-inline (max-width:720px){
+  .classification-inline__list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container classification-inline (max-width:420px){
+  .classification-inline__list{grid-template-columns:minmax(0,1fr)}
 }
 .classification-inline__code{font-size:.78rem;color:var(--loc-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
 .classification-inline__actions{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
@@ -478,12 +502,6 @@
 .classification-inline__assignments{display:grid;gap:.5rem;min-width:0}
 .classification-inline__assignment .scope-select{width:100%;min-width:0;min-height:44px}
 @media(max-width:580px){
-  .classification-inline__row,.classification-inline__row--personal{
-    grid-template-columns:minmax(0,1fr);
-    gap:.45rem;
-  }
-  .classification-inline__row--new{padding:.8rem}
-  .classification-inline__code{order:-1}
   .classification-inline__assignment{grid-template-columns:minmax(0,1fr)}
   .classification-inline__actions>.loc-button{flex:1 1 auto}
 }
