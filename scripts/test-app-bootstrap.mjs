@@ -219,8 +219,8 @@ test('advanced statistics uses grouped category tabs and real keyword group memb
   assert.ok(source.includes('for(const group of hitGroups)add('));
   assert.ok(source.includes('maximumLanes=Math.min(8,'));
   assert.ok(source.includes("kind:'source_rollup'"));
-  assert.ok(source.includes("name:'系統分類'"));
-  assert.ok(source.includes("name:'個人分類'"));
+  assert.ok(source.includes("name:'作品群組分類'"));
+  assert.ok(source.includes("name:'作品自訂分類'"));
   assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'system')"));
   const start=source.indexOf('export function mediaTypeFamily(raw)');
   const end=source.indexOf('const MEDIA_GROUP_NAMES=',start);
@@ -398,19 +398,50 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/timeline\.redraw\(\)/);
 });
 
-test('Admin and Scope classification forms allow direct editing without a two-pane selector',()=>{
+test('Admin and Scope classification forms share direct one-level txt_class editor',()=>{
   const work=readFileSync(new URL('../app/loc/WorkClassificationPage.jsx',import.meta.url),'utf8');
   const personal=readFileSync(new URL('../app/loc/ScopeOthersSources.jsx',import.meta.url),'utf8');
-  for(const code of [work,personal]){
-    assert.match(code,/classification-inline__list/);
-    assert.match(code,/classification-inline__actions/);
-    assert.match(code,/type="submit"/);
-    assert.doesNotMatch(code,/classification-page__layout/);
-    assert.doesNotMatch(code,/classification-page__choice/);
-  }
-  assert.match(work,/canManageGlobalSync/);
-  assert.match(personal,/canManageScopeSync/);
-  assert.match(personal,/enabled:allowed&&showAssignments/);
+  const editor=readFileSync(new URL('../app/loc/FlatClassificationEditor.jsx',import.meta.url),'utf8');
+  assert.match(work,/<FlatClassificationEditor scopeId="loc"\/>/);
+  assert.match(personal,/<FlatClassificationEditor scopeId=\{scopeId\}\/>/);
+  assert.match(editor,/classification-inline__list/);
+  assert.match(editor,/classification-inline__actions/);
+  assert.match(editor,/type="submit"/);
+  assert.match(editor,/\.update\(\{txt_class:names\}\)/);
+  assert.match(editor,/canManageGlobalSync\(\)/);
+  assert.match(editor,/canManageScopeSync\(scopeId\)/);
+  assert.match(editor,/作品群組分類/);
+  assert.match(editor,/作品自訂分類/);
+  assert.doesNotMatch(editor,/classification-page__layout|statistics_source_categories|statistics_scope_others_groups/);
+});
+
+test('Scope import keeps one action row and no Source Refresh or data reorganization',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/scope-import-primary-row/);
+  assert.match(panel,/uiExtra\.importUI\.importLanguage/);
+  assert.match(panel,/uiExtra\.importUI\.fileSource/);
+  assert.match(panel,/uiExtra\.importUI\.batchImport/);
+  assert.match(panel,/<ImportFormatSettings/);
+  assert.doesNotMatch(panel,/function SourceRefresh|function DuplicateDetection|findGalaxyDuplicates/);
+});
+
+test('LOC member and work management owns member registry and reserved names; media target is fixed',()=>{
+  const page=readFileSync(new URL('../app/loc/LocSourceManagement.jsx',import.meta.url),'utf8');
+  const admin=readFileSync(new URL('../app/loc/views/AdminHomeView.jsx',import.meta.url),'utf8');
+  const target=readFileSync(new URL('../app/loc/ManagementContentTarget.jsx',import.meta.url),'utf8');
+  const searchManage=readFileSync(new URL('../app/loc/SearchManagement.jsx',import.meta.url),'utf8');
+  const publicSearch=readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
+  const zh=readFileSync(new URL('../app/i18n/zh_tw.js',import.meta.url),'utf8');
+  assert.match(page,/人員作品管理/);
+  assert.match(page,/views\/admin-panels\/AdminRegistry/);
+  assert.match(page,/views\/admin-panels\/AdminReservedScopeIds/);
+  assert.doesNotMatch(admin,/section==='registry'|section==='reserved'/);
+  assert.match(target,/AUTHOR_SCOPE_ID='lo3rwang'/);
+  assert.match(target,/scopeData\?\.galaxyMedia/);
+  assert.doesNotMatch(target,/目標 Table|<Select|selectScopeRegistry/);
+  assert.match(searchManage,/label:'治理原則',shortLabel:'治理原則'/);
+  assert.match(publicSearch,/UI_COPY\.features\.trace\.detailsLabel/);
+  assert.match(zh,/"detailsLabel": "治理原則"/);
 });
 
 test('Culture second river waits for its first source snapshot and avoids lazy density remounts',()=>{
