@@ -433,10 +433,12 @@ export default function CultureTimeline({
         });
         if(changedRows.length)data.update(changedRows);
         const obsoleteGroups=[...existingGroupIds].filter(id=>!wantedGroups.has(id));
-        if(obsoleteGroups.length){
-          groups.remove(obsoleteGroups);
-          // Flush the group/label layout once only when lanes disappear.
-          // Normal density changes remain in-place without a redraw.
+        if(obsoleteGroups.length)groups.remove(obsoleteGroups);
+        // A published root can arrive before child rows. DataSet updates alone
+        // do not reliably recompute vis-timeline's row geometry after an
+        // asynchronous root/child transition. Redraw the existing instance
+        // once, preserving its camera and avoiding chart re-creation.
+        if(changedGroups.length||changedRows.length||obsoleteRows.length||obsoleteGroups.length){
           timeline.redraw();
         }
       }else if(nextGroups.length){
@@ -446,6 +448,7 @@ export default function CultureTimeline({
         const previousRowIds=new Set(data.getIds());
         data.remove([...previousRowIds].filter(id=>!nextRows.some(row=>row.id===id)));
         data.update(nextRows);
+        timeline.redraw();
       }
       timeline.setOptions({minHeight:timelineMinHeight+'px',maxHeight:timelineMaxHeight+'px'});
     }catch(error){
