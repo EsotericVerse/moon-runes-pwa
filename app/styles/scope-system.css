@@ -644,6 +644,17 @@
 .scope-culture-double-river .vis-label.scope-dual-river-child .vis-inner{padding-left:1.4rem}
 .scope-culture-double-river .scope-river-group-button{appearance:none;border:0;background:none;color:inherit;cursor:pointer;text-align:left;font:inherit;font-weight:inherit;width:100%;padding:.35rem .1rem;white-space:normal;overflow-wrap:anywhere}
 .scope-culture-double-river .scope-river-group-button:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-2px;border-radius:3px}
+
+/* Rune catalog is revealed on demand below the *same* second river. */
+.scope-culture-rune-list{margin:.65rem 0 0;padding:.7rem .85rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel)}
+.scope-culture-rune-list header{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap;margin-bottom:.55rem}
+.scope-culture-rune-list ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}
+.scope-culture-rune-list li{display:flex;justify-content:space-between;align-items:center;gap:.4rem;min-width:0;padding:.55rem .6rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);font-size:.85rem}
+.scope-culture-rune-list li strong{overflow-wrap:anywhere}
+.scope-culture-rune-list li span{flex-shrink:0;color:var(--loc-muted);font-variant-numeric:tabular-nums}
+@media(max-width:900px){.scope-culture-rune-list ul{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.scope-culture-rune-list ul{grid-template-columns:1fr}}
+
 .scope-culture-double-river .vis-label.scope-candidate-lane,.scope-culture-double-river .vis-group.scope-candidate-lane{background:color-mix(in srgb,var(--loc-accent) 6%,var(--loc-panel))!important;min-height:52px}
 .scope-culture-double-river .vis-label.scope-candidate-lane{border-top:1px solid color-mix(in srgb,var(--loc-accent) 22%,transparent)}
 .scope-culture-double-river .vis-custom-time{width:1px!important;background:color-mix(in srgb,var(--loc-accent) 52%,transparent)!important;pointer-events:none;z-index:2}
