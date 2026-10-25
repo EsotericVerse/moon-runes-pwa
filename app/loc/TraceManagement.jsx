@@ -10,6 +10,8 @@ import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
 
+const TraceOrganizer=dynamic(()=>import('./TraceOrganizer'),{loading:()=> <p className="scope-status">正在整理空間定錨點…</p>});
+
 const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
   ssr:false,loading:()=> <p className="scope-status" role="status">正在開啟空間定錨地圖…</p>
 });
@@ -234,7 +236,9 @@ export default function TraceManagementPanel({scopeId,mode='anchor'}){
   if(query.isPending)return <p className="scope-status" role="status">正在載入空間定錨點與痕跡圖…</p>;
   if(query.error)return <p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>;
   const spatial=query.data||{anchors:[],maps:[]};
-  return mode==='map'
+  return mode==='cleanup'
+    ?<TraceOrganizer key={scopeId+'-cleanup'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
+    :mode==='map'
     ?<MapEditor key={scopeId+'-map'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
     :<AnchorEditor key={scopeId+'-anchor'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>;
 }
