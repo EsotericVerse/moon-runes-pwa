@@ -764,13 +764,12 @@ export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
   }catch(error){
     if(!missingStatisticsRpc(error))throw error;
   }
-  const [earliest,rows,categories,aliases]=await Promise.all([
+  const [earliest,rows,catalog]=await Promise.all([
     selectFirstScopeStatisticsDate(current),
     selectScopeSourceBreakdownRows(current,{startDate,endDate}),
-    selectRows('silver.statistics_source_categories',{columns:'category_code,display_name,enabled',limit:250}),
-    selectRows('silver.statistics_source_aliases',{columns:'source_key,category_code',limit:250})
+    selectSourceTaxonomy()
   ]);
-  return {earliest,rows,categories:categories.rows,aliases:aliases.rows};
+  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases};
 }
 export async function selectScopeEarliest(scope){
   const current=scopeOf(scope);
