@@ -22,7 +22,7 @@ export function setAuthorization(user,rows=[]){
     const scopeid=normalizeScope(row?.scopeid||row?.id);
     const recordEmail=normalizeEmail(row?.email);
     const role=String(row?.role||'').trim().toLowerCase();
-    if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeid)||recordEmail!==verifiedEmail||!['admin','scope'].includes(role))return [];
+    if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeid)||recordEmail!==verifiedEmail||!['admin','group','scope'].includes(role))return [];
     return [Object.freeze({scopeid,email:recordEmail,role})];
   });
   userId=id;
@@ -38,7 +38,14 @@ export function readAuthorization(){
 export function canAuthorizeScope(scopeid){
   const scope=normalizeScope(scopeid);
   return Boolean(email&&entries?.some(row=>row.email===email&&(
-    row.role==='admin'||(row.role==='scope'&&row.scopeid===scope)
+    row.role==='admin'||((row.role==='scope'||row.role==='group')&&row.scopeid===scope)
+  )));
+}
+
+export function canAuthorizeGroup(groupId){
+  const group=normalizeScope(groupId);
+  return Boolean(email&&entries?.some(row=>row.email===email&&(
+    row.role==='admin'||(row.role==='group'&&row.scopeid===group)
   )));
 }
 
@@ -51,11 +58,14 @@ export function createScopeAuthorizer(user){
   if(!current||current.userId!==String(user?.id||'')||
     current.email!==normalizeEmail(user?.email))return null;
   const scopes=[...new Set(current.entries.filter(row=>row.role==='scope').map(row=>row.scopeid))].sort();
+  const groups=[...new Set(current.entries.filter(row=>row.role==='group').map(row=>row.scopeid))].sort();
   const admin=canAuthorizeGlobal();
   return Object.freeze({
     email:current.email,
-    role:admin?'admin':(scopes.length?'scope':''),
+    role:admin?'admin':(groups.length?'group':(scopes.length?'scope':'')),
     scopeIds:Object.freeze(scopes),
+    groupIds:Object.freeze(groups),
+    canManageGroupSync:canAuthorizeGroup,
     canManageGlobalSync:canAuthorizeGlobal,
     canManageScopeSync:canAuthorizeScope
   });
@@ -69,6 +79,6 @@ export function assertAuthorizationForTable(table){
   const suffix=name.slice(7);
   // Rune reference tables are managed by the LunaRunes scope.
   const scopeid=suffix==='runes'||suffix.startsWith('runes_')?'lrunes':suffix.split('_')[0];
-  if(scopeid==='loc'?canAuthorizeGlobal():canAuthorizeScope(scopeid))return;
+  if(name==='silver.manage'?canAuthorizeGlobal():scopeid==='loc'?canAuthorizeGroup('loc'):canAuthorizeScope(scopeid))return;
   throw new Error('目前登入帳號沒有此 Scope 的寫入權限。');
 }
