@@ -20,10 +20,8 @@ import PanelLoading from '../PanelLoading';
 const ADMIN_OPTIONS=Object.freeze([
   {value:'traceAnchor',label:'新增空間定錨點',shortLabel:'空間定錨點',description:'新增 LOC 自己的空間定錨點。'},
   {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'連接 LOC 的空間定錨點，作為一張痕跡圖。'},
-  {value:'registry',label:'群組與人員',shortLabel:'人員',description:'管理群組、人員及所屬關係。'},
   {value:'database',label:'資料庫設定',shortLabel:'資料庫',description:'資料庫連線與郵件封鎖名單。'},
   {value:'isr',label:'ISR 設定',shortLabel:'ISR',description:'管理 ISR 網域與手動選用的平台。'},
-  {value:'reserved',label:'保留名稱設定',shortLabel:'保留',description:'查看系統保留名稱並編輯備註。'},
   {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁 Hero 與展示資源。'},
   {value:'themes',label:'主題顏色設定',shortLabel:'配色',description:'調整網站主題和色彩。'}
 ]);
@@ -36,8 +34,6 @@ function Login({account}){
   </FeaturePage>;
 }
 
-const AdminRegistryPanel=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
-const AdminReservedScopeIds=dynamic(()=>import('./admin-panels/AdminReservedScopeIds'),{loading:PanelLoading});
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
 const IsrDomainTarget=dynamic(()=>import('./admin-panels/IsrDomainTarget'),{loading:PanelLoading});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
@@ -54,7 +50,9 @@ export default function AdminHomeView(){
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
-  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{system:'database'});
+  const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'traceAnchor',{
+    system:'database',registry:'traceAnchor',reserved:'traceAnchor'
+  });
   const switchSection=next=>{
     if(next===section)return;
     // No Next.js navigation: update the right-hand panel immediately in React.
@@ -79,8 +77,6 @@ export default function AdminHomeView(){
         items={ADMIN_OPTIONS} value={section} onChange={switchSection}/>
       <div className="management-workspace-panel" id="admin-management-panel" role="region"
         aria-labelledby={'admin-sections-option-'+selectedOption.value}>
-        {section==='registry'?<AdminRegistryPanel/>:null}
-        {section==='reserved'?<AdminReservedScopeIds/>:null}
         {section==='themes'?<ThemeEditor/>:null}
         {section==='database'?<><DatabaseTarget/><AdminEmailBlocklist/></>:null}
         {section==='isr'?<IsrDomainTarget/>:null}
