@@ -1,2 +1,0 @@
-// Public loc/group_governance Blocks; this module loads only when its page is requested.
-export default [{"uid":"997BFF13","scope":"loc","page_name":"group_governance","block_text":"\u003cp>處理如何被使用、引用、延伸與修正的\u003cstrong>基本原則\u003c/strong>或\u003cstrong>著作權\u003c/strong>跟\u003cstrong>授權方式\u003c/strong>等等。\u003c/p>","block_image":null,"block_order":1,"block_title":"治理","block_entity":[],"block_eyebrow":"Governance","block_subtitle":"\u003cp>\u003cbr>\u003c/p>"}];
