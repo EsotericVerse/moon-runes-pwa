@@ -14,7 +14,7 @@ const MIN_SEARCH_GAP_MS=1250;
 const normalized=value=>String(value||'').normalize('NFKC').toLowerCase()
   .replace(/[（(]\s*(台灣|臺灣)\s*[）)]/g,'')
   .replace(/[\s\u3000、，,.。()（）\-－_]/g,'');
-const validDateOrNumber=value=>Number.isFinite(Number(value));
+const validDateOrNumber=value=>value!==null&&value!==undefined&&String(value).trim()!==''&&Number.isFinite(Number(value));
 
 function readCache(id){
   try{
@@ -81,6 +81,7 @@ export default function TracePlaceGeocoder({scopeId}){
   const [filter,setFilter]=useState('all');
   const [page,setPage]=useState(0);
   const [running,setRunning]=useState(false);
+  const [policyAccepted,setPolicyAccepted]=useState(false);
   const [saving,setSaving]=useState(false);
   const [processed,setProcessed]=useState(0);
   const [notice,setNotice]=useState('');
@@ -144,7 +145,7 @@ export default function TracePlaceGeocoder({scopeId}){
     }
   }
   async function lookupMany(names){
-    if(busyRef.current||saving)return;
+    if(busyRef.current||saving||!policyAccepted)return;
     busyRef.current=true;stopRef.current=false;setRunning(true);
     setFailure('');setNotice('');setProcessed(0);
     let completed=0;
@@ -203,9 +204,13 @@ export default function TracePlaceGeocoder({scopeId}){
         共 {total} 筆打卡、{all.length} 種名稱；現有定錨點已涵蓋 {all.length-pending.length} 種。
         待定位 {pending.length} 種，其中可儲存 {ready.length} 種、待核對 {unresolved.length} 種、無結果 {missing.length} 種。
       </p>
+      <label className="scope-setting-toggle">
+        <input type="checkbox" checked={policyAccepted} onChange={event=>setPolicyAccepted(event.target.checked)}/>
+        <span>我了解查詢會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
+      </label>
       <div className="scope-stat-controls">
-        <button className="loc-button" type="button" disabled={running||saving||!pending.some(item=>!found[item.name])} onClick={searchNext}>查詢接下來 20 處</button>
-        <button className="loc-button" type="button" disabled={running||saving||!pending.some(item=>!found[item.name])} onClick={searchAll}>查詢其餘地點</button>
+        <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchNext}>查詢接下來 20 處</button>
+        <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchAll}>查詢其餘地點</button>
         {running?<button className="loc-button" type="button" onClick={()=>{stopRef.current=true;requestRef.current?.abort()}}>停止</button>:null}
         <button className="loc-button primary" type="button" disabled={running||saving||!ready.length} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
       </div>
@@ -231,7 +236,7 @@ export default function TracePlaceGeocoder({scopeId}){
             {result?.status==='ready'?<p className="scope-status">已選位置：{result.choices[result.selected]?.label}（{result.choices[result.selected]?.latitude}, {result.choices[result.selected]?.longitude}）</p>:null}
             {result?.status==='review'?<p className="scope-status">同名或相似候選，請核對位置再選取：</p>:null}
             {result?.status==='notfound'?<p className="scope-status">沒有找到。可在一般空間定錨點頁面改用地圖手動選取。</p>:null}
-            {result?.choices?.length?<label>候選位置
+            {Boolean(result?.choices?.length)?<label>候選位置
               <select className="scope-select" value={result.selected>=0?String(result.selected):''}
                 disabled={running||saving} onChange={e=>choose(item.name,Number(e.target.value))}>
                 <option value="">請確認位置</option>
@@ -239,7 +244,7 @@ export default function TracePlaceGeocoder({scopeId}){
               </select>
             </label>:null}
             {!result||result.status==='notfound'?<button type="button" className="loc-button"
-              disabled={running||saving} onClick={()=>lookupMany([item.name])}>查詢這個地點</button>:null}
+              disabled={!policyAccepted||running||saving} onClick={()=>lookupMany([item.name])}>查詢這個地點</button>:null}
           </div>;
         })}
         {!rows.length?<p className="scope-status">沒有符合目前條件的地點。</p>:null}
