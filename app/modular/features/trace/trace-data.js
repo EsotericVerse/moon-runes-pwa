@@ -2,6 +2,7 @@
 
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
 import {createUid8} from '../../../loc/uid';
+import {anchorAddress,findAnchorWriteMatches,normalizeAnchorAddress,organizeAnchorCandidates} from './trace-organizer.mjs';
 
 // Exactly one source table per Scope. Source-table SQL triggers mirror changes
 // into loc_trace (scope_id + uid); LOC reads this one materialized union directly.
@@ -47,46 +48,127 @@ export async function readTraceData(scopeId){
     maps:rows.filter(row=>row.trace_type==='map')
   };
 }
+// Used for both interactive edits and bulk geocoding. All comparisons are
+// based on the source Scope, never the LOC-wide materialized union.
+const normalizedName=value=>String(value||'').normalize('NFKC').trim().replace(/\\s+/g,'').toLowerCase();
+function comparableAnchors(data,scopeId,excludeUid=''){
+  return (data?.anchors||[]).filter(row=>row.source_scope===scopeId&&row.uid!==excludeUid);
+}
+function classifyNewAnchor(candidate,known){
+  const byName=known.find(row=>normalizedName(row.title)===normalizedName(candidate.title));
+  const matches=findAnchorWriteMatches(candidate,known);
+  const safe=matches.filter(item=>item.safeReuse);
+  // Two or more seemingly equivalent records indicate that the *existing*
+  // database needs a reviewed consolidation, not a new automatic decision.
+  const reuse=safe.length===1?safe[0].b:null;
+  const conflicts=matches.filter(item=>
+    item.type==='address-coordinate-conflict'
+    ||item.type==='same-address'&&!item.safeReuse);
+  return {byName,reuse,conflicts,matches};
+}
+function distinctTitleOrThrow(candidate,byName,matches){
+  if(!byName)return false;
+  const match=matches.find(item=>item.b.uid===byName.uid);
+  if(!match||match.meters===null||match.meters>60
+    ||match.type==='near-different-address'||match.type==='address-coordinate-conflict')
+    throw Error('同名定錨點「'+candidate.title+'」的地址或座標不一致。請先到「整理空間定錨點」核對，不能以同名覆蓋。');
+  return true;
+}
+async function reuseExistingAnchor({scopeId,candidate,existing}){
+  const name=String(candidate.title).trim(),oldNote=String(existing.description||'');
+  if(normalizedName(name)===normalizedName(existing.title))
+    return {uid:existing.uid,reused:true};
+  // This exact, reviewed postal address agrees within 60 meters. The existing
+  // anchor is retained, with the incoming check-in name preserved as an alias.
+  // Do not touch Galaxy, map anchor_uids, coordinates, or an existing title.
+  const names=[...oldNote.matchAll(/(?:打卡別名|歷史名稱)[：:]\\s*([^。\\n]+)/g)]
+    .flatMap(match=>match[1].split(/[、，,|]/).map(s=>normalizedName(s)));
+  if(names.includes(normalizedName(name)))return {uid:existing.uid,reused:true};
+  const note=oldNote+(oldNote?'\\n':'')+'打卡別名：'+name+'。';
+  if(note.length>2000)throw Error('同址別名說明會超過 2000 字，請先在整理頁處理。');
+  let request=dbAuthRelation(relation(scopeId)).update({description:note})
+    .eq('uid',existing.uid).eq('trace_type','anchor').eq('description',oldNote);
+  if(scopeId==='loc')request=request.eq('scope_id','loc');
+  const rows=verified(await request.select('uid'),'整理同址別名');
+  if(!Array.isArray(rows)||rows.length!==1)
+    throw Error('定錨點在檢查後已被其他工作修改；請重新讀取再儲存，避免覆蓋別名。');
+  return {uid:existing.uid,reused:true,aliasAdded:name};
+}
+export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid=''}){
+  const id=sourceId(scopeId);
+  const existing=comparableAnchors(await readTraceData(id),id,excludeUid);
+  return classifyNewAnchor({...anchor,source_scope:id,trace_type:'anchor'},existing);
+}
 export async function addTraceAnchor({scopeId,title,description='',longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const data={
     uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
-    description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m)
+    description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
+    source_scope:id
   };
-  const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
-  return verified(result,'新增定錨點');
+  const {byName,reuse,conflicts,matches}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
+  if(distinctTitleOrThrow(data,byName,matches))return {uid:byName.uid,reused:true};
+  if(conflicts.length)throw Error('附近有同址但座標不一致的定錨點，請先到「整理空間定錨點」核對。');
+  if(reuse)return reuseExistingAnchor({scopeId:id,candidate:data,existing:reuse});
+  const {source_scope,...record}=data;
+  return verified(await dbAuthRelation(relation(id)).insert(record).select('uid').single(),'新增定錨點');
 }
-// One authorized insert per bounded batch, not one SQL round-trip per place.
-// A fresh source read skips names already saved by a previous partial run.
-// This never writes to Galaxy's source_place or any other article field.
+// One authorized insert per bounded batch, never one read or insert per item.
+// The after-batch audit reports unresolved candidates for the existing
+// organizer; it does not blindly merge approximate coordinates.
 export async function addTraceAnchorsBatch({scopeId,places=[]}){
   const id=sourceId(scopeId);
   if(id==='loc')throw Error('請在作品所屬的 Scope 建立空間定錨點。');
   const list=Array.isArray(places)?places:[];
   if(!list.length)throw Error('沒有已核對的座標可以儲存。');
   if(list.length>2000)throw Error('單次匯入超過安全上限。');
-  const seen=new Set(), prepared=[];
-  for(const place of list){
-    const title=verifiedText(place.title,'打卡地點名稱');
-    if(seen.has(title))continue;
-    seen.add(title);
-    if(!validCoordinates(place.longitude,place.latitude))
-      throw Error(title+' 的經緯度無效，請先確認候選位置。');
-    if(!validRadius(place.radius_m??500))throw Error(title+' 的空間範圍無效。');
-    prepared.push({
-      uid:createUid8(),trace_type:'anchor',title,
-      longitude:Number(place.longitude),latitude:Number(place.latitude),
-      radius_m:Number(place.radius_m??500),description:''
-    });
-  }
   const previous=await readTraceData(id);
-  const names=new Set(previous.anchors.map(row=>String(row.title||'').trim()));
-  const pending=prepared.filter(row=>!names.has(row.title));
+  const known=comparableAnchors(previous,id);
+  const pending=[],reuseQueue=[];
+  let skipped=0,duplicatesInBatch=0;
+  for(const place of list){
+    const data={uid:createUid8(),trace_type:'anchor',source_scope:id,
+      title:verifiedText(place.title,'打卡地點名稱'),
+      description:descriptionText(place.description||''),
+      longitude:Number(place.longitude),latitude:Number(place.latitude),
+      radius_m:Number(place.radius_m??500)};
+    if(!validCoordinates(place.longitude,place.latitude))
+      throw Error(data.title+' 的經緯度無效，請先確認候選位置。');
+    if(!validRadius(data.radius_m))throw Error(data.title+' 的空間範圍無效。');
+    const old=classifyNewAnchor(data,known);
+    if(distinctTitleOrThrow(data,old.byName,old.matches)){
+      skipped++;continue;
+    }
+    if(old.reuse&&!old.conflicts.length){
+      reuseQueue.push({candidate:data,existing:old.reuse});skipped++;continue;
+    }
+    // Keep candidates of uncertain identity as distinct records, so they can
+    // be reviewed after import without losing the original check-in title.
+    const sameBatch=classifyNewAnchor(data,pending);
+    if(distinctTitleOrThrow(data,sameBatch.byName,sameBatch.matches)){
+      duplicatesInBatch++;skipped++;continue;
+    }
+    if(sameBatch.reuse&&!sameBatch.conflicts.length){
+      // No row has been inserted yet. Retain the alias in the record to be
+      // inserted with the primary title.
+      const original=sameBatch.reuse;
+      const addition='打卡別名：'+data.title+'。';
+      const updated=String(original.description||'')+(original.description?'\\n':'')+addition;
+      if(updated.length>2000)throw Error('批次同址別名過多，無法安全保留完整名稱。');
+      original.description=updated;skipped++;duplicatesInBatch++;continue;
+    }
+    pending.push(data);
+  }
+  let consolidated=0;
+  for(const item of reuseQueue){
+    try{await reuseExistingAnchor({scopeId:id,...item});consolidated++;}
+    catch(error){throw Error('同址整併已完成 '+consolidated+' 處，下一筆失敗：'+String(error?.message||error));}
+  }
   let count=0;
   for(let offset=0;offset<pending.length;offset+=80){
-    const chunk=pending.slice(offset,offset+80);
+    const chunk=pending.slice(offset,offset+80).map(({source_scope,...item})=>item);
     try{
       const rows=verified(await dbAuthRelation(relation(id)).insert(chunk).select('uid'),'批次建立空間定錨點');
       if(!Array.isArray(rows)||rows.length!==chunk.length)throw Error('批次寫入數量不符');
@@ -95,7 +177,16 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       throw Error('已成功寫入 '+count+' 處，後續批次失敗：'+String(error.message||error)+'。可重新執行，已存在的地點會跳過。');
     }
   }
-  return {count,skipped:list.length-pending.length};
+  let reviewCount=0,reviewPreview=[],auditError='';
+  try{
+    const current=await readTraceData(id);
+    const all=organizeAnchorCandidates(comparableAnchors(current,id));
+    reviewCount=all.length;
+    reviewPreview=all.slice(0,8).map(item=>({
+      a:item.a.title,b:item.b.title,meters:item.meters,type:item.type
+    }));
+  }catch(error){auditError=String(error?.message||error);}
+  return {count,skipped,consolidated,duplicatesInBatch,reviewCount,reviewPreview,auditError};
 }
 
 export async function updateTraceAnchor({scopeId,uid,title,description='',longitude,latitude,radius_m=500}){
