@@ -12,7 +12,8 @@ import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.
 import {classifyTraceAnchors} from '../modular/features/trace/trace-spatial-classification.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute} from '../modular/features/trace/trace-route-preference.mjs';
 import {
-  TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,
+  TRACE_SCOPES,traceKey,traceMapIndexKey,traceAllAnchorsKey,
+  readTraceData,addTraceAnchor,updateTraceAnchor,
   addTraceMap,updateTraceMap,deleteTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
 
@@ -113,7 +114,11 @@ function AnchorEditor({scopeId,spatial,reload}){
         :await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
       await revalidateServerMetadata();
-      await cache.invalidate({queryKey:['loc-place-summary',scopeId]});
+      await Promise.all([
+        cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
+        cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
+        cache.invalidate({queryKey:['trace-current',scopeId]})
+      ]);
       setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
@@ -317,8 +322,11 @@ function MapEditor({scopeId,spatial,reload}){
       // already confirmed above; never report failure because a secondary
       // mounted public view could not refresh.
       let refreshOk=true;
-      try{await Promise.all([...new Set(['loc',writeScopeId])].map(id=>
-        cache.revalidate({queryKey:traceKey(id)})));}catch{refreshOk=false;}
+      try{await Promise.all([...new Set(['loc',writeScopeId])].flatMap(id=>[
+        cache.revalidate({queryKey:traceKey(id)}),
+        cache.invalidate({queryKey:traceMapIndexKey(id)}),
+        cache.invalidate({queryKey:['trace-current',id]})
+      ]));}catch{refreshOk=false;}
       setNotice((changed?'痕跡圖已更新並重新讀取確認。':'已新增痕跡圖並重新讀取確認。')
         +(refreshOk?'':'其他已開啟的地圖可能需要重新整理。'));
       return true;
@@ -342,8 +350,11 @@ function MapEditor({scopeId,spatial,reload}){
       setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
       if(editingUid===map.uid){reset();setEditorOpen(false);}
       let refreshOk=true;
-      try{await Promise.all([...new Set(['loc',map.source_scope])].map(id=>
-        cache.revalidate({queryKey:traceKey(id)})));}catch{refreshOk=false;}
+      try{await Promise.all([...new Set(['loc',map.source_scope])].flatMap(id=>[
+        cache.revalidate({queryKey:traceKey(id)}),
+        cache.invalidate({queryKey:traceMapIndexKey(id)}),
+        cache.invalidate({queryKey:['trace-current',id]})
+      ]));}catch{refreshOk=false;}
       setNotice('已刪除該張痕跡圖並重新讀取確認；原始定錨點與文章均未刪除。'
         +(refreshOk?'':'其他已開啟的地圖可能需要重新整理。'));
     }catch(error){setNoticeError(true);setNotice(String(error?.message||error));}
