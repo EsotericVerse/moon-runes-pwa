@@ -82,7 +82,7 @@ export default {
   "crossAdvancedTitle": "Expand Meta Tag cross-analysis (advanced)",
   "othersAll": "All",
   "othersCategory": "Other",
-  "othersLoadFailed": "Could not load custom categories: {error}",
-  "othersBreakdownTitle": "Custom categories",
+  "othersLoadFailed": "Could not load custom work categories: {error}",
+  "othersBreakdownTitle": "Custom work categories",
   "othersUnclassified": "Uncategorized",
 };
