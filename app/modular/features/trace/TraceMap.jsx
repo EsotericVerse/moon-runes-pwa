@@ -255,7 +255,10 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
         {spatialData?.anchors?.some(anchor=>anchor.trace_type==='anchor'
-          &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude)))
+          &&anchor.longitude!=null&&anchor.latitude!=null
+          &&String(anchor.longitude).trim()!==''&&String(anchor.latitude).trim()!==''
+          &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude))
+          &&Math.abs(Number(anchor.longitude))<=180&&Math.abs(Number(anchor.latitude))<=90)
           ?copy.all:copy.examples}
       </button>
       {DEMO_PLACES.map(place=><button key={place.id} type="button" aria-pressed={selected===place.id}
