@@ -71,7 +71,7 @@ export default function Trace({scopeId='loc'}){
         <span>時期</span>
         <select className="scope-select" value={periodKey}
           onChange={event=>setPeriodKey(event.target.value)}>
-          <option value="latest">最新時期</option>
+          <option value="latest">{periods.length?'最新時期':'未設定時期（不限日期）'}</option>
           <option value="all">全部時期</option>
           {periods.map(period=><option key={period.record_id||period.period}
             value={String(period.period||period.era_id||period.record_id)}>
@@ -80,6 +80,7 @@ export default function Trace({scopeId='loc'}){
         </select>
       </label>
       {periodsQuery.isPending?<span className="scope-status" role="status">正在載入時期…</span>:null}
+      {!periodsQuery.isPending&&!periodsQuery.error&&!periods.length?<span className="scope-status">尚未建立時期；可直接使用地圖及地點搜尋。</span>:null}
       {periodsQuery.error?<span className="scope-status scope-error" role="alert">
         時期讀取失敗：{String(periodsQuery.error.message||periodsQuery.error)}
       </span>:null}
