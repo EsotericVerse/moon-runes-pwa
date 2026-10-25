@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "該時間區間內沒有資料。",
-  "system": "作品群組分類",
-  "custom": "作品自訂分類",
+  "system": "作品分類",
+  "custom": "個人分類",
   "media": "多媒體",
   "other": "未分類",
   "candidateDate": "建議日期",
