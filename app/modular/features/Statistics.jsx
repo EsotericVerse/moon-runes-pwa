@@ -301,7 +301,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     [zoomLevel,queryEndDate,knownEarliest]);
   const periodQuery=useAsyncResource({
     queryKey:['culture-time-periods',scopeId],
-    enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
+    enabled:!isLrunesDaily&&scopeId!=='local'&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {readNumericIsr,usesNumericIsr}=await import('../../loc/numeric-isr-client');
       if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'periods');
@@ -319,7 +319,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const selectedPeriod=selectedPeriodKey==='latest'
     ?periods.at(-1)||null
     :periods.find(row=>String(row.period||row.era_id||row.record_id)===selectedPeriodKey)||null;
-  const periodNavigationReady=isLrunesDaily||periodQuery.data!==undefined||Boolean(periodQuery.error);
+  const periodNavigationReady=isLrunesDaily||scopeId==='local'||periodQuery.data!==undefined||Boolean(periodQuery.error);
   const queryRange=useMemo(()=>{
     if(!selectedPeriod)return customQueryRange;
     const startDate=String(selectedPeriod.start_date).slice(0,10);
