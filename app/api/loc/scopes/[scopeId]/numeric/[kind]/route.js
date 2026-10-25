@@ -5,7 +5,7 @@ import {StatisticsFacets} from '../../../../../../loc/statistics-facets';
 import {publishedSourceTaxonomy} from '../../../../../../modular/published-source-taxonomy.js';
 import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../../../../../../loc/culture-river-roots.mjs';
 
-// Only public numeric summaries are cached; not Blocks, search or row contents.
+// Public Culture/Statistics numeric summaries and the frequently used Time-period\n// navigation index are cached; never cache raw articles, Blocks or private text.
 export const revalidate=3600;
 export const LOC_NUMERIC_CACHE_TAG='loc-numeric-summaries-v1';
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
@@ -18,7 +18,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest','periods'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='',roots=[];
   try{
@@ -35,7 +35,7 @@ export async function GET(request,{params}){
     if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
     if(kind==='loc-statistics'&&scopeId!=='loc')throw Error('LOC aggregate Scope only');
-    if(['earliest','daily-earliest'].includes(kind)&&search.size)throw Error('Unexpected date range');
+    if(['earliest','daily-earliest','periods'].includes(kind)&&search.size)throw Error('Unexpected date range');
     if(['statistics','loc-statistics'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(search.has('undated')&&!['0','1'].includes(search.get('undated')))throw Error('Invalid undated');
     start=date(search.get('start'));
@@ -51,6 +51,59 @@ export async function GET(request,{params}){
     const db=createPublicSupabaseClient();
     // LOC aggregates Scope totals in one public RPC, cached across browser sessions.
     // Per-Scope statistics retain their existing independent cache keys.
+    if(kind==='periods'){
+      // The Period selector is the *primary* navigation in Culture and
+      // Statistics, not an optional post-focus query. Cache only public names
+      // and date boundaries, never raw Time notes, draft content or addresses.
+      // Resolve the table suffix from the canonical silver.manage registry.
+      const {data:scope,error:scopeError}=await db.from('manage')
+        .select('time_table,birthday').eq('id',scopeId).eq('manage_role','scope').maybeSingle();
+      if(scopeError)throw scopeError;
+      const suffix=String(scope?.time_table||'').trim();
+      if(!/^[a-z][a-z0-9_]*$/.test(suffix))throw Error('Invalid registered Time table');
+      const {data,error}=await db.from(scopeId+'_'+suffix)
+        .select('record_id,record_type,resource_id,label,display_order,status,anchor_ids,time_date,date_status,year_value')
+        .in('record_type',['anchor','period'])
+        .order('display_order',{ascending:true})
+        .order('record_id',{ascending:true});
+      if(error)throw error;
+      const rows=Array.isArray(data)?data:[];
+      const anchorDates=new Map();
+      for(const row of rows){
+        if(row.record_type!=='anchor')continue;
+        const id=String(row.resource_id||'').trim();
+        const date=String(row.time_date||'').slice(0,10);
+        const resolved=DAY.test(date)?date
+          :row.date_status==='year_only'&&Number.isInteger(Number(row.year_value))&&Number(row.year_value)>0
+            ?String(row.year_value)+'-01-01':null;
+        if(id&&resolved){
+          if(anchorDates.has(id)&&anchorDates.get(id)!==resolved)
+            throw Error('Time anchor date conflict');
+          anchorDates.set(id,resolved);
+        }
+      }
+      const previousDay=value=>{
+        if(!value)return null;
+        const d=new Date(value+'T00:00:00Z');
+        if(Number.isNaN(d.getTime()))return null;
+        d.setUTCDate(d.getUTCDate()-1);
+        return d.toISOString().slice(0,10);
+      };
+      return rows.filter(row=>row.record_type==='period').map(row=>{
+        const id=String(row.resource_id||row.record_id||'');
+        const anchors=Array.isArray(row.anchor_ids)?row.anchor_ids:[];
+        const first=String(anchors[0]||'0'),last=String(anchors.at(-1)||'0');
+        const start=first==='0'?String(scope.birthday||'').slice(0,10):anchorDates.get(first)||null;
+        const end=last==='0'?null:previousDay(anchorDates.get(last)||'');
+        const title=String(row.label||id);
+        return {
+          record_id:row.record_id,period:id,era_id:id,entry_type:'period',scope_id:scopeId,
+          title,name:title,display_label:title,start_date:start,end_date:end,
+          status:String(row.status||''),order:Number(row.display_order)||0
+        };
+      }).filter(row=>DAY.test(String(row.start_date||'')))
+        .sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.order-b.order);
+    }
     if(kind==='loc-statistics'){
       const {data,error}=await db.rpc('read_loc_statistics',{p_start:start,p_end:end});
       if(error)throw error;
