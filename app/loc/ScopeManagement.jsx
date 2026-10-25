@@ -35,7 +35,8 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const native=useNativeNavigation();
   const isLoc=routeScopeId==='loc';
   const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
-  const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
+  const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):
+    MANAGEMENT_OPTIONS.filter(option=>option.value!=='placeFill'||['lo3rwang','lrunes'].includes(routeScopeId));
   const editRequested=searchParams?.get('edit')==='1';
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
