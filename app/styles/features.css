@@ -1038,12 +1038,36 @@
   background:var(--loc-panel);
   isolation:isolate;
 }
+.loc-trace-resize-tools{display:none}
 @media (min-width:900px) and (pointer:fine){
-  .loc-trace-map-frame{resize:both}
-}
-.loc-trace-resize-hint{margin:0;display:none;font-size:.84rem}
-@media (min-width:900px) and (pointer:fine){
-  .loc-trace-resize-hint{display:block}
+  .loc-trace-resize-tools{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:.75rem;
+    margin-top:-.6rem;
+  }
+  .loc-trace-resize-hint{margin:0;font-size:.84rem}
+  .loc-trace-resize-grip{
+    display:grid;
+    place-items:center;
+    width:44px;
+    height:44px;
+    flex:0 0 44px;
+    border:1px solid var(--loc-line);
+    border-radius:var(--loc-radius-sm);
+    background:var(--loc-panel);
+    color:var(--loc-text);
+    font:inherit;
+    font-size:1.4rem;
+    cursor:nwse-resize;
+    touch-action:none;
+    user-select:none;
+  }
+  .loc-trace-resize-grip:focus-visible{
+    outline:3px solid var(--loc-accent);
+    outline-offset:2px;
+  }
 }
 .loc-trace-map-frame .maplibregl-map{
   width:100%;
