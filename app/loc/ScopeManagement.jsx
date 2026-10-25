@@ -18,7 +18,7 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:Pan
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'自訂分類',shortLabel:'分類',description:''},
+  {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
@@ -45,7 +45,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   if(isLoc)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card">
       <div className="scope-stat-controls">
-        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>來源管理</ScopeLink>
+        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>作品分類</ScopeLink>
         <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
       </div>
     </section>
