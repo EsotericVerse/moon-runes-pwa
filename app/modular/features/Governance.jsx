@@ -20,7 +20,7 @@ const GOVERNANCE_SUBTITLES=Object.freeze({
   personal:'說明個人作品的來源、版本與著作權原則。'
 });
 
-function GovernanceBlocks({scopeId}){
+export function GovernanceBlocks({scopeId}){
   // All governance pages are public. Management starts at each Scope homepage.
   return <ScopeEditableBlocks
     scopeId={scopeId}
