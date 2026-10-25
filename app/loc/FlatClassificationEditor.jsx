@@ -3,7 +3,7 @@
 import {useState} from 'react';
 import {useSWRConfig} from 'swr';
 import {useAsyncResource} from './use-async-resource';
-import {dbAuthRelation} from './db-client.mjs';
+import {dbAuthRelation,dbAuthClient} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useUiLocale} from '../i18n/ui-locale';
 import {useEditDockForm} from '../modular/edit-dock';
@@ -24,7 +24,7 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const global=scopeId==='loc';
   const valid=/^[a-z][a-z0-9]{0,14}$/.test(scopeId);
   const allowed=valid&&Boolean(account.user&&!account.loading&&!account.permissionLoading&&
-    (global?account.canManageGlobalSync():account.canManageScopeSync(scopeId)));
+    (global?account.canManageGroupSync('loc'):account.canManageScopeSync(scopeId)));
   const [draft,setDraft]=useState(null);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
@@ -50,9 +50,16 @@ export default function FlatClassificationEditor({scopeId='loc'}){
     if(new Set(normalized).size!==normalized.length){setNotice(l.duplicate);return false;}
     setBusy(true);setNotice('');
     try{
-      const {data,error}=await dbAuthRelation('silver.'+scopeId).update({txt_class:names})
-        .eq('id',scopeId).select('id');
-      if(error||!data?.length)throw new Error(error?.message||l.noPermission);
+      if(global){
+        const {data,error}=await dbAuthClient.schema('silver').rpc('update_group_txt_class',{
+          p_group_id:'loc',p_names:names
+        });
+        if(error||data!==true)throw new Error(error?.message||l.noPermission);
+      }else{
+        const {data,error}=await dbAuthRelation('silver.'+scopeId).update({txt_class:names})
+          .eq('id',scopeId).select('id');
+        if(error||!data?.length)throw new Error(error?.message||l.noPermission);
+      }
       await query.refetch();
       setDraft(null);
       await mutate(key=>Array.isArray(key)&&(
@@ -80,13 +87,13 @@ export default function FlatClassificationEditor({scopeId='loc'}){
             <input type="text" maxLength={80} required disabled={busy}
               value={name} onChange={event=>change(index,event.target.value)}/>
           </label>
-          <button type="button" className="loc-button" disabled={busy}
-            onClick={()=>{setDraft(rows.filter((_,i)=>i!==index));setNotice('');}}>{l.remove}</button>
+          {!global?<button type="button" className="loc-button" disabled={busy}
+            onClick={()=>{setDraft(rows.filter((_,i)=>i!==index));setNotice('');}}>{l.remove}</button>:null}
         </div>)}
       </div>
       <div className="classification-inline__actions">
-        <button type="button" className="loc-button" disabled={busy}
-          onClick={()=>{setDraft([...rows,'']);setNotice('');}}>{l.add}</button>
+        {!global?<button type="button" className="loc-button" disabled={busy}
+          onClick={()=>{setDraft([...rows,'']);setNotice('');}}>{l.add}</button>:null}
         <button className="loc-button primary" type="submit" disabled={busy||!changed}>{busy?l.saving:l.save+' '+title}</button>
         <button type="button" className="loc-button" disabled={busy||!changed}
           onClick={()=>{setDraft(null);setNotice('');}}>{l.revert}</button>
