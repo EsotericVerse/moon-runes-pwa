@@ -21,8 +21,8 @@ async function emptyIsrHarness({registered=true,timeRows=[]}={}){
     order(){return this;},
     gte(){return this;},
     lte(){return this;},
-    range(){return Promise.resolve(emptyResult);},
-    limit(){return Promise.resolve(emptyResult);},
+    range(){return this;},
+    limit(){return this;},
     async maybeSingle(){
       if(name!=='manage')throw Error('Unexpected maybeSingle '+name);
       return {data:registered?{time_table:null,birthday:null}:null,error:null};
