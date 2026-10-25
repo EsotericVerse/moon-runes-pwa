@@ -94,7 +94,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null,mapOnly=false}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
@@ -260,7 +260,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     }
   }
 
-  return <section className="loc-card loc-trace-panel" aria-label={copy.label}>
+  return <section className={"loc-card loc-trace-panel"+(mapOnly?" is-map-only":"")} aria-label={copy.label}>
     <header className="loc-trace-intro">
       <div>
         <p className="loc-eyebrow">{copy.eyebrow}</p>
