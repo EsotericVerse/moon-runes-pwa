@@ -85,12 +85,55 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let pickedPosition=null;
   let radius=Number(radiusMeters)||500;
   let savedAnchors=anchors;
+  let selectedSavedRoute=null;
   function refreshRadius(){
     if(loaded&&pickedPosition)map.getSource('loc-trace-picked-area')?.setData(pickedArea(pickedPosition.lng,pickedPosition.lat,radius));
   }
   function setAnchors(next){
     savedAnchors=Array.isArray(next)?next:[];
-    if(loaded)map.getSource('loc-trace-saved-anchors')?.setData(existingAnchorPoints(savedAnchors));
+    if(!loaded)return;
+    map.getSource('loc-trace-saved-anchors')?.setData(existingAnchorPoints(savedAnchors));
+    refreshSavedRoute();
+    if(!canPickLocation&&!selectedSavedRoute)overview();
+  }
+  function savedRoutePoints(route=selectedSavedRoute){
+    if(!Array.isArray(route?.anchor_uids))return [];
+    const byId=new Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
+    return route.anchor_uids.map(uid=>byId.get(String(uid))||null);
+  }
+  function savedRouteData(route=selectedSavedRoute){
+    const points=savedRoutePoints(route);
+    const features=[];
+    points.forEach((place,index)=>{
+      if(!place)return;
+      const coordinates=[Number(place.longitude),Number(place.latitude)];
+      features.push({type:'Feature',properties:{order:index+1,title:String(place.title||'')},
+        geometry:{type:'Point',coordinates}});
+      const previous=points[index-1];
+      if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
+        geometry:{type:'LineString',coordinates:[
+          [Number(previous.longitude),Number(previous.latitude)],coordinates
+        ]}});
+    });
+    return {type:'FeatureCollection',features};
+  }
+  function refreshSavedRoute(){
+    if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
+  }
+  function setSavedRoute(route){
+    selectedSavedRoute=route?.trace_type==='map'?route:null;
+    refreshSavedRoute();
+    if(!loaded||!selectedSavedRoute)return;
+    const valid=savedRoutePoints().filter(Boolean);
+    if(valid.length===1){
+      map.flyTo({center:[Number(valid[0].longitude),Number(valid[0].latitude)],
+        zoom:12.5,pitch:45,bearing:0,essential:true});
+    }else if(valid.length>1){
+      const bounds=new LngLatBounds();
+      valid.forEach(point=>bounds.extend([Number(point.longitude),Number(point.latitude)]));
+      map.fitBounds(bounds,{padding:Math.max(32,Math.min(90,Math.round(map.getContainer().clientWidth*.07))),
+        pitch:0,bearing:0,maxZoom:13,duration:500});
+    }
   }
   function setRadius(value){
     const n=Number(value);
@@ -103,8 +146,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   const touchDevice=typeof window!=='undefined'
     &&Boolean(window.matchMedia?.('(pointer:coarse)').matches);
   const map=new Map({
-    container,style:STYLE,center:[121.4647,25.0187],
-    zoom:12.8,pitch:59,bearing:-23,
+    container,style:STYLE,center:canPickLocation?[121.4647,25.0187]:[120.98,23.73],
+    zoom:canPickLocation?12.8:6.5,pitch:canPickLocation?59:0,bearing:canPickLocation?-23:0,
     cooperativeGestures:touchDevice,
     antialias:true,attributionControl:true
   });
@@ -164,6 +207,12 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         pitch:45,bearing:0,essential:true});
       return;
     }
+    if(!visibleAnchors.length){
+      if(!canPickLocation){
+        map.flyTo({center:[120.98,23.73],zoom:6.5,pitch:0,bearing:0,essential:true});
+        return;
+      }
+    }
     const points=visibleAnchors.length?visibleAnchors:EXAMPLE_ANCHORS;
     const bounds=new LngLatBounds();
     points.forEach(place=>bounds.extend([place.lng,place.lat]));
@@ -176,18 +225,15 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   map.once('load',()=>{
     if(removed)return;
     loaded=true;
-    map.addSource('loc-trace-extrusions',{type:'geojson',data:pillarGeojson(EXAMPLE_ANCHORS)});
-    map.addLayer({
-      id:'loc-trace-3d-anchors',
-      type:'fill-extrusion',
-      source:'loc-trace-extrusions',
-      paint:{
-        'fill-extrusion-color':'#b9a6f6',
-        'fill-extrusion-opacity':0.8,
-        'fill-extrusion-height':['get','height'],
-        'fill-extrusion-base':0
-      }
-    });
+    if(canPickLocation){
+      // The Banqiao mock stations belong to the anchor editor only.
+      map.addSource('loc-trace-extrusions',{type:'geojson',data:pillarGeojson(EXAMPLE_ANCHORS)});
+      map.addLayer({
+        id:'loc-trace-3d-anchors',type:'fill-extrusion',source:'loc-trace-extrusions',
+        paint:{'fill-extrusion-color':'#b9a6f6','fill-extrusion-opacity':0.8,
+          'fill-extrusion-height':['get','height'],'fill-extrusion-base':0}
+      });
+    }
     map.addSource('loc-trace-saved-anchors',{type:'geojson',data:existingAnchorPoints(savedAnchors)});
     map.addLayer({id:'loc-trace-saved-point-layer',type:'circle',source:'loc-trace-saved-anchors',
       paint:{'circle-radius':6,'circle-color':'#6ce4ce','circle-opacity':0.95,
@@ -214,13 +260,29 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     map.addLayer({id:'loc-trace-picked-outline',type:'line',source:'loc-trace-picked-area',
       paint:{'line-color':'#f7ba66','line-width':2,'line-opacity':0.85}});
     refreshRadius();
+    // Saved routes connect user-selected anchors in their recorded sequence.
+    // A straight connection is not presented as an actual historical road.
+    map.addSource('loc-trace-user-routes',{type:'geojson',data:savedRouteData()});
+    map.addLayer({id:'loc-trace-user-route-lines',type:'line',source:'loc-trace-user-routes',
+      filter:['==',['geometry-type'],'LineString'],
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':'#ffcb73','line-width':4,'line-opacity':0.95}});
+    map.addLayer({id:'loc-trace-user-route-stops',type:'circle',source:'loc-trace-user-routes',
+      filter:['==',['geometry-type'],'Point'],
+      paint:{'circle-radius':12,'circle-color':'#ffcb73','circle-stroke-color':'#30253e',
+        'circle-stroke-width':2}});
+    map.addLayer({id:'loc-trace-user-route-order',type:'symbol',source:'loc-trace-user-routes',
+      filter:['==',['geometry-type'],'Point'],
+      layout:{'text-field':['to-string',['get','order']],'text-size':12,
+        'text-allow-overlap':true},
+      paint:{'text-color':'#30253e'}});
     map.addSource('loc-trace-route',{type:'geojson',data:emptyRoute()});
     map.addLayer({
       id:'loc-trace-route-line',type:'line',source:'loc-trace-route',
       layout:{'line-cap':'round','line-join':'round'},
       paint:{'line-color':'#f7ba66','line-width':5,'line-opacity':0.95}
     });
-    markers=EXAMPLE_ANCHORS.map(place=>{
+    if(canPickLocation)markers=EXAMPLE_ANCHORS.map(place=>{
       const button=document.createElement('button');
       button.type='button';
       button.className='loc-trace-anchor-marker';
@@ -230,6 +292,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       return new Marker({element:button,anchor:'bottom',offset:[0,-13]})
         .setLngLat([place.lng,place.lat]).addTo(map);
     });
+    if(!canPickLocation&&savedAnchors.some(isValidSavedAnchor))overview();
+    if(selectedSavedRoute)setSavedRoute(selectedSavedRoute);
     status('ready');
   });
   map.on('error',event=>{
@@ -237,7 +301,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   });
 
   async function showRoadRoute(){
-    if(removed||!loaded)return false;
+    if(removed||!loaded||!canPickLocation)return false;
     if(routeActive){
       map.getSource('loc-trace-route')?.setData(emptyRoute());
       routeActive=false;
@@ -276,6 +340,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,setRadius,setAnchors,overview,showRoadRoute,
+  return {focus,focusCoordinates,setRadius,setAnchors,setSavedRoute,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }
