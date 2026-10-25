@@ -18,7 +18,7 @@ function date(value){
 
 export async function GET(request,{params}){
   const {scopeId,kind}=await params;
-  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','facet','earliest','daily','daily-earliest'].includes(kind))
+  if(!validScopeId(scopeId)||['local','admin'].includes(scopeId)||!['culture','culture-roots','culture-children','statistics','loc-statistics','facet','earliest','daily','daily-earliest'].includes(kind))
     return withLocCors(Response.json({error:'Invalid numeric summary path'},{status:400}),request);
   let start,end,undated,dimension='',roots=[];
   try{
@@ -34,8 +34,9 @@ export async function GET(request,{params}){
     if(kind==='facet'?!['media_type','media_platform','media_style'].includes(dimension):Boolean(dimension))throw Error('Invalid facet dimension');
     if(['facet','earliest','daily','daily-earliest'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(['daily','daily-earliest'].includes(kind)&&scopeId!=='lrunes')throw Error('Daily Rune Scope only');
+    if(kind==='loc-statistics'&&scopeId!=='loc')throw Error('LOC aggregate Scope only');
     if(['earliest','daily-earliest'].includes(kind)&&search.size)throw Error('Unexpected date range');
-    if(kind==='statistics'&&search.has('undated'))throw Error('Unexpected undated');
+    if(['statistics','loc-statistics'].includes(kind)&&search.has('undated'))throw Error('Unexpected undated');
     if(search.has('undated')&&!['0','1'].includes(search.get('undated')))throw Error('Invalid undated');
     start=date(search.get('start'));
     end=date(search.get('end'));
@@ -48,6 +49,14 @@ export async function GET(request,{params}){
   const read=unstable_cache(async()=>{
     const kind=cachedKind;
     const db=createPublicSupabaseClient();
+    // LOC aggregates Scope totals in one public RPC, cached across browser sessions.
+    // Per-Scope statistics retain their existing independent cache keys.
+    if(kind==='loc-statistics'){
+      const {data,error}=await db.rpc('read_loc_statistics',{p_start:start,p_end:end});
+      if(error)throw error;
+      if(!data||!Array.isArray(data.rows)||!Array.isArray(data.scopes))throw Error('Invalid LOC statistics result');
+      return {earliest:String(data.earliest||'').slice(0,10),rows:data.rows,scopes:data.scopes};
+    }
     if(kind==='earliest'){
       const {data,error}=await db.rpc('read_scope_earliest',{p_scope_id:scopeId});
       if(error)throw error;
