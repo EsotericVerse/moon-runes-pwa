@@ -43,7 +43,7 @@ const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loa
 const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
 // Only fetch governance when its label is selected; its existing Blocks
 // and stored page_name remain untouched.
-const GovernanceBlocks=dynamic(()=>import('./Governance').then(mod=>mod.GovernanceBlocks),{loading:()=>null});
+const GovernanceBlocks=dynamic(()=>import('./GovernanceLegal').then(mod=>mod.GovernanceBlocks),{loading:()=>null});
 
 
 const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
