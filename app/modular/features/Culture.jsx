@@ -451,7 +451,8 @@ export default function Culture(){
     :sourceSnapshotQuery.isPending||sourceSnapshotQuery.isFetching);
   // Existing SQL summary covers the overview. Drill-down fetches only the
   // requested source and/or class, without eagerly reading all Galaxy attrs.
-  const keywordDetailRequested=Boolean(keywordDrillSource||keywordDrillGroup);
+  // Expanding a Rune group reads only its catalog, not all Galaxy attributes.
+  const keywordDetailRequested=Boolean(keywordDrillSource);
   const keywordDensityQuery=useAsyncResource({
     queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd,keywordDrillSource,keywordDrillGroup],
     enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
@@ -500,23 +501,27 @@ export default function Culture(){
     queryFn:async()=>{
       const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
       if(!groupName)return [];
-      const {rows}=await selectAllRows(scopeData.keywords,{
+      const {rows}=await selectRows(scopeData.keywords,{
         columns:'item_no,item_name,order_no,class_group',
         filters:[
           {column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)},
           {column:'class_group',operator:'eq',value:groupName}
         ],
-        orders:[{column:'order_no',ascending:true}]
+        orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}],
+        limit:16
       });
       return rows;
     },
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false,
+    revalidateIfStale:false
   });
   const keywordDrillItems=useMemo(()=>{
     if(keywordDetailRequested&&!keywordDensityQuery.data)return [];
-    if(keywordDrillGroup&&!keywordGroupCatalogQuery.data)return [];
+    // Expanding a group preserves the Class density; no guessed per-day Rune bars.
     return keywordDrillRiverItems(keywordDetailRequested
       ?keywordDensityQuery.data:styleQuery.data?.classifications,{
-      source:keywordDrillSource,groupId:keywordDrillGroup,
+      source:keywordDrillSource,groupId:keywordDetailRequested?keywordDrillGroup:'',
       meta:styleQuery.data?.keywordMeta,groupItems:keywordGroupCatalogQuery.data||[]
     });
   },[keywordDetailRequested,keywordDensityQuery.data,styleQuery.data?.classifications,keywordDrillSource,keywordDrillGroup,styleQuery.data?.keywordMeta,keywordGroupCatalogQuery.data]);
@@ -988,13 +993,29 @@ export default function Culture(){
       groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,className:'scope-candidate-lane'});
       items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
     }
-    if(showKeywordRiver)items.push(...keywordDrillItems.map((item,index)=>({
-      ...item,id:'dual:'+String(item.id),
-      group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
-      group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
-    })));
+    if(showKeywordRiver){
+      items.push(...keywordDrillItems.map((item,index)=>({
+        ...item,id:'dual:'+String(item.id),
+        group_key:'dual:keyword:'+String(item.drill_key||item.group_label||index),
+        group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
+      })));
+      const keywordCounts=new Map();
+      for(const item of keywordDrillItems){
+        const key=String(item.drill_key||'');
+        if(key)keywordCounts.set(key,(keywordCounts.get(key)||0)+(Number(item.count)||0));
+      }
+      for(const group of keywordGroupOptions){
+        const count=keywordCounts.get(String(group.id))||0;
+        if(count<=0)continue;
+        groups.push({
+          id:'dual:keyword:'+group.id,label:group.label+'（'+count.toLocaleString(locale)+'）',
+          order:1000+Number(group.id)*100,className:'scope-dual-river-root',
+          collapsible:true,expanded:keywordDrillGroup===group.id
+        });
+      }
+    }
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
+  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
@@ -1463,10 +1484,18 @@ export default function Culture(){
                   <CultureTimeline
                     items={cultureRiver.items}
                     extraGroups={cultureRiver.groups}
-                    onGroupToggle={id=>setOpenCultureRoots(current=>{
-                      const key=id.replace('dual:root:','');
-                      return current.includes(key)?current.filter(value=>value!==key):[...current,key];
-                    })}
+                    onGroupToggle={id=>{
+                      if(id.startsWith('dual:keyword:')){
+                        const groupId=id.slice('dual:keyword:'.length);
+                        if(keywordGroupOptions.some(group=>group.id===groupId))
+                          setKeywordDrillGroup(current=>current===groupId?'':groupId);
+                        return;
+                      }
+                      if(!id.startsWith('dual:root:'))return;
+                      const key=id.slice('dual:root:'.length);
+                      setOpenCultureRoots(current=>current.includes(key)
+                        ?current.filter(value=>value!==key):[...current,key]);
+                    }}
                     onGroupSelect={id=>{
                       const key=cultureRiver.groups.find(group=>group.id===id)?.sourceKey
                         ||id.replace('dual:child:','');
@@ -1511,6 +1540,26 @@ export default function Culture(){
                       }
                     }}
                   />
+                  {showKeywordRiver&&keywordDrillGroup?<section className='scope-culture-rune-list'
+                    role='region' aria-label={(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'符文群組')+'符文列表'}>
+                    <header>
+                      <strong>{styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'群組'}｜符文列表</strong>
+                      <button className='loc-button' type='button' onClick={()=>setKeywordDrillGroup('')}>收合符文列表</button>
+                    </header>
+                    {keywordGroupCatalogQuery.isPending?<p className='scope-status' role='status'>正在載入此群組的符文…</p>:null}
+                    {keywordGroupCatalogQuery.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
+                    {keywordGroupCatalogQuery.data?.length?<ul>
+                      {keywordGroupCatalogQuery.data.map(rune=>{
+                        const matched=(styleQuery.data?.runeTotals||[]).find(item=>Number(item.rune_id)===Number(rune.item_no));
+                        return <li key={rune.item_no}>
+                          <strong>{rune.item_no} · {rune.item_name}</strong>
+                          <span>{Number(matched?.count||0).toLocaleString(locale)} 次命中</span>
+                        </li>;
+                      })}
+                    </ul>:null}
+                    {keywordGroupCatalogQuery.data&&!keywordGroupCatalogQuery.data.length
+                      ?<p className='scope-status'>此群組目前沒有符文項目。</p>:null}
+                  </section>:null}
                 </div>:null}
                 {(!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
