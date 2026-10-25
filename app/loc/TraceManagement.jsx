@@ -3,7 +3,8 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
-import {useAsyncResource} from './use-async-resource';
+import {useAsyncResource,useResourceCache} from './use-async-resource';
+import {revalidateServerMetadata} from './scope-data';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {
@@ -18,6 +19,7 @@ const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
 });
 
 function AnchorEditor({scopeId,spatial,reload}){
+  const cache=useResourceCache();
   const ownAnchors=spatial.anchors.filter(row=>row.source_scope===scopeId);
   const [editingUid,setEditingUid]=useState('');
   const [title,setTitle]=useState('');
@@ -95,6 +97,10 @@ function AnchorEditor({scopeId,spatial,reload}){
       if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500});
       else await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
+      await Promise.all([
+        cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
+        revalidateServerMetadata()
+      ]);
       setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新。':'空間定錨點已儲存。');
