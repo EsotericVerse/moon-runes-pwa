@@ -19,6 +19,8 @@ async function emptyIsrHarness({registered=true}={}){
     eq(){return this;},
     in(){return this;},
     order(){return this;},
+    gte(){return this;},
+    lte(){return this;},
     range(){return Promise.resolve(emptyResult);},
     limit(){return Promise.resolve(emptyResult);},
     async maybeSingle(){
