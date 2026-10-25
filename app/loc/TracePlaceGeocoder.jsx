@@ -238,7 +238,7 @@ export default function TracePlaceGeocoder({scopeId}){
             {result?.status==='notfound'?<p className="scope-status">沒有找到。可在一般空間定錨點頁面改用地圖手動選取。</p>:null}
             {Boolean(result?.choices?.length)?<label>候選位置
               <select className="scope-select" value={result.selected>=0?String(result.selected):''}
-                disabled={running||saving} onChange={e=>choose(item.name,Number(e.target.value))}>
+                disabled={running||saving} onChange={e=>{if(e.target.value!=='')choose(item.name,Number(e.target.value));}}>
                 <option value="">請確認位置</option>
                 {result.choices.map((candidate,i)=><option key={i} value={i}>{candidate.label}</option>)}
               </select>
