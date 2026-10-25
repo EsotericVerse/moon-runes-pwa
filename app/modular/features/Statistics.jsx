@@ -286,11 +286,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     setKeywordSource('');
     setSourceGroup('');
   },[scopeId]);
-  // Custom retains the existing one-year default and +/- zoom; periods are
-  // canonical dates from the same Time records Culture uses.
-  const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
-  const [periodOptionsRequested,setPeriodOptionsRequested]=useState(false);
-  useEffect(()=>{setSelectedPeriodKey('');setPeriodOptionsRequested(false);},[scopeId]);
+  // Period is the primary Statistics navigation. Default to the latest
+  // saved Period, not an unnecessary preliminary one-year statistics fetch.
+  const [selectedPeriodKey,setSelectedPeriodKey]=useState('latest');
+  useEffect(()=>{setSelectedPeriodKey('latest');},[scopeId]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
@@ -301,19 +300,26 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const customQueryRange=useMemo(()=>statisticsZoomWindow(zoomLevel,queryEndDate,knownEarliest),
     [zoomLevel,queryEndDate,knownEarliest]);
   const periodQuery=useAsyncResource({
-    queryKey:['culture-timeline',scopeId],
-    // The default date/zoom chart does not need the entire Time record set.
-    // Fetch available Period choices only when the Period selector is used.
-    enabled:periodOptionsRequested&&!isLrunesDaily&&Boolean(targetScopes[0]),
+    queryKey:['culture-time-periods',scopeId],
+    enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
     queryFn:async()=>{
+      const {readNumericIsr,usesNumericIsr}=await import('../../loc/numeric-isr-client');
+      if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'periods');
+      // Native/local data providers do not make remote ISR requests.
       const {selectScopeCultureData}=await import('../../loc/culture-query');
-      return selectScopeCultureData(scopeId);
+      return (await selectScopeCultureData(scopeId)).eras?.eras||[];
     },
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false
   });
-  const periods=useMemo(()=>(periodQuery.data?.eras?.eras||[])
+  const periods=useMemo(()=>(periodQuery.data||[])
     .filter(row=>String(row.scope_id||'')===scopeId&&row.start_date)
-    .sort((a,b)=>Number(a.order||0)-Number(b.order||0)||String(a.start_date).localeCompare(String(b.start_date))),[periodQuery.data,scopeId]);
-  const selectedPeriod=periods.find(row=>String(row.period||row.era_id||row.record_id)===selectedPeriodKey)||null;
+    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
+      ||Number(a.order||0)-Number(b.order||0)),[periodQuery.data,scopeId]);
+  const selectedPeriod=selectedPeriodKey==='latest'
+    ?periods.at(-1)||null
+    :periods.find(row=>String(row.period||row.era_id||row.record_id)===selectedPeriodKey)||null;
+  const periodNavigationReady=isLrunesDaily||periodQuery.data!==undefined||Boolean(periodQuery.error);
   const queryRange=useMemo(()=>{
     if(!selectedPeriod)return customQueryRange;
     const startDate=String(selectedPeriod.start_date).slice(0,10);
@@ -329,7 +335,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
   const overview=useAsyncResource({
     queryKey:['scope-overview',scopeId,queryRange.startDate,queryRange.endDate],
-    enabled:sourceChart&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:sourceChart&&periodNavigationReady&&Boolean(queryRange.startDate&&queryRange.endDate),
     queryFn:async()=>{
       const {selectScopeOverview}=await loadGalaxyStatistics();
       const data=await selectScopeOverview(targetScopes[0],queryRange);
@@ -341,7 +347,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Media charts carry their own facet rows; the earliest date is one small request.
   const earliestQuery=useAsyncResource({
     queryKey:['statistics-history-start',scopeId],
-    enabled:!isLrunesDaily&&mediaDimension&&!knownEarliest&&Boolean(targetScopes[0]),
+    enabled:!isLrunesDaily&&mediaDimension&&periodNavigationReady&&selectedPeriodKey===''&&!knownEarliest&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {selectScopeEarliest}=await loadGalaxyStatistics();
       return selectScopeEarliest(targetScopes[0]);
@@ -359,7 +365,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       const {selectMediaStatisticsFacetRows}=await loadGalaxyStatistics();
       return selectMediaStatisticsFacetRows(targetScopes[0],rankingType,queryRange);
     },
-    enabled:mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
+    enabled:mediaDimension&&periodNavigationReady&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
   });
   const crossTagQuery=useAsyncResource({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
@@ -522,11 +528,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<label>
         <span>時期</span>
         <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
-          onFocus={()=>setPeriodOptionsRequested(true)}
-          onPointerDown={()=>setPeriodOptionsRequested(true)}
           onChange={event=>setSelectedPeriodKey(event.target.value)}>
+          <option value="latest">最新時期</option>
           <option value="">自選時間（原有縮放）</option>
-          {periodOptionsRequested&&periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
+          {periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
           {periods.map(period=><option key={period.record_id||period.period} value={String(period.period||period.era_id||period.record_id)}>
             {period.title||period.name||period.period}
           </option>)}
