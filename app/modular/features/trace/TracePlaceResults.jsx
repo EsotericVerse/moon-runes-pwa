@@ -8,7 +8,8 @@ import {traceArticleFilters,groupedTraceDays,traceMediaMatches} from './trace-pa
 import {defaultScopeData} from '../../../loc/scope-data';
 import {readNumericIsr,usesNumericIsr} from '../../../loc/numeric-isr-client';
 import {traceArticlePlaces} from './trace-article-places.mjs';
-import {ArticleSortSelect,WorkSummaryCard,WorkFullText} from '../../ui';
+import Article from '../../Article';
+import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
 
 const CultureTimeline=dynamic(()=>import('../../modules/culture-timeline/CultureTimeline'),{loading:()=> <p className="scope-status">正在開啟時間長河…</p>});
 const StatisticsMultiChart=dynamic(()=>import('../../modules/statistics/StatisticsMultiChart'),{loading:()=> <p className="scope-status">正在開啟統計圖…</p>});
@@ -29,14 +30,16 @@ function TraceWork({row,scope}){
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  return <WorkSummaryCard title={row.title||'未命名文章'} date={String(row.createtime||'').slice(0,10)}
-    source={row.source_name||''} checkIn={row.source_place||''} scopeId={scope?.id}>
+  return <Article uid={row.uid} title={row.title||'未命名文章'}
+    date={String(row.createtime||'').slice(0,10)}
+    source={row.source_name||''} checkInPlace={row.source_place||''}
+    scopeId={scope?.id} editOnCardClick={false}>
     <WorkFullText open={opened} loading={opened&&body.isPending}
       error={body.error?String(body.error.message||body.error):''}
       content={body.data||''} showToggle={false}/>
     <button type="button" className="loc-button" aria-expanded={opened}
       onClick={()=>setOpened(x=>!x)}>{opened?'收合文章':'閱讀文章'}</button>
-  </WorkSummaryCard>;
+  </Article>;
 }
 
 export default function TracePlaceResults({place=null,anchors=[],scopeId='',period=null,
@@ -258,16 +261,18 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
     {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有符合這個時期的已確認打卡文章。</p>:null}
-    {tab==='articles'&&rows.length?<div className="loc-trace-works-list">
-      {rows.map(row=><TraceWork key={targetScope+':'+row.uid} row={row} scope={scope}/>)}
-    </div>:null}
-    {tab==='articles'&&(selectedMediaType
-      ?(mediaFiltered.data?.length||0)>visibleCount:list.hasNextPage)
-      ?<button className="loc-button" type="button"
-        disabled={!selectedMediaType&&list.isFetchingNextPage}
-        onClick={()=>selectedMediaType?setVisibleCount(n=>n+PAGE_SIZE):list.fetchNextPage()}>
-        {!selectedMediaType&&list.isFetchingNextPage?'載入中…':'載入更多文章'}
-      </button>:null}
+    {tab==='articles'&&rows.length?<IncrementalList
+      items={rows}
+      batchSize={PAGE_SIZE}
+      resetKey={[targetScope,place?.uid,placesKey,startDate,endDate,sourceFilter,selectedMediaType,sort].join('|')}
+      className="loc-trace-works-list"
+      externalHasMore={selectedMediaType
+        ?(mediaFiltered.data?.length||0)>visibleCount:Boolean(list.hasNextPage)}
+      loading={selectedMediaType?mediaFiltered.isPending:Boolean(list.isPending||list.isFetchingNextPage)}
+      error={error}
+      onLoadMore={selectedMediaType?()=>setVisibleCount(n=>n+PAGE_SIZE):list.fetchNextPage}
+      renderItem={row=><TraceWork key={targetScope+':'+row.uid} row={row} scope={scope}/>}
+    />:null}
     {tab==='timeline'&&(summary.data||(!sourceFilter&&!selectedMediaType&&visibleVisits.length>0))?<div className="loc-trace-works-timeline" aria-label="按真實造訪時間排列的時間長河">
       {riverItems.length?<CultureTimeline items={riverItems}
         extraGroups={[
