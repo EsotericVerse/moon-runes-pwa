@@ -40,6 +40,7 @@ async function emptyIsrHarness({registered=true,timeRows=[]}={}){
     async rpc(name){
       rpcCalls.push(name);
       if(name==='read_scope_overview')return {data,error:null};
+      if(name==='read_scope_place_statistics')return emptyResult;
       if(name==='read_scope_statistics')return emptyResult;
       if(name==='read_scope_earliest')return {data:null,error:null};
       if(name==='read_loc_statistics')return {data:{rows:[],scopes:[],earliest:''},error:null};
@@ -107,6 +108,15 @@ test('empty Galaxy and Media yield non-error Statistics and Culture ISR',async()
   assert.deepEqual(Array.from(facet.body),[]);
   assert.ok(h.rpcCalls.includes('read_scope_overview'));
   assert.ok(h.rpcCalls.includes('read_scope_statistics'));
+});
+
+test('no source_place and no spatial anchors return an empty ISR place result',async()=>{
+  const h=await emptyIsrHarness();
+  const {status,body}=await h.get('places','?start=2026-10-01&end=2026-10-25');
+  assert.equal(status,200);
+  assert.deepEqual(Array.from(body.rows),[]);
+  assert.deepEqual(Array.from(body.anchors),[]);
+  assert.ok(h.rpcCalls.includes('read_scope_place_statistics'));
 });
 
 test('unregistered Scope still errors; zero rows must not hide missing Registry',async()=>{
