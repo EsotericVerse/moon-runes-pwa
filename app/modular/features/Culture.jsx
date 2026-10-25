@@ -908,8 +908,10 @@ export default function Culture(){
       title:day+' · '+label+' · '+count.toLocaleString(locale)
     });
     const items=[],groups=[];
-    const activeChildren=new Set([...subtotals].filter(([,count])=>count>0)
-      .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
+    const activeChildren=stagedSourceRiver
+      ?new Set(groupedSources.filter(group=>group.item_count>0).map(group=>group.key))
+      :new Set([...subtotals].filter(([,count])=>count>0)
+        .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
     const activeRoots=new Set([...totals].filter(([,count])=>count>0)
       .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
     for(const parent of roots){
@@ -929,7 +931,7 @@ export default function Culture(){
         const [type,day]=key.split('\u0000');
         if(type===parent.id&&count>0)items.push(row('root:'+parent.id,day,count,label,parent.order,parentMaximum.get(parent.id),'source_total'));
       }
-      if(!expanded)continue;
+      if(!expanded||(stagedSourceRiver&&!sourceSnapshotQuery.data))continue;
       members.forEach((group,index)=>{
         const id='dual:child:'+group.key;
         groups.push({id,label:group.label,order:parent.order+index+1,
