@@ -39,5 +39,5 @@ test('Culture classification is a published JS module, not a mandatory four-quer
   assert.match(culture,/openCultureRoots\.length>0/);
   assert.match(culture,/culture-children/);
   assert.match(culture,/culture-roots/);
-  assert.match(culture,/selectedRiverGroup\+'\|'\+'source'/);
+  assert.ok(culture.includes("selectedRiverGroup+'|source|'"));
 });
