@@ -200,6 +200,10 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
     description:descriptionText(description),
     longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m)
   };
+  const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
+    anchor:{...changes,source_scope:id,trace_type:'anchor'},excludeUid:anchorId});
+  if(check.byName||check.reuse||check.conflicts.length)
+    throw Error('更新後會與既有定錨點同名或同址，請先到「整理空間定錨點」確認並處理，避免破壞已儲存路線。');
   let request=dbAuthRelation(relation(id)).update(changes)
     .eq('uid',anchorId).eq('trace_type','anchor');
   if(id==='loc')request=request.eq('scope_id','loc');
