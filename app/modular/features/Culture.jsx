@@ -43,6 +43,7 @@ import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui'
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 const CultureTimelineEditor=dynamic(()=>import('./CultureTimelineEditor'),{loading:()=>null});
+const CulturePlaceRiver=dynamic(()=>import('./trace/CulturePlaceRiver'),{loading:()=>null});
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {publicContentFilters,requireGalaxyContent,resolveGalaxyTitle} from '../../loc/content-policy';
@@ -330,8 +331,8 @@ export default function Culture(){
   const keywordPeriod=cultureTimeKind==='event'
     ?cultureEventOptions.find(item=>'event:'+String(item.id||item.entry_id||item.record_id)===keywordPeriodKey)||null
     :keywordPeriodKey==='all'?allTimePeriod
-    :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod)
-    :keywordPeriodKey==='current'?selectedWorkPeriod
+    :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod||allTimePeriod)
+    :keywordPeriodKey==='current'?(selectedWorkPeriod||allTimePeriod)
     :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||latestPeriod||selectedWorkPeriod;
   const keywordWindowStart=keywordPeriodKey==='custom'&&cultureTimeKind==='period'
     ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
@@ -1364,7 +1365,7 @@ export default function Culture(){
                 </div>:null}
               </section>
 
-              {selectedWorkPeriod?<section className='scope-card scope-culture-classification-river'>
+              {(selectedWorkPeriod||!primaryPeriods.length)?<section className='scope-card scope-culture-classification-river'>
                 <div className='scope-culture-river-toolbar'>
                   <h3>{UI_COPY.culture.classificationRiver}｜{classificationPeriodLabel}</h3>
                   <div className='scope-culture-river-selectors'>
@@ -1421,6 +1422,7 @@ export default function Culture(){
                         onPointerDown={()=>setKeywordOptionsScope(scopeId)}
                         onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
                         <option value='none'>{l.noStyle}</option>
+                        <option value='trace'>痕跡（地點）</option>
                         <option value='rune66' disabled={!keywordClassQuery.data}>
                           {keywordClassQuery.data?keywordClassQuery.data:l.keywordStyle}
                         </option>
@@ -1477,16 +1479,18 @@ export default function Culture(){
                     &&!keywordRiverError&&!styleQuery.error&&!keywordGroupCatalogQuery.error&&!keywordDrillItems.length
                     ?<p className='scope-status'>此範圍沒有可顯示的命中資料。</p>:null}
                 </section>:null}
+                {styleFilter==='trace'&&classificationWindowValid?<CulturePlaceRiver
+                  scopeId={scopeId} startDate={classificationWindowStart} endDate={classificationWindowEnd}/>:null}
                 {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
-                {sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
-                {[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
+                {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
+                {styleFilter!=='trace'?[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
                   .filter(Boolean).map((error,index)=><p key={index} className='scope-status scope-error' role='alert'>
                     {featureDataErrorMessage(error,UI_COPY)}</p>)}
-                {stagedSourceRiver&&openCultureRoots.length>0&&
+                {styleFilter!=='trace'&&stagedSourceRiver&&openCultureRoots.length>0&&
                   (systemChildrenQuery.isPending||customChildrenQuery.isPending||mediaChildrenQuery.isPending||sourceSnapshotQuery.isPending)
                   ?<p className='scope-status' role='status'>正在讀取展開河道的細部分布…</p>:null}
-                {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
+                {styleFilter!=='trace'&&!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
                     onClick={createSelectedSuggestedAnchors}>
@@ -1510,14 +1514,14 @@ export default function Culture(){
                     </div>
                   </details>
                 </div>:null}
-                {classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                {styleFilter!=='trace'&&classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)
                   &&!cultureRiver.hasSourceData
                   ?<div className='scope-card scope-status scope-culture-no-data' role='status'>{l.noDataInPeriod}</div>:null}
                 {/* Never mount vis-timeline over an empty/pending source snapshot:
                     on first entry it otherwise creates an unready chart and then
                     replaces its DOM while groups and density analysis arrive. */}
-                {classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                {styleFilter!=='trace'&&classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData
                   ?<div className='scope-culture-double-river'>
                   <CultureTimeline
@@ -1601,7 +1605,7 @@ export default function Culture(){
                       ?<p className='scope-status'>此群組目前沒有符文項目。</p>:null}
                   </section>:null}
                 </div>:null}
-                {(!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
+                {styleFilter!=='trace'&&(!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
