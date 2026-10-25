@@ -27,7 +27,7 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const original=query.data||[];
   const rows=draft===null?original:draft;
   const changed=draft!==null&&JSON.stringify(draft)!==JSON.stringify(original);
-  const title=global?'作品群組分類':'作品自訂分類';
+  const title=global?'作品分類':'個人分類';
   const change=(index,value)=>{setDraft(prev=>{
     const next=[...(prev===null?original:prev)];next[index]=value;return next;
   });setNotice('');};
