@@ -1,6 +1,8 @@
 'use client';
 
 import {useMemo,useRef,useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {scopeHref} from '../modular/scope-registry';
 import {dbAuthClient} from './db-client.mjs';
 import {defaultScopeData} from './scope-data';
 import {selectCultureTimeRows} from './culture-query';
@@ -25,6 +27,7 @@ function sampleRows(preview){
   }).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.uid).localeCompare(String(b.uid)));
 }
 export default function PlaceBatchFill({scopeId,anchors=[]}){
+  const router=useRouter();
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
   const [place,setPlace]=useState('');
@@ -107,7 +110,7 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
   }
   return <section className="loc-card scope-feature-card">
     <h3>快速補寫打卡地點</h3>
-    <p className="scope-status">只補寫 Galaxy 原本空白的 source_place，依文章 createtime 的台灣日期篩選；不會改文章內容或既有 Facebook 打卡。預覽只顯示前後各三筆。</p>
+    <p className="scope-status">本頁適合將整個日期區間的空白 source_place 統一補成同一個地點，不會改文章內容或既有 Facebook 打卡。這裡只預覽前後各三筆；需要完整文章列表及逐篇勾選，請使用 LOC 原有搜尋。</p>
     <div className="scope-management-fields">
       <label>從現有時期／事件帶入（可選）
         <select className="scope-select" value={periodId} disabled={busy||periods.isPending} onChange={event=>usePeriod(event.target.value)}>
@@ -144,6 +147,13 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
       <button type="button" className="loc-button" onClick={inspect} disabled={!isValid||busy}>
         {busy?'處理中…':'預覽符合條件的文章'}
       </button>
+      <button type="button" className="loc-button" onClick={()=>{
+        const url=new URL(scopeHref('loc','admin/search'));
+        if(place.trim())url.searchParams.set('fill_place',place.trim());
+        if(validDate(startDate))url.searchParams.set('from',startDate);
+        if(validDate(endDate))url.searchParams.set('to',endDate);
+        router.push(url.href);
+      }}>打開 LOC 搜尋文章列表，逐篇勾選補寫</button>
     </div>
     {currentPreview?<section className="scope-card" aria-label="快速補寫預覽">
       <h4>預計補寫 {count.toLocaleString()} 篇</h4>
