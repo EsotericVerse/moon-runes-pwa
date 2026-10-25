@@ -6,7 +6,7 @@ import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient} from './db-client.mjs';
 import {
-  TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,addTraceMap,validCoordinates
+  TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
 
 const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
@@ -14,13 +14,24 @@ const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
 });
 
 function AnchorEditor({scopeId,spatial,reload}){
+  const ownAnchors=spatial.anchors.filter(row=>row.source_scope===scopeId);
+  const [editingUid,setEditingUid]=useState('');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const dirty=Boolean(title||description||longitude||latitude);
+  const dirty=Boolean(editingUid||title||description||longitude||latitude);
+  const pickExisting=uid=>{
+    const anchor=ownAnchors.find(row=>row.uid===uid);
+    setEditingUid(anchor?.uid||'');
+    setTitle(anchor?.title||'');
+    setDescription(anchor?.description||'');
+    setLongitude(anchor?.longitude==null?'':String(anchor.longitude));
+    setLatitude(anchor?.latitude==null?'':String(anchor.latitude));
+    setNotice('');
+  };
   const popular=useAsyncResource(['trace-place-names',scopeId],async()=>{
     const {data,error}=await dbAuthClient.schema('silver').rpc('trace_place_suggestions',{
       p_scope_id:scopeId,p_limit:50
@@ -32,17 +43,32 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(busy)return false;
     setBusy(true);setNotice('');
     try{
-      await addTraceAnchor({scopeId,title,description,longitude,latitude});
+      if(!editingUid&&ownAnchors.some(row=>String(row.title||'').trim()===title.trim())){
+        throw new Error('已有同名空間定錨點，請先從上方選擇編輯既有紀錄，避免重複建立。');
+      }
+      if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude});
+      else await addTraceAnchor({scopeId,title,description,longitude,latitude});
       await reload();
+      setEditingUid('');
       setTitle('');setDescription('');setLongitude('');setLatitude('');
-      setNotice('空間定錨點已儲存。');
+      setNotice(editingUid?'空間定錨點已更新。':'空間定錨點已儲存。');
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card">
-    <h3>新增空間定錨點</h3>
+    <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
+    {ownAnchors.length?<div className="scope-management-fields">
+      <label>編輯既有空間定錨點（不需要重新新增）
+        <select className="scope-select" value={editingUid} onChange={event=>pickExisting(event.target.value)} disabled={busy}>
+          <option value="">新增新地點</option>
+          {ownAnchors.map(anchor=><option key={anchor.uid} value={anchor.uid}>
+            {anchor.title} · {anchor.latitude}, {anchor.longitude}
+          </option>)}
+        </select>
+      </label>
+    </div>:null}
     <p className="scope-status">請直接在地圖上點選位置（或點車站快捷位置），經緯度會自動填入；橘色圖釘可拖曳調整。不會修改 Galaxy 打卡欄位。</p>
     <div className="scope-management-fields">
       <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
