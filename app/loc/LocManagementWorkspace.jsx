@@ -9,7 +9,7 @@ import ManagementSectionNav from '../modular/ManagementSectionNav';
 
 // Shared workspace layout and access boundary; each management capability
 // still owns its own route, data, editor, and lifecycle.
-export default function LocManagementWorkspace({featureId,navId,item,children}){
+export default function LocManagementWorkspace({featureId,navId,item,children,standalone=false}){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
@@ -31,6 +31,8 @@ export default function LocManagementWorkspace({featureId,navId,item,children}){
   if(!canManage)return <FeaturePage featureId={featureId}>
     <section className="loc-card scope-feature-card"><p>目前帳號沒有 LOC 管理權限。</p></section>
   </FeaturePage>;
+
+  if(standalone)return <FeaturePage featureId={featureId}>{children}</FeaturePage>;
 
   const panelId=navId+'-panel';
   return <FeaturePage featureId={featureId}>
