@@ -11,7 +11,7 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
     // Undated results must not create clickable but empty child lanes.
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     const raw=isMedia?'媒體 · '+category:category;
-    const root=isMedia?'media':assignedSource(category,taxonomy.aliases||[],taxonomy.categories||[])==='others'?'custom':'system';
+    const root=isMedia?'media':assignedSource(category,taxonomy.aliases||[],taxonomy.categories||[])==='unclassified'?'custom':'system';
     const key=(isMedia?'media:':'source:')+category;
     const group=groups.get(key)||{
       category_key:'source:'+raw,category_type:isMedia?'media':'source',source_name:raw,
@@ -34,7 +34,7 @@ export function selectCultureRiverChildren(rows=[],taxonomy={},roots=[]){
   return rows.filter(row=>{
     if(row?.kind==='media')return wanted.has('media');
     if(row?.kind!=='source')return false;
-    const root=assignedSource(String(row.category||'').trim(),taxonomy.aliases||[],taxonomy.categories||[])==='others'?'custom':'system';
+    const root=assignedSource(String(row.category||'').trim(),taxonomy.aliases||[],taxonomy.categories||[])==='unclassified'?'custom':'system';
     return wanted.has(root);
   });
 }
