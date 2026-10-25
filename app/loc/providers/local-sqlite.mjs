@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS local (
   search_able INTEGER NOT NULL DEFAULT 1,
   statistics_able INTEGER NOT NULL DEFAULT 1,
   culture_able INTEGER NOT NULL DEFAULT 1,
-  sources TEXT NOT NULL DEFAULT '["facebook","threads","ig","x","others"]',
+  txt_class TEXT NOT NULL DEFAULT '[]',
   updated_at TEXT NOT NULL,
   keyword_min_chars INTEGER NOT NULL DEFAULT 32,
   keyword_min_documents INTEGER NOT NULL DEFAULT 100,
@@ -241,6 +241,8 @@ async function webDatabase(){
     const bytes=await readWebBytes();
     const db=bytes?new SQL.Database(new Uint8Array(bytes)):createFreshSQL(SQL);
     db.run(SCHEMA);
+    if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
+      db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
     db.run(SEED_LOCAL_ROW_SQL,[new Date().toISOString()]);
     return db;
@@ -256,6 +258,9 @@ async function nativeDatabase(){
       :await plugin.createConnection(DATABASE_NAME,false,'no-encryption',1,false);
     await conn.open();
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
+    const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
+    if(!columns.some(row=>row.name==='txt_class'))
+      await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     await conn.run(SCHEMA_MARKER_SQL,[MARKER],false);
     await conn.run(SEED_LOCAL_ROW_SQL,[new Date().toISOString()],false);
     return conn;
@@ -470,7 +475,7 @@ function queryBuilder(table){
 // JSON/boolean columns round-trip through TEXT/INTEGER in SQLite; decode the
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
-const JSON_COLUMNS=new Set(['sources','keyword_meta','search_aliases','block_entity','block_image',
+const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
   'target_id','media_link','anchor_ids','keywords','runeslist','rune_references']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
