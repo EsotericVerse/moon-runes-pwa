@@ -337,8 +337,14 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         {routeBusy?copy.busy:routeVisible?copy.hide:copy.show}
       </button></>:null}
     </div>
-    <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
-      role="application" aria-label={selectingLocation?copy.map:'空間定錨點與已儲存痕跡圖地圖'}/>
+    <div className="loc-trace-map-shell">
+      {!selectingLocation?<button type="button" className="loc-button loc-trace-origin-button"
+        disabled={!ready} onClick={()=>mapRef.current?.goOrigin()}>
+        回原點 · 板橋車站
+      </button>:null}
+      <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
+        role="application" aria-label={selectingLocation?copy.map:'空間定錨點與已儲存痕跡圖地圖'}/>
+    </div>
     <div className="loc-trace-mobile-map-tools">
       <button type="button" className="loc-button" aria-pressed={expandedMap}
         onClick={()=>setExpandedMap(value=>!value)}>
