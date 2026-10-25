@@ -27,7 +27,7 @@ const KeywordSettings=dynamic(()=>import('../modular/features/KeywordSettings'),
 const Culture=dynamic(()=>import('../modular/features/Culture'),{loading});
 const Search=dynamic(()=>import('../modular/features/Search'),{loading});
 const SearchManagement=dynamic(()=>import('./SearchManagement'),{loading});
-const Traces=dynamic(()=>import('../modular/features/Traces'),{loading});
+const Trace=dynamic(()=>import('../modular/features/Trace'),{loading});
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
 const ManagementView=dynamic(()=>import('./GovernanceManagement'),{loading});
@@ -42,7 +42,7 @@ const VIEWS={
   culture:Culture,
   search:Search,
   searchManage:SearchManagement,
-  governance:Traces,
+  trace:Trace,
   manage:ManagementView,
   sourceManage:SourceManagementView,
   keywordManage:KeywordManagementView,
@@ -60,7 +60,7 @@ const VIEW_PRELOADERS={
   culture:()=>import('../modular/features/Culture'),
   search:()=>import('../modular/features/Search'),
   searchManage:()=>import('./SearchManagement'),
-  governance:()=>import('../modular/features/Traces'),
+  trace:()=>import('../modular/features/Trace'),
   manage:()=>import('./GovernanceManagement'),
   sourceManage:()=>import('./LocSourceManagement'),
   keywordManage:()=>import('./LocKeywordManagementPage'),
@@ -154,7 +154,7 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
           <ScopeGroupOverview
             scopeId={scopeId}
             featureId={forcedView}
-            title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title',governance:'features.governance.title'}[forcedView])}
+            title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title'}[forcedView])}
             description={t('uiExtra.feature.groupGuide')}
           />
         </FeaturePage>:<ActiveView section={forcedSection} scopeId={scopeId}/>}
