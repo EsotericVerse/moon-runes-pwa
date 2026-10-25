@@ -1091,6 +1091,18 @@ export default function Search({managementMode=false}){
     />
     </div>
   </>;
-  return managementMode?pageContent:<FeaturePage featureId="search">{pageContent}</FeaturePage>;
+  // Public governance remains owned by its existing Scope blocks. Search only
+  // provides a reading surface; article-management permissions are unchanged.
+  return managementMode?pageContent:<FeaturePage featureId="search">
+    <div className="scope-search-governance-layout">
+      <div className="scope-search-governance-main">{pageContent}</div>
+      <aside className="scope-search-governance-aside" aria-label="法律宣告">
+        <h2>法律宣告</h2>
+        <ScopeEditableBlocks scopeId={scopeId} page="governance"
+          className="scope-search-governance-blocks"
+          headingLevel={3} allowEditing={false}/>
+      </aside>
+    </div>
+  </FeaturePage>;
 }
 
