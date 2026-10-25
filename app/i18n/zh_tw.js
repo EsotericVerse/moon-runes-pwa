@@ -44,6 +44,11 @@ export default {
       "subtitle": "把作品放回時間順序，觀察不同時期的累積與變化。",
       "description": "時間長河依日期呈現作品與來源；定錨點用來切分時期，方便比較前後差異。"
     },
+    "traces": {
+      "title": "痕跡",
+      "subtitle": "以真實地理位置觀看空間定錨點與路線。",
+      "description": "以真實地理位置觀看空間定錨點與路線。"
+    },
     "governance": {
       "title": "治理",
       "subtitle": "說明使用原則、權利邊界與管理方式。",
