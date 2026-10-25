@@ -43,7 +43,9 @@ export default function Trace({scopeId='loc'}){
     {start:customStart,end:customEnd}),[timeWindow,customStart,customEnd]);
   const choosePlace=anchor=>{
     if(!anchor?.uid)return;
-    setSelectedPlace(anchor);setReportTab('articles');
+    // Switching pins replaces content without resetting the chosen mode.
+    // The first selection still defaults to articles through reportTab state.
+    setSelectedPlace(anchor);
   };
 
   // Reuse the route preference from the existing management editor. "All"
