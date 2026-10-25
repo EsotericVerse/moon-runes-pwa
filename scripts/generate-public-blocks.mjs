@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createPublicSupabaseClient} from '../app/api/loc/_server.js';
 import {THEME_TOKEN_KEYS} from '../app/modular/theme-registry.js';
+import {classNames} from '../app/loc/source-classification.mjs';
 import {publishPublicFiles} from './publish-public-files.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -16,22 +17,12 @@ const {data:site,error:siteError}=await db.rpc('read_app_bootstrap',{p_scope_id:
 if(siteError||!site||!Array.isArray(site.registry))throw Error('Cannot publish public Bootstrap');
 const routes=site.registry.filter(x=>x.active!==false&&x.scope_kind!=='system');
 if(!routes.length||routes.some(x=>!validScope.test(x.scope_id)))throw Error('Invalid public Scope list');
-// Public classification is a JS snapshot, not four SQL reads per Culture visit.
-const taxonomyTable=async(table,cols)=>{
-  const {data,error}=await db.from(table).select(cols).range(0,65534);
-  if(error)throw Error('Cannot publish '+table+': '+error.message);
-  return data||[];
-};
-const [categories,aliases,othersGroups,othersAliases]=await Promise.all([
-  taxonomyTable('statistics_source_categories','category_code,display_name,enabled'),
-  taxonomyTable('statistics_source_aliases','source_key,category_code'),
-  taxonomyTable('statistics_scope_others_groups','scope_id,group_code,display_name,enabled,sort_order'),
-  taxonomyTable('statistics_scope_others_aliases','scope_id,source_key,group_code')
-]);
-const publishedSourceTaxonomies=Object.fromEntries(routes.map(({scope_id})=>[scope_id,{
-  categories,aliases,groups:othersGroups.filter(row=>row.scope_id===scope_id).map(({scope_id,...row})=>row),
-  groupAliases:othersAliases.filter(row=>row.scope_id===scope_id).map(({scope_id,...row})=>row)
-}]));
+// Public source classifications are two flat text[] snapshots; never read the old tables.
+const {data:globalList,error:globalError}=await db.from('loc')
+  .select('txt_class').eq('id','loc').maybeSingle();
+if(globalError||!globalList)throw Error('Cannot publish LOC txt_class');
+const systemNames=classNames(globalList.txt_class);
+const publishedSourceLists={};
 const allBlocks=new Map(),routeConfigs=[];
 const cols='uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image';
 for(const row of routes){
@@ -41,6 +32,10 @@ for(const row of routes){
     .eq('id',id).limit(1).maybeSingle();
   if(configError||!config)throw Error('Missing published Scope Config for '+id);
   routeConfigs.push({scope_id:id,domain:row.domain||null,directory:row.directory||null,active:true,config});
+  const {data:scopeList,error:scopeListError}=await db.from(id)
+    .select('txt_class').eq('id',id).maybeSingle();
+  if(scopeListError||!scopeList)throw Error('Cannot publish txt_class for '+id);
+  publishedSourceLists[id]={system:systemNames,personal:id==='loc'?[]:classNames(scopeList.txt_class)};
   const {data:blocks,error:blocksError}=await db.from(id+'_blocks').select(cols).order('block_order').range(0,65534);
   if(blocksError)throw Error('Blocks unavailable for '+id+': '+blocksError.message);
   for(const block of blocks||[]){
@@ -69,7 +64,7 @@ const themeMeta=themes.map(t=>({theme_id:t.theme_id,theme_name:t.theme_name,them
 const bootstrap={scope_id:'loc',page_name:'index',registry:site.registry,page_copy:site.page_copy||[],theme_list:themeMeta,themes:[],blocks:[]};
 const entries=[
   ['app/modular/scope-route-index.js','// PUBLIC Scope routing + Config; explicit publication only.\nexport const SCOPE_ROUTE_INDEX=Object.freeze('+encode(routeConfigs)+');\n'],
-  ['app/modular/published-source-taxonomy.js','// Public source classification, published with Scope Config.\nexport const PUBLISHED_SOURCE_TAXONOMY=Object.freeze('+encode(publishedSourceTaxonomies)+');\nexport function publishedSourceTaxonomy(scopeId){return Object.prototype.hasOwnProperty.call(PUBLISHED_SOURCE_TAXONOMY,scopeId)?PUBLISHED_SOURCE_TAXONOMY[scopeId]:null;}\n'],
+  ['app/modular/published-source-taxonomy.js',"// Flat public source classification, published with Scope Config.\\nimport {sourceTaxonomyFromArrays} from '../loc/source-classification.mjs';\\nexport const PUBLISHED_SOURCE_LISTS=Object.freeze("+encode(publishedSourceLists)+");\\nexport const PUBLISHED_SOURCE_TAXONOMY=Object.freeze(Object.fromEntries(Object.entries(PUBLISHED_SOURCE_LISTS).map(([id,lists])=>[id,sourceTaxonomyFromArrays(lists.system,lists.personal)])));\\nexport function publishedSourceTaxonomy(scopeId){return Object.prototype.hasOwnProperty.call(PUBLISHED_SOURCE_TAXONOMY,scopeId)?PUBLISHED_SOURCE_TAXONOMY[scopeId]:null;}\\n"],
   ['app/modular/published-site-bootstrap.js','// PUBLIC navigation metadata; Theme values live in CSS.\nexport const PUBLISHED_SITE_BOOTSTRAP=Object.freeze('+encode(bootstrap)+');\n'],
   ['app/modular/published-theme-meta.js','// Published Theme metadata (palettes are CSS).\nexport const PUBLISHED_THEME_META='+encode(themes.map(t=>['theme-'+t.theme_id,t.theme_name,t.scheme,t.style_key]))+';\n'],
   ['app/styles/published-themes.css','/* Published Theme palette; explicit publication only. */\n'+palettes.join('\n\n')+'\n']
