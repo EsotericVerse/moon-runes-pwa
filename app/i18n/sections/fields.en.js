@@ -1,4 +1,6 @@
 export default {
+  "空間定錨": "Spatial anchors",
+  "時間定錨": "Time anchors",
   "暫存": "Save draft",
   "搜尋文章管理": "Article search management",
   "痕跡製作": "Create traces",
