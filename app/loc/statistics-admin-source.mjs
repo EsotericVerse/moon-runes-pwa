@@ -20,7 +20,7 @@ export function administrativeSourceTrend(raw=[],taxonomy={},{startDate='',endDa
     return {rows:[],series:[],distribution:[],total:0};
   }
   const keys=new Map(categories.map(c=>[c.category_code,c.display_name]));
-  if(!keys.has('others'))keys.set('others','Others');
+  if(!keys.has('unclassified'))keys.set('unclassified','未分類');
   const data=new Map(),totals=new Map(),rawRecords=Array.isArray(raw)?raw:[];
   for(let date=new Date(start+'T00:00:00Z'),last=new Date(end+'T00:00:00Z');date<=last;date.setUTCDate(date.getUTCDate()+1)){
     const today=date.toISOString().slice(0,10),group=bucket(today,unit);
