@@ -57,21 +57,12 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           if [ -f /tmp/next-build.log ]; then
             tail -n 200 /tmp/next-build.log >> "$GITHUB_STEP_SUMMARY"
-            # Surface the build log tail in annotations only when a build ran.
-            grep -v '^\s*
-      - name: Keep browser screenshots for visual inspection
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: quality-screenshots
-          path: test-results/**/full-page.png
-          if-no-files-found: ignore
-          retention-days: 3
- /tmp/next-build.log | tail -n 8 | cut -c1-400 | while IFS= read -r line; do
+            # Log annotations are useful when the build actually ran.
+            tail -n 8 /tmp/next-build.log | cut -c1-400 | while IFS= read -r line; do
               echo "::error title=build-tail::${line//%/%25}"
             done
           else
-            echo 'Build was not started. See the earlier failed test or setup step.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Build was not started. See the earlier failed step.' >> "$GITHUB_STEP_SUMMARY"
           fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
       - name: Keep browser screenshots for visual inspection
