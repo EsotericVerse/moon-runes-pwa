@@ -64,7 +64,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   const status=message=>{if(!removed)onStatus(message);};
   // Spatial anchors are explicit user selections, never inferred from device
   // location or demo coordinates. Only the management editor enables picking.
-  function pickLocation(lng,lat){
+  function pickLocation(lng,lat,name=''){
     if(removed||!canPickLocation||!Number.isFinite(lng)||!Number.isFinite(lat))return;
     if(!pickedMarker){
       pickedMarker=new Marker({color:'#f7ba66',draggable:true})
@@ -74,7 +74,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         pickLocation(position.lng,position.lat);
       });
     }else pickedMarker.setLngLat([lng,lat]);
-    onLocationPick({lng,lat});
+    onLocationPick({lng,lat,...(name?{name}:{})});
     status('locationPicked');
   }
   if(canPickLocation){
@@ -86,7 +86,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(!place)return;
     map.flyTo({center:[place.lng,place.lat],zoom:15.1,pitch:65,bearing:-23,essential:true});
     onSelect(place.id);
-    if(canPickLocation)pickLocation(place.lng,place.lat);
+    if(canPickLocation)pickLocation(place.lng,place.lat,place.name);
     new Popup({closeButton:true,offset:24})
       .setLngLat([place.lng,place.lat])
       .setText(place.name)
