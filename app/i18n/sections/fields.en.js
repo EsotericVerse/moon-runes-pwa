@@ -1,4 +1,9 @@
 export default {
+  "暫存": "Save draft",
+  "搜尋文章管理": "Article search management",
+  "痕跡製作": "Create traces",
+  "設立定錨": "Set anchors",
+  "關鍵詞": "Keywords",
   "主要資料庫": "Primary database",
   "次要資料庫": "Backup database",
   "運作模式": "Routing mode",
