@@ -5,6 +5,7 @@ import {executePublicRead} from './db-query.mjs';
 import {useAsyncResource} from './use-async-resource';
 import {useAccount} from './use-account';
 import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modular/features/trace/trace-data';
+import {revalidateServerMetadata} from './scope-data';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -86,6 +87,7 @@ export default function TracePlaceGeocoder({scopeId}){
   const [saving,setSaving]=useState(false);
   const [processed,setProcessed]=useState(0);
   const [notice,setNotice]=useState('');
+  const [audit,setAudit]=useState(null);
   const [failure,setFailure]=useState('');
   const stopRef=useRef(false);
   const busyRef=useRef(false);
@@ -185,11 +187,16 @@ export default function TracePlaceGeocoder({scopeId}){
     }));
     const names=previewEnds(payload).map(item=>item.name).join('\n');
     if(!window.confirm('即將在 '+scopeId+' 新增 '+payload.length+' 個空間定錨點，半徑 '+radius+' 公尺，保留 Galaxy 原本的打卡名稱與文章內容。\n\n'+names+'\n\n確定寫入？'))return;
-    setSaving(true);setFailure('');setNotice('');
+    setSaving(true);setFailure('');setNotice('');setAudit(null);
     try{
       const result=await addTraceAnchorsBatch({scopeId,places:payload});
+      await revalidateServerMetadata();
       await traces.mutate();
-      setNotice('已新增 '+result.count+' 個空間定錨點；略過已存在地點 '+result.skipped+' 個。');
+      setAudit(result);
+      setNotice('本批新增 '+result.count+' 個；略過已存在或批內同址 '+result.skipped
+        +' 個；安全沿用舊錨點並保留名稱 '+result.consolidated+' 處。'
+        +(result.reviewCount?'還有 '+result.reviewCount+' 組候選，請到「整理空間定錨點」核對。':'沒有發現待核對候選。')
+        +(result.auditError?' 匯入後檢查未完成：'+result.auditError:''));
     }catch(error){
       await traces.mutate().catch(()=>{});
       setFailure(String(error.message||error));
@@ -260,6 +267,15 @@ export default function TracePlaceGeocoder({scopeId}){
       </div>:null}
       <p className="scope-status">地理資料 © OpenStreetMap contributors。查詢結果會儲存在目前裝置以避免重複請求；真正的定錨點只在按下「確認並批次儲存」後寫入。服務限制單一序列低頻請求；開放大量使用者時應改用可受控的專用地理編碼服務。</p>
       {notice?<p role="status" className="scope-status">{notice}</p>:null}
+      {audit?.reviewPreview?.length?<details>
+        <summary>本次寫入後的重複定錨候選（顯示前 {audit.reviewPreview.length} 組）</summary>
+        <ul>{audit.reviewPreview.map((item,index)=><li key={index}>
+          {item.a}／{item.b} · {item.meters??'座標不完整'} 公尺 ·
+          {item.type==='same-address'?'同址待核對':item.type==='near-unverified'?'附近候選':
+            item.type==='near-different-address'?'不同地址，不能合併':item.type==='address-coordinate-conflict'?'座標衝突':'同名不同位置'}
+        </li>)}</ul>
+        <p className="scope-status">請切到管理選單「整理空間定錨點」進行確認；不會自動刪除候選點。</p>
+      </details>:null}
       {failure?<p role="alert" className="scope-status scope-error">{failure}</p>:null}
     </>:null}
   </section>;
