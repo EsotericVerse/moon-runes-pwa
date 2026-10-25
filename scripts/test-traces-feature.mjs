@@ -68,7 +68,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   const admin=read('app/loc/views/AdminHomeView.jsx');
   const traceRoute=read('app/trace/manage/page.jsx');
   assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
-  assert.match(editor,/if\(name\)setTitle\(name\)/);
+  assert.match(editor,/if\(name\)setTitle\(current=>current\.trim\(\)\?current:name\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
   assert.match(react,/export default function TraceMap\(\{onLocationPick=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
@@ -108,4 +108,21 @@ test('Only canonical public Trace and management routes exist',()=>{
   // The previous group_governance data key remains a compatibility alias for
   // the Trace Hero. It is not a public governance route or a second page.
   assert.match(core,/"loc:group_governance"/);
+});
+
+test('Check-in backfill uses only empty source_place and user-confirmed date range',()=>{
+  const editor=read('app/loc/PlaceBatchFill.jsx');
+  const manager=read('app/loc/ScopeManagement.jsx');
+  const trace=read('app/loc/TraceManagement.jsx');
+  assert.match(manager,/value:'placeFill'/);
+  assert.match(manager,/dynamic\(\(\)=>import\('\.\/PlaceBatchFill'\)/);
+  assert.match(editor,/selectCultureTimeRows\(scope\)/);
+  assert.match(editor,/p_start_date:startDate,p_end_date:endDate/);
+  assert.match(editor,/p_apply:false/);
+  assert.match(editor,/p_apply:true,p_expected_count:count/);
+  assert.match(editor,/window\.confirm\(/);
+  assert.match(editor,/trace_place_suggestions/);
+  assert.match(editor,/前後各三筆/);
+  assert.match(trace,/常用 Facebook 打卡名稱/);
+  assert.doesNotMatch(editor,/selectAllRows\(|insertRows\(|updateRows\(/);
 });
