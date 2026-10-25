@@ -13,7 +13,7 @@ test('home Hero stays first; second cannot move over Hero',()=>{
   }
 });
 test('ordinary blocks may still change order',()=>{
-  for(const page of ['search','governance','group_culture']){
+  for(const page of ['search','trace','group_culture']){
     assert.equal(HomeBlock.isPinnedHomeHero(page,blocks[0]),false);
     assert.equal(HomeBlock.canSwapHomeBlockPositions(page,blocks,0,1),true);
     assert.equal(HomeBlock.canSwapHomeBlockPositions(page,blocks,1,0),true);
