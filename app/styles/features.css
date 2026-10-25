@@ -1200,11 +1200,11 @@
 .loc-trace-map-manager-heading .scope-status{margin:0}
 .loc-trace-saved-maps{display:grid;gap:.65rem;min-width:0}
 .loc-trace-saved-map{min-width:0;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);overflow:hidden}
-.loc-trace-saved-map summary{cursor:pointer;padding:.8rem .95rem;display:flex;align-items:center;gap:.75rem;min-height:44px;overflow-wrap:anywhere;font-weight:600}
-.loc-trace-saved-map summary::marker{color:var(--loc-accent)}
-.loc-trace-saved-map summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-3px}
-.loc-trace-saved-map summary>.scope-status{margin-left:auto;white-space:nowrap;font-weight:400}
-.loc-trace-saved-map[open] summary{border-bottom:1px solid var(--loc-line)}
+.loc-trace-saved-map-summary{cursor:pointer;display:flex;align-items:center;gap:.75rem;width:100%;min-height:44px;padding:.8rem .95rem;border:0;text-align:left;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;overflow-wrap:anywhere}
+.loc-trace-saved-map-summary>span:first-child{color:var(--loc-accent);flex:0 0 auto}
+.loc-trace-saved-map-summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-3px}
+.loc-trace-saved-map-summary>.scope-status{margin-left:auto;white-space:nowrap;font-weight:400}
+.loc-trace-saved-map-summary[aria-expanded="true"]{border-bottom:1px solid var(--loc-line)}
 .loc-trace-saved-map-body{display:grid;gap:.8rem;padding:.85rem .95rem;min-width:0}
 .loc-trace-route-description{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 .loc-trace-route-composer{display:grid;gap:.85rem;min-width:0;padding:.9rem;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)}
