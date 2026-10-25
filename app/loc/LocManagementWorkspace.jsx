@@ -14,7 +14,7 @@ export default function LocManagementWorkspace({featureId,navId,item,children,st
   const editDock=useEditDock();
   const searchParams=useSearchParams();
   const editRequested=searchParams?.get('edit')==='1';
-  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
+  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGroupSync('loc'));
 
   useEffect(()=>{
     if(editRequested&&canManage)editDock?.begin('loc');
