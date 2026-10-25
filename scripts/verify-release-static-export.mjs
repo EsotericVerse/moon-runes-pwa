@@ -9,8 +9,10 @@ const routes=[
   'lo3rwang', 'lo3rwang/search', 'lo3rwang/culture', 'lo3rwang/statics',
   'lrunes', 'lrunes/search', 'lrunes/game', 'game/room',
   'scope-shell', 'scope-shell/search',
-  'admin', 'governance/manage', 'governance/manage/search',
-  'local/settings', 'local/governance'
+  'admin', 'admin/search', 'lrunes/manage', 'lrunes/manage/search',
+  'lo3rwang/manage', 'lo3rwang/manage/search',
+  'scope-shell/manage', 'scope-shell/manage/search',
+  'local/settings', 'local/manage'
 ];
 const root=process.argv[2]||'out';
 const missing=routes.filter(route=>{
