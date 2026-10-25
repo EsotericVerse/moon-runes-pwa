@@ -114,7 +114,7 @@ export default function TraceMap(){
         setStatus('initError');
       }
     };
-    if(!document.querySelector('link[data-loc-traces-map-style]')){
+    if(!document.querySelector('link[data-loc-trace-map-style]')){
       insertedStyles=document.createElement('link');
       insertedStyles.rel='stylesheet';
       insertedStyles.href=MAP_CSS;
@@ -149,15 +149,15 @@ export default function TraceMap(){
     }
   }
 
-  return <section className="loc-card loc-traces-panel" aria-label={copy.label}>
-    <header className="loc-traces-intro">
+  return <section className="loc-card loc-trace-panel" aria-label={copy.label}>
+    <header className="loc-trace-intro">
       <div>
         <p className="loc-eyebrow">{copy.eyebrow}</p>
         <h2>{copy.title}</h2>
       </div>
       <p className="scope-status">{copy.intro}</p>
     </header>
-    <div className="loc-traces-controls" role="group" aria-label={copy.controls}>
+    <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
         {copy.all}
       </button>
@@ -170,9 +170,9 @@ export default function TraceMap(){
         {routeBusy?copy.busy:routeVisible?copy.hide:copy.show}
       </button>
     </div>
-    <div className="loc-traces-map-frame" ref={containerRef}
+    <div className="loc-trace-map-frame" ref={containerRef}
       role="application" aria-label={copy.map}/>
-    <p className="scope-status loc-traces-map-status" role="status" aria-live="polite">{copy.status[status]||copy.status.loading}</p>
-    <p className="scope-status loc-traces-map-note">{copy.note}</p>
+    <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">{copy.status[status]||copy.status.loading}</p>
+    <p className="scope-status loc-trace-map-note">{copy.note}</p>
   </section>;
 }
