@@ -598,7 +598,7 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
   if(usesNumericIsr(current.id))
     return readNumericIsr(current.id,'facet',{startDate,endDate,dimension});
   const filters=timeFilters('createtime',startDate,endDate);
-  const columns='media_id,media_type,url,source_place,meta_tags,createtime';
+  const columns='media_id,media_type,url,meta_tags,createtime';
   const orders=[{column:'media_id',ascending:true}];
   const aggregates=new Map();
   let offset=0,total=null,source='auto';
