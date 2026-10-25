@@ -1057,3 +1057,11 @@
 @media(prefers-reduced-motion:reduce){
   .loc-trace-panel *{scroll-behavior:auto!important}
 }
+
+
+/* Place lookup and spatial-radius editing share existing Trace styles. */
+.loc-trace-location-search{display:flex;align-items:end;gap:.5rem;flex-wrap:wrap;margin:.4rem 0}
+.loc-trace-location-search label{flex:0 0 100%;font-weight:600}
+.loc-trace-location-search input{flex:1 1 220px;min-width:0;max-width:100%;padding:.65rem .8rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);background:var(--loc-panel);color:var(--loc-text);font:inherit}
+.loc-trace-location-results{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .7rem}
+.loc-trace-location-results .loc-button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}
