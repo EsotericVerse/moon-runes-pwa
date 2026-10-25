@@ -1002,7 +1002,7 @@ export default function Culture(){
       const keywordCounts=new Map();
       for(const item of keywordDrillItems){
         const key=String(item.drill_key||'');
-        if(key)keywordCounts.set(key,(keywordCounts.get(key)||0)+(Number(item.count)||0));
+        if(key)keywordCounts.set(key,(keywordCounts.get(key)||0)+(Number(item.item_count)||0));
       }
       for(const group of keywordGroupOptions){
         const count=keywordCounts.get(String(group.id))||0;
