@@ -43,6 +43,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const [tab,setTab]=useState('articles');
   const [sort,setSort]=useState('desc');
   const [chartType,setChartType]=useState('bar');
+  const [showAllVisits,setShowAllVisits]=useState(false);
   const name=String(place?.title||'').trim();
   const isMap=place?.trace_type==='map';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
@@ -102,6 +103,33 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       places:[...places].sort((a,b)=>b[1]-a[1]),
       total:[...places.values()].reduce((total,n)=>total+n,0)};
   },[numeric.data,placesKey]);
+  // Each spatial anchor has its own times[]; a multi-day route does not mean
+  // each stop was visited continuously throughout that route.
+  // Use saved times, never inferred timestamps from the route or article period.
+  const visits=useMemo(()=>{
+    const stops=isMap
+      ?(place?.anchor_uids||[]).map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===targetScope)).filter(Boolean)
+      :(place?[place]:[]);
+    return stops.flatMap((stop,stopIndex)=>(Array.isArray(stop.times)?stop.times:[])
+      .flatMap((when,visitIndex)=>{
+        const timestamp=Date.parse(String(when||''));
+        if(!Number.isFinite(timestamp))return [];
+        const exact=new Date(timestamp);
+        return [{
+          id:stop.uid+':'+stopIndex+':'+visitIndex,uid:stop.uid,
+          title:String(stop.title||''),when:exact.toISOString(),
+          label:exact.toLocaleString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',
+            month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
+        }];
+      }))
+      .sort((a,b)=>a.when.localeCompare(b.when));
+  },[isMap,place,anchors,targetScope]);
+  const visitRiver=useMemo(()=>visits.map(visit=>({
+    id:'trace-visit:'+visit.id,entry_id:'trace-visit:'+visit.id,
+    entry_type:'spatial_visit',group_key:'trace-visits',group_label:'實際造訪時間',
+    group_order:0,start_date:visit.when,
+    title:visit.title+' · '+visit.label
+  })),[visits]);
   const listTotal=list.data?.pages?.[0]?.total;
   // Present the same vis-timeline river used by Culture. Aggregate by month
   // so a 20-year personal history remains navigable without thousands of
@@ -118,6 +146,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
         title:month+' · '+count+' 篇有打卡地點的文章'};
     });
   },[verified.months,name]);
+  const riverItems=useMemo(()=>[...visitRiver,...riverRows],[visitRiver,riverRows]);
   const chartRows=useMemo(()=>verified.months.map(([month,count])=>({
     period:month.replace('-', '/'),start_date:month+'-01',value:count
   })),[verified.months]);
@@ -140,6 +169,21 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
           :(numeric.data?verified.total+' 篇已確認打卡文章':'數值圖表')}
       </span>
     </header>
+    <div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
+      <p className="scope-status">
+        {visits.length?'已保存 '+visits.length+' 次具體造訪時間；各站獨立記錄。'
+          :'目前沒有可確認的造訪時刻；不會以整趟旅程起訖日期代替各站時間。'}
+      </p>
+      {visits.length?<ol className="loc-trace-selection-order">
+        {(showAllVisits?visits:visits.slice(0,12)).map(visit=><li key={visit.id}>
+          <span>{visit.label} · {visit.title}</span>
+        </li>)}
+      </ol>:null}
+      {visits.length>12?<button className="loc-button" type="button"
+        onClick={()=>setShowAllVisits(value=>!value)}>
+        {showAllVisits?'收合造訪時間':'顯示全部 '+visits.length+' 次造訪時間'}
+      </button>:null}
+    </div>
     <div className="loc-trace-works-tabs" role="group" aria-label="雙定錨基本報表">
       {TABS.map(item=><button key={item.id} type="button" className="loc-button"
         aria-pressed={tab===item.id} onClick={()=>setTab(item.id)}>{item.label}</button>)}
@@ -158,13 +202,16 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       {list.isFetchingNextPage?'載入中…':'載入更多文章'}
     </button>:null}
     {tab!=='articles'&&!usesNumericIsr(targetScope)?<p className="scope-status">本機版保留文章列表；雲端數值 ISR 不用於私人 SQLite。</p>:null}
-    {tab==='timeline'&&numeric.data?<div className="loc-trace-works-timeline" aria-label="按月份排列的真正時間長河">
-      {riverRows.length?<CultureTimeline items={riverRows}
-        extraGroups={[{id:'trace-density',label:name,order:0,selectable:false}]}
+    {tab==='timeline'&&(numeric.data||visits.length>0)?<div className="loc-trace-works-timeline" aria-label="按真實造訪時間排列的時間長河">
+      {riverItems.length?<CultureTimeline items={riverItems}
+        extraGroups={[
+          ...(visitRiver.length?[{id:'trace-visits',label:'實際造訪時間',order:0,selectable:false}]:[]),
+          ...(riverRows.length?[{id:'trace-density',label:'文章月份密度',order:1,selectable:false}]:[])
+        ]}
         labelOf={()=>''} mode="source" heightVariant="double"
-        windowStart={startDate} windowEnd={endDate}
-      />:<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
-      <p className="scope-status">河道顯示文章的月份密度，不會將文字紀錄推定為實際造訪日期。</p>
+        windowStart={visitRiver.length?'':startDate} windowEnd={visitRiver.length?'':endDate}
+      />:<p className="scope-status">目前沒有可顯示的時間資料。</p>}
+      <p className="scope-status">造訪點只採用每個空間錨點 times[] 中的原始時間；文章密度是獨立河道，不推定造訪或停留。</p>
     </div>:null}
     {tab==='statistics'&&numeric.data?<div className="loc-trace-works-stat" aria-label="地點與文章統計圖">
       {verified.total?<><label>圖表
