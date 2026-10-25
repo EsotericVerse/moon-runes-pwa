@@ -4,9 +4,9 @@ import {useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {scopeHref} from '../modular/scope-registry';
 import {dbAuthClient} from './db-client.mjs';
-import {defaultScopeData} from './scope-data';
+import {defaultScopeData,revalidateServerMetadata} from './scope-data';
 import {selectCultureTimeRows} from './culture-query';
-import {useAsyncResource} from './use-async-resource';
+import {useAsyncResource,useResourceCache} from './use-async-resource';
 
 const DATE=/^\d{4}-\d{2}-\d{2}$/;
 function validDate(value){
@@ -28,6 +28,7 @@ function sampleRows(preview){
 }
 export default function PlaceBatchFill({scopeId,anchors=[]}){
   const router=useRouter();
+  const cache=useResourceCache();
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
   const [place,setPlace]=useState('');
@@ -96,6 +97,8 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
         p_apply:true,p_expected_count:count
       });
       const data=verified(result);
+      await revalidateServerMetadata();
+      await cache.invalidate({queryKey:['loc-place-summary',scopeId]});
       if(token===revision.current){
         setPreview(null);
         setNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 source_place；原本已有地點的文章沒有修改。');
