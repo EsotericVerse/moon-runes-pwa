@@ -45,7 +45,7 @@ export default {
       "description": "The time river shows works and sources by date; anchors divide periods for comparison."
     },
     "trace": {
-      "detailsLabel": "Information",
+      "detailsLabel": "Governance principles",
       "title": "Traces",
       "subtitle": "Explore spatial anchors and routes on a real map.",
       "description": "Explore spatial anchors and routes on a real map."
