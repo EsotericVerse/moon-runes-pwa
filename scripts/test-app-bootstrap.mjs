@@ -393,7 +393,10 @@ test('Culture river hides zero-count parents, folds singleton children and rende
 test('Culture second river waits for its first source snapshot and avoids lazy density remounts',()=>{
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const river=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
-  assert.match(culture,/sourceSnapshotQuery\.data&&cultureRiver\.hasSourceData\s*\?<div className='scope-culture-double-river'>/);
+  assert.match(culture,/stagedSourceRiver\?sourceRootQuery\.data:sourceSnapshotQuery\.data/);
+  assert.match(culture,/openCultureRoots\.length>0/);
+  assert.match(culture,/readNumericIsr\(scopeId,'culture-children'/);
+  assert.match(culture,/legacyRows=await readNumericIsr\(scopeId,'culture'/);
   assert.doesNotMatch(culture,/\(!sourceSnapshotQuery\.data\|\|riverRangeLoading\|\|cultureRiver\.hasSourceData\)/);
   assert.match(river,/heightVariant==='double'\?null:hiddenDates/);
   assert.match(river,/timeline\.setOptions\(\{hiddenDates:/);
