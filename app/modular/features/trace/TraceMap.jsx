@@ -95,7 +95,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null,mapOnly=false}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
@@ -305,7 +305,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       </label>
       <p className="scope-status">只列出已儲存且有有效座標的定錨點。選擇後在地圖定位，下方顯示該地點文章；不會跳頁。</p>
     </div>:null}
-    {!selectingLocation&&savedMaps.length?<div className="loc-trace-saved-route-picker">
+    {!selectingLocation&&!hideRoutePicker&&savedMaps.length?<div className="loc-trace-saved-route-picker">
       <label>痕跡圖（已儲存路線）
         <select className="scope-select" value={selectedRouteUid}
           onChange={event=>{
