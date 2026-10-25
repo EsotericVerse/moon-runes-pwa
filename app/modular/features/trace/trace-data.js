@@ -105,9 +105,10 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
     description:descriptionText(description),
     longitude:Number(longitude),latitude:Number(latitude)
   };
-  const result=await dbAuthRelation(relation(id)).update(changes)
-    .eq('uid',anchorId).eq('trace_type','anchor')
-    .select('uid').single();
+  let request=dbAuthRelation(relation(id)).update(changes)
+    .eq('uid',anchorId).eq('trace_type','anchor');
+  if(id==='loc')request=request.eq('scope_id','loc');
+  const result=await request.select('uid').single();
   return verified(result,'更新定錨點');
 }
 
