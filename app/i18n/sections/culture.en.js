@@ -14,7 +14,7 @@ export default {
   "virtualAnchorHelp": "Select ◇ on the timeline or a date below to view and choose a boundary. Virtual points are not saved to the database.",
   "showAllWorks": "Show all works",
   "editing": "Editing",
-  "noPeriodClassification": "No work classification data for this period.",
+  "noPeriodClassification": "No work group classification data for this period.",
   "selectedPrefix": "Selected | ",
   "creating": "Creating…",
   "viewMode": "View mode"
