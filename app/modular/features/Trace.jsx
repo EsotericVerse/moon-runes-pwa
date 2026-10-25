@@ -6,6 +6,10 @@ import {FeaturePage} from '../ui';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
 import {
+  readDefaultTraceRoute,setDefaultTraceRoute,chooseDefaultTraceRoute,
+  TRACE_DEFAULT_ROUTE_CHANGED
+} from './trace/trace-route-preference.mjs';
+import {
   TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,
   readTraceMapIndex,readCurrentTraceAnchors,readAllTraceAnchors
 } from './trace/trace-data';
@@ -29,20 +33,21 @@ export default function Trace({scopeId='loc'}){
   const [periodKey,setPeriodKey]=useState('latest');
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
 
-  // Current is a small per-Scope browser preference, not another database
-  // table. If the choice was deleted, the first saved route becomes default.
+  // Reuse the route preference from the existing management editor. "All"
+  // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
-    let choice='auto';
-    try{choice=window.localStorage.getItem('loc-current-trace:'+periodScopeId)||'auto';}
-    catch{/* Current still works when persistent storage is unavailable. */}
-    setCurrentTraceChoice(choice);
-    setSelectedPlace(null);
+    const reloadDefault=()=>{
+      setCurrentTraceChoice(readDefaultTraceRoute(periodScopeId)||'auto');
+      setSelectedPlace(null);
+    };
+    reloadDefault();
+    window.addEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
+    return()=>window.removeEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
   },[periodScopeId]);
   const chooseCurrentTrace=value=>{
-    setCurrentTraceChoice(value);
     setSelectedPlace(null);
-    try{window.localStorage.setItem('loc-current-trace:'+periodScopeId,value);}
-    catch{/* Keep the in-memory selection. */}
+    if(value==='all'){setCurrentTraceChoice('all');return;}
+    if(setDefaultTraceRoute(periodScopeId,value))setCurrentTraceChoice(value);
   };
 
   const periodsQuery=useAsyncResource({
@@ -72,8 +77,8 @@ export default function Trace({scopeId='loc'}){
   const maps=traceIndex.data||[];
   const currentMap=useMemo(()=>{
     if(currentTraceChoice==='all')return null;
-    return maps.find(map=>map.uid===currentTraceChoice)||maps[0]||null;
-  },[traceIndex.data,currentTraceChoice]);
+    return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
+  },[traceIndex.data,periodScopeId,currentTraceChoice]);
   const showingAll=currentTraceChoice==='all';
 
   // Phase 2: cache the current route's 2–80 sites by its membership revision.
