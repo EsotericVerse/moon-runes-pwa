@@ -6,17 +6,14 @@ import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSe
 import {useEditDock} from '../modular/edit-dock';
 import PanelLoading from './PanelLoading';
 
-// All three capabilities remain independent: work classifications are stored
-// in silver.loc.txt_class; member management and reserved-name notes retain
-// their existing global Admin authorization and write paths.
+// Group members and work classifications are editable here without system
+// privileges. System accounts, reserved IDs and Email belong to /admin.
 const WorkClassificationPage=dynamic(()=>import('./WorkClassificationPage'),{loading:PanelLoading});
-const AdminRegistryPanel=dynamic(()=>import('./views/admin-panels/AdminRegistry'),{loading:PanelLoading});
-const AdminReservedScopeIds=dynamic(()=>import('./views/admin-panels/AdminReservedScopeIds'),{loading:PanelLoading});
+const LocGroupMemberList=dynamic(()=>import('./LocGroupMemberList'),{loading:PanelLoading});
 
 const OPTIONS=Object.freeze([
   {value:'works',label:'作品群組分類',shortLabel:'作品群組分類',description:'管理全站的作品群組分類名稱。'},
-  {value:'registry',label:'人員',shortLabel:'人員',description:'管理人員、群組及所屬關係。'},
-  {value:'reserved',label:'保留名稱',shortLabel:'保留名稱',description:'查看系統保留名稱並修改備註。'}
+  {value:'members',label:'人員',shortLabel:'人員',description:'僅修改所屬人員的顯示名稱，不變更帳號或 Email。'}
 ]);
 const ITEM=Object.freeze({value:'works',label:'人員作品管理'});
 
@@ -35,8 +32,7 @@ export default function LocSourceManagement(){
       <div id="loc-source-panel" className="management-workspace-panel" role="region"
         aria-labelledby={'loc-source-sections-option-'+selected.value}>
         {section==='works'?<WorkClassificationPage/>:null}
-        {section==='registry'?<AdminRegistryPanel/>:null}
-        {section==='reserved'?<AdminReservedScopeIds/>:null}
+        {section==='members'?<LocGroupMemberList groupId="loc"/>:null}
       </div>
     </div>
   </LocManagementWorkspace>;
