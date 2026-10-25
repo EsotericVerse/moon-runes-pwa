@@ -38,7 +38,7 @@ function descriptionText(value){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times'+(union?',scope_id':'');
   const result=await dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).order('created_at',{ascending:true}).limit(2000);
   const rows=(verified(result,id+' 痕跡讀取')||[])
@@ -61,7 +61,7 @@ export const traceCurrentKey=(scopeId,route)=>[
 ];
 export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at';
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times';
 
 export async function readTraceMapIndex(scopeId){
   const id=sourceId(scopeId);
