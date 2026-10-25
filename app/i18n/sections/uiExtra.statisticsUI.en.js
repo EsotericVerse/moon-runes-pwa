@@ -1,6 +1,7 @@
 export default {
   "dailyRune": "Daily runes",
   "sourceGroup": "Group source categories",
+  "place": "Places",
   "mediaType": "Media types",
   "mediaPlatform": "Media platform statistics",
   "mediaStyle": "Media style statistics (Meta Tag)",
