@@ -1,10 +1,11 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient} from './db-client.mjs';
+import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {
   TRACE_SCOPES,traceKey,readTraceData,addTraceAnchor,updateTraceAnchor,addTraceMap,validCoordinates
 } from '../modular/features/trace/trace-data';
@@ -22,10 +23,17 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [latitude,setLatitude]=useState('');
   const [radius,setRadius]=useState('');
   const [focusLocation,setFocusLocation]=useState(null);
+  const [quickCandidates,setQuickCandidates]=useState([]);
+  const [quickBusy,setQuickBusy]=useState(false);
+  const [quickNotice,setQuickNotice]=useState('');
+  const quickRequest=useRef(0);
+  useEffect(()=>()=>{quickRequest.current+=1;},[]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
   const pickExisting=uid=>{
+    quickRequest.current+=1;
+    setQuickCandidates([]);setQuickNotice('');
     const anchor=ownAnchors.find(row=>row.uid===uid);
     setEditingUid(anchor?.uid||'');
     setTitle(anchor?.title||'');
@@ -43,8 +51,39 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(error)throw new Error(error.message||'打卡名稱讀取失敗');
     return data||[];
   },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
+  const applyQuickPlace=(candidate,query=title.trim())=>{
+    const lng=Number(candidate.longitude),lat=Number(candidate.latitude);
+    if(!Number.isFinite(lng)||!Number.isFinite(lat))return;
+    setLongitude(String(Math.round(lng*1e6)/1e6));
+    setLatitude(String(Math.round(lat*1e6)/1e6));
+    setFocusLocation({longitude:lng,latitude:lat,name:query,radius_m:Number(radius)||500});
+    setQuickCandidates([]);
+    setQuickNotice('已快速移至「'+candidate.label+'」，座標已填入；請核對位置後再儲存。');
+  };
+  const quickLocate=async()=>{
+    const query=title.trim();
+    if(busy||quickBusy||query.length<2)return;
+    const request=++quickRequest.current;
+    setQuickBusy(true);setQuickCandidates([]);setQuickNotice('');
+    try{
+      const found=await searchTracePlaces(query);
+      if(quickRequest.current!==request)return;
+      if(!found.length){
+        setQuickNotice('找不到「'+query+'」，請換個地名或直接點選地圖。');
+      }else if(found.length===1&&exactTracePlaceMatch(query,found[0])){
+        applyQuickPlace(found[0],query);
+      }else{
+        setQuickCandidates(found);
+        setQuickNotice('請選擇正確地點；不會自動採用不確定的搜尋結果。');
+      }
+    }catch(error){
+      if(quickRequest.current===request)setQuickNotice('快速定位失敗：'+String(error?.message||error));
+    }finally{
+      if(quickRequest.current===request)setQuickBusy(false);
+    }
+  };
   const save=async()=>{
-    if(busy)return false;
+    if(busy||quickBusy)return false;
     setBusy(true);setNotice('');
     try{
       if(!editingUid&&ownAnchors.some(row=>String(row.title||'').trim()===title.trim())){
@@ -60,7 +99,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
   };
-  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
+  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||quickBusy});
   return <section className="loc-card scope-feature-card">
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
     {ownAnchors.length?<div className="scope-management-fields">
@@ -73,20 +112,35 @@ function AnchorEditor({scopeId,spatial,reload}){
         </select>
       </label>
     </div>:null}
-    <p className="scope-status">請直接在地圖上點選位置（或點車站快捷位置），經緯度會自動填入；橘色圖釘可拖曳調整。不會修改 Galaxy 打卡欄位。</p>
+    <p className="scope-status">輸入或選擇打卡地名後按「快速定位」，地圖會直接跳往候選位置；也可在地圖點選位置或拖曳圖釘調整。不會修改 Galaxy 打卡欄位。</p>
     <div className="scope-management-fields">
-      <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
-        value={title} onChange={e=>setTitle(e.target.value)}
-        placeholder="選既有 Facebook 打卡名稱，或自行輸入" disabled={busy}/>
-        <datalist id={'trace-place-'+scopeId}>
-          {(popular.data||[]).map(item=><option key={item.name} value={item.name}/>)}
-        </datalist>
-      </label>
+      <div className="loc-trace-quick-field">
+        <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
+          value={title} onChange={e=>{
+            quickRequest.current+=1;
+            setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
+            setTitle(e.target.value);
+          }}
+          placeholder="選既有 Facebook 打卡名稱，或自行輸入" disabled={busy}/>
+          <datalist id={'trace-place-'+scopeId}>
+            {(popular.data||[]).map(item=><option key={item.name} value={item.name}/>)}
+          </datalist>
+        </label>
+        <button className="loc-button" type="button" onClick={quickLocate}
+          disabled={busy||quickBusy||title.trim().length<2}>
+          {quickBusy?'定位中…':'快速定位'}
+        </button>
+      </div>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
       <label>周圍搜尋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} placeholder="500" onChange={e=>setRadius(e.target.value)} disabled={busy}/></label>
     </div>
+    {quickNotice?<p className="scope-status" role="status" aria-live="polite">{quickNotice}</p>:null}
+    {quickCandidates.length?<div className="loc-trace-quick-results" role="group" aria-label="地點候選">
+      {quickCandidates.map((candidate,index)=><button key={index} className="loc-button" type="button"
+        disabled={busy||quickBusy} onClick={()=>applyQuickPlace(candidate)}>{candidate.label}</button>)}
+    </div>:null}
     {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
       <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
       {popular.data.slice(0,10).map(item=><button className="loc-button" type="button"
