@@ -48,7 +48,7 @@ test('Culture/Statistics use one optional place ISR and do not require keyword C
   const statPlace=read('app/modular/features/trace/PlaceStatisticsPanel.jsx');
   assert.match(route,/read_scope_place_statistics/);
   assert.match(route,/kind==='places'/);
-  assert.match(client,/'places'\]\.includes\(kind\)/);
+  assert.match(client,/\['culture'.*'places'.*\]\.includes\(kind\)/);
   assert.match(culture,/<option value='trace'>痕跡（地點）<\/option>/);
   assert.match(culture,/<CulturePlaceRiver/);
   assert.match(statistics,/const STAT_TYPES=\['total','source','place'/);
