@@ -1235,7 +1235,9 @@ export default function Culture(){
             </div>
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
-            {!query.isPending&&!query.error?<CultureTimeline
+            {!query.isPending&&!query.error&&!timeEditorItems.length
+              ?<p className='scope-status'>目前尚未建立此類時間紀錄，可直接在下方新增。</p>:null}
+            {!query.isPending&&!query.error&&timeEditorItems.length>0?<CultureTimeline
               key={'time-editor-'+timeEditorSection}
               items={timeEditorItems}
               labelOf={localizedLabelOf}
