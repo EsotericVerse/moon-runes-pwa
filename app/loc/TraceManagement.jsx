@@ -313,7 +313,8 @@ function MapEditor({scopeId,spatial,reload}){
       // Refresh existing public numeric tags only after a verified write;
       // this is not an ISR architecture or database schema change.
       const refreshed=await revalidateServerMetadata();
-      try{await cache.invalidate({queryKey:traceKey('loc')});}catch{
+      try{await Promise.all([...new Set(['loc',writeScopeId])].map(id=>
+        cache.invalidate({queryKey:traceKey(id)})));}catch{
         // The fresh readback already verified persistence. Do not relabel
         // a successful database write as a save failure due to SWR refresh.
       }
@@ -336,7 +337,8 @@ function MapEditor({scopeId,spatial,reload}){
       setExpandedIds(ids=>ids.filter(id=>id!==map.uid));
       if(editingUid===map.uid){reset();setEditorOpen(false);}
       const refreshed=await revalidateServerMetadata();
-      try{await cache.invalidate({queryKey:traceKey('loc')});}catch{}
+      try{await Promise.all([...new Set(['loc',map.source_scope])].map(id=>
+        cache.invalidate({queryKey:traceKey(id)})));}catch{}
       setNotice('已刪除該張痕跡圖並重新讀取確認；原始定錨點與文章均未刪除。'
         +(refreshed?'':'公開地圖快取可能尚未更新。'));
     }catch(error){setNoticeError(true);setNotice(String(error?.message||error));}
