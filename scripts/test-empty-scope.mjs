@@ -43,41 +43,29 @@ async function emptyIsrHarness({registered=true}={}){
       throw Error('Unexpected RPC '+name);
     }
   };
-  const context=vm.createContext({Promise,Date,Response,Request,URL,Set,Map});
-  const stubs={
-    'next/cache':{unstable_cache:load=>load},
-    '../../../../_cors':{withLocCors:response=>response,locCorsPreflight:()=>new Response(null,{status:204})},
-    '../../../../_server':{
-      createPublicSupabaseClient:()=>client,
-      validScopeId:value=>/^[a-z][a-z0-9]{0,14}$/.test(String(value||''))
-    },
-    '../../../../../../loc/statistics-facets':{
-      StatisticsFacets:{base:{mediaFacetDaily:()=>[]}}
-    },
-    '../../../../../../modular/published-source-taxonomy.js':{
-      publishedSourceTaxonomy:()=>sourceTaxonomyFromArrays([],[])
-    },
-    '../../../../../../loc/culture-river-roots.mjs':{
-      summarizeCultureRiverRoots,selectCultureRiverChildren
-    }
-  };
-  const deps=new Map(Object.entries(stubs).map(([id,values])=>[
-    id,new vm.SyntheticModule(Object.keys(values),function(){
-      for(const [key,value] of Object.entries(values))this.setExport(key,value);
-    },{context,identifier:id})
-  ]));
-  const mod=new vm.SourceTextModule(read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js'),{context});
-  await mod.link(id=>{
-    const dependency=deps.get(id);
-    if(!dependency)throw Error('Unexpected import '+id);
-    return dependency;
+  // The handler is ordinary JS; strip only its static imports/exports so
+  // this self-contained fixture works under plain node --test, without
+  // --experimental-vm-modules and without deploying/charging CI.
+  const context=vm.createContext({
+    Promise,Date,Response,Request,URL,Set,Map,
+    unstable_cache:load=>load,
+    withLocCors:response=>response,
+    locCorsPreflight:()=>new Response(null,{status:204}),
+    createPublicSupabaseClient:()=>client,
+    validScopeId:value=>/^[a-z][a-z0-9]{0,14}$/.test(String(value||'')),
+    StatisticsFacets:{base:{mediaFacetDaily:()=>[]}},
+    publishedSourceTaxonomy:()=>sourceTaxonomyFromArrays([],[]),
+    summarizeCultureRiverRoots,selectCultureRiverChildren
   });
-  await mod.evaluate();
+  const route=read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js')
+    .replace(/^import .+;\s*$/gm,'')
+    .replace(/^export (const|async function|function) /gm,'$1 ');
+  vm.runInContext(route+'\\nglobalThis.__emptyScopeGet=GET;',context);
   return {
     tableCalls,rpcCalls,
     get:async(kind,query='')=>{
       const url='https://example.test/api/loc/scopes/lo3rwang/numeric/'+kind+query;
-      const response=await mod.namespace.GET(new Request(url),{
+      const response=await context.__emptyScopeGet(new Request(url),{
         params:Promise.resolve({scopeId:'lo3rwang',kind})
       });
       return {status:response.status,body:await response.json()};
