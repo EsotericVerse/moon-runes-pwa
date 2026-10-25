@@ -122,3 +122,16 @@ test('public Trace reads fresh maps and a complete inline three-tab report',()=>
   assert.match(css,/\.loc-trace-route-pickers\{display:grid/);
   assert.match(css,/\.loc-trace-route-queue-actions>\.loc-button\{min-width:44px/);
 });
+
+test('full-map display mode keeps mounted MapLibre and allows return to normal controls',()=>{
+  const page=read('app/modular/features/Trace.jsx');
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const css=read('app/styles/features.css');
+  assert.match(page,/\[mapOnly,setMapOnly\]=useState\(false\)/);
+  assert.match(page,/mapOnly=\{mapOnly\}/);
+  assert.match(page,/mapOnly\?'返回完整痕跡操作'/);
+  assert.match(map,/\(mapOnly\?" is-map-only":""\)/);
+  assert.match(map,/createTraceMap\(containerRef\.current/);
+  assert.match(css,/\.loc-trace-panel\.is-map-only \.loc-trace-map-frame/);
+  assert.match(css,/height:82svh!important/);
+});
