@@ -46,13 +46,15 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
   let loaded=false;
   let routeActive=false;
   let markers=[];
+  let pickedMarker=null;
+  const canPickLocation=typeof onLocationPick==='function';
   const map=new Map({
     container,style:STYLE,center:[121.4647,25.0187],
     zoom:12.8,pitch:59,bearing:-23,
@@ -60,12 +62,31 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
   });
   map.addControl(new NavigationControl({showCompass:true,showZoom:true}),'top-right');
   const status=message=>{if(!removed)onStatus(message);};
+  // Spatial anchors are explicit user selections, never inferred from device
+  // location or demo coordinates. Only the management editor enables picking.
+  function pickLocation(lng,lat){
+    if(removed||!canPickLocation||!Number.isFinite(lng)||!Number.isFinite(lat))return;
+    if(!pickedMarker){
+      pickedMarker=new Marker({color:'#f7ba66',draggable:true})
+        .setLngLat([lng,lat]).addTo(map);
+      pickedMarker.on('dragend',()=>{
+        const position=pickedMarker.getLngLat();
+        pickLocation(position.lng,position.lat);
+      });
+    }else pickedMarker.setLngLat([lng,lat]);
+    onLocationPick({lng,lat});
+    status('locationPicked');
+  }
+  if(canPickLocation){
+    map.on('click',event=>pickLocation(event.lngLat.lng,event.lngLat.lat));
+  }
   function focus(id){
     if(removed)return;
     const place=EXAMPLE_ANCHORS.find(item=>item.id===id);
     if(!place)return;
     map.flyTo({center:[place.lng,place.lat],zoom:15.1,pitch:65,bearing:-23,essential:true});
     onSelect(place.id);
+    if(canPickLocation)pickLocation(place.lng,place.lat);
     new Popup({closeButton:true,offset:24})
       .setLngLat([place.lng,place.lat])
       .setText(place.name)
@@ -151,6 +172,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{}}={}){
     controller.abort();
     markers.forEach(marker=>marker.remove());
     markers=[];
+    pickedMarker?.remove();
+    pickedMarker=null;
     map.remove();
   }
   return {focus,overview,showRoadRoute,destroy};
