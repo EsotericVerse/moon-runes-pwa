@@ -406,6 +406,17 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.match(personal,/<FlatClassificationEditor scopeId=\{scopeId\}\/>/);
   assert.match(editor,/classification-inline__list/);
   assert.match(editor,/classification-inline__actions/);
+  assert.match(editor,/classification-inline__controls/);
+  assert.match(editor,/ResizeObserver/);
+  assert.match(editor,/gridColumns/);
+  assert.match(editor,/next.splice\(target,0,item\)/);
+  assert.match(editor,/setDraft\(\[\.\.\.rows,''\]\)/);
+  assert.match(editor,/setDraft\(rows.filter/);
+  assert.doesNotMatch(editor,/!global\?<button/);
+  const css=readFileSync(new URL('../app/styles/settings-select.css',import.meta.url),'utf8');
+  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(css,/@container classification-inline \(max-width:720px\)/);
+  assert.match(css,/@container classification-inline \(max-width:420px\)/);
   assert.match(editor,/type="submit"/);
   assert.match(editor,/\.update\(\{txt_class:names\}\)/);
   assert.match(editor,/canManageGroupSync\('loc'\)/);
