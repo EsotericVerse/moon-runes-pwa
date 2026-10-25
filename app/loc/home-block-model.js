@@ -110,8 +110,9 @@ export function removeDuplicatedLegacySubtitle(body='',subtitle=''){
   return text.startsWith(heading)?text.slice(heading.length):text;
 }
 
-// The four feature headers share LOC-managed hero rows on silver.loc_blocks,
-// one page per feature -- page_name='group_<feature>', block_order always 1
+// Feature headers share LOC-managed Hero rows on silver.loc_blocks,
+// normally page_name='group_<feature>', block_order always 1. Trace keeps the
+// established group_governance data key while its feature route is named trace.
 // (the same symmetric "<kind>_<feature>" naming already used for the 8
 // feature-hero images, see admin-panels/FeatureHeroImages.jsx). block_order
 // is purely "which block within this page" -- it never stands in for which
@@ -148,7 +149,8 @@ export function shouldUseSingleFeatureHeroImage(featureId){
 }
 
 export function featureHeroPageFor(featureId){
-  return 'group_'+String(featureId||'');
+  const id=String(featureId||'');
+  return id==='trace'?'group_governance':'group_'+id;
 }
 
 export function sharedFeatureHeroFor(rows){

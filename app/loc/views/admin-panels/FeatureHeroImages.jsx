@@ -26,7 +26,7 @@ const SCOPE_VARIANTS=Object.freeze([
 const SINGLE_VARIANT=Object.freeze([
   {kind:'scope',label:'首頁圖'}
 ]);
-function pageFor(kind,feature){return kind+'_'+feature.id;}
+function pageFor(kind,feature){return kind==='group'&&feature.id==='trace'?'group_governance':kind+'_'+feature.id;}
 
 
 function ImageSlot({feature,variant,onDirtyChange}){
