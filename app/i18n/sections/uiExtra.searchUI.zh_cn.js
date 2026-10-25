@@ -5,6 +5,7 @@ export default {
   "invalidMediaId": "媒体 ID 格式无效。",
   "mediaManageDenied": "没有编辑媒体的权限。",
   "mediaAttributes": "媒体属性",
+  "checkInPlace": "打卡地点",
   "editMedia": "编辑媒体：{id}",
   "styleRecommendations": "风格标签推荐",
   "stylePeriod": "所属时期：",
