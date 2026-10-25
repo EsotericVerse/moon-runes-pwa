@@ -31,13 +31,13 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const searchParams=useSearchParams();
   const native=useNativeNavigation();
   const isLoc=routeScopeId==='loc';
-  const canManageHere=isLoc?account.canManageGlobalSync():account.canManageScopeSync(routeScopeId);
-  const options=MANAGEMENT_OPTIONS;
+  const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
+  const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
   const editRequested=searchParams?.get('edit')==='1';
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(isLoc||!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap'].includes(section))||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -45,15 +45,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   </FeaturePage>;
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>請先至設定首頁登入。</p></section></FeaturePage>;
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
-  if(isLoc)return <FeaturePage featureId="manage">
-    <section className="loc-card scope-feature-card">
-      <div className="scope-stat-controls">
-        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','culture/manage',native)+'?edit=1'}>人員作品管理</ScopeLink>
-        <ScopeLink className="loc-button" native={native} href={navigationHref('loc','statics/manage',native)+'?edit=1'}>關鍵詞管理</ScopeLink>
-      </div>
-    </section>
-  </FeaturePage>;
-  return <FeaturePage featureId="manage">
+  return <FeaturePage featureId={isLoc?'trace':'manage'}>
 
     <div className="scope-management-layout">
     <div className="management-workspace">
