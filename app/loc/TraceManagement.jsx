@@ -20,9 +20,10 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [description,setDescription]=useState('');
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
+  const [radius,setRadius]=useState('');
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const dirty=Boolean(editingUid||title||description||longitude||latitude);
+  const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
   const pickExisting=uid=>{
     const anchor=ownAnchors.find(row=>row.uid===uid);
     setEditingUid(anchor?.uid||'');
@@ -30,6 +31,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setDescription(anchor?.description||'');
     setLongitude(anchor?.longitude==null?'':String(anchor.longitude));
     setLatitude(anchor?.latitude==null?'':String(anchor.latitude));
+    setRadius(anchor?.radius_m==null?'500':String(anchor.radius_m));
     setNotice('');
   };
   const popular=useAsyncResource(['trace-place-names',scopeId],async()=>{
@@ -46,11 +48,11 @@ function AnchorEditor({scopeId,spatial,reload}){
       if(!editingUid&&ownAnchors.some(row=>String(row.title||'').trim()===title.trim())){
         throw new Error('已有同名空間定錨點，請先從上方選擇編輯既有紀錄，避免重複建立。');
       }
-      if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude});
-      else await addTraceAnchor({scopeId,title,description,longitude,latitude});
+      if(editingUid)await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500});
+      else await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
       await reload();
       setEditingUid('');
-      setTitle('');setDescription('');setLongitude('');setLatitude('');
+      setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新。':'空間定錨點已儲存。');
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
@@ -81,6 +83,7 @@ function AnchorEditor({scopeId,spatial,reload}){
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
+      <label>周圍搜尋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} placeholder="500" onChange={e=>setRadius(e.target.value)} disabled={busy}/></label>
     </div>
     {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
       <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
