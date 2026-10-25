@@ -264,18 +264,23 @@ export default function ScopeOthersSources({scopeId,scopeData=null}){
           {existingSources.isPending?<p role="status" className="scope-status">正在查詢可選來源…</p>:null}
           {existingSources.error?<p role="alert" className="scope-status scope-error">來源清單無法載入，可手動輸入。</p>:null}
           <div className="classification-inline__assignment">
-            <label className="classification-inline__field">
-              <span>指定原始來源</span>
-              {options.some(item=>belongsToPersonal(item.key))?<select className="scope-select"
-                disabled={busy} value={options.some(item=>item.key===raw)?raw:''}
-                onChange={event=>{setSource(event.target.value);setNotice('');}}>
-                <option value="">選擇現有來源（或手動輸入）</option>
-                {options.filter(item=>belongsToPersonal(item.key)).map(item=>
-                  <option key={item.key} value={item.key}>{item.key} · {item.count.toLocaleString()} 篇</option>)}
-              </select>:null}
-              <input type="text" maxLength={120} value={source} disabled={busy}
-                placeholder="原始來源名稱" onChange={event=>{setSource(event.target.value);setNotice('');}}/>
-            </label>
+            <div className="classification-inline__field">
+              {options.some(item=>belongsToPersonal(item.key))?<label className="classification-inline__field">
+                <span>選擇現有來源</span>
+                <select className="scope-select"
+                  disabled={busy} value={options.some(item=>item.key===raw)?raw:''}
+                  onChange={event=>{setSource(event.target.value);setNotice('');}}>
+                  <option value="">選擇現有來源（或手動輸入）</option>
+                  {options.filter(item=>belongsToPersonal(item.key)).map(item=>
+                    <option key={item.key} value={item.key}>{item.key} · {item.count.toLocaleString()} 篇</option>)}
+                </select>
+              </label>:null}
+              <label className="classification-inline__field">
+                <span>原始來源名稱</span>
+                <input type="text" maxLength={120} value={source} disabled={busy}
+                  placeholder="輸入原始來源名稱" onChange={event=>{setSource(event.target.value);setNotice('');}}/>
+              </label>
+            </div>
             <label className="classification-inline__field">
               <span>對應至個人分類</span>
               <select className="scope-select" value={sourceGroup} disabled={busy||!targetGroups.length}
