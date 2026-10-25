@@ -56,6 +56,45 @@ export async function addTraceAnchor({scopeId,title,description='',longitude,lat
   const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
   return verified(result,'新增定錨點');
 }
+// One authorized insert per bounded batch, not one SQL round-trip per place.
+// A fresh source read skips names already saved by a previous partial run.
+// This never writes to Galaxy's source_place or any other article field.
+export async function addTraceAnchorsBatch({scopeId,places=[]}){
+  const id=sourceId(scopeId);
+  if(id==='loc')throw Error('請在作品所屬的 Scope 建立空間定錨點。');
+  const list=Array.isArray(places)?places:[];
+  if(!list.length)throw Error('沒有已核對的座標可以儲存。');
+  if(list.length>2000)throw Error('單次匯入超過安全上限。');
+  const seen=new Set(), prepared=[];
+  for(const place of list){
+    const title=verifiedText(place.title,'打卡地點名稱');
+    if(seen.has(title))continue;
+    seen.add(title);
+    if(!validCoordinates(place.longitude,place.latitude))
+      throw Error(title+' 的經緯度無效，請先確認候選位置。');
+    prepared.push({
+      uid:createUid8(),trace_type:'anchor',title,
+      longitude:Number(place.longitude),latitude:Number(place.latitude),
+      description:''
+    });
+  }
+  const previous=await readTraceData(id);
+  const names=new Set(previous.anchors.map(row=>String(row.title||'').trim()));
+  const pending=prepared.filter(row=>!names.has(row.title));
+  let count=0;
+  for(let offset=0;offset<pending.length;offset+=80){
+    const chunk=pending.slice(offset,offset+80);
+    try{
+      const rows=verified(await dbAuthRelation(relation(id)).insert(chunk).select('uid'),'批次建立空間定錨點');
+      if(!Array.isArray(rows)||rows.length!==chunk.length)throw Error('批次寫入數量不符');
+      count+=rows.length;
+    }catch(error){
+      throw Error('已成功寫入 '+count+' 處，後續批次失敗：'+String(error.message||error)+'。可重新執行，已存在的地點會跳過。');
+    }
+  }
+  return {count,skipped:list.length-pending.length};
+}
+
 export async function addTraceMap({scopeId,title,description='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const chosen=Array.isArray(anchorUids)?anchorUids:[];
