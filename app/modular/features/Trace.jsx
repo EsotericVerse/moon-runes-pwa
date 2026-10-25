@@ -3,8 +3,7 @@
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 
-// The /trace URL owns this feature. Its original governance Hero asset contract
-// remains unchanged until the author updates the stored title. The actual
+// The /trace URL is canonical; the original Hero image remains unchanged. The actual
 // Governance text Blocks remain owned by GovernanceLegal and Search's tab.
 const TraceMap=dynamic(()=>import('./trace/TraceMap'),{
   ssr:false,
@@ -12,7 +11,7 @@ const TraceMap=dynamic(()=>import('./trace/TraceMap'),{
 });
 
 export default function Trace(){
-  return <FeaturePage featureId="governance">
+  return <FeaturePage featureId="trace">
     <TraceMap/>
   </FeaturePage>;
 }
