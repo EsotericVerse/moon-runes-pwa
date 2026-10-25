@@ -41,6 +41,9 @@ import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
 import {applyFilters,isAbortError,selectRows} from '../../loc/db-query.mjs';
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
 const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{loading:()=>null});
+// Only fetch governance when its label is selected; its existing Blocks
+// and stored page_name remain untouched.
+const GovernanceBlocks=dynamic(()=>import('./Governance').then(mod=>mod.GovernanceBlocks),{loading:()=>null});
 
 
 const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
@@ -242,6 +245,7 @@ export default function Search({managementMode=false}){
   const searchParams=useSearchParams();
   const router=useRouter();
   const resourceCache=useResourceCache();
+  const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
@@ -1091,6 +1095,18 @@ export default function Search({managementMode=false}){
     />
     </div>
   </>;
-  return managementMode?pageContent:<FeaturePage featureId="search">{pageContent}</FeaturePage>;
+  return managementMode?pageContent:<FeaturePage featureId="search">
+    <div className="scope-search-view-labels" role="group" aria-label={UI_COPY.features.search.title+' / '+UI_COPY.features.governance.title}>
+      <button type="button" aria-pressed={publicView==='search'}
+        onClick={()=>setPublicView('search')}>{UI_COPY.features.search.title}</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" aria-pressed={publicView==='governance'}
+        onClick={()=>setPublicView('governance')}>{UI_COPY.features.governance.title}</button>
+    </div>
+    <div className="scope-search-view-panel" role="region"
+      aria-label={publicView==='search'?UI_COPY.features.search.title:UI_COPY.features.governance.title}>
+      {publicView==='search'?pageContent:<GovernanceBlocks scopeId={scopeId}/>}
+    </div>
+  </FeaturePage>;
 }
 
