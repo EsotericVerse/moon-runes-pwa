@@ -94,7 +94,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLocation=null}){
+export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLocation=null,spatialData=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
@@ -124,6 +124,7 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
     try{
       instance=createTraceMap(containerRef.current,{
         radiusMeters,
+        anchors:spatialData?.anchors||[],
         onSelect:id=>{if(active)setSelected(id);},
         onLocationPick:selectingLocation?coords=>{if(active)locationPickRef.current?.(coords);}:null,
         onStatus:code=>{
@@ -144,6 +145,7 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
   },[]);
 
   useEffect(()=>{mapRef.current?.setRadius(radiusMeters);},[radiusMeters]);
+  useEffect(()=>{mapRef.current?.setAnchors(spatialData?.anchors||[]);},[spatialData]);
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
