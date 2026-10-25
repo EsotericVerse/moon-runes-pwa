@@ -100,6 +100,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
   const containerRef=useRef(null);
   const mapRef=useRef(null);
+  const resizeStartRef=useRef(null);
   const locationPickRef=useRef(onLocationPick);
   locationPickRef.current=onLocationPick;
   const anchorSelectRef=useRef(onAnchorSelect);
@@ -161,6 +162,42 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
+  // The visible resize grip lives outside MapLibre's canvas and controls, so
+  // its pointer events do not conflict with map pan/rotate or attribution.
+  function resizeFrame(width,height){
+    const frame=containerRef.current;
+    if(!frame)return;
+    const availableWidth=frame.parentElement?.clientWidth||frame.clientWidth;
+    frame.style.width=Math.min(availableWidth,Math.max(320,width))+'px';
+    frame.style.height=Math.min(Math.max(360,window.innerHeight*.95),Math.max(340,height))+'px';
+  }
+  function startMapResize(event){
+    if(event.button!==0||!containerRef.current)return;
+    const rect=containerRef.current.getBoundingClientRect();
+    resizeStartRef.current={pointerId:event.pointerId,x:event.clientX,y:event.clientY,w:rect.width,h:rect.height};
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
+  function moveMapResize(event){
+    const start=resizeStartRef.current;
+    if(!start||start.pointerId!==event.pointerId)return;
+    resizeFrame(start.w+event.clientX-start.x,start.h+event.clientY-start.y);
+  }
+  function stopMapResize(event){
+    if(resizeStartRef.current?.pointerId===event.pointerId)resizeStartRef.current=null;
+    if(event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+  function keyboardMapResize(event){
+    const deltas={ArrowLeft:[-32,0],ArrowRight:[32,0],ArrowUp:[0,-32],ArrowDown:[0,32]};
+    const delta=deltas[event.key];
+    if(!delta||!containerRef.current)return;
+    event.preventDefault();
+    const bounds=containerRef.current.getBoundingClientRect();
+    const step=event.shiftKey?2:1;
+    resizeFrame(bounds.width+delta[0]*step,bounds.height+delta[1]*step);
+  }
+
   async function lookupPlace(event){
     event.preventDefault();
     if(searching)return;
@@ -232,7 +269,16 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radius
     </div>
     <div className="loc-trace-map-frame" ref={containerRef}
       role="application" aria-label={copy.map}/>
-    <p className="scope-status loc-trace-resize-hint">{copy.resizeHint}</p>
+    <div className="loc-trace-resize-tools">
+      <span className="scope-status loc-trace-resize-hint">{copy.resizeHint}</span>
+      <button type="button" className="loc-trace-resize-grip"
+        aria-label={copy.resizeHint} title={copy.resizeHint}
+        onPointerDown={startMapResize} onPointerMove={moveMapResize}
+        onPointerUp={stopMapResize} onPointerCancel={stopMapResize}
+        onKeyDown={keyboardMapResize}>
+        <span aria-hidden="true">◢</span>
+      </button>
+    </div>
     <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">{copy.status[status]||copy.status.loading}</p>
     <p className="scope-status loc-trace-map-note">{copy.note}</p>
   </section>;
