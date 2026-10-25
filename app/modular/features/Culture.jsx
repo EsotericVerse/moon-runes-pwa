@@ -373,33 +373,55 @@ export default function Culture(){
       }
     }
   });
+  // Each clicked parent owns a separate SWR key. Opening another parent does
+  // not refetch the first one's detail; closing a parent only hides its rows.
+  const sourceChildrenEnabled=stagedSourceRiver&&!isLrunesDaily&&!isLocItemView
+    &&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid&&Boolean(sourceRootQuery.data);
+  const loadSourceChildren=async root=>{
+    const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
+    const taxonomy=publishedSourceTaxonomy(scopeId)||{};
+    if(sourceRootQuery.data?.legacyRows)
+      return selectCultureRiverChildren(sourceRootQuery.data.legacyRows,taxonomy,[root]);
+    try{return await readNumericIsr(scopeId,'culture-children',{...range,roots:[root]});}
+    catch(error){
+      if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
+      const full=await readNumericIsr(scopeId,'culture',range);
+      return selectCultureRiverChildren(full,taxonomy,[root]);
+    }
+  };
+  const systemChildrenQuery=useAsyncResource({
+    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'system'],
+    enabled:sourceChildrenEnabled&&openCultureRoots.includes('system'),
+    queryFn:()=>loadSourceChildren('system')
+  });
+  const customChildrenQuery=useAsyncResource({
+    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'custom'],
+    enabled:sourceChildrenEnabled&&openCultureRoots.includes('custom'),
+    queryFn:()=>loadSourceChildren('custom')
+  });
+  const mediaChildrenQuery=useAsyncResource({
+    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'media'],
+    enabled:sourceChildrenEnabled&&openCultureRoots.includes('media'),
+    queryFn:()=>loadSourceChildren('media')
+  });
+  const requestedChildren=useMemo(()=>[
+    ...(openCultureRoots.includes('system')?[systemChildrenQuery.data]:[]),
+    ...(openCultureRoots.includes('custom')?[customChildrenQuery.data]:[]),
+    ...(openCultureRoots.includes('media')?[mediaChildrenQuery.data]:[])
+  ],[openCultureRoots,systemChildrenQuery.data,customChildrenQuery.data,mediaChildrenQuery.data]);
+  const expandedSourceReady=requestedChildren.length>0&&requestedChildren.every(Array.isArray);
+  // This SWR step only formats the already-fetched numeric rows locally.
+  // The initial overview never depends on it.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v4',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
+    queryKey:['culture-period-source-snapshot','v5',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
+    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
+      &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
-      if(stagedSourceRiver){
-        const taxonomy=publishedSourceTaxonomy(scopeId)||{};
-        let numericRows;
-        if(sourceRootQuery.data?.legacyRows){
-          numericRows=selectCultureRiverChildren(sourceRootQuery.data.legacyRows,taxonomy,expandedSourceRoots);
-        }else{
-          try{
-            numericRows=await readNumericIsr(scopeId,'culture-children',{
-              ...range,includeUndated:true,roots:expandedSourceRoots
-            });
-          }catch(error){
-            if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
-            const full=await readNumericIsr(scopeId,'culture',{...range,includeUndated:true});
-            numericRows=selectCultureRiverChildren(full,taxonomy,expandedSourceRoots);
-          }
-        }
-        return selectScopePeriodSourceSnapshot(scopeData,{...range,numericRows});
-      }
-      return selectScopePeriodSourceSnapshot(scopeData,range);
-    },
-    enabled:!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
-      &&(!stagedSourceRiver||openCultureRoots.length>0),
+      return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
+        ?{...range,numericRows:requestedChildren.flat()}:range);
+    }
   });
   const keywordClassQuery=useAsyncResource({
     queryKey:['scope-active-keyword-class-name',scopeId],
@@ -919,19 +941,20 @@ export default function Culture(){
       if(!activeRoots.has(parent.id))continue;
       const members=groupedSources.filter(g=>g.root===parent.id&&activeChildren.has(g.key))
         .sort((a,b)=>a.label.localeCompare(b.label,locale));
-      const expanded=members.length>1&&openCultureRoots.includes(parent.id);
+      const expanded=openCultureRoots.includes(parent.id);
       const onlyChild=members.length===1?members[0]:null;
       // A lone child *is* the visible river: do not draw its parent's
       // identical total and force an unnecessary second lane on expansion.
       const label=onlyChild?.label||parent.label;
       groups.push({id:'dual:root:'+parent.id,label,order:parent.order,
-        className:'scope-dual-river-root',collapsible:members.length>1,
+        className:'scope-dual-river-root',collapsible:members.length!==1,
         selectable:Boolean(onlyChild),sourceKey:onlyChild?.key||'',expanded});
       for(const [key,count] of totals){
         const [type,day]=key.split('\u0000');
         if(type===parent.id&&count>0)items.push(row('root:'+parent.id,day,count,label,parent.order,parentMaximum.get(parent.id),'source_total'));
       }
-      if(!expanded||(stagedSourceRiver&&!sourceSnapshotQuery.data))continue;
+      // A lone populated child is already represented by the parent lane.
+      if(!expanded||onlyChild||(stagedSourceRiver&&!sourceSnapshotQuery.data))continue;
       members.forEach((group,index)=>{
         const id='dual:child:'+group.key;
         groups.push({id,label:group.label,order:parent.order+index+1,
@@ -952,7 +975,7 @@ export default function Culture(){
       group_label:String(item.group_label||''),group_order:1000+(Number(item.group_order)||index)
     })));
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
+  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,l,locale]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
@@ -1372,8 +1395,11 @@ export default function Culture(){
                 </section>:null}
                 {!classificationWindowValid?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
-                {sourceSnapshotQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
-                {stagedSourceRiver&&openCultureRoots.length>0&&sourceSnapshotQuery.isPending
+                {[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
+                  .filter(Boolean).map((error,index)=><p key={index} className='scope-status scope-error' role='alert'>
+                    {featureDataErrorMessage(error,UI_COPY)}</p>)}
+                {stagedSourceRiver&&openCultureRoots.length>0&&
+                  (systemChildrenQuery.isPending||customChildrenQuery.isPending||mediaChildrenQuery.isPending||sourceSnapshotQuery.isPending)
                   ?<p className='scope-status' role='status'>正在讀取展開河道的細部分布…</p>:null}
                 {!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
