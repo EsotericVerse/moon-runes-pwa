@@ -188,7 +188,8 @@ export default function Culture(){
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
   const isTimeEditingView=searchParams?.get('edit')==='1';
-  const account=useAccount({enabled:false});
+  // Public Culture does not load management grants; editing must verify them.
+  const account=useAccount({enabled:isTimeEditingView});
   const editDock=useEditDock();
   const [timeEditorSection,setTimeEditorSection]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
@@ -1142,12 +1143,18 @@ export default function Culture(){
   // record kind appears on the right, with the same native zoom/pan controls.
   if(isTimeEditingView){
     const editorAvailable=Boolean(scopeId&&scopeId!=='loc');
+    const permissionPending=account.loading||account.permissionLoading;
+    const editorAuthorized=Boolean(account.user&&account.canManageScopeSync(scopeId));
     const choice=TIME_EDITOR_SECTIONS.find(item=>item.value===timeEditorSection)||TIME_EDITOR_SECTIONS[0];
     return <FeaturePage featureId="culture">
       <section className='loc-card scope-feature-card scope-feature-card-wide'>
         <h2>時間編輯</h2>
         {!editorAvailable?<p className='scope-status'>此區沒有個別 Scope 的時間編輯資料。</p>:null}
-        {editorAvailable?<div className='management-workspace scope-time-edit-workspace'>
+        {editorAvailable&&permissionPending?<p className='scope-status' role='status'>正在確認此 Scope 的編輯權限…</p>:null}
+        {editorAvailable&&!permissionPending&&!editorAuthorized?<p className='scope-status scope-error' role='alert'>
+          {account.error?String(account.error):account.user?'目前登入帳號沒有此 Scope 的管理權限。':'請先至設定首頁登入，才能編輯時間定錨。'}
+        </p>:null}
+        {editorAvailable&&!permissionPending&&editorAuthorized?<div className='management-workspace scope-time-edit-workspace'>
           <ManagementSectionNav id='time-editor-sections' title='編輯項目'
             panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
             value={timeEditorSection} onChange={next=>{
