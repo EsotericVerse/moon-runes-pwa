@@ -1256,3 +1256,39 @@
     height:82svh!important;min-height:320px;
   }
 }
+
+
+/* Trace's favorite-style place report: one reusable frame, three lazy views. */
+.loc-trace-report-toolbar{
+  display:grid;gap:.7rem;min-width:0;padding:.8rem 1rem;
+  border:1px solid var(--loc-line);border-radius:var(--loc-radius);
+  background:var(--loc-ui-panel-soft);
+}
+.loc-trace-report-toolbar>strong{overflow-wrap:anywhere;color:var(--loc-heading)}
+.loc-trace-report-toolbar .scope-stat-controls{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
+.loc-trace-report-toolbar .loc-button{min-height:44px}
+.loc-trace-report-toolbar .loc-button[aria-pressed="true"]{
+  border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft);
+  color:var(--loc-heading);
+}
+.loc-trace-report-settings{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end;min-width:0}
+.loc-trace-report-settings>label,
+.loc-trace-report-settings>form>label{display:grid;gap:.3rem;min-width:min(100%,200px)}
+.loc-trace-report-settings>form{display:flex;flex-wrap:wrap;gap:.45rem;align-items:end;min-width:0}
+.loc-trace-report-settings input,.loc-trace-report-settings select{
+  min-height:44px;min-width:0;width:100%;font:inherit;
+}
+.loc-trace-report-settings>.scope-status{flex:1 1 100%;margin:0}
+.loc-trace-map-shell{position:relative;min-width:0}
+.loc-trace-origin-button{
+  position:absolute;top:.65rem;left:.65rem;z-index:5;
+  min-height:44px;max-width:calc(100% - 1.3rem);
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.loc-trace-map-frame.is-mobile-expanded{height:min(88svh,980px)}
+@media(max-width:680px){
+  .loc-trace-report-settings>label,
+  .loc-trace-report-settings>form,
+  .loc-trace-report-settings>form>label{flex:1 1 100%}
+  .loc-trace-origin-button{font-size:.85rem}
+}
