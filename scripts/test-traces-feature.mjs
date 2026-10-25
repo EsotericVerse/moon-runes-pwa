@@ -250,7 +250,8 @@ test('Culture and Statistics share only published flat classification lists',()=
 test('Trace overview fits every saved spatial anchor, not just the three Banqiao demos',()=>{
   const source=read('app/modular/features/trace/trace-map-engine.js');
   const overview=source.match(/^  function overview\(\)\{[\s\S]*?^  \}\n(?=\n  map\.once)/m)?.[0];
-  assert.ok(overview,'overview function must be present in the map engine');
+  const validAnchor=source.match(/^function isValidSavedAnchor\(anchor\)\{[\s\S]*?^\}/m)?.[0];
+  assert.ok(overview&&validAnchor,'overview and coordinate validator must be present in the map engine');
   class Bounds {
     constructor(){this.points=[];}
     extend(point){this.points.push(point);}
@@ -263,7 +264,7 @@ test('Trace overview fits every saved spatial anchor, not just the three Banqiao
       fitBounds:(bounds,opts)=>calls.push({kind:'bounds',points:bounds.points,opts}),
       flyTo:opts=>calls.push({kind:'single',opts})
     };
-    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded',overview+'; return overview;');
+    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded',validAnchor+'\n'+overview+'; return overview;');
     go(map,Bounds,anchors,example,false,true)();
     return calls[0];
   };
@@ -275,6 +276,8 @@ test('Trace overview fits every saved spatial anchor, not just the three Banqiao
     {trace_type:'anchor',longitude:121.5,latitude:25.1}
   ]).opts.center,[121.5,25.1]);
   assert.deepEqual(run([]).points,[[121.46,25.01],[121.47,25.03]]);
+  assert.deepEqual(run([{trace_type:'anchor',longitude:null,latitude:null}]).points,
+    [[121.46,25.01],[121.47,25.03]]);
 });
 
 test('Trace desktop map widens, resizes with mouse or keyboard, and stays phone responsive',()=>{
