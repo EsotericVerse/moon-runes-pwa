@@ -95,7 +95,7 @@ export async function GET(request,{params}){
       let from=0;
       for(;;){
         let q=db.from(scopeId+'_galaxy_media')
-          .select('media_id,media_type,url,source_place,meta_tags,createtime')
+          .select('media_id,media_type,url,meta_tags,createtime')
           .order('media_id',{ascending:true}).range(from,from+65534);
         if(start)q=q.gte('createtime',start+'T00:00:00+08:00');
         if(end)q=q.lte('createtime',end+'T23:59:59.999+08:00');
