@@ -219,8 +219,8 @@ test('advanced statistics uses grouped category tabs and real keyword group memb
   assert.ok(source.includes('for(const group of hitGroups)add('));
   assert.ok(source.includes('maximumLanes=Math.min(8,'));
   assert.ok(source.includes("kind:'source_rollup'"));
-  assert.ok(source.includes("name:'作品群組分類'"));
-  assert.ok(source.includes("name:'作品自訂分類'"));
+  assert.ok(source.includes("name:'作品分類'"));
+  assert.ok(source.includes("name:'個人分類'"));
   assert.ok(source.includes("ids.push('source_rollup'+String.fromCharCode(0)+'system')"));
   const start=source.indexOf('export function mediaTypeFamily(raw)');
   const end=source.indexOf('const MEDIA_GROUP_NAMES=',start);
@@ -410,8 +410,8 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.match(editor,/\.update\(\{txt_class:names\}\)/);
   assert.match(editor,/canManageGlobalSync\(\)/);
   assert.match(editor,/canManageScopeSync\(scopeId\)/);
-  assert.match(editor,/作品群組分類/);
-  assert.match(editor,/作品自訂分類/);
+  assert.match(editor,/作品分類/);
+  assert.match(editor,/個人分類/);
   assert.doesNotMatch(editor,/classification-page__layout|statistics_source_categories|statistics_scope_others_groups/);
 });
 
