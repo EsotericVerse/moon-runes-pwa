@@ -141,7 +141,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   useEffect(()=>{
     setCounty('');
     setAnchorUid('');
-  },[spatialData?.anchors]);
+  },[spatialData?.anchors,resolveCounty]);
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
@@ -272,7 +272,8 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
       ):(onAnchorSelect&&spatialData?.anchors?.length?
-        '點擊地圖上的綠色空間定錨點，直接在地圖下方查看文章列表、時間長河及基本報表，不跳搜尋頁。':copy.intro)}</p>
+        '先選縣市與空間定錨點，或選擇已儲存的痕跡圖；地圖會直接定位並顯示路線，下方可查看文章報表，不跳頁。':
+        '尚無已儲存的空間定錨點；可以先到管理頁建立。地圖不會把板橋示例當作你的紀錄。')}</p>
     </header>
     {!selectingLocation?<><form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
       <label htmlFor="trace-geocode-query">{geo.label}</label>
@@ -321,7 +322,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
           onChange={event=>{
             const route=savedMaps.find(map=>map.uid===event.target.value)||null;
             onRouteSelect?.(route);
-            mapRef.current?.setSavedRoute(route);
           }}>
           <option value="">不顯示路線</option>
           {savedMaps.map(route=><option key={route.uid} value={route.uid}>
@@ -349,7 +349,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       </button></>:null}
     </div>
     <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
-      role="application" aria-label={copy.map}/>
+      role="application" aria-label={selectingLocation?copy.map:'空間定錨點與已儲存痕跡圖地圖'}/>
     <div className="loc-trace-mobile-map-tools">
       <button type="button" className="loc-button" aria-pressed={expandedMap}
         onClick={()=>setExpandedMap(value=>!value)}>
@@ -367,7 +367,10 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         <span aria-hidden="true">◢</span>
       </button>
     </div>
-    <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">{copy.status[status]||copy.status.loading}</p>
-    <p className="scope-status loc-trace-map-note">{copy.note}</p>
+    <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">
+      {status==='ready'&&!selectingLocation?'地圖已就緒，可用縣市與定錨點選單定位。':copy.status[status]||copy.status.loading}
+    </p>
+    <p className="scope-status loc-trace-map-note">{selectingLocation?copy.note:
+      '空間定錨點取自已儲存的真實座標；痕跡圖顯示站點順序與相鄰站點連線，不代表實際行駛或步行路線。'}</p>
   </section>;
 }
