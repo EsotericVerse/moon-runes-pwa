@@ -5,8 +5,26 @@ export const PUBLISHED_SOURCE_LISTS=Object.freeze({
   lo3rwang:{system:['facebook','threads','instagram'],personal:['suno','kkcity','其他','方格子vocus','ptt','無名wretch','pixnet']},
   lrunes:{system:['facebook','threads','instagram'],personal:['vocus','others','suno']}
 });
+// A few display names were renamed without rewriting source_name in Galaxy.
+// Preserve their literal stored strings as read-only aliases, not new tables.
+const SOURCE_DISPLAY_ALIASES=Object.freeze({
+  lo3rwang:{'其他':'others','方格子vocus':'vocus','無名wretch':'wretch'}
+});
 export const PUBLISHED_SOURCE_TAXONOMY=Object.freeze(Object.fromEntries(
-  Object.entries(PUBLISHED_SOURCE_LISTS).map(([id,lists])=>[id,sourceTaxonomyFromArrays(lists.system,lists.personal)])
+  Object.entries(PUBLISHED_SOURCE_LISTS).map(([id,lists])=>{
+    const taxonomy=sourceTaxonomyFromArrays(lists.system,lists.personal);
+    const displayAliases=SOURCE_DISPLAY_ALIASES[id]||{};
+    return [id,{
+      ...taxonomy,
+      groupAliases:[
+        ...taxonomy.groupAliases,
+        ...taxonomy.groups.flatMap(group=>{
+          const sourceKey=displayAliases[group.display_name];
+          return sourceKey?[{source_key:sourceKey,group_code:group.group_code}]:[];
+        })
+      ]
+    }];
+  })
 ));
 export function publishedSourceTaxonomy(scopeId){
   return Object.prototype.hasOwnProperty.call(PUBLISHED_SOURCE_TAXONOMY,scopeId)?PUBLISHED_SOURCE_TAXONOMY[scopeId]:null;
