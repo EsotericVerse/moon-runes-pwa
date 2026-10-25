@@ -12,7 +12,7 @@ const PrivateLocalFiles=dynamic(()=>import('../PrivateLocalFiles'),{loading:Pane
 export default function LocalSettingView(){
   const [native,setNative]=useState(false);
   useEffect(()=>setNative(Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'),[]);
-  return <FeaturePage featureId="governance">
+  return <FeaturePage featureId="manage">
     {native?<><LocalDatabaseImport/><PrivateLocalFiles/></>:
       <section className="loc-card"><p>本機管理僅在 iOS App 提供。</p></section>}
   </FeaturePage>;
