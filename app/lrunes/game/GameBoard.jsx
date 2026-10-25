@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {usePathname,useRouter,useSearchParams} from 'next/navigation';
-import {runeImage} from '../rune-directory.mjs';
+import {runeImage,RUNE_CARD_BACK_IMAGE} from '../rune-directory.mjs';
 import {LOC_ORIGIN} from '../../seo/metadata';
 import {produce} from 'immer';
 import {useAsyncResource} from '../../loc/use-async-resource';
@@ -171,6 +171,46 @@ function RuneCard({card,selected,disabled,onClick,playerIndex,roleName='',groupV
   </button>;
 }
 
+// A presentation-only local opening deal. The game model already owns every
+// hand and deck: these noninteractive card backs must never shuffle, draw or
+// modify its authoritative state. CSS perspective supplies the brief 3D motion.
+function OpeningDealCards({cards,roleByGroup,groupVisualByGroup}){
+  return <>
+    <span className="lrg-deal-pile" aria-hidden="true">
+      <img src={RUNE_CARD_BACK_IMAGE} alt=""/>
+    </span>
+    {cards.map((card,index)=>{
+      const column=index%4;
+      const row=Math.floor(index/4);
+      return <div
+        key={card.id}
+        className="lrg-deal-card"
+        data-deal-card={index+1}
+        style={{
+          '--deal-order':index,
+          '--deal-source-x':(1.5-column)*107+'%',
+          '--deal-row-shift':row===0?'0%':'-100%'
+        }}
+        aria-hidden="true"
+      >
+        <div className="lrg-deal-flip">
+          <div className="lrg-deal-side lrg-deal-back">
+            <img src={RUNE_CARD_BACK_IMAGE} alt=""/>
+          </div>
+          <div className="lrg-deal-side lrg-deal-front">
+            <img className="lrg-rune-art" src={cardSrc(card)} alt=""/>
+            {groupVisualByGroup.get(card.group)?<img className="lrg-group-mark" src={groupVisualByGroup.get(card.group)} alt=""/>:null}
+            <span>
+              <b>{String(card.id).padStart(2,'0')} {card.name}</b>
+              <small>{card.group}{roleByGroup.get(card.group)?' · '+roleByGroup.get(card.group):''}</small>
+            </span>
+          </div>
+        </div>
+      </div>;
+    })}
+  </>;
+}
+
 function SelectionZone({count,limit,playerIndex}){
   const {setNodeRef,isOver}=useDroppable({id:'selected-zone-'+playerIndex,data:{playerIndex}});
   return <Paper
@@ -206,13 +246,35 @@ function DeTrend({history,players}){
   </Paper>;
 }
 
-function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊戲'}){
+function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊戲',animateLocalDeal=false}){
   const [target,setTarget]=useState('');
   const [tab,setTab]=useState('board');
   const [showScoringHelp,setShowScoringHelp]=useState(false);
   const [effectsEnabled,setEffectsEnabled]=useState(true);
   const [battleEffect,setBattleEffect]=useState(null);
   const effectSequence=useRef(0);
+  const dealActive=animateLocalDeal&&G.stage==='opening';
+  const dealPlayer=G.players[G.active];
+  // Includes the active seat and hand identity; advancing to the next seat
+  // always begins a new local deal without flashing its face-up cards.
+  const dealToken=dealActive?
+    G.round+':'+G.active+':'+dealPlayer.hand.map(card=>card.id).join(','):null;
+  const [completedDeal,setCompletedDeal]=useState(null);
+  const dealReady=!dealActive||completedDeal===dealToken;
+  useEffect(()=>{
+    if(!dealToken)return;
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      setCompletedDeal(dealToken);
+      return;
+    }
+    // 140ms stagger + 900ms arrival/flip. Timing is cosmetic and does not
+    // write any game state. All opening actions remain disabled until reveal.
+    const timeout=window.setTimeout(
+      ()=>setCompletedDeal(dealToken),900+Math.max(1,dealPlayer.hand.length)*140
+    );
+    return()=>window.clearTimeout(timeout);
+  },[dealToken,dealPlayer?.hand.length]);
+
   useEffect(()=>{
     if(!battleEffect)return;
     const timer=setTimeout(()=>setBattleEffect(current=>current?.key===battleEffect.key?null:current),
@@ -244,6 +306,7 @@ function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊�
   },[remoteEffect]);
 
   const toggleRune=(playerIndex,id)=>{
+    if(!dealReady)return;
     const player=G.players[playerIndex];
     if(player&&!player.selected.includes(id)&&
       (G.stage==='event'||(G.stage==='opening'&&playerIndex===G.active))){
@@ -262,7 +325,7 @@ function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊�
   const isEvent=G.stage==='event';
   const isResonance=String(G.stage||'').includes('resonance')||G.stage==='duel';
   const done=G.stage==='finished';
-  const selectable=!done&&!isResonance;
+  const selectable=dealReady&&!done&&!isResonance;
   const players=opening?[{p:active,i:G.active}]:G.players.map((p,i)=>({p,i}));
   const roleByGroup=new Map((rules.roles||[]).map(role=>[role.group,role.formalName||role.publicName||role.name]));
   const groupVisualByGroup=new Map((rules.groupAssets||[]).map(item=>[item.group,item.path]));
@@ -367,7 +430,7 @@ function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊�
                 <Typography variant="overline" color="primary">SETUP</Typography>
                 <Typography variant="h5" component="h2">{active.name} 起手設定</Typography>
                 <Typography>選擇 {rules.config.openingDiscard} 張棄牌，保留 {rules.config.handBase} 張。</Typography>
-                <Button variant="contained" disabled={active.selected.length!==rules.config.openingDiscard} onClick={()=>{playRuneEffect(active.hand.find(card=>active.selected.includes(card.id)),'card');moves.confirmOpening(G.active);}}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</Button>
+                <Button variant="contained" disabled={!dealReady||active.selected.length!==rules.config.openingDiscard} onClick={()=>{if(!dealReady)return;playRuneEffect(active.hand.find(card=>active.selected.includes(card.id)),'card');moves.confirmOpening(G.active);}}>確認棄牌（{active.selected.length}/{rules.config.openingDiscard}）</Button>
               </>:null}
 
               {done?<>
@@ -385,8 +448,11 @@ function Board({G,moves,rules,onRestart,remoteEffect=null,restartLabel='新遊�
                 </Stack>
                 <LinearProgress variant="determinate" value={Math.max(0,Math.min(100,p.de/rules.config.deMax*100))} sx={{my:1.25,height:8,borderRadius:2}}/>
                 <Typography variant="caption" color="text.secondary">手牌 {p.hand.length} · 牌庫 {p.deck.length} · 棄牌 {p.discard.length} · 已選 {p.selected.length}</Typography>
-                <div className="lrg-hand">
-                  {p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} roleName={roleByGroup.get(card.group)||''} groupVisual={groupVisualByGroup.get(card.group)||''} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>toggleRune(i,card.id)}/>)}
+                {dealActive&&!dealReady&&i===G.active?<Typography variant="caption" className="lrg-deal-status" role="status">正在發牌…</Typography>:null}
+                <div className="lrg-hand" data-deal-phase={dealActive&&!dealReady&&i===G.active?'dealing':undefined} aria-busy={dealActive&&!dealReady&&i===G.active}>
+                  {dealActive&&!dealReady&&i===G.active?
+                    <OpeningDealCards cards={p.hand} roleByGroup={roleByGroup} groupVisualByGroup={groupVisualByGroup}/>:
+                    p.hand.map(card=><RuneCard key={card.id} card={card} playerIndex={i} roleName={roleByGroup.get(card.group)||''} groupVisual={groupVisualByGroup.get(card.group)||''} selected={p.selected.includes(card.id)} disabled={!selectable||(opening&&i!==G.active)} onClick={()=>toggleRune(i,card.id)}/>)}
                 </div>
                 {!done&&!isResonance&&((opening&&i===G.active)||isEvent)?<SelectionZone playerIndex={i} count={p.selected.length} limit={opening?rules.config.openingDiscard:rules.config.eventResponseCards}/>:null}
               </Paper>)}
@@ -536,7 +602,7 @@ function LocalMatch({data,count,onRestart}){
   const moves=useMemo(()=>Object.fromEntries(
     Object.keys(game.moves).map(move=>[move,(...args)=>dispatch({move,args})])
   ),[game]);
-  return <Board G={G} moves={moves} rules={data} onRestart={onRestart}/>;
+  return <Board G={G} moves={moves} rules={data} onRestart={onRestart} animateLocalDeal/>;
 }
 
 export default function GameBoard(){
