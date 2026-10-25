@@ -789,6 +789,14 @@ export async function selectScopeEarliest(scope){
 }
 // LOC is a set: one call returns each Scope's daily totals and the earliest date of the set.
 export async function selectLocStatistics({startDate='',endDate=''}={}){
+  if(usesNumericIsr('loc')){
+    try{return await readNumericIsr('loc','loc-statistics',{startDate,endDate});}
+    catch(error){
+      // A static frontend may deploy before its separate ISR Worker.
+      // Only unknown-route responses fall back to the existing public RPC.
+      if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
+    }
+  }
   try{
     return await readLocStatistics({startDate,endDate});
   }catch(error){
