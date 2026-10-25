@@ -26,7 +26,7 @@ const publishedSourceLists={};
 const allBlocks=new Map(),routeConfigs=[];
 const cols='uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image';
 for(const row of routes){
-  const id=row.scope_id,table=id==='loc'?'loc_config':id;
+  const id=row.scope_id,table=id;
   const {data:config,error:configError}=await db.from(table)
     .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
     .eq('id',id).limit(1).maybeSingle();
