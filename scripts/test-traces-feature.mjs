@@ -76,7 +76,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
   assert.match(editor,/if\(name\)setTitle\(current=>current\.trim\(\)\?current:name\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
-  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,onAnchorSelect=null,radiusMeters=500,focusLocation=null,spatialData=null\}\)/);
+  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid=''/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
   assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
   assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
@@ -179,24 +179,22 @@ test('Trace anchor quick-location button uses current place name and previews wi
   assert.ok(styles.includes('.loc-trace-quick-field'),'inline control has responsive layout');
 });
 
-test('Public trace map opens existing LOC article search using saved anchors and source_place only',()=>{
+test('Public Trace keeps anchor and route results inline rather than navigating to Search',()=>{
   const feature=read('app/modular/features/Trace.jsx');
   const map=read('app/modular/features/trace/TraceMap.jsx');
   const engine=read('app/modular/features/trace/trace-map-engine.js');
-  const search=read('app/modular/features/Search.jsx');
-  const provider=read('app/loc/galaxy-query.js');
-  const nav=read('app/modular/feature-navigation.js');
+  const results=read('app/modular/features/trace/TracePlaceResults.jsx');
   assert.match(feature,/readTraceData\(scopeId\)/);
   assert.match(feature,/onAnchorSelect=\{anchor=>/);
-  assert.match(feature,/featureNavigationHref\('loc','search',\{place\}\)/);
+  assert.match(feature,/onRouteSelect=\{map=>/);
+  assert.match(feature,/<TracePlaceResults/);
   assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
   assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
-  assert.match(search,/setPlaceOnly\(Boolean\(place\)\)/);
-  assert.match(search,/placeOnly:Boolean\(options\.placeOnly\)/);
-  assert.match(provider,/searchFields:\['source_place'\]/);
-  assert.match(nav,/place:NavigationValue\.optional\(\)/);
-  assert.match(search,/<IncrementalList/);
-  assert.doesNotMatch(feature,/searchGalaxyRows\(/);
+  assert.match(map,/selectedRouteUid/);
+  assert.match(results,/文章列表/);
+  assert.match(results,/時間長河/);
+  assert.match(results,/基本報表/);
+  assert.doesNotMatch(feature,/featureNavigationHref|router\.push/);
 });
 
 
@@ -221,7 +219,7 @@ test('Trace shares cached Time-period navigation with Culture and Statistics',()
   assert.match(trace,/readNumericIsr\(periodScopeId,'periods'\)/);
   assert.match(trace,/\[periodKey,setPeriodKey\]=useState\('latest'\)/);
   assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
-  assert.match(trace,/from:String\(range\.start_date\|\|''\)/);
+  assert.match(trace,/period=\{periodKey==='all'\?null:selectedPeriod\|\|null\}/);
   assert.match(trace,/onAnchorSelect=\{anchor=>/);
   assert.match(trace,/空間定錨點不代表該時期曾造訪/);
   assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
@@ -264,8 +262,8 @@ test('Trace overview fits every saved spatial anchor, not just the three Banqiao
       fitBounds:(bounds,opts)=>calls.push({kind:'bounds',points:bounds.points,opts}),
       flyTo:opts=>calls.push({kind:'single',opts})
     };
-    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded',validAnchor+'\n'+overview+'; return overview;');
-    go(map,Bounds,anchors,example,false,true)();
+    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded','canPickLocation',validAnchor+'\n'+overview+'; return overview;');
+    go(map,Bounds,anchors,example,false,true,false)();
     return calls[0];
   };
   assert.deepEqual(run([
@@ -275,9 +273,9 @@ test('Trace overview fits every saved spatial anchor, not just the three Banqiao
   assert.deepEqual(run([
     {trace_type:'anchor',longitude:121.5,latitude:25.1}
   ]).opts.center,[121.5,25.1]);
-  assert.deepEqual(run([]).points,[[121.46,25.01],[121.47,25.03]]);
-  assert.deepEqual(run([{trace_type:'anchor',longitude:null,latitude:null}]).points,
-    [[121.46,25.01],[121.47,25.03]]);
+  assert.deepEqual(run([]).opts.center,[120.98,23.73]);
+  assert.deepEqual(run([{trace_type:'anchor',longitude:null,latitude:null}]).opts.center,
+    [120.98,23.73]);
 });
 
 test('Trace desktop map widens, resizes with mouse or keyboard, and stays phone responsive',()=>{
@@ -298,5 +296,5 @@ test('Trace desktop map widens, resizes with mouse or keyboard, and stays phone 
   assert.match(map,/onPointerUp=\{stopMapResize\}/);
   assert.match(map,/onKeyDown=\{keyboardMapResize\}/);
   assert.match(map,/spatialData\?\.anchors\?\.some\(/);
-  assert.match(map,/copy\.all:copy\.examples/);
+  assert.match(map,/selectingLocation\?copy\.examples:copy\.all/);
 });
