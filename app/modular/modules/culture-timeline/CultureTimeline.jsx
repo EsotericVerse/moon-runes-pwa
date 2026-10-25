@@ -183,6 +183,7 @@ export default function CultureTimeline({
   const timelineRef=useRef(null);
   const timelineDataRef=useRef(null);
   const timelineGroupsRef=useRef(null);
+  const appliedHiddenDatesRef=useRef(hiddenDates);
   const doubleRiverWindowRef=useRef(null);
   const [selectedRowId,setSelectedRowId]=useState('');
   const onSelectRef=useRef(onSelect);
@@ -238,6 +239,7 @@ export default function CultureTimeline({
         }
       }:row);
       const data=new DataSet(dataRows);
+      appliedHiddenDatesRef.current=hiddenDates;
       const groupRows=makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef);
       const groups=groupRows.length?new DataSet(groupRows):null;
       timelineDataRef.current=data;
@@ -351,7 +353,8 @@ export default function CultureTimeline({
       }
       initialPanWindow=instance.getWindow();
       setReady(true);
-    }catch{
+    }catch(error){
+      console.error('Culture timeline initial rendering failed',error);
       if(!cancelled){setReady(false);setChartError(true);}
     }
     return()=>{
@@ -376,7 +379,7 @@ export default function CultureTimeline({
     heightVariant==='double'?null:timelineMaxHeight,
     Boolean(rows.length||editable||extraGroups.length),
     heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,
-    hiddenDates,editable,locale,labels,timelineLocale]);
+    heightVariant==='double'?null:hiddenDates,editable,locale,labels,timelineLocale]);
 
   // When a group opens, mutate existing datasets instead of destroying and
   // recreating vis-timeline. Preserve camera zoom, pan and touch scroll.
@@ -428,6 +431,21 @@ export default function CultureTimeline({
       setChartError(true);
     }
   },[rows,extraGroups,hasTimeKinds,editable,heightVariant,ready,timelineMinHeight,timelineMaxHeight,labels]);
+
+  // Density analysis is lazy-loaded after first paint. Updating the source
+  // river's hidden date ranges must not destroy/recreate the entire chart.
+  useEffect(()=>{
+    if(heightVariant!=='double'||!ready||appliedHiddenDatesRef.current===hiddenDates)return;
+    const timeline=timelineRef.current;
+    if(!timeline)return;
+    try{
+      timeline.setOptions({hiddenDates:Array.isArray(hiddenDates)?hiddenDates:[]});
+      appliedHiddenDatesRef.current=hiddenDates;
+    }catch(error){
+      console.error('Culture river hidden-date update failed',error);
+      setChartError(true);
+    }
+  },[heightVariant,ready,hiddenDates]);
 
   // One noninteractive time marker extends across every visible group.
   useEffect(()=>{

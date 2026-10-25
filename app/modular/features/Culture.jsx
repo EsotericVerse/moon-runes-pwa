@@ -1346,11 +1346,14 @@ export default function Culture(){
                     </div>
                   </details>
                 </div>:null}
-                {classificationWindowValid&&!riverRangeLoading&&!sourceSnapshotQuery.error
-                  &&sourceSnapshotQuery.data&&!cultureRiver.hasSourceData
+                {classificationWindowValid&&!sourceSnapshotQuery.error&&sourceSnapshotQuery.data
+                  &&!cultureRiver.hasSourceData
                   ?<div className='scope-card scope-status scope-culture-no-data' role='status'>{l.noDataInPeriod}</div>:null}
+                {/* Never mount vis-timeline over an empty/pending source snapshot:
+                    on first entry it otherwise creates an unready chart and then
+                    replaces its DOM while groups and density analysis arrive. */}
                 {classificationWindowValid&&!sourceSnapshotQuery.error
-                  &&(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)
+                  &&sourceSnapshotQuery.data&&cultureRiver.hasSourceData
                   ?<div className='scope-culture-double-river'>
                   <CultureTimeline
                     items={cultureRiver.items}
@@ -1402,7 +1405,7 @@ export default function Culture(){
                     }}
                   />
                 </div>:null}
-                {(!sourceSnapshotQuery.data||riverRangeLoading||cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
+                {(!sourceSnapshotQuery.error&&sourceSnapshotQuery.data&&cultureRiver.hasSourceData)?<details className='scope-culture-source-detail' open={worksOpen} onToggle={event=>setWorksOpen(event.currentTarget.open)}>
                   <summary>點開文章列表</summary>
                   {worksOpen?<><header style={{display:'flex',justifyContent:'space-between',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
                     {selectedGroup?<button type='button' className='scope-pagination-button' onClick={()=>setSelectedCategory('')}>{UI_COPY.culture.showAllWorks}</button>:<span/>}
