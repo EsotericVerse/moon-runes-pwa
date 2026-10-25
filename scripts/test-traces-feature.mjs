@@ -67,7 +67,9 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   const scope=read('app/loc/ScopeManagement.jsx');
   const admin=read('app/loc/views/AdminHomeView.jsx');
   const traceRoute=read('app/trace/manage/page.jsx');
-  assert.match(editor,/onLocationPick=\{\(\{lng,lat\}\)=>\{/);
+  assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
+  assert.match(editor,/if\(name\)setTitle\(name\)/);
+  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
   assert.match(react,/export default function TraceMap\(\{onLocationPick=null\}\)/);
   assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
   assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
