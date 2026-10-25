@@ -217,14 +217,14 @@ export default function ScopeEditableBlocks({
           if(keepEditorOpen){onEditorExit?.();return;}
           setEditMode(false);
           if(editDock?.active&&editDock.scopeId===scopeId){
-            const destination=pageName==='search'?'search':pageName==='governance'?'governance':'';
+            const destination=pageName==='search'?'search':pageName==='trace'?'search':'';
             editDock.complete(navigationHref(scopeId,destination,native));
           }else onEditorExit?.();
         }}
         onDone={(notice,{switching=false}={})=>{
           setMessage(notice);
           if(keepEditorOpen){if(!switching)onEditorExit?.(notice);return;}
-          if(['search','governance'].includes(pageName)&&!switching)return;
+          if(['search','trace'].includes(pageName)&&!switching)return;
           setEditMode(false);
           if(switching)return;
           if(editDock?.active&&editDock.scopeId===scopeId)
