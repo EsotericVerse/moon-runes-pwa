@@ -183,7 +183,7 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
       ):copy.intro}</p>
     </header>
-    <form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
+    {!selectingLocation?<><form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
       <label htmlFor="trace-geocode-query">{geo.label}</label>
       <input id="trace-geocode-query" type="search" minLength={2} maxLength={160}
         placeholder={geo.placeholder} value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)}/>
@@ -194,7 +194,7 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
     {matches.length?<div className="loc-trace-location-results" role="group" aria-label={geo.label}>
       {matches.map((item,index)=><button type="button" className="loc-button" key={index}
         disabled={!ready} onClick={()=>mapRef.current?.focusCoordinates({...item,radius_m:radiusMeters})}>{item.label}</button>)}
-    </div>:null}
+    </div>:null}</>:null}
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
         {copy.all}
