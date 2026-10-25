@@ -37,16 +37,25 @@ test('Navigation places Trace before Search and gives it an independent icon',()
   }
 });
 
-test('Trace map uses real tile/road APIs only for marked example anchors',()=>{
-  const map=read('public/trace-map.mjs');
+test('Trace mounts installed MapLibre from a lazy React chunk with Next.js ESM worker',()=>{
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
   const react=read('app/modular/features/trace/TraceMap.jsx');
-  assert.match(map,/maplibre-gl@6\.15\.0/);
-  assert.match(map,/tiles\.openfreemap\.org\/styles\/liberty/);
-  assert.match(map,/fill-extrusion/);
-  assert.match(map,/EXAMPLE_ANCHORS/);
-  assert.match(map,/async function showRoadRoute\(/);
-  assert.match(map,/router\.project-osrm\.org/);
-  assert.doesNotMatch(map,/selectRows\(|updateRows\(|insertRows\(|deleteRows\(/);
+  const feature=read('app/modular/features/Trace.jsx');
+  assert.match(engine,/from 'maplibre-gl'/);
+  assert.match(engine,/setWorkerUrl\(new URL\('maplibre-gl\/dist\/maplibre-gl-worker\.mjs',import\.meta\.url\)/);
+  assert.match(react,/import 'maplibre-gl\/dist\/maplibre-gl\.css'/);
+  assert.match(react,/createTraceMap\(containerRef\.current/);
+  assert.match(react,/instance\?\.destroy\(\)/);
+  assert.match(feature,/ssr:false/);
+  assert.match(engine,/tiles\.openfreemap\.org\/styles\/liberty/);
+  assert.match(engine,/fill-extrusion/);
+  assert.match(engine,/EXAMPLE_ANCHORS/);
+  assert.match(engine,/async function showRoadRoute\(/);
+  assert.match(engine,/router\.project-osrm\.org/);
+  assert.doesNotMatch(engine,/selectRows\(|updateRows\(|insertRows\(|deleteRows\(/);
+  assert.doesNotMatch(engine,/unpkg\.com|LOCTraceMapModule/);
+  assert.doesNotMatch(react,/document\.createElement|MODULE_SRC|MAP_CSS|LOCTraceMapModule/);
+  assert.ok(!existsSync(pathOf('public/trace-map.mjs')),'CDN transport must be removed');
   assert.match(react,/示例/);
   assert.match(react,/routeBusy/);
 });
