@@ -33,6 +33,7 @@ import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
 import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
+import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
 import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
@@ -361,9 +362,16 @@ export default function Culture(){
     queryKey:['culture-period-roots','v1',classificationScope,classificationWindowStart,classificationWindowEnd],
     enabled:stagedSourceRiver&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope
       &&Boolean(scopeData)&&classificationWindowValid,
-    queryFn:()=>readNumericIsr(scopeId,'culture-roots',{
-      startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true
-    })
+    queryFn:async()=>{
+      const args={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
+      try{return await readNumericIsr(scopeId,'culture-roots',args);}
+      catch(error){
+        // Static Pages can precede a manually updated Cloudflare Worker.
+        if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
+        const legacyRows=await readNumericIsr(scopeId,'culture',args);
+        return {...summarizeCultureRiverRoots(legacyRows,publishedSourceTaxonomy(scopeId)||{}),legacyRows};
+      }
+    }
   });
   const sourceSnapshotQuery=useAsyncResource({
     queryKey:['culture-period-source-snapshot','v4',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
@@ -371,9 +379,21 @@ export default function Culture(){
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
       if(stagedSourceRiver){
-        const numericRows=await readNumericIsr(scopeId,'culture-children',{
-          ...range,includeUndated:true,roots:expandedSourceRoots
-        });
+        const taxonomy=publishedSourceTaxonomy(scopeId)||{};
+        let numericRows;
+        if(sourceRootQuery.data?.legacyRows){
+          numericRows=selectCultureRiverChildren(sourceRootQuery.data.legacyRows,taxonomy,expandedSourceRoots);
+        }else{
+          try{
+            numericRows=await readNumericIsr(scopeId,'culture-children',{
+              ...range,includeUndated:true,roots:expandedSourceRoots
+            });
+          }catch(error){
+            if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
+            const full=await readNumericIsr(scopeId,'culture',{...range,includeUndated:true});
+            numericRows=selectCultureRiverChildren(full,taxonomy,expandedSourceRoots);
+          }
+        }
         return selectScopePeriodSourceSnapshot(scopeData,{...range,numericRows});
       }
       return selectScopePeriodSourceSnapshot(scopeData,range);
