@@ -129,7 +129,7 @@ export function EditDockProvider({children}){
         const saved=await editor.save();
         if(saved!==true)throw new Error('部分設定未儲存，已保留編輯內容。請檢查各區塊提示。');
       }
-      if(dirty.length)setNotice(stayInEditMode?'已分段儲存，可繼續編輯。':'目前修改已儲存。');
+      if(dirty.length)setNotice(stayInEditMode?'已暫存，可繼續編輯。':'目前修改已儲存。');
     }catch(error){
       setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
     }finally{
