@@ -1,6 +1,6 @@
 'use client';
 
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useSWRConfig} from 'swr';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthRelation,dbAuthClient} from './db-client.mjs';
@@ -26,6 +26,7 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const allowed=valid&&Boolean(account.user&&!account.loading&&!account.permissionLoading&&
     (global?account.canManageGroupSync('loc'):account.canManageScopeSync(scopeId)));
   const [draft,setDraft]=useState(null);
+  const [gridColumns,setGridColumns]=useState(4);
   const listRef=useRef(null);
   const lastInputRef=useRef(null);
   const [busy,setBusy]=useState(false);
@@ -43,12 +44,18 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const change=(index,value)=>{setDraft(prev=>{
     const next=[...(prev===null?original:prev)];next[index]=value;return next;
   });setNotice('');};
-  // Read the available form width at click time: arrows follow the actual grid,
-  // including the two-column and single-column layouts on smaller screens.
-  const columns=()=>{
-    const width=listRef.current?.clientWidth||0;
-    return width<=420?1:width<=720?2:4;
-  };
+  // Track the actual available panel width, not the whole device viewport.
+  useEffect(()=>{
+    const node=listRef.current;
+    if(!node||typeof ResizeObserver==='undefined')return;
+    const observer=new ResizeObserver(([entry])=>{
+      const width=entry.contentRect.width;
+      setGridColumns(width<=420?1:width<=720?2:4);
+    });
+    observer.observe(node);
+    return ()=>observer.disconnect();
+  },[allowed,query.isPending,query.error]);
+  const columns=()=>gridColumns;
   const move=(index,target)=>{
     if(target===index||target<0||target>=rows.length)return;
     setDraft(prev=>{
