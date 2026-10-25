@@ -44,15 +44,11 @@ export default {
       "subtitle": "Place works back on the timeline to observe accumulation and change.",
       "description": "The time river shows works and sources by date; anchors divide periods for comparison."
     },
-    "traces": {
+    "trace": {
+      "detailsLabel": "Information",
       "title": "Traces",
       "subtitle": "Explore spatial anchors and routes on a real map.",
       "description": "Explore spatial anchors and routes on a real map."
-    },
-    "governance": {
-      "title": "Governance",
-      "subtitle": "Usage principles, rights boundaries, and management.",
-      "description": "Governance documents the basic rules, copyright, and licensing for this scope."
     },
     "search": {
       "title": "Search",
@@ -81,7 +77,7 @@ export default {
       "ranking": "Overall ranking",
       "statics": "View work counts, source ratios, and changes over time.",
       "culture": "Place works back on the timeline and compare periods.",
-      "governance": "LOC usage principles, rights boundaries, and management.",
+      "trace": "View and organize the context of Scope content.",
       "search": "Search LOC text, works, media, and related content."
     },
     "author": {
