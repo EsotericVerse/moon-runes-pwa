@@ -1,7 +1,7 @@
 export default {
   "noDataInPeriod": "選択した期間にはデータがありません。",
-  "system": "作品グループ分類",
-  "custom": "作品カスタム分類",
+  "system": "作品カテゴリー",
+  "custom": "個人カテゴリー",
   "media": "マルチメディア",
   "other": "未分類",
   "candidateDate": "候補日",
