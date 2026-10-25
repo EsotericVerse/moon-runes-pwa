@@ -40,6 +40,7 @@ import ScopeLink from '../ScopeLink';
 const LrunesDailyStatisticsPanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytics').then(m=>m.LrunesDailyStatisticsPanel),{loading:()=>null});
 import {STAT_VISUAL_TYPES,availableStatisticChartTypes,chartTypeGroups} from '../modules/statistics/statistics-time-zoom.mjs';
 const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
+const PlaceStatisticsPanel=dynamic(()=>import('./trace/PlaceStatisticsPanel'),{loading:()=>null});
 const Rune66Summary=dynamic(()=>import('../modules/statistics/StatisticsMultiChart').then(m=>m.Rune66Summary),{loading:()=>null});
 const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
 const MediaCrossTagStatistics=dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics'),{loading:()=>null});
@@ -52,7 +53,7 @@ import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const CHART_TYPES=STAT_VISUAL_TYPES;
-const STAT_TYPES=['total','source','media_type','media_platform','media_style'];
+const STAT_TYPES=['total','source','place','media_type','media_platform','media_style'];
 const STAT_TYPE_KEYS=Object.freeze({
   daily_rune:'uiExtra.statisticsUI.dailyRune',
   total:'statistics.totalSource',
@@ -263,7 +264,7 @@ function StatisticTypeSelect({scopeId,navigation,types}){
       if(!value||value===active)return;
       router.push(featureNavigationHref(scopeId,'statics',{...navigation,rankingType:value}));
     }}>
-      {types.map(value=><option key={value} value={value}>{t(STAT_TYPE_KEYS[value]||value)}</option>)}
+      {types.map(value=><option key={value} value={value}>{value==='place'?'地點':t(STAT_TYPE_KEYS[value]||value)}</option>)}
     </select>
   </label>;
 }
@@ -334,7 +335,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   },[selectedPeriod,customQueryRange,queryEndDate]);
   // Both editors store flat names. Show one direct source choice, not a group tree.
   const activeSourceSelection=styleFilter==='rune66'?keywordSource:rankingType==='source'?sourceGroup:'';
-  const sourceChart=!isLrunesDaily&&!mediaDimension&&Boolean(targetScopes.length)&&Boolean(rankingType);
+  const sourceChart=!isLrunesDaily&&!mediaDimension&&rankingType!=='place'&&Boolean(targetScopes.length)&&Boolean(rankingType);
   // ONE request per source chart: earliest date + exact daily counts + source taxonomy.
   const overview=useAsyncResource({
     queryKey:['scope-overview',scopeId,queryRange.startDate,queryRange.endDate],
@@ -517,7 +518,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     <header className="scope-stat-domain-heading"><div><h2>{UI_COPY.statistics.result}</h2></div></header>
     <div className="scope-stat-controls">
       <StatisticTypeSelect scopeId={scopeId} navigation={navigation} types={types}/>
-      {!isLrunesDaily?<label>
+      {!isLrunesDaily&&rankingType!=='place'?<label>
         <span>顯示關鍵字</span>
         <select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
           {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>
@@ -540,7 +541,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           </option>)}
         </select>
       </label>:null}
-      {!isLrunesDaily&&!mediaDimension&&(rankingType==='source'||styleFilter==='rune66')?<label>
+      {!isLrunesDaily&&!mediaDimension&&rankingType!=='place'&&(rankingType==='source'||styleFilter==='rune66')?<label>
         <span>作品／個人分類</span>
         <select className="scope-select" aria-label="作品／個人分類" value={activeSourceSelection}
           onChange={event=>{
@@ -556,7 +557,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {periodQuery.error&&!isLrunesDaily?<span className="scope-status scope-error">
         時期範圍無法載入，仍可使用自選時間：{featureDataErrorMessage(periodQuery.error,UI_COPY)}
       </span>:null}
-      {!isLrunesDaily?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
+      {!isLrunesDaily&&rankingType!=='place'?<>{!mediaDimension?<label><span>{UI_COPY.statistics.chart}</span><select className="scope-select" value={effectiveChartType} onChange={event=>setChartType(event.target.value)}>
         {chartGroups.primary.length?<optgroup label={t('uiExtra.statisticsView.chartPrimary')}>
   {chartGroups.primary.map(([value,label])=><option key={value} value={value}>{t(label)}</option>)}
 </optgroup>:null}
@@ -570,14 +571,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       </>:null}
     </div>
     {isLrunesDaily?<LrunesDailyStatisticsPanel/>:<>
-    {((mediaDimension&&mediaLoading)||(!mediaDimension&&!sourceRows.error&&!sourceCatalog.error&&(sourceRows.isPending||sourceCatalog.isPending||!adminSourceReady)))?<div className="scope-stat-data-pending">
+    {rankingType==='place'?<PlaceStatisticsPanel scopeId={scopeId} range={queryRange}/>:null}
+    {((mediaDimension&&mediaLoading)||(rankingType!=='place'&&!mediaDimension&&!sourceRows.error&&!sourceCatalog.error&&(sourceRows.isPending||sourceCatalog.isPending||!adminSourceReady)))?<div className="scope-stat-data-pending">
       <p className="scope-status" role="status"><UiText id="uiExtra.statisticsUI.loading"/></p>
       <div className="scope-feature-loading__body" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>:null}
     {earliestQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(earliestQuery.error,UI_COPY)}</p>:null}
-    {!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
+    {rankingType!=='place'&&!mediaDimension&&(sourceRows.error||sourceCatalog.error)?<p className="scope-status scope-error">{featureDataErrorMessage(sourceRows.error||sourceCatalog.error,UI_COPY)}</p>:null}
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
-    {!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error?<>
+    {rankingType!=='place'&&!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
@@ -637,7 +639,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
             loadGalaxyStatistics={loadGalaxyStatistics}
           />}
     </StatisticsDetails>:null}
-    {styleFilter==='rune66'?<>
+    {rankingType!=='place'&&styleFilter==='rune66'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {keywordClassQuery.isPending?<p className="scope-status">正在讀取關鍵詞組設定…</p>:null}
       {!keywordClassQuery.isPending&&!keywordClassQuery.error&&!keywordClassQuery.data?<p className="scope-status">此 Scope 尚未設定關鍵詞組。</p>:null}
@@ -645,7 +647,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data} range={queryRange} scopeId={scopeId}/>:null}
     </>:null}
-    {!isLrunesDaily&&Boolean(targetScopes[0])?<StatisticsDetails
+    {!isLrunesDaily&&rankingType!=='place'&&Boolean(targetScopes[0])?<StatisticsDetails
       summary={<UiText id="uiExtra.statisticsView.selfIntersectionTitle"/>}>
       {()=> <ScopeSelfIntersection
         key={scopeId}
