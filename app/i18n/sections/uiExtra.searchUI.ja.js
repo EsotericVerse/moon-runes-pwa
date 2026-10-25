@@ -5,6 +5,7 @@ export default {
   "invalidMediaId": "メディア ID の形式が無効です。",
   "mediaManageDenied": "このメディアを編集する権限がありません。",
   "mediaAttributes": "メディア属性",
+  "checkInPlace": "チェックイン場所",
   "editMedia": "メディアを編集：{id}",
   "styleRecommendations": "おすすめのスタイルタグ",
   "stylePeriod": "所属期間：",
