@@ -35,7 +35,7 @@ export default function WorkClassificationPage(){
     &&String(drafts[row.category_code]).trim()!==String(row.display_name||'').trim());
   const isDirty=changed.some(row=>row.category_code===selected);
   const duplicateName=(code,name)=>rows.some(row=>row.category_code!==code
-    &&String(drafts[row.category_code]??row.display_name||'').trim().toLocaleLowerCase()===name.toLocaleLowerCase());
+    &&String(drafts[row.category_code]??row.display_name??'').trim().toLocaleLowerCase()===name.toLocaleLowerCase());
 
   async function persist(codes){
     if(busy||!allowed||query.isPending||query.error)return false;
