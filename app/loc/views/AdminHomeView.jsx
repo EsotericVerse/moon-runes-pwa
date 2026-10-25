@@ -18,8 +18,8 @@ import PanelLoading from '../PanelLoading';
 // Registry editing and source catalogs are independent admin capabilities.
 
 const ADMIN_OPTIONS=Object.freeze([
-  {value:'traceAnchor',label:'新增定錨點',shortLabel:'定錨點',description:'新增 LOC 自己的空間定錨點。'},
-  {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'連接 LOC 的定錨點，作為一張痕跡圖。'},
+  {value:'traceAnchor',label:'新增空間定錨點',shortLabel:'空間定錨點',description:'新增 LOC 自己的空間定錨點。'},
+  {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'連接 LOC 的空間定錨點，作為一張痕跡圖。'},
   {value:'registry',label:'群組與人員',shortLabel:'人員',description:'管理群組、人員及所屬關係。'},
   {value:'database',label:'資料庫設定',shortLabel:'資料庫',description:'資料庫連線與郵件封鎖名單。'},
   {value:'isr',label:'ISR 設定',shortLabel:'ISR',description:'管理 ISR 網域與手動選用的平台。'},
