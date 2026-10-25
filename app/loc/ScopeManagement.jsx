@@ -16,10 +16,13 @@ const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loadi
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
+const PlaceBatchFill=dynamic(()=>import('./PlaceBatchFill'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'traceAnchor',label:'新增空間定錨點',shortLabel:'空間定錨點',description:'建立具座標的空間定錨點。'},
   {value:'traceMap',label:'新增痕跡圖',shortLabel:'痕跡圖',description:'依序組合此 Scope 的空間定錨點。'},
+  {value:'placeFill',label:'快速補寫打卡地點',shortLabel:'快速補打卡',description:'以完整日期及地點名稱批次補寫空白的 source_place。'},
+
   {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
   {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
@@ -37,7 +40,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const [section,setSection]=useManagementSection(options);
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap'].includes(section))||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap','placeFill'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -59,6 +62,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
         aria-labelledby={'scope-sections-option-'+selectedOption.value}>
         {section==='traceAnchor'?<TraceManagementPanel scopeId={routeScopeId} mode="anchor"/>:null}
         {section==='traceMap'?<TraceManagementPanel scopeId={routeScopeId} mode="map"/>:null}
+        {section==='placeFill'&&routeScopeId!=='loc'?<PlaceBatchFill scopeId={routeScopeId}/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
         {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
         {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
