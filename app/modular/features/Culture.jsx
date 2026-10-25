@@ -289,7 +289,18 @@ export default function Culture(){
   const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
   // The newest recorded period, not the open/current flag, is the default.
   const latestPeriod=primaryPeriods.at(-1)||null;
-  const allTimePeriod=useMemo(()=>periodRange(primaryPeriods,classificationScope,UI_COPY.culture.allTime),[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
+  // Articles may exist even when no formal Period has been created. Use an
+  // ordinary bounded date window; never treat an empty Time table as invalid.
+  const allTimePeriod=useMemo(()=>{
+    if(primaryPeriods.length)return periodRange(primaryPeriods,classificationScope,UI_COPY.culture.allTime);
+    const endDate=new Date().toISOString().slice(0,10);
+    const oneYearAgo=new Date(endDate+'T00:00:00Z');
+    oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear()-1);
+    return {
+      period:'all',title:'未設定時期（最近一年）',display_label:'未設定時期（最近一年）',
+      start_date:oneYearAgo.toISOString().slice(0,10),end_date:endDate,scope_id:classificationScope
+    };
+  },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
   useEffect(()=>{
     if(isAggregateScope||!primaryPeriods.length)return;
     const preferred=periodKey(latestPeriod)||'all';
@@ -738,7 +749,9 @@ export default function Culture(){
     }
     return rows;
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart,l,locale]);
-  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length||query.data?.scopes?.length):Boolean(timelineItems.length||selectedWorkPeriod?.start_date);
+  // An empty Time/Galaxy/Media database is a legitimate new Scope. Keep the
+  // controls and empty-state river, not an absent Culture screen.
+  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length||query.data?.scopes?.length):Boolean(query.data);
 
   function switchTimelineEditor(target,apply){
     // Reuse the edit dock's Save / Discard / Cancel safeguard when the
@@ -1389,8 +1402,8 @@ export default function Culture(){
                                   value={'event:'+String(item.id||item.entry_id||item.record_id)}>{localizedLabelOf(item,0)}</option>)
                               :<option value=''>{l.eventOption}</option>)
                             :<>
-                              <option value='latest'>{l.recentPeriod}</option>
-                              <option value='all'>{l.allPeriods}</option>
+                              <option value='latest'>{primaryPeriods.length?l.recentPeriod:'未設定時期（最近一年）'}</option>
+                              <option value='all'>{primaryPeriods.length?l.allPeriods:'最近一年（未設定時期）'}</option>
                               {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                               <option value='custom'>{l.customPeriod}</option>
                             </>}
