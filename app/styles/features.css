@@ -1039,6 +1039,26 @@
   isolation:isolate;
 }
 .loc-trace-resize-tools{display:none}
+.loc-trace-mobile-map-tools{display:none}
+@media(pointer:coarse){
+  .loc-trace-mobile-map-tools{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:.5rem .85rem;
+    margin-top:-.5rem;
+  }
+  .loc-trace-mobile-map-tools>.loc-button{min-height:44px}
+  .loc-trace-mobile-map-tools>.scope-status{
+    margin:0;
+    font-size:.84rem;
+  }
+  /* A tap expands the map's viewport, not the website's horizontal scroll.
+     The existing ResizeObserver updates its MapLibre WebGL canvas. */
+  .loc-trace-map-frame.is-mobile-expanded{
+    height:min(88svh,980px);
+  }
+}
 @media (min-width:900px) and (pointer:fine){
   .loc-trace-resize-tools{
     display:flex;
