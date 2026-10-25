@@ -44,6 +44,11 @@ export default {
       "subtitle": "把作品放回时间顺序，观察不同时期的累积与变化。",
       "description": "时间长河依日期呈现作品与来源；定锚点用来切分时期，方便比较前后差异。"
     },
+    "traces": {
+      "title": "痕迹",
+      "subtitle": "以真实地理位置查看空间定锚点与路线。",
+      "description": "以真实地理位置查看空间定锚点与路线。"
+    },
     "governance": {
       "title": "治理",
       "subtitle": "说明使用原则、权利边界与管理方式。",
