@@ -8,6 +8,7 @@ import ManagementSectionNav from '../modular/ManagementSectionNav';
 import dynamic from 'next/dynamic';
 import {useSWRConfig} from 'swr';
 import {selectCount} from './db-query.mjs';
+import {classGroupIndex} from './model/class-group-items.mjs';
 import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 
@@ -235,8 +236,15 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     .filter(row=>String(row.class_id)===String(currentClassId))
     .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,currentClassId]);
   const selectedClassId=String(items[0]?.class_id||'');
-  const groups=useMemo(()=>[...new Set(items.map(item=>String(item.class_group||'').trim()).filter(Boolean))],[items]);
-  const groupItems=useMemo(()=>items.filter(item=>String(item.class_group||'').trim()===selectedGroup),[items,selectedGroup]);
+  // Share the pure Class -> Group -> Item projection with Trace routes.
+  // Keyword item identity and editing semantics remain unchanged.
+  const classGroups=useMemo(()=>classGroupIndex(items,{
+    classOf:item=>item.class_name,groupOf:item=>item.class_group
+  }),[items]);
+  const groups=useMemo(()=>[...(classGroups.get(selectedClass)||new Map()).keys()].filter(Boolean),
+    [classGroups,selectedClass]);
+  const groupItems=useMemo(()=>(classGroups.get(selectedClass)?.get(selectedGroup)||[]),
+    [classGroups,selectedClass,selectedGroup]);
   const draftKeywords=useMemo(()=>normalizeKeywordLines(draft?.keywords_text||''),[draft?.keywords_text]);
   const configDirty=Boolean(configSnapshot)&&(
     Number(minChars)!==Number(configSnapshot.minChars)
