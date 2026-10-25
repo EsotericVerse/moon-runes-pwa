@@ -202,7 +202,6 @@ function SummaryList({rankingType,summary,scope,range,filteredSource=false}){
     {rows.map(row=><div key={row.category||row.term} style={{display:'block'}}>
       <StatisticsDetails className="scope-stat-details" summary={<><strong>{row.term}</strong><span>{Number(row.item_count||0).toLocaleString()}</span></>}>
         {()=> <>
-          {null
           {filteredSource&&rankingType==='total'&&!row.sourceNames?.length
             ?<p className="scope-status">所選來源在此區間沒有作品。</p>
             :<SourceArticleList key={scope.id+'|'+range.startDate+'|'+range.endDate}
