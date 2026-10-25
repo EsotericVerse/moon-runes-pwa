@@ -13,6 +13,7 @@ import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 
 import {useEditDock} from '../edit-dock';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
+import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 
 
@@ -301,6 +302,10 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       }else{
         await insertRows(timeTable,[payload]);
       }
+      // Invalidate R2-backed public Period navigation before SWR refetches it.
+      // This also covers edits to anchor dates used as Period boundaries.
+      if(dataScope!=='local')await revalidateServerMetadata();
+      await resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]});
       await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
       await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
       const fresh=newDraft(defaultType);
@@ -332,6 +337,10 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       await deleteRows(timeTable,{filters:[
         {column:'record_id',operator:'eq',value:selectedId}
       ]});
+      // Invalidate R2-backed public Period navigation before SWR refetches it.
+      // This also covers edits to anchor dates used as Period boundaries.
+      if(dataScope!=='local')await revalidateServerMetadata();
+      await resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]});
       await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
       await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
       const fresh=newDraft(defaultType);
