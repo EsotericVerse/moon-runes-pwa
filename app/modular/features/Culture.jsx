@@ -922,6 +922,19 @@ export default function Culture(){
       return result;
     };
     const parentMaximum=maximum(totals),childMaximum=maximum(subtotals);
+    // Counts on the left are totals for the selected time window (not the
+    // maximum density of a single day). Do not read any extra article rows.
+    const totalCounts=map=>{
+      const counts=new Map();
+      for(const [key,count] of map){
+        if(!Number.isFinite(count)||count<=0)continue;
+        const id=key.slice(0,key.indexOf('\u0000'));
+        counts.set(id,(counts.get(id)||0)+count);
+      }
+      return counts;
+    };
+    const rootCounts=totalCounts(totals),childCounts=totalCounts(subtotals);
+    const numberedLabel=(label,count)=>label+'（'+count.toLocaleString(locale)+'）';
     const row=(id,day,count,label,order,max,kind)=>({
       id:'dual:'+id+':'+day,entry_id:'dual:'+id+':'+day,
       entry_type:kind,group_key:'dual:'+id,group_label:label,group_order:order,
@@ -938,7 +951,8 @@ export default function Culture(){
       .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
     for(const parent of roots){
       // Hide zero-count parent lanes in the requested interval entirely.
-      if(!activeRoots.has(parent.id))continue;
+      const parentCount=rootCounts.get(parent.id)||0;
+      if(!activeRoots.has(parent.id)||parentCount<=0)continue;
       const members=groupedSources.filter(g=>g.root===parent.id&&activeChildren.has(g.key))
         .sort((a,b)=>a.label.localeCompare(b.label,locale));
       const expanded=openCultureRoots.includes(parent.id);
@@ -946,7 +960,7 @@ export default function Culture(){
       // A lone child *is* the visible river: do not draw its parent's
       // identical total and force an unnecessary second lane on expansion.
       const label=onlyChild?.label||parent.label;
-      groups.push({id:'dual:root:'+parent.id,label,order:parent.order,
+      groups.push({id:'dual:root:'+parent.id,label:numberedLabel(label,parentCount),order:parent.order,
         className:'scope-dual-river-root',collapsible:members.length!==1,
         selectable:Boolean(onlyChild),sourceKey:onlyChild?.key||'',expanded});
       for(const [key,count] of totals){
@@ -956,8 +970,12 @@ export default function Culture(){
       // A lone populated child is already represented by the parent lane.
       if(!expanded||onlyChild||(stagedSourceRiver&&!sourceSnapshotQuery.data))continue;
       members.forEach((group,index)=>{
+        const count=childCounts.get(group.key)||0;
+        // After expansion, use the actual loaded date buckets. Empty children
+        // must not create left-side labels or selectable blank lanes.
+        if(count<=0)return;
         const id='dual:child:'+group.key;
-        groups.push({id,label:group.label,order:parent.order+index+1,
+        groups.push({id,label:numberedLabel(group.label,count),order:parent.order+index+1,
           className:'scope-dual-river-child',selectable:true,sourceKey:group.key});
         for(const [key,count] of subtotals){
           const [code,day]=key.split('\u0000');
