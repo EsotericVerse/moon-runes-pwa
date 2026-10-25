@@ -18,6 +18,7 @@ function verified(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);
   return result.data;
 }
+export const validRadius=value=>Number.isInteger(Number(value))&&Number(value)>=10&&Number(value)<=20000000;
 export const validCoordinates=(longitude,latitude)=>{
   const lng=Number(longitude),lat=Number(latitude);
   return String(longitude).trim()!==''&&String(latitude).trim()!==''&&Number.isFinite(lng)&&Number.isFinite(lat)
@@ -36,7 +37,7 @@ function descriptionText(value){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,anchor_uids,created_at'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at'+(union?',scope_id':'');
   const result=await dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).order('created_at',{ascending:true}).limit(2000);
   const rows=(verified(result,id+' 痕跡讀取')||[])
@@ -46,12 +47,13 @@ export async function readTraceData(scopeId){
     maps:rows.filter(row=>row.trace_type==='map')
   };
 }
-export async function addTraceAnchor({scopeId,title,description='',longitude,latitude}){
+export async function addTraceAnchor({scopeId,title,description='',longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
+  if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const data={
     uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
-    description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude)
+    description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m)
   };
   const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
   return verified(result,'新增定錨點');
@@ -72,10 +74,11 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
     seen.add(title);
     if(!validCoordinates(place.longitude,place.latitude))
       throw Error(title+' 的經緯度無效，請先確認候選位置。');
+    if(!validRadius(place.radius_m??500))throw Error(title+' 的空間範圍無效。');
     prepared.push({
       uid:createUid8(),trace_type:'anchor',title,
       longitude:Number(place.longitude),latitude:Number(place.latitude),
-      description:''
+      radius_m:Number(place.radius_m??500),description:''
     });
   }
   const previous=await readTraceData(id);
