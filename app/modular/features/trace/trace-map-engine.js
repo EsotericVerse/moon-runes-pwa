@@ -9,6 +9,8 @@ import {Map,Marker,Popup,NavigationControl,LngLatBounds,setWorkerUrl} from 'mapl
 setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs',import.meta.url).toString());
 
 const STYLE='https://tiles.openfreemap.org/styles/liberty';
+export const TRACE_ORIGIN=Object.freeze({name:'板橋車站',lng:121.4638,lat:25.0143});
+
 // Fixed, public example locations: these are NOT the user's Galaxy records.
 // Geographic coordinates are approximate station-area anchors, not store doors.
 export const EXAMPLE_ANCHORS=Object.freeze([
@@ -94,7 +96,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(!loaded)return;
     map.getSource('loc-trace-saved-anchors')?.setData(existingAnchorPoints(savedAnchors));
     refreshSavedRoute();
-    if(!canPickLocation&&!selectedSavedRoute)overview();
+    // Updating GeoJSON never resets the viewport. Only explicit navigation may.
   }
   function savedRoutePoints(route=selectedSavedRoute){
     if(!Array.isArray(route?.anchor_uids))return [];
@@ -121,9 +123,13 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
   }
   function setSavedRoute(route){
-    selectedSavedRoute=route?.trace_type==='map'?route:null;
+    const next=route?.trace_type==='map'?route:null;
+    const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
+      ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
+    selectedSavedRoute=next;
     refreshSavedRoute();
-    if(!loaded||!selectedSavedRoute)return;
+    // SWR refreshes may return a new object representing the same route.
+    if(!loaded||!selectedSavedRoute||!changed)return;
     const valid=savedRoutePoints().filter(Boolean);
     if(valid.length===1){
       map.flyTo({center:[Number(valid[0].longitude),Number(valid[0].latitude)],
@@ -140,14 +146,34 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(Number.isFinite(n)&&n>=10&&n<=20000000){radius=n;refreshRadius();}
   }
   const canPickLocation=typeof onLocationPick==='function';
+  // The user's "home" is a public station-area navigation origin, not a
+  // saved visit or residential address. A map click never resets to this.
+  function goOrigin(){
+    if(removed)return;
+    map.flyTo({center:[TRACE_ORIGIN.lng,TRACE_ORIGIN.lat],
+      zoom:13,pitch:45,bearing:0,essential:true});
+  }
+  function centerIfFar(longitude,latitude){
+    const lng=Number(longitude),lat=Number(latitude);
+    if(removed||!Number.isFinite(lng)||!Number.isFinite(lat))return false;
+    const canvas=map.getCanvas(),width=canvas?.clientWidth||map.getContainer().clientWidth||0;
+    const height=canvas?.clientHeight||map.getContainer().clientHeight||0;
+    const projected=typeof map.project==='function'?map.project([lng,lat]):null;
+    // An already central point does not interrupt the user's zoom/tilt.
+    const far=projected&&width>0&&height>0
+      ?Math.abs(projected.x-width/2)>width*.26||Math.abs(projected.y-height/2)>height*.26
+      :true;
+    if(far)map.easeTo({center:[lng,lat],duration:350,essential:true});
+    return far;
+  }
   // On touch devices one-finger swipes should scroll the *page*, not
   // accidentally trap the user inside this tall map. Two fingers can still
   // pan, rotate and pinch-zoom it; desktop mouse dragging stays unchanged.
   const touchDevice=typeof window!=='undefined'
     &&Boolean(window.matchMedia?.('(pointer:coarse)').matches);
   const map=new Map({
-    container,style:STYLE,center:canPickLocation?[121.4647,25.0187]:[120.98,23.73],
-    zoom:canPickLocation?12.8:6.5,pitch:canPickLocation?59:0,bearing:canPickLocation?-23:0,
+    container,style:STYLE,center:[TRACE_ORIGIN.lng,TRACE_ORIGIN.lat],
+    zoom:canPickLocation?12.8:13,pitch:canPickLocation?59:45,bearing:canPickLocation?-23:0,
     cooperativeGestures:touchDevice,
     antialias:true,attributionControl:true
   });
@@ -190,7 +216,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(removed||!Number.isFinite(lng)||!Number.isFinite(lat)||Math.abs(lng)>180||Math.abs(lat)>90)return;
     if(radius_m!=null)setRadius(radius_m);
     const zoom=Math.max(2,Math.min(16,14.5-Math.log2(Math.max(radius,100)/500)));
-    map.flyTo({center:[lng,lat],zoom,pitch:59,bearing:-23,essential:true});
+    if(canPickLocation)map.flyTo({center:[lng,lat],zoom,pitch:59,bearing:-23,essential:true});
+    else centerIfFar(lng,lat);
     if(canPickLocation)pickLocation(lng,lat,name);
     else {pickedPosition={lng,lat};refreshRadius();}
     if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
@@ -250,7 +277,10 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         // presentation properties alone omit that contextual information.
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props.uid)
           &&String(row.source_scope||'')===String(props.source_scope||''));
-        if(anchor)onAnchorSelect(anchor);
+        if(anchor){
+          centerIfFar(anchor.longitude,anchor.latitude);
+          onAnchorSelect(anchor);
+        }
       };
       for(const layer of ['loc-trace-saved-point-layer','loc-trace-saved-point-labels']){
         map.on('click',layer,chooseAnchor);
@@ -296,8 +326,13 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       return new Marker({element:button,anchor:'bottom',offset:[0,-13]})
         .setLngLat([place.lng,place.lat]).addTo(map);
     });
-    if(!canPickLocation&&savedAnchors.some(isValidSavedAnchor))overview();
-    if(selectedSavedRoute)setSavedRoute(selectedSavedRoute);
+    // No implicit fit/overview on load: the origin remains stable until
+    // the current route is explicitly chosen by the parent.
+    if(selectedSavedRoute){
+      const openingRoute=selectedSavedRoute;
+      selectedSavedRoute=null;
+      setSavedRoute(openingRoute);
+    }
     status('ready');
   });
   map.on('error',event=>{
@@ -344,6 +379,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,setRadius,setAnchors,setSavedRoute,overview,showRoadRoute,
+  return {focus,focusCoordinates,centerIfFar,goOrigin,setRadius,setAnchors,setSavedRoute,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }
