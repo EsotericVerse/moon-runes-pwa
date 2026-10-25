@@ -124,6 +124,11 @@ test('Check-in backfill uses only empty source_place and user-confirmed date ran
   assert.match(editor,/trace_place_suggestions/);
   assert.match(editor,/前後各三筆/);
   assert.match(trace,/常用 Facebook 打卡名稱/);
+  assert.match(trace,/編輯既有空間定錨點/);
+  assert.match(trace,/updateTraceAnchor/);
+  const writes=read('app/modular/features/trace/trace-data.js');
+  assert.match(writes,/export async function updateTraceAnchor/);
+  assert.match(writes,/if\(id==='loc'\)request=request\.eq\('scope_id','loc'\)/);
   assert.doesNotMatch(editor,/selectAllRows\(|insertRows\(|updateRows\(/);
 });
 
