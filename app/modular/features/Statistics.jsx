@@ -346,7 +346,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Custom retains the existing one-year default and +/- zoom; periods are
   // canonical dates from the same Time records Culture uses.
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
-  useEffect(()=>setSelectedPeriodKey(''),[scopeId]);
+  const [periodOptionsRequested,setPeriodOptionsRequested]=useState(false);
+  useEffect(()=>{setSelectedPeriodKey('');setPeriodOptionsRequested(false);},[scopeId]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>isLrunesDaily?[]:[defaultScopeData(scopeId)].filter(Boolean),[scopeId,isLrunesDaily]);
@@ -358,7 +359,9 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     [zoomLevel,queryEndDate,knownEarliest]);
   const periodQuery=useAsyncResource({
     queryKey:['culture-timeline',scopeId],
-    enabled:!isLrunesDaily&&Boolean(targetScopes[0]),
+    // The default date/zoom chart does not need the entire Time record set.
+    // Fetch available Period choices only when the Period selector is used.
+    enabled:periodOptionsRequested&&!isLrunesDaily&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       const {selectScopeCultureData}=await import('../../loc/culture-query');
       return selectScopeCultureData(scopeId);
@@ -531,7 +534,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   }),[queryRange.startDate,queryRange.endDate]);
   const keywordClassQuery=useAsyncResource({
     queryKey:['scope-active-keyword-class-name',scopeId],
-    enabled:!isLrunesDaily,
+    // The keyword class is optional; the ordinary Statistics view never queries it.
+    enabled:!isLrunesDaily&&styleFilter==='rune66',
     queryFn:async()=>{
       const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
       return selectActiveKeywordClassName(scopeId);
@@ -539,7 +543,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   });
   const keywordClassLabel=keywordClassQuery.data
     ?'關鍵詞組：'+keywordClassQuery.data
-    :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
+    :styleFilter!=='rune66'?'關鍵詞組'
+      :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
   const keywordSourcesQuery=useAsyncResource({
     queryKey:['statistics-source-taxonomy'],
     enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data),
@@ -576,8 +581,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<label>
         <span>顯示關鍵字</span>
         <select className="scope-select" value={styleFilter} onChange={event=>setStyleFilter(event.target.value)}>
-          {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}
-            disabled={item.value==='rune66'&&!keywordClassQuery.data}>
+          {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>
             {item.value==='rune66'?keywordClassLabel:t(item.textKey)}
           </option>)}
         </select>
@@ -588,8 +592,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       {!isLrunesDaily?<label>
         <span>時期</span>
         <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
+          onFocus={()=>setPeriodOptionsRequested(true)}
+          onPointerDown={()=>setPeriodOptionsRequested(true)}
           onChange={event=>setSelectedPeriodKey(event.target.value)}>
           <option value="">自選時間（原有縮放）</option>
+          {periodOptionsRequested&&periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
           {periods.map(period=><option key={period.record_id||period.period} value={String(period.period||period.era_id||period.record_id)}>
             {period.title||period.name||period.period}
           </option>)}
@@ -705,6 +712,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     </StatisticsDetails>:null}
     {styleFilter==='rune66'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
+      {keywordClassQuery.isPending?<p className="scope-status">正在讀取關鍵詞組設定…</p>:null}
+      {!keywordClassQuery.isPending&&!keywordClassQuery.error&&!keywordClassQuery.data?<p className="scope-status">此 Scope 尚未設定關鍵詞組。</p>:null}
       {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data} range={queryRange} scopeId={scopeId}/>:null}
