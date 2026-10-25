@@ -60,6 +60,24 @@ test('Trace mounts installed MapLibre from a lazy React chunk with Next.js ESM w
   assert.match(react,/routeBusy/);
 });
 
+test('Trace management selects spatial coordinates from map clicks and sample stations',()=>{
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
+  const react=read('app/modular/features/trace/TraceMap.jsx');
+  const editor=read('app/loc/TraceManagement.jsx');
+  const scope=read('app/loc/ScopeManagement.jsx');
+  const admin=read('app/loc/views/AdminHomeView.jsx');
+  assert.match(editor,/onLocationPick=\{\(\{lng,lat\}\)=>\{/);
+  assert.match(react,/export default function TraceMap\(\{onLocationPick=null\}\)/);
+  assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
+  assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
+  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat\)/);
+  assert.match(engine,/pickedMarker\.on\('dragend'/);
+  assert.match(engine,/pickedMarker\?\.remove\(\)/);
+  assert.match(editor,/新增空間定錨點/);
+  assert.match(scope,/shortLabel:'空間定錨點'/);
+  assert.match(admin,/shortLabel:'空間定錨點'/);
+});
+
 test('Only canonical public Trace and management routes exist',()=>{
   for(const path of [
     'app/trace/page.jsx','app/lrunes/trace/page.jsx',
