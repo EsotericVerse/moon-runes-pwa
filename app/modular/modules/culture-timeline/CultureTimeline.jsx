@@ -197,16 +197,33 @@ export default function CultureTimeline({
   const onRemoveRef=useRef(onRemove);
   const [ready,setReady]=useState(false);
   const [chartError,setChartError]=useState(false);
-  const rows=useMemo(()=>timelineRows(items,labelOf===defaultTimelineLabel?(item,index)=>item?.display_label||item?.name||item?.title||item?.period||labels.item+' '+(index+1):labelOf,focus,labels),[items,labelOf,focus,labels]);
+  // A hidden/zero-count source group must not leave an item in vis-timeline:
+  // otherwise the library may create an unlabeled row even after its group
+  // was removed. Derive visible rows from the same group model as labels.
+  const visibleItems=useMemo(()=>{
+    if(heightVariant!=='double')return items;
+    const visibleGroups=new Set(extraGroups.map(group=>String(group.id)));
+    return items.filter(item=>{
+      const kind=String(item?.entry_type||'');
+      if(kind==='source_total'||kind==='source_group')
+        return Number(item?.item_count)>0&&visibleGroups.has(String(item?.group_key||''));
+      if(kind==='keyword_density')
+        return Number(item?.item_count)>0&&Boolean(String(item?.group_label||'').trim());
+      return true;
+    });
+  },[items,extraGroups,heightVariant]);
+  const rows=useMemo(()=>timelineRows(visibleItems,labelOf===defaultTimelineLabel?(item,index)=>item?.display_label||item?.name||item?.title||item?.period||labels.item+' '+(index+1):labelOf,focus,labels),[visibleItems,labelOf,focus,labels]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const hasTimeKinds=mode==='overview'&&rows.some(row=>String(row.group||'').startsWith('kind:'));
   const groupCount=Math.max(new Set([...rows.map(row=>row.group),...extraGroups.map(group=>group.id)].filter(Boolean)).size,hasTimeKinds&&!editable?4:0);
   const compactGroupCount=Math.max(1,groupCount||rows.length);
+  // The double river must shrink after zero-count groups disappear.
+  // A fixed 320px floor previously left a dark, empty band on 1–2 lanes.
   const timelineMinHeight=heightVariant==='double'
-    ?Math.max(320,152+compactGroupCount*48)
+    ?Math.max(186,110+compactGroupCount*58)
     :Math.max(180,96+compactGroupCount*46);
   const timelineMaxHeight=heightVariant==='double'
-    ?Math.max(timelineMinHeight+60,210+compactGroupCount*66)
+    ?Math.max(timelineMinHeight+28,148+compactGroupCount*72)
     :Math.max(360,Math.min(760,180+compactGroupCount*92));
 
   useEffect(()=>{onSelectRef.current=onSelect},[onSelect]);
@@ -416,7 +433,12 @@ export default function CultureTimeline({
         });
         if(changedRows.length)data.update(changedRows);
         const obsoleteGroups=[...existingGroupIds].filter(id=>!wantedGroups.has(id));
-        if(obsoleteGroups.length)groups.remove(obsoleteGroups);
+        if(obsoleteGroups.length){
+          groups.remove(obsoleteGroups);
+          // Flush the group/label layout once only when lanes disappear.
+          // Normal density changes remain in-place without a redraw.
+          timeline.redraw();
+        }
       }else if(nextGroups.length){
         const newGroups=new DataSet(nextGroups);
         timeline.setGroups(newGroups);
