@@ -94,7 +94,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLocation=null,spatialData=null}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,radiusMeters=500,focusLocation=null,spatialData=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
@@ -102,6 +102,8 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
   const mapRef=useRef(null);
   const locationPickRef=useRef(onLocationPick);
   locationPickRef.current=onLocationPick;
+  const anchorSelectRef=useRef(onAnchorSelect);
+  anchorSelectRef.current=onAnchorSelect;
   const selectingLocation=typeof onLocationPick==='function';
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
@@ -126,6 +128,7 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
         radiusMeters,
         anchors:spatialData?.anchors||[],
         onSelect:id=>{if(active)setSelected(id);},
+        onAnchorSelect:!selectingLocation?anchor=>{if(active)anchorSelectRef.current?.(anchor);}:null,
         onLocationPick:selectingLocation?coords=>{if(active)locationPickRef.current?.(coords);}:null,
         onStatus:code=>{
           if(!active)return;
@@ -181,7 +184,8 @@ export default function TraceMap({onLocationPick=null,radiusMeters=500,focusLoca
         locale==='en'?'Click any map location or a sample station to fill in coordinates automatically.':
         locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
-      ):copy.intro}</p>
+      ):(onAnchorSelect&&spatialData?.anchors?.length?
+        '點擊地圖上的綠色空間定錨點，直接使用 LOC 搜尋查看該地點的文章列表；不必先懂經緯度。':copy.intro)}</p>
     </header>
     {!selectingLocation?<><form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
       <label htmlFor="trace-geocode-query">{geo.label}</label>
