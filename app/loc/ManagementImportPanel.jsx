@@ -10,12 +10,12 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {insertRows,dbAuthRelation,updateRows,deleteRows,findGalaxyDuplicates} from './db-client.mjs';
+import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,importRowsFromJson,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -130,25 +130,16 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
 
-// Secondary tools stay collapsed and unmounted until opened, so the page is one
-// primary import card instead of four stacked ones.
-function ImportSection({title,children}){
-  const [open,setOpen]=useState(false);
-  return <section className="loc-card scope-import-section">
-    <button type="button" className="scope-import-section-toggle" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
-      <span>{title}</span><span aria-hidden="true">{open?'−':'+'}</span>
-    </button>
-    {open?<div className="scope-import-section-body">{children}</div>:null}
-  </section>;
-}
-
-function ImportFormatSettings({format,onChange,disabled=false}){
+function ImportFormatSettings({format,onChange,disabled=false,source='',onSourceChange,sourceDisabled=false,suggested=''}){
   const t=useUiText();
   const update=(key,value)=>onChange({...format,[key]:value});
   const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
   return <details className="loc-bubble scope-import-format">
-    <summary><UiText id="uiExtra.importUI.formatSummary"/></summary>
+    <summary><UiText id="uiExtra.importUI.formatSummary"/><span className="scope-import-format-mark" aria-hidden="true"/></summary>
     <div className="scope-management-fields">
+      <label><UiText id="uiExtra.importUI.sourceLabel"/>
+        <input disabled={disabled||sourceDisabled} value={source} onChange={e=>onSourceChange?.(e.target.value)} placeholder={suggested}/>
+      </label>
       <label><UiText id="uiExtra.importUI.recordPath"/>
         <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder={t('uiExtra.importUI.recordPathHint')}/>
       </label>
@@ -252,7 +243,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
   return {created:createMedia.length,connected};
 }
 
-function UniversalImport({scopeId,format,onBusyChange}) {
+function UniversalImport({scopeId,format,onFormatChange}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -284,7 +275,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
   },[rows,deferredSource,format.fields,locale]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
-  async function loadQueuedFile(file,index,total,language=importLocale){
+  async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
     setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
@@ -304,7 +295,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
-      const list=await parseUniversalImportFile(file,{recordPath:format.recordPath,importLocale:language});
+      const list=await parseUniversalImportFile(file,{recordPath,importLocale:language});
       const prepared=list.map(row=>({
         raw:row,
         import_uid:createUid8()
@@ -339,7 +330,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
-    setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.checkingUids'));
+    setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
@@ -374,7 +365,7 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
       writeCooldown.start();
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
-    finally{setBusy(false);onBusyChange?.(false);}
+    finally{setBusy(false);}
   }
   async function chooseImportLocale(event){
     if(busy)return;
@@ -382,16 +373,32 @@ function UniversalImport({scopeId,format,onBusyChange}) {
     setImportLocale(next);
     if(queue.length)await loadQueuedFile(queue[queueIndex],queueIndex,queue.length,next);
   }
+  function changeImportFormat(next){
+    if(busy)return;
+    onFormatChange(next);
+    // A changed record path changes the parsed file, not just field mapping.
+    // Reparse the queued file in place instead of resetting the whole import.
+    if(next.recordPath!==format.recordPath&&queue.length)
+      void loadQueuedFile(queue[queueIndex],queueIndex,queue.length,importLocale,next.recordPath);
+  }
   const pending=queue.length>queueIndex+1;
   return <div className="scope-import-body">
-    <label><UiText id="uiExtra.importUI.importLanguage"/>
-      <select className="scope-select" value={importLocale} disabled={busy} onChange={chooseImportLocale}>
-        {UI_LOCALE_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-    </label>
-    <label>{UI_COPY.management.currentFile}<input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/></label>
-    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):suggested}</strong></p>:null}
-    <label>{UI_COPY.management.sourceChoice}<input disabled={busy||!rows.length} value={source} onChange={event=>setSource(event.target.value)} placeholder={suggested}/></label>
+    <div className="scope-import-primary-row">
+      <label><UiText id="uiExtra.importUI.importLanguage"/>
+        <select className="scope-select" value={importLocale} disabled={busy} onChange={chooseImportLocale}>
+          {UI_LOCALE_OPTIONS.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </label>
+      <label><UiText id="uiExtra.importUI.fileSource"/>
+        <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
+      </label>
+      <button type="button" className="loc-button" disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+      </button>
+    </div>
+    <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}
+      source={source} onSourceChange={setSource} sourceDisabled={!rows.length} suggested={suggested}/>
+    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
         <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
@@ -442,311 +449,20 @@ function UniversalImport({scopeId,format,onBusyChange}) {
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
     </div>:null}
-    <div className="scope-tabs">
-      <button type="button" disabled={busy||!analysisCurrent||!analyzed.valid.length||writeCooldown.active} onClick={run}>{busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}</button>
-      {pending&&!rows.length?<button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button>:null}
-    </div>
+    {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 
-function refreshComparable(record={}){
-  return {
-    title:String(record.title||''),
-    content:String(record.content||''),
-    createtime:String(record.createtime||''),
-    source_place:String(record.source_place||''),
-    url:String(record.url||''),
-    searchable:record.searchable!==false,
-    statistics_able:record.statistics_able!==false
-  };
-}
 
-function sameRefreshRecord(current,next){
-  const a=refreshComparable(current),b=refreshComparable(next);
-  return Object.keys(a).every(key=>a[key]===b[key]);
-}
-
-function SourceRefresh({scopeId,format,onBusyChange}){
-  const t=useUiText();
-  const account=useAccount();
-  const [fileName,setFileName]=useState('');
-  const [rows,setRows]=useState([]);
-  const [source,setSource]=useState('');
-  const [plan,setPlan]=useState(null);
-  const [status,setStatus]=useState('');
-  const [busy,setBusy]=useState(false);
-  const [progress,setProgress]=useState(null);
-  const writeCooldown=useBulkWriteCooldown();
-  if(!account.canManageScopeSync(scopeId))return null;
-
-  async function chooseFile(event){
-    const file=event.target.files?.[0];
-    if(!file||busy)return;
-    setFileName(file.name);setRows([]);setStatus('');setPlan(null);setProgress(null);
-    try{
-      const parsed=JSON.parse(await file.text());
-      const list=importRowsFromJson(parsed,format.recordPath);
-      setRows(list.map(row=>({raw:row,import_uid:createUid8()})));
-      setSource(sourceSuggestion(file.name));
-      setStatus(t('uiExtra.importUI.refreshLoaded',{count:list.length.toLocaleString()}));
-    }catch(error){
-      setRows([]);setPlan(null);setStatus(t('uiExtra.importUI.refreshParseFailed',{error:error?.message||error}));
-    }
-  }
-
-  async function analyze(){
-    const selected=source.trim();
-    if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
-    // Refresh only targets records with an explicit article UID.
-    const valid=normalized.filter(item=>item.record&&String(mappedImportValue(item.raw,'uid',format.fields)||'').trim()).map(item=>item.record);
-    const invalid=normalized.length-valid.length;
-    if(!valid.length){setPlan({creates:[],updates:[],unchanged:[],invalid});setStatus(t('uiExtra.importUI.noUid'));return;}
-    setBusy(true);onBusyChange?.(true);setStatus(t('uiExtra.importUI.analyzing'));setProgress(null);
-    try{
-      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      const existing=[];
-      const ids=[...new Set(valid.map(row=>row.uid))];
-      for(let offset=0;offset<ids.length;offset+=200){
-        const batch=ids.slice(offset,offset+200);
-        const {data,error}=await dbAuthRelation(galaxy)
-          .select('uid,title,content,createtime,source_place,url,searchable,statistics_able,source_name')
-          .eq('source_name',selected)
-          .in('uid',batch);
-        if(error)throw new Error(error.message||t('uiExtra.importUI.refreshCompareFailed'));
-        existing.push(...(data||[]));
-      }
-      const byUid=new Map(existing.map(row=>[String(row.uid||'').trim(),row]));
-      const hasExplicit=(item,field)=>{
-        const value=mappedImportValue(item.raw,field,format.fields);
-        return value!==undefined&&value!==null&&String(value).trim()!=='';
-      };
-      const explicitFlags=new Map(normalized.filter(item=>item.record).map(item=>[
-        item.record.uid,{
-          searchable:hasExplicit(item,'searchable'),
-          statistics_able:hasExplicit(item,'statistics_able')
-        }
-      ]));
-      const creates=[],updates=[],unchanged=[],seen=new Set();
-      for(const record of valid){
-        if(seen.has(record.uid))continue;
-        seen.add(record.uid);
-        const current=byUid.get(record.uid);
-        const explicit=explicitFlags.get(record.uid)||{};
-        if(!current){creates.push(record);continue;}
-        const next={
-          ...record,
-          uid:current.uid,
-          searchable:explicit.searchable?record.searchable:current.searchable,
-          statistics_able:explicit.statistics_able?record.statistics_able:current.statistics_able,
-          source_name:selected,
-          createtime:record.createtime||current.createtime||null,
-          source_place:record.source_place||current.source_place||null,
-          url:record.url||current.url||null
-        };
-        if(sameRefreshRecord(current,next))unchanged.push(next);
-        else updates.push(next);
-      }
-      const nextPlan={creates,updates,unchanged,invalid:invalid+(valid.length-seen.size)};
-      setPlan(nextPlan);
-      setStatus(t('uiExtra.importUI.diffComplete',{created:creates.length.toLocaleString(),updated:updates.length.toLocaleString(),unchanged:unchanged.length.toLocaleString(),skipped:nextPlan.invalid.toLocaleString()}));
-    }catch(error){setPlan(null);setStatus(error?.message||t('uiExtra.importUI.refreshAnalyzeFailed'));}
-    finally{setBusy(false);onBusyChange?.(false);}
-  }
-
-  async function applyRefresh(){
-    if(!plan||busy)return;
-    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
-    const selected=source.trim();
-    setBusy(true);onBusyChange?.(true);setStatus('');
-    const total=plan.creates.length+plan.updates.length;
-    let completed=0;
-    setProgress({completed:0,total,percent:total?0:100});
-    try{
-      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      await writeImportBatches(plan.creates,{
-        batchSize:validImportBatchSize(format.batchSize),
-        writeBatch:batch=>insertRows(galaxy,batch),
-        onProgress:p=>{
-          completed=p.completed;
-          setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
-        }
-      });
-      for(const row of plan.updates){
-        await updateRows(galaxy,{
-          title:row.title,
-          content:row.content,
-          createtime:row.createtime,
-          source_place:row.source_place,
-          url:row.url,
-          searchable:row.searchable!==false,
-          statistics_able:row.statistics_able!==false,
-          UpdateTime:new Date().toISOString()
-        },{filters:[{column:'uid',operator:'eq',value:row.uid}]});
-        completed++;
-        if(completed%10===0||completed===total)setProgress({completed,total,percent:Math.round(completed/Math.max(1,total)*100)});
-      }
-      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
-      if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      const original=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t))
-        .filter(item=>item.record);
-      const knownArticleIds=new Map([...plan.creates,...plan.updates,...plan.unchanged].map(row=>[row.uid,row.uid]));
-      const mediaSummary=await syncImportedMedia({
-        normalized:original,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
-      });
-      setStatus(t('uiExtra.importUI.refreshComplete',{created:plan.creates.length.toLocaleString(),updated:plan.updates.length.toLocaleString()}) +t('uiExtra.importUI.refreshMediaSuffix',{media:mediaSummary.created,linked:mediaSummary.connected}));
-      setPlan(null);setRows([]);setFileName('');
-      writeCooldown.start();
-    }catch(error){
-      setPlan(null);
-      setStatus(String(error?.message||error||t('uiExtra.importUI.refreshWriteFailed'))+t('uiExtra.importUI.refreshRetry'));
-    }finally{setBusy(false);onBusyChange?.(false);}
-  }
-
-  return <div className="scope-import-body">
-    <p><UiText id="uiExtra.importUI.refreshHelp"/></p>
-    <label>Refresh JSON<input type="file" accept=".json,application/json" disabled={busy} onChange={chooseFile}/></label>
-    {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong></p>:null}
-    <label><UiText id="uiExtra.importUI.sourceLabel"/><input disabled={busy} value={source} onChange={event=>{setSource(event.target.value);setPlan(null);setProgress(null);}} placeholder={sourceSuggestion(fileName)}/></label>
-    <div className="scope-tabs">
-      <button type="button" disabled={busy||!rows.length} onClick={analyze}>{busy?t('uiExtra.importUI.processing'):t('uiExtra.importUI.analyze')}</button>
-      <button type="button" disabled={busy||!plan||(!plan.creates.length&&!plan.updates.length)||writeCooldown.active} onClick={applyRefresh}><UiText id="uiExtra.importUI.applyRefresh"/></button>
-    </div>
-    {plan?<div className="scope-ranking">
-      <div><strong><UiText id="uiExtra.importUI.create"/></strong><span>{plan.creates.length.toLocaleString()}</span></div>
-      <div><strong><UiText id="uiExtra.importUI.update"/></strong><span>{plan.updates.length.toLocaleString()}</span></div>
-      <div><strong><UiText id="uiExtra.importUI.unchanged"/></strong><span>{plan.unchanged.length.toLocaleString()}</span></div>
-      <div><strong><UiText id="uiExtra.importUI.skipped"/></strong><span>{plan.invalid.toLocaleString()}</span></div>
-    </div>:null}
-    {progress?<div role="status" className="scope-import-progress">
-      <progress value={progress.percent||0} max="100"/>
-      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
-    </div>:null}
-    {status?<p className="scope-status" role="status">{status}</p>:null}
-  </div>;
-}
-
-const DUPLICATE_RENDER_LIMIT=40;
-function DuplicateDetection({scopeId}){
-  const t=useUiText();
-  const account=useAccount();
-  const [groups,setGroups]=useState(null);
-  const [selected,setSelected]=useState(()=>new Set());
-  const [status,setStatus]=useState('');
-  const [busy,setBusy]=useState(false);
-  if(!account.canManageScopeSync(scopeId))return null;
-
-  function formatTime(value){
-    return value?String(value).slice(0,19).replace('T',' '):'';
-  }
-
-  async function scan(){
-    setBusy(true);setStatus(t('uiExtra.importUI.duplicateScanning'));setGroups(null);setSelected(new Set());
-    try{
-      const found=await findGalaxyDuplicates(scopeId);
-      setGroups(found);
-      // Preselect the copies that contain line breaks, but only where a clean copy
-      // of the same post remains in that group.
-      const preselected=new Set();
-      for(const group of found){
-        if(!group.hasNewline.some(flag=>!flag))continue;
-        group.uids.forEach((uid,index)=>{if(group.hasNewline[index])preselected.add(uid);});
-      }
-      setSelected(preselected);
-      setStatus(found.length
-        ?t('uiExtra.importUI.duplicateGroupsFound',{count:found.length})+(preselected.size?'；已預選 '+preselected.size.toLocaleString()+' 筆含換行的重複版本':'')
-        :t('uiExtra.importUI.duplicateNoneFound'));
-    }catch(error){
-      setGroups(null);
-      setStatus(String(error?.message||error||t('uiExtra.importUI.duplicateScanFailed')));
-    }finally{setBusy(false);}
-  }
-
-  function toggle(uid){
-    setSelected(current=>{
-      const next=new Set(current);
-      if(next.has(uid))next.delete(uid);else next.add(uid);
-      return next;
-    });
-  }
-
-  async function removeSelected(){
-    if(!selected.size||busy)return;
-    setBusy(true);setStatus('');
-    try{
-      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
-      if(!galaxy)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      const uids=[...selected];
-      // management_write's delete path only accepts eq filters -- one call per row.
-      for(let offset=0;offset<uids.length;offset+=8){
-        await Promise.all(uids.slice(offset,offset+8).map(uid=>deleteRows(galaxy,{filters:[{column:'uid',operator:'eq',value:uid}]})));
-      }
-      setGroups(current=>(current||[])
-        .map(group=>({
-          ...group,
-          titles:group.titles.filter((_,index)=>!selected.has(group.uids[index])),
-          updateTimes:group.updateTimes.filter((_,index)=>!selected.has(group.uids[index])),
-          hasNewline:(group.hasNewline||[]).filter((_,index)=>!selected.has(group.uids[index])),
-          uids:group.uids.filter(uid=>!selected.has(uid))
-        }))
-        .filter(group=>group.uids.length>1));
-      setStatus(t('uiExtra.importUI.duplicateDeleted',{count:uids.length}));
-      setSelected(new Set());
-    }catch(error){
-      setStatus(String(error?.message||error||t('uiExtra.importUI.duplicateDeleteFailed')));
-    }finally{setBusy(false);}
-  }
-
-  return <ImportSection title={t('uiExtra.importUI.duplicateTitle')}><div className="scope-import-body">
-    <p><UiText id="uiExtra.importUI.duplicateHelp"/></p>
-    <div className="scope-tabs">
-      <button type="button" disabled={busy} onClick={scan}>
-        {busy?t('uiExtra.importUI.duplicateScanning'):t('uiExtra.importUI.duplicateRun')}
-      </button>
-      <button type="button" disabled={busy||!selected.size} onClick={removeSelected}>
-        <UiText id="uiExtra.importUI.duplicateDeleteSelected" params={{count:selected.size}}/>
-      </button>
-    </div>
-    {status?<p className="scope-status" role="status">{status}</p>:null}
-    {groups&&groups.length?<div className="scope-management-records">
-      {groups.slice(0,DUPLICATE_RENDER_LIMIT).map((group,groupIndex)=><article className="loc-bubble" key={group.sourceName+':'+group.createtime+':'+groupIndex}>
-        <strong>{group.sourceName} · {formatTime(group.createtime)}</strong>
-        <div className="scope-management-fields">
-          {group.uids.map((uid,index)=><label key={uid}>
-            <input type="checkbox" checked={selected.has(uid)} onChange={()=>toggle(uid)}/>
-            <span>{group.titles[index]||uid}</span>
-            <span>{uid}</span>
-            <span><UiText id="uiExtra.importUI.duplicateUpdated" params={{time:formatTime(group.updateTimes[index])||'—'}}/></span>
-          </label>)}
-        </div>
-      </article>)}
-    </div>:null}
-    {groups&&groups.length>DUPLICATE_RENDER_LIMIT?<p className="scope-status">{'僅顯示前 '+DUPLICATE_RENDER_LIMIT+' 組，共 '+groups.length.toLocaleString()+' 組；處理後再重新掃描即可看到其餘。'}</p>:null}
-  </div></ImportSection>;
-}
-
-export default function ManagementImportPanel({scopeId,flat=false}){
+export default function ManagementImportPanel({scopeId}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
-  const [revision,setRevision]=useState(0);
-  const [busyCount,setBusyCount]=useState(0);
-  const setBusy=flag=>setBusyCount(value=>Math.max(0,value+(flag?1:-1)));
-  function changeFormat(next){
-    if(busyCount)return;
-    setFormat(next);
-    setRevision(value=>value+1);
-  }
   return <div className="scope-management-imports">
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
-      <ImportFormatSettings format={format} onChange={changeFormat} disabled={busyCount>0}/>
-      <UniversalImport key={'file-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/>
+      <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat}/>
     </section>
-    {scopeId!=='local'?<><ImportSection title="Source Refresh"><SourceRefresh key={'refresh-'+revision} scopeId={scopeId} format={format} onBusyChange={setBusy}/></ImportSection>
-    <DuplicateDetection scopeId={scopeId}/></>:null}
   </div>;
 }
