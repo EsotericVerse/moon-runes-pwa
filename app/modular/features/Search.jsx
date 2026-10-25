@@ -213,7 +213,7 @@ function prioritizeStyleTagResults(rows=[]){
 
 
 function searchHref(scopeId,query,filters={}){
-  const href=featureNavigationHref(scopeId,'search',{q:query});
+  const href=featureNavigationHref(scopeId,'search',filters.placeOnly?{place:query}:{q:query});
   const params=new URLSearchParams();
   for(const [key,value] of Object.entries({
     type:filters.contentType,source:filters.sourceFilter,
@@ -246,6 +246,7 @@ export default function Search({managementMode=false}){
   const resourceCache=useResourceCache();
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
+  const [placeOnly,setPlaceOnly]=useState(false);
   const [advancedOpen,setAdvancedOpen]=useState(false);
   const [advancedTab,setAdvancedTab]=useState('type');
   const [contentType,setContentType]=useState('');
@@ -389,7 +390,7 @@ export default function Search({managementMode=false}){
     const q=String(rawQuery||'').trim();
     const options=append&&activeSearchOptionsRef.current
       ?activeSearchOptionsRef.current
-      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',mediaOnly:false,browse,sortDirection:articleSort});
+      :(overrideOptions||{contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',mediaOnly:false,placeOnly,browse,sortDirection:articleSort});
     if(!q&&!options.browse)return;
     const searchScopes=scopeId==='loc'&&managementMode&&options.scopeFilter
       ?availableScopes.filter(item=>item.id===options.scopeFilter)
@@ -465,7 +466,7 @@ export default function Search({managementMode=false}){
           return;
         }
       }
-      const wantsStyleTags=!managementMode&&!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
+      const wantsStyleTags=!options.placeOnly&&!managementMode&&!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
       // Start the primary search first so it takes the first connection slot, then
       // run the cross-Scope style-tag lookup alongside it instead of in front of it.
       const searchPromise=searchGalaxyRows(searchScopes,q,{
@@ -474,7 +475,7 @@ export default function Search({managementMode=false}){
         // exactly matches a style tag.
         cursor,
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
-        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,
+        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:Boolean(options.placeOnly),
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         sortDirection:options.sortDirection,signal
       });
@@ -625,6 +626,7 @@ export default function Search({managementMode=false}){
     const identity=String(searchParams?.get('identity')||'').trim();
     const media=String(searchParams?.get('media')||'').trim();
     if(media){setQuery('');executeMediaIdentity(media);return;}
+    const place=String(searchParams?.get('place')||'').trim();
     const value=String(searchParams?.get('q')||'').trim();
     if(identity){setQuery('');executeIdentity(identity);return;}
     const filters={
@@ -638,7 +640,9 @@ export default function Search({managementMode=false}){
     setContentType(filters.contentType);setSourceFilter(filters.sourceFilter);
     setStartDate(filters.startDate);setEndDate(filters.endDate);setSelectedPeriod(filters.selectedPeriod);
     if(managementMode)setScopeFilter(filters.scopeFilter);
-    if(value){setQuery(value);executeSearch(value,null,{overrideOptions:{...filters,mediaOnly:false,browse:false}});}
+    const term=place||value;
+    setPlaceOnly(Boolean(place));
+    if(term){setQuery(term);executeSearch(term,null,{overrideOptions:{...filters,placeOnly:Boolean(place),mediaOnly:false,browse:false}});}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,managementMode,managementAuthorized]);
 
 
@@ -796,7 +800,7 @@ export default function Search({managementMode=false}){
     await executeSearch('',null,{browse:true});
   }
   function clearSearchFilters(){
-    setQuery('');setContentType('');setSourceFilter('');setScopeFilter('');
+    setQuery('');setPlaceOnly(false);setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
     router.replace(managementMode?scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'):featureNavigationHref(scopeId,'search'));
@@ -848,13 +852,14 @@ export default function Search({managementMode=false}){
     if(!term)return;
     // Keep the keyword in the URL and input so a style-to-style link is a
     // reproducible next search, not a transient single-page interaction.
-    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter:managementMode?scopeFilter:''});
-    const current=workspaceSearchHref(String(searchParams?.get('q')||'').trim(),{
+    const url=workspaceSearchHref(term,{contentType,sourceFilter,startDate,endDate,selectedPeriod,scopeFilter:managementMode?scopeFilter:'',placeOnly});
+    const current=workspaceSearchHref(String(searchParams?.get('place')||searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
-      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),scopeFilter:managementMode?searchParams?.get('scope'):''
+      startDate:searchParams?.get('from'),endDate:searchParams?.get('to'),selectedPeriod:searchParams?.get('period'),
+      scopeFilter:managementMode?searchParams?.get('scope'):'',placeOnly:Boolean(searchParams?.get('place'))
     });
     if(url!==current||searchParams?.get('identity')){router.push(url,{scroll:false});return;}
-    await executeSearch(term);
+    await executeSearch(term,null,{overrideOptions:{contentType,sourceFilter,startDate,endDate,scopeFilter:managementMode?scopeFilter:'',placeOnly,mediaOnly:false,browse:false,sortDirection:articleSort}});
   }
 
   dockActions.current={
@@ -904,6 +909,13 @@ export default function Search({managementMode=false}){
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
+      <div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
+        <button type="button" className="loc-button" aria-pressed={!placeOnly}
+          onClick={()=>{setPlaceOnly(false);resetSearchState();}}>全部內容</button>
+        <button type="button" className="loc-button" aria-pressed={placeOnly}
+          onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
+      </div>
+      {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 source_place；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
       {scopeId==='loc'&&managementMode?<div className="scope-search-scope-filter">
         <label htmlFor="scope-search-scope">{t('uiExtra.searchUI.scopeFilter')}</label>
         <select id="scope-search-scope" value={scopeFilter}
