@@ -411,9 +411,7 @@ function AppShellInner({children}){
     ?new URLSearchParams(window.location.search).get('section'):'';
   const featureEditReturn=editSegments.includes('culture')?'culture'
     :editSegments.includes('statics')&&(editSegments.includes('keywords')||editSegments.includes('manage'))?'statics'
-    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSegments.includes('search')?'search'
-    :editSegments.includes('admin')&&editSection==='governance'?'trace'
-    :editSegments.includes('governance')&&editSegments.includes('manage')&&editSection==='governance'?'trace'
+    :editSegments.includes('search')&&(editSegments.includes('manage')||editSegments.includes('admin'))?'search'
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
@@ -423,18 +421,18 @@ function AppShellInner({children}){
     {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞編輯'),
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
     {id:'suggestions',icon:'search',label:'文章管理',
-      href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('governance/manage/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('governance/manage/search','section','search')+'&edit=1':''},
-    {id:'governance',icon:'governance',label:'管理選單',
-      href:navScopeId==='local'?navigationHref('local','governance',native):locAdminEdit?navigationHref('admin','',native)+'?edit=1':editScopeAvailable?editTabHref('governance/manage','section','settings')+'&edit=1':''},
+      href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
+    {id:'manage',icon:'settings',label:'管理選單',
+      href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit?navigationHref('loc','admin',native)+'?edit=1':editScopeAvailable?editTabHref('manage','section','settings')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
     {id:'home',icon:localWorkspace?'phone':'home',label:translateUiField(activeLocale,'首頁'),href:localWorkspace?deviceNavigation.mobileHomeHref(true):navigationHref(navScopeId,'',native)+(native&&navScopeId==='loc'?'?loc_direct=1':'')},
     ...['culture','statics','trace','search'].map(id=>{
       const feature=FEATURES.find(item=>item.id===id);
-      return {id,icon:id==='trace'?(localWorkspace?'governance':'traces'):id,
-        label:localWorkspace&&id==='trace'?'管理':id==='trace'?(copy.features?.traces?.title||feature.label):(copy.features?.[id]?.title||feature.label),
-        href:navigationHref(navScopeId,localWorkspace&&id==='trace'?'governance':feature.path,native)};
+      return {id,icon:id==='trace'?(localWorkspace?'settings':'trace'):id,
+        label:localWorkspace&&id==='trace'?'管理':(copy.features?.[id]?.title||feature.label),
+        href:navigationHref(navScopeId,localWorkspace&&id==='trace'?'manage':feature.path,native)};
     }),
     {id:'settings',icon:'settings',label:copy.common.settings||'設定',href:native?'/local/settings/index.html':'/local/settings/'}
   ];
