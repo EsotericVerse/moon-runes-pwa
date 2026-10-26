@@ -26,14 +26,20 @@ test('missing coordinates cannot be added as a saved map stop',()=>{
   assert.equal(locatableTraceAnchor(data[3]),false);
 });
 
-test('selecting the county/anchor only changes React selection, never the queue',()=>{
-  const editor=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
-  const map=editor.slice(editor.indexOf('function MapEditor('));
-  assert.match(map,/onChange=\{event=>\{setCounty\(event\.target\.value\);setPointUid\(''\);\}\}/);
-  assert.match(map,/onChange=\{event=>setPointUid\(event\.target\.value\)\}/);
-  assert.match(map,/onClick=\{addToQueue\}>＋<\/button>/);
-  const add=map.slice(map.indexOf('const addToQueue=()=>{'),map.indexOf('  const setAllExpanded=',map.indexOf('const addToQueue=()=>{')));
-  assert.match(add,/setSelected\(ids=>\[\.\.\.ids,pointUid\]\)/);
-  assert.doesNotMatch(add,/setSelected\(ids=>\[\.\.\.ids,pointUid,pointUid\]/);
-  assert.match(map,/selected\.includes\(row\.uid\)/);
+test('county and autocomplete choice never enqueue without the explicit plus button',()=>{
+  // Frame editing now lives in TraceRouteManager, not the removed MapEditor.
+  const editor=readFileSync(new URL('../app/loc/TraceRouteManager.jsx',import.meta.url),'utf8');
+  assert.match(editor,/onChange=\{event=>\{setCounty\(event\.target\.value\);setPointQuery\(''\);setPicked\(null\);\}\}/);
+  assert.match(editor,/onChange=\{event=>\{setPointQuery\(event\.target\.value\);setPicked\(null\);\}\}/);
+  assert.match(editor,/onClick=\{\(\)=>pickAnchor\(anchor\)\}/);
+  assert.match(editor,/onClick=\{addPoint\}>＋<\/button>/);
+  const start=editor.indexOf('const addPoint=()=>{');
+  const end=editor.indexOf('const shift=',start);
+  assert.ok(start>=0&&end>start,'Current Frame editor addPoint handler missing');
+  const add=editor.slice(start,end);
+  assert.match(add,/if\(!choice\|\|queue\.includes\(choice\.uid\)\|\|queue\.length>=MAX_STOPS\)return/);
+  assert.match(add,/setQueue\(ids=>ids\.includes\(choice\.uid\)\?ids:\[\.\.\.ids,choice\.uid\]\)/);
+  const pick=editor.slice(editor.indexOf('const pickAnchor=item=>{'),start);
+  assert.doesNotMatch(pick,/setQueue\(/,'Picking a suggestion must not enqueue it');
+  assert.match(editor,/disabled=\{busy\|\|!choice\|\|queue\.includes\(choice\.uid\)/);
 });

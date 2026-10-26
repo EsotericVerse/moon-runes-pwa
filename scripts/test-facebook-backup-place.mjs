@@ -93,11 +93,15 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  const parser=src('app/loc/private-archive-universal.mjs');
  assert.match(ui,/facebookBackupPlace\(row\)/);
  assert.match(ui,/facebookBackupPostText\(row\)/);
- assert.match(ui,/facebookArchiveGalaxyRow\(record\)/);
+ assert.match(ui,/archiveGalaxyRow\(record\)/);
+ // The shared ZIP adapter delegates Facebook posts to the same
+ // place/time/UID conversion; the UI no longer calls it directly.
+ const adapter=src('app/loc/archive-galaxy-row.mjs');
+ assert.match(adapter,/facebookArchiveGalaxyRow\(record\)/);
  assert.match(ui,/await inspectPrivateArchive\(file,\{onRecord:/);
  assert.match(ui,/setRows\(imported\)/);
- assert.match(ui,/setSource\('Facebook'\)/);
- assert.match(parser,/sourcePlace=platform==='facebook'/);
+ assert.match(ui,/setSource\(sourceNames\.length===1\?sourceNames\[0\]:'Mixed'\)/);
+ assert.match(parser,/sourcePlace=actualKind==='post'\?facebookBackupPlace\(item\):''/);
  assert.match(src('app/loc/archive-source-signatures.mjs'),/your_facebook_activity/);
 });
 

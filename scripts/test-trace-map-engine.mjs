@@ -35,9 +35,18 @@ function setup({anchors=[],onAnchorSelect=()=>{}}={}){
     remove(){this.removed=true;}
   }
   class Noop{}
+  // MapLibre Popup uses a fluent API. Keep the fake semantically faithful,
+  // rather than failing before our original-record and recenter assertions.
+  class FakePopup {
+    setLngLat(value){this.position=value;return this;}
+    setText(value){this.label=value;return this;}
+    setHTML(value){this.label=value;return this;}
+    addTo(map){this.map=map;return this;}
+    remove(){return this;}
+  }
   const make=new Function('Map','Marker','Popup','NavigationControl','LngLatBounds','setWorkerUrl',
     engine+'\nreturn createTraceMap');
-  const createTraceMap=make(FakeMap,Noop,Noop,Noop,Bounds,()=>{});
+  const createTraceMap=make(FakeMap,Noop,FakePopup,Noop,Bounds,()=>{});
   const instance=createTraceMap({},{anchors,onAnchorSelect});
   const map=maps[0];
   map.callbacks.load();

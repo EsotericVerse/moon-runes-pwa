@@ -45,13 +45,18 @@ test('count groups only from selected metadata; never invent dates',()=>{
   ]);
 });
 
-test('UI does not load route or article data at opening; mode settings reuse one frame',()=>{
+test('UI loads only the Frame index on entry; selected sites and report stay gated',()=>{
   const trace=read('app/modular/features/Trace.jsx');
   const result=read('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(trace,/\[routeListOpen,setRouteListOpen\]=useState\(false\)/);
+  assert.match(trace,/\[routeListOpen\]=useState\(true\)/);
+  assert.match(trace,/queryFn:\(\)=>readTraceMapIndex\(periodScopeId\)/);
   assert.match(trace,/enabled:supported&&routeListOpen/);
   assert.match(trace,/\[reportTab,setReportTab\]=useState\('articles'\)/);
-  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('3m'\)/);
+  // An historical Frame intentionally starts with its complete time range.
+  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
+  assert.match(trace,/enabled:supported&&routeListOpen&&traceIndex\.data!==undefined&&\(Boolean\(currentMap\)\|\|showingAll\)/);
+  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids\)/);
+  assert.match(trace,/!mapOnly&&reportPlace\?<TracePlaceResults/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
   assert.match(result,/mediaFiltered=useAsyncResource/);
   assert.match(result,/galaxy_link,media_type/);

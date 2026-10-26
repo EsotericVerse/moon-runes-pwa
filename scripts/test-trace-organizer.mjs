@@ -72,5 +72,10 @@ test('batch and single Trace writes share the duplicate preflight and preserve r
   assert.match(file,/reuseExistingAnchor\(/);
   assert.match(file,/organizeAnchorCandidates\(comparableAnchors\(current,id\)\)/);
   assert.match(file,/reviewCount,reviewPreview,auditError/);
-  assert.doesNotMatch(file,/\.delete\(\)/);
+  // Removing a saved Frame is legitimate, but must never remove its anchors.
+  const anchorWrites=file.slice(file.indexOf('export async function addTraceAnchor'),
+    file.indexOf('export async function addTraceMap'));
+  assert.doesNotMatch(anchorWrites,/\.delete\(\)/);
+  assert.match(file,/export async function deleteTraceMap/);
+  assert.match(file,/\.eq\('uid',traceMapUid\(uid\)\)\.eq\('trace_type','map'\)/);
 });
