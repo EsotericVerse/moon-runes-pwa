@@ -4,7 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
 import {spaceGraphGeojson} from './space-graph-geojson.mjs';
-import {classifyTraceAnchors,locatableTraceAnchor} from './trace-spatial-classification.mjs';
+import {spaceCoordinates} from './space-graph.mjs';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
 // the same public sample anchors in each language; not Galaxy places.
@@ -100,29 +100,24 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   const anchorSelectRef=useRef(onAnchorSelect);
   anchorSelectRef.current=onAnchorSelect;
   const selectingLocation=typeof onLocationPick==='function';
-  const [resolveCounty,setResolveCounty]=useState(null);
-  const [countyLookupFailed,setCountyLookupFailed]=useState(false);
-  const [county,setCounty]=useState('');
+  const [anchorQuery,setAnchorQuery]=useState('');
   const [anchorUid,setAnchorUid]=useState('');
   const savedAnchors=spatialData?.anchors||[];
-  const groups=useMemo(()=>!resolveCounty&&!countyLookupFailed?new Map()
-    :classifyTraceAnchors(savedAnchors,resolveCounty),
-    [spatialData?.anchors,resolveCounty,countyLookupFailed]);
-  const counties=useMemo(()=>[...groups.keys()],[groups]);
-  const regionAnchors=groups.get(county)||[];
   const savedMaps=spatialData?.maps||[];
+  // Use the current Scope's already loaded anchors: no county restriction,
+  // geocoding request or eager cross-Scope query on every typed character.
+  const anchorMatches=useMemo(()=>{
+    const q=anchorQuery.trim().normalize('NFKC').toLocaleLowerCase();
+    if(!q)return [];
+    return savedAnchors.filter(anchor=>
+      String(anchor.title||'').normalize('NFKC').toLocaleLowerCase().includes(q)
+      ||String(anchor.uid||anchor.id||'').toLocaleLowerCase().includes(q))
+      .slice(0,12);
+  },[spatialData?.anchors,anchorQuery]);
   useEffect(()=>{
-    if(selectingLocation||!savedAnchors.some(locatableTraceAnchor))return undefined;
-    let active=true;
-    import('./trace-county-lookup.mjs').then(module=>{
-      if(active)setResolveCounty(()=>module.countyForCoordinates);
-    }).catch(()=>{if(active)setCountyLookupFailed(true);});
-    return()=>{active=false;};
-  },[selectingLocation,spatialData?.anchors]);
-  useEffect(()=>{
-    setCounty('');
+    setAnchorQuery('');
     setAnchorUid('');
-  },[spatialData?.anchors,resolveCounty]);
+  },[spatialData?.anchors]);
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
@@ -245,38 +240,37 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
       ):(onAnchorSelect&&spatialData?.anchors?.length?
-        '先選縣市與空間定錨點，或選擇已儲存的痕跡圖；地圖會直接定位並顯示路線，下方可查看文章報表，不跳頁。':
+        '搜尋空間定錨點，或選擇已儲存的路線／痕跡；地圖顯示已核對的座標與路線，下方可查看文章報表。':
         '尚無已儲存的空間定錨點；可以先到管理頁建立。地圖不會把板橋示例當作你的紀錄。')}</p>
     </header>
-    {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="縣市與空間定錨點">
-      <label>行政區（縣市）
-        <select className="scope-select" value={county}
-          onChange={event=>{setCounty(event.target.value);setAnchorUid('');}}
-          disabled={!counties.length}>
-          <option value="">{counties.length?'請選縣市'
-             :!resolveCounty&&!countyLookupFailed&&savedAnchors.some(locatableTraceAnchor)?'正在整理縣市…':'尚無空間定錨點'}</option>
-          {counties.map(name=><option key={name} value={name}>{name}（{groups.get(name)?.length||0}）</option>)}
-        </select>
-      </label>
+    {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="空間定錨點自動完成搜尋">
       <label>空間定錨點
-        <select className="scope-select" value={anchorUid}
-          disabled={!county||!regionAnchors.length}
-          onChange={event=>{
-            const uid=event.target.value;
-            setAnchorUid(uid);
-            const anchor=regionAnchors.find(item=>String(item.uid)===uid);
-            if(!anchor)return;
-            mapRef.current?.focusCoordinates({
-              longitude:anchor.longitude,latitude:anchor.latitude,
-              name:anchor.title,radius_m:anchor.radius_m
+        <input type="search" value={anchorQuery} className="scope-select"
+          placeholder="輸入地點名稱或 UID，不限縣市"
+          onChange={event=>{setAnchorQuery(event.target.value);setAnchorUid('');}}
+          autoComplete="off" aria-label="搜尋空間定錨點"/>
+      </label>
+      {anchorQuery.trim()?<div className="loc-trace-quick-results" role="group"
+        aria-label="符合的空間定錨點">
+        {anchorMatches.map(anchor=><button type="button" className="loc-button"
+          aria-pressed={anchorUid===String(anchor.uid||anchor.id)}
+          key={(anchor.source_scope||'')+':'+(anchor.uid||anchor.id)}
+          onClick={()=>{
+            setAnchorUid(String(anchor.uid||anchor.id));
+            setAnchorQuery(String(anchor.title||''));
+            const coordinates=spaceCoordinates(anchor);
+            if(coordinates)mapRef.current?.focusCoordinates({
+              longitude:coordinates[0],latitude:coordinates[1],name:anchor.title
             });
             onAnchorSelect?.(anchor);
           }}>
-          <option value="">{!county?'先選縣市':'請選定錨點'}</option>
-          {regionAnchors.map(anchor=><option key={anchor.uid} value={anchor.uid}>{anchor.title}</option>)}
-        </select>
-      </label>
-      <p className="scope-status">只列出已儲存且有有效座標的定錨點。選擇後在地圖定位，下方顯示該地點文章；不會跳頁。</p>
+          {anchor.title} · {anchor.uid||anchor.id}
+          {!spaceCoordinates(anchor)?'（待補地圖座標）':''}
+        </button>)}
+        {!anchorMatches.length?<p className="scope-status">目前載入的地點沒有符合項目。</p>:null}
+        {anchorMatches.length===12?<p className="scope-status">顯示前 12 筆，可繼續輸入縮小範圍。</p>:null}
+      </div>:null}
+      <p className="scope-status">不限縣市；選取地點可查看文章。有真實座標才定位，沒有座標仍保留地點。</p>
     </div>:null}
     {!selectingLocation&&!hideRoutePicker&&savedMaps.length?<div className="loc-trace-saved-route-picker">
       <label>痕跡圖（已儲存路線）
@@ -336,7 +330,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       </button>
     </div>
     <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">
-      {status==='ready'&&!selectingLocation?'地圖已就緒，可用縣市與定錨點選單定位。':copy.status[status]||copy.status.loading}
+      {status==='ready'&&!selectingLocation?'地圖已就緒，可直接搜尋空間定錨點。':copy.status[status]||copy.status.loading}
     </p>
     <p className="scope-status loc-trace-map-note">{selectingLocation?copy.note:
       '空間定錨點取自已儲存的真實座標；痕跡圖顯示站點順序與相鄰站點連線，不代表實際行駛或步行路線。'}</p>
