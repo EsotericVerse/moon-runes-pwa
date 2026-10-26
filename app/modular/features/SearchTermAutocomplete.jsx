@@ -34,6 +34,7 @@ export default function SearchTermAutocomplete({scopeId,query,onQueryChange,plac
   const options=useMemo(()=>rankScopeSearchSuggestions(index,terms,query,8),[index,terms,query]);
 
   return <Autocomplete
+    className="scope-search-input-autocomplete"
     freeSolo
     size="small"
     options={options}
