@@ -991,7 +991,9 @@
 
 /* Trace stays inside the existing LOC page frame at every viewport width.
    In particular, do not expand .loc-next-main beyond its layout parent. */
-.loc-next-main:has(.loc-trace-panel){min-width:0;max-width:100%}
+.loc-next-main:has(.loc-trace-panel){min-width:0;max-width:100%;overflow-x:clip}
+.loc-trace-panel,.loc-trace-map-manager,.loc-trace-map-shell{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.loc-trace-map-shell>.loc-trace-map-frame{max-width:100%!important}
 /* Trace / spatial anchoring demonstration (the legacy trace Hero is
    unchanged). The map is not a 3D terrain; only the anchor symbols extrude. */
 .loc-trace-panel{
