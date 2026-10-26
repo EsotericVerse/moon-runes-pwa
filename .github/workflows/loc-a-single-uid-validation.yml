@@ -1,5 +1,5 @@
 name: LOC A-line single UID isolated verification
-# Verification iteration 2: update UID fixtures and importer adapter assertions.
+# Verification iteration 3: fix groupedTraceDays temporal-dead-zone variable.
 on:
   push:
     branches: [fix/loc-place-id-layout-20261026]
