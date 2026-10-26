@@ -240,6 +240,16 @@
 
 - **TRACE-25｜AGENTS／Markdown／Galaxy 開發決議一致性** — 現行開發指示與已同意決議維持版本一致；普通 TODO 不等同授權寫 Galaxy 文章，真正設計文檔另按 AGENTS 明確批准後雙份存檔。 **現況：** Markdown 統整中，Galaxy 本次未授權修改。 （歸入 LOC-TODO-34）
 
+### D｜搜尋自動完成（獨立工作線，原 LOC-TODO-06 的子目標）
+
+**線目標：** FlexSearch 在瀏覽器對預先算好的搜尋詞進行即時候選比對；不從歷史查詢紀錄取詞、不逐字對 Supabase 查詢、不使用 ISR、R2、持久化 Cache 或進頁掃描三萬多篇文章。
+
+- **嚴格按 ScopeID 隔離：** `silver.loc_search_terms`、`silver.lo3rwang_search_terms`、`silver.lrunes_search_terms` 為三張不同的表；每張只取自己 Scope 的公開可搜尋來源，不建立跨 Scope 共同熱詞表，不合併來源，不共用瀏覽器索引。日後新增 Scope 才建立它自己的表。
+- **資料已初始化（2026-10-26，Supabase 現況）：** `loc` 4、`lo3rwang` 2,048、`lrunes` 281 筆。這些為搜尋候選詞而非歷史搜尋頻率；`silver.loc_search_keywords` 保留原用途、不參與本功能。
+- **建立／維護：** 僅執行明確授權的獨立批次 SQL，範例 `scripts/sql/rebuild-scope-search-terms.sql`；不掛 Galaxy INSERT 觸發器，不在使用者進頁時做詞頻統計，不在匯入主流程增加大規模重算。
+- **目前程式：** D 線修改隔離於 `task/search-flexsearch-scope-terms-20261026`。正式搜尋仍維持 LOC 既有跨 Scope 資料查詢行為；候選詞依當前 ScopeID 自己的表讀取。UI／效能與 CI 尚須工程自行驗證後才整合 main。
+- **工程交付要求：** Guest/已登入、載入失敗降級、繁簡中英日、輸入連續變更與鍵盤選取、零候選、Scope 切換不串資料、一次查詞不逐鍵 SQL；量測輸入後候選顯示目標 ≤100ms，且不得拖慢正常搜尋。無真實瀏覽器量測時標示未驗證，不能聲稱已通過。
+
 ## 四、使用者指定的七項整體驗收（同一個目標，不是七次零碎驗收）
 
 > **實際驗收由使用者進行；工程側事先自行測試、排除已知問題並提供真實環境和可核對數據。** 使用者可以隨時觀察，但不必替工程端逐步查 code、找 bug、追 CI。下列 1～7 保留使用者指定的方式與順序；第 7 項四大功能另須在**無 ISR 基準狀態**先自測，並在 ISR 開啟後再確認一次。
