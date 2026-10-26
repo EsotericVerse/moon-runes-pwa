@@ -17,7 +17,9 @@
 
 ### 工程完成、CI 通過、已合併 main｜等待集中手動部署
 
-目前**沒有在本區新增任何未經新規則核實的完成項目**。符合門檻後每項記錄：`功能／TODO ID｜整合 main SHA｜成功 CI run／測試證據｜工程功能驗證｜可驗收的實際操作｜部署狀態`。可持續累積成一整批，不因某個分支合併就請使用者立即驗收。
+- [x] **Admin 全站三段快取模式** `[工程程式及 CI 完成／main 已合併／待使用者集中手動部署]`：`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → `main 2c73439c`；[Bootstrap 216/216 + Build/Chrome #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)、[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 成功。預定集中驗收：Admin → ISR 設定 → `off/cache/isr` 切換、儲存、重新讀取及退路。**尚未部署；真實 Admin 登入寫入、外部 ISR 快取命中尚未在線上驗證，不得當作已由使用者驗收。**
+
+符合門檻後每項記錄：`功能／TODO ID｜整合 main SHA｜成功 CI run／測試證據｜工程功能驗證｜可驗收的實際操作｜部署狀態`。可持續累積成一整批，不因某個分支合併就請使用者立即驗收。
 
 ### 已部署、版本確認、基本線上檢查完成｜集中待使用者驗收
 
@@ -33,20 +35,13 @@
 
 ### 分支生命週期登記｜ISR-RECOVERY-01
 
-- [ ] **任務：Admin 三段全站快取模式** `[IN PROGRESS / NOT FOR MERGE]`
-  - **分支：** `task/isr-three-mode-admin-cache`（已建立；實際起始 `main`：`f48179c2c00720ef2f0e8484181fcb3a883732c0`）
-  - **基準 main：** `a1aa41ad14782dd619906b0ef5644452164d4f00`（登記前基準；建立分支時另記實際基準）。
-  - **完整目標：** 在既有 Admin → ISR 設定加入三種可儲存及讀回的全站模式：「不開快取」「打開快取」「打開 ISR」。模式必須真實控制應用快取與資料查詢來源；保留 Service Worker/PWA、原有 JS Routes/Config/Blocks、Scope 權限；快取模式與 ISR 模式不可互相假冒，ISR 不可用時恢復直接查 Supabase/SQLite。不對私人資料／跨 Scope 快取；公開圖片包含在可控快取策略中。
-  - **負責：** ISR／全域設定工程線；已有 Admin ISR 網域面板、silver.loc_cache_settings 與 ISR-off 讀取路徑。
-  - **完成門檻：** DB 授權／公開唯讀模式同步、三段切換立即生效與讀回、圖片及原有 SW 繼續運作、數值／自動完成共用快取真實命中及安全回退、四大功能回歸、CI／Build／log 警告檢查、整合 `main`、關閉 PR 和刪除已合併分支。
-  - **部署與成本限制：** 分支實作及驗證不授權 GitHub Pages、iOS IPA、Cloudflare ISR/Preview 或任何實際部署；正式發布由使用者手動決定。不得以部署驗證替代工程 CI。
-  - **目前進度：** 同一分支已實作 Admin 三模式、全站公開唯讀設定、Service Worker 保留及 off/cache/ISR 訊息、公開圖片可選共用來源、選用式數值 HTTP 快取／直接 RPC 回退、相應 Node 回歸與 Chrome CI；Supabase 已**套用非破壞性 migration**，目前模式 `cache`、origin 空字串、anon 可 SELECT、anon 無 UPDATE、Admin UPDATE 由 RLS `silver.can_manage_global()` 限制。**未部署、正式 ISR 仍未啟動。**
-  - **CI 證據／HEAD：** 分支 `a8f7d8aec88a9c385442958812445c25ee4f1523`；[Trace PR #40336755355](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40336755355) 成功（Bootstrap／Next Build／Chrome 桌機手機／ISR 防護）；[Culture PR #40336755407](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40336755407) 成功。第一次 CI 在 Service Worker 圖片正規表示式失敗，已修復後完整重跑成功。
-  - **Draft PR／分支：** [#584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584)；仍保持 Draft／NOT FOR MERGE，既有分支沿用，不另建替代。
-  - **尚待驗證：** 需在已授權環境確認 Admin 真實登入/儲存/重讀、全域生效、三模式連續切換；公開圖片與數值 CDN 實際跨使用者命中、故障退路、剩餘自動完成快取及成本。尚無授權正式 ISR 部署，不能虛稱線上運作或邀請驗收；PR 保持 Draft。下一位 Agent 從此既有 PR 接手，補完整體 E2E、完成 CI、整合 main、關 PR 和刪 branch。
-  - **下一步：** 在現有分支實作 Admin 設定與共享模式讀取，完成功能自測、CI 和最後整合。若中斷，使用此條目及遠端 branch HEAD 接續，禁止另開替代分支。
-
-
+- [x] **Admin 三段全站快取模式：工程實作已整合；待集中部署與使用者驗收** `[MERGED / PR CLOSED / NEVER REUSE BRANCH]`
+  - **原始工作分支：** `task/isr-three-mode-admin-cache`；**PR：** [#584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584)（已合併並關閉）；**main 合併 SHA：** `2c73439c8a19a9b8448bb12b23e7028b32d227b4`；**分支最終 HEAD：** `7b29bb8d8bad78ccd86dc85d7b7a24c6789236a3`。工作沿用同一分支完成，沒有開替代分支。
+  - **已完成的程式：** Admin → ISR 設定三模式「不開快取／打開快取／打開 ISR」，儲存至 `silver.loc_cache_runtime` 並可讀回；公開讀取、管理員 RLS 寫入、Service Worker 不移除、JS Route/Config/Blocks 及原資料庫直接讀取路徑不變。一般快取和 ISR 是不同模式；公開圖片可走選用邊緣來源，遇超時／失敗回原站；ISR 數值摘要不可用時回 Supabase RPC。網域清單編輯無效也不阻擋管理者切回 off/cache。
+  - **資料庫唯讀核對：** Supabase 單筆設定目前 `mode=cache`、`origin=''`；RLS 有 anon/authenticated SELECT 與 `silver.can_manage_global()` 的 authenticated UPDATE（欄位級 UPDATE 權限已核對）。這是資料庫契約查驗，**沒有以真實 Admin 登入執行模式寫入／重讀端對端測試**。
+  - **CI／Build：** [Trace/Admin Hero #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352) 終態 success：Bootstrap **216/216**、Next.js Build、Chrome Trace 桌機／手機、ISR 防護檢查；[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 終態 success。PR 已在 CI 完成後整合 `main`，正式 GitHub Pages/IPA/Cloudflare 部署均**未觸發**。
+  - **集中待驗收及工程後續檢核：** 使用者自行手動部署後，再以實際授權 Admin 操作「三模式反覆切換→儲存→讀回→重進頁」，確認 Service Worker、圖片、文化／統計資料路徑及 ISR 故障回退；確認正式站生效版本。公開 CDN/Workers 跨使用者快取命中、時間／空間候選快取全覆蓋、實際費用與 ISR 遠端服務啟用仍屬**父項 `ISR-RECOVERY-01` 未完成範圍**，不能僅憑這次 Admin 選單合併宣稱全套 ISR 已恢復。
+  - **分支善後：** PR 已合併／關閉；目前連接器不提供刪除 Git branch 操作，該遠端分支目前仍存在，標記 `MERGED / NEVER REUSE`，不可再拿它承接新工作；如果日後具備安全刪除方式，才清理該已合併分支。此限制不影響既有 `main` 的程式整合狀態。
 
 - [ ] **ISR-RECOVERY-01｜ISR／全域共用快取恢復、手動切換與故障退路** `[已決議／待實作與 CI 驗證]`
   - **保留 Service Worker，絕不移除。** 既有 PWA、公開圖片 Cache First、適用的 JS/CSS 快取及既有離線能力繼續保留；只依測試與成本證據精簡重複快取責任。**原本的 JS 政策不變**：Scope Route + Config 的 JS 模組、按頁載入 Blocks、按需資料查詢與既有運算流程不得因加入 ISR 而回退為大量 JSON 解析或整頁預載。
