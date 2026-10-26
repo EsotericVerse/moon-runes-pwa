@@ -99,7 +99,10 @@
 
 - **TRACE-14｜地址參考優先、地理服務按需呼叫** — 優先已存參考，缺資料才查外部定位；使用適度快取，避免逐字遠端查詢及無必要 SQL，且不依賴 ISR。 **現況：** 批次地點整理的程式已優先查本地參考，缺資料才呼叫外部服務；冷／熱查詢次數、實際等待及完整互動仍待量測。 （歸入 LOC-TODO-10）
 
-#### A 線新增：Scope 內四碼 UID 與文章地點索引（2026-10-26 使用者確認；未實作）
+#### A 線新增：Scope 內四碼 UID 與文章地點索引（2026-10-26；實作中，尚未驗收）
+
+> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。單一 `trace.uid` 是 Trace 紀錄唯一 UID，`trace_type='anchor'|'map'` 區分定錨點／痕跡圖；**不再另設 `trace.trace_id` 作第二套 UID**。Galaxy 的 `place_id` 指向同 Scope、type=anchor 的 `trace.uid`；文章原始 `uid`、`source_place` 均保留。
+> **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 UID → 四碼 UID／回退方案；② 以原 `trace.uid` 單一 PK 完整轉換 anchor/map 及 Frame Queue、LOC (scope_id,uid)，停止額外 trace_id 用途；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
 
 > **定案：** 同 Scope 的空間定錨點 trace.uid 與 Galaxy 文章 place_id 統一為 **varchar(4)**；place_id 直接對應該 Scope 的空間錨點 UID，不是另外配置一個全域地點編號；不得改動文章 galaxy.uid。**UID 只在所屬 Scope 內唯一**，新 Scope 可獨立從頭配置，不要求跨 Scope 唯一。對既有八碼錨點必須做完整對照遷移，不能截斷。LOC 聯集含 scope_id，識別或顯示必須使用 (scope_id, uid) 才不會誤認他人的錨點；**LOC 聯集的進階整理暫緩，先完成各 Scope。**
 
