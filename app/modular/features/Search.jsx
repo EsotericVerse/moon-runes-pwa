@@ -16,6 +16,7 @@ registerDefaultSection('uiExtra.cultureView',cultureViewZh);
 registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {Fragment,useEffect,useMemo,useRef,useState} from 'react';
+import SearchTermAutocomplete from './SearchTermAutocomplete';
 import dynamic from 'next/dynamic';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 import {useRouter,useSearchParams} from 'next/navigation';
@@ -363,15 +364,12 @@ export default function Search({managementMode=false}){
       return date?(articleSort==='desc'?-date:date):a.index-b.index;
     }).map(item=>item.row);
   },[results,scopeId,availableScopes,articleSort]);
-  // Suggestions come from loaded results only; do not imply a database-wide ranking.
+  // After a search, offer related places; typing suggestions instead come only
+  // from this Scope's independently precomputed search_terms table.
   const suggestedPlaces=useMemo(()=>[...new Set(results
     .filter(row=>row.resourceType==='galaxy')
     .map(row=>String(row.checkInPlace||'').trim())
     .filter(Boolean))].slice(0,4),[results]);
-  const suggestedTitles=useMemo(()=>[...new Set(results
-    .filter(row=>row.resourceType==='galaxy')
-    .map(row=>String(row.title||'').trim())
-    .filter(title=>title&&title.length<=80))].slice(0,8),[results]);
   const advancedRef=useRef(null);
   const collectionLabel=scopeId==='loc'?UI_COPY.search.allContent:String(scope?.label||scopeId);
   const periodScope=scopeId==='loc'
@@ -995,12 +993,13 @@ export default function Search({managementMode=false}){
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
-        <input id="scope-search-query" list={suggestedTitles.length?'scope-search-loaded-titles':undefined}
-          value={query} onChange={event=>setQuery(event.target.value)}
-          placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
-        {suggestedTitles.length?<datalist id="scope-search-loaded-titles">
-          {suggestedTitles.map(title=><option key={title} value={title}/>)}
-        </datalist>:null}
+        <SearchTermAutocomplete
+          scopeId={scopeId}
+          query={query}
+          onQueryChange={setQuery}
+          placeholder={managementMode?'':UI_COPY.search.textPlaceholder}
+          label={UI_COPY.search.textPromptLabel}
+        />
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         {managementMode?<button type="button" className="loc-button" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
           onClick={()=>{
