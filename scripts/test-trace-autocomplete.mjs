@@ -1,6 +1,8 @@
 import test from 'node:test';
 // Existing bootstrap test suite includes the full spatial-anchor regression tests.
 import './test-spatial-anchor-references.mjs';
+// Exercise the real Facebook JSON/ZIP import path in the bootstrap gate.
+import './test-facebook-backup-place.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
