@@ -11,18 +11,20 @@ const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loadi
 
 // Ordinary feature tabs keep their two artwork choices; management Hero tabs
 // are independent editors, not hidden within the ordinary browsing Heroes.
-const FEATURES=Object.freeze([
-  {id:'culture',label:'文化'},
-  {id:'statics',label:'統計'},
-  {id:'search',label:'搜尋'},
-  {id:'trace',label:'痕跡'},
+// Top-level feature order and its directly associated management entry.
+// The four management Heroes retain their existing independent page names.
+const FEATURE_GROUPS=Object.freeze([
+  {id:'culture',label:'文化',childId:'management-time',childLabel:'時間定錨',managementKey:'time'},
+  {id:'statics',label:'統計',childId:'management-keywords',childLabel:'關鍵詞',managementKey:'keywords'},
+  {id:'trace',label:'痕跡',childId:'management-spatial',childLabel:'空間定錨',managementKey:'spatial'},
+  {id:'search',label:'搜尋',childId:'management-advanced',childLabel:'進階搜尋',managementKey:'advanced'},
   {id:'admin',label:'系統管理'},
-  {id:'setting',label:'個人設定'},
-  {id:'management-time',label:'時間定錨',managementKey:'time'},
-  {id:'management-keywords',label:'關鍵詞',managementKey:'keywords'},
-  {id:'management-spatial',label:'空間定錨',managementKey:'spatial'},
-  {id:'management-advanced',label:'進階搜尋',managementKey:'advanced'}
-].map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
+  {id:'setting',label:'個人設定'}
+]);
+const FEATURES=Object.freeze(FEATURE_GROUPS.flatMap(group=>[
+  {id:group.id,label:group.label},
+  ...(group.childId?[{id:group.childId,label:group.childLabel,managementKey:group.managementKey}]:[])
+]).map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
 const SCOPE_VARIANTS=Object.freeze([
   {kind:'group',label:'群組圖：首頁圖連結'},
   {kind:'scope',label:'個人圖：首頁圖連結'}
@@ -252,11 +254,18 @@ export default function FeatureHeroImages(){
   const locSlot=locSlots.find(slot=>slot.key===locSlotKey)||locSlots[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
-    <div className="scope-preview-links" role="group" aria-label="功能區塊">
-      {FEATURES.map(item=><button type="button" key={item.id}
-        className={'loc-button'+(item.id===feature.id?' primary':'')}
-        aria-pressed={item.id===feature.id}
-        onClick={()=>selectFeature(item.id)}>{item.label}</button>)}
+    <div className="feature-hero-nav" role="group" aria-label="功能區塊">
+      {FEATURE_GROUPS.map(group=><div className="feature-hero-nav__group" role="group"
+        aria-label={group.label} key={group.id}>
+        <button type="button"
+          className={'loc-button feature-hero-nav__main'+(feature.id===group.id?' primary':'')}
+          aria-pressed={feature.id===group.id}
+          onClick={()=>selectFeature(group.id)}>{group.label}</button>
+        {group.childId?<button type="button"
+          className={'loc-button feature-hero-nav__sub'+(feature.id===group.childId?' primary':'')}
+          aria-pressed={feature.id===group.childId}
+          onClick={()=>selectFeature(group.childId)}>{group.childLabel}</button>:null}
+      </div>)}
     </div>
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
