@@ -126,8 +126,7 @@ export default function TraceRouteManager({scopeId}){
   });
   const suggestions=debouncedQuery===normalize(pointQuery)?autocomplete.data||[]:[];
   const choice=picked&&picked.title===pointQuery&&
-    (picked.county_id||'OTHER')===county?picked
-    :suggestions.length===1?suggestions[0]:null;
+    (picked.county_id||'OTHER')===county?picked:null;
   const references=useAsyncResource({
     queryKey:['trace-address-references',activeScope,debouncedReference],
     enabled:editorOpen&&referenceOpen&&debouncedReference.length>=2,
@@ -188,7 +187,7 @@ export default function TraceRouteManager({scopeId}){
   const addPoint=()=>{
     if(!choice||queue.includes(choice.uid)||queue.length>=MAX_STOPS)return;
     setExtraAnchors(rows=>rows.some(x=>x.uid===choice.uid)?rows:[...rows,choice]);
-    setQueue(ids=>[...ids,choice.uid]);setPointQuery('');setPicked(null);
+    setQueue(ids=>ids.includes(choice.uid)?ids:[...ids,choice.uid]);setPointQuery('');setPicked(null);
   };
   const changeReference=(field,value)=>setReferenceDraft(row=>row?{...row,[field]:value}:null);
   const selectReference=row=>{
@@ -210,7 +209,7 @@ export default function TraceRouteManager({scopeId}){
       let uid=receipt?.uid;
       if(!uid){
         const {source_scope,source_uid,...fields}=draft;
-        const saved=await addTraceAnchor({scopeId:owner,...fields});
+        const saved=await addTraceAnchor({scopeId:owner,...fields,forceNewIdentity:true});
         if(saved?.reused||!/^[A-Za-z0-9]{8}$/.test(saved?.uid||''))
           throw Error('建立自己的錨點失敗，來源地址未修改。');
         uid=saved.uid;
