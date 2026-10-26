@@ -65,9 +65,10 @@ function compareAnchorPair(a,b){
   if(!type)return null;
   return {key:[a.uid,b.uid].sort().join(':'),a,b,address:match?aa:'',meters,type,
     canMerge:type==='same-address'||type==='near-unverified',
-    // Extremely conservative unattended reuse: same complete postal address
-    // and coordinates agree within 60 m. All other suggestions require review.
-    safeReuse:Boolean(match&&meters!==null&&meters<=60)};
+    // Names collide frequently, and a new business can reuse the old address.
+    // Only reuse a genuinely same-name, essentially identical point; a
+    // different name or a 60 m proximity must NEVER merge historical shops.
+    safeReuse:Boolean(nameMatch&&meters!==null&&meters<=2&&(!both||match))};
 }
 export function findAnchorWriteMatches(anchor,existing=[]){
   const incoming={...anchor,uid:'__incoming__',trace_type:'anchor'};
