@@ -118,6 +118,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     setAnchorQuery('');
     setAnchorUid('');
   },[spatialData?.anchors]);
+  const autoOverviewScopeRef=useRef('');
   const [ready,setReady]=useState(false);
   const [routeVisible,setRouteVisible]=useState(false);
   const [routeBusy,setRouteBusy]=useState(false);
@@ -179,6 +180,13 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
+  useEffect(()=>{
+    if(!ready||selectedRouteUid||!spatialData?.anchors?.length)return;
+    const scope=spatialData.anchors[0].source_scope||'';
+    if(autoOverviewScopeRef.current===scope)return;
+    autoOverviewScopeRef.current=scope;
+    mapRef.current?.overview();
+  },[ready,selectedRouteUid,spatialData?.anchors]);
   // The visible resize grip lives outside MapLibre's canvas and controls, so
   // its pointer events do not conflict with map pan/rotate or attribution.
   function resizeFrame(width,height){
@@ -239,7 +247,8 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
       ):(onAnchorSelect&&spatialData?.anchors?.length?
         '搜尋空間定錨點，或選擇已儲存的路線／痕跡；地圖顯示已核對的座標與路線，下方可查看文章報表。':
-        '尚無已儲存的空間定錨點；可以先到管理頁建立。地圖不會把板橋示例當作你的紀錄。')}</p>
+        spatialData===null?'正在取得空間定錨點資料；如有錯誤請查看上方訊息。':
+        '目前沒有已儲存的空間定錨點；可在管理頁建立。')}</p>
     </header>
     {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="空間定錨點自動完成搜尋">
       <label>空間定錨點
