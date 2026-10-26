@@ -150,3 +150,106 @@ test('selected Frame connects points by saved order without a road-network requi
   assert.match(page,/兩站不需要相鄰/);
   assert.doesNotMatch(page,/router\.push|featureNavigationHref/);
 });
+
+test('native LOC Frame is the initial management Scope and keeps foreign UIDs out of the Queue',()=>{
+  const page=manager();
+  const data=read('app/modular/features/trace/trace-data.js');
+  assert.match(page,/useState\(scopeId\)/);
+  assert.match(page,/readTraceMapIndex\(activeScope,\{nativeOnly:activeScope==='loc'\}\)/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
+  assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
+  assert.match(page,/readTraceAddressReferences\(activeScope,debouncedReference,8\)/);
+  assert.match(page,/addTraceAnchor\(\{scopeId:owner,\.\.\.fields\}\)/);
+  assert.match(page,/readCurrentTraceAnchors\(owner,\[uid\],\{nativeOnly:owner==='loc'\}\)/);
+  assert.match(data,/neq\('scope_id',owner\)/);
+  assert.match(data,/neq\('address',''\)/);
+  assert.match(data,/source_scope:row\.scope_id/);
+  assert.match(page,/＋ 建立自己的錨點並加入 Queue/);
+});
+
+function referenceHarness({owner='loc',delayed=false,denied=false,cacheFailed=false}={}){
+  const page=manager();
+  const start=page.indexOf('  const createReferenceAnchor=async()=>{');
+  const end=page.indexOf('  const shift=(index,step)=>{',start);
+  assert.ok(start>0&&end>start);
+  const body=page.slice(start,end).trim().replace(/^const createReferenceAnchor=/,'').replace(/;\s*$/,'');
+  const draft={source_scope:'lo3rwang',source_uid:'FOREIGN1',title:'參考店家',
+    address:'新北市板橋區文化路100號2樓',floor_label:'2樓',floor_level:2,
+    longitude:121.45,latitude:25,radius_m:500,description:''};
+  const state={writes:[],reads:0,queue:[],extra:[],messages:[]};
+  const pendingReference={current:null};
+  const deps={
+    busy:false,canEdit:true,referenceDraft:draft,queue:[],MAX_STOPS:80,activeScope:owner,
+    pendingReference,setBusy:()=>{},setNotice:x=>state.messages.push(x),setIsError:()=>{},
+    addTraceAnchor:async input=>{
+      if(denied)throw Error('RLS 拒絕寫入');
+      state.writes.push(input);return {uid:'OWN00001'};
+    },
+    readCurrentTraceAnchors:async(scopeId,ids,options)=>{
+      assert.equal(scopeId,owner);
+      assert.deepEqual(ids,['OWN00001']);
+      assert.equal(options.nativeOnly,owner==='loc');
+      state.reads++;
+      return delayed&&state.reads===1?[]:[{uid:'OWN00001',source_scope:owner,title:'參考店家'}];
+    },
+    setExtraAnchors:fn=>{state.extra=fn(state.extra);},
+    setQueue:fn=>{state.queue=fn(state.queue);},
+    setReferenceDraft:()=>{},setReferenceQuery:()=>{},setReferenceOpen:()=>{},
+    cache:{invalidate:async()=>{if(cacheFailed)throw Error('cache');}},
+    traceAllAnchorsKey:id=>['trace-all-anchors',id],
+  };
+  const keys=Object.keys(deps);
+  const create=new Function(...keys,'return ('+body+');')(...keys.map(key=>deps[key]));
+  return {create,state,pendingReference};
+}
+test('cross-Scope address creates a new own UID, never writing foreign UID or changing source',async()=>{
+  const {create,state}=referenceHarness();
+  assert.equal(await create(),true);
+  assert.equal(state.writes.length,1);
+  assert.equal(state.writes[0].scopeId,'loc');
+  assert.ok(!('source_scope' in state.writes[0]));
+  assert.ok(!('source_uid' in state.writes[0]));
+  assert.equal(state.writes[0].floor_level,2);
+  assert.deepEqual(state.queue,['OWN00001']);
+  assert.equal(state.extra[0].source_scope,'loc');
+});
+test('cross-Scope anchor delayed readback does not cause double insert; RLS denial adds no Queue entry',async()=>{
+  const retry=referenceHarness({owner:'lrunes',delayed:true,cacheFailed:true});
+  assert.equal(await retry.create(),false);
+  assert.equal(retry.state.writes.length,1);
+  assert.deepEqual(retry.state.queue,[]);
+  assert.equal(await retry.create(),true);
+  assert.equal(retry.state.writes.length,1);
+  assert.equal(retry.state.reads,2);
+  assert.deepEqual(retry.state.queue,['OWN00001']);
+  const denied=referenceHarness({denied:true});
+  assert.equal(await denied.create(),false);
+  assert.equal(denied.state.writes.length,0);
+  assert.deepEqual(denied.state.queue,[]);
+});
+test('searches are bounded, address-aware, read-only and escape OR metacharacters',async()=>{
+  const file=read('app/modular/features/trace/trace-data.js');
+  const match=file.match(/export async function readTraceAddressReferences[\s\S]*?\n\}/);
+  assert.ok(match);
+  const calls=[];
+  const query={
+    select(...v){calls.push(['select',...v]);return this;},
+    eq(...v){calls.push(['eq',...v]);return this;},
+    neq(...v){calls.push(['neq',...v]);return this;},
+    or(...v){calls.push(['or',...v]);return this;},
+    order(...v){return this;},
+    async limit(v){calls.push(['limit',v]);return {data:[],error:null};},
+  };
+  const dbPublicClient={schema:()=>({from:table=>{
+    calls.push(['from',table]);return query;
+  }})};
+  const scopeId=x=>{assert.ok(['loc','lo3rwang','lrunes'].includes(x));return x;};
+  const readReference=new Function('dbPublicClient','sourceId','verified',
+    match[0].replace('export async function','async function')+';return readTraceAddressReferences'
+  )(dbPublicClient,scopeId,response=>response.data);
+  assert.deepEqual(await readReference('loc','新北市(二),文化路'),[]);
+  assert.ok(calls.some(call=>call[0]==='neq'&&call[1]==='scope_id'&&call[2]==='loc'));
+  assert.ok(calls.some(call=>call[0]==='or'&&call[1].includes('"%新北市(二),文化路%"')));
+  assert.ok(calls.some(call=>call[0]==='limit'&&call[1]===8));
+  assert.equal(calls.filter(call=>call[0]==='from').length,1);
+});
