@@ -27,7 +27,9 @@ jobs:
           node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs 2>&1 | tee complete-tests.log
       - name: LOC bootstrap integration
         run: npm run test:bootstrap
-      - name: Production build, no deployment
+      - name: Production static export for local Chrome smoke, no deployment
+        env:
+          LOC_STATIC_EXPORT: '1'
         run: npm run build
       - name: Chrome Culture UI after static build
         env:
