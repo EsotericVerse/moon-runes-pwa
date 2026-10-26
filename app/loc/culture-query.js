@@ -12,7 +12,7 @@ import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,
 
 
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,status';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){return row?.address?String(row.address).slice(0,10):null;}
 function previousDay(value){
@@ -184,7 +184,7 @@ function periodRows(rows){
     uid:row.uid||null,name:row.entry_name||row.title||row.entry_key,
     title:row.title||row.entry_key,description:row.summary||'',
     start_date:row.start_date||null,end_date:row.end_date||null,
-    ranges:row.ranges||[],status:row.status||'',
+    ranges:row.ranges||[],
     anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
     end_anchor_id:row.end_anchor_id||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
@@ -245,7 +245,6 @@ function cultureParts(scopeContext,runtimeId){
     start_date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
-    status:row.status||'',
     visibility:'public'
   }));
   const trajectories=normalizedContext.filter(row=>row.entry_type==='anchor').map(row=>({
@@ -258,7 +257,6 @@ function cultureParts(scopeContext,runtimeId){
     date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_id:row.anchor_id||null,
-    status:row.status||''
   }));
   const styleComments=[];
   return {normalizedContext,periods,eras,events,trajectories,styleComments};
