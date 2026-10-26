@@ -437,7 +437,7 @@ export default function TraceRouteManager({scopeId}){
             setReferenceOpen(value=>!value);setReferenceDraft(null);setReferenceQuery('');
           }}>{referenceOpen?'收合公用地址':'從 LOC 公用地址參考建立錨點'}</button>
         {referenceOpen?<div className="loc-trace-reference-body">
-          <p className="scope-status">僅讀取其他 Scope 的已核對地址。選擇後建立目前 Scope 的獨立 UID；不會修改參考來源或直接使用來源 UID。</p>
+          <p className="scope-status">僅參考其他 Scope 已儲存的地址，並不保證地址正確。核對後才建立目前 Scope 的獨立 UID；不修改參考來源或直接沿用其 UID。請勿公開私人住址。</p>
           <label>搜尋名稱或完整地址（至少兩字）
             <input type="search" value={referenceQuery} maxLength={100}
               disabled={busy||Boolean(pendingReference.current)}
@@ -453,12 +453,12 @@ export default function TraceRouteManager({scopeId}){
                 onClick={()=>selectReference(row)}>
                 <span>{row.title} · {row.address}{row.floor_label?' · '+row.floor_label:''}</span>
                 <small>參考 Scope {row.source_scope} · UID {row.uid}</small>
-              </button>):<p className="scope-status">找不到已核對的公用地址。仍可回空間定錨頁建立自己的地點。</p>}
+              </button>):<p className="scope-status">沒有符合的既有參考地址。仍可到空間定錨頁自行建立地點。</p>}
             {references.data?.length===8?<p className="scope-status">最多顯示前八筆，繼續輸入可縮小範圍。</p>:null}
           </div>:null}
           {referenceDraft?<div className="scope-management-fields">
             <p className="scope-status">唯讀來源：{referenceDraft.source_scope} · {referenceDraft.source_uid}；核對下列內容後明確建立自己的錨點。</p>
-            <label>自己錨點的名稱<input required maxLength={120} value={referenceDraft.title}
+            <label>自己錨點的名稱<input maxLength={120} value={referenceDraft.title}
               disabled={busy||Boolean(pendingReference.current)}
               onChange={event=>changeReference('title',event.target.value)}/></label>
             <label>完整地址<input maxLength={320} value={referenceDraft.address}
