@@ -168,29 +168,16 @@ export async function readTraceAddressReferences(scopeId,term,limit=8){
 // "All anchors" is an explicit choice, not an eager bootstrap dependency.
 // Paginate: a single 2,000-row cap would silently hide old check-ins.
 // Search the server only after a user types inside a selected county.
-export async function readTraceAnchorSuggestions(scopeId,countyId,term,limit=8){
+// Search canonical names and reviewed aliases within the selected Scope.
+// Never require county, address, coordinates or an external geocoding request.
+export async function readTraceAnchorSuggestions(scopeId,term,limit=8){
   const id=sourceId(scopeId),q=String(term||'').trim().slice(0,100);
-  const county=String(countyId||'');
-  if(!q||!county)return [];
-  const union=id==='loc';
-  const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
-  let request=dbPublicClient.schema('silver').from(id+'_trace')
-    .select('uid,title,trace_type,county_id,address,floor_label,floor_level,longitude,latitude'+(union?',scope_id':''))
-    .eq('trace_type','anchor');
-  // Address and place label are independent searchable evidence; matching a
-  // full postal address must not depend on a place having the same title.
-  // Quote the OR filter literal so commas and parentheses stay data.
-  const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
-  const filters=['title.ilike.'+literal,'address.ilike.'+literal];
-  if(/^[A-Za-z0-9]{4}$/.test(q))filters.push('uid.eq.'+q);
-  request=request.or(filters.join(','));
-  if(county==='OTHER')request=request.is('county_id',null);
-  else request=request.eq('county_id',county);
-  if(union)request=request.eq('scope_id','loc');
-  const result=await request.order('title',{ascending:true})
-    .order('uid',{ascending:true}).limit(Math.min(Math.max(1,limit),8));
-  return (verified(result,'空間錨點自動完成')||[])
-    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+  if(!q)return [];
+  const result=await dbPublicClient.schema('silver').rpc('search_scope_trace_place_names',{
+    p_scope_id:id,p_term:q,p_limit:Math.min(Math.max(1,Number(limit)||8),8)
+  });
+  return (verified(result,'空間定錨點自動完成')||[])
+    .map(row=>({...row,trace_type:'anchor',source_scope:id}));
 }
 export async function readTracePopularAnchors(scopeId){
   const id=sourceId(scopeId);
