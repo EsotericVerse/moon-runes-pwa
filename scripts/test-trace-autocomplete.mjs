@@ -50,7 +50,7 @@ test('Frame editor queries by county + name or UID and adds only on explicit plu
  assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
  assert.match(storage,/uid\.eq\./);
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
- assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
+ assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)/);
  assert.match(storage,/anchor_uids:chosen/);
 });
 
@@ -61,7 +61,7 @@ test('same-name candidate list stays capped at eight; exact UID is a separate se
    description:'地址：新北市板橋區第'+index+'路'
  }));
  assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
- assert.ok(read('app/modular/features/trace/trace-data.js').includes("'title.ilike.'+pattern+',uid.eq.'+q"));
+ assert.match(read('app/modular/features/trace/trace-data.js'),/filters\.push\('uid\.eq\.'\+q\)/);
  assert.match(read('app/loc/TraceRouteManager.jsx'),/UID \{anchor\.uid\}/);
 });
 test('same address but different business names are never safe for automatic reuse',()=>{
