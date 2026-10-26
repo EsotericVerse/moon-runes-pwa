@@ -113,5 +113,9 @@ try{
     }));
   for(const entry of children.reverse())entry.child.kill('SIGTERM');
   await Promise.all(waits);
-  rmSync(temp,{recursive:true,force:true,maxRetries:12,retryDelay:200});
+  // Chrome's descendant processes can keep writing their own temporary
+  // profile after the main browser exits. The GitHub runner removes /tmp on
+  // teardown; do not turn successfully checked routes into a test failure.
+  try{rmSync(temp,{recursive:true,force:true,maxRetries:3,retryDelay:150})}
+  catch(error){if(!['ENOTEMPTY','EBUSY','EPERM'].includes(error?.code))throw error;}
 }
