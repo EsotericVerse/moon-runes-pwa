@@ -112,7 +112,7 @@ const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,anchor_uids,created_at,"class",class_group'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,anchor_uids,created_at,category,"class",class_group'+(union?',scope_id':'');
   let request=dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).eq('trace_type','map');
   if(union&&nativeOnly)request=request.eq('scope_id','loc');
@@ -369,7 +369,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   return verified(result,'更新定錨點');
 }
 
-function validatedTraceMapValues({scopeId,title,description='',className='',group='',anchorUids=[],anchors=[]}){
+function validatedTraceMapValues({scopeId,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const chosen=Array.isArray(anchorUids)?anchorUids:[];
   if(chosen.length<2||chosen.length>80||new Set(chosen).size!==chosen.length)
@@ -379,7 +379,7 @@ function validatedTraceMapValues({scopeId,title,description='',className='',grou
     throw Error('痕跡圖不能引用不同 Scope 或不存在的定錨點。');
   return {
     title:verifiedText(title,'痕跡圖名稱'),description:descriptionText(description),
-    ...validateTraceRouteLabels(className,group),
+    ...validateTraceRouteLabels(category,className,group),
     anchor_uids:chosen
   };
 }
@@ -388,16 +388,16 @@ function traceMapUid(uid){
   if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error('痕跡圖 UID 格式無效。');
   return id;
 }
-export async function addTraceMap({scopeId,title,description='',className='',group='',anchorUids=[],anchors=[]}){
+export async function addTraceMap({scopeId,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const data={uid:createUid8(),trace_type:'map',
-    ...validatedTraceMapValues({scopeId:id,title,description,className,group,anchorUids,anchors})};
+    ...validatedTraceMapValues({scopeId:id,title,description,category,className,group,anchorUids,anchors})};
   const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
   return verified(result,'新增痕跡圖');
 }
-export async function updateTraceMap({scopeId,uid,title,description='',className='',group='',anchorUids=[],anchors=[]}){
+export async function updateTraceMap({scopeId,uid,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
-  const changes=validatedTraceMapValues({scopeId:id,title,description,className,group,anchorUids,anchors});
+  const changes=validatedTraceMapValues({scopeId:id,title,description,category,className,group,anchorUids,anchors});
   let request=dbAuthRelation(relation(id)).update(changes)
     .eq('uid',traceMapUid(uid)).eq('trace_type','map');
   if(id==='loc')request=request.eq('scope_id','loc');
