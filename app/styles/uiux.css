@@ -1297,3 +1297,40 @@ body{
     padding:1rem;
   }
 }
+
+/* Management and editing Hero use the single scope_manage artwork.
+   Grid min-content tracks must never let MapLibre canvases widen the Hero. */
+.scope-main--edit-workspace,
+.scope-main--edit-workspace>.scope-page,
+.scope-main--edit-workspace .scope-content{
+  min-width:0;
+  max-width:100%;
+}
+.scope-main--edit-workspace>.scope-page,
+.scope-main--edit-workspace .scope-content{
+  grid-template-columns:minmax(0,1fr);
+}
+.scope-main--edit-workspace .scope-content>*{
+  min-width:0;
+  max-width:100%;
+}
+.scope-main--edit-workspace .scope-feature-hero--manage{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  /* The old contain rule letterboxed the image in the middle. */
+  background-size:100% 100%,cover;
+}
+.management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
+.management-hero-copy-group{display:grid;gap:.65rem;min-width:0}
+.management-hero-copy-group>h4{margin:.35rem 0;color:var(--loc-heading)}
+.management-hero-copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.management-hero-copy-card{min-width:0;margin:0;padding:1rem;border:1px solid var(--loc-line);border-radius:12px;display:grid;gap:.65rem}
+.management-hero-copy-card legend{padding:0 .3rem;font-weight:700}
+.management-hero-copy-card label{display:grid;gap:.3rem;min-width:0}
+.management-hero-copy-card :is(input,textarea){box-sizing:border-box;width:100%;min-width:0;font:inherit}
+.management-hero-copy-card textarea{resize:vertical}
+@media(max-width:720px){
+  .management-hero-copy-grid{grid-template-columns:minmax(0,1fr)}
+}

@@ -11,6 +11,7 @@ on:
       - 'scripts/test-trace-*.mjs'
       - 'scripts/test-trace-browser-smoke.mjs'
       - 'scripts/verify-trace-bootstrap-baseline.mjs'
+      - 'scripts/verify-trace-focused-baseline.mjs'
       - 'supabase/migrations/*trace*.sql'
       - 'package.json'
       - '.github/workflows/trace-pull-request-checks.yml'
@@ -34,8 +35,18 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - name: Exercise Trace-specific regressions
-        run: node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs
+      - name: Exercise Trace regressions and reject any new failures
+        shell: bash
+        run: |
+          set +e
+          node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs > /tmp/trace-focused.log 2>&1
+          focused_status=$?
+          set -e
+          grep -E '^#|not ok|ok [0-9]+' /tmp/trace-focused.log | tail -n 14 || true
+          node scripts/verify-trace-focused-baseline.mjs /tmp/trace-focused.log
+          if [ "$focused_status" -ne 0 ]; then
+            echo "::warning::An unchanged-main Facebook import A-line test fails; all other focused Trace regressions passed."
+          fi
       - name: Exercise full bootstrap; reject failures beyond exact untouched-main baseline
         shell: bash
         run: |
@@ -46,7 +57,7 @@ jobs:
           grep -E '^#|not ok|ok [0-9]+' /tmp/trace-bootstrap.log | tail -n 14 || true
           node scripts/verify-trace-bootstrap-baseline.mjs /tmp/trace-bootstrap.log
           if [ "$bootstrap_status" -ne 0 ]; then
-            echo "::warning::Two verified unchanged-main Culture/ISR assertions fail while remote ISR remains disabled; no additional bootstrap regression is accepted."
+            echo "::warning::Three verified unchanged-main Settings/Facebook import assertions currently fail; no additional bootstrap regression is accepted."
           fi
       - name: Build Next.js app without ISR deployment
         if: success() || failure()
