@@ -10,11 +10,13 @@ import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
 import {dbAuthRelation} from '../../db-client.mjs';
 import {resolveDatabaseRouting} from '../../providers/routing-config.mjs';
+import {scopedDatabaseListRelation} from '../../providers/database-list-relation.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 const STATIC_ROUTING=resolveDatabaseRouting();
 
-export default function DatabaseTarget(){
+export default function DatabaseTarget({scopeGroup}){
+  const listRelation=scopedDatabaseListRelation(scopeGroup);
   useUiSection('uiExtra.adminView');
   const [rows,setRows]=useState([]);
   const [selectedId,setSelectedId]=useState('');
@@ -25,7 +27,7 @@ export default function DatabaseTarget(){
   useEffect(()=>{
     let active=true;
     (async()=>{
-      const {data,error}=await dbAuthRelation('silver.database_targets')
+      const {data,error}=await dbAuthRelation(listRelation)
         .select('target_id,provider,engine,connection_alias,connection_mode,label,project_id,project_url,region,selected,updated_at')
         .order('provider').order('target_id');
       if(!active)return;
@@ -76,7 +78,7 @@ export default function DatabaseTarget(){
     }
     setSaving(true);setStatus('');
     try{
-      const {error}=await dbAuthRelation('silver.database_targets').delete().eq('target_id',row.target_id);
+      const {error}=await dbAuthRelation(listRelation).delete().eq('target_id',row.target_id);
       if(error)throw new Error(error.message||'刪除資料庫目標失敗。');
       setStatus('已刪除資料庫目標。');setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'刪除失敗。');}
@@ -106,7 +108,7 @@ export default function DatabaseTarget(){
         region:row.region||'',
         updated_at:new Date().toISOString()
       };
-      const relation=dbAuthRelation('silver.database_targets');
+      const relation=dbAuthRelation(listRelation);
       const changes=row._new?payload:Object.fromEntries(
         Object.entries(payload).filter(([key])=>key==='updated_at'||row[key]!==previous?.[key])
       );
