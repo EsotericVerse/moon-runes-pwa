@@ -14,7 +14,9 @@ import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-pla
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
 const MAX_EXTRACTED=100*1024*1024;
-const MAX_FILES=20000,MAX_TEXT_DOCUMENT=8*1024*1024;
+// Large Meta backups may contain tens of thousands of *ignored* media entries.
+// Count entries but never decompress ignored media; retain a finite ZIP entry cap.
+const MAX_FILES=100000,MAX_TEXT_DOCUMENT=8*1024*1024;
 const MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES;
 const MAX_SNIFF_INFLATE=2*1024*1024;
 const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
@@ -327,7 +329,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   }
   const unzip=new Unzip(entry=>{
     aborted(signal);
-    if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 20,000 筆，已停止辨識。');
+    if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 100,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
     if(!path||path.endsWith('/')){discardZipEntry(unzip,entry);return;}
     const fileAudit=audit.addFile(path);
@@ -403,7 +405,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
     const sessions=[];
     const unzip=new Unzip(entry=>{
       aborted(signal);
-      if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 20,000 筆，安全停止。');
+      if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
       if(skippedZipEntry(path)){
         summary.otherFiles++;
