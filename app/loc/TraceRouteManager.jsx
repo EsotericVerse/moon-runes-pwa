@@ -187,8 +187,9 @@ export default function TraceRouteManager({scopeId}){
         ||JSON.stringify(found.anchor_uids||[])!==JSON.stringify(queue))
         throw Error('寫入已回應，但重讀尚未確認。保留草稿；再按儲存只會重讀，不會重複新增。');
       setSelectedUid(saved.uid);clearEntry();setEditorOpen(false);setShowMap(true);
-      await refreshFrame(activeScope);
-      setNotice('痕跡圖已儲存並重新讀取確認。');
+      let cacheWarning=false;
+      try{await refreshFrame(activeScope);}catch{cacheWarning=true;}
+      setNotice('痕跡圖已儲存並重新讀取確認。'+(cacheWarning?'其他已開啟頁面可能需要手動重新整理。':''));
     }catch(error){setIsError(true);setNotice(String(error?.message||error));}
     finally{setBusy(false);}
   };
@@ -198,13 +199,14 @@ export default function TraceRouteManager({scopeId}){
     try{
       await deleteTraceMap({scopeId:activeScope,uid:map.uid});
       const latest=await index.mutate();
-      if(latest?.some(row=>row.uid===map.uid))
+      if(!Array.isArray(latest)||latest.some(row=>row.uid===map.uid))
         throw Error('資料庫刪除已回應，但重讀仍找到路線。');
       if(readDefaultTraceRoute(activeScope)===map.uid)clearDefaultTraceRoute(activeScope,map.uid);
       if(selectedUid===map.uid){setSelectedUid('');setShowMap(false);}
       if(editingUid===map.uid){clearEntry();setEditorOpen(false);}
-      await refreshFrame(activeScope);
-      setNotice('痕跡圖已刪除並重讀確認；空間錨點與文章未受影響。');
+      let cacheWarning=false;
+      try{await refreshFrame(activeScope);}catch{cacheWarning=true;}
+      setNotice('痕跡圖已刪除並重讀確認；空間錨點與文章未受影響。'+(cacheWarning?'其他已開啟頁面可能需要手動重新整理。':''));
     }catch(error){setIsError(true);setNotice(String(error?.message||error));}
     finally{setBusy(false);}
   };
