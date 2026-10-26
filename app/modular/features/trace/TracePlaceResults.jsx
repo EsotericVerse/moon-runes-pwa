@@ -6,7 +6,7 @@ import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-
 import {selectRows,selectAllRows} from '../../../loc/db-query.mjs';
 import {traceArticleFilters,groupedTraceDays,traceMediaMatches} from './trace-panel-filters.mjs';
 import {defaultScopeData} from '../../../loc/scope-data';
-import {readNumericIsr,usesNumericIsr} from '../../../loc/numeric-isr-client';
+import {readPlaceSummary} from '../../../loc/place-summary-client';
 import {traceArticlePlaces} from './trace-article-places.mjs';
 import Article from '../../Article';
 import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
@@ -113,22 +113,22 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
 
-  // Per-day counts are served from the existing one-hour numeric ISR route.
+  // Per-day counts use the existing indexed database aggregate RPC on demand.
   // Only the opened timeline/report tab requests them; no article bodies.
   const needsSummary=enabled&&tab!=='articles';
-  const useIsr=needsSummary&&!sourceFilter&&!selectedMediaType&&usesNumericIsr(targetScope);
+  const useSummary=needsSummary&&!sourceFilter&&!selectedMediaType;
   const numeric=useAsyncResource({
     queryKey:['trace-confirmed-place-summary',targetScope,startDate,endDate],
-    enabled:useIsr,
-    queryFn:()=>readNumericIsr(targetScope,'places',{startDate,endDate}),
+    enabled:useSummary,
+    queryFn:()=>readPlaceSummary(targetScope,{startDate,endDate}),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  // A source-specific view cannot reuse place totals from numeric ISR:
+  // A source-specific view cannot reuse whole-Scope place totals:
   // that would silently count Facebook/other sources in a Threads filter.
   // Read only its matching, searchable Galaxy metadata on demand.
   const filteredDaily=useAsyncResource({
     queryKey:['trace-filtered-daily-v1',targetScope,placesKey,startDate,endDate,sourceFilter],
-    enabled:needsSummary&&!useIsr&&!selectedMediaType,
+    enabled:needsSummary&&!useSummary&&!selectedMediaType,
     queryFn:async()=>{
       const {rows}=await selectAllRows(scope.galaxy,{
         columns:'source_place,source_name,createtime',
@@ -144,7 +144,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     :undefined,[mediaFiltered.data]);
   const summary=selectedMediaType
     ?{data:mediaSummary,isPending:mediaFiltered.isPending,error:mediaFiltered.error}
-    :useIsr?numeric:filteredDaily;
+    :useSummary?numeric:filteredDaily;
   const rows=useMemo(()=>{
     if(selectedMediaType)return (mediaFiltered.data||[])
       .slice().sort((a,b)=>sort==='asc'

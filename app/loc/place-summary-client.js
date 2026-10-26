@@ -1,16 +1,31 @@
 'use client';
 
-import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
+import {Capacitor} from '@capacitor/core';
 
-// Server-side ISR aggregates public text check-ins into counts. The native
-// SQLite provider never relies on a network cache or remote database.
+// Web: use the existing DB-side aggregate RPC, not a full article scan.
+// Native/local SQLite retains the original on-device row-level reader.
 export async function readPlaceSummary(scopeId,{startDate='',endDate=''}={}){
-  if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'places',{startDate,endDate});
-  const [{selectAllRows},{defaultScopeData}]=await Promise.all([
-    import('./db-query.mjs'),import('./scope-data')
+  const [{selectAllRows,selectRows},{defaultScopeData},{dbPublicClient}]=await Promise.all([
+    import('./db-query.mjs'),import('./scope-data'),import('./db-client.mjs')
   ]);
   const scope=defaultScopeData(scopeId);
   if(!scope)return {rows:[],anchors:[]};
+  if(scopeId!=='local'&&!Capacitor.isNativePlatform()){
+    const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_place_statistics',{
+      p_scope_id:scopeId,p_start:startDate||null,p_end:endDate||null
+    });
+    if(error)throw error;
+    if(!Array.isArray(data))throw new Error('Invalid place summary RPC result');
+    let anchors=[];
+    if(['lo3rwang','lrunes'].includes(scopeId)){
+      const {rows}=await selectRows('silver.'+scopeId+'_trace',{
+        columns:'uid,title',filters:[{column:'trace_type',operator:'eq',value:'anchor'}],
+        limit:10000,offset:0
+      });
+      anchors=rows.map(row=>({uid:row.uid,title:row.title}));
+    }
+    return {rows:data,anchors};
+  }
   const filters=[
     {column:'statistics_able',operator:'eq',value:true},
     {column:'searchable',operator:'eq',value:true},
