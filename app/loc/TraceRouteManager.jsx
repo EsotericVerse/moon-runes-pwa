@@ -52,6 +52,7 @@ export default function TraceRouteManager({scopeId}){
   const [referenceQuery,setReferenceQuery]=useState('');
   const [debouncedReference,setDebouncedReference]=useState('');
   const [referenceDraft,setReferenceDraft]=useState(null);
+  const [referencePending,setReferencePending]=useState(false);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
@@ -72,7 +73,8 @@ export default function TraceRouteManager({scopeId}){
     setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
     setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
     setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
-    pendingReference.current=null;pendingSaved.current=null;setNotice('');setIsError(false);
+    pendingReference.current=null;setReferencePending(false);
+    pendingSaved.current=null;setNotice('');setIsError(false);
   },[activeScope]);
 
   // Index contains only saved Frame metadata, never the entire spatial anchor table.
@@ -135,7 +137,8 @@ export default function TraceRouteManager({scopeId}){
   const clearEntry=()=>{
     setEditingUid('');setTitle('');setDescription('');setClassName('');setGroup('');
     setQueue([]);setExtraAnchors([]);setCounty('');setPointQuery('');setPicked(null);
-    pendingSaved.current=null;pendingReference.current=null;setPopularOpen(false);
+    pendingSaved.current=null;pendingReference.current=null;setReferencePending(false);
+    setPopularOpen(false);
     setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
   };
   const mayLeave=()=>!dirty||window.confirm('目前有尚未儲存的痕跡圖修改，確定放棄？');
@@ -205,13 +208,15 @@ export default function TraceRouteManager({scopeId}){
           throw Error('建立自己的錨點失敗，來源地址未修改。');
         uid=saved.uid;
         pendingReference.current={uid,owner,source_uid:draft.source_uid};
+        setReferencePending(true);
       }
       const [confirmed]=await readCurrentTraceAnchors(owner,[uid],{nativeOnly:owner==='loc'});
       if(!confirmed||confirmed.uid!==uid||confirmed.source_scope!==owner)
         throw Error('新錨點已寫入但尚未重讀確認，再按一次只會重讀，不會重複新增。');
       setExtraAnchors(rows=>rows.some(x=>x.uid===uid)?rows:[...rows,confirmed]);
       setQueue(ids=>ids.includes(uid)?ids:[...ids,uid]);
-      pendingReference.current=null;setReferenceDraft(null);setReferenceQuery('');
+      pendingReference.current=null;setReferencePending(false);
+      setReferenceDraft(null);setReferenceQuery('');
       setReferenceOpen(false);
       await Promise.allSettled([
         cache.invalidate({queryKey:traceAllAnchorsKey(owner)}),
@@ -434,7 +439,7 @@ export default function TraceRouteManager({scopeId}){
         {popular.data&&!popular.data.length?<p className="scope-status">目前沒有重複使用的常用站點。</p>:null}
       </div>:null}
       <section className="loc-trace-reference-panel" aria-label="跨 Scope 公用地點與地址參考">
-        <button type="button" className="loc-button" disabled={busy||!canEdit||Boolean(pendingReference.current)}
+        <button type="button" className="loc-button" disabled={busy||!canEdit||referencePending}
           aria-expanded={referenceOpen} onClick={()=>{
             setReferenceOpen(value=>!value);setReferenceDraft(null);setReferenceQuery('');
           }}>{referenceOpen?'收合公用地點':'從 LOC 公用地點／地址參考建立錨點'}</button>
@@ -442,7 +447,7 @@ export default function TraceRouteManager({scopeId}){
           <p className="scope-status">只讀取其他 Scope 已儲存的地點名稱、座標及可能存在的地址；沒有完整地址的候選也可以選，但須自行核對。建立後是目前 Scope 的獨立 UID，不更動來源；請勿公開私人住址。</p>
           <label>搜尋地點名稱或地址（至少兩字）
             <input type="search" value={referenceQuery} maxLength={100}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>{setReferenceQuery(event.target.value);setReferenceDraft(null);}}
               placeholder="例如：板橋車站、文化路門牌"/>
           </label>
@@ -461,22 +466,22 @@ export default function TraceRouteManager({scopeId}){
           {referenceDraft?<div className="scope-management-fields">
             <p className="scope-status">唯讀來源：{referenceDraft.source_scope} · {referenceDraft.source_uid}；地址缺漏時請保留未知，核對座標、樓層與店家身份後再建立。</p>
             <label>自己錨點的名稱<input maxLength={120} value={referenceDraft.title}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>changeReference('title',event.target.value)}/></label>
             <label>完整地址<input maxLength={320} value={referenceDraft.address}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>changeReference('address',event.target.value)}/></label>
             <label>樓層／室別<input maxLength={40} value={referenceDraft.floor_label}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>changeReference('floor_label',event.target.value)}/></label>
             <label>樓層序號（可空；不是高度公尺）<input type="number" min={-100} max={300} step={1}
-              value={referenceDraft.floor_level} disabled={busy||Boolean(pendingReference.current)}
+              value={referenceDraft.floor_level} disabled={busy||referencePending}
               onChange={event=>changeReference('floor_level',event.target.value)}/></label>
             <label>經度<input type="number" min={-180} max={180} step="any" value={referenceDraft.longitude}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>changeReference('longitude',event.target.value)}/></label>
             <label>緯度<input type="number" min={-90} max={90} step="any" value={referenceDraft.latitude}
-              disabled={busy||Boolean(pendingReference.current)}
+              disabled={busy||referencePending}
               onChange={event=>changeReference('latitude',event.target.value)}/></label>
             <button type="button" className="loc-button primary" disabled={busy||!canEdit||queue.length>=MAX_STOPS}
               onClick={createReferenceAnchor}>＋ 建立自己的錨點並加入 Queue</button>
