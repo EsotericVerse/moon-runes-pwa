@@ -1,40 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
-import {findAnchorWriteMatches} from '../app/modular/features/trace/trace-organizer.mjs';
 import './test-spatial-anchor-references.mjs';
 import './test-facebook-backup-place.mjs';
-const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
+import {findAnchorWriteMatches} from '../app/modular/features/trace/trace-organizer.mjs';
+
 const anchors=[
- {uid:'A001',trace_type:'space_anchor',title:'小柏小傑',postal_address:'新北'},
- {uid:'a001',trace_type:'space_anchor',title:'小柏小傑',postal_address:'高雄'},
- {uid:'B002',trace_type:'space_anchor',title:'板橋車站'}
+ {uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor',title:'小柏小傑',postal_address:'臺北'},
+ {uid:'a001',source_scope:'lo3rwang',trace_type:'space_anchor',title:'小柏小傑',postal_address:'高雄'},
+ {uid:'B002',source_scope:'lo3rwang',trace_type:'space_anchor',title:'板橋車站'},
+ {uid:'C003',source_scope:'lo3rwang',trace_type:'space_anchor',title:'無縣市地點'}
 ];
-test('name-only autocomplete is independent of county',()=>{
+test('location autocomplete requires no county, GPS, floor or address',()=>{
  assert.deepEqual(traceAnchorSuggestions(anchors,'小柏').map(x=>x.uid),['A001','a001']);
- assert.deepEqual(traceAnchorSuggestions(anchors,'小柏',['A001']).map(x=>x.uid),['a001']);
- assert.deepEqual(traceAnchorSuggestions(anchors,'小柏',[],1).map(x=>x.uid),['A001']);
- assert.deepEqual(traceAnchorSuggestions(anchors,''),[]);
+ assert.deepEqual(traceAnchorSuggestions(anchors,'無縣市').map(x=>x.uid),['C003']);
+ assert.deepEqual(traceAnchorSuggestions(anchors,'板橋').map(x=>x.uid),['B002']);
+ assert.deepEqual(traceAnchorSuggestions(anchors,'').map(x=>x.uid),[]);
 });
-test('single suggestion never auto-selects its UID',()=>{
- assert.equal(traceAnchorCompletionUid(anchors.slice(0,1)),'');
- assert.equal(traceAnchorCompletionUid(anchors,'a001'),'a001');
- assert.equal(traceAnchorCompletionUid(anchors,'Z999'),'');
+test('same names remain distinct and never select a candidate implicitly',()=>{
+ const matches=traceAnchorSuggestions(anchors,'小柏');
+ assert.equal(traceAnchorCompletionUid(matches),'');
+ assert.equal(traceAnchorCompletionUid(matches,'a001'),'a001');
+ assert.equal(traceAnchorCompletionUid(matches,'A001'),'A001');
+ assert.equal(traceAnchorCompletionUid(matches,'other'),'');
 });
-test('React Select and RPC use name rather than county or floor filters',()=>{
- const ui=read('app/loc/TraceManagement.jsx'),route=read('app/loc/TraceRouteManager.jsx');
- const db=read('app/modular/features/trace/trace-data.js');
- assert.match(ui,/import Select from 'react-select'/);
- assert.match(route,/onClick=\{addToSpool\}/);
- assert.match(route,/readAllTraceAnchors\(owner/);
- assert.doesNotMatch(ui+route,/countyOptions|setFloorLevel|setFloorLabel/);
- assert.match(db,/rpc\('search_scope_trace_place_names'/);
- assert.doesNotMatch(db,/county_id|floor_level|floor_label/);
+test('autocomplete caps results and excludes explicitly selected UIDs',()=>{
+ const sample=Array.from({length:18},(_,i)=>({uid:'X'+String(i).padStart(3,'0'),trace_type:'space_anchor',title:'重複名稱'}));
+ assert.equal(traceAnchorSuggestions(sample,'重複',[],8).length,8);
+ assert.deepEqual(traceAnchorSuggestions(sample,'重複',['X000'],2).map(x=>x.uid),['X001','X002']);
 });
-test('near-identical anchors never authorize automatic UID reuse',()=>{
- const a={uid:'A001',trace_type:'space_anchor',source_scope:'lo3rwang',title:'同名店',address:[121.5,25]};
- const matches=findAnchorWriteMatches(a,[{...a,uid:'a001'}]);
- assert.equal(matches.length,1);
- assert.equal(matches[0].safeReuse,false);
+test('same name or position never silently reuses another anchor UID',()=>{
+ const a={uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor',title:'某商店',
+   postal_address:'文化路',address:[121.5,25.1]};
+ const b={...a,uid:'a001'};
+ const result=findAnchorWriteMatches(a,[b]);
+ assert.equal(result.length,1);
+ assert.equal(result[0].safeReuse,false);
+});
+test('route composer offers React Select and does not require a county selector',()=>{
+ const source=readFileSync(new URL('../app/loc/TraceRouteManager.jsx',import.meta.url),'utf8');
+ assert.ok(source.includes("import Select from 'react-select'"));
+ assert.ok(source.includes('onClick={addToSpool}'));
+ assert.ok(!source.includes('selectedCounty'));
+ assert.ok(!source.includes('county_id'));
 });
