@@ -27,6 +27,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+      - name: Parse JavaScript and JSX before expensive build
+        run: npm run check:syntax
       - name: Security release gate (moderate, high and critical)
         run: npm run audit:security
       - name: Game regression tests

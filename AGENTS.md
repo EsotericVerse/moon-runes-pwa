@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Pre-commit syntax gate (fast, no deployment)
+- Before any JS/JSX/TS commit or merge, run `npm run check:syntax` to parse app/scripts source files, and correct every real syntax error before delivery. This is a local check, not a demand to trigger paid deployments or automatically run GitHub Actions.
+- Syntax checks detect invalid code, not Chinese/English wording, label text, historical names, or obsolete TODO semantics. Keep the GitHub Pages workflow manual-only.
+
 ## ISR operating status (updated 2026-10-27): enabled, manual deployment only
 - **Latest user confirmation:** ISR is **already enabled**. Do not turn it off, restart it, or treat it as a pending recovery task. This does **not** authorize automatic GitHub/Cloudflare builds, deployments, Previews, Vercel cutover, new R2/DO cache writes or paid load tests; existing manual-deployment-only cost controls remain in force. This current status supersedes dated references below saying ISR is disabled.
 - Ordinary GitHub edits, branch work, tests and merges must not trigger Cloudflare deployments. Do not resume domain routing or switch on a Vercel ISR backup automatically.
