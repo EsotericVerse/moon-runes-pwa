@@ -19,7 +19,6 @@ import {useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
-import ManagementSectionNav,{useManagementSection} from '../ManagementSectionNav';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
@@ -58,12 +57,7 @@ function isInteractiveTarget(target){
 
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
-const TIME_EDITOR_SECTIONS=Object.freeze([
-  {value:'anchor-style',label:'時間定錨點',shortLabel:'定錨點',description:'編輯真正的日期定錨點。'},
-  {value:'event',label:'事件',description:'編輯以正式定錨點界定的事件。'},
-  {value:'period',label:'時間痕跡',description:'收集事件成為可分離、交錯的時間痕跡。'}
-]);
-const EMPTY_RIVER_FOCUS=Object.freeze({});
+// Time has ONE management entry. Type selection belongs to the editor form.const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_CULTURE_GROUPS=Object.freeze([]);
 const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
@@ -194,7 +188,6 @@ export default function Culture(){
   // Public Culture does not load management grants; editing must verify them.
   const account=useAccount({enabled:isTimeEditingView});
   const editDock=useEditDock();
-  const [timeEditorSection,setTimeEditorSection]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
@@ -630,11 +623,6 @@ export default function Culture(){
     [timelineItems,expandedTimeTraceIds]);
   const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
     current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
-  const timeEditorItems=useMemo(()=>timelineItems.filter(item=>
-    timeEditorSection==='anchor-style'
-      ?item.entry_type==='anchor'
-      :item.entry_type===timeEditorSection
-  ),[timelineItems,timeEditorSection]);
   const activeStructureKey=selectedPeriodKey||structurePreference.preferredKey;
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
@@ -1157,7 +1145,6 @@ export default function Culture(){
     const editorAvailable=Boolean(scopeId&&scopeId!=='loc');
     const permissionPending=account.loading||account.permissionLoading;
     const editorAuthorized=Boolean(account.user&&account.canManageScopeSync(scopeId));
-    const choice=TIME_EDITOR_SECTIONS.find(item=>item.value===timeEditorSection)||TIME_EDITOR_SECTIONS[0];
     return <FeaturePage featureId="culture">
       <section className='loc-card scope-feature-card scope-feature-card-wide'>
         <h2>時間編輯</h2>
@@ -1167,40 +1154,24 @@ export default function Culture(){
           {account.error?String(account.error):account.user?'目前登入帳號沒有此 Scope 的管理權限。':'請先至設定首頁登入，才能編輯時間定錨。'}
         </p>:null}
         {editorAvailable&&!permissionPending&&editorAuthorized?<div className='management-workspace scope-time-edit-workspace'>
-          <ManagementSectionNav id='time-editor-sections' title='編輯項目'
-            panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
-            value={timeEditorSection} onChange={next=>{
-              if(next===timeEditorSection)return;
-              const apply=()=>{
-                setTimeEditorSection(next);
-                setSelectedTimelineRecordId('');
-                setSelectedTimelineInfo(null);
-                setSelectedTimelineDate('');
-                setSuggestedRecordType(next==='anchor-style'?'anchor':next);
-                setSuggestedRequestNonce(0);
-                setTimelineEditorRevision(value=>value+1);
-              };
-              if(editDock?.active)editDock.switchSection(next,apply);
-              else apply();
-            }}/>
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
-            aria-labelledby={'time-editor-sections-option-'+choice.value}>
+            aria-label='時間編輯'>
             <div className='scope-culture-timeline-tools'>
-              <h3>{choice.label}｜時間長河</h3>
+              <h3>時間定錨點／事件／時間痕跡</h3>
             </div>
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
-            {!query.isPending&&!query.error&&!timeEditorItems.length
+            {!query.isPending&&!query.error&&!timelineItems.length
               ?<p className='scope-status'>目前尚未建立此類時間紀錄，可直接在下方新增。</p>:null}
-            {!query.isPending&&!query.error&&timeEditorItems.length>0?<CultureTimeline
-              key={'time-editor-'+timeEditorSection}
-              items={timeEditorItems}
+            {!query.isPending&&!query.error&&timelineItems.length>0?<CultureTimeline
+              key={'time-editor-unified'}
+              items={timelineItems}
               labelOf={localizedLabelOf}
               focus={EMPTY_RIVER_FOCUS}
               mode='overview'
               windowStart={currentStructureStart}
               windowEnd={currentStructureEnd}
-              onTimeClick={timeEditorSection==='anchor-style'?date=>beginTimelineCreation('anchor',date):null}
+              onTimeClick={date=>beginTimelineCreation('anchor',date)}
               onSelect={item=>beginTimelineRecordEdit(item)}
               editable
               onMove={moveTimelineRecord}
@@ -1215,17 +1186,13 @@ export default function Culture(){
               <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
             </div>:null}
             <div className='scope-culture-time-input-area'>
-              {timeEditorSection==='anchor-style'?<div className='scope-culture-record-kind' role='group' aria-label='新增或編輯類型'>
-                <button type='button' aria-pressed={true} className='loc-button'
-                  onClick={()=>beginTimelineCreation('anchor','')}>定錨點</button>
-              </div>:null}
-              <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
+              <CultureTimelineEditor key={scopeId+':unified:'+timelineEditorRevision}
                 scopeId={scopeId}
                 timeTable={scopeData?.time||''}
                 selectedRecordId={selectedTimelineRecordId}
                 suggestedAnchorDate={selectedTimelineDate}
                 suggestedRecordType={suggestedRecordType}
-                defaultRecordType={timeEditorSection==='anchor-style'?'anchor':timeEditorSection}
+                defaultRecordType='anchor'
                 suggestedRequestNonce={suggestedRequestNonce}
                 onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>
             </div>
