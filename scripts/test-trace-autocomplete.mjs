@@ -84,3 +84,41 @@ test('same names at different locations remain independent spatial anchors',()=>
  assert.doesNotMatch(storage,/distinctTitleOrThrow/);
  assert.doesNotMatch(storage,/if\(check\.byName/);
 });
+
+test('vertical floor identity preserves downstairs and upstairs within one 2D coordinate',()=>{
+ const source=read('app/modular/features/trace/trace-data.js');
+ const match=source.match(/function locationFields\([\s\S]*?\n\}/);
+ assert.ok(match,'locationFields must remain an executable validator');
+ const locationFields=new Function(match[0]+';return locationFields')();
+ assert.deepEqual(locationFields({address:'新北市永和區仁愛路152號B1'}),
+   {address:'新北市永和區仁愛路152號B1',floor_label:'B1',floor_level:-1});
+ assert.deepEqual(locationFields({address:'新北市某區某路100號2樓'}),
+   {address:'新北市某區某路100號2樓',floor_label:'2樓',floor_level:2});
+ assert.deepEqual(locationFields({address:'新北市中和區中山路291號3–4樓'}),
+   {address:'新北市中和區中山路291號3–4樓',floor_label:'3–4樓',floor_level:null});
+ assert.deepEqual(locationFields({address:'未知道路'}),{address:'未知道路',floor_label:'',floor_level:null});
+ assert.throws(()=>locationFields({floor_level:'3.5'}),/樓層序號/);
+ assert.match(source,/county_id:await countyIdAt\(longitude,latitude\),\s*\.\.\.locationFields/);
+ assert.match(source,/address,floor_label,floor_level/);
+});
+test('full address and different floors prevent spatial ID auto reuse',()=>{
+ const a={uid:'AAA11111',trace_type:'anchor',source_scope:'lo3rwang',title:'某大樓商店',
+   address:'新北市某區某路100號',floor_label:'B1',floor_level:-1,latitude:25,longitude:121.5};
+ const b={...a,uid:'BBB22222',floor_label:'2樓',floor_level:2};
+ const matches=findAnchorWriteMatches(a,[b]);
+ assert.equal(matches.length,1);
+ assert.equal(matches[0].type,'different-floor');
+ assert.equal(matches[0].safeReuse,false);
+ assert.equal(matches[0].canMerge,false);
+ const sameName={...a,uid:'CCC33333'};
+ const duplicate=findAnchorWriteMatches(a,[sameName]);
+ assert.equal(duplicate.length,1);
+ assert.equal(duplicate[0].safeReuse,false,'UID identity cannot be implied by coordinates and label');
+ const manager=read('app/loc/TraceManagement.jsx');
+ const engine=read('app/modular/features/trace/trace-map-engine.js');
+ assert.match(manager,/setFloorLevel/);
+ assert.match(manager,/setFloorLabel/);
+ assert.match(manager,/setAddress/);
+ assert.match(manager,/floor_level:floorLevel/);
+ assert.match(engine,/floor_label:String\(a\.floor_label/);
+});
