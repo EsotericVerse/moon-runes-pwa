@@ -219,6 +219,16 @@
 - [ ] **LOC-PLACE-05｜持久化、精確查詢與往後沿用** [P1] [未實作]：成功整理即更新相應文章的 place_id 並建立 Scope 專用索引，依 place_id 等值查文章，不再堆疊大量 OR source_place 條件；原始 source_place 及 galaxy.uid 不得改動。已判定的原始地名 ↔ 錨點對應要能持久重用，新文章照常完整匯入，隨後利用已知對應自動關聯；同一地點不能每次重新核對。誤判／別名衝突要能追蹤且安全修正，寫入必須遵守 Scope RLS。
 - [ ] **LOC-PLACE-06｜LOC 聯集與工程驗證** [P2] [LOC 聯集細節後議／未實作]：silver.loc_trace 聯集中的同碼 `id` 必須帶 `scope_id` 區分，顯示時保留來源 Scope，跨 Scope 不擅自合併。後續再整理 LOC 的聯集視圖，不阻塞 Scope 工作。交付前自主核對實際資料回填、重新開頁、下一次匯入、同址不同店及樓層、無地址、UID 唯一性、權限、性能、UI、lint/build/CI；測試通過並整合 main 才可標完成。
 
+### TIME-ANCHOR-RANGES-20261027｜時間定錨與動態、不連續時期（使用者 2026-10-27 最新定案；尚未實作）
+
+> **正確核心：先有定錨點，才能定時期。時期沒有獨立可寫死的時間，全部以已存在的 `time.uid` 對應日期動態計算；改動定錨點後立即重算所有使用它的時期，不允許殘留舊日期或虛構錨點。** 一個「時期」可由**多個有順序、彼此不連續的起訖區段**構成，必須保留中斷時間，而不是把第一個起點與最後一個終點硬合併為一整段。概念示例：`anchor_ids = [[A001,B001],[C001,D001]]`，表示 A001–B001、C001–D001 兩段；每個端點是該 Scope 真正的 `time.uid`，不是日期字串。**這是結構示意，不預先決定 PostgreSQL 採一維成對陣列、二維陣列或有序 JSON；定案要兼顧既有 `text[]` 和事件的多錨點語義，不能直接強制轉型破壞資料。** 使用者可選擇區段順序，無需 `display_order` 欄位。
+
+- [ ] **TIME-01｜單一四碼身份及命名**：`silver.<scopeid>_time.record_id` **直接改名／遷移為 `uid varchar(4)`**（不是 `id`），同一 Scope 內唯一；`record_type → type`、`label → title`、`note`／`style_description → description`。過去 `resource_id` 文字識別碼只作零損失遷移對照，完成轉換後移除，所有時間錨點、事件、時期與查詢直接使用 `time.uid`。`_trace` 的主鍵另為 `trace.id varchar(4)`；兩張表是不同資料類型，不可混淆。
+- [ ] **TIME-02｜移除冗餘欄位及風格標籤入口**：移除 `display_order`、`date_status`、`year_value`、`visibility`、`created_at`、`updated_at`；對全 NULL 且無合法依賴的冗餘欄位按實測移除。風格標籤從時間編輯／展示／篩選流程退場，相關風格查詢交由既有進階搜尋；既存 `style_comment` 文字（實測 lo3rwang 8 筆）不可未備份先刪。非空的 `status`、`resource_id`、`display_order` 等先確認全部消費者與回復方案，不能只改 live schema 讓文化功能壞掉。保留真正錨點的 `time_date` 作唯一日期來源。
+- [ ] **TIME-03｜多區段時期陣列／動態重算**：`type='period'` 的 `anchor_ids` 為**有序區段陣列**，可表示 `A–B, C–D, ...`，中間沒有被覆蓋的日期不屬於時期；僅以真實 `type='anchor'` 記錄的四碼 `uid` 解析每段起訖。使用者編輯時期只選錨點和區段，不直接寫日期；修改任何錨點的 `time_date` 後所有引用重算，無需重建時期。日期排序以各段實際時間為基礎，可按區段順序展示；不再用 `display_order` 選「最新時期」或依 `status='current'` 冒充動態狀態。開放尾端時期需保留真實已確定的起點，不能偽造終點。
+- [ ] **TIME-04｜刪改完整性及零損失回填**：被引用的錨點遭刪除或失效時，**不得自動刪掉時期、使用舊日期、偽造錨點，或悄悄把兩個區段接成一段**；未受影響區段繼續有效，受影響區段標示待修正並保留時期內容。須處理 live 的既有 `anchor_ids text[]`、包含 `0` 的開放邊界、事件多錨點、各 Scope 的 P1–P7／符文時期、歷史風格文字；備份舊 `record_id` UUID、`resource_id` → 新四碼 `uid` 對照與全部陣列原順序，嚴禁截斷或把兩個不同物件合併。
+- [ ] **TIME-05｜全程式與 SQLite 對齊、驗證後整批整合**：同步修正 `CultureTimelineEditor`、`culture-query`、`Culture`、`Statistics`、`Search`、Galaxy 時間查詢、時間軸拖曳／吸附、Period 選單、SQLite `local_time`、匯入匯出、Supabase RPC／RLS／函式／索引／回退與 CI。測試多個不連續區段、間隙不被列入、當前時期動態變動、錨點日期改動、刪除錨點、空 Scope、不同 Scope、權限與正式資料重新讀取，所有受影響功能通過才合併 `main`。Cloudflare、ISR、自動部署仍保持關閉。
+
 ### B｜痕跡圖
 
 **線目標：** 使用空間錨點建立、管理、觀看具名痕跡圖 Frame；選 Current、入列、改序、刪除、重讀都能正常使用；地圖、文章、時間和風格聯動。**分類骨架直接重用既有關鍵詞的分層模型與介面／索引／操作方式（舊框架作模板），不另造平行分類體系；痕跡圖、關鍵詞項目與文章仍有各自的資料身份與用途。**
