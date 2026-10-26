@@ -28,7 +28,8 @@ test('trace data and on-demand reports work without ISR or article preloading',(
   assert.match(route,/status:410/);
   assert.match(client,/return false/);
   assert.doesNotMatch(trace,/readNumericIsr\(scopeId,'traces'\)/);
-  assert.match(trace,/spatialData\.maps\.map/);
+  assert.match(trace,/maps\.map\(map/);
+  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids\)/);
   assert.match(report,/enabled:enabled&&tab==='articles'/);
   assert.match(report,/enabled:useSummary/);
   assert.match(report,/readPlaceSummary\(targetScope/);
