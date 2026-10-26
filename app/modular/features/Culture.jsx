@@ -747,13 +747,20 @@ export default function Culture(){
     });
   }
 
+  async function refreshCultureSourceSummary(){
+    await Promise.all([
+      resourceCache.invalidate({queryKey:['culture-period-roots','v2',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-source-snapshot','v6',scopeId]})
+    ]);
+  }
   async function refreshTimelineData(){
     // Time edits refresh the direct database query and SWR resource keys.
     if(scopeId!=='local')await revalidateServerMetadata();
     await Promise.all([
       resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-period-settings',scopeId]}),
-      resourceCache.invalidate({queryKey:['search-style-keyword']})
+      resourceCache.invalidate({queryKey:['search-style-keyword']}),
+      refreshCultureSourceSummary()
     ]);
   }
   async function moveTimelineRecord(item,row){
@@ -1100,6 +1107,7 @@ export default function Culture(){
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(content);
       setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
+      await refreshCultureSourceSummary();
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.saveFailed));
@@ -1118,6 +1126,7 @@ export default function Culture(){
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key){setFullTextKey('');setFullText('');}
       setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
+      await refreshCultureSourceSummary();
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.deleteFailed));
