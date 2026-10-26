@@ -45,7 +45,7 @@ test('Frame editor queries by county + name or UID and adds only on explicit plu
  const manager=read('app/loc/TraceRouteManager.jsx');
  const storage=read('app/modular/features/trace/trace-data.js');
  assert.match(manager,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
- assert.match(manager,/setQueue\(ids=>\[\.\.\.ids,choice\.uid\]\)/);
+ assert.match(manager,/setQueue\(ids=>ids.includes\(choice.uid\)\?ids:\[\.\.\.ids,choice.uid\]\)/);
  assert.match(manager,/onClick=\{addPoint\}>＋/);
  assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
  assert.match(storage,/uid\.eq\./);
