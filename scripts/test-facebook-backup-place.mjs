@@ -143,6 +143,21 @@ test('Meta ZIP decoded place and author text survive Galaxy import without mojib
   assert.equal(alreadyCorrect.content,'正常繁體中文');
 });
 
+test('ZIP parser accepts Facebook JSON exceeding former 10 MB entry cap',async()=>{
+  const entries=Array.from({length:2600},(_,i)=>post(1720000000+i,'板橋車站','文字'+String(i)+'文'.repeat(1500)));
+  const text=JSON.stringify(entries);
+  assert.ok(new TextEncoder().encode(text).length>10_000_000);
+  assert.ok(new TextEncoder().encode(text).length<ARCHIVE_JSON_MAX_BYTES);
+  const zip=zipSync({'archive/your_facebook_activity/posts/your_posts_1.json':strToU8(text)});
+  const rows=[];
+  const result=await inspectPrivateArchive(asFile('facebook-large-json.zip',zip),{
+    onRecord:row=>{const mapped=facebookArchiveGalaxyRow(row);if(mapped)rows.push(mapped);}
+  });
+  assert.equal(result.acceptedRows,entries.length);
+  assert.equal(rows.length,entries.length);
+  assert.equal(rows[0].source_place,'板橋車站');
+});
+
 test('large Facebook ZIP size cap is 1 GiB and checked before reading any bytes',async()=>{
   assert.equal(ARCHIVE_MAX_BYTES,1024*1024*1024);
   assert.equal(ARCHIVE_JSON_MAX_BYTES,50*1024*1024);
