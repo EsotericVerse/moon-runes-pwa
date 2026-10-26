@@ -1,6 +1,7 @@
 'use client';
 
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
+import {validTraceCoordinates,normalizedTraceCoordinates} from './trace-anchor-coordinates.mjs';
 import {traceCountyId} from './trace-county-id.mjs';
 import {validateTraceRouteLabels} from './trace-route-classes.mjs';
 import {anchorAddress,findAnchorWriteMatches,normalizeAnchorAddress,organizeAnchorCandidates} from './trace-organizer.mjs';
@@ -58,11 +59,7 @@ function verified(result,label){
   return result.data;
 }
 export const validRadius=value=>Number.isInteger(Number(value))&&Number(value)>=10&&Number(value)<=20000000;
-export const validCoordinates=(longitude,latitude)=>{
-  const lng=Number(longitude),lat=Number(latitude);
-  return String(longitude).trim()!==''&&String(latitude).trim()!==''&&Number.isFinite(lng)&&Number.isFinite(lat)
-    &&lng>=-180&&lng<=180&&lat>=-90&&lat<=90;
-};
+export const validCoordinates=validTraceCoordinates;
 function verifiedText(value,label,max=120){
   const s=String(value||'').trim();
   if(!s||s.length>max)throw Error(label+'必填，最多 '+max+' 字。');
@@ -287,13 +284,13 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
 }
 export async function addTraceAnchor({scopeId,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500,forceNewIdentity=false}){
   const id=sourceId(scopeId);
-  if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
+  const coordinates=normalizedTraceCoordinates(longitude,latitude);
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const data={
     trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
-    description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
+    description:descriptionText(description),...coordinates,radius_m:Number(radius_m),
     source_scope:id,
-    county_id:await countyIdAt(longitude,latitude,address),
+    county_id:await countyIdAt(coordinates.longitude,coordinates.latitude,address),
     ...locationFields({address,floor_label,floor_level})
   };
   // Explicitly copied cross-Scope references must get a NEW UID in this Scope.
@@ -375,12 +372,12 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   const id=sourceId(scopeId);
   const anchorId=String(uid||'').trim();
   if(!/^(?:[A-Za-z0-9]{4}|[A-Za-z0-9]{8})$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
-  if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
+  const coordinates=normalizedTraceCoordinates(longitude,latitude);
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const changes={
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
-    longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
+    ...coordinates,radius_m:Number(radius_m),
     // No verified postal address: preserve the stored historical county_id.
     // Omitting the field from UPDATE avoids clearing earlier known county data.
     ...(countyIdFromAddress(address)?{county_id:countyIdFromAddress(address)}:{}),

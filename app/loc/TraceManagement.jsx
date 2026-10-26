@@ -209,10 +209,10 @@ function AnchorEditor({scopeId,spatial,reload}){
         <input type="number" min={-100} max={300} step={1} value={floorLevel}
           onChange={e=>setFloorLevel(e.target.value)} placeholder="未知" disabled={busy}/>
       </label>
-      <p className="scope-status">地址含樓層可區分同棟不同場所；GPS 只作地圖定位。樓層序號不代表海拔或實測高度。此地點若不適合公開，請勿填入私人住址。</p>
+      <p className="scope-status">地址含樓層可區分同棟不同場所；GPS 可在確認後再補上；未知座標儲存為空值，不繪製地圖點。樓層序號不代表海拔或實測高度。此地點若不適合公開，請勿填入私人住址。</p>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
-      <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
-      <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
+      <label>經度（可留空）<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
+      <label>緯度（可留空）<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
       <label>周圍搜尋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} placeholder="500" onChange={e=>setRadius(e.target.value)} disabled={busy}/></label>
     </div>
     {closeCandidates.length?<div className="scope-card" role="status">
