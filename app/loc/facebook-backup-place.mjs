@@ -26,6 +26,14 @@ function placeCandidates(row){
   const direct=PLACE_KEYS.map(field=>namedPlace(row?.[field])).filter(Boolean);
   if(direct.length)return direct; // Explicit post location outranks attachment metadata.
   const found=[];
+  // Some text-only Meta exports place the check-in on data[i], not an
+  // attachment. These are location metadata, never inferred from post prose.
+  for(const item of Array.isArray(row?.data)?row.data:[]){
+    for(const field of PLACE_KEYS){
+      const name=namedPlace(item?.[field]);
+      if(name)found.push(name);
+    }
+  }
   const attachments=[...(Array.isArray(row?.attachments)?row.attachments:[]),
     ...(Array.isArray(row?.data)?row.data:[]).flatMap(item=>
       Array.isArray(item?.attachments)?item.attachments:[])];
