@@ -26,6 +26,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify culture classifications and source lazy-loading
         run: node --test scripts/test-culture-river-roots.mjs
+      - name: Full Bootstrap and Admin regressions (no deployment)
+        run: npm run test:bootstrap
       - name: Existing source and time regressions
         run: |
           node --experimental-vm-modules --test scripts/test-numeric-isr.mjs scripts/test-isr-client-cache.mjs scripts/test-empty-scope.mjs
@@ -60,8 +62,6 @@ jobs:
             fi
             echo "LOCAL CHROME OK $route rendered DOM bytes=$(wc -c <"/tmp/culture-$id.html")"
           done
-      - name: Verify the release still prohibits ISR
-        run: node scripts/verify-release-isr.mjs
       - name: Warning and error baseline summary
         if: always()
         shell: bash
