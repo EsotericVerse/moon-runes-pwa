@@ -21,11 +21,15 @@ BEGIN
     RAISE EXCEPTION 'Invalid Scope Group ID: %',scope_group;
   END IF;
   target_name:=scope_group||'_dblists';
-  IF to_regclass('silver.database_targets') IS NULL
-     OR to_regclass(format('silver.%I',target_name)) IS NOT NULL THEN
+  IF to_regclass('silver.database_targets') IS NOT NULL
+     AND to_regclass(format('silver.%I',target_name)) IS NULL THEN
+    EXECUTE format('ALTER TABLE silver.database_targets RENAME TO %I',target_name);
+  ELSIF to_regclass('silver.database_targets') IS NULL
+     AND to_regclass(format('silver.%I',target_name)) IS NOT NULL THEN
+    NULL; -- Already applied directly; safe on later migration replay.
+  ELSE
     RAISE EXCEPTION 'Unexpected database list table state for %',target_name;
   END IF;
-  EXECUTE format('ALTER TABLE silver.database_targets RENAME TO %I',target_name);
 END $rename$;
 
 -- The existing public routing-state RPC remains stable with unchanged output.
