@@ -115,6 +115,6 @@ export function organizeAnchorCoordinateGroups(anchors=[]){
   }
   return [...byPosition.values()].filter(group=>group.anchors.length>1)
     .map(({uids,...group})=>({...group,anchors:group.anchors.sort((a,b)=>
-      String(a.title||'').localeCompare(String(b.title||'','zh-Hant')))}))
+      String(a.title||'').localeCompare(String(b.title||''),'zh-Hant'))}))
     .sort((a,b)=>b.anchors.length-a.anchors.length||a.key.localeCompare(b.key));
 }
