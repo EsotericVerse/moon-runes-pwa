@@ -39,7 +39,7 @@ export default function DatabaseTarget({scopeGroup}){
         (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
-  },[revision]);
+  },[revision,listRelation]);
   const index=rows.findIndex(item=>item.target_id===selectedId);
   const row=index<0?null:rows[index];
   const isManaged=row?.target_id==='supabase-current'||row?.target_id==='neon-current';
