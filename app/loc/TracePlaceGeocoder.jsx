@@ -6,6 +6,7 @@ import {useAsyncResource} from './use-async-resource';
 import {useAccount} from './use-account';
 import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modular/features/trace/trace-data';
 import {revalidateServerMetadata} from './scope-data';
+import {postalAddressFromNominatim} from '../modular/features/trace/trace-postal-evidence.mjs';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -31,6 +32,9 @@ function geographyChoices(payload,name){
   const choices=source.filter(item=>validDateOrNumber(item.lon)&&validDateOrNumber(item.lat))
     .slice(0,4).map(item=>({
       longitude:Number(item.lon),latitude:Number(item.lat),
+      // Only a structured street + house-number result supplies postal
+      // evidence. Provider POI display labels are not assumed to be addresses.
+      address:postalAddressFromNominatim(item),
       label:String(item.display_name||item.name||name).slice(0,240),
       title:String(item.namedetails?.name||item.name||item.display_name?.split(',')[0]||'').trim()
     }));
@@ -183,6 +187,7 @@ export default function TracePlaceGeocoder({scopeId}){
       title:item.name,
       longitude:found[item.name].choices[found[item.name].selected].longitude,
       latitude:found[item.name].choices[found[item.name].selected].latitude,
+      address:found[item.name].choices[found[item.name].selected].address||'',
       radius_m:Number(radius)
     }));
     const names=previewEnds(payload).map(item=>item.name).join('\n');
