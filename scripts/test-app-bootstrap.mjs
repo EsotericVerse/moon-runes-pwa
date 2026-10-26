@@ -395,6 +395,15 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
 test('Culture upper time_trace selector stays independent; lower river selects only actual trace ranges',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(source,/aria-label='第一條河道時間痕跡選擇'/);
+  assert.match(source,/const \[structureWindowKey,setStructureWindowKey\]=useState\('all'\)/);
+  assert.match(source,/const activeStructureKey=structureWindowKey==='all'/);
+  assert.match(source,/setStructureWindowKey\(event\.target\.value\)/);
+  assert.match(source,/setStructureWindowKey\(periodKey\(matched\)\)/);
+  assert.match(source,/const selectedWorkPeriod=selectedPeriodKey==='all'/,
+    'initial first-river fit must not change the lower data query interval');
+  const timeline=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
+  assert.match(timeline,/instance\.fit\(\{animation:false\}\)/,
+    'unselected first-river window must fit loaded timeline rows');
   assert.match(source,/buildTimeTraceRiver\(timelineItems,expandedTimeTraceIds\)/);
   assert.match(source,/onGroupToggle=\{toggleTimeTrace\}/);
   assert.match(source,/windowStart=\{currentStructureStart\}/);

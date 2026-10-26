@@ -205,6 +205,7 @@ export default function Culture(){
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  const [structureWindowKey,setStructureWindowKey]=useState('all');
   const [expandedTimeTraceIds,setExpandedTimeTraceIds]=useState([]);
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -254,6 +255,7 @@ export default function Culture(){
     setOpenCultureRoots([]);
     setSelectedRiverGroup('');
     setFocusedAnchorDate('');
+    setStructureWindowKey('all');
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
@@ -347,6 +349,7 @@ export default function Culture(){
     if(matched){
       appliedDateNavigationRef.current=navigationKey;
       setSelectedPeriodKey(periodKey(matched));
+      setStructureWindowKey(periodKey(matched));
       setKeywordPeriodKey(periodKey(matched));
     }
   },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
@@ -624,7 +627,10 @@ export default function Culture(){
     [timelineItems,expandedTimeTraceIds]);
   const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
     current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
-  const activeStructureKey=selectedPeriodKey||structurePreference.preferredKey;
+  // The first river starts with an all-anchor camera without changing the
+  // default recent-period SQL query. Manual period selection retains its behavior.
+  const activeStructureKey=structureWindowKey==='all'||primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
+    ?structureWindowKey:'all';
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
     :String(currentStructurePeriod?.start_date||'').slice(0,10);
@@ -1271,7 +1277,10 @@ export default function Culture(){
                   <h3>{l.timeTrace}</h3>
                   <label><span>{l.timeTrace}</span>
                     <select className='scope-select' aria-label='第一條河道時間痕跡選擇'
-                      value={activeStructureKey} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                      value={activeStructureKey} onChange={event=>{
+                         setStructureWindowKey(event.target.value);
+                         setSelectedPeriodKey(event.target.value);
+                       }}>
                       <option value='all'>{l.allTimeTraces}</option>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                         </select>
