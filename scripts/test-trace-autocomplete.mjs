@@ -154,3 +154,34 @@ test('unknown postal county is never guessed from coordinates during new writes'
  assert.doesNotMatch(db,/countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates/);
  assert.match(db,/county_id:countyIdFromAddress\(place\.address\)/);
 });
+
+test('editing a legacy addressless anchor preserves its stored county ID',async()=>{
+ const source=read('app/modular/features/trace/trace-data.js');
+ const match=source.match(/export async function updateTraceAnchor[\s\S]*?(?=\nfunction validatedTraceMapValues)/);
+ assert.ok(match,'actual updateTraceAnchor implementation is available');
+ const writes=[];
+ const query={
+   eq(){return this;},
+   select(){return {single:async()=>({data:{uid:'ABCDEFG1'},error:null})};}
+ };
+ const dbAuthRelation=()=>({update:values=>{writes.push(values);return query;}});
+ const deps={
+   sourceId:x=>x,
+   validCoordinates:()=>true,validRadius:()=>true,
+   verifiedText:x=>x,descriptionText:x=>x,
+   countyIdFromAddress:address=>address.startsWith('新北市')?'TW-NWT':null,
+   locationFields:x=>x,
+   inspectTraceAnchorBeforeWrite:async()=>({reuse:null}),
+   dbAuthRelation,relation:x=>x,verified:result=>result.data
+ };
+ const update=new Function(...Object.keys(deps),
+   match[0].replace('export async function','async function')+';return updateTraceAnchor;')
+   (...Object.values(deps));
+ await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'',
+   longitude:121.5,latitude:25});
+ assert.equal(Object.hasOwn(writes[0],'county_id'),false,
+   'editing without verified address must not clear historical county_id');
+ await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'新北市板橋區文化路100號',
+   longitude:121.5,latitude:25});
+ assert.equal(writes[1].county_id,'TW-NWT');
+});
