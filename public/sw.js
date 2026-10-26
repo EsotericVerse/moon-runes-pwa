@@ -90,6 +90,14 @@ async function htmlStrategy(event){
     throw error;
   }
 }
+// A Service Worker stays installed for all modes. 'off' simply bypasses its
+// optional response caches; browser built-in HTTP caching is outside SW control.
+let runtimeCacheMode='cache';
+self.addEventListener('message',event=>{
+  if(event.data?.type!=='LOC_CACHE_POLICY')return;
+  const mode=event.data.mode;
+  if(mode==='off'||mode==='cache'||mode==='isr')runtimeCacheMode=mode;
+});
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   const names=await caches.keys();
@@ -103,7 +111,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 })()));
 self.addEventListener('fetch',event=>{
   const request=event.request,url=urlFor(request);
-  if(!url)return;
+  if(!url||runtimeCacheMode==='off')return;
   if(isStaticAsset(request,url))event.respondWith(staticStrategy(event));
   else if(isImage(request,url))event.respondWith(imageStrategy(event));
   else if(isPublicHtml(request,url))event.respondWith(htmlStrategy(event));
