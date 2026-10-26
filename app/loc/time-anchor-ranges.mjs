@@ -1,83 +1,76 @@
-// Canonical Time interval references. Store only Time UIDs in anchor_ids text[],
-// for time_period records, using one entry per anchor interval: UID, UID-UID, UID-0.
-// time_trace instead stores a list of time_period UID references.
-// A separator never implies that unreferenced time belongs to the period.
+// Canonical three-level Time graph:
+// anchor.address DATE -> time_period.anchor_ids [startUID, optional endUID]
+// -> time_trace.anchor_ids [time_period UID, ...].
+// A missing endpoint leaves a genuine surviving point; no '0' or now() anchor.
 const UID=/^[0-9A-F]{4}$/;
-const PERIOD_TOKEN=/^([0-9A-F]{4})(?:-([0-9A-F]{4}|0))?$/;
-
+const dateOf=value=>{
+  const date=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
+};
 export function isTimeUid(value){return UID.test(String(value||''));}
 export function allocateTimeUid(rows=[]){
-  const taken=new Set(rows.map(row=>String(row?.uid||'')));
+  const occupied=new Set((Array.isArray(rows)?rows:[]).map(row=>String(row?.uid||'')));
   for(let i=1;i<=65535;i++){
     const uid=i.toString(16).toUpperCase().padStart(4,'0');
-    if(!taken.has(uid))return uid;
+    if(!occupied.has(uid))return uid;
   }
-  throw new Error('本 Scope 的四碼時間 UID 已用盡');
+  throw new Error('四碼時間 UID 已用盡');
 }
 export function encodeTimeSegment(start,end=''){
   const a=String(start||'').toUpperCase(),b=String(end||'').toUpperCase();
-  if(!isTimeUid(a)||b&&!isTimeUid(b)&&b!=='0')throw new Error('無效的時間定錨點 UID');
-  return b?a+'-'+b:a;
+  if(!isTimeUid(a)||b&&!isTimeUid(b)||a===b)
+    throw new Error('事件只能引用一個或兩個不同的定錨點 UID');
+  return b?[a,b]:[a];
 }
-export function decodeTimeSegments(value,{legacy=false,type='period'}={}){
-  const input=Array.isArray(value)?value.map(v=>String(v||'').trim()).filter(Boolean):[];
-  if(!input.length)return [];
-  if(legacy&&input.every(t=>!PERIOD_TOKEN.test(t))){
-    if(input.length===1)return [{start:input[0],end:'',raw:input[0]}];
-    if(type==='event'&&input.length>2)
-      return input.slice(1).map((t,i)=>({start:input[i],end:t,raw:input[i]+'-'+t}));
-    return [{start:input[0],end:input[1]==='0'?'0':input[1],raw:input.join(',')}];
-  }
-  return input.map(token=>{
-    const match=PERIOD_TOKEN.exec(token);
-    if(!match)return {start:'',end:'',raw:token,malformed:true};
-    return {start:match[1],end:match[2]||'',raw:token};
-  });
+export function decodeTimeSegments(value,{legacy=false}={}){
+  const ids=Array.isArray(value)?value.map(v=>String(v||'').trim()).filter(Boolean):[];
+  if(!ids.length)return [];
+  const valid=legacy||ids.every(isTimeUid);
+  return [{start:ids[0]||'',end:ids[1]||'',raw:ids.join(','),
+    malformed:!valid||ids.length>2||ids[0]===ids[1]}];
 }
-function dateOf(value){const s=String(value||'').slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'';}
 export function previousTimeDay(value){
-  const s=dateOf(value);if(!s)return '';
-  const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);
+  const day=dateOf(value);
+  if(!day)return '';
+  const date=new Date(day+'T00:00:00Z');date.setUTCDate(date.getUTCDate()-1);
+  return date.toISOString().slice(0,10);
 }
-export function resolveTimeSegments(tokens,anchors,{period=true,today=''}={}){
-  const known=anchors instanceof Map?anchors:new Map((anchors||[]).map(row=>[String(row.uid||''),row]));
-  return decodeTimeSegments(tokens).map((range,index)=>{
-    const first=known.get(range.start),last=range.end&&range.end!=='0'?known.get(range.end):null;
-    const start=dateOf(first?.address),end=dateOf(last?.address);
-    const openEnd=range.end==='0';
-    const missing=[range.start,...(range.end&&range.end!=='0'?[range.end]:[])].filter(id=>!known.has(id));
-    const invalid=Boolean(range.malformed||missing.length||(range.end&&range.end!=='0'&&start&&end&&end<=start));
-    // A deleted endpoint invalidates only its edge, not the period or other ranges.
-    // A still-existing endpoint remains a point; never bridge to another segment.
-    const from=start||end||'';
-    const to=invalid?from:
-      (openEnd?dateOf(today)||null:
-        end?(period?previousTimeDay(end):end):from);
-    return {index,anchor_ids:range.end?[range.start,range.end]:[range.start],
-      start_date:from||null,end_date:to||null,open_end:openEnd,
-      point:!range.end||invalid,invalid,missing_anchor_ids:missing,
-      start_anchor_id:range.start,end_anchor_id:range.end&&range.end!=='0'?range.end:null};
+export function resolveTimeSegments(anchorIds,anchors){
+  const known=anchors instanceof Map?anchors:new Map((Array.isArray(anchors)?anchors:[])
+    .map(row=>[String(row.uid||''),row]));
+  return decodeTimeSegments(anchorIds).map((ids,index)=>{
+    const first=known.get(ids.start),last=ids.end?known.get(ids.end):null;
+    const a=dateOf(first?.address),b=dateOf(last?.address);
+    const missing=[ids.start,...(ids.end?[ids.end]:[])]
+      .filter(uid=>!known.has(uid));
+    const reversed=Boolean(a&&b&&b<a);
+    const point=!a||!b;
+    const start=point?a||b:a;
+    const end=point?start:b;
+    return {index,anchor_ids:[ids.start,...(ids.end?[ids.end]:[])],
+      start_anchor_id:ids.start||null,end_anchor_id:ids.end||null,
+      start_date:start||null,end_date:end||null,
+      invalid:Boolean(ids.malformed||missing.length||reversed),
+      point:point||a===b,open_end:false,
+      missing_anchor_ids:missing};
   });
 }
-export function timeSegmentContainsDate(range,day,{today=''}={}){
-  if(!range?.start_date)return false;
-  // Deleting one endpoint leaves the surviving endpoint as a real point.
-  if(range.invalid)return Boolean(range.point&&dateOf(day)===dateOf(range.start_date));
-  const d=dateOf(day),start=dateOf(range.start_date);
-  const end=range.open_end?dateOf(today):dateOf(range.end_date);
-  return Boolean(d&&start&&d>=start&&(!end||d<=end));
+export function timeSegmentContainsDate(range,day){
+  const date=dateOf(day),start=dateOf(range?.start_date),end=dateOf(range?.end_date);
+  if(!date||!start||!end)return false;
+  // If one referenced anchor was deleted, the remaining point is still real.
+  if(range.invalid&&!range.point)return false;
+  return date>=start&&date<=end;
 }
-export function timePeriodContainsDate(period,day,{today=''}={}){
-  return (period?.ranges||[]).some(range=>timeSegmentContainsDate(range,day,{today}));
+export function timePeriodContainsDate(period,day){
+  return (period?.ranges||[]).some(range=>timeSegmentContainsDate(range,day));
 }
 export function resolveTimeTrace(periodUids,events){
   const known=events instanceof Map?events:new Map((events||[]).map(event=>[String(event.uid),event]));
   const entries=Array.isArray(periodUids)?periodUids:[];
-  const invalidLinks=[];
-  const ranges=[];
-  for(const [position,uidRaw] of entries.entries()){
-    const uid=String(uidRaw||'');
-    const event=known.get(uid);
+  const invalidLinks=[],ranges=[];
+  for(const [position,raw] of entries.entries()){
+    const uid=String(raw||''),event=known.get(uid);
     if(!event||event.type!=='time_period'){
       invalidLinks.push(uid);
       continue;
@@ -92,24 +85,23 @@ export function timePeriodSortDate(period){
   return (period?.ranges||[]).map(x=>x.start_date).filter(Boolean).sort()[0]||'9999-12-31';
 }
 export function timePeriodsWithValidRanges(rows=[]){
-  return rows.filter(row=>row.ranges?.some(range=>range.start_date&&!range.invalid));
+  return rows.filter(row=>row.ranges?.some(range=>range.start_date&&(!range.invalid||range.point)));
 }
-
-export function timeDateWindows(ranges=[],today=''){
+// Merge only overlapping or adjoining valid ranges for efficient SQL selection.
+// Disconnected ranges remain separate and cannot inherit today's date.
+export function timeDateWindows(ranges=[]){
   const windows=(Array.isArray(ranges)?ranges:[])
-    .filter(range=>range?.start_date)
-    .map(range=>({
-      startDate:dateOf(range.start_date),
-      endDate:dateOf(range.open_end?today:range.end_date)||dateOf(range.start_date)
-    }))
+    .filter(range=>range?.start_date&&(!range.invalid||range.point))
+    .map(range=>({startDate:dateOf(range.start_date),
+      endDate:dateOf(range.end_date)||dateOf(range.start_date)}))
     .filter(range=>range.startDate&&range.endDate&&range.endDate>=range.startDate)
     .sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate));
   const merged=[];
-  for(const window of windows){
-    const previous=merged.at(-1);
-    if(previous&&window.startDate<=previous.endDate){
-      if(window.endDate>previous.endDate)previous.endDate=window.endDate;
-    }else merged.push({...window});
+  for(const next of windows){
+    const prev=merged.at(-1);
+    if(prev&&next.startDate<=prev.endDate){
+      if(next.endDate>prev.endDate)prev.endDate=next.endDate;
+    }else merged.push({...next});
   }
   return merged;
 }
