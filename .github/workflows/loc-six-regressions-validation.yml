@@ -27,9 +27,9 @@ jobs:
           node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs 2>&1 | tee complete-tests.log
       - name: LOC bootstrap integration
         run: npm run test:bootstrap
-      - name: Next production build for local Chrome smoke, no deployment
-        run: npm run build
-      - name: Chrome Culture UI against local Next production server
+      - name: Supported LOC static export for local Chrome smoke, no deployment
+        run: npm run build:static
+      - name: Chrome Culture UI against the exported site
         env:
           LOC_REQUIRE_CULTURE_BROWSER: '1'
         run: node scripts/test-culture-dynamic-browser.mjs

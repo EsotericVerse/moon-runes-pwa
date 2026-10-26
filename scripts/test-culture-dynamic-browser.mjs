@@ -16,18 +16,17 @@ const wait=async(fn,timeout=20000)=>{
   throw new Error('Culture UI interaction timed out after '+timeout+'ms');
 };
 // A raw Node glob runs before the static export exists. That is a unit
-// phase, not a meaningful browser failure; the local Next smoke runs explicitly
+// phase, not a meaningful browser failure; the built-page smoke runs explicitly
 // with LOC_REQUIRE_CULTURE_BROWSER=1 after npm run build.
-const builtCulture=existsSync('.next/BUILD_ID');
+const builtCulture=existsSync('out/lo3rwang/culture/index.html');
 if(!builtCulture&&process.env.LOC_REQUIRE_CULTURE_BROWSER!=='1'){
-  test('Culture live Chrome integration (requires a Next production build)',
+  test('Culture live Chrome integration (requires the project static export)',
     {skip:'Run after npm run build with LOC_REQUIRE_CULTURE_BROWSER=1'},()=>{});
 }else{
-if(!builtCulture)throw new Error('Culture browser integration requires a .next/BUILD_ID production build; run npm run build first');
-// Exercise the real local production app. Pure static export cannot compile
-// LOC's dynamic API routes, so a directory-only http.server is inappropriate.
-const server=spawn('node',['node_modules/next/dist/bin/next','start',
-  '--port','8766','--hostname','127.0.0.1'],{stdio:'ignore'});
+if(!builtCulture)throw new Error('Culture browser integration requires out/lo3rwang/culture/index.html; run npm run build:static first');
+// Use the repository's supported build:static output. The export tool
+// excludes Next-only dynamic API routes before producing the public pages.
+const server=spawn('python3',['-m','http.server','8766','--bind','127.0.0.1','--directory','out'],{stdio:'ignore'});
 const chrome=spawn('google-chrome',[
   '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
   '--disable-background-networking','--remote-debugging-port=9223',
