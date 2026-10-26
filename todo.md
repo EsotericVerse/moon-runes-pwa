@@ -1,3 +1,14 @@
+## 2026-10-26｜Admin 選單整併（人員首頁／名單管理／網路設定）
+
+- [ ] **ADMIN-NAV-20261026｜同一短期分支完整實作與自測** `[IN PROGRESS / NOT FOR MERGE]`
+  - **分支：** `task/admin-network-lists-nav`（先在 main 登記，再以包含此登記的 main SHA 建立）。**登記前 main：** `1fc5d0c74a2379cb96fcd265993e8f5c9fb0322e`。
+  - **明確交付：** Admin 首頁預設選中「人員」；合併「資料庫設定」與「ISR 設定／快取」為「網路設定」（保留各自獨立設定、三模式 off/cache/isr、最多 32 家 ISR 來源）；合併「保留名稱」與「系統黑名單」為「名單管理」（保留保留名稱僅編輯備註，以及 Email 黑名單增刪與既有 RLS，不混用資料表）。選單總計「人員／名單管理／網路設定／區塊／配色」。舊 `?section=database/isr/reserved/blocklist` 入口映射到新選單，不增加新的路由頁。
+  - **安全與相容：** 維持 Service Worker、JS 路由／Blocks、快取三模式、現有資料表與權限；共頁的多組編輯內容使用既有 EditDock 儲存／取消／切換機制，避免未存修改遺失。不得自行部署 Pages／Cloudflare／IPA／啟用 ISR。
+  - **自測／CI：** Admin 入口、預設人員、舊連結相容、各舊面板仍實際裝載，兩組共頁儲存及未儲存切換；聚焦 Node 回歸、完整 Bootstrap、Build、適用現有 CI（成功終態與 logs）；自動測試無法覆蓋實際認證時須標明實機／正式站邊界。全通過再合併 main、關 PR，清理分支並於本紀錄寫入 SHA 與待集中驗收。
+  - **下一步：** 建立上述 branch，修改 AdminHomeView 及相依測試，跑完 CI 後整理完整交付。
+
+---
+
 ## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585；待集中驗收／未部署）
 > **狀態：程式已合併 main；等待使用者集中手動部署，正式功能仍待工程端驗證及集中驗收。** 此為最新指令，後方「不得合併頁面控管」與「只編輯四個簡短標題」已被取代。**原分支編號／名稱：** `feat/hero-management-consolidation-20261026`；**PR：** [#585](https://github.com/EsotericVerse/moon-runes-pwa/pull/585)（merged）；**main merge SHA：** `8ae9c3f2581d568f1bacf54088e4b1a0dec16502`。**CI：** [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) 終態 success：管理 Hero 回歸 5/5、聚焦 Trace 73/73、Bootstrap 211/211、Next build 257/257、Chrome Trace 桌機／手機與 ISR 停用檢查通過。尚未進行真實 Admin 登入寫入／讀回、手機／桌機管理編輯互動及正式站版本驗證，**不能把「合併 main」視為已部署或使用者已驗收**。
 
