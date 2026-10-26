@@ -5,6 +5,14 @@ const UID=/^[0-9A-F]{4}$/;
 const PERIOD_TOKEN=/^([0-9A-F]{4})(?:-([0-9A-F]{4}|0))?$/;
 
 export function isTimeUid(value){return UID.test(String(value||''));}
+export function allocateTimeUid(rows=[]){
+  const taken=new Set(rows.map(row=>String(row?.uid||'')));
+  for(let i=1;i<=65535;i++){
+    const uid=i.toString(16).toUpperCase().padStart(4,'0');
+    if(!taken.has(uid))return uid;
+  }
+  throw new Error('本 Scope 的四碼時間 UID 已用盡');
+}
 export function encodeTimeSegment(start,end=''){
   const a=String(start||'').toUpperCase(),b=String(end||'').toUpperCase();
   if(!isTimeUid(a)||b&&!isTimeUid(b)&&b!=='0')throw new Error('無效的時間定錨點 UID');
