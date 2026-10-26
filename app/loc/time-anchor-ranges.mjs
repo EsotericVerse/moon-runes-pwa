@@ -43,7 +43,7 @@ export function resolveTimeSegments(tokens,anchors,{period=true,today=''}={}){
   const known=anchors instanceof Map?anchors:new Map((anchors||[]).map(row=>[String(row.uid||''),row]));
   return decodeTimeSegments(tokens).map((range,index)=>{
     const first=known.get(range.start),last=range.end&&range.end!=='0'?known.get(range.end):null;
-    const start=dateOf(first?.time_date),end=dateOf(last?.time_date);
+    const start=dateOf(first?.address),end=dateOf(last?.address);
     const openEnd=range.end==='0';
     const missing=[range.start,...(range.end&&range.end!=='0'?[range.end]:[])].filter(id=>!known.has(id));
     const invalid=Boolean(range.malformed||missing.length||(range.end&&range.end!=='0'&&start&&end&&end<=start));
