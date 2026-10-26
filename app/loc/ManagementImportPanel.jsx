@@ -255,7 +255,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
   return {created:createMedia.length,connected};
 }
 
-function UniversalImport({scopeId,format,onFormatChange}) {
+function UniversalImport({scopeId,format,onFormatChange,saveEnabled=true}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -301,13 +301,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     try{
       if(isZip){
         const {detectZipArchiveSource,inspectPrivateArchive}=await import('./private-archive-universal.mjs');
-        const result=await detectZipArchiveSource(file);
+        const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
         setArchiveDetection(result);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],uidOwners=new Map(),exifSamples=[];
         let ignored=0;
-        const summary=await inspectPrivateArchive(file,{onRecord:record=>{
+        const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           const article=archiveGalaxyRow(record);
           if(!article){ignored++;return;}
           const previous=uidOwners.get(article.uid);
@@ -369,6 +369,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   }
   async function run(){
     if(busy||!rows.length)return;
+    if(!saveEnabled){setStatus('已解析完成；目前設定為只預覽，不寫入資料庫。');return;}
     if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
@@ -492,9 +493,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <p>{t('uiExtra.importUI.saveHint')}</p>
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        disabled={busy||!saveEnabled||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
+      {!saveEnabled?<p className="scope-status">目前為預覽模式，未啟用資料庫寫入。</p>:null}
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
@@ -506,14 +508,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
 }
 
 
-export default function ManagementImportPanel({scopeId}){
+export default function ManagementImportPanel({scopeId,saveEnabled=true}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
   return <div className="scope-management-imports">
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
-      <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat}/>
+      <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat} saveEnabled={saveEnabled}/>
     </section>
   </div>;
 }
