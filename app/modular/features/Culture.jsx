@@ -57,7 +57,8 @@ function isInteractiveTarget(target){
 
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
-// Time has ONE management entry. Type selection belongs to the editor form.const EMPTY_RIVER_FOCUS=Object.freeze({});
+// Time has ONE management entry. Type selection belongs to the editor form.
+const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_CULTURE_GROUPS=Object.freeze([]);
 const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}

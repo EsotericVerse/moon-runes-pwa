@@ -8,7 +8,7 @@ import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query'
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
-import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate} from './time-anchor-ranges.mjs';
 
 
 

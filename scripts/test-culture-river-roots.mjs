@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
+import {parse} from '@babel/parser';
 import {summarizeCultureRiverRoots,selectCultureRiverChildren,buildCultureRiverRootPayload} from '../app/loc/culture-river-roots.mjs';
 const taxonomy={
   categories:[{category_code:'facebook',enabled:true},{category_code:'others',enabled:true}],
@@ -85,4 +86,23 @@ test('progressive Culture component uses SQL once and does not require numeric I
   assert.match(source,/numericRows:requestedChildren/);
   assert.doesNotMatch(source,/readNumericIsr|usesNumericIsr|systemChildrenQuery|customChildrenQuery|mediaChildrenQuery/);
   assert.equal((source.match(/await selectScopeDailyCounts\(scopeData/g)||[]).length,1);
+});
+
+test('Culture period loading uses declared render focus and imported period intersection helper',()=>{
+  // Verify JavaScript bindings, not display wording or regex formatting.
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const cultureAst=parse(culture,{sourceType:'module',plugins:['jsx']});
+  const topLevelBindings=new Set(cultureAst.program.body
+    .filter(node=>node.type==='VariableDeclaration')
+    .flatMap(node=>node.declarations)
+    .filter(node=>node.id.type==='Identifier')
+    .map(node=>node.id.name));
+  assert.ok(topLevelBindings.has('EMPTY_RIVER_FOCUS'),'render focus must exist at module scope');
+  const query=readFileSync(new URL('../app/loc/culture-query.js',import.meta.url),'utf8');
+  const queryAst=parse(query,{sourceType:'module',plugins:['jsx']});
+  const rangesImport=queryAst.program.body.find(node=>node.type==='ImportDeclaration'
+    &&node.source.value==='./time-anchor-ranges.mjs');
+  assert.ok(rangesImport?.specifiers.some(node=>node.type==='ImportSpecifier'
+    &&node.imported.name==='timePeriodContainsDate'),
+  'LOC culture must import the actual period-range predicate it calls');
 });
