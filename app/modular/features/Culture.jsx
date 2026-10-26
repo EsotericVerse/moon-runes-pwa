@@ -627,8 +627,8 @@ export default function Culture(){
     [timelineItems,expandedTimeTraceIds]);
   const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
     current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
-  // The first river starts with a complete anchor overview; choosing a trace
-  // only changes its camera. Lower Culture queries keep their recent window.
+  // The first river starts with an all-anchor camera without changing the
+  // default recent-period SQL query. Manual period selection retains its behavior.
   const activeStructureKey=structureWindowKey==='all'||primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
     ?structureWindowKey:'all';
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
