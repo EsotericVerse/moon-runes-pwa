@@ -240,6 +240,27 @@ BEGIN
    WHERE s.trace_type<>b.trace_type
       OR cardinality(s.anchor_uids)<>cardinality(b.old_anchor_uids)
  ) THEN RAISE EXCEPTION 'Type or ordered Queue cardinality changed'; END IF;
+ IF EXISTS (
+   SELECT 1 FROM silver.lo3rwang_trace m
+   JOIN silver.trace_uid_migration_backup original
+     ON original.scope_id='lo3rwang' AND original.new_uid=m.uid
+   WHERE m.trace_type='map' AND m.anchor_uids IS DISTINCT FROM (
+     SELECT array_agg(resolved.new_uid::text ORDER BY old.ord)
+     FROM unnest(original.old_anchor_uids) WITH ORDINALITY old(uid,ord)
+     JOIN silver.trace_uid_migration_backup resolved
+       ON resolved.scope_id='lo3rwang' AND resolved.old_uid=old.uid
+   )
+ ) OR EXISTS (
+   SELECT 1 FROM silver.loc_trace m
+   JOIN silver.trace_uid_migration_backup original
+     ON original.scope_id=m.scope_id AND original.new_uid=m.uid
+   WHERE m.trace_type='map' AND m.anchor_uids IS DISTINCT FROM (
+     SELECT array_agg(resolved.new_uid::text ORDER BY old.ord)
+     FROM unnest(original.old_anchor_uids) WITH ORDINALITY old(uid,ord)
+     JOIN silver.trace_uid_migration_backup resolved
+       ON resolved.scope_id=m.scope_id AND resolved.old_uid=old.uid
+   )
+ ) THEN RAISE EXCEPTION 'Frame Queue order or membership changed'; END IF;
 END
 $verify$;
 
