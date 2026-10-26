@@ -62,6 +62,8 @@ jobs:
             fi
             echo "LOCAL CHROME OK $route rendered DOM bytes=$(wc -c <"/tmp/culture-$id.html")"
           done
+      - name: Culture root expand interaction under five seconds (no extra RPC)
+        run: node scripts/test-culture-dynamic-browser.mjs
       - name: Warning and error baseline summary
         if: always()
         shell: bash
