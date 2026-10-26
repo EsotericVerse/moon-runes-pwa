@@ -162,10 +162,15 @@ export default function CultureTimelineEditor({
       }else{
         if(!anchorChoices.length)throw new Error('請先建立時間定錨點');
         if(!segments.length)throw new Error('請加入至少一個已存在的時間定錨點');
+        const unchangedLinks=Boolean(selectedId)&&
+          JSON.stringify(draft.anchor_ids)===JSON.stringify(original.current.anchor_ids);
         for(const s of segments){
-          if(!isTimeUid(s.start)||!anchors.has(s.start))throw new Error('找不到起始定錨點：'+s.start);
-          if(s.end&&s.end!=='0'&&!anchors.has(s.end))throw new Error('找不到結束定錨點：'+s.end);
-          if(s.end&&s.end!=='0'&&day(anchors.get(s.end)?.time_date)<=day(anchors.get(s.start)?.time_date))
+          if(!isTimeUid(s.start)||!anchors.has(s.start)&&!unchangedLinks)
+            throw new Error('找不到起始定錨點：'+s.start);
+          if(s.end&&s.end!=='0'&&!anchors.has(s.end)&&!unchangedLinks)
+            throw new Error('找不到結束定錨點：'+s.end);
+          if(s.end&&s.end!=='0'&&anchors.has(s.start)&&anchors.has(s.end)&&
+            day(anchors.get(s.end)?.time_date)<=day(anchors.get(s.start)?.time_date))
             throw new Error('區間結束定錨點必須晚於起始定錨點');
         }
         payload.anchor_ids=segments.map(s=>encodeTimeSegment(s.start,s.end));
@@ -197,6 +202,17 @@ export default function CultureTimelineEditor({
       <h4>{selectedId?'編輯':'新增'}{({anchor:'定錨點',period:'時期',event:'事件'})[draft.type]}</h4>
     </header>
     {query.error?<p className="scope-status scope-error" role="alert">{query.error.message}</p>:null}
+    {rows.length?<label>現有時間紀錄（含失效連線，可重新選擇定錨點）
+      <select className="scope-select" value={selectedId} onChange={event=>{
+        if(event.target.value)selectRow(event.target.value);
+        else reset();
+      }}>
+        <option value="">新增紀錄</option>
+        {rows.map(row=><option key={row.uid} value={row.uid}>
+          {({anchor:'定錨點',period:'時期',event:'事件'})[row.type]}｜{row.title}
+        </option>)}
+      </select>
+    </label>:null}
     {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
     <form className="scope-culture-quick-form" onSubmit={save}>
       {!selectedId?<label>種類
@@ -220,6 +236,7 @@ export default function CultureTimelineEditor({
           <label>第 {index+1} 段起點
             <select className="scope-select" value={segment.start}
               onChange={e=>updateSegment(index,'start',e.target.value)}>
+              {!anchors.has(segment.start)?<option value={segment.start}>已失效：{segment.start}</option>:null}
               {anchorChoices.map(row=><option key={row.uid} value={row.uid}>{day(row.time_date)}｜{row.title}</option>)}
             </select>
           </label>
@@ -228,6 +245,8 @@ export default function CultureTimelineEditor({
               onChange={e=>updateSegment(index,'end',e.target.value)}>
               <option value="">單一定錨點</option>
               <option value="0">開放至今</option>
+              {segment.end&&segment.end!=='0'&&!anchors.has(segment.end)?
+                <option value={segment.end}>已失效：{segment.end}</option>:null}
               {anchorChoices.filter(row=>row.uid!==segment.start)
                 .map(row=><option key={row.uid} value={row.uid}>{day(row.time_date)}｜{row.title}</option>)}
             </select>
