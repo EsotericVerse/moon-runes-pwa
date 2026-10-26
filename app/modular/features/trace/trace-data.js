@@ -263,7 +263,7 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
   const existing=comparableAnchors({anchors},id,excludeUid);
   return classifyNewAnchor({...anchor,source_scope:id,trace_type:'anchor'},existing);
 }
-export async function addTraceAnchor({scopeId,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
+export async function addTraceAnchor({scopeId,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500,forceNewIdentity=false}){
   const id=sourceId(scopeId);
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
@@ -274,8 +274,12 @@ export async function addTraceAnchor({scopeId,title,description='',address='',fl
     county_id:await countyIdAt(longitude,latitude,address),
     ...locationFields({address,floor_label,floor_level})
   };
-  const {reuse}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
-  if(reuse)return reuseExistingAnchor({scopeId:id,candidate:data,existing:reuse});
+  // Explicitly copied cross-Scope references must get a NEW UID in this Scope.
+  // Neither run same-Scope dedup nor alias-update an existing place's history.
+  if(!forceNewIdentity){
+    const {reuse}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
+    if(reuse)return reuseExistingAnchor({scopeId:id,candidate:data,existing:reuse});
+  }
   const {source_scope,...record}=data;
   return verified(await dbAuthRelation(relation(id)).insert(record).select('uid').single(),'新增定錨點');
 }
