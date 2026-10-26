@@ -85,7 +85,7 @@ test('unlinked dated anchors are visible even when no traces exist',()=>{
 test('each Scope has its own permanent anchor lane and stable identifiers',()=>{
   const data=buildTimeTraceRiver([
     row('A001','anchor','甲','2026-01-01'),
-    row('A001','anchor','乙','2026-01-02',{scope_id:'other'})
+    row('A001','anchor','乙','2026-01-02',null,{scope_id:'other'})
   ]);
   assert.deepEqual(data.groups.map(x=>x.label),['example · 定錨點','other · 定錨點']);
   assert.deepEqual(data.items.map(x=>x.id),['time-anchors:example:A001','time-anchors:other:A001']);
