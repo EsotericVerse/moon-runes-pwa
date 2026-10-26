@@ -6,8 +6,8 @@ import {Index,Charset} from 'flexsearch';
 
 const terms=[
   {term:'板橋車站',term_kind:'place',document_count:120},
-  {term:'板橋夜市',term_kind:'place',document_count:18},
-  {term:'台北車站',term_kind:'place',document_count:200},
+  {term:'板橋旅行',term_kind:'title',document_count:18},
+  {term:'台北散步',term_kind:'title',document_count:200},
   {term:'北部旅行',term_kind:'hashtag',document_count:11},
   {term:'Hip-Hop',term_kind:'keyword',document_count:3},
   {term:'京都旅行',term_kind:'title',document_count:2},
@@ -24,7 +24,8 @@ test('per-Scope physical term tables cannot alias or traverse another scope',()=
 test('FlexSearch provides bounded local Chinese/English completions without SQL',()=>{
   const idx=new Index({tokenize:'forward',encoder:Charset.CJK});
   terms.forEach((row,id)=>idx.add(id,row.term));
-  assert.deepEqual(rankScopeSearchSuggestions(idx,terms,'板橋',8),['板橋車站','板橋夜市']);
+  assert.deepEqual(rankScopeSearchSuggestions(idx,terms,'板橋',8),['板橋旅行']);
+  assert.ok(!rankScopeSearchSuggestions(idx,terms,'板橋',8).includes('板橋車站'),'stale check-in places cannot be suggested');
   assert.deepEqual(rankScopeSearchSuggestions(idx,terms,'',8),[]);
   assert.ok(rankScopeSearchSuggestions(idx,terms,'Hip',8).includes('Hip-Hop'));
   assert.ok(rankScopeSearchSuggestions(idx,terms,'京都',8).includes('京都旅行'));
@@ -38,4 +39,11 @@ test('the UI does not subscribe to keystroke database queries or history tables'
   assert.doesNotMatch(ui,/loc_search_keywords|localStorage|indexedDB|isr|searchGalaxyRows/i);
   assert.match(data,/_search_terms/);
   assert.doesNotMatch(data,/loc_search_keywords|source_place|\.galaxy|union all/i);
+});
+
+test('offline rebuild and runtime autocomplete exclude spatial check-in candidates',()=>{
+  const rebuild=readFileSync(new URL('../scripts/sql/rebuild-scope-search-terms.sql',import.meta.url),'utf8');
+  const client=readFileSync(new URL('../app/loc/search-terms-client.mjs',import.meta.url),'utf8');
+  assert.doesNotMatch(rebuild,/btrim\\(source_place\\)|'place'::text kind/);
+  assert.match(client,/row\\.term_kind!==['"]place['"]/);
 });
