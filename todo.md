@@ -148,6 +148,8 @@
 
   - **2026-10-26 發布後公開網路實測：** 一次性 GitHub Actions [40285508839](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285508839) 通過：正式首頁、文化、統計的 HTTP 均為 200，且含新版 Next.js 靜態資產。GitHub runner 使用現行公開 publishable key 呼叫真實 Supabase REST RPC：文化讀取 500 列、Scope overview 500 列、LOC overview 114 列，三種匿名資料路徑均成功。一次性 smoke workflow 已移除，Pages 已恢復手動發布。此證據包含真實 HTTP／RPC，但非互動式瀏覽器檢測；已開啟的舊分頁必須重新載入才會使用新 JS，仍保留完整 Browser UI／Network 和持續操作驗收，本項不提前結案。
 
+  - **2026-10-26 真實 Chrome 渲染實測：** 一次性 GitHub Actions [40285855308](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285855308) 在 Linux headless Chrome 實際載入並執行正式站 JS，驗證 `/culture/`、`/statics/`、`/lo3rwang/culture/`、`/lo3rwang/statics/` 四頁均未顯示資料庫連結失敗或 scope-error（0 個），文化出現 vis-timeline、統計有圖表標記，測試全部成功。GitHub Pages 發布及 GitHub runner 公開 HTTP、Supabase RPC 均已通過；一次性工作流程已刪除。**此為 Guest、冷啟動四頁的功能恢復證據，不代表長時連續使用、登入/Admin、舊分頁 SW 更新、所有空資料／切換操作已全面驗收；維持剩餘需求為開放項。**
+
 
 - [ ] **LOC-TODO-03｜Cloudflare 成本、快取膨脹與過度部署根因** `[P0]` `[停用設定已核實／帳單待查證]`
   - 完成條件／待辦：讀取可核對的 Cloudflare Pages deployments、Workers、R2、DO 與建置／請求計費紀錄，分析成本與觸發來源；先維持現有停用隔離，再處理確定根因。**不得用重啟部署、ISR 或寫入型快取來驗證**。退休的 `incremental-cache/` 24 小時到期規則僅屬成本收斂，不代表可恢復 R2 寫入。
