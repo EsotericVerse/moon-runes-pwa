@@ -43,9 +43,7 @@ export async function loadCachePolicy({force=false}={}){
     }catch{
       // Missing configuration/primary connectivity must never activate ISR.
       // Safe default: no optional cache, normal direct database queries.
-      policy=DEFAULT_POLICY;
-      lastFetch=Date.now();
-      return policy;
+      return applyCachePolicy(DEFAULT_POLICY);
     }finally{inFlight=null;}
   })();
   return inFlight;
