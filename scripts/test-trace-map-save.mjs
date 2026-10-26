@@ -347,3 +347,15 @@ test('cross-Scope address can require a fresh own UID without touching duplicate
   assert.equal(actions.inserts[0].uid,'OWN00002');
   assert.match(manager(),/forceNewIdentity:true/);
 });
+
+test('public LOC Trace can view its own native Frames, not hidden behind author or union entries',()=>{
+  const publicTrace=read('app/modular/features/Trace.jsx');
+  const db=read('app/modular/features/trace/trace-data.js');
+  assert.match(publicTrace,/<option value="loc">LOC 自有痕跡<\/option>/);
+  assert.match(publicTrace,/readTraceMapIndex\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/readAllTraceAnchors\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/traceMapIndexKey\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(db,/export const traceMapIndexKey=\(scopeId,\{nativeOnly=false\}=\{\}\)=>/);
+  assert.match(db,/nativeOnly\?\['trace-map-index',scopeId,'native'\]/);
+});
