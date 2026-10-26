@@ -62,7 +62,7 @@ const anchors=[
 ];
 test('saved route plots all numbered stops and preserves segment order',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_list:anchors.map(a=>a.uid)});
   const features=map.sources['loc-trace-user-routes'].data.features;
   assert.deepEqual(features.filter(f=>f.geometry.type==='Point')
     .map(f=>f.properties.order),[1,2,3]);
@@ -72,7 +72,7 @@ test('saved route plots all numbered stops and preserves segment order',()=>{
 });
 test('clearing route removes line and no saved anchors never shows sample markers',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_uids:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_list:anchors.map(a=>a.uid)});
   instance.setSavedRoute(null);
   assert.deepEqual(map.sources['loc-trace-user-routes'].data.features,[]);
   assert.equal(map.sources['loc-trace-extrusions'],undefined);
@@ -118,7 +118,7 @@ test('numbered route stops are also clickable even when they overlap source pin'
   let selected=null;
   const {instance,map}=setup({anchors,onAnchorSelect:anchor=>{selected=anchor;}});
   const route={uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',
-    anchor_uids:anchors.map(row=>row.uid)};
+    anchor_list:anchors.map(row=>row.uid)};
   instance.setSavedRoute(route);
   map.callbacks['click|loc-trace-user-route-stops']({
     features:[{properties:{uid:anchors[1].uid,source_scope:'lo3rwang'}}]});

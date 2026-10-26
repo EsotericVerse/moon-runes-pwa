@@ -55,7 +55,7 @@ test('UI loads only the Frame index on entry; selected sites and report stay gat
   // An historical Frame intentionally starts with its complete time range.
   assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
   assert.match(trace,/enabled:supported&&routeListOpen&&traceIndex\.data!==undefined&&\(Boolean\(currentMap\)\|\|showingAll\)/);
-  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids\)/);
+  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list\)/);
   assert.match(trace,/!mapOnly&&reportPlace\?<TracePlaceResults/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
   assert.match(result,/mediaFiltered=useAsyncResource/);

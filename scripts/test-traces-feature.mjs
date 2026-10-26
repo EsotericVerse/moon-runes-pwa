@@ -173,7 +173,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/<option value="loc">LOC 自有痕跡<\/option>/);
   assert.ok(feature.indexOf('const periodScopeId=')<feature.indexOf('},[periodScopeId]);'),
     'derived Scope must be initialized before any effect dependency accesses it');
-  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
   assert.match(feature,/onAnchorSelect=\{choosePlace\}/);
   assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);

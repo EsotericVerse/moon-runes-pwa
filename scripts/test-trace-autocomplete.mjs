@@ -55,7 +55,7 @@ test('Frame editor queries Scope place names without county and adds only on exp
  assert.match(storage,/search_scope_trace_place_names/);
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
  assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)/);
- assert.match(storage,/anchor_uids:chosen/);
+ assert.match(storage,/anchor_list:chosen/);
 });
 
 test('same-name candidate list stays capped at eight; exact UID is a separate server lookup',()=>{

@@ -13,7 +13,7 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(entry,/mode==='map'\)return <TraceRouteManager/);
   assert.doesNotMatch(entry,/function MapEditor\(/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
-  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_list/);
   assert.match(page,/enabled:Boolean\(current\)/);
   assert.match(page,/readTraceAnchorSuggestions\(activeScope,debouncedQuery,8\)/);
   assert.match(page,/enabled:editorOpen&&Boolean\(debouncedQuery\)/);
@@ -31,7 +31,7 @@ test('Category/Class/Group/Item routes use shared hierarchy and saved Frame inde
   assert.match(page,/searchTraceRoutes\(maps,/);
   assert.match(page,/validateTraceRouteLabels\(category,className,group\)/);
   assert.match(db,/validateTraceRouteLabels\(category,className,group\)/);
-  assert.match(db,/anchor_uids:chosen/);
+  assert.match(db,/anchor_list:chosen/);
   assert.match(db,/nativeOnly/);
   assert.match(results,/column:'place_id'/);
   assert.doesNotMatch(results,/column:'content'/);
@@ -49,7 +49,7 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
   let reads=0,clears=0;
   const expected={uid:'MAP00001',source_scope:'lo3rwang',title:'成長路線測試',
     description:'保留路線',category:'旅遊',class:'夜市',class_group:'北部',
-    anchor_uids:['AAA00001','BBB00002']};
+    anchor_list:['AAA00001','BBB00002']};
   const args={
     busy:false,canEdit:true,editorOpen:true,setBusy:x=>states.push(x),
     setNotice:x=>messages.push(x),setIsError:()=>{},
@@ -157,7 +157,7 @@ test('LOC Frame management uses existing Scope-owned UIDs without auto-creating 
   const page=manager();
   assert.match(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
-  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_list,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
   assert.doesNotMatch(page,/createReferenceAnchor|readTraceAddressReferences|forceNewIdentity/);
 });
@@ -253,7 +253,7 @@ test('public LOC Trace can view its own native Frames, not hidden behind author 
   const db=read('app/modular/features/trace/trace-data.js');
   assert.match(publicTrace,/<option value="loc">LOC 自有痕跡<\/option>/);
   assert.match(publicTrace,/readTraceMapIndex\(scopeId\)/);
-  assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
   assert.match(publicTrace,/readAllTraceAnchors\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
   assert.match(publicTrace,/traceMapIndexKey\(scopeId\)/);
   assert.match(db,/export const traceMapIndexKey=\(scopeId,\{nativeOnly=false\}=\{\}\)=>/);
@@ -268,7 +268,7 @@ test('LOC public Trace auto discovers an existing author Frame without moving it
   assert.match(page,/allMaps\.filter\(row=>row\.source_scope===periodScopeId\)/);
   assert.match(page,/<option value="auto">自動顯示已儲存痕跡<\/option>/);
   assert.match(page,/<option value="lo3rwang">作者作品<\/option>/);
-  assert.match(page,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+  assert.match(page,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
 });
 test('LOC manager discovers existing author Frames in one safe union index',()=>{
   const managerSource=manager();

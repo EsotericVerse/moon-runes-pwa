@@ -22,7 +22,7 @@ test('one four-character UID per Trace row; exact lossless archive and Frame Que
   assert.ok(sql.includes('ALTER TABLE silver.lo3rwang_trace ALTER COLUMN uid TYPE varchar(4)'));
   assert.ok(sql.includes('ALTER TABLE silver.lrunes_trace ALTER COLUMN uid TYPE varchar(4)'));
   assert.ok(sql.includes('ALTER TABLE silver.loc_trace ALTER COLUMN uid TYPE varchar(4)'));
-  assert.ok(sql.includes('unnest(m.anchor_uids) WITH ORDINALITY'));
+  assert.ok(sql.includes('unnest(m.anchor_list) WITH ORDINALITY'));
   assert.ok(sql.includes('COUNT')||sql.includes('count(*)'));
   assert.doesNotMatch(sql,/UPDATE\s+silver\.(?:lo3rwang|lrunes)_galaxy/i);
   assert.ok(cleanup.includes('ALTER TABLE silver.lo3rwang_trace DROP COLUMN trace_id'));
@@ -36,7 +36,7 @@ test('selected anchor or Frame Queue resolves Galaxy place_id from anchor uid on
   ];
   assert.deepEqual(traceArticleIds(stops[0],stops),['0001']);
   const frame={uid:'0100',source_scope:'lo3rwang',
-    trace_type:'map',anchor_uids:['0002','0001','0003']};
+    trace_type:'map',anchor_list:['0002','0001','0003']};
   assert.deepEqual(traceArticleIds(frame,stops),['0002','0001']);
   assert.equal(traceArticleLabels(stops[0]).get('0001'),'一樓');
   assert.deepEqual(traceArticleIdFilters(['0001']),[
