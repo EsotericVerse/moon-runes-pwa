@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../app/loc/culture-river-roots.mjs';
+import {summarizeCultureRiverRoots,selectCultureRiverChildren,buildCultureRiverRootPayload} from '../app/loc/culture-river-roots.mjs';
 const taxonomy={
   categories:[{category_code:'facebook',enabled:true},{category_code:'others',enabled:true}],
   aliases:[{source_key:'facebook',category_code:'facebook'}]
@@ -28,4 +28,46 @@ test('expanded root filter never leaks other source types or top-level totals',(
   assert.deepEqual(selectCultureRiverChildren(rows,taxonomy,['custom']).map(x=>x.item_count),[2]);
   assert.deepEqual(selectCultureRiverChildren(rows,taxonomy,['media']).map(x=>x.item_count),[3]);
   assert.equal(selectCultureRiverChildren(rows,taxonomy,[]).length,0);
+});
+
+test('first paint summarizes only roots; expanded children reuse same numeric RPC data',()=>{
+  const counted={
+    text:[
+      {day:'2026-10-01',category:'Facebook',item_count:4},
+      {day:'2026-10-01',category:'Website',item_count:2},
+      {day:'2026-10-02',category:'Facebook',item_count:1},
+      {day:'',category:'Facebook',item_count:9}
+    ],
+    media:[{day:'2026-10-01',category:'music',item_count:3}]
+  };
+  const data=buildCultureRiverRootPayload(counted,taxonomy);
+  assert.deepEqual(data.rootBuckets,[
+    {category:'custom',start_date:'2026-10-01',item_count:2},
+    {category:'media',start_date:'2026-10-01',item_count:3},
+    {category:'system',start_date:'2026-10-01',item_count:4},
+    {category:'system',start_date:'2026-10-02',item_count:1}
+  ]);
+  assert.equal(data.groups.length,3);
+  assert.equal(data.numericRows.length,5);
+  assert.deepEqual(selectCultureRiverChildren(data.numericRows,taxonomy,['system'])
+    .filter(row=>row.day).map(row=>row.item_count),[4,1]);
+  assert.deepEqual(selectCultureRiverChildren(data.numericRows,taxonomy,['custom'])
+    .map(row=>row.item_count),[2]);
+  assert.deepEqual(selectCultureRiverChildren(data.numericRows,taxonomy,['media'])
+    .map(row=>row.item_count),[3]);
+  assert.equal(selectCultureRiverChildren(data.numericRows,taxonomy,[]).length,0);
+});
+
+test('empty and single-source Scopes retain correct parent counts without a child network request',()=>{
+  const empty=buildCultureRiverRootPayload({text:[],media:[]},taxonomy);
+  assert.deepEqual(empty,{rootBuckets:[],groups:[],numericRows:[]});
+  const single=buildCultureRiverRootPayload({
+    text:[{day:'2026-10-03',category:'Facebook',item_count:7}],
+    media:[]
+  },taxonomy);
+  assert.deepEqual(single.rootBuckets,[
+    {category:'system',start_date:'2026-10-03',item_count:7}
+  ]);
+  assert.equal(single.groups.length,1);
+  assert.equal(single.groups[0].item_count,7);
 });
