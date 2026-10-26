@@ -76,3 +76,14 @@ test('Meta explicitly labelled visited-place JSON preserves the check-in locatio
   assert.notEqual(facebookBackupImportUid(record),facebookBackupImportUid({...record,fbid:'another-place'}));
   assert.equal(facebookBackupPlace({label_values:[{label:encoded('地點'),value:encoded('私人現居地')}] }),'');
 });
+
+test('own existing anchor is edited; another Scope is only a positional reference',()=>{
+  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+  const lookups=readFileSync(new URL('../app/modular/features/trace/trace-spatial-reference-data.js',import.meta.url),'utf8');
+  assert.match(ui,/if\(reference.source_scope===scopeId\)\{\s*\/\/[^\n]+[\s\S]*?pickExisting\(reference.uid\)/);
+  assert.match(ui,/setAddress\(reference.address/);
+  assert.match(ui,/setFloorLevel\(reference.floor_level/);
+  assert.doesNotMatch(ui,/setEditingUid\(reference.uid\)/);
+  assert.match(lookups,/\.from\('loc_trace'\)/);
+  assert.match(lookups,/\.eq\('trace_type','anchor'\)/);
+});
