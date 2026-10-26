@@ -282,7 +282,7 @@ export default function Culture(){
     const oneYearAgo=new Date(endDate+'T00:00:00Z');
     oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear()-1);
     return {
-      period:'all',title:'未設定時期（最近一年）',display_label:'未設定時期（最近一年）',
+      period:'all',title:'未設定時間痕跡（最近一年）',display_label:'未設定時間痕跡（最近一年）',
       start_date:oneYearAgo.toISOString().slice(0,10),end_date:endDate,scope_id:classificationScope
     };
   },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
@@ -330,7 +330,7 @@ export default function Culture(){
   // An unfilled custom range is normal until dates are supplied.
   const optionalTimeRangeUnfilled=!keywordWindowStart||!keywordWindowEnd;
   const classificationPeriodLabel=keywordPeriodKey==='custom'
-    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.period;
+    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):'時間痕跡';
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -1341,8 +1341,8 @@ export default function Culture(){
                             setKeywordPeriodKey(next);
 
                           }}>
-                          <option value='latest'>{primaryPeriods.length?l.recentPeriod:'未設定時期（最近一年）'}</option>
-                           <option value='all'>{primaryPeriods.length?l.allPeriods:'最近一年（未設定時期）'}</option>
+                          <option value='latest'>{primaryPeriods.length?'最近時間痕跡':'未設定時間痕跡（最近一年）'}</option>
+                           <option value='all'>{primaryPeriods.length?'全部時間痕跡':'最近一年（未設定時間痕跡）'}</option>
                            {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                            <option value='custom'>{l.customPeriod}</option>
                         </select>
@@ -1413,7 +1413,7 @@ export default function Culture(){
                 </section>:null}
                 {styleFilter==='trace'&&classificationWindowValid?<CulturePlaceRiver
                   scopeId={scopeId} startDate={classificationWindowStart} endDate={classificationWindowEnd}/>:null}
-                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
+                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時間痕跡、事件或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
                 {styleFilter!=='trace'&&sourceSnapshotQuery.error
