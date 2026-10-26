@@ -296,7 +296,7 @@ function AppShellInner({children}){
     let policyModule=null;
     const send=policy=>{
       if(!active)return;
-      const message={type:'LOC_CACHE_POLICY',mode:policy.mode};
+      const message={type:'LOC_CACHE_POLICY',mode:policy.mode,origin:policy.origin||''};
       navigator.serviceWorker.controller?.postMessage(message);
       void navigator.serviceWorker.ready.then(reg=>{
         if(active)reg.active?.postMessage(message);
