@@ -2,7 +2,7 @@
 // Only runs in the GitHub Actions disposable PostgreSQL service, NEVER Supabase.
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-const migration=fileURLToPath(new URL('../supabase/migrations/20261027160000_time_uid_dynamic_periods.sql',import.meta.url));
+const migration=fileURLToPath(new URL('../supabase/migrations/20261027190000_time_v2_safe_production_cutover.sql',import.meta.url));
 function psql({sql,filename}={}){
   const args=['-X','-v','ON_ERROR_STOP=1','-q'];
   if(filename)args.push('-f',filename);else args.push('-c',sql);
@@ -42,7 +42,8 @@ CREATE INDEX ${scope}_time_date_idx ON silver.${scope}_time(time_date);
 `;
 const fixture=`
 CREATE SCHEMA silver;
-DO $$ BEGIN
+CREATE FUNCTION silver.can_manage_scope(p_scope text) RETURNS boolean LANGUAGE sql STABLE AS $ SELECT true $;
+DO $ BEGIN
  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon; END IF;
  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated; END IF;
 END $$;
@@ -74,9 +75,9 @@ DO $$
 DECLARE scope_name text; tbl text; originals bigint; migrated bigint;
 BEGIN
  FOR scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
-   tbl:=format('silver.%I',scope_name||'_time');
+   tbl:=format('silver.%I',scope_name||'_time_v2');
    EXECUTE format('SELECT count(*) FROM %s',tbl) INTO migrated;
-   SELECT count(*) INTO originals FROM silver.time_uid_cutover_backup WHERE scope_id=scope_name;
+   SELECT count(*) INTO originals FROM silver.time_v2_cutover_backup WHERE scope_id=scope_name;
    IF originals<>(CASE WHEN scope_name='lo3rwang' THEN 9 ELSE 4 END) THEN
      RAISE EXCEPTION 'Backup count wrong for %: %',scope_name,originals; END IF;
    IF migrated<>(CASE WHEN scope_name='lo3rwang' THEN 11 ELSE 5 END) THEN
@@ -94,28 +95,34 @@ BEGIN
     $q$,tbl,tbl,tbl) INTO migrated;
    IF migrated<>0 THEN RAISE EXCEPTION 'Bad anchor/event references for %',scope_name; END IF;
  END LOOP;
- IF (SELECT cardinality(anchor_ids) FROM silver.lrunes_time
+ IF (SELECT cardinality(anchor_ids) FROM silver.lrunes_time_v2
        WHERE title='舊虛擬至今')<>1 THEN
    RAISE EXCEPTION 'Virtual now was not removed'; END IF;
- IF (SELECT count(*) FROM silver.lo3rwang_time WHERE status='legacy_split')<>1 THEN
+ IF (SELECT count(*) FROM silver.lo3rwang_time_v2 WHERE status='legacy_split')<>1 THEN
    RAISE EXCEPTION 'Historical three-anchor event not fully split'; END IF;
- IF NOT EXISTS (SELECT 1 FROM silver.lo3rwang_time WHERE title='時間痕跡六' AND type='time_trace')
+ IF NOT EXISTS (SELECT 1 FROM silver.lo3rwang_time_v2 WHERE title='時間痕跡六' AND type='time_trace')
  THEN RAISE EXCEPTION 'Original P6 trace missing'; END IF;
- IF has_table_privilege('anon','silver.time_uid_cutover_backup','SELECT')
-   OR has_table_privilege('authenticated','silver.time_uid_cutover_backup','SELECT')
+ IF (SELECT count(*) FROM silver.lo3rwang_time WHERE record_type='style_comment')<>1
+    OR (SELECT count(*) FROM silver.lo3rwang_time WHERE record_type='period')<>2
+    OR (SELECT count(*) FROM silver.lrunes_time WHERE record_type='period')<>1
+ THEN RAISE EXCEPTION 'Legacy tables mutated during v2 migration'; END IF;
+ IF has_table_privilege('anon','silver.lo3rwang_time_v2','SELECT') IS FALSE
+ THEN RAISE EXCEPTION 'New time v2 missing anon read'; END IF;
+ IF has_table_privilege('anon','silver.time_v2_cutover_backup','SELECT')
+   OR has_table_privilege('authenticated','silver.time_v2_cutover_backup','SELECT')
  THEN RAISE EXCEPTION 'Backup readable by public roles'; END IF;
 END $$;
 -- No ON DELETE CASCADE: broken endpoint only means a broken connection.
-DELETE FROM silver.lo3rwang_time
+DELETE FROM silver.lo3rwang_time_v2
 WHERE type='anchor' AND title='第一段結束';
 DO $$
 BEGIN
- IF (SELECT count(*) FROM silver.lo3rwang_time WHERE type='time_trace')<>2
- OR (SELECT count(*) FROM silver.lo3rwang_time WHERE type='time_period')<>5
+ IF (SELECT count(*) FROM silver.lo3rwang_time_v2 WHERE type='time_trace')<>2
+ OR (SELECT count(*) FROM silver.lo3rwang_time_v2 WHERE type='time_period')<>5
  THEN RAISE EXCEPTION 'Deleting anchor unexpectedly deleted events/traces'; END IF;
 END $$;
 `});
-  console.log('Ephemeral PostgreSQL Time migration: backup, 4-digit UIDs, anchor/event/trace links, 0 removal, split event, public privileges and non-cascading deletion PASS');
+  console.log('Ephemeral PostgreSQL safe Time v2 migration: backup, 4-digit UIDs, anchor/event/trace links, 0 removal, split event, public privileges and non-cascading deletion PASS');
 }catch(error){
   console.error('Time cutover PostgreSQL smoke FAILED:',String(error?.stderr||error?.message||error).slice(0,5500));
   process.exitCode=1;
