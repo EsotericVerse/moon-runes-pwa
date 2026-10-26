@@ -79,10 +79,10 @@ CREATE TABLE IF NOT EXISTS local_galaxy_media (
 );
 CREATE TABLE IF NOT EXISTS local_time (
   uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
-  type TEXT NOT NULL CHECK(type IN ('anchor','period','event')),
+  type TEXT NOT NULL CHECK(type IN ('anchor','time_period','time_trace')),
   title TEXT,
   description TEXT,
-  time_date TEXT,
+  address TEXT,
   anchor_ids TEXT,
   status TEXT
 );
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS local_file_meta (
 // Keep pre-cutover device data recoverable. Both SQL.js and native SQLite run
 // the same validated row conversion inside a transaction before opening Time.
 const TIME_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_time \([\s\S]*?\);/)[0];
-const TIME_COLUMNS=['uid','type','title','description','time_date','anchor_ids','status'];
+const TIME_COLUMNS=['uid','type','title','description','address','anchor_ids','status'];
 const TIME_INSERT_SQL='INSERT INTO local_time ('+TIME_COLUMNS.join(',')+') VALUES ('+TIME_COLUMNS.map(()=>'?').join(',')+')';
 const oldTimePresent=columns=>columns.some(row=>row.name==='record_id')&&!columns.some(row=>row.name==='uid');
 function timeMigrationStatements(oldRows){
@@ -190,7 +190,7 @@ function upgradeWebLocalTime(db){
   try{
     for(const step of steps)db.run(step.sql,step.values);
     const count=Number(rowsOf(db,'SELECT count(*) AS n FROM local_time')[0]?.n)||0;
-    const expected=oldRows.filter(row=>row.record_type!=='style_comment').length;
+    const expected=convertLegacyTimeRows(oldRows).rows.length;
     if(count!==expected)throw new Error('SQLite Time migration count mismatch');
     db.run('COMMIT');
   }catch(error){db.run('ROLLBACK');throw error;}
