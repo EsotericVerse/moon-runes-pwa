@@ -30,7 +30,7 @@ export default function TraceRouteManager({scopeId}){
   const cache=useResourceCache();
   const searchParams=useSearchParams();
   const requestedFrame=searchParams?.get('frame')||'';
-  const [activeScope,setActiveScope]=useState(scopeId);
+  const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
   const [selectedUid,setSelectedUid]=useState('');
   const [categoryFilter,setCategoryFilter]=useState(ALL_CATEGORIES);
   const [classFilter,setClassFilter]=useState(ALL_CLASSES);
