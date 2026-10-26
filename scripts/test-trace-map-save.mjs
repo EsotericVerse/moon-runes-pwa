@@ -181,7 +181,7 @@ function referenceHarness({owner='loc',delayed=false,denied=false,cacheFailed=fa
   const pendingReference={current:null};
   const deps={
     busy:false,canEdit:true,referenceDraft:draft,queue:[],MAX_STOPS:80,activeScope:owner,
-    pendingReference,setBusy:()=>{},setNotice:x=>state.messages.push(x),setIsError:()=>{},
+    pendingReference,setReferencePending:()=>{},setBusy:()=>{},setNotice:x=>state.messages.push(x),setIsError:()=>{},
     addTraceAnchor:async input=>{
       if(denied)throw Error('RLS 拒絕寫入');
       state.writes.push(input);return {uid:'OWN00001'};
