@@ -5,16 +5,11 @@ import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
-import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
-import {navigationHref} from '../modular/scope-registry';
-import useNativeNavigation from '../modular/use-native-navigation';
 
-const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
-const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceBatchFill=dynamic(()=>import('./PlaceBatchFill'),{loading:PanelLoading});
 const TracePlaceGeocoder=dynamic(()=>import('./TracePlaceGeocoder'),{loading:PanelLoading});
@@ -26,8 +21,6 @@ const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'placeFill',label:'快速補寫打卡地點',shortLabel:'快速補打卡',description:'以完整日期及地點名稱批次補寫空白的 source_place。'},
   {value:'traceGeocode',label:'打卡地點自動定位',shortLabel:'打卡定位',description:'依現有打卡名稱查詢座標，核對後批次建立空間定錨點。'},
 
-  {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
@@ -35,16 +28,28 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
-  const native=useNativeNavigation();
   const isLoc=routeScopeId==='loc';
   const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,3):
     MANAGEMENT_OPTIONS.filter(option=>!['placeFill','traceGeocode'].includes(option.value)||['lo3rwang','lrunes'].includes(routeScopeId));
   const editRequested=searchParams?.get('edit')==='1';
+  // Links saved before the two panels moved to Article Control still open the
+  // same Scope's panel instead of silently falling back to Trace Management.
+  const requestedSection=searchParams?.get('section');
+  useEffect(()=>{
+    if(isLoc||!['import','others'].includes(requestedSection))return;
+    const url=new URL(window.location.href);
+    if(/\/manage\/index\.html$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/index\.html$/,'/manage/search/index.html');
+    else if(/\/manage\/?$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/?$/,'/manage/search/');
+    else return;
+    window.location.replace(url.href);
+  },[isLoc,requestedSection]);
   const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap','traceCleanup','placeFill','traceGeocode'].includes(section))||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['settings','traceAnchor','traceMap','traceCleanup','placeFill','traceGeocode'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -70,8 +75,6 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
         {section==='placeFill'&&routeScopeId!=='loc'?<PlaceBatchFill scopeId={routeScopeId}/>:null}
         {section==='traceGeocode'&&routeScopeId!=='loc'?<TracePlaceGeocoder scopeId={routeScopeId}/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-        {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
-        {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
       </div>
     </div>
     </div>
