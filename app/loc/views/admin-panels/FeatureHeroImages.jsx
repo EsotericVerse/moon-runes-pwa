@@ -29,7 +29,7 @@ const SCOPE_VARIANTS=Object.freeze([
 ]);
 const SINGLE_VARIANT=Object.freeze([{kind:'scope',label:'首頁圖連結'}]);
 const MANAGEMENT_VARIANT=Object.freeze({kind:'scope',label:'首頁圖連結'});
-function pageFor(kind,feature){return kind==='group'&&feature.id==='trace'?'group_governance':kind+'_'+feature.id;}
+function pageFor(kind,feature){return kind+'_'+feature.id;}
 const managementSlotFor=featureId=>HomeBlock.MANAGEMENT_HERO_SLOTS.find(slot=>slot.featureId===featureId);
 const locSlots=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(slot=>slot.audience==='loc'&&slot.key!=='system');
 
