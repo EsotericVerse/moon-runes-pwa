@@ -1,5 +1,6 @@
 name: LOC spatial A branch validation (no deployment)
 
+# Integrated A/1.1 RC pre-main check; explicit one-shot after final ZIP parsing changes.
 # Isolated engineering check only. Never deploy Pages, Cloudflare, ISR, R2, DO or Vercel.
 on:
   # Run on an explicit edit to this workflow, not on every A branch commit.
