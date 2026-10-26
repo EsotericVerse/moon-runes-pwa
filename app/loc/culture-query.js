@@ -12,9 +12,9 @@ import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows}
 
 
 
-const TIME_COLUMNS='uid,type,title,description,time_date,anchor_ids,status';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,status';
 function scopeIdOf(value){return String(value||'').trim();}
-function timeDate(row){return row?.time_date?String(row.time_date).slice(0,10):null;}
+function timeDate(row){return row?.address?String(row.address).slice(0,10):null;}
 function previousDay(value){
   if(!value)return null;
   const date=new Date(String(value).slice(0,10)+'T00:00:00Z');
