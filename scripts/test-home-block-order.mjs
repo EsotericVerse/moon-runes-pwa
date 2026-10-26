@@ -79,6 +79,10 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/const page=slot\.page/);
   assert.match(hero,/page_name:page,block_order:1/);
   assert.match(hero,/pageOverride="scope_admin"/);
+  for(const [id,label] of [['management-time','時間定錨'],['management-keywords','關鍵詞'],['management-spatial','空間定錨'],['management-advanced','進階搜尋']]){
+    assert.ok(hero.includes(`id:'${id}',label:'${label}'`));
+  }
+  assert.match(hero,/!feature\.managementKey/);
   assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
   assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);
   assert.doesNotMatch(read('app/modular/ui.jsx'),/group_manage/);
