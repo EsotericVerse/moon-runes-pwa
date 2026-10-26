@@ -46,7 +46,7 @@ export default function TraceRouteManager({scopeId}){
   const [showMap,setShowMap]=useState(false);
   const [savedReceipt,setSavedReceipt]=useState(null);
   const openedFromUrl=useRef('');
-  const own=account.canManageScopeSync(owner);
+  const own=owner!=='loc'&&account.canManageScopeSync(owner);
   const index=useAsyncResource({
     queryKey:traceMapIndexKey(scopeId),
     enabled:TRACE_SCOPES.includes(scopeId),
@@ -188,6 +188,7 @@ export default function TraceRouteManager({scopeId}){
   };
   useEditDockForm({save,isDirty:()=>incomplete,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card loc-trace-map-manager" aria-label="路線與痕跡圖管理">
+    {owner==='loc'?<p className="scope-status">LOC 空間聚合已暫停並刪除；請先選擇來源 Scope 整理地點。完成後才重建 LOC。</p>:null}
     <header className="loc-trace-map-manager-heading">
       <div><h3>路線圖／痕跡圖管理</h3>
         <p className="scope-status">先用 React Select 自動完成標題並加入 Spool，再從 Spool 配置路線或獨立線段。不依賴縣市、常用排名或付費地理搜尋。</p>

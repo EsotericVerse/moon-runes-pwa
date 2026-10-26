@@ -18,7 +18,12 @@ const idScope=value=>{
   if(!TRACE_SCOPES.includes(id))throw Error('無效的空間 Scope');
   return id;
 };
-const relation=id=>'silver.'+idScope(id)+'_trace';
+const writableScope=scopeId=>{
+  const scope=idScope(scopeId);
+  if(scope==='loc')throw Error('LOC 空間聚合尚未重建；請先整理來源 Scope');
+  return scope;
+};
+const relation=id=>'silver.'+writableScope(id)+'_trace';
 function checked(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);
   return result.data;
@@ -54,7 +59,10 @@ function readRow(row,scope){
     source_scope:row.scope_id||scope,anchor_list:Array.isArray(row.anchor_list)?row.anchor_list:[]};
 }
 async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false}={}){
-  const union=id==='loc',rows=[],size=750;
+  // The LOC materialized union was deliberately dropped. Never query it
+  // until the owner Scope place data has been reviewed and a new union built.
+  if(id==='loc')return [];
+  const union=false,rows=[],size=750;
   for(let offset=0;;offset+=size){
     let query=dbPublicClient.schema('silver').from(id+'_trace')
       .select(columns+(union?',scope_id':'')).order('uid',{ascending:true})
@@ -81,7 +89,9 @@ export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
 export const traceMemberUids=record=>[...new Set((record?.anchor_list||[])
   .flat(Infinity).map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
 export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=false}={}){
-  const id=idScope(scopeId),ids=[...new Set((anchorUids||[]).flat(Infinity)
+  const id=idScope(scopeId);
+  if(id==='loc')return [];
+  const ids=[...new Set((anchorUids||[]).flat(Infinity)
     .map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
   if(!ids.length)return [];
   if(ids.length>800)throw Error('地點數量超過上限');
@@ -98,7 +108,7 @@ export async function readAllTraceAnchors(scopeId,{nativeOnly=false}={}){
 }
 export async function readTraceAnchorSuggestions(scopeId,term,limit=8){
   const id=idScope(scopeId),q=textValue(term).slice(0,100);
-  if(!q)return [];
+  if(id==='loc'||!q)return [];
   const data=checked(await dbPublicClient.schema('silver').rpc('search_scope_trace_place_names',{
     p_scope_id:id,p_term:q,p_limit:Math.max(1,Math.min(Number(limit)||8,100))
   }),'搜尋地點標題')||[];
@@ -107,15 +117,9 @@ export async function readTraceAnchorSuggestions(scopeId,term,limit=8){
 export async function readTracePopularAnchors(scopeId){
   return (await readAllTraceAnchors(scopeId,{nativeOnly:scopeId==='loc'})).slice(0,10);
 }
-export async function readTraceAddressReferences(scopeId,term,limit=8){
-  const owner=idScope(scopeId),q=textValue(term);
-  if(q.length<2)return [];
-  const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
-  const result=await dbPublicClient.schema('silver').from('loc_trace')
-    .select(CORE_COLUMNS+',scope_id')
-    .eq('trace_type','space_anchor').neq('scope_id',owner)
-    .ilike('title',pattern).limit(Math.min(Math.max(Number(limit)||8,1),8));
-  return (checked(result,'讀取公開地點名稱')||[]).map(row=>readRow(row,'loc'));
+// Cross-Scope reference suggestions remain disabled while LOC union is absent.
+export async function readTraceAddressReferences(_scopeId,_term,_limit=8){
+  return [];
 }
 export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid=''}){
   const id=idScope(scopeId),anchors=await readAllTraceAnchors(id,{nativeOnly:id==='loc'});
@@ -124,7 +128,7 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
   return {reuse:null,matches}; // Never merge spatial identities without explicit approval.
 }
 export async function addTraceAnchor({scopeId,title,description='',address='',longitude,latitude,times=[]}){
-  const id=idScope(scopeId);
+  const id=writableScope(scopeId);
   const record={trace_type:'space_anchor',title:nonempty(title,'地點標題'),
     description:descriptionObject(description,address),
     address:coordinateArray(longitude,latitude),
@@ -133,7 +137,7 @@ export async function addTraceAnchor({scopeId,title,description='',address='',lo
   return checked(await query,'新增空間定錨點');
 }
 export async function updateTraceAnchor({scopeId,uid,title,description='',address='',longitude,latitude}){
-  const id=idScope(scopeId),selected=textValue(uid);
+  const id=writableScope(scopeId),selected=textValue(uid);
   if(!VALID_ID.test(selected))throw Error('地點 UID 必須是四碼');
   const record={title:nonempty(title,'地點標題'),
     description:descriptionObject(description,address),
@@ -143,7 +147,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   return checked(await query.select('uid').single(),'更新空間定錨點');
 }
 export async function addTraceAnchorsBatch({scopeId,places=[]}){
-  const id=idScope(scopeId);
+  const id=writableScope(scopeId);
   if(id==='loc')throw Error('請在作品 Scope 儲存地點');
   if(!Array.isArray(places)||places.length>2000)throw Error('大量匯入範圍無效');
   const existing=await readAllTraceAnchors(id),seen=new Set(existing
@@ -185,14 +189,14 @@ function validatedConnections({scopeId,type,anchorUids=[],anchors=[]}){
 }
 const validUid=value=>VALID_ID.test(textValue(value));
 export async function addTraceMap({scopeId,title,description='',type='space_road',anchorUids=[],anchors=[]}){
-  const id=idScope(scopeId),anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
+  const id=writableScope(scopeId),anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
   return checked(await dbAuthRelation(relation(id)).insert({
     trace_type:type,title:nonempty(title,'名稱'),description:descriptionObject(description),
     anchor_list
   }).select('uid').single(),'儲存路線或痕跡圖');
 }
 export async function updateTraceMap({scopeId,uid,title,description='',type='space_road',anchorUids=[],anchors=[]}){
-  const id=idScope(scopeId),key=textValue(uid);
+  const id=writableScope(scopeId),key=textValue(uid);
   if(!validUid(key))throw Error('無效 UID');
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
   let query=dbAuthRelation(relation(id)).update({
@@ -202,7 +206,7 @@ export async function updateTraceMap({scopeId,uid,title,description='',type='spa
   return checked(await query.select('uid').single(),'更新路線或痕跡圖');
 }
 export async function deleteTraceMap({scopeId,uid,type='space_road'}){
-  const id=idScope(scopeId);
+  const id=writableScope(scopeId);
   if(!validUid(uid)||!['space_road','space_trace'].includes(type))throw Error('無效的刪除目標');
   let query=dbAuthRelation(relation(id)).delete().eq('uid',uid).eq('trace_type',type);
   if(id==='loc')query=query.eq('scope_id','loc');

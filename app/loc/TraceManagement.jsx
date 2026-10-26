@@ -49,6 +49,9 @@ function AnchorEditor({scopeId,spatial,reload}){
       setFocusLocation({longitude:row.longitude,latitude:row.latitude,name:row.title});
   };
   const save=async()=>{
+    if(scopeId==='loc'){
+      setIsError(true);setNotice('LOC 空間聚合已暫停；請先在來源 Scope 編輯。');return false;
+    }
     if(busy)return false;
     setBusy(true);setIsError(false);setNotice('');
     try{
