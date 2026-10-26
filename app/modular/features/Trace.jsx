@@ -115,7 +115,7 @@ export default function Trace({scopeId='loc'}){
     if(!showingAll&&!currentMap)return {anchors:[],maps:[]};
     if(anchorsQuery.data===undefined)return null;
     return {anchors:anchorsQuery.data,
-      maps:showingAll?traceIndex.data:[currentMap]};
+      maps:showingAll?maps:[currentMap]};
   },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
