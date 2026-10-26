@@ -212,8 +212,8 @@ function timelineItems(rows,{includeScope=false}={}){
           group_order:{anchor:0,event:1,period:2}[row.entry_type]??99
         };
       });
-    }).filter(row=>row.start_date)
-    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||
+    }).filter(row=>row.start_date||row.entry_type==='period')
+    .sort((a,b)=>String(a.start_date||'9999-12-31').localeCompare(String(b.start_date||'9999-12-31'))||
       String(a.uid||'').localeCompare(String(b.uid||''))||
       a.segment_index-b.segment_index);
 }
