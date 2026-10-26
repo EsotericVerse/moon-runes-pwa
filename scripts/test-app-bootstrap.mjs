@@ -388,14 +388,15 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
-test('Culture period and event selectors expose different second-option catalogs',()=>{
+test('Culture upper Period selector stays independent; lower river selects only Period windows',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(source,/value=\{cultureTimeKind\}/);
-  assert.match(source,/setCultureTimeKind\(kind\)/);
-  assert.match(source,/cultureTimeKind==='event'/);
-  assert.match(source,/cultureEventOptions\.map\(item=><option/);
+  assert.match(source,/aria-label='第一條河道時期選擇'/);
+  assert.match(source,/windowStart=\{currentStructureStart\}/);
+  assert.match(source,/windowEnd=\{currentStructureEnd\}/);
+  assert.match(source,/value=\{keywordPeriodKey\}/);
   assert.match(source,/primaryPeriods\.map\(item=><option/);
-  assert.doesNotMatch(source,/<optgroup label=\{l\.eventOption\}>/);
+  assert.doesNotMatch(source,/cultureTimeKind/);
+  assert.doesNotMatch(source,/setSelectedPeriodKey\(next\)/);
 });
 
 test('Culture river hides zero-count parents, folds singleton children and renders a localized empty state',()=>{
