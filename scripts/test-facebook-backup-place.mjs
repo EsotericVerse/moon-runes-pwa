@@ -7,7 +7,8 @@ import {facebookBackupPlace,facebookBackupPostText,
   from '../app/loc/facebook-backup-place.mjs';
 import {detectZipArchiveSource,inspectPrivateArchive}
   from '../app/loc/private-archive-universal.mjs';
-import {importRowsFromJson} from '../app/loc/import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from '../app/loc/import-batch.mjs';
+import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
 const src=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const asFile=(name,bytes)=>{
   const data=new Uint8Array(bytes);
@@ -140,4 +141,30 @@ test('Meta ZIP decoded place and author text survive Galaxy import without mojib
   });
   assert.equal(alreadyCorrect.source_place,'臺北車站');
   assert.equal(alreadyCorrect.content,'正常繁體中文');
+});
+
+test('large Facebook ZIP size cap is 1 GiB and checked before reading any bytes',async()=>{
+  assert.equal(ARCHIVE_MAX_BYTES,1024*1024*1024);
+  assert.equal(ARCHIVE_JSON_MAX_BYTES,50*1024*1024);
+  let touched=false;
+  const file={size:ARCHIVE_MAX_BYTES+1,slice(){touched=true;throw Error('read forbidden')}};
+  await assert.rejects(detectZipArchiveSource(file),/1024 MiB/);
+  await assert.rejects(inspectPrivateArchive(file,{onRecord:()=>{}}),/1024 MiB/);
+  assert.equal(touched,false);
+  const underLimit={size:700*1024*1024,slice(){
+    return {arrayBuffer:async()=>Uint8Array.of(0,0,0,0).buffer};
+  }};
+  await assert.rejects(detectZipArchiveSource(underLimit),/不是有效的 ZIP 標頭/);
+});
+
+test('standalone JSON over 50 MiB is rejected before loading the whole file',async()=>{
+  let touched=false;
+  const file={name:'facebook.json',size:ARCHIVE_JSON_MAX_BYTES+1,
+    arrayBuffer(){touched=true;throw Error('read forbidden')},
+    text(){touched=true;throw Error('read forbidden')}};
+  await assert.rejects(parseUniversalImportFile(file),/50 MiB/);
+  assert.equal(touched,false);
+  const engine=src('app/loc/private-archive-universal.mjs');
+  assert.match(engine,/MAX_EXTRACTED=100\*1024\*1024/);
+  assert.match(engine,/MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES/);
 });
