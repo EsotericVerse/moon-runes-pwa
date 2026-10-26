@@ -106,7 +106,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
     actualKind==='message'?(txt(item.content)||txt(item.text)||null):
     actualKind==='post'?(extractCaption(item)||txt(data['Title']?.value)||null):
     extractCaption(item));
-  const sourcePlace=platform==='facebook'&&actualKind==='post'?facebookBackupPlace(item):'';
+  const sourcePlace=actualKind==='post'?facebookBackupPlace(item):'';
   const attachments=[
     ...(Array.isArray(item.photos)?item.photos:[]),
     ...(Array.isArray(item.videos)?item.videos:[]),
@@ -434,14 +434,17 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
       if(exifImage.test(path)&&typeof onMediaMetadata==='function'&&[0,8].includes(entry.compression)&&
-        (entry.originalSize===undefined||entry.originalSize<=8*1024*1024)&&summary.exifImages<2500){
+        (entry.originalSize===undefined||entry.originalSize<=32*1024*1024)&&
+        exifExtracted<100*1024*1024&&summary.exifImages<2500){
         summary.mediaFiles++;summary.exifImages++;known=true;
         const chunks=[];let stored=0,received=0;
         entry.ondata=(error,data,final)=>{
           if(error)throw error;
           received+=data.length;exifExtracted+=data.length;
-          if(exifExtracted>100*1024*1024)throw new Error('EXIF 媒體解壓總量超過 100 MiB。');
-          if(received>8*1024*1024)throw new Error(path+'：影像超過 EXIF 安全解析上限。');
+          if(received>32*1024*1024||exifExtracted>100*1024*1024){
+            if(final)summary.exifSkipped++;
+            return;
+          }
           if(stored<IMAGE_EXIF_PREFIX_LIMIT){
             const part=data.subarray(0,IMAGE_EXIF_PREFIX_LIMIT-stored);
             if(part.length){chunks.push(part);stored+=part.length;}
