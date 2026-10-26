@@ -8,6 +8,7 @@ import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modula
 import {revalidateServerMetadata} from './scope-data';
 import {postalAddressFromNominatim} from '../modular/features/trace/trace-postal-evidence.mjs';
 import {readSharedSpatialReferencesByNames} from '../modular/features/trace/trace-spatial-reference-data';
+import {spatialReferenceChoicesForName} from '../modular/features/trace/trace-spatial-references.mjs';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -175,16 +176,7 @@ export default function TracePlaceGeocoder({scopeId}){
           if(stopRef.current)break;
           const refs=byName.get(name)||[];
           if(refs.length){
-            const choices=refs.slice(0,4).map(ref=>({
-              longitude:ref.longitude,latitude:ref.latitude,
-              address:ref.address||'',floor_label:ref.floor_label||'',
-              floor_level:ref.floor_level,
-              title:ref.title,source_scope:ref.source_scope,uid:ref.uid,
-              label:ref.title+' · '+(ref.address||'地址未核實')+
-                (ref.floor_label?' · '+ref.floor_label:'')+
-                ' · '+ref.source_scope+' UID '+ref.uid
-            }));
-            remember(name,{choices,selected:-1,status:'review',origin:'loc-reference'});
+            remember(name,spatialReferenceChoicesForName(name,refs));
           }else{
             const result=await lookUp(name);
             if(!result)break;
@@ -310,6 +302,7 @@ export default function TracePlaceGeocoder({scopeId}){
             <strong>{item.name}</strong> <span className="scope-status">（{item.count} 篇）</span>
             {result?.status==='ready'?<p className="scope-status">已選位置：{result.choices[result.selected]?.label}（{result.choices[result.selected]?.latitude}, {result.choices[result.selected]?.longitude}）</p>:null}
             {result?.status==='review'?<p className="scope-status">同名或相似候選，請核對位置再選取：</p>:null}
+            {result?.moreChoices?<p className="scope-status" role="status">同名候選超過 8 個，只列出前 8 個。請在空間錨點管理中以門牌或 UID 查詢，避免選錯位置。</p>:null}
             {result?.status==='notfound'?<p className="scope-status">沒有找到。可在一般空間定錨點頁面改用地圖手動選取。</p>:null}
             {Boolean(result?.choices?.length)?<label>候選位置
               <select className="scope-select" value={result.selected>=0?String(result.selected):''}
