@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS silver.time_uid_cutover_backup (
   PRIMARY KEY (scope_id,old_record_id)
 );
 REVOKE ALL ON silver.time_uid_cutover_backup FROM PUBLIC,anon,authenticated;
+ALTER TABLE silver.time_uid_cutover_backup ENABLE ROW LEVEL SECURITY;
 INSERT INTO silver.time_uid_cutover_backup(scope_id,old_record_id,old_resource_id,original_row)
 SELECT 'lo3rwang',record_id,resource_id,to_jsonb(t) FROM silver.lo3rwang_time t
 UNION ALL
