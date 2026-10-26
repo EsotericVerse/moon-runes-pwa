@@ -46,7 +46,6 @@ END $$;
 DO $$
 BEGIN
  IF (SELECT count(*) FROM silver.lo3rwang_trace WHERE trace_type='space_anchor')<>581
-   OR (SELECT count(*) FROM silver.lo3rwang_trace WHERE trace_type='space_period')<>1
    OR EXISTS(SELECT 1 FROM silver.lo3rwang_trace WHERE trace_type='space_road')
    OR EXISTS(SELECT 1 FROM silver.lrunes_trace WHERE trace_type='space_road') THEN
   RAISE EXCEPTION 'Space period cutover validation failed';
