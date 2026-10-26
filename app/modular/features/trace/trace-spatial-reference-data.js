@@ -16,8 +16,11 @@ export async function readSharedSpatialReferences(term){
     .order('scope_id',{ascending:true})
     .order('uid',{ascending:true})
     .limit(8);
-  const [byName,byAddress]=await Promise.all([query('title'),query('address')]);
+  const [byName,byAddress,byFloor]=await Promise.all([
+    query('title'),query('address'),query('floor_label')
+  ]);
   if(byName.error)throw Error('共用地點名稱查詢失敗：'+byName.error.message);
   if(byAddress.error)throw Error('共用地址查詢失敗：'+byAddress.error.message);
-  return spatialReferenceCandidates([byName.data||[],byAddress.data||[]]);
+  if(byFloor.error)throw Error('共用樓層查詢失敗：'+byFloor.error.message);
+  return spatialReferenceCandidates([byName.data||[],byAddress.data||[],byFloor.data||[]]);
 }
