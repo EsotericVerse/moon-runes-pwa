@@ -119,6 +119,16 @@ test('EditDock switch requires the Frame save to return exactly true',()=>{
   assert.match(dock,/if\(saved!==true\)throw new Error/);
   assert.match(page,/return true;\s*\}catch\(error\)\{setIsError\(true\);setNotice\(String\(error\?\.message\|\|error\)\);return false;/);
 });
+test('Trace page edit navigation opens the selected Frame by UID, not a local default',()=>{
+  const feature=read('app/modular/features/Trace.jsx');
+  const editor=manager();
+  assert.match(feature,/section=traceMap&frame='/);
+  assert.match(feature,/encodeURIComponent\(currentMap\.uid\)/);
+  assert.match(editor,/index\.data\.find\(map=>map\.uid===requestedFrame\)/);
+  assert.match(editor,/openedFrame\.current===key/);
+  assert.match(editor,/edit\(target\)/);
+});
+
 test('selected Frame connects points by saved order without a road-network requirement',()=>{
   const engine=read('app/modular/features/trace/trace-map-engine.js');
   const page=manager();
