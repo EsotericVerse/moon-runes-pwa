@@ -77,9 +77,9 @@ BEGIN
    tbl:=format('silver.%I',scope_name||'_time');
    EXECUTE format('SELECT count(*) FROM %s',tbl) INTO migrated;
    SELECT count(*) INTO originals FROM silver.time_uid_cutover_backup WHERE scope_id=scope_name;
-   IF originals<>CASE WHEN scope_name='lo3rwang' THEN 9 ELSE 4 END THEN
+   IF originals<>(CASE WHEN scope_name='lo3rwang' THEN 9 ELSE 4 END) THEN
      RAISE EXCEPTION 'Backup count wrong for %: %',scope_name,originals; END IF;
-   IF migrated<>CASE WHEN scope_name='lo3rwang' THEN 11 ELSE 5 END THEN
+   IF migrated<>(CASE WHEN scope_name='lo3rwang' THEN 11 ELSE 5 END) THEN
      RAISE EXCEPTION 'Migrated row count wrong for %: %',scope_name,migrated; END IF;
    EXECUTE format('SELECT count(*) FROM %s WHERE length(uid)<>4 OR type NOT IN (''anchor'',''time_period'',''time_trace'') OR (type<>''anchor'' AND address IS NOT NULL)',tbl)
      INTO migrated;
