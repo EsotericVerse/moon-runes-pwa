@@ -999,18 +999,18 @@
 .scope-search-view-panel{min-width:0}
 
 
-/* A desktop Trace map benefits from a wider canvas than article reading.
-   Expand only the Trace page: other feature widths and mobile breakpoints stay
-   unchanged. Keep map/content within the existing viewport at all sizes. */
-@media (min-width:900px){
-  .loc-next-main:has(.loc-trace-panel){
-    width:min(1680px,calc(100% - clamp(1rem,3vw,3rem)));
-  }
-}
+/* Trace stays inside the existing LOC page frame at every viewport width.
+   In particular, do not expand .loc-next-main beyond its layout parent. */
+.loc-next-main:has(.loc-trace-panel){min-width:0;max-width:100%;overflow-x:clip}
+.loc-trace-panel,.loc-trace-map-manager,.loc-trace-map-shell{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.loc-trace-map-shell>.loc-trace-map-frame{max-width:100%!important}
 /* Trace / spatial anchoring demonstration (the legacy trace Hero is
    unchanged). The map is not a 3D terrain; only the anchor symbols extrude. */
 .loc-trace-panel{
   min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
   display:grid;
   gap:.8rem;
 }
@@ -1062,7 +1062,7 @@
   box-sizing:border-box;
   width:100%;
   height:clamp(460px,68svh,820px);
-  min-width:min(380px,100%);
+  min-width:0;
   min-height:340px;
   max-width:100%;
   max-height:min(95svh,1150px);
@@ -1151,9 +1151,9 @@
   /* Use almost all available card width on narrow phones; no horizontal
      scrolling or desktop-only resize grip. */
   .loc-trace-map-frame{
-    width:calc(100% + 1.5rem);
-    max-width:calc(100% + 1.5rem);
-    margin-inline:-.75rem;
+    width:100%;
+    max-width:100%;
+    margin-inline:0;
     height:clamp(400px,62svh,690px);
     resize:none;
   }
@@ -1210,10 +1210,10 @@
 .loc-trace-map-manager-heading .scope-status{margin:0}
 .loc-trace-saved-maps{display:grid;gap:.65rem;min-width:0}
 .loc-trace-saved-map{min-width:0;border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm);background:var(--loc-panel);overflow:hidden}
-.loc-trace-saved-map-summary{cursor:pointer;display:flex;align-items:center;gap:.75rem;width:100%;min-height:44px;padding:.8rem .95rem;border:0;text-align:left;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;overflow-wrap:anywhere}
+.loc-trace-saved-map-summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;width:100%;min-width:0;min-height:44px;padding:.8rem .95rem;border:0;text-align:left;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;overflow-wrap:anywhere}
 .loc-trace-saved-map-summary>span:first-child{color:var(--loc-accent);flex:0 0 auto}
 .loc-trace-saved-map-summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:-3px}
-.loc-trace-saved-map-summary>.scope-status{margin-left:auto;white-space:nowrap;font-weight:400}
+.loc-trace-saved-map-summary>.scope-status{margin-left:auto;min-width:0;white-space:normal;overflow-wrap:anywhere;font-weight:400}
 .loc-trace-saved-map-summary[aria-expanded="true"]{border-bottom:1px solid var(--loc-line)}
 .loc-trace-saved-map-body{display:grid;gap:.8rem;padding:.85rem .95rem;min-width:0}
 .loc-trace-route-description{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -1248,10 +1248,22 @@
 }
 
 
+/* Public address references are secondary to the user's own Frame Queue. */
+.loc-trace-reference-panel{display:grid;gap:.65rem;min-width:0;padding:.7rem;
+  border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)}
+.loc-trace-reference-panel>.loc-button{justify-self:start;min-height:44px}
+.loc-trace-reference-body{display:grid;gap:.7rem;min-width:0}
+.loc-trace-reference-body>label,
+.loc-trace-reference-body .scope-management-fields>label{display:grid;gap:.35rem;min-width:0}
+.loc-trace-reference-body input{width:100%;min-width:0;min-height:44px;font:inherit}
+.loc-trace-reference-panel .loc-trace-route-suggestions{position:static;max-height:14rem}
+.loc-trace-reference-body .scope-management-fields{min-width:0}
+@media(max-width:720px){.loc-trace-reference-panel>.loc-button{width:100%}}
+
 /* Full Trace map viewing: no loss of selected route, time filter or article
    state; the switch remains above the map and is always touch accessible. */
 .loc-next-main:has(.loc-trace-panel.is-map-only){
-  width:min(1920px,calc(100% - 1rem));
+  min-width:0;max-width:100%;
 }
 .loc-trace-panel.is-map-only{padding:clamp(.3rem,.7vw,.75rem)}
 .loc-trace-panel.is-map-only .loc-trace-intro,
@@ -1297,7 +1309,7 @@
   min-height:44px;min-width:0;width:100%;font:inherit;
 }
 .loc-trace-report-settings>.scope-status{flex:1 1 100%;margin:0}
-.loc-trace-map-shell{position:relative;min-width:0}
+.loc-trace-map-shell{position:relative;min-width:0;max-width:100%;overflow:hidden}
 .loc-trace-origin-button{
   position:absolute;top:.65rem;left:.65rem;z-index:5;
   min-height:44px;max-width:calc(100% - 1.3rem);
@@ -1312,7 +1324,7 @@
 }
 
 /* Trace Frame manager: one lightweight list, one county + query + Add control. */
-.loc-trace-route-browse{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;min-width:0}
+.loc-trace-route-browse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;min-width:0}
 .loc-trace-route-browse>label{display:grid;gap:.35rem;min-width:0;font-weight:600}
 .loc-trace-route-browse input,.loc-trace-route-browse select{width:100%;min-width:0;min-height:44px}
 .loc-trace-route-autocomplete{position:relative;display:grid;gap:.35rem;min-width:0;font-weight:600}
@@ -1325,7 +1337,17 @@
 .loc-trace-route-suggestions small{font-size:.76rem;font-weight:400;opacity:.8}
 .loc-trace-saved-map-summary[aria-current="true"]{
   border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft)}
+@media(max-width:1050px) and (min-width:721px){
+  .loc-trace-route-browse{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:720px){
   .loc-trace-route-browse{grid-template-columns:minmax(0,1fr)}
   .loc-trace-route-suggestions{max-height:12rem}
 }
+
+/* Saved Frames in other Scopes are discoverable without changing their owner. */
+.loc-trace-other-scopes{display:grid;gap:.55rem;min-width:0;max-width:100%}
+.loc-trace-other-scopes h4{margin:0}
+.loc-trace-other-scopes-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:.5rem;min-width:0}
+.loc-trace-other-scopes-list>.loc-button{display:grid;gap:.3rem;justify-items:start;min-width:0;min-height:44px;white-space:normal;text-align:left;overflow-wrap:anywhere}
+.loc-trace-other-scopes-list>.loc-button span{color:var(--loc-muted);font-size:.85rem}

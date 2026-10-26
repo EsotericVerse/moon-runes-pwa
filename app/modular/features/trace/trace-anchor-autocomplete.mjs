@@ -11,7 +11,7 @@ export function traceAnchorSuggestions(anchors=[],countyId='',query='',selectedU
     if(anchor.trace_type!=='anchor'||anchor.county_id!==countyId||taken.has(anchor.uid))continue;
     // Both district/address and UID are searchable. With >8 identically
     // named stores, refining by name alone is impossible.
-    const haystack=[anchor.title,anchor.uid,anchor.description]
+    const haystack=[anchor.title,anchor.uid,anchor.address,anchor.floor_label,anchor.description]
       .join(' ').normalize('NFKC').toLocaleLowerCase('zh-Hant');
     if(!terms.every(term=>haystack.includes(term)))continue;
     output.push(anchor);
