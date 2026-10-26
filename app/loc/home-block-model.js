@@ -141,20 +141,25 @@ export const FEATURE_HERO_ORDER=Object.freeze({
   setting:7
 });
 export const FEATURE_HERO_IDS=Object.freeze(Object.keys(FEATURE_HERO_ORDER));
-// Management entries have independent copy in group_manage, while all share
-// one editable scope_manage/order 1 image. No new table or public-page slot.
+// Management titles and content live on independently named pages.
+// Scope and Admin management groups each have ONE editable shared image page.
+// Never use block_order to multiplex unrelated Hero documents into group_manage.
 export const MANAGEMENT_HERO_IMAGE_URL='https://loc.lo3rwang.cc/pics/scope-gn.jpg';
 export const MANAGEMENT_HERO_SLOTS=Object.freeze([
-  {key:'time',order:2,label:'時間定錨',audience:'scope',featureId:'culture',englishTitle:'TimeAnchor'},
-  {key:'keywords',order:3,label:'關鍵詞',audience:'scope',featureId:'statics',englishTitle:'Keywords'},
-  {key:'spatial',order:4,label:'空間定錨',audience:'scope',featureId:'trace',englishTitle:'SpaceAnchor'},
-  {key:'advanced',order:5,label:'進階搜尋',audience:'scope',featureId:'search',englishTitle:'AdvancedSearch'},
-  {key:'system',order:6,label:'系統管理',audience:'loc'},
-  {key:'members',order:7,label:'人員作品管理',audience:'loc'},
-  {key:'locKeywords',order:8,label:'關鍵詞',audience:'loc'},
-  {key:'trace',order:9,label:'痕跡圖管理',audience:'loc'},
-  {key:'articles',order:10,label:'文章管理',audience:'loc'}
+  {key:'time',label:'時間定錨',audience:'scope',featureId:'culture',page:'TimeAnchor',englishTitle:'TimeAnchor'},
+  {key:'keywords',label:'關鍵詞',audience:'scope',featureId:'statics',page:'ScopeKeyword',englishTitle:'ScopeKeyword'},
+  {key:'spatial',label:'空間定錨',audience:'scope',featureId:'trace',page:'SpaceAnchor',englishTitle:'SpaceAnchor'},
+  {key:'advanced',label:'進階搜尋',audience:'scope',featureId:'search',page:'ScopeAdvSearch',englishTitle:'ScopeAdvSearch'},
+  {key:'system',label:'系統管理',audience:'loc',page:'scope_admin',englishTitle:'Administration'},
+  {key:'members',label:'人員作品管理',audience:'loc',page:'GalaxyManage',englishTitle:'GalaxyManage'},
+  {key:'locKeywords',label:'關鍵詞',audience:'loc',page:'Groupkeyword',englishTitle:'Groupkeyword'},
+  {key:'trace',label:'痕跡圖管理',audience:'loc',page:'GroupSpace',englishTitle:'GroupSpace'},
+  {key:'articles',label:'文章管理',audience:'loc',page:'GroupArticle',englishTitle:'GroupArticle'}
 ]);
+export function managementHeroImagePage(slot){
+  return slot?.audience==='loc'?'scope_admin':'scope_manage';
+}
+
 export function managementHeroSlot(pathname='',scopeId='',editing=false,featureId=''){
   const parts=String(pathname||'').toLowerCase().split('/').filter(Boolean);
   const loc=scopeId==='loc'||scopeId==='admin';
@@ -186,7 +191,7 @@ export function managementHeroSlot(pathname='',scopeId='',editing=false,featureI
 }
 export function managementHeroCopy(rows,slot){
   if(!slot)return null;
-  const row=(Array.isArray(rows)?rows:[]).find(item=>Number(item?.block_order)===slot.order);
+  const row=(Array.isArray(rows)?rows:[]).find(item=>Number(item?.block_order)===1);
   return {
     eyebrow:String(row?.block_eyebrow||slot.englishTitle||'').trim(),
     title:String(row?.block_title||'').trim()||slot.label,
@@ -204,7 +209,7 @@ export function shouldUseSingleFeatureHeroImage(featureId){
 
 export function featureHeroPageFor(featureId){
   const id=String(featureId||'');
-  return id==='trace'?'group_governance':'group_'+id;
+  return id==='admin'?'scope_admin':id==='trace'?'group_governance':'group_'+id;
 }
 
 export function sharedFeatureHeroFor(rows){
@@ -263,5 +268,6 @@ export const HomeBlock=Object.freeze({
   MANAGEMENT_HERO_SLOTS,
   MANAGEMENT_HERO_IMAGE_URL,
   managementHeroSlot,
+  managementHeroImagePage,
   managementHeroCopy
 });
