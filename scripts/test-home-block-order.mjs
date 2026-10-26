@@ -43,6 +43,8 @@ test('management Hero uses nine dedicated page_name documents, not group_manage 
   for(const slot of admin)assert.equal(HomeBlock.managementHeroImagePage(slot),'scope_admin');
   assert.equal(HomeBlock.MANAGEMENT_HERO_IMAGE_URL,'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
   assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
+  assert.equal(HomeBlock.featureHeroPageFor('trace'),'group_trace');
+  assert.doesNotMatch(readFileSync(new URL('../app/modular/published-blocks/index.js',import.meta.url),'utf8'),/group_governance/);
   assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
   assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/culture/manage','lo3rwang',true,'culture')?.page,'TimeAnchor');
   assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/statics/manage','lo3rwang',true,'statics')?.page,'ScopeKeyword');
