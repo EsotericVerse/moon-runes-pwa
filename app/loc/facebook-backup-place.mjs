@@ -109,7 +109,10 @@ export function facebookBackupImportUid(row){
   // Plain JSON has no outer archive key; use a deterministic source key so
   // the same backup is not assigned new random Galaxy IDs on every import.
   const native=String(row?.id||row?.post_id||row?.fbid||'').trim();
-  return facebookArchiveUid('facebook:json:'+(native||JSON.stringify(row||{})));
+  // fbid can identify a location/page instead of an individual visit.
+  // Include the original timestamp and record to preserve separate visits.
+  const identity=JSON.stringify([native,facebookBackupTimestamp(row),row||{}]);
+  return facebookArchiveUid('facebook:json:'+identity);
 }
 export function facebookArchiveUid(key){
   const text=String(key||'');
