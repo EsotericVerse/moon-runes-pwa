@@ -1,12 +1,7 @@
-import {defineCloudflareConfig} from "@opennextjs/cloudflare";
-import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
-import doQueue from "@opennextjs/cloudflare/overrides/queue/do-queue";
-import doShardedTagCache from "@opennextjs/cloudflare/overrides/tag-cache/do-sharded-tag-cache";
+import {defineCloudflareConfig} from '@opennextjs/cloudflare';
+import staticAssetsIncrementalCache from '@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache';
 
-// R2 stores incremental results; Durable Objects coordinate timed and tagged
-// revalidation. Avoid regional Cache API caching until purge behavior is tested.
+// Read-only build assets: no R2, Durable Object queue, tag cache or ISR.
 export default defineCloudflareConfig({
-  incrementalCache: r2IncrementalCache,
-  queue: doQueue,
-  tagCache: doShardedTagCache({baseShardSize: 12}),
+  incrementalCache: staticAssetsIncrementalCache
 });

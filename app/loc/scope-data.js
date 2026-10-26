@@ -2,7 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
-import {dbAuthEvents,dbPublicClient} from './db-client.mjs';
+import {dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
 import {SCOPE_ROUTE_INDEX} from '../modular/scope-route-index.js';
 import {PUBLISHED_SITE_BOOTSTRAP} from '../modular/published-site-bootstrap.js';
@@ -23,15 +23,9 @@ const MANAGE_ROLE_COLUMN='manage_role';
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
 const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
 
-// One deployment-level ISR API origin. Scope Domain/Directory URLs NEVER
-// select an ISR server; static export supplies this via its build environment.
-// Next.js ISR hosts leave it unset and use their own relative API handlers.
-// Native Capacitor retains offline/local database access, not cloud ISR.
-export function locPublicIsrUrl(path){
-  const origin=String(process.env.NEXT_PUBLIC_LOC_ISR_ORIGIN||'').trim().replace(/\/+$/,'');
-  if(!origin||Capacitor.isNativePlatform())return path;
-  return origin+path;
-}
+// No remote ISR address is permitted, including when an old build
+// environment variable still contains one.
+export function locPublicIsrUrl(path){return path;}
 
 function requiredToken(value,label){
   const token=String(value||'').trim()||label;
@@ -138,21 +132,9 @@ export function invalidatePublicScopeMetadata(){
     window.dispatchEvent(new Event('loc-public-scope-metadata-changed'));
   }
 }
-export async function revalidateServerMetadata(){
-  try{
-    const {data,error}=await dbAuthEvents.getSession();
-    const token=data?.session?.access_token;
-    if(error||!token)return false;
-    const response=await fetch(locPublicIsrUrl('/api/loc/revalidate'),{
-      method:'POST',
-      headers:{Authorization:`Bearer ${token}`},
-      cache:'no-store'
-    });
-    if(!response.ok)return false;
-    // Only the numeric Culture/Statistics tag is invalidated on the server.
-    return true;
-  }catch{return false;}
-}
+// The caller's SWR invalidation and direct database reads provide freshness;
+// no API request or background ISR cache invalidation is necessary.
+export async function revalidateServerMetadata(){return false;}
 export function selectPublicSiteBootstrap(){
   if(publicSiteBootstrapRequest)return publicSiteBootstrapRequest;
   // Normal visitor path is a JS module, no fetch, JSON parsing, Worker or SQL.

@@ -6,8 +6,7 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const readJson=file=>JSON.parse(read(file));
 const routes=readJson('.next/server/app-paths-manifest.json');
 
-// ISR is limited to public Culture/Statistics numeric data, including
-// Rune Daily timelines, media facets and chart range metadata.
+// Emergency release requirement: source must remain independent of remote ISR.
 const numeric='app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js';
 const invalidation='app/api/loc/revalidate/route.js';
 const appPath=file=>'/'+file.replace(/^app\//,'').replace(/\.js$/,'');
@@ -21,21 +20,25 @@ for(const route of [
 ]){
   if(fs.existsSync(path.join(root,route)))throw Error('Legacy ISR route still present: '+route);
 }
-const source=read(numeric);
-if(!source.includes('unstable_cache(')||!source.includes('read_scope_statistics')
-  ||!source.includes('read_scope_overview')||!source.includes("Cache-Control':'no-store"))
-  throw Error('Missing shared numeric ISR Data Cache or browser-cache bypass');
-if(!source.includes("'media_style'")||!source.includes("'daily-earliest'")||!source.includes("'earliest'"))
-  throw Error('Numeric ISR misses Media Style or Daily Rune chart data');
+const numericSource=read(numeric),invalidateSource=read(invalidation);
+if(!numericSource.includes('status:410')||!invalidateSource.includes('status:410'))
+  throw Error('Remote ISR endpoints are not disabled');
+if(/unstable_cache|revalidateTag|read_scope_statistics/.test(numericSource))
+  throw Error('Disabled ISR numeric API must not query SQL or cache');
+const openNext=read('open-next.config.ts'),wrangler=readJson('wrangler.jsonc');
+if(!openNext.includes('static-assets-incremental-cache')||
+  /r2-incremental-cache|do-queue|do-sharded-tag-cache/.test(openNext))
+  throw Error('OpenNext must use the read-only Static Assets cache');
+if(wrangler.r2_buckets||wrangler.durable_objects)
+  throw Error('Worker still contains billable ISR cache bindings');
+const numericClient=read('app/loc/numeric-isr-client.js');
+if(!numericClient.includes('return false;')||numericClient.includes('fetch('))
+  throw Error('Browser still enables remote ISR');
 const config=read('app/loc/scope-data.js');
-if(config.includes("locPublicIsrUrl('/api/loc/site-bootstrap')")||
-   config.includes("locPublicIsrUrl('/api/loc/scopes/"))
-  throw Error('Non-numeric ISR reference remains in scope-data');
-// Public Bootstrap and Config are JS snapshots, and page Blocks are lazy JS
-// chunks. Only Culture/Statistics numeric APIs belong behind ISR.
-if(!config.includes('PUBLISHED_SITE_BOOTSTRAP')||!config.includes('SCOPE_ROUTE_INDEX')||
-   !config.includes('loadPublishedBlocks(id,pageName)'))
-  throw Error('Missing published JS Bootstrap/Config/Blocks data sources');
+if(!config.includes('PUBLISHED_SITE_BOOTSTRAP')||
+  !config.includes('SCOPE_ROUTE_INDEX')||
+  !config.includes('loadPublishedBlocks(id,pageName)'))
+  throw Error('Missing published JS Bootstrap/Config/Blocks sources');
 const routesConfig=read('app/modular/scope-route-index.js');
 if(!routesConfig.includes('SCOPE_ROUTE_INDEX')||!routesConfig.includes('"config":'))
   throw Error('Scope Routes and Config must share one public JS module');
@@ -49,4 +52,4 @@ const worker=read('public/sw.js');
 if(!worker.includes('isStaticAsset(request,url)')||!worker.includes('staticStrategy(event)')||
    !worker.includes('_next\\/static'))
   throw Error('Service Worker must cache published Next.js JS/CSS assets');
-console.log('Verified Culture/Statistics numeric ISR and published JS/CSS Scope metadata and Blocks.');
+console.log('Verified suspended remote ISR, read-only cache and published JS/CSS Scope metadata/Blocks.');

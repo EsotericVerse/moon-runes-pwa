@@ -39,16 +39,16 @@ test('saved spatial anchors annotate place identity without manufacturing visit 
   assert.deepEqual(stat.places,[]);
 });
 
-test('Culture/Statistics use one optional place ISR and do not require keyword Class',()=>{
+test('Culture and Statistics use optional SQL place summaries without ISR or required keyword Class',()=>{
   const route=read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js');
   const client=read('app/loc/numeric-isr-client.js');
   const culture=read('app/modular/features/Culture.jsx');
   const statistics=read('app/modular/features/Statistics.jsx');
   const cultPlace=read('app/modular/features/trace/CulturePlaceRiver.jsx');
   const statPlace=read('app/modular/features/trace/PlaceStatisticsPanel.jsx');
-  assert.match(route,/read_scope_place_statistics/);
-  assert.match(route,/kind==='places'/);
-  assert.match(client,/\['culture'.*'places'.*\]\.includes\(kind\)/);
+  assert.match(route,/status:410/);
+  assert.match(read('app/loc/place-summary-client.js'),/read_scope_place_statistics/);
+  assert.match(client,/return false/);
   assert.match(culture,/<option value='trace'>痕跡（地點）<\/option>/);
   assert.match(culture,/<CulturePlaceRiver/);
   assert.match(statistics,/const STAT_TYPES=\['total','source','place'/);

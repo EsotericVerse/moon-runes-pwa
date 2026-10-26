@@ -34,11 +34,11 @@ jobs:
         run: npm run test:game
       - name: Bootstrap performance and Admin regression tests
         run: npm run test:bootstrap
-      - name: Build Next.js app for Vercel ISR
+      - name: Build Next.js app (ISR suspended)
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
         shell: bash
         run: npm run build 2>&1 | tee /tmp/next-build.log
-      - name: Verify ISR routes and revalidation window
+      - name: Verify ISR suspended and published JS snapshots
         run: node scripts/verify-release-isr.mjs
       - name: Report build failure to job summary
         if: failure()
