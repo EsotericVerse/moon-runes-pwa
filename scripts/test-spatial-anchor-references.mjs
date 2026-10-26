@@ -2,7 +2,7 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {spatialReferenceCandidates,spatialReferenceLikePattern} from '../app/modular/features/trace/trace-spatial-references.mjs';
-import {facebookBackupPlace} from '../app/loc/facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupTimestamp,facebookBackupImportUid} from '../app/loc/facebook-backup-place.mjs';
 import {mappedImportValue,parseImportCreatedTime} from '../app/loc/import-batch.mjs';
 import {postalAddressFromNominatim} from '../app/modular/features/trace/trace-postal-evidence.mjs';
 
@@ -59,4 +59,20 @@ test('address retains floors and suites without guessing an indoor height',()=>{
  assert.equal(locationFields({address:'新北市板橋區文化路100號3–4樓'}).floor_level,null);
  assert.equal(locationFields({address:'新北市板橋區文化路100號501室'}).floor_level,null);
  assert.throws(()=>locationFields({floor_label:'B1',floor_level:2}),/不一致/);
+});
+
+test('Meta explicitly labelled visited-place JSON preserves the check-in location and time',()=>{
+  const encoded=value=>[...new TextEncoder().encode(value)].map(code=>String.fromCharCode(code)).join('');
+  const record={
+    fbid:'stable-facebook-visit',
+    label_values:[
+      {label:encoded('造訪時間'),timestamp_value:1720000000},
+      {dict:[{title:encoded('地標'),dict:[{label:encoded('名稱'),value:encoded('板橋車站')}]}]}
+    ]
+  };
+  assert.equal(facebookBackupPlace(record),encoded('板橋車站'));
+  assert.equal(facebookBackupTimestamp(record),1720000000);
+  assert.equal(facebookBackupImportUid(record),facebookBackupImportUid({...record}));
+  assert.notEqual(facebookBackupImportUid(record),facebookBackupImportUid({...record,fbid:'another-place'}));
+  assert.equal(facebookBackupPlace({label_values:[{label:encoded('地點'),value:encoded('私人現居地')}] }),'');
 });
