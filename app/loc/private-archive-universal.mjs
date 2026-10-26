@@ -9,6 +9,7 @@ import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-s
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
+import {facebookBackupPlace} from './facebook-backup-place.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -87,6 +88,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
     actualKind==='message'?(txt(item.content)||txt(item.text)||null):
     actualKind==='post'?(extractCaption(item)||txt(data['Title']?.value)||null):
     extractCaption(item);
+  const sourcePlace=platform==='facebook'&&actualKind==='post'?facebookBackupPlace(item):'';
   const attachments=[
     ...(Array.isArray(item.photos)?item.photos:[]),
     ...(Array.isArray(item.videos)?item.videos:[]),
@@ -97,11 +99,11 @@ function normalize(row,{platform,kind,path,index,conversation}){
   ].map(v=>({uri:txt(v?.uri)||txt(v?.media?.uri)||null})).filter(v=>v.uri).slice(0,200);
   if(kind==='message'&&text===null&&!attachments.length)
     return {error:'訊息沒有文字或可辨識附件'};
-  if(kind==='post'&&text===null&&!attachments.length)
-    return {error:'貼文沒有可辨識文字或附件'};
+  if(kind==='post'&&text===null&&!attachments.length&&!sourcePlace)
+    return {error:'貼文沒有可辨識文字、打卡地點或附件'};
   // A previously unseen Meta schema is retained as explicitly unmapped JSON,
   // never silently presented as a successfully mapped post or message.
-  const unmapped=!text&&!attachments.length;
+  const unmapped=!text&&!attachments.length&&!sourcePlace;
   const finalKind=unmapped?'unmapped':actualKind;
   const visibleText=unmapped?JSON.stringify(row):text||'';
   const native=String(item.id_str||item.id||item.post_id||item.media_id||
@@ -119,7 +121,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const stable=native||hash(JSON.stringify([group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments]));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
-    platform,kind:finalKind,nativeId:stable,text:visibleText,
+    platform,kind:finalKind,nativeId:stable,text:visibleText,sourcePlace,
     sender,conversationId:actualKind==='message'?conv:null,attachments,
     createdAt,originalTimestamp,
     sourcePath:cleanPath(path),
