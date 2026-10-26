@@ -196,8 +196,9 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   function resizeFrame(width,height){
     const frame=containerRef.current;
     if(!frame)return;
-    const availableWidth=frame.parentElement?.clientWidth||frame.clientWidth;
-    frame.style.width=Math.min(availableWidth,Math.max(320,width))+'px';
+    const availableWidth=Math.max(1,frame.parentElement?.clientWidth||frame.clientWidth||1);
+    const minWidth=Math.min(320,availableWidth);
+    frame.style.width=Math.min(availableWidth,Math.max(minWidth,width))+'px';
     frame.style.height=Math.min(Math.max(360,window.innerHeight*.95),Math.max(340,height))+'px';
   }
   function startMapResize(event){
