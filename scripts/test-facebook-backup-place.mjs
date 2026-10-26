@@ -117,7 +117,7 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
  const imported=records.map(facebookArchiveGalaxyRow).filter(Boolean);
  assert.equal(imported.length,1);
- assert.equal(imported[0].source_place,enc('某車站'));
+ assert.equal(imported[0].source_place,'某車站');
  assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
 });
 
