@@ -320,7 +320,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       ||Number(a.order||0)-Number(b.order||0)),[periodQuery.data,scopeId]);
   const selectedPeriod=selectedPeriodKey==='latest'
     ?periods.at(-1)||null
-    :periods.find(row=>String(row.period||row.era_id||row.record_id)===selectedPeriodKey)||null;
+    :periods.find(row=>String(row.period||row.era_id||row.uid)===selectedPeriodKey)||null;
   // LOC aggregates member Scopes, but has no mandatory aggregate Period row.
   // An empty or non-period Scope must not request a nonexistent Period index.
   const periodNavigationReady=isLrunesDaily||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
@@ -536,7 +536,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           <option value="latest">{periods.length?'最新時期':'未設定時期（預設時間）'}</option>
           <option value="">自選時間（原有縮放）</option>
           {periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
-          {periods.map(period=><option key={period.record_id||period.period} value={String(period.period||period.era_id||period.record_id)}>
+          {periods.map(period=><option key={period.uid||period.period} value={String(period.period||period.era_id||period.uid)}>
             {period.title||period.name||period.period}
           </option>)}
         </select>
