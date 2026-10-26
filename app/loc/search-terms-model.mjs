@@ -13,9 +13,9 @@ export function rankScopeSearchSuggestions(index,terms,query,limit=8){
   if(!q||!index||!Array.isArray(terms))return [];
   const matched=index.search(q,{suggest:true,limit:Math.max(limit*4,32)});
   const seen=new Set();
-  const points={keyword:100,place:80,hashtag:75,title:50,media:40,source:10};
+  const points={keyword:100,hashtag:75,title:50,media:40,source:10};
   return matched.map(id=>terms[Number(id)]).filter(row=>{
-    if(!row?.term||seen.has(row.term))return false;
+    if(!row?.term||row.term_kind==='place'||seen.has(row.term))return false;
     seen.add(row.term);
     return true;
   }).sort((a,b)=>{
