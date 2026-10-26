@@ -234,7 +234,7 @@ export default function Culture(){
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
   // Events are displayed inside their Period, not as a competing time mode.
-  const cultureTimeKind='period';
+  const [cultureTimeKind,setCultureTimeKind]=useState('period');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -268,6 +268,7 @@ export default function Culture(){
     setStyleFilter('none');
     setKeywordOptionsScope('');
     setKeywordPeriodKey('latest');
+    setCultureTimeKind('period');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
     setOpenCultureRoots([]);
@@ -277,17 +278,12 @@ export default function Culture(){
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
   // Time structure is authoritative without any remote ISR Period request.
-  const openRows=useMemo(()=>(query.data?.openRanges||[])
-    .filter(item=>isAggregateScope||String(item?.scope_id||'')===scopeId),[isAggregateScope,scopeId,query.data]);
-  const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
-
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const classificationScope=scopeId;
   const scopeData=query.data?.scope||null;
   // Use a stable periods array: date-navigation effects must not re-run just
   // because a different Culture panel or query refreshed the page.
   const primaryPeriods=useMemo(()=>isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId),[isAggregateScope,allPeriods,scopeId]);
-  const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
   const latestPeriod=primaryPeriods.at(-1)||null;
   const structurePreference=useMemo(()=>structurePeriodPreference(primaryPeriods,
     (query.data?.timelineItems||[]).filter(item=>item.scope_id===scopeId)),
