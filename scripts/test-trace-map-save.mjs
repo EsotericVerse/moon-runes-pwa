@@ -139,7 +139,7 @@ test('Trace page edit navigation opens the selected Frame by UID, not a local de
   const editor=manager();
   assert.match(feature,/section=traceMap&frame='/);
   assert.match(feature,/encodeURIComponent\(currentMap\.uid\)/);
-  assert.match(editor,/index\.data\.find\(map=>map\.uid===requestedFrame\)/);
+  assert.match(editor,/index\.data\.find\(map=>map\.source_scope===activeScope&&map\.uid===requestedFrame\)/);
   assert.match(editor,/openedFrame\.current===key/);
   assert.match(editor,/edit\(target\)/);
 });
