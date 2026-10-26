@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
 import {traceCountyId,traceCountyName} from '../app/modular/features/trace/trace-county-id.mjs';
 import {groupTraceAnchorsByCountyId} from '../app/modular/features/trace/trace-spatial-classification.mjs';
+import {findAnchorWriteMatches} from '../app/modular/features/trace/trace-organizer.mjs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
 const sample=[
@@ -50,4 +51,35 @@ test('code saves ordered station UIDs and stores county_id on every anchor write
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude\)/);
  assert.match(storage,/county_id:traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
  assert.match(storage,/anchor_uids:chosen/);
+});
+
+test('many identically named businesses can be disambiguated by UID or address',()=>{
+ const crowds=Array.from({length:15},(_,index)=>({
+   uid:'X'+String(index).padStart(7,'0'),trace_type:'anchor',
+   county_id:'TW-NWT',title:'同名店',
+   description:'地址：新北市板橋區第'+index+'路'
+ }));
+ assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
+ assert.deepEqual(traceAnchorSuggestions(crowds,'TW-NWT','同名店 X0000012').map(a=>a.uid),['X0000012']);
+ assert.deepEqual(traceAnchorSuggestions(crowds,'TW-NWT','同名店 第12路').map(a=>a.uid),['X0000012']);
+});
+test('same address but different business names are never safe for automatic reuse',()=>{
+ const previous={uid:'OLD12345',trace_type:'anchor',source_scope:'lo3rwang',title:'舊餐廳',
+   latitude:25,longitude:121.5,description:'地址：新北市板橋區一號'};
+ const next={...previous,uid:'NEW12345',title:'新餐廳'};
+ const matches=findAnchorWriteMatches(next,[previous]);
+ assert.equal(matches.length,1);
+ assert.equal(matches[0].type,'same-address');
+ assert.equal(matches[0].safeReuse,false);
+});
+test('same names at different locations remain independent spatial anchors',()=>{
+ const previous={uid:'OLD12345',trace_type:'anchor',source_scope:'lo3rwang',title:'小柏小傑',
+   latitude:25,longitude:121.5,description:''};
+ const next={...previous,uid:'NEW12345',longitude:121.51};
+ const matches=findAnchorWriteMatches(next,[previous]);
+ assert.equal(matches.length,1);
+ assert.equal(matches[0].safeReuse,false);
+ const storage=read('app/modular/features/trace/trace-data.js');
+ assert.doesNotMatch(storage,/distinctTitleOrThrow/);
+ assert.doesNotMatch(storage,/if\(check\.byName/);
 });
