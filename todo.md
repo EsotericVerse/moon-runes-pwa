@@ -1,11 +1,12 @@
 ## 2026-10-26｜Admin 選單整併（人員首頁／名單管理／網路設定）
 
-- [ ] **ADMIN-NAV-20261026｜同一短期分支完整實作與自測** `[IN PROGRESS / NOT FOR MERGE]`
-  - **分支：** `task/admin-network-lists-nav`（先在 main 登記，再以包含此登記的 main SHA 建立）。**登記前 main：** `1fc5d0c74a2379cb96fcd265993e8f5c9fb0322e`。
-  - **明確交付：** Admin 首頁預設選中「人員」；合併「資料庫設定」與「ISR 設定／快取」為「網路設定」（保留各自獨立設定、三模式 off/cache/isr、最多 32 家 ISR 來源）；合併「保留名稱」與「系統黑名單」為「名單管理」（保留保留名稱僅編輯備註，以及 Email 黑名單增刪與既有 RLS，不混用資料表）。選單總計「人員／名單管理／網路設定／區塊／配色」。舊 `?section=database/isr/reserved/blocklist` 入口映射到新選單，不增加新的路由頁。
-  - **安全與相容：** 維持 Service Worker、JS 路由／Blocks、快取三模式、現有資料表與權限；共頁的多組編輯內容使用既有 EditDock 儲存／取消／切換機制，避免未存修改遺失。不得自行部署 Pages／Cloudflare／IPA／啟用 ISR。
-  - **自測／CI：** Admin 入口、預設人員、舊連結相容、各舊面板仍實際裝載，兩組共頁儲存及未儲存切換；聚焦 Node 回歸、完整 Bootstrap、Build、適用現有 CI（成功終態與 logs）；自動測試無法覆蓋實際認證時須標明實機／正式站邊界。全通過再合併 main、關 PR，清理分支並於本紀錄寫入 SHA 與待集中驗收。
-  - **下一步：** 建立上述 branch，修改 AdminHomeView 及相依測試，跑完 CI 後整理完整交付。
+- [x] **ADMIN-NAV-20261026｜程式整合及適用 CI 通過** `[MERGED / CLOSED / 等待集中手動部署與驗收]`
+  - **原分支：** `task/admin-network-lists-nav`；**PR：** [#586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)（已合併／關閉）；**main merge SHA：** `53f7c2b7664679558ef0135faecdbbac6f021991`；**分支最後 HEAD：** `e4eed9a9a063f25284acf47a20021606434e446a`；**建立基準 main：** `30695966749094655a4d4e65941a7550643743ac`。
+  - **已完成：** Admin 預設「人員」，頂部五選單「人員／名單管理／網路設定／區塊／配色」；「名單管理」共頁載入原保留名稱備註與 Email 黑名單；「網路設定」共頁載入資料庫設定與可切換 off/cache/isr 的「快取」及最多 32 家可選 ISR Domain。保留 `?section=database/isr/reserved/blocklist` 舊深連結映射，兩組原面板保留各自的資料庫表與權限、原 EditDock 全部 dirty editor 的儲存／切換管理。沒有移動或更改 `silver.loc_blocks` 管理 Hero 文字；先前使用者自行補寫的內容全部維持。
+  - **CI 實際證據：** [Actions #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676) **終態 success**；期間／定錨測試 **8/8**、選單與文化相關 Bootstrap 聚焦測試 **9/9**、文化分組 **5/5**、Next.js 257/257 靜態頁 Build；log 已核對，僅現有依賴 `punycode`／`url.parse` DeprecationWarning，無此次新增的測試或編譯失敗。完整 Bootstrap 全集及真實 Admin 帳號共頁寫入並非這次 CI 涵蓋，不能虛稱已實測。
+  - **待集中驗收與工程後續：** 使用者決定手動部署後核實正式版 SHA、Admin 預設人員、舊連結導向、網路快取三模式與資料庫設定、名單新增／移除／備註寫入及取消切換；不同編輯同頁未儲存提示、正確 RLS、手機版。因未在真實登入環境端到端操作寫入，**此為程式／CI 整合完成，不等於已線上驗收**。沒有觸發 GitHub Pages、IPA、Cloudflare ISR、R2 或任何正式部署。
+  - **分支清理：** PR 已關閉，現有 GitHub 連接器沒有刪除 Git branch 功能；遠端分支標記 `MERGED / NEVER REUSE`，不得重新使用；待有受控刪除手段時清理。
+
 
 ---
 
@@ -27,6 +28,8 @@
 > **這裡是集中驗收看板，不是未完成工作清單。** 一般功能須先由工程端完成、實際功能自測、適用 CI 全數通過並合併 `main`，才加入下方「工程完成／待集中部署」區。之後由使用者自行決定一次手動部署，工程端核實部署成功、線上版本與基本實際功能，才移至「已部署／集中待驗收」。讓使用者一次驗收多項完整功能，不必逐 PR、逐小修等待或替工程端除錯。未完成、CI 失敗／未驗證項目留在原本 TODO，不能冒充待驗收。
 
 ### 工程完成、CI 通過、已合併 main｜等待集中手動部署
+
+- [x] **Admin 系統管理五選單整併** `[工程程式與適用 CI 通過／已合併／未部署]`：`ADMIN-NAV-20261026`、原分支 `task/admin-network-lists-nav`、[PR #586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)、`main 53f7c2b7`、[CI #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676)。預計同批驗收：Admin 首頁人員；名單管理（保留名稱＋黑名單）；網路設定（資料庫＋快取／多家 ISR）；舊連結；原 Hero 文字不變。正式登入寫入及線上狀態尚未驗證，**不得視為已部署或使用者驗收**。
 
 - [x] **Admin 全站三段快取模式** `[工程程式及 CI 完成／main 已合併／待使用者集中手動部署]`：`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → `main 2c73439c`；[Bootstrap 216/216 + Build/Chrome #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)、[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 成功。預定集中驗收：Admin → ISR 設定 → `off/cache/isr` 切換、儲存、重新讀取及退路。**尚未部署；真實 Admin 登入寫入、外部 ISR 快取命中尚未在線上驗證，不得當作已由使用者驗收。**
 
