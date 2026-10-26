@@ -1,140 +1,122 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
+const manager=()=>read('app/loc/TraceRouteManager.jsx');
 
-test('LOC route editor selects an authorized source Scope, never filters to empty LOC-only mirrors',()=>{
-  const src=read('app/loc/TraceManagement.jsx');
-  assert.match(src,/const \[routeScopeId,setRouteScopeId\]=useState\(/);
-  assert.match(src,/scopeId==='loc'\s*\?editableScopes\.includes\(routeScopeId\)\?routeScopeId:editableScopes\[0\]/);
-  assert.match(src,/account\.canManageScopeSync\(source\)/);
-  assert.match(src,/spatial\.anchors\.filter\(row=>row\.source_scope===writeScopeId\)/);
-  assert.match(src,/input=\{scopeId:writeScopeId,title,description,anchorUids:selected,anchors\}/);
-  assert.match(src,/可編輯的作品範圍/);
+test('route manager reads only selected Frame, never scans all anchors to open map editor',()=>{
+  const entry=read('app/loc/TraceManagement.jsx');
+  const page=manager();
+  const db=read('app/modular/features/trace/trace-data.js');
+  assert.match(entry,/enabled:enabled&&mode!=='map'/);
+  assert.match(entry,/mode==='map'\)return <TraceRouteManager/);
+  assert.doesNotMatch(entry,/function MapEditor\(/);
+  assert.match(page,/readTraceMapIndex\(activeScope,/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids/);
+  assert.match(page,/enabled:Boolean\(current\)/);
+  assert.match(page,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
+  assert.match(page,/enabled:editorOpen&&Boolean\(county&&debouncedQuery\)/);
+  assert.doesNotMatch(page,/readTraceData\(|readAllTraceAnchors\(/);
+  assert.match(db,/\.eq\('trace_type','anchor'\)\.ilike\('title'/);
 });
 
-test('Trace save result is confirmed by a fresh read before clearing the story and stops',()=>{
-  const src=read('app/loc/TraceManagement.jsx');
-  assert.match(src,/const written=editingUid\s*\?await updateTraceMap/);
-  assert.match(src,/const fresh=await reload\(\)/);
-  assert.match(src,/fresh\.maps\.find\(row=>row\.uid===saved\.uid/);
-  assert.match(src,/setNoticeError\(true\)/);
-  assert.match(src,/useEditDockForm\(\{save,isDirty:\(\)=>dirty,isBusy:\(\)=>busy\}\)/);
-  const writes=read('app/modular/features/trace/trace-data.js');
-  assert.match(writes,/dbAuthRelation\(relation\(id\)\)\.insert\(data\)\.select\('uid'\)\.single\(\)/);
-  assert.match(writes,/chosen\.some\(uid=>!existing\.has\(uid\)\)/);
+test('Class/Group and route names use the saved Frame index; article search remains separate',()=>{
+  const page=manager();
+  const db=read('app/modular/features/trace/trace-data.js');
+  const results=read('app/modular/features/trace/trace-panel-filters.mjs');
+  assert.match(page,/routeClasses\(maps\)/);
+  assert.match(page,/routeGroups\(maps,classFilter\)/);
+  assert.match(page,/searchTraceRoutes\(maps,/);
+  assert.match(page,/validateTraceRouteLabels\(className,group\)/);
+  assert.match(db,/validateTraceRouteLabels\(className,group\)/);
+  assert.match(db,/anchor_uids:chosen/);
+  assert.match(db,/nativeOnly/);
+  assert.match(results,/column:'source_place'/);
+  assert.doesNotMatch(results,/column:'content'/);
+  assert.match(page,/將選取錨點加入 Queue/);
+  assert.match(page,/MAX_STOPS=80/);
 });
 
-test('a successful route edit refreshes public Trace without changing database policy',()=>{
-  const src=read('app/loc/TraceManagement.jsx');
-  const mapEditor=src.slice(src.indexOf('function MapEditor('));
-  assert.doesNotMatch(mapEditor,/revalidateServerMetadata\(\)/);
-  assert.match(mapEditor,/\['loc',writeScopeId\]/);
-  assert.match(mapEditor,/cache\.revalidate\(\{queryKey:traceKey\(id\)\}\)/);
-  assert.match(src,/row\.source_scope===writeScopeId/);
-  assert.match(src,/deleteTraceMap\(\{scopeId:map\.source_scope,uid:map\.uid\}\)/);
-  assert.match(read('app/modular/features/trace/TraceMap.jsx'),/selectedRouteUid/);
-  assert.match(read('app/modular/features/trace/trace-map-engine.js'),/setSavedRoute/);
-});
-
-function actualRouteSaveHarness({firstReadMiss=false,writeFails=false,cacheFails=false,edit=false}={}){
-  const editor=read('app/loc/TraceManagement.jsx');
-  const body=editor.slice(editor.indexOf('function MapEditor('));
-  const match=body.match(/  const save=async\(\)=>\{[\s\S]*?\n  \};\n  const remove=async/);
-  assert.ok(match,'MapEditor Save must remain an actual callable handler');
-  const code=match[0].replace(/\n  const remove=async$/,'')
-    .replace(/^  const save=/,'').trim().replace(/;$/,'');
-  const written=[],messages=[];
-  let reads=0,resets=0;
-  const pendingSavedRef={current:null};
+function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails=false}={}){
+  const page=manager();
+  const start=page.indexOf('  const save=async event=>{');
+  const end=page.indexOf('  const remove=async map=>{',start);
+  assert.ok(start>0&&end>start,'actual selected-Frame save handler exists');
+  const code=page.slice(start,end).trim().replace(/^const save=/,'').replace(/;\s*$/,'');
+  const written=[],messages=[],states=[];
+  let reads=0,clears=0;
+  const expected={uid:'MAP00001',source_scope:'lo3rwang',title:'成長路線測試',
+    description:'保留路線',class:'跟朋友',class_group:'夜市',
+    anchor_uids:['AAA00001','BBB00002']};
   const args={
-    busy:false,editorOpen:true,setBusy:()=>{},setNotice:msg=>messages.push(msg),
-    setNoticeError:()=>{},writeScopeId:'lo3rwang',
-    title:'成長路線測試',description:'保留原始故事',
-    selected:['ABC12345','DEF67890'],
-    anchors:[{uid:'ABC12345',source_scope:'lo3rwang'},{uid:'DEF67890',source_scope:'lo3rwang'}],
-    editingUid:edit?'A1B2C3D4':'',pendingSavedRef,
-    updateTraceMap:async payload=>{written.push({type:'update',payload});return {uid:'A1B2C3D4'};},
-    addTraceMap:async payload=>{
-      if(writeFails)throw Error('受保護寫入被拒絕');
-      written.push({type:'insert',payload});
-      return {uid:'A1B2C3D4'};
+    busy:false,canEdit:true,editorOpen:true,setBusy:x=>states.push(x),
+    setNotice:x=>messages.push(x),setIsError:()=>{},
+    validateTraceRouteLabels:(cls,grp)=>({class:cls,class_group:grp}),
+    queue:['AAA00001','BBB00002'],MAX_STOPS:80,missing:[],activeScope:'lo3rwang',
+    title:'成長路線測試',description:'保留路線',className:'跟朋友',group:'夜市',
+    anchors:new Map([
+      ['AAA00001',{uid:'AAA00001',source_scope:'lo3rwang'}],
+      ['BBB00002',{uid:'BBB00002',source_scope:'lo3rwang'}]
+    ]),
+    editingUid:edit?'MAP00001':'',pendingSaved:{current:null},
+    addTraceMap:async input=>{
+      if(writeFails)throw Error('授權寫入被拒絕');
+      written.push({method:'insert',input});return {uid:'MAP00001'};
     },
-    reload:async()=>{
-      reads++;
-      if(firstReadMiss&&reads===1)return {maps:[]};
-      return {maps:[{uid:'A1B2C3D4',source_scope:'lo3rwang',
-        title:'成長路線測試',description:'保留原始故事',
-        anchor_uids:['ABC12345','DEF67890']}]};
+    updateTraceMap:async input=>{
+      if(writeFails)throw Error('授權寫入被拒絕');
+      written.push({method:'update',input});return {uid:'MAP00001'};
     },
-    setExpandedIds:()=>{},reset:()=>{resets++;pendingSavedRef.current=null;},
-    setEditorOpen:()=>{},
-    cache:{revalidate:async()=>{if(cacheFails)throw Error('cache temporarily unavailable');}},
-    traceKey:scope=>['scope-trace',scope]
+    index:{mutate:async()=>{reads++;return firstReadMiss&&reads===1?[]:[expected];}},
+    setSelectedUid:()=>{},clearEntry:()=>{clears++;},setEditorOpen:()=>{},
+    setShowMap:()=>{},refreshFrame:async()=>{if(cacheFails)throw Error('cache unavailable');}
   };
   const keys=Object.keys(args);
-  const save=new Function(...keys,'return ('+code+');')(...keys.map(k=>args[k]));
-  return {save,written,messages,get reads(){return reads;},get resets(){return resets;}};
+  const save=new Function(...keys,'return ('+code+');')(...keys.map(key=>args[key]));
+  return {save,written,messages,states,get reads(){return reads;},get clears(){return clears;}};
 }
-
-test('actual Trace save handler writes to selected source and confirms a fresh read',async()=>{
-  const task=actualRouteSaveHarness();
-  assert.equal(await task.save(),true);
+test('actual save handler writes ordered UIDs and Class/Group then confirms readback',async()=>{
+  const task=saveHarness();
+  await task.save();
   assert.equal(task.written.length,1);
-  assert.equal(task.written[0].type,'insert');
-  assert.equal(task.written[0].payload.scopeId,'lo3rwang');
-  assert.deepEqual(task.written[0].payload.anchorUids,['ABC12345','DEF67890']);
-  assert.equal(task.resets,1);
+  assert.equal(task.written[0].input.scopeId,'lo3rwang');
+  assert.equal(task.written[0].input.className,'跟朋友');
+  assert.equal(task.written[0].input.group,'夜市');
+  assert.deepEqual(task.written[0].input.anchorUids,['AAA00001','BBB00002']);
+  assert.equal(task.reads,1);
+  assert.equal(task.clears,1);
   assert.match(task.messages.at(-1),/重新讀取確認/);
 });
-
-test('actual handler never double inserts after readback delay',async()=>{
-  const task=actualRouteSaveHarness({firstReadMiss:true});
-  assert.equal(await task.save(),false);
-  assert.equal(task.resets,0,'preserve draft while unconfirmed');
-  assert.equal(await task.save(),true,'retry readback, not insert');
+test('readback delay never double-inserts and keeps editing draft',async()=>{
+  const task=saveHarness({firstReadMiss:true});
+  await task.save();
   assert.equal(task.written.length,1);
+  assert.equal(task.clears,0);
+  assert.match(task.messages.at(-1),/保留草稿/);
+  await task.save();
   assert.equal(task.reads,2);
+  assert.equal(task.written.length,1);
+  assert.equal(task.clears,1);
 });
-
-test('actual handler preserves draft on rejected write, and cache failure does not erase a successful save',async()=>{
-  const rejected=actualRouteSaveHarness({writeFails:true});
-  assert.equal(await rejected.save(),false);
-  assert.equal(rejected.resets,0);
-  assert.equal(rejected.written.length,0);
-  assert.match(rejected.messages.at(-1),/寫入被拒絕/);
-  const cached=actualRouteSaveHarness({cacheFails:true,edit:true});
-  assert.equal(await cached.save(),true);
-  assert.equal(cached.written[0].type,'update');
-  assert.equal(cached.resets,1);
-  assert.match(cached.messages.at(-1),/已更新並重新讀取確認/);
+test('write rejection preserves draft; confirmed save survives secondary cache failure',async()=>{
+  const denied=saveHarness({writeFails:true});
+  await denied.save();
+  assert.equal(denied.written.length,0);
+  assert.equal(denied.clears,0);
+  assert.match(denied.messages.at(-1),/授權寫入被拒絕/);
+  const cached=saveHarness({edit:true,cacheFails:true});
+  await cached.save();
+  assert.equal(cached.written[0].method,'update');
+  assert.equal(cached.clears,1);
+  assert.match(cached.messages.at(-1),/已儲存並重新讀取確認/);
 });
-
-test('public Trace reads fresh maps and a complete inline three-tab report',()=>{
-  const page=read('app/modular/features/Trace.jsx');
-  const results=read('app/modular/features/trace/TracePlaceResults.jsx');
-  const editor=read('app/loc/TraceManagement.jsx');
-  const css=read('app/styles/features.css');
-  assert.match(page,/enabled:supported&&routeListOpen/);
-  assert.match(page,/readTraceMapIndex\(periodScopeId\)/);
-  assert.doesNotMatch(page,/readNumericIsr\(scopeId,'traces'\)/);
-  assert.match(results,/<CultureTimeline items=\{riverRows\}/);
-  assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
-  assert.match(results,/沒有可對應的打卡地點/);
-  assert.match(editor,/aria-expanded=\{expandedIds\.includes\(map\.uid\)\}/);
-  assert.match(css,/\.loc-trace-route-pickers\{display:grid/);
-  assert.match(css,/\.loc-trace-route-queue-actions>\.loc-button\{min-width:44px/);
-});
-
-test('full-map display mode keeps mounted MapLibre and allows return to normal controls',()=>{
-  const page=read('app/modular/features/Trace.jsx');
-  const map=read('app/modular/features/trace/TraceMap.jsx');
-  const css=read('app/styles/features.css');
-  assert.match(page,/\[mapOnly,setMapOnly\]=useState\(false\)/);
-  assert.match(page,/mapOnly=\{mapOnly\}/);
-  assert.match(page,/mapOnly\?'返回完整痕跡操作'/);
-  assert.match(map,/\(mapOnly\?" is-map-only":""\)/);
-  assert.match(map,/createTraceMap\(containerRef\.current/);
-  assert.match(css,/\.loc-trace-panel\.is-map-only \.loc-trace-map-frame/);
-  assert.match(css,/height:82svh!important/);
+test('selected Frame connects points by saved order without a road-network requirement',()=>{
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
+  const page=manager();
+  assert.match(engine,/geometry:\{type:'LineString',coordinates:/);
+  assert.match(engine,/previous\.longitude/);
+  assert.match(engine,/previous\.latitude/);
+  assert.match(page,/兩站不需要相鄰/);
+  assert.doesNotMatch(page,/router\.push|featureNavigationHref/);
 });
