@@ -44,7 +44,10 @@ function buildScopeData(row,id){
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
     galaxyMedia:galaxy+'_media',
-    time:`silver.${id}_${timeSuffix}`,
+    // This release reads the canonical Time UID model from the production
+    // _time_v2 table. The old _time tables remain available to deployed
+    // legacy clients until the coordinated Time+Space frontend release.
+    time:`silver.${id}_${timeSuffix==='time'&&['lo3rwang','lrunes'].includes(id)?'time_v2':timeSuffix}`,
     keywords:`silver.${id}_keywords`,
     blocks:`silver.${id}_blocks`
   };
