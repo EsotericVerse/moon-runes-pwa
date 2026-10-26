@@ -124,7 +124,7 @@ export async function readTraceAnchorSuggestions(scopeId,countyId,term,limit=8){
   const union=id==='loc';
   let request=dbPublicClient.schema('silver').from(id+'_trace')
     .select('uid,title,trace_type,county_id,longitude,latitude'+(union?',scope_id':''))
-    .eq('trace_type','anchor').ilike('title','%'+q.replace(/[\\%_]/g,'\\export async function readAllTraceAnchors(scopeId){')+'%');
+    .eq('trace_type','anchor').ilike('title','%'+q.replace(/[\\%_]/g,'\\$&')+'%');
   if(county==='OTHER')request=request.is('county_id',null);
   else request=request.eq('county_id',county);
   if(union)request=request.eq('scope_id','loc');
