@@ -2,7 +2,7 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {spatialReferenceCandidates,spatialReferenceLikePattern,spatialReferenceChoicesForName,spatialReferenceLabelVariants,spatialReferenceLabelKey} from '../app/modular/features/trace/trace-spatial-references.mjs';
-import {facebookBackupPlace,facebookBackupTimestamp,facebookBackupImportUid} from '../app/loc/facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupTimestamp,facebookBackupImportUid,facebookArchiveGalaxyRow} from '../app/loc/facebook-backup-place.mjs';
 import {mappedImportValue,parseImportCreatedTime} from '../app/loc/import-batch.mjs';
 import {postalAddressFromNominatim} from '../app/modular/features/trace/trace-postal-evidence.mjs';
 
@@ -172,4 +172,26 @@ test('external geocoder candidates never auto-confirm from a name match alone',(
   const none=geographyChoices([],'相同名稱');
   assert.equal(none.status,'notfound');
   assert.equal(none.selected,-1);
+});
+
+test('Galaxy ZIP check-ins decode Meta mojibake without changing source visit identity',()=>{
+  const encode=value=>[...new TextEncoder().encode(value)]
+    .map(code=>String.fromCharCode(code)).join('');
+  const record={
+    platform:'facebook',kind:'post',key:'facebook:visit:encoded',
+    sourcePlace:encode('板橋車站'),text:encode('今天來到板橋車站'),
+    createdAt:'2024-07-03T09:46:40.000Z'
+  };
+  const converted=facebookArchiveGalaxyRow(record);
+  assert.equal(converted.source_place,'板橋車站');
+  assert.equal(converted.content,'今天來到板橋車站');
+  assert.equal(converted.title,'今天來到板橋車站');
+  assert.equal(converted.createtime,record.createdAt);
+  assert.match(converted.uid,/^[A-Z0-9]{8}$/);
+  assert.equal(converted.uid,facebookArchiveGalaxyRow(record).uid);
+  const valid=facebookArchiveGalaxyRow({
+    ...record,key:'facebook:visit:native',sourcePlace:'臺北車站',text:'正確繁體中文'
+  });
+  assert.equal(valid.source_place,'臺北車站');
+  assert.equal(valid.content,'正確繁體中文');
 });
