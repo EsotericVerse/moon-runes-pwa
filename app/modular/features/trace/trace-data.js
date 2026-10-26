@@ -23,11 +23,10 @@ function countyIdFromAddress(address){
   const start=String(address||'').trim().match(/^(.{2,3}[縣市])/u);
   return start?traceCountyId(start[1]):null;
 }
-async function countyIdAt(longitude,latitude,address=''){
-  const explicit=countyIdFromAddress(address);
-  if(explicit)return explicit;
-  const {countyForCoordinates}=await import('./trace-county-lookup.mjs');
-  return traceCountyId(countyForCoordinates(longitude,latitude));
+async function countyIdAt(_longitude,_latitude,address=''){
+  // GPS is only horizontal evidence; no postal county is fabricated when
+  // the complete postal address is missing. Old county_id remains readable.
+  return countyIdFromAddress(address);
 }
 function verified(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);
@@ -284,7 +283,6 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   if(!list.length)throw Error('沒有已核對的座標可以儲存。');
   if(list.length>2000)throw Error('單次匯入超過安全上限。');
   const previous=await readTraceData(id);
-  const {countyForCoordinates}=await import('./trace-county-lookup.mjs');
   const known=comparableAnchors(previous,id);
   const pending=[],reuseQueue=[];
   let skipped=0,duplicatesInBatch=0;
@@ -293,7 +291,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       title:verifiedText(place.title,'打卡地點名稱'),
       description:descriptionText(place.description||''),
       longitude:Number(place.longitude),latitude:Number(place.latitude),
-      county_id:countyIdFromAddress(place.address)||traceCountyId(countyForCoordinates(place.longitude,place.latitude)),
+      county_id:countyIdFromAddress(place.address),
       radius_m:Number(place.radius_m??500),
       ...locationFields(place)};
     if(!validCoordinates(place.longitude,place.latitude))
