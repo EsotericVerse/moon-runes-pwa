@@ -1,4 +1,5 @@
 name: LOC A-line single UID isolated verification
+# Verification iteration 2: update UID fixtures and importer adapter assertions.
 on:
   push:
     branches: [fix/loc-place-id-layout-20261026]
