@@ -29,16 +29,24 @@ jobs:
       - name: Existing dependency security gate
         run: npm run audit:security
       - name: Full Node regression suite
+        id: full_node
+        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
           node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs 2>&1 | tee node-tests.log
+      - name: A regression integration suite
+        id: bootstrap
+        continue-on-error: true
+        run: npm run test:bootstrap
       - name: Next production build (no deployment)
         shell: bash
         run: |
           set -o pipefail
           npm run build 2>&1 | tee next-build.log
       - name: Check ISR remains disabled
+        id: isr
+        continue-on-error: true
         run: node scripts/verify-release-isr.mjs
       - name: Preserve diagnostics
         if: always()
@@ -50,3 +58,14 @@ jobs:
             next-build.log
           if-no-files-found: ignore
           retention-days: 3
+      - name: Require all checks successful
+        if: always()
+        env:
+          NODE_RESULT: ${{ steps.full_node.outcome }}
+          BOOTSTRAP_RESULT: ${{ steps.bootstrap.outcome }}
+          ISR_RESULT: ${{ steps.isr.outcome }}
+        run: |
+          echo "node=$NODE_RESULT bootstrap=$BOOTSTRAP_RESULT isr=$ISR_RESULT"
+          test "$NODE_RESULT" = success
+          test "$BOOTSTRAP_RESULT" = success
+          test "$ISR_RESULT" = success
