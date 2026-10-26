@@ -44,6 +44,6 @@ test('the UI does not subscribe to keystroke database queries or history tables'
 test('offline rebuild and runtime autocomplete exclude spatial check-in candidates',()=>{
   const rebuild=readFileSync(new URL('../scripts/sql/rebuild-scope-search-terms.sql',import.meta.url),'utf8');
   const client=readFileSync(new URL('../app/loc/search-terms-client.mjs',import.meta.url),'utf8');
-  assert.doesNotMatch(rebuild,/btrim\\(source_place\\)|'place'::text kind/);
-  assert.match(client,/row\\.term_kind!==['"]place['"]/);
+  assert.doesNotMatch(rebuild,/btrim\(source_place\)|'place'::text kind/);
+  assert.match(client,/row\.term_kind!==['"]place['"]/);
 });
