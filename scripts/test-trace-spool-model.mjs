@@ -9,7 +9,7 @@ const anchors=['A001','B002','C003','E005','Z026','K011'].map((uid,i)=>({
   uid,source_scope:scope,trace_type:'space_anchor',title:uid,address:[120+i*.1,23+i*.1]
 }));
 test('road Queue connects only adjacent ordered stops',()=>{
-  const road={uid:'R001',source_scope:scope,trace_type:'space_road',
+  const road={uid:'R001',source_scope:scope,trace_type:'space_period',
     anchor_list:['A001','B002','C003']};
   const graph=resolveSpaceGraph(road,anchors,{scopeId:scope});
   assert.deepEqual(graph.lines.map(edge=>[edge.from,edge.to]),
@@ -46,4 +46,11 @@ test('cross-scope anchors cannot be implicitly linked',()=>{
   const graph=resolveSpaceGraph(trace,places,{scopeId:scope});
   assert.deepEqual(graph.lines.map(e=>[e.from,e.to]),[['A001','B002']]);
   assert.deepEqual(graph.missing,['K011']);
+});
+
+test('article IDs preserve case-sensitive four-character identity',()=>{
+  const selected={uid:'R009',source_scope:scope,trace_type:'space_period',
+    anchor_list:['A001','a001']};
+  const rows=[...anchors,{uid:'a001',source_scope:scope,trace_type:'space_anchor'}];
+  assert.deepEqual(traceArticleIds(selected,rows),['A001','a001']);
 });

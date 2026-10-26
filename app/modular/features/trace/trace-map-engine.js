@@ -56,7 +56,7 @@ function isValidSavedAnchor(anchor){
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(isValidSavedAnchor)
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),floor_label:'',
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),
         uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
       geometry:{type:'Point',coordinates:spaceCoordinates(a)}}))};
 }
@@ -107,7 +107,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       const coordinates=spaceCoordinates(place);
       features.push({type:'Feature',properties:{order:index+1,title:String(place.title||''),
         uid:String(place.uid||''),source_scope:String(place.source_scope||''),
-        address:String(place.postal_address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
+        address:String(place.postal_address||'')},
         geometry:{type:'Point',coordinates}});
       const previous=points[index-1];
       if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
@@ -121,7 +121,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
   }
   function setSavedRoute(route){
-    const next=['space_road','space_trace'].includes(route?.trace_type)?route:null;
+    const next=['space_period','space_trace'].includes(route?.trace_type)?route:null;
     const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
@@ -264,8 +264,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       paint:{'circle-radius':6,'circle-color':'#6ce4ce','circle-opacity':0.95,
         'circle-stroke-width':1.5,'circle-stroke-color':'#153739'}});
     map.addLayer({id:'loc-trace-saved-point-labels',type:'symbol',source:'loc-trace-saved-anchors',
-      minzoom:12,layout:{'text-field':['concat',['get','title'],
-        ['case',['!=',['get','floor_label'],''],' · ',''],['get','floor_label']],
+      minzoom:12,layout:{'text-field':['get','title'],
         'text-size':12,'text-offset':[0,1.2],'text-anchor':'top',
         'text-allow-overlap':false},paint:{'text-color':'#ebfff8','text-halo-color':'#122d39','text-halo-width':1.5}});
     if(typeof onAnchorSelect==='function'){

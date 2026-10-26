@@ -11,7 +11,7 @@ export const traceCurrentKey=(scopeId,route,{nativeOnly=false}={})=>
 export const traceAllAnchorsKey=(scopeId,{nativeOnly=false}={})=>
   ['trace-all-anchors',scopeId,...(nativeOnly?['native']:[])];
 const VALID_ID=/^[A-Za-z0-9]{4}$/;
-const TRACE_TYPES=['space_anchor','space_road','space_trace'];
+const TRACE_TYPES=['space_anchor','space_period','space_trace'];
 const CORE_COLUMNS='uid,trace_type,title,description,anchor_list,times,address';
 const idScope=value=>{
   const id=String(value||'').toLowerCase().trim();
@@ -79,12 +79,12 @@ async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false}=
 export async function readTraceData(scopeId){
   const id=idScope(scopeId),rows=await readPages(id);
   return {anchors:rows.filter(row=>row.trace_type==='space_anchor'),
-    maps:rows.filter(row=>row.trace_type==='space_road'||row.trace_type==='space_trace')};
+    maps:rows.filter(row=>row.trace_type==='space_period'||row.trace_type==='space_trace')};
 }
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=idScope(scopeId);
   return readPages(id,{columns:'uid,trace_type,title,description,anchor_list',nativeOnly})
-    .then(rows=>rows.filter(row=>row.trace_type==='space_road'||row.trace_type==='space_trace'));
+    .then(rows=>rows.filter(row=>row.trace_type==='space_period'||row.trace_type==='space_trace'));
 }
 export const traceMemberUids=record=>[...new Set((record?.anchor_list||[])
   .flat(Infinity).map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
@@ -175,11 +175,11 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
 }
 function validatedConnections({scopeId,type,anchorUids=[],anchors=[]}){
   const id=idScope(scopeId),list=Array.isArray(anchorUids)?anchorUids:[];
-  if(!['space_road','space_trace'].includes(type))throw Error('無效的連線類型');
+  if(!['space_period','space_trace'].includes(type))throw Error('無效的連線類型');
   const ids=list.flat(Infinity);
   const known=new Set((anchors||[]).filter(row=>row.source_scope===id).map(row=>row.uid));
   if(ids.some(uid=>!VALID_ID.test(String(uid))||!known.has(uid)))throw Error('連線含不存在或跨 Scope 的地點');
-  if(type==='space_road'){
+  if(type==='space_period'){
     if(list.length<2||list.length>80||list.some(Array.isArray)||new Set(list).size!==list.length)
       throw Error('路線需依序排列 2～80 個不同地點');
   }else if(list.length<1||list.length>400||list.some(pair=>
@@ -188,14 +188,14 @@ function validatedConnections({scopeId,type,anchorUids=[],anchors=[]}){
   return list;
 }
 const validUid=value=>VALID_ID.test(textValue(value));
-export async function addTraceMap({scopeId,title,description='',type='space_road',anchorUids=[],anchors=[]}){
+export async function addTraceMap({scopeId,title,description='',type='space_period',anchorUids=[],anchors=[]}){
   const id=writableScope(scopeId),anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
   return checked(await dbAuthRelation(relation(id)).insert({
     trace_type:type,title:nonempty(title,'名稱'),description:descriptionObject(description),
     anchor_list
   }).select('uid').single(),'儲存路線或痕跡圖');
 }
-export async function updateTraceMap({scopeId,uid,title,description='',type='space_road',anchorUids=[],anchors=[]}){
+export async function updateTraceMap({scopeId,uid,title,description='',type='space_period',anchorUids=[],anchors=[]}){
   const id=writableScope(scopeId),key=textValue(uid);
   if(!validUid(key))throw Error('無效 UID');
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
@@ -205,9 +205,9 @@ export async function updateTraceMap({scopeId,uid,title,description='',type='spa
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'更新路線或痕跡圖');
 }
-export async function deleteTraceMap({scopeId,uid,type='space_road'}){
+export async function deleteTraceMap({scopeId,uid,type='space_period'}){
   const id=writableScope(scopeId);
-  if(!validUid(uid)||!['space_road','space_trace'].includes(type))throw Error('無效的刪除目標');
+  if(!validUid(uid)||!['space_period','space_trace'].includes(type))throw Error('無效的刪除目標');
   let query=dbAuthRelation(relation(id)).delete().eq('uid',uid).eq('trace_type',type);
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'刪除路線或痕跡圖');

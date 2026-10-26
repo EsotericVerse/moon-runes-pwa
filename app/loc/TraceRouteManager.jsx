@@ -29,7 +29,7 @@ export default function TraceRouteManager({scopeId}){
   const [selectedUid,setSelectedUid]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
   const [editingUid,setEditingUid]=useState('');
-  const [type,setType]=useState('space_road');
+  const [type,setType]=useState('space_period');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [filter,setFilter]=useState('');
@@ -76,10 +76,10 @@ export default function TraceRouteManager({scopeId}){
     .filter(Boolean).map(row=>({value:row.uid,label:row.title+' · '+row.uid})),[spool,anchorMap]);
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length);
-  const chosenIds=type==='space_road'?queue:unique(pairs.flat());
+  const chosenIds=type==='space_period'?queue:unique(pairs.flat());
   const preview=editorOpen&&chosenIds.length>=2
     ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
-      title:title||'地圖預覽',anchor_list:type==='space_road'?queue:pairs}:current;
+      title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs}:current;
   const previewAnchors=editorOpen?chosenIds.map(uid=>anchorMap.get(uid)).filter(Boolean):(currentAnchors.data||[]);
   const clear=()=>{
     setEditingUid('');setTitle('');setDescription('');setSpool([]);setQueue([]);setPairs([]);
@@ -94,7 +94,7 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!allowLeave())return;
     clear();setEditorOpen(true);setEditingUid(row.uid);setType(row.trace_type);
     setTitle(row.title);setDescription(row.description||'');
-    setQueue(row.trace_type==='space_road'?[...row.anchor_list]:[]);
+    setQueue(row.trace_type==='space_period'?[...row.anchor_list]:[]);
     setPairs(row.trace_type==='space_trace'?row.anchor_list.map(pair=>[...pair]):[]);
     setSpool(traceMemberUids(row));setSelectedUid(row.uid);setShowMap(true);
   };
@@ -146,13 +146,13 @@ export default function TraceRouteManager({scopeId}){
     setBusy(true);setNotice('');setError(false);
     try{
       if(!title.trim())throw Error('請輸入名稱');
-      if(type==='space_road'&&(queue.length<2||queue.length>MAX_ROAD))
+      if(type==='space_period'&&(queue.length<2||queue.length>MAX_ROAD))
         throw Error('路線至少兩站，依先後順序建立');
       if(type==='space_trace'&&(!pairs.length||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
         throw Error('痕跡圖必須至少有一條有效的起點與終點線段');
       if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('Spool 內有尚未載入的定錨點');
       const input={scopeId:owner,type,title,description,
-        anchorUids:type==='space_road'?queue:pairs,anchors:allAnchors};
+        anchorUids:type==='space_period'?queue:pairs,anchors:allAnchors};
       let receipt=savedReceipt;
       if(receipt&&(receipt.type!==type||receipt.editingUid!==editingUid))
         throw Error('上一筆儲存尚未確認，不會再次新增');
@@ -170,7 +170,7 @@ export default function TraceRouteManager({scopeId}){
       const uid=receipt.uid;
       clear();setSelectedUid(uid);setEditorOpen(false);setShowMap(true);
       await refresh();
-      setNotice('已儲存並重讀確認：'+(type==='space_road'?'路線圖':'痕跡圖'));
+      setNotice('已儲存並重讀確認：'+(type==='space_period'?'路線圖':'痕跡圖'));
       return true;
     }catch(e){setError(true);setNotice(String(e.message||e));return false;}
     finally{setBusy(false);}
@@ -194,7 +194,7 @@ export default function TraceRouteManager({scopeId}){
         <p className="scope-status">先用 React Select 自動完成標題並加入 Spool，再從 Spool 配置路線或獨立線段。不依賴縣市、常用排名或付費地理搜尋。</p>
       </div>
       <div className="scope-stat-controls">
-        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_road')}>新增路線圖</button>
+        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_period')}>新增路線圖</button>
         <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_trace')}>新增痕跡圖</button>
       </div>
     </header>
@@ -214,7 +214,7 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-trace-saved-map-summary"
           onClick={()=>{if(allowLeave()){setSelectedUid(row.uid);setShowMap(true);setEditorOpen(false);clear();}}}>
           <span>{row.title}</span>
-          <span className="scope-status">{row.trace_type==='space_road'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
+          <span className="scope-status">{row.trace_type==='space_period'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
         </button>
         {current?.uid===row.uid?<div className="scope-stat-controls">
           <button type="button" className="loc-button" disabled={!own||busy} onClick={()=>openEdit(row)}>編輯</button>
@@ -226,7 +226,7 @@ export default function TraceRouteManager({scopeId}){
       </div>)}
     </div>
     {editorOpen?<form className="loc-trace-route-composer" onSubmit={save}>
-      <h4>{editingUid?'編輯':'新增'}{type==='space_road'?'路線圖':'痕跡圖'}</h4>
+      <h4>{editingUid?'編輯':'新增'}{type==='space_period'?'路線圖':'痕跡圖'}</h4>
       <div className="scope-management-fields">
         <label>名稱<input required maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
         <label>說明<textarea rows={2} maxLength={2000} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
@@ -252,8 +252,8 @@ export default function TraceRouteManager({scopeId}){
           <button type="button" className="loc-button" disabled={busy} onClick={()=>removeFromSpool(uid)}>移除</button>
         </div>)}
       </div>
-      <h4>2. {type==='space_road'?'路線 Queue（依選點先後）':'痕跡線段（不限制順序、可重用端點）'}</h4>
-      {type==='space_road'?<>
+      <h4>2. {type==='space_period'?'路線 Queue（依選點先後）':'痕跡線段（不限制順序、可重用端點）'}</h4>
+      {type==='space_period'?<>
         <div className="loc-trace-route-pickers">
           <Select inputId="trace-queue-stop" instanceId="trace-queue-stop"
             options={availableRoadOptions} value={availableRoadOptions.find(x=>x.value===selectedStop)||null}
@@ -296,8 +296,8 @@ export default function TraceRouteManager({scopeId}){
       </>}
       <div className="scope-stat-controls">
         <button className="loc-button primary" type="submit" disabled={busy||!own||anchorIndex.isPending||Boolean(anchorIndex.error)||!title.trim()||
-          (type==='space_road'?queue.length<2:pairs.length<1)}>
-          {busy?'儲存中…':'儲存'+(type==='space_road'?'路線圖':'痕跡圖')}
+          (type==='space_period'?queue.length<2:pairs.length<1)}>
+          {busy?'儲存中…':'儲存'+(type==='space_period'?'路線圖':'痕跡圖')}
         </button>
         <button type="button" className="loc-button" disabled={busy}
           onClick={()=>{if(allowLeave()){clear();setEditorOpen(false);}}}>取消</button>

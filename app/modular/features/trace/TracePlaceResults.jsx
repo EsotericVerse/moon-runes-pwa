@@ -49,7 +49,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const [showAllVisits,setShowAllVisits]=useState(false);
   const [visibleCount,setVisibleCount]=useState(PAGE_SIZE);
   const name=String(place?.title||'').trim();
-  const isMap=place?.trace_type==='space_road'||place?.trace_type==='space_trace';
+  const isMap=place?.trace_type==='space_period'||place?.trace_type==='space_trace';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
   const scope=useMemo(()=>defaultScopeData(targetScope),[targetScope]);
   const placeIds=useMemo(()=>traceArticleIds(place,anchors),[place,anchors]);
