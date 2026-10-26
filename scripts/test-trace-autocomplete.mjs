@@ -49,8 +49,8 @@ test('Frame editor queries by county + name or UID and adds only on explicit plu
  assert.match(manager,/onClick=\{addPoint\}>＋/);
  assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
  assert.match(storage,/uid\.eq\./);
- assert.match(storage,/county_id:await countyIdAt\(longitude,latitude\)/);
- assert.match(storage,/county_id:traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
+ assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
+ assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
  assert.match(storage,/anchor_uids:chosen/);
 });
 
@@ -98,7 +98,7 @@ test('vertical floor identity preserves downstairs and upstairs within one 2D co
    {address:'新北市中和區中山路291號3–4樓',floor_label:'3–4樓',floor_level:null});
  assert.deepEqual(locationFields({address:'未知道路'}),{address:'未知道路',floor_label:'',floor_level:null});
  assert.throws(()=>locationFields({floor_level:'3.5'}),/樓層序號/);
- assert.match(source,/county_id:await countyIdAt\(longitude,latitude\),\s*\.\.\.locationFields/);
+ assert.match(source,/county_id:await countyIdAt\(longitude,latitude,address\),\s*\.\.\.locationFields/);
  assert.match(source,/address,floor_label,floor_level/);
 });
 test('full address and different floors prevent spatial ID auto reuse',()=>{
@@ -121,4 +121,15 @@ test('full address and different floors prevent spatial ID auto reuse',()=>{
  assert.match(manager,/setAddress/);
  assert.match(manager,/floor_level:floorLevel/);
  assert.match(engine,/floor_label:String\(a\.floor_label/);
+});
+
+test('postal city wins over GPS county boundary when known',()=>{
+ const source=read('app/modular/features/trace/trace-data.js');
+ const countyId=(name)=>({'新北市':'TW-NWT','臺北市':'TW-TPE'}[name]||null);
+ const match=source.match(/function countyIdFromAddress\([\s\S]*?\n\}/);
+ assert.ok(match);
+ const decide=new Function('traceCountyId',match[0]+';return countyIdFromAddress')(countyId);
+ assert.equal(decide('新北市板橋區文化路100號2樓'),'TW-NWT');
+ assert.equal(decide('臺北市中山區南京東路10號B1'),'TW-TPE');
+ assert.equal(decide(''),'null'===null?null:null);
 });
