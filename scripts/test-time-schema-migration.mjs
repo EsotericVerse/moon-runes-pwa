@@ -1,47 +1,52 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {convertLegacyTimeRows} from '../app/loc/time-schema-migration.mjs';
-
 const legacy=[
-  {record_id:'uuid-1',record_type:'anchor',resource_id:'birthday',label:'生日',time_date:'1980-06-23',note:'原始定錨點'},
-  {record_id:'uuid-2',record_type:'anchor',resource_id:'military-start',label:'當兵',time_date:'2003-12-16'},
-  {record_id:'uuid-3',record_type:'anchor',resource_id:'military-end',label:'退伍',time_date:'2005-07-01'},
-  {record_id:'uuid-4',record_type:'period',resource_id:'P1',label:'學生時代',anchor_ids:['birthday','military-start']},
-  {record_id:'uuid-5',record_type:'period',resource_id:'P2',label:'現行',anchor_ids:['military-end','0']},
-  {record_id:'uuid-6',record_type:'event',resource_id:'events',label:'多時間事件',anchor_ids:['birthday','military-start','military-end']},
-  {record_id:'uuid-7',record_type:'style_comment',resource_id:'style1',label:'歷史風格',style_description:'必須保留備份'}
+ {record_id:'uuid-1',record_type:'anchor',resource_id:'birthday',label:'生日',time_date:'1980-06-23'},
+ {record_id:'uuid-2',record_type:'anchor',resource_id:'start',label:'開端',time_date:'2003-12-16'},
+ {record_id:'uuid-3',record_type:'anchor',resource_id:'end',label:'結束',time_date:'2005-07-01'},
+ {record_id:'uuid-4',record_type:'period',resource_id:'P1',label:'時間痕跡甲',anchor_ids:['birthday','start']},
+ {record_id:'uuid-5',record_type:'period',resource_id:'P2',label:'時間痕跡乙',anchor_ids:['end','0']},
+ {record_id:'uuid-6',record_type:'event',resource_id:'multi',label:'三錨舊事件',anchor_ids:['birthday','start','end']},
+ {record_id:'uuid-7',record_type:'style_comment',resource_id:'style1',style_description:'歷史風格'}
 ];
-test('all Time identities use one unique four-character uid',()=>{
-  const {rows,archive}=convertLegacyTimeRows(legacy);
-  assert.equal(rows.length,8);
-  assert.equal(archive.length,7);
-  assert.equal(new Set(archive.map(x=>x.migrated_uid)).size,7);
-  assert.ok(rows.every(row=>/^[0-9A-F]{4}$/.test(row.uid)));
-  assert.equal(new Set(rows.map(x=>x.uid)).size,8);
-  assert.ok(rows.every(row=>!('resource_id' in row)&&!('record_id' in row)));
+test('unique four-character UIDs and backed-up old records',()=>{
+ const {rows,archive}=convertLegacyTimeRows(legacy);
+ assert.equal(archive.length,7);
+ assert.equal(rows.length,9,'original 6 active rows plus 2 boundary events plus 1 extra legacy segment');
+ assert.equal(new Set(rows.map(row=>row.uid)).size,9);
+ assert.ok(rows.every(row=>/^[0-9A-F]{4}$/.test(row.uid)));
+ assert.ok(rows.every(row=>!('resource_id' in row)&&!('record_id' in row)));
 });
-test('legacy period becomes time_trace and its original boundary becomes a real time_period',()=>{
-  const {rows}=convertLegacyTimeRows(legacy);
-  const [a,b,c]=rows.filter(x=>x.type==='anchor');
-  const [trace1,trace2]=rows.filter(x=>x.type==='time_trace');
-  const boundaryEvents=rows.filter(x=>x.type==='time_period'&&x.status==='legacy_boundary');
-  const [event]=rows.filter(x=>x.type==='time_period'&&x.status!=='legacy_boundary');
-  assert.equal(boundaryEvents.length,2);
-  assert.deepEqual(trace1.anchor_ids,[boundaryEvents[0].uid]);
-  assert.deepEqual(trace2.anchor_ids,[boundaryEvents[1].uid]);
-  assert.deepEqual(boundaryEvents[0].anchor_ids,[a.uid+'-'+b.uid]);
-  assert.deepEqual(boundaryEvents[1].anchor_ids,[c.uid+'-0']);
-  assert.deepEqual(event.anchor_ids,[a.uid+'-'+b.uid,b.uid+'-'+c.uid]);
-  assert.equal(trace1.address,null,'time traces do not own independent dates');
-  assert.equal(a.address,'1980-06-23');
+test('old periods become traces collecting events with real one/two anchor arrays',()=>{
+ const {rows}=convertLegacyTimeRows(legacy);
+ const [a,b,c]=rows.filter(row=>row.type==='anchor');
+ const traces=rows.filter(row=>row.type==='time_trace');
+ const boundaries=rows.filter(row=>row.status==='legacy_boundary');
+ assert.equal(boundaries.length,2);
+ assert.deepEqual(traces.map(row=>row.anchor_ids),boundaries.map(row=>[row.uid]));
+ assert.deepEqual(boundaries[0].anchor_ids,[a.uid,b.uid]);
+ assert.deepEqual(boundaries[1].anchor_ids,[c.uid],'legacy 0 no longer extends to now');
+ assert.equal(traces[0].address,null);
+ assert.equal(a.address,'1980-06-23');
 });
-test('archived labels survive feature removal without becoming live time rows',()=>{
-  const {rows,archive}=convertLegacyTimeRows(legacy);
-  assert.ok(!rows.some(row=>row.type==='style_comment'));
-  assert.equal(archive.find(row=>row.record_type==='style_comment').style_description,'必須保留備份');
+test('legacy triple-anchor event is split into two real pairs',()=>{
+ const {rows}=convertLegacyTimeRows(legacy);
+ const [a,b,c]=rows.filter(row=>row.type==='anchor');
+ const original=rows.find(row=>row.title==='三錨舊事件');
+ const split=rows.find(row=>row.status==='legacy_split');
+ assert.deepEqual(original.anchor_ids,[a.uid,b.uid]);
+ assert.deepEqual(split.anchor_ids,[b.uid,c.uid]);
+ assert.ok(rows.filter(row=>row.type==='time_period')
+   .every(row=>row.anchor_ids.length>=1&&row.anchor_ids.length<=2));
 });
-test('unresolved historical anchor reference blocks migration instead of inventing time',()=>{
-  assert.throws(()=>convertLegacyTimeRows([
-    legacy[0],{record_type:'period',resource_id:'P1',label:'危險',anchor_ids:['birthday','unlisted']}
-  ]),/不存在的定錨點/);
+test('historical style notes remain in private archive, not live Time',()=>{
+ const {rows,archive}=convertLegacyTimeRows(legacy);
+ assert.ok(!rows.some(row=>row.type==='style_comment'));
+ assert.equal(archive[6].style_description,'歷史風格');
+});
+test('unresolved reference aborts conversion rather than manufacturing an anchor',()=>{
+ assert.throws(()=>convertLegacyTimeRows([legacy[0],{
+  record_id:'bad',record_type:'period',resource_id:'P1',anchor_ids:['birthday','missing']
+ }]),/不存在的定錨點/);
 });
