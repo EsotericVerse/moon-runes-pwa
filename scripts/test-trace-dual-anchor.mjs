@@ -20,13 +20,13 @@ test('never do brand-only or distance-only fuzzy expansion',()=>{
   assert.deepEqual(traceArticlePlaces(anchor('AAA00001','拉亞漢堡行天宮店')),['拉亞漢堡行天宮店']);
   assert.deepEqual(traceArticlePlaces({uid:'MAP00001',trace_type:'map',source_scope:'lo3rwang',anchor_uids:['unknown']},[]),[]);
 });
-test('trace ISR caches metadata, and client defers counts and article bodies',()=>{
+test('trace data and on-demand reports work without ISR or article preloading',()=>{
   const route=source('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js');
   const client=source('app/loc/numeric-isr-client.js');
   const trace=source('app/modular/features/Trace.jsx');
   const report=source('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(route,/kind==='traces'/);
-  assert.match(client,/'places','traces'/);
+  assert.match(route,/status:410/);
+  assert.match(client,/return false/);
   assert.doesNotMatch(trace,/readNumericIsr\(scopeId,'traces'\)/);
   assert.match(trace,/spatialData\.maps\.map/);
   assert.match(report,/enabled:enabled&&tab==='articles'/);
