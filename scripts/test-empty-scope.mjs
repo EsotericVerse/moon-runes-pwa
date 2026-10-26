@@ -80,6 +80,6 @@ test('empty Time and optional Event or Keywords do not block page usage',()=>{
   assert.match(statistics,/scopeId==='loc'\|\|periodQuery\.data!==undefined/);
   assert.match(statistics,/periods\.length\?'最新時期':'未設定時期（預設時間）'/);
   assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
-  assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
+  assert.match(trace,/traceWindow\(timeWindow,new Date\(\)/);
   assert.match(keyword,/if\(!currentId\)return ''/);
 });
