@@ -80,7 +80,6 @@ function timelineRows(items,labelOf,focus,labels={}){
       period:String(item?.period||''),
       runeCount:Number(item?.rune_count||0),
       workCount:Number(item?.item_count||0),
-      status:String(item?.status||''),
       openStart,openEnd,
       raw:item,
       ...(group?{group:String(group),groupContent:String(groupContent),groupOrder}:{}),
@@ -432,7 +431,7 @@ export default function CultureTimeline({
           return !old||old.group!==row.group||old.start!==row.start||old.end!==row.end
             ||old.content!==row.content||old.title!==row.title
             ||old.className!==row.className||old.style!==row.style
-            ||old.workCount!==row.workCount||old.status!==row.status;
+            ||old.workCount!==row.workCount;
         });
         if(changedRows.length)data.update(changedRows);
         const obsoleteGroups=[...existingGroupIds].filter(id=>!wantedGroups.has(id));
