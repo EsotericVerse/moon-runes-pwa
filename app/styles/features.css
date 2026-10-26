@@ -1314,7 +1314,7 @@
 }
 
 /* Trace Frame manager: one lightweight list, one county + query + Add control. */
-.loc-trace-route-browse{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;min-width:0}
+.loc-trace-route-browse{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;min-width:0}
 .loc-trace-route-browse>label{display:grid;gap:.35rem;min-width:0;font-weight:600}
 .loc-trace-route-browse input,.loc-trace-route-browse select{width:100%;min-width:0;min-height:44px}
 .loc-trace-route-autocomplete{position:relative;display:grid;gap:.35rem;min-width:0;font-weight:600}
@@ -1327,6 +1327,9 @@
 .loc-trace-route-suggestions small{font-size:.76rem;font-weight:400;opacity:.8}
 .loc-trace-saved-map-summary[aria-current="true"]{
   border-color:var(--loc-accent-border);background:var(--loc-ui-accent-soft)}
+@media(max-width:1050px) and (min-width:721px){
+  .loc-trace-route-browse{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:720px){
   .loc-trace-route-browse{grid-template-columns:minmax(0,1fr)}
   .loc-trace-route-suggestions{max-height:12rem}
