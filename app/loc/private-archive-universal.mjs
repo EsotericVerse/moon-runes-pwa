@@ -169,7 +169,9 @@ function determine(path,prefix){
   }
   if(/your_posts|status_updates|facebook_activity|posts_\d+\.json|posts\.json/.test(p)||
     /"status_updates"\s*:/.test(head)){
-    const platform=category(path)==='meta'?'facebook':category(path);
+    // A generic posts.json belongs to its archive; its name alone never proves Facebook.
+    const platform=category(path)==='meta'&&/your_posts|status_updates|facebook_activity/.test(p)?
+      'facebook':category(path);
     return {platform,kind:'post',array:head.startsWith('[')?'$':rootArray(head,['status_updates','posts','ig_posts','data'])||rootArrayAny(head)};
   }
   if(/ig_posts|instagram|media\/posts|content\/posts/.test(p)){
