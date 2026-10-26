@@ -46,7 +46,11 @@ export async function selectCultureTimeRows(scope,birthday=''){
     const dated=ranges.filter(range=>range.start_date).sort((a,b)=>
       a.start_date.localeCompare(b.start_date)||a.index-b.index);
     const first=dated[0],last=dated.at(-1);
-    const openEnd=Boolean(last?.open_end);
+    // Overlapping events can end out of start-date order. The envelope is
+    // only for camera/labels; precise article filters use each range.
+    const finalDate=ranges.map(range=>range.end_date||range.start_date)
+      .filter(Boolean).sort().at(-1)||null;
+    const openEnd=false;
     return {...row,scope_id:scopeId,
       entry_key:type+':'+id,entry_type:type,
       title:row.title||id,summary:row.description||'',
@@ -60,7 +64,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
       event_id:type==='event'?id:null,
       open_start:false,open_end:openEnd,
       start_date:first?.start_date||null,
-      end_date:openEnd?null:last?.end_date||null,
+      end_date:finalDate,
       invalid_anchor_links:[
         ...invalidTraceLinks,
         ...ranges.filter(range=>range.invalid).flatMap(range=>range.missing_anchor_ids||[])
