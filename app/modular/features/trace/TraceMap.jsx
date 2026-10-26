@@ -3,7 +3,6 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
-import {searchTracePlaces} from './trace-geocoding';
 import {classifyTraceAnchors,locatableTraceAnchor} from './trace-spatial-classification.mjs';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
@@ -14,12 +13,6 @@ const DEMO_PLACES=[
   {id:'jiangzicui',name:'江子翠站'}
 ];
 
-const SEARCH_UI={
-  'zh-Hant':{label:'快速地區定位',placeholder:'搜尋地名、車站、商家或地區',find:'查詢地點',empty:'沒有找到符合的地點，請換個地名。',failed:'地點查詢失敗'},
-  'zh-Hans':{label:'快速地区定位',placeholder:'搜索地名、车站、商家或地区',find:'查询地点',empty:'没有找到符合的地点。',failed:'地点查询失败'},
-  en:{label:'Find a place',placeholder:'Place, station, venue or region',find:'Search places',empty:'No matching locations found.',failed:'Place lookup failed'},
-  ja:{label:'場所を検索',placeholder:'地名、駅、施設、地域',find:'場所を探す',empty:'該当する場所が見つかりません。',failed:'検索できませんでした'}
-};
 const STRINGS={
   'zh-Hant':{
     label:'地理痕跡示範',eyebrow:'痕跡 · 空間定錨',title:'地理定位與路線',
@@ -98,7 +91,6 @@ const STRINGS={
 export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
-  const geo=SEARCH_UI[locale]||SEARCH_UI['zh-Hant'];
   const containerRef=useRef(null);
   const mapRef=useRef(null);
   const resizeStartRef=useRef(null);
@@ -136,12 +128,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   const [selected,setSelected]=useState('');
   const [expandedMap,setExpandedMap]=useState(false);
   const [status,setStatus]=useState('loading');
-  const [placeQuery,setPlaceQuery]=useState('');
-  const [matches,setMatches]=useState([]);
-  const [searching,setSearching]=useState(false);
-  const [lookupError,setLookupError]=useState('');
-  const [lookupDone,setLookupDone]=useState(false);
-  const lookupId=useRef(0);
 
   // TraceMap itself is a client-only, lazily loaded feature chunk: MapLibre is
   // initialized exactly once per mount and cleaned up on navigation/unmount.
@@ -228,17 +214,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     resizeFrame(bounds.width+delta[0]*step,bounds.height+delta[1]*step);
   }
 
-  async function lookupPlace(event){
-    event.preventDefault();
-    if(searching)return;
-    const id=++lookupId.current;
-    setSearching(true);setLookupError('');setMatches([]);setLookupDone(false);
-    try{
-      const found=await searchTracePlaces(placeQuery);
-      if(id===lookupId.current){setMatches(found);setLookupDone(true);}
-    }catch(error){if(id===lookupId.current)setLookupError(String(error?.message||geo.failed));}
-    finally{if(id===lookupId.current)setSearching(false);}
-  }
   async function toggleRoute(){
     if(!mapRef.current||routeBusy)return;
     setRouteBusy(true);
@@ -264,18 +239,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         '先選縣市與空間定錨點，或選擇已儲存的痕跡圖；地圖會直接定位並顯示路線，下方可查看文章報表，不跳頁。':
         '尚無已儲存的空間定錨點；可以先到管理頁建立。地圖不會把板橋示例當作你的紀錄。')}</p>
     </header>
-    {!selectingLocation?<><form className="loc-trace-location-search" role="search" onSubmit={lookupPlace}>
-      <label htmlFor="trace-geocode-query">{geo.label}</label>
-      <input id="trace-geocode-query" type="search" minLength={2} maxLength={160}
-        placeholder={geo.placeholder} value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)}/>
-      <button className="loc-button" type="submit" disabled={searching||placeQuery.trim().length<2}>{searching?'…':geo.find}</button>
-    </form>
-    {lookupError?<p role="alert" className="scope-status scope-error">{lookupError}</p>:null}
-    {lookupDone&&!matches.length?<p role="status" className="scope-status">{geo.empty}</p>:null}
-    {matches.length?<div className="loc-trace-location-results" role="group" aria-label={geo.label}>
-      {matches.map((item,index)=><button type="button" className="loc-button" key={index}
-        disabled={!ready} onClick={()=>mapRef.current?.focusCoordinates({...item,radius_m:radiusMeters})}>{item.label}</button>)}
-    </div>:null}</>:null}
     {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="縣市與空間定錨點">
       <label>行政區（縣市）
         <select className="scope-select" value={county}
