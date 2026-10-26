@@ -219,8 +219,9 @@
 - [ ] **LOC-TODO-31｜3D 桌遊發牌、卡背、文字與三操作鈕** `[P2]` `[部分實作／待視覺驗收]`
   - 完成條件／待辦：完成開局發牌與翻牌可見度；卡背採已指定的符文專屬視覺，不用單一『月』字代替；『繼續抽牌／停止抽牌看籤詩／重新開始抽牌』及暗背景文字對比要正常。
 
-- [ ] **LOC-TODO-32｜每日符文紀錄不能新增** `[P1]` `[待查證]`
+- [ ] **LOC-TODO-32｜每日符文紀錄不能新增** `[P1]` `[寫入前置條件已稽核／新增故障未重現]`
   - 完成條件／待辦：重現並修正新增紀錄問題，驗證儲存、讀回、權限與四向／特殊符文規則；不擅改符文資料。
+  - **2026-10-26 唯讀查證：** `app/daily/log/DailyLogClient.jsx` 的表單確實會按 `canWrite` 與當日主抽／補抽槽位走雲端 `insertDailyRuneRecord` 或手機本地 SQLite，後端使用授權的 `dbAuthRelation('silver.lrunes_daily')`。Supabase live schema 的 `record_id`、`record_date`、`draw_kind`、`rune_number`、`direction` 都存在，`authenticated` 對表有 INSERT/SELECT，RLS 針對寫入另以 `silver.can_manage_scope('lrunes')` 嚴格控管，複合日期種類唯一鍵存在。最近 24 小時 API 日誌未見 `lrunes_daily` 新增請求，**不能因此判定新增正常或已修復**。未取得授權者 session 寫入回應，沒有執行測試 INSERT、修改 RLS 或替使用者新增任何記錄。下一步需在已授權測試 session 重現完整表單→INSERT→讀回，另驗 Web IndexedDB 不可用時是否影響雲端記錄顯示及原生 SQLite 路徑。
 
 - [ ] **LOC-TODO-33｜真正 3D 多人連線桌遊** `[P2]` `[規劃內／尚未自證]`
   - 完成條件／待辦：完成 2–4 人連線、發牌與狀態同步、每四局 Resonance、平分 PK、計分與既定卡牌規則。現有單機 3D 桌面不等於連線對戰已驗收。
