@@ -6,6 +6,18 @@ on:
     paths:
       - 'app/modular/features/Culture.jsx'
       - 'app/loc/culture-period-navigation.mjs'
+      - 'app/loc/time-anchor-ranges.mjs'
+      - 'app/loc/time-schema-migration.mjs'
+      - 'app/loc/culture-query.js'
+      - 'app/loc/galaxy-query.js'
+      - 'app/loc/providers/local-sqlite.mjs'
+      - 'app/modular/features/CultureTimelineEditor.jsx'
+      - 'app/modular/modules/culture-timeline/CultureTimeline.jsx'
+      - 'app/modular/modules/culture-timeline/culture-timeline-model.js'
+      - 'app/modular/features/Statistics.jsx'
+      - 'supabase/migrations/*time_uid*'
+      - 'scripts/test-time-anchor-ranges.mjs'
+      - 'scripts/test-time-schema-migration.mjs'
       - 'app/styles/scope-system.css'
       - 'scripts/test-culture-period-navigation.mjs'
       - 'scripts/test-app-bootstrap.mjs'
@@ -28,7 +40,7 @@ jobs:
       - name: Locked dependency install
         run: npm ci --no-audit --no-fund
       - name: Period and independent anchor regression
-        run: node --test scripts/test-culture-period-navigation.mjs
+        run: node --test scripts/test-culture-period-navigation.mjs scripts/test-time-anchor-ranges.mjs scripts/test-time-schema-migration.mjs
       - name: Culture and app bootstrap focused regressions
         # Full baseline currently has pre-existing unrelated Settings/Facebook importer failures; these checks target the Culture feature.
         run: |
