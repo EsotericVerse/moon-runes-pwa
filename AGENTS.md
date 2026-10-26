@@ -1,10 +1,10 @@
 # Agent Instructions
 
-## Active ISR incident lock (2026-10-26): disabled indefinitely
-- User instruction supersedes stale ISR deployment assumptions below: Cloudflare automatic GitHub builds, deployments, Previews, ISR, R2 incremental cache and tag/queue Durable Objects must remain disabled until the user explicitly reauthorizes them.
+## ISR operating status (updated 2026-10-27): enabled, manual deployment only
+- **Latest user confirmation:** ISR is **already enabled**. Do not turn it off, restart it, or treat it as a pending recovery task. This does **not** authorize automatic GitHub/Cloudflare builds, deployments, Previews, Vercel cutover, new R2/DO cache writes or paid load tests; existing manual-deployment-only cost controls remain in force. This current status supersedes dated references below saying ISR is disabled.
 - Ordinary GitHub edits, branch work, tests and merges must not trigger Cloudflare deployments. Do not resume domain routing or switch on a Vercel ISR backup automatically.
 - Culture, Statistics, Periods, Places, Traces and Daily Runes use the existing public DB RPC/queries and SWR/Service Worker as needed, not a mandatory ISR endpoint. Preserve lazy querying, server-side aggregate RPC, access checks and SQLite local semantics; never replace chart aggregations with repeated full-text downloads.
-- OpenNext may use read-only Workers Static Assets caching only. No R2 or DO ISR bindings or populateRemoteCache. Do not run a deployment to validate code changes. The R2 24-hour expiry rule for the retired `incremental-cache/` prefix is separate cost containment, not license to resume writing.
+- Keep the current ISR/OpenNext configuration untouched. Do not add R2/DO bindings or populateRemoteCache in code and do not run a deployment to validate changes without explicit authorization. The R2 24-hour expiry rule for a retired cache prefix does not authorize new writes or deployments.
 - Do not delete any Galaxy, Supabase, Neon or non-ISR storage data.
 
 
