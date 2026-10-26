@@ -10,6 +10,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
+import {readSharedSpatialReferences} from '../modular/features/trace/trace-spatial-reference-data';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {
   TRACE_SCOPES,traceKey,traceAllAnchorsKey,
@@ -37,6 +38,14 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [focusLocation,setFocusLocation]=useState(null);
   const [quickCandidates,setQuickCandidates]=useState([]);
   const [quickBusy,setQuickBusy]=useState(false);
+  const [sharedTerm,setSharedTerm]=useState('');
+  useEffect(()=>{
+    const timer=setTimeout(()=>setSharedTerm(title.trim()),300);
+    return()=>clearTimeout(timer);
+  },[title]);
+  const sharedReferences=useAsyncResource(['trace-shared-spatial-references',sharedTerm],
+    ()=>readSharedSpatialReferences(sharedTerm),
+    {enabled:!editingUid&&sharedTerm.length>=2,revalidateOnFocus:false,revalidateOnReconnect:false});
   const [quickNotice,setQuickNotice]=useState('');
   const quickRequest=useRef(0);
   useEffect(()=>()=>{quickRequest.current+=1;},[]);
@@ -76,6 +85,21 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(error)throw new Error(error.message||'打卡名稱讀取失敗');
     return data||[];
   },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
+  const useSharedReference=reference=>{
+    // The reference's Scope and UID are never copied to the new anchor.
+    // Reusing verified coordinates/address is not reusing a historical place.
+    if(!validCoordinates(reference.longitude,reference.latitude))return;
+    setAddress(reference.address||'');
+    setFloorLabel(reference.floor_label||'');
+    setFloorLevel(reference.floor_level==null?'':String(reference.floor_level));
+    setLongitude(String(reference.longitude));
+    setLatitude(String(reference.latitude));
+    setFocusLocation({longitude:reference.longitude,latitude:reference.latitude,
+      name:title.trim(),radius_m:Number(radius)||500});
+    setQuickCandidates([]);
+    setQuickNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
+      ' 不會重用或修改。請核對門牌、樓層及目前店家後，再以自己的 Scope 新增。');
+  };
   const applyQuickPlace=(candidate,query=title.trim())=>{
     const lng=Number(candidate.longitude),lat=Number(candidate.latitude);
     if(!Number.isFinite(lng)||!Number.isFinite(lat))return;
@@ -174,6 +198,22 @@ function AnchorEditor({scopeId,spatial,reload}){
           {quickBusy?'定位中…':'快速定位'}
         </button>
       </div>
+      {!editingUid&&sharedTerm.length>=2?<div className="loc-trace-quick-results" role="group" aria-label="LOC 已有空間地址參考">
+        <strong>已有地址／地點參考（選用後仍建立新的定錨點 UID）</strong>
+        {sharedReferences.isPending?<p className="scope-status">正在比對現有空間錨點…</p>:null}
+        {sharedReferences.error?<p role="status" className="scope-status scope-error">
+          讀取公用地址參考失敗：{String(sharedReferences.error?.message||sharedReferences.error)}
+        </p>:null}
+        {(sharedReferences.data||[]).map(reference=><button
+          key={reference.source_scope+':'+reference.uid} type="button" className="loc-button"
+          onClick={()=>useSharedReference(reference)} disabled={busy||quickBusy}>
+          {reference.title||'未命名'} · {reference.address||'地址未核實'}
+          {reference.floor_label?' · '+reference.floor_label:''}
+          {' · '+reference.source_scope+' · UID '+reference.uid}
+        </button>)}
+        {!sharedReferences.isPending&&!sharedReferences.error&&!sharedReferences.data?.length?
+          <p className="scope-status">目前沒有可用的公用候選；可改按「快速定位」查外部地點。</p>:null}
+      </div>:null}
       <label>完整地址（含門牌、樓層／室別；未確認可留空）
         <input type="text" maxLength={320} autoComplete="street-address" value={address}
           onChange={e=>setAddress(e.target.value)} placeholder="例如：新北市某區某路100號2樓" disabled={busy}/>
