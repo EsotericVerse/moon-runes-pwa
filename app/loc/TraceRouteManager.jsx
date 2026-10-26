@@ -6,11 +6,11 @@ import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
-import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
-  readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,
-  addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
+import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,readTraceMapIndex,
+  readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,readTraceAddressReferences,
+  addTraceAnchor,addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
 import {TRACE_COUNTY_IDS} from '../modular/features/trace/trace-county-id.mjs';
-import {routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
+import {traceCategories,routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
   from '../modular/features/trace/trace-route-preference.mjs';
 
@@ -20,6 +20,7 @@ const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
 const countyOptions=[...Object.entries(TRACE_COUNTY_IDS).map(([name,id])=>({name,id})),
   {id:'OTHER',name:'未判定／其他地區'}];
 const MAX_STOPS=80;
+const ALL_CATEGORIES='__trace_all_categories__';
 const ALL_CLASSES='__trace_all_classes__';
 const ALL_GROUPS='__trace_all_groups__';
 const normalize=value=>String(value||'').trim();
@@ -31,6 +32,7 @@ export default function TraceRouteManager({scopeId}){
   const requestedFrame=searchParams?.get('frame')||'';
   const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
   const [selectedUid,setSelectedUid]=useState('');
+  const [categoryFilter,setCategoryFilter]=useState(ALL_CATEGORIES);
   const [classFilter,setClassFilter]=useState(ALL_CLASSES);
   const [groupFilter,setGroupFilter]=useState(ALL_GROUPS);
   const [routeFilter,setRouteFilter]=useState('');
@@ -38,6 +40,7 @@ export default function TraceRouteManager({scopeId}){
   const [editorOpen,setEditorOpen]=useState(false);
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
+  const [category,setCategory]=useState('');
   const [className,setClassName]=useState('');
   const [group,setGroup]=useState('');
   const [queue,setQueue]=useState([]);
@@ -48,10 +51,16 @@ export default function TraceRouteManager({scopeId}){
   const [picked,setPicked]=useState(null);
   const [popularOpen,setPopularOpen]=useState(false);
   const [showMap,setShowMap]=useState(false);
+  const [referenceOpen,setReferenceOpen]=useState(false);
+  const [referenceQuery,setReferenceQuery]=useState('');
+  const [debouncedReference,setDebouncedReference]=useState('');
+  const [referenceDraft,setReferenceDraft]=useState(null);
+  const [referencePending,setReferencePending]=useState(false);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
   const pendingSaved=useRef(null);
+  const pendingReference=useRef(null);
   const openedFrame=useRef('');
 
   useEffect(()=>{
@@ -59,20 +68,29 @@ export default function TraceRouteManager({scopeId}){
     return()=>clearTimeout(timer);
   },[pointQuery]);
   useEffect(()=>{
-    setSelectedUid('');setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
+    const timer=setTimeout(()=>setDebouncedReference(normalize(referenceQuery)),280);
+    return()=>clearTimeout(timer);
+  },[referenceQuery]);
+  useEffect(()=>{
+    setSelectedUid('');setCategoryFilter(ALL_CATEGORIES);setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
     setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
     setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
+    setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
+    pendingReference.current=null;setReferencePending(false);
     pendingSaved.current=null;setNotice('');setIsError(false);
   },[activeScope]);
 
   // Index contains only saved Frame metadata, never the entire spatial anchor table.
   const index=useAsyncResource({
-    queryKey:['trace-manager-index',activeScope],
-    enabled:TRACE_SCOPES.includes(activeScope),
-    queryFn:()=>readTraceMapIndex(activeScope,{nativeOnly:activeScope==='loc'}),
+    // On LOC, use the one public metadata union to discover all saved Frames,
+    // while edits and Queue reads remain restricted to the selected owner.
+    queryKey:traceMapIndexKey(scopeId),
+    enabled:TRACE_SCOPES.includes(scopeId),
+    queryFn:()=>readTraceMapIndex(scopeId),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const maps=index.data||[];
+  const allSavedFrames=index.data||[];
+  const maps=allSavedFrames.filter(row=>row.source_scope===activeScope);
   const preferredUid=readDefaultTraceRoute(activeScope);
   const current=maps.find(map=>map.uid===selectedUid)
     ||chooseDefaultTraceRoute(maps,activeScope,preferredUid);
@@ -83,15 +101,18 @@ export default function TraceRouteManager({scopeId}){
       {nativeOnly:activeScope==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const availableClasses=useMemo(()=>routeClasses(maps),[maps]);
-  const availableGroups=useMemo(()=>routeGroups(maps,classFilter),[maps,classFilter]);
+  const availableCategories=useMemo(()=>traceCategories(maps),[maps]);
+  const availableClasses=useMemo(()=>categoryFilter===ALL_CATEGORIES?[]:routeClasses(maps,categoryFilter),[maps,categoryFilter]);
+  const availableGroups=useMemo(()=>categoryFilter===ALL_CATEGORIES||classFilter===ALL_CLASSES?[]:
+    routeGroups(maps,categoryFilter,classFilter),[maps,categoryFilter,classFilter]);
   const listed=useMemo(()=>searchTraceRoutes(maps,{
-    ...(classFilter!==ALL_CLASSES?{className:classFilter}:{}),
-    ...(classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),query:routeFilter
-  }),[maps,classFilter,groupFilter,routeFilter]);
-  const canEdit=activeScope==='loc'
-    ?account.canManageGroupSync('loc')
-    :account.canManageScopeSync(activeScope);
+    ...(categoryFilter!==ALL_CATEGORIES?{category:categoryFilter}:{}),
+    ...(categoryFilter!==ALL_CATEGORIES&&classFilter!==ALL_CLASSES?{className:classFilter}:{}),
+    ...(categoryFilter!==ALL_CATEGORIES&&classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),
+    query:routeFilter
+  }),[maps,categoryFilter,classFilter,groupFilter,routeFilter]);
+  // Keep the UI permission aligned with silver.can_manage_scope().
+  const canEdit=account.canManageScopeSync(activeScope);
 
   // The selected Frame and specifically selected autocomplete entries
   // are the only anchor rows retained by the editor.
@@ -108,19 +129,26 @@ export default function TraceRouteManager({scopeId}){
   });
   const suggestions=debouncedQuery===normalize(pointQuery)?autocomplete.data||[]:[];
   const choice=picked&&picked.title===pointQuery&&
-    (picked.county_id||'OTHER')===county?picked
-    :suggestions.length===1?suggestions[0]:null;
+    (picked.county_id||'OTHER')===county?picked:null;
+  const references=useAsyncResource({
+    queryKey:['trace-address-references',activeScope,debouncedReference],
+    enabled:editorOpen&&referenceOpen&&debouncedReference.length>=2,
+    queryFn:()=>readTraceAddressReferences(activeScope,debouncedReference,8),
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
   const popular=useAsyncResource({
     queryKey:['trace-frame-popular',activeScope],
     enabled:editorOpen&&popularOpen,
     queryFn:()=>readTracePopularAnchors(activeScope),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const dirty=editorOpen&&Boolean(editingUid||title||description||className||group||queue.length);
+  const dirty=editorOpen&&Boolean(editingUid||title||description||category||className||group||queue.length||referenceDraft);
   const clearEntry=()=>{
-    setEditingUid('');setTitle('');setDescription('');setClassName('');setGroup('');
+    setEditingUid('');setTitle('');setDescription('');setCategory('');setClassName('');setGroup('');
     setQueue([]);setExtraAnchors([]);setCounty('');setPointQuery('');setPicked(null);
-    pendingSaved.current=null;setPopularOpen(false);
+    pendingSaved.current=null;pendingReference.current=null;setReferencePending(false);
+    setPopularOpen(false);
+    setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
   };
   const mayLeave=()=>!dirty||window.confirm('目前有尚未儲存的痕跡圖修改，確定放棄？');
   const chooseScope=value=>{
@@ -140,7 +168,7 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!mayLeave())return;
     clearEntry();setSelectedUid(map.uid);setEditingUid(map.uid);
     setTitle(map.title||'');setDescription(map.description||'');
-    setClassName(map.class||'');setGroup(map.class_group||'');
+    setCategory(map.category||'');setClassName(map.class||'');setGroup(map.class_group||'');
     setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
     setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
   };
@@ -150,7 +178,7 @@ export default function TraceRouteManager({scopeId}){
     if(!/^[A-Za-z0-9]{8}$/.test(requestedFrame)||!canEdit||!index.data)return;
     const key=activeScope+':'+requestedFrame;
     if(openedFrame.current===key)return;
-    const target=index.data.find(map=>map.uid===requestedFrame);
+    const target=index.data.find(map=>map.source_scope===activeScope&&map.uid===requestedFrame);
     if(!target)return;
     openedFrame.current=key;
     edit(target);
@@ -162,7 +190,51 @@ export default function TraceRouteManager({scopeId}){
   const addPoint=()=>{
     if(!choice||queue.includes(choice.uid)||queue.length>=MAX_STOPS)return;
     setExtraAnchors(rows=>rows.some(x=>x.uid===choice.uid)?rows:[...rows,choice]);
-    setQueue(ids=>[...ids,choice.uid]);setPointQuery('');setPicked(null);
+    setQueue(ids=>ids.includes(choice.uid)?ids:[...ids,choice.uid]);setPointQuery('');setPicked(null);
+  };
+  const changeReference=(field,value)=>setReferenceDraft(row=>row?{...row,[field]:value}:null);
+  const selectReference=row=>{
+    if(busy||!canEdit||pendingReference.current)return;
+    setReferenceDraft({source_scope:row.source_scope,source_uid:row.uid,
+      title:row.title,address:row.address||'',floor_label:row.floor_label||'',
+      floor_level:row.floor_level??'',longitude:row.longitude,latitude:row.latitude,
+      radius_m:row.radius_m||500,description:''});
+  };
+  // An external address is a suggestion only. Its UID cannot enter a route:
+  // create a new anchor within the current authorized Scope, then read it back.
+  const createReferenceAnchor=async()=>{
+    if(busy||!canEdit||!referenceDraft||queue.length>=MAX_STOPS)return false;
+    setBusy(true);setNotice('');setIsError(false);
+    try{
+      const draft=referenceDraft,owner=activeScope,receipt=pendingReference.current;
+      if(receipt&&(receipt.owner!==owner||receipt.source_uid!==draft.source_uid))
+        throw Error('上次新增尚未確認，請先重讀原錨點。');
+      let uid=receipt?.uid;
+      if(!uid){
+        const {source_scope,source_uid,...fields}=draft;
+        const saved=await addTraceAnchor({scopeId:owner,...fields,forceNewIdentity:true});
+        if(saved?.reused||!/^[A-Za-z0-9]{8}$/.test(saved?.uid||''))
+          throw Error('建立自己的錨點失敗，來源地址未修改。');
+        uid=saved.uid;
+        pendingReference.current={uid,owner,source_uid:draft.source_uid};
+        setReferencePending(true);
+      }
+      const [confirmed]=await readCurrentTraceAnchors(owner,[uid],{nativeOnly:owner==='loc'});
+      if(!confirmed||confirmed.uid!==uid||confirmed.source_scope!==owner)
+        throw Error('新錨點已寫入但尚未重讀確認，再按一次只會重讀，不會重複新增。');
+      setExtraAnchors(rows=>rows.some(x=>x.uid===uid)?rows:[...rows,confirmed]);
+      setQueue(ids=>ids.includes(uid)?ids:[...ids,uid]);
+      pendingReference.current=null;setReferencePending(false);
+      setReferenceDraft(null);setReferenceQuery('');
+      setReferenceOpen(false);
+      await Promise.allSettled([
+        cache.invalidate({queryKey:traceAllAnchorsKey(owner)}),
+        cache.invalidate({queryKey:['trace-current',owner]})
+      ]);
+      setNotice('已建立 '+owner+' 專屬空間錨點 '+uid+' 並加入 Queue；公用參考未修改。');
+      return true;
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));return false;}
+    finally{setBusy(false);}
   };
   const shift=(index,step)=>{
     setQueue(ids=>{
@@ -182,11 +254,13 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!canEdit||!editorOpen)return false;
     setBusy(true);setNotice('');setIsError(false);
     try{
-      const labels=validateTraceRouteLabels(className,group);
+      if(referenceDraft||pendingReference.current)
+        throw Error('請先建立自己的參考錨點，或收合並取消參考，再儲存痕跡圖。');
+      const labels=validateTraceRouteLabels(category,className,group);
       if(queue.length<2||queue.length>MAX_STOPS||new Set(queue).size!==queue.length)
         throw Error('請依照順序加入 2～80 個不重複的定錨點。');
       if(missing.length)throw Error('目前 Frame 有未取得的錨點，請先確認全部站點已載入。');
-      const input={scopeId:activeScope,title,description,className:labels.class,
+      const input={scopeId:activeScope,title,description,category:labels.category,className:labels.class,
         group:labels.class_group,anchorUids:queue,anchors:[...anchors.values()]};
       let saved=pendingSaved.current;
       if(saved&&(saved.editingUid!==editingUid||saved.scopeId!==activeScope))
@@ -197,10 +271,11 @@ export default function TraceRouteManager({scopeId}){
         saved={uid:result.uid,editingUid,scopeId:activeScope};pendingSaved.current=saved;
       }
       const latest=await index.mutate();
-      const found=latest?.find(map=>map.uid===saved.uid);
+      const found=latest?.find(map=>map.source_scope===activeScope&&map.uid===saved.uid);
       if(!found||found.title!==normalize(title)
         ||normalize(found.description)!==normalize(description)
-        ||normalize(found.class)!==labels.class
+        ||normalize(found.category)!==labels.category
+         ||normalize(found.class)!==labels.class
         ||normalize(found.class_group)!==labels.class_group
         ||JSON.stringify(found.anchor_uids||[])!==JSON.stringify(queue))
         throw Error('寫入已回應，但重讀尚未確認。保留草稿；再按儲存只會重讀，不會重複新增。');
@@ -218,7 +293,7 @@ export default function TraceRouteManager({scopeId}){
     try{
       await deleteTraceMap({scopeId:activeScope,uid:map.uid});
       const latest=await index.mutate();
-      if(!Array.isArray(latest)||latest.some(row=>row.uid===map.uid))
+      if(!Array.isArray(latest)||latest.some(row=>row.source_scope===activeScope&&row.uid===map.uid))
         throw Error('資料庫刪除已回應，但重讀仍找到路線。');
       if(readDefaultTraceRoute(activeScope)===map.uid)clearDefaultTraceRoute(activeScope,map.uid);
       if(selectedUid===map.uid){setSelectedUid('');setShowMap(false);}
@@ -247,7 +322,7 @@ export default function TraceRouteManager({scopeId}){
   return <section className="loc-card scope-feature-card loc-trace-map-manager" aria-label="痕跡圖 Frame 管理">
     <header className="loc-trace-map-manager-heading">
       <div><h3>痕跡圖管理</h3>
-        <p className="scope-status">Class → 領域 → 具名痕跡圖。站點 Queue 僅於選中 Frame 後載入；選錨點必須按 ＋ 才加入。</p>
+        <p className="scope-status">大分類 → Class → Group → Item（具名痕跡圖）。站點 Queue 是 Item 內部的有序錨點，僅按需載入；選錨點必須按 ＋ 才加入。</p>
       </div>
       <button className="loc-button" type="button" disabled={busy||!canEdit}
         onClick={startNew}>新增痕跡圖</button>
@@ -255,15 +330,38 @@ export default function TraceRouteManager({scopeId}){
     {scopeId==='loc'?<label>作品範圍
       <select className="scope-select" value={activeScope} disabled={busy}
         onChange={event=>chooseScope(event.target.value)}>
+        <option value="loc">LOC 自有痕跡</option>
         <option value="lo3rwang">作者作品</option>
         <option value="lrunes">月之符文</option>
-        <option value="loc">LOC 自有痕跡</option>
       </select>
     </label>:null}
+    {scopeId==='loc'&&!index.isPending&&!index.error&&
+      allSavedFrames.some(row=>row.source_scope!==activeScope)?<section className="loc-trace-other-scopes" aria-label="已儲存的其他範圍痕跡圖">
+      <h4>已儲存的其他範圍痕跡圖</h4>
+      <p className="scope-status">痕跡圖屬於建立它的 Scope。點選範圍即可在此管理與觀看；不複製或移動既有 UID。</p>
+      <div className="loc-trace-other-scopes-list">
+        {allSavedFrames.filter(row=>row.source_scope!==activeScope).map(row=><button
+          key={row.source_scope+':'+row.uid} type="button" className="loc-button"
+          disabled={busy} onClick={()=>{
+            if(busy||!mayLeave())return;
+            setActiveScope(row.source_scope);
+          }}>
+          <strong>{row.title}</strong>
+          <span>{row.source_scope==='lo3rwang'?'作者作品':row.source_scope==='lrunes'?'月之符文':'LOC 自有痕跡'} · {row.anchor_uids?.length||0} 站</span>
+        </button>)}
+      </div>
+    </section>:null}
     {!canEdit?<p className="scope-status">可查看路線；編輯需該 Scope 的管理權限（寫入仍由 Supabase RLS 驗證）。</p>:null}
     <div className="loc-trace-route-browse">
+      <label>大分類
+        <select className="scope-select" value={categoryFilter}
+          onChange={event=>{setCategoryFilter(event.target.value);setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);}}>
+          <option value={ALL_CATEGORIES}>全部大分類</option>
+          {availableCategories.map(value=><option key={value||'_empty'} value={value}>{traceClassLabel(value)}</option>)}
+        </select>
+      </label>
       <label>Class
-        <select className="scope-select" value={classFilter}
+        <select className="scope-select" value={classFilter} disabled={categoryFilter===ALL_CATEGORIES}
           onChange={event=>{setClassFilter(event.target.value);setGroupFilter(ALL_GROUPS);}}>
           <option value={ALL_CLASSES}>全部 Class</option>
           {availableClasses.map(value=><option key={value||'_empty'} value={value}>{traceClassLabel(value)}</option>)}
@@ -271,7 +369,7 @@ export default function TraceRouteManager({scopeId}){
       </label>
       <label>領域
         <select className="scope-select" value={groupFilter}
-          disabled={classFilter===ALL_CLASSES}
+          disabled={categoryFilter===ALL_CATEGORIES||classFilter===ALL_CLASSES}
           onChange={event=>setGroupFilter(event.target.value)}>
           <option value={ALL_GROUPS}>全部領域</option>
           {availableGroups.map(value=><option key={value||'_empty'} value={value}>{value||'未分組'}</option>)}
@@ -292,7 +390,7 @@ export default function TraceRouteManager({scopeId}){
           aria-current={current?.uid===map.uid?'true':undefined}
           onClick={()=>chooseMap(map)}>
           <span aria-hidden="true">{current?.uid===map.uid?'▾':'▸'}</span>
-          <span>{map.title}</span><span className="scope-status">{map.anchor_uids?.length||0} 站</span>
+          <span>{map.title}</span><span className="scope-status">{[map.category,map.class,map.class_group].filter(Boolean).join(' / ')||'未分類'} · {map.anchor_uids?.length||0} 站</span>
         </button>
         {current?.uid===map.uid?<div className="loc-trace-saved-map-body">
           {map.description?<p>{map.description}</p>:null}
@@ -322,10 +420,12 @@ export default function TraceRouteManager({scopeId}){
       <div className="scope-management-fields">
         <label>痕跡圖名稱 <input value={title} maxLength={120} required disabled={busy}
           onChange={event=>setTitle(event.target.value)}/></label>
+        <label>大分類 <input value={category} maxLength={100} disabled={busy}
+          placeholder="例如：旅遊" onChange={event=>setCategory(event.target.value)}/></label>
         <label>Class <input value={className} maxLength={100} disabled={busy}
-          placeholder="例如：跟朋友" onChange={event=>{setClassName(event.target.value);if(!event.target.value.trim())setGroup('');}}/></label>
-        <label>領域（Group）<input value={group} maxLength={100} disabled={busy||!className.trim()}
-          placeholder="例如：夜市" onChange={event=>setGroup(event.target.value)}/></label>
+          placeholder="例如：夜市" onChange={event=>{setClassName(event.target.value);if(!event.target.value.trim())setGroup('');}}/></label>
+        <label>Group<input value={group} maxLength={100} disabled={busy||!className.trim()}
+          placeholder="例如：北部" onChange={event=>setGroup(event.target.value)}/></label>
         <label>路線說明 <textarea value={description} maxLength={2000} rows={3} disabled={busy}
           onChange={event=>setDescription(event.target.value)}/></label>
       </div>
@@ -373,6 +473,56 @@ export default function TraceRouteManager({scopeId}){
           {item.title}（{item.usage_count}）</button>)}
         {popular.data&&!popular.data.length?<p className="scope-status">目前沒有重複使用的常用站點。</p>:null}
       </div>:null}
+      <section className="loc-trace-reference-panel" aria-label="跨 Scope 公用地點與地址參考">
+        <button type="button" className="loc-button" disabled={busy||!canEdit||referencePending}
+          aria-expanded={referenceOpen} onClick={()=>{
+            setReferenceOpen(value=>!value);setReferenceDraft(null);setReferenceQuery('');
+          }}>{referenceOpen?'收合公用地點':'從 LOC 公用地點／地址參考建立錨點'}</button>
+        {referenceOpen?<div className="loc-trace-reference-body">
+          <p className="scope-status">只讀取其他 Scope 已儲存的地點名稱、座標及可能存在的地址；沒有完整地址的候選也可以選，但須自行核對。建立後是目前 Scope 的獨立 UID，不更動來源；請勿公開私人住址。</p>
+          <label>搜尋地點名稱或地址（至少兩字）
+            <input type="search" value={referenceQuery} maxLength={100}
+              disabled={busy||referencePending}
+              onChange={event=>{setReferenceQuery(event.target.value);setReferenceDraft(null);}}
+              placeholder="例如：板橋車站、文化路門牌"/>
+          </label>
+          {referenceQuery.trim().length>=2&&!referenceDraft?<div className="loc-trace-route-suggestions">
+            {normalize(referenceQuery)!==debouncedReference||references.isPending
+              ?<p role="status" className="scope-status">讀取公用地址中…</p>
+              :references.error?<p role="alert" className="scope-status scope-error">{String(references.error.message||references.error)}</p>
+              :references.data?.length?references.data.map(row=><button key={row.source_scope+':'+row.uid}
+                className="loc-button" type="button" disabled={busy}
+                onClick={()=>selectReference(row)}>
+                <span>{row.title} · {row.address||'地址待確認'}{row.floor_label?' · '+row.floor_label:''}</span>
+                <small>參考 Scope {row.source_scope} · UID {row.uid}</small>
+              </button>):<p className="scope-status">沒有符合的既有地點；仍可到空間定錨頁自行建立。</p>}
+            {references.data?.length===8?<p className="scope-status">最多顯示前八筆，繼續輸入可縮小範圍。</p>:null}
+          </div>:null}
+          {referenceDraft?<div className="scope-management-fields">
+            <p className="scope-status">唯讀來源：{referenceDraft.source_scope} · {referenceDraft.source_uid}；地址缺漏時請保留未知，核對座標、樓層與店家身份後再建立。</p>
+            <label>自己錨點的名稱<input maxLength={120} value={referenceDraft.title}
+              disabled={busy||referencePending}
+              onChange={event=>changeReference('title',event.target.value)}/></label>
+            <label>完整地址<input maxLength={320} value={referenceDraft.address}
+              disabled={busy||referencePending}
+              onChange={event=>changeReference('address',event.target.value)}/></label>
+            <label>樓層／室別<input maxLength={40} value={referenceDraft.floor_label}
+              disabled={busy||referencePending}
+              onChange={event=>changeReference('floor_label',event.target.value)}/></label>
+            <label>樓層序號（可空；不是高度公尺）<input type="number" min={-100} max={300} step={1}
+              value={referenceDraft.floor_level} disabled={busy||referencePending}
+              onChange={event=>changeReference('floor_level',event.target.value)}/></label>
+            <label>經度<input type="number" min={-180} max={180} step="any" value={referenceDraft.longitude}
+              disabled={busy||referencePending}
+              onChange={event=>changeReference('longitude',event.target.value)}/></label>
+            <label>緯度<input type="number" min={-90} max={90} step="any" value={referenceDraft.latitude}
+              disabled={busy||referencePending}
+              onChange={event=>changeReference('latitude',event.target.value)}/></label>
+            <button type="button" className="loc-button primary" disabled={busy||!canEdit||queue.length>=MAX_STOPS}
+              onClick={createReferenceAnchor}>＋ 建立自己的錨點並加入 Queue</button>
+          </div>:null}
+        </div>:null}
+      </section>
       <h4>站點 Queue（{queue.length}／{MAX_STOPS}）</h4>
       {missing.length?<p className="scope-status" role="status">正在讀取目前 Frame 的既有站點…</p>:null}
       <ol className="loc-trace-selection-order">

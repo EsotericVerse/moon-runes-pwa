@@ -38,7 +38,7 @@ test('county and autocomplete choice never enqueue without the explicit plus but
   assert.ok(start>=0&&end>start,'Current Frame editor addPoint handler missing');
   const add=editor.slice(start,end);
   assert.match(add,/if\(!choice\|\|queue\.includes\(choice\.uid\)\|\|queue\.length>=MAX_STOPS\)return/);
-  assert.match(add,/setQueue\(ids=>\[\.\.\.ids,choice\.uid\]\)/);
+  assert.match(add,/setQueue\(ids=>ids\.includes\(choice\.uid\)\?ids:\[\.\.\.ids,choice\.uid\]\)/);
   const pick=editor.slice(editor.indexOf('const pickAnchor=item=>{'),start);
   assert.doesNotMatch(pick,/setQueue\(/,'Picking a suggestion must not enqueue it');
   assert.match(editor,/disabled=\{busy\|\|!choice\|\|queue\.includes\(choice\.uid\)/);

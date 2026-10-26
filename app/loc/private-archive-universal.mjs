@@ -5,11 +5,12 @@ import {Unzip,UnzipInflate,UnzipPassThrough} from 'fflate';
 import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES} from './import-batch.mjs';
 export {ARCHIVE_MAX_BYTES};
 import {JSONParser} from '@streamparser/json';
-import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
+import {archiveEntrySignatures,summarizeArchiveSources,archiveFilenameSource} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
+import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -21,6 +22,7 @@ const MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES;
 const MAX_SNIFF_INFLATE=2*1024*1024;
 const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
 const textExtension=/\.(?:json|js|txt|md|csv|tsv|html?|xml|log|jsonl)$/i;
+const exifImage=/\.(?:jpe?g|png)$/i;
 const mediaExtension=/\.(?:jpe?g|png|gif|webp|heic|bmp|avif|tiff?|mp4|mov|avi|mkv|webm|m4v|pdf|mp3|ogg|wav|flac|m4a|aac|zip|7z|rar|tar|gz|woff2?|svg|ico|exe|dll|bin|sqlite|db)$/i;
 const SKIP_ZIP_BYTES=new Uint8Array(0);
 const skippedZipEntry=path=>!path||path.endsWith('/')||path.split('/').some(part=>part==='..'||part==='__MACOSX')||!textExtension.test(path)||mediaExtension.test(path);
@@ -66,6 +68,19 @@ const category=path=>{
   return 'meta';
 };
 const txt=value=>typeof value==='string'?value:null;
+const pickUrl=item=>[item.url,item.permalink,item.link,item.post_url,item.string_map_data?.Permalink?.value,
+  item.string_map_data?.Link?.value].find(v=>typeof v==='string'&&/^https?:\/\//i.test(v.trim()))||'';
+function chatgptConversation(row){
+  if(!row||typeof row!=='object'||!row.mapping)return null;
+  const messages=Object.values(row.mapping).map(node=>node?.message).filter(Boolean)
+    .map(message=>{
+      const parts=message.content?.parts||message.content?.text;
+      const content=Array.isArray(parts)?parts.filter(v=>typeof v==='string').join('\n'):
+        typeof parts==='string'?parts:'';
+      return {content,role:String(message.author?.role||'unknown'),time:Number(message.create_time)||0};
+    }).filter(item=>item.content.trim()).sort((a,b)=>a.time-b.time);
+  return messages.length?messages.map(item=>'['+item.role+']\n'+item.content).join('\n\n'):null;
+}
 function extractCaption(item){
   const a=item?.title??item?.caption??item?.text??item?.content??item?.description??
     item?.post??item?.body??item?.value??item?.string_map_data?.Text?.value;
@@ -86,11 +101,12 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const sender=txt(item.sender_name)||txt(item.username)||txt(item.author?.username)||
     txt(item.actor)||txt(item.user?.name)||null;
   const data=item.string_map_data||{};
-  const text=platform==='x'?(txt(item.full_text)||txt(item.core?.text)||txt(item.text)):
+  const chatText=platform==='chatgpt'?chatgptConversation(item):null;
+  const text=chatText||(platform==='x'?(txt(item.full_text)||txt(item.core?.text)||txt(item.text)):
     actualKind==='message'?(txt(item.content)||txt(item.text)||null):
     actualKind==='post'?(extractCaption(item)||txt(data['Title']?.value)||null):
-    extractCaption(item);
-  const sourcePlace=platform==='facebook'&&actualKind==='post'?facebookBackupPlace(item):'';
+    extractCaption(item));
+  const sourcePlace=actualKind==='post'?facebookBackupPlace(item):'';
   const attachments=[
     ...(Array.isArray(item.photos)?item.photos:[]),
     ...(Array.isArray(item.videos)?item.videos:[]),
@@ -108,9 +124,9 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const unmapped=!text&&!attachments.length&&!sourcePlace;
   const finalKind=unmapped?'unmapped':actualKind;
   const visibleText=unmapped?JSON.stringify(row):text||'';
-  const native=String(item.id_str||item.id||item.post_id||item.media_id||
+  const native=String(item.id_str||item.id||item.post_id||item.conversation_id||item.media_id||
     item.noteTweetId||item.uri||'');
-  const timestamp=item.timestamp_ms??item.timestamp??item.creation_timestamp??
+  const timestamp=item.create_time??item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
     item.string_map_data?.['Creation Time']?.timestamp??
     (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
@@ -128,6 +144,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
     platform,kind:finalKind,nativeId:stable,text:visibleText,sourcePlace,
+    title:txt(item.title)||'',url:pickUrl(item),
     sender,conversationId:actualKind==='message'?conv:null,attachments,
     createdAt,originalTimestamp,
     sourcePath:cleanPath(path),
@@ -147,17 +164,21 @@ function determine(path,prefix){
     if(/"messages"\s*:/.test(head.slice(0,16000))||/\/(?:message|messages)_\d+\.json$/.test(p))
       return {platform:category(path)==='instagram'?'instagram':'messenger',kind:'message',array:'messages'};
   }
-  if(/threads/.test(p)||/"media_product_type"\s*:\s*"THREADS"/.test(head)){
+  if(/(?:threads|text_post_app_text_posts)/.test(p)||/"media_product_type"\s*:\s*"THREADS"/.test(head)){
     return {platform:'threads',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['threads','posts','data','thread_posts','threads_posts','text_post_app_text_posts'])||rootArrayAny(head)};
   }
   if(/your_posts|status_updates|facebook_activity|posts_\d+\.json|posts\.json/.test(p)||
     /"status_updates"\s*:/.test(head)){
-    const platform=category(path)==='meta'?'facebook':category(path);
+    // A generic posts.json belongs to its archive; its name alone never proves Facebook.
+    const platform=category(path)==='meta'&&/your_posts|status_updates|facebook_activity/.test(p)?
+      'facebook':category(path);
     return {platform,kind:'post',array:head.startsWith('[')?'$':rootArray(head,['status_updates','posts','ig_posts','data'])||rootArrayAny(head)};
   }
   if(/ig_posts|instagram|media\/posts|content\/posts/.test(p)){
     return {platform:'instagram',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['ig_posts','posts','data','media'])||rootArrayAny(head)};
   }
+  if(/(?:^|\/)conversations\.json$/.test(p))
+    return {platform:'chatgpt',kind:'conversation',array:head.startsWith('[')?'$':rootArray(head,['conversations'])||'$'};
   if(head.startsWith('[')){
     const kind=/\/comments?\//.test(p)?'comment':
       /\/likes?|reactions?\//.test(p)?'reaction':
@@ -168,20 +189,20 @@ function determine(path,prefix){
   }
   if(head.startsWith('{')){
     const key=rootArray(head,[
-      'messages','status_updates','ig_posts','posts','threads','threads_posts',
+      'conversations','messages','status_updates','ig_posts','posts','threads','threads_posts',
       'text_post_app_text_posts','ig_stories','ig_reels_media','videos_v2','other_photos_v2',
       'photos_v2','comments_v2','likes_media_likes','saved_saved_media',
       'friends_v2','followers','following','data','items','records','entries',
       'comments','stories','reactions','media','videos'
     ])||rootArrayAny(head);
     if(key){
-      const kind=key==='messages'?'message':
+      const kind=key==='conversations'?'conversation':key==='messages'?'message':
         /stories/.test(key)?'story':
         /(?:photos|videos|reels|media)/.test(key)?'media':
         /comments/.test(key)?'comment':
         /likes|reactions/.test(key)?'reaction':
         /friends|follow/.test(key)?'relation':'auto';
-      const platform=key==='messages'?(category(path)==='instagram'?'instagram':'messenger'):category(path);
+      const platform=key==='conversations'?'chatgpt':key==='messages'?(category(path)==='instagram'?'instagram':'messenger'):category(path);
       return {platform,kind,array:key};
     }
   }
@@ -201,12 +222,13 @@ function rootArrayAny(head){
 const fileSummary=()=>({
   matchedFiles:0,otherFiles:0,totalRows:0,acceptedRows:0,rejectedRows:0,
   suspiciousRows:0,duplicateRows:0,bytesRead:0,sourceFiles:[],sample:[],
+  exifImages:0,exifWithGps:0,exifWithTime:0,exifSkipped:0,
   problems:[],byPlatform:{},unrecognizedFiles:[],mediaFiles:0,unmappedRows:0
 });
 function report(summary,message){
   if(summary.problems.length<30)summary.problems.push(message);
 }
-function createSink(path,summary,onRecord,signal){
+function createSink(path,summary,onRecord,signal,sourceHint=null){
   const decoder=new TextDecoder('utf-8',{fatal:true});
   const snippetLimit=32768;
   let header='',ready=false,parser=null,config=null,trail='',finished=false,unknown=false;
@@ -214,7 +236,8 @@ function createSink(path,summary,onRecord,signal){
     aborted(signal);
     summary.totalRows++;
     const result=normalize(value,{...config,path,index:summary.totalRows});
-    if(result.error){
+    if(result.error||result.kind==='unmapped'){
+      if(result.kind==='unmapped')result.error='非可匯入文字紀錄';
       summary.rejectedRows++;
       report(summary,path+'：第 '+summary.totalRows+' 筆 '+result.error);
       return;
@@ -231,6 +254,8 @@ function createSink(path,summary,onRecord,signal){
   };
   function init(){
     config=determine(path,header);
+    if(config?.platform==='meta'&&config.kind!=='message'&&sourceHint)
+      config={...config,platform:sourceHint};
     if(!config||!config.array){
       unknown=true;
       summary.otherFiles++;
@@ -316,6 +341,9 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
   const hits=new Map();
+  // Filename hints select a source, but the actual records remain authoritative.
+  const hint=archiveFilenameSource(file.name);
+  if(hint)hits.set(hint,{confidence:1,path:file.name});
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
   const filenames=new Set();
   const profiles=[];
@@ -388,12 +416,13 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
-export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
+export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
   if(typeof onRecord!=='function')throw new Error('缺少私人本機寫入管線。');
   const summary=fileSummary();
+  const sourceHint=archiveFilenameSource(file.name);
   const prefix=new Uint8Array(await file.slice(0,4).arrayBuffer());
   const isZip=prefix[0]===80&&prefix[1]===75&&[3,5,7].includes(prefix[2]);
   const read=async offset=>{
@@ -401,15 +430,45 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
     return new Uint8Array(await file.slice(offset,Math.min(file.size,offset+ARCHIVE_CHUNK_BYTES)).arrayBuffer());
   };
   if(isZip){
-    let filesSeen=0,extracted=0,known=false;
+    let filesSeen=0,extracted=0,exifExtracted=0,known=false;
     const sessions=[];
     const unzip=new Unzip(entry=>{
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
+      if(exifImage.test(path)&&typeof onMediaMetadata==='function'&&[0,8].includes(entry.compression)&&
+        (entry.originalSize===undefined||entry.originalSize<=32*1024*1024)&&
+        exifExtracted<100*1024*1024&&summary.exifImages<2500){
+        summary.mediaFiles++;summary.exifImages++;known=true;
+        const chunks=[];let stored=0,received=0;
+        entry.ondata=(error,data,final)=>{
+          if(error)throw error;
+          received+=data.length;exifExtracted+=data.length;
+          if(received>32*1024*1024||exifExtracted>100*1024*1024){
+            if(final)summary.exifSkipped++;
+            return;
+          }
+          if(stored<IMAGE_EXIF_PREFIX_LIMIT){
+            const part=data.subarray(0,IMAGE_EXIF_PREFIX_LIMIT-stored);
+            if(part.length){chunks.push(part);stored+=part.length;}
+          }
+          if(final){
+            const sample=new Uint8Array(stored);let pos=0;
+            for(const chunk of chunks){sample.set(chunk,pos);pos+=chunk.length;}
+            const metadata=readImageExif(sample,path);
+            if(metadata){
+              if(metadata.latitude!==undefined)summary.exifWithGps++;
+              if(metadata.cameraLocalTime)summary.exifWithTime++;
+              onMediaMetadata({path,metadata});
+            }
+          }
+        };
+        entry.start();
+        return;
+      }
       if(skippedZipEntry(path)){
         summary.otherFiles++;
-        if(mediaExtension.test(path))summary.mediaFiles++;
+        if(mediaExtension.test(path)){summary.mediaFiles++;if(exifImage.test(path))summary.exifSkipped++;}
         else if(summary.unrecognizedFiles.length<60)summary.unrecognizedFiles.push(path);
         discardZipEntry(unzip,entry);
         return;
@@ -430,7 +489,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
       const chunks=[];
       let textSize=0;
       const isStructured=/\.(?:json|js)$/i.test(path);
-      const sink=isStructured?createSink(path,summary,onRecord,signal):null;
+      const sink=isStructured?createSink(path,summary,onRecord,signal,sourceHint):null;
       const session={path,ended:false};sessions.push(session);
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
@@ -475,8 +534,8 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
       textDocument(buffer,path,summary,onRecord);
       summary.bytesRead=file.size;
     }else{
-      if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 10 MB 上限，未嘗試解析。');
-      const sink=createSink(path,summary,onRecord,signal);
+      if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 50 MiB 上限，未嘗試解析。');
+      const sink=createSink(path,summary,onRecord,signal,sourceHint);
       for(let offset=0;offset<file.size;offset+=ARCHIVE_CHUNK_BYTES){
         const chunk=await read(offset);
         sink.push(chunk,offset+chunk.length>=file.size);

@@ -32,8 +32,11 @@ export default function Trace({scopeId='loc'}){
   const reportTopRef=useRef(null);
   const [scrollRequest,setScrollRequest]=useState(0);
   const [mapOnly,setMapOnly]=useState(false);
-  const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
-  const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
+  // /trace is a public index for all published Scope Frames. Prefer LOC
+  // native when it exists; otherwise show a real saved author/rune Frame.
+  // A missing LOC-native route must not hide existing author routes.
+  const visibleScopes=['loc','lo3rwang','lrunes'];
+  const [locPeriodScope,setLocPeriodScope]=useState('auto');
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState('articles');
@@ -56,6 +59,21 @@ export default function Trace({scopeId='loc'}){
     setScrollRequest(value=>value+1);
   };
 
+
+  // Phase 1: load the light index, never all historical check-ins at startup.
+  const traceIndex=useAsyncResource({
+    queryKey:traceMapIndexKey(scopeId),
+    enabled:supported&&routeListOpen,
+    queryFn:()=>readTraceMapIndex(scopeId),
+    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const allMaps=traceIndex.data||[];
+  const periodScopeId=scopeId==='loc'
+    ?(locPeriodScope==='auto'
+      ?visibleScopes.find(id=>allMaps.some(row=>row.source_scope===id))||'loc'
+      :locPeriodScope)
+    :scopeId;
+  const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
@@ -72,15 +90,6 @@ export default function Trace({scopeId='loc'}){
     if(value==='all'){setCurrentTraceChoice('all');return;}
     if(setDefaultTraceRoute(periodScopeId,value))setCurrentTraceChoice(value);
   };
-
-  // Phase 1: load the light index, never all historical check-ins at startup.
-  const traceIndex=useAsyncResource({
-    queryKey:traceMapIndexKey(periodScopeId),
-    enabled:supported&&routeListOpen,
-    queryFn:()=>readTraceMapIndex(periodScopeId),
-    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
-  });
-  const maps=traceIndex.data||[];
   const currentMap=useMemo(()=>{
     if(currentTraceChoice==='all')return null;
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
@@ -92,12 +101,13 @@ export default function Trace({scopeId='loc'}){
   // that any one stop was occupied for its entire duration.
   const anchorsQuery=useAsyncResource({
     queryKey:currentMap
-      ?traceCurrentKey(periodScopeId,currentMap)
-      :traceAllAnchorsKey(periodScopeId),
+      ?traceCurrentKey(periodScopeId,currentMap,{nativeOnly:periodScopeId==='loc'})
+      :traceAllAnchorsKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
-      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids)
-      :readAllTraceAnchors(periodScopeId),
+      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids,
+          {nativeOnly:periodScopeId==='loc'})
+      :readAllTraceAnchors(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const spatialData=useMemo(()=>{
@@ -105,7 +115,7 @@ export default function Trace({scopeId='loc'}){
     if(!showingAll&&!currentMap)return {anchors:[],maps:[]};
     if(anchorsQuery.data===undefined)return null;
     return {anchors:anchorsQuery.data,
-      maps:showingAll?traceIndex.data:[currentMap]};
+      maps:showingAll?maps:[currentMap]};
   },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
@@ -136,6 +146,8 @@ export default function Trace({scopeId='loc'}){
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
           onChange={event=>{setLocPeriodScope(event.target.value);setSelectedPlace(null);}}>
+          <option value="auto">自動顯示已儲存痕跡</option>
+          <option value="loc">LOC 自有痕跡</option>
           <option value="lo3rwang">作者作品</option>
           <option value="lrunes">月之符文</option>
         </select>

@@ -49,12 +49,12 @@ test('Frame editor queries by county + name or UID and adds only on explicit plu
  const manager=read('app/loc/TraceRouteManager.jsx');
  const storage=read('app/modular/features/trace/trace-data.js');
  assert.match(manager,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
- assert.match(manager,/setQueue\(ids=>\[\.\.\.ids,choice\.uid\]\)/);
+ assert.match(manager,/setQueue\(ids=>ids.includes\(choice.uid\)\?ids:\[\.\.\.ids,choice.uid\]\)/);
  assert.match(manager,/onClick=\{addPoint\}>＋/);
  assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
  assert.match(storage,/uid\.eq\./);
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
- assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
+ assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)/);
  assert.match(storage,/anchor_uids:chosen/);
 });
 
@@ -65,7 +65,7 @@ test('same-name candidate list stays capped at eight; exact UID is a separate se
    description:'地址：新北市板橋區第'+index+'路'
  }));
  assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
- assert.ok(read('app/modular/features/trace/trace-data.js').includes("'title.ilike.'+pattern+',uid.eq.'+q"));
+ assert.match(read('app/modular/features/trace/trace-data.js'),/filters\.push\('uid\.eq\.'\+q\)/);
  assert.match(read('app/loc/TraceRouteManager.jsx'),/UID \{anchor\.uid\}/);
 });
 test('same address but different business names are never safe for automatic reuse',()=>{
@@ -136,4 +136,21 @@ test('postal city wins over GPS county boundary when known',()=>{
  assert.equal(decide('新北市板橋區文化路100號2樓'),'TW-NWT');
  assert.equal(decide('臺北市中山區南京東路10號B1'),'TW-TPE');
  assert.equal(decide(''),null);
+});
+
+test('own-anchor search includes complete postal addresses and distinguishes floors',()=>{
+ const rows=[
+   {uid:'FLR00001',trace_type:'anchor',county_id:'TW-NWT',title:'同名店',address:'新北市板橋區文化路100號',floor_label:'B1'},
+   {uid:'FLR00002',trace_type:'anchor',county_id:'TW-NWT',title:'同名店',address:'新北市板橋區文化路100號',floor_label:'2樓'}
+ ];
+ assert.deepEqual(traceAnchorSuggestions(rows,'TW-NWT','文化路').map(x=>x.uid),['FLR00001','FLR00002']);
+ assert.deepEqual(traceAnchorSuggestions(rows,'TW-NWT','B1').map(x=>x.uid),['FLR00001']);
+ assert.equal(traceAnchorCompletionUid(traceAnchorSuggestions(rows,'TW-NWT','同名店')),'');
+});
+
+test('unknown postal county is never guessed from coordinates during new writes',()=>{
+ const db=read('app/modular/features/trace/trace-data.js');
+ assert.match(db,/return countyIdFromAddress\(address\);/);
+ assert.doesNotMatch(db,/countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates/);
+ assert.match(db,/county_id:countyIdFromAddress\(place\.address\)/);
 });

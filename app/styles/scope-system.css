@@ -539,8 +539,8 @@
 .scope-data-source-values{display:flex;flex-wrap:wrap;gap:.35rem .8rem;padding:.3rem 0 .15rem}
 
 
-/* Advanced statistics: each comparison is a compact group of real tabs,
-   never a long mixed select/list. Rows contain a category and its own items. */
+/* Advanced statistics: dimension tabs + exactly two compact selectors per
+   comparison lane, never an expanding wall of metric chips. */
 .scope-self-intersection-kind-tabs{
   display:flex;
   flex-wrap:wrap;
@@ -550,37 +550,20 @@
 }
 .scope-self-intersection-category-groups{
   display:grid;
-  gap:.65rem;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.7rem;
   padding-top:.8rem;
   min-width:0;
 }
-.scope-self-stat-group{
-  display:grid;
-  grid-template-columns:minmax(5.8rem,auto) minmax(0,1fr);
-  align-items:start;
-  column-gap:.65rem;
-  row-gap:.35rem;
-  min-width:0;
-}
-.scope-self-stat-group-header{
+.scope-self-stat-picker{
   display:flex;
-  align-items:center;
+  flex-direction:column;
+  gap:.35rem;
   min-width:0;
-}
-.scope-self-stat-group-label{
-  display:block;
-  color:var(--scope-muted,var(--loc-muted));
   font-size:.9rem;
-  font-weight:700;
 }
-.scope-self-stat-item-tabs{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:.4rem;
-  min-width:0;
-}
-.scope-self-stat-tab,.scope-self-stat-chip{
+.scope-self-stat-picker .scope-select{width:100%;min-width:0}
+.scope-self-stat-tab{
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -600,25 +583,14 @@
   cursor:pointer;
   touch-action:manipulation;
 }
-.scope-self-stat-chip{
-  font-size:.86rem;
-  font-weight:550;
-  background:var(--loc-ui-panel,var(--loc-panel));
-}
-.scope-self-stat-tab[aria-pressed="true"],
-.scope-self-stat-chip[aria-pressed="true"]{
+.scope-self-stat-tab[aria-pressed="true"]{
   border-color:var(--loc-accent);
   background:var(--loc-accent-surface,var(--loc-ui-accent-soft));
   color:var(--loc-heading);
   box-shadow:inset 0 -3px 0 var(--loc-accent);
 }
-.scope-self-stat-tab:hover,.scope-self-stat-chip:hover{
-  border-color:var(--loc-accent);
-}
-.scope-self-stat-tab:focus-visible,.scope-self-stat-chip:focus-visible{
-  outline:2px solid var(--loc-accent);
-  outline-offset:2px;
-}
+.scope-self-stat-tab:hover{border-color:var(--loc-accent)}
+.scope-self-stat-tab:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px}
 .scope-self-stat-empty{
   padding:.6rem 0;
   font-size:.85rem;
@@ -627,9 +599,8 @@
 @media(max-width:560px){
   .scope-self-intersection-comparisons{grid-template-columns:minmax(0,1fr)}
   .scope-self-intersection-lane{padding:.65rem}
-  .scope-self-stat-group{grid-template-columns:minmax(0,1fr)}
-  .scope-self-stat-group-header{padding-bottom:.05rem}
-  .scope-self-stat-tab,.scope-self-stat-chip{min-height:2.75rem;padding:.5rem .7rem}
+  .scope-self-intersection-category-groups{grid-template-columns:minmax(0,1fr)}
+  .scope-self-stat-tab{min-height:2.75rem;padding:.5rem .7rem}
 }
 
 .scope-culture-river-toolbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.4rem 0 .6rem}
