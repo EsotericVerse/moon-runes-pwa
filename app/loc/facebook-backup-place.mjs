@@ -33,10 +33,19 @@ function labelText(value){
   catch{return raw;}
 }
 function explicitTaggedPlaces(row){
+  const fields=Array.isArray(row?.label_values)?row.label_values:[];
+  // Only a documented visit event is a check-in. Meta profile settings
+  // (primary_location/primary_public_location) also contain labelled
+  // geography, but must NEVER be imported as a historical visit.
+  if(!fields.some(field=>labelText(field?.label)==='造訪時間'&&
+    field?.timestamp_value!==undefined&&field?.timestamp_value!==null))return [];
   const found=[];
-  for(const field of Array.isArray(row?.label_values)?row.label_values:[]){
+  for(const field of fields){
+    const outerLandmark=labelText(field?.title)==='地標';
     for(const landmark of Array.isArray(field?.dict)?field.dict:[]){
-      if(labelText(landmark?.title)!=='地標')continue;
+      // Real "places_you_have_been_tagged_in" exports label the outer
+      // field as 地標. Other Meta variants label the nested field.
+      if(!outerLandmark&&labelText(landmark?.title)!=='地標')continue;
       for(const detail of Array.isArray(landmark?.dict)?landmark.dict:[]){
         if(labelText(detail?.label)!=='名稱')continue;
         const name=asName(detail?.value);
