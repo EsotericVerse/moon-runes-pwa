@@ -195,7 +195,7 @@
 
 ### A 線分支生命週期｜LOC-PLACE-01～06（2026-10-26 23:41 台灣時間查證）
 
-- **隔離分支：** `fix/loc-place-id-layout-20261026`；**PR：** [#580](https://github.com/EsotericVerse/moon-runes-pwa/pull/580)（已轉 Draft、未合併）；**查核分支 HEAD：** `4281406c51dd58ac73a86947e94366c391d11945`；**查核基準 main：** `d8020bc6f4208b8d3022dd014130cc580432c1c4`，雙方均有新提交，需先以 merge 整合最新 main，不能直接覆蓋。
+- **隔離分支：** `fix/loc-place-id-layout-20261026`；**PR：** [#580](https://github.com/EsotericVerse/moon-runes-pwa/pull/580)（已轉 Draft、未合併）；**查核分支 HEAD：** `2afc89bb556fd30d021c59af79c57d952124e960`；**查核基準 main：** `d8020bc6f4208b8d3022dd014130cc580432c1c4`，雙方均有新提交，需先以 merge 整合最新 main，不能直接覆蓋。
 - **狀態：FROZEN / UNVERIFIED / NOT FOR MERGE。** A 線本次 **LOC-PLACE-01～06 無任何可確認整項完成**；分支已有 UI／資料查詢／對照 migration 程式及部分單元測試，但與正式資料庫尚不相容，不加入集中待驗收，亦不得由 GitHub CI 的部分綠燈宣稱完成。
 - **資料證據（read-only Supabase）：** `silver.lo3rwang_trace` 582 筆 `uid` 全部仍為八碼，含 1 筆 map；LOC 聯集相應 582 筆亦八碼；錯增 `trace.trace_id` 四碼欄位仍存在；`lo3rwang_galaxy` 35,141 篇中 `place_id` 已設 0 篇。已新增的 nullable `place_id varchar(4)` 與索引只能記為**部分 schema 步驟**，不能視為資料／功能驗收通過，不能擅自刪除 Trace／Galaxy 資料。
 - **CI 證據：** [#40344096224](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40344096224) **failure**。專項 69/69 零失敗，然而對比最新 main 原有測試 73 項，分支刪除了跨 Scope 身份、延遲讀回防重複寫入、Frame 待處理站點等既有驗證（五個測試名稱不見、僅補兩項）；舊基準檢查器 `total<73` 因此攔下。**不得透過降低 73 門檻或跳過測試讓 CI 假綠**；需恢復等價回歸、確認不再適用的案例有相應新功能證據。該次 Next build 成功、Chrome 因前置步驟 failure **skipped**；實際授權寫入／重讀／RLS 及長時間負載尚未自證。
@@ -205,6 +205,8 @@
 
 > **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。**最新使用者定案（取代本節此前全部 uid／trace_id 方案）：`silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵；不得保留 Trace 的 `uid`、`trace_uid` 或 `trace_id` 等並行身份欄位**。`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖。`silver.<scopeid>_galaxy.place_id varchar(4)` 只指向同 Scope、`trace_type='anchor'` 的 `trace.id`。**文章自身的 `galaxy.uid` 和原始 `source_place` 不變**；`galaxy.uid` 是另一種文章物件的既有識別碼，並非 Trace 的第二身份。
 > **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 Trace `uid`／臨時 `trace_id` → 四碼 `id` 的完整映射與回退方案；② 將 Trace 的唯一 PK 統一為 `id`（anchor／map 同表），轉換所有 Frame Queue、RPC、觸發器、別名及 LOC 聯集 `(scope_id,id)` 的引用；最終不得留下 Trace `uid`／`trace_uid`／`trace_id` 平行身份；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
+
+> **Queue 更名工程紀錄（未合併／未部署）：** 已在原分支 `fix/loc-place-id-layout-20261026` merge 最新 main，將 UI、Trace 讀寫／文章映射與相關測試調整為 `anchor_list`，另準備交易式遷移 `20261027001000_trace_anchor_list_column.sql`，一次更名三張 Scope Trace 表並重寫相依觸發器／RPC，保留原本的 array 站序及 5 站資料。**本次正式 Supabase 未執行 DDL**；2026-10-27 專項 CI [#40356720053](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40356720053) 最終 failure（69/69 test passed、但原版 baseline 驗證至少要求 73 項，且先前跨 Scope regressions 被減少），不得降低門檻或誤報完成。新欄位需與尚未完成的 `trace.id varchar(4)` 遷移一併啟用；目前保留 Draft #580，狀態仍 **FROZEN / UNVERIFIED / NOT FOR MERGE**。
 
 > **最新 Queue 欄位命名（2026-10-27）：** Trace 表原有 `anchor_uids` **正式更名為 `anchor_list`**，同一張 map／Frame 內維持有序的本 Scope `trace.id`（四碼）陣列；不另外新增 Queue 或平行欄位。遷移須保留舊紀錄及每個站點的**原始順序與重複語義**，同步更新 SQL 函式／觸發器／RLS 影響範圍、前後端讀寫、路線／時間顯示及驗證案例；在正式版本相容且自測通過前不得對 live 表單獨改名。
 
