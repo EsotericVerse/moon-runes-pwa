@@ -22,6 +22,26 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
     .map(row=>[text(row.scope_id)+':'+text(row.uid),row]));
   const expanded=new Set(list(expandedTraceIds).map(text));
   const items=[],groups=[];
+  // The permanent anchor lane shows every saved dated point, including
+  // anchors not referenced by a time_period or an expanded time_trace.
+  const datedAnchors=[...anchors.values()]
+    .filter(anchor=>validDate(anchor.start_date))
+    .sort((a,b)=>text(a.start_date).localeCompare(text(b.start_date))||
+      text(a.uid).localeCompare(text(b.uid)));
+  const scopes=[...new Set(datedAnchors.map(anchor=>text(anchor.scope_id)))];
+  for(const [index,scope] of scopes.entries()){
+    const groupId='time-anchors:'+scope;
+    const groupLabel=scopes.length>1?scope+' · 定錨點':'定錨點';
+    groups.push({id:groupId,label:groupLabel,order:-10000+index,
+      className:'scope-time-anchor-parent'});
+    for(const anchor of datedAnchors.filter(row=>text(row.scope_id)===scope)){
+      const uid=text(anchor.uid),title=text(anchor.title)||uid;
+      items.push({id:groupId+':'+uid,uid,scope_id:scope,entry_type:'anchor',
+        group_key:groupId,group_label:groupLabel,group_order:-10000+index,
+        start_date:text(anchor.start_date).slice(0,10),
+        display_label:title,title,description:anchor.summary||anchor.description||''});
+    }
+  }
   for(const [traceIndex,trace] of traces.entries()){
     const scope=text(trace.scope_id),id=text(trace.uid);
     const groupId='trace:'+scope+':'+id;
