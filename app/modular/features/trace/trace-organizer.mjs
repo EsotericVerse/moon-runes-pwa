@@ -6,6 +6,9 @@ export function normalizeAnchorAddress(value){
   return String(value||'').trim().replace(/臺/g,'台').replace(/[，,．.。；;\s　]/g,'').toLowerCase();
 }
 export function anchorAddress(anchor){
+  // Prefer the structured field. Legacy approved descriptions still provide
+  // evidence until their contents have been individually reviewed.
+  if(String(anchor?.address||'').trim())return String(anchor.address).trim();
   const text=String(anchor?.description||'');
   return (text.match(/地址[：:]\s*([^。；;\n]+)/)?.[1]||'').trim();
 }
@@ -51,6 +54,10 @@ function distance(a,b){
 function compareAnchorPair(a,b){
   if(a.source_scope!==b.source_scope)return null;
   const aa=anchorAddress(a),ba=anchorAddress(b);
+  const floors=[a.floor_label,b.floor_label].map(v=>String(v||'').trim().toLowerCase());
+  const levels=[a.floor_level,b.floor_level].map(v=>v==null?null:Number(v));
+  const floorConflict=Boolean(floors[0]&&floors[1]&&floors[0]!==floors[1])
+    ||Boolean(levels[0]!==null&&levels[1]!==null&&levels[0]!==levels[1]);
   const match=aa&&ba&&normalizeAnchorAddress(aa)===normalizeAnchorAddress(ba);
   const both=Boolean(aa&&ba);
   const valid=[a.latitude,a.longitude,b.latitude,b.longitude]
@@ -59,16 +66,15 @@ function compareAnchorPair(a,b){
   const nameMatch=String(a.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase()
     ===String(b.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase();
   let type='';
-  if(match)type=meters!==null&&meters>350?'address-coordinate-conflict':'same-address';
+  if(match)type=floorConflict?'different-floor':meters!==null&&meters>350?'address-coordinate-conflict':'same-address';
   else if(meters!==null&&meters<=80)type=both?'near-different-address':'near-unverified';
   else if(nameMatch)type='same-name-different-location';
   if(!type)return null;
   return {key:[a.uid,b.uid].sort().join(':'),a,b,address:match?aa:'',meters,type,
     canMerge:type==='same-address'||type==='near-unverified',
-    // Names collide frequently, and a new business can reuse the old address.
-    // Only reuse a genuinely same-name, essentially identical point; a
-    // different name or a 60 m proximity must NEVER merge historical shops.
-    safeReuse:Boolean(nameMatch&&meters!==null&&meters<=2&&(!both||match))};
+    // Same building/coordinates/name may represent another floor or an old
+    // business. An anchor UID is never automatically folded into another.
+    safeReuse:false};
 }
 export function findAnchorWriteMatches(anchor,existing=[]){
   const incoming={...anchor,uid:'__incoming__',trace_type:'anchor'};
@@ -85,7 +91,7 @@ export function organizeAnchorCandidates(anchors){
     if(candidate)results.push(candidate);
   }
   return results.sort((a,b)=>{
-    const priority={'same-address':0,'near-unverified':1,'address-coordinate-conflict':2,'near-different-address':3,'same-name-different-location':4};
+    const priority={'same-address':0,'near-unverified':1,'address-coordinate-conflict':2,'near-different-address':3,'same-name-different-location':4,'different-floor':5};
     return priority[a.type]-priority[b.type]||(a.meters??999999)-(b.meters??999999);
   });
 }
