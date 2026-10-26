@@ -59,7 +59,9 @@ export function resolveTimeSegments(tokens,anchors,{period=true,today=''}={}){
   });
 }
 export function timeSegmentContainsDate(range,day,{today=''}={}){
-  if(!range?.start_date||range.invalid)return false;
+  if(!range?.start_date)return false;
+  // Deleting one endpoint leaves the surviving endpoint as a real point.
+  if(range.invalid)return Boolean(range.point&&dateOf(day)===dateOf(range.start_date));
   const d=dateOf(day),start=dateOf(range.start_date);
   const end=range.open_end?dateOf(today):dateOf(range.end_date);
   return Boolean(d&&start&&d>=start&&(!end||d<=end));
