@@ -1,0 +1,80 @@
+// Facebook Takeout *text* place metadata, not EXIF or media file lookup.
+// Never infer a check-in from post prose, filename, GPS or generic post title.
+const PLACE_KEYS=['place','location','checkin','check_in','venue'];
+const asName=value=>{
+  if(typeof value!=='string')return '';
+  const text=value.trim();
+  return text&&text.length<=200&&!/[\r\n\u0000-\u001f]/u.test(text)?text:'';
+};
+function namedPlace(value){
+  if(typeof value==='string')return asName(value);
+  if(!value||typeof value!=='object'||Array.isArray(value))return '';
+  for(const field of ['name','place_name','title','address','full_address']){
+    const text=asName(value[field]);
+    if(text)return text;
+  }
+  // Meta variants can nest place metadata under location/place.
+  for(const field of ['place','location']){
+    if(value[field]&&value[field]!==value){
+      const text=namedPlace(value[field]);
+      if(text)return text;
+    }
+  }
+  return '';
+}
+function placeCandidates(row){
+  const direct=PLACE_KEYS.map(field=>namedPlace(row?.[field])).filter(Boolean);
+  if(direct.length)return direct; // Explicit post location outranks attachment metadata.
+  const found=[];
+  const attachments=[...(Array.isArray(row?.attachments)?row.attachments:[]),
+    ...(Array.isArray(row?.data)?row.data:[]).flatMap(item=>
+      Array.isArray(item?.attachments)?item.attachments:[])];
+  for(const item of attachments){
+    for(const field of PLACE_KEYS){
+      const name=namedPlace(item?.[field]);
+      if(name)found.push(name);
+    }
+    for(const sub of Array.isArray(item?.data)?item.data:[]){
+      for(const field of PLACE_KEYS){
+        const name=namedPlace(sub?.[field]);
+        if(name)found.push(name);
+      }
+    }
+  }
+  return found;
+}
+export function facebookBackupPlace(row){
+  if(!row||typeof row!=='object'||Array.isArray(row))return '';
+  const names=[...new Set(placeCandidates(row))];
+  return names.length===1?names[0]:'';
+}
+
+// Stable source-record ID for repeat imports. No external IDs are conflated
+// with the owner's Trace UID; this is only the Galaxy article's 8-char ID.
+const UID_CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+export function facebookArchiveUid(key){
+  const text=String(key||'');
+  if(!text)throw Error('Facebook 紀錄缺少來源識別，無法安全重複匯入。');
+  let value=0xcbf29ce484222325n;
+  for(let i=0;i<text.length;i++){
+    value=BigInt.asUintN(64,(value^BigInt(text.charCodeAt(i)))*0x100000001b3n);
+  }
+  let number=value%(36n**8n),output='';
+  for(let i=0;i<8;i++){output=UID_CHARS[Number(number%36n)]+output;number/=36n;}
+  return output;
+}
+export function facebookArchiveGalaxyRow(record){
+  if(record?.platform!=='facebook'||record?.kind!=='post')return null;
+  const source_place=asName(record.sourcePlace)||facebookBackupPlace(record.raw);
+  const original=String(record.text||'').trim();
+  // A place-only check-in is still a post; accurately label its metadata,
+  // rather than inventing an author-written caption.
+  const content=original||(source_place?'Facebook 打卡地點：'+source_place:'');
+  if(!content)return null;
+  const title=(original.split(/\r?\n/)[0]||'').slice(0,120)||('Facebook 打卡：'+source_place).slice(0,120);
+  return {
+    uid:facebookArchiveUid(record.key),title,content,
+    createtime:record.createdAt||null,
+    ...(source_place?{source_place}:{}),
+  };
+}
