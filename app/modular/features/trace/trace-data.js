@@ -101,11 +101,13 @@ export async function readTraceData(scopeId){
  * grouping table, or collapse distinct check-ins at the same coordinates.
  * The index is small. Only the current trace's anchors are read on demand.
  */
-export const traceMapIndexKey=scopeId=>['trace-map-index',scopeId];
-export const traceCurrentKey=(scopeId,route)=>[
-  'trace-current',scopeId,route.uid,(route.anchor_uids||[]).join(',')
+export const traceMapIndexKey=(scopeId,{nativeOnly=false}={})=>
+  nativeOnly?['trace-map-index',scopeId,'native']:['trace-map-index',scopeId];
+export const traceCurrentKey=(scopeId,route,{nativeOnly=false}={})=>[
+  'trace-current',scopeId,route.uid,(route.anchor_uids||[]).join(','),...(nativeOnly?['native']:[])
 ];
-export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
+export const traceAllAnchorsKey=(scopeId,{nativeOnly=false}={})=>
+  nativeOnly?['trace-all-anchors',scopeId,'native']:['trace-all-anchors',scopeId];
 
 const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level';
 
