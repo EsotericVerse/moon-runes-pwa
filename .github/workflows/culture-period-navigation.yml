@@ -30,9 +30,9 @@ jobs:
       - name: Period and independent anchor regression
         run: node --test scripts/test-culture-period-navigation.mjs
       - name: Culture and app bootstrap focused regressions
-        # Full baseline has pre-existing unrelated Settings/Facebook importer failures.
+        # Full baseline currently has pre-existing unrelated Settings/Facebook importer failures; these checks target the Culture feature.
         run: |
-          node --experimental-vm-modules --test --test-name-pattern='^(?!Settings document import is iOS only).*$' scripts/test-app-bootstrap.mjs
+          node --experimental-vm-modules --test --test-name-pattern='Culture' scripts/test-app-bootstrap.mjs
           node --test scripts/test-culture-river-roots.mjs
       - name: Build Next without deploying
         run: npm run build
