@@ -498,8 +498,8 @@ button,a,.loc-control,.loc-button,
     var(--scope-feature-hero-image);
   background-position:center center,center center;
   background-repeat:no-repeat,no-repeat;
-  /* Overlay fills the Hero while the original artwork fits without cropping. */
-  background-size:100% 100%,contain;
+  /* The image layer fills the entire Hero frame at every aspect ratio. */
+  background-size:100% 100%,cover;
 }
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"],[data-loc-scope="admin"],[data-loc-scope="local"])
   .scope-feature-hero--artwork:not(.is-editing){
