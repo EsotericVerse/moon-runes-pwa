@@ -131,5 +131,5 @@ test('postal city wins over GPS county boundary when known',()=>{
  const decide=new Function('traceCountyId',match[0]+';return countyIdFromAddress')(countyId);
  assert.equal(decide('新北市板橋區文化路100號2樓'),'TW-NWT');
  assert.equal(decide('臺北市中山區南京東路10號B1'),'TW-TPE');
- assert.equal(decide(''),'null'===null?null:null);
+ assert.equal(decide(''),null);
 });
