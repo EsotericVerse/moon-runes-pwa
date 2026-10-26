@@ -359,3 +359,31 @@ test('public LOC Trace can view its own native Frames, not hidden behind author 
   assert.match(db,/export const traceMapIndexKey=\(scopeId,\{nativeOnly=false\}=\{\}\)=>/);
   assert.match(db,/nativeOnly\?\['trace-map-index',scopeId,'native'\]/);
 });
+
+test('LOC public Trace auto discovers an existing author Frame without moving its UID',()=>{
+  const page=read('app/modular/features/Trace.jsx');
+  assert.match(page,/readTraceMapIndex\(scopeId\)/);
+  assert.match(page,/const visibleScopes=\['loc','lo3rwang','lrunes'\]/);
+  assert.match(page,/visibleScopes\.find\(id=>allMaps\.some\(row=>row\.source_scope===id\)\)/);
+  assert.match(page,/allMaps\.filter\(row=>row\.source_scope===periodScopeId\)/);
+  assert.match(page,/<option value="auto">自動顯示已儲存痕跡<\/option>/);
+  assert.match(page,/<option value="lo3rwang">作者作品<\/option>/);
+  assert.match(page,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+});
+test('LOC manager discovers existing author Frames in one safe union index',()=>{
+  const managerSource=manager();
+  assert.match(managerSource,/readTraceMapIndex\(scopeId\)/);
+  assert.match(managerSource,/const maps=.*filter\(row=>row\.source_scope===activeScope\)/);
+  assert.match(managerSource,/const allSavedFrames=.*index\.data/);
+  assert.match(managerSource,/已儲存的其他範圍痕跡圖/);
+  assert.match(managerSource,/setActiveScope\(row\.source_scope\)/);
+});
+test('Trace Map cannot resize or escape its parent layout at narrow mobile widths',()=>{
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const css=read('app/styles/features.css');
+  assert.match(map,/Math\.min\(availableWidth,Math\.max\(/);
+  assert.doesNotMatch(css,/width:calc\(100% \+ 1\.5rem\)/);
+  assert.doesNotMatch(css,/max-width:calc\(100% \+ 1\.5rem\)/);
+  assert.match(css,/\.loc-trace-map-shell\{[^}]*max-width:100%/);
+  assert.match(css,/\.loc-trace-panel\{[^}]*max-width:100%/);
+});
