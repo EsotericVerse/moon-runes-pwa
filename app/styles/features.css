@@ -687,6 +687,21 @@
   color:var(--loc-text)!important;
   font-size:1rem;
 }
+.scope-search-workspace .scope-search-form>.scope-search-input-autocomplete{
+  grid-area:input;min-width:0;width:100%;
+}
+.scope-search-workspace .scope-search-form>.scope-search-input-autocomplete .MuiOutlinedInput-root{
+  min-height:3.15rem;
+  border-radius:var(--loc-ui-radius-md);
+  background:var(--loc-surface);
+  color:var(--loc-text);
+}
+.scope-search-workspace .scope-search-form>.scope-search-input-autocomplete .MuiOutlinedInput-notchedOutline{
+  border-color:var(--loc-ui-hairline);
+}
+.scope-search-workspace .scope-search-form>.scope-search-input-autocomplete .Mui-focused .MuiOutlinedInput-notchedOutline{
+  border-color:var(--loc-accent-border);
+}
 .scope-search-workspace .scope-search-form>input:focus{
   border-color:var(--loc-accent-border)!important;
   box-shadow:0 0 0 3px var(--loc-ui-accent-soft)!important;
