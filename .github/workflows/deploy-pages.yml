@@ -4,6 +4,12 @@ name: Deploy Main Next to GitHub Pages
 # Manually run this workflow only for an intentional GitHub Pages deployment.
 on:
   workflow_dispatch:
+  # One-time emergency recovery of Culture and Statistics on GitHub Pages.
+  # This does NOT deploy Cloudflare or re-enable ISR.
+  push:
+    branches: [main]
+    paths:
+      - '.github/recovery/pages-20261026.trigger'
 
 permissions:
   contents: read
