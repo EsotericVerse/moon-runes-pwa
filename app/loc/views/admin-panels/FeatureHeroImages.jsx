@@ -105,6 +105,8 @@ function ImageSlot({feature,variant,onDirtyChange}){
       />
 
     </div>
+    <button type="button" className="loc-button" disabled={busy||rows===null||!dirty}
+      onClick={save}>{busy?'儲存中…':'儲存 Hero 圖片路徑'}</button>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </label>;
 }

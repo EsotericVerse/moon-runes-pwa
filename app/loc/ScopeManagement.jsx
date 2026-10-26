@@ -33,6 +33,19 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,3):
     MANAGEMENT_OPTIONS.filter(option=>!['placeFill','traceGeocode'].includes(option.value)||['lo3rwang','lrunes'].includes(routeScopeId));
   const editRequested=searchParams?.get('edit')==='1';
+  // Links saved before the two panels moved to Article Control still open the
+  // same Scope's panel instead of silently falling back to Trace Management.
+  const requestedSection=searchParams?.get('section');
+  useEffect(()=>{
+    if(isLoc||!['import','others'].includes(requestedSection))return;
+    const url=new URL(window.location.href);
+    if(/\/manage\/index\.html$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/index\.html$/,'/manage/search/index.html');
+    else if(/\/manage\/?$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/?$/,'/manage/search/');
+    else return;
+    window.location.replace(url.href);
+  },[isLoc,requestedSection]);
   const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
