@@ -80,7 +80,9 @@ async function imageStrategy(event){
       const source=new URL(request.url),cdn=new URL(source.pathname+source.search,runtimeImageOrigin);
       // Only this site's public immutable image directories are mirrored.
       if(/^\/(?:pics|assets|vendor)\//.test(source.pathname)){
-        const edge=await fetch(cdn.href,{mode:'cors',credentials:'omit'});
+        // Bound optional edge latency: a failed ISR origin must not stall images.
+        const edge=await fetch(cdn.href,{mode:'cors',credentials:'omit',
+          signal:AbortSignal.timeout(1500)});
         if(edge.ok&&/^image\//i.test(edge.headers.get('content-type')||''))
           response=edge;
       }

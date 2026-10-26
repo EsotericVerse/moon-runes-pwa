@@ -32,7 +32,7 @@ function createHarness(){
     clone(){return response(type,headers);}
   });
   const context=vm.createContext({
-    URL,Promise,Request,Response,caches:cacheStorage,
+    URL,Promise,Request,Response,AbortSignal,caches:cacheStorage,
     self:{
       location:{origin:'https://loc.lo3rwang.cc'},
       addEventListener:(name,fn)=>listeners.set(name,fn),
@@ -95,6 +95,19 @@ test('ISR mode prefers a portable public image edge and falls back to the site w
   h.setResponseHeaders({'content-type':'text/plain'});
   await h.dispatch('fetch',h.req(second));
   assert.deepEqual(h.requests.slice(1),['https://cache.example.com/pics/second.webp',second]);
+});
+
+test('ISR image origin offline falls back to primary image without disabling SW',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'isr',origin:'https://unreachable.example'});
+  const target=h.req('https://loc.lo3rwang.cc/pics/fallback.webp');
+  h.setResponseHeaders({'content-type':'text/plain'});
+  const result=await h.dispatch('fetch',target);
+  assert.ok(result.handled);
+  assert.deepEqual(h.requests,[
+    'https://unreachable.example/pics/fallback.webp',
+    'https://loc.lo3rwang.cc/pics/fallback.webp'
+  ]);
 });
 
 test('picture cache: first network hit, repeat without network, and offline reuse',async()=>{
