@@ -5,6 +5,9 @@ on:
       - main
     paths:
       - .github/workflows/isr-off-one-time-tests.yml
+      - scripts/test-empty-scope.mjs
+      - scripts/test-trace-dual-anchor.mjs
+      - scripts/test-numeric-isr.mjs
 permissions:
   contents: read
 jobs:
