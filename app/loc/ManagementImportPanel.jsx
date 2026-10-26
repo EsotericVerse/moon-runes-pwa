@@ -14,6 +14,7 @@ import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -47,6 +48,7 @@ function useBulkWriteCooldown(){
 }
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
+  if(/your_posts|status_updates|facebook_activity/i.test(value))return 'Facebook';
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
     if(value.includes(key))return key;
   }
@@ -61,11 +63,16 @@ function iso(value){
 function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
-  const content=normalizeGalaxyContent(value('content'));
+  const isFacebook=String(source||'').trim().toLowerCase()==='facebook';
+  const place=repairMojibakeText(value('source_place')||
+    (isFacebook?facebookBackupPlace(row):'')).trim();
+  const facebookText=isFacebook?facebookBackupPostText(row):'';
+  const content=normalizeGalaxyContent(value('content')||facebookText||
+    (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
-  const sourcePlace=repairMojibakeText(value('source_place')).trim();
+  const sourcePlace=place;
   const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
-  const createdAt=iso(value('createtime'));
+  const createdAt=iso(value('createtime')||(isFacebook?facebookBackupTimestamp(row):null));
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
@@ -109,7 +116,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     uid,
     title:resolveGalaxyTitle(rawTitle,content),
     content,
-    createtime:iso(value('createtime')),
+    createtime:createdAt,
     source_place:sourcePlace||null,
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
@@ -286,11 +293,35 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
-        const {detectZipArchiveSource}=await import('./private-archive-universal.mjs');
+        const {detectZipArchiveSource,inspectPrivateArchive}=await import('./private-archive-universal.mjs');
         const result=await detectZipArchiveSource(file);
         setArchiveDetection(result);
-        setSource(result.sources.length===1?result.sources[0]:'');
-        setStatus(t('uiExtra.importUI.zipInspected',{count:result.filesSeen}));
+        if(!result.sources.includes('facebook')){
+          setSource(result.sources.length===1?result.sources[0]:'');
+          setStatus(t('uiExtra.importUI.zipInspected',{count:result.filesSeen}));
+          return;
+        }
+        // Parse only confirmed Facebook post/check-in text. Messenger and
+        // media inside a mixed Meta Takeout ZIP are never imported as posts.
+        const imported=[],uidOwners=new Map();
+        let ignored=0;
+        await inspectPrivateArchive(file,{onRecord:record=>{
+          const article=facebookArchiveGalaxyRow(record);
+          if(!article){ignored++;return;}
+          const previous=uidOwners.get(article.uid);
+          if(previous&&previous!==record.key)
+            throw Error('Facebook 備份紀錄 UID 雜湊衝突，已停止匯入，沒有寫入資料庫。');
+          uidOwners.set(article.uid,record.key);
+          if(imported.length>=30000)
+            throw Error('Facebook 文字貼文超過本次 30,000 筆安全上限，未匯入。');
+          imported.push({raw:article,import_uid:article.uid});
+        }});
+        if(!imported.length)throw Error('備份內沒有可匯入的 Facebook 貼文或打卡文字。');
+        setRows(imported);
+        setSource('Facebook');
+        setStatus('已從 Facebook 備份辨識 '+imported.length.toLocaleString()+
+          ' 篇貼文／打卡文字，另略過 '+ignored.toLocaleString()+
+          ' 筆非貼文紀錄。請核對預覽後再按匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
