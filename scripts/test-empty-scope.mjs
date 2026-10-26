@@ -48,7 +48,7 @@ test('No spatial anchors, no saved route maps and no keyword groups are valid',(
   const classification=read('app/loc/source-classification.mjs');
   assert.match(traceData,/anchors:rows\.filter\(row=>row\.trace_type==='anchor'\)/);
   assert.match(traceData,/maps:rows\.filter\(row=>row\.trace_type==='map'\)/);
-  assert.match(trace,/if\(!data\|\|scopeId!=='loc'\)return data/);
+  assert.match(trace,/if\(!routeListOpen\|\|traceIndex\.data===undefined\)return \{anchors:\[\],maps:\[\]\}/);
   assert.match(culture,/const anchors=new Map\(all\.filter\(row=>row\.entry_type==='anchor'\)/);
   assert.match(classification,/sourceTaxonomyFromArrays\(systemNames=\[\],personalNames=\[\]\)/);
 });
@@ -79,7 +79,7 @@ test('empty Time and optional Event or Keywords do not block page usage',()=>{
   assert.match(statistics,/scopeId!=='loc'&&Boolean\(targetScopes\[0\]\)/);
   assert.match(statistics,/scopeId==='loc'\|\|periodQuery\.data!==undefined/);
   assert.match(statistics,/periods\.length\?'最新時期':'未設定時期（預設時間）'/);
-  assert.match(trace,/periods\.length\?'最新時期':'未設定時期（不限日期）'/);
+  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
   assert.match(trace,/periodKey==='all'\?null:selectedPeriod/);
   assert.match(keyword,/if\(!currentId\)return ''/);
 });
