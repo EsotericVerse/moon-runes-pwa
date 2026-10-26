@@ -9,6 +9,7 @@ on:
       - 'app/modular/features/trace/**'
       - 'app/styles/features.css'
       - 'scripts/test-trace-*.mjs'
+      - 'scripts/test-trace-browser-smoke.mjs'
       - 'scripts/verify-trace-bootstrap-baseline.mjs'
       - 'supabase/migrations/*trace*.sql'
       - 'package.json'
@@ -53,6 +54,10 @@ jobs:
         run: |
           set -o pipefail
           npm run build 2>&1 | tee /tmp/trace-next-build.log
+      - name: Render real public Trace in local Chrome, including narrow mobile layouts
+        if: success()
+        timeout-minutes: 5
+        run: node scripts/test-trace-browser-smoke.mjs
       - name: Verify ISR remains suspended
         if: success() || failure()
         run: node scripts/verify-release-isr.mjs
