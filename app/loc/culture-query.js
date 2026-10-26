@@ -76,11 +76,25 @@ export async function selectCultureTimeRows(scope,birthday=''){
 }
 
 function openPeriodRangeFromRows(scopeId,rows=[]){
-  const period=rows.filter(row=>row.entry_type==='period'&&row.open_end&&row.start_date)
-    .sort((a,b)=>timePeriodSortDate(b).localeCompare(timePeriodSortDate(a)))[0];
-  if(!period)return null;
-  return {...period,scope_id:scopeId,display_label:period.title||period.period||'時期',
-    derived_from:'anchor_ids uid open boundary'};
+  // Legacy helper name retained for callers. This is a real, closed
+  // time_trace chosen by its nearest actual endpoint, NEVER open-ended now.
+  const traces=rows.filter(row=>row.entry_type==='period'&&
+    row.ranges?.some(range=>range.start_date));
+  const day=new Date().toISOString().slice(0,10),target=Date.parse(day+'T00:00:00Z');
+  const ranked=traces.map(row=>{
+    const windows=timeDateWindows(row.ranges);
+    const distances=windows.map(range=>{
+      const start=Date.parse(range.startDate+'T00:00:00Z');
+      const end=Date.parse(range.endDate+'T00:00:00Z');
+      return {distance:target<start?start-target:target>end?target-end:0,end};
+    }).sort((a,b)=>a.distance-b.distance||b.end-a.end);
+    return {...row,distance:distances[0]?.distance??Infinity,latestEnd:distances[0]?.end??0};
+  }).sort((a,b)=>a.distance-b.distance||b.latestEnd-a.latestEnd);
+  const closest=ranked[0];
+  if(!closest||!Number.isFinite(closest.distance))return null;
+  return {...closest,scope_id:scopeId,
+    display_label:closest.title||'時間痕跡',
+    derived_from:'time_trace period UID collection of actual anchor dates'};
 }
 
 const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
@@ -277,14 +291,14 @@ export async function selectScopeCultureData(scopeId){
     const validBundles=bundles.filter(bundle=>Boolean(bundle.openRange?.start_date));
     const openRanges=validBundles.map(bundle=>bundle.openRange);
     const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
+    const ends=openRanges.map(row=>String(row.end_date||'')).filter(Boolean).sort();
     const intersectionStart=starts.at(-1)||'';
-    const today=new Date().toISOString().slice(0,10);
-
-    if(!intersectionStart){
+    const intersectionEnd=ends[0]||'';
+    if(!intersectionStart||!intersectionEnd||intersectionStart>intersectionEnd){
       return {
         scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],intersectionStart:'',intersectionEnd:today,intersectionScopeIds:[]
+        works:[],intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[]
       };
     }
 
@@ -292,13 +306,14 @@ export async function selectScopeCultureData(scopeId){
     const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
       const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(bundle.scope,{
         startDate:intersectionStart,
-        endDate:today,
+        endDate:intersectionEnd,
         includeEmptyMedia:true,
         requireAggregate:true
       });
+      const validDate=row=>timePeriodContainsDate(bundle.openRange,String(row.day||'').slice(0,10));
       return [
-        ...textDaily.map(row=>({...row,scope_id:bundle.runtimeId})),
-        ...mediaDaily.map(row=>({...row,scope_id:bundle.runtimeId}))
+        ...textDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId})),
+        ...mediaDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId}))
       ];
     }))).flat();
 
@@ -318,7 +333,7 @@ export async function selectScopeCultureData(scopeId){
       trajectories:[],
       works:[],
       intersectionStart,
-      intersectionEnd:today,
+      intersectionEnd,
       intersectionScopeIds
     };
   }
