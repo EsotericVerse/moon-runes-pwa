@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {traceArticleIds,traceArticleLabels} from '../app/modular/features/trace/trace-article-ids.mjs';
+import {compactPlaceName,placeNameKey,reviewPlaceNameGroups} from '../app/modular/features/trace/trace-place-names.mjs';
 import {traceArticleIdFilters,groupedTraceDays} from '../app/modular/features/trace/trace-panel-filters.mjs';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const css=read('app/styles/settings-select.css');
@@ -71,4 +72,26 @@ test('per-Scope persistent name aliases and archive protect merged identities',(
  assert.ok(ui.includes('儲存已勾選（同一 Trace UID）'));
  assert.ok(ui.includes('runAutomatic'));
  assert.ok(ui.includes('save_scope_trace_place_names'));
+});
+
+test('name-only merge recognizes Facebook brand spacing and order while preserving first title',()=>{
+ assert.equal(compactPlaceName('World Gym 永和店'),compactPlaceName('WorldGym永和店'));
+ assert.equal(placeNameKey('World Gym 永和店'),placeNameKey('WorldGym 新北永和店'));
+ assert.equal(placeNameKey('桂林家樂福店'),placeNameKey('家樂福桂林店'));
+ const stamp=(uid,title,created_at,floor_label='')=>({uid,title,created_at,trace_type:'anchor',floor_label});
+ const group=reviewPlaceNameGroups([
+  stamp('0002','WorldGym 新北永和店','2025-01-02'),
+  stamp('0001','World Gym 永和店','2024-01-01'),
+  stamp('0003','家樂福桂林店','2025-01-03'),
+  stamp('0004','桂林家樂福店','2024-01-02')
+ ]);
+ assert.equal(group.automatic.length,2);
+ assert.equal(group.automatic.find(x=>x.key.startsWith('worldgym'))?.canonical.uid,'0001');
+ assert.equal(group.automatic.find(x=>x.key.startsWith('家樂福'))?.canonical.uid,'0004');
+ const floors=reviewPlaceNameGroups([
+  stamp('0005','同名商店','2024-01-01','B1'),
+  stamp('0006','同名商店','2024-02-01','2樓')
+ ]);
+ assert.equal(floors.automatic.length,0);
+ assert.equal(floors.uncertain.length,1);
 });
