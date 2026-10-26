@@ -17,7 +17,9 @@ export function archiveEntrySignatures(path,head=''){
   const add=(source,confidence)=>found.set(source,Math.max(found.get(source)||0,confidence));
   const contains=(...fields)=>fields.every(field=>sample.includes('"'+field+'"'));
   const takeout=/^(?:[^/]+\/)*takeout\//.test(p);
-  const metaFacebook=segmented(p,'facebook');
+  const metaFacebook=segmented(p,'facebook')||segmented(p,'your_facebook_activity')
+    ||/(?:^|\/)posts\/your_posts(?:_\d+)?\.json$/.test(p)
+    ||/(?:^|\/)posts\/status_updates(?:_\d+)?\.json$/.test(p);
   const metaInstagram=segmented(p,'instagram')||p.includes('your_instagram_activity/');
   const metaThreads=segmented(p,'threads')||p.includes('threads_and_replies/');
   const isMessenger=metaFacebook&&/\/messages\/(?:inbox|archived_threads|message_requests|filtered_threads)\//.test('/'+p);
