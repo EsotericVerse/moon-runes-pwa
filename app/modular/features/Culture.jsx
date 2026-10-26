@@ -25,6 +25,7 @@ import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
+import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
 import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
@@ -210,6 +211,7 @@ export default function Culture(){
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  const [expandedTimeTraceIds,setExpandedTimeTraceIds]=useState([]);
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
@@ -622,6 +624,10 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
+  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
+    [timelineItems,expandedTimeTraceIds]);
+  const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
+    current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
   const timeEditorItems=useMemo(()=>timelineItems.filter(item=>
     timeEditorSection==='anchor-style'
       ?item.entry_type==='anchor'
@@ -1292,21 +1298,22 @@ export default function Culture(){
             </>:<>
               <section className='scope-card scope-culture-structure-river'>
                 <div className='scope-culture-structure-toolbar'>
-                  <h3>{UI_COPY.culture.structure}</h3>
-                  <label><span>{l.period}</span>
-                    <select className='scope-select' aria-label='第一條河道時期選擇'
+                  <h3>時間痕跡</h3>
+                  <label><span>時間痕跡</span>
+                    <select className='scope-select' aria-label='第一條河道時間痕跡選擇'
                       value={activeStructureKey} onChange={event=>setSelectedPeriodKey(event.target.value)}>
                       <option value='all'>{l.allPeriods}</option>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
-                      {structurePreference.lastAnchor?<option value='after'>最後定錨點至目前</option>:null}
-                    </select>
+                        </select>
                   </label>
                 </div>
-                {timelineItems.length?<CultureTimeline
-                  items={timelineItems}
+                {traceRiver.groups.length?<CultureTimeline
+                  items={traceRiver.items}
+                  extraGroups={traceRiver.groups}
                   labelOf={localizedLabelOf}
                   focus={navigation}
-                  mode='overview'
+                  mode='trace'
+                  onGroupToggle={toggleTimeTrace}
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
