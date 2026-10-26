@@ -30,11 +30,9 @@ ALTER TABLE silver.lrunes_time_v2
   ADD CONSTRAINT lrunes_time_v2_record_type_check CHECK(record_type IN ('anchor','period','event','style_comment')),
   ADD CONSTRAINT lrunes_time_v2_record_type_resource_id_key UNIQUE(record_type,resource_id),
   ADD CONSTRAINT lrunes_time_v2_style_comment_shape_check CHECK(true);
--- Atomic, manual-only Time schema cutover. DO NOT apply until the new
--- Culture client is ready to publish; current deployed code reads old fields.
--- Names: time.uid (4 chars), time.address (DATE), anchor -> time_period
--- (old event) -> time_trace (old period). No trace/time date duplication.
-BEGIN;
+-- Operates solely on the new _time_v2 copies, so the deployed
+-- legacy _time readers and writers remain available during transition.
+-- A real Time v2 schema is created here; no synthetic now() anchor.
 CREATE TABLE IF NOT EXISTS silver.time_v2_cutover_backup (
   scope_id text NOT NULL,
   old_record_id uuid NOT NULL,
