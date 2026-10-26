@@ -40,7 +40,9 @@ test('Culture classification is a published JS module, not a mandatory four-quer
   }
   assert.match(taxonomy,/PUBLISHED_SOURCE_LISTS/);
   assert.doesNotMatch(taxonomy,/statistics_source_categories|statistics_scope_others_groups/);
-  assert.match(culture,/if\(published\)return published/);
+  assert.match(culture,/const publishedTaxonomy=useMemo\(\(\)=>publishedSourceTaxonomy\(scopeId\)/);
+  assert.match(culture,/enabled:!publishedTaxonomy&&!isAggregateScope/);
+  assert.match(culture,/const sourceTaxonomy=publishedTaxonomy\|\|sourceTaxonomyQuery.data/);
   assert.match(culture,/openCultureRoots\.length>0/);
   assert.match(culture,/culture-children/);
   assert.match(culture,/culture-roots/);
