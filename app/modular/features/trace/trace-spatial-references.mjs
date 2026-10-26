@@ -27,3 +27,25 @@ export function spatialReferenceCandidates(groups,limit=8){
   }
   return found;
 }
+
+/**
+ * Resolve one name's already-known positions as *review candidates*, never
+ * an implicit winner or a merged identity. Same name at two coordinates,
+ * floors or Scopes must remain distinct and visible.
+ */
+export function spatialReferenceChoicesForName(name,references=[]){
+  const key=String(name||'').trim();
+  const matches=(Array.isArray(references)?references:[])
+    .filter(ref=>String(ref?.title||'').trim()===key);
+  const choices=matches.slice(0,8).map(ref=>({
+    longitude:ref.longitude,latitude:ref.latitude,
+    address:ref.address||'',floor_label:ref.floor_label||'',
+    floor_level:ref.floor_level??null,
+    title:ref.title,source_scope:ref.source_scope,uid:ref.uid,
+    label:ref.title+' · '+(ref.address||'地址未核實')+
+      (ref.floor_label?' · '+ref.floor_label:'')+
+      ' · '+ref.source_scope+' UID '+ref.uid
+  }));
+  return {choices,selected:-1,status:choices.length?'review':'notfound',
+    origin:'loc-reference',moreChoices:matches.length>8};
+}
