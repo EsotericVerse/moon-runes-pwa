@@ -90,6 +90,7 @@ export default function TracePlaceGeocoder({scopeId}){
   const [policyAccepted,setPolicyAccepted]=useState(false);
   const [radius,setRadius]=useState('500');
   const [saving,setSaving]=useState(false);
+  const [refreshRequired,setRefreshRequired]=useState(false);
   const [processed,setProcessed]=useState(0);
   const [notice,setNotice]=useState('');
   const [audit,setAudit]=useState(null);
@@ -209,7 +210,7 @@ export default function TracePlaceGeocoder({scopeId}){
     remember(name,{...old,selected:value,status:'ready'});
   };
   async function saveReady(){
-    if(running||saving||!ready.length)return;
+    if(running||saving||refreshRequired||!ready.length)return;
     if(!validRadius(radius)){setFailure('搜尋半徑請設定為 10 公尺至 20,000 公里。');return;}
     const payload=ready.map(item=>({
       title:item.name,
@@ -225,16 +226,35 @@ export default function TracePlaceGeocoder({scopeId}){
     setSaving(true);setFailure('');setNotice('');setAudit(null);
     try{
       const result=await addTraceAnchorsBatch({scopeId,places:payload});
-      await revalidateServerMetadata();
-      await traces.mutate();
+      // A successful database write stays successful even if a later
+      // metadata/cache refresh fails. Never encourage a duplicate insert.
       setAudit(result);
-      setNotice('本批新增 '+result.count+' 個；略過已存在或批內同址 '+result.skipped
-        +' 個；安全沿用舊錨點並保留名稱 '+result.consolidated+' 處。'
-        +(result.reviewCount?'還有 '+result.reviewCount+' 組候選，請到「整理空間定錨點」核對。':'沒有發現待核對候選。')
-        +(result.auditError?' 匯入後檢查未完成：'+result.auditError:''));
+      let refreshProblem='';
+      try{await revalidateServerMetadata();}
+      catch(error){refreshProblem='中繼資訊更新失敗：'+String(error?.message||error);}
+      try{
+        const fresh=await traces.mutate();
+        if(!Array.isArray(fresh?.anchors))throw Error('無法確認最新錨點清單');
+        setRefreshRequired(false);
+      }catch(error){
+        setRefreshRequired(true);
+        refreshProblem+=(refreshProblem?'；':'')+'錨點重讀失敗：'+String(error?.message||error);
+      }
+      setNotice('本批成功新增 '+result.count+' 個；略過 '+result.skipped+
+        ' 個；同址別名整理 '+result.consolidated+' 處。'
+        +(result.reviewCount?'另有 '+result.reviewCount+' 組候選需要核對。':'')
+        +(result.auditError?' 寫入後稽核未完成：'+result.auditError:'')
+        +(refreshProblem?' 資料已寫入，但'+refreshProblem+'；請勿重複新增。':''));
     }catch(error){
-      await traces.mutate().catch(()=>{});
-      setFailure(String(error.message||error));
+      let confirmed=false;
+      try{
+        const fresh=await traces.mutate();
+        confirmed=Array.isArray(fresh?.anchors);
+      }catch{}
+      setRefreshRequired(!confirmed);
+      setFailure('批次作業中斷：'+String(error?.message||error)+
+        (confirmed?'。已重新讀取最新錨點清單，可僅對仍缺少的地點再操作。':
+          '。是否部分寫入尚未確認，已暫停再次儲存；須先成功重新讀取錨點。'));
     }finally{setSaving(false);}
   }
 
@@ -258,11 +278,20 @@ export default function TracePlaceGeocoder({scopeId}){
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchNext}>查詢接下來 20 處</button>
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchAll}>查詢其餘地點</button>
         {running?<button className="loc-button" type="button" onClick={()=>{stopRef.current=true;requestRef.current?.abort()}}>停止</button>:null}
-        <button className="loc-button primary" type="button" disabled={running||saving||!ready.length||!validRadius(radius)} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
+        <button className="loc-button primary" type="button" disabled={running||saving||refreshRequired||!ready.length||!validRadius(radius)} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
       </div>
       <p role="status" className="scope-status">
         {running?'已完成本次 '+processed+' 處；可停止並從本機快取續查。':'每次按鈕操作才查詢，不會在開啟頁面時自動查位置。'}
       </p>
+      {refreshRequired?<button className="loc-button" type="button" disabled={saving||running}
+        onClick={async()=>{
+          try{
+            const fresh=await traces.mutate();
+            if(!Array.isArray(fresh?.anchors))throw Error('資料庫尚未回傳最新錨點清單');
+            setRefreshRequired(false);setFailure('');
+            setNotice('錨點已重新讀取。已存在的打卡名稱不會再次進入批次新增。');
+          }catch(error){setFailure('重新讀取失敗：'+String(error?.message||error));}
+        }}>重新讀取錨點後再繼續</button>:null}
       <div className="scope-stat-controls">
         <label>顯示
           <select className="scope-select" value={filter} disabled={running||saving}
