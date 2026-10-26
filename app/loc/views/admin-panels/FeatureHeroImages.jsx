@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {useSWRConfig} from 'swr';
 import dynamic from 'next/dynamic';
-import {invalidateScopeBlockPage,selectScopeBlocks} from '../../scope-data';
+import {invalidateScopeBlockPage,selectLiveScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -45,12 +45,11 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
     let active=true;
     (async()=>{
       try{
-        const data=await selectScopeBlocks('loc',page);
+        const data=await selectLiveScopeBlocks('loc',page);
         if(!active)return;
         const row=data.find(item=>Number(item.block_order)===1);
         setRows(data);
         setValue(imageUrlOf(row)||defaultUrl);
-        setStatus('');
       }catch(error){if(active)setStatus(error?.message||'讀取失敗。');}
     })();
     return()=>{active=false;};
@@ -82,7 +81,7 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       }
       if(result?.error)throw new Error(result.error.message||'儲存失敗。');
       invalidateScopeBlockPage('loc',page);
-      const verified=await selectScopeBlocks('loc',page);
+      const verified=await selectLiveScopeBlocks('loc',page);
       const persisted=verified.find(item=>Number(item.block_order)===1);
       if(!persisted||imageUrlOf(persisted)!==trimmed)
         throw new Error('儲存後資料庫讀回不一致，請檢查寫入權限。');
@@ -129,17 +128,17 @@ function ManagementHeroDetails({slot,onDirtyChange}){
     let live=true;
     (async()=>{
       try{
-        const data=await selectScopeBlocks('loc','group_manage');
+        const data=await selectLiveScopeBlocks('loc','group_manage');
         if(!live)return;
         const found=data.find(item=>Number(item.block_order)===slot.order);
         const fields={
-          eyebrow:String(found?.block_eyebrow??slot.englishTitle??''),
+          eyebrow:String(found?.block_eyebrow||slot.englishTitle||''),
           title:String(found?.block_title??slot.label),
           subtitle:String(found?.block_subtitle??''),
           text:String(found?.block_text??'')
         };
         setRows(data);setDraft(fields);
-        initial.current=JSON.stringify(fields);setStatus('');
+        initial.current=JSON.stringify(fields);
       }catch(error){if(live)setStatus(error?.message||'管理區塊讀取失敗。');}
     })();
     return()=>{live=false;};
@@ -169,7 +168,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
         }]);
       if(result?.error)throw new Error(result.error.message||'儲存失敗。');
       invalidateScopeBlockPage('loc','group_manage');
-      const verified=await selectScopeBlocks('loc','group_manage');
+      const verified=await selectLiveScopeBlocks('loc','group_manage');
       const saved=verified.find(item=>Number(item.block_order)===slot.order);
       if(!saved||Object.entries(fields).some(([key,value])=>String(saved[key]??'')!==value))
         throw new Error('儲存後資料庫讀回不一致，請檢查寫入權限。');
@@ -218,6 +217,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
 export default function FeatureHeroImages(){
   const [featureId,setFeatureId]=useState(FEATURES[0].id);
   const [locSlotKey,setLocSlotKey]=useState('members');
+  const [groupOpen,setGroupOpen]=useState(false);
   const [editorRevision,setEditorRevision]=useState(0);
   const pendingEdits=useRef(new Set());
   const trackDirty=useCallback((key,dirty)=>{
@@ -269,9 +269,9 @@ export default function FeatureHeroImages(){
           pageOverride="scope_manage" defaultUrl={HomeBlock.MANAGEMENT_HERO_IMAGE_URL}
           onDirtyChange={trackDirty}/>
       </section>:null}
-      {feature.id==='admin'?<details className="loc-card scope-inline-card">
+      {feature.id==='admin'?<details className="loc-card scope-inline-card" onToggle={event=>setGroupOpen(event.currentTarget.open)}>
         <summary>Group 管理入口設定</summary>
-        <label className="scope-management-wide-field">
+        {groupOpen?<><label className="scope-management-wide-field">
           <span>管理項目</span>
           <select className="scope-search-input" value={locSlotKey}
             onChange={event=>selectLocSlot(event.target.value)}>
@@ -282,6 +282,7 @@ export default function FeatureHeroImages(){
         <ImageSlot feature={feature} variant={MANAGEMENT_VARIANT}
           pageOverride="scope_manage" defaultUrl={HomeBlock.MANAGEMENT_HERO_IMAGE_URL}
           onDirtyChange={trackDirty}/>
+        </>:null}
       </details>:null}
     </section>
   </section>;
