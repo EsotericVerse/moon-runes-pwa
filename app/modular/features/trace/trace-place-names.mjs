@@ -5,7 +5,7 @@ const BRANDS=['worldgym','家樂福'];
 const CITY_PREFIXES=['新北市','新北','臺北市','台北市','台北','桃園市','台中市','臺中市','台南市','臺南市','高雄市'];
 export function compactPlaceName(value){
   return String(value||'').normalize('NFKC').toLowerCase().replace(/臺/g,'台')
-    .replace(/[\s\u3000\u200b·•．.，,、;；:：()（）[\]【】「」『』／/\\_\-]+/gu,'');
+    .replace(/[\s\u3000\u200b·•．.，,、;；:：()（）\[\]【】「」『』／\/\\_\-]+/gu,'');
 }
 export function placeNameKey(value){
   const compact=compactPlaceName(value);
@@ -26,7 +26,8 @@ export function samePlaceFloor(a,b){
   const x=String(a?.floor_label||'').trim().toLowerCase();
   const y=String(b?.floor_label||'').trim().toLowerCase();
   const n=a?.floor_level??null,m=b?.floor_level??null;
-  return !(x&&y&&x!==y)&&!(n!==null&&m!==null&&Number(n)!==Number(m));
+  // A missing floor on one side is NOT proof that both are the same floor.
+  return x===y&&(n===null&&m===null||(n!==null&&m!==null&&Number(n)===Number(m)));
 }
 export function initialPlaceOf(group){
   return [...group].sort((a,b)=>
