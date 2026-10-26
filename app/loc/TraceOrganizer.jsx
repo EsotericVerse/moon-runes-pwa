@@ -5,7 +5,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {anchorAddress,countyOfAnchor,groupAnchorsByCounty,organizeAnchorCandidates} from '../modular/features/trace/trace-organizer.mjs';
 
 const normalizePlace=value=>String(value||'').trim().replace(/臺/g,'台')
-  .toLocaleLowerCase().replace(/[\\s　]+/g,'');
+  .toLocaleLowerCase().replace(/[\s　]+/g,'');
 const STATUS={
   'same-address':'地址相同：可以確認合併',
   'near-unverified':'座標接近、地址未齊：請先核對是否同址',
@@ -62,15 +62,15 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     finally{setPlaceBusy(false);}
   };
   const approveArticlePlace=async(row)=>{
-    const traceId=placeChoices[row.source_place];
-    if(placeBusy||!traceId||scopeId==='loc')return;
-    const valid=ownAnchors.some(anchor=>anchor.trace_type==='anchor'&&anchor.trace_id===traceId);
+    const anchorUid=placeChoices[row.source_place];
+    if(placeBusy||!anchorUid||scopeId==='loc')return;
+    const valid=ownAnchors.some(anchor=>anchor.trace_type==='anchor'&&anchor.uid===anchorUid);
     if(!valid){setPlaceIsError(true);setPlaceNotice('請選擇同一 Scope 現有的空間定錨點。');return;}
     setPlaceBusy(true);setPlaceIsError(false);setPlaceNotice('');
     try{
       const {data,error}=await dbAuthClient.schema('silver')
         .rpc('approve_scope_trace_place_alias',{
-          p_scope_id:scopeId,p_source_place:row.source_place,p_trace_id:traceId
+          p_scope_id:scopeId,p_source_place:row.source_place,p_anchor_uid:anchorUid
         });
       if(error)throw error;
       setPlaceNotice('人工核對已儲存；'+Number(data||0).toLocaleString()+' 篇文章建立 place_id，往後可沿用同一別名。');
@@ -81,7 +81,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     }catch(error){setPlaceIsError(true);setPlaceNotice(String(error?.message||error));}
     finally{setPlaceBusy(false);}
   };
-  const exactPlaceRows=placeRows?.filter(r=>r.matched_trace_id)||[];
+  const exactPlaceRows=placeRows?.filter(r=>r.matched_uid)||[];
   const ambiguousPlaceRows=placeRows?.filter(r=>r.match_status==='ambiguous')||[];
   const unmatchedPlaceRows=placeRows?.filter(r=>r.match_status==='unmatched')||[];
   const merge=async proposal=>{
@@ -109,7 +109,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     <p className="scope-status">自動按縣市整理，主動發現同址異名及可疑重複。相同地址才提出合併；座標接近只供人工核對。任何合併都必須由你確認，且不修改 Galaxy 的文章或原始打卡。</p>
     {scopeId!=='loc'?<section className="loc-trace-article-linking" aria-label="現有文章打卡地點整理">
       <h4>空間定錨點：現有文章，打卡地點整理</h4>
-      <p className="scope-status">文章先正常匯入；建立錨點以後，按這裡分析原始打卡名稱。只會把唯一確定的名稱連結至 Galaxy.place_id（對應 Trace.trace_id）。source_place 與文章 UID 永遠保留；同名不同店或不同樓層不得自動合併。</p>
+      <p className="scope-status">文章先正常匯入；建立錨點以後，按這裡分析原始打卡名稱。只會把唯一確定的名稱連結至 Galaxy.place_id（對應 Trace.uid）。source_place 與文章 UID 永遠保留；同名不同店或不同樓層不得自動合併。</p>
       <button className="loc-button" type="button" disabled={placeBusy}
         onClick={reviewArticles}>{placeBusy?'分析中…':'空間定錨點：現有文章，打卡地點整理'}</button>
       {placeRows?<div className="loc-trace-article-linking-results">
@@ -127,7 +127,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
                 <select className="scope-select" value={placeChoices[row.source_place]||''}
                   disabled={placeBusy} onChange={event=>setPlaceChoices(prev=>({...prev,[row.source_place]:event.target.value}))}>
                   <option value="">不確定，暫不連結</option>
-                  {candidates.map(anchor=><option value={anchor.trace_id} key={anchor.uid}>
+                  {candidates.map(anchor=><option value={anchor.uid} key={anchor.uid}>
                     {anchor.title} · {anchor.address||'無地址'} · {anchor.floor_label||'樓層未知'} · UID {anchor.uid}
                   </option>)}
                 </select>

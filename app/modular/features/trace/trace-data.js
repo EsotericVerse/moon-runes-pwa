@@ -1,7 +1,6 @@
 'use client';
 
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
-import {createUid8} from '../../../loc/uid';
 import {traceCountyId} from './trace-county-id.mjs';
 import {validateTraceRouteLabels} from './trace-route-classes.mjs';
 import {anchorAddress,findAnchorWriteMatches,normalizeAnchorAddress,organizeAnchorCandidates} from './trace-organizer.mjs';
@@ -129,7 +128,7 @@ export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
 export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const ids=[...new Set((Array.isArray(anchorUids)?anchorUids:[])
-    .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))];
+    .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{4}$/.test(uid)))];
   if(ids.length>80)throw Error('單張痕跡圖的站點超過上限。');
   if(!ids.length)return [];
   const union=id==='loc';
@@ -183,7 +182,7 @@ export async function readTraceAnchorSuggestions(scopeId,countyId,term,limit=8){
   // Quote the OR filter literal so commas and parentheses stay data.
   const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
   const filters=['title.ilike.'+literal,'address.ilike.'+literal];
-  if(/^[A-Za-z0-9]{8}$/.test(q))filters.push('uid.eq.'+q);
+  if(/^[A-Za-z0-9]{4}$/.test(q))filters.push('uid.eq.'+q);
   request=request.or(filters.join(','));
   if(county==='OTHER')request=request.is('county_id',null);
   else request=request.eq('county_id',county);
@@ -273,7 +272,7 @@ export async function addTraceAnchor({scopeId,title,description='',address='',fl
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const data={
-    uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
+    trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
     source_scope:id,
     county_id:await countyIdAt(longitude,latitude,address),
@@ -302,7 +301,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   const pending=[],reuseQueue=[];
   let skipped=0,duplicatesInBatch=0;
   for(const place of list){
-    const data={uid:createUid8(),trace_type:'anchor',source_scope:id,
+    const data={uid:'pending-'+pending.length,trace_type:'anchor',source_scope:id,
       title:verifiedText(place.title,'打卡地點名稱'),
       description:descriptionText(place.description||''),
       longitude:Number(place.longitude),latitude:Number(place.latitude),
@@ -333,7 +332,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   }
   let count=0;
   for(let offset=0;offset<pending.length;offset+=80){
-    const chunk=pending.slice(offset,offset+80).map(({source_scope,...item})=>item);
+    const chunk=pending.slice(offset,offset+80).map(({source_scope,uid,...item})=>item);
     try{
       const rows=verified(await dbAuthRelation(relation(id)).insert(chunk).select('uid'),'批次建立空間定錨點');
       if(!Array.isArray(rows)||rows.length!==chunk.length)throw Error('批次寫入數量不符');
@@ -357,7 +356,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
 export async function updateTraceAnchor({scopeId,uid,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   const anchorId=String(uid||'').trim();
-  if(!/^[A-Za-z0-9]{8}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
+  if(!/^[A-Za-z0-9]{4}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const changes={
@@ -396,12 +395,12 @@ function validatedTraceMapValues({scopeId,title,description='',category='',class
 }
 function traceMapUid(uid){
   const id=String(uid||'').trim();
-  if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error('痕跡圖 UID 格式無效。');
+  if(!/^[A-Za-z0-9]{4}$/.test(id))throw Error('痕跡圖 UID 格式無效。');
   return id;
 }
 export async function addTraceMap({scopeId,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
-  const data={uid:createUid8(),trace_type:'map',
+  const data={trace_type:'map',
     ...validatedTraceMapValues({scopeId:id,title,description,category,className,group,anchorUids,anchors})};
   const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
   return verified(result,'新增痕跡圖');

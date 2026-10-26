@@ -1,5 +1,5 @@
 // Trace public article linkage is purely Scope-local by a stable four-character ID.
-// The existing eight-character uid remains the Frame/Queue object identity.
+// The same four-character trace.uid identifies anchors and Frames by trace_type.
 const shortId=value=>{
   const id=String(value||'').trim().toUpperCase();
   return /^[A-Z0-9]{4}$/.test(id)?id:'';
@@ -14,10 +14,10 @@ function selectedAnchors(selection,anchors=[]){
 }
 export function traceArticleIds(selection,anchors=[]){
   return [...new Set(selectedAnchors(selection,anchors)
-    .map(row=>shortId(row.trace_id)).filter(Boolean))].slice(0,80);
+    .map(row=>shortId(row.uid)).filter(Boolean))].slice(0,80);
 }
 export function traceArticleLabels(selection,anchors=[]){
   return new Map(selectedAnchors(selection,anchors)
     .filter(row=>shortId(row.trace_id))
-    .map(row=>[shortId(row.trace_id),String(row.title||row.trace_id)]));
+    .map(row=>[shortId(row.trace_id),String(row.title||row.uid)]));
 }

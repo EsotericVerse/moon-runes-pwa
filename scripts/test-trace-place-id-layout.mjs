@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const css=readFileSync(new URL('../app/styles/settings-select.css',import.meta.url),'utf8');
-const sql=readFileSync(new URL('../supabase/migrations/20261026180500_galaxy_scope_place_id_nullable.sql',import.meta.url),'utf8');
+const sql=readFileSync(new URL('../supabase/migrations/20261026190000_single_trace_uid_cutover.sql',import.meta.url),'utf8');
 
 test('anchor-only form is bounded without overriding the main management navigation',()=>{
   assert.match(css,/\.scope-management-layout--anchor\s*\{\s*container:scope-anchor-form \/ inline-size;/);
@@ -27,13 +27,13 @@ import {traceArticleIdFilters,groupedTraceDays} from '../app/modular/features/tr
 
 test('Trace article join preserves object UID but reads only four-character place_id',()=>{
   const stops=[
-    {uid:'AAAAAAAA',source_scope:'lo3rwang',trace_id:'0001',title:'一樓',source_place:'old'},
-    {uid:'BBBBBBBB',source_scope:'lo3rwang',trace_id:'0002',title:'二樓'},
-    {uid:'CCCCCCCC',source_scope:'lrunes',trace_id:'0003',title:'別人 Scope'}
+    {uid:'0001',source_scope:'lo3rwang',,title:'一樓',source_place:'old'},
+    {uid:'0002',source_scope:'lo3rwang',,title:'二樓'},
+    {uid:'0003',source_scope:'lrunes',,title:'別人 Scope'}
   ];
   assert.deepEqual(traceArticleIds(stops[0],stops),['0001']);
-  assert.deepEqual(traceArticleIds({uid:'MAP88888',source_scope:'lo3rwang',
-    trace_type:'map',anchor_uids:['BBBBBBBB','AAAAAAAA','CCCCCCCC']},stops),['0002','0001']);
+  assert.deepEqual(traceArticleIds({uid:'0100',source_scope:'lo3rwang',
+    trace_type:'map',anchor_uids:['0002','0001','0003']},stops),['0002','0001']);
   assert.equal(traceArticleLabels(stops[0]).get('0001'),'一樓');
   assert.deepEqual(traceArticleIdFilters(['0001']),[
     {column:'place_id',operator:'eq',value:'0001'},
