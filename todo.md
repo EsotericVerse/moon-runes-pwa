@@ -146,6 +146,8 @@
   - **2026-10-26 緊急故障調查：** 使用者回報文化／統計在關閉 ISR 後顯示資料庫連結失敗，但搜尋正常。DNS 已確認 `loc.lo3rwang.cc` 指向 GitHub Pages（非 ISR Worker）；關閉 ISR 前的靜態建置預設嵌入 `https://isr.lo3rwang.cc`，目前 main 已移除，但**正式站是否仍載入舊版 JS 尚缺線上資產證據**。`main` 提交 `1b80602` 新增 GitHub Pages 編譯產物 JS／HTML 的舊 ISR 網址阻擋檢查；本地 Node 已測正常、舊網址、跳脫網址三種情境。GitHub Pages 發布維持手動，**本次未部署、未驗證線上功能恢復**；不應用重新啟用 ISR 作修復。
   - **2026-10-26 緊急正式網站更新：** GitHub Pages Run [40284884702](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40284884702) 以 commit `d0577149` **成功完成正式部署**：安全檢查成功、遊戲 29/29、Bootstrap 135/135、Next.js 靜態 256/256、Guest/Admin 30 個路由及 2 個 PWA 資產通過、編譯後 JS/HTML 不含已退役 `isr.lo3rwang.cc`。先前兩次嘗試未部署即遭過時測試阻擋，後續已修正測試。發布完成後，一次性 GitHub Pages push trigger 與 marker 已刪除，回復 `workflow_dispatch` 唯一手動入口；Cloudflare/ISR/R2 沒有重啟。**仍需線上實際 Browser／Network 核對文化、統計讀取，以及 SW 老客戶端更新；目前網頁連線工具無法讀取 live 資產，不可宣稱實際頁面 100% 驗收。** Build log 僅見無 Next 建置快取、punycode/Actions Node 相容性相關警告，未見本次編譯錯誤。
 
+  - **2026-10-26 發布後公開網路實測：** 一次性 GitHub Actions [40285508839](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285508839) 通過：正式首頁、文化、統計的 HTTP 均為 200，且含新版 Next.js 靜態資產。GitHub runner 使用現行公開 publishable key 呼叫真實 Supabase REST RPC：文化讀取 500 列、Scope overview 500 列、LOC overview 114 列，三種匿名資料路徑均成功。一次性 smoke workflow 已移除，Pages 已恢復手動發布。此證據包含真實 HTTP／RPC，但非互動式瀏覽器檢測；已開啟的舊分頁必須重新載入才會使用新 JS，仍保留完整 Browser UI／Network 和持續操作驗收，本項不提前結案。
+
 
 - [ ] **LOC-TODO-03｜Cloudflare 成本、快取膨脹與過度部署根因** `[P0]` `[停用設定已核實／帳單待查證]`
   - 完成條件／待辦：讀取可核對的 Cloudflare Pages deployments、Workers、R2、DO 與建置／請求計費紀錄，分析成本與觸發來源；先維持現有停用隔離，再處理確定根因。**不得用重啟部署、ISR 或寫入型快取來驗證**。退休的 `incremental-cache/` 24 小時到期規則僅屬成本收斂，不代表可恢復 R2 寫入。
