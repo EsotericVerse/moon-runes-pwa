@@ -190,9 +190,9 @@ export default function Trace({scopeId='loc'}){
       {reportSettingsOpen?<div className="loc-trace-report-settings">
         <label>時間
           <select className="scope-select" value={timeWindow} onChange={event=>setTimeWindow(event.target.value)}>
-            <option value="3m">最近三個月（預設）</option>
+            <option value="3m">最近三個月</option>
             <option value="12m">最近一年</option>
-            <option value="all">全部時間</option>
+            <option value="all">全部時間（預設）</option>
             <option value="custom">自訂日期</option>
           </select>
         </label>
