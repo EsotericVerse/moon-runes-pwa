@@ -21,10 +21,13 @@ for(const route of [
   if(fs.existsSync(path.join(root,route)))throw Error('Legacy ISR route still present: '+route);
 }
 const numericSource=read(numeric),invalidateSource=read(invalidation);
-if(!numericSource.includes('status:410')||!invalidateSource.includes('status:410'))
-  throw Error('Remote ISR endpoints are not disabled');
-if(/unstable_cache|revalidateTag|read_scope_statistics/.test(numericSource))
-  throw Error('Disabled ISR numeric API must not query SQL or cache');
+// ISR routes are prepared but refuse requests unless Admin enables mode=isr.
+// Deployment continues to be a separate manual user action.
+if(!numericSource.includes('loc_cache_runtime')||!numericSource.includes("mode!=='isr'")||
+   !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
+  throw Error('ISR must remain admin-gated; revalidation writes remain disabled');
+if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource))
+  throw Error('Optional numeric endpoint must use public RPC and standard HTTP caching');
 const openNext=read('open-next.config.ts'),wrangler=readJson('wrangler.jsonc');
 if(!openNext.includes('static-assets-incremental-cache')||
   /r2-incremental-cache|do-queue|do-sharded-tag-cache/.test(openNext))
@@ -32,8 +35,16 @@ if(!openNext.includes('static-assets-incremental-cache')||
 if(wrangler.r2_buckets||wrangler.durable_objects)
   throw Error('Worker still contains billable ISR cache bindings');
 const numericClient=read('app/loc/numeric-isr-client.js');
-if(!numericClient.includes('return false;')||numericClient.includes('fetch('))
-  throw Error('Browser still enables remote ISR');
+if(!numericClient.includes("mode==='isr'")||!numericClient.includes('readNumericIsr')||
+  !numericClient.includes('credentials:\'omit\''))
+  throw Error('Remote ISR must remain optional and use only anonymous public reads');
+const cacheMode=read('app/loc/cache-mode-client.mjs');
+if(!cacheMode.includes('loc_cache_runtime')||!cacheMode.includes('DEFAULT_POLICY')||
+  !cacheMode.includes("mode:'off'"))
+  throw Error('Public three-mode policy must fail safely without enabling ISR');
+const sw=read('public/sw.js');
+if(!sw.includes("runtimeCacheMode==='off'")||!sw.includes('LOC_CACHE_POLICY'))
+  throw Error('SW must preserve its installation but support cache bypass');
 const config=read('app/loc/scope-data.js');
 if(!config.includes('PUBLISHED_SITE_BOOTSTRAP')||
   !config.includes('SCOPE_ROUTE_INDEX')||
@@ -52,4 +63,4 @@ const worker=read('public/sw.js');
 if(!worker.includes('isStaticAsset(request,url)')||!worker.includes('staticStrategy(event)')||
    !worker.includes('_next\\/static'))
   throw Error('Service Worker must cache published Next.js JS/CSS assets');
-console.log('Verified suspended remote ISR, read-only cache and published JS/CSS Scope metadata/Blocks.');
+console.log('Verified default-off optional ISR, admin-gated public numeric HTTP cache, SW bypass and published JS policy.');
