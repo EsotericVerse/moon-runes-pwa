@@ -6,9 +6,9 @@ import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
-import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
-  readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,
-  addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
+import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,readTraceMapIndex,
+  readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,readTraceAddressReferences,
+  addTraceAnchor,addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
 import {TRACE_COUNTY_IDS} from '../modular/features/trace/trace-county-id.mjs';
 import {routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
@@ -29,7 +29,7 @@ export default function TraceRouteManager({scopeId}){
   const cache=useResourceCache();
   const searchParams=useSearchParams();
   const requestedFrame=searchParams?.get('frame')||'';
-  const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
+  const [activeScope,setActiveScope]=useState(scopeId);
   const [selectedUid,setSelectedUid]=useState('');
   const [classFilter,setClassFilter]=useState(ALL_CLASSES);
   const [groupFilter,setGroupFilter]=useState(ALL_GROUPS);
@@ -48,10 +48,15 @@ export default function TraceRouteManager({scopeId}){
   const [picked,setPicked]=useState(null);
   const [popularOpen,setPopularOpen]=useState(false);
   const [showMap,setShowMap]=useState(false);
+  const [referenceOpen,setReferenceOpen]=useState(false);
+  const [referenceQuery,setReferenceQuery]=useState('');
+  const [debouncedReference,setDebouncedReference]=useState('');
+  const [referenceDraft,setReferenceDraft]=useState(null);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
   const pendingSaved=useRef(null);
+  const pendingReference=useRef(null);
   const openedFrame=useRef('');
 
   useEffect(()=>{
@@ -59,10 +64,15 @@ export default function TraceRouteManager({scopeId}){
     return()=>clearTimeout(timer);
   },[pointQuery]);
   useEffect(()=>{
+    const timer=setTimeout(()=>setDebouncedReference(normalize(referenceQuery)),280);
+    return()=>clearTimeout(timer);
+  },[referenceQuery]);
+  useEffect(()=>{
     setSelectedUid('');setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
     setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
     setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
-    pendingSaved.current=null;setNotice('');setIsError(false);
+    setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
+    pendingReference.current=null;pendingSaved.current=null;setNotice('');setIsError(false);
   },[activeScope]);
 
   // Index contains only saved Frame metadata, never the entire spatial anchor table.
@@ -89,9 +99,8 @@ export default function TraceRouteManager({scopeId}){
     ...(classFilter!==ALL_CLASSES?{className:classFilter}:{}),
     ...(classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),query:routeFilter
   }),[maps,classFilter,groupFilter,routeFilter]);
-  const canEdit=activeScope==='loc'
-    ?account.canManageGroupSync('loc')
-    :account.canManageScopeSync(activeScope);
+  // Keep the UI permission aligned with silver.can_manage_scope().
+  const canEdit=account.canManageScopeSync(activeScope);
 
   // The selected Frame and specifically selected autocomplete entries
   // are the only anchor rows retained by the editor.
@@ -110,17 +119,24 @@ export default function TraceRouteManager({scopeId}){
   const choice=picked&&picked.title===pointQuery&&
     (picked.county_id||'OTHER')===county?picked
     :suggestions.length===1?suggestions[0]:null;
+  const references=useAsyncResource({
+    queryKey:['trace-address-references',activeScope,debouncedReference],
+    enabled:editorOpen&&referenceOpen&&debouncedReference.length>=2,
+    queryFn:()=>readTraceAddressReferences(activeScope,debouncedReference,8),
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
   const popular=useAsyncResource({
     queryKey:['trace-frame-popular',activeScope],
     enabled:editorOpen&&popularOpen,
     queryFn:()=>readTracePopularAnchors(activeScope),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const dirty=editorOpen&&Boolean(editingUid||title||description||className||group||queue.length);
+  const dirty=editorOpen&&Boolean(editingUid||title||description||className||group||queue.length||referenceDraft);
   const clearEntry=()=>{
     setEditingUid('');setTitle('');setDescription('');setClassName('');setGroup('');
     setQueue([]);setExtraAnchors([]);setCounty('');setPointQuery('');setPicked(null);
-    pendingSaved.current=null;setPopularOpen(false);
+    pendingSaved.current=null;pendingReference.current=null;setPopularOpen(false);
+    setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
   };
   const mayLeave=()=>!dirty||window.confirm('目前有尚未儲存的痕跡圖修改，確定放棄？');
   const chooseScope=value=>{
@@ -255,9 +271,9 @@ export default function TraceRouteManager({scopeId}){
     {scopeId==='loc'?<label>作品範圍
       <select className="scope-select" value={activeScope} disabled={busy}
         onChange={event=>chooseScope(event.target.value)}>
+        <option value="loc">LOC 自有痕跡</option>
         <option value="lo3rwang">作者作品</option>
         <option value="lrunes">月之符文</option>
-        <option value="loc">LOC 自有痕跡</option>
       </select>
     </label>:null}
     {!canEdit?<p className="scope-status">可查看路線；編輯需該 Scope 的管理權限（寫入仍由 Supabase RLS 驗證）。</p>:null}
