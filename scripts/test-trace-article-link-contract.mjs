@@ -23,3 +23,10 @@ test('new four-character identities accept case-sensitive Base62 while old snaps
   assert.match(identity,/trace_uid_migration_backup/);
   assert.match(identity,/original_record jsonb/);
 });
+
+test('single-UID migration has one atomic transaction and no duplicated cutover',()=>{
+  assert.equal((identity.match(/^BEGIN;/gm)||[]).length,1);
+  assert.equal((identity.match(/^COMMIT;/gm)||[]).length,1);
+  assert.equal((identity.match(/ADD CONSTRAINT .*_trace_uid_check CHECK/g)||[]).length,3);
+  assert.ok(identity.split('\\n').length<350,'Unexpected duplicated SQL after cutover');
+});

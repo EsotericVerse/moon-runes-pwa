@@ -12,7 +12,7 @@ BEGIN
      name_lists text[] NOT NULL DEFAULT ''{}''::text[],
      created_at timestamptz NOT NULL DEFAULT now(),
      updated_at timestamptz NOT NULL DEFAULT now(),
-     CONSTRAINT %I CHECK (uid ~ ''^[0-9A-F]{4}$'')
+     CONSTRAINT %I CHECK (uid ~ ''^[A-Za-z0-9]{4}$'')
    )',target,target||'_uid_check');
    EXECUTE format('ALTER TABLE silver.%I ENABLE ROW LEVEL SECURITY',target);
    EXECUTE format('REVOKE ALL ON TABLE silver.%I FROM PUBLIC, anon, authenticated',target);
