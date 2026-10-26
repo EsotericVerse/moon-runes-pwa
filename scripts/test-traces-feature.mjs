@@ -212,15 +212,15 @@ test('Search recommendations execute real queries and only suggest loaded place 
   assert.match(blocks,/!slot\.entities\.some\(entity=>recommendationTerm\(entity\.text\)\)/);
 });
 
-test('Trace loads only the station origin initially; content frames default to three months',()=>{
+test('Trace loads only Frame metadata at entry; content modes remain scoped and lazy',()=>{
   const trace=read('app/modular/features/Trace.jsx');
   const panel=read('app/modular/features/trace/TracePlaceResults.jsx');
   const filters=read('app/modular/features/trace/trace-panel-filters.mjs');
   const culture=read('app/modular/features/Culture.jsx');
   const stats=read('app/modular/features/Statistics.jsx');
-  assert.match(trace,/\[routeListOpen,setRouteListOpen\]=useState\(false\)/);
+  assert.match(trace,/\[routeListOpen\]=useState\(true\)/);
   assert.match(trace,/enabled:supported&&routeListOpen/);
-  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('3m'\)/);
+  assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
   assert.match(trace,/\[reportTab,setReportTab\]=useState\('articles'\)/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
   assert.match(filters,/traceWindow\(window='3m'/);
