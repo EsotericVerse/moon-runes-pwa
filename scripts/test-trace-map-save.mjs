@@ -80,7 +80,7 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
 }
 test('actual save handler writes ordered UIDs and Class/Group then confirms readback',async()=>{
   const task=saveHarness();
-  await task.save();
+  assert.equal(await task.save({switching:true}),true);
   assert.equal(task.written.length,1);
   assert.equal(task.written[0].input.scopeId,'lo3rwang');
   assert.equal(task.written[0].input.className,'跟朋友');
@@ -92,26 +92,32 @@ test('actual save handler writes ordered UIDs and Class/Group then confirms read
 });
 test('readback delay never double-inserts and keeps editing draft',async()=>{
   const task=saveHarness({firstReadMiss:true});
-  await task.save();
+  assert.equal(await task.save({switching:true}),false);
   assert.equal(task.written.length,1);
   assert.equal(task.clears,0);
   assert.match(task.messages.at(-1),/保留草稿/);
-  await task.save();
+  assert.equal(await task.save({switching:true}),true);
   assert.equal(task.reads,2);
   assert.equal(task.written.length,1);
   assert.equal(task.clears,1);
 });
 test('write rejection preserves draft; confirmed save survives secondary cache failure',async()=>{
   const denied=saveHarness({writeFails:true});
-  await denied.save();
+  assert.equal(await denied.save({switching:true}),false);
   assert.equal(denied.written.length,0);
   assert.equal(denied.clears,0);
   assert.match(denied.messages.at(-1),/授權寫入被拒絕/);
   const cached=saveHarness({edit:true,cacheFails:true});
-  await cached.save();
+  assert.equal(await cached.save({switching:true}),true);
   assert.equal(cached.written[0].method,'update');
   assert.equal(cached.clears,1);
   assert.match(cached.messages.at(-1),/已儲存並重新讀取確認/);
+});
+test('EditDock switch requires the Frame save to return exactly true',()=>{
+  const dock=read('app/modular/edit-dock.jsx');
+  const page=manager();
+  assert.match(dock,/if\(saved!==true\)throw new Error/);
+  assert.match(page,/return true;\s*\}catch\(error\)\{setIsError\(true\);setNotice\(String\(error\?\.message\|\|error\)\);return false;/);
 });
 test('selected Frame connects points by saved order without a road-network requirement',()=>{
   const engine=read('app/modular/features/trace/trace-map-engine.js');
