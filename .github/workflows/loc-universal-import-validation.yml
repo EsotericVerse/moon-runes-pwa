@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - fix/loc-universal-archive-import-20261026
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 permissions:
   contents: read
