@@ -1,14 +1,12 @@
 -- Manual/administrative rebuild ONLY. Run in an authorized maintenance window.
 -- The published site never runs these writes, and no ISR/cache/cron is involved.
 -- Each statement reads exactly one Scope and writes only that Scope's derived table.
+-- Spatial check-ins use the already-existing Galaxy.place_id, not this autocomplete.
+-- Do not derive search-term rows from Galaxy.source_place.
 begin;
 delete from silver.lo3rwang_search_terms;
 -- Only this Scope's publicly searchable Galaxy data and published keyword class.
 with raw as (
-select btrim(source_place) term,count(*)::integer n,'place'::text kind,60 priority
-from silver.lo3rwang_galaxy where searchable is true and nullif(btrim(source_place),'') is not null
-group by btrim(source_place)
-union all
 select btrim(title) term,count(*)::integer n,'title'::text kind,30 priority
 from silver.lo3rwang_galaxy where searchable is true and char_length(btrim(title)) between 3 and 64
 and title !~* '(更新了|分享了|透過.{0,60}發表|新增了|發表了動態|說.{0,24}讚|^全曲|https?://)'
@@ -53,10 +51,6 @@ on conflict(term) do update
 delete from silver.lrunes_search_terms;
 -- Only this Scope's publicly searchable Galaxy data and published keyword class.
 with raw as (
-select btrim(source_place) term,count(*)::integer n,'place'::text kind,60 priority
-from silver.lrunes_galaxy where searchable is true and nullif(btrim(source_place),'') is not null
-group by btrim(source_place)
-union all
 select btrim(title) term,count(*)::integer n,'title'::text kind,30 priority
 from silver.lrunes_galaxy where searchable is true and char_length(btrim(title)) between 3 and 64
 and title !~* '(更新了|分享了|透過.{0,60}發表|新增了|發表了動態|說.{0,24}讚|^全曲|https?://)'
