@@ -330,7 +330,7 @@ export default function Culture(){
   // An unfilled custom range is normal until dates are supplied.
   const optionalTimeRangeUnfilled=!keywordWindowStart||!keywordWindowEnd;
   const classificationPeriodLabel=keywordPeriodKey==='custom'
-    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):'時間痕跡';
+    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.timeTrace;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -1300,11 +1300,11 @@ export default function Culture(){
             </>:<>
               <section className='scope-card scope-culture-structure-river'>
                 <div className='scope-culture-structure-toolbar'>
-                  <h3>時間痕跡</h3>
-                  <label><span>時間痕跡</span>
+                  <h3>{l.timeTrace}</h3>
+                  <label><span>{l.timeTrace}</span>
                     <select className='scope-select' aria-label='第一條河道時間痕跡選擇'
                       value={activeStructureKey} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                      <option value='all'>{l.allPeriods}</option>
+                      <option value='all'>{l.allTimeTraces}</option>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                         </select>
                   </label>
@@ -1344,8 +1344,8 @@ export default function Culture(){
                             setKeywordPeriodKey(next);
 
                           }}>
-                          <option value='latest'>{primaryPeriods.length?'最近時間痕跡':'未設定時間痕跡（最近一年）'}</option>
-                           <option value='all'>{primaryPeriods.length?'全部時間痕跡':'最近一年（未設定時間痕跡）'}</option>
+                          <option value='latest'>{primaryPeriods.length?l.recentTimeTrace:'未設定時間痕跡（最近一年）'}</option>
+                           <option value='all'>{primaryPeriods.length?l.allTimeTraces:'最近一年（未設定時間痕跡）'}</option>
                            {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                            <option value='custom'>{l.customPeriod}</option>
                         </select>
