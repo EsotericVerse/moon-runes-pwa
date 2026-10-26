@@ -36,7 +36,7 @@ REVOKE ALL ON TABLE silver.trace_place_merge_archive FROM PUBLIC,anon,authentica
 
 CREATE OR REPLACE FUNCTION silver.search_scope_trace_place_names(
  p_scope_id text,p_term text,p_limit integer DEFAULT 8)
-RETURNS TABLE(uid varchar(4),title text,floor_label text)
+RETURNS TABLE(uid varchar(4),title text,floor_label text,longitude double precision,latitude double precision)
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog,silver
 AS $$
 DECLARE pattern text; sql text;
@@ -44,7 +44,7 @@ BEGIN
  IF p_scope_id NOT IN ('lo3rwang','lrunes','loc') THEN RETURN; END IF;
  IF nullif(btrim(p_term),'') IS NULL THEN RETURN; END IF;
  pattern:='%'||replace(replace(replace(left(btrim(p_term),100),'\','\\'),'%','\%'),'_','\_')||'%';
- sql:=format('SELECT a.uid::varchar(4),a.title::text,a.floor_label::text
+ sql:=format('SELECT a.uid::varchar(4),a.title::text,a.floor_label::text,a.longitude,a.latitude
  FROM silver.%I a LEFT JOIN silver.%I n ON n.uid=a.uid
  WHERE a.trace_type=''anchor'' %s AND
   (a.title ILIKE $1 OR EXISTS
