@@ -257,7 +257,7 @@
 **線目標：** FlexSearch 在瀏覽器對預先算好的搜尋詞進行即時候選比對；不從歷史查詢紀錄取詞、不逐字對 Supabase 查詢、不使用 ISR、R2、持久化 Cache 或進頁掃描三萬多篇文章。
 
 - **嚴格按 ScopeID 隔離：** `silver.loc_search_terms`、`silver.lo3rwang_search_terms`、`silver.lrunes_search_terms` 為三張不同的表；每張只取自己 Scope 的公開可搜尋來源，不建立跨 Scope 共同熱詞表，不合併來源，不共用瀏覽器索引。日後新增 Scope 才建立它自己的表。
-- **候選詞資料修正（2026-10-26，已讀回 Supabase）：** Galaxy 已有 `place_id`，D 線不再使用 `source_place` 建立打卡地點候選。已刪除 `lo3rwang` 336 與 `lrunes` 6 筆 `place` 候選，共 342 筆；剩餘 `lo3rwang` 1,712、`lrunes` 275、`loc` 4 筆，三表 `term_kind='place'` 均為 0。已加 DB 約束拒絕重新寫入 `place` 類型，重建腳本永久排除打卡來源。保留文章 `place_id`／`source_place` 與空間定錨原始資料，不觸碰 A 線；前端完整 CI／互動效能仍待驗證。
+- **候選詞清理與來源修正（2026-10-26，已讀回 Supabase）：** `place_id` 已存在，D 線不讀 `source_place`，不納入打卡地點／社群地點式標題；先前刪掉 342 筆 `place`，DB 約束禁止再寫。後續實際分析發現可搜尋的 `lo3rwang` 34,505 篇中有 21,240 篇標題符合常見平台套版模式，因此不再直接拿完整標題和候選上限湊數。透過平台樣板排除、`Re:` 前綴清理、系列篇章歸一、空白標點大小寫正規化，以及大 Scope 標題至少出現 3 篇才入詞庫，已重新批次建置：`lo3rwang` 655（標題 40、關鍵詞 466、Hashtag 140、來源 9）、`lrunes` 94（標題 89、Hashtag 1、來源 4）、`loc` 4。原文 `place_id`、`source_place`、標題完全不變。正式內文斷詞熱詞尚未實作，不可將這 753 筆宣稱為三萬篇完整內容分析成果；前端完整 CI／真實互動延遲仍未驗證。
 - **建立／維護：** 僅執行明確授權的獨立批次 SQL，範例 `scripts/sql/rebuild-scope-search-terms.sql`；不掛 Galaxy INSERT 觸發器，不在使用者進頁時做詞頻統計，不在匯入主流程增加大規模重算。
 - **目前程式：** D 線修改隔離於 `task/search-flexsearch-scope-terms-20261026`。正式搜尋仍維持 LOC 既有跨 Scope 資料查詢行為；候選詞依當前 ScopeID 自己的表讀取。UI／效能與 CI 尚須工程自行驗證後才整合 main。
 - **工程交付要求：** Guest/已登入、載入失敗降級、繁簡中英日、輸入連續變更與鍵盤選取、零候選、Scope 切換不串資料、一次查詞不逐鍵 SQL；量測輸入後候選顯示目標 ≤100ms，且不得拖慢正常搜尋。無真實瀏覽器量測時標示未驗證，不能聲稱已通過。
