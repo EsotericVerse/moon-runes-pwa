@@ -188,7 +188,7 @@ export function managementHeroCopy(rows,slot){
   if(!slot)return null;
   const row=(Array.isArray(rows)?rows:[]).find(item=>Number(item?.block_order)===slot.order);
   return {
-    eyebrow:String(row?.block_eyebrow??slot.englishTitle??'').trim(),
+    eyebrow:String(row?.block_eyebrow||slot.englishTitle||'').trim(),
     title:String(row?.block_title||'').trim()||slot.label,
     subtitle:String(row?.block_subtitle||'').trim(),
     description:String(row?.block_text||'').trim()
