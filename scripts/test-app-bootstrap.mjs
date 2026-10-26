@@ -520,8 +520,9 @@ test('Culture second river waits for its first source snapshot and avoids lazy d
   const river=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
   assert.match(culture,/stagedSourceRiver\?sourceRootQuery\.data:sourceSnapshotQuery\.data/);
   assert.match(culture,/openCultureRoots\.length>0/);
-  assert.match(culture,/readNumericIsr\(scopeId,'culture-children'/);
-  assert.match(culture,/legacyRows=await readNumericIsr\(scopeId,'culture'/);
+  assert.ok(culture.includes('selectScopeDailyCounts(scopeData,{'));
+  assert.ok(culture.includes('selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots)'));
+  assert.ok(!culture.includes('readNumericIsr('));
   assert.doesNotMatch(culture,/\(!sourceSnapshotQuery\.data\|\|riverRangeLoading\|\|cultureRiver\.hasSourceData\)/);
   assert.match(river,/heightVariant==='double'\?null:hiddenDates/);
   assert.match(river,/timeline\.setOptions\(\{hiddenDates:/);
