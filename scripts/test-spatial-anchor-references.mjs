@@ -74,6 +74,7 @@ test('Meta explicitly labelled visited-place JSON preserves the check-in locatio
   assert.equal(facebookBackupTimestamp(record),1720000000);
   assert.equal(facebookBackupImportUid(record),facebookBackupImportUid({...record}));
   assert.notEqual(facebookBackupImportUid(record),facebookBackupImportUid({...record,fbid:'another-place'}));
+  assert.notEqual(facebookBackupImportUid(record),facebookBackupImportUid({...record,label_values:[...record.label_values.slice(0,1).map(item=>({...item,timestamp_value:1720086400})),...record.label_values.slice(1)]}));
   assert.equal(facebookBackupPlace({label_values:[{label:encoded('地點'),value:encoded('私人現居地')}] }),'');
 });
 
