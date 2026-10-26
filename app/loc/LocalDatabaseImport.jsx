@@ -15,7 +15,7 @@ export default function LocalDatabaseImport(){
   useEffect(()=>setNative(Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'),[]);
   if(!native)return null;
   return <section className="loc-card scope-feature-card">
-    <h2>匯入本機資料庫</h2>
+    <h2>文件匯入</h2>
     <label>要將檔案內容匯入 SQLite 嗎？
       <select className="scope-select" value={importChoice} onChange={event=>setImportChoice(event.target.value)}>
         <option value="no">No</option>
