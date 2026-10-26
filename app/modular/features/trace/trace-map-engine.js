@@ -49,11 +49,6 @@ function pillarGeojson(anchors){
     geometry:{type:'Polygon',coordinates:[ringAround(place,45)]}
   }))};
 }
-function pickedArea(lng,lat,radius){
-  return {type:'FeatureCollection',features:Number.isFinite(lng)&&Number.isFinite(lat)?[{
-    type:'Feature',properties:{radius_m:radius},geometry:{type:'Polygon',coordinates:[ringAround({lng,lat},radius)]}
-  }]:[]};
-}
 function isValidSavedAnchor(anchor){
   if(anchor?.trace_type!=='space_anchor')return false;
   return Boolean(spaceCoordinates(anchor));
@@ -61,8 +56,8 @@ function isValidSavedAnchor(anchor){
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(isValidSavedAnchor)
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),floor_label:String(a.floor_label||''),floor_level:a.floor_level??null,
-        radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),floor_label:'',
+        uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
       geometry:{type:'Point',coordinates:spaceCoordinates(a)}}))};
 }
 function emptyRoute(){
@@ -75,7 +70,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,radiusMeters=500,anchors=[]}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,anchors=[]}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -84,13 +79,9 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let markers=[];
   let pickedMarker=null;
   let pickedPosition=null;
-  let radius=Number(radiusMeters)||500;
   let savedAnchors=anchors;
   let selectedSavedRoute=null;
   let selectedSavedGraph=null;
-  function refreshRadius(){
-    if(loaded&&pickedPosition)map.getSource('loc-trace-picked-area')?.setData(pickedArea(pickedPosition.lng,pickedPosition.lat,radius));
-  }
   function setAnchors(next){
     savedAnchors=Array.isArray(next)?next:[];
     if(!loaded)return;
@@ -130,7 +121,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
   }
   function setSavedRoute(route){
-    const next=route?.trace_type==='map'?route:null;
+    const next=['space_road','space_trace'].includes(route?.trace_type)?route:null;
     const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
@@ -153,10 +144,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     selectedSavedGraph=graph?.type==='FeatureCollection'&&Array.isArray(graph.features)
       ?graph:null;
     refreshSavedRoute();
-  }
-  function setRadius(value){
-    const n=Number(value);
-    if(Number.isFinite(n)&&n>=10&&n<=20000000){radius=n;refreshRadius();}
   }
   const canPickLocation=typeof onLocationPick==='function';
   // The user's "home" is a public station-area navigation origin, not a
@@ -205,7 +192,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       });
     }else pickedMarker.setLngLat([lng,lat]);
     pickedPosition={lng,lat};
-    refreshRadius();
     onLocationPick({lng,lat,...(name?{name}:{})});
     status('locationPicked');
   }
@@ -224,15 +210,14 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       .setText(place.name)
       .addTo(map);
   }
-  function focusCoordinates({longitude,latitude,name='',radius_m}={}){
+  function focusCoordinates({longitude,latitude,name=''}={}){
     const lng=Number(longitude),lat=Number(latitude);
     if(removed||!Number.isFinite(lng)||!Number.isFinite(lat)||Math.abs(lng)>180||Math.abs(lat)>90)return;
-    if(radius_m!=null)setRadius(radius_m);
-    const zoom=Math.max(2,Math.min(16,14.5-Math.log2(Math.max(radius,100)/500)));
+    const zoom=14.5;
     if(canPickLocation)map.flyTo({center:[lng,lat],zoom,pitch:59,bearing:-23,essential:true});
     else centerIfFar(lng,lat);
     if(canPickLocation)pickLocation(lng,lat,name);
-    else {pickedPosition={lng,lat};refreshRadius();}
+    else {pickedPosition={lng,lat};}
     if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
   }
   function overview(){
@@ -307,12 +292,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         map.on('mouseleave',layer,()=>{map.getCanvas().style.cursor='';});
       }
     }
-    map.addSource('loc-trace-picked-area',{type:'geojson',data:pickedArea(NaN,NaN,radius)});
-    map.addLayer({id:'loc-trace-picked-fill',type:'fill',source:'loc-trace-picked-area',
-      paint:{'fill-color':'#f7ba66','fill-opacity':0.14}});
-    map.addLayer({id:'loc-trace-picked-outline',type:'line',source:'loc-trace-picked-area',
-      paint:{'line-color':'#f7ba66','line-width':2,'line-opacity':0.85}});
-    refreshRadius();
     // Saved routes connect user-selected anchors in their recorded sequence.
     // A straight connection is not presented as an actual historical road.
     map.addSource('loc-trace-user-routes',{type:'geojson',data:savedRouteData()});
@@ -325,7 +304,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       paint:{'circle-radius':12,'circle-color':'#ffcb73','circle-stroke-color':'#30253e',
         'circle-stroke-width':2}});
     map.addLayer({id:'loc-trace-user-route-order',type:'symbol',source:'loc-trace-user-routes',
-      filter:['==',['geometry-type'],'Point'],
+      filter:['all',['==',['geometry-type'],'Point'],['==',['get','kind'],'space_stop']],
       layout:{'text-field':['to-string',['get','order']],'text-size':12,
         'text-allow-overlap':true},
       paint:{'text-color':'#30253e'}});
@@ -415,6 +394,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,centerIfFar,goOrigin,setRadius,setAnchors,setSavedRoute,setSavedGraph,overview,showRoadRoute,
+  return {focus,focusCoordinates,centerIfFar,goOrigin,setAnchors,setSavedRoute,setSavedGraph,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }

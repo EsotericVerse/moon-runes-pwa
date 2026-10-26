@@ -89,7 +89,7 @@ const STRINGS={
   }
 };
 
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',radiusMeters=500,focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const containerRef=useRef(null);
@@ -133,7 +133,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     let instance=null;
     try{
       instance=createTraceMap(containerRef.current,{
-        radiusMeters,
         anchors:spatialData?.anchors||[],
         onSelect:id=>{if(active)setSelected(id);},
         onAnchorSelect:!selectingLocation?anchor=>{if(active)anchorSelectRef.current?.(anchor);}:null,
@@ -164,7 +163,6 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     return()=>observer.disconnect();
   },[]);
 
-  useEffect(()=>{mapRef.current?.setRadius(radiusMeters);},[radiusMeters]);
   useEffect(()=>{
     mapRef.current?.setAnchors(spatialData?.anchors||[]);
     const selectedMap=(spatialData?.maps||[]).find(map=>
@@ -284,7 +282,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
             {route.title}（{route.trace_type==='space_trace'?'痕跡 '+route.anchor_list.length+' 段':'路線 '+route.anchor_list.length+' 站'}）</option>)}
         </select>
       </label>
-      <p className="scope-status">依你儲存的站點順序畫出連線與站序；連線不代表實際走過的道路。</p>
+      <p className="scope-status">路線依 Queue 順序連線；痕跡各段獨立顯示，不要求連續，也不代表實際道路。</p>
     </div>:null}
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>

@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import Select from 'react-select';
 import {useSearchParams} from 'next/navigation';
@@ -45,6 +45,7 @@ export default function TraceRouteManager({scopeId}){
   const [error,setError]=useState(false);
   const [showMap,setShowMap]=useState(false);
   const [savedReceipt,setSavedReceipt]=useState(null);
+  const openedFromUrl=useRef('');
   const own=account.canManageScopeSync(owner);
   const index=useAsyncResource({
     queryKey:traceMapIndexKey(scopeId),
@@ -103,8 +104,10 @@ export default function TraceRouteManager({scopeId}){
   useEffect(()=>{
     const requested=params?.get('frame')||'';
     if(!requested||!index.data||!own||editorOpen)return;
+    const token=owner+':'+requested;
+    if(openedFromUrl.current===token)return;
     const row=records.find(item=>item.uid===requested);
-    if(row)openEdit(row);
+    if(row){openedFromUrl.current=token;openEdit(row);}
   },[params,index.data,owner,own]);
   const addToSpool=()=>{
     const uid=selectedAnchor?.value;
@@ -291,7 +294,7 @@ export default function TraceRouteManager({scopeId}){
         </div>)}</div>
       </>}
       <div className="scope-stat-controls">
-        <button className="loc-button primary" type="submit" disabled={busy||!own||!title.trim()||
+        <button className="loc-button primary" type="submit" disabled={busy||!own||anchorIndex.isPending||Boolean(anchorIndex.error)||!title.trim()||
           (type==='space_road'?queue.length<2:pairs.length<1)}>
           {busy?'儲存中…':'儲存'+(type==='space_road'?'路線圖':'痕跡圖')}
         </button>
