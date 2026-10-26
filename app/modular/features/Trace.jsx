@@ -16,8 +16,8 @@ import {
   readTraceMapIndex,readCurrentTraceAnchors,readAllTraceAnchors
 } from './trace/trace-data';
 
-// A trace map is the spatial counterpart of a Time period. Only the selected
-// Current trace's anchors are loaded; "all" is an explicit, costly choice.
+// A Current route loads only its members. Without a saved route, show the
+// Scope's saved anchors automatically.
 const TraceMap=dynamic(()=>import('./trace/TraceMap'),{
   ssr:false,
   loading:()=> <p className="scope-status" role="status">正在載入痕跡地圖…</p>
@@ -94,7 +94,7 @@ export default function Trace({scopeId='loc'}){
     if(currentTraceChoice==='all')return null;
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
   },[traceIndex.data,periodScopeId,currentTraceChoice]);
-  const showingAll=currentTraceChoice==='all';
+  const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
 
   // Phase 2: cache the current route's 2–80 sites by its membership revision.
   // Repeated visits have their own timestamps; a multi-day trip does not imply
@@ -111,7 +111,7 @@ export default function Trace({scopeId='loc'}){
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const spatialData=useMemo(()=>{
-    if(!routeListOpen||traceIndex.data===undefined)return {anchors:[],maps:[]};
+    if(!routeListOpen||traceIndex.data===undefined)return null;
     if(!showingAll&&!currentMap)return {anchors:[],maps:[]};
     if(anchorsQuery.data===undefined)return null;
     return {anchors:anchorsQuery.data,
@@ -158,11 +158,10 @@ export default function Trace({scopeId='loc'}){
           value={showingAll?'all':currentMap?.uid||''}
           onChange={event=>chooseCurrentTrace(event.target.value)}
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
-          {!maps.length?<option value="">尚未建立痕跡圖</option>:null}
           {maps.map(map=><option key={map.uid} value={map.uid}>
             {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
-          <option value="all">全部定錨點（手動載入）</option>
+          <option value="all">全部定錨點{!maps.length?'（無路線，自動顯示）':'（手動載入）'}</option>
         </select>
       </label>:null}
       {currentMap&&routeListOpen?<ScopeLink className="loc-button"
@@ -179,8 +178,10 @@ export default function Trace({scopeId='loc'}){
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
     {scopeId==='loc'?<p className="scope-status">LOC 空間聚合尚未重建，請先在作者／符文 Scope 整理地點與路線；此頁目前不查詢已刪除的 loc_trace。</p>:null}
-    {supported&&!traceIndex.isPending&&!maps.length?<p className="scope-status">
-      尚未建立路線圖或痕跡圖。請在管理頁先將地點加入 Spool，或手動選擇「全部定錨點」。
+    {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
+      {anchorsQuery.data?.length
+        ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
+        :'尚未建立路線圖或痕跡圖，也沒有已儲存的空間定錨點。'}
     </p>:null}
 
     <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker
