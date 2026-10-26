@@ -1,7 +1,8 @@
 // One format contract for JSON Import and Source Refresh. No database authority lives here.
 // Lightweight file-selection contracts remain separate from parser implementations.
 export const UNIVERSAL_IMPORT_ACCEPT='.zip,.json,.csv,.tsv,.xlsx,.ods,.docx,.pptx,.pdf,.odt,.odp,.odg,.rtf,.md,.html,.htm,.epub,.tex';
-export const ARCHIVE_MAX_BYTES=512*1024*1024;
+export const ARCHIVE_MAX_BYTES=1024*1024*1024;
+export const ARCHIVE_JSON_MAX_BYTES=50*1024*1024;
 export const IMPORT_FIELD_ALIASES=Object.freeze({
   uid:['uid'],
   content:['content','body','text','message','description'],

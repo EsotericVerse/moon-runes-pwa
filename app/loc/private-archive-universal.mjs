@@ -2,20 +2,22 @@
 // Never uploads contents. zip.js-like mature primitives: fflate for ZIP; @streamparser/json for JSON.
 // Unsupported formats are explicitly accounted for; no speculative field coercion.
 import {Unzip,UnzipInflate,UnzipPassThrough} from 'fflate';
-import {ARCHIVE_MAX_BYTES} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES} from './import-batch.mjs';
 export {ARCHIVE_MAX_BYTES};
 import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
-import {facebookBackupPlace} from './facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
-const MAX_EXTRACTED=30*1024*1024;
-const MAX_FILES=20000,MAX_TEXT_DOCUMENT=8*1024*1024;
-const MAX_STRUCTURED_DOCUMENT=10_000_000;
+const MAX_EXTRACTED=100*1024*1024;
+// Large Meta backups may contain tens of thousands of *ignored* media entries.
+// Count entries but never decompress ignored media; retain a finite ZIP entry cap.
+const MAX_FILES=100000,MAX_TEXT_DOCUMENT=8*1024*1024;
+const MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES;
 const MAX_SNIFF_INFLATE=2*1024*1024;
 const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
 const textExtension=/\.(?:json|js|txt|md|csv|tsv|html?|xml|log|jsonl)$/i;
@@ -110,7 +112,8 @@ function normalize(row,{platform,kind,path,index,conversation}){
     item.noteTweetId||item.uri||'');
   const timestamp=item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
-    item.string_map_data?.['Creation Time']?.timestamp;
+    item.string_map_data?.['Creation Time']?.timestamp??
+    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
   const createdAt=iso(timestamp);
   const originalTimestamp=timestamp===undefined?'':String(timestamp);
   const relative=cleanPath(path).replace(/^.*?(?=messages\/)/i,'');
@@ -308,7 +311,7 @@ const ZIP_SNIFF_FILES=160;
 export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的 ZIP 備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 512 MiB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 1024 MiB 安全限制；未讀取檔案內容。');
   const magic=new Uint8Array(await file.slice(0,4).arrayBuffer());
   if(magic[0]!==80||magic[1]!==75||![3,5,7].includes(magic[2]))
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
@@ -326,7 +329,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
   }
   const unzip=new Unzip(entry=>{
     aborted(signal);
-    if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 20,000 筆，已停止辨識。');
+    if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 100,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
     if(!path||path.endsWith('/')){discardZipEntry(unzip,entry);return;}
     const fileAudit=audit.addFile(path);
@@ -359,7 +362,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
       extractedBytes+=data.length;
       received+=data.length;
       if(received>MAX_SNIFF_INFLATE)throw new Error('ZIP 取樣檔案解壓超過 2 MiB，已停止辨識。');
-      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 30 MiB，已停止辨識。');
+      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 100 MiB，已停止辨識。');
       if(length<ZIP_SNIFF_BYTES){
         const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
         samples.push(part);length+=part.length;
@@ -388,7 +391,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
 export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
-  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 512 MiB 安全限制；未讀取檔案內容。');
+  if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
   if(typeof onRecord!=='function')throw new Error('缺少私人本機寫入管線。');
   const summary=fileSummary();
   const prefix=new Uint8Array(await file.slice(0,4).arrayBuffer());
@@ -402,7 +405,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
     const sessions=[];
     const unzip=new Unzip(entry=>{
       aborted(signal);
-      if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 20,000 筆，安全停止。');
+      if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
       if(skippedZipEntry(path)){
         summary.otherFiles++;
@@ -432,7 +435,7 @@ export async function inspectPrivateArchive(file,{onRecord,onProgress,flush,sign
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
         extracted+=data.length;
-        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 30 MiB，拒絕繼續展開。');
+        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 100 MiB，拒絕繼續展開。');
         textSize+=data.length;
         if(textSize>sizeLimit)throw new Error(path+'：解壓後單檔超過安全上限。');
         if(isStructured)sink.push(data,Boolean(final));

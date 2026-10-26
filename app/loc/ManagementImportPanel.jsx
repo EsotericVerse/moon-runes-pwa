@@ -14,8 +14,8 @@ import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -48,7 +48,7 @@ function useBulkWriteCooldown(){
 }
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
-  if(/your_posts|status_updates|facebook_activity/i.test(value))return 'Facebook';
+  if(/your_posts|status_updates|facebook_activity|places_you_have_been_tagged_in/i.test(value))return 'Facebook';
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
     if(value.includes(key))return key;
   }
@@ -64,15 +64,20 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
   const isFacebook=String(source||'').trim().toLowerCase()==='facebook';
-  const place=repairMojibakeText(value('source_place')||
-    (isFacebook?facebookBackupPlace(row):'')).trim();
+  // The generic "place" alias can hold a Meta object. Only actual text
+  // belongs in Galaxy.source_place; never stringify [object Object].
+  const mappedPlace=value('source_place');
+  const placeText=typeof mappedPlace==='string'?mappedPlace:
+    (isFacebook?facebookBackupPlace(row):'');
+  const place=repairMojibakeText(placeText).trim();
   const facebookText=isFacebook?facebookBackupPostText(row):'';
   const content=normalizeGalaxyContent(value('content')||facebookText||
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
-  const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
-  const createdAt=iso(value('createtime')||(isFacebook?facebookBackupTimestamp(row):null));
+  const uid=String(value('uid')||entry?.import_uid||(isFacebook?facebookBackupImportUid(row):createUid8())).trim().toUpperCase();
+  const rawDate=value('createtime')||(isFacebook?facebookBackupTimestamp(row):null);
+  const createdAt=isFacebook?parseImportCreatedTime(rawDate):iso(rawDate);
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
@@ -422,9 +427,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       <label><UiText id="uiExtra.importUI.fileSource"/>
         <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
       </label>
-      <button type="button" className="loc-button" disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
-      </button>
     </div>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}
       source={source} onSourceChange={setSource} sourceDisabled={!rows.length} suggested={suggested}/>
@@ -474,6 +476,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         </article>)}
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
+    </section>:null}
+    {rows.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+      <div>
+        <h3>{t('uiExtra.importUI.saveSection')}</h3>
+        <p>{t('uiExtra.importUI.saveHint')}</p>
+      </div>
+      <button type="button" className="loc-button scope-import-save-button"
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+      </button>
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>

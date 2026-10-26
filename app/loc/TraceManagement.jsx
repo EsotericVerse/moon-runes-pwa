@@ -10,6 +10,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {dbAuthClient} from './db-client.mjs';
 import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
+import {readSharedSpatialReferences} from '../modular/features/trace/trace-spatial-reference-data';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {
   TRACE_SCOPES,traceKey,traceAllAnchorsKey,
@@ -37,6 +38,13 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [focusLocation,setFocusLocation]=useState(null);
   const [quickCandidates,setQuickCandidates]=useState([]);
   const [quickBusy,setQuickBusy]=useState(false);
+  // Existing references are searched only on an explicit action, not per key.
+  // Names, street addresses and floor/unit strings share the same lookup.
+  const [referenceText,setReferenceText]=useState('');
+  const [sharedTerm,setSharedTerm]=useState('');
+  const sharedReferences=useAsyncResource(['trace-shared-spatial-references',sharedTerm],
+    ()=>readSharedSpatialReferences(sharedTerm),
+    {enabled:!editingUid&&sharedTerm.length>=2,revalidateOnFocus:false,revalidateOnReconnect:false});
   const [quickNotice,setQuickNotice]=useState('');
   const quickRequest=useRef(0);
   useEffect(()=>()=>{quickRequest.current+=1;},[]);
@@ -76,6 +84,30 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(error)throw new Error(error.message||'打卡名稱讀取失敗');
     return data||[];
   },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
+  const useSharedReference=reference=>{
+    if(reference.source_scope===scopeId){
+      // A current-Scope hit is an existing anchor identity, not a template
+      // for creating another anchor with a fresh UID.
+      pickExisting(reference.uid);
+      return;
+    }
+    // The reference's Scope and UID are never copied to the new anchor.
+    // Reusing reviewed coordinates/address is not reusing a historical place.
+    if(!validCoordinates(reference.longitude,reference.latitude))return;
+    // Address-first searches may not have a title in the new-anchor form.
+    // Prefill the candidate label only as an editable suggestion.
+    if(!title.trim()&&reference.title)setTitle(reference.title);
+    setAddress(reference.address||'');
+    setFloorLabel(reference.floor_label||'');
+    setFloorLevel(reference.floor_level==null?'':String(reference.floor_level));
+    setLongitude(String(reference.longitude));
+    setLatitude(String(reference.latitude));
+    setFocusLocation({longitude:reference.longitude,latitude:reference.latitude,
+      name:title.trim(),radius_m:Number(radius)||500});
+    setQuickCandidates([]);
+    setQuickNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
+      ' 不會重用或修改。請核對門牌、樓層及目前店家後，再以自己的 Scope 新增。');
+  };
   const applyQuickPlace=(candidate,query=title.trim())=>{
     const lng=Number(candidate.longitude),lat=Number(candidate.latitude);
     if(!Number.isFinite(lng)||!Number.isFinite(lat))return;
@@ -119,10 +151,12 @@ function AnchorEditor({scopeId,spatial,reload}){
       const saved=editingUid
         ?await updateTraceAnchor({scopeId,uid:editingUid,...location})
         :await addTraceAnchor({scopeId,...location});
-      await reload();
-      await revalidateServerMetadata();
-      // The database write has already succeeded; a secondary cache
-      // refresh failure must not invite a duplicate insert on retry.
+      // Persistence is already confirmed by the authorized write's UID.
+      // If a secondary read/metadata refresh fails, never tell the user to
+      // submit the same new anchor again; that can create a second UID.
+      let anchorReadSynced=true;
+      try{await reload();}catch{anchorReadSynced=false;}
+      try{await revalidateServerMetadata();}catch{anchorReadSynced=false;}
       let anchorCacheSynced=true;
       try{
         await Promise.all([
@@ -137,6 +171,7 @@ function AnchorEditor({scopeId,spatial,reload}){
       setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
         :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
         :'空間定錨點已儲存，地址／樓層資訊已保留。'
+        +(anchorReadSynced?'':'資料庫已回報儲存成功，但重新讀取失敗；請重新載入查看，勿重複新增。')
         +(anchorCacheSynced?'':'部分已開啟的痕跡快取可能需要重新整理。'));
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
@@ -174,6 +209,37 @@ function AnchorEditor({scopeId,spatial,reload}){
           {quickBusy?'定位中…':'快速定位'}
         </button>
       </div>
+      {!editingUid?<div className="loc-trace-quick-field">
+        <label>查找 LOC 已有地點／門牌／樓層
+          <input type="search" maxLength={100} value={referenceText}
+            onChange={e=>setReferenceText(e.target.value)}
+            placeholder="可輸入店名、地址、B1 或室別；留空使用上面的地點名稱"
+            disabled={busy||quickBusy}/>
+        </label>
+        <button className="loc-button" type="button"
+          onClick={()=>setSharedTerm((referenceText.trim()||address.trim()||title.trim()).slice(0,100))}
+          disabled={busy||quickBusy||(referenceText.trim()||address.trim()||title.trim()).length<2}>
+          查詢已有錨點
+        </button>
+      </div>:null}
+      {!editingUid&&sharedTerm.length>=2?<div className="loc-trace-quick-results" role="group" aria-label="LOC 已有空間地址參考">
+        <strong>LOC 已有錨點／地址參考：{sharedTerm}</strong>
+        <p className="scope-status">自己的錨點會開啟編輯；其他 Scope 的資料只帶入位置參考，仍建立自己的新 UID。沒有門牌的紀錄不代表地址已核實。</p>
+        {sharedReferences.isPending?<p className="scope-status">正在比對現有空間錨點…</p>:null}
+        {sharedReferences.error?<p role="status" className="scope-status scope-error">
+          讀取公用地址參考失敗：{String(sharedReferences.error?.message||sharedReferences.error)}
+        </p>:null}
+        {(sharedReferences.data||[]).map(reference=><button
+          key={reference.source_scope+':'+reference.uid} type="button" className="loc-button"
+          onClick={()=>useSharedReference(reference)} disabled={busy||quickBusy}>
+          {reference.source_scope===scopeId?'編輯自己的錨點：':'選用位置參考：'}
+          {reference.title||'未命名'} · {reference.address||'門牌未核實'}
+          {reference.floor_label?' · '+reference.floor_label:''}
+          {' · '+reference.source_scope+' · UID '+reference.uid}
+        </button>)}
+        {!sharedReferences.isPending&&!sharedReferences.error&&!sharedReferences.data?.length?
+          <p className="scope-status">目前沒有可用的公用候選；可改按「快速定位」查外部地點。</p>:null}
+      </div>:null}
       <label>完整地址（含門牌、樓層／室別；未確認可留空）
         <input type="text" maxLength={320} autoComplete="street-address" value={address}
           onChange={e=>setAddress(e.target.value)} placeholder="例如：新北市某區某路100號2樓" disabled={busy}/>

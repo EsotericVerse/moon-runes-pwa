@@ -866,11 +866,11 @@
   .scope-frame-image-fields .scope-frame-image-url{grid-column:1/-1}
 }
 
-/* Scope import: one primary action row with a collapsed format guide. */
+/* Scope import: file reading and Galaxy saving remain distinct actions. */
 .scope-import-body{display:grid;gap:.8rem;min-width:0}
 .scope-import-primary-row{
   display:grid;
-  grid-template-columns:minmax(9rem,1fr) minmax(15rem,1.8fr) max-content;
+  grid-template-columns:minmax(9rem,1fr) minmax(15rem,1.8fr);
   align-items:end;gap:.75rem;min-width:0
 }
 .scope-import-primary-row>label{min-width:0}
@@ -878,9 +878,21 @@
 .scope-import-primary-row input[type=file]{
   box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:44px
 }
-.scope-import-primary-row>button{min-height:44px;white-space:nowrap;align-self:end}
 .scope-import-primary-row input[type=file]{padding:.45rem .6rem}
 .scope-import-primary-row input[type=file]::file-selector-button{padding:.35rem .65rem}
+.scope-import-save{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  padding:1rem 0;border-top:2px solid var(--loc-accent-border)
+}
+.scope-import-save>div{flex:1 1 18rem;min-width:0}
+.scope-import-save h3{margin:0;font-size:1.05rem}
+.scope-import-save p{margin:.35rem 0 0;color:var(--loc-muted);font-size:.88rem}
+.scope-import-save-button{
+  min-height:50px;min-width:11rem;padding:.75rem 1.4rem;
+  font-weight:750;border:2px solid var(--loc-accent-border);
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+@media(max-width:700px){.scope-import-save-button{width:100%}}
 .scope-import-format{min-width:0;max-width:100%}
 .scope-import-format>summary{
   display:flex;align-items:center;justify-content:space-between;gap:.5rem;
@@ -893,11 +905,9 @@
 .scope-import-format[open]>.scope-management-fields{margin-top:.7rem}
 @media(max-width:700px){
   .scope-import-primary-row{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:.55rem}
-  .scope-import-primary-row>button{grid-column:1/-1;width:100%}
 }
 @media(max-width:390px){
   .scope-import-primary-row{grid-template-columns:minmax(0,1fr)}
-  .scope-import-primary-row>button{grid-column:auto}
 }
 .scope-import-body>h3{margin:0}
 .scope-import-body label{display:grid;gap:.35rem}

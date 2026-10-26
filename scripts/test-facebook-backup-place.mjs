@@ -7,7 +7,8 @@ import {facebookBackupPlace,facebookBackupPostText,
   from '../app/loc/facebook-backup-place.mjs';
 import {detectZipArchiveSource,inspectPrivateArchive}
   from '../app/loc/private-archive-universal.mjs';
-import {importRowsFromJson} from '../app/loc/import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from '../app/loc/import-batch.mjs';
+import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
 const src=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const asFile=(name,bytes)=>{
   const data=new Uint8Array(bytes);
@@ -97,4 +98,88 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  assert.match(ui,/setSource\('Facebook'\)/);
  assert.match(parser,/sourcePlace=platform==='facebook'/);
  assert.match(src('app/loc/archive-source-signatures.mjs'),/your_facebook_activity/);
+});
+
+test('Facebook nested visited-place ZIP retains explicit visit time and location',async()=>{
+ const enc=value=>[...new TextEncoder().encode(value)]
+   .map(code=>String.fromCharCode(code)).join('');
+ const visit={fbid:'tagged-visit-01',label_values:[
+   {label:enc('造訪時間'),timestamp_value:1720000000},
+   {title:enc('地標'),dict:[{dict:[{label:enc('名稱'),value:enc('某車站')}]}]}
+ ]};
+ const zipped=zipSync({
+   'archive/your_facebook_activity/places_you_have_been_tagged_in.json':
+     strToU8(JSON.stringify([visit]))
+ });
+ const file=asFile('fb-places.zip',zipped);
+ const detection=await detectZipArchiveSource(file);
+ assert.ok(detection.sources.includes('facebook'));
+ const records=[];
+ await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
+ const imported=records.map(facebookArchiveGalaxyRow).filter(Boolean);
+ assert.equal(imported.length,1);
+ assert.equal(imported[0].source_place,'某車站');
+ assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
+});
+
+test('Meta ZIP decoded place and author text survive Galaxy import without mojibake',()=>{
+  // Some Meta exports encode UTF-8 bytes as Latin-1 JS characters.
+  const encoded=value=>[...new TextEncoder().encode(value)]
+    .map(n=>String.fromCharCode(n)).join('');
+  const row=facebookArchiveGalaxyRow({
+    platform:'facebook',kind:'post',key:'facebook:raw:visit:1',
+    sourcePlace:encoded('板橋車站'),text:encoded('今天來到板橋車站'),
+    createdAt:'2024-07-03T09:46:40.000Z'
+  });
+  assert.equal(row.source_place,'板橋車站');
+  assert.equal(row.content,'今天來到板橋車站');
+  assert.equal(row.title,'今天來到板橋車站');
+  assert.equal(row.createtime,'2024-07-03T09:46:40.000Z');
+  const alreadyCorrect=facebookArchiveGalaxyRow({
+    platform:'facebook',kind:'post',key:'facebook:raw:visit:2',
+    sourcePlace:'臺北車站',text:'正常繁體中文'
+  });
+  assert.equal(alreadyCorrect.source_place,'臺北車站');
+  assert.equal(alreadyCorrect.content,'正常繁體中文');
+});
+
+test('ZIP parser accepts Facebook JSON exceeding former 10 MB entry cap',async()=>{
+  const entries=Array.from({length:2600},(_,i)=>post(1720000000+i,'板橋車站','文字'+String(i)+'文'.repeat(1500)));
+  const text=JSON.stringify(entries);
+  assert.ok(new TextEncoder().encode(text).length>10_000_000);
+  assert.ok(new TextEncoder().encode(text).length<ARCHIVE_JSON_MAX_BYTES);
+  const zip=zipSync({'archive/your_facebook_activity/posts/your_posts_1.json':strToU8(text)});
+  const rows=[];
+  const result=await inspectPrivateArchive(asFile('facebook-large-json.zip',zip),{
+    onRecord:row=>{const mapped=facebookArchiveGalaxyRow(row);if(mapped)rows.push(mapped);}
+  });
+  assert.equal(result.acceptedRows,entries.length);
+  assert.equal(rows.length,entries.length);
+  assert.equal(rows[0].source_place,'板橋車站');
+});
+
+test('large Facebook ZIP size cap is 1 GiB and checked before reading any bytes',async()=>{
+  assert.equal(ARCHIVE_MAX_BYTES,1024*1024*1024);
+  assert.equal(ARCHIVE_JSON_MAX_BYTES,50*1024*1024);
+  let touched=false;
+  const file={size:ARCHIVE_MAX_BYTES+1,slice(){touched=true;throw Error('read forbidden')}};
+  await assert.rejects(detectZipArchiveSource(file),/1024 MiB/);
+  await assert.rejects(inspectPrivateArchive(file,{onRecord:()=>{}}),/1024 MiB/);
+  assert.equal(touched,false);
+  const underLimit={size:700*1024*1024,slice(){
+    return {arrayBuffer:async()=>Uint8Array.of(0,0,0,0).buffer};
+  }};
+  await assert.rejects(detectZipArchiveSource(underLimit),/不是有效的 ZIP 標頭/);
+});
+
+test('standalone JSON over 50 MiB is rejected before loading the whole file',async()=>{
+  let touched=false;
+  const file={name:'facebook.json',size:ARCHIVE_JSON_MAX_BYTES+1,
+    arrayBuffer(){touched=true;throw Error('read forbidden')},
+    text(){touched=true;throw Error('read forbidden')}};
+  await assert.rejects(parseUniversalImportFile(file),/50 MiB/);
+  assert.equal(touched,false);
+  const engine=src('app/loc/private-archive-universal.mjs');
+  assert.match(engine,/MAX_EXTRACTED=100\*1024\*1024/);
+  assert.match(engine,/MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES/);
 });
