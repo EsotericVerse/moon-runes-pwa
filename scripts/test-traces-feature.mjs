@@ -185,7 +185,10 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   const map=read('app/modular/features/trace/TraceMap.jsx');
   const engine=read('app/modular/features/trace/trace-map-engine.js');
   const results=read('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(feature,/readTraceMapIndex\(periodScopeId\)/);
+  assert.match(feature,/readTraceMapIndex\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(feature,/<option value="loc">LOC 自有痕跡<\/option>/);
+  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+  assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
   assert.match(feature,/onAnchorSelect=\{choosePlace\}/);
   assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
   assert.match(feature,/\{value:'articles',label:'文章列表'\}/);
