@@ -23,6 +23,7 @@ const MAX_SNIFF_INFLATE=2*1024*1024;
 const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
 const textExtension=/\.(?:json|js|txt|md|csv|tsv|html?|xml|log|jsonl)$/i;
 const exifImage=/\.(?:jpe?g|png)$/i;
+const exifImage=/\.(?:jpe?g|png)$/i;
 const mediaExtension=/\.(?:jpe?g|png|gif|webp|heic|bmp|avif|tiff?|mp4|mov|avi|mkv|webm|m4v|pdf|mp3|ogg|wav|flac|m4a|aac|zip|7z|rar|tar|gz|woff2?|svg|ico|exe|dll|bin|sqlite|db)$/i;
 const SKIP_ZIP_BYTES=new Uint8Array(0);
 const skippedZipEntry=path=>!path||path.endsWith('/')||path.split('/').some(part=>part==='..'||part==='__MACOSX')||!textExtension.test(path)||mediaExtension.test(path);
@@ -432,9 +433,35 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
+      if(exifImage.test(path)&&typeof onMediaMetadata==='function'&&[0,8].includes(entry.compression)&&
+        (entry.originalSize===undefined||entry.originalSize<=8*1024*1024)&&summary.exifImages<2500){
+        // Bounded image metadata-only inspection. Image bytes never enter Galaxy.
+        summary.mediaFiles++;summary.exifImages++;
+        const chunks=[];let stored=0,received=0;
+        entry.ondata=(error,data,final)=>{
+          if(error)throw error;
+          received+=data.length;
+          if(received>8*1024*1024)throw new Error(path+'：影像超過 EXIF 安全解析上限。');
+          if(stored<IMAGE_EXIF_PREFIX_LIMIT){
+            const part=data.subarray(0,IMAGE_EXIF_PREFIX_LIMIT-stored);
+            if(part.length){chunks.push(part);stored+=part.length;}
+          }
+          if(final){
+            const sample=new Uint8Array(stored);let pos=0;
+            for(const chunk of chunks){sample.set(chunk,pos);pos+=chunk.length;}
+            const metadata=readImageExif(sample,path);
+            if(metadata){
+              if(metadata.latitude!==undefined)summary.exifWithGps++;
+              if(metadata.cameraLocalTime)summary.exifWithTime++;
+              onMediaMetadata({path,metadata});
+            }
+          }
+        };
+        entry.start();return;
+      }
       if(skippedZipEntry(path)){
         summary.otherFiles++;
-        if(mediaExtension.test(path))summary.mediaFiles++;
+        if(mediaExtension.test(path)){summary.mediaFiles++;if(exifImage.test(path))summary.exifSkipped++;}
         else if(summary.unrecognizedFiles.length<60)summary.unrecognizedFiles.push(path);
         discardZipEntry(unzip,entry);
         return;
