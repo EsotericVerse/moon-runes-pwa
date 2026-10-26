@@ -126,9 +126,9 @@ export default {
   "noDate": "無日期",
   "skippedReasons": "前幾筆略過原因：",
   "writtenProgress": "已確認寫入 {completed}／{total} 筆 · {percent}%",
-  "batchImport": "開始匯入",  "saveSection": "儲存至 Galaxy",
+  "batchImport": "開始匯入",
+  "saveSection": "儲存至 Galaxy",
   "saveHint": "檔案已完成讀取與預覽。確認內容後，按下「開始匯入」才會寫入 Galaxy。",
-
   "nextJson": "下一個 JSON 檔案",
   "refreshLoaded": "已載入 {count} 筆 Refresh payload；先分析差異，不會直接寫入。",
   "refreshParseFailed": "Refresh JSON／格式解析失敗：{error}",
