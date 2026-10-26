@@ -240,6 +240,8 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!canEdit||!editorOpen)return false;
     setBusy(true);setNotice('');setIsError(false);
     try{
+      if(referenceDraft||pendingReference.current)
+        throw Error('請先建立自己的參考錨點，或收合並取消參考，再儲存痕跡圖。');
       const labels=validateTraceRouteLabels(className,group);
       if(queue.length<2||queue.length>MAX_STOPS||new Set(queue).size!==queue.length)
         throw Error('請依照順序加入 2～80 個不重複的定錨點。');
