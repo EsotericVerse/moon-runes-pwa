@@ -1,8 +1,8 @@
 name: One-time ISR-off regression (branch only)
 on:
-  push:
+  pull_request:
     branches:
-      - fix/isr-independent-20261026
+      - main
     paths:
       - .github/workflows/isr-off-one-time-tests.yml
 permissions:
