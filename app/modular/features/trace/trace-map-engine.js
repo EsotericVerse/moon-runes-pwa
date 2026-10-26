@@ -63,7 +63,8 @@ function isValidSavedAnchor(anchor){
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(isValidSavedAnchor)
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.address||''),floor_label:String(a.floor_label||''),floor_level:a.floor_level??null,
+        radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
       geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
 }
 function emptyRoute(){
@@ -110,7 +111,8 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       if(!place)return;
       const coordinates=[Number(place.longitude),Number(place.latitude)];
       features.push({type:'Feature',properties:{order:index+1,title:String(place.title||''),
-        uid:String(place.uid||''),source_scope:String(place.source_scope||'')},
+        uid:String(place.uid||''),source_scope:String(place.source_scope||''),
+        address:String(place.address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
         geometry:{type:'Point',coordinates}});
       const previous=points[index-1];
       if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
@@ -267,7 +269,9 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       paint:{'circle-radius':6,'circle-color':'#6ce4ce','circle-opacity':0.95,
         'circle-stroke-width':1.5,'circle-stroke-color':'#153739'}});
     map.addLayer({id:'loc-trace-saved-point-labels',type:'symbol',source:'loc-trace-saved-anchors',
-      minzoom:12,layout:{'text-field':['get','title'],'text-size':12,'text-offset':[0,1.2],'text-anchor':'top',
+      minzoom:12,layout:{'text-field':['concat',['get','title'],
+        ['case',['!=',['get','floor_label'],''],' · ',''],['get','floor_label']],
+        'text-size':12,'text-offset':[0,1.2],'text-anchor':'top',
         'text-allow-overlap':false},paint:{'text-color':'#ebfff8','text-halo-color':'#122d39','text-halo-width':1.5}});
     if(typeof onAnchorSelect==='function'){
       const chooseAnchor=event=>{
@@ -281,6 +285,10 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         if(anchor){
           centerIfFar(anchor.longitude,anchor.latitude);
           onAnchorSelect(anchor);
+          new Popup({closeButton:true,offset:18})
+            .setLngLat([Number(anchor.longitude),Number(anchor.latitude)])
+            .setText([anchor.title,anchor.address,anchor.floor_label].filter(Boolean).join(' · '))
+            .addTo(map);
         }
       };
       for(const layer of ['loc-trace-saved-point-layer','loc-trace-saved-point-labels']){
