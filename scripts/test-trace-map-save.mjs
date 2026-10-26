@@ -260,3 +260,27 @@ test('Frame save does not silently discard a pending cross-Scope reference',()=>
   assert.match(page,/if\(referenceDraft\|\|pendingReference\.current\)/);
   assert.match(page,/請先建立自己的參考錨點/);
 });
+
+test('LOC native duplicate checks never enumerate foreign public-union anchors',()=>{
+  const data=read('app/modular/features/trace/trace-data.js');
+  assert.match(data,/readAllTraceAnchors\(scopeId,\{nativeOnly=false\}=\{\}\)/);
+  assert.match(data,/if\(union&&nativeOnly\)request=request\.eq\('scope_id','loc'\)/);
+  assert.match(data,/const anchors=await readAllTraceAnchors\(id,\{nativeOnly:id==='loc'\}\)/);
+  assert.match(data,/comparableAnchors\(\{anchors\},id,excludeUid\)/);
+  const code=data.match(/export async function readAllTraceAnchors[\s\S]*?\n\}/);
+  assert.ok(code,'own-anchor reader should be executable');
+  const calls=[];
+  const query={
+    select(){return this;},
+    eq(key,value){calls.push([key,value]);return this;},
+    order(){return this;},
+    async range(){return {data:[{uid:'OWN00001',scope_id:'loc',trace_type:'anchor'}],error:null};}
+  };
+  const dbPublicClient={schema:()=>({from:()=>query})};
+  const reader=new Function('dbPublicClient','sourceId','verified','TRACE_DISPLAY_COLUMNS',
+    code[0].replace('export async function','async function')+';return readAllTraceAnchors'
+  )(dbPublicClient,x=>x,response=>response.data,'uid,trace_type');
+  const result=await reader('loc',{nativeOnly:true});
+  assert.ok(calls.some(([key,value])=>key==='scope_id'&&value==='loc'));
+  assert.equal(result[0].source_scope,'loc');
+});
