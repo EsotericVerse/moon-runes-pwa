@@ -5,7 +5,7 @@ import {Unzip,UnzipInflate,UnzipPassThrough} from 'fflate';
 import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES} from './import-batch.mjs';
 export {ARCHIVE_MAX_BYTES};
 import {JSONParser} from '@streamparser/json';
-import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-signatures.mjs';
+import {archiveEntrySignatures,summarizeArchiveSources,archiveFilenameSource} from './archive-source-signatures.mjs';
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
@@ -228,7 +228,7 @@ const fileSummary=()=>({
 function report(summary,message){
   if(summary.problems.length<30)summary.problems.push(message);
 }
-function createSink(path,summary,onRecord,signal){
+function createSink(path,summary,onRecord,signal,sourceHint=null){
   const decoder=new TextDecoder('utf-8',{fatal:true});
   const snippetLimit=32768;
   let header='',ready=false,parser=null,config=null,trail='',finished=false,unknown=false;
@@ -254,6 +254,8 @@ function createSink(path,summary,onRecord,signal){
   };
   function init(){
     config=determine(path,header);
+    if(config?.platform==='meta'&&config.kind!=='message'&&sourceHint)
+      config={...config,platform:sourceHint};
     if(!config||!config.array){
       unknown=true;
       summary.otherFiles++;
@@ -340,9 +342,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     throw new Error('檔案內容不是有效的 ZIP 標頭。');
   const hits=new Map();
   // Filename hints select a source, but the actual records remain authoritative.
-  const name=String(file.name||'').toLowerCase();
-  const hint=/(?:chatgpt|openai)/.test(name)?'chatgpt':/threads/.test(name)?'threads':
-    /facebook/.test(name)?'facebook':/instagram/.test(name)?'instagram':null;
+  const hint=archiveFilenameSource(file.name);
   if(hint)hits.set(hint,{confidence:1,path:file.name});
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
   const filenames=new Set();
@@ -422,6 +422,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
   if(typeof onRecord!=='function')throw new Error('缺少私人本機寫入管線。');
   const summary=fileSummary();
+  const sourceHint=archiveFilenameSource(file.name);
   const prefix=new Uint8Array(await file.slice(0,4).arrayBuffer());
   const isZip=prefix[0]===80&&prefix[1]===75&&[3,5,7].includes(prefix[2]);
   const read=async offset=>{
@@ -488,7 +489,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       const chunks=[];
       let textSize=0;
       const isStructured=/\.(?:json|js)$/i.test(path);
-      const sink=isStructured?createSink(path,summary,onRecord,signal):null;
+      const sink=isStructured?createSink(path,summary,onRecord,signal,sourceHint):null;
       const session={path,ended:false};sessions.push(session);
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
@@ -534,7 +535,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       summary.bytesRead=file.size;
     }else{
       if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 50 MiB 上限，未嘗試解析。');
-      const sink=createSink(path,summary,onRecord,signal);
+      const sink=createSink(path,summary,onRecord,signal,sourceHint);
       for(let offset=0;offset<file.size;offset+=ARCHIVE_CHUNK_BYTES){
         const chunk=await read(offset);
         sink.push(chunk,offset+chunk.length>=file.size);
