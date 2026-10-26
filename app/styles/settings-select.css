@@ -554,3 +554,82 @@
     padding:.6rem;
   }
 }
+
+
+/* Spatial-anchor forms and management tabs must fit the real page/card width.
+   Screen width alone is insufficient: LOC and Scope use nested, padded cards. */
+.scope-management-layout{
+  container-type:inline-size;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+}
+.scope-management-layout .management-workspace,
+.scope-management-layout .management-section-nav,
+.scope-management-layout .management-workspace-panel,
+.scope-management-layout .management-workspace-panel>.loc-card{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.scope-management-layout .management-section-nav__item,
+.scope-management-layout .management-section-nav__label{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+.scope-management-layout .management-workspace-panel :is(
+  .scope-management-fields,.loc-trace-quick-field,.loc-trace-quick-results,
+  .loc-trace-route-browse,.loc-trace-route-pickers,.loc-trace-reference-panel,
+  .loc-trace-map-manager,.loc-trace-route-composer,.loc-trace-map-shell
+){
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.scope-management-layout .management-workspace-panel :is(input,select,textarea){
+  box-sizing:border-box;
+  max-width:100%;
+}
+.scope-management-layout .loc-trace-quick-results>.loc-button{
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@container (max-width: 62rem){
+  .scope-management-layout .management-workspace{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout .management-section-nav__items{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.35rem;
+  }
+  .scope-management-layout .management-section-nav__item{
+    flex:0 1 auto;
+    width:auto;
+    min-height:2.75rem;
+    padding:.45rem .65rem;
+  }
+}
+@container (max-width: 39rem){
+  .scope-management-layout .management-workspace-panel .scope-management-fields,
+  .scope-management-layout .management-workspace-panel .loc-trace-route-browse,
+  .scope-management-layout .management-workspace-panel .loc-trace-route-pickers{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout .management-workspace-panel .scope-stat-controls{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout .loc-trace-quick-field{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout .loc-trace-quick-field>.loc-button{
+    width:100%;
+    white-space:normal;
+  }
+  .scope-management-layout .management-workspace-panel>.loc-card{
+    padding:clamp(.65rem,2vw,1rem);
+  }
+}
