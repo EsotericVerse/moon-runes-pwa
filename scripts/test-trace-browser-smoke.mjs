@@ -1,6 +1,6 @@
 // Local-only, read-only Guest rendering check using existing Chrome and Node CDP.
 // No deployment or live write. The Next server starts only on 127.0.0.1.
-import {spawn} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -11,9 +11,10 @@ const children=[];
 const webPort=3307,chromePort=9337;
 function start(command,args){
   const child=spawn(command,args,{stdio:['ignore','ignore','pipe'],env:{...process.env,NEXT_TELEMETRY_DISABLED:'1'}});
-  let stderr='';
+  let stderr='',startError='';
   child.stderr.on('data',data=>{stderr=(stderr+String(data)).slice(-4000)});
-  children.push({child,getError:()=>stderr});return child;
+  child.on('error',error=>{startError=String(error)});
+  children.push({child,getError:()=>startError+' '+stderr});return child;
 }
 async function until(fn,timeout=30000){
   const end=Date.now()+timeout;let error;
@@ -69,16 +70,24 @@ try{
     if(server.exitCode!=null)throw Error('Next server exited '+children[0].getError());
     return (await fetch('http://127.0.0.1:'+webPort+'/trace/')).status===200;
   },40000);
-  const browser=start(process.env.CHROME_BIN||'google-chrome',[
+  const binaries=[process.env.CHROME_BIN,'google-chrome','google-chrome-stable','chromium','chromium-browser'].filter(Boolean);
+  const chromeBin=binaries.map(bin=>spawnSync('which',[bin],{encoding:'utf8'}))
+    .find(check=>check.status===0)?.stdout.trim();
+  if(!chromeBin)throw Error('No Chrome/Chromium binary installed on runner: '+binaries.join(','));
+  console.log('TRACE-BROWSER chrome binary:',chromeBin);
+  const browser=start(chromeBin,[
     '--headless=new','--no-sandbox','--disable-dev-shm-usage',
     '--enable-unsafe-swiftshader','--use-angle=swiftshader','--no-first-run',
     '--remote-allow-origins=*','--remote-debugging-port='+chromePort,
     '--user-data-dir='+join(temp,'chrome'),'about:blank']);
   const page=await until(async()=>{
-    if(browser.exitCode!=null)throw Error('Chrome exited '+children[1].getError());
-    const tabs=await (await fetch('http://127.0.0.1:'+chromePort+'/json')).json();
+    if(browser.exitCode!=null||browser.signalCode||children[1].getError().includes('ENOENT'))
+      throw Error('Chrome exited '+children[1].getError());
+    let tabs;
+    try{tabs=await (await fetch('http://127.0.0.1:'+chromePort+'/json')).json()}
+    catch(error){throw Error('Chrome CDP not ready: '+String(error.message||error)+' / '+children[1].getError())}
     return tabs.find(t=>t.type==='page'&&t.webSocketDebuggerUrl);
-  },20000);
+  },35000);
   socket=new WebSocket(page.webSocketDebuggerUrl);
   socket.onmessage=e=>{
     const msg=JSON.parse(String(e.data));
