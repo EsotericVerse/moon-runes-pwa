@@ -1,7 +1,7 @@
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-import {spatialReferenceCandidates,spatialReferenceLikePattern} from '../app/modular/features/trace/trace-spatial-references.mjs';
+import {spatialReferenceCandidates,spatialReferenceLikePattern,spatialReferenceChoicesForName} from '../app/modular/features/trace/trace-spatial-references.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp,facebookBackupImportUid} from '../app/loc/facebook-backup-place.mjs';
 import {mappedImportValue,parseImportCreatedTime} from '../app/loc/import-batch.mjs';
 import {postalAddressFromNominatim} from '../app/modular/features/trace/trace-postal-evidence.mjs';
@@ -87,4 +87,37 @@ test('own existing anchor is edited; another Scope is only a positional referenc
   assert.doesNotMatch(ui,/setEditingUid\(reference.uid\)/);
   assert.match(lookups,/\.from\('loc_trace'\)/);
   assert.match(lookups,/\.eq\('trace_type','anchor'\)/);
+});
+
+test('same label, same 2D point, different UID/floors remain separate place choices',()=>{
+  const rows=[
+    {uid:'ANCH0001',source_scope:'loc',title:'同名店',floor_label:'B1',floor_level:-1,latitude:25,longitude:121.5},
+    {uid:'ANCH0002',source_scope:'loc',title:'同名店',floor_label:'2樓',floor_level:2,latitude:25,longitude:121.5},
+    {uid:'ANCH0001',source_scope:'lrunes',title:'同名店',floor_label:'5樓',floor_level:5,latitude:25,longitude:121.5}
+  ];
+  const selected=spatialReferenceChoicesForName('同名店',rows);
+  assert.equal(selected.status,'review');
+  assert.equal(selected.selected,-1);
+  assert.deepEqual(selected.choices.map(v=>[v.source_scope,v.uid,v.floor_level]),[
+    ['loc','ANCH0001',-1],['loc','ANCH0002',2],['lrunes','ANCH0001',5]]);
+  assert.equal(selected.moreChoices,false);
+});
+test('many historical identities do not silently choose one of more than eight candidates',()=>{
+  const rows=Array.from({length:12},(_,i)=>({
+    source_scope:'loc',uid:'A'+String(i).padStart(7,'0'),
+    title:'老店',latitude:25,longitude:121.5
+  }));
+  const lookup=spatialReferenceChoicesForName('老店',rows);
+  assert.equal(lookup.choices.length,8);
+  assert.equal(lookup.moreChoices,true);
+  assert.equal(lookup.selected,-1);
+});
+test('shared address searches are explicit and bulk geocoding reuses LOC first',()=>{
+  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+  const geo=readFileSync(new URL('../app/loc/TracePlaceGeocoder.jsx',import.meta.url),'utf8');
+  assert.match(ui,/查詢已有錨點/);
+  assert.doesNotMatch(ui,/setTimeout\(\(\)=>setSharedTerm\(title\.trim\(\)\)/);
+  assert.match(geo,/await readSharedSpatialReferencesByNames\(group\)/);
+  assert.match(geo,/spatialReferenceChoicesForName\(name,refs\)/);
+  assert.match(geo,/refreshRequired/);
 });
