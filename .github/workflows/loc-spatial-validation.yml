@@ -35,6 +35,17 @@ jobs:
         run: |
           set -o pipefail
           node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs 2>&1 | tee node-tests.log
+      - name: Compare Node baseline from current main (read-only checkout)
+        id: main_baseline
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          git fetch origin main --depth=1
+          mkdir -p /tmp/loc-main-baseline
+          git archive origin/main | tar -x -C /tmp/loc-main-baseline
+          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/loc-main-baseline/node_modules
+          (cd /tmp/loc-main-baseline && node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs) 2>&1 | tee main-node-baseline.log
       - name: A regression integration suite
         id: bootstrap
         continue-on-error: true
@@ -55,6 +66,7 @@ jobs:
           name: spatial-validation-logs
           path: |
             node-tests.log
+            main-node-baseline.log
             next-build.log
           if-no-files-found: ignore
           retention-days: 3
