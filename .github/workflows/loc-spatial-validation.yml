@@ -2,8 +2,13 @@ name: LOC spatial A branch validation (no deployment)
 
 # Isolated engineering check only. Never deploy Pages, Cloudflare, ISR, R2, DO or Vercel.
 on:
-  # Deliberate one-shot verification: rapid commits on the shared A branch
-  # must not start and cancel expensive builds repeatedly.
+  # Run on an explicit edit to this workflow, not on every A branch commit.
+  # Branch-only workflows cannot rely on workflow_dispatch before main has it.
+  push:
+    branches:
+      - feat/loc-spatial-anchors-20261026
+    paths:
+      - '.github/workflows/loc-spatial-validation.yml'
   workflow_dispatch:
 
 permissions:
