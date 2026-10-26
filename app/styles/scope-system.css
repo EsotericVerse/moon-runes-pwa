@@ -603,6 +603,17 @@
   .scope-self-stat-tab{min-height:2.75rem;padding:.5rem .7rem}
 }
 
+/* The first Time River has a separate responsive Period control. */
+.scope-culture-structure-toolbar{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap;margin-bottom:.65rem}
+.scope-culture-structure-toolbar h3{margin:0}
+.scope-culture-structure-toolbar label{display:flex;gap:.45rem;align-items:center;min-width:0}
+.scope-culture-structure-toolbar select{max-width:min(24rem,70vw);min-height:2.75rem}
+@media(max-width:600px){
+  .scope-culture-structure-toolbar{align-items:stretch}
+  .scope-culture-structure-toolbar label{flex:1 1 100%}
+  .scope-culture-structure-toolbar select{flex:1;min-width:0;max-width:100%}
+}
+
 .scope-culture-river-toolbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.4rem 0 .6rem}
 .scope-culture-river-toolbar h3{margin:0 .5rem 0 0}
 .scope-culture-river-selectors{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
