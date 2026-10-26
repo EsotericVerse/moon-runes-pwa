@@ -237,6 +237,7 @@ test('searches are bounded, address-aware, read-only and escape OR metacharacter
     select(...v){calls.push(['select',...v]);return this;},
     eq(...v){calls.push(['eq',...v]);return this;},
     neq(...v){calls.push(['neq',...v]);return this;},
+    not(...v){calls.push(['not',...v]);return this;},
     or(...v){calls.push(['or',...v]);return this;},
     order(...v){return this;},
     async limit(v){calls.push(['limit',v]);return {data:[],error:null};},
