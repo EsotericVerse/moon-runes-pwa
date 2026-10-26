@@ -12,7 +12,7 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(entry,/enabled:enabled&&mode!=='map'/);
   assert.match(entry,/mode==='map'\)return <TraceRouteManager/);
   assert.doesNotMatch(entry,/function MapEditor\(/);
-  assert.match(page,/readTraceMapIndex\(activeScope,/);
+  assert.match(page,/readTraceMapIndex\(scopeId\)/);
   assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids/);
   assert.match(page,/enabled:Boolean\(current\)/);
   assert.match(page,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
@@ -158,7 +158,7 @@ test('native LOC Frame is the initial management Scope and keeps foreign UIDs ou
   const page=manager();
   const data=read('app/modular/features/trace/trace-data.js');
   assert.match(page,/useState\(scopeId\)/);
-  assert.match(page,/readTraceMapIndex\(activeScope,\{nativeOnly:activeScope==='loc'\}\)/);
+  assert.match(page,/readTraceMapIndex\(scopeId\)/);
   assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
   assert.match(page,/readTraceAddressReferences\(activeScope,debouncedReference,8\)/);
@@ -352,10 +352,10 @@ test('public LOC Trace can view its own native Frames, not hidden behind author 
   const publicTrace=read('app/modular/features/Trace.jsx');
   const db=read('app/modular/features/trace/trace-data.js');
   assert.match(publicTrace,/<option value="loc">LOC 自有痕跡<\/option>/);
-  assert.match(publicTrace,/readTraceMapIndex\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/readTraceMapIndex\(scopeId\)/);
   assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
   assert.match(publicTrace,/readAllTraceAnchors\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
-  assert.match(publicTrace,/traceMapIndexKey\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/traceMapIndexKey\(scopeId\)/);
   assert.match(db,/export const traceMapIndexKey=\(scopeId,\{nativeOnly=false\}=\{\}\)=>/);
   assert.match(db,/nativeOnly\?\['trace-map-index',scopeId,'native'\]/);
 });
