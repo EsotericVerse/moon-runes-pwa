@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {spatialReferenceCandidates,spatialReferenceLikePattern} from '../app/modular/features/trace/trace-spatial-references.mjs';
 import {facebookBackupPlace} from '../app/loc/facebook-backup-place.mjs';
 import {mappedImportValue,parseImportCreatedTime} from '../app/loc/import-batch.mjs';
+import {postalAddressFromNominatim} from '../app/modular/features/trace/trace-postal-evidence.mjs';
 
 test('scope identity is not a shared UID',()=>{
   const base={uid:'TEST0001',scope_id:'loc',title:'某車站',longitude:121.5,latitude:25};
@@ -32,4 +33,15 @@ test('plain Facebook source timestamps are Unix seconds, not 1970 milliseconds',
   assert.equal(facebookBackupPlace(sample),'某車站');
   assert.equal(parseImportCreatedTime(mappedImportValue(sample,'createtime')),
     '2024-07-03T09:46:40.000Z');
+});
+
+test('geocoder does not invent a street number or floor from a place label',()=>{
+  assert.equal(postalAddressFromNominatim({
+    display_name:'某咖啡廳',
+    address:{state:'新北市',suburb:'板橋區',road:'文化路一段'}
+  }),'');
+  assert.equal(postalAddressFromNominatim({
+    address:{state:'新北市',suburb:'板橋區',road:'文化路一段',house_number:'100號'}
+  }),'新北市板橋區文化路一段100號');
+  assert.equal(postalAddressFromNominatim({address:{road:'文化路一段',house_number:'100號'}}),'');
 });
