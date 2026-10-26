@@ -22,15 +22,15 @@
 
 ### 分支生命週期登記｜ISR-RECOVERY-01
 
-- [ ] **任務：Admin 三段全站快取模式** `[PLANNED / NOT FOR MERGE]`
-  - **分支：** `task/isr-three-mode-admin-cache`（尚未建立；需從包含本紀錄的最新 `main` 建立）
+- [ ] **任務：Admin 三段全站快取模式** `[IN PROGRESS / NOT FOR MERGE]`
+  - **分支：** `task/isr-three-mode-admin-cache`（已建立；實際起始 `main`：`f48179c2c00720ef2f0e8484181fcb3a883732c0`）
   - **基準 main：** `a1aa41ad14782dd619906b0ef5644452164d4f00`（登記前基準；建立分支時另記實際基準）。
   - **完整目標：** 在既有 Admin → ISR 設定加入三種可儲存及讀回的全站模式：「不開快取」「打開快取」「打開 ISR」。模式必須真實控制應用快取與資料查詢來源；保留 Service Worker/PWA、原有 JS Routes/Config/Blocks、Scope 權限；快取模式與 ISR 模式不可互相假冒，ISR 不可用時恢復直接查 Supabase/SQLite。不對私人資料／跨 Scope 快取；公開圖片包含在可控快取策略中。
   - **負責：** ISR／全域設定工程線；已有 Admin ISR 網域面板、silver.loc_cache_settings 與 ISR-off 讀取路徑。
   - **完成門檻：** DB 授權／公開唯讀模式同步、三段切換立即生效與讀回、圖片及原有 SW 繼續運作、數值／自動完成共用快取真實命中及安全回退、四大功能回歸、CI／Build／log 警告檢查、整合 `main`、關閉 PR 和刪除已合併分支。
   - **部署與成本限制：** 分支實作及驗證不授權 GitHub Pages、iOS IPA、Cloudflare ISR/Preview 或任何實際部署；正式發布由使用者手動決定。不得以部署驗證替代工程 CI。
   - **目前進度：** 已核對目前 Admin 僅有 ISR 網域選擇、資料庫現有 schema 及權限；尚未修改執行程式或資料庫。起始實作先整理控制面與資料面的可驗證切換。
-  - **下一步：** 建立上列分支，更新狀態 `IN PROGRESS`，由 Admin 設定與共享模式讀取開始實作。若中斷，使用此條目及遠端 branch HEAD 接續，禁止另開替代分支。
+  - **下一步：** 在現有分支實作 Admin 設定與共享模式讀取，完成功能自測、CI 和最後整合。若中斷，使用此條目及遠端 branch HEAD 接續，禁止另開替代分支。
 
 
 
