@@ -9,10 +9,10 @@ import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-que
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
 import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate} from './time-anchor-ranges.mjs';
+import {timeReadColumns} from './time-read-columns.mjs';
 
 
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,status';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){return row?.address?String(row.address).slice(0,10):null;}
 function previousDay(value){
@@ -26,7 +26,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
   const table=scope?.time;
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
-    columns:TIME_COLUMNS,
+    columns:timeReadColumns(table),
     filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}],
     orders:[{column:'uid',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,offset:0
