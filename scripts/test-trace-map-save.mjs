@@ -154,10 +154,10 @@ test('selected Frame connects points by saved order without a road-network requi
   assert.doesNotMatch(page,/router\.push|featureNavigationHref/);
 });
 
-test('native LOC Frame is the initial management Scope and keeps foreign UIDs out of the Queue',()=>{
+test('LOC management initially shows existing author Frames while preserving Scope-owned Queue IDs',()=>{
   const page=manager();
   const data=read('app/modular/features/trace/trace-data.js');
-  assert.match(page,/useState\(scopeId\)/);
+  assert.match(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
   assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
