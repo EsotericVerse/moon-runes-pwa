@@ -773,7 +773,7 @@ export default function Culture(){
       // Scope permissions are enforced by the database write RPC.
       const date=dayKeyFromTimelineValue(item?.start);
       if(!date)throw new Error(l.invalidAnchorDate);
-      await updateRows(scopeData.time,{time_date:date},{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
+      await updateRows(scopeData.time,{address:date},{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
       await refreshTimelineData();
       setEditError('');
       return {...item,start:date};
@@ -1029,7 +1029,7 @@ export default function Culture(){
       const payload=dates.map(date=>{
         const uid=allocateTimeUid([...used].map(uid=>({uid})));
         used.add(uid);
-        return {uid,type:'anchor',title:'建議定錨 '+date,description:null,time_date:date,anchor_ids:null};
+        return {uid,type:'anchor',title:'建議定錨 '+date,description:null,address:date,anchor_ids:null};
       });
       await insertRows(scopeData.time,payload);
       setSelectedVirtualAnchorDates([]);
