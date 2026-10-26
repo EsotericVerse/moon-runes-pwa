@@ -146,7 +146,7 @@ export default function IsrDomainTarget(){
   });
 
   return <section className="loc-card admin-workspace">
-    <h2>全站快取模式與 ISR Domain</h2>
+    <h2>快取</h2>
     <p className="scope-status">全站三段模式由 Admin 手動指定。切換不會部署、改動 DNS，且不移除 Service Worker／既有 JS 架構。</p>
     {!loaded?<p role="status" className="scope-status">{status||'正在載入 ISR Domain…'}</p>:<>
       <div className="scope-management-fields">

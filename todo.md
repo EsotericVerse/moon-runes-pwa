@@ -1,3 +1,26 @@
+## 2026-10-26｜Hero 對應及資料庫歸屬修復（PR #587；程式已合併／未部署／待集中驗收）
+
+- [x] **痕跡 Hero 名稱去重：** 正式保留 `silver.loc_blocks(page_name='group_trace', uid='BRP7JEFQ')`，完整保留「文字在真實的立體場景出現的痕跡」及 `LOC-gn.jpg`；在 `main` 改完正式讀寫對應與 published JS 模組後，依指定 UID 僅刪除 `group_governance/997BFF13` 一筆。Supabase 再次 SELECT 確認只剩一筆，舊列全文與 UID 留於 `docs/hero-page-name-repair-20261026.md`。
+- [x] **管理 Hero 各自 `page_name`：** 八筆舊 `group_manage` 項目原 UID 原資料移至 `TimeAnchor`／`ScopeKeyword`／`SpaceAnchor`／`ScopeAdvSearch`／`GalaxyManage`／`Groupkeyword`／`GroupSpace`／`GroupArticle`，並設定對應英文標題，原標題與正文保留；系統管理文案使用 `scope_admin`，修正大小寫敏感的 DB 查詢及各項儲存／顯示讀取，不再以 `group_manage.block_order` 當項目識別。
+- [x] **Hero 圖片位置：** 原 CSS 中 14 個 Hero 圖片網址補入現有 `silver.loc_blocks.block_image`（僅填空值，未覆寫原有設定）；Scope 四項管理共用 `scope_manage` 的 `scope-gn.jpg`，Admin 五項管理共用 `scope_admin` 的 `LOC-admin.jpg`，設定 UI 仍可修改及儲存；修復 `block_image` 為 TEXT 的 JSON 序列化。
+- [x] **合併與測試證據：** 原 branch `fix/admin-scope-hero-page-ownership-20261026`；[PR #587](https://github.com/EsotericVerse/moon-runes-pwa/pull/587)（merged）；main SHA `d8020bc6f4208b8d3022dd014130cc580432c1c4`；[Actions #40352344908](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40352344908) 終態 success，管理 Hero 5/5、Trace 73/73、Bootstrap 218/218、Next.js 257/257、Chrome 桌機／手機 Trace 和 ISR 停用檢查通過。CI 未涵蓋真實登入 Admin 的 E2E 寫入。
+- [ ] **待工程端／集中驗收：** 授權 Admin 真實操作圖片、文案儲存與重進頁讀回，無權限寫入拒絕、各管理 Hero 的路由及圖片顯示、使用者手動部署後的正式站版本／SW 更新。**未部署；未允許開 Cloudflare 自動部署或 ISR。**
+- [ ] **舊資料待判定（不擅自刪除）：** `group_manage` 還有兩筆舊資料：`E090E4CA`（頁面控管，內文含成員／匯入說明）與 `MGHERO06`（舊系統管理空內容）。其餘八筆均已重新歸位。此兩筆已不作新的 Hero 讀寫來源；是否與現有管理文字整併／封存，須以不遺失原文為前提處理。
+
+---
+
+## 2026-10-26｜Admin 選單整併（人員首頁／名單管理／網路設定）
+
+- [x] **ADMIN-NAV-20261026｜程式整合及適用 CI 通過** `[MERGED / CLOSED / 等待集中手動部署與驗收]`
+  - **原分支：** `task/admin-network-lists-nav`；**PR：** [#586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)（已合併／關閉）；**main merge SHA：** `53f7c2b7664679558ef0135faecdbbac6f021991`；**分支最後 HEAD：** `e4eed9a9a063f25284acf47a20021606434e446a`；**建立基準 main：** `30695966749094655a4d4e65941a7550643743ac`。
+  - **已完成：** Admin 預設「人員」，頂部五選單「人員／名單管理／網路設定／區塊／配色」；「名單管理」共頁載入原保留名稱備註與 Email 黑名單；「網路設定」共頁載入資料庫設定與可切換 off/cache/isr 的「快取」及最多 32 家可選 ISR Domain。保留 `?section=database/isr/reserved/blocklist` 舊深連結映射，兩組原面板保留各自的資料庫表與權限、原 EditDock 全部 dirty editor 的儲存／切換管理。沒有移動或更改 `silver.loc_blocks` 管理 Hero 文字；先前使用者自行補寫的內容全部維持。
+  - **CI 實際證據：** [Actions #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676) **終態 success**；期間／定錨測試 **8/8**、選單與文化相關 Bootstrap 聚焦測試 **9/9**、文化分組 **5/5**、Next.js 257/257 靜態頁 Build；log 已核對，僅現有依賴 `punycode`／`url.parse` DeprecationWarning，無此次新增的測試或編譯失敗。完整 Bootstrap 全集及真實 Admin 帳號共頁寫入並非這次 CI 涵蓋，不能虛稱已實測。
+  - **待集中驗收與工程後續：** 使用者決定手動部署後核實正式版 SHA、Admin 預設人員、舊連結導向、網路快取三模式與資料庫設定、名單新增／移除／備註寫入及取消切換；不同編輯同頁未儲存提示、正確 RLS、手機版。因未在真實登入環境端到端操作寫入，**此為程式／CI 整合完成，不等於已線上驗收**。沒有觸發 GitHub Pages、IPA、Cloudflare ISR、R2 或任何正式部署。
+  - **分支清理：** PR 已關閉，現有 GitHub 連接器沒有刪除 Git branch 功能；遠端分支標記 `MERGED / NEVER REUSE`，不得重新使用；待有受控刪除手段時清理。
+
+
+---
+
 ## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585；待集中驗收／未部署）
 > **狀態：程式已合併 main；等待使用者集中手動部署，正式功能仍待工程端驗證及集中驗收。** 此為最新指令，後方「不得合併頁面控管」與「只編輯四個簡短標題」已被取代。**原分支編號／名稱：** `feat/hero-management-consolidation-20261026`；**PR：** [#585](https://github.com/EsotericVerse/moon-runes-pwa/pull/585)（merged）；**main merge SHA：** `8ae9c3f2581d568f1bacf54088e4b1a0dec16502`。**CI：** [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) 終態 success：管理 Hero 回歸 5/5、聚焦 Trace 73/73、Bootstrap 211/211、Next build 257/257、Chrome Trace 桌機／手機與 ISR 停用檢查通過。尚未進行真實 Admin 登入寫入／讀回、手機／桌機管理編輯互動及正式站版本驗證，**不能把「合併 main」視為已部署或使用者已驗收**。
 
@@ -16,6 +39,8 @@
 > **這裡是集中驗收看板，不是未完成工作清單。** 一般功能須先由工程端完成、實際功能自測、適用 CI 全數通過並合併 `main`，才加入下方「工程完成／待集中部署」區。之後由使用者自行決定一次手動部署，工程端核實部署成功、線上版本與基本實際功能，才移至「已部署／集中待驗收」。讓使用者一次驗收多項完整功能，不必逐 PR、逐小修等待或替工程端除錯。未完成、CI 失敗／未驗證項目留在原本 TODO，不能冒充待驗收。
 
 ### 工程完成、CI 通過、已合併 main｜等待集中手動部署
+
+- [x] **Admin 系統管理五選單整併** `[工程程式與適用 CI 通過／已合併／未部署]`：`ADMIN-NAV-20261026`、原分支 `task/admin-network-lists-nav`、[PR #586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)、`main 53f7c2b7`、[CI #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676)。預計同批驗收：Admin 首頁人員；名單管理（保留名稱＋黑名單）；網路設定（資料庫＋快取／多家 ISR）；舊連結；原 Hero 文字不變。正式登入寫入及線上狀態尚未驗證，**不得視為已部署或使用者驗收**。
 
 - [x] **Admin 全站三段快取模式** `[工程程式及 CI 完成／main 已合併／待使用者集中手動部署]`：`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → `main 2c73439c`；[Bootstrap 216/216 + Build/Chrome #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)、[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 成功。預定集中驗收：Admin → ISR 設定 → `off/cache/isr` 切換、儲存、重新讀取及退路。**尚未部署；真實 Admin 登入寫入、外部 ISR 快取命中尚未在線上驗證，不得當作已由使用者驗收。**
 
@@ -63,7 +88,7 @@
 - [ ] **LOC 管理入口是另一路由及文案需求，勿與 Admin/Manage Hero 類別混為一談。** LOC 管理時的五個入口文案為「系統管理／人員作品管理／關鍵詞／痕跡圖管理／文章管理」，其中「系統管理」僅 Admin 可進；先前使用者亦指定管理入口的 Hero 圖相同、文字不同。核對各入口的實際路由與 `admin`／`manage` 責任，不得因共用圖片而合併原有獨立選單。新增的五項文字編輯區如有需要，仍在既有 Admin 功能區塊設定中呈現，不取代 Scope 的上述四個欄位。
 - [ ] **修正「頁面控管」 Hero CSS 與地圖撐版。** 原本 `scope_manage` 的 Hero CSS 顯示已有問題，必須獨立核對背景圖是否正確鋪滿及圖片容器寬高；地圖 MapLibre 初次載入與互動後，不能撐大 Hero、整頁、Grid 或管理選單。桌機／手機、換頁／重新進頁均需自主回歸。
 - [ ] **保存與生效驗證。** 只在核實既有 `silver.loc_blocks` 契約與 Admin 寫入路徑後修改，保存四段文字＋原單一路徑，讀回後確認所有入口正確、權限沒有退化。確認 GitHub `main`、PR merge、完整 CI／build、實際網站載入版本與 Service Worker 快取。**目前網站看不到變動，因此不能把 commit 當成交付**；不得藉此擅開 Cloudflare 自動部署／ISR。
-- [ ] **其他獨立故障仍待查證。** 正式站選 ZIP 仍出現舊的 512 MiB 提示（原始碼 1024 MiB 不代表已發布）；PR #580 已關閉但未合併，不能宣稱相關 Trace／place 四碼改動進入 `main`。此類問題與本次頁面控管 UI 分開追蹤。
+- [ ] **其他獨立故障仍待查證。** 正式站選 ZIP 仍出現舊的 512 MiB 提示（原始碼 1024 MiB 不代表已發布）；PR #580 現為 **Draft／未合併**，相關 Trace／place 四碼改動尚未進入 `main`（詳見 A 線分支生命週期紀錄）。此類問題與本次頁面控管 UI 分開追蹤。
 
 
 ---
@@ -168,19 +193,29 @@
 
 - **TRACE-14｜地址參考優先、地理服務按需呼叫** — 優先已存參考，缺資料才查外部定位；使用適度快取，避免逐字遠端查詢及無必要 SQL，且不依賴 ISR。 **現況：** 批次地點整理的程式已優先查本地參考，缺資料才呼叫外部服務；冷／熱查詢次數、實際等待及完整互動仍待量測。 （歸入 LOC-TODO-10）
 
-#### A 線新增：Scope 內四碼 UID 與文章地點索引（2026-10-26；實作中，尚未驗收）
+### A 線分支生命週期｜LOC-PLACE-01～06（2026-10-26 23:41 台灣時間查證）
 
-> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。單一 `trace.uid` 是 Trace 紀錄唯一 UID，`trace_type='anchor'|'map'` 區分定錨點／痕跡圖；**不再另設 `trace.trace_id` 作第二套 UID**。Galaxy 的 `place_id` 指向同 Scope、type=anchor 的 `trace.uid`；文章原始 `uid`、`source_place` 均保留。
-> **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 UID → 四碼 UID／回退方案；② 以原 `trace.uid` 單一 PK 完整轉換 anchor/map 及 Frame Queue、LOC (scope_id,uid)，停止額外 trace_id 用途；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
+- **隔離分支：** `fix/loc-place-id-layout-20261026`；**PR：** [#580](https://github.com/EsotericVerse/moon-runes-pwa/pull/580)（已轉 Draft、未合併）；**查核分支 HEAD：** `4281406c51dd58ac73a86947e94366c391d11945`；**查核基準 main：** `d8020bc6f4208b8d3022dd014130cc580432c1c4`，雙方均有新提交，需先以 merge 整合最新 main，不能直接覆蓋。
+- **狀態：FROZEN / UNVERIFIED / NOT FOR MERGE。** A 線本次 **LOC-PLACE-01～06 無任何可確認整項完成**；分支已有 UI／資料查詢／對照 migration 程式及部分單元測試，但與正式資料庫尚不相容，不加入集中待驗收，亦不得由 GitHub CI 的部分綠燈宣稱完成。
+- **資料證據（read-only Supabase）：** `silver.lo3rwang_trace` 582 筆 `uid` 全部仍為八碼，含 1 筆 map；LOC 聯集相應 582 筆亦八碼；錯增 `trace.trace_id` 四碼欄位仍存在；`lo3rwang_galaxy` 35,141 篇中 `place_id` 已設 0 篇。已新增的 nullable `place_id varchar(4)` 與索引只能記為**部分 schema 步驟**，不能視為資料／功能驗收通過，不能擅自刪除 Trace／Galaxy 資料。
+- **CI 證據：** [#40344096224](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40344096224) **failure**。專項 69/69 零失敗，然而對比最新 main 原有測試 73 項，分支刪除了跨 Scope 身份、延遲讀回防重複寫入、Frame 待處理站點等既有驗證（五個測試名稱不見、僅補兩項）；舊基準檢查器 `total<73` 因此攔下。**不得透過降低 73 門檻或跳過測試讓 CI 假綠**；需恢復等價回歸、確認不再適用的案例有相應新功能證據。該次 Next build 成功、Chrome 因前置步驟 failure **skipped**；實際授權寫入／重讀／RLS 及長時間負載尚未自證。
+- **下一步：** 保留並整合最新 main，補回被移除的跨 Scope／Queue 回歸測試，核對 migrations 的原 UID → 四碼映射、完整 Frame Queue 與回復機制；在不觸發使用者封鎖的 Cloudflare／ISR／自動部署前提下，完成實際 Supabase 權限寫入與讀回、真實介面及所有適用 CI。全部驗證並與正式 DB 具相容方案時，才安全整合 main、關閉 #580、紀錄最終 SHA 並標可集中驗收。不得要求使用者逐項替工程端測試。
 
-> **定案：** 同 Scope 的空間定錨點 trace.uid 與 Galaxy 文章 place_id 統一為 **varchar(4)**；place_id 直接對應該 Scope 的空間錨點 UID，不是另外配置一個全域地點編號；不得改動文章 galaxy.uid。**UID 只在所屬 Scope 內唯一**，新 Scope 可獨立從頭配置，不要求跨 Scope 唯一。對既有八碼錨點必須做完整對照遷移，不能截斷。LOC 聯集含 scope_id，識別或顯示必須使用 (scope_id, uid) 才不會誤認他人的錨點；**LOC 聯集的進階整理暫緩，先完成各 Scope。**
+#### A 線新增：Scope 內四碼 id 與文章地點索引（2026-10-26；實作中，尚未驗收）
 
-- [ ] **LOC-PLACE-01｜統一四碼欄位與身份** [P1] [規格已定／未實作]：原生 Scope 的 *_trace.uid（anchor 與 map 均屬同表）改為 varchar(4)，各 Scope 的 *_galaxy 新增 nullable place_id varchar(4)，未比對成功留 NULL。同 Scope 同一實際地點的文章引用同一 anchor UID；同座標的不同商家、樓層或不同實體仍有不同 UID。依 Scope 保持獨立的唯一性與寫入權限，不混用不同 Scope 的 ID。
-- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、anchor_uids Queue、silver.loc_trace 聯集、搜尋及匯入等引用。建立每 Scope 舊 UID → 新四碼 UID 的唯一對照，完整更新所有合法關聯及程式八碼產號／驗證；不可直接 LEFT(uid,4) 或刪掉原有 UID 關聯。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
+> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。**最新使用者定案（取代本節此前全部 uid／trace_id 方案）：`silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵；不得保留 Trace 的 `uid`、`trace_uid` 或 `trace_id` 等並行身份欄位**。`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖。`silver.<scopeid>_galaxy.place_id varchar(4)` 只指向同 Scope、`trace_type='anchor'` 的 `trace.id`。**文章自身的 `galaxy.uid` 和原始 `source_place` 不變**；`galaxy.uid` 是另一種文章物件的既有識別碼，並非 Trace 的第二身份。
+> **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 Trace `uid`／臨時 `trace_id` → 四碼 `id` 的完整映射與回退方案；② 將 Trace 的唯一 PK 統一為 `id`（anchor／map 同表），轉換所有 Frame Queue、RPC、觸發器、別名及 LOC 聯集 `(scope_id,id)` 的引用；最終不得留下 Trace `uid`／`trace_uid`／`trace_id` 平行身份；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
+
+> **最新 Queue 欄位命名（2026-10-27）：** Trace 表原有 `anchor_uids` **正式更名為 `anchor_list`**，同一張 map／Frame 內維持有序的本 Scope `trace.id`（四碼）陣列；不另外新增 Queue 或平行欄位。遷移須保留舊紀錄及每個站點的**原始順序與重複語義**，同步更新 SQL 函式／觸發器／RLS 影響範圍、前後端讀寫、路線／時間顯示及驗證案例；在正式版本相容且自測通過前不得對 live 表單獨改名。
+
+> **唯一命名契約（最新）：** `silver.<scopeid>_trace.id varchar(4)` ↔ `silver.<scopeid>_galaxy.place_id varchar(4)`；Trace 不存在 `uid`、`trace_uid`、`trace_id` 三種替代欄位。`place_id` 等值關聯到本 Scope 的 anchor `id`，不額外分配第二套 ID；Frame 也使用本 Scope 的 `trace.id`。各 Scope 的 ID 可獨立從頭配置，不能跨 Scope 當作同一筆。LOC 聯集以 **`(scope_id,id)`** 辨識來源；聯集顯示的進階整理延後。舊 Trace 八碼 `uid` 必須有可回復的對照映射，禁止截斷或破壞 Queue；文章 `galaxy.uid`／`source_place` 永遠保留。
+
+- [ ] **LOC-PLACE-01｜統一四碼欄位與身份** [P1] [規格已定／未實作]：原生 Scope 的 `*_trace.id`（anchor 與 map 均屬同表）使用 `varchar(4)` 並作單一主鍵，最終不得有 Trace `uid`／`trace_uid`／`trace_id`；Scope 的 `*_galaxy.place_id` 為 nullable `varchar(4)`，未比對成功留 NULL。同 Scope 同一實際地點的文章引用同一 anchor `id`；同座標的不同商家、樓層或不同實體仍用不同 `id`。不同 Scope 各自編號、授權隔離。
+- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、歷史 `anchor_list` Queue、`silver.loc_trace` 聯集、搜尋及匯入等引用。建立每 Scope **舊八碼 Trace `uid`／臨時四碼 `trace_id` → 最終四碼 `id`** 的唯一對照，完整轉換所有合法關聯、Queue 值與程式產號／驗證；不可直接截斷舊識別碼或刪除原有關聯，舊欄位名稱只在備份／遷移紀錄中保留。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
 - [ ] **LOC-PLACE-03｜現有文章打卡地點整理按鈕** [P1] [未實作]：在「管理選單 → 整理定錨點」新增 **「空間定錨點：現有文章，打卡地點整理」**。文章匯入必須先完整完成，不需要匯入時建立空間定錨點、定位或填地址；**galaxy.source_place 永遠保留原始字串、不統一、不回寫**。錨點建立後才用既有錨點、地名與可用座標／地址資訊，建立文章 place_id 關聯。
 - [ ] **LOC-PLACE-04｜自動判別先做、疑問才顯示** [P1] [未實作]：先正規化空白、全半形、臺／台、前後文字格式、行政區／同義名稱等高可信度變體；已確定的自動整理，不要求每組人工補地址或使用付費地理查詢。相同座標的錨點用 Map 單趟分組，每個座標只列一組，不採雙迴圈兩兩產生大量卡片；但**同 GPS 不代表同一商家**（例如家樂福和石二鍋家樂福桂林店），需保持不同身份。只有不確定的候選放在頁面下方，由使用者判別；明確空白／缺資料可保留未匹配而不阻塞。
 - [ ] **LOC-PLACE-05｜持久化、精確查詢與往後沿用** [P1] [未實作]：成功整理即更新相應文章的 place_id 並建立 Scope 專用索引，依 place_id 等值查文章，不再堆疊大量 OR source_place 條件；原始 source_place 及 galaxy.uid 不得改動。已判定的原始地名 ↔ 錨點對應要能持久重用，新文章照常完整匯入，隨後利用已知對應自動關聯；同一地點不能每次重新核對。誤判／別名衝突要能追蹤且安全修正，寫入必須遵守 Scope RLS。
-- [ ] **LOC-PLACE-06｜LOC 聯集與工程驗證** [P2] [LOC 聯集細節後議／未實作]：silver.loc_trace 聯集中的同碼 UID 必須帶 scope_id 區分，顯示時保留來源 Scope，跨 Scope 不擅自合併。後續再整理 LOC 的聯集視圖，不阻塞 Scope 工作。交付前自主核對實際資料回填、重新開頁、下一次匯入、同址不同店及樓層、無地址、UID 唯一性、權限、性能、UI、lint/build/CI；測試通過並整合 main 才可標完成。
+- [ ] **LOC-PLACE-06｜LOC 聯集與工程驗證** [P2] [LOC 聯集細節後議／未實作]：silver.loc_trace 聯集中的同碼 `id` 必須帶 `scope_id` 區分，顯示時保留來源 Scope，跨 Scope 不擅自合併。後續再整理 LOC 的聯集視圖，不阻塞 Scope 工作。交付前自主核對實際資料回填、重新開頁、下一次匯入、同址不同店及樓層、無地址、UID 唯一性、權限、性能、UI、lint/build/CI；測試通過並整合 main 才可標完成。
 
 ### B｜痕跡圖
 
@@ -197,7 +232,7 @@
 **直接歸屬的原有工作：** LOC-TODO-08、09、14；LOC-TODO-13 為 A 線實作、B 線必須共同驗證的動態地圖／文章／時間依賴。
 
 - [ ] **LOC-TODO-08｜具名痕跡圖 Frame 與大分類／Class／Group／Item** `[P1]` `[四層規格已確認／實作尚未完整自證]`
-  - **【已確認新規格】** 沿用現有關鍵詞分層骨架，支援**大分類 → Class → Group → Item（具名痕跡圖 Frame）**，例如 **旅遊 → 夜市 → 北部 → 痕跡圖**；可依層級建立、選取、搜尋、編輯、儲存、重新載入，並以現有共同分類模型實現，不另造平行分類引擎。**Item 就是一張 Frame，Queue 是 Frame 內的有序站點，不是 Item 本身或另一個分類層。** Frame 只引用**該 Scope 自己的**空間錨點 UID，其 `anchor_uids` Queue 可編排；不可將關鍵詞資料列或文章 `class_id` 直接當作痕跡圖分類／物件身份。錨點多次打卡、同址不同樓層與跨 Scope 候選不得自動合併 UID。站點按順序直接連線，**無需相鄰／道路通達，也不宣稱是真實道路導航**。驗收重讀、改序、重試、刪除不傷錨點與文章、Scope 授權／RLS。
+  - **【已確認新規格】** 沿用現有關鍵詞分層骨架，支援**大分類 → Class → Group → Item（具名痕跡圖 Frame）**，例如 **旅遊 → 夜市 → 北部 → 痕跡圖**；可依層級建立、選取、搜尋、編輯、儲存、重新載入，並以現有共同分類模型實現，不另造平行分類引擎。**Item 就是一張 Frame，Queue 是 Frame 內的有序站點，不是 Item 本身或另一個分類層。** Frame 只引用**該 Scope 自己的**空間錨點 UID，其 `anchor_list` Queue 可編排；不可將關鍵詞資料列或文章 `class_id` 直接當作痕跡圖分類／物件身份。錨點多次打卡、同址不同樓層與跨 Scope 候選不得自動合併 UID。站點按順序直接連線，**無需相鄰／道路通達，也不宣稱是真實道路導航**。驗收重讀、改序、重試、刪除不傷錨點與文章、Scope 授權／RLS。
 
 - [ ] **LOC-TODO-09｜Current Frame／預設痕跡切換與載入** `[P1]` `[部分實作／尚未自證]`
   - 完成條件／待辦：維持目前／預設 Frame 的單一選取，起始僅取得輕量索引與選中路線的錨點；切換、重新整理、離線可用性、空路線以及**沒有任何 Frame／錨點的合法空 Scope** 均要正常顯示，不得強制建立假資料、不應把零筆當成 SQL 錯誤。

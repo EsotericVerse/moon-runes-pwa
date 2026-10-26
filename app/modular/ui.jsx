@@ -67,15 +67,17 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const scopeHeroImageQuery=useAsyncResource([adminHero?'scope-blocks-live':'scope-blocks','loc',scopeHeroPage],
     ()=>(adminHero?selectLiveScopeBlocks:selectScopeBlocks)('loc',scopeHeroPage),
     {enabled:!managementMode&&hasFeatureHero&&(scopeId!=='loc'||HomeBlock.shouldUseSingleFeatureHeroImage(featureId))});
-  const managementTextQuery=useAsyncResource(['scope-blocks-live','loc','group_manage'],
-    ()=>selectLiveScopeBlocks('loc','group_manage'),{enabled:managementMode});
-  const managementImageQuery=useAsyncResource(['scope-blocks-live','loc','scope_manage'],
-    ()=>selectLiveScopeBlocks('loc','scope_manage'),{enabled:managementMode});
+  const managementTextPage=managementSlot?.page||'';
+  const managementImagePage=HomeBlock.managementHeroImagePage(managementSlot);
+  const managementTextQuery=useAsyncResource(['scope-blocks-live','loc',managementTextPage],
+    ()=>selectLiveScopeBlocks('loc',managementTextPage),{enabled:managementMode});
+  const managementImageQuery=useAsyncResource(['scope-blocks-live','loc',managementImagePage],
+    ()=>selectLiveScopeBlocks('loc',managementImagePage),{enabled:managementMode});
   const heroImageRow=managementMode
     ?managementImageQuery.data?.find(row=>Number(row.block_order)===1)
     :((scopeId==='loc'&&!HomeBlock.shouldUseSingleFeatureHeroImage(featureId))
       ?groupHeroQuery.data:scopeHeroImageQuery.data)?.find(row=>Number(row.block_order)===1);
-  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?HomeBlock.MANAGEMENT_HERO_IMAGE_URL:'');
+  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?(managementSlot.audience==='loc'?'https://loc.lo3rwang.cc/pics/LOC-admin.jpg':HomeBlock.MANAGEMENT_HERO_IMAGE_URL):'');
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)
     :sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
@@ -87,7 +89,7 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
 
   return <main className={'scope-main'+(managementMode?' scope-main--edit-workspace':'')}>
     <section className="scope-page">
-      <header className={heroClassName} style={heroStyle} data-feature-hero-source={managementMode?'loc-manage':shared?'loc':'default'}>
+      <header className={heroClassName} style={heroStyle} data-feature-hero-source={managementMode?managementTextPage:shared?'loc':'default'}>
         <FeatureHeroContent
           scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
