@@ -102,6 +102,16 @@ try{
   await visit('/trace/',320);
   await visit('/lo3rwang/trace/',390);
 }finally{
-  socket?.close();for(const entry of children.reverse())entry.child.kill('SIGTERM');
-  rmSync(temp,{recursive:true,force:true});
+  socket?.close();
+  // Wait for Chrome's profile writer before removing its private temporary dir.
+  // A successful Guest rendering test must not be turned red by cleanup races.
+  const waits=children.map(({child})=>child.exitCode!==null||child.signalCode!==null
+    ?Promise.resolve()
+    :new Promise(resolve=>{
+      const timeout=setTimeout(resolve,4000);
+      child.once('exit',()=>{clearTimeout(timeout);resolve()});
+    }));
+  for(const entry of children.reverse())entry.child.kill('SIGTERM');
+  await Promise.all(waits);
+  rmSync(temp,{recursive:true,force:true,maxRetries:12,retryDelay:200});
 }
