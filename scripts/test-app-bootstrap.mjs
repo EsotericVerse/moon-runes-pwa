@@ -602,3 +602,20 @@ test('Scope editor uses time/spatial anchor labels and preserves LOC group label
   assert.match(dock,/已暫存，可繼續編輯/);
   assert.doesNotMatch(dock,/已分段儲存/);
 });
+
+test('Culture Time management uses one editor with anchor, event and trace types rather than three redundant tabs',()=>{
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(culture,/TIME_EDITOR_SECTIONS|timeEditorSection|time-editor-sections|<ManagementSectionNav/);
+  assert.match(culture,/id='time-editor-panel' role='region'/);
+  assert.match(culture,/items=\{timelineItems\}/);
+  assert.match(culture,/onSelect=\{item=>beginTimelineRecordEdit\(item\)\}/);
+  assert.match(culture,/onTimeClick=\{date=>beginTimelineCreation\('anchor',date\)\}/);
+  assert.match(culture,/defaultRecordType='anchor'/);
+  assert.match(editor,/const TYPES=\['anchor','time_period','time_trace'\]/);
+  assert.match(editor,/\{TYPES\.map\(type=><option/);
+  assert.match(editor,/payload\.anchor_ids=draft\.type==='time_trace'/);
+  assert.match(editor,/updateRows\(timeTable,payload/);
+  assert.match(editor,/insertRows\(timeTable,/);
+  assert.match(editor,/deleteRows\(timeTable,/);
+});
