@@ -73,7 +73,8 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
         const url=new URL(trimmed,window.location.origin);
         if(!['https:','http:'].includes(url.protocol))throw new Error('首頁圖只接受 HTTP(S) 圖片網址。');
       }
-      const image=trimmed?{source:'custom',url:trimmed}:null;
+      // silver.loc_blocks.block_image is TEXT carrying JSON, never a raw object.
+      const image=trimmed?JSON.stringify({source:'custom',url:trimmed}):null;
       const row=rows.find(item=>Number(item.block_order)===1);
       let result;
       if(row?.uid){
