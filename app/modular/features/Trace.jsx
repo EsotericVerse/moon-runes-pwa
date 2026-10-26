@@ -154,7 +154,7 @@ export default function Trace({scopeId='loc'}){
         </select>
       </label>:null}
       {currentMap&&routeListOpen?<ScopeLink className="loc-button"
-        href={navigationHref(periodScopeId,'manage')+'?section=traceMap'}>
+        href={navigationHref(periodScopeId,'manage')+'?section=traceMap&frame='+encodeURIComponent(currentMap.uid)}>
         編輯目前痕跡圖
       </ScopeLink>:null}
     </div>
