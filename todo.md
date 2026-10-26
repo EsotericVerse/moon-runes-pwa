@@ -1,10 +1,11 @@
-## 2026-10-26｜Admin「區塊」新版管理規格（PR #585；優先於後方舊版）
-> 此為使用者最新指令。後方「不得合併頁面控管」與「只編輯四個簡短標題」屬舊規格，**已被本節取代**，不可依舊版撤銷此需求；目前 PR 仍在工程驗證，非已部署或已驗收。
+## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585；待集中驗收／未部署）
+> **狀態：程式已合併 main；等待使用者集中手動部署，正式功能仍待工程端驗證及集中驗收。** 此為最新指令，後方「不得合併頁面控管」與「只編輯四個簡短標題」已被取代。**原分支編號／名稱：** `feat/hero-management-consolidation-20261026`；**PR：** [#585](https://github.com/EsotericVerse/moon-runes-pwa/pull/585)（merged）；**main merge SHA：** `8ae9c3f2581d568f1bacf54088e4b1a0dec16502`。**CI：** [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) 終態 success：管理 Hero 回歸 5/5、聚焦 Trace 73/73、Bootstrap 211/211、Next build 257/257、Chrome Trace 桌機／手機與 ISR 停用檢查通過。尚未進行真實 Admin 登入寫入／讀回、手機／桌機管理編輯互動及正式站版本驗證，**不能把「合併 main」視為已部署或使用者已驗收**。
 
-- [ ] 區塊選單移除獨立「頁面控管」，管理類別只保留「系統管理」與「個人設定」；各自沿用原本英文標題／中文大標題／標題說明／正文及獨立首頁圖連結。
-- [ ] 文化、統計、痕跡、搜尋普通 Hero 原欄位不變、保留群組圖／個人圖兩種設定；其下各新增「管理」：文化＝TimeAnchor／時間定錨、統計＝Keywords／關鍵詞、痕跡＝SpaceAnchor／空間定錨、搜尋＝AdvancedSearch／進階搜尋。四項各自可儲存英文標題、中文大標題、標題說明、正文（預設空白）。
-- [ ] 管理 Hero 圖片使用既有 `scope_manage` 共用連結 `https://loc.lo3rwang.cc/pics/scope-gn.jpg` 作為預設；允許修改並在 `silver.loc_blocks` 真實儲存，重新讀取需一致。不要新增圖片表／Scope 專屬管理圖片。舊 LOC Group 管理四項文案可在「系統管理 → Group 管理入口設定」繼續編輯，不遺失舊資料。
-- [ ] 完整驗證可寫與不可寫權限、不同管理路由的文字和圖、重新開啟編輯頁回讀、現有四大頁普通 Hero 不退化、React/build/CI。Cloudflare 自動部署與 ISR 保持停用，正式網站更新仍由使用者手動觸發。
+- [x] **程式實作：** 區塊選單移除獨立「頁面控管」，管理類別只保留「系統管理」與「個人設定」；各自保留英文標題／中文大標題／標題說明／正文及獨立首頁圖連結。
+- [x] **程式實作：** 文化、統計、痕跡、搜尋普通 Hero 原欄位不變、保留群組圖／個人圖；分別新增「管理」TimeAnchor／時間定錨、Keywords／關鍵詞、SpaceAnchor／空間定錨、AdvancedSearch／進階搜尋，支援英文標題、中文大標題、標題說明、正文（初始空白）。
+- [x] **程式實作：** 管理 Hero 沿用既有 `scope_manage` 共用圖片欄位，預設 `https://loc.lo3rwang.cc/pics/scope-gn.jpg`；儲存改以 `silver.loc_blocks` 完整 UID 寫入並實際資料庫讀回比對（程式契約已測，生產權限寫入尚未實測）。Group 管理入口文案保留於「系統管理」下，不新增資料表。
+- [ ] **待工程端真實功能與整批驗收：** 已授權 Admin 儲存→Supabase 讀回→重進頁→文字／圖片變更生效、無權限使用者禁止寫入、不同管理入口與一般 Hero 互不干擾、桌機手機編輯操作；使用者手動部署後再檢查正式版本和 Service Worker。此項與 PR 編號集中記錄，**不要求使用者逐分支驗收**。
+- [x] **交付邊界：** 未開啟 Cloudflare 自動部署／ISR，未觸碰 `time`、`trace`、`keywords` 表結構；這三表的合併構想僅為後續討論，**本 PR 不授權執行**。
 
 ---
 
