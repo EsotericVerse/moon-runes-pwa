@@ -32,8 +32,11 @@ export default function Trace({scopeId='loc'}){
   const reportTopRef=useRef(null);
   const [scrollRequest,setScrollRequest]=useState(0);
   const [mapOnly,setMapOnly]=useState(false);
-  const [locPeriodScope,setLocPeriodScope]=useState('loc');
-  const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
+  // /trace is a public index for all published Scope Frames. Prefer LOC
+  // native when it exists; otherwise show a real saved author/rune Frame.
+  // A missing LOC-native route must not hide existing author routes.
+  const visibleScopes=['loc','lo3rwang','lrunes'];
+  const [locPeriodScope,setLocPeriodScope]=useState('auto');
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState('articles');
@@ -75,12 +78,18 @@ export default function Trace({scopeId='loc'}){
 
   // Phase 1: load the light index, never all historical check-ins at startup.
   const traceIndex=useAsyncResource({
-    queryKey:traceMapIndexKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
+    queryKey:traceMapIndexKey(scopeId),
     enabled:supported&&routeListOpen,
-    queryFn:()=>readTraceMapIndex(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
+    queryFn:()=>readTraceMapIndex(scopeId),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const maps=traceIndex.data||[];
+  const allMaps=traceIndex.data||[];
+  const periodScopeId=scopeId==='loc'
+    ?(locPeriodScope==='auto'
+      ?visibleScopes.find(id=>allMaps.some(row=>row.source_scope===id))||'loc'
+      :locPeriodScope)
+    :scopeId;
+  const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
   const currentMap=useMemo(()=>{
     if(currentTraceChoice==='all')return null;
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
@@ -137,6 +146,7 @@ export default function Trace({scopeId='loc'}){
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
           onChange={event=>{setLocPeriodScope(event.target.value);setSelectedPlace(null);}}>
+          <option value="auto">自動顯示已儲存痕跡</option>
           <option value="loc">LOC 自有痕跡</option>
           <option value="lo3rwang">作者作品</option>
           <option value="lrunes">月之符文</option>
