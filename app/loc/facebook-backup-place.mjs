@@ -22,10 +22,34 @@ function namedPlace(value){
   }
   return '';
 }
+// Meta's labelled export can be UTF-8 bytes written as Latin-1 characters.
+// Decode only field labels to recognize an explicit check-in; keep the
+// original place value for the existing import encoding repair.
+function labelText(value){
+  const raw=String(value||'').trim();
+  if([...raw].some(char=>char.charCodeAt(0)>255))return raw;
+  try{return new TextDecoder('utf-8',{fatal:true})
+    .decode(Uint8Array.from(raw,char=>char.charCodeAt(0)));}
+  catch{return raw;}
+}
+function explicitTaggedPlaces(row){
+  const found=[];
+  for(const field of Array.isArray(row?.label_values)?row.label_values:[]){
+    for(const landmark of Array.isArray(field?.dict)?field.dict:[]){
+      if(labelText(landmark?.title)!=='地標')continue;
+      for(const detail of Array.isArray(landmark?.dict)?landmark.dict:[]){
+        if(labelText(detail?.label)!=='名稱')continue;
+        const name=asName(detail?.value);
+        if(name)found.push(name);
+      }
+    }
+  }
+  return found;
+}
 function placeCandidates(row){
   const direct=PLACE_KEYS.map(field=>namedPlace(row?.[field])).filter(Boolean);
   if(direct.length)return direct; // Explicit post location outranks attachment metadata.
-  const found=[];
+  const found=explicitTaggedPlaces(row);
   // Some text-only Meta exports place the check-in on data[i], not an
   // attachment. These are location metadata, never inferred from post prose.
   for(const item of Array.isArray(row?.data)?row.data:[]){
@@ -68,13 +92,25 @@ export function facebookBackupPostText(row){
   return '';
 }
 export function facebookBackupTimestamp(row){
-  return row?.timestamp??row?.creation_timestamp??row?.created_at??
-    row?.string_map_data?.['Creation Time']?.timestamp??null;
+  const direct=row?.timestamp??row?.creation_timestamp??row?.created_at??
+    row?.string_map_data?.['Creation Time']?.timestamp;
+  if(direct!==undefined&&direct!==null)return direct;
+  // This is a real Meta "visited place" timestamp, not a fabricated
+  // date inferred from coordinates or other posts.
+  const labeled=(Array.isArray(row?.label_values)?row.label_values:[])
+    .find(item=>labelText(item?.label)==='造訪時間');
+  return labeled?.timestamp_value??null;
 }
 
 // Stable source-record ID for repeat imports. No external IDs are conflated
 // with the owner's Trace UID; this is only the Galaxy article's 8-char ID.
 const UID_CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+export function facebookBackupImportUid(row){
+  // Plain JSON has no outer archive key; use a deterministic source key so
+  // the same backup is not assigned new random Galaxy IDs on every import.
+  const native=String(row?.id||row?.post_id||row?.fbid||'').trim();
+  return facebookArchiveUid('facebook:json:'+(native||JSON.stringify(row||{})));
+}
 export function facebookArchiveUid(key){
   const text=String(key||'');
   if(!text)throw Error('Facebook 紀錄缺少來源識別，無法安全重複匯入。');
