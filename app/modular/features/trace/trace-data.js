@@ -43,10 +43,22 @@ function descriptionText(value){
   if(s.length>2000)throw Error('說明不能超過 2000 字。');
   return s;
 }
+// Floor is a semantic vertical coordinate, not inferred building height.
+// Preserve complete unit/floor address text (e.g. B1, 3-4樓, 5樓之2).
+function locationFields({address='',floor_label='',floor_level=null}={}){
+  const full=String(address||'').trim(),floor=String(floor_label||'').trim();
+  if(full.length>320)throw Error('完整地址最多 320 字。');
+  if(floor.length>40)throw Error('樓層／室別最多 40 字。');
+  const raw=String(floor_level??'').trim();
+  const level=raw===''?null:Number(raw);
+  if(level!==null&&(!Number.isInteger(level)||level===0||level < -100||level>300))
+    throw Error('樓層序號需為 -100～-1 或 1～300；未知或跨樓層可留空。');
+  return {address:full,floor_label:floor,floor_level:level};
+}
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
   // Read only when the selected Trace screen mounts. A former 2,000-row cap
   // silently hid historical places as imports grew; bounded pages preserve all.
   // This does not run on every autocomplete keystroke.
@@ -81,7 +93,7 @@ export const traceCurrentKey=(scopeId,route)=>[
 ];
 export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id';
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level';
 
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
@@ -209,7 +221,7 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
   const existing=comparableAnchors(await readTraceData(id),id,excludeUid);
   return classifyNewAnchor({...anchor,source_scope:id,trace_type:'anchor'},existing);
 }
-export async function addTraceAnchor({scopeId,title,description='',longitude,latitude,radius_m=500}){
+export async function addTraceAnchor({scopeId,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
@@ -217,7 +229,8 @@ export async function addTraceAnchor({scopeId,title,description='',longitude,lat
     uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
     source_scope:id,
-    county_id:await countyIdAt(longitude,latitude)
+    county_id:await countyIdAt(longitude,latitude),
+    ...locationFields({address,floor_label,floor_level})
   };
   const {reuse}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
   if(reuse)return reuseExistingAnchor({scopeId:id,candidate:data,existing:reuse});
@@ -244,7 +257,8 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       description:descriptionText(place.description||''),
       longitude:Number(place.longitude),latitude:Number(place.latitude),
       county_id:traceCountyId(countyForCoordinates(place.longitude,place.latitude)),
-      radius_m:Number(place.radius_m??500)};
+      radius_m:Number(place.radius_m??500),
+      ...locationFields(place)};
     if(!validCoordinates(place.longitude,place.latitude))
       throw Error(data.title+' 的經緯度無效，請先確認候選位置。');
     if(!validRadius(data.radius_m))throw Error(data.title+' 的空間範圍無效。');
@@ -290,7 +304,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   return {count,skipped,consolidated,duplicatesInBatch,reviewCount,reviewPreview,auditError};
 }
 
-export async function updateTraceAnchor({scopeId,uid,title,description='',longitude,latitude,radius_m=500}){
+export async function updateTraceAnchor({scopeId,uid,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   const anchorId=String(uid||'').trim();
   if(!/^[A-Za-z0-9]{8}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
@@ -300,7 +314,8 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
     longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
-    county_id:await countyIdAt(longitude,latitude)
+    county_id:await countyIdAt(longitude,latitude),
+    ...locationFields({address,floor_label,floor_level})
   };
   const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
     anchor:{...changes,source_scope:id,trace_type:'anchor'},excludeUid:anchorId});
