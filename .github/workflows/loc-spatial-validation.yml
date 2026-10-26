@@ -2,9 +2,8 @@ name: LOC spatial A branch validation (no deployment)
 
 # Isolated engineering check only. Never deploy Pages, Cloudflare, ISR, R2, DO or Vercel.
 on:
-  push:
-    branches:
-      - feat/loc-spatial-anchors-20261026
+  # Deliberate one-shot verification: rapid commits on the shared A branch
+  # must not start and cancel expensive builds repeatedly.
   workflow_dispatch:
 
 permissions:
