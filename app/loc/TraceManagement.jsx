@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
 const TraceRouteManager=dynamic(()=>import('./TraceRouteManager'),{
@@ -9,7 +9,6 @@ const TraceRouteManager=dynamic(()=>import('./TraceRouteManager'),{
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {dbAuthClient} from './db-client.mjs';
-import {searchTracePlaces,exactTracePlaceMatch} from '../modular/features/trace/trace-geocoding';
 import {readSharedSpatialReferences} from '../modular/features/trace/trace-spatial-reference-data';
 import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {
@@ -36,8 +35,6 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [latitude,setLatitude]=useState('');
   const [radius,setRadius]=useState('');
   const [focusLocation,setFocusLocation]=useState(null);
-  const [quickCandidates,setQuickCandidates]=useState([]);
-  const [quickBusy,setQuickBusy]=useState(false);
   // Existing references are searched only on an explicit action, not per key.
   // Names, street addresses and floor/unit strings share the same lookup.
   const [referenceText,setReferenceText]=useState('');
@@ -45,9 +42,6 @@ function AnchorEditor({scopeId,spatial,reload}){
   const sharedReferences=useAsyncResource(['trace-shared-spatial-references',sharedTerm],
     ()=>readSharedSpatialReferences(sharedTerm),
     {enabled:!editingUid&&sharedTerm.length>=2,revalidateOnFocus:false,revalidateOnReconnect:false});
-  const [quickNotice,setQuickNotice]=useState('');
-  const quickRequest=useRef(0);
-  useEffect(()=>()=>{quickRequest.current+=1;},[]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const dirty=Boolean(editingUid||title||description||address||floorLabel||floorLevel||longitude||latitude||radius);
@@ -62,8 +56,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     item.type==='near-unverified'||item.type==='same-address'
     ||item.type==='different-floor'||item.type==='address-coordinate-conflict'||item.type==='same-name-different-location');
   const pickExisting=uid=>{
-    quickRequest.current+=1;
-    setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
+
     const anchor=ownAnchors.find(row=>row.uid===uid);
     setEditingUid(anchor?.uid||'');
     setTitle(anchor?.title||'');
@@ -104,43 +97,12 @@ function AnchorEditor({scopeId,spatial,reload}){
     setLatitude(String(reference.latitude));
     setFocusLocation({longitude:reference.longitude,latitude:reference.latitude,
       name:title.trim(),radius_m:Number(radius)||500});
-    setQuickCandidates([]);
+
     setQuickNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
       ' 不會重用或修改。請核對門牌、樓層及目前店家後，再以自己的 Scope 新增。');
   };
-  const applyQuickPlace=(candidate,query=title.trim())=>{
-    const lng=Number(candidate.longitude),lat=Number(candidate.latitude);
-    if(!Number.isFinite(lng)||!Number.isFinite(lat))return;
-    setLongitude(String(Math.round(lng*1e6)/1e6));
-    setLatitude(String(Math.round(lat*1e6)/1e6));
-    setFocusLocation({longitude:lng,latitude:lat,name:query,radius_m:Number(radius)||500});
-    setQuickCandidates([]);
-    setQuickNotice('已快速移至「'+candidate.label+'」，座標已填入；請核對位置後再儲存。');
-  };
-  const quickLocate=async()=>{
-    const query=title.trim();
-    if(busy||quickBusy||query.length<2)return;
-    const request=++quickRequest.current;
-    setQuickBusy(true);setQuickCandidates([]);setQuickNotice('');
-    try{
-      const found=await searchTracePlaces(query);
-      if(quickRequest.current!==request)return;
-      if(!found.length){
-        setQuickNotice('找不到「'+query+'」，請換個地名或直接點選地圖。');
-      }else if(found.length===1&&exactTracePlaceMatch(query,found[0])){
-        applyQuickPlace(found[0],query);
-      }else{
-        setQuickCandidates(found);
-        setQuickNotice('請選擇正確地點；不會自動採用不確定的搜尋結果。');
-      }
-    }catch(error){
-      if(quickRequest.current===request)setQuickNotice('快速定位失敗：'+String(error?.message||error));
-    }finally{
-      if(quickRequest.current===request)setQuickBusy(false);
-    }
-  };
   const save=async()=>{
-    if(busy||quickBusy)return false;
+    if(busy)return false;
     setBusy(true);setNotice('');
     try{
       if(closeCandidates.some(item=>item.type==='near-unverified')&&!window.confirm(
@@ -177,7 +139,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
     finally{setBusy(false);}
   };
-  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||quickBusy});
+  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card">
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
     {ownAnchors.length?<div className="scope-management-fields">
@@ -190,13 +152,12 @@ function AnchorEditor({scopeId,spatial,reload}){
         </select>
       </label>
     </div>:null}
-    <p className="scope-status">輸入或選擇打卡地名後按「快速定位」，地圖會直接跳往候選位置；也可在地圖點選位置或拖曳圖釘調整。不會修改 Galaxy 打卡欄位。</p>
+    <p className="scope-status">既有地點直接開啟編輯；地址、縣市和樓層是補充資訊，不參與同一地點的合併判斷。</p>
     <div className="scope-management-fields">
       <div className="loc-trace-quick-field">
         <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
           value={title} onChange={e=>{
-            quickRequest.current+=1;
-            setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
+
             setTitle(e.target.value);
           }}
           placeholder="選既有 Facebook 打卡名稱，或自行輸入" disabled={busy}/>
@@ -204,21 +165,17 @@ function AnchorEditor({scopeId,spatial,reload}){
             {(popular.data||[]).map(item=><option key={item.name} value={item.name}/>)}
           </datalist>
         </label>
-        <button className="loc-button" type="button" onClick={quickLocate}
-          disabled={busy||quickBusy||title.trim().length<2}>
-          {quickBusy?'定位中…':'快速定位'}
-        </button>
       </div>
       {!editingUid?<div className="loc-trace-quick-field">
         <label>查找 LOC 已有地點／門牌／樓層
           <input type="search" maxLength={100} value={referenceText}
             onChange={e=>setReferenceText(e.target.value)}
             placeholder="可輸入店名、地址、B1 或室別；留空使用上面的地點名稱"
-            disabled={busy||quickBusy}/>
+            disabled={busy}/>
         </label>
         <button className="loc-button" type="button"
           onClick={()=>setSharedTerm((referenceText.trim()||address.trim()||title.trim()).slice(0,100))}
-          disabled={busy||quickBusy||(referenceText.trim()||address.trim()||title.trim()).length<2}>
+          disabled={busy||(referenceText.trim()||address.trim()||title.trim()).length<2}>
           查詢已有錨點
         </button>
       </div>:null}
@@ -231,14 +188,14 @@ function AnchorEditor({scopeId,spatial,reload}){
         </p>:null}
         {(sharedReferences.data||[]).map(reference=><button
           key={reference.source_scope+':'+reference.uid} type="button" className="loc-button"
-          onClick={()=>useSharedReference(reference)} disabled={busy||quickBusy}>
+          onClick={()=>useSharedReference(reference)} disabled={busy}>
           {reference.source_scope===scopeId?'編輯自己的錨點：':'選用位置參考：'}
           {reference.title||'未命名'} · {reference.address||'門牌未核實'}
           {reference.floor_label?' · '+reference.floor_label:''}
           {' · '+reference.source_scope+' · UID '+reference.uid}
         </button>)}
         {!sharedReferences.isPending&&!sharedReferences.error&&!sharedReferences.data?.length?
-          <p className="scope-status">目前沒有可用的公用候選；可改按「快速定位」查外部地點。</p>:null}
+          <p className="scope-status">目前沒有可用的既有地點；可手動補充位置。</p>:null}
       </div>:null}
       <label>完整地址（含門牌、樓層／室別；未確認可留空）
         <input type="text" maxLength={320} autoComplete="street-address" value={address}
@@ -269,17 +226,12 @@ function AnchorEditor({scopeId,spatial,reload}){
           :'請確認是否為同一地點'}
       </p>)}
     </div>:null}
-    {quickNotice?<p className="scope-status" role="status" aria-live="polite">{quickNotice}</p>:null}
-    {quickCandidates.length?<div className="loc-trace-quick-results" role="group" aria-label="地點候選">
-      {quickCandidates.map((candidate,index)=><button key={index} className="loc-button" type="button"
-        disabled={busy||quickBusy} onClick={()=>applyQuickPlace(candidate)}>{candidate.label}</button>)}
-    </div>:null}
+
     {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
       <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
       {popular.data.slice(0,10).map(item=><button className="loc-button" type="button"
         key={item.name} disabled={busy} onClick={()=>{
-          quickRequest.current+=1;
-          setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
+
           setTitle(item.name);
         }}>
         {item.name}（{item.article_count}）
