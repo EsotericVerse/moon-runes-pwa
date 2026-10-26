@@ -126,9 +126,9 @@ export default {
   "noDate": "日付なし",
   "skippedReasons": "スキップした最初のレコードの理由：",
   "writtenProgress": "保存済み {completed}／{total} 件・{percent}%",
-  "batchImport": "インポート開始",  "saveSection": "Galaxy に保存",
+  "batchImport": "インポート開始",
+  "saveSection": "Galaxy に保存",
   "saveHint": "ファイルの読み取りは完了しています。プレビューを確認し、「インポート開始」で Galaxy に書き込みます。",
-
   "nextJson": "次の JSON ファイル",
   "refreshLoaded": "Refresh データ {count} 件を読み込みました。変更内容を確認してから書き込みます。",
   "refreshParseFailed": "Refresh JSON／形式の解析に失敗：{error}",
