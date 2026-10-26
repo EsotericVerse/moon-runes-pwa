@@ -1,202 +1,165 @@
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {dbAuthClient} from './db-client.mjs';
-import {anchorAddress,countyOfAnchor,groupAnchorsByCounty,organizeAnchorCandidates} from '../modular/features/trace/trace-organizer.mjs';
+import {reviewPlaceNameGroups,compactPlaceName} from '../modular/features/trace/trace-place-names.mjs';
 
-const normalizePlace=value=>String(value||'').trim().replace(/臺/g,'台')
-  .toLocaleLowerCase().replace(/[\s　]+/g,'');
-const STATUS={
-  'same-address':'地址相同：可以確認合併',
-  'near-unverified':'座標接近、地址未齊：請先核對是否同址',
-  'near-different-address':'座標接近，但記錄地址不同：不合併',
-  'address-coordinate-conflict':'地址相同，但座標相距過遠：先核對座標',
-  'same-name-different-location':'名稱相同、位置不同：保留獨立'
-};
-function Detail({anchor}){
-  return <div><strong>{anchor.title}</strong> <small>（{anchor.uid}）</small>
-    <p className="scope-status">{anchorAddress(anchor)||'尚無已核對地址'} · {anchor.latitude}, {anchor.longitude}</p>
-  </div>;
-}
+const canonical=items=>[...items].sort((a,b)=>
+  String(a.created_at||'').localeCompare(String(b.created_at||''))||
+  String(a.uid||'').localeCompare(String(b.uid||'')))[0];
+
 export default function TraceOrganizer({scopeId,spatial,reload}){
-  const ownAnchors=useMemo(()=>(spatial.anchors||[]).filter(a=>a.source_scope===scopeId),[spatial.anchors,scopeId]);
-  const groups=useMemo(()=>groupAnchorsByCounty(ownAnchors),[ownAnchors]);
-  const suggestions=useMemo(()=>organizeAnchorCandidates(ownAnchors),[ownAnchors]);
-  const [selectedUid,setSelectedUid]=useState('');
-  const [selectedCounty,setSelectedCounty]=useState('');
-  const [keeps,setKeeps]=useState({});
-  const [verified,setVerified]=useState({});
-  const [busy,setBusy]=useState('');
+  const anchors=useMemo(()=>(spatial.anchors||[]).filter(item=>
+    item.trace_type==='anchor'&&item.source_scope===scopeId),[spatial.anchors,scopeId]);
+  const {automatic,uncertain}=useMemo(()=>reviewPlaceNameGroups(anchors),[anchors]);
+  const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const [placeRows,setPlaceRows]=useState(null);
-  const [placeBusy,setPlaceBusy]=useState(false);
-  const [placeNotice,setPlaceNotice]=useState('');
-  const [placeIsError,setPlaceIsError]=useState(false);
-  const [placeChoices,setPlaceChoices]=useState({});
-  const source=ownAnchors.find(a=>a.uid===selectedUid);
-  const selectable=groups.filter(g=>!selectedCounty||g.county===selectedCounty);
-  const reviewArticles=async()=>{
-    if(placeBusy||scopeId==='loc')return;
-    setPlaceBusy(true);setPlaceIsError(false);setPlaceNotice('');
-    try{
-      const {data,error}=await dbAuthClient.schema('silver')
-        .rpc('preview_scope_trace_article_places',{p_scope_id:scopeId});
-      if(error)throw error;
-      setPlaceRows(Array.isArray(data)?data:[]);
-    }catch(error){setPlaceIsError(true);setPlaceNotice(String(error?.message||error));}
-    finally{setPlaceBusy(false);}
-  };
-  const applyArticleLinks=async()=>{
-    if(placeBusy||!placeRows||scopeId==='loc')return;
-    setPlaceBusy(true);setPlaceIsError(false);setPlaceNotice('');
-    try{
-      const {data,error}=await dbAuthClient.schema('silver')
-        .rpc('apply_scope_trace_article_places',{p_scope_id:scopeId});
-      if(error)throw error;
-      setPlaceNotice('已將 '+Number(data||0).toLocaleString()+' 篇有唯一確定錨點的文章連結到四碼 place_id；原始打卡地名未修改。');
-      const preview=await dbAuthClient.schema('silver')
-        .rpc('preview_scope_trace_article_places',{p_scope_id:scopeId});
-      if(preview.error)throw preview.error;
-      setPlaceRows(Array.isArray(preview.data)?preview.data:[]);
-    }catch(error){setPlaceIsError(true);setPlaceNotice(String(error?.message||error));}
-    finally{setPlaceBusy(false);}
-  };
-  const approveArticlePlace=async(row)=>{
-    const anchorUid=placeChoices[row.source_place];
-    if(placeBusy||!anchorUid||scopeId==='loc')return;
-    const valid=ownAnchors.some(anchor=>anchor.trace_type==='anchor'&&anchor.uid===anchorUid);
-    if(!valid){setPlaceIsError(true);setPlaceNotice('請選擇同一 Scope 現有的空間定錨點。');return;}
-    setPlaceBusy(true);setPlaceIsError(false);setPlaceNotice('');
-    try{
-      const {data,error}=await dbAuthClient.schema('silver')
-        .rpc('approve_scope_trace_place_alias',{
-          p_scope_id:scopeId,p_source_place:row.source_place,p_anchor_uid:anchorUid
-        });
-      if(error)throw error;
-      setPlaceNotice('人工核對已儲存；'+Number(data||0).toLocaleString()+' 篇文章建立 place_id，往後可沿用同一別名。');
-      const preview=await dbAuthClient.schema('silver')
-        .rpc('preview_scope_trace_article_places',{p_scope_id:scopeId});
-      if(preview.error)throw preview.error;
-      setPlaceRows(Array.isArray(preview.data)?preview.data:[]);
-    }catch(error){setPlaceIsError(true);setPlaceNotice(String(error?.message||error));}
-    finally{setPlaceBusy(false);}
-  };
-  const exactPlaceRows=placeRows?.filter(r=>r.matched_uid)||[];
-  const ambiguousPlaceRows=placeRows?.filter(r=>r.match_status==='ambiguous')||[];
-  const unmatchedPlaceRows=placeRows?.filter(r=>r.match_status==='unmatched')||[];
-  const merge=async proposal=>{
-    if(busy||scopeId==='loc'||!proposal.canMerge)return;
-    const keep=keeps[proposal.key]||proposal.a.uid;
-    const remove=keep===proposal.a.uid?proposal.b.uid:proposal.a.uid;
-    const keepRow=keep===proposal.a.uid?proposal.a:proposal.b;
-    const removeRow=remove===proposal.a.uid?proposal.a:proposal.b;
-    const address=proposal.type==='same-address'?proposal.address:(verified[proposal.key]||'').trim();
-    if(!address||address.length<6){setNotice('請先核對並輸入完整共同地址。');return;}
-    if(!window.confirm('確定兩筆是同一地址、同一實體地點？\n保留：'+keepRow.title+'（'+keep+'）\n合併：'+removeRow.title+'（'+remove+'）\n地址：'+address+'\n將保留舊名稱及原有痕跡圖關聯。'))return;
-    setBusy(proposal.key);setNotice('');
-    try{
-      const {data,error}=await dbAuthClient.schema('silver').rpc('merge_scoped_trace_anchors',{
-        p_scope_id:scopeId,p_keep_uid:keep,p_remove_uid:remove,p_verified_address:address
+  const [error,setError]=useState(false);
+  const [checked,setChecked]=useState({});
+  const [placeName,setPlaceName]=useState('');
+  const [selectedUid,setSelectedUid]=useState('');
+  const [aliases,setAliases]=useState([]);
+  const [newAlias,setNewAlias]=useState('');
+  const ownPlaces=scopeId!=='loc';
+  const place=anchors.find(item=>item.uid===selectedUid);
+  useEffect(()=>{
+    let live=true;
+    if(!selectedUid){setAliases([]);return;}
+    dbAuthClient.schema('silver').from(scopeId+'_place')
+      .select('name_lists').eq('uid',selectedUid).maybeSingle()
+      .then(({data,error:loadError})=>{
+        if(!live)return;
+        if(loadError){setError(true);setNotice(String(loadError.message||loadError));return;}
+        setAliases(data?.name_lists||[]);
       });
-      if(error)throw new Error(error.message||'合併失敗');
-      await reload();
-      setNotice('已合併「'+(data?.historical_title||removeRow.title)+'」至「'+(data?.canonical_title||keepRow.title)+'」，並保留歷史名稱。');
-    }catch(error){setNotice('合併未完成：'+String(error?.message||error));}
-    finally{setBusy('');}
+    return()=>{live=false;};
+  },[scopeId,selectedUid]);
+  const saveNames=async()=>{
+    if(busy||!selectedUid)return;
+    const list=[...new Set([...aliases,newAlias.trim()].filter(Boolean))];
+    setBusy(true);setError(false);setNotice('');
+    try{
+      const {error:saveError}=await dbAuthClient.schema('silver')
+        .rpc('save_scope_trace_place_names',{p_scope_id:scopeId,p_uid:selectedUid,p_names:list});
+      if(saveError)throw saveError;
+      setAliases(list);setNewAlias('');setNotice('已儲存 '+place.title+' 的名稱對照，下次 Facebook 匯入可直接沿用。');
+    }catch(saveError){setError(true);setNotice(String(saveError.message||saveError));}
+    finally{setBusy(false);}
   };
-  return <section className="loc-card scope-feature-card">
-    <h3>整理空間定錨點</h3>
-    <p className="scope-status">自動按縣市整理，主動發現同址異名及可疑重複。相同地址才提出合併；座標接近只供人工核對。任何合併都必須由你確認，且不修改 Galaxy 的文章或原始打卡。</p>
-    {scopeId!=='loc'?<section className="loc-trace-article-linking" aria-label="現有文章打卡地點整理">
-      <h4>空間定錨點：現有文章，打卡地點整理</h4>
-      <p className="scope-status">文章先正常匯入；建立錨點以後，按這裡分析原始打卡名稱。只會把唯一確定的名稱連結至 Galaxy.place_id（對應 Trace.uid）。source_place 與文章 UID 永遠保留；同名不同店或不同樓層不得自動合併。</p>
-      <button className="loc-button" type="button" disabled={placeBusy}
-        onClick={reviewArticles}>{placeBusy?'分析中…':'空間定錨點：現有文章，打卡地點整理'}</button>
-      {placeRows?<div className="loc-trace-article-linking-results">
-        <p className="scope-status">確定可連結：{exactPlaceRows.length} 種名稱 · {exactPlaceRows.reduce((total,row)=>total+Number(row.article_count||0),0).toLocaleString()} 篇；有歧義：{ambiguousPlaceRows.length} 種；無明確錨點：{unmatchedPlaceRows.length} 種（保留未連結）。</p>
-        {exactPlaceRows.length?<button className="loc-button" type="button" disabled={placeBusy}
-          onClick={applyArticleLinks}>連結確定的文章（不修改打卡原文）</button>:null}
-        {ambiguousPlaceRows.length?<div className="loc-trace-article-ambiguous">
-          <h5>同名不同錨點：需要你判別（只顯示有疑問的項目）</h5>
-          {ambiguousPlaceRows.slice(0,60).map(row=>{
-            const candidates=ownAnchors.filter(a=>a.trace_type==='anchor'
-              &&normalizePlace(a.title)===normalizePlace(row.source_place));
-            return <div className="loc-trace-article-choice" key={row.source_place}>
-              <strong>{row.source_place} · {Number(row.article_count||0).toLocaleString()} 篇</strong>
-              <label>選擇實際地點
-                <select className="scope-select" value={placeChoices[row.source_place]||''}
-                  disabled={placeBusy} onChange={event=>setPlaceChoices(prev=>({...prev,[row.source_place]:event.target.value}))}>
-                  <option value="">不確定，暫不連結</option>
-                  {candidates.map(anchor=><option value={anchor.uid} key={anchor.uid}>
-                    {anchor.title} · {anchor.address||'無地址'} · {anchor.floor_label||'樓層未知'} · UID {anchor.uid}
-                  </option>)}
-                </select>
-              </label>
-              <button className="loc-button" type="button" disabled={placeBusy||!placeChoices[row.source_place]}
-                onClick={()=>approveArticlePlace(row)}>確認同一地點並保存對應</button>
-            </div>;
-          })}
-          {ambiguousPlaceRows.length>60?<p className="scope-status">僅顯示前 60 種歧義，處理後重新分析。</p>:null}
-        </div>:null}
-        {unmatchedPlaceRows.length?<p className="scope-status">其餘 {unmatchedPlaceRows.length} 種地名尚無可確定的同名錨點，不會猜測或強迫輸入地址；新增錨點後再整理即可。</p>:null}
-      </div>:null}
-      {placeNotice?<p role={placeIsError?'alert':'status'} className={'scope-status'+(placeIsError?' scope-error':'')}>{placeNotice}</p>:null}
+  const mergeGroup=async(group,uids)=>{
+    const keep=canonical(group.items);
+    const remove=[...new Set(uids)].filter(uid=>uid!==keep.uid);
+    if(!remove.length)throw Error('請先勾選要合併至 '+keep.title+' 的地點。');
+    const {data,error:mergeError}=await dbAuthClient.schema('silver')
+      .rpc('merge_scope_trace_place_names',{
+        p_scope_id:scopeId,p_keep_uid:keep.uid,p_remove_uids:remove
+      });
+    if(mergeError)throw mergeError;
+    return Number(data||0);
+  };
+  const runAutomatic=async()=>{
+    if(busy||!automatic.length||!ownPlaces)return;
+    setBusy(true);setError(false);setNotice('');
+    let completed=0,groups=0;
+    try{
+      for(const group of automatic){
+        completed+=await mergeGroup(group,group.items.slice(1).map(item=>item.uid));
+        groups++;
+      }
+      setNotice('已完成 '+groups+' 組明確名稱變體合併，共整理 '+completed+' 個重複 UID；首筆名稱不變。');
+    }catch(mergeError){
+      setError(true);setNotice('已完成 '+groups+' 組。後續已停止：'+String(mergeError.message||mergeError));
+    }finally{
+      try{await reload();}catch(e){setError(true);setNotice(current=>current+' 資料庫已回報寫入，但重讀失敗：'+String(e.message||e));}
+      setBusy(false);
+    }
+  };
+  const saveChecked=async(group)=>{
+    if(busy||!ownPlaces)return;
+    const uids=Object.keys(checked[group.key]||{}).filter(uid=>checked[group.key][uid]);
+    if(!uids.length){setError(true);setNotice('先勾選確認為同一地點的項目。');return;}
+    setBusy(true);setError(false);setNotice('');
+    try{
+      const removed=await mergeGroup(group,uids);
+      setChecked(previous=>({...previous,[group.key]:{}}));
+      setNotice('已保存 '+removed+' 個確認相同的地點，使用首筆 Trace UID；其餘仍保持獨立。');
+      await reload();
+    }catch(mergeError){setError(true);setNotice(String(mergeError.message||mergeError));}
+    finally{setBusy(false);}
+  };
+  const matches=useMemo(()=>{
+    const q=compactPlaceName(placeName);
+    if(!q)return [];
+    return anchors.filter(item=>compactPlaceName(item.title).includes(q)).slice(0,30);
+  },[anchors,placeName]);
+  return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱合併">
+    <h3>地點管理 · 名稱整理</h3>
+    <p className="scope-status">只比對地點名稱與已儲存別名，不使用地址、縣市或 GPS 判定相同。保留最早建立的名稱和 UID；不同樓層／不同實體保持獨立。任何整理都不修改 Galaxy.source_place。</p>
+    <div className="scope-stat-controls" role="status">
+      <span>目前地點：{anchors.length}</span>
+      <span>明確名稱變體：{automatic.length} 組</span>
+      <span>需要確認：{uncertain.length} 組</span>
+    </div>
+    {ownPlaces&&automatic.length?<section className="scope-card">
+      <h4>可直接整理的文字變體</h4>
+      <p className="scope-status">空白、大小寫、台／臺與明確品牌＋分店名稱順序差異，自動歸入最早的 UID，不要求先新增錨點。</p>
+      <button className="loc-button primary" type="button" disabled={busy} onClick={runAutomatic}>
+        {busy?'整理中…':'合併明確文字變體（'+automatic.length+' 組）'}
+      </button>
+      <details><summary>查看整理候選</summary>
+        {automatic.slice(0,80).map(group=><p key={group.key}>
+          <strong>{group.canonical.title}</strong> · {group.items.map(item=>item.title+' ('+item.uid+')').join('、')}
+        </p>)}
+      </details>
     </section>:null}
-    <div className="scope-stat-controls" role="group" aria-label="整理摘要">
-      <span className="scope-status">定錨點：{ownAnchors.length}</span>
-      <span className="scope-status">待檢查：{suggestions.length} 組</span>
-      <span className="scope-status">相同地址：{suggestions.filter(item=>item.type==='same-address').length} 組</span>
-    </div>
-    <div className="scope-management-fields">
-      <label>縣市
-        <select className="scope-select" value={selectedCounty} onChange={event=>{setSelectedCounty(event.target.value);setSelectedUid('');}}>
-          <option value="">全部縣市</option>
-          {groups.map(g=><option key={g.county} value={g.county}>{g.county}（{g.items.length}）</option>)}
-        </select>
+    <section className="scope-card">
+      <h4>名稱相似，需要確認</h4>
+      <p className="scope-status">勾選確定同一地點的名稱，按一次「儲存已勾選」。不勾選就保留原 UID；不同樓層不要合併。</p>
+      {!uncertain.length?<p className="scope-status">目前沒有需要人工判斷的名稱候選。</p>:null}
+      {uncertain.slice(0,80).map(group=>{
+        const keep=canonical(group.items);
+        return <details key={group.key} className="loc-trace-article-choice">
+          <summary>{keep.title} · {group.items.length} 筆 · {group.reason||'名稱不同'}</summary>
+          <p>保留最早的 UID：{keep.uid}（{keep.title}）</p>
+          {group.items.filter(item=>item.uid!==keep.uid).map(item=><label key={item.uid}>
+            <input type="checkbox" disabled={busy||!ownPlaces} checked={Boolean(checked[group.key]?.[item.uid])}
+              onChange={event=>setChecked(current=>({...current,[group.key]:{
+                ...current[group.key],[item.uid]:event.target.checked
+              }}))}/>
+            {item.title} · UID {item.uid}{item.floor_label?' · '+item.floor_label:''}
+          </label>)}
+          <div className="scope-stat-controls">
+            <button type="button" className="loc-button primary" disabled={busy||!ownPlaces}
+              onClick={()=>saveChecked(group)}>儲存已勾選（同一 Trace UID）</button>
+            <button type="button" className="loc-button" disabled={busy}
+              onClick={()=>setChecked(current=>({...current,[group.key]:{}}))}>保持獨立／清除勾選</button>
+          </div>
+        </details>;
+      })}
+      {uncertain.length>80?<p className="scope-status">已顯示前 80 組，完成後重新載入下一批。</p>:null}
+    </section>
+    <section className="scope-card">
+      <h4>管理已確認的地點名稱</h4>
+      <label>搜尋既有地點
+        <input type="search" value={placeName} placeholder="輸入名稱，不限縣市" onChange={event=>setPlaceName(event.target.value)}/>
       </label>
-      <label>定錨點
-        <select className="scope-select" value={selectedUid} onChange={event=>setSelectedUid(event.target.value)}>
-          <option value="">請選擇定錨點</option>
-          {selectable.map(g=><optgroup key={g.county} label={g.county}>
-            {g.items.map(a=><option key={a.uid} value={a.uid}>{a.title}</option>)}
-          </optgroup>)}
-        </select>
-      </label>
-    </div>
-    {source?<div className="scope-card">
-      <Detail anchor={source}/>
-      <p className="scope-status">縣市：{countyOfAnchor(source)} · 半徑：{source.radius_m||500} 公尺</p>
-    </div>:null}
-    <h4>需要檢查的地點</h4>
-    {!suggestions.length?<p className="scope-status">目前沒有查到可疑重複。沒有完整地址的地標仍可能需要補充地址才能進行同址判定。</p>:null}
-    {suggestions.slice(0,80).map(proposal=>{
-      const keep=keeps[proposal.key]||proposal.a.uid;
-      const address=proposal.type==='same-address'?proposal.address:(verified[proposal.key]||'');
-      const available=proposal.canMerge&&(proposal.type==='same-address'||address.trim().length>=6);
-      return <div className="scope-card" key={proposal.key}>
-        <h4>{STATUS[proposal.type]}</h4>
-        <Detail anchor={proposal.a}/>
-        <Detail anchor={proposal.b}/>
-        <p className="scope-status">座標距離：{proposal.meters===null?'無座標':proposal.meters+' 公尺'}</p>
-        {proposal.canMerge&&scopeId!=='loc'?<>
-          <label>保留的主要定錨點
-            <select className="scope-select" disabled={Boolean(busy)} value={keep}
-              onChange={event=>setKeeps(current=>({...current,[proposal.key]:event.target.value}))}>
-              <option value={proposal.a.uid}>{proposal.a.title}</option>
-              <option value={proposal.b.uid}>{proposal.b.title}</option>
-            </select>
-          </label>
-          {proposal.type==='near-unverified'?<label>人工核對的共同地址
-            <input type="text" maxLength={160} value={address} placeholder="確認同一實體地址後，輸入完整門牌"
-              disabled={Boolean(busy)} onChange={event=>setVerified(current=>({...current,[proposal.key]:event.target.value}))}/>
-          </label>:<p className="scope-status">共同地址：{address}</p>}
-          <button className="loc-button" type="button" disabled={Boolean(busy)||!available}
-            onClick={()=>merge(proposal)}>{busy===proposal.key?'合併中…':'確認同址並合併'}</button>
-        </>:<p className="scope-status">此組不能直接合併；請先修正地址或座標，避免把相鄰的不同地點合在一起。</p>}
-      </div>;
-    })}
-    {suggestions.length>80?<p className="scope-status">僅顯示前 80 組建議，請先處理或核對，再重新檢查。</p>:null}
-    {scopeId==='loc'?<p className="scope-status">LOC 群組只彙整各 Scope 的地點；合併請前往原作品 Scope。</p>:null}
-    {notice?<p role="status" className="scope-status" aria-live="polite">{notice}</p>:null}
+      {matches.length?<div className="loc-trace-route-suggestions" role="group" aria-label="既有地點">
+        {matches.map(item=><button className="loc-button" type="button" key={item.uid}
+          onClick={()=>{setSelectedUid(item.uid);setNewAlias('');}}>
+          {item.title} · UID {item.uid}{item.floor_label?' · '+item.floor_label:''}
+        </button>)}
+      </div>:null}
+      {place?<div className="scope-management-fields">
+        <p>主要名稱：{place.title} · UID {place.uid}</p>
+        <p>已確認別名：{aliases.length?aliases.join('、'):'無'}</p>
+        <label>新增名稱變體
+          <input value={newAlias} maxLength={200} onChange={event=>setNewAlias(event.target.value)}
+            placeholder="例如：WorldGym 新北永和店"/>
+        </label>
+        <button className="loc-button primary" type="button" disabled={busy||!ownPlaces||!newAlias.trim()}
+          onClick={saveNames}>儲存名稱對照</button>
+      </div>:null}
+    </section>
+    {notice?<p role={error?'alert':'status'} className={'scope-status'+(error?' scope-error':'')}>{notice}</p>:null}
   </section>;
 }
