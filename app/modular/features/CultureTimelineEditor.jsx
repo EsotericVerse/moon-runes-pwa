@@ -9,11 +9,11 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
-const TIME_COLUMNS='uid,type,title,description,time_date,anchor_ids,status';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,status';
 const TYPES=['anchor','time_period','time_trace'];
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
 const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時期／時間痕跡'};
-const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',time_date:'',anchor_ids:[],status:''});
+const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],status:''});
 const day=value=>value?String(value).slice(0,10):'';
 function nextTimeUid(rows){
   const taken=new Set(rows.map(row=>String(row.uid||'')));
@@ -25,7 +25,7 @@ function nextTimeUid(rows){
 }
 function normalizeDraft(row){
   if(!row)return blank();
-  return {...blank(row.type),...row,time_date:day(row.time_date),
+  return {...blank(row.type),...row,address:day(row.address),
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]};
 }
 export default function CultureTimelineEditor({
@@ -68,11 +68,11 @@ export default function CultureTimelineEditor({
   const eventChoices=useMemo(()=>[...all].filter(row=>row.type==='time_period'),[all]);
   const eventByUid=useMemo(()=>new Map(eventChoices.map(row=>[String(row.uid),row])),[eventChoices]);
   const anchorChoices=useMemo(()=>[...anchors.values()]
-    .sort((a,b)=>day(a.time_date).localeCompare(day(b.time_date))||
+    .sort((a,b)=>day(a.address).localeCompare(day(b.address))||
       String(a.uid).localeCompare(String(b.uid))),[anchors]);
   const rows=useMemo(()=>[...all].sort((a,b)=>{
     const position=row=>{
-      if(row.type==='anchor')return day(row.time_date);
+      if(row.type==='anchor')return day(row.address);
       const eventRanges=eventChoices.map(event=>({...event,ranges:resolveTimeSegments(event.anchor_ids,anchors,{period:false})}));
       return row.type==='time_trace'
         ?(row.anchor_ids||[]).flatMap(id=>eventRanges.find(event=>event.uid===id)?.ranges||[])
@@ -107,7 +107,7 @@ export default function CultureTimelineEditor({
     const key=[suggestedRequestNonce,effectiveAnchorDate,type].join(':');
     if(requestSeen.current===key)return;
     requestSeen.current=key;
-    const fresh={...blank(type),time_date:type==='anchor'?effectiveAnchorDate:''};
+    const fresh={...blank(type),address:type==='anchor'?effectiveAnchorDate:''};
     setDraft(fresh);original.current=fresh;setSelectedId('');setMessage('');
   },[suggestedRecordType,suggestedRequestNonce,effectiveAnchorDate,selectedRecordId]);
   useEffect(()=>{
@@ -164,11 +164,11 @@ export default function CultureTimelineEditor({
       const type=String(draft.type||'');
       if(!TYPES.includes(type))throw new Error('不支援的時間紀錄類型');
       const payload={type,title,description:String(draft.description||'').trim()||null,
-        time_date:null,anchor_ids:null};
+        address:null,anchor_ids:null};
       if(type==='anchor'){
-        const timeDate=day(draft.time_date);
+        const timeDate=day(draft.address);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(timeDate))throw new Error('請先指定有效的定錨日期');
-        payload.time_date=timeDate;
+        payload.address=timeDate;
       }else{
         if(draft.type==='time_period'&&!anchorChoices.length)throw new Error('請先建立時間定錨點');
         if(draft.type==='time_trace'&&!eventChoices.length)throw new Error('請先建立事件');
@@ -186,7 +186,7 @@ export default function CultureTimelineEditor({
           if(segment.end&&segment.end!=='0'&&!anchors.has(segment.end)&&!unchangedLinks)
             throw new Error('找不到結束定錨點：'+segment.end);
           if(segment.end&&segment.end!=='0'&&anchors.has(segment.start)&&anchors.has(segment.end)&&
-            day(anchors.get(segment.end)?.time_date)<=day(anchors.get(segment.start)?.time_date))
+            day(anchors.get(segment.end)?.address)<=day(anchors.get(segment.start)?.address))
             throw new Error('結束定錨點必須晚於起始定錨點');
         }
         payload.anchor_ids=draft.type==='time_trace'
@@ -244,8 +244,8 @@ export default function CultureTimelineEditor({
             onChange={event=>change('title',event.target.value)}/>
         </label>
         {draft.type==='anchor'?<label>定錨日期
-          <input className="scope-select" type="date" required value={day(draft.time_date)}
-            onChange={event=>change('time_date',event.target.value)}/>
+          <input className="scope-select" type="date" required value={day(draft.address)}
+            onChange={event=>change('address',event.target.value)}/>
         </label>:null}
       </div>
       {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
@@ -261,7 +261,7 @@ export default function CultureTimelineEditor({
                 <option value={segment.start}>已失效：{segment.start}</option>:null}
               {(draft.type==='time_trace'?eventChoices:anchorChoices)
                 .map(row=><option key={row.uid} value={row.uid}>
-                  {draft.type==='time_trace'?'事件｜':day(row.time_date)+'｜'}{row.title}
+                  {draft.type==='time_trace'?'事件｜':day(row.address)+'｜'}{row.title}
                 </option>)}
             </select>
           </label>
@@ -273,7 +273,7 @@ export default function CultureTimelineEditor({
               {segment.end&&segment.end!=='0'&&!anchors.has(segment.end)?
                 <option value={segment.end}>已失效：{segment.end}</option>:null}
               {anchorChoices.filter(row=>row.uid!==segment.start)
-                .map(row=><option key={row.uid} value={row.uid}>{day(row.time_date)}｜{row.title}</option>)}
+                .map(row=><option key={row.uid} value={row.uid}>{day(row.address)}｜{row.title}</option>)}
             </select>
           </label>:null}
           <button type="button" className="loc-button"
