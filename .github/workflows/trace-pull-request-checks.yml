@@ -1,0 +1,50 @@
+name: Trace Frame PR checks
+# Verify Trace edits without any website deploy, ISR, R2/DO cache writes, or Neon sync.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/loc/TraceRouteManager.jsx'
+      - 'app/loc/model/class-group-items.mjs'
+      - 'app/modular/features/trace/**'
+      - 'app/styles/features.css'
+      - 'scripts/test-trace-*.mjs'
+      - 'supabase/migrations/*trace*.sql'
+      - 'package.json'
+      - '.github/workflows/trace-pull-request-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trace-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Exercise Trace and adjacent bootstrap regressions
+        run: npm run test:bootstrap
+      - name: Build Next.js app without ISR deployment
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee /tmp/trace-next-build.log
+      - name: Verify ISR remains suspended
+        run: node scripts/verify-release-isr.mjs
+      - name: Preserve failure diagnostics
+        if: failure()
+        run: |
+          echo "## Trace verification failure" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/trace-next-build.log ]; then
+            tail -n 180 /tmp/trace-next-build.log >> "$GITHUB_STEP_SUMMARY"
+          fi
