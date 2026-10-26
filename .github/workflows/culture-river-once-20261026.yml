@@ -1,0 +1,44 @@
+name: Culture second river — isolated verification
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/culture-river-once-20261026.yml'
+      - 'app/modular/features/Culture.jsx'
+      - 'app/loc/culture-river-roots.mjs'
+      - 'scripts/test-culture-river-roots.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: culture-river-20261026
+  cancel-in-progress: true
+jobs:
+  culture-build-no-deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Install locked dependencies without auditing
+        run: npm ci --no-audit --no-fund
+      - name: Verify culture classifications and source lazy-loading
+        run: node --test scripts/test-culture-river-roots.mjs
+      - name: Existing source and time regressions
+        run: |
+          node --experimental-vm-modules --test scripts/test-numeric-isr.mjs scripts/test-isr-client-cache.mjs scripts/test-empty-scope.mjs
+      - name: Next.js compilation (no Worker build, Cloudflare deploy or ISR)
+        shell: bash
+        run: npm run build 2>&1 | tee /tmp/culture-build.log
+      - name: Verify the release still prohibits ISR
+        run: node scripts/verify-release-isr.mjs
+      - name: Warning and error baseline summary
+        if: always()
+        shell: bash
+        run: |
+          if test -f /tmp/culture-build.log; then
+            echo '### Next.js build warnings/errors' >> "$GITHUB_STEP_SUMMARY"
+            (grep -Ein '(^|[[:space:]])(warning|warn|error|failed)[:[:space:]]' /tmp/culture-build.log || true) | tail -n 100 >> "$GITHUB_STEP_SUMMARY"
+          fi
