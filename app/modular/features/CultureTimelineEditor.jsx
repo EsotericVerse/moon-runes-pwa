@@ -8,8 +8,8 @@ import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid} from '../../loc/time-anchor-ranges.mjs';
-import {timeReadColumns} from '../../loc/time-read-columns.mjs';
 
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
 const TYPES=['anchor','time_period','time_trace'];
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
 const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時間痕跡'};
@@ -57,7 +57,7 @@ export default function CultureTimelineEditor({
     enabled:editable,
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
-        columns:timeReadColumns(timeTable),filters:[{column:'type',operator:'in',value:TYPES}],
+        columns:TIME_COLUMNS,filters:[{column:'type',operator:'in',value:TYPES}],
         orders:[{column:'uid',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
       });
       return rows;
