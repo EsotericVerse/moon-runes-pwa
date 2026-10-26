@@ -1,0 +1,21 @@
+name: One-time ISR-off regression (branch only)
+on:
+  push:
+    branches:
+      - fix/isr-independent-20261026
+    paths:
+      - .github/workflows/isr-off-one-time-tests.yml
+permissions:
+  contents: read
+jobs:
+  node-regression-no-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Node tests only — no npm install, no compile, no deploy
+        run: |
+          node --experimental-vm-modules --test             scripts/test-isr-client-cache.mjs             scripts/test-numeric-isr.mjs             scripts/test-place-statistics.mjs             scripts/test-empty-scope.mjs             scripts/test-trace-dual-anchor.mjs
