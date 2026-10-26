@@ -201,19 +201,19 @@
 - **CI 證據：** [#40344096224](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40344096224) **failure**。專項 69/69 零失敗，然而對比最新 main 原有測試 73 項，分支刪除了跨 Scope 身份、延遲讀回防重複寫入、Frame 待處理站點等既有驗證（五個測試名稱不見、僅補兩項）；舊基準檢查器 `total<73` 因此攔下。**不得透過降低 73 門檻或跳過測試讓 CI 假綠**；需恢復等價回歸、確認不再適用的案例有相應新功能證據。該次 Next build 成功、Chrome 因前置步驟 failure **skipped**；實際授權寫入／重讀／RLS 及長時間負載尚未自證。
 - **下一步：** 保留並整合最新 main，補回被移除的跨 Scope／Queue 回歸測試，核對 migrations 的原 UID → 四碼映射、完整 Frame Queue 與回復機制；在不觸發使用者封鎖的 Cloudflare／ISR／自動部署前提下，完成實際 Supabase 權限寫入與讀回、真實介面及所有適用 CI。全部驗證並與正式 DB 具相容方案時，才安全整合 main、關閉 #580、紀錄最終 SHA 並標可集中驗收。不得要求使用者逐項替工程端測試。
 
-#### A 線新增：Scope 內四碼 UID 與文章地點索引（2026-10-26；實作中，尚未驗收）
+#### A 線新增：Scope 內四碼 id 與文章地點索引（2026-10-26；實作中，尚未驗收）
 
-> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。單一 `trace.uid` 是 Trace 紀錄唯一 UID，`trace_type='anchor'|'map'` 區分定錨點／痕跡圖；**不再另設 `trace.trace_id` 作第二套 UID**。Galaxy 的 `place_id` 指向同 Scope、type=anchor 的 `trace.uid`；文章原始 `uid`、`source_place` 均保留。
-> **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 UID → 四碼 UID／回退方案；② 以原 `trace.uid` 單一 PK 完整轉換 anchor/map 及 Frame Queue、LOC (scope_id,uid)，停止額外 trace_id 用途；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
+> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。**最新使用者定案（取代本節此前全部 uid／trace_id 方案）：`silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵；不得保留 Trace 的 `uid`、`trace_uid` 或 `trace_id` 等並行身份欄位**。`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖。`silver.<scopeid>_galaxy.place_id varchar(4)` 只指向同 Scope、`trace_type='anchor'` 的 `trace.id`。**文章自身的 `galaxy.uid` 和原始 `source_place` 不變**；`galaxy.uid` 是另一種文章物件的既有識別碼，並非 Trace 的第二身份。
+> **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 Trace `uid`／臨時 `trace_id` → 四碼 `id` 的完整映射與回退方案；② 將 Trace 的唯一 PK 統一為 `id`（anchor／map 同表），轉換所有 Frame Queue、RPC、觸發器、別名及 LOC 聯集 `(scope_id,id)` 的引用；最終不得留下 Trace `uid`／`trace_uid`／`trace_id` 平行身份；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
 
-> **定案：** 同 Scope 的空間定錨點 trace.uid 與 Galaxy 文章 place_id 統一為 **varchar(4)**；place_id 直接對應該 Scope 的空間錨點 UID，不是另外配置一個全域地點編號；不得改動文章 galaxy.uid。**UID 只在所屬 Scope 內唯一**，新 Scope 可獨立從頭配置，不要求跨 Scope 唯一。對既有八碼錨點必須做完整對照遷移，不能截斷。LOC 聯集含 scope_id，識別或顯示必須使用 (scope_id, uid) 才不會誤認他人的錨點；**LOC 聯集的進階整理暫緩，先完成各 Scope。**
+> **唯一命名契約（最新）：** `silver.<scopeid>_trace.id varchar(4)` ↔ `silver.<scopeid>_galaxy.place_id varchar(4)`；Trace 不存在 `uid`、`trace_uid`、`trace_id` 三種替代欄位。`place_id` 等值關聯到本 Scope 的 anchor `id`，不額外分配第二套 ID；Frame 也使用本 Scope 的 `trace.id`。各 Scope 的 ID 可獨立從頭配置，不能跨 Scope 當作同一筆。LOC 聯集以 **`(scope_id,id)`** 辨識來源；聯集顯示的進階整理延後。舊 Trace 八碼 `uid` 必須有可回復的對照映射，禁止截斷或破壞 Queue；文章 `galaxy.uid`／`source_place` 永遠保留。
 
-- [ ] **LOC-PLACE-01｜統一四碼欄位與身份** [P1] [規格已定／未實作]：原生 Scope 的 *_trace.uid（anchor 與 map 均屬同表）改為 varchar(4)，各 Scope 的 *_galaxy 新增 nullable place_id varchar(4)，未比對成功留 NULL。同 Scope 同一實際地點的文章引用同一 anchor UID；同座標的不同商家、樓層或不同實體仍有不同 UID。依 Scope 保持獨立的唯一性與寫入權限，不混用不同 Scope 的 ID。
-- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、anchor_uids Queue、silver.loc_trace 聯集、搜尋及匯入等引用。建立每 Scope 舊 UID → 新四碼 UID 的唯一對照，完整更新所有合法關聯及程式八碼產號／驗證；不可直接 LEFT(uid,4) 或刪掉原有 UID 關聯。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
+- [ ] **LOC-PLACE-01｜統一四碼欄位與身份** [P1] [規格已定／未實作]：原生 Scope 的 `*_trace.id`（anchor 與 map 均屬同表）使用 `varchar(4)` 並作單一主鍵，最終不得有 Trace `uid`／`trace_uid`／`trace_id`；Scope 的 `*_galaxy.place_id` 為 nullable `varchar(4)`，未比對成功留 NULL。同 Scope 同一實際地點的文章引用同一 anchor `id`；同座標的不同商家、樓層或不同實體仍用不同 `id`。不同 Scope 各自編號、授權隔離。
+- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、歷史 `anchor_uids` Queue、`silver.loc_trace` 聯集、搜尋及匯入等引用。建立每 Scope **舊八碼 Trace `uid`／臨時四碼 `trace_id` → 最終四碼 `id`** 的唯一對照，完整轉換所有合法關聯、Queue 值與程式產號／驗證；不可直接截斷舊識別碼或刪除原有關聯，舊欄位名稱只在備份／遷移紀錄中保留。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
 - [ ] **LOC-PLACE-03｜現有文章打卡地點整理按鈕** [P1] [未實作]：在「管理選單 → 整理定錨點」新增 **「空間定錨點：現有文章，打卡地點整理」**。文章匯入必須先完整完成，不需要匯入時建立空間定錨點、定位或填地址；**galaxy.source_place 永遠保留原始字串、不統一、不回寫**。錨點建立後才用既有錨點、地名與可用座標／地址資訊，建立文章 place_id 關聯。
 - [ ] **LOC-PLACE-04｜自動判別先做、疑問才顯示** [P1] [未實作]：先正規化空白、全半形、臺／台、前後文字格式、行政區／同義名稱等高可信度變體；已確定的自動整理，不要求每組人工補地址或使用付費地理查詢。相同座標的錨點用 Map 單趟分組，每個座標只列一組，不採雙迴圈兩兩產生大量卡片；但**同 GPS 不代表同一商家**（例如家樂福和石二鍋家樂福桂林店），需保持不同身份。只有不確定的候選放在頁面下方，由使用者判別；明確空白／缺資料可保留未匹配而不阻塞。
 - [ ] **LOC-PLACE-05｜持久化、精確查詢與往後沿用** [P1] [未實作]：成功整理即更新相應文章的 place_id 並建立 Scope 專用索引，依 place_id 等值查文章，不再堆疊大量 OR source_place 條件；原始 source_place 及 galaxy.uid 不得改動。已判定的原始地名 ↔ 錨點對應要能持久重用，新文章照常完整匯入，隨後利用已知對應自動關聯；同一地點不能每次重新核對。誤判／別名衝突要能追蹤且安全修正，寫入必須遵守 Scope RLS。
-- [ ] **LOC-PLACE-06｜LOC 聯集與工程驗證** [P2] [LOC 聯集細節後議／未實作]：silver.loc_trace 聯集中的同碼 UID 必須帶 scope_id 區分，顯示時保留來源 Scope，跨 Scope 不擅自合併。後續再整理 LOC 的聯集視圖，不阻塞 Scope 工作。交付前自主核對實際資料回填、重新開頁、下一次匯入、同址不同店及樓層、無地址、UID 唯一性、權限、性能、UI、lint/build/CI；測試通過並整合 main 才可標完成。
+- [ ] **LOC-PLACE-06｜LOC 聯集與工程驗證** [P2] [LOC 聯集細節後議／未實作]：silver.loc_trace 聯集中的同碼 `id` 必須帶 `scope_id` 區分，顯示時保留來源 Scope，跨 Scope 不擅自合併。後續再整理 LOC 的聯集視圖，不阻塞 Scope 工作。交付前自主核對實際資料回填、重新開頁、下一次匯入、同址不同店及樓層、無地址、UID 唯一性、權限、性能、UI、lint/build/CI；測試通過並整合 main 才可標完成。
 
 ### B｜痕跡圖
 
