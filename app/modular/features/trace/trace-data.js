@@ -141,6 +141,26 @@ export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=
   return ids.map(uid=>byUid.get(uid)).filter(Boolean);
 }
 
+// This is a READ-ONLY address library. Cross-Scope candidates are evidence,
+// never a foreign UID that may be placed in the current Scope's route queue.
+export async function readTraceAddressReferences(scopeId,term,limit=8){
+  const owner=sourceId(scopeId);
+  const q=String(term||'').trim().slice(0,100);
+  if(q.length<2)return [];
+  // PostgREST OR syntax requires quoted/escaped literal values for commas,
+  // parentheses and quoted address/name fragments; SQL parameters stay bound.
+  const pattern='%'+q.replace(/[\\%_]/g,'\\// "All anchors" is an explicit choice, not an eager bootstrap dependency.')+'%';
+  const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
+  const result=await dbPublicClient.schema('silver').from('loc_trace')
+    .select('scope_id,uid,trace_type,title,description,address,floor_label,floor_level,county_id,longitude,latitude,radius_m')
+    .eq('trace_type','anchor').neq('scope_id',owner).neq('address','')
+    .or('title.ilike.'+literal+',address.ilike.'+literal)
+    .order('title',{ascending:true}).order('uid',{ascending:true})
+    .limit(Math.min(Math.max(1,Number(limit)||8),8));
+  return (verified(result,'LOC 跨 Scope 地址參考')||[])
+    .map(row=>({...row,source_scope:row.scope_id}));
+}
+
 // "All anchors" is an explicit choice, not an eager bootstrap dependency.
 // Paginate: a single 2,000-row cap would silently hide old check-ins.
 // Search the server only after a user types inside a selected county.
