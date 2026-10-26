@@ -1,3 +1,14 @@
+## 2026-10-26｜Hero 對應及資料庫歸屬修復（PR #587；程式已合併／未部署／待集中驗收）
+
+- [x] **痕跡 Hero 名稱去重：** 正式保留 `silver.loc_blocks(page_name='group_trace', uid='BRP7JEFQ')`，完整保留「文字在真實的立體場景出現的痕跡」及 `LOC-gn.jpg`；在 `main` 改完正式讀寫對應與 published JS 模組後，依指定 UID 僅刪除 `group_governance/997BFF13` 一筆。Supabase 再次 SELECT 確認只剩一筆，舊列全文與 UID 留於 `docs/hero-page-name-repair-20261026.md`。
+- [x] **管理 Hero 各自 `page_name`：** 八筆舊 `group_manage` 項目原 UID 原資料移至 `TimeAnchor`／`ScopeKeyword`／`SpaceAnchor`／`ScopeAdvSearch`／`GalaxyManage`／`Groupkeyword`／`GroupSpace`／`GroupArticle`，並設定對應英文標題，原標題與正文保留；系統管理文案使用 `scope_admin`，修正大小寫敏感的 DB 查詢及各項儲存／顯示讀取，不再以 `group_manage.block_order` 當項目識別。
+- [x] **Hero 圖片位置：** 原 CSS 中 14 個 Hero 圖片網址補入現有 `silver.loc_blocks.block_image`（僅填空值，未覆寫原有設定）；Scope 四項管理共用 `scope_manage` 的 `scope-gn.jpg`，Admin 五項管理共用 `scope_admin` 的 `LOC-admin.jpg`，設定 UI 仍可修改及儲存；修復 `block_image` 為 TEXT 的 JSON 序列化。
+- [x] **合併與測試證據：** 原 branch `fix/admin-scope-hero-page-ownership-20261026`；[PR #587](https://github.com/EsotericVerse/moon-runes-pwa/pull/587)（merged）；main SHA `d8020bc6f4208b8d3022dd014130cc580432c1c4`；[Actions #40352344908](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40352344908) 終態 success，管理 Hero 5/5、Trace 73/73、Bootstrap 218/218、Next.js 257/257、Chrome 桌機／手機 Trace 和 ISR 停用檢查通過。CI 未涵蓋真實登入 Admin 的 E2E 寫入。
+- [ ] **待工程端／集中驗收：** 授權 Admin 真實操作圖片、文案儲存與重進頁讀回，無權限寫入拒絕、各管理 Hero 的路由及圖片顯示、使用者手動部署後的正式站版本／SW 更新。**未部署；未允許開 Cloudflare 自動部署或 ISR。**
+- [ ] **舊資料待判定（不擅自刪除）：** `group_manage` 還有兩筆舊資料：`E090E4CA`（頁面控管，內文含成員／匯入說明）與 `MGHERO06`（舊系統管理空內容）。其餘八筆均已重新歸位。此兩筆已不作新的 Hero 讀寫來源；是否與現有管理文字整併／封存，須以不遺失原文為前提處理。
+
+---
+
 ## 2026-10-26｜Admin 選單整併（人員首頁／名單管理／網路設定）
 
 - [x] **ADMIN-NAV-20261026｜程式整合及適用 CI 通過** `[MERGED / CLOSED / 等待集中手動部署與驗收]`
