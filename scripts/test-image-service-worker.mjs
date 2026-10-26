@@ -46,6 +46,8 @@ function createHarness(){
     }
   });
   vm.runInContext(source,context,{filename:'public/sw.js'});
+  // Start each existing cache regression with the Admin-approved 'cache' mode.
+  listeners.get('message')({data:{type:'LOC_CACHE_POLICY',mode:'cache'}});
   async function dispatch(name,request){
     const pending=[];
     let handled;
@@ -63,6 +65,23 @@ function createHarness(){
   return {dispatch,req,requests,stored,deleted,setOnline:value=>{online=value;},
     setResponseHeaders:value=>{networkHeaders=value;}};
 }
+
+test('off mode bypasses all SW response caching without unregistering the worker',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'off'});
+  for(const request of [
+    h.req('https://loc.lo3rwang.cc/pics/cover.webp'),
+    h.req('https://loc.lo3rwang.cc/_next/static/chunks/hashed.js','script'),
+    {...h.req('https://loc.lo3rwang.cc/','document'),mode:'navigate'}
+  ])assert.equal((await h.dispatch('fetch',request)).handled,false);
+  assert.equal(h.requests.length,0);
+  assert.equal(h.stored.size,0);
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'cache'});
+  const image=h.req('https://loc.lo3rwang.cc/pics/cover.webp');
+  assert.equal((await h.dispatch('fetch',image)).handled,true);
+  assert.equal((await h.dispatch('fetch',image)).handled,true);
+  assert.equal(h.requests.length,1);
+});
 
 test('picture cache: first network hit, repeat without network, and offline reuse',async()=>{
   const h=createHarness();
