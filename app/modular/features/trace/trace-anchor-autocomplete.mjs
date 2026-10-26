@@ -3,7 +3,7 @@
 // A visible label or same coordinates must never act as a key.
 export function traceAnchorSuggestions(anchors=[],countyId='',query='',selectedUids=[],limit=8){
   const terms=String(query||'').trim().normalize('NFKC')
-    .toLocaleLowerCase('zh-Hant').split(/\\s+/).filter(Boolean);
+    .toLocaleLowerCase('zh-Hant').split(/\s+/).filter(Boolean);
   if(!countyId||!terms.length)return [];
   const taken=new Set(selectedUids);
   const output=[];
