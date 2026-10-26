@@ -1,5 +1,13 @@
 # Agent Instructions
 
+## Active ISR incident lock (2026-10-26): disabled indefinitely
+- User instruction supersedes stale ISR deployment assumptions below: Cloudflare automatic GitHub builds, deployments, Previews, ISR, R2 incremental cache and tag/queue Durable Objects must remain disabled until the user explicitly reauthorizes them.
+- Ordinary GitHub edits, branch work, tests and merges must not trigger Cloudflare deployments. Do not resume domain routing or switch on a Vercel ISR backup automatically.
+- Culture, Statistics, Periods, Places, Traces and Daily Runes use the existing public DB RPC/queries and SWR/Service Worker as needed, not a mandatory ISR endpoint. Preserve lazy querying, server-side aggregate RPC, access checks and SQLite local semantics; never replace chart aggregations with repeated full-text downloads.
+- OpenNext may use read-only Workers Static Assets caching only. No R2 or DO ISR bindings or populateRemoteCache. Do not run a deployment to validate code changes. The R2 24-hour expiry rule for the retired `incremental-cache/` prefix is separate cost containment, not license to resume writing.
+- Do not delete any Galaxy, Supabase, Neon or non-ISR storage data.
+
+
 ## Priority order
 
 Security ≫ Portable > Loading = UI > Code is the **ordinary engineering default**, not a timeless priority queue or an unconditional ordering for every task. When a real authentication, authorization, privacy, data-integrity or other security boundary is implicated, its required checks remain hard acceptance constraints; this does **not** justify elevating unrelated security or deployment work above the requested UI, product or game task. Determine the effective priority from the current context, verified severity, time pressure, likely consequences, dependencies and the user's actual objective. Preserve a workable balance among the dimensions rather than maximizing one by default. When a genuine tradeoff cannot be resolved without sacrificing an important requirement, show the alternatives and let the user decide; do not silently decide solely from the default rank.
