@@ -134,3 +134,17 @@ test('台/臺 is search-equivalent but recorded addresses and Scope UIDs stay un
   const query=readFileSync(new URL('../app/modular/features/trace/trace-spatial-reference-data.js',import.meta.url),'utf8');
   assert.match(query,/spellings=\[\.\.\.new Set\(unique\.flatMap\(spatialReferenceLabelVariants\)\)\]/);
 });
+
+test('real Meta visited-places format uses OUTER 地標 title, not a nested title',()=>{
+  const bytes=value=>[...new TextEncoder().encode(value)]
+    .map(code=>String.fromCharCode(code)).join('');
+  const visit={label_values:[
+    {label:bytes('造訪時間'),timestamp_value:1720000000},
+    {title:bytes('地標'),dict:[{dict:[{label:bytes('名稱'),value:bytes('某車站')}]}]}
+  ]};
+  assert.equal(facebookBackupPlace(visit),bytes('某車站'));
+  assert.equal(facebookBackupPlace({label_values:visit.label_values.slice(1)}),'');
+  assert.equal(facebookBackupPlace({label_values:[
+    {label:bytes('地點'),dict:[{label:bytes('城市'),value:bytes('某地區')}]}
+  ]}),'');
+});
