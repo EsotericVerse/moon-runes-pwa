@@ -22,6 +22,7 @@
 //     fully offline.
 import {Capacitor} from '@capacitor/core';
 import {sourceTaxonomyFromArrays} from '../source-classification.mjs';
+import {convertLegacyTimeRows} from '../time-schema-migration.mjs';
 
 const DATABASE_NAME='loc_local_scope';
 const MARKER='loc.local.scope.sqlite.v1';
@@ -77,21 +78,13 @@ CREATE TABLE IF NOT EXISTS local_galaxy_media (
   rune_references TEXT
 );
 CREATE TABLE IF NOT EXISTS local_time (
-  record_id TEXT PRIMARY KEY NOT NULL,
-  record_type TEXT NOT NULL,
-  resource_id TEXT,
-  label TEXT,
-  display_order INTEGER,
-  status TEXT,
-  note TEXT,
+  uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
+  type TEXT NOT NULL CHECK(type IN ('anchor','period','event')),
+  title TEXT,
+  description TEXT,
   time_date TEXT,
   anchor_ids TEXT,
-  date_status TEXT,
-  year_value INTEGER,
-  visibility TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  style_description TEXT
+  status TEXT
 );
 CREATE TABLE IF NOT EXISTS local_keywords (
   keyword_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -174,6 +167,52 @@ CREATE TABLE IF NOT EXISTS local_file_meta (
   version INTEGER NOT NULL
 );
 `;
+// Keep pre-cutover device data recoverable. Both SQL.js and native SQLite run
+// the same validated row conversion inside a transaction before opening Time.
+const TIME_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_time \([\s\S]*?\);/)[0];
+const TIME_COLUMNS=['uid','type','title','description','time_date','anchor_ids','status'];
+const TIME_INSERT_SQL='INSERT INTO local_time ('+TIME_COLUMNS.join(',')+') VALUES ('+TIME_COLUMNS.map(()=>'?').join(',')+')';
+const oldTimePresent=columns=>columns.some(row=>row.name==='record_id')&&!columns.some(row=>row.name==='uid');
+function timeMigrationStatements(oldRows){
+  const {rows}=convertLegacyTimeRows(oldRows);
+  return [
+    {sql:'ALTER TABLE local_time RENAME TO local_time_legacy_backup',values:[]},
+    {sql:TIME_TABLE_CREATE,values:[]},
+    ...rows.map(row=>({sql:TIME_INSERT_SQL,values:TIME_COLUMNS.map(c=>toSqlValue(row[c]))}))
+  ];
+}
+function upgradeWebLocalTime(db){
+  const columns=rowsOf(db,'PRAGMA table_info(local_time)');
+  if(!oldTimePresent(columns))return;
+  const oldRows=rowsOf(db,'SELECT * FROM local_time');
+  const steps=timeMigrationStatements(oldRows);
+  db.run('BEGIN');
+  try{
+    for(const step of steps)db.run(step.sql,step.values);
+    const count=Number(rowsOf(db,'SELECT count(*) AS n FROM local_time')[0]?.n)||0;
+    const expected=oldRows.filter(row=>row.record_type!=='style_comment').length;
+    if(count!==expected)throw new Error('SQLite Time migration count mismatch');
+    db.run('COMMIT');
+  }catch(error){db.run('ROLLBACK');throw error;}
+}
+async function upgradeNativeLocalTime(conn){
+  const columns=(await conn.query('PRAGMA table_info(local_time)')).values||[];
+  if(!oldTimePresent(columns))return;
+  const oldRows=(await conn.query('SELECT * FROM local_time')).values||[];
+  const steps=timeMigrationStatements(oldRows);
+  await conn.beginTransaction();
+  try{
+    for(const step of steps){
+      if(step.values.length)await conn.run(step.sql,step.values,false);
+      else await conn.execute(step.sql+';');
+    }
+    const count=Number((await conn.query('SELECT count(*) AS n FROM local_time')).values?.[0]?.n)||0;
+    const expected=oldRows.filter(row=>row.record_type!=='style_comment').length;
+    if(count!==expected)throw new Error('Native Time migration count mismatch');
+    await conn.commitTransaction();
+  }catch(error){await conn.rollbackTransaction();throw error;}
+}
+
 const SCHEMA_MARKER_SQL='INSERT OR IGNORE INTO local_file_meta(format,version) VALUES(?,1)';
 // A single settings row must exist (`local` has id='local') before
 // read_scope_overview/statistics or keyword-classification finalize can
@@ -242,6 +281,7 @@ async function webDatabase(){
     const bytes=await readWebBytes();
     const db=bytes?new SQL.Database(new Uint8Array(bytes)):createFreshSQL(SQL);
     db.run(SCHEMA);
+    upgradeWebLocalTime(db);
     if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
       db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
@@ -259,6 +299,7 @@ async function nativeDatabase(){
       :await plugin.createConnection(DATABASE_NAME,false,'no-encryption',1,false);
     await conn.open();
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
+    await upgradeNativeLocalTime(conn);
     const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
     if(!columns.some(row=>row.name==='txt_class'))
       await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
