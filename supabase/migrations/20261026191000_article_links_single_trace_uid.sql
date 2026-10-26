@@ -62,6 +62,13 @@ BEGIN
  IF NOT silver.can_manage_scope(p_scope_id) THEN
    RAISE EXCEPTION 'No permission to link this Scope articles';
  END IF;
+ -- Place identities must be deduplicated before linking any articles.
+ -- This guard intentionally does not read/write Galaxy.source_place.
+ EXECUTE format('SELECT count(*) FROM silver.%I WHERE trace_type=''anchor''',p_scope_id||'_trace')
+   INTO affected;
+ IF affected >= 100 THEN
+   RAISE EXCEPTION '請先整理現有空間定錨點至 100 筆以下，才可建立文章 place_id 關聯';
+ END IF;
  EXECUTE format($sql$
   WITH names AS (
     SELECT silver.trace_normalize_place_name(title) AS place_key,
@@ -104,6 +111,12 @@ DECLARE normalized text; affected integer;
 BEGIN
  IF p_scope_id NOT IN ('lo3rwang','lrunes') OR NOT silver.can_manage_scope(p_scope_id) THEN
    RAISE EXCEPTION 'No permission for this Scope';
+ END IF;
+ -- A manual alias must not bypass the same deduplication-first gate.
+ EXECUTE format('SELECT count(*) FROM silver.%I WHERE trace_type=''anchor''',p_scope_id||'_trace')
+   INTO affected;
+ IF affected >= 100 THEN
+   RAISE EXCEPTION '請先整理現有空間定錨點至 100 筆以下，才可連結文章 place_id';
  END IF;
  normalized:=silver.trace_normalize_place_name(p_source_place);
  IF length(normalized)<2 OR length(normalized)>320 THEN
