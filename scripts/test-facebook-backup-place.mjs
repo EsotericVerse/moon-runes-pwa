@@ -120,3 +120,24 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  assert.equal(imported[0].source_place,enc('某車站'));
  assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
 });
+
+test('Meta ZIP decoded place and author text survive Galaxy import without mojibake',()=>{
+  // Some Meta exports encode UTF-8 bytes as Latin-1 JS characters.
+  const encoded=value=>[...new TextEncoder().encode(value)]
+    .map(n=>String.fromCharCode(n)).join('');
+  const row=facebookArchiveGalaxyRow({
+    platform:'facebook',kind:'post',key:'facebook:raw:visit:1',
+    sourcePlace:encoded('板橋車站'),text:encoded('今天來到板橋車站'),
+    createdAt:'2024-07-03T09:46:40.000Z'
+  });
+  assert.equal(row.source_place,'板橋車站');
+  assert.equal(row.content,'今天來到板橋車站');
+  assert.equal(row.title,'今天來到板橋車站');
+  assert.equal(row.createtime,'2024-07-03T09:46:40.000Z');
+  const alreadyCorrect=facebookArchiveGalaxyRow({
+    platform:'facebook',kind:'post',key:'facebook:raw:visit:2',
+    sourcePlace:'臺北車站',text:'正常繁體中文'
+  });
+  assert.equal(alreadyCorrect.source_place,'臺北車站');
+  assert.equal(alreadyCorrect.content,'正常繁體中文');
+});
