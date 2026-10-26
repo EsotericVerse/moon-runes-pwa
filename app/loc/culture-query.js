@@ -8,21 +8,13 @@ import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query'
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
+import {resolveTimeSegments,timePeriodSortDate} from './time-anchor-ranges.mjs';
 
 
 
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
+const TIME_COLUMNS='uid,type,title,description,time_date,anchor_ids,status';
 function scopeIdOf(value){return String(value||'').trim();}
-function timeDate(row){
-  if(row?.time_date)return String(row.time_date).slice(0,10);
-  const year=Number(row?.year_value);
-  return String(row?.date_status||'')==='year_only'&&Number.isInteger(year)&&year>0?`${year}-01-01`:null;
-}
-function anchorIds(value){
-  const source=Array.isArray(value)?value:String(value||'').split(',');
-  const ids=source.map(item=>String(item||'0').trim()||'0').filter(Boolean);
-  return ids.length?ids:['0','0'];
-}
+function timeDate(row){return row?.time_date?String(row.time_date).slice(0,10):null;}
 function previousDay(value){
   if(!value)return null;
   const date=new Date(String(value).slice(0,10)+'T00:00:00Z');
@@ -35,98 +27,57 @@ export async function selectCultureTimeRows(scope,birthday=''){
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
     columns:TIME_COLUMNS,
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event','style_comment']}],
-    orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-    limit:DB_QUERY_BATCH_SIZE,
-    offset:0
+    filters:[{column:'type',operator:'in',value:['anchor','period','event']}],
+    orders:[{column:'uid',ascending:true}],
+    limit:DB_QUERY_BATCH_SIZE,offset:0
   });
-  const scopeBirthday=/^\d{4}-\d{2}-\d{2}$/.test(String(birthday||'').slice(0,10))
-    ?String(birthday).slice(0,10)
-    :null;
-  const anchors=rows.filter(row=>row.record_type==='anchor');
-  const periods=rows.filter(row=>row.record_type==='period');
-  const events=rows.filter(row=>row.record_type==='event');
-  const styleComments=rows.filter(row=>row.record_type==='style_comment');
-  const anchorMap=new Map();
-  for(const row of anchors){
-    const anchorId=String(row.resource_id||'').trim();
-    if(!anchorId)continue;
-    const existing=anchorMap.get(anchorId);
-    if(existing){
-      const existingSignature=existing.time_date
-        ?'exact:'+String(existing.time_date).slice(0,10)
-        :String(existing.date_status||'')==='year_only'?'year:'+String(existing.year_value||''):'unknown';
-      const nextSignature=row.time_date
-        ?'exact:'+String(row.time_date).slice(0,10)
-        :String(row.date_status||'')==='year_only'?'year:'+String(row.year_value||''):'unknown';
-      if(existingSignature!==nextSignature){
-        throw new Error('Scope '+scopeId+' 定錨點識別衝突：'+anchorId+' 對應不同日期（'+existingSignature+' / '+nextSignature+'）');
-      }
-      continue;
-    }
-    anchorMap.set(anchorId,row);
-  }
+  const anchors=rows.filter(row=>row.type==='anchor');
+  const periods=rows.filter(row=>row.type==='period');
+  const events=rows.filter(row=>row.type==='event');
+  const byUid=new Map(anchors.map(row=>[String(row.uid),row]));
   const normalize=(row,type)=>{
-    const id=String(row.resource_id||row.record_id||'');
-    const ids=type==='style_comment'?(Array.isArray(row.anchor_ids)?row.anchor_ids:[]):anchorIds(row.anchor_ids);
-    const firstId=ids[0]||'0';
-    const lastId=ids.at(-1)||'0';
-    const startAnchor=firstId==='0'?null:anchorMap.get(firstId);
-    const endAnchor=lastId==='0'?null:anchorMap.get(lastId);
-    const startDate=type==='anchor'
-      ?timeDate(row)
-      :type==='style_comment'
-        ?timeDate(startAnchor)
-        :(firstId==='0'?scopeBirthday:timeDate(startAnchor));
-    const endBoundary=type==='anchor'||type==='style_comment'
-      ?null
-      :(lastId==='0'?null:timeDate(endAnchor));
+    const id=String(row.uid||'');
+    const ranges=type==='anchor'?[{
+      index:0,start_date:timeDate(row),end_date:timeDate(row),
+      start_anchor_id:id,end_anchor_id:null,anchor_ids:[id],point:true,invalid:false
+    }]:resolveTimeSegments(row.anchor_ids,byUid,{period:type==='period'});
+    const dated=ranges.filter(range=>range.start_date).sort((a,b)=>
+      a.start_date.localeCompare(b.start_date)||a.index-b.index);
+    const first=dated[0],last=dated.at(-1);
+    const openStart=false;
+    const openEnd=Boolean(last?.open_end);
+    const startDate=first?.start_date||null;
+    const endDate=openEnd?null:last?.end_date||null;
     return {
-      ...row,
-      scope_id:scopeId,
-      entry_key:type+':'+id,
-      entry_type:type,
-      title:row.label||id,
-      summary:row.note||'',
-      era_id:type==='period'?id:null,
-      period:type==='period'?id:null,
-      entry_name:type==='period'?String(row.label||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
-      order_no:row.display_order,
+      ...row,scope_id:scopeId,
+      entry_key:type+':'+id,entry_type:type,
+      title:row.title||id,summary:row.description||'',
+      era_id:type==='period'?id:null,period:type==='period'?id:null,
+      entry_name:type==='period'?String(row.title||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
       anchor_id:type==='anchor'?id:null,
-      anchor_ids:type==='anchor'?[]:ids,
-      start_anchor_id:firstId==='0'?null:firstId,
-      end_anchor_id:lastId==='0'?null:lastId,
+      anchor_ids:type==='anchor'?[]:(Array.isArray(row.anchor_ids)?row.anchor_ids:[]),
+      ranges,
+      start_anchor_id:first?.start_anchor_id||null,
+      end_anchor_id:last?.end_anchor_id||null,
       event_id:type==='event'?id:null,
-      open_start:['period','event'].includes(type)&&firstId==='0',
-      open_end:['period','event'].includes(type)&&lastId==='0',
-      start_date:startDate,
-      end_date:type==='period'?previousDay(endBoundary):endBoundary
+      open_start:openStart,open_end:openEnd,
+      start_date:startDate,end_date:endDate,
+      invalid_anchor_links:ranges.filter(range=>range.invalid).flatMap(range=>range.missing_anchor_ids||[])
     };
   };
   return [
     ...anchors.map(row=>normalize(row,'anchor')),
     ...periods.map(row=>normalize(row,'period')),
-    ...events.map(row=>normalize(row,'event')),
-    ...styleComments.map(row=>({
-      ...normalize(row,'style_comment'),
-      anchor_id:String(row.anchor_ids?.[0]||''),
-      style_description:String(row.style_description||''),
-      label:String(row.label||'')
-    }))
+    ...events.map(row=>normalize(row,'event'))
   ];
 }
 
 function openPeriodRangeFromRows(scopeId,rows=[]){
-  const period=[...rows]
-    .filter(row=>row.entry_type==='period'&&row.open_end&&row.start_date)
-    .sort((a,b)=>Number(b.order_no||0)-Number(a.order_no||0))[0];
+  const period=rows.filter(row=>row.entry_type==='period'&&row.open_end&&row.start_date)
+    .sort((a,b)=>timePeriodSortDate(b).localeCompare(timePeriodSortDate(a)))[0];
   if(!period)return null;
-  return {
-    ...period,
-    scope_id:scopeId,
-    display_label:period.title||period.period||'時期',
-    derived_from:'anchor_ids[last]=0'
-  };
+  return {...period,scope_id:scopeId,display_label:period.title||period.period||'時期',
+    derived_from:'anchor_ids uid open boundary'};
 }
 
 const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
@@ -208,33 +159,46 @@ function mondayOf(value){
 }
 function periodRows(rows){
   return (rows||[]).map(row=>({
-    era_id:row.era_id||row.entry_key,period:row.period||row.entry_key||'',name:row.entry_name||row.title||row.entry_key,
-    title:row.title||row.entry_key,description:row.summary||'',start_date:row.start_date||null,end_date:row.end_date||null,
-    record_id:row.record_id||null,resource_id:row.resource_id||null,
-    order:Number(row.order_no||0),status:row.status||'',anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
-    end_anchor_id:row.end_anchor_id||null,anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],date_status:row.date_status||'',
-    open_start:Boolean(row.open_start),open_end:Boolean(row.open_end)
-  })).sort((a,b)=>a.order-b.order||String(a.period).localeCompare(String(b.period)));
+    era_id:row.era_id||row.entry_key,period:row.period||row.entry_key||'',
+    uid:row.uid||null,name:row.entry_name||row.title||row.entry_key,
+    title:row.title||row.entry_key,description:row.summary||'',
+    start_date:row.start_date||null,end_date:row.end_date||null,
+    ranges:row.ranges||[],status:row.status||'',
+    anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
+    end_anchor_id:row.end_anchor_id||null,
+    anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
+    open_start:Boolean(row.open_start),open_end:Boolean(row.open_end),
+    invalid_anchor_links:row.invalid_anchor_links||[]
+  })).sort((a,b)=>
+    timePeriodSortDate(a).localeCompare(timePeriodSortDate(b))||
+    String(a.uid||'').localeCompare(String(b.uid||'')));
 }
 function timelineItems(rows,{includeScope=false}={}){
   const all=Array.isArray(rows)?rows:[];
-  const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[`${row.scope_id}:${row.anchor_id}`,row]));
-  return all.filter(row=>['anchor','event','period','style_comment'].includes(row.entry_type)&&row.status!=='needs_anchor').map(row=>{
-    const startAnchor=anchors.get(`${row.scope_id}:${row.start_anchor_id}`);
-    const endAnchor=anchors.get(`${row.scope_id}:${row.end_anchor_id}`);
-    const start=row.start_date||startAnchor?.start_date||null;
-    const end=row.end_date||endAnchor?.start_date||null;
-    const kindLabel={anchor:'定錨點',event:'事件',period:'時期',style_comment:'風格標籤'}[row.entry_type];
-    const groupOrder={anchor:0,event:1,style_comment:2,period:3}[row.entry_type]??99;
-    const scopeId=scopeIdOf(row.scope_id);
-    return {...row,scope_id:scopeId,id:`${scopeId}:${row.entry_key}`,entry_id:`${scopeId}:${row.entry_key}`,start_date:start,end_date:end,date:start||end,
-      display_label:row.title,
-      description:row.entry_type==='style_comment'?row.style_description:row.summary,
-      group_key:includeScope?`${scopeId}:${row.entry_type}`:`kind:${row.entry_type}`,
-      group_label:includeScope?`${scopeId} · ${kindLabel}`:kindLabel,
-      group_order:groupOrder};
-  }).filter(row=>row.start_date||(row.open_start&&row.end_date))
-    .sort((a,b)=>String(a.start_date||a.end_date).localeCompare(String(b.start_date||b.end_date)));
+  const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[row.scope_id+':'+row.anchor_id,row]));
+  return all.filter(row=>['anchor','event','period'].includes(row.entry_type))
+    .flatMap(row=>{
+      const slices=row.entry_type==='anchor'?[row]:row.ranges?.length?row.ranges:[row];
+      return slices.map((range,index)=>{
+        const scopeId=scopeIdOf(row.scope_id);
+        const start=range.start_date||null,end=range.end_date||null;
+        const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
+        return {...row,scope_id:scopeId,
+          id:scopeId+':'+row.entry_key+':'+index,
+          entry_id:scopeId+':'+row.entry_key+':'+index,
+          segment_index:index,start_date:start,end_date:end,date:start||end,
+          open_end:range.open_end??row.open_end,
+          invalid_anchor_links:range.missing_anchor_ids||[],
+          display_label:row.title,description:row.summary,
+          group_key:includeScope?scopeId+':'+row.entry_type:'kind:'+row.entry_type,
+          group_label:includeScope?scopeId+' · '+kindLabel:kindLabel,
+          group_order:{anchor:0,event:1,period:2}[row.entry_type]??99
+        };
+      });
+    }).filter(row=>row.start_date)
+    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))||
+      String(a.uid||'').localeCompare(String(b.uid||''))||
+      a.segment_index-b.segment_index);
 }
 function dateFilters(startDate,endDate,column='createtime'){
   const filters=[];
@@ -261,7 +225,7 @@ function cultureParts(scopeContext,runtimeId){
     end_date:row.end_date||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
     status:row.status||'',
-    visibility:row.visibility||'public'
+    visibility:'public'
   }));
   const trajectories=normalizedContext.filter(row=>row.entry_type==='anchor').map(row=>({
     entry_id:row.entry_key,
@@ -275,7 +239,7 @@ function cultureParts(scopeContext,runtimeId){
     anchor_id:row.anchor_id||null,
     status:row.status||''
   }));
-  const styleComments=normalizedContext.filter(row=>row.entry_type==='style_comment');
+  const styleComments=[];
   return {normalizedContext,periods,eras,events,trajectories,styleComments};
 }
 
