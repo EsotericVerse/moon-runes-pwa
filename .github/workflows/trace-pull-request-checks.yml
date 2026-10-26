@@ -51,10 +51,7 @@ jobs:
           focused_status=$?
           set -e
           grep -E '^#|not ok|ok [0-9]+' /tmp/trace-focused.log | tail -n 14 || true
-          node scripts/verify-trace-focused-baseline.mjs /tmp/trace-focused.log
-          if [ "$focused_status" -ne 0 ]; then
-            echo "::warning::An unchanged-main Facebook import A-line test fails; all other focused Trace regressions passed."
-          fi
+          node scripts/verify-trace-focused-baseline.mjs /tmp/trace-focused.log "$focused_status"
       - name: Exercise full bootstrap; reject failures beyond exact untouched-main baseline
         shell: bash
         run: |

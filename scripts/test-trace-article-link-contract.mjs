@@ -28,5 +28,5 @@ test('single-UID migration has one atomic transaction and no duplicated cutover'
   assert.equal((identity.match(/^BEGIN;/gm)||[]).length,1);
   assert.equal((identity.match(/^COMMIT;/gm)||[]).length,1);
   assert.equal((identity.match(/ADD CONSTRAINT .*_trace_uid_check CHECK/g)||[]).length,3);
-  assert.ok(identity.split('\\n').length<350,'Unexpected duplicated SQL after cutover');
+  assert.ok(identity.split('\n').length<350,'Unexpected duplicated SQL after cutover');
 });
