@@ -119,6 +119,17 @@ test('EditDock switch requires the Frame save to return exactly true',()=>{
   assert.match(dock,/if\(saved!==true\)throw new Error/);
   assert.match(page,/return true;\s*\}catch\(error\)\{setIsError\(true\);setNotice\(String\(error\?\.message\|\|error\)\);return false;/);
 });
+test('unclassified saved Frames remain selectable without rewriting historic labels',()=>{
+  const page=manager();
+  assert.match(page,/const ALL_CLASSES='__trace_all_classes__'/);
+  assert.match(page,/const ALL_GROUPS='__trace_all_groups__'/);
+  assert.match(page,/classFilter!==ALL_CLASSES\?\{className:classFilter\}/);
+  assert.match(page,/groupFilter!==ALL_GROUPS\?\{group:groupFilter\}/);
+  assert.match(page,/traceClassLabel\(value\)/);
+  assert.match(page,/value\|\|'未分組'/);
+  assert.doesNotMatch(page,/availableGroups\.filter\(Boolean\)/);
+});
+
 test('Trace page edit navigation opens the selected Frame by UID, not a local default',()=>{
   const feature=read('app/modular/features/Trace.jsx');
   const editor=manager();
