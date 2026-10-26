@@ -45,8 +45,8 @@ test('Culture classification is a published JS module, not a mandatory four-quer
   // Stage parent lanes on a single direct numeric RPC; child expansion must
   // filter those aggregates locally rather than reviving the suspended ISR.
   assert.match(culture,/culture-period-roots/);
-  assert.match(culture,/selectScopeDailyCounts\\(scopeData/);
-  assert.match(culture,/selectCultureRiverChildren\\(sourceRootQuery\\.data\\.numericRows/);
+  assert.ok(culture.includes('selectScopeDailyCounts(scopeData'));
+  assert.ok(culture.includes('selectCultureRiverChildren(sourceRootQuery.data.numericRows'));
   assert.doesNotMatch(culture,/readNumericIsr|usesNumericIsr/);
   assert.ok(culture.includes("selectedRiverGroup+'|source|'"));
 });
