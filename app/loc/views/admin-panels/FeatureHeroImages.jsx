@@ -9,13 +9,19 @@ import {useEditDockForm} from '../../../modular/edit-dock';
 
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
+// Ordinary feature tabs keep their two artwork choices; management Hero tabs
+// are independent editors, not hidden within the ordinary browsing Heroes.
 const FEATURES=Object.freeze([
   {id:'culture',label:'文化'},
   {id:'statics',label:'統計'},
   {id:'search',label:'搜尋'},
   {id:'trace',label:'痕跡'},
   {id:'admin',label:'系統管理'},
-  {id:'setting',label:'個人設定'}
+  {id:'setting',label:'個人設定'},
+  {id:'management-time',label:'時間定錨',managementKey:'time'},
+  {id:'management-keywords',label:'關鍵詞',managementKey:'keywords'},
+  {id:'management-spatial',label:'空間定錨',managementKey:'spatial'},
+  {id:'management-advanced',label:'進階搜尋',managementKey:'advanced'}
 ].map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
 const SCOPE_VARIANTS=Object.freeze([
   {kind:'group',label:'群組圖：首頁圖連結'},
@@ -241,7 +247,7 @@ export default function FeatureHeroImages(){
     pendingEdits.current.clear();setLocSlotKey(key);
   };
   const feature=FEATURES.find(item=>item.id===featureId)||FEATURES[0];
-  const scopeSlot=managementSlotFor(feature.id);
+  const scopeSlot=feature.managementKey?HomeBlock.MANAGEMENT_HERO_SLOTS.find(slot=>slot.key===feature.managementKey):null;
   const locSlot=locSlots.find(slot=>slot.key===locSlotKey)||locSlots[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
@@ -253,7 +259,7 @@ export default function FeatureHeroImages(){
     </div>
     <section className="loc-card scope-inline-card" key={feature.id}>
       <h3>{feature.label}</h3>
-      <ScopeEditableBlocks
+      {!feature.managementKey?<><ScopeEditableBlocks
         key={feature.id+':'+editorRevision}
         scopeId="loc"
         page={HomeBlock.featureHeroPageFor(feature.id)}
@@ -268,6 +274,7 @@ export default function FeatureHeroImages(){
       {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=>
         <ImageSlot feature={feature} variant={variant}
           onDirtyChange={trackDirty} key={feature.id+variant.kind}/>)}
+      </>:null}
       {scopeSlot?<section className="loc-card scope-inline-card">
         <h4>管理</h4>
         <ManagementHeroDetails slot={scopeSlot} onDirtyChange={trackDirty}/>
