@@ -143,10 +143,12 @@ function AnchorEditor({scopeId,spatial,reload}){
       const saved=editingUid
         ?await updateTraceAnchor({scopeId,uid:editingUid,...location})
         :await addTraceAnchor({scopeId,...location});
-      await reload();
-      await revalidateServerMetadata();
-      // The database write has already succeeded; a secondary cache
-      // refresh failure must not invite a duplicate insert on retry.
+      // Persistence is already confirmed by the authorized write's UID.
+      // If a secondary read/metadata refresh fails, never tell the user to
+      // submit the same new anchor again; that can create a second UID.
+      let anchorReadSynced=true;
+      try{await reload();}catch{anchorReadSynced=false;}
+      try{await revalidateServerMetadata();}catch{anchorReadSynced=false;}
       let anchorCacheSynced=true;
       try{
         await Promise.all([
@@ -161,6 +163,7 @@ function AnchorEditor({scopeId,spatial,reload}){
       setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
         :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
         :'空間定錨點已儲存，地址／樓層資訊已保留。'
+        +(anchorReadSynced?'':'資料庫已回報儲存成功，但重新讀取失敗；請重新載入查看，勿重複新增。')
         +(anchorCacheSynced?'':'部分已開啟的痕跡快取可能需要重新整理。'));
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
