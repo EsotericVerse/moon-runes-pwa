@@ -1,5 +1,5 @@
 name: LOC A-line single UID isolated verification
-# Verification iteration 3: fix groupedTraceDays temporal-dead-zone variable.
+# Verification iteration 4: update legacy Bootstrap assertions after Trace UID model cutover.
 on:
   push:
     branches: [fix/loc-place-id-layout-20261026]
