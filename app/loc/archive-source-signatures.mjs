@@ -1,6 +1,16 @@
 // Source signatures for read-only archive identification.
 // A path is only a hint (confidence=1). Confidence=3 needs matching payload features.
 // Unknown vendors are deliberately not guessed from generic "messages.json" names.
+// Filename only suggests an adapter; archive entries still determine the record schema.
+export function archiveFilenameSource(filename){
+  const name=String(filename||'').toLowerCase();
+  for(const [pattern,source] of [
+    [/chatgpt|openai/,'chatgpt'],[/threads/,'threads'],[/facebook/,'facebook'],
+    [/instagram/,'instagram'],[/claude|anthropic/,'claude'],[/twitter|tweet/,'x'],
+    [/telegram/,'telegram'],[/whatsapp/,'whatsapp']
+  ])if(pattern.test(name))return source;
+  return null;
+}
 export const ARCHIVE_SOURCE_ORDER=Object.freeze([
   'chatgpt','claude','gemini','grok','copilot','perplexity','meta-ai',
   'facebook','messenger','instagram','threads','whatsapp','x',

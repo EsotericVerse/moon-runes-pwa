@@ -14,7 +14,8 @@ import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
+import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -262,6 +263,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const account=useAccount({enabled:!nativeLocal});
   const [fileName,setFileName]=useState('');
   const [archiveDetection,setArchiveDetection]=useState(null);
+  const [archiveSummary,setArchiveSummary]=useState(null);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -276,7 +278,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const analysisCurrent=deferredSource===source;
   const analyzed=useMemo(()=>{
     const selected=deferredSource.trim();
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,selected,format.fields,t));
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,entry?.raw?.source_name||selected,format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
       normalized:normalized.filter(item=>item.record),
@@ -287,7 +289,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveDetection(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
@@ -301,32 +303,38 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const {detectZipArchiveSource,inspectPrivateArchive}=await import('./private-archive-universal.mjs');
         const result=await detectZipArchiveSource(file);
         setArchiveDetection(result);
-        if(!result.sources.includes('facebook')){
-          setSource(result.sources.length===1?result.sources[0]:'');
-          setStatus(t('uiExtra.importUI.zipInspected',{count:result.filesSeen}));
-          return;
-        }
-        // Parse only confirmed Facebook post/check-in text. Messenger and
-        // media inside a mixed Meta Takeout ZIP are never imported as posts.
-        const imported=[],uidOwners=new Map();
+        // Inspect every supported source through the shared ZIP scanner.
+        // Archive filename/structure picks an adapter; record content is authoritative.
+        const imported=[],uidOwners=new Map(),exifSamples=[];
         let ignored=0;
-        await inspectPrivateArchive(file,{onRecord:record=>{
-          const article=facebookArchiveGalaxyRow(record);
+        const summary=await inspectPrivateArchive(file,{onRecord:record=>{
+          const article=archiveGalaxyRow(record);
           if(!article){ignored++;return;}
           const previous=uidOwners.get(article.uid);
           if(previous&&previous!==record.key)
-            throw Error('Facebook 備份紀錄 UID 雜湊衝突，已停止匯入，沒有寫入資料庫。');
+            throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
           uidOwners.set(article.uid,record.key);
           if(imported.length>=30000)
-            throw Error('Facebook 文字貼文超過本次 30,000 筆安全上限，未匯入。');
+            throw Error('備份文字紀錄超過本次 30,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
+        },onMediaMetadata:item=>{
+          // In-memory preview only; image and EXIF are not uploaded or stored.
+          if(exifSamples.length<5)exifSamples.push(item);
         }});
-        if(!imported.length)throw Error('備份內沒有可匯入的 Facebook 貼文或打卡文字。');
+        setArchiveSummary({...summary,exifSamples});
+        if(!imported.length){
+          setSource(result.sources.length===1?result.sources[0]:'');
+          setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
+            ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
+            (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
+          return;
+        }
         setRows(imported);
-        setSource('Facebook');
-        setStatus('已從 Facebook 備份辨識 '+imported.length.toLocaleString()+
-          ' 篇貼文／打卡文字，另略過 '+ignored.toLocaleString()+
-          ' 筆非貼文紀錄。請核對預覽後再按匯入。');
+        const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
+        setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
+        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話；略過 '+
+          (ignored+summary.rejectedRows).toLocaleString()+
+          ' 筆。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
@@ -466,6 +474,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </details>:null}
       <p className="scope-status">{t('uiExtra.importUI.zipReadOnly')}</p>
     </section>:null}
+    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；EXIF 解析 {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆。影像不儲存；GPS 僅供位置證據，不能直接當作打卡地名。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
