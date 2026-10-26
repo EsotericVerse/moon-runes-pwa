@@ -8,7 +8,7 @@ export function spatialReferenceLikePattern(value){
   return '%'+q.replace(/[\\%_]/g,'\\$&')+'%';
 }
 export function spatialReferenceCandidates(groups,limit=8){
-  const found=[],seen=new Set(),max=Math.min(8,Math.max(1,limit));
+  const found=[],seen=new Set(),max=Math.min(200,Math.max(1,Number(limit)||8));
   for(const group of groups){
     for(const item of group||[]){
       const scope=String(item?.scope_id||item?.source_scope||'');
