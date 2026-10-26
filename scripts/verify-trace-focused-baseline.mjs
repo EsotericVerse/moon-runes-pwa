@@ -1,15 +1,22 @@
 import {readFileSync} from 'node:fs';
-// PR regression boundary: the imported Facebook backup test is an unchanged
-// A-line source assertion on current main, outside this Trace anchor fix.
-// Reject any additional failure and continue testing/building without changing A.
-const lines=readFileSync(process.argv[2]||'', 'utf8');
-const failed=[...lines.matchAll(/^.*?not ok \d+ - (.+)$/gm)].map(x=>x[1].trim());
-const count=label=>[...lines.matchAll(new RegExp('^.*?# '+label+' (\\d+)\\s*$','gm'))]
- .map(m=>Number(m[1])).at(-1);
-const total=count('tests'),passed=count('pass'),nFailed=count('fail');
-const known='management import maps Facebook JSON place into Galaxy and ZIP can actually import';
-if(!Number.isInteger(total)||total<73||passed+nFailed!==total
- ||nFailed!==failed.length||nFailed>1||failed.some(x=>x!==known))
- throw Error('Trace suite has a new/unclassified failure: '+JSON.stringify({total,passed,nFailed,failed}));
-if(nFailed)console.log('KNOWN MAIN A-LINE BASELINE: '+known+'; '+passed+'/'+total+' others passed');
-else console.log('All '+total+' Trace test cases passed.');
+
+// Verify actual TAP outcomes. Neither test titles nor implementation wording
+// nor a hard-coded historic test count are a functional interface.
+const path=process.argv[2];
+if(!path)throw Error('Expected Node --test TAP log');
+const log=readFileSync(path,'utf8');
+const number=key=>{
+  const matches=[...log.matchAll(new RegExp('^.*?# '+key+' (\\d+)\\s*$','gm'))];
+  return matches.length?Number(matches.at(-1)[1]):NaN;
+};
+const tests=number('tests'),pass=number('pass'),fail=number('fail');
+const cancelled=number('cancelled'),skipped=number('skipped');
+const exitCode=process.argv[3]===undefined?null:Number(process.argv[3]);
+if(!Number.isInteger(tests)||tests<1||pass+fail+cancelled+skipped!==tests
+  ||fail!==0||cancelled!==0||skipped!==0
+  ||(exitCode!==null&&exitCode!==0)){
+  const failures=[...log.matchAll(/^\s*not ok \d+ - (.+)$/gm)].map(m=>m[1].trim());
+  throw Error('Focused Trace behavior tests did not pass: '
+    +JSON.stringify({tests,pass,fail,cancelled,skipped,exitCode,failures}));
+}
+console.log('Focused Trace TAP passed: '+pass+'/'+tests+' (test wording ignored).');
