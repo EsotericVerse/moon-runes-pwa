@@ -1,14 +1,15 @@
 'use client';
 
 import {dbPublicClient} from '../../../loc/db-client.mjs';
-import {spatialReferenceLikePattern,spatialReferenceCandidates} from './trace-spatial-references.mjs';
+import {spatialReferenceLikePattern,spatialReferenceCandidates,spatialReferenceLabelVariants} from './trace-spatial-references.mjs';
 
 // The LOC union is a read-only lookup for confirmed place data. The caller
 // always creates an independent UID under its own Scope on save.
 export async function readSharedSpatialReferences(term){
-  const pattern=spatialReferenceLikePattern(term);
-  if(!pattern)return [];
-  const query=column=>dbPublicClient.schema('silver').from('loc_trace')
+  const patterns=spatialReferenceLabelVariants(term)
+    .map(spatialReferenceLikePattern).filter(Boolean);
+  if(!patterns.length)return [];
+  const query=(column,pattern)=>dbPublicClient.schema('silver').from('loc_trace')
     .select('uid,scope_id,title,address,floor_label,floor_level,longitude,latitude')
     .eq('trace_type','anchor')
     .ilike(column,pattern)
@@ -16,13 +17,12 @@ export async function readSharedSpatialReferences(term){
     .order('scope_id',{ascending:true})
     .order('uid',{ascending:true})
     .limit(8);
-  const [byName,byAddress,byFloor]=await Promise.all([
-    query('title'),query('address'),query('floor_label')
-  ]);
-  if(byName.error)throw Error('共用地點名稱查詢失敗：'+byName.error.message);
-  if(byAddress.error)throw Error('共用地址查詢失敗：'+byAddress.error.message);
-  if(byFloor.error)throw Error('共用樓層查詢失敗：'+byFloor.error.message);
-  return spatialReferenceCandidates([byName.data||[],byAddress.data||[],byFloor.data||[]]);
+  const columns=['title','address','floor_label'];
+  const results=await Promise.all(patterns.flatMap(pattern=>
+    columns.map(column=>query(column,pattern))));
+  const failed=results.find(row=>row.error);
+  if(failed)throw Error('LOC 地點／地址參考查詢失敗：'+failed.error.message);
+  return spatialReferenceCandidates(results.map(row=>row.data||[]));
 }
 
 /**
@@ -35,10 +35,11 @@ export async function readSharedSpatialReferencesByNames(names=[]){
     .map(value=>String(value||'').trim()).filter(Boolean))];
   if(!unique.length)return [];
   if(unique.length>20)throw Error('同批地名超過 20 個，請分批查詢。');
+  const spellings=[...new Set(unique.flatMap(spatialReferenceLabelVariants))];
   const result=await dbPublicClient.schema('silver').from('loc_trace')
     .select('uid,scope_id,trace_type,title,address,floor_label,floor_level,longitude,latitude')
     .eq('trace_type','anchor')
-    .in('title',unique)
+    .in('title',spellings)
     .order('scope_id',{ascending:true})
     .order('uid',{ascending:true})
     .limit(201);
