@@ -20,6 +20,7 @@ on:
       - 'supabase/migrations/*time_uid*'
       - 'scripts/test-time-anchor-ranges.mjs'
       - 'scripts/test-time-schema-migration.mjs'
+      - 'scripts/test-time-postgres-cutover.mjs'
       - 'app/styles/scope-system.css'
       - 'scripts/test-culture-period-navigation.mjs'
       - 'scripts/test-app-bootstrap.mjs'
@@ -33,6 +34,24 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -43,6 +62,10 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Period and independent anchor regression
         run: node --test scripts/test-culture-period-navigation.mjs scripts/test-time-anchor-ranges.mjs scripts/test-time-schema-migration.mjs scripts/test-culture-time-trace-river.mjs
+      - name: Verify actual Time DDL against disposable PostgreSQL only
+        run: |
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+          node scripts/test-time-postgres-cutover.mjs
       - name: Culture and app bootstrap focused regressions
         # Full baseline currently has pre-existing unrelated Settings/Facebook importer failures; these checks target the Culture feature.
         run: |
