@@ -1,6 +1,6 @@
 name: Trace manual integration check
-# No automatic PR CI or source-text assertions. Run only when explicitly requested;
-# keep manual build/browser smoke without website deploy, ISR, R2/DO writes, or Neon sync.
+# Manual-only: no PR-triggered builds or source-text test assertions.
+# No deployment, ISR, R2/DO writes, or Neon sync.
 on:
   workflow_dispatch:
 
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: trace-pr-${{ github.event.pull_request.number }}
+  group: trace-manual-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
