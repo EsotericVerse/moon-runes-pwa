@@ -199,7 +199,7 @@ function timelineItems(rows,{includeScope=false}={}){
       return slices.map((range,index)=>{
         const scopeId=scopeIdOf(row.scope_id);
         const start=range.start_date||null,end=range.end_date||null;
-        const kindLabel={anchor:'定錨點',event:'事件',period:'時期'}[row.entry_type];
+        const kindLabel={anchor:'定錨點',event:'事件',period:'時間痕跡'}[row.entry_type];
         return {...row,scope_id:scopeId,
           id:scopeId+':'+row.entry_key+':'+index,
           entry_id:scopeId+':'+row.entry_key+':'+index,
@@ -229,7 +229,7 @@ function cultureParts(scopeContext,runtimeId){
   const eras=periods.map(row=>({
     ...periodRows([row])[0],
     scope_id:runtimeId,
-    group_label:runtimeId+' 時期'
+    group_label:runtimeId+' 時間痕跡'
   }));
   const events=normalizedContext.filter(row=>row.entry_type==='event').map(row=>({
     entry_id:row.event_id||row.entry_key,
