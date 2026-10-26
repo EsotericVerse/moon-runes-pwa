@@ -38,10 +38,11 @@ test('region organizer groups and preserves labels',()=>{
   assert.deepEqual(groups.map(g=>g.county),['新北市','臺南市']);
 });
 
-test('recurrent pre-write check reuses only a corroborated address within 60 meters',()=>{
+test('historical same-address names are review candidates, never automatic UID reuse',()=>{
   const original=item('AAA00001','板橋車站','地址：新北市板橋區縣民大道二段7號。',25.014,121.463);
   const same={...item('__incoming__','高鐵板橋站','地址：新北市板橋區縣民大道二段7號。',25.01403,121.463)};
-  assert.equal(findAnchorWriteMatches(same,[original])[0].safeReuse,true);
+  assert.equal(findAnchorWriteMatches(same,[original])[0].safeReuse,false);
+  assert.equal(findAnchorWriteMatches(same,[original])[0].canMerge,true);
   const far={...same,latitude:25.0163};
   assert.equal(findAnchorWriteMatches(far,[original])[0].safeReuse,false);
   assert.equal(findAnchorWriteMatches(far,[original])[0].type,'same-address');
