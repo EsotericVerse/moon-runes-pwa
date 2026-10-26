@@ -32,14 +32,18 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - name: Exercise Trace and adjacent bootstrap regressions
+      - name: Exercise Trace-specific regressions
+        run: node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs
+      - name: Exercise adjacent bootstrap regressions (baseline status retained)
         run: npm run test:bootstrap
       - name: Build Next.js app without ISR deployment
+        if: success() || failure()
         shell: bash
         run: |
           set -o pipefail
           npm run build 2>&1 | tee /tmp/trace-next-build.log
       - name: Verify ISR remains suspended
+        if: success() || failure()
         run: node scripts/verify-release-isr.mjs
       - name: Preserve failure diagnostics
         if: failure()
