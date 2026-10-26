@@ -22,7 +22,7 @@ test('Base62 IDs remain case-sensitive; location arrays accept real coords but n
   assert.notEqual('a001','A001');
   assert.deepEqual(spaceCoordinates(a),[121.5,25.1]);
   assert.equal(spaceCoordinates(c),null);
-  assert.equal(spaceCoordinates({longitude:120.3,latitude:22.1}),[120.3,22.1]);
+  assert.deepEqual(spaceCoordinates({longitude:120.3,latitude:22.1}),[120.3,22.1]);
   assert.equal(spaceCoordinates({longitude:null,latitude:null}),null);
   assert.equal(spaceCoordinates({address:[999,35]}),null);
   assert.equal(spaceType({trace_type:'anchor'}),SPACE_ANCHOR);

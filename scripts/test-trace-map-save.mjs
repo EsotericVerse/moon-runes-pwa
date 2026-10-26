@@ -155,7 +155,7 @@ test('selected Frame connects points by saved order without a road-network requi
 
 test('LOC Frame management uses existing Scope-owned UIDs without auto-creating places',()=>{
   const page=manager();
-  assert.match(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
+  assert.match(page,/useState\(scopeId\)/);\n  assert.doesNotMatch(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
   assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_list,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
