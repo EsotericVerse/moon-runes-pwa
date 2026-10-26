@@ -292,7 +292,7 @@ test('Trace map resizes with mouse or keyboard while remaining inside the deskto
   const engine=read('app/modular/features/trace/trace-map-engine.js');
   const css=read('app/styles/features.css');
   assert.match(css,/\.loc-next-main:has\(\.loc-trace-panel\)/);
-  assert.match(css,/\.loc-next-main:has\(\.loc-trace-panel\)\{min-width:0;max-width:100%\}/);
+  assert.match(css,/\.loc-next-main:has\(\.loc-trace-panel\)\{min-width:0;max-width:100%;overflow-x:clip\}/);
   assert.match(css,/\.loc-trace-resize-tools\{display:none\}/);
   assert.match(css,/\(min-width:900px\) and \(pointer:fine\)/);
   assert.match(css,/\.loc-trace-map-frame\{[\s\S]*?height:clamp\(460px,68svh,820px\)/);
