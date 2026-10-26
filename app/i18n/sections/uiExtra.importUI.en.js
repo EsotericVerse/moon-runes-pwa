@@ -126,9 +126,9 @@ export default {
   "noDate": "Undated",
   "skippedReasons": "Reasons for the first skipped records:",
   "writtenProgress": "Confirmed saved {completed}/{total} records · {percent}%",
-  "batchImport": "Start import",  "saveSection": "Save to Galaxy",
+  "batchImport": "Start import",
+  "saveSection": "Save to Galaxy",
   "saveHint": "File reading is complete. Review the preview, then select Start import to write records to Galaxy.",
-
   "nextJson": "Next JSON file",
   "refreshLoaded": "Loaded {count} Refresh records. Review differences before writing.",
   "refreshParseFailed": "Cannot parse Refresh JSON/format: {error}",
