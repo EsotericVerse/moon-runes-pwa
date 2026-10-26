@@ -249,8 +249,10 @@ export function invalidateScopeBlockPage(scopeId,page='index'){
 export async function selectLiveScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return [];
-  const name=String(page||'index').trim().toLowerCase();
-  if(!/^[a-z0-9_-]+$/.test(name))throw new Error('Page name 無效');
+  // Management page_name is a case-sensitive document key in PostgreSQL.
+  // Preserve named keys such as TimeAnchor and GalaxyManage exactly.
+  const name=String(page||'index').trim();
+  if(!/^[A-Za-z0-9_-]+$/.test(name))throw new Error('Page name 無效');
   const {rows}=await selectRows(`silver.${id}_blocks`,{
     columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
     filters:[{column:'page_name',operator:'eq',value:name}],
