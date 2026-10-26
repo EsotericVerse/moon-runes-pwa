@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {scopeSearchTermsTable,rankScopeSearchSuggestions,SEARCH_TERM_LIMIT} from '../app/loc/search-terms-client.mjs';
+import {scopeSearchTermsTable,rankScopeSearchSuggestions,SEARCH_TERM_LIMIT} from '../app/loc/search-terms-model.mjs';
 import {Index,Charset} from 'flexsearch';
 
 const terms=[
