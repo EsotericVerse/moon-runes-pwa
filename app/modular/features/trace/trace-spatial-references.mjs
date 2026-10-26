@@ -34,9 +34,9 @@ export function spatialReferenceCandidates(groups,limit=8){
  * floors or Scopes must remain distinct and visible.
  */
 export function spatialReferenceChoicesForName(name,references=[]){
-  const key=String(name||'').trim();
+  const key=spatialReferenceLabelKey(name);
   const matches=(Array.isArray(references)?references:[])
-    .filter(ref=>String(ref?.title||'').trim()===key);
+    .filter(ref=>spatialReferenceLabelKey(ref?.title)===key);
   const choices=matches.slice(0,8).map(ref=>({
     longitude:ref.longitude,latitude:ref.latitude,
     address:ref.address||'',floor_label:ref.floor_label||'',
@@ -48,4 +48,16 @@ export function spatialReferenceChoicesForName(name,references=[]){
   }));
   return {choices,selected:-1,status:choices.length?'review':'notfound',
     origin:'loc-reference',moreChoices:matches.length>8};
+}
+
+// Search-only spelling equivalence; never rewrites a documented address,
+// changes an anchor's UID, or treats two shops as the same identity.
+export function spatialReferenceLabelKey(value){
+  return String(value||'').trim().normalize('NFKC').replace(/臺/g,'台');
+}
+export function spatialReferenceLabelVariants(value){
+  const original=String(value||'').trim();
+  if(!original)return [];
+  const alternate=original.replace(/[臺台]/g,char=>char==='臺'?'台':'臺');
+  return [...new Set([original,alternate])];
 }
