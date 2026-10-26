@@ -1,10 +1,7 @@
 // Name-based suggestions. County is never required to select an existing anchor.
 // UIDs are independent even for duplicate names and coordinates.
-export function traceAnchorSuggestions(anchors=[],countyOrQuery='',queryOrSelected='',selectedOrLimit=[],limit=8){
-  const legacy=Array.isArray(queryOrSelected);
-  const query=legacy?countyOrQuery:queryOrSelected;
-  const selectedUids=legacy?queryOrSelected:(Array.isArray(selectedOrLimit)?selectedOrLimit:[]);
-  const cap=legacy?(Number(selectedOrLimit)||limit):limit;
+export function traceAnchorSuggestions(anchors=[],query='',selectedUids=[],limit=8){
+  const cap=limit;
   const terms=String(query||'').trim().normalize('NFKC')
     .toLocaleLowerCase('zh-Hant').split(/\s+/).filter(Boolean);
   if(!terms.length)return [];

@@ -7,6 +7,25 @@ BEGIN
   THEN RAISE EXCEPTION 'Scoped Trace tables are missing'; END IF;
   SELECT count(*) INTO c_before FROM silver.lo3rwang_trace WHERE trace_type='space_road';
   IF c_before>1 THEN RAISE EXCEPTION 'Unexpected number of original routes'; END IF;
+  -- A preceding historical migration may have already installed the canonical
+  -- shape. Retain it and only repair the third name-merge routine if necessary.
+  IF NOT EXISTS(SELECT 1 FROM silver.lo3rwang_trace WHERE trace_type='space_road')
+     AND NOT EXISTS(SELECT 1 FROM silver.lrunes_trace WHERE trace_type='space_road')
+     AND EXISTS(SELECT 1 FROM pg_constraint
+       WHERE conrelid='silver.lo3rwang_trace'::regclass
+       AND conname='lo3rwang_trace_trace_type_check'
+       AND pg_get_constraintdef(oid) LIKE '%space_period%')
+     AND EXISTS(SELECT 1 FROM pg_constraint
+       WHERE conrelid='silver.lrunes_trace'::regclass
+       AND conname='lrunes_trace_trace_type_check'
+       AND pg_get_constraintdef(oid) LIKE '%space_period%') THEN
+    SELECT pg_get_functiondef(p.oid) INTO ddl FROM pg_proc p
+      JOIN pg_namespace ns ON ns.oid=p.pronamespace
+      WHERE ns.nspname='silver' AND p.proname='merge_scope_trace_place_names';
+    IF ddl IS NOT NULL AND position('space_road' IN ddl)>0
+      THEN EXECUTE replace(ddl,'space_road','space_period'); END IF;
+    RETURN;
+  END IF;
   FOR obj IN SELECT unnest(ARRAY['validate_scoped_trace_map','protect_scoped_trace_anchor','merge_scope_trace_place_names']) LOOP
     SELECT pg_get_functiondef(p.oid) INTO ddl FROM pg_proc p
       JOIN pg_namespace ns ON ns.oid=p.pronamespace
