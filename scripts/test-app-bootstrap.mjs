@@ -529,7 +529,7 @@ test('LOC group member editing and system Admin panels are disjoint; media targe
   assert.match(admin,/section==='network'/);
   assert.match(admin,/<AdminReservedScopeIds\/>/);
   assert.match(admin,/<AdminEmailBlocklist\/>/);
-  assert.match(admin,/<DatabaseTarget\/>/);
+  assert.match(admin,/<DatabaseTarget scopeGroup=\{scopeGroup\}\/>/);
   assert.match(admin,/<IsrDomainTarget\/>/);
   assert.doesNotMatch(admin,/section==='reserved'/);
   assert.doesNotMatch(admin,/section==='blocklist'/);
@@ -561,7 +561,7 @@ test('Admin first tab is People; lists and network consolidate existing secure e
     database:'network',isr:'network',reserved:'lists',blocklist:'lists'
   }))assert.ok(admin.includes(oldId+":'"+newId+"'"),'legacy section '+oldId+' not mapped');
   assert.match(admin,/section==='lists'\?<\>[\s\S]*?<AdminReservedScopeIds\/>[\s\S]*?<AdminEmailBlocklist\/>[\s\S]*?<\/\>/);
-  assert.match(admin,/section==='network'\?<\>[\s\S]*?<DatabaseTarget\/>[\s\S]*?<IsrDomainTarget\/>[\s\S]*?<\/\>/);
+  assert.match(admin,/section==='network'\?<\>[\s\S]*?<DatabaseTarget scopeGroup=\{scopeGroup\}\/>[\s\S]*?<IsrDomainTarget\/>[\s\S]*?<\/\>/);
   assert.match(cache,/<h2>快取<\/h2>/);
   assert.match(cache,/MAX_ISR_DOMAINS/);
   assert.match(cache,/admin-cache-mode/);
