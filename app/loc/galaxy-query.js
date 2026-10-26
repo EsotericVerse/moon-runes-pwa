@@ -451,49 +451,9 @@ function normalizeSearch(value){
 // Scope tables are independent, so one LOC-wide keyword used to fire one request per
 // Scope at once. A small worker pool keeps the browser's connection slots free for
 // the primary search request, and the signal stops the remaining work on re-search.
-export async function selectStyleKeywordMatches(scopes,query,{signal=null,concurrency=4}={}){
-  const key=normalizeSearch(query);
-  if(!key)return [];
-  const targets=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id&&scope?.time);
-  const matchScope=async scope=>{
-    const current=scopeOf(scope);
-    const {rows=[]}=await selectRows(current.time,{
-      columns:'record_id,record_type,label,style_description,status',
-      filters:[
-        {column:'record_type',operator:'eq',value:'style_comment'},
-        {column:'label',operator:'eq',value:String(query||'').normalize('NFKC').trim()}
-      ],
-      limit:DEFAULT_LIST_BATCH_SIZE,
-      signal
-    });
-    return rows
-      .filter(row=>row.status!=='needs_anchor'&&String(row.label||'').trim()&&normalizeSearch(row.label)===key)
-      .map(row=>({
-        row:{
-          id:'style-keyword:'+current.id+':'+row.record_id,
-          scope_id:current.id,
-          style_keyword_tag:true,
-          title:String(row.label).trim(),
-          style_description:String(row.style_description||'')
-        },
-        source:'風格標籤',
-        providerId:current.id+':style-keyword'
-      }));
-  };
-  const found=new Array(targets.length);
-  let cursor=0;
-  const worker=async()=>{
-    while(cursor<targets.length){
-      if(signal?.aborted)return;
-      const index=cursor++;
-      found[index]=await matchScope(targets[index]);
-    }
-  };
-  await Promise.all(Array.from({length:Math.min(Math.max(1,concurrency),targets.length)},worker));
-  // Never return a partial result for a cancelled lookup: callers cache successes.
-  if(signal?.aborted){const cancelled=new Error('Request cancelled');cancelled.name='AbortError';throw cancelled;}
-  return found.filter(Boolean).flat();
-}
+// Deprecated Time style labels are not a search provider. Their classification
+// is handled by the Advanced Search keyword path; keep a no-op for old imports.
+export async function selectStyleKeywordMatches(){return [];}
 
 export async function searchGalaxyRows(scopes,query,{
   limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false,browse=false,signal=null,sortDirection='asc'
