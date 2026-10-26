@@ -10,7 +10,7 @@ import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,readTra
   readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,readTraceAddressReferences,
   addTraceAnchor,addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
 import {TRACE_COUNTY_IDS} from '../modular/features/trace/trace-county-id.mjs';
-import {routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
+import {traceCategories,routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
   from '../modular/features/trace/trace-route-preference.mjs';
 
@@ -20,6 +20,7 @@ const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
 const countyOptions=[...Object.entries(TRACE_COUNTY_IDS).map(([name,id])=>({name,id})),
   {id:'OTHER',name:'未判定／其他地區'}];
 const MAX_STOPS=80;
+const ALL_CATEGORIES='__trace_all_categories__';
 const ALL_CLASSES='__trace_all_classes__';
 const ALL_GROUPS='__trace_all_groups__';
 const normalize=value=>String(value||'').trim();
@@ -31,6 +32,7 @@ export default function TraceRouteManager({scopeId}){
   const requestedFrame=searchParams?.get('frame')||'';
   const [activeScope,setActiveScope]=useState(scopeId);
   const [selectedUid,setSelectedUid]=useState('');
+  const [categoryFilter,setCategoryFilter]=useState(ALL_CATEGORIES);
   const [classFilter,setClassFilter]=useState(ALL_CLASSES);
   const [groupFilter,setGroupFilter]=useState(ALL_GROUPS);
   const [routeFilter,setRouteFilter]=useState('');
@@ -38,6 +40,7 @@ export default function TraceRouteManager({scopeId}){
   const [editorOpen,setEditorOpen]=useState(false);
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
+  const [category,setCategory]=useState('');
   const [className,setClassName]=useState('');
   const [group,setGroup]=useState('');
   const [queue,setQueue]=useState([]);
@@ -69,7 +72,7 @@ export default function TraceRouteManager({scopeId}){
     return()=>clearTimeout(timer);
   },[referenceQuery]);
   useEffect(()=>{
-    setSelectedUid('');setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
+    setSelectedUid('');setCategoryFilter(ALL_CATEGORIES);setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
     setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
     setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
     setReferenceOpen(false);setReferenceQuery('');setReferenceDraft(null);
@@ -95,12 +98,16 @@ export default function TraceRouteManager({scopeId}){
       {nativeOnly:activeScope==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const availableClasses=useMemo(()=>routeClasses(maps),[maps]);
-  const availableGroups=useMemo(()=>routeGroups(maps,classFilter),[maps,classFilter]);
+  const availableCategories=useMemo(()=>traceCategories(maps),[maps]);
+  const availableClasses=useMemo(()=>categoryFilter===ALL_CATEGORIES?[]:routeClasses(maps,categoryFilter),[maps,categoryFilter]);
+  const availableGroups=useMemo(()=>categoryFilter===ALL_CATEGORIES||classFilter===ALL_CLASSES?[]:
+    routeGroups(maps,categoryFilter,classFilter),[maps,categoryFilter,classFilter]);
   const listed=useMemo(()=>searchTraceRoutes(maps,{
-    ...(classFilter!==ALL_CLASSES?{className:classFilter}:{}),
-    ...(classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),query:routeFilter
-  }),[maps,classFilter,groupFilter,routeFilter]);
+    ...(categoryFilter!==ALL_CATEGORIES?{category:categoryFilter}:{}),
+    ...(categoryFilter!==ALL_CATEGORIES&&classFilter!==ALL_CLASSES?{className:classFilter}:{}),
+    ...(categoryFilter!==ALL_CATEGORIES&&classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),
+    query:routeFilter
+  }),[maps,categoryFilter,classFilter,groupFilter,routeFilter]);
   // Keep the UI permission aligned with silver.can_manage_scope().
   const canEdit=account.canManageScopeSync(activeScope);
 
@@ -133,9 +140,9 @@ export default function TraceRouteManager({scopeId}){
     queryFn:()=>readTracePopularAnchors(activeScope),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const dirty=editorOpen&&Boolean(editingUid||title||description||className||group||queue.length||referenceDraft);
+  const dirty=editorOpen&&Boolean(editingUid||title||description||category||className||group||queue.length||referenceDraft);
   const clearEntry=()=>{
-    setEditingUid('');setTitle('');setDescription('');setClassName('');setGroup('');
+    setEditingUid('');setTitle('');setDescription('');setCategory('');setClassName('');setGroup('');
     setQueue([]);setExtraAnchors([]);setCounty('');setPointQuery('');setPicked(null);
     pendingSaved.current=null;pendingReference.current=null;setReferencePending(false);
     setPopularOpen(false);
@@ -159,7 +166,7 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!mayLeave())return;
     clearEntry();setSelectedUid(map.uid);setEditingUid(map.uid);
     setTitle(map.title||'');setDescription(map.description||'');
-    setClassName(map.class||'');setGroup(map.class_group||'');
+    setCategory(map.category||'');setClassName(map.class||'');setGroup(map.class_group||'');
     setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
     setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
   };
@@ -247,11 +254,11 @@ export default function TraceRouteManager({scopeId}){
     try{
       if(referenceDraft||pendingReference.current)
         throw Error('請先建立自己的參考錨點，或收合並取消參考，再儲存痕跡圖。');
-      const labels=validateTraceRouteLabels(className,group);
+      const labels=validateTraceRouteLabels(category,className,group);
       if(queue.length<2||queue.length>MAX_STOPS||new Set(queue).size!==queue.length)
         throw Error('請依照順序加入 2～80 個不重複的定錨點。');
       if(missing.length)throw Error('目前 Frame 有未取得的錨點，請先確認全部站點已載入。');
-      const input={scopeId:activeScope,title,description,className:labels.class,
+      const input={scopeId:activeScope,title,description,category:labels.category,className:labels.class,
         group:labels.class_group,anchorUids:queue,anchors:[...anchors.values()]};
       let saved=pendingSaved.current;
       if(saved&&(saved.editingUid!==editingUid||saved.scopeId!==activeScope))
@@ -265,7 +272,8 @@ export default function TraceRouteManager({scopeId}){
       const found=latest?.find(map=>map.uid===saved.uid);
       if(!found||found.title!==normalize(title)
         ||normalize(found.description)!==normalize(description)
-        ||normalize(found.class)!==labels.class
+        ||normalize(found.category)!==labels.category
+         ||normalize(found.class)!==labels.class
         ||normalize(found.class_group)!==labels.class_group
         ||JSON.stringify(found.anchor_uids||[])!==JSON.stringify(queue))
         throw Error('寫入已回應，但重讀尚未確認。保留草稿；再按儲存只會重讀，不會重複新增。');
@@ -312,7 +320,7 @@ export default function TraceRouteManager({scopeId}){
   return <section className="loc-card scope-feature-card loc-trace-map-manager" aria-label="痕跡圖 Frame 管理">
     <header className="loc-trace-map-manager-heading">
       <div><h3>痕跡圖管理</h3>
-        <p className="scope-status">Class → 領域 → 具名痕跡圖。站點 Queue 僅於選中 Frame 後載入；選錨點必須按 ＋ 才加入。</p>
+        <p className="scope-status">大分類 → Class → Group → Item（具名痕跡圖）。站點 Queue 是 Item 內部的有序錨點，僅按需載入；選錨點必須按 ＋ 才加入。</p>
       </div>
       <button className="loc-button" type="button" disabled={busy||!canEdit}
         onClick={startNew}>新增痕跡圖</button>
@@ -327,8 +335,15 @@ export default function TraceRouteManager({scopeId}){
     </label>:null}
     {!canEdit?<p className="scope-status">可查看路線；編輯需該 Scope 的管理權限（寫入仍由 Supabase RLS 驗證）。</p>:null}
     <div className="loc-trace-route-browse">
+      <label>大分類
+        <select className="scope-select" value={categoryFilter}
+          onChange={event=>{setCategoryFilter(event.target.value);setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);}}>
+          <option value={ALL_CATEGORIES}>全部大分類</option>
+          {availableCategories.map(value=><option key={value||'_empty'} value={value}>{traceClassLabel(value)}</option>)}
+        </select>
+      </label>
       <label>Class
-        <select className="scope-select" value={classFilter}
+        <select className="scope-select" value={classFilter} disabled={categoryFilter===ALL_CATEGORIES}
           onChange={event=>{setClassFilter(event.target.value);setGroupFilter(ALL_GROUPS);}}>
           <option value={ALL_CLASSES}>全部 Class</option>
           {availableClasses.map(value=><option key={value||'_empty'} value={value}>{traceClassLabel(value)}</option>)}
@@ -336,7 +351,7 @@ export default function TraceRouteManager({scopeId}){
       </label>
       <label>領域
         <select className="scope-select" value={groupFilter}
-          disabled={classFilter===ALL_CLASSES}
+          disabled={categoryFilter===ALL_CATEGORIES||classFilter===ALL_CLASSES}
           onChange={event=>setGroupFilter(event.target.value)}>
           <option value={ALL_GROUPS}>全部領域</option>
           {availableGroups.map(value=><option key={value||'_empty'} value={value}>{value||'未分組'}</option>)}
@@ -357,7 +372,7 @@ export default function TraceRouteManager({scopeId}){
           aria-current={current?.uid===map.uid?'true':undefined}
           onClick={()=>chooseMap(map)}>
           <span aria-hidden="true">{current?.uid===map.uid?'▾':'▸'}</span>
-          <span>{map.title}</span><span className="scope-status">{map.anchor_uids?.length||0} 站</span>
+          <span>{map.title}</span><span className="scope-status">{[map.category,map.class,map.class_group].filter(Boolean).join(' / ')||'未分類'} · {map.anchor_uids?.length||0} 站</span>
         </button>
         {current?.uid===map.uid?<div className="loc-trace-saved-map-body">
           {map.description?<p>{map.description}</p>:null}
@@ -387,10 +402,12 @@ export default function TraceRouteManager({scopeId}){
       <div className="scope-management-fields">
         <label>痕跡圖名稱 <input value={title} maxLength={120} required disabled={busy}
           onChange={event=>setTitle(event.target.value)}/></label>
+        <label>大分類 <input value={category} maxLength={100} disabled={busy}
+          placeholder="例如：旅遊" onChange={event=>setCategory(event.target.value)}/></label>
         <label>Class <input value={className} maxLength={100} disabled={busy}
-          placeholder="例如：跟朋友" onChange={event=>{setClassName(event.target.value);if(!event.target.value.trim())setGroup('');}}/></label>
-        <label>領域（Group）<input value={group} maxLength={100} disabled={busy||!className.trim()}
-          placeholder="例如：夜市" onChange={event=>setGroup(event.target.value)}/></label>
+          placeholder="例如：夜市" onChange={event=>{setClassName(event.target.value);if(!event.target.value.trim())setGroup('');}}/></label>
+        <label>Group<input value={group} maxLength={100} disabled={busy||!className.trim()}
+          placeholder="例如：北部" onChange={event=>setGroup(event.target.value)}/></label>
         <label>路線說明 <textarea value={description} maxLength={2000} rows={3} disabled={busy}
           onChange={event=>setDescription(event.target.value)}/></label>
       </div>
