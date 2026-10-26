@@ -483,12 +483,21 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.doesNotMatch(editor,/classification-page__layout|statistics_source_categories|statistics_scope_others_groups/);
 });
 
-test('Scope import keeps one action row and no Source Refresh or data reorganization',()=>{
+test('Scope import separates local preview from explicit Galaxy save',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/scope-import-primary-row/);
   assert.match(panel,/uiExtra\.importUI\.importLanguage/);
   assert.match(panel,/uiExtra\.importUI\.fileSource/);
   assert.match(panel,/uiExtra\.importUI\.batchImport/);
+  assert.match(panel,/className="scope-import-save"/);
+  assert.match(panel,/uiExtra\.importUI\.saveSection/);
+  assert.match(panel,/uiExtra\.importUI\.saveHint/);
+  assert.match(panel,/scope-import-save-button/);
+  const chooseAndPreview=panel.split('scope-import-primary-row')[1].split('</div>')[0];
+  assert.doesNotMatch(chooseAndPreview,/onClick=\{run\}/);
+  assert.match(panel,/scope-import-save[\s\S]*onClick=\{run\}/);
+  const css=readFileSync(new URL('../app/styles/features.css',import.meta.url),'utf8');
+  assert.match(css,/\.scope-import-save-button/);
   assert.match(panel,/<ImportFormatSettings/);
   assert.doesNotMatch(panel,/function SourceRefresh|function DuplicateDetection|findGalaxyDuplicates/);
 });
