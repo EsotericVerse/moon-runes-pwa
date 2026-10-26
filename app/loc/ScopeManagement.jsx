@@ -41,7 +41,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,3):
     MANAGEMENT_OPTIONS.filter(option=>!['placeFill','traceGeocode'].includes(option.value)||['lo3rwang','lrunes'].includes(routeScopeId));
   const editRequested=searchParams?.get('edit')==='1';
-  const [section,setSection]=useManagementSection(options);
+  const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
     if(!account.user||!canManageHere||(!editRequested&&!['others','settings','traceAnchor','traceMap','traceCleanup','placeFill','traceGeocode'].includes(section))||account.permissionLoading)return;
