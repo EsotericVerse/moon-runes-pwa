@@ -154,8 +154,10 @@
 - [ ] **LOC-TODO-03｜Cloudflare 成本、快取膨脹與過度部署根因** `[P0]` `[停用設定已核實／帳單待查證]`
   - 完成條件／待辦：讀取可核對的 Cloudflare Pages deployments、Workers、R2、DO 與建置／請求計費紀錄，分析成本與觸發來源；先維持現有停用隔離，再處理確定根因。**不得用重啟部署、ISR 或寫入型快取來驗證**。退休的 `incremental-cache/` 24 小時到期規則僅屬成本收斂，不代表可恢復 R2 寫入。
 
-- [ ] **LOC-TODO-04｜文化第二條時間河道首次載入卡頓** `[P1]` `[部分實作／尚未自證]`
+- [ ] **LOC-TODO-04｜文化第二條時間河道首次載入卡頓** `[P1]` `[ISR-off 分段載入已整合／長時間情境仍待量測]`
   - 完成條件／待辦：只抓當前必要的資料；分類、河道展開按需查詢並原地更新，避免畫面閃爍、整頁重載與初始化等所有統計查完才顯示。驗收冷啟動／空資料／單類別等情境。
+  - **2026-10-26 工程證據：** PR [#575](https://github.com/EsotericVerse/moon-runes-pwa/pull/575)，main `9cbd0404`。解除第二河道分段載入對 ISR 的綁定；首次主分類與展開子類沿用同一次 Supabase 日／來源彙總，展開不額外查 SQL；資料修改時更新相關 SWR keys。GitHub Actions [40287876436](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40287876436) 已完成完整 Bootstrap 138/138、文化 5/5、其他 16/16、靜態建置與四頁本機 Chrome 實際渲染，點擊展示 8 主群組／16 子群組、682ms、**新增彙總 RPC 0 次**。未觸發 Pages/Cloudflare 部署；暫時 CI 已移除。
+  - **剩餘工程驗證：** 已涵蓋空資料與單分類模擬；整體五分鐘持續操作、實際空 Scope 在瀏覽器的視覺呈現、10/100 位同時互動，以及正式網站下次授權發布後新版本驗證尚未執行。請不要把單次 CI／互動成功冒充全部使用情境已驗收。
 
 - [ ] **LOC-TODO-05｜Service Worker 與公開 Blocks 快取** `[P1]` `[部分實作／尚未自證]`
   - 完成條件／待辦：核實首頁、各 Scope 的公開 Blocks／Bootstrap／Config 靜態快照及 SW Cache First 行為（內容變更時更新版本），檢查冷／熱讀取、過期失效、Guest 讀取與 SQL/RPC 次數；區分 HTTP 請求、連線數與 SQL 執行數。不得借修快取重新啟用 ISR、R2／DO 或頻繁焦點重查，也不得為了少數查詢重寫成熟模組。
