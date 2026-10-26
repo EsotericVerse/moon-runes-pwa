@@ -1,5 +1,5 @@
 name: Culture first-river period regression
-# Does not deploy, publish assets, write ISR, or touch the database.
+# Build and tests only. No deployment, ISR writes or data migration.
 on:
   pull_request:
     branches: [main]
@@ -8,6 +8,7 @@ on:
       - 'app/loc/culture-period-navigation.mjs'
       - 'app/styles/scope-system.css'
       - 'scripts/test-culture-period-navigation.mjs'
+      - 'scripts/test-app-bootstrap.mjs'
       - '.github/workflows/culture-period-navigation.yml'
 permissions:
   contents: read
@@ -28,14 +29,10 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Period and independent anchor regression
         run: node --test scripts/test-culture-period-navigation.mjs
-      - name: Culture and existing app bootstrap regressions
-        # Main currently has an unrelated Settings importer expectation mismatch.
-        # Keep the remaining application tests; the full baseline failure is
-        # documented in PR run 40323614351, not silently marked as passing.
+      - name: Culture and app bootstrap focused regressions
+        # Full baseline has pre-existing unrelated Settings/Facebook importer failures.
         run: |
-          node --experimental-vm-modules --test --test-name-pattern='^(?!Settings document import is iOS only).*
-        run: npm run build
- scripts/test-app-bootstrap.mjs
+          node --experimental-vm-modules --test --test-name-pattern='^(?!Settings document import is iOS only).*$' scripts/test-app-bootstrap.mjs
           node --test scripts/test-culture-river-roots.mjs
       - name: Build Next without deploying
         run: npm run build
