@@ -126,9 +126,9 @@ export default {
   "noDate": "无日期",
   "skippedReasons": "前几条跳过原因：",
   "writtenProgress": "已写入 {completed}／{total} 条 · {percent}%",
-  "batchImport": "开始导入",  "saveSection": "保存到 Galaxy",
+  "batchImport": "开始导入",
+  "saveSection": "保存到 Galaxy",
   "saveHint": "文件已读取并预览。确认内容后，点击「开始导入」才会将记录写入 Galaxy。",
-
   "nextJson": "下一个 JSON 文件",
   "refreshLoaded": "已加载 {count} 条 Refresh 数据；先分析差异，不会直接写入。",
   "refreshParseFailed": "Refresh JSON／格式解析失败：{error}",
