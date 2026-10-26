@@ -3,11 +3,12 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useAccount} from './use-account';
+import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
-import {TRACE_SCOPES,traceKey,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
+import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
   readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,
   addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
-import {TRACE_COUNTY_IDS,traceCountyName} from '../modular/features/trace/trace-county-id.mjs';
+import {TRACE_COUNTY_IDS} from '../modular/features/trace/trace-county-id.mjs';
 import {routeClasses,routeGroups,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
   from '../modular/features/trace/trace-route-preference.mjs';
@@ -216,6 +217,7 @@ export default function TraceRouteManager({scopeId}){
     }
     setSelectedUid(map.uid);setNotice('已設為此瀏覽器的預設痕跡圖。');
   };
+  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   const previewFrame=editorOpen&&queue.length>=2&&missing.length===0
     ?{uid:editingUid||'DRAFT000',source_scope:activeScope,trace_type:'map',
       title:title||'編輯預覽',anchor_uids:queue}:current;
