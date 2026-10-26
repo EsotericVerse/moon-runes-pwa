@@ -86,6 +86,12 @@ function AnchorEditor({scopeId,spatial,reload}){
     return data||[];
   },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
   const useSharedReference=reference=>{
+    if(reference.source_scope===scopeId){
+      // A current-Scope hit is an existing anchor identity, not a template
+      // for creating another anchor with a fresh UID.
+      pickExisting(reference.uid);
+      return;
+    }
     // The reference's Scope and UID are never copied to the new anchor.
     // Reusing verified coordinates/address is not reusing a historical place.
     if(!validCoordinates(reference.longitude,reference.latitude))return;
@@ -202,7 +208,8 @@ function AnchorEditor({scopeId,spatial,reload}){
         </button>
       </div>
       {!editingUid&&sharedTerm.length>=2?<div className="loc-trace-quick-results" role="group" aria-label="LOC 已有空間地址參考">
-        <strong>已有地址／地點參考（選用後仍建立新的定錨點 UID）</strong>
+        <strong>LOC 已有錨點／地址參考</strong>
+        <p className="scope-status">自己的錨點會開啟編輯；其他 Scope 的資料只帶入位置參考，仍建立自己的新 UID。沒有門牌的紀錄不代表地址已核實。</p>
         {sharedReferences.isPending?<p className="scope-status">正在比對現有空間錨點…</p>:null}
         {sharedReferences.error?<p role="status" className="scope-status scope-error">
           讀取公用地址參考失敗：{String(sharedReferences.error?.message||sharedReferences.error)}
@@ -210,7 +217,8 @@ function AnchorEditor({scopeId,spatial,reload}){
         {(sharedReferences.data||[]).map(reference=><button
           key={reference.source_scope+':'+reference.uid} type="button" className="loc-button"
           onClick={()=>useSharedReference(reference)} disabled={busy||quickBusy}>
-          {reference.title||'未命名'} · {reference.address||'地址未核實'}
+          {reference.source_scope===scopeId?'編輯自己的錨點：':'選用位置參考：'}
+          {reference.title||'未命名'} · {reference.address||'門牌未核實'}
           {reference.floor_label?' · '+reference.floor_label:''}
           {' · '+reference.source_scope+' · UID '+reference.uid}
         </button>)}
