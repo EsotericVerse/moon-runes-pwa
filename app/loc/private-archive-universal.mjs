@@ -118,7 +118,10 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const group=actualKind==='message'?conv:(sender||platform);
   // If no source-native ID exists, identity is based on conversation/author, time,
   // original content and attachments (never the index/order of the ZIP).
-  const stable=native||hash(JSON.stringify([group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments]));
+  // Distinct textless check-ins at the same timestamp must not share an ID.
+  const identityParts=[group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments];
+  if(sourcePlace)identityParts.push(sourcePlace);
+  const stable=native||hash(JSON.stringify(identityParts));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
     platform,kind:finalKind,nativeId:stable,text:visibleText,sourcePlace,
