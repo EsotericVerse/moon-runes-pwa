@@ -4,7 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import {Index,Charset} from 'flexsearch';
-import {loadScopeSearchTerms,rankScopeSearchSuggestions} from '../../loc/search-terms-client.mjs';
+import {loadScopeSearchTerms} from '../../loc/search-terms-client.mjs';
+import {rankScopeSearchSuggestions} from '../../loc/search-terms-model.mjs';
 
 // A transient memory index scoped to this mounted input, never a shared or
 // persistent cache. Each keystroke stays entirely local; normal full search
