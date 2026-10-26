@@ -431,6 +431,56 @@ export default function TraceRouteManager({scopeId}){
           {item.title}（{item.usage_count}）</button>)}
         {popular.data&&!popular.data.length?<p className="scope-status">目前沒有重複使用的常用站點。</p>:null}
       </div>:null}
+      <section className="loc-trace-reference-panel" aria-label="跨 Scope 公用地址參考">
+        <button type="button" className="loc-button" disabled={busy||!canEdit||Boolean(pendingReference.current)}
+          aria-expanded={referenceOpen} onClick={()=>{
+            setReferenceOpen(value=>!value);setReferenceDraft(null);setReferenceQuery('');
+          }}>{referenceOpen?'收合公用地址':'從 LOC 公用地址參考建立錨點'}</button>
+        {referenceOpen?<div className="loc-trace-reference-body">
+          <p className="scope-status">僅讀取其他 Scope 的已核對地址。選擇後建立目前 Scope 的獨立 UID；不會修改參考來源或直接使用來源 UID。</p>
+          <label>搜尋名稱或完整地址（至少兩字）
+            <input type="search" value={referenceQuery} maxLength={100}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>{setReferenceQuery(event.target.value);setReferenceDraft(null);}}
+              placeholder="例如：板橋車站、文化路門牌"/>
+          </label>
+          {referenceQuery.trim().length>=2&&!referenceDraft?<div className="loc-trace-route-suggestions">
+            {normalize(referenceQuery)!==debouncedReference||references.isPending
+              ?<p role="status" className="scope-status">讀取公用地址中…</p>
+              :references.error?<p role="alert" className="scope-status scope-error">{String(references.error.message||references.error)}</p>
+              :references.data?.length?references.data.map(row=><button key={row.source_scope+':'+row.uid}
+                className="loc-button" type="button" disabled={busy}
+                onClick={()=>selectReference(row)}>
+                <span>{row.title} · {row.address}{row.floor_label?' · '+row.floor_label:''}</span>
+                <small>參考 Scope {row.source_scope} · UID {row.uid}</small>
+              </button>):<p className="scope-status">找不到已核對的公用地址。仍可回空間定錨頁建立自己的地點。</p>}
+            {references.data?.length===8?<p className="scope-status">最多顯示前八筆，繼續輸入可縮小範圍。</p>:null}
+          </div>:null}
+          {referenceDraft?<div className="scope-management-fields">
+            <p className="scope-status">唯讀來源：{referenceDraft.source_scope} · {referenceDraft.source_uid}；核對下列內容後明確建立自己的錨點。</p>
+            <label>自己錨點的名稱<input required maxLength={120} value={referenceDraft.title}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('title',event.target.value)}/></label>
+            <label>完整地址<input maxLength={320} value={referenceDraft.address}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('address',event.target.value)}/></label>
+            <label>樓層／室別<input maxLength={40} value={referenceDraft.floor_label}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('floor_label',event.target.value)}/></label>
+            <label>樓層序號（可空；不是高度公尺）<input type="number" min={-100} max={300} step={1}
+              value={referenceDraft.floor_level} disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('floor_level',event.target.value)}/></label>
+            <label>經度<input type="number" min={-180} max={180} step="any" value={referenceDraft.longitude}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('longitude',event.target.value)}/></label>
+            <label>緯度<input type="number" min={-90} max={90} step="any" value={referenceDraft.latitude}
+              disabled={busy||Boolean(pendingReference.current)}
+              onChange={event=>changeReference('latitude',event.target.value)}/></label>
+            <button type="button" className="loc-button primary" disabled={busy||!canEdit||queue.length>=MAX_STOPS}
+              onClick={createReferenceAnchor}>＋ 建立自己的錨點並加入 Queue</button>
+          </div>:null}
+        </div>:null}
+      </section>
       <h4>站點 Queue（{queue.length}／{MAX_STOPS}）</h4>
       {missing.length?<p className="scope-status" role="status">正在讀取目前 Frame 的既有站點…</p>:null}
       <ol className="loc-trace-selection-order">
