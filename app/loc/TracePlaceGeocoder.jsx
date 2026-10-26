@@ -7,6 +7,7 @@ import {useAccount} from './use-account';
 import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modular/features/trace/trace-data';
 import {revalidateServerMetadata} from './scope-data';
 import {postalAddressFromNominatim} from '../modular/features/trace/trace-postal-evidence.mjs';
+import {readSharedSpatialReferencesByNames} from '../modular/features/trace/trace-spatial-reference-data';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -157,14 +158,41 @@ export default function TracePlaceGeocoder({scopeId}){
     setFailure('');setNotice('');setProcessed(0);
     let completed=0;
     try{
-      for(const name of names){
+      for(let offset=0;offset<names.length;offset+=20){
         if(stopRef.current)break;
-        const result=await lookUp(name);
-        if(!result)break;
-        remember(name,result);
-        completed+=1;setProcessed(completed);
+        const group=names.slice(offset,offset+20);
+        // One local LOC-union lookup per 20 names, before any external request.
+        // A matching name does not prove which historical business/floor it is.
+        const reviewed=await readSharedSpatialReferencesByNames(group);
+        const byName=new Map();
+        for(const reference of reviewed){
+          const name=String(reference.title||'').trim();
+          if(!byName.has(name))byName.set(name,[]);
+          byName.get(name).push(reference);
+        }
+        for(const name of group){
+          if(stopRef.current)break;
+          const refs=byName.get(name)||[];
+          if(refs.length){
+            const choices=refs.slice(0,4).map(ref=>({
+              longitude:ref.longitude,latitude:ref.latitude,
+              address:ref.address||'',floor_label:ref.floor_label||'',
+              floor_level:ref.floor_level,
+              title:ref.title,source_scope:ref.source_scope,uid:ref.uid,
+              label:ref.title+' · '+(ref.address||'地址未核實')+
+                (ref.floor_label?' · '+ref.floor_label:'')+
+                ' · '+ref.source_scope+' UID '+ref.uid
+            }));
+            remember(name,{choices,selected:-1,status:'review',origin:'loc-reference'});
+          }else{
+            const result=await lookUp(name);
+            if(!result)break;
+            remember(name,result);
+          }
+          completed+=1;setProcessed(completed);
+        }
       }
-      setNotice('本次已查詢 '+completed+' 處。只有名稱高度吻合的候選會預選，其餘必須人工確認。');
+      setNotice('本次已處理 '+completed+' 處。優先使用 LOC 已有錨點；既有地點需要核對後選取，缺少參考才查詢外部服務。');
     }catch(error){
       if(!stopRef.current)setFailure('查詢已停止：'+String(error.message||error)+'。既有結果已保存在本機，可續查。');
     }finally{busyRef.current=false;setRunning(false);}
@@ -188,6 +216,8 @@ export default function TracePlaceGeocoder({scopeId}){
       longitude:found[item.name].choices[found[item.name].selected].longitude,
       latitude:found[item.name].choices[found[item.name].selected].latitude,
       address:found[item.name].choices[found[item.name].selected].address||'',
+      floor_label:found[item.name].choices[found[item.name].selected].floor_label||'',
+      floor_level:found[item.name].choices[found[item.name].selected].floor_level??null,
       radius_m:Number(radius)
     }));
     const names=previewEnds(payload).map(item=>item.name).join('\n');
@@ -211,7 +241,7 @@ export default function TracePlaceGeocoder({scopeId}){
   if(!authorized)return <p className="scope-status">需要此 Scope 的管理權限。</p>;
   return <section className="loc-card scope-feature-card">
     <h3>打卡地點 → 空間定錨點</h3>
-    <p className="scope-status">從 Galaxy 既有的 source_place 去重，搜尋經緯度並建立同名空間定錨點。只讀取打卡地點名稱，不變更任何 Galaxy 文章。地理位置來自 OpenStreetMap Nominatim，候選可能不完整或有同名地點。</p>
+    <p className="scope-status">從 Galaxy 既有的 source_place 整理打卡名稱，先從 LOC 公開錨點查已知地址與座標；沒有參考才向 OpenStreetMap Nominatim 查詢。候選都要核對，新的錨點使用自己的 Scope UID，不修改 Galaxy 文章或別人的錨點。</p>
     {places.isPending||traces.isPending?<p role="status" className="scope-status">正在讀取打卡名稱與現有定錨點…</p>:null}
     {places.error||traces.error?<p role="alert" className="scope-status scope-error">{String(places.error?.message||traces.error?.message||'')}</p>:null}
     {!places.isPending&&!traces.isPending&&!places.error&&!traces.error?<>
@@ -221,7 +251,7 @@ export default function TracePlaceGeocoder({scopeId}){
       </p>
       <label className="scope-setting-toggle">
         <input type="checkbox" checked={policyAccepted} onChange={event=>setPolicyAccepted(event.target.checked)}/>
-        <span>我了解查詢會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
+        <span>我了解只有 LOC 沒有對應地名參考時，才會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
       </label>
       <div className="scope-management-fields"><label>批次定錨的涵蓋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} onChange={event=>setRadius(event.target.value)} disabled={running||saving}/></label></div>
       <div className="scope-stat-controls">
