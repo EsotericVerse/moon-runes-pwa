@@ -45,14 +45,14 @@ test('county grouping retains distinct UIDs and does not silently merge same nam
  assert.equal(groups.get('TW-TPE').length,1);
  assert.notEqual(groups.get('TW-NWT')[0].uid,groups.get('TW-NWT')[1].uid);
 });
-test('Frame editor queries by county + name or UID and adds only on explicit plus',()=>{
+test('Frame editor queries Scope place names without county and adds only on explicit plus',()=>{
  const manager=read('app/loc/TraceRouteManager.jsx');
  const storage=read('app/modular/features/trace/trace-data.js');
- assert.match(manager,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
+ assert.match(manager,/readTraceAnchorSuggestions\(activeScope,debouncedQuery,8\)/);
  assert.match(manager,/setQueue\(ids=>ids.includes\(choice.uid\)\?ids:\[\.\.\.ids,choice.uid\]\)/);
  assert.match(manager,/onClick=\{addPoint\}>＋/);
  assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
- assert.match(storage,/uid\.eq\./);
+ assert.match(storage,/search_scope_trace_place_names/);
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
  assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)/);
  assert.match(storage,/anchor_uids:chosen/);
@@ -65,7 +65,7 @@ test('same-name candidate list stays capped at eight; exact UID is a separate se
    description:'地址：新北市板橋區第'+index+'路'
  }));
  assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
- assert.match(read('app/modular/features/trace/trace-data.js'),/filters\.push\('uid\.eq\.'\+q\)/);
+ assert.match(read('app/modular/features/trace/trace-data.js'),/p_term:q,p_limit:/);
  assert.match(read('app/loc/TraceRouteManager.jsx'),/UID \{anchor\.uid\}/);
 });
 test('same address but different business names are never safe for automatic reuse',()=>{

@@ -112,16 +112,11 @@ test('many historical identities do not silently choose one of more than eight c
   assert.equal(lookup.moreChoices,true);
   assert.equal(lookup.selected,-1);
 });
-test('shared address searches are explicit and bulk geocoding reuses LOC first',()=>{
-  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
-  const geo=readFileSync(new URL('../app/loc/TracePlaceGeocoder.jsx',import.meta.url),'utf8');
-  assert.match(ui,/查詢已有錨點/);
-  assert.doesNotMatch(ui,/setTimeout\(\(\)=>setSharedTerm\(title\.trim\(\)\)/);
-  assert.match(geo,/await readSharedSpatialReferencesByNames\(group\)/);
-  assert.match(geo,/spatialReferenceChoicesForName\(name,refs\)/);
-  assert.match(geo,/refreshRequired/);
+test('read-only local address references do not need an external geocoder',()=>{
+ const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+ assert.match(ui,/查詢已有錨點/);
+ assert.doesNotMatch(ui,/searchTracePlaces|nominatim|photon/);
 });
-
 test('台/臺 is search-equivalent but recorded addresses and Scope UIDs stay unchanged',()=>{
   assert.deepEqual(spatialReferenceLabelVariants('台北車站'),['台北車站','臺北車站']);
   assert.equal(spatialReferenceLabelKey('臺北車站'),spatialReferenceLabelKey('台北車站'));
@@ -154,24 +149,6 @@ test('ZIP parser takes Facebook tagged visit time from explicit metadata, not GP
   assert.match(archive,/import \{facebookBackupPlace,facebookBackupTimestamp\}/);
   assert.match(archive,/platform==='facebook'&&actualKind==='post'\?facebookBackupTimestamp\(item\):null/);
   assert.doesNotMatch(archive,/timestamp\s*=\s*item\.longitude/);
-});
-
-test('external geocoder candidates never auto-confirm from a name match alone',()=>{
-  const code=readFileSync(new URL('../app/loc/TracePlaceGeocoder.jsx',import.meta.url),'utf8');
-  const match=code.match(/function geographyChoices\([\s\S]*?\n\}/);
-  assert.ok(match);
-  const validNumber=value=>value!=null&&String(value).trim()!==''&&Number.isFinite(Number(value));
-  const geographyChoices=new Function('validDateOrNumber','postalAddressFromNominatim',
-    match[0]+';return geographyChoices')(validNumber,postalAddressFromNominatim);
-  const one=geographyChoices([{lon:'121.46',lat:'25.03',name:'相同名稱',
-    address:{state:'新北市',suburb:'板橋區',road:'文化路',house_number:'100號'}}],'相同名稱');
-  assert.equal(one.choices.length,1);
-  assert.equal(one.status,'review');
-  assert.equal(one.selected,-1);
-  assert.equal(one.choices[0].address,'新北市板橋區文化路100號');
-  const none=geographyChoices([],'相同名稱');
-  assert.equal(none.status,'notfound');
-  assert.equal(none.selected,-1);
 });
 
 test('Galaxy ZIP check-ins decode Meta mojibake without changing source visit identity',()=>{

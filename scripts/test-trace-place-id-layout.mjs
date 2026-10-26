@@ -57,3 +57,18 @@ test('Trace report queries indexed place_id in all views, not a place-text OR',(
   assert.ok(!s.includes('traceArticlePlaces('));
   assert.ok(!s.includes('traceArticleFilters(sourcePlaces'));
 });
+
+test('per-Scope persistent name aliases and archive protect merged identities',()=>{
+ const sql=read('supabase/migrations/20261026223000_scope_place_names_and_merge.sql');
+ assert.ok(sql.includes("ARRAY['lo3rwang','lrunes','loc']"));
+ assert.ok(sql.includes('name_lists text[] NOT NULL'));
+ assert.ok(sql.includes('merge_scope_trace_place_names'));
+ assert.ok(sql.includes('trace_place_merge_archive'));
+ assert.ok(sql.includes('WITH ORDINALITY'));
+ assert.ok(sql.includes('search_scope_trace_place_names'));
+ assert.doesNotMatch(sql,/SET\s+source_place\s*=/i);
+ const ui=read('app/loc/TraceOrganizer.jsx');
+ assert.ok(ui.includes('儲存已勾選（同一 Trace UID）'));
+ assert.ok(ui.includes('runAutomatic'));
+ assert.ok(ui.includes('save_scope_trace_place_names'));
+});
