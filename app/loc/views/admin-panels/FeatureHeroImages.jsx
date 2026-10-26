@@ -88,6 +88,7 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       setRows(verified);
       await Promise.all([
         mutate(['scope-blocks','loc',page]),
+        mutate(['scope-blocks-live','loc',page]),
         mutate(['app-bootstrap','loc',page])
       ]);
       setStatus('首頁圖連結已儲存並讀回確認。');
@@ -175,6 +176,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
       setRows(verified);
       await Promise.all([
         mutate(['scope-blocks','loc','group_manage']),
+        mutate(['scope-blocks-live','loc','group_manage']),
         mutate(['app-bootstrap','loc','group_manage'])
       ]);
       setStatus('管理區塊已儲存並讀回確認。');
