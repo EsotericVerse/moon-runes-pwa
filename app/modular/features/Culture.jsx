@@ -319,6 +319,12 @@ export default function Culture(){
     &&keywordWindowStart<=keywordWindowEnd;
   const classificationWindowStart=keywordWindowStart;
   const classificationWindowEnd=keywordWindowEnd;
+  // SQL reads only the bounding envelope. The selected period's exact
+  // intervals must still exclude every day of an unlinked gap.
+  const classificationPeriodRanges=keywordPeriodKey==='custom'||keywordPeriodKey==='all'
+    ?null:(Array.isArray(keywordPeriod?.ranges)?keywordPeriod.ranges:null);
+  const periodRangeSignature=JSON.stringify((classificationPeriodRanges||[]).map(range=>
+    [range.start_date,range.end_date,range.open_end,range.invalid]));
   const classificationWindowValid=keywordWindowValid;
   // An unfilled custom range is normal until dates are supplied.
   const optionalTimeRangeUnfilled=!keywordWindowStart||!keywordWindowEnd;
@@ -369,7 +375,7 @@ export default function Culture(){
   const stagedSourceRiver=Boolean(publishedTaxonomy)&&!isAggregateScope&&scopeId!=='local';
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
   const sourceRootQuery=useAsyncResource({
-    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd],
+    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
     enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
@@ -377,7 +383,11 @@ export default function Culture(){
         startDate:classificationWindowStart,endDate:classificationWindowEnd,
         includeUndated:true,requireAggregate:true
       });
-      return buildCultureRiverRootPayload({text,media},publishedTaxonomy);
+      const inside=row=>!classificationPeriodRanges||timePeriodContainsDate(
+        {ranges:classificationPeriodRanges},String(row.day||''),{today:classificationWindowEnd});
+      return buildCultureRiverRootPayload({
+        text:text.filter(inside),media:media.filter(inside)
+      },publishedTaxonomy);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
@@ -392,12 +402,13 @@ export default function Culture(){
   // This SWR step only formats the already-fetched numeric rows locally.
   // The initial overview never depends on it.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRootsKey:'all'],
+    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
     enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
-      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
+      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,
+        periodRanges:classificationPeriodRanges};
       return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
         ?{...range,numericRows:requestedChildren}:range);
     }
@@ -540,7 +551,7 @@ export default function Culture(){
     ||null;
   const effectiveCategoryKey=selectedGroup?.category_key||selectedGroup?.key||'';
   const periodWorksQuery=useAsyncInfiniteResource({
-    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
+    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
     enabled:worksOpen&&styleFilter!=='trace'&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
@@ -549,6 +560,7 @@ export default function Culture(){
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:classificationWindowStart,
         endDate:classificationWindowEnd,
+        periodRanges:classificationPeriodRanges,
         sourceName:selectedGroup?.source_name||'',
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
@@ -560,7 +572,8 @@ export default function Culture(){
       return {
         rows:details.rows||[],
         totalCount:Number(indexPage.totalCount)||0,
-        hasMore:Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
+        hasMore:typeof indexPage.hasMore==='boolean'?indexPage.hasMore:
+          Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
         nextCursor:indexPage.nextCursor
       };
     }
