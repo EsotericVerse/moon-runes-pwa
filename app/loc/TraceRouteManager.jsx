@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
@@ -24,6 +25,8 @@ const normalize=value=>String(value||'').trim();
 export default function TraceRouteManager({scopeId}){
   const account=useAccount();
   const cache=useResourceCache();
+  const searchParams=useSearchParams();
+  const requestedFrame=searchParams?.get('frame')||'';
   const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
   const [selectedUid,setSelectedUid]=useState('');
   const [classFilter,setClassFilter]=useState('');
@@ -47,6 +50,7 @@ export default function TraceRouteManager({scopeId}){
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
   const pendingSaved=useRef(null);
+  const openedFrame=useRef('');
 
   useEffect(()=>{
     const timer=setTimeout(()=>setDebouncedQuery(normalize(pointQuery)),240);
@@ -138,6 +142,17 @@ export default function TraceRouteManager({scopeId}){
     setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
     setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
   };
+  // A Trace page's Edit action opens the exact current Frame, not an
+  // unrelated browser-local default. Revalidate by UID in the fetched index.
+  useEffect(()=>{
+    if(!/^[A-Za-z0-9]{8}$/.test(requestedFrame)||!canEdit||!index.data)return;
+    const key=activeScope+':'+requestedFrame;
+    if(openedFrame.current===key)return;
+    const target=index.data.find(map=>map.uid===requestedFrame);
+    if(!target)return;
+    openedFrame.current=key;
+    edit(target);
+  },[activeScope,canEdit,index.data,requestedFrame]);
   const pickAnchor=item=>{
     setCounty(item.county_id||'OTHER');
     setPointQuery(item.title);setPicked(item);
