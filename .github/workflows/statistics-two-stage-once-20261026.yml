@@ -22,6 +22,8 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Validate interactive test syntax before expensive build
+        run: node --check scripts/test-statistics-two-stage-browser.mjs
       - name: Selector logic tests
         run: node --test scripts/test-statistics-compare-options.mjs
       - name: Whole Bootstrap / Admin / Culture regressions

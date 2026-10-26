@@ -101,7 +101,7 @@ try {
       categories:[...selects[0].options].filter(el=>!el.disabled).map(el=>({value:el.value,label:el.textContent})),
       itemCount:selects[1].options.length,
       errors:document.querySelectorAll('.scope-error').length};
-  })()`),5000);
+  })()`).then(state=>state?.all==='全部'?state:null),5000);
   assert.equal(all.all,'全部','Dimension did not switch to All');
   assert.ok(all.categories.some(o=>o.value.startsWith('source:')),'No source category in All');
   assert.ok(all.categories.some(o=>o.value.startsWith('media:')),'No media category in All');
@@ -126,7 +126,7 @@ try {
         .filter(el=>!el.disabled).map(el=>({id:el.value,label:el.textContent})),
         errors:document.querySelectorAll('.scope-error').length};
     })()`);
-    return state.category===${JSON.stringify(alternate.value)}&&state.items.length?state:null;
+    return state.category===alternate.value&&state.items.length?state:null;
   },5000);
   assert.equal(category.errors,0);
   assert.ok(category.items.length>0,'Changing category did not update the item selector');
@@ -146,7 +146,7 @@ try {
       const picks=[...lane.querySelectorAll('.scope-self-stat-picker select')];
       return {item:picks[1].value,errors:document.querySelectorAll('.scope-error').length};
     })()`);
-    return state.item===${JSON.stringify(selectedItem.id)}?state:null;
+    return state.item===selectedItem.id?state:null;
   },5000);
   assert.equal(selected.errors,0);
   assert.ok(Date.now()-start<5000,'Ordinary comparison selection exceeded five seconds');
