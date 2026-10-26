@@ -12,6 +12,7 @@ import {rankScopeSearchSuggestions} from '../../loc/search-terms-model.mjs';
 // still runs only through the parent form's submit handler.
 export default function SearchTermAutocomplete({scopeId,query,onQueryChange,placeholder,label}){
   const [terms,setTerms]=useState([]);
+  const [suggestionsDismissed,setSuggestionsDismissed]=useState(false);
   useEffect(()=>{
     const controller=new AbortController();
     setTerms([]);
@@ -40,11 +41,18 @@ export default function SearchTermAutocomplete({scopeId,query,onQueryChange,plac
     options={options}
     inputValue={query}
     filterOptions={items=>items}
-    open={Boolean(query.trim()&&options.length)}
+    open={Boolean(!suggestionsDismissed&&query.trim()&&options.length)}
+    onClose={()=>setSuggestionsDismissed(true)}
     onInputChange={(_event,value,reason)=>{
-      if(reason==='input'||reason==='clear')onQueryChange(value);
+      if(reason==='input'||reason==='clear'){
+        setSuggestionsDismissed(false);
+        onQueryChange(value);
+      }
     }}
-    onChange={(_event,value)=>{if(typeof value==='string')onQueryChange(value);}}
+    onChange={(_event,value)=>{
+      if(typeof value==='string')onQueryChange(value);
+      setSuggestionsDismissed(true);
+    }}
     clearOnBlur={false}
     blurOnSelect
     autoHighlight
