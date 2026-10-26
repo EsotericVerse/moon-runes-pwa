@@ -81,8 +81,8 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/const page=slot\.page/);
   assert.match(hero,/page_name:page,block_order:1/);
   assert.match(hero,/pageOverride="scope_admin"/);
-  // Six Admin feature tabs only; these four management Heroes belong INSIDE
-  // their respective panels, not as separate navigation buttons.
+  // Five Admin feature tabs only; management Heroes and Personal Settings are
+  // embedded inside their parent panels, not separate navigation buttons.
   const definitions=hero.match(/const FEATURES=Object\.freeze\((\[[\s\S]*?\])\.map\(feature=>/);
   assert.ok(definitions,'six feature definitions must be present');
   const features=Function('return '+definitions[1])();
@@ -91,8 +91,7 @@ test('Article Control and feature-aligned management Hero editor remain function
     ['statics','統計','keywords'],
     ['trace','痕跡','spatial'],
     ['search','搜尋','advanced'],
-    ['admin','系統管理',null],
-    ['setting','個人設定',null]
+    ['admin','系統管理',null]
   ]);
   assert.match(hero,/FEATURES\.map\(item=><button/);
   assert.doesNotMatch(hero,/FEATURE_GROUPS|management-time|management-keywords|management-spatial|management-advanced/);
@@ -100,6 +99,13 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/const scopeSlot=feature\.managementKey\?HomeBlock\.MANAGEMENT_HERO_SLOTS\.find/);
   assert.match(hero,/<h4>\{scopeSlot\.label\}<\/h4>/);
   assert.match(hero,/<ManagementHeroDetails slot=\{scopeSlot\} onDirtyChange=\{trackDirty\}\/>/);
+  assert.match(hero,/const PERSONAL_SETTINGS_FEATURE=Object\.freeze/);
+  assert.match(hero,/feature\.id==='admin'\?<section className="loc-card scope-inline-card" aria-label="個人設定"/);
+  assert.match(hero,/page=\{HomeBlock\.featureHeroPageFor\(PERSONAL_SETTINGS_FEATURE\.id\)\}/);
+  assert.match(hero,/<ImageSlot feature=\{PERSONAL_SETTINGS_FEATURE\} variant=\{SINGLE_VARIANT\[0\]\}/);
+  assert.match(hero,/trackDirty\('setting-blocks',dirty\)/);
+  assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
+  assert.equal(HomeBlock.featureHeroPageFor('setting'),'group_setting');
   assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
   assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);
   assert.doesNotMatch(read('app/modular/ui.jsx'),/group_manage/);

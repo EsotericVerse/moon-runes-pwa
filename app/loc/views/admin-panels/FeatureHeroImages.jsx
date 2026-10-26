@@ -16,8 +16,7 @@ const FEATURES=Object.freeze([
   {id:'statics',label:'統計',managementKey:'keywords'},
   {id:'trace',label:'痕跡',managementKey:'spatial'},
   {id:'search',label:'搜尋',managementKey:'advanced'},
-  {id:'admin',label:'系統管理'},
-  {id:'setting',label:'個人設定'}
+  {id:'admin',label:'系統管理'}
 ].map(feature=>({...feature,singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage(feature.id)})));
 const SCOPE_VARIANTS=Object.freeze([
   {kind:'group',label:'群組圖：首頁圖連結'},
@@ -25,6 +24,10 @@ const SCOPE_VARIANTS=Object.freeze([
 ]);
 const SINGLE_VARIANT=Object.freeze([{kind:'scope',label:'首頁圖連結'}]);
 const MANAGEMENT_VARIANT=Object.freeze({kind:'scope',label:'首頁圖連結'});
+// Personal Settings remains a separate Hero record, edited within the Admin panel.
+const PERSONAL_SETTINGS_FEATURE=Object.freeze({
+  id:'setting',label:'個人設定',singleSlot:HomeBlock.shouldUseSingleFeatureHeroImage('setting')
+});
 function pageFor(kind,feature){return kind+'_'+feature.id;}
 const managementSlotFor=featureId=>HomeBlock.MANAGEMENT_HERO_SLOTS.find(slot=>slot.featureId===featureId);
 const locSlots=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(slot=>slot.audience==='loc'&&slot.key!=='system');
@@ -299,6 +302,23 @@ export default function FeatureHeroImages(){
           onDirtyChange={trackDirty}/>
         </>:null}
       </details>:null}
+      {feature.id==='admin'?<section className="loc-card scope-inline-card" aria-label="個人設定">
+        <h4>個人設定</h4>
+        <ScopeEditableBlocks
+          key={'setting:'+editorRevision}
+          scopeId="loc"
+          page={HomeBlock.featureHeroPageFor(PERSONAL_SETTINGS_FEATURE.id)}
+          orders={[1]} containerless
+          slotClassName="loc-card" editSlotClassName="loc-card"
+          placeholderFirstOrder={1} allowEditing
+          authorizedByParent startInEditMode keepEditorOpen
+          onEditorExit={()=>setEditorRevision(value=>value+1)}
+          onDirtyChange={dirty=>trackDirty('setting-blocks',dirty)}
+          explicitEditButton allowDelete={false} allowEntities={false}
+        />
+        <ImageSlot feature={PERSONAL_SETTINGS_FEATURE} variant={SINGLE_VARIANT[0]}
+          onDirtyChange={trackDirty} key="setting:scope"/>
+      </section>:null}
     </section>
   </section>;
 }
