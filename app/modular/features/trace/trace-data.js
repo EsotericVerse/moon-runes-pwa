@@ -75,7 +75,7 @@ function locationFields({address='',floor_label='',floor_level=null}={}){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
+  const columns='uid,trace_id,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
   // Read only when the selected Trace screen mounts. A former 2,000-row cap
   // silently hid historical places as imports grew; bounded pages preserve all.
   // This does not run on every autocomplete keystroke.
@@ -112,12 +112,12 @@ export const traceCurrentKey=(scopeId,route,{nativeOnly=false}={})=>[
 export const traceAllAnchorsKey=(scopeId,{nativeOnly=false}={})=>
   nativeOnly?['trace-all-anchors',scopeId,'native']:['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level';
+const TRACE_DISPLAY_COLUMNS='uid,trace_id,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level';
 
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,anchor_uids,created_at,category,"class",class_group'+(union?',scope_id':'');
+  const columns='uid,trace_id,trace_type,title,description,anchor_uids,created_at,category,"class",class_group'+(union?',scope_id':'');
   let request=dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).eq('trace_type','map');
   if(union&&nativeOnly)request=request.eq('scope_id','loc');

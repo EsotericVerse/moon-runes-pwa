@@ -4,10 +4,10 @@ import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-resource';
 import {selectRows,selectAllRows} from '../../../loc/db-query.mjs';
-import {traceArticleFilters,groupedTraceDays,traceMediaMatches} from './trace-panel-filters.mjs';
+import {traceArticleIdFilters,groupedTraceDays,traceMediaMatches} from './trace-panel-filters.mjs';
 import {defaultScopeData} from '../../../loc/scope-data';
-import {readPlaceSummary} from '../../../loc/place-summary-client';
-import {traceArticlePlaces} from './trace-article-places.mjs';
+import {dbPublicClient} from '../../../loc/db-client.mjs';
+import {traceArticleIds,traceArticleLabels} from './trace-article-ids.mjs';
 import Article from '../../Article';
 import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
 
@@ -52,8 +52,9 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const isMap=place?.trace_type==='map';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
   const scope=useMemo(()=>defaultScopeData(targetScope),[targetScope]);
-  const sourcePlaces=useMemo(()=>traceArticlePlaces(place,anchors),[place,anchors]);
-  const placesKey=sourcePlaces.join('|');
+  const placeIds=useMemo(()=>traceArticleIds(place,anchors),[place,anchors]);
+  const placeLabels=useMemo(()=>traceArticleLabels(place,anchors),[place,anchors]);
+  const placesKey=placeIds.join('|');
   const startDate=validDate(dateRange?.startDate)?dateRange.startDate
     :validDate(period?.start_date)?String(period.start_date).slice(0,10):'';
   const endDate=validDate(dateRange?.endDate)?dateRange.endDate
@@ -61,7 +62,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const sourceFilter=String(sourceName||'').trim();
   const selectedMediaType=String(mediaType||'').trim();
   useEffect(()=>{setVisibleCount(PAGE_SIZE);},[place?.uid,sourceFilter,selectedMediaType,startDate,endDate]);
-  const enabled=Boolean(name&&sourcePlaces.length&&scope?.galaxy&&targetScope===scopeId);
+  const enabled=Boolean(name&&placeIds.length&&scope?.galaxy&&targetScope===scopeId);
 
   // One selected resource and one small page at a time. No eager Galaxy scan.
   const list=useAsyncInfiniteResource({
@@ -70,10 +71,10 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     initialPageParam:0,
     getNextPageParam:page=>page.hasMore?page.nextOffset:undefined,
     queryFn:async({pageParam})=>{
-      const filters=traceArticleFilters(sourcePlaces,{startDate,endDate,sourceName:sourceFilter});
+      const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,source_place,url',
+        columns:'uid,title,createtime,source_name,source_place,place_id,url',
         filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
@@ -93,8 +94,8 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,source_place,url,statistics_able',
-        filters:traceArticleFilters(sourcePlaces,{startDate,endDate,sourceName:sourceFilter})
+        columns:'uid,title,createtime,source_name,source_place,place_id,url,statistics_able',
+        filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];
       const linked=[];
@@ -113,38 +114,29 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
 
-  // Per-day counts use the existing indexed database aggregate RPC on demand.
-  // Only the opened timeline/report tab requests them; no article bodies.
+  // Place density is computed on indexed place_id inside Postgres.
+  // Never fetch a Scope-wide Galaxy metadata list just to draw a chart.
   const needsSummary=enabled&&tab!=='articles';
-  const useSummary=needsSummary&&!sourceFilter&&!selectedMediaType;
   const numeric=useAsyncResource({
-    queryKey:['trace-confirmed-place-summary',targetScope,startDate,endDate],
-    enabled:useSummary,
-    queryFn:()=>readPlaceSummary(targetScope,{startDate,endDate}),
-    revalidateOnFocus:false,revalidateOnReconnect:false
-  });
-  // A source-specific view cannot reuse whole-Scope place totals:
-  // that would silently count Facebook/other sources in a Threads filter.
-  // Read only its matching, searchable Galaxy metadata on demand.
-  const filteredDaily=useAsyncResource({
-    queryKey:['trace-filtered-daily-v1',targetScope,placesKey,startDate,endDate,sourceFilter],
-    enabled:needsSummary&&!useSummary&&!selectedMediaType,
+    queryKey:['trace-place-id-summary-v1',targetScope,placesKey,startDate,endDate,sourceFilter],
+    enabled:needsSummary&&!selectedMediaType,
     queryFn:async()=>{
-      const {rows}=await selectAllRows(scope.galaxy,{
-        columns:'source_place,source_name,createtime',
-        filters:[...traceArticleFilters(sourcePlaces,{startDate,endDate,sourceName:sourceFilter}),
-          {column:'statistics_able',operator:'eq',value:true}]
+      const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_place_density',{
+        p_scope_id:targetScope,p_place_ids:placeIds,
+        p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
       });
-      return {rows:groupedTraceDays(rows)};
+      if(error)throw error;
+      if(!Array.isArray(data))throw new Error('Invalid Trace place_id density response');
+      return {rows:data};
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const mediaSummary=useMemo(()=>mediaFiltered.data
-    ?{rows:groupedTraceDays(mediaFiltered.data.filter(row=>row.statistics_able===true))}
+    ?{rows:groupedTraceDays(mediaFiltered.data.filter(row=>row.statistics_able===true),{key:'place_id'})}
     :undefined,[mediaFiltered.data]);
   const summary=selectedMediaType
     ?{data:mediaSummary,isPending:mediaFiltered.isPending,error:mediaFiltered.error}
-    :useSummary?numeric:filteredDaily;
+    :numeric;
   const rows=useMemo(()=>{
     if(selectedMediaType)return (mediaFiltered.data||[])
       .slice().sort((a,b)=>sort==='asc'
@@ -154,17 +146,18 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     return (list.data?.pages||[]).flatMap(p=>p.rows||[]);
   },[list.data,selectedMediaType,mediaFiltered.data,sort,visibleCount]);
   const verified=useMemo(()=>{
-    const wanted=new Set(sourcePlaces),months=new Map(),places=new Map();
+    const wanted=new Set(placeIds),months=new Map(),places=new Map();
     for(const row of summary.data?.rows||[]){
       if(!wanted.has(row.category)||!validDate(String(row.day||'')))continue;
       const count=Number(row.item_count)||0,month=String(row.day).slice(0,7);
       months.set(month,(months.get(month)||0)+count);
-      places.set(row.category,(places.get(row.category)||0)+count);
+      const display=placeLabels.get(row.category)||row.category;
+      places.set(display,(places.get(display)||0)+count);
     }
     return {months:[...months].sort(([a],[b])=>a.localeCompare(b)),
       places:[...places].sort((a,b)=>b[1]-a[1]),
       total:[...places.values()].reduce((total,n)=>total+n,0)};
-  },[summary.data,placesKey]);
+  },[summary.data,placesKey,placeLabels]);
   // Each spatial anchor has its own times[]; a multi-day route does not mean
   // each stop was visited continuously throughout that route.
   // Use saved times, never inferred timestamps from the route or article period.
@@ -256,11 +249,11 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     </div>:null}
     {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
     {sourceFilter||selectedMediaType?<p className="scope-status">篩選條件：{sourceFilter?'作品來源 '+sourceFilter:'全部來源'} · {selectedMediaType?'媒體 '+selectedMediaType:'全部媒體'}（三種模式一致）</p>:null}
-    <p className="scope-status">文章依原始打卡與已核對的同址別名關聯；尚未核准補寫的 Google Timeline 候選不計入已確認篇數。</p>
-    {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有可對應的原始打卡名稱，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
+    <p className="scope-status">文章只依目前 Scope 的四碼 Trace ID／Galaxy place_id 精確關聯；原始 source_place 僅用來顯示，不作模糊匹配。</p>
+    {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有有效的四碼 Trace ID，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
-    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有符合這個時期的已確認打卡文章。</p>:null}
+    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有已連結此 Trace ID 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。</p>:null}
     {tab==='articles'&&rows.length?<IncrementalList
       items={rows}
       batchSize={PAGE_SIZE}
