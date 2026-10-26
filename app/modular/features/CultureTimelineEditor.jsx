@@ -1,183 +1,111 @@
 'use client';
-import {useFeatureCopy,useUiCopy,useUiSection} from '../../i18n/ui-locale';
-import featureZh from '../../i18n/features.zh_tw.js';
-import {registerDefaultSection} from '../../i18n/ui-copy';
-import dataErrorsZh from '../../i18n/sections/uiExtra.dataErrors.zh_tw.js';
-registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
-
-
-
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
+import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
-
 import {useEditDock} from '../edit-dock';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
+import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
-
-const TIME_COLUMNS='record_id,record_type,label,resource_id,display_order,status,note,time_date,anchor_ids,date_status,year_value,visibility,style_description';
-
-
-const EDITABLE_TYPES=Object.freeze([
-  ['anchor','anchor'],['period','period'],['event','event'],['style_comment','style']
-]);
-const BLANK=Object.freeze({
-  record_id:'',record_type:'anchor',label:'',resource_id:'',note:'',time_date:'',
-  anchor_ids:['0','0'],status:'',display_order:'',date_status:'exact',year_value:'',visibility:'',style_description:''
-});
-
-function newDraft(type='anchor'){
-  return {...BLANK,record_type:type,anchor_ids:type==='style_comment'?[]:['0','0']};
+const TIME_COLUMNS='uid,type,title,description,time_date,anchor_ids,status';
+const TYPES=['anchor','period','event'];
+const blank=(type='anchor')=>({uid:'',type,title:'',description:'',time_date:'',anchor_ids:[],status:''});
+const day=value=>value?String(value).slice(0,10):'';
+function nextTimeUid(rows){
+  const taken=new Set(rows.map(row=>String(row.uid||'')));
+  for(let i=1;i<=65535;i++){
+    const candidate=i.toString(16).toUpperCase().padStart(4,'0');
+    if(!taken.has(candidate))return candidate;
+  }
+  throw new Error('本 Scope 的四碼時間 UID 已用盡');
 }
-function dateText(value){return value?String(value).slice(0,10):'';}
-function normalizeAnchorIds(value){
-  const source=Array.isArray(value)?value:String(value||'').split(',');
-  const ids=source.map(item=>String(item||'0').trim()||'0').filter(Boolean);
-  return ids.length?ids:['0','0'];
+function normalizeDraft(row){
+  if(!row)return blank();
+  return {...blank(row.type),...row,time_date:day(row.time_date),
+    anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]};
 }
-function rowDraft(row){
-  if(!row)return {...BLANK};
-  return {
-    ...BLANK,...row,
-    anchor_ids:row.record_type==='style_comment'?(Array.isArray(row.anchor_ids)?row.anchor_ids:[]):normalizeAnchorIds(row.anchor_ids),
-    time_date:dateText(row.time_date),
-    year_value:row.year_value??''
-  };
-}
-function newResourceId(type){
-  return type+':'+globalThis.crypto.randomUUID();
-}
-function rowSortDate(row,anchors){
-  if(row.record_type==='anchor')return dateText(row.time_date)||String(row.year_value||'9999');
-  const ids=normalizeAnchorIds(row.anchor_ids);
-  const first=ids[0]||'0';
-  const last=ids.at(-1)||'0';
-  return dateText(anchors.get(first)?.time_date)||dateText(anchors.get(last)?.time_date)||'9999-12-31';
-}
-
-export default function CultureTimelineEditor({scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',suggestedRecordType='anchor',suggestedRequestNonce=0,defaultRecordType='anchor',onClose=null}){
+export default function CultureTimelineEditor({
+  scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',
+  suggestedRecordType='anchor',suggestedRequestNonce=0,defaultRecordType='anchor',onClose=null
+}){
   useUiSection('uiExtra.dataErrors');
   const copy=useUiCopy();
-  const l=useFeatureCopy('timelineEditor',featureZh.timelineEditor);
-
   const editDock=useEditDock();
-  const dockActions=useRef({save:null});
-  const searchParams=useSearchParams();
-  const routeSuggestedAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
-  const effectiveSuggestedAnchorDate=String(suggestedAnchorDate||(!selectedRecordId?routeSuggestedAnchorDate:'')||'').slice(0,10);
   const resourceCache=useResourceCache();
-  const runtimeScope=String(scopeId||'').trim();
-  const dataScope=runtimeScope;
-  const editable=Boolean(dataScope&&dataScope!=='loc');
+  const searchParams=useSearchParams();
+  const routeAnchorDate=String(searchParams?.get?.('anchorDate')||'').slice(0,10);
+  const effectiveAnchorDate=day(suggestedAnchorDate||(!selectedRecordId?routeAnchorDate:''));
+  const dataScope=String(scopeId||'').trim();
   const timeTable=String(providedTimeTable||'').trim();
-  const defaultType=EDITABLE_TYPES.some(([type])=>type===defaultRecordType)?defaultRecordType:'anchor';
-  const [draft,setDraft]=useState(()=>newDraft(defaultType));
+  const editable=Boolean(dataScope&&dataScope!=='loc'&&timeTable);
+  const defaultType=TYPES.includes(defaultRecordType)?defaultRecordType:'anchor';
+  const [draft,setDraft]=useState(()=>blank(defaultType));
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
-  const initialDraftRef=useRef(newDraft(defaultType));
-  const initializedRequestRef=useRef('');
-  const inlineSectionRef=useRef(null);
-  const nameInputRef=useRef(null);
+  const original=useRef(blank(defaultType));
+  const requestSeen=useRef('');
+  const dockActions=useRef({save:null,isDirty:()=>false,isBusy:()=>false});
+  const editorRef=useRef(null),inputRef=useRef(null);
 
   const query=useAsyncResource({
     queryKey:['culture-period-settings',dataScope,timeTable],
-    enabled:editable&&Boolean(timeTable),
+    enabled:editable,
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
-        columns:TIME_COLUMNS,
-        filters:[{column:'record_type',operator:'in',value:EDITABLE_TYPES.map(([type])=>type)}],
-        orders:[{column:'display_order',ascending:true},{column:'record_id',ascending:true}],
-        limit:DB_QUERY_BATCH_SIZE,
-        offset:0
+        columns:TIME_COLUMNS,filters:[{column:'type',operator:'in',value:TYPES}],
+        orders:[{column:'uid',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
       });
       return rows;
-    },
+    }
   });
-
-  const rawRows=query.data||[];
-  const duplicateAnchorIds=useMemo(()=>{
-    const seen=new Set();
-    const duplicates=new Set();
-    for(const row of rawRows){
-      if(row.record_type!=='anchor')continue;
-      const id=String(row.resource_id||'').trim();
-      if(!id)continue;
-      if(seen.has(id))duplicates.add(id);
-      seen.add(id);
-    }
-    return [...duplicates].sort();
-  },[rawRows]);
-  const anchors=useMemo(()=>{
-    const map=new Map();
-    for(const row of rawRows){
-      if(row.record_type!=='anchor')continue;
-      const id=String(row.resource_id||'').trim();
-      if(!id||map.has(id))continue;
-      map.set(id,row);
-    }
-    return map;
-  },[rawRows]);
-  const anchorOptions=useMemo(()=>[...anchors.values()].sort((a,b)=>{
-    const ad=dateText(a.time_date)||String(a.year_value||'9999');
-    const bd=dateText(b.time_date)||String(b.year_value||'9999');
-    return ad.localeCompare(bd)||String(a.label||'').localeCompare(String(b.label||''));
-  }),[anchors]);
-  const rows=useMemo(()=>[...rawRows].sort((a,b)=>
-    rowSortDate(a,anchors).localeCompare(rowSortDate(b,anchors))||
-    Number(a.display_order||0)-Number(b.display_order||0)||
-    String(a.label||'').localeCompare(String(b.label||''))
-  ),[rawRows,anchors]);
-
+  const all=query.data||[];
+  const anchors=useMemo(()=>new Map(all.filter(row=>row.type==='anchor').map(row=>[String(row.uid),row])),[all]);
+  const anchorChoices=useMemo(()=>[...anchors.values()]
+    .sort((a,b)=>day(a.time_date).localeCompare(day(b.time_date))||
+      String(a.uid).localeCompare(String(b.uid))),[anchors]);
+  const rows=useMemo(()=>[...all].sort((a,b)=>{
+    const position=row=>{
+      if(row.type==='anchor')return day(row.time_date);
+      return resolveTimeSegments(row.anchor_ids,anchors,{period:row.type==='period'})
+        .map(range=>range.start_date).filter(Boolean).sort()[0]||'9999-12-31';
+    };
+    return position(a).localeCompare(position(b))||
+      String(a.uid).localeCompare(String(b.uid));
+  }),[all,anchors]);
+  const selectRow=id=>{
+    const row=all.find(item=>String(item.uid)===String(id));
+    if(!row)return;
+    setSelectedId(String(id));
+    const next=normalizeDraft(row);
+    original.current=next;setDraft(next);setMessage('');
+  };
   useEffect(()=>{
     const id=String(selectedRecordId||'').trim();
-    if(!id||!rawRows.length)return;
-    const row=rawRows.find(item=>String(item.record_id)===id);
+    if(!id||!all.length)return;
+    if(id===selectedId&&dockActions.current.isDirty())return;
+    const row=all.find(item=>String(item.uid)===id);
     if(row){
-      if(selectedId===id&&dockActions.current.isDirty?.())return;
-      setSelectedId(id);
-      const initial=rowDraft(row);
-      initialDraftRef.current=initial;
-      setDraft(initial);
-      setMessage('');
+      const next=normalizeDraft(row);
+      setSelectedId(id);original.current=next;setDraft(next);setMessage('');
     }
-  },[selectedRecordId,selectedId,rawRows]);
-
+  },[selectedRecordId,all,selectedId]);
   useEffect(()=>{
-    const recordType=EDITABLE_TYPES.some(([type])=>type===suggestedRecordType)?suggestedRecordType:'anchor';
-    const hasAnchorDate=/^\d{4}-\d{2}-\d{2}$/.test(effectiveSuggestedAnchorDate);
-    // All three non-anchor types share this editor; the form chooses their
-    // required references: period 1–2, event 2, style_comment 1.
-    if(selectedRecordId||(!hasAnchorDate&&!suggestedRequestNonce))return;
-    const requestKey=suggestedRequestNonce
-      ?'requested:'+suggestedRequestNonce+':'+recordType+':'+effectiveSuggestedAnchorDate
-      :'route:'+recordType+':'+effectiveSuggestedAnchorDate;
-    if(initializedRequestRef.current===requestKey)return;
-    initializedRequestRef.current=requestKey;
-    setSelectedId('');
-    const initial={
-      ...BLANK,
-      record_type:recordType,
-      time_date:recordType==='anchor'?effectiveSuggestedAnchorDate:'',
-      // No date is inferred from the river: the user picks the anchor(s).
-      anchor_ids:recordType==='style_comment'?[]:['0','0'],
-      note:''
-    };
-    initialDraftRef.current=initial;
-    setDraft(initial);
-    setMessage(recordType==='anchor'?l.inferredAnchor:recordType==='style_comment'?l.styleNeedsAnchor:recordType==='period'?l.periodNeedsAnchor:l.eventNeedsAnchor);
-  },[effectiveSuggestedAnchorDate,suggestedRecordType,suggestedRequestNonce,selectedRecordId,l]);
-
-  // Keep the Time form in document flow, directly beneath its add controls.
-  const canRenderEditor=editable&&Boolean(timeTable);
+    const type=TYPES.includes(suggestedRecordType)?suggestedRecordType:'anchor';
+    if(selectedRecordId||(!effectiveAnchorDate&&!suggestedRequestNonce))return;
+    const key=[suggestedRequestNonce,effectiveAnchorDate,type].join(':');
+    if(requestSeen.current===key)return;
+    requestSeen.current=key;
+    const fresh={...blank(type),time_date:type==='anchor'?effectiveAnchorDate:''};
+    setDraft(fresh);original.current=fresh;setSelectedId('');setMessage('');
+  },[suggestedRecordType,suggestedRequestNonce,effectiveAnchorDate,selectedRecordId]);
   useEffect(()=>{
-    // The river remains at the top on initial load; only explicit edits focus the form.
-    if(!canRenderEditor||(!selectedRecordId&&!suggestedRequestNonce))return;
-    inlineSectionRef.current?.scrollIntoView({block:'nearest'});
-    nameInputRef.current?.focus({preventScroll:true});
-  },[canRenderEditor,selectedRecordId,suggestedRequestNonce]);
+    if(!editable||(!selectedRecordId&&!suggestedRequestNonce))return;
+    editorRef.current?.scrollIntoView({block:'nearest'});
+    inputRef.current?.focus({preventScroll:true});
+  },[editable,selectedRecordId,suggestedRequestNonce]);
   useEffect(()=>{
     if(!editDock?.active||editDock.scopeId!==scopeId)return undefined;
     return editDock.register({
@@ -186,232 +114,143 @@ export default function CultureTimelineEditor({scopeId='',timeTable:providedTime
       isBusy:()=>dockActions.current.isBusy()
     });
   },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
+  if(!editable)return null;
 
-  if(!canRenderEditor)return null;
-
-  const cancelEdit=()=>{
-    const fresh=newDraft(defaultType);
-    initialDraftRef.current=fresh;
-    setSelectedId('');
-    setDraft(fresh);
-    setMessage('');
-    onClose?.();
+  const reset=()=>{
+    const fresh=blank(defaultType);
+    original.current=fresh;setDraft(fresh);setSelectedId('');setMessage('');onClose?.();
   };
-  const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
-  const changeAnchor=(index,value)=>setDraft(current=>{
-    // Historical multi-point events are preserved until an anchor selector
-    // is deliberately changed. A new choice uses the canonical two-point form.
-    const original=normalizeAnchorIds(current.anchor_ids);
-    const ids=[original[0]||'0',original.length>2?original.at(-1):original[1]||'0'];
-    ids[index]=value||'0';
-    return {...current,anchor_ids:ids};
-  });
-  const currentAnchorIds=normalizeAnchorIds(draft.anchor_ids);
-  const chosenAnchorPair=[currentAnchorIds[0]||'0',currentAnchorIds.length>2?currentAnchorIds.at(-1):currentAnchorIds[1]||'0'];
-  const legacyEventIds=rawRows.find(row=>String(row.record_id)===String(selectedId)&&row.record_type==='event')?.anchor_ids;
-  const legacyEventUnchanged=draft.record_type==='event'&&selectedId&&
-    Array.isArray(legacyEventIds)&&
-    (legacyEventIds.length!==2||legacyEventIds.includes('0'))&&
-    JSON.stringify(currentAnchorIds)===JSON.stringify(legacyEventIds);
-
-  const save=async (event,{switching=false}={})=>{
-    event.preventDefault();
+  const change=(key,value)=>setDraft(row=>({...row,[key]:value}));
+  const segments=decodeTimeSegments(draft.anchor_ids);
+  const setSegments=next=>change('anchor_ids',next.map(range=>encodeTimeSegment(range.start,range.end)));
+  const updateSegment=(index,key,value)=>{
+    const copy=segments.map(row=>({...row}));
+    copy[index][key]=value;
+    if(copy[index].end===copy[index].start)copy[index].end='';
+    if(!copy[index].start)return;
+    setSegments(copy);
+  };
+  const addSegment=()=>{
+    if(!anchorChoices.length)return;
+    setSegments([...segments,{start:String(anchorChoices[0].uid),end:''}]);
+  };
+  const refresh=async()=>{
+    if(dataScope!=='local')await revalidateServerMetadata();
+    await Promise.all([
+      resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]}),
+      resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-roots','v2',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-source-snapshot','v6',scopeId]})
+    ]);
+  };
+  const save=async(event)=>{
+    event.preventDefault?.();
+    if(busy||query.isPending)return false;
     setBusy(true);setMessage('');
     try{
-      const type=String(draft.record_type||'');
-      const label=String(draft.label||'').trim();
-      if(!label)throw new Error(l.nameRequired);
-      const resourceId=String(draft.resource_id||'').trim()||newResourceId(type);
-      if(type==='style_comment'){
-        const normalized=label.normalize('NFKC').toLocaleLowerCase('zh-Hant');
-        const duplicate=rawRows.find(row=>row.record_type==='style_comment'&&
-          String(row.label||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant')===normalized&&
-          String(row.record_id||'')!==String(selectedId||''));
-        if(duplicate)throw new Error(l.duplicateStyle);
-      }
+      const title=String(draft.title||'').trim();
+      if(!title)throw new Error('請輸入名稱');
+      const type=String(draft.type||'');
+      if(!TYPES.includes(type))throw new Error('不支援的時間紀錄類型');
+      const payload={type,title,description:String(draft.description||'').trim()||null,
+        time_date:null,anchor_ids:null};
       if(type==='anchor'){
-        const duplicate=rawRows.find(row=>
-          row.record_type==='anchor'&&
-          String(row.resource_id||'').trim()===resourceId&&
-          String(row.record_id||'')!==String(selectedId||'')
-        );
-        if(duplicate)throw new Error(l.duplicateAnchor+resourceId);
-      }
-      const payload={
-        record_type:type,
-        label,
-        resource_id:resourceId,
-        note:type==='style_comment'?null:String(draft.note||'').trim()||null,
-        status:type==='style_comment'?'active':String(draft.status||'').trim()||null,
-        display_order:draft.display_order===''?null:Number(draft.display_order),
-        visibility:String(draft.visibility||'').trim()||null,
-        time_date:null,
-        anchor_ids:null,
-        date_status:null,
-        year_value:null,
-        updated_at:new Date().toISOString()
-      };
-      if(type==='anchor'){
-        const exact=dateText(draft.time_date);
-        const year=draft.year_value===''?null:Number(draft.year_value);
-        if(!exact&&!Number.isInteger(year))throw new Error(l.dateRequired);
-        payload.time_date=exact||null;
-        payload.date_status=exact?'exact':'year_only';
-        payload.year_value=exact?null:year;
-      }else if(type==='style_comment'){
-        const styleDescription=String(draft.style_description||'').trim();
-        const anchorId=String(Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':'').trim();
-        if(!styleDescription)throw new Error(l.styleDescriptionRequired);
-        if(!anchorId||anchorId==='0'||!anchors.has(anchorId))throw new Error(l.formalAnchorRequired);
-        payload.style_description=styleDescription;
-        payload.anchor_ids=[anchorId];
+        const timeDate=day(draft.time_date);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(timeDate))throw new Error('請先指定有效的定錨日期');
+        payload.time_date=timeDate;
       }else{
-        const ids=normalizeAnchorIds(draft.anchor_ids);
-        const concrete=ids.filter(id=>id!=='0');
-        // Existing 1-point/3-point historical events are never silently
-        // rewritten just because the author edits an unrelated field.
-        if(type==='event'&&!legacyEventUnchanged&&(ids.length!==2||concrete.length!==2)){
-          throw new Error(l.eventTwo);
+        if(!anchorChoices.length)throw new Error('請先建立時間定錨點');
+        if(!segments.length)throw new Error('請加入至少一個已存在的時間定錨點');
+        for(const s of segments){
+          if(!isTimeUid(s.start)||!anchors.has(s.start))throw new Error('找不到起始定錨點：'+s.start);
+          if(s.end&&s.end!=='0'&&!anchors.has(s.end))throw new Error('找不到結束定錨點：'+s.end);
+          if(s.end&&s.end!=='0'&&day(anchors.get(s.end)?.time_date)<=day(anchors.get(s.start)?.time_date))
+            throw new Error('區間結束定錨點必須晚於起始定錨點');
         }
-        if(type==='period'&&(ids.length>2||concrete.length<1||concrete.length>2)){
-          throw new Error(l.periodOneTwo);
-        }
-        if(ids.slice(1,-1).includes('0'))throw new Error(l.openPeriodOnly);
-        if(type==='event'&&!legacyEventUnchanged&&new Set(concrete).size!==2){
-          throw new Error(l.distinctAnchors);
-        }
-        for(const id of concrete){
-          if(!anchors.has(id))throw new Error(l.anchorMissing+id);
-        }
-        const dated=concrete
-          .map(id=>({id,date:dateText(anchors.get(id)?.time_date)}))
-          .filter(item=>item.date);
-        for(let index=1;index<dated.length;index+=1){
-          if(dated[index-1].date>=dated[index].date){
-            throw new Error(l.anchorOrder);
-          }
-        }
-        payload.anchor_ids=ids;
+        payload.anchor_ids=segments.map(s=>encodeTimeSegment(s.start,s.end));
       }
-      // The target database RPC authorizes this Scope on the actual write.
       if(selectedId){
-        const {record_type,...patch}=payload;
-        await updateRows(timeTable,patch,{filters:[
-          {column:'record_id',operator:'eq',value:selectedId}
-        ]});
+        await updateRows(timeTable,payload,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
       }else{
-        await insertRows(timeTable,[payload]);
+        await insertRows(timeTable,[{uid:nextTimeUid(all),...payload}]);
       }
-      // Invalidate R2-backed public Period navigation before SWR refetches it.
-      // This also covers edits to anchor dates used as Period boundaries.
-      if(dataScope!=='local')await revalidateServerMetadata();
-      await resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]});
-      await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
-      await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
-      const fresh=newDraft(defaultType);
-      initialDraftRef.current=fresh;
-      setSelectedId('');
-      setDraft(fresh);
-      setMessage('已儲存。');
-      onClose?.();
-      return true;
-    }catch(error){
-      const detail=error?.message||l.saveError;
-      setMessage(detail);
-      if(editDock?.active)editDock.setNotice(detail);
-      return false;
-    }
+      await refresh();reset();setMessage('已儲存。');return true;
+    }catch(error){setMessage(error?.message||'儲存失敗');editDock?.setNotice?.(error?.message||'儲存失敗');return false;}
     finally{setBusy(false);}
   };
-
   const remove=async()=>{
-    if(!selectedId)return;
-    if(draft.record_type==='anchor'){
-      const id=String(draft.resource_id||'');
-      const references=rawRows.filter(row=>row.record_type!=='anchor'&&normalizeAnchorIds(row.anchor_ids).includes(id));
-      if(references.length){setMessage(l.anchorInUse);return;}
-    }
+    if(!selectedId||busy)return;
     setBusy(true);setMessage('');
     try{
-      // The target database RPC authorizes this Scope on the actual write.
-      await deleteRows(timeTable,{filters:[
-        {column:'record_id',operator:'eq',value:selectedId}
-      ]});
-      // Invalidate R2-backed public Period navigation before SWR refetches it.
-      // This also covers edits to anchor dates used as Period boundaries.
-      if(dataScope!=='local')await revalidateServerMetadata();
-      await resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]});
-      await resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]});
-      await resourceCache.invalidate({queryKey:['culture-timeline',scopeId]});
-      const fresh=newDraft(defaultType);
-      initialDraftRef.current=fresh;
-      setSelectedId('');setDraft(fresh);setMessage('已刪除。');onClose?.();
-    }catch(error){setMessage(error?.message||l.deleteError);}
+      // Periods survive anchor deletion; only their affected UID links become invalid.
+      await deleteRows(timeTable,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
+      await refresh();reset();setMessage('已刪除。');
+    }catch(error){setMessage(error?.message||'刪除失敗');}
     finally{setBusy(false);}
   };
-
-  dockActions.current={
-    save:options=>save({preventDefault(){}},options),
-    isDirty:()=>JSON.stringify(draft)!==JSON.stringify(initialDraftRef.current),
-    isBusy:()=>busy
-  };
-  return <section ref={inlineSectionRef} className="scope-culture-inline-editor" role="region" aria-label={l.editorTitle}>
+  dockActions.current={save:()=>save({preventDefault(){}}),
+    isDirty:()=>JSON.stringify(draft)!==JSON.stringify(original.current),
+    isBusy:()=>busy};
+  return <section ref={editorRef} className="scope-culture-inline-editor" role="region" aria-label="時間定錨與時期編輯">
     <header className="scope-culture-inline-heading">
-      <h4>{selectedId?'編輯':'新增'}{l[draft.record_type==='style_comment'?'style':draft.record_type]}</h4>
-      {selectedId?<span className="scope-status">目前編輯既有紀錄</span>:null}
+      <h4>{selectedId?'編輯':'新增'}{({anchor:'定錨點',period:'時期',event:'事件'})[draft.type]}</h4>
     </header>
     {query.error?<p className="scope-status scope-error" role="alert">{query.error.message}</p>:null}
-    {duplicateAnchorIds.length?<p className="scope-status scope-error">{l.duplicateDataPrefix}{duplicateAnchorIds.join('、')}{l.duplicateDataSuffix}</p>:null}
     {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
     <form className="scope-culture-quick-form" onSubmit={save}>
+      {!selectedId?<label>種類
+        <select className="scope-select" value={draft.type} onChange={e=>setDraft(blank(e.target.value))}>
+          {TYPES.map(type=><option key={type} value={type}>{({anchor:'定錨點',period:'時期',event:'事件'})[type]}</option>)}
+        </select>
+      </label>:null}
       <div className="scope-culture-quick-primary">
-        <label className="scope-culture-quick-name">
-          <span>{draft.record_type==='style_comment'?l.styleName:l.name}</span>
-          <input ref={nameInputRef} className="scope-search-input" value={draft.label||''} onChange={event=>change('label',event.target.value)} required/>
+        <label className="scope-culture-quick-name">名稱
+          <input ref={inputRef} className="scope-search-input" value={draft.title} required
+            onChange={event=>change('title',event.target.value)}/>
         </label>
-        {draft.record_type==='anchor'?<>
-          <label><span>{l.date}</span><input className="scope-select" type="date" value={dateText(draft.time_date)} onChange={event=>change('time_date',event.target.value)}/></label>
-          <label><span>{l.unknownDateYear}</span><input className="scope-search-input" type="number" value={draft.year_value??''} onChange={event=>change('year_value',event.target.value)}/></label>
-        </>:null}
-        {draft.record_type==='style_comment'?<label>
-          <span>{l.uniqueAnchor}</span>
-          <select className="scope-select" value={Array.isArray(draft.anchor_ids)?draft.anchor_ids[0]||'':''} onChange={event=>change('anchor_ids',event.target.value?[event.target.value]:[])} required>
-            <option value="">{l.chooseExisting}</option>
-            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}</option>)}
-          </select>
+        {draft.type==='anchor'?<label>定錨日期
+          <input className="scope-select" type="date" required value={day(draft.time_date)}
+            onChange={event=>change('time_date',event.target.value)}/>
         </label>:null}
       </div>
-      {['period','event'].includes(draft.record_type)?<div className="scope-culture-quick-anchors">
-        {anchorOptions.length===0?<p className="scope-status scope-error">{l.noAnchors}</p>:null}
-        {legacyEventUnchanged?<p className="scope-status">{l.legacyPrefix}{legacyEventIds.length}{l.legacySuffix}</p>:null}
-        {chosenAnchorPair.map((anchorId,index)=><label key={index}>
-          <span>{index===0?l.startAnchor:l.endAnchor}{draft.record_type==='period'?l.optional:''}</span>
-          <select className="scope-select" aria-label={index===0?l.chooseStart:l.chooseEnd}
-            value={anchorId} required={draft.record_type==='event'} onChange={event=>changeAnchor(index,event.target.value)}>
-            <option value="0">{draft.record_type==='period'?l.openEnd:l.chooseFormal}</option>
-            {anchorOptions.map(row=><option key={row.resource_id} value={row.resource_id}>{dateText(row.time_date)||row.year_value||l.unknownYear}｜{row.label}</option>)}
-          </select>
-        </label>)}
+      {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
+        {!anchorChoices.length?<p className="scope-status scope-error">請先建立時間定錨點，才能新增時期或事件。</p>:null}
+        {segments.map((segment,index)=><div key={index} className="scope-culture-quick-primary">
+          <label>第 {index+1} 段起點
+            <select className="scope-select" value={segment.start}
+              onChange={e=>updateSegment(index,'start',e.target.value)}>
+              {anchorChoices.map(row=><option key={row.uid} value={row.uid}>{day(row.time_date)}｜{row.title}</option>)}
+            </select>
+          </label>
+          <label>結束（可只有單一定錨點）
+            <select className="scope-select" value={segment.end}
+              onChange={e=>updateSegment(index,'end',e.target.value)}>
+              <option value="">單一定錨點</option>
+              <option value="0">開放至今</option>
+              {anchorChoices.filter(row=>row.uid!==segment.start)
+                .map(row=><option key={row.uid} value={row.uid}>{day(row.time_date)}｜{row.title}</option>)}
+            </select>
+          </label>
+          <button type="button" className="loc-button"
+            onClick={()=>setSegments(segments.filter((_,i)=>i!==index))}>移除此段</button>
+        </div>)}
+        <button type="button" className="loc-button" disabled={!anchorChoices.length}
+          onClick={addSegment}>＋ 新增定錨點／時間區間</button>
+        {segments.some(s=>resolveTimeSegments([s.raw],anchors).some(r=>r.invalid))?
+          <p className="scope-status scope-error">部分定錨點連線已失效，請修正對應區間。</p>:null}
       </div>:null}
-      <label className="scope-culture-quick-notes">
-        <span>{draft.record_type==='style_comment'?l.styleText:draft.record_type==='anchor'?l.anchorDescription:l.periodDescription}</span>
-        <textarea className="scope-search-input" rows={draft.record_type==='style_comment'?3:2}
-          value={draft.record_type==='style_comment'?draft.style_description||'':draft.note||''}
-          onChange={event=>change(draft.record_type==='style_comment'?'style_description':'note',event.target.value)}/>
+      <label className="scope-culture-quick-notes">說明
+        <textarea className="scope-search-input" rows={3} value={draft.description||''}
+          onChange={event=>change('description',event.target.value)}/>
       </label>
-      <details className="scope-culture-quick-extra">
-        <summary>其他設定</summary>
-        <div className="scope-culture-quick-extra-fields">
-          <label><span>{l.identity}</span><input className="scope-search-input" value={draft.resource_id||''} disabled={Boolean(selectedId)} onChange={event=>change('resource_id',event.target.value)} placeholder={l.autoIdentifier}/></label>
-          {draft.record_type!=='style_comment'?<label><span>{l.status}</span><input className="scope-search-input" value={draft.status||''} onChange={event=>change('status',event.target.value)}/></label>:null}
-          {draft.record_type==='period'?<label><span>{l.sort}</span><input className="scope-search-input" type="number" value={draft.display_order??''} onChange={event=>change('display_order',event.target.value)}/></label>:null}
-        </div>
-      </details>
       {message?<p className="scope-status" role="status" aria-live="polite">{message}</p>:null}
       <div className="scope-culture-quick-actions">
-        <button type="submit" className="loc-button" disabled={busy||query.isPending||Boolean(query.error)}>{busy?l.saving:selectedId?'儲存修改':'儲存'+l[draft.record_type==='style_comment'?'style':draft.record_type]}</button>
-        <button type="button" className="loc-button" disabled={busy} onClick={cancelEdit}>{selectedId?l.cancel:'清除'}</button>
-        {selectedId?<button type="button" className="loc-button" disabled={busy} onClick={remove}>{l.delete}</button>:null}
+        <button type="submit" className="loc-button" disabled={busy||query.isPending||Boolean(query.error)}>
+          {busy?'儲存中…':selectedId?'儲存修改':'儲存'}
+        </button>
+        <button type="button" className="loc-button" onClick={reset} disabled={busy}>取消</button>
+        {selectedId?<button type="button" className="loc-button" onClick={remove} disabled={busy}>刪除</button>:null}
       </div>
     </form>
   </section>;
