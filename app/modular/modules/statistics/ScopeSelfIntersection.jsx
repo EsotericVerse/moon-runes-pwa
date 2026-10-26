@@ -16,11 +16,13 @@ import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
 import StatisticsDetails from './StatisticsDetails';
 import {ownScopeCategoryCatalog} from '../../../loc/statistics-source-intersection.mjs';
+import {comparisonMetricGroups,selectedComparisonMetricGroup,firstAvailableGroupMetric} from './statistics-compare-options.mjs';
 
 const DAY_MS=86400000;
 // One dimension tab per comparison lane. Keyword tab appears only if stored
 // statistics contain actual keyword hits in the selected date range.
 export const DIMENSION_FILTERS=Object.freeze([
+  {value:'all',label:'全部'},
   {value:'source',label:'作品來源'},
   {value:'media',label:'多媒體'},
   {value:'keyword',label:'關鍵詞'}
@@ -127,11 +129,14 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   });
   const keywordTabAvailable=Boolean(keywords.data?.statisticsEnabled&&
     (keywords.data?.runeTotals||[]).some(item=>Number(item.document_count)>0));
-  const availableKinds=useMemo(()=>[
-    ...(rows.some(row=>row.kind==='source'&&Number(row.item_count)>0)?['source']:[]),
-    ...(rows.some(row=>row.kind==='media'&&Number(row.item_count)>0)?['media']:[]),
-    ...(keywordTabAvailable?['keyword']:[])
-  ],[rows,keywordTabAvailable]);
+  const availableKinds=useMemo(()=>{
+    const kinds=[
+      ...(rows.some(row=>row.kind==='source'&&Number(row.item_count)>0)?['source']:[]),
+      ...(rows.some(row=>row.kind==='media'&&Number(row.item_count)>0)?['media']:[]),
+      ...(keywordTabAvailable?['keyword']:[])
+    ];
+    return kinds.length?[...kinds,'all']:[];
+  },[rows,keywordTabAvailable]);
   const maximumLanes=Math.min(8,Math.max(0,
     rows.filter(row=>Number(row.item_count)>0).length+
     (keywords.data?.runeTotals||[]).filter(row=>Number(row.document_count)>0).length));
@@ -139,7 +144,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   const shownKinds=Array.from({length:lanes},(_,index)=>
     availableKinds.includes(laneKinds[index])?laneKinds[index]:
     availableKinds[index%Math.max(1,availableKinds.length)]||'source');
-  const keywordModeActive=shownKinds.includes('keyword')&&keywordTabAvailable;
+  const keywordModeActive=keywordTabAvailable&&shownKinds.some(kind=>kind==='keyword'||kind==='all');
   // Resolve Class -> group -> item from the current Scope's *real* keyword
   // catalog. Stored aggregate metadata has item labels but no group mapping.
   const keywordCatalog=useAsyncResource({
@@ -226,7 +231,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
       ...keywordAll,...keywordGroups,...keywordGroupsItems,...keywordItems];
   },[rows,catalog.data,keywords.data,othersConfig.data,keywordItemGroup,keywordTabAvailable]);
   const candidatesForLane=index=>categoryList.filter(item=>
-    dimensionForKind(item.kind)===shownKinds[index]&&
+    (shownKinds[index]==='all'||dimensionForKind(item.kind)===shownKinds[index])&&
     !['group','others_subgroup','total'].includes(item.kind));
   const chosen=Array.from({length:lanes},(_,index)=>{
     const candidates=candidatesForLane(index);
@@ -396,46 +401,59 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
               .map(group=>({name:group.name,item:group,
                 items:categoryList.filter(item=>
                   (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group===group.group)}));
-            const groups=kind==='source'?sourceGroups:kind==='media'?mediaGroups:groupTabs;
             const allKeywords=categoryList.find(item=>item.kind==='keyword_all');
+            const groups=comparisonMetricGroups(kind,{
+              source:sourceGroups,
+              media:mediaGroups,
+              keyword:[
+                ...(allKeywords?[{name:l.allKeywords,item:allKeywords,items:[]}]:[]),
+                ...groupTabs
+              ]
+            });
+            const currentGroup=selectedComparisonMetricGroup(groups,chosenId);
+            const selectedGroupMetrics=currentGroup?.options||[];
+            const takenByOther=new Set(selection.filter((_,lane)=>lane!==index));
             return <section className="scope-self-intersection-lane" key={index}
               aria-label={l.comparisonItem+' '+(index+1)}>
               <strong>{l.comparisonItem} {index+1}</strong>
               <div className="scope-self-intersection-kind-tabs" role="group"
                 aria-label={l.comparisonItem+' '+(index+1)+' 類型'}>
-                {DIMENSION_FILTERS.filter(tab=>availableKinds.includes(tab.value)).map(tab=>
+                {DIMENSION_FILTERS.filter(tab=>tab.value==='all'?availableKinds.length>0:availableKinds.includes(tab.value)).map(tab=>
                   <button type="button" className="scope-self-stat-tab" key={tab.value}
                     aria-pressed={kind===tab.value} onClick={()=>switchKind(tab.value)}>
-                    {tab.value==='source'?l.sourceTab:tab.value==='media'?l.mediaTab:l.keywordTab}
+                    {tab.value==='all'?'全部':tab.value==='source'?l.sourceTab:tab.value==='media'?l.mediaTab:l.keywordTab}
                   </button>)}
               </div>
               <div className="scope-self-intersection-category-groups">
-                {kind==='keyword'&&allKeywords?<div className="scope-self-stat-group">
-                  <button type="button" className="scope-self-stat-tab"
-                    aria-pressed={chosenId===allKeywords.id}
-                    onClick={()=>selectMetric(allKeywords.id)}>{l.allKeywords}</button>
-                </div>:null}
-                {groups.map((group,gIndex)=><div className="scope-self-stat-group" key={gIndex}>
-                  <div className="scope-self-stat-group-header">
-                    {group.item?<button type="button" className="scope-self-stat-tab"
-                      aria-pressed={chosenId===group.item.id}
-                      onClick={()=>selectMetric(group.item.id)}>{group.name}</button>
-                    :<span className="scope-self-stat-group-label">{group.name}</span>}
-                  </div>
-                  <div className="scope-self-stat-item-tabs" role="group" aria-label={group.name}>
-                    {group.items.map(item=><button type="button" key={item.id}
-                      className="scope-self-stat-chip"
-                      aria-pressed={chosenId===item.id}
-                      onClick={()=>selectMetric(item.id)}>{item.kind==='keyword_group_items'?l.groupItems:item.name}</button>)}
-                    {!group.items.length?<span className="scope-self-stat-empty">
-                      {kind==='keyword'&&keywordCatalog.isPending?'正在讀取組內項目…':l.noSelectableSource}
-                    </span>:null}
-                  </div>
-                </div>)}
-                {kind==='keyword'&&keywordCatalog.error?<p role="alert" className="scope-status scope-error">
+                <label className="scope-self-stat-picker"><span>類別</span>
+                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 類別'}
+                    value={currentGroup?.key||''}
+                    onChange={event=>{
+                      const target=groups.find(group=>group.key===event.target.value);
+                      const id=firstAvailableGroupMetric(target,takenByOther);
+                      if(id)selectMetric(id);
+                    }}>
+                    {!groups.length?<option value="">無可用類別</option>:null}
+                    {groups.map(group=><option key={group.key} value={group.key}
+                      disabled={!firstAvailableGroupMetric(group,takenByOther)}>{group.name}</option>)}
+                  </select>
+                </label>
+                <label className="scope-self-stat-picker"><span>項目</span>
+                  <select className="scope-select" aria-label={l.comparisonItem+' '+(index+1)+' 項目'}
+                    value={selectedGroupMetrics.some(item=>item.id===chosenId)?chosenId:''}
+                    disabled={!selectedGroupMetrics.length}
+                    onChange={event=>selectMetric(event.target.value)}>
+                    {!selectedGroupMetrics.length?<option value="">無可用項目</option>:null}
+                    {selectedGroupMetrics.map(item=><option key={item.id} value={item.id}
+                      disabled={takenByOther.has(item.id)}>{item.kind==='keyword_group_items'?l.groupItems:item.name}</option>)}
+                  </select>
+                </label>
+                {kind==='keyword'||kind==='all'?keywordCatalog.isPending
+                  ?<p className="scope-status" role="status">正在讀取組內項目…</p>:null:null}
+                {(kind==='keyword'||kind==='all')&&keywordCatalog.error?<p role="alert" className="scope-status scope-error">
                   組內關鍵詞讀取失敗：{String(keywordCatalog.error?.message||keywordCatalog.error)}
                 </p>:null}
-                {!groups.length&&kind!=='keyword'?<p className="scope-status">{l.noSelectableSource}</p>:null}
+                {!groups.length?<p className="scope-status">{l.noSelectableSource}</p>:null}
               </div>
             </section>;
           })}
