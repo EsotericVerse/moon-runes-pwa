@@ -148,3 +148,10 @@ test('real Meta visited-places format uses OUTER 地標 title, not a nested titl
     {label:bytes('地點'),dict:[{label:bytes('城市'),value:bytes('某地區')}]}
   ]}),'');
 });
+
+test('ZIP parser takes Facebook tagged visit time from explicit metadata, not GPS',()=>{
+  const archive=readFileSync(new URL('../app/loc/private-archive-universal.mjs',import.meta.url),'utf8');
+  assert.match(archive,/import \{facebookBackupPlace,facebookBackupTimestamp\}/);
+  assert.match(archive,/platform==='facebook'&&actualKind==='post'\?facebookBackupTimestamp\(item\):null/);
+  assert.doesNotMatch(archive,/timestamp\s*=\s*item\.longitude/);
+});
