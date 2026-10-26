@@ -40,8 +40,9 @@ function geographyChoices(payload,name){
       label:String(item.display_name||item.name||name).slice(0,240),
       title:String(item.namedetails?.name||item.name||item.display_name?.split(',')[0]||'').trim()
     }));
-  const exact=choices.map((item,index)=>normalized(item.title)===normalized(name)?index:-1).filter(i=>i>=0);
-  return {choices,selected:exact.length===1?exact[0]:-1,status:!choices.length?'notfound':exact.length===1?'ready':'review'};
+  // A name match is NOT evidence that the correct historical place, business,
+  // or floor has been found. Every external result needs explicit selection.
+  return {choices,selected:-1,status:choices.length?'review':'notfound'};
 }
 
 // Public reads transfer only non-empty check-in names; never load 30k article bodies.
