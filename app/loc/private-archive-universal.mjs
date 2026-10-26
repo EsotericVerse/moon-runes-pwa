@@ -176,7 +176,7 @@ function determine(path,prefix){
   if(/ig_posts|instagram|media\/posts|content\/posts/.test(p)){
     return {platform:'instagram',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['ig_posts','posts','data','media'])||rootArrayAny(head)};
   }
-  if(/(?:^|\/)conversations\.json$/.test(p)&&/"mapping"\s*:/.test(head))
+  if(/(?:^|\/)conversations\.json$/.test(p)&&(/"mapping"\s*:/.test(head)||/chatgpt|openai/.test(p)))
     return {platform:'chatgpt',kind:'conversation',array:head.startsWith('[')?'
     const kind=/\/comments?\//.test(p)?'comment':
       /\/likes?|reactions?\//.test(p)?'reaction':
@@ -427,7 +427,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
     return new Uint8Array(await file.slice(offset,Math.min(file.size,offset+ARCHIVE_CHUNK_BYTES)).arrayBuffer());
   };
   if(isZip){
-    let filesSeen=0,extracted=0,known=false;
+    let filesSeen=0,extracted=0,exifExtracted=0,known=false;
     const sessions=[];
     const unzip=new Unzip(entry=>{
       aborted(signal);
@@ -440,7 +440,8 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
         const chunks=[];let stored=0,received=0;
         entry.ondata=(error,data,final)=>{
           if(error)throw error;
-          received+=data.length;
+          received+=data.length;exifExtracted+=data.length;
+          if(exifExtracted>100*1024*1024)throw new Error('EXIF 媒體解壓總量超過 100 MiB。');
           if(received>8*1024*1024)throw new Error(path+'：影像超過 EXIF 安全解析上限。');
           if(stored<IMAGE_EXIF_PREFIX_LIMIT){
             const part=data.subarray(0,IMAGE_EXIF_PREFIX_LIMIT-stored);
