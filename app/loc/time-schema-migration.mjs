@@ -65,28 +65,5 @@ export function convertLegacyTimeRows(legacy=[]){
       description:[note,style].filter(Boolean).join('\n')||null,
       address:type==='anchor'?row.time_date||null:null,anchor_ids,status:row.status||null});
   }
-  // Old periods were defined by dated anchor boundaries, while historical
-  // events were stored separately. Attach events that actually intersect each
-  // old trace's real anchor window so the first Culture river does not lose
-  // visible historical events during cutover. The synthetic boundary event
-  // stays to preserve the formerly continuous selection/works interval.
-  // This is a one-time, auditable initial association, not dynamic membership.
-  const byAnchorUid=new Map(rows.filter(row=>row.type==='anchor')
-    .map(row=>[row.uid,String(row.address||'').slice(0,10)]));
-  const datedEvent=event=>{
-    const dates=(event.anchor_ids||[]).map(uid=>byAnchorUid.get(uid)).filter(Boolean).sort();
-    return dates.length?{start:dates[0],end:dates.at(-1)}:null;
-  };
-  const events=rows.filter(row=>row.type==='time_period'&&row.status!=='legacy_boundary');
-  for(const trace of rows.filter(row=>row.type==='time_trace')){
-    const boundary=rows.find(row=>row.uid===trace.anchor_ids?.[0]);
-    const span=boundary?datedEvent(boundary):null;
-    if(!span)continue;
-    const matched=events.map(event=>({event,span:datedEvent(event)}))
-      .filter(item=>item.span&&item.span.start<=span.end&&item.span.end>=span.start)
-      .sort((a,b)=>a.span.start.localeCompare(b.span.start)||a.event.uid.localeCompare(b.event.uid));
-    trace.anchor_ids.push(...matched.map(item=>item.event.uid)
-      .filter(uid=>!trace.anchor_ids.includes(uid)));
-  }
   return {rows,archive,periodBaselines};
 }
