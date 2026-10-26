@@ -63,6 +63,7 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
       ['BBB00002',{uid:'BBB00002',source_scope:'lo3rwang'}]
     ]),
     editingUid:edit?'MAP00001':'',pendingSaved:{current:null},
+    referenceDraft:null,pendingReference:{current:null},
     addTraceMap:async input=>{
       if(writeFails)throw Error('授權寫入被拒絕');
       written.push({method:'insert',input});return {uid:'MAP00001'};
@@ -252,4 +253,10 @@ test('searches are bounded, address-aware, read-only and escape OR metacharacter
   assert.ok(calls.some(call=>call[0]==='or'&&call[1].includes('"%新北市(二),文化路%"')));
   assert.ok(calls.some(call=>call[0]==='limit'&&call[1]===8));
   assert.equal(calls.filter(call=>call[0]==='from').length,1);
+});
+
+test('Frame save does not silently discard a pending cross-Scope reference',()=>{
+  const page=manager();
+  assert.match(page,/if\(referenceDraft\|\|pendingReference\.current\)/);
+  assert.match(page,/請先建立自己的參考錨點/);
 });
