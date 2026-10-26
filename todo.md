@@ -29,7 +29,9 @@
   - **負責：** ISR／全域設定工程線；已有 Admin ISR 網域面板、silver.loc_cache_settings 與 ISR-off 讀取路徑。
   - **完成門檻：** DB 授權／公開唯讀模式同步、三段切換立即生效與讀回、圖片及原有 SW 繼續運作、數值／自動完成共用快取真實命中及安全回退、四大功能回歸、CI／Build／log 警告檢查、整合 `main`、關閉 PR 和刪除已合併分支。
   - **部署與成本限制：** 分支實作及驗證不授權 GitHub Pages、iOS IPA、Cloudflare ISR/Preview 或任何實際部署；正式發布由使用者手動決定。不得以部署驗證替代工程 CI。
-  - **目前進度：** 已核對目前 Admin 僅有 ISR 網域選擇、資料庫現有 schema 及權限；尚未修改執行程式或資料庫。起始實作先整理控制面與資料面的可驗證切換。
+  - **目前進度：** 已在同一分支實作 Admin 三段模式、公開唯讀模式資料契約／SQL migration 檔、Service Worker 選擇性快取與圖片共用來源、選用式數值 HTTP 快取／原有 RPC 回退、回歸測試；尚未套用正式 Supabase migration，CI／實際共用快取命中與四大功能完整驗證未完成。**不得合併或交付。**
+  - **Draft PR／分支 HEAD：** [#584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584)，`2c4a156e0c62d9c6386e43b9c17a8b1233c55c8c`。已觸發 Trace／文化 CI（#40336301417、#40336301418），須待終態與完整日誌核對。
+  - **目前阻擋：** 確認 DB migration/RLS、三段模式在實際 DB 讀寫與跨使用者讀取、Cloudflare/Vercel 圖片 CORS 與 CDN 命中、公開數值路由的實際共享快取、失效回退、全部相關 CI 與瀏覽器 E2E。不可擅自部署、啟用 ISR 或把尚未驗證的部分標為完成。
   - **下一步：** 在現有分支實作 Admin 設定與共享模式讀取，完成功能自測、CI 和最後整合。若中斷，使用此條目及遠端 branch HEAD 接續，禁止另開替代分支。
 
 
