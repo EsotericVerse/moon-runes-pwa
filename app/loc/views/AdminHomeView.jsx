@@ -39,7 +39,7 @@ const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{
 const AdminRegistry=dynamic(()=>import('./admin-panels/AdminRegistry'),{loading:PanelLoading});
 const AdminReservedScopeIds=dynamic(()=>import('./admin-panels/AdminReservedScopeIds'),{loading:PanelLoading});
 
-export default function AdminHomeView(){
+export default function AdminHomeView({scopeGroup}){
   useUiSection('admin');
   useUiSection('uiExtra.adminView');
   const UI_COPY=useUiCopy();
@@ -84,7 +84,7 @@ export default function AdminHomeView(){
           <AdminEmailBlocklist/>
         </>:null}
         {section==='network'?<>
-          <DatabaseTarget/>
+          <DatabaseTarget scopeGroup={scopeGroup}/>
           <IsrDomainTarget/>
         </>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
