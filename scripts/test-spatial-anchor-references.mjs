@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {spatialReferenceCandidates,spatialReferenceLikePattern} from '../app/modular/features/trace/trace-spatial-references.mjs';
 import {facebookBackupPlace} from '../app/loc/facebook-backup-place.mjs';
@@ -44,4 +45,18 @@ test('geocoder does not invent a street number or floor from a place label',()=>
     address:{state:'新北市',suburb:'板橋區',road:'文化路一段',house_number:'100號'}
   }),'新北市板橋區文化路一段100號');
   assert.equal(postalAddressFromNominatim({address:{road:'文化路一段',house_number:'100號'}}),'');
+});
+
+test('address retains floors and suites without guessing an indoor height',()=>{
+ const code=readFileSync(new URL('../app/modular/features/trace/trace-data.js',import.meta.url),'utf8');
+ const match=code.match(/function locationFields\([\s\S]*?\n\}/);
+ assert.ok(match);
+ const locationFields=new Function(match[0]+';return locationFields')();
+ assert.deepEqual(locationFields({address:'新北市板橋區文化路100號5樓501室'}),{
+   address:'新北市板橋區文化路100號5樓501室',floor_label:'5樓501室',floor_level:5
+ });
+ assert.equal(locationFields({address:'新北市板橋區文化路100號B1'}).floor_level,-1);
+ assert.equal(locationFields({address:'新北市板橋區文化路100號3–4樓'}).floor_level,null);
+ assert.equal(locationFields({address:'新北市板橋區文化路100號501室'}).floor_level,null);
+ assert.throws(()=>locationFields({floor_label:'B1',floor_level:2}),/不一致/);
 });
