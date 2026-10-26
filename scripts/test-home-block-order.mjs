@@ -114,7 +114,7 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/儲存 Hero 圖片路徑/);
   assert.match(hero,/儲存後資料庫讀回不一致/);
   assert.match(hero,/uid:HomeBlock.createUid\(\)/);
-  assert.match(css,/\.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*background-size:100% 100%,cover/);
+  assert.match(css,/\.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*background-size:100% 100%,contain/);
   assert.match(css,/\.article-control-stacked/);
 });
 
