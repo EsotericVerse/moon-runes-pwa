@@ -198,22 +198,26 @@ test('keyword combined ranking follows actual Class membership and keeps paginat
 });
 
 
-test('advanced statistics uses grouped category tabs and real keyword group membership',()=>{
+test('advanced statistics uses dimension tabs and two dependent comparison selectors',()=>{
   const source=readFileSync(new URL('../app/modular/modules/statistics/ScopeSelfIntersection.jsx',import.meta.url),'utf8');
   const dimensions=source.slice(source.indexOf('export const DIMENSION_FILTERS='),source.indexOf('export const DIMENSIONS='));
-  for(const label of ['作品來源','多媒體','關鍵詞'])assert.ok(dimensions.includes("label:'"+label+"'"));
-  assert.equal((dimensions.match(/label:/g)||[]).length,3);
+  for(const label of ['全部','作品來源','多媒體','關鍵詞'])assert.ok(dimensions.includes("label:'"+label+"'"));
+  assert.equal((dimensions.match(/label:/g)||[]).length,4);
   const ui=source.slice(source.indexOf('<div className="scope-self-intersection-comparisons">'),
     source.indexOf('<div className="scope-stat-controls">',source.indexOf('<div className="scope-self-intersection-comparisons">')));
   assert.ok(ui.includes('Array.from({length:lanes}'));
-  assert.equal((ui.match(/<select className="scope-select"/g)||[]).length,0);
+  assert.equal((ui.match(/<select className="scope-select"/g)||[]).length,2);
+  assert.ok(ui.includes('comparisonMetricGroups(kind,{'));
+  assert.ok(ui.includes('selectedComparisonMetricGroup(groups,chosenId)'));
+  assert.ok(ui.includes('firstAvailableGroupMetric(target,takenByOther)'));
   assert.ok(ui.includes('scope-self-intersection-kind-tabs'));
-  assert.ok(ui.includes('scope-self-stat-item-tabs'));
-  assert.ok(ui.includes('aria-pressed={chosenId===item.id}'));
+  assert.ok(ui.includes("+' 類別'"));
+  assert.ok(ui.includes("+' 項目'"));
   assert.ok(source.includes('scope-advanced-keyword-catalog'));
   assert.ok(source.includes("columns:'class_group,item_no,item_name,class_enable'"));
   assert.ok(source.includes('item.group===group.group'));
   assert.ok(source.includes("dimensionForKind(item.kind)===shownKinds[index]"));
+  assert.ok(source.includes("shownKinds[index]==='all'"));
   assert.ok(source.includes('keywordTabAvailable'));
   assert.ok(source.includes('const hitGroups=new Set()'));
   assert.ok(source.includes('for(const group of hitGroups)add('));
