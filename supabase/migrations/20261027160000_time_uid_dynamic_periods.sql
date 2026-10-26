@@ -67,38 +67,32 @@ SELECT 'lrunes',resource_id,uid FROM silver.lrunes_time WHERE record_type='ancho
 -- Do NOT infer dates or rejoin broken edges; every target must be present.
 CREATE FUNCTION silver._cutover_time_segments(p_scope text,p_refs text[],p_old_type text)
 RETURNS text[] LANGUAGE plpgsql SECURITY INVOKER AS $$
-DECLARE n integer:=coalesce(cardinality(p_refs),0);
-  ids text[]:=ARRAY[]::text[]; edges text[]:=ARRAY[]::text[];
+DECLARE
+  ids text[]:=ARRAY[]::text[];
   item text; mapped text; i integer;
 BEGIN
-  IF n=0 THEN RETURN ARRAY[]::text[]; END IF;
-  FOR i IN 1..n LOOP
+  IF coalesce(cardinality(p_refs),0)=0 THEN
+    RAISE EXCEPTION 'Old Time % record missing anchor references',p_old_type;
+  END IF;
+  FOR i IN 1..cardinality(p_refs) LOOP
     item:=p_refs[i];
-    IF item='0' THEN mapped:='0';
-    ELSE
-      SELECT uid INTO mapped FROM pg_temp.time_anchor_mapping
-        WHERE scope_id=p_scope AND old_resource_id=item;
-      IF mapped IS NULL THEN RAISE EXCEPTION 'Missing old anchor % in %',item,p_scope; END IF;
-    END IF;
+    -- A historical '0' is NOT a date. Drop the virtual-now reference.
+    IF item='0' THEN CONTINUE; END IF;
+    mapped:=NULL;
+    SELECT uid INTO mapped FROM pg_temp.time_anchor_mapping
+      WHERE scope_id=p_scope AND old_resource_id=item;
+    IF mapped IS NULL THEN RAISE EXCEPTION 'Missing Time anchor % in %',item,p_scope; END IF;
     ids:=array_append(ids,mapped);
   END LOOP;
-  IF p_old_type='period' THEN
-    IF n>2 OR ids[1]='0' THEN
-      RAISE EXCEPTION 'Old period has invalid anchor endpoints for %',p_scope;
-    END IF;
-    RETURN CASE WHEN n=1 THEN ARRAY[ids[1]] ELSE ARRAY[ids[1]||'-'||ids[2]] END;
+  IF cardinality(ids)<1 THEN RAISE EXCEPTION 'Time event with no real anchor'; END IF;
+  IF p_old_type='period' AND cardinality(ids)>2 THEN
+    RAISE EXCEPTION 'Old Time trace has over two boundary anchors';
   END IF;
-  IF p_old_type='event' THEN
-    IF array_position(ids,'0') IS NOT NULL THEN
-      RAISE EXCEPTION 'Unexpected open endpoint in historical event %',p_scope;
-    END IF;
-    IF n=1 THEN RETURN ARRAY[ids[1]]; END IF;
-    FOR i IN 2..n LOOP
-      edges:=array_append(edges,ids[i-1]||'-'||ids[i]);
-    END LOOP;
-    RETURN edges;
+  IF p_old_type NOT IN ('period','event') THEN
+    RAISE EXCEPTION 'Unsupported Time kind %',p_old_type;
   END IF;
-  RAISE EXCEPTION 'Unsupported legacy Time type %',p_old_type;
+  -- Event triples are split into actual two-anchor event rows separately.
+  RETURN ids[1:LEAST(cardinality(ids),2)];
 END $$;
 -- Save a separate, actual time_period UID for each historical time_trace
 -- boundary. These refer to genuine anchor UIDs and never manufacture dates.
@@ -121,6 +115,27 @@ SELECT 'lo3rwang',n.record_id,
   upper(lpad(to_hex((c.n+n.ord)::integer),4,'0')),
   silver._cutover_time_segments('lo3rwang',n.anchor_ids,'period')
 FROM numbered n CROSS JOIN original_count c;
+
+-- Preserve every edge of exceptional 3+ anchor legacy events by
+-- creating additional real time_period rows for successive endpoint pairs.
+-- Each generated event has no independent DATE value.
+WITH original_count AS (SELECT count(*) AS n FROM silver.lo3rwang_time),
+     baseline_count AS (SELECT count(*) AS n FROM pg_temp.time_legacy_baselines WHERE scope_id='lo3rwang'),
+     extra_events AS (
+       SELECT t.record_id,t.label,t.note,t.anchor_ids,g.pos,
+         row_number() OVER (ORDER BY t.record_id,g.pos) AS seq
+       FROM silver.lo3rwang_time t
+       CROSS JOIN LATERAL generate_series(2,cardinality(t.anchor_ids)-1) AS g(pos)
+       WHERE t.record_type='event'
+     )
+INSERT INTO silver.lo3rwang_time(record_type,resource_id,label,note,status,time_date,anchor_ids,uid)
+SELECT 'event','__legacy_event_segment__:'||e.record_id::text||':'||e.pos,
+       coalesce(e.label,'')||'｜分段 '||e.pos,e.note,
+       'legacy_split',NULL,
+       silver._cutover_time_segments('lo3rwang',
+         ARRAY[e.anchor_ids[e.pos],e.anchor_ids[e.pos+1]],'event'),
+       upper(lpad(to_hex((oc.n+bc.n+e.seq)::integer),4,'0'))
+FROM extra_events e CROSS JOIN original_count oc CROSS JOIN baseline_count bc;
 
 UPDATE silver.lo3rwang_time t
 SET anchor_ids=silver._cutover_time_segments('lo3rwang',t.anchor_ids,'event')
@@ -183,7 +198,10 @@ ALTER TABLE silver.lo3rwang_time
    (type<>'anchor' AND address IS NULL)),
  ADD CONSTRAINT lo3rwang_time_reference_shape_check CHECK (
    type='anchor' OR
-   (anchor_ids IS NOT NULL AND cardinality(anchor_ids)>0)
+   (type='time_period' AND anchor_ids IS NOT NULL
+     AND cardinality(anchor_ids) BETWEEN 1 AND 2) OR
+   (type='time_trace' AND anchor_ids IS NOT NULL
+     AND cardinality(anchor_ids)>0)
  );
 
 -- Every trace only lists existing time_period UIDs; each event's tokens
@@ -196,9 +214,10 @@ BEGIN
       SELECT 1 FROM silver.lo3rwang_time e WHERE e.uid=x.uid AND e.type='time_period')
   ) THEN RAISE EXCEPTION 'Invalid migrated time_trace links for lo3rwang'; END IF;
   IF EXISTS(
-    SELECT 1 FROM silver.lo3rwang_time t CROSS JOIN LATERAL unnest(t.anchor_ids) x(token)
-    WHERE t.type='time_period' AND x.token !~ '^[0-9A-F]{4}(-([0-9A-F]{4}|0))?$'
-  ) THEN RAISE EXCEPTION 'Malformed time_period anchor reference for lo3rwang'; END IF;
+    SELECT 1 FROM silver.lo3rwang_time t CROSS JOIN LATERAL unnest(t.anchor_ids) x(uid)
+    WHERE t.type='time_period' AND NOT EXISTS(
+      SELECT 1 FROM silver.lo3rwang_time a WHERE a.uid=x.uid AND a.type='anchor')
+  ) THEN RAISE EXCEPTION 'Broken migrated time_period anchor UID for lo3rwang'; END IF;
 END $$;
 
 INSERT INTO pg_temp.time_legacy_baselines(scope_id,old_record_id,uid,anchor_ids)
@@ -212,6 +231,27 @@ SELECT 'lrunes',n.record_id,
   upper(lpad(to_hex((c.n+n.ord)::integer),4,'0')),
   silver._cutover_time_segments('lrunes',n.anchor_ids,'period')
 FROM numbered n CROSS JOIN original_count c;
+
+-- Preserve every edge of exceptional 3+ anchor legacy events by
+-- creating additional real time_period rows for successive endpoint pairs.
+-- Each generated event has no independent DATE value.
+WITH original_count AS (SELECT count(*) AS n FROM silver.lrunes_time),
+     baseline_count AS (SELECT count(*) AS n FROM pg_temp.time_legacy_baselines WHERE scope_id='lrunes'),
+     extra_events AS (
+       SELECT t.record_id,t.label,t.note,t.anchor_ids,g.pos,
+         row_number() OVER (ORDER BY t.record_id,g.pos) AS seq
+       FROM silver.lrunes_time t
+       CROSS JOIN LATERAL generate_series(2,cardinality(t.anchor_ids)-1) AS g(pos)
+       WHERE t.record_type='event'
+     )
+INSERT INTO silver.lrunes_time(record_type,resource_id,label,note,status,time_date,anchor_ids,uid)
+SELECT 'event','__legacy_event_segment__:'||e.record_id::text||':'||e.pos,
+       coalesce(e.label,'')||'｜分段 '||e.pos,e.note,
+       'legacy_split',NULL,
+       silver._cutover_time_segments('lrunes',
+         ARRAY[e.anchor_ids[e.pos],e.anchor_ids[e.pos+1]],'event'),
+       upper(lpad(to_hex((oc.n+bc.n+e.seq)::integer),4,'0'))
+FROM extra_events e CROSS JOIN original_count oc CROSS JOIN baseline_count bc;
 
 UPDATE silver.lrunes_time t
 SET anchor_ids=silver._cutover_time_segments('lrunes',t.anchor_ids,'event')
@@ -274,7 +314,10 @@ ALTER TABLE silver.lrunes_time
    (type<>'anchor' AND address IS NULL)),
  ADD CONSTRAINT lrunes_time_reference_shape_check CHECK (
    type='anchor' OR
-   (anchor_ids IS NOT NULL AND cardinality(anchor_ids)>0)
+   (type='time_period' AND anchor_ids IS NOT NULL
+     AND cardinality(anchor_ids) BETWEEN 1 AND 2) OR
+   (type='time_trace' AND anchor_ids IS NOT NULL
+     AND cardinality(anchor_ids)>0)
  );
 
 -- Every trace only lists existing time_period UIDs; each event's tokens
@@ -287,9 +330,10 @@ BEGIN
       SELECT 1 FROM silver.lrunes_time e WHERE e.uid=x.uid AND e.type='time_period')
   ) THEN RAISE EXCEPTION 'Invalid migrated time_trace links for lrunes'; END IF;
   IF EXISTS(
-    SELECT 1 FROM silver.lrunes_time t CROSS JOIN LATERAL unnest(t.anchor_ids) x(token)
-    WHERE t.type='time_period' AND x.token !~ '^[0-9A-F]{4}(-([0-9A-F]{4}|0))?$'
-  ) THEN RAISE EXCEPTION 'Malformed time_period anchor reference for lrunes'; END IF;
+    SELECT 1 FROM silver.lrunes_time t CROSS JOIN LATERAL unnest(t.anchor_ids) x(uid)
+    WHERE t.type='time_period' AND NOT EXISTS(
+      SELECT 1 FROM silver.lrunes_time a WHERE a.uid=x.uid AND a.type='anchor')
+  ) THEN RAISE EXCEPTION 'Broken migrated time_period anchor UID for lrunes'; END IF;
 END $$;
 
 DROP FUNCTION silver._cutover_time_segments(text,text[],text);
