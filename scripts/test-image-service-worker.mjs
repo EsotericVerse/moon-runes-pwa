@@ -40,9 +40,10 @@ function createHarness(){
       clients:{claim:async()=>{}}
     },
     fetch:async request=>{
-      requests.push(request.url);
+      const url=typeof request==='string'?request:request.url;
+      requests.push(url);
       if(!online)throw new Error('network unavailable');
-      return response(request.url.startsWith('https://remote.example')?'opaque':'basic',networkHeaders);
+      return response(url.startsWith('https://remote.example')?'opaque':'basic',networkHeaders);
     }
   });
   vm.runInContext(source,context,{filename:'public/sw.js'});
@@ -81,6 +82,19 @@ test('off mode bypasses all SW response caching without unregistering the worker
   assert.equal((await h.dispatch('fetch',image)).handled,true);
   assert.equal((await h.dispatch('fetch',image)).handled,true);
   assert.equal(h.requests.length,1);
+});
+
+test('ISR mode prefers a portable public image edge and falls back to the site when unavailable',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'isr',origin:'https://cache.example.com'});
+  const first='https://loc.lo3rwang.cc/pics/main.webp';
+  await h.dispatch('fetch',h.req(first));
+  await h.dispatch('fetch',h.req(first));
+  assert.deepEqual(h.requests,['https://cache.example.com/pics/main.webp']);
+  const second='https://loc.lo3rwang.cc/pics/second.webp';
+  h.setResponseHeaders({'content-type':'text/plain'});
+  await h.dispatch('fetch',h.req(second));
+  assert.deepEqual(h.requests.slice(1),['https://cache.example.com/pics/second.webp',second]);
 });
 
 test('picture cache: first network hit, repeat without network, and offline reuse',async()=>{
