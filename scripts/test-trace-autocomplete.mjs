@@ -133,3 +133,20 @@ test('postal city wins over GPS county boundary when known',()=>{
  assert.equal(decide('臺北市中山區南京東路10號B1'),'TW-TPE');
  assert.equal(decide(''),null);
 });
+
+test('own-anchor search includes complete postal addresses and distinguishes floors',()=>{
+ const rows=[
+   {uid:'FLR00001',trace_type:'anchor',county_id:'TW-NWT',title:'同名店',address:'新北市板橋區文化路100號',floor_label:'B1'},
+   {uid:'FLR00002',trace_type:'anchor',county_id:'TW-NWT',title:'同名店',address:'新北市板橋區文化路100號',floor_label:'2樓'}
+ ];
+ assert.deepEqual(traceAnchorSuggestions(rows,'TW-NWT','文化路').map(x=>x.uid),['FLR00001','FLR00002']);
+ assert.deepEqual(traceAnchorSuggestions(rows,'TW-NWT','B1').map(x=>x.uid),['FLR00001']);
+ assert.equal(traceAnchorCompletionUid(traceAnchorSuggestions(rows,'TW-NWT','同名店')),'');
+});
+
+test('unknown postal county is never guessed from coordinates during new writes',()=>{
+ const db=read('app/modular/features/trace/trace-data.js');
+ assert.match(db,/return countyIdFromAddress\(address\);/);
+ assert.doesNotMatch(db,/countyIdFromAddress\(place\.address\)\|\|traceCountyId\(countyForCoordinates/);
+ assert.match(db,/county_id:countyIdFromAddress\(place\.address\)/);
+});
