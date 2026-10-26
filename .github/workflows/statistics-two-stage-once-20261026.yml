@@ -51,6 +51,8 @@ jobs:
             fi
             echo "LOCAL CHROME OK $route rendered DOM bytes=$(wc -c <"/tmp/statistics-$id.html")"
           done
+      - name: Dynamic browser tab, category and item interaction
+        run: node scripts/test-statistics-two-stage-browser.mjs
       - name: Report Next warnings and errors
         if: always()
         run: |
