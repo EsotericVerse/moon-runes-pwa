@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import {
   encodeTimeSegment,decodeTimeSegments,resolveTimeSegments,
-  timeSegmentContainsDate,timePeriodContainsDate,timePeriodSortDate
+  timeSegmentContainsDate,timePeriodContainsDate,timePeriodSortDate,resolveTimeTrace
 } from '../app/loc/time-anchor-ranges.mjs';
 
 const anchors=new Map([
-  ['A001',{uid:'A001',time_date:'2000-01-01'}],
-  ['A002',{uid:'A002',time_date:'2000-02-01'}],
-  ['A003',{uid:'A003',time_date:'2000-05-01'}],
-  ['A004',{uid:'A004',time_date:'2000-07-01'}]
+  ['A001',{uid:'A001',address:'2000-01-01'}],
+  ['A002',{uid:'A002',address:'2000-02-01'}],
+  ['A003',{uid:'A003',address:'2000-05-01'}],
+  ['A004',{uid:'A004',address:'2000-07-01'}]
 ]);
 const ranges=resolveTimeSegments(['A001-A002','A003-A004','A004'],anchors,{today:'2000-08-01'});
 assert.equal(ranges.length,3);
@@ -24,7 +24,7 @@ assert.deepEqual(decodeTimeSegments(['birthday','military-start'],{legacy:true})
   start:'birthday',end:'military-start',raw:'birthday,military-start'
 });
 const changed=new Map(anchors);
-changed.set('A001',{uid:'A001',time_date:'1999-12-01'});
+changed.set('A001',{uid:'A001',address:'1999-12-01'});
 assert.equal(resolveTimeSegments(['A001-A002'],changed)[0].start_date,'1999-12-01','anchor edit must move period');
 const removed=new Map(anchors);
 removed.delete('A002');
@@ -37,3 +37,10 @@ assert.equal(timeSegmentContainsDate(broken[0],'2000-02-01'),false);
 assert.equal(resolveTimeSegments(['A004-0'],anchors,{today:'2000-08-01'})[0].open_end,true);
 assert.equal(timePeriodContainsDate({ranges:resolveTimeSegments(['A004-0'],anchors)},'2000-08-01',{today:'2000-08-01'}),true);
 console.log('time anchor ranges: 17 structural and behavioral assertions passed');
+
+const periodMap=new Map([['E001',{uid:'E001',type:'time_period',ranges}],['E002',{uid:'E002',type:'time_period',ranges:[broken[1]]}]]);
+const trace=resolveTimeTrace(['E002','MISSING','E001'],periodMap);
+assert.equal(trace.ranges.length,4);
+assert.deepEqual(trace.invalidLinks,['MISSING']);
+assert.equal(trace.ranges[0].time_period_uid,'E002');
+console.log('time_trace references real time_period UIDs without synthesizing links');
