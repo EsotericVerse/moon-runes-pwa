@@ -101,10 +101,14 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   function savedRoutePoints(route=selectedSavedRoute){
     if(!Array.isArray(route?.anchor_list))return [];
     const byId=new globalThis.Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
-    return route.anchor_list.map(uid=>byId.get(String(uid))||null);
+    const ids=route.trace_type==='space_trace'
+      ?[...new Set(route.anchor_list.flat(Infinity))]:route.anchor_list;
+    return ids.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
     if(selectedSavedGraph)return selectedSavedGraph;
+    // A trace is a collection of unrelated pairs; no temporary Queue bridges.
+    if(route?.trace_type==='space_trace')return emptyRoute();
     const points=savedRoutePoints(route);
     const features=[];
     points.forEach((place,index)=>{

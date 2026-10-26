@@ -61,6 +61,7 @@ async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false}=
       .range(offset,offset+size-1);
     if(filter)query=query.eq('trace_type',filter);
     if(union&&nativeOnly)query=query.eq('scope_id','loc');
+    if(union)query=query.order('scope_id',{ascending:true});
     const batch=checked(await query,'空間資料讀取')||[];
     rows.push(...batch.map(row=>readRow(row,id)));
     if(batch.length<size)break;

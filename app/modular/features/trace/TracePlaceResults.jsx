@@ -121,13 +121,19 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     queryKey:['trace-place-id-summary-v1',targetScope,placesKey,startDate,endDate,sourceFilter],
     enabled:needsSummary&&!selectedMediaType,
     queryFn:async()=>{
-      const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_place_density',{
-        p_scope_id:targetScope,p_place_ids:placeIds,
-        p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
-      });
-      if(error)throw error;
-      if(!Array.isArray(data))throw new Error('Invalid Trace place_id density response');
-      return {rows:data};
+      const rows=[];
+      // The stored procedure accepts at most 80 place IDs per query.
+      // A large disconnected trace may have hundreds of unique spool points.
+      for(let i=0;i<placeIds.length;i+=80){
+        const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_place_density',{
+          p_scope_id:targetScope,p_place_ids:placeIds.slice(i,i+80),
+          p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
+        });
+        if(error)throw error;
+        if(!Array.isArray(data))throw new Error('Invalid Trace place_id density response');
+        rows.push(...data);
+      }
+      return {rows};
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
