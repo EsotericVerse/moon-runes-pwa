@@ -55,12 +55,11 @@ test('Block editor reads latest SQL only after authorized invalidation',async()=
   assert.equal(result[0].uid,'editor-latest');assert.deepEqual(h.database,['silver.lo3rwang_blocks']);
   assert.equal(h.calls.length,0);
 });
-test('numeric ISR invalidation is separate from published modules',async()=>{
+test('authorized edit does not contact the suspended Worker',async()=>{
   const h=await createHarness();await h.selectPublicSiteBootstrap();
-  assert.equal(await h.revalidateServerMetadata(),true);
+  assert.equal(await h.revalidateServerMetadata(),false);
   assert.equal((await h.selectPublicSiteBootstrap()).version,1);
-  assert.equal(h.calls.length,1);assert.equal(h.calls[0].url,'https://isr.lo3rwang.cc/api/loc/revalidate');
-  assert.equal(h.calls[0].method,'POST');assert.equal(h.calls[0].cache,'no-store');
+  assert.equal(h.calls.length,0);
 });
 test('unauthenticated visitors cannot invalidate numeric cache',async()=>{
   const h=await createHarness();h.setToken('');
@@ -71,9 +70,9 @@ test('authorized metadata editing bypasses modules only in the editing session',
   assert.equal((await h.selectPublicSiteBootstrap()).version,99);
   assert.deepEqual(h.database,['rpc:bootstrap']);
 });
-test('only numeric API calls use the configured ISR origin',async()=>{
+test('an old ISR build environment cannot redirect requests',async()=>{
   const h=await createHarness();
-  assert.equal(h.locPublicIsrUrl('/api/loc/revalidate'),'https://isr.lo3rwang.cc/api/loc/revalidate');
+  assert.equal(h.locPublicIsrUrl('/api/loc/revalidate'),'/api/loc/revalidate');
   await h.selectScopeBlocks('lo3rwang','index');
   assert.equal(h.calls.length,0);
 });

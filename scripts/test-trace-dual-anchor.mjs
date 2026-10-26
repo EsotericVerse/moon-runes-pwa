@@ -27,11 +27,11 @@ test('trace ISR caches metadata, and client defers counts and article bodies',()
   const report=source('app/modular/features/trace/TracePlaceResults.jsx');
   assert.match(route,/kind==='traces'/);
   assert.match(client,/'places','traces'/);
-  assert.match(trace,/readNumericIsr\(scopeId,'traces'\)/);
+  assert.doesNotMatch(trace,/readNumericIsr\(scopeId,'traces'\)/);
   assert.match(trace,/spatialData\.maps\.map/);
   assert.match(report,/enabled:enabled&&tab==='articles'/);
-  assert.match(report,/enabled:useIsr/);
-  assert.match(report,/readNumericIsr\(targetScope,'places'/);
+  assert.match(report,/enabled:useSummary/);
+  assert.match(report,/readPlaceSummary\(targetScope/);
   assert.match(report,/sourcePlaces\.length===1\?'eq':'in'/);
   assert.match(report,/const PAGE_SIZE=40/);
   assert.doesNotMatch(route,/\\.select\\('uid,content'\\)/);
