@@ -1238,6 +1238,18 @@
 }
 
 
+/* Public address references are secondary to the user's own Frame Queue. */
+.loc-trace-reference-panel{display:grid;gap:.65rem;min-width:0;padding:.7rem;
+  border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)}
+.loc-trace-reference-panel>.loc-button{justify-self:start;min-height:44px}
+.loc-trace-reference-body{display:grid;gap:.7rem;min-width:0}
+.loc-trace-reference-body>label,
+.loc-trace-reference-body .scope-management-fields>label{display:grid;gap:.35rem;min-width:0}
+.loc-trace-reference-body input{width:100%;min-width:0;min-height:44px;font:inherit}
+.loc-trace-reference-panel .loc-trace-route-suggestions{position:static;max-height:14rem}
+.loc-trace-reference-body .scope-management-fields{min-width:0}
+@media(max-width:720px){.loc-trace-reference-panel>.loc-button{width:100%}}
+
 /* Full Trace map viewing: no loss of selected route, time filter or article
    state; the switch remains above the map and is always touch accessible. */
 .loc-next-main:has(.loc-trace-panel.is-map-only){
