@@ -5,25 +5,17 @@ import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
-import ScopeLink from '../modular/ScopeLink';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
-import {navigationHref} from '../modular/scope-registry';
-import useNativeNavigation from '../modular/use-native-navigation';
 
-const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:PanelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
-const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceManagement=dynamic(()=>import('./PlaceManagement'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
-  {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'名稱合併、勾選儲存、別名、編輯和快速補打卡。'},
-  {value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',description:'以自動完成選取既有地點並組合 Frame。'},
-
-  {value:'import',label:'匯入',shortLabel:'匯入',description:'匯入檔案、檢查資料並管理匯入結果。'},
-  {value:'others',label:'個人分類',shortLabel:'個人分類',description:''},
+  {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'名稱合併、勾選儲存、別名、補充和快速補打卡。'},
+  {value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',description:'從已有地點自動完成選點，組合有序 Frame。'},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
@@ -31,15 +23,27 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
-  const native=useNativeNavigation();
   const isLoc=routeScopeId==='loc';
   const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
   const editRequested=searchParams?.get('edit')==='1';
+  // Links saved before the two panels moved to Article Control still open the
+  // same Scope's panel instead of silently falling back to Trace Management.
+  const requestedSection=searchParams?.get('section');
+  useEffect(()=>{
+    if(isLoc||!['import','others'].includes(requestedSection))return;
+    const url=new URL(window.location.href);
+    if(/\/manage\/index\.html$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/index\.html$/,'/manage/search/index.html');
+    else if(/\/manage\/?$/.test(url.pathname))
+      url.pathname=url.pathname.replace(/\/manage\/?$/,'/manage/search/');
+    else return;
+    window.location.replace(url.href);
+  },[isLoc,requestedSection]);
   const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
   const selectedOption=options.find(option=>option.value===section)||options[0];
   useEffect(()=>{
-    if(!account.user||!canManageHere||(!editRequested&&!['others','settings','placeManage','traceMap'].includes(section))||account.permissionLoading)return;
+    if(!account.user||!canManageHere||(!editRequested&&!['settings','placeManage','traceMap'].includes(section))||account.permissionLoading)return;
     editDock?.begin(routeScopeId);
   },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
@@ -62,8 +66,6 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
         {section==='placeManage'?<PlaceManagement scopeId={routeScopeId}/>:null}
         {section==='traceMap'?<TraceManagementPanel scopeId={routeScopeId} mode="map"/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
-        {section==='import'?<ManagementImportPanel key={routeScopeId+'-import'} scopeId={routeScopeId}/>:null}
-        {section==='others'?<ScopeOthersSources key={routeScopeId+'-others'} scopeId={routeScopeId} scopeData={account.scopeDataFor(routeScopeId)}/>:null}
       </div>
     </div>
     </div>

@@ -71,7 +71,24 @@ async function imageStrategy(event){
   const request=event.request;
   let cache;
   try{cache=await caches.open(IMAGE_CACHE);const hit=await cache.match(request);if(hit)return hit;}catch{}
-  const response=await fetch(request);
+  // Optional provider-neutral shared image origin. CDN/Worker may cache the
+  // same public assets across visitors. If unreachable, retain the site image.
+  let response=null;
+  if(runtimeCacheMode==='isr'&&runtimeImageOrigin&&
+     urlFor(request)?.origin===self.location.origin){
+    try{
+      const source=new URL(request.url),cdn=new URL(source.pathname+source.search,runtimeImageOrigin);
+      // Only this site's public immutable image directories are mirrored.
+      if(/^\/(?:pics|assets|vendor)\//.test(source.pathname)){
+        // Bound optional edge latency: a failed ISR origin must not stall images.
+        const edge=await fetch(cdn.href,{mode:'cors',credentials:'omit',
+          signal:AbortSignal.timeout(1500)});
+        if(edge.ok&&/^image\//i.test(edge.headers.get('content-type')||''))
+          response=edge;
+      }
+    }catch{ /* Missing edge deploy/CORS: use unchanged original image URL. */ }
+  }
+  response??=await fetch(request);
   if(cache&&cacheableImage(response))event.waitUntil(keep(cache,request,response.clone(),MAX_IMAGES).catch(()=>{}));
   return response;
 }
@@ -90,6 +107,18 @@ async function htmlStrategy(event){
     throw error;
   }
 }
+// A Service Worker stays installed for all modes. 'off' simply bypasses its
+// optional response caches; browser built-in HTTP caching is outside SW control.
+let runtimeCacheMode='off',runtimeImageOrigin='';
+self.addEventListener('message',event=>{
+  if(event.data?.type!=='LOC_CACHE_POLICY')return;
+  const mode=event.data.mode;
+  if(mode!=='off'&&mode!=='cache'&&mode!=='isr')return;
+  const candidate=String(event.data.origin||'');
+  const valid=/^https:\/\/[a-z0-9][a-z0-9.-]*[a-z0-9]$/i.test(candidate);
+  runtimeCacheMode=mode;
+  runtimeImageOrigin=mode==='isr'&&valid?candidate:'';
+});
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   const names=await caches.keys();
@@ -103,7 +132,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 })()));
 self.addEventListener('fetch',event=>{
   const request=event.request,url=urlFor(request);
-  if(!url)return;
+  if(!url||runtimeCacheMode==='off')return;
   if(isStaticAsset(request,url))event.respondWith(staticStrategy(event));
   else if(isImage(request,url))event.respondWith(imageStrategy(event));
   else if(isPublicHtml(request,url))event.respondWith(htmlStrategy(event));

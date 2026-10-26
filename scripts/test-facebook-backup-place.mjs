@@ -98,7 +98,7 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  // place/time/UID conversion; the UI no longer calls it directly.
  const adapter=src('app/loc/archive-galaxy-row.mjs');
  assert.match(adapter,/facebookArchiveGalaxyRow\(record\)/);
- assert.match(ui,/await inspectPrivateArchive\(file,\{onProgress:.*onRecord:/);
+ assert.match(ui,/await inspectPrivateArchive\(file,\{[\s\S]*?onRecord:record=>\{/);
  assert.match(ui,/setRows\(imported\)/);
  assert.match(ui,/setSource\(sourceNames\.length===1\?sourceNames\[0\]:'Mixed'\)/);
  assert.match(parser,/sourcePlace=actualKind==='post'\?facebookBackupPlace\(item\):''/);

@@ -141,35 +141,46 @@ export const FEATURE_HERO_ORDER=Object.freeze({
   setting:7
 });
 export const FEATURE_HERO_IDS=Object.freeze(Object.keys(FEATURE_HERO_ORDER));
-// One shared scope_manage artwork; management entry titles are independent
-// rows in LOC group_manage. Order 1 remains the historical Page Management copy.
+// Management entries have independent copy in group_manage, while all share
+// one editable scope_manage/order 1 image. No new table or public-page slot.
+export const MANAGEMENT_HERO_IMAGE_URL='https://loc.lo3rwang.cc/pics/scope-gn.jpg';
 export const MANAGEMENT_HERO_SLOTS=Object.freeze([
-  {key:'time',order:2,label:'時間定錨',audience:'scope'},
-  {key:'keywords',order:3,label:'關鍵詞',audience:'scope'},
-  {key:'spatial',order:4,label:'空間定錨',audience:'scope'},
-  {key:'advanced',order:5,label:'進階搜尋',audience:'scope'},
+  {key:'time',order:2,label:'時間定錨',audience:'scope',featureId:'culture',englishTitle:'TimeAnchor'},
+  {key:'keywords',order:3,label:'關鍵詞',audience:'scope',featureId:'statics',englishTitle:'Keywords'},
+  {key:'spatial',order:4,label:'空間定錨',audience:'scope',featureId:'trace',englishTitle:'SpaceAnchor'},
+  {key:'advanced',order:5,label:'進階搜尋',audience:'scope',featureId:'search',englishTitle:'AdvancedSearch'},
   {key:'system',order:6,label:'系統管理',audience:'loc'},
   {key:'members',order:7,label:'人員作品管理',audience:'loc'},
   {key:'locKeywords',order:8,label:'關鍵詞',audience:'loc'},
   {key:'trace',order:9,label:'痕跡圖管理',audience:'loc'},
   {key:'articles',order:10,label:'文章管理',audience:'loc'}
 ]);
-export function managementHeroSlot(pathname='',scopeId='',editing=false){
+export function managementHeroSlot(pathname='',scopeId='',editing=false,featureId=''){
   const parts=String(pathname||'').toLowerCase().split('/').filter(Boolean);
   const loc=scopeId==='loc'||scopeId==='admin';
   let key='';
   if(loc){
+    // The Admin landing Hero belongs to group_admin/scope_admin, not
+    // the management-entry copy; its search subpage remains independent.
     if(parts[0]==='admin'&&parts[1]==='search')key='articles';
-    else if(parts[0]==='admin')key='system';
+    else if(parts[0]==='admin')return null;
     else if(parts[0]==='culture'&&parts.includes('manage'))key='members';
     else if(parts[0]==='statics'&&parts.includes('manage'))key='locKeywords';
     else if(parts[0]==='trace'&&parts.includes('manage'))key='trace';
     else if(editing)key=parts.includes('culture')?'members':parts.includes('statics')?'locKeywords':parts.includes('search')?'articles':'trace';
   }else{
-    if(parts.includes('manage')&&parts.includes('search'))key='advanced';
+    // Prefer the actual feature instead of the generic /manage pathname:
+    // culture, statistics, trace and search need four distinct editor Heroes.
+    const featureSlots={culture:'time',statics:'keywords',trace:'spatial',search:'advanced'};
+    if(featureId==='setting'||parts.includes('setting'))return null;
+    if(featureSlots[featureId]&&(editing||parts.includes('manage')||parts.includes('keywords')))
+      key=featureSlots[featureId];
+    else if(featureId==='manage')key=parts.includes('search')?'advanced':'spatial';
+    else if(parts.includes('manage')&&parts.includes('search'))key='advanced';
+    else if(parts.includes('manage')&&parts.includes('culture'))key='time';
+    else if(parts.includes('manage')&&parts.includes('statics'))key='keywords';
     else if(parts.includes('manage'))key='spatial';
     else if(parts.includes('keywords'))key='keywords';
-    else if(editing)key=parts.includes('culture')?'time':parts.includes('statics')?'keywords':parts.includes('search')?'advanced':'spatial';
   }
   return MANAGEMENT_HERO_SLOTS.find(slot=>slot.key===key)||null;
 }
@@ -177,7 +188,7 @@ export function managementHeroCopy(rows,slot){
   if(!slot)return null;
   const row=(Array.isArray(rows)?rows:[]).find(item=>Number(item?.block_order)===slot.order);
   return {
-    eyebrow:String(row?.block_eyebrow||'').trim(),
+    eyebrow:String(row?.block_eyebrow||slot.englishTitle||'').trim(),
     title:String(row?.block_title||'').trim()||slot.label,
     subtitle:String(row?.block_subtitle||'').trim(),
     description:String(row?.block_text||'').trim()
@@ -250,6 +261,7 @@ export const HomeBlock=Object.freeze({
   SINGLE_SLOT_FEATURE_HERO_IDS,
   shouldUseSingleFeatureHeroImage,
   MANAGEMENT_HERO_SLOTS,
+  MANAGEMENT_HERO_IMAGE_URL,
   managementHeroSlot,
   managementHeroCopy
 });

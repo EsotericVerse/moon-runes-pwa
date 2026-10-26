@@ -10,7 +10,7 @@ import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
 import {DEFAULT_LIST_BATCH_SIZE,LIST_LOAD_COOLDOWN_MS} from '../loc/db-contract.mjs';
 import {useScopeRuntime} from './use-scope-runtime';
-import {selectScopeBlocks} from '../loc/scope-data';
+import {selectScopeBlocks,selectLiveScopeBlocks} from '../loc/scope-data';
 import {heroImageUrl as heroImageUrlOf} from '../loc/hero-image.mjs';
 
 import {HomeBlock} from '../loc/home-block-model';
@@ -47,24 +47,35 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const searchParams=useSearchParams();
   const editDock=useEditDock();
   const editing=Boolean(searchParams?.get('edit')==='1'||(editDock?.active&&editDock.scopeId===scopeId));
-  const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing);
+  const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing,featureId);
   const managementMode=Boolean(managementSlot);
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const artworkId=managementMode?'manage':featureId;
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[artworkId]?' scope-feature-hero--artwork scope-feature-hero--'+artworkId:'');
   const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
-  // Edit workspaces share one image (loc/scope_manage), never their normal
-  // feature artwork. Each entry reads its own text row from group_manage.
-  const groupHeroQuery=useAsyncResource(['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
-    ()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),{enabled:!managementMode&&(sharedEnabled||hasFeatureHero)});
-  const scopeHeroImageQuery=useAsyncResource(['scope-blocks','loc','scope_'+featureId],
-    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:!managementMode&&hasFeatureHero&&scopeId!=='loc'});
-  const managementTextQuery=useAsyncResource(['scope-blocks','loc','group_manage'],
-    ()=>selectScopeBlocks('loc','group_manage'),{enabled:managementMode});
-  const managementImageQuery=useAsyncResource(['scope-blocks','loc','scope_manage'],
-    ()=>selectScopeBlocks('loc','scope_manage'),{enabled:managementMode});
-  const heroImageRow=managementMode?managementImageQuery.data?.[0]:(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
-  const heroImageOverride=heroImageUrlOf(heroImageRow);
+  // Management entries share a single editable image and independently saved
+  // text. The Admin and Personal Settings landing Heroes stay separate.
+  // Admin / Settings / protected management entry Heroes use live, persisted
+  // records. The four public browsing Heroes keep their published JS snapshots
+  // until the owner deliberately republishes; no ISR/deployment is triggered.
+  const adminHero=featureId==='admin'||featureId==='setting';
+  const groupHeroPage=HomeBlock.featureHeroPageFor(featureId);
+  const groupHeroQuery=useAsyncResource([adminHero?'scope-blocks-live':'scope-blocks','loc',groupHeroPage],
+    ()=>(adminHero?selectLiveScopeBlocks:selectScopeBlocks)('loc',groupHeroPage),
+    {enabled:!managementMode&&(sharedEnabled||hasFeatureHero)});
+  const scopeHeroPage='scope_'+featureId;
+  const scopeHeroImageQuery=useAsyncResource([adminHero?'scope-blocks-live':'scope-blocks','loc',scopeHeroPage],
+    ()=>(adminHero?selectLiveScopeBlocks:selectScopeBlocks)('loc',scopeHeroPage),
+    {enabled:!managementMode&&hasFeatureHero&&(scopeId!=='loc'||HomeBlock.shouldUseSingleFeatureHeroImage(featureId))});
+  const managementTextQuery=useAsyncResource(['scope-blocks-live','loc','group_manage'],
+    ()=>selectLiveScopeBlocks('loc','group_manage'),{enabled:managementMode});
+  const managementImageQuery=useAsyncResource(['scope-blocks-live','loc','scope_manage'],
+    ()=>selectLiveScopeBlocks('loc','scope_manage'),{enabled:managementMode});
+  const heroImageRow=managementMode
+    ?managementImageQuery.data?.find(row=>Number(row.block_order)===1)
+    :((scopeId==='loc'&&!HomeBlock.shouldUseSingleFeatureHeroImage(featureId))
+      ?groupHeroQuery.data:scopeHeroImageQuery.data)?.find(row=>Number(row.block_order)===1);
+  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?HomeBlock.MANAGEMENT_HERO_IMAGE_URL:'');
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)
     :sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;

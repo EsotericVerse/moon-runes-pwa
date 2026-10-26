@@ -334,6 +334,8 @@ test('Settings document import is iOS only, and the existing importer uses local
   assert.match(settings,/native&&Capacitor\.getPlatform\(\)==='ios'\?\[option\('files'/);
   assert.doesNotMatch(settings,/activeSection==='files'&&!native/);
   assert.doesNotMatch(settings,/loc-import-scope|requestedScope|managedScopes|ManagementImportPanel/);
+  assert.match(localImport,/Capacitor\.isNativePlatform\(\)&&Capacitor\.getPlatform\(\)==='ios'/);
+  assert.match(localImport,/if\(!native\)return null;/);
   assert.match(localImport,/<ManagementImportPanel scopeId="local"\/>/);
   assert.match(panel,/scopeId==='local'&&Capacitor\.isNativePlatform\(\)&&Capacitor\.getPlatform\(\)==='ios'/);
   assert.match(dbClient,/if\(name==='local'\|\|name\.startsWith\('local_'\)\)return true/);
@@ -373,29 +375,32 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
-  assert.ok(route.includes('status:410'));
+  assert.ok(route.includes('loc_cache_runtime'));
+  assert.ok(route.includes("mode!=='isr'"));
   assert.ok(route.includes('no-store'));
-  assert.ok(!route.includes('read_scope_statistics')&&!route.includes('revalidateTag'));
-  assert.ok(adapter.includes('return false;'));
-  assert.ok(!adapter.includes('fetch('));
+  assert.ok(route.includes('read_scope_statistics'));
+  assert.ok(!route.includes('revalidateTag'));
+  assert.ok(adapter.includes("mode==='isr'"));
+  assert.ok(adapter.includes('credentials:\'omit\''));
   assert.ok(culture.includes('selectScopeCultureData(scopeId)'));
   assert.ok(culture.includes('query.data?.eras?.eras'));
   assert.ok(stats.includes("queryKey:['culture-time-periods',scopeId]"));
-  assert.ok(stats.includes("if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'periods')"));
+  assert.ok(!stats.includes("readNumericIsr(scopeId,'periods')"));
   assert.ok(stats.includes('selectScopeCultureData(scopeId)'));
   assert.ok(stats.includes('sourceChart&&periodNavigationReady'));
   assert.ok(stats.includes('mediaDimension&&periodNavigationReady'));
   assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
-test('Culture period and event selectors expose different second-option catalogs',()=>{
+test('Culture upper Period selector stays independent; lower river selects only Period windows',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(source,/value=\{cultureTimeKind\}/);
-  assert.match(source,/setCultureTimeKind\(kind\)/);
-  assert.match(source,/cultureTimeKind==='event'/);
-  assert.match(source,/cultureEventOptions\.map\(item=><option/);
+  assert.match(source,/aria-label='第一條河道時期選擇'/);
+  assert.match(source,/windowStart=\{currentStructureStart\}/);
+  assert.match(source,/windowEnd=\{currentStructureEnd\}/);
+  assert.match(source,/value=\{keywordPeriodKey\}/);
   assert.match(source,/primaryPeriods\.map\(item=><option/);
-  assert.doesNotMatch(source,/<optgroup label=\{l\.eventOption\}>/);
+  assert.doesNotMatch(source,/cultureTimeKind/);
+  assert.doesNotMatch(source,/setSelectedPeriodKey\(next\)/);
 });
 
 test('Culture river hides zero-count parents, folds singleton children and renders a localized empty state',()=>{

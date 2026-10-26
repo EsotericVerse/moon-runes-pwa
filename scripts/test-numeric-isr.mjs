@@ -4,27 +4,47 @@ import {test} from 'node:test';
 import vm from 'node:vm';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('all browser and native Scopes use direct data readers',async()=>{
+test('optional ISR is used only in explicit ISR mode and always bounded',async()=>{
   const source=read('app/loc/numeric-isr-client.js');
-  assert.doesNotMatch(source,/fetch\(/);
-  assert.doesNotMatch(source,/locPublicIsrUrl/);
-  const context=vm.createContext({Error});
+  let mode='off',requests=[];
+  const context=vm.createContext({
+    URL,AbortSignal,Error,
+    fetch:async url=>{requests.push(url);return {ok:true,json:async()=>({rows:[{day:'2026-10-26'}]})};}
+  });
+  const stub=new vm.SyntheticModule(['currentCachePolicy'],function(){
+    this.setExport('currentCachePolicy',()=>({mode,origin:'https://isr.example.com'}));
+  },{context});
   const mod=new vm.SourceTextModule(source,{context});
-  await mod.link(()=>{throw Error('Unexpected import')});
+  await mod.link(specifier=>{
+    assert.equal(specifier,'./cache-mode-client.mjs');
+    return stub;
+  });
   await mod.evaluate();
-  for(const id of ['loc','lo3rwang','lrunes','local','admin','unknown'])
+  for(const id of ['loc','lo3rwang','lrunes','local','admin']){
     assert.equal(mod.namespace.usesNumericIsr(id),false,id);
-  await assert.rejects(mod.namespace.readNumericIsr(),/ISR is suspended/);
+  }
+  mode='cache';
+  assert.equal(mod.namespace.usesNumericIsr('loc'),false);
+  mode='isr';
+  assert.equal(mod.namespace.usesNumericIsr('local'),false);
+  assert.equal(mod.namespace.usesNumericIsr('lo3rwang'),true);
+  const data=await mod.namespace.readNumericIsr('lo3rwang','culture',{startDate:'2026-10-26'});
+  assert.equal(data.rows[0].day,'2026-10-26');
+  assert.match(requests[0],/^https:\/\/isr\.example\.com\/api\/loc\/scopes\/lo3rwang\/numeric\/culture\?/);
+  assert.equal(requests.length,1);
+  await assert.rejects(mod.namespace.readNumericIsr('../admin','culture'),/unavailable/);
 });
 
-test('retired ISR APIs cannot query SQL or populate cache',()=>{
-  for(const path of ['app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',
-    'app/api/loc/revalidate/route.js']){
-    const source=read(path);
-    assert.match(source,/status:410/);
-    assert.match(source,/no-store/);
-    assert.doesNotMatch(source,/unstable_cache|revalidateTag|createPublicSupabaseClient/);
-  }
+test('ISR server route checks global mode, validates scope and is safe for disabled mode',()=>{
+  const source=read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js');
+  assert.match(source,/loc_cache_runtime/);
+  assert.match(source,/settings\.data\?\.mode!=='isr'/);
+  assert.match(source,/status===200\?CACHE_HEADERS:NO_CACHE/);
+  assert.match(source,/read_scope_statistics/);
+  assert.match(source,/read_scope_overview/);
+  assert.match(source,/read_loc_statistics/);
+  assert.match(source,/no-store/);
+  assert.doesNotMatch(source,/service_role|SUPABASE_SERVICE_ROLE_KEY|createClient\([^,]+,[^,]+\s*\)/);
 });
 
 test('Worker and OpenNext cannot write R2 or Durable Object caches',()=>{
@@ -49,7 +69,7 @@ test('Culture, Statistics, Periods, Daily Runes and Trace have direct data provi
   assert.match(culture,/selectScopePeriodSourceSnapshot/);
   assert.match(stats,/selectScopeCultureData\(scopeId\)/);
   assert.match(daily,/selectDailyRuneRange\(range\)/);
-  assert.match(traces,/read_trace_place_density/);
+  assert.match(traces,/readPlaceSummary\(targetScope/);
   assert.match(places,/read_scope_place_statistics/);
   assert.match(places,/Capacitor\.isNativePlatform/);
 });

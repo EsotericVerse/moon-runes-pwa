@@ -244,6 +244,20 @@ export function invalidateScopeBlockPage(scopeId,page='index'){
   scopeBlocksRequests.delete(key);
   locallyEditedBlocks.add(key);
 }
+// Admin editing must read committed rows, not an immutable build-time JS snapshot.
+// Read-after-write calls use this path too, so an RLS no-op cannot appear saved.
+export async function selectLiveScopeBlocks(scopeId,page='index'){
+  const id=String(scopeId||'').trim().toLowerCase();
+  if(!SCOPE_ID_PATTERN.test(id))return [];
+  const name=String(page||'index').trim().toLowerCase();
+  if(!/^[a-z0-9_-]+$/.test(name))throw new Error('Page name 無效');
+  const {rows}=await selectRows(`silver.${id}_blocks`,{
+    columns:'uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image',
+    filters:[{column:'page_name',operator:'eq',value:name}],
+    orders:[{column:'block_order',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
+  });
+  return rows||[];
+}
 export async function selectScopeBlocks(scopeId,page='index'){
   const id=String(scopeId||'').trim().toLowerCase();
   if(!SCOPE_ID_PATTERN.test(id))return [];

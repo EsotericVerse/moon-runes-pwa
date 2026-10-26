@@ -1325,12 +1325,14 @@ body{
 .management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
 .management-hero-copy-group{display:grid;gap:.65rem;min-width:0}
 .management-hero-copy-group>h4{margin:.35rem 0;color:var(--loc-heading)}
-.management-hero-copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
-.management-hero-copy-card{min-width:0;margin:0;padding:1rem;border:1px solid var(--loc-line);border-radius:12px;display:grid;gap:.65rem}
-.management-hero-copy-card legend{padding:0 .3rem;font-weight:700}
-.management-hero-copy-card label{display:grid;gap:.3rem;min-width:0}
-.management-hero-copy-card :is(input,textarea){box-sizing:border-box;width:100%;min-width:0;font:inherit}
-.management-hero-copy-card textarea{resize:vertical}
+.management-hero-copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.management-hero-copy-row{display:grid;grid-template-columns:minmax(5rem,9rem) minmax(0,1fr);align-items:center;gap:.65rem;min-width:0}
+.management-hero-copy-row>span{font-weight:600}
+.management-hero-copy-row input{box-sizing:border-box;width:100%;min-width:0;font:inherit}
+.article-control-stacked{display:grid;gap:1.25rem;min-width:0}
+.article-control-stacked>section{min-width:0;max-width:100%}
+.article-control-stacked>section>h3{margin:0 0 .75rem}
 @media(max-width:720px){
   .management-hero-copy-grid{grid-template-columns:minmax(0,1fr)}
+  .management-hero-copy-row{grid-template-columns:minmax(0,1fr);gap:.3rem}
 }

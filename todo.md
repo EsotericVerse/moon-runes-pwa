@@ -1,4 +1,57 @@
+## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585；待集中驗收／未部署）
+> **狀態：程式已合併 main；等待使用者集中手動部署，正式功能仍待工程端驗證及集中驗收。** 此為最新指令，後方「不得合併頁面控管」與「只編輯四個簡短標題」已被取代。**原分支編號／名稱：** `feat/hero-management-consolidation-20261026`；**PR：** [#585](https://github.com/EsotericVerse/moon-runes-pwa/pull/585)（merged）；**main merge SHA：** `8ae9c3f2581d568f1bacf54088e4b1a0dec16502`。**CI：** [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) 終態 success：管理 Hero 回歸 5/5、聚焦 Trace 73/73、Bootstrap 211/211、Next build 257/257、Chrome Trace 桌機／手機與 ISR 停用檢查通過。尚未進行真實 Admin 登入寫入／讀回、手機／桌機管理編輯互動及正式站版本驗證，**不能把「合併 main」視為已部署或使用者已驗收**。
+
+- [x] **程式實作：** 區塊選單移除獨立「頁面控管」，管理類別只保留「系統管理」與「個人設定」；各自保留英文標題／中文大標題／標題說明／正文及獨立首頁圖連結。
+- [x] **程式實作：** 文化、統計、痕跡、搜尋普通 Hero 原欄位不變、保留群組圖／個人圖；分別新增「管理」TimeAnchor／時間定錨、Keywords／關鍵詞、SpaceAnchor／空間定錨、AdvancedSearch／進階搜尋，支援英文標題、中文大標題、標題說明、正文（初始空白）。
+- [x] **程式實作：** 管理 Hero 沿用既有 `scope_manage` 共用圖片欄位，預設 `https://loc.lo3rwang.cc/pics/scope-gn.jpg`；儲存改以 `silver.loc_blocks` 完整 UID 寫入並實際資料庫讀回比對（程式契約已測，生產權限寫入尚未實測）。Group 管理入口文案保留於「系統管理」下，不新增資料表。
+- [ ] **待工程端真實功能與整批驗收：** 已授權 Admin 儲存→Supabase 讀回→重進頁→文字／圖片變更生效、無權限使用者禁止寫入、不同管理入口與一般 Hero 互不干擾、桌機手機編輯操作；使用者手動部署後再檢查正式版本和 Service Worker。此項與 PR 編號集中記錄，**不要求使用者逐分支驗收**。
+- [x] **交付邊界：** 未開啟 Cloudflare 自動部署／ISR，未觸碰 `time`、`trace`、`keywords` 表結構；這三表的合併構想僅為後續討論，**本 PR 不授權執行**。
+
+---
+
 # LOC 1.1 RC｜功能完整與無 ISR 依賴：三線整合 TODO（2026-10-26）
+
+## 集中待驗收｜整批功能驗收清單（CI 通過後加入）
+
+> **這裡是集中驗收看板，不是未完成工作清單。** 一般功能須先由工程端完成、實際功能自測、適用 CI 全數通過並合併 `main`，才加入下方「工程完成／待集中部署」區。之後由使用者自行決定一次手動部署，工程端核實部署成功、線上版本與基本實際功能，才移至「已部署／集中待驗收」。讓使用者一次驗收多項完整功能，不必逐 PR、逐小修等待或替工程端除錯。未完成、CI 失敗／未驗證項目留在原本 TODO，不能冒充待驗收。
+
+### 工程完成、CI 通過、已合併 main｜等待集中手動部署
+
+- [x] **Admin 全站三段快取模式** `[工程程式及 CI 完成／main 已合併／待使用者集中手動部署]`：`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → `main 2c73439c`；[Bootstrap 216/216 + Build/Chrome #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)、[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 成功。預定集中驗收：Admin → ISR 設定 → `off/cache/isr` 切換、儲存、重新讀取及退路。**尚未部署；真實 Admin 登入寫入、外部 ISR 快取命中尚未在線上驗證，不得當作已由使用者驗收。**
+
+符合門檻後每項記錄：`功能／TODO ID｜整合 main SHA｜成功 CI run／測試證據｜工程功能驗證｜可驗收的實際操作｜部署狀態`。可持續累積成一整批，不因某個分支合併就請使用者立即驗收。
+
+### 已部署、版本確認、基本線上檢查完成｜集中待使用者驗收
+
+本區僅能由上區項目在**使用者手動部署成功且工程端確認實際生效**後移入；列出一口氣可完成的功能驗收路徑、預期結果與必要的版本差異。使用者只驗收整體功能與使用感，不必逐項檢查程式碼或 CI。
+
+### 急迫修復｜獨立快速通道
+
+真正急迫的服務故障／安全或資料完整性問題，或使用者明確要求立刻恢復的功能，不必等集中批次；工程端先完成必要的聚焦安全與功能檢查，迅速修復並整合 `main`，再由使用者決定立刻手動部署（除非另有明確單次授權）。工程端確認線上恢復後補完完整適用 CI 與回歸檢查，紀錄當時未驗證部分；不得把未部署的修復稱為已生效，也不得自行重啟 Cloudflare／ISR 或自動部署。
+
+---
+
+## 待實作｜恢復 ISR 與全域共用快取（含圖片；Service Worker 保留）
+
+### 分支生命週期登記｜ISR-RECOVERY-01
+
+- [x] **Admin 三段全站快取模式：工程實作已整合；待集中部署與使用者驗收** `[MERGED / PR CLOSED / NEVER REUSE BRANCH]`
+  - **原始工作分支：** `task/isr-three-mode-admin-cache`；**PR：** [#584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584)（已合併並關閉）；**main 合併 SHA：** `2c73439c8a19a9b8448bb12b23e7028b32d227b4`；**分支最終 HEAD：** `7b29bb8d8bad78ccd86dc85d7b7a24c6789236a3`。工作沿用同一分支完成，沒有開替代分支。
+  - **已完成的程式：** Admin → ISR 設定三模式「不開快取／打開快取／打開 ISR」，儲存至 `silver.loc_cache_runtime` 並可讀回；公開讀取、管理員 RLS 寫入、Service Worker 不移除、JS Route/Config/Blocks 及原資料庫直接讀取路徑不變。一般快取和 ISR 是不同模式；公開圖片可走選用邊緣來源，遇超時／失敗回原站；ISR 數值摘要不可用時回 Supabase RPC。網域清單編輯無效也不阻擋管理者切回 off/cache。
+  - **資料庫唯讀核對：** Supabase 單筆設定目前 `mode=cache`、`origin=''`；RLS 有 anon/authenticated SELECT 與 `silver.can_manage_global()` 的 authenticated UPDATE（欄位級 UPDATE 權限已核對）。這是資料庫契約查驗，**沒有以真實 Admin 登入執行模式寫入／重讀端對端測試**。
+  - **CI／Build：** [Trace/Admin Hero #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352) 終態 success：Bootstrap **216/216**、Next.js Build、Chrome Trace 桌機／手機、ISR 防護檢查；[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 終態 success。PR 已在 CI 完成後整合 `main`，正式 GitHub Pages/IPA/Cloudflare 部署均**未觸發**。
+  - **集中待驗收及工程後續檢核：** 使用者自行手動部署後，再以實際授權 Admin 操作「三模式反覆切換→儲存→讀回→重進頁」，確認 Service Worker、圖片、文化／統計資料路徑及 ISR 故障回退；確認正式站生效版本。公開 CDN/Workers 跨使用者快取命中、時間／空間候選快取全覆蓋、實際費用與 ISR 遠端服務啟用仍屬**父項 `ISR-RECOVERY-01` 未完成範圍**，不能僅憑這次 Admin 選單合併宣稱全套 ISR 已恢復。
+  - **分支善後：** PR 已合併／關閉；目前連接器不提供刪除 Git branch 操作，該遠端分支目前仍存在，標記 `MERGED / NEVER REUSE`，不可再拿它承接新工作；如果日後具備安全刪除方式，才清理該已合併分支。此限制不影響既有 `main` 的程式整合狀態。
+
+- [ ] **ISR-RECOVERY-01｜ISR／全域共用快取恢復、手動切換與故障退路** `[已決議／待實作與 CI 驗證]`
+  - **保留 Service Worker，絕不移除。** 既有 PWA、公開圖片 Cache First、適用的 JS/CSS 快取及既有離線能力繼續保留；只依測試與成本證據精簡重複快取責任。**原本的 JS 政策不變**：Scope Route + Config 的 JS 模組、按頁載入 Blocks、按需資料查詢與既有運算流程不得因加入 ISR 而回退為大量 JSON 解析或整頁預載。
+  - **讓適合多人重用的內容進入全域共用快取，包括圖片。** 將公開圖片納入邊緣共用快取（可使用 CDN/HTTP Cache，毋須硬塞進 Next.js ISR 頁面），並按資料特性恢復 ISR／伺服器共用快取：文化／統計摘要、搜尋與空間定錨點自動完成候選、時間定錨點相關候選／統計，以及其他適合的公開可重複成果。快取策略逐類審核來源、TTL、失效／更新、Scope 隔離、版本、冷啟動、成本與必要的資料保護；**不得快取私有資料、授權回應、登入資訊或造成跨 Scope 洩漏**。
+  - **明確提供可由管理者手動修改／選擇的快取模式，作為 ISR 故障處置。** 至少支援「**ISR／全域快取啟用**」與「**ISR 停用、直接查原有資料來源**」兩種明確模式；切換時保持 Service Worker 及 JS 政策正常，不需要重新設計文化／統計／搜尋／痕跡功能。應核實現有設定入口與已授權的配置／切換方式，採用簡單、安全、可回退的方案，不能只靠臨時改原始碼或請使用者逐功能手動修復。遇到 ISR 不可用時，不得把快取失敗誤報成「資料庫連結失敗」，核心功能仍可回到已驗證的 Supabase RPC／查詢或手機 SQLite 讀取路徑；明確區分手動控制與必要的故障退路。
+  - **部署完全由使用者決定。** 平時多項功能整批完成、CI 通過、合併 `main` 並列入集中待驗收，再由使用者自己觸發一次手動部署；急迫狀況是否連續部署也由使用者控制。**本 TODO 只授權規劃與後續實作追蹤，不表示現在已啟用 ISR、Cloudflare 自動建置／Preview、R2／DO 寫入、Vercel 備援或任何實際部署**。在明確啟用之前，現行 ISR 停用與費用保護不變。
+  - **工程完成條件：** 無 ISR 時四大核心功能、登入權限與資料正確；啟用 ISR 時快取命中／冷啟動／圖片重複下載／跨使用者共用有可核實證據；手動關閉、恢復與 ISR 故障回退均通過整合與安全測試，且不改既有 JS 功能。工程端完成相關 CI、Build、警告比對與整合後才能標成工程完成；正式流量與上線效果只在使用者自行啟用／部署後觀察，集中提供整批驗收，不能叫使用者逐項測。
+  - **關聯既有工作：** LOC-TODO-02（ISR 不得成為功能必要依賴）、LOC-TODO-03（成本／部署）、LOC-TODO-05（Service Worker）、LOC-TODO-04／06（文化／搜尋相關效能）。本項是新增「恢復並擴充 ISR」需求，不能倒寫成已完成或直接覆蓋既有停用期間的事故紀錄。
+
+---
 
 ## 待查證｜既有「頁面控管」Hero 四組文案與單圖（2026-10-26，優先）
 

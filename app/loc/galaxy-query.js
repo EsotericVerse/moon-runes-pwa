@@ -67,7 +67,10 @@ let statisticsRpcInstalled=true;
 async function scopeStatisticsRows(scope,{startDate='',endDate='',includeUndated=false}={}){
   const current=scopeOf(scope);
   // The browser only receives the cached numeric payload; repeat views do not rerun SQL.
-  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'culture',{startDate,endDate,includeUndated});
+  if(usesNumericIsr(current.id)){
+    try{return await readNumericIsr(current.id,'culture',{startDate,endDate,includeUndated});}
+    catch{ /* Optional ISR failure: use existing DB RPC. */ }
+  }
   if(!statisticsRpcInstalled)return null;
   try{
     return await readScopeStatistics(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated});
@@ -597,8 +600,10 @@ export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate=
   }
   // Only the numbers for public charts are persisted in server ISR.
   // Advanced Style cross-tag relationships still require their own raw metadata.
-  if(usesNumericIsr(current.id))
-    return readNumericIsr(current.id,'facet',{startDate,endDate,dimension});
+  if(usesNumericIsr(current.id)){
+    try{return await readNumericIsr(current.id,'facet',{startDate,endDate,dimension});}
+    catch{ /* Optional ISR failure: aggregate existing metadata. */ }
+  }
   const filters=timeFilters('createtime',startDate,endDate);
   const columns='media_id,media_type,url,meta_tags,createtime';
   const orders=[{column:'media_id',ascending:true}];
@@ -765,7 +770,10 @@ export async function selectFirstScopeStatisticsDate(scope){
 // serve while the functions are not installed (for example on a backup database).
 export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'statistics',{startDate,endDate});
+  if(usesNumericIsr(current.id)){
+    try{return await readNumericIsr(current.id,'statistics',{startDate,endDate});}
+    catch{ /* Optional ISR failure: existing overview RPC. */ }
+  }
   try{
     return await readScopeOverview(current.id,{startDate,endDate});
   }catch(error){
@@ -780,7 +788,10 @@ export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
 }
 export async function selectScopeEarliest(scope){
   const current=scopeOf(scope);
-  if(usesNumericIsr(current.id))return readNumericIsr(current.id,'earliest');
+  if(usesNumericIsr(current.id)){
+    try{return await readNumericIsr(current.id,'earliest');}
+    catch{ /* Optional ISR failure: existing earliest RPC. */ }
+  }
   try{
     return await readScopeEarliest(current.id);
   }catch(error){
@@ -792,11 +803,7 @@ export async function selectScopeEarliest(scope){
 export async function selectLocStatistics({startDate='',endDate=''}={}){
   if(usesNumericIsr('loc')){
     try{return await readNumericIsr('loc','loc-statistics',{startDate,endDate});}
-    catch(error){
-      // A static frontend may deploy before its separate ISR Worker.
-      // Only unknown-route responses fall back to the existing public RPC.
-      if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
-    }
+    catch{ /* Optional ISR failure: existing LOC statistics RPC. */ }
   }
   try{
     return await readLocStatistics({startDate,endDate});

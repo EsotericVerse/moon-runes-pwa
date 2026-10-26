@@ -306,9 +306,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     queryKey:['culture-time-periods',scopeId],
     enabled:!isLrunesDaily&&scopeId!=='local'&&scopeId!=='loc'&&Boolean(targetScopes[0]),
     queryFn:async()=>{
-      const {readNumericIsr,usesNumericIsr}=await import('../../loc/numeric-isr-client');
-      if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'periods');
-      // Native/local data providers do not make remote ISR requests.
+      // Period anchors remain on the independently working direct reader.
+      // ISR never becomes a required path when an endpoint is not available.
       const {selectScopeCultureData}=await import('../../loc/culture-query');
       return (await selectScopeCultureData(scopeId)).eras?.eras||[];
     },

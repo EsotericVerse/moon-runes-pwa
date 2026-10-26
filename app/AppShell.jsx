@@ -288,6 +288,33 @@ function AppShellInner({children}){
     };
   },[mutate]);
   const {scopeId,scope,host,pathname,registryRow,configRow}=useScopeRuntime();
+  // Reconcile the public three-mode policy on initial load and route changes.
+  // SW remains installed; messages control only its optional response caches.
+  useEffect(()=>{
+    if(Capacitor.isNativePlatform()||!('serviceWorker' in navigator))return undefined;
+    let active=true;
+    let policyModule=null;
+    const send=policy=>{
+      if(!active)return;
+      const message={type:'LOC_CACHE_POLICY',mode:policy.mode,origin:policy.origin||''};
+      navigator.serviceWorker.controller?.postMessage(message);
+      void navigator.serviceWorker.ready.then(reg=>{
+        if(active)reg.active?.postMessage(message);
+      }).catch(()=>{});
+    };
+    const sync=()=>{void import('./loc/cache-mode-client.mjs')
+      .then(module=>{if(!active)return;policyModule=module;return module.loadCachePolicy();})
+      .then(policy=>{if(active&&policy)send(policy);}).catch(()=>send({mode:'off'}));};
+    const change=event=>send(event.detail||{mode:'off'});
+    sync();
+    window.addEventListener('loc-cache-policy-changed',change);
+    navigator.serviceWorker.addEventListener('controllerchange',sync);
+    return ()=>{
+      active=false;
+      window.removeEventListener('loc-cache-policy-changed',change);
+      navigator.serviceWorker.removeEventListener('controllerchange',sync);
+    };
+  },[pathname]);
   const editDock=useEditDock();
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
@@ -426,7 +453,7 @@ function AppShellInner({children}){
       href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
         ?editTabHref('trace/manage','section','traceAnchor')+'&edit=1'
         :editScopeAvailable?editTabHref('manage','section','traceAnchor')+'&edit=1':''},
-    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'搜尋文章管理'),
+    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'文章控管'),
       href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];

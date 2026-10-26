@@ -32,7 +32,7 @@ function createHarness(){
     clone(){return response(type,headers);}
   });
   const context=vm.createContext({
-    URL,Promise,Request,Response,caches:cacheStorage,
+    URL,Promise,Request,Response,AbortSignal,caches:cacheStorage,
     self:{
       location:{origin:'https://loc.lo3rwang.cc'},
       addEventListener:(name,fn)=>listeners.set(name,fn),
@@ -40,12 +40,15 @@ function createHarness(){
       clients:{claim:async()=>{}}
     },
     fetch:async request=>{
-      requests.push(request.url);
+      const url=typeof request==='string'?request:request.url;
+      requests.push(url);
       if(!online)throw new Error('network unavailable');
-      return response(request.url.startsWith('https://remote.example')?'opaque':'basic',networkHeaders);
+      return response(url.startsWith('https://remote.example')?'opaque':'basic',networkHeaders);
     }
   });
   vm.runInContext(source,context,{filename:'public/sw.js'});
+  // Start each existing cache regression with the Admin-approved 'cache' mode.
+  listeners.get('message')({data:{type:'LOC_CACHE_POLICY',mode:'cache'}});
   async function dispatch(name,request){
     const pending=[];
     let handled;
@@ -63,6 +66,49 @@ function createHarness(){
   return {dispatch,req,requests,stored,deleted,setOnline:value=>{online=value;},
     setResponseHeaders:value=>{networkHeaders=value;}};
 }
+
+test('off mode bypasses all SW response caching without unregistering the worker',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'off'});
+  for(const request of [
+    h.req('https://loc.lo3rwang.cc/pics/cover.webp'),
+    h.req('https://loc.lo3rwang.cc/_next/static/chunks/hashed.js','script'),
+    {...h.req('https://loc.lo3rwang.cc/','document'),mode:'navigate'}
+  ])assert.equal((await h.dispatch('fetch',request)).handled,false);
+  assert.equal(h.requests.length,0);
+  assert.equal(h.stored.size,0);
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'cache'});
+  const image=h.req('https://loc.lo3rwang.cc/pics/cover.webp');
+  assert.equal((await h.dispatch('fetch',image)).handled,true);
+  assert.equal((await h.dispatch('fetch',image)).handled,true);
+  assert.equal(h.requests.length,1);
+});
+
+test('ISR mode prefers a portable public image edge and falls back to the site when unavailable',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'isr',origin:'https://cache.example.com'});
+  const first='https://loc.lo3rwang.cc/pics/main.webp';
+  await h.dispatch('fetch',h.req(first));
+  await h.dispatch('fetch',h.req(first));
+  assert.deepEqual(h.requests,['https://cache.example.com/pics/main.webp']);
+  const second='https://loc.lo3rwang.cc/pics/second.webp';
+  h.setResponseHeaders({'content-type':'text/plain'});
+  await h.dispatch('fetch',h.req(second));
+  assert.deepEqual(h.requests.slice(1),['https://cache.example.com/pics/second.webp',second]);
+});
+
+test('ISR image origin offline falls back to primary image without disabling SW',async()=>{
+  const h=createHarness();
+  h.dispatch('message',{type:'LOC_CACHE_POLICY',mode:'isr',origin:'https://unreachable.example'});
+  const target=h.req('https://loc.lo3rwang.cc/pics/fallback.webp');
+  h.setResponseHeaders({'content-type':'text/plain'});
+  const result=await h.dispatch('fetch',target);
+  assert.ok(result.handled);
+  assert.deepEqual(h.requests,[
+    'https://unreachable.example/pics/fallback.webp',
+    'https://loc.lo3rwang.cc/pics/fallback.webp'
+  ]);
+});
 
 test('picture cache: first network hit, repeat without network, and offline reuse',async()=>{
   const h=createHarness();

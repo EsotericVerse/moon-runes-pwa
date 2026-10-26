@@ -14,7 +14,7 @@ export default function PlaceManagement({scopeId}){
     <TraceManagement scopeId={scopeId} mode="cleanup"/>
     <details className="scope-card" open={editing}
       onToggle={event=>setEditing(event.currentTarget.open)}>
-      <summary>編輯既有地點／補充縣市、內容及備註</summary>
+      <summary>編輯既有地點／補充縣市、地址與內容</summary>
       {editing?<TraceManagement scopeId={scopeId} mode="anchor"/>:null}
     </details>
     {scopeId!=='loc'?<details className="scope-card" open={quickFill}
