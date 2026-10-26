@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useEditDockForm} from '../modular/edit-dock';
+import TraceRouteManager from './TraceRouteManager';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {useAccount} from './use-account';
@@ -531,15 +532,14 @@ function MapEditor({scopeId,spatial,reload}){
 export default function TraceManagementPanel({scopeId,mode='anchor'}){
   const enabled=TRACE_SCOPES.includes(scopeId);
   const query=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
-    enabled,revalidateOnFocus:false,revalidateOnReconnect:false
+    enabled:enabled&&mode!=='map',revalidateOnFocus:false,revalidateOnReconnect:false
   });
   if(!enabled)return <p className="scope-status">此 Scope 尚未配置痕跡資料表。</p>;
+  if(mode==='map')return <TraceRouteManager key={scopeId+'-map'} scopeId={scopeId}/>;
   if(query.isPending)return <p className="scope-status" role="status">正在載入空間定錨點與痕跡圖…</p>;
   if(query.error)return <p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>;
   const spatial=query.data||{anchors:[],maps:[]};
   return mode==='cleanup'
     ?<TraceOrganizer key={scopeId+'-cleanup'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
-    :mode==='map'
-    ?<MapEditor key={scopeId+'-map'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>
     :<AnchorEditor key={scopeId+'-anchor'} scopeId={scopeId} spatial={spatial} reload={()=>query.mutate()}/>;
 }
