@@ -149,7 +149,7 @@ export async function readTraceAddressReferences(scopeId,term,limit=8){
   if(q.length<2)return [];
   // PostgREST OR syntax requires quoted/escaped literal values for commas,
   // parentheses and quoted address/name fragments; SQL parameters stay bound.
-  const pattern='%'+q.replace(/[\\%_]/g,'\\// "All anchors" is an explicit choice, not an eager bootstrap dependency.')+'%';
+  const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
   const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
   const result=await dbPublicClient.schema('silver').from('loc_trace')
     .select('scope_id,uid,trace_type,title,description,address,floor_label,floor_level,county_id,longitude,latitude,radius_m')
