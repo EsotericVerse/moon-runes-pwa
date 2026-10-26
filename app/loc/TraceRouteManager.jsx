@@ -162,7 +162,7 @@ export default function TraceRouteManager({scopeId}){
   };
   const save=async event=>{
     event?.preventDefault?.();
-    if(busy||!canEdit||!editorOpen)return;
+    if(busy||!canEdit||!editorOpen)return false;
     setBusy(true);setNotice('');setIsError(false);
     try{
       const labels=validateTraceRouteLabels(className,group);
@@ -191,7 +191,8 @@ export default function TraceRouteManager({scopeId}){
       let cacheWarning=false;
       try{await refreshFrame(activeScope);}catch{cacheWarning=true;}
       setNotice('痕跡圖已儲存並重新讀取確認。'+(cacheWarning?'其他已開啟頁面可能需要手動重新整理。':''));
-    }catch(error){setIsError(true);setNotice(String(error?.message||error));}
+      return true;
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));return false;}
     finally{setBusy(false);}
   };
   const remove=async map=>{
