@@ -18,7 +18,8 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(page,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
   assert.match(page,/enabled:editorOpen&&Boolean\(county&&debouncedQuery\)/);
   assert.doesNotMatch(page,/readTraceData\(|readAllTraceAnchors\(/);
-  assert.match(db,/request\.ilike\('title',pattern\)/);
+  assert.match(db,/request=request\.or\(filters\.join\(','\)\)/);
+  assert.match(db,/\['title\.ilike\.'\+literal,'address\.ilike\.'\+literal\]/);
   assert.match(db,/uid\.eq\./);
 });
 
