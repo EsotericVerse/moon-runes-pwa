@@ -8,7 +8,7 @@ import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modula
 import {revalidateServerMetadata} from './scope-data';
 import {postalAddressFromNominatim} from '../modular/features/trace/trace-postal-evidence.mjs';
 import {readSharedSpatialReferencesByNames} from '../modular/features/trace/trace-spatial-reference-data';
-import {spatialReferenceChoicesForName} from '../modular/features/trace/trace-spatial-references.mjs';
+import {spatialReferenceChoicesForName,spatialReferenceLabelKey} from '../modular/features/trace/trace-spatial-references.mjs';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -168,13 +168,13 @@ export default function TracePlaceGeocoder({scopeId}){
         const reviewed=await readSharedSpatialReferencesByNames(group);
         const byName=new Map();
         for(const reference of reviewed){
-          const name=String(reference.title||'').trim();
+          const name=spatialReferenceLabelKey(reference.title);
           if(!byName.has(name))byName.set(name,[]);
           byName.get(name).push(reference);
         }
         for(const name of group){
           if(stopRef.current)break;
-          const refs=byName.get(name)||[];
+          const refs=byName.get(spatialReferenceLabelKey(name))||[];
           if(refs.length){
             remember(name,spatialReferenceChoicesForName(name,refs));
           }else{
