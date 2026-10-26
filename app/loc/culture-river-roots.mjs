@@ -38,3 +38,24 @@ export function selectCultureRiverChildren(rows=[],taxonomy={},roots=[]){
     return wanted.has(root);
   });
 }
+
+/**
+ * Reuse ONE time-bounded DB aggregate for the initial parent lanes and
+ * clicked children. The first paint consumes rootBuckets/groups only; the
+ * compact numericRows remain in SWR until the user expands a parent.
+ *
+ * No article text, extra SQL request, or remote ISR cache is involved.
+ */
+export function buildCultureRiverRootPayload({text=[],media=[]}={},taxonomy={}){
+  const numericRows=[
+    ...(Array.isArray(text)?text:[]).map(row=>({
+      kind:'source',day:String(row?.day||''),category:String(row?.category||''),
+      item_count:Number(row?.item_count)||0
+    })),
+    ...(Array.isArray(media)?media:[]).map(row=>({
+      kind:'media',day:String(row?.day||''),category:String(row?.category||''),
+      item_count:Number(row?.item_count)||0
+    }))
+  ];
+  return {...summarizeCultureRiverRoots(numericRows,taxonomy),numericRows};
+}
