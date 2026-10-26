@@ -23,15 +23,15 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(db,/uid\.eq\./);
 });
 
-test('Class/Group and route names use the saved Frame index; article search remains separate',()=>{
+test('Category/Class/Group/Item routes use shared hierarchy and saved Frame index; article search remains separate',()=>{
   const page=manager();
   const db=read('app/modular/features/trace/trace-data.js');
   const results=read('app/modular/features/trace/trace-panel-filters.mjs');
-  assert.match(page,/routeClasses\(maps\)/);
-  assert.match(page,/routeGroups\(maps,classFilter\)/);
+  assert.match(page,/routeClasses\(maps,categoryFilter\)/);
+  assert.match(page,/routeGroups\(maps,categoryFilter,classFilter\)/);
   assert.match(page,/searchTraceRoutes\(maps,/);
-  assert.match(page,/validateTraceRouteLabels\(className,group\)/);
-  assert.match(db,/validateTraceRouteLabels\(className,group\)/);
+  assert.match(page,/validateTraceRouteLabels\(category,className,group\)/);
+  assert.match(db,/validateTraceRouteLabels\(category,className,group\)/);
   assert.match(db,/anchor_uids:chosen/);
   assert.match(db,/nativeOnly/);
   assert.match(results,/column:'source_place'/);
@@ -49,15 +49,15 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
   const written=[],messages=[],states=[];
   let reads=0,clears=0;
   const expected={uid:'MAP00001',source_scope:'lo3rwang',title:'成長路線測試',
-    description:'保留路線',class:'跟朋友',class_group:'夜市',
+    description:'保留路線',category:'旅遊',class:'夜市',class_group:'北部',
     anchor_uids:['AAA00001','BBB00002']};
   const args={
     busy:false,canEdit:true,editorOpen:true,setBusy:x=>states.push(x),
     setNotice:x=>messages.push(x),setIsError:()=>{},
-    validateTraceRouteLabels:(cls,grp)=>({class:cls,class_group:grp}),
+    validateTraceRouteLabels:(cat,cls,grp)=>({category:cat,class:cls,class_group:grp}),
     normalize:value=>String(value||'').trim(),
     queue:['AAA00001','BBB00002'],MAX_STOPS:80,missing:[],activeScope:'lo3rwang',
-    title:'成長路線測試',description:'保留路線',className:'跟朋友',group:'夜市',
+    title:'成長路線測試',description:'保留路線',category:'旅遊',className:'夜市',group:'北部',
     anchors:new Map([
       ['AAA00001',{uid:'AAA00001',source_scope:'lo3rwang'}],
       ['BBB00002',{uid:'BBB00002',source_scope:'lo3rwang'}]
@@ -85,8 +85,9 @@ test('actual save handler writes ordered UIDs and Class/Group then confirms read
   assert.equal(await task.save({switching:true}),true);
   assert.equal(task.written.length,1);
   assert.equal(task.written[0].input.scopeId,'lo3rwang');
-  assert.equal(task.written[0].input.className,'跟朋友');
-  assert.equal(task.written[0].input.group,'夜市');
+  assert.equal(task.written[0].input.category,'旅遊');
+  assert.equal(task.written[0].input.className,'夜市');
+  assert.equal(task.written[0].input.group,'北部');
   assert.deepEqual(task.written[0].input.anchorUids,['AAA00001','BBB00002']);
   assert.equal(task.reads,1);
   assert.equal(task.clears,1);
@@ -125,6 +126,7 @@ test('unclassified saved Frames remain selectable without rewriting historic lab
   const page=manager();
   assert.match(page,/const ALL_CLASSES='__trace_all_classes__'/);
   assert.match(page,/const ALL_GROUPS='__trace_all_groups__'/);
+  assert.match(page,/categoryFilter!==ALL_CATEGORIES\?\{category:categoryFilter\}/);
   assert.match(page,/classFilter!==ALL_CLASSES\?\{className:classFilter\}/);
   assert.match(page,/groupFilter!==ALL_GROUPS\?\{group:groupFilter\}/);
   assert.match(page,/traceClassLabel\(value\)/);
@@ -284,4 +286,20 @@ test('LOC native duplicate checks never enumerate foreign public-union anchors',
   const result=await reader('loc',{nativeOnly:true});
   assert.ok(calls.some(([key,value])=>key==='scope_id'&&value==='loc'));
   assert.equal(result[0].source_scope,'loc');
+});
+
+test('category/Class/Group/Frame flow retains legacy unclassified routes',async()=>{
+  const base=read('app/loc/model/class-group-items.mjs');
+  const labels=read('app/modular/features/trace/trace-route-classes.mjs');
+  assert.match(base,/export function categoryClassGroupIndex/);
+  assert.match(labels,/categoryClassGroupIndex\(maps/);
+  assert.match(labels,/traceCategoryOf=route=>normalizeClassificationText\(route\?\.category\)/);
+  const managerSource=manager();
+  assert.match(managerSource,/availableCategories=useMemo/);
+  assert.match(managerSource,/setCategory\(map.category\|\|''\)/);
+  assert.match(managerSource,/category:labels.category/);
+  assert.match(managerSource,/normalize\(found.category\)!==labels.category/);
+  const db=read('app/modular/features/trace/trace-data.js');
+  assert.match(db,/created_at,category,"class",class_group/);
+  assert.match(db,/validatedTraceMapValues\(\{scopeId:id,title,description,category,className,group/);
 });
