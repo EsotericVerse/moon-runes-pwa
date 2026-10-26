@@ -92,8 +92,11 @@ function AnchorEditor({scopeId,spatial,reload}){
       return;
     }
     // The reference's Scope and UID are never copied to the new anchor.
-    // Reusing verified coordinates/address is not reusing a historical place.
+    // Reusing reviewed coordinates/address is not reusing a historical place.
     if(!validCoordinates(reference.longitude,reference.latitude))return;
+    // Address-first searches may not have a title in the new-anchor form.
+    // Prefill the candidate label only as an editable suggestion.
+    if(!title.trim()&&reference.title)setTitle(reference.title);
     setAddress(reference.address||'');
     setFloorLabel(reference.floor_label||'');
     setFloorLevel(reference.floor_level==null?'':String(reference.floor_level));
