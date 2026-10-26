@@ -9,7 +9,7 @@ function selectedAnchors(selection,anchors=[]){
   if(selection.trace_type!=='map')return [selection];
   const byKey=new Map((anchors||[]).map(row=>
     [String(row.source_scope||'')+':'+String(row.uid||''),row]));
-  return (selection.anchor_uids||[]).map(uid=>
+  return (selection.anchor_list||[]).map(uid=>
     byKey.get(String(selection.source_scope||'')+':'+String(uid))).filter(Boolean);
 }
 export function traceArticleIds(selection,anchors=[]){
