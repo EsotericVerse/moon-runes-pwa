@@ -82,12 +82,15 @@ export default function TraceRouteManager({scopeId}){
 
   // Index contains only saved Frame metadata, never the entire spatial anchor table.
   const index=useAsyncResource({
-    queryKey:['trace-manager-index',activeScope],
-    enabled:TRACE_SCOPES.includes(activeScope),
-    queryFn:()=>readTraceMapIndex(activeScope,{nativeOnly:activeScope==='loc'}),
+    // On LOC, use the one public metadata union to discover all saved Frames,
+    // while edits and Queue reads remain restricted to the selected owner.
+    queryKey:traceMapIndexKey(scopeId),
+    enabled:TRACE_SCOPES.includes(scopeId),
+    queryFn:()=>readTraceMapIndex(scopeId),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const maps=index.data||[];
+  const allSavedFrames=index.data||[];
+  const maps=allSavedFrames.filter(row=>row.source_scope===activeScope);
   const preferredUid=readDefaultTraceRoute(activeScope);
   const current=maps.find(map=>map.uid===selectedUid)
     ||chooseDefaultTraceRoute(maps,activeScope,preferredUid);
@@ -175,7 +178,7 @@ export default function TraceRouteManager({scopeId}){
     if(!/^[A-Za-z0-9]{8}$/.test(requestedFrame)||!canEdit||!index.data)return;
     const key=activeScope+':'+requestedFrame;
     if(openedFrame.current===key)return;
-    const target=index.data.find(map=>map.uid===requestedFrame);
+    const target=index.data.find(map=>map.source_scope===activeScope&&map.uid===requestedFrame);
     if(!target)return;
     openedFrame.current=key;
     edit(target);
@@ -268,7 +271,7 @@ export default function TraceRouteManager({scopeId}){
         saved={uid:result.uid,editingUid,scopeId:activeScope};pendingSaved.current=saved;
       }
       const latest=await index.mutate();
-      const found=latest?.find(map=>map.uid===saved.uid);
+      const found=latest?.find(map=>map.source_scope===activeScope&&map.uid===saved.uid);
       if(!found||found.title!==normalize(title)
         ||normalize(found.description)!==normalize(description)
         ||normalize(found.category)!==labels.category
@@ -290,7 +293,7 @@ export default function TraceRouteManager({scopeId}){
     try{
       await deleteTraceMap({scopeId:activeScope,uid:map.uid});
       const latest=await index.mutate();
-      if(!Array.isArray(latest)||latest.some(row=>row.uid===map.uid))
+      if(!Array.isArray(latest)||latest.some(row=>row.source_scope===activeScope&&row.uid===map.uid))
         throw Error('資料庫刪除已回應，但重讀仍找到路線。');
       if(readDefaultTraceRoute(activeScope)===map.uid)clearDefaultTraceRoute(activeScope,map.uid);
       if(selectedUid===map.uid){setSelectedUid('');setShowMap(false);}
@@ -332,6 +335,22 @@ export default function TraceRouteManager({scopeId}){
         <option value="lrunes">月之符文</option>
       </select>
     </label>:null}
+    {scopeId==='loc'&&!index.isPending&&!index.error&&
+      allSavedFrames.some(row=>row.source_scope!==activeScope)?<section className="loc-trace-other-scopes" aria-label="已儲存的其他範圍痕跡圖">
+      <h4>已儲存的其他範圍痕跡圖</h4>
+      <p className="scope-status">痕跡圖屬於建立它的 Scope。點選範圍即可在此管理與觀看；不複製或移動既有 UID。</p>
+      <div className="loc-trace-other-scopes-list">
+        {allSavedFrames.filter(row=>row.source_scope!==activeScope).map(row=><button
+          key={row.source_scope+':'+row.uid} type="button" className="loc-button"
+          disabled={busy} onClick={()=>{
+            if(busy||!mayLeave())return;
+            setActiveScope(row.source_scope);
+          }}>
+          <strong>{row.title}</strong>
+          <span>{row.source_scope==='lo3rwang'?'作者作品':row.source_scope==='lrunes'?'月之符文':'LOC 自有痕跡'} · {row.anchor_uids?.length||0} 站</span>
+        </button>)}
+      </div>
+    </section>:null}
     {!canEdit?<p className="scope-status">可查看路線；編輯需該 Scope 的管理權限（寫入仍由 Supabase RLS 驗證）。</p>:null}
     <div className="loc-trace-route-browse">
       <label>大分類
