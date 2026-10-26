@@ -180,6 +180,48 @@ export default function TraceRouteManager({scopeId}){
     setExtraAnchors(rows=>rows.some(x=>x.uid===choice.uid)?rows:[...rows,choice]);
     setQueue(ids=>[...ids,choice.uid]);setPointQuery('');setPicked(null);
   };
+  const changeReference=(field,value)=>setReferenceDraft(row=>row?{...row,[field]:value}:null);
+  const selectReference=row=>{
+    if(busy||!canEdit||pendingReference.current)return;
+    setReferenceDraft({source_scope:row.source_scope,source_uid:row.uid,
+      title:row.title,address:row.address||'',floor_label:row.floor_label||'',
+      floor_level:row.floor_level??'',longitude:row.longitude,latitude:row.latitude,
+      radius_m:row.radius_m||500,description:''});
+  };
+  // An external address is a suggestion only. Its UID cannot enter a route:
+  // create a new anchor within the current authorized Scope, then read it back.
+  const createReferenceAnchor=async()=>{
+    if(busy||!canEdit||!referenceDraft||queue.length>=MAX_STOPS)return false;
+    setBusy(true);setNotice('');setIsError(false);
+    try{
+      const draft=referenceDraft,owner=activeScope,receipt=pendingReference.current;
+      if(receipt&&(receipt.owner!==owner||receipt.source_uid!==draft.source_uid))
+        throw Error('上次新增尚未確認，請先重讀原錨點。');
+      let uid=receipt?.uid;
+      if(!uid){
+        const {source_scope,source_uid,...fields}=draft;
+        const saved=await addTraceAnchor({scopeId:owner,...fields});
+        if(saved?.reused||!/^[A-Za-z0-9]{8}$/.test(saved?.uid||''))
+          throw Error('建立自己的錨點失敗，來源地址未修改。');
+        uid=saved.uid;
+        pendingReference.current={uid,owner,source_uid:draft.source_uid};
+      }
+      const [confirmed]=await readCurrentTraceAnchors(owner,[uid],{nativeOnly:owner==='loc'});
+      if(!confirmed||confirmed.uid!==uid||confirmed.source_scope!==owner)
+        throw Error('新錨點已寫入但尚未重讀確認，再按一次只會重讀，不會重複新增。');
+      setExtraAnchors(rows=>rows.some(x=>x.uid===uid)?rows:[...rows,confirmed]);
+      setQueue(ids=>ids.includes(uid)?ids:[...ids,uid]);
+      pendingReference.current=null;setReferenceDraft(null);setReferenceQuery('');
+      setReferenceOpen(false);
+      await Promise.allSettled([
+        cache.invalidate({queryKey:traceAllAnchorsKey(owner)}),
+        cache.invalidate({queryKey:['trace-current',owner]})
+      ]);
+      setNotice('已建立 '+owner+' 專屬空間錨點 '+uid+' 並加入 Queue；公用參考未修改。');
+      return true;
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));return false;}
+    finally{setBusy(false);}
+  };
   const shift=(index,step)=>{
     setQueue(ids=>{
       const next=index+step;
