@@ -27,8 +27,8 @@ function pageFor(kind,feature){return kind==='group'&&feature.id==='trace'?'grou
 const managementSlotFor=featureId=>HomeBlock.MANAGEMENT_HERO_SLOTS.find(slot=>slot.featureId===featureId);
 const locSlots=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(slot=>slot.audience==='loc'&&slot.key!=='system');
 
-// All management pages use the existing scope_manage/order=1 record.
-// Editing the image in any management section changes the same stored URL.
+// Scope management shares scope_manage/order 1, Admin management shares scope_admin/order 1.
+// Ordinary feature images remain independently editable.
 function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}) {
   const page=pageOverride||pageFor(variant.kind,feature);
   const {mutate}=useSWRConfig();
@@ -125,16 +125,17 @@ function ManagementHeroDetails({slot,onDirtyChange}){
   const [revision,setRevision]=useState(0);
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
-  const row=rows?.find(item=>Number(item.block_order)===slot.order);
+  const page=slot.page;
+  const row=rows?.find(item=>Number(item.block_order)===1);
   const dirty=rows!==null&&JSON.stringify(draft)!==initial.current;
   const canSave=dirty||(rows!==null&&!row);
   useEffect(()=>{
     let live=true;
     (async()=>{
       try{
-        const data=await selectLiveScopeBlocks('loc','group_manage');
+        const data=await selectLiveScopeBlocks('loc',page);
         if(!live)return;
-        const found=data.find(item=>Number(item.block_order)===slot.order);
+        const found=data.find(item=>Number(item.block_order)===1);
         const fields={
           eyebrow:String(found?.block_eyebrow||slot.englishTitle||''),
           title:String(found?.block_title??slot.label),
@@ -146,7 +147,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
       }catch(error){if(live)setStatus(error?.message||'管理區塊讀取失敗。');}
     })();
     return()=>{live=false;};
-  },[slot,revision]);
+  },[slot,page,revision]);
   async function save(){
     if(busy||rows===null)return false;
     setBusy(true);setStatus('');
@@ -161,26 +162,26 @@ function ManagementHeroDetails({slot,onDirtyChange}){
         block_subtitle:subtitle,block_text:draft.text
       };
       const {updateRows,insertRows}=await import('../../db-client.mjs');
-      const found=rows.find(item=>Number(item.block_order)===slot.order);
+      const found=rows.find(item=>Number(item.block_order)===1);
       const result=found?.uid
         ?await updateRows('silver.loc_blocks',fields,{filters:[
           {column:'uid',operator:'eq',value:found.uid},
-          {column:'page_name',operator:'eq',value:'group_manage'}]})
+          {column:'page_name',operator:'eq',value:page}]})
         :await insertRows('silver.loc_blocks',[{
-          uid:HomeBlock.createUid(),page_name:'group_manage',block_order:slot.order,
+          uid:HomeBlock.createUid(),page_name:page,block_order:1,
           block_entity:[],block_image:null,...fields
         }]);
       if(result?.error)throw new Error(result.error.message||'儲存失敗。');
-      invalidateScopeBlockPage('loc','group_manage');
-      const verified=await selectLiveScopeBlocks('loc','group_manage');
-      const saved=verified.find(item=>Number(item.block_order)===slot.order);
+      invalidateScopeBlockPage('loc',page);
+      const verified=await selectLiveScopeBlocks('loc',page);
+      const saved=verified.find(item=>Number(item.block_order)===1);
       if(!saved||Object.entries(fields).some(([key,value])=>String(saved[key]??'')!==value))
         throw new Error('儲存後資料庫讀回不一致，請檢查寫入權限。');
       setRows(verified);
       await Promise.all([
-        mutate(['scope-blocks','loc','group_manage']),
-        mutate(['scope-blocks-live','loc','group_manage']),
-        mutate(['app-bootstrap','loc','group_manage'])
+        mutate(['scope-blocks','loc',page]),
+        mutate(['scope-blocks-live','loc',page]),
+        mutate(['app-bootstrap','loc',page])
       ]);
       setStatus('管理區塊已儲存並讀回確認。');
       setRevision(v=>v+1);
@@ -189,9 +190,9 @@ function ManagementHeroDetails({slot,onDirtyChange}){
     finally{setBusy(false);}
   }
   useEffect(()=>{
-    onDirtyChange?.('management-'+slot.key,dirty);
-    return()=>onDirtyChange?.('management-'+slot.key,false);
-  },[dirty,slot.key,onDirtyChange]);
+    onDirtyChange?.('management-'+page,dirty);
+    return()=>onDirtyChange?.('management-'+page,false);
+  },[dirty,page,onDirtyChange]);
   useEditDockForm({save,isBusy:()=>busy,isDirty:()=>dirty});
   const field=(key,label,maxLength)=><label className="management-hero-copy-row" key={key}>
     <span>{label}</span>
@@ -281,7 +282,7 @@ export default function FeatureHeroImages(){
         }
         setGroupOpen(open);
       }}>
-        <summary>Group 管理入口設定</summary>
+        <summary>系統管理入口設定</summary>
         {groupOpen?<><label className="scope-management-wide-field">
           <span>管理項目</span>
           <select className="scope-search-input" value={locSlotKey}
@@ -291,7 +292,7 @@ export default function FeatureHeroImages(){
         </label>
         <ManagementHeroDetails key={locSlot.key} slot={locSlot} onDirtyChange={trackDirty}/>
         <ImageSlot feature={feature} variant={MANAGEMENT_VARIANT}
-          pageOverride="scope_manage" defaultUrl={HomeBlock.MANAGEMENT_HERO_IMAGE_URL}
+          pageOverride="scope_admin" defaultUrl="https://loc.lo3rwang.cc/pics/LOC-admin.jpg"
           onDirtyChange={trackDirty}/>
         </>:null}
       </details>:null}
