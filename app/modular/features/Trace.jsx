@@ -160,7 +160,7 @@ export default function Trace({scopeId='loc'}){
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
           {!maps.length?<option value="">尚未建立痕跡圖</option>:null}
           {maps.map(map=><option key={map.uid} value={map.uid}>
-            {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'）
+            {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
           <option value="all">全部定錨點（手動載入）</option>
         </select>
