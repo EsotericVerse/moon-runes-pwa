@@ -364,7 +364,9 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
     longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
-    county_id:await countyIdAt(longitude,latitude,address),
+    // No verified postal address: preserve the stored historical county_id.
+    // Omitting the field from UPDATE avoids clearing earlier known county data.
+    ...(countyIdFromAddress(address)?{county_id:countyIdFromAddress(address)}:{}),
     ...locationFields({address,floor_label,floor_level})
   };
   const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
