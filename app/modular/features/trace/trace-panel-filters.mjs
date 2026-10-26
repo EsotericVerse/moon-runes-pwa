@@ -40,8 +40,8 @@ export function groupedTraceDays(rows=[],{key='source_place'}={}){
     const day=String(row.createtime||'').slice(0,10);
     const category=String(row[key]||'').trim();
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!category)continue;
-    const key=day+'|'+category;
-    group.set(key,(group.get(key)||0)+1);
+    const groupKey=day+'|'+category;
+    group.set(groupKey,(group.get(groupKey)||0)+1);
   }
   return [...group].map(([key,item_count])=>{
     const sep=key.indexOf('|');
