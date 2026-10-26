@@ -1302,7 +1302,7 @@ export default function Culture(){
                   <div className='scope-culture-river-selectors'>
                     <div className='scope-culture-time-picker'>
                       <label>
-                        <select className='scope-select' aria-label={l.period}
+                        <select className='scope-select' aria-label={l.timeTrace}
                           value={keywordPeriodKey} onChange={event=>{
                             const next=event.target.value;
                             if(next==='custom'){

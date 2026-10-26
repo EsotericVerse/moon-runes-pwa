@@ -5,7 +5,7 @@ export default {
   "combinedSources": "綜合來源",
   "combinedRiver": "綜合來源時間長河",
   "classificationRiver": "作品體系展現",
-  "structure": "時期・事件・定錨點",
+  "structure": "時間痕跡・事件・定錨點",
   "period": "時期",
   "allTime": "全部時間",
   "allWorks": "全部作品",

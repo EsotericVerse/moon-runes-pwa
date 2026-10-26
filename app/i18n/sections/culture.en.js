@@ -5,7 +5,7 @@ export default {
   "combinedSources": "Combined sources",
   "combinedRiver": "Combined source river",
   "classificationRiver": "Work Structure Overview",
-  "structure": "Periods · Events · Anchors",
+  "structure": "Time Traces · Events · Anchors",
   "period": "Period",
   "allTime": "All time",
   "allWorks": "All works",
