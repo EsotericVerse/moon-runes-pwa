@@ -105,7 +105,7 @@ export default function Trace({scopeId='loc'}){
       :traceAllAnchorsKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
-      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids,
+      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_list,
           {nativeOnly:periodScopeId==='loc'})
       :readAllTraceAnchors(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
@@ -160,7 +160,7 @@ export default function Trace({scopeId='loc'}){
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
           {!maps.length?<option value="">尚未建立痕跡圖</option>:null}
           {maps.map(map=><option key={map.uid} value={map.uid}>
-            {map.title}（{map.anchor_uids?.length||0} 站）
+            {map.title}（{map.anchor_list?.length||0} 站）
           </option>)}
           <option value="all">全部定錨點（手動載入）</option>
         </select>

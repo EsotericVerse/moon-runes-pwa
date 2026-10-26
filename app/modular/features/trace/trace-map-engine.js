@@ -100,9 +100,9 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     // Updating GeoJSON never resets the viewport. Only explicit navigation may.
   }
   function savedRoutePoints(route=selectedSavedRoute){
-    if(!Array.isArray(route?.anchor_uids))return [];
+    if(!Array.isArray(route?.anchor_list))return [];
     const byId=new globalThis.Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
-    return route.anchor_uids.map(uid=>byId.get(String(uid))||null);
+    return route.anchor_list.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
     const points=savedRoutePoints(route);

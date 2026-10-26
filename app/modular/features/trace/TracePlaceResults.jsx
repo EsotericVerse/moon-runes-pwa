@@ -163,7 +163,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   // Use saved times, never inferred timestamps from the route or article period.
   const visits=useMemo(()=>{
     const stops=isMap
-      ?(place?.anchor_uids||[]).map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===targetScope)).filter(Boolean)
+      ?(place?.anchor_list||[]).map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===targetScope)).filter(Boolean)
       :(place?[place]:[]);
     return stops.flatMap((stop,stopIndex)=>(Array.isArray(stop.times)?stop.times:[])
       .flatMap((when,visitIndex)=>{
@@ -225,7 +225,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   return <section className="loc-card loc-trace-works" aria-label={name+'文章報表'}>
     <header className="loc-trace-works-title">
       <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
-      <span className="scope-status">{isMap?(place.anchor_uids?.length||0)+' 站 · ':''}
+      <span className="scope-status">{isMap?(place.anchor_list?.length||0)+' 站 · ':''}
         {!enabled?'沒有可對應的打卡地點'
           :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}

@@ -74,7 +74,7 @@ function locationFields({address='',floor_label='',floor_level=null}={}){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_list,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
   // Read only when the selected Trace screen mounts. A former 2,000-row cap
   // silently hid historical places as imports grew; bounded pages preserve all.
   // This does not run on every autocomplete keystroke.
@@ -99,24 +99,24 @@ export async function readTraceData(scopeId){
 
 /**
  * A saved trace map is the spatial counterpart of a Time period.
- * Its ordered anchor_uids are the membership list; do not invent a second
+ * Its ordered anchor_list are the membership list; do not invent a second
  * grouping table, or collapse distinct check-ins at the same coordinates.
  * The index is small. Only the current trace's anchors are read on demand.
  */
 export const traceMapIndexKey=(scopeId,{nativeOnly=false}={})=>
   nativeOnly?['trace-map-index',scopeId,'native']:['trace-map-index',scopeId];
 export const traceCurrentKey=(scopeId,route,{nativeOnly=false}={})=>[
-  'trace-current',scopeId,route.uid,(route.anchor_uids||[]).join(','),...(nativeOnly?['native']:[])
+  'trace-current',scopeId,route.uid,(route.anchor_list||[]).join(','),...(nativeOnly?['native']:[])
 ];
 export const traceAllAnchorsKey=(scopeId,{nativeOnly=false}={})=>
   nativeOnly?['trace-all-anchors',scopeId,'native']:['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id,address,floor_label,floor_level';
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_list,created_at,times,county_id,address,floor_label,floor_level';
 
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,anchor_uids,created_at,category,"class",class_group'+(union?',scope_id':'');
+  const columns='uid,trace_type,title,description,anchor_list,created_at,category,"class",class_group'+(union?',scope_id':'');
   let request=dbPublicClient.schema('silver').from(id+'_trace')
     .select(columns).eq('trace_type','map');
   if(union&&nativeOnly)request=request.eq('scope_id','loc');
@@ -229,7 +229,7 @@ async function reuseExistingAnchor({scopeId,candidate,existing}){
     return {uid:existing.uid,reused:true};
   // This exact, reviewed postal address agrees within 60 meters. The existing
   // anchor is retained, with the incoming check-in name preserved as an alias.
-  // Do not touch Galaxy, map anchor_uids, coordinates, or an existing title.
+  // Do not touch Galaxy, map anchor_list, coordinates, or an existing title.
   const names=[...oldNote.matchAll(/(?:打卡別名|歷史名稱)[：:]\s*([^。\n]+)/g)]
     .flatMap(match=>match[1].split(/[、，,|]/).map(s=>normalizedName(s)));
   if(names.includes(normalizedName(name)))return {uid:existing.uid,reused:true};
@@ -377,7 +377,7 @@ function validatedTraceMapValues({scopeId,title,description='',category='',class
   return {
     title:verifiedText(title,'痕跡圖名稱'),description:descriptionText(description),
     ...validateTraceRouteLabels(category,className,group),
-    anchor_uids:chosen
+    anchor_list:chosen
   };
 }
 function traceMapUid(uid){

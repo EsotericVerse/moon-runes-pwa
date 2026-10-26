@@ -278,7 +278,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
           }}>
           <option value="">不顯示路線</option>
           {savedMaps.map(route=><option key={route.uid} value={route.uid}>
-            {route.title}（{route.anchor_uids?.length||0} 站）</option>)}
+            {route.title}（{route.anchor_list?.length||0} 站）</option>)}
         </select>
       </label>
       <p className="scope-status">依你儲存的站點順序畫出連線與站序；連線不代表實際走過的道路。</p>

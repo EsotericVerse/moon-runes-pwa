@@ -81,7 +81,7 @@ export default function TraceRouteManager({scopeId}){
   const route=useAsyncResource({
     queryKey:current?traceCurrentKey(activeScope,current):null,
     enabled:Boolean(current),
-    queryFn:()=>readCurrentTraceAnchors(activeScope,current.anchor_uids,
+    queryFn:()=>readCurrentTraceAnchors(activeScope,current.anchor_list,
       {nativeOnly:activeScope==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
@@ -145,7 +145,7 @@ export default function TraceRouteManager({scopeId}){
     clearEntry();setSelectedUid(map.uid);setEditingUid(map.uid);
     setTitle(map.title||'');setDescription(map.description||'');
     setCategory(map.category||'');setClassName(map.class||'');setGroup(map.class_group||'');
-    setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
+    setQueue(Array.isArray(map.anchor_list)?[...map.anchor_list]:[]);
     setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
   };
   // A Trace page's Edit action opens the exact current Frame, not an
@@ -206,7 +206,7 @@ export default function TraceRouteManager({scopeId}){
         ||normalize(found.category)!==labels.category
          ||normalize(found.class)!==labels.class
         ||normalize(found.class_group)!==labels.class_group
-        ||JSON.stringify(found.anchor_uids||[])!==JSON.stringify(queue))
+        ||JSON.stringify(found.anchor_list||[])!==JSON.stringify(queue))
         throw Error('寫入已回應，但重讀尚未確認。保留草稿；再按儲存只會重讀，不會重複新增。');
       setSelectedUid(saved.uid);clearEntry();setEditorOpen(false);setShowMap(true);
       let cacheWarning=false;
@@ -242,7 +242,7 @@ export default function TraceRouteManager({scopeId}){
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   const previewFrame=editorOpen&&queue.length>=2&&missing.length===0
     ?{uid:editingUid||'DRAFT000',source_scope:activeScope,trace_type:'map',
-      title:title||'編輯預覽',anchor_uids:queue}:current;
+      title:title||'編輯預覽',anchor_list:queue}:current;
   const previewAnchors=editorOpen&&queue.length>=2&&missing.length===0
     ?queue.map(uid=>anchors.get(uid))
     :route.data||[];
@@ -276,7 +276,7 @@ export default function TraceRouteManager({scopeId}){
             setActiveScope(row.source_scope);
           }}>
           <strong>{row.title}</strong>
-          <span>{row.source_scope==='lo3rwang'?'作者作品':row.source_scope==='lrunes'?'月之符文':'LOC 自有痕跡'} · {row.anchor_uids?.length||0} 站</span>
+          <span>{row.source_scope==='lo3rwang'?'作者作品':row.source_scope==='lrunes'?'月之符文':'LOC 自有痕跡'} · {row.anchor_list?.length||0} 站</span>
         </button>)}
       </div>
     </section>:null}
@@ -319,14 +319,14 @@ export default function TraceRouteManager({scopeId}){
           aria-current={current?.uid===map.uid?'true':undefined}
           onClick={()=>chooseMap(map)}>
           <span aria-hidden="true">{current?.uid===map.uid?'▾':'▸'}</span>
-          <span>{map.title}</span><span className="scope-status">{[map.category,map.class,map.class_group].filter(Boolean).join(' / ')||'未分類'} · {map.anchor_uids?.length||0} 站</span>
+          <span>{map.title}</span><span className="scope-status">{[map.category,map.class,map.class_group].filter(Boolean).join(' / ')||'未分類'} · {map.anchor_list?.length||0} 站</span>
         </button>
         {current?.uid===map.uid?<div className="loc-trace-saved-map-body">
           {map.description?<p>{map.description}</p>:null}
           {route.isPending?<p role="status" className="scope-status">正在讀取目前 Frame 的站點…</p>:null}
           {route.error?<p role="alert" className="scope-status scope-error">{String(route.error.message||route.error)}</p>:null}
           {route.data?<ol className="loc-trace-selection-order">
-            {map.anchor_uids?.map((uid,j)=><li key={uid+':'+j}>
+            {map.anchor_list?.map((uid,j)=><li key={uid+':'+j}>
               {route.data.find(x=>x.uid===uid)?.title||'尚未對應的錨點 UID '+uid}
             </li>)}
           </ol>:null}
