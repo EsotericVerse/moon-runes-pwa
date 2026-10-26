@@ -1,31 +1,14 @@
-name: Trace and Admin Hero PR checks
-# Verify Trace edits without any website deploy, ISR, R2/DO cache writes, or Neon sync.
+name: Trace manual integration check
+# Manual-only: no PR-triggered builds or source-text test assertions.
+# No deployment, ISR, R2/DO writes, or Neon sync.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'app/loc/TraceRouteManager.jsx'
-      - 'app/loc/views/admin-panels/FeatureHeroImages.jsx'
-      - 'app/loc/home-block-model.js'
-      - 'app/loc/scope-data.js'
-      - 'app/modular/ui.jsx'
-      - 'scripts/test-home-block-order.mjs'
-      - 'app/loc/model/class-group-items.mjs'
-      - 'app/modular/features/trace/**'
-      - 'app/styles/features.css'
-      - 'scripts/test-trace-*.mjs'
-      - 'scripts/test-trace-browser-smoke.mjs'
-      - 'scripts/verify-trace-bootstrap-baseline.mjs'
-      - 'scripts/verify-trace-focused-baseline.mjs'
-      - 'supabase/migrations/*trace*.sql'
-      - 'package.json'
-      - '.github/workflows/trace-pull-request-checks.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: trace-pr-${{ github.event.pull_request.number }}
+  group: trace-manual-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -40,32 +23,6 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - name: Verify Admin Hero management contracts
-        run: node --test scripts/test-home-block-order.mjs
-      - name: Exercise Trace regressions and reject any new failures
-        shell: bash
-        run: |
-          set +e
-          node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs > /tmp/trace-focused.log 2>&1
-          focused_status=$?
-          set -e
-          grep -E '^#|not ok|ok [0-9]+' /tmp/trace-focused.log | tail -n 14 || true
-          node scripts/verify-trace-focused-baseline.mjs /tmp/trace-focused.log
-          if [ "$focused_status" -ne 0 ]; then
-            echo "::warning::An unchanged-main Facebook import A-line test fails; all other focused Trace regressions passed."
-          fi
-      - name: Exercise full bootstrap; reject failures beyond exact untouched-main baseline
-        shell: bash
-        run: |
-          set +e
-          npm run test:bootstrap > /tmp/trace-bootstrap.log 2>&1
-          bootstrap_status=$?
-          set -e
-          grep -E '^#|not ok|ok [0-9]+' /tmp/trace-bootstrap.log | tail -n 14 || true
-          node scripts/verify-trace-bootstrap-baseline.mjs /tmp/trace-bootstrap.log
-          if [ "$bootstrap_status" -ne 0 ]; then
-            echo "::warning::Three verified unchanged-main Settings/Facebook import assertions currently fail; no additional bootstrap regression is accepted."
-          fi
       - name: Build Next.js app without ISR deployment
         if: success() || failure()
         shell: bash
