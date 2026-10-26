@@ -8,7 +8,7 @@ import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query'
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
-import {resolveTimeSegments,timePeriodSortDate} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,timePeriodSortDate,timeDateWindows} from './time-anchor-ranges.mjs';
 
 
 
@@ -340,7 +340,7 @@ export async function selectScopeCultureData(scopeId){
   };
 }
 
-export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null,numericRows=null}={}){
+export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDate=null,numericRows=null,periodRanges=null}={}){
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
   // The database counts per day and category (undated rows included, day ''); category
@@ -351,9 +351,14 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
       media:numericRows.filter(row=>row.kind==='media').map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
     }
     :await selectScopeDailyCounts(scope,{startDate,endDate,includeUndated:true,requireAggregate:true});
+  const windows=Array.isArray(periodRanges)&&periodRanges.length
+    ?timeDateWindows(periodRanges,endDate||new Date().toISOString().slice(0,10)):null;
+  const inside=row=>!windows||windows.some(window=>
+    String(row.day||'')>=window.startDate&&String(row.day||'')<=window.endDate);
   const summarize=(rows,includeEmpty)=>{
     const catalog=new Map(),daily=[];
     for(const row of rows){
+      if(!inside(row))continue;
       const category=String(row.category||'').trim();
       if(!includeEmpty&&!category)continue;
       catalog.set(category,(catalog.get(category)||0)+row.item_count);
@@ -475,7 +480,56 @@ function mediaMetadataDescription(row){
   return fields.map(([label,value])=>{const text=CultureTimelineModel.decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
-export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null,sortDirection='asc'}={}){
+export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=null,sourceName='',sourceNames=[],mediaTypes=[],limit=10,offset=0,cursor=null,sortDirection='asc',periodRanges=null}={}){
+  // A named period may contain several DISJOINT ranges. Fetch each bounded
+  // range independently and merge pages by date; the gaps are never queried
+  // or counted as part of the period.
+  if(Array.isArray(periodRanges)&&periodRanges.length){
+    const windows=timeDateWindows(periodRanges,endDate||new Date().toISOString().slice(0,10));
+    const common={sourceName,sourceNames,mediaTypes,limit,offset,sortDirection};
+    if(!windows.length)return {rows:[],totalCount:0,hasMore:false,nextCursor:null};
+    if(windows.length===1)return selectScopePeriodWorkIndex(scope,{
+      ...common,...windows[0],cursor,periodRanges:null
+    });
+    const oldCursors=cursor?.intervalCursors||[];
+    const pages=await Promise.all(windows.map((window,i)=>
+      selectScopePeriodWorkIndex(scope,{
+        ...common,...window,cursor:oldCursors[i]||null,periodRanges:null
+      })));
+    const positions=pages.map(()=>0),out=[];
+    const ascending=sortDirection!=='desc';
+    const consumed=pages.map(()=>({galaxy:0,media:0}));
+    const keys=new Set();
+    const pageSize=Math.max(1,Math.floor(Number(limit)||10));
+    while(out.length<pageSize){
+      let chosen=-1;
+      for(let i=0;i<pages.length;i++){
+        const row=pages[i].rows[positions[i]];
+        if(!row)continue;
+        if(chosen<0){chosen=i;continue;}
+        const left=String(row.createtime||'')+'|'+String(row.entry_id||'');
+        const other=pages[chosen].rows[positions[chosen]];
+        const right=String(other.createtime||'')+'|'+String(other.entry_id||'');
+        if(ascending?left<right:left>right)chosen=i;
+      }
+      if(chosen<0)break;
+      const row=pages[chosen].rows[positions[chosen]++];
+      if(row.entry_type==='work')consumed[chosen].galaxy++;
+      else consumed[chosen].media++;
+      if(keys.has(row.key))continue;
+      keys.add(row.key);out.push(row);
+    }
+    const next=pages.map((page,i)=>({
+      galaxyOffset:Number(oldCursors[i]?.galaxyOffset||0)+consumed[i].galaxy,
+      mediaOffset:Number(oldCursors[i]?.mediaOffset||0)+consumed[i].media,
+      galaxyCount:Number(page.nextCursor?.galaxyCount||0),
+      mediaCount:Number(page.nextCursor?.mediaCount||0)
+    }));
+    return {rows:out,
+      totalCount:pages.reduce((sum,page)=>sum+Number(page.totalCount||0),0),
+      hasMore:next.some(c=>c.galaxyOffset<c.galaxyCount||c.mediaOffset<c.mediaCount),
+      nextCursor:{intervalCursors:next}};
+  }
   const scopeId=scopeIdOf(scope?.id);
   if(!scopeId)throw new Error('scopeId is required');
   // Explicitly requested empty source names are valid (e.g. Statistics · Others).
