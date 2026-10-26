@@ -95,3 +95,26 @@ export function organizeAnchorCandidates(anchors){
     return priority[a.type]-priority[b.type]||(a.meters??999999)-(b.meters??999999);
   });
 }
+
+// Review candidates, not place identity. O(n) grouping replaces the
+// pairwise O(n²) UI for the same recorded GPS position. A shared GPS
+// never authorizes a merge: different shops/floors remain separate UIDs.
+export function organizeAnchorCoordinateGroups(anchors=[]){
+  const byPosition=new Map();
+  for(const anchor of anchors){
+    if(anchor?.trace_type!=='anchor')continue;
+    const lat=anchor.latitude,lng=anchor.longitude;
+    if(lat==null||lng==null||String(lat).trim()===''||String(lng).trim()==='')continue;
+    if(!Number.isFinite(Number(lat))||!Number.isFinite(Number(lng)))continue;
+    const scope=String(anchor.source_scope||'');
+    const position=Number(lat).toFixed(6)+','+Number(lng).toFixed(6);
+    const key=scope+':'+position;
+    let group=byPosition.get(key);
+    if(!group){group={key,scope,position,anchors:[],uids:new Set()};byPosition.set(key,group);}
+    if(!group.uids.has(anchor.uid)){group.anchors.push(anchor);group.uids.add(anchor.uid);}
+  }
+  return [...byPosition.values()].filter(group=>group.anchors.length>1)
+    .map(({uids,...group})=>({...group,anchors:group.anchors.sort((a,b)=>
+      String(a.title||'').localeCompare(String(b.title||'','zh-Hant')))}))
+    .sort((a,b)=>b.anchors.length-a.anchors.length||a.key.localeCompare(b.key));
+}
