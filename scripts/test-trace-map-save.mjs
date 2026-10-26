@@ -261,7 +261,7 @@ test('Frame save does not silently discard a pending cross-Scope reference',()=>
   assert.match(page,/請先建立自己的參考錨點/);
 });
 
-test('LOC native duplicate checks never enumerate foreign public-union anchors',()=>{
+test('LOC native duplicate checks never enumerate foreign public-union anchors',async()=>{
   const data=read('app/modular/features/trace/trace-data.js');
   assert.match(data,/readAllTraceAnchors\(scopeId,\{nativeOnly=false\}=\{\}\)/);
   assert.match(data,/if\(union&&nativeOnly\)request=request\.eq\('scope_id','loc'\)/);
