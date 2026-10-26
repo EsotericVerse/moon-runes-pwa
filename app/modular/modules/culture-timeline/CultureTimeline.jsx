@@ -69,12 +69,12 @@ function timelineRows(items,labelOf,focus,labels={}){
       title:[
         item?.title,item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
         openStart?labels.openStart:'',openEnd?labels.openEnd:'',
-        item?.date_status==='year_only'?labels.yearOnly:'',
+        
         item?.is_primary_anchor?labels.primaryAnchor:'',item?.is_rc_zone?labels.rcZone:''
       ].filter(Boolean).join(' · '),
       start,
-      recordId:String(item?.record_id||item?.recordId||''),
-      resourceId:String(item?.resource_id||''),
+      recordId:String(item?.uid||item?.recordId||''),
+      resourceId:String(item?.uid||''),
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
@@ -108,7 +108,7 @@ function settle(handler,item,row,callback,defaultValue=null){
 // Generate labels as vis-timeline group content; handlers always read the
 // latest callbacks. This is shared by initial mount and in-place expansion.
 function makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef){
-      const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
+      const timeGroupLabels={anchor:labels.anchor,event:labels.event,period:labels.period};
       const standardTimeKinds=Object.keys(timeGroupLabels);
       const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const additionalGroups=new Map(extraGroups.filter(group=>group?.id).map(group=>[String(group.id),group]));
