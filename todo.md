@@ -206,10 +206,12 @@
 > **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。**最新使用者定案（取代本節此前全部 uid／trace_id 方案）：`silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵；不得保留 Trace 的 `uid`、`trace_uid` 或 `trace_id` 等並行身份欄位**。`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖。`silver.<scopeid>_galaxy.place_id varchar(4)` 只指向同 Scope、`trace_type='anchor'` 的 `trace.id`。**文章自身的 `galaxy.uid` 和原始 `source_place` 不變**；`galaxy.uid` 是另一種文章物件的既有識別碼，並非 Trace 的第二身份。
 > **本次工作項目（仍待完成，依序處理）**：① 比對最新 GitHub main 和 live Supabase，確立舊 Trace `uid`／臨時 `trace_id` → 四碼 `id` 的完整映射與回退方案；② 將 Trace 的唯一 PK 統一為 `id`（anchor／map 同表），轉換所有 Frame Queue、RPC、觸發器、別名及 LOC 聯集 `(scope_id,id)` 的引用；最終不得留下 Trace `uid`／`trace_uid`／`trace_id` 平行身份；③ 整理 `galaxy.place_id` 與有把握的既有打卡文章、保留待判斷的歧義；④ 管理選單加入「現有文章，打卡地點整理」，報表依 ID 精確查詢；⑤ 修正一般／管理定錨點版面過寬且保留其他分頁佈局；⑥ 完成資料讀寫回歸、RLS、真實 Chrome、效能和終態 CI，整批安全 merge main 後才標「待驗收」。
 
+> **最新 Queue 欄位命名（2026-10-27）：** Trace 表原有 `anchor_uids` **正式更名為 `anchor_list`**，同一張 map／Frame 內維持有序的本 Scope `trace.id`（四碼）陣列；不另外新增 Queue 或平行欄位。遷移須保留舊紀錄及每個站點的**原始順序與重複語義**，同步更新 SQL 函式／觸發器／RLS 影響範圍、前後端讀寫、路線／時間顯示及驗證案例；在正式版本相容且自測通過前不得對 live 表單獨改名。
+
 > **唯一命名契約（最新）：** `silver.<scopeid>_trace.id varchar(4)` ↔ `silver.<scopeid>_galaxy.place_id varchar(4)`；Trace 不存在 `uid`、`trace_uid`、`trace_id` 三種替代欄位。`place_id` 等值關聯到本 Scope 的 anchor `id`，不額外分配第二套 ID；Frame 也使用本 Scope 的 `trace.id`。各 Scope 的 ID 可獨立從頭配置，不能跨 Scope 當作同一筆。LOC 聯集以 **`(scope_id,id)`** 辨識來源；聯集顯示的進階整理延後。舊 Trace 八碼 `uid` 必須有可回復的對照映射，禁止截斷或破壞 Queue；文章 `galaxy.uid`／`source_place` 永遠保留。
 
 - [ ] **LOC-PLACE-01｜統一四碼欄位與身份** [P1] [規格已定／未實作]：原生 Scope 的 `*_trace.id`（anchor 與 map 均屬同表）使用 `varchar(4)` 並作單一主鍵，最終不得有 Trace `uid`／`trace_uid`／`trace_id`；Scope 的 `*_galaxy.place_id` 為 nullable `varchar(4)`，未比對成功留 NULL。同 Scope 同一實際地點的文章引用同一 anchor `id`；同座標的不同商家、樓層或不同實體仍用不同 `id`。不同 Scope 各自編號、授權隔離。
-- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、歷史 `anchor_uids` Queue、`silver.loc_trace` 聯集、搜尋及匯入等引用。建立每 Scope **舊八碼 Trace `uid`／臨時四碼 `trace_id` → 最終四碼 `id`** 的唯一對照，完整轉換所有合法關聯、Queue 值與程式產號／驗證；不可直接截斷舊識別碼或刪除原有關聯，舊欄位名稱只在備份／遷移紀錄中保留。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
+- [ ] **LOC-PLACE-02｜既有八碼 UID 零損失遷移** [P1] [未實作]：先查 live Supabase 欄位、PK、trigger、function、RLS、現存錨點與 Frame、歷史 `anchor_list` Queue、`silver.loc_trace` 聯集、搜尋及匯入等引用。建立每 Scope **舊八碼 Trace `uid`／臨時四碼 `trace_id` → 最終四碼 `id`** 的唯一對照，完整轉換所有合法關聯、Queue 值與程式產號／驗證；不可直接截斷舊識別碼或刪除原有關聯，舊欄位名稱只在備份／遷移紀錄中保留。保留原錨點身份、名稱、地址、樓層、時間、Frame、Queue 順序與歷史資訊，需有備份、回退與讀回驗證。
 - [ ] **LOC-PLACE-03｜現有文章打卡地點整理按鈕** [P1] [未實作]：在「管理選單 → 整理定錨點」新增 **「空間定錨點：現有文章，打卡地點整理」**。文章匯入必須先完整完成，不需要匯入時建立空間定錨點、定位或填地址；**galaxy.source_place 永遠保留原始字串、不統一、不回寫**。錨點建立後才用既有錨點、地名與可用座標／地址資訊，建立文章 place_id 關聯。
 - [ ] **LOC-PLACE-04｜自動判別先做、疑問才顯示** [P1] [未實作]：先正規化空白、全半形、臺／台、前後文字格式、行政區／同義名稱等高可信度變體；已確定的自動整理，不要求每組人工補地址或使用付費地理查詢。相同座標的錨點用 Map 單趟分組，每個座標只列一組，不採雙迴圈兩兩產生大量卡片；但**同 GPS 不代表同一商家**（例如家樂福和石二鍋家樂福桂林店），需保持不同身份。只有不確定的候選放在頁面下方，由使用者判別；明確空白／缺資料可保留未匹配而不阻塞。
 - [ ] **LOC-PLACE-05｜持久化、精確查詢與往後沿用** [P1] [未實作]：成功整理即更新相應文章的 place_id 並建立 Scope 專用索引，依 place_id 等值查文章，不再堆疊大量 OR source_place 條件；原始 source_place 及 galaxy.uid 不得改動。已判定的原始地名 ↔ 錨點對應要能持久重用，新文章照常完整匯入，隨後利用已知對應自動關聯；同一地點不能每次重新核對。誤判／別名衝突要能追蹤且安全修正，寫入必須遵守 Scope RLS。
@@ -230,7 +232,7 @@
 **直接歸屬的原有工作：** LOC-TODO-08、09、14；LOC-TODO-13 為 A 線實作、B 線必須共同驗證的動態地圖／文章／時間依賴。
 
 - [ ] **LOC-TODO-08｜具名痕跡圖 Frame 與大分類／Class／Group／Item** `[P1]` `[四層規格已確認／實作尚未完整自證]`
-  - **【已確認新規格】** 沿用現有關鍵詞分層骨架，支援**大分類 → Class → Group → Item（具名痕跡圖 Frame）**，例如 **旅遊 → 夜市 → 北部 → 痕跡圖**；可依層級建立、選取、搜尋、編輯、儲存、重新載入，並以現有共同分類模型實現，不另造平行分類引擎。**Item 就是一張 Frame，Queue 是 Frame 內的有序站點，不是 Item 本身或另一個分類層。** Frame 只引用**該 Scope 自己的**空間錨點 UID，其 `anchor_uids` Queue 可編排；不可將關鍵詞資料列或文章 `class_id` 直接當作痕跡圖分類／物件身份。錨點多次打卡、同址不同樓層與跨 Scope 候選不得自動合併 UID。站點按順序直接連線，**無需相鄰／道路通達，也不宣稱是真實道路導航**。驗收重讀、改序、重試、刪除不傷錨點與文章、Scope 授權／RLS。
+  - **【已確認新規格】** 沿用現有關鍵詞分層骨架，支援**大分類 → Class → Group → Item（具名痕跡圖 Frame）**，例如 **旅遊 → 夜市 → 北部 → 痕跡圖**；可依層級建立、選取、搜尋、編輯、儲存、重新載入，並以現有共同分類模型實現，不另造平行分類引擎。**Item 就是一張 Frame，Queue 是 Frame 內的有序站點，不是 Item 本身或另一個分類層。** Frame 只引用**該 Scope 自己的**空間錨點 UID，其 `anchor_list` Queue 可編排；不可將關鍵詞資料列或文章 `class_id` 直接當作痕跡圖分類／物件身份。錨點多次打卡、同址不同樓層與跨 Scope 候選不得自動合併 UID。站點按順序直接連線，**無需相鄰／道路通達，也不宣稱是真實道路導航**。驗收重讀、改序、重試、刪除不傷錨點與文章、Scope 授權／RLS。
 
 - [ ] **LOC-TODO-09｜Current Frame／預設痕跡切換與載入** `[P1]` `[部分實作／尚未自證]`
   - 完成條件／待辦：維持目前／預設 Frame 的單一選取，起始僅取得輕量索引與選中路線的錨點；切換、重新整理、離線可用性、空路線以及**沒有任何 Frame／錨點的合法空 Scope** 均要正常顯示，不得強制建立假資料、不應把零筆當成 SQL 錯誤。
