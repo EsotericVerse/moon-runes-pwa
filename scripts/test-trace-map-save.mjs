@@ -303,3 +303,47 @@ test('category/Class/Group/Frame flow retains legacy unclassified routes',async(
   assert.match(db,/created_at,category,"class",class_group/);
   assert.match(db,/validatedTraceMapValues\(\{scopeId:id,title,description,category,className,group/);
 });
+
+test('one autocomplete suggestion is not implicitly selected before the user chooses it',()=>{
+  const page=manager();
+  const expression=page.match(/const choice=([\s\S]*?);/);
+  assert.ok(expression,'real autocomplete selection expression found');
+  const choose=new Function('picked','pointQuery','county','suggestions',
+    'return ('+expression[1]+');');
+  const candidate={uid:'OWN00001',title:'同名景點',county_id:'TW-NWT'};
+  assert.equal(choose(null,'同名景點','TW-NWT',[candidate]),null);
+  assert.equal(choose(candidate,'同名景點','TW-NWT',[candidate]),candidate);
+  assert.equal(choose(candidate,'同名景點2','TW-NWT',[candidate]),null);
+});
+
+test('cross-Scope address can require a fresh own UID without touching duplicate/alias reuse',async()=>{
+  const db=read('app/modular/features/trace/trace-data.js');
+  const code=db.match(/export async function addTraceAnchor[\s\S]*?(?=\n\/\/ One authorized insert)/);
+  assert.ok(code,'real addTraceAnchor implementation found');
+  const actions={inspected:0,inserts:[]};
+  const dbAuthRelation=()=>({
+    insert:record=>{
+      actions.inserts.push(record);
+      return {select:()=>({single:async()=>({data:{uid:record.uid},error:null})})};
+    }
+  });
+  const deps={
+    sourceId:x=>x,validCoordinates:()=>true,validRadius:()=>true,
+    createUid8:()=> 'OWN00002',verifiedText:x=>x,descriptionText:x=>x,
+    countyIdAt:async()=>null,locationFields:({address,floor_label,floor_level})=>({address,floor_label,floor_level}),
+    inspectTraceAnchorBeforeWrite:async()=>{actions.inspected++;throw Error('would reuse existing anchor');},
+    reuseExistingAnchor:async()=>{throw Error('must never alias-update');},
+    dbAuthRelation,relation:id=>id,verified:result=>result.data
+  };
+  const create=new Function(...Object.keys(deps),
+    code[0].replace('export async function','async function')+';return addTraceAnchor;')
+    (...Object.values(deps));
+  const result=await create({scopeId:'loc',title:'參考地點',longitude:121.5,latitude:25,
+    address:'',forceNewIdentity:true});
+  assert.equal(result.uid,'OWN00002');
+  assert.equal(actions.inspected,0,'explicit independent reference must skip alias reuse');
+  assert.equal(actions.inserts.length,1);
+  assert.ok(!('forceNewIdentity' in actions.inserts[0]));
+  assert.equal(actions.inserts[0].uid,'OWN00002');
+  assert.match(manager(),/forceNewIdentity:true/);
+});
