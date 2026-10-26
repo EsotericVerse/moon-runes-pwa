@@ -325,7 +325,7 @@
   height:100%;
   max-width:none;
   max-height:none;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center;
   pointer-events:none;
   user-select:none;
