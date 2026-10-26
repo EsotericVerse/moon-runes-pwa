@@ -221,7 +221,7 @@ export default function Culture(){
   const [keywordOptionsScope,setKeywordOptionsScope]=useState('');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
-  const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
+  const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -345,6 +345,9 @@ export default function Culture(){
     const matched=primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
+      // Never select a disconnected time trace merely because the clicked
+      // date is inside its broad first-to-last bounding envelope.
+      if(Array.isArray(item?.ranges))return timePeriodContainsDate(item,requestedWindowStart);
       return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
     });
     if(matched){
