@@ -9,10 +9,10 @@ import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-que
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
 import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate} from './time-anchor-ranges.mjs';
-import {timeReadColumns} from './time-read-columns.mjs';
 
 
 
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){return row?.address?String(row.address).slice(0,10):null;}
 function previousDay(value){
@@ -26,7 +26,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
   const table=scope?.time;
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
-    columns:timeReadColumns(table),
+    columns:TIME_COLUMNS,
     filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}],
     orders:[{column:'uid',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,offset:0
@@ -184,7 +184,7 @@ function periodRows(rows){
     uid:row.uid||null,name:row.entry_name||row.title||row.entry_key,
     title:row.title||row.entry_key,description:row.summary||'',
     start_date:row.start_date||null,end_date:row.end_date||null,
-    ranges:row.ranges||[],status:row.status||'',
+    ranges:row.ranges||[],
     anchor_id:row.anchor_id||null,start_anchor_id:row.start_anchor_id||null,
     end_anchor_id:row.end_anchor_id||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
@@ -245,7 +245,6 @@ function cultureParts(scopeContext,runtimeId){
     start_date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[],
-    status:row.status||'',
     visibility:'public'
   }));
   const trajectories=normalizedContext.filter(row=>row.entry_type==='anchor').map(row=>({
@@ -258,7 +257,6 @@ function cultureParts(scopeContext,runtimeId){
     date:row.start_date||null,
     end_date:row.end_date||null,
     anchor_id:row.anchor_id||null,
-    status:row.status||''
   }));
   const styleComments=[];
   return {normalizedContext,periods,eras,events,trajectories,styleComments};
