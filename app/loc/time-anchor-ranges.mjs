@@ -1,5 +1,6 @@
 // Canonical Time interval references. Store only Time UIDs in anchor_ids text[],
-// using one entry per interval: UID, UID-UID, or UID-0 for an open end.
+// for time_period records, using one entry per anchor interval: UID, UID-UID, UID-0.
+// time_trace instead stores a list of time_period UID references.
 // A separator never implies that unreferenced time belongs to the period.
 const UID=/^[0-9A-F]{4}$/;
 const PERIOD_TOKEN=/^([0-9A-F]{4})(?:-([0-9A-F]{4}|0))?$/;
@@ -68,6 +69,24 @@ export function timeSegmentContainsDate(range,day,{today=''}={}){
 }
 export function timePeriodContainsDate(period,day,{today=''}={}){
   return (period?.ranges||[]).some(range=>timeSegmentContainsDate(range,day,{today}));
+}
+export function resolveTimeTrace(periodUids,events){
+  const known=events instanceof Map?events:new Map((events||[]).map(event=>[String(event.uid),event]));
+  const entries=Array.isArray(periodUids)?periodUids:[];
+  const invalidLinks=[];
+  const ranges=[];
+  for(const [position,uidRaw] of entries.entries()){
+    const uid=String(uidRaw||'');
+    const event=known.get(uid);
+    if(!event||event.type!=='time_period'){
+      invalidLinks.push(uid);
+      continue;
+    }
+    for(const range of event.ranges||[]){
+      ranges.push({...range,index:ranges.length,time_period_uid:uid,segment_order:position});
+    }
+  }
+  return {ranges,invalidLinks};
 }
 export function timePeriodSortDate(period){
   return (period?.ranges||[]).map(x=>x.start_date).filter(Boolean).sort()[0]||'9999-12-31';
