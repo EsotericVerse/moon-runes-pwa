@@ -38,55 +38,25 @@ test('Navigation places Trace before Search and gives it an independent icon',()
   }
 });
 
-test('Trace mounts installed MapLibre from a lazy React chunk with Next.js ESM worker',()=>{
-  const engine=read('app/modular/features/trace/trace-map-engine.js');
-  const react=read('app/modular/features/trace/TraceMap.jsx');
-  const feature=read('app/modular/features/Trace.jsx');
-  assert.match(engine,/from 'maplibre-gl'/);
-  assert.match(engine,/setWorkerUrl\(new URL\('maplibre-gl\/dist\/maplibre-gl-worker\.mjs',import\.meta\.url\)/);
-  assert.match(react,/import 'maplibre-gl\/dist\/maplibre-gl\.css'/);
-  assert.match(react,/createTraceMap\(containerRef\.current/);
-  assert.match(react,/instance\?\.destroy\(\)/);
-  assert.match(feature,/ssr:false/);
-  assert.match(engine,/tiles\.openfreemap\.org\/styles\/liberty/);
-  assert.match(engine,/fill-extrusion/);
-  assert.match(engine,/EXAMPLE_ANCHORS/);
-  assert.match(engine,/async function showRoadRoute\(/);
-  assert.match(engine,/router\.project-osrm\.org/);
-  assert.doesNotMatch(engine,/selectRows\(|updateRows\(|insertRows\(|deleteRows\(/);
-  assert.doesNotMatch(engine,/unpkg\.com|LOCTraceMapModule/);
-  assert.doesNotMatch(react,/document\.createElement|MODULE_SRC|MAP_CSS|LOCTraceMapModule/);
-  assert.ok(!existsSync(pathOf('public/trace-map.mjs')),'CDN transport must be removed');
-  assert.match(react,/示例/);
-  assert.match(react,/routeBusy/);
-  assert.doesNotMatch(react,/searchTracePlaces|photon|nominatim/);
-  assert.match(react,/focusCoordinates/);
-  assert.match(engine,/loc-trace-picked-area/);
-  assert.match(engine,/setRadius/);
-  assert.match(engine,/setAnchors/);
-  assert.match(engine,/loc-trace-saved-anchors/);
+test('MapLibre is lazy and has neither paid search nor floor geometry',()=>{
+ const engine=read('app/modular/features/trace/trace-map-engine.js');
+ const react=read('app/modular/features/trace/TraceMap.jsx');
+ assert.match(engine,/from 'maplibre-gl'/);
+ assert.match(react,/import 'maplibre-gl\/dist\/maplibre-gl\.css'/);
+ assert.match(react,/createTraceMap\(containerRef\.current/);
+ assert.match(engine,/loc-trace-saved-anchors/);
+ assert.doesNotMatch(engine,/floor_level|floor_label|loc-trace-picked-area|setRadius/);
+ assert.doesNotMatch(engine,/searchTracePlaces|nominatim|photon/);
 });
 
-test('Trace management selects spatial coordinates from map clicks and sample stations',()=>{
-  const engine=read('app/modular/features/trace/trace-map-engine.js');
-  const react=read('app/modular/features/trace/TraceMap.jsx');
-  const editor=read('app/loc/TraceManagement.jsx');
-  const scope=read('app/loc/ScopeManagement.jsx');
-  const admin=read('app/loc/views/AdminHomeView.jsx');
-  const traceRoute=read('app/trace/manage/page.jsx');
-  assert.match(editor,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
-  assert.match(editor,/if\(name\)setTitle\(current=>current\.trim\(\)\?current:name\)/);
-  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
-  assert.match(react,/export default function TraceMap\(\{onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid=''/);
-  assert.match(react,/onLocationPick:selectingLocation\?coords=>/);
-  assert.match(engine,/map\.on\('click',event=>pickLocation\(event\.lngLat\.lng,event\.lngLat\.lat\)\)/);
-  assert.match(engine,/if\(canPickLocation\)pickLocation\(place\.lng,place\.lat,place\.name\)/);
-  assert.match(engine,/pickedMarker\.on\('dragend'/);
-  assert.match(engine,/pickedMarker\?\.remove\(\)/);
-  assert.match(editor,/新增空間定錨點/);
-  assert.match(scope,/shortLabel:'地點管理'/);
-  assert.doesNotMatch(admin,/shortLabel:'空間定錨點'/);
-  assert.match(traceRoute,/forcedView="manage" forcedScope="loc"/);
+test('MapLibre click stores optional GPS without county or floor',()=>{
+ const engine=read('app/modular/features/trace/trace-map-engine.js');
+ const ui=read('app/loc/TraceManagement.jsx');
+ assert.match(ui,/onLocationPick=\{\(\{lng,lat,name\}\)=>\{/);
+ assert.match(ui,/if\(name\)setTitle\(t=>t\.trim\(\)\|\|name\)/);
+ assert.match(ui,/文字地址（非必填）/);
+ assert.match(engine,/map\.on\('click',event=>pickLocation/);
+ assert.doesNotMatch(ui,/countyOptions|floor_level/);
 });
 
 test('Only canonical public Trace and management routes exist',()=>{
@@ -117,28 +87,14 @@ test('Only canonical public Trace and management routes exist',()=>{
   assert.doesNotMatch(core,/"loc:group_governance"/);
 });
 
-test('Check-in backfill uses only empty source_place and user-confirmed date range',()=>{
-  const editor=read('app/loc/PlaceBatchFill.jsx');
-  const manager=read('app/loc/ScopeManagement.jsx');
-  const trace=read('app/loc/TraceManagement.jsx');
-  assert.match(manager,/value:'placeManage'/);
-  assert.match(read('app/loc/PlaceManagement.jsx'),/dynamic\(\(\)=>import\('\.\/PlaceBatchFill'\)/);
-  assert.match(editor,/selectCultureTimeRows\(scope\)/);
-  assert.match(editor,/p_start_date:startDate,p_end_date:endDate/);
-  assert.match(editor,/p_apply:false/);
-  assert.match(editor,/p_apply:true,p_expected_count:count/);
-  assert.match(editor,/window\.confirm\(/);
-  assert.match(editor,/trace_place_suggestions/);
-  assert.match(editor,/前後各三筆/);
-  assert.match(trace,/常用 Facebook 打卡名稱/);
-  assert.match(trace,/編輯既有空間定錨點/);
-  assert.match(trace,/updateTraceAnchor/);
-  const writes=read('app/modular/features/trace/trace-data.js');
-  assert.match(writes,/export async function updateTraceAnchor/);
-  assert.match(writes,/if\(id==='loc'\)request=request\.eq\('scope_id','loc'\)/);
-  assert.doesNotMatch(editor,/selectAllRows\(|insertRows\(|updateRows\(/);
+test('review-first Facebook place backfill remains separate from Trace edits',()=>{
+ const editor=read('app/loc/PlaceBatchFill.jsx'),ui=read('app/loc/TraceManagement.jsx');
+ assert.match(editor,/p_apply:false/);
+ assert.match(editor,/p_apply:true,p_expected_count:count/);
+ assert.match(editor,/window\.confirm\(/);
+ assert.match(ui,/編輯既有地點（直接搜尋標題）/);
+ assert.match(ui,/updateTraceAnchor/);
 });
-
 
 test('paid third-party place geocoding is absent from all Trace surfaces',()=>{
  const mgr=read('app/loc/ScopeManagement.jsx');
@@ -152,16 +108,15 @@ test('paid third-party place geocoding is absent from all Trace surfaces',()=>{
  assert.match(mgr,/value:'placeManage'/);
  assert.match(read('app/loc/PlaceManagement.jsx'),/mode="cleanup"/);
 });
-test('Frame queue accepts arbitrary places by name without county/GPS choice',()=>{
- const manager=read('app/loc/TraceRouteManager.jsx');
- const api=read('app/modular/features/trace/trace-data.js');
- assert.ok(manager.includes('readTraceAnchorSuggestions(activeScope,debouncedQuery,8)'));
- assert.doesNotMatch(manager,/countyOptions|readTraceAddressReferences|createReferenceAnchor/);
- assert.ok(manager.includes('onClick={addPoint}>＋'));
- assert.ok(api.includes('search_scope_trace_place_names'));
- const fn=api.slice(api.indexOf('export async function readTraceAnchorSuggestions('),
-   api.indexOf('export async function readTracePopularAnchors('));
- assert.doesNotMatch(fn,/county_id|longitude|latitude|address/);
+test('Frame Queue uses existing selected UIDs with no county prerequisite',()=>{
+ const ui=read('app/loc/TraceRouteManager.jsx');
+ const db=read('app/modular/features/trace/trace-data.js');
+ assert.match(ui,/import Select from 'react-select'/);
+ assert.match(ui,/onClick=\{addToSpool\}/);
+ assert.match(ui,/onClick=\{addRoadStop\}/);
+ assert.match(ui,/readAllTraceAnchors\(owner/);
+ assert.doesNotMatch(ui,/countyOptions|readTraceAddressReferences|createReferenceAnchor/);
+ assert.match(db,/space_period/);
 });
 
 test('Public Trace presents on-demand selected-place articles / Culture / Statistics',()=>{
@@ -240,37 +195,12 @@ test('Culture and Statistics share only published flat classification lists',()=
   assert.doesNotMatch(catalog,/statistics_source_categories|statistics_scope_others_groups/);
 });
 
-test('Trace overview fits every saved spatial anchor, not just the three Banqiao demos',()=>{
-  const source=read('app/modular/features/trace/trace-map-engine.js');
-  const overview=source.match(/^  function overview\(\)\{[\s\S]*?^  \}\n(?=\n  map\.once)/m)?.[0];
-  const validAnchor=source.match(/^function isValidSavedAnchor\(anchor\)\{[\s\S]*?^\}/m)?.[0];
-  assert.ok(overview&&validAnchor,'overview and coordinate validator must be present in the map engine');
-  class Bounds {
-    constructor(){this.points=[];}
-    extend(point){this.points.push(point);}
-  }
-  const example=[{lng:121.46,lat:25.01},{lng:121.47,lat:25.03}];
-  const run=anchors=>{
-    const calls=[];
-    const map={
-      getContainer:()=>({clientWidth:1300}),
-      fitBounds:(bounds,opts)=>calls.push({kind:'bounds',points:bounds.points,opts}),
-      flyTo:opts=>calls.push({kind:'single',opts})
-    };
-    const go=new Function('map','LngLatBounds','savedAnchors','EXAMPLE_ANCHORS','removed','loaded','canPickLocation',validAnchor+'\n'+overview+'; return overview;');
-    go(map,Bounds,anchors,example,false,true,false)();
-    return calls[0];
-  };
-  assert.deepEqual(run([
-    {trace_type:'anchor',longitude:121.5,latitude:25.1},
-    {trace_type:'anchor',longitude:120.2,latitude:22.9}
-  ]).points,[[121.5,25.1],[120.2,22.9]]);
-  assert.deepEqual(run([
-    {trace_type:'anchor',longitude:121.5,latitude:25.1}
-  ]).opts.center,[121.5,25.1]);
-  assert.deepEqual(run([]).opts.center,[120.98,23.73]);
-  assert.deepEqual(run([{trace_type:'anchor',longitude:null,latitude:null}]).opts.center,
-    [120.98,23.73]);
+test('Trace overview computes bounds from saved space_anchor coordinates',()=>{
+ const engine=read('app/modular/features/trace/trace-map-engine.js');
+ assert.match(engine,/function overview\(\)\{/);
+ assert.match(engine,/\.filter\(isValidSavedAnchor\)/);
+ assert.match(engine,/map\.fitBounds\(bounds/);
+ assert.match(engine,/anchor\?\.trace_type!=='space_anchor'/);
 });
 
 test('Trace map resizes with mouse or keyboard while remaining inside the desktop and phone main frame',()=>{

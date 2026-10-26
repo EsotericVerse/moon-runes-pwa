@@ -47,18 +47,12 @@ test('geocoder does not invent a street number or floor from a place label',()=>
   assert.equal(postalAddressFromNominatim({address:{road:'文化路一段',house_number:'100號'}}),'');
 });
 
-test('address retains floors and suites without guessing an indoor height',()=>{
- const code=readFileSync(new URL('../app/modular/features/trace/trace-data.js',import.meta.url),'utf8');
- const match=code.match(/function locationFields\([\s\S]*?\n\}/);
- assert.ok(match);
- const locationFields=new Function(match[0]+';return locationFields')();
- assert.deepEqual(locationFields({address:'新北市板橋區文化路100號5樓501室'}),{
-   address:'新北市板橋區文化路100號5樓501室',floor_label:'5樓501室',floor_level:5
- });
- assert.equal(locationFields({address:'新北市板橋區文化路100號B1'}).floor_level,-1);
- assert.equal(locationFields({address:'新北市板橋區文化路100號3–4樓'}).floor_level,null);
- assert.equal(locationFields({address:'新北市板橋區文化路100號501室'}).floor_level,null);
- assert.throws(()=>locationFields({floor_label:'B1',floor_level:2}),/不一致/);
+test('text address is optional and needs no floor or city columns',()=>{
+ const db=readFileSync(new URL('../app/modular/features/trace/trace-data.js',import.meta.url),'utf8');
+ const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+ assert.match(db,/descriptionObject\(description,address\)/);
+ assert.match(ui,/文字地址（非必填）/);
+ assert.doesNotMatch(ui,/setFloorLevel|setFloorLabel|countyOptions/);
 });
 
 test('Meta explicitly labelled visited-place JSON preserves the check-in location and time',()=>{
@@ -78,15 +72,12 @@ test('Meta explicitly labelled visited-place JSON preserves the check-in locatio
   assert.equal(facebookBackupPlace({label_values:[{label:encoded('地點'),value:encoded('私人現居地')}] }),'');
 });
 
-test('own existing anchor is edited; another Scope is only a positional reference',()=>{
-  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
-  const lookups=readFileSync(new URL('../app/modular/features/trace/trace-spatial-reference-data.js',import.meta.url),'utf8');
-  assert.match(ui,/if\(reference.source_scope===scopeId\)\{\s*\/\/[^\n]+[\s\S]*?pickExisting\(reference.uid\)/);
-  assert.match(ui,/setAddress\(reference.address/);
-  assert.match(ui,/setFloorLevel\(reference.floor_level/);
-  assert.doesNotMatch(ui,/setEditingUid\(reference.uid\)/);
-  assert.match(lookups,/\.from\('loc_trace'\)/);
-  assert.match(lookups,/\.eq\('trace_type','anchor'\)/);
+test('existing Scope anchor is chosen by UID, not county',()=>{
+ const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+ assert.match(ui,/import Select from 'react-select'/);
+ assert.match(ui,/ownAnchors\.find\(item=>item\.uid===uid\)/);
+ assert.match(ui,/onChange=\{choice=>pickExisting/);
+ assert.doesNotMatch(ui,/county_id|setFloorLevel/);
 });
 
 test('same label, same 2D point, different UID/floors remain separate place choices',()=>{
@@ -112,11 +103,12 @@ test('many historical identities do not silently choose one of more than eight c
   assert.equal(lookup.moreChoices,true);
   assert.equal(lookup.selected,-1);
 });
-test('read-only local address references do not need an external geocoder',()=>{
+test('anchor name autocomplete is local and geocoder-free',()=>{
  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
- assert.match(ui,/查詢已有錨點/);
- assert.doesNotMatch(ui,/searchTracePlaces|nominatim|photon/);
+ assert.match(ui,/搜尋標題，或留空新增/);
+ assert.doesNotMatch(ui,/searchTracePlaces|nominatim|photon|countyOptions/);
 });
+
 test('台/臺 is search-equivalent but recorded addresses and Scope UIDs stay unchanged',()=>{
   assert.deepEqual(spatialReferenceLabelVariants('台北車站'),['台北車站','臺北車站']);
   assert.equal(spatialReferenceLabelKey('臺北車站'),spatialReferenceLabelKey('台北車站'));
