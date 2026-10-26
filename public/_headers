@@ -1,0 +1,14 @@
+# Applies only when the manually deployed provider supports _headers
+# (e.g. Cloudflare Workers Static Assets). GitHub Pages ignores these rules.
+# Public image mirrors may be read by a browser Service Worker over CORS.
+/pics/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600, s-maxage=3600
+
+/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600, s-maxage=3600
+
+/vendor/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600, s-maxage=3600
