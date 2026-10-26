@@ -1,0 +1,107 @@
+// Canonical three-level Time graph:
+// anchor.address DATE -> time_period.anchor_ids [startUID, optional endUID]
+// -> time_trace.anchor_ids [time_period UID, ...].
+// A missing endpoint leaves a genuine surviving point; no '0' or now() anchor.
+const UID=/^[0-9A-F]{4}$/;
+const dateOf=value=>{
+  const date=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
+};
+export function isTimeUid(value){return UID.test(String(value||''));}
+export function allocateTimeUid(rows=[]){
+  const occupied=new Set((Array.isArray(rows)?rows:[]).map(row=>String(row?.uid||'')));
+  for(let i=1;i<=65535;i++){
+    const uid=i.toString(16).toUpperCase().padStart(4,'0');
+    if(!occupied.has(uid))return uid;
+  }
+  throw new Error('四碼時間 UID 已用盡');
+}
+export function encodeTimeSegment(start,end=''){
+  const a=String(start||'').toUpperCase(),b=String(end||'').toUpperCase();
+  if(!isTimeUid(a)||b&&!isTimeUid(b)||a===b)
+    throw new Error('事件只能引用一個或兩個不同的定錨點 UID');
+  return b?[a,b]:[a];
+}
+export function decodeTimeSegments(value,{legacy=false}={}){
+  const ids=Array.isArray(value)?value.map(v=>String(v||'').trim()).filter(Boolean):[];
+  if(!ids.length)return [];
+  const valid=legacy||ids.every(isTimeUid);
+  return [{start:ids[0]||'',end:ids[1]||'',raw:ids.join(','),
+    malformed:!valid||ids.length>2||ids[0]===ids[1]}];
+}
+export function previousTimeDay(value){
+  const day=dateOf(value);
+  if(!day)return '';
+  const date=new Date(day+'T00:00:00Z');date.setUTCDate(date.getUTCDate()-1);
+  return date.toISOString().slice(0,10);
+}
+export function resolveTimeSegments(anchorIds,anchors){
+  const known=anchors instanceof Map?anchors:new Map((Array.isArray(anchors)?anchors:[])
+    .map(row=>[String(row.uid||''),row]));
+  return decodeTimeSegments(anchorIds).map((ids,index)=>{
+    const first=known.get(ids.start),last=ids.end?known.get(ids.end):null;
+    const a=dateOf(first?.address),b=dateOf(last?.address);
+    const missing=[ids.start,...(ids.end?[ids.end]:[])]
+      .filter(uid=>!known.has(uid));
+    const reversed=Boolean(a&&b&&b<a);
+    const point=!a||!b;
+    const start=point?a||b:a;
+    const end=point?start:b;
+    return {index,anchor_ids:[ids.start,...(ids.end?[ids.end]:[])],
+      start_anchor_id:ids.start||null,end_anchor_id:ids.end||null,
+      start_date:start||null,end_date:end||null,
+      invalid:Boolean(ids.malformed||missing.length||reversed),
+      point:point||a===b,open_end:false,
+      missing_anchor_ids:missing};
+  });
+}
+export function timeSegmentContainsDate(range,day){
+  const date=dateOf(day),start=dateOf(range?.start_date),end=dateOf(range?.end_date);
+  if(!date||!start||!end)return false;
+  // If one referenced anchor was deleted, the remaining point is still real.
+  if(range.invalid&&!range.point)return false;
+  return date>=start&&date<=end;
+}
+export function timePeriodContainsDate(period,day){
+  return (period?.ranges||[]).some(range=>timeSegmentContainsDate(range,day));
+}
+export function resolveTimeTrace(periodUids,events){
+  const known=events instanceof Map?events:new Map((events||[]).map(event=>[String(event.uid),event]));
+  const entries=Array.isArray(periodUids)?periodUids:[];
+  const invalidLinks=[],ranges=[];
+  for(const [position,raw] of entries.entries()){
+    const uid=String(raw||''),event=known.get(uid);
+    if(!event||event.type!=='time_period'){
+      invalidLinks.push(uid);
+      continue;
+    }
+    for(const range of event.ranges||[]){
+      ranges.push({...range,index:ranges.length,time_period_uid:uid,segment_order:position});
+    }
+  }
+  return {ranges,invalidLinks};
+}
+export function timePeriodSortDate(period){
+  return (period?.ranges||[]).map(x=>x.start_date).filter(Boolean).sort()[0]||'9999-12-31';
+}
+export function timePeriodsWithValidRanges(rows=[]){
+  return rows.filter(row=>row.ranges?.some(range=>range.start_date&&(!range.invalid||range.point)));
+}
+// Merge only overlapping or adjoining valid ranges for efficient SQL selection.
+// Disconnected ranges remain separate and cannot inherit today's date.
+export function timeDateWindows(ranges=[]){
+  const windows=(Array.isArray(ranges)?ranges:[])
+    .filter(range=>range?.start_date&&(!range.invalid||range.point))
+    .map(range=>({startDate:dateOf(range.start_date),
+      endDate:dateOf(range.end_date)||dateOf(range.start_date)}))
+    .filter(range=>range.startDate&&range.endDate&&range.endDate>=range.startDate)
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate));
+  const merged=[];
+  for(const next of windows){
+    const prev=merged.at(-1);
+    if(prev&&next.startDate<=prev.endDate){
+      if(next.endDate>prev.endDate)prev.endDate=next.endDate;
+    }else merged.push({...next});
+  }
+  return merged;
+}

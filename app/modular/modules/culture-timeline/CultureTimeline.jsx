@@ -69,12 +69,12 @@ function timelineRows(items,labelOf,focus,labels={}){
       title:[
         item?.title,item?.description,item?.milestone,item?.anchor_role,item?.anchor_type,
         openStart?labels.openStart:'',openEnd?labels.openEnd:'',
-        item?.date_status==='year_only'?labels.yearOnly:'',
+        
         item?.is_primary_anchor?labels.primaryAnchor:'',item?.is_rc_zone?labels.rcZone:''
       ].filter(Boolean).join(' · '),
       start,
-      recordId:String(item?.record_id||item?.recordId||''),
-      resourceId:String(item?.resource_id||''),
+      recordId:String(item?.uid||item?.recordId||''),
+      resourceId:String(item?.uid||''),
       scopeId:String(item?.scope_id||''),
       entryType:String(item?.entry_type||''),
       period:String(item?.period||''),
@@ -108,7 +108,7 @@ function settle(handler,item,row,callback,defaultValue=null){
 // Generate labels as vis-timeline group content; handlers always read the
 // latest callbacks. This is shared by initial mount and in-place expansion.
 function makeTimelineGroups(rows,extraGroups,hasTimeKinds,editable,labels,onGroupToggleRef,onGroupSelectRef){
-      const timeGroupLabels={anchor:labels.anchor,event:labels.event,style_comment:labels.styleComment,period:labels.period};
+      const timeGroupLabels={anchor:labels.anchor,event:labels.event,period:labels.period};
       const standardTimeKinds=Object.keys(timeGroupLabels);
       const foundGroups=[...new Set(rows.map(row=>row.group).filter(Boolean))];
       const additionalGroups=new Map(extraGroups.filter(group=>group?.id).map(group=>[String(group.id),group]));
@@ -215,6 +215,9 @@ export default function CultureTimeline({
   const rows=useMemo(()=>timelineRows(visibleItems,labelOf===defaultTimelineLabel?(item,index)=>item?.display_label||item?.name||item?.title||item?.period||labels.item+' '+(index+1):labelOf,focus,labels),[visibleItems,labelOf,focus,labels]);
   const fallbackRows=useMemo(()=>[...rows].sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
   const hasTimeKinds=mode==='overview'&&rows.some(row=>String(row.group||'').startsWith('kind:'));
+  // Trace expand/collapse updates datasets in place to preserve pan, zoom
+  // and touch position exactly like the lower numeric river.
+  const preserveTimelineInstance=heightVariant==='double'||mode==='trace';
   const groupCount=Math.max(new Set([...rows.map(row=>row.group),...extraGroups.map(group=>group.id)].filter(Boolean)).size,hasTimeKinds&&!editable?4:0);
   const compactGroupCount=Math.max(1,groupCount||rows.length);
   // The double river must shrink after zero-count groups disappear.
@@ -391,17 +394,17 @@ export default function CultureTimeline({
       }
       if(instance)instance.destroy();
     };
-  },[heightVariant==='double'?null:rows,heightVariant==='double'?null:extraGroups,
-    hasTimeKinds,heightVariant==='double'?null:timelineMinHeight,
-    heightVariant==='double'?null:timelineMaxHeight,
+  },[preserveTimelineInstance?null:rows,preserveTimelineInstance?null:extraGroups,
+    hasTimeKinds,preserveTimelineInstance?null:timelineMinHeight,
+    preserveTimelineInstance?null:timelineMaxHeight,
     Boolean(rows.length||editable||extraGroups.length),
     heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,
-    heightVariant==='double'?null:hiddenDates,editable,locale,labels,timelineLocale]);
+    preserveTimelineInstance?null:hiddenDates,editable,locale,labels,timelineLocale]);
 
   // When a group opens, mutate existing datasets instead of destroying and
   // recreating vis-timeline. Preserve camera zoom, pan and touch scroll.
   useEffect(()=>{
-    if(heightVariant!=='double'||!ready)return;
+    if(!preserveTimelineInstance||!ready)return;
     const timeline=timelineRef.current,data=timelineDataRef.current;
     if(!timeline||!data)return;
     const nextRows=rows.map(row=>editable?{
@@ -455,7 +458,7 @@ export default function CultureTimeline({
       console.error('Culture river in-place group update failed',error);
       setChartError(true);
     }
-  },[rows,extraGroups,hasTimeKinds,editable,heightVariant,ready,timelineMinHeight,timelineMaxHeight,labels]);
+  },[rows,extraGroups,hasTimeKinds,editable,heightVariant,preserveTimelineInstance,ready,timelineMinHeight,timelineMaxHeight,labels]);
 
   // vis-timeline can accept a DataSet update while its virtualized range
   // items are not yet painted. Detect a genuinely blank numeric river using

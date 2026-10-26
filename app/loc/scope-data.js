@@ -44,6 +44,7 @@ function buildScopeData(row,id){
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
     galaxyMedia:galaxy+'_media',
+    // The real silver.<scope>_time table now uses uid/type/address.
     time:`silver.${id}_${timeSuffix}`,
     keywords:`silver.${id}_keywords`,
     blocks:`silver.${id}_blocks`

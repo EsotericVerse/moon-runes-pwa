@@ -1,4 +1,7 @@
 export default {
+  "timeTrace": "時間の軌跡",
+  "allTimeTraces": "すべての時間の軌跡",
+  "recentTimeTrace": "最も近い時間の軌跡",
   "noDataInPeriod": "選択した期間にはデータがありません。",
   "system": "作品カテゴリー",
   "custom": "個人カテゴリー",

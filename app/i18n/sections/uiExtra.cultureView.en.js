@@ -1,4 +1,7 @@
 export default {
+  "timeTrace": "Time traces",
+  "allTimeTraces": "All time traces",
+  "recentTimeTrace": "Nearest time trace",
   "noDataInPeriod": "No data is available for the selected time range.",
   "system": "Work categories",
   "custom": "Personal categories",

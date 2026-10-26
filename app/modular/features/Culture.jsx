@@ -19,12 +19,13 @@ import {useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
-import ManagementSectionNav,{useManagementSection} from '../ManagementSectionNav';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
+import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
+import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
 import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
@@ -56,12 +57,7 @@ function isInteractiveTarget(target){
 
 // Preserve timeline instances while editor dialogs, suggested points and
 // density suggestions update around them.
-const TIME_EDITOR_SECTIONS=Object.freeze([
-  {value:'anchor-style',label:'定錨點／風格標籤',shortLabel:'定錨／風格',description:'編輯日期定錨點與依附定錨點的風格標籤。'},
-  {value:'event',label:'事件',description:'編輯以正式定錨點界定的事件。'},
-  {value:'period',label:'時期',description:'編輯時期與起訖定錨點。'}
-]);
-const EMPTY_RIVER_FOCUS=Object.freeze({});
+// Time has ONE management entry. Type selection belongs to the editor form.const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_CULTURE_GROUPS=Object.freeze([]);
 const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
@@ -74,7 +70,7 @@ function labelOf(item,index,periodName=UI_COPY.format.period(index+1)){
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))||
-    Number(a.order||0)-Number(b.order||0)
+    String(a.uid||'').localeCompare(String(b.uid||''))
   );
 }
 function periodRange(rows=[],scope='',allTime=UI_COPY.culture.allTime){
@@ -192,7 +188,6 @@ export default function Culture(){
   // Public Culture does not load management grants; editing must verify them.
   const account=useAccount({enabled:isTimeEditingView});
   const editDock=useEditDock();
-  const [timeEditorSection,setTimeEditorSection]=useManagementSection(TIME_EDITOR_SECTIONS,'anchor-style');
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
@@ -209,6 +204,7 @@ export default function Culture(){
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  const [expandedTimeTraceIds,setExpandedTimeTraceIds]=useState([]);
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
@@ -218,7 +214,7 @@ export default function Culture(){
   const [keywordOptionsScope,setKeywordOptionsScope]=useState('');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
-  const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
+  const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -279,7 +275,7 @@ export default function Culture(){
     const oneYearAgo=new Date(endDate+'T00:00:00Z');
     oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear()-1);
     return {
-      period:'all',title:'未設定時期（最近一年）',display_label:'未設定時期（最近一年）',
+      period:'all',title:'未設定時間痕跡（最近一年）',display_label:'未設定時間痕跡（最近一年）',
       start_date:oneYearAgo.toISOString().slice(0,10),end_date:endDate,scope_id:classificationScope
     };
   },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
@@ -289,8 +285,7 @@ export default function Culture(){
     const scopeChanged=periodSelectionScopeRef.current!==scopeId;
     periodSelectionScopeRef.current=scopeId;
     setSelectedPeriodKey(current=>scopeChanged?preferred:
-      (current==='all'||(current==='after'&&structurePreference.lastAnchor)
-        ||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
+      (current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
   },[scopeId,isAggregateScope,query.data,structurePreference,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
@@ -318,11 +313,17 @@ export default function Culture(){
     &&keywordWindowStart<=keywordWindowEnd;
   const classificationWindowStart=keywordWindowStart;
   const classificationWindowEnd=keywordWindowEnd;
+  // SQL reads only the bounding envelope. The selected period's exact
+  // intervals must still exclude every day of an unlinked gap.
+  const classificationPeriodRanges=keywordPeriodKey==='custom'||keywordPeriodKey==='all'
+    ?null:(Array.isArray(keywordPeriod?.ranges)?keywordPeriod.ranges:null);
+  const periodRangeSignature=JSON.stringify((classificationPeriodRanges||[]).map(range=>
+    [range.start_date,range.end_date,range.open_end,range.invalid]));
   const classificationWindowValid=keywordWindowValid;
   // An unfilled custom range is normal until dates are supplied.
   const optionalTimeRangeUnfilled=!keywordWindowStart||!keywordWindowEnd;
   const classificationPeriodLabel=keywordPeriodKey==='custom'
-    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.period;
+    ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.timeTrace;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
   const appliedDateNavigationRef=useRef('');
@@ -337,6 +338,9 @@ export default function Culture(){
     const matched=primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
+      // Never select a disconnected time trace merely because the clicked
+      // date is inside its broad first-to-last bounding envelope.
+      if(Array.isArray(item?.ranges))return timePeriodContainsDate(item,requestedWindowStart);
       return (!start||requestedWindowStart>=start)&&requestedWindowStart<=end;
     });
     if(matched){
@@ -368,7 +372,7 @@ export default function Culture(){
   const stagedSourceRiver=Boolean(publishedTaxonomy)&&!isAggregateScope&&scopeId!=='local';
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
   const sourceRootQuery=useAsyncResource({
-    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd],
+    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
     enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
@@ -376,7 +380,11 @@ export default function Culture(){
         startDate:classificationWindowStart,endDate:classificationWindowEnd,
         includeUndated:true,requireAggregate:true
       });
-      return buildCultureRiverRootPayload({text,media},publishedTaxonomy);
+      const inside=row=>!classificationPeriodRanges||timePeriodContainsDate(
+        {ranges:classificationPeriodRanges},String(row.day||''),{today:classificationWindowEnd});
+      return buildCultureRiverRootPayload({
+        text:text.filter(inside),media:media.filter(inside)
+      },publishedTaxonomy);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
@@ -391,12 +399,13 @@ export default function Culture(){
   // This SWR step only formats the already-fetched numeric rows locally.
   // The initial overview never depends on it.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRootsKey:'all'],
+    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
     enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
-      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
+      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,
+        periodRanges:classificationPeriodRanges};
       return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
         ?{...range,numericRows:requestedChildren}:range);
     }
@@ -539,7 +548,7 @@ export default function Culture(){
     ||null;
   const effectiveCategoryKey=selectedGroup?.category_key||selectedGroup?.key||'';
   const periodWorksQuery=useAsyncInfiniteResource({
-    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,effectiveCategoryKey||'all',articleSort],
+    queryKey:['culture-period-works',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,effectiveCategoryKey||'all',articleSort],
     initialPageParam:null,
     getNextPageParam:lastPage=>lastPage.hasMore?lastPage.nextCursor:undefined,
     enabled:worksOpen&&styleFilter!=='trace'&&!isLrunesDaily&&!isAggregateScope&&Boolean(scopeData)&&Boolean(selectedWorkPeriod)&&classificationWindowValid,
@@ -548,6 +557,7 @@ export default function Culture(){
       const indexPage=await selectScopePeriodWorkIndex(scopeData,{
         startDate:classificationWindowStart,
         endDate:classificationWindowEnd,
+        periodRanges:classificationPeriodRanges,
         sourceName:selectedGroup?.source_name||'',
         sourceNames:selectedGroup?.source_names||[],
         mediaTypes:selectedGroup?.media_types||[],
@@ -559,7 +569,8 @@ export default function Culture(){
       return {
         rows:details.rows||[],
         totalCount:Number(indexPage.totalCount)||0,
-        hasMore:Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
+        hasMore:typeof indexPage.hasMore==='boolean'?indexPage.hasMore:
+          Number(indexPage.nextCursor?.galaxyOffset||0)+Number(indexPage.nextCursor?.mediaOffset||0)<Number(indexPage.totalCount||0),
         nextCursor:indexPage.nextCursor
       };
     }
@@ -608,22 +619,21 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
-  const timeEditorItems=useMemo(()=>timelineItems.filter(item=>
-    timeEditorSection==='anchor-style'
-      ?['anchor','style_comment'].includes(item.entry_type)
-      :item.entry_type===timeEditorSection
-  ),[timelineItems,timeEditorSection]);
+  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
+    [timelineItems,expandedTimeTraceIds]);
+  const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
+    current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
   const activeStructureKey=selectedPeriodKey||structurePreference.preferredKey;
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
-    :String(currentStructurePeriod?.start_date||structurePreference.lastAnchor?.start_date||'').slice(0,10);
-  // Today is a viewport endpoint only, never a stored Period end anchor.
+    :String(currentStructurePeriod?.start_date||'').slice(0,10);
+  // A trace stops at its final real anchor; no virtual today endpoint.
   const currentStructureEnd=activeStructureKey==='all'?''
-    :String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
-  // Keep every Time record in the first river. The selected period controls
-  // the initial camera window, not which historic anchors are accessible.
+    :String(currentStructurePeriod?.end_date||'').slice(0,10);
+  // Keep the first river grouped by time_trace UID. A selected trace changes
+  // only the camera viewport, never the saved anchor/event/trace graph.
   const anchorRecords=useMemo(()=>timelineItems
-    .filter(item=>item.entry_type==='anchor'&&item.record_id)
+    .filter(item=>item.entry_type==='anchor'&&item.uid)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.display_label||'').localeCompare(String(b.display_label||''))),[timelineItems]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
@@ -726,7 +736,7 @@ export default function Culture(){
     if(!id)return;
     switchTimelineEditor('edit-'+id,()=>{
       const recordType=String(item?.entryType||item?.raw?.entry_type||'');
-      if(recordType==='anchor'||recordType==='style_comment')setSuggestedRecordType(recordType);
+      if(['anchor','period','event'].includes(recordType))setSuggestedRecordType(recordType);
       setSelectedTimelineInfo(item||null);
       setSelectedTimelineRecordId(id);
       setSelectedTimelineDate('');
@@ -759,12 +769,7 @@ export default function Culture(){
       // Scope permissions are enforced by the database write RPC.
       const date=dayKeyFromTimelineValue(item?.start);
       if(!date)throw new Error(l.invalidAnchorDate);
-      await updateRows(scopeData.time,{
-        time_date:date,
-        date_status:'exact',
-        year_value:null,
-        updated_at:new Date().toISOString()
-      },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      await updateRows(scopeData.time,{address:date},{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
       await refreshTimelineData();
       setEditError('');
       return {...item,start:date};
@@ -775,21 +780,9 @@ export default function Culture(){
   }
   async function removeTimelineRecord(item,row){
     if(!row?.recordId||!scopeData?.time)return null;
-    const source=row?.raw||{};
-    if(row.entryType==='anchor'){
-      const anchorId=String(source?.resource_id||row.resourceId||'').trim();
-      const referenced=[...timelineItems,...(query.data?.styleComments||[])].some(candidate=>
-        String(candidate?.entry_type||'')!=='anchor'&&
-        Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
-      );
-      if(referenced){
-        setEditError(l.anchorReferenced);
-        return null;
-      }
-    }
     try{
       // Scope permissions are enforced by the database write RPC.
-      await deleteRows(scopeData.time,{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      await deleteRows(scopeData.time,{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
       setSelectedTimelineRecordId('');
       setSelectedTimelineDate('');
       setEditError('');
@@ -1028,14 +1021,13 @@ export default function Culture(){
       // authorization check. The database RPC remains the final guard.
       const verified=await account.refresh();
       if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('請先登入具備此 Scope 權限的帳號。');
-      const updatedAt=new Date().toISOString();
-      await insertRows(scopeData.time,dates.map(date=>({
-        record_type:'anchor',label:'建議定錨 '+date,
-        resource_id:'anchor:'+globalThis.crypto.randomUUID(),
-        note:null,status:'active',display_order:null,visibility:null,
-        time_date:date,anchor_ids:null,date_status:'exact',year_value:null,
-        updated_at:updatedAt
-      })));
+      const used=new Set((query.data?.timelineItems||[]).filter(row=>row?.entry_type==='anchor').map(row=>String(row.uid||'')));
+      const payload=dates.map(date=>{
+        const uid=allocateTimeUid([...used].map(uid=>({uid})));
+        used.add(uid);
+        return {uid,type:'anchor',title:'建議定錨 '+date,description:null,address:date,anchor_ids:null};
+      });
+      await insertRows(scopeData.time,payload);
       setSelectedVirtualAnchorDates([]);
       await refreshTimelineData();
     }catch(error){setEditError(String(error?.message||error));}
@@ -1153,7 +1145,6 @@ export default function Culture(){
     const editorAvailable=Boolean(scopeId&&scopeId!=='loc');
     const permissionPending=account.loading||account.permissionLoading;
     const editorAuthorized=Boolean(account.user&&account.canManageScopeSync(scopeId));
-    const choice=TIME_EDITOR_SECTIONS.find(item=>item.value===timeEditorSection)||TIME_EDITOR_SECTIONS[0];
     return <FeaturePage featureId="culture">
       <section className='loc-card scope-feature-card scope-feature-card-wide'>
         <h2>時間編輯</h2>
@@ -1163,40 +1154,24 @@ export default function Culture(){
           {account.error?String(account.error):account.user?'目前登入帳號沒有此 Scope 的管理權限。':'請先至設定首頁登入，才能編輯時間定錨。'}
         </p>:null}
         {editorAvailable&&!permissionPending&&editorAuthorized?<div className='management-workspace scope-time-edit-workspace'>
-          <ManagementSectionNav id='time-editor-sections' title='編輯項目'
-            panelId='time-editor-panel' items={TIME_EDITOR_SECTIONS}
-            value={timeEditorSection} onChange={next=>{
-              if(next===timeEditorSection)return;
-              const apply=()=>{
-                setTimeEditorSection(next);
-                setSelectedTimelineRecordId('');
-                setSelectedTimelineInfo(null);
-                setSelectedTimelineDate('');
-                setSuggestedRecordType(next==='anchor-style'?'anchor':next);
-                setSuggestedRequestNonce(0);
-                setTimelineEditorRevision(value=>value+1);
-              };
-              if(editDock?.active)editDock.switchSection(next,apply);
-              else apply();
-            }}/>
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
-            aria-labelledby={'time-editor-sections-option-'+choice.value}>
+            aria-label='時間編輯'>
             <div className='scope-culture-timeline-tools'>
-              <h3>{choice.label}｜時間長河</h3>
+              <h3>時間定錨點／事件／時間痕跡</h3>
             </div>
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
-            {!query.isPending&&!query.error&&!timeEditorItems.length
+            {!query.isPending&&!query.error&&!timelineItems.length
               ?<p className='scope-status'>目前尚未建立此類時間紀錄，可直接在下方新增。</p>:null}
-            {!query.isPending&&!query.error&&timeEditorItems.length>0?<CultureTimeline
-              key={'time-editor-'+timeEditorSection}
-              items={timeEditorItems}
+            {!query.isPending&&!query.error&&timelineItems.length>0?<CultureTimeline
+              key={'time-editor-unified'}
+              items={timelineItems}
               labelOf={localizedLabelOf}
               focus={EMPTY_RIVER_FOCUS}
               mode='overview'
               windowStart={currentStructureStart}
               windowEnd={currentStructureEnd}
-              onTimeClick={timeEditorSection==='anchor-style'?date=>beginTimelineCreation('anchor',date):null}
+              onTimeClick={date=>beginTimelineCreation('anchor',date)}
               onSelect={item=>beginTimelineRecordEdit(item)}
               editable
               onMove={moveTimelineRecord}
@@ -1211,19 +1186,13 @@ export default function Culture(){
               <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
             </div>:null}
             <div className='scope-culture-time-input-area'>
-              {timeEditorSection==='anchor-style'?<div className='scope-culture-record-kind' role='group' aria-label='新增或編輯類型'>
-                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='anchor':suggestedRecordType!=='style_comment'}
-                  className='loc-button' onClick={()=>beginTimelineCreation('anchor','')}>定錨點</button>
-                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='style_comment':suggestedRecordType==='style_comment'}
-                  className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>風格標籤</button>
-              </div>:null}
-              <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
+              <CultureTimelineEditor key={scopeId+':unified:'+timelineEditorRevision}
                 scopeId={scopeId}
                 timeTable={scopeData?.time||''}
                 selectedRecordId={selectedTimelineRecordId}
                 suggestedAnchorDate={selectedTimelineDate}
                 suggestedRecordType={suggestedRecordType}
-                defaultRecordType={timeEditorSection==='anchor-style'?(suggestedRecordType==='style_comment'?'style_comment':'anchor'):timeEditorSection}
+                defaultRecordType='anchor'
                 suggestedRequestNonce={suggestedRequestNonce}
                 onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>
             </div>
@@ -1298,21 +1267,22 @@ export default function Culture(){
             </>:<>
               <section className='scope-card scope-culture-structure-river'>
                 <div className='scope-culture-structure-toolbar'>
-                  <h3>{UI_COPY.culture.structure}</h3>
-                  <label><span>{l.period}</span>
-                    <select className='scope-select' aria-label='第一條河道時期選擇'
+                  <h3>{l.timeTrace}</h3>
+                  <label><span>{l.timeTrace}</span>
+                    <select className='scope-select' aria-label='第一條河道時間痕跡選擇'
                       value={activeStructureKey} onChange={event=>setSelectedPeriodKey(event.target.value)}>
-                      <option value='all'>{l.allPeriods}</option>
+                      <option value='all'>{l.allTimeTraces}</option>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
-                      {structurePreference.lastAnchor?<option value='after'>最後定錨點至目前</option>:null}
-                    </select>
+                        </select>
                   </label>
                 </div>
-                {timelineItems.length?<CultureTimeline
-                  items={timelineItems}
+                {traceRiver.groups.length?<CultureTimeline
+                  items={traceRiver.items}
+                  extraGroups={traceRiver.groups}
                   labelOf={localizedLabelOf}
                   focus={navigation}
-                  mode='overview'
+                  mode='trace'
+                  onGroupToggle={toggleTimeTrace}
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
@@ -1341,8 +1311,8 @@ export default function Culture(){
                             setKeywordPeriodKey(next);
 
                           }}>
-                          <option value='latest'>{primaryPeriods.length?l.recentPeriod:'未設定時期（最近一年）'}</option>
-                           <option value='all'>{primaryPeriods.length?l.allPeriods:'最近一年（未設定時期）'}</option>
+                          <option value='latest'>{primaryPeriods.length?l.recentTimeTrace:'未設定時間痕跡（最近一年）'}</option>
+                           <option value='all'>{primaryPeriods.length?l.allTimeTraces:'最近一年（未設定時間痕跡）'}</option>
                            {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                            <option value='custom'>{l.customPeriod}</option>
                         </select>
@@ -1413,7 +1383,7 @@ export default function Culture(){
                 </section>:null}
                 {styleFilter==='trace'&&classificationWindowValid?<CulturePlaceRiver
                   scopeId={scopeId} startDate={classificationWindowStart} endDate={classificationWindowEnd}/>:null}
-                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
+                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時間痕跡、事件或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
                 {styleFilter!=='trace'&&sourceSnapshotQuery.error

@@ -392,9 +392,11 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
-test('Culture upper Period selector stays independent; lower river selects only Period windows',()=>{
+test('Culture upper time_trace selector stays independent; lower river selects only actual trace ranges',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(source,/aria-label='第一條河道時期選擇'/);
+  assert.match(source,/aria-label='第一條河道時間痕跡選擇'/);
+  assert.match(source,/buildTimeTraceRiver\(timelineItems,expandedTimeTraceIds\)/);
+  assert.match(source,/onGroupToggle=\{toggleTimeTrace\}/);
   assert.match(source,/windowStart=\{currentStructureStart\}/);
   assert.match(source,/windowEnd=\{currentStructureEnd\}/);
   assert.match(source,/value=\{keywordPeriodKey\}/);
@@ -419,7 +421,8 @@ test('Culture river hides zero-count parents, folds singleton children and rende
   assert.match(river,/timelineGroupsRef=useRef\(null\)/);
   assert.match(river,/groups\.update\(changedGroups\)/);
   assert.match(river,/data\.update\(changedRows\)/);
-  assert.match(river,/heightVariant==='double'\?null:rows/);
+  assert.match(river,/const preserveTimelineInstance=heightVariant==='double'\|\|mode==='trace'/);
+  assert.match(river,/preserveTimelineInstance\?null:rows/);
   assert.match(river,/const visibleItems=useMemo/);
   assert.match(river,/visibleGroups\.has\(String\(item\?\.group_key\|\|''\)\)/);
   assert.match(river,/Number\(item\?\.item_count\)>0/);
@@ -581,7 +584,7 @@ test('Culture second river waits for its first source snapshot and avoids lazy d
   assert.ok(culture.includes('selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots)'));
   assert.ok(!culture.includes('readNumericIsr('));
   assert.doesNotMatch(culture,/\(!sourceSnapshotQuery\.data\|\|riverRangeLoading\|\|cultureRiver\.hasSourceData\)/);
-  assert.match(river,/heightVariant==='double'\?null:hiddenDates/);
+  assert.match(river,/preserveTimelineInstance\?null:hiddenDates/);
   assert.match(river,/timeline\.setOptions\(\{hiddenDates:/);
   assert.match(river,/appliedHiddenDatesRef\.current=hiddenDates/);
 });
@@ -598,4 +601,21 @@ test('Scope editor uses time/spatial anchor labels and preserves LOC group label
   assert.doesNotMatch(shell,/translateUiField\(activeLocale,'痕跡管理'\)/);
   assert.match(dock,/已暫存，可繼續編輯/);
   assert.doesNotMatch(dock,/已分段儲存/);
+});
+
+test('Culture Time management uses one editor with anchor, event and trace types rather than three redundant tabs',()=>{
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(culture,/TIME_EDITOR_SECTIONS|timeEditorSection|time-editor-sections|<ManagementSectionNav/);
+  assert.match(culture,/id='time-editor-panel' role='region'/);
+  assert.match(culture,/items=\{timelineItems\}/);
+  assert.match(culture,/onSelect=\{item=>beginTimelineRecordEdit\(item\)\}/);
+  assert.match(culture,/onTimeClick=\{date=>beginTimelineCreation\('anchor',date\)\}/);
+  assert.match(culture,/defaultRecordType='anchor'/);
+  assert.match(editor,/const TYPES=\['anchor','time_period','time_trace'\]/);
+  assert.match(editor,/\{TYPES\.map\(type=><option/);
+  assert.match(editor,/payload\.anchor_ids=draft\.type==='time_trace'/);
+  assert.match(editor,/updateRows\(timeTable,payload/);
+  assert.match(editor,/insertRows\(timeTable,/);
+  assert.match(editor,/deleteRows\(timeTable,/);
 });

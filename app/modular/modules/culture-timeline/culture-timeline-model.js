@@ -1,3 +1,4 @@
+import {decodeTimeSegments,encodeTimeSegment} from '../../../loc/time-anchor-ranges.mjs';
 const DENSITY_LEVELS=Object.freeze([
   Object.freeze({minimum:1001,key:'focus-6',label:'1001 篇以上',brightness:1.4,glow:0.9}),
   Object.freeze({minimum:501,key:'focus-5',label:'501–1000 篇',brightness:1.32,glow:0.78}),
@@ -114,8 +115,8 @@ function previousDay(date){
 }
 function anchorEntries(items){
   return (Array.isArray(items)?items:[])
-    .filter(item=>item?.entry_type==='anchor'&&item?.resource_id&&item?.date_status!=='year_only'&&item?.start_date)
-    .map(item=>({id:String(item.resource_id),day:dateKey(item.start_date)}))
+    .filter(item=>item?.entry_type==='anchor'&&item?.uid&&item?.start_date)
+    .map(item=>({id:String(item.uid),day:dateKey(item.start_date)}))
     .filter(item=>item.day)
     .sort((a,b)=>a.day.localeCompare(b.day)||a.id.localeCompare(b.id));
 }
@@ -125,32 +126,28 @@ function nearestAnchor(target,anchors,mode,periodEndExclusive=false){
 }
 export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
   if(!['period','event'].includes(row?.entryType))throw new Error('只有時期／事件可以調整範圍。');
-  if(row.openStart||row.openEnd)throw new Error('開放端請先在定錨點編輯器中指定邊界。');
-  const original=Array.isArray(row?.raw?.anchor_ids)?row.raw.anchor_ids.map(String):[];
-  if(original.length<2||original[0]==='0'||original.at(-1)==='0')throw new Error('範圍沒有完整定錨點，請先編輯定錨關聯。');
+  const segments=decodeTimeSegments(row?.raw?.anchor_ids);
+  // A multi-interval period must be edited as separate intervals, never by
+  // dragging one joined envelope across a gap.
+  if(segments.length!==1)throw new Error('多段時期請在時期編輯器調整個別區間。');
+  const original=segments[0];
+  if(!original.start||!original.end||original.end==='0')
+    throw new Error('單點／開放時期請在時期編輯器調整定錨點。');
   const anchors=anchorEntries(timeRows);
   const byId=new Map(anchors.map(anchor=>[anchor.id,anchor]));
-  const oldStart=byId.get(original[0]);
-  const oldEnd=byId.get(original.at(-1));
-  if(!oldStart||!oldEnd)throw new Error('起訖定錨點不是完整日期，不能拖曳調整。');
-  const requestedStart=dateKey(item?.start);
-  const requestedEnd=dateKey(item?.end);
+  const oldStart=byId.get(original.start),oldEnd=byId.get(original.end);
+  if(!oldStart||!oldEnd)throw new Error('起訖定錨點不存在，請修正失效連線。');
+  const requestedStart=dateKey(item?.start),requestedEnd=dateKey(item?.end);
   if(!requestedStart||!requestedEnd)throw new Error('無法解析時間軸的新範圍。');
   const nextStart=requestedStart===oldStart.day?oldStart:nearestAnchor(requestedStart,anchors,'start');
-  const nextEnd=requestedEnd===(row.entryType==='period'?previousDay(oldEnd.day):oldEnd.day)?oldEnd:nearestAnchor(requestedEnd,anchors,'end',row.entryType==='period');
-  if(!nextStart||!nextEnd)throw new Error('目前沒有可以吸附的定錨點。');
-  const nextIds=[nextStart.id,...original.slice(1,-1),nextEnd.id];
-  if(new Set(nextIds).size!==nextIds.length)throw new Error('定錨點不能重複；請選擇其他範圍。');
-  const selected=nextIds.map(id=>byId.get(id));
-  if(selected.some(item=>!item))throw new Error('此範圍含有無法精確定位的定錨點，請從編輯器調整。');
-  if(selected.some((item,index)=>index>0&&item.day<=selected[index-1].day)){
-    throw new Error('拖曳後的定錨點順序不正確，請換一個邊界。');
-  }
-  return {
-    anchor_ids:nextIds,
-    changed:nextIds.some((id,index)=>id!==original[index]),
-    item:{...item,start:nextStart.day,end:row.entryType==='period'?previousDay(nextEnd.day):nextEnd.day}
-  };
+  const nextEnd=requestedEnd===(row.entryType==='period'?previousDay(oldEnd.day):oldEnd.day)?
+    oldEnd:nearestAnchor(requestedEnd,anchors,'end',row.entryType==='period');
+  if(!nextStart||!nextEnd||nextStart.id===nextEnd.id||nextStart.day>=nextEnd.day)
+    throw new Error('必須選擇依日期先後的兩個不同定錨點。');
+  const token=encodeTimeSegment(nextStart.id,nextEnd.id);
+  return {anchor_ids:[token],changed:token!==original.raw,
+    item:{...item,start:nextStart.day,end:row.entryType==='period'?
+      previousDay(nextEnd.day):nextEnd.day}};
 }
 
 /** Compose culture date/display utilities and canonical Time-anchor range behavior. */

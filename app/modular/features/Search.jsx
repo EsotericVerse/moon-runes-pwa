@@ -145,7 +145,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     key:identity?[scope,source,identity].join(':'):[source,scope,title].join('-'),
     source:displaySource,title:String(title),
     checkInPlace:isGalaxy?String(row.source_place||'').trim():'',
-    date:row.date||row.createtime||row.time_date||row.record_date||row.UpdateTime||row.updated_at||'',
+    date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
     styleTagMatch:Boolean(row.style_keyword_tag),
     styleIntroText:row.style_keyword_tag?workDisplayText(row.style_description||''):'',
