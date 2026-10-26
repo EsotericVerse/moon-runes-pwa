@@ -247,18 +247,6 @@ export default function Search({managementMode=false}){
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
   const [placeOnly,setPlaceOnly]=useState(false);
-  const [recentSearchQueries,setRecentSearchQueries]=useState([]);
-  // Public search suggestions are session-local; opening the page never fetches
-  // extra Galaxy rows and typing does not issue database requests.
-  useEffect(()=>{
-    if(!locPublicSearch)return;
-    try{
-      const saved=JSON.parse(sessionStorage.getItem('loc-search-recent-queries')||'[]');
-      setRecentSearchQueries(Array.isArray(saved)?saved.filter(item=>
-        typeof item?.term==='string'&&item.term.length<=80&&typeof item.placeOnly==='boolean'
-      ).slice(0,8):[]);
-    }catch{setRecentSearchQueries([]);}
-  },[locPublicSearch]);
   const [selectedPlaceArticles,setSelectedPlaceArticles]=useState([]);
   const [bulkPlace,setBulkPlace]=useState('');
   const [bulkPreview,setBulkPreview]=useState(null);
@@ -884,13 +872,6 @@ export default function Search({managementMode=false}){
       contentType,sourceFilter,startDate,endDate,selectedPeriod,
       scopeFilter:managementMode?scopeFilter:'',placeOnly,...overrides
     };
-    if(locPublicSearch&&term.length<=80){
-      const next=[{term,placeOnly:Boolean(filters.placeOnly)},...recentSearchQueries.filter(item=>
-        item.term!==term||item.placeOnly!==Boolean(filters.placeOnly)
-      )].slice(0,8);
-      setRecentSearchQueries(next);
-      try{sessionStorage.setItem('loc-search-recent-queries',JSON.stringify(next));}catch{}
-    }
     const url=workspaceSearchHref(term,filters);
     const current=workspaceSearchHref(String(searchParams?.get('place')||searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
@@ -999,10 +980,6 @@ export default function Search({managementMode=false}){
     return String(t('uiExtra.searchUI.'+key)||'').split('\n')
       .map(line=>line.split('|')[0].trim()).filter(Boolean).slice(0,6);
   },[contentType,t]);
-  const autocompleteSuggestions=[...new Set([
-    ...recentSearchQueries.filter(item=>item.placeOnly===placeOnly).map(item=>item.term),
-    ...(placeOnly?suggestedPlaces:[...suggestedTerms,...suggestedTitles])
-  ])].filter(Boolean).slice(0,20);
   function followSearchSuggestion(term,patch={}){
     const text=String(term||'').trim();
     if(!text)return;
@@ -1018,11 +995,11 @@ export default function Search({managementMode=false}){
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
-        <input id="scope-search-query" list={autocompleteSuggestions.length?'scope-search-autocomplete':undefined}
+        <input id="scope-search-query" list={suggestedTitles.length?'scope-search-loaded-titles':undefined}
           value={query} onChange={event=>setQuery(event.target.value)}
           placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
-        {autocompleteSuggestions.length?<datalist id="scope-search-autocomplete">
-          {autocompleteSuggestions.map(term=><option key={term} value={term}/>)}
+        {suggestedTitles.length?<datalist id="scope-search-loaded-titles">
+          {suggestedTitles.map(title=><option key={title} value={title}/>)}
         </datalist>:null}
         <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>{UI_COPY.nav.search}</button>
         {managementMode?<button type="button" className="loc-button" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
