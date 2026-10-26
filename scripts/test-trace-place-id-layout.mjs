@@ -27,9 +27,9 @@ import {traceArticleIdFilters,groupedTraceDays} from '../app/modular/features/tr
 
 test('Trace article join preserves object UID but reads only four-character place_id',()=>{
   const stops=[
-    {uid:'0001',source_scope:'lo3rwang',,title:'一樓',source_place:'old'},
-    {uid:'0002',source_scope:'lo3rwang',,title:'二樓'},
-    {uid:'0003',source_scope:'lrunes',,title:'別人 Scope'}
+    {uid:'0001',source_scope:'lo3rwang',title:'一樓',source_place:'old'},
+    {uid:'0002',source_scope:'lo3rwang',title:'二樓'},
+    {uid:'0003',source_scope:'lrunes',title:'別人 Scope'}
   ];
   assert.deepEqual(traceArticleIds(stops[0],stops),['0001']);
   assert.deepEqual(traceArticleIds({uid:'0100',source_scope:'lo3rwang',
