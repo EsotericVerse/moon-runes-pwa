@@ -75,3 +75,22 @@ export function timePeriodSortDate(period){
 export function timePeriodsWithValidRanges(rows=[]){
   return rows.filter(row=>row.ranges?.some(range=>range.start_date&&!range.invalid));
 }
+
+export function timeDateWindows(ranges=[],today=''){
+  const windows=(Array.isArray(ranges)?ranges:[])
+    .filter(range=>range?.start_date)
+    .map(range=>({
+      startDate:dateOf(range.start_date),
+      endDate:dateOf(range.open_end?today:range.end_date)||dateOf(range.start_date)
+    }))
+    .filter(range=>range.startDate&&range.endDate&&range.endDate>=range.startDate)
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate));
+  const merged=[];
+  for(const window of windows){
+    const previous=merged.at(-1);
+    if(previous&&window.startDate<=previous.endDate){
+      if(window.endDate>previous.endDate)previous.endDate=window.endDate;
+    }else merged.push({...window});
+  }
+  return merged;
+}
