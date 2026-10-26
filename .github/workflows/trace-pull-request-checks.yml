@@ -1,10 +1,15 @@
-name: Trace Frame PR checks
+name: Trace and Admin Hero PR checks
 # Verify Trace edits without any website deploy, ISR, R2/DO cache writes, or Neon sync.
 on:
   pull_request:
     branches: [main]
     paths:
       - 'app/loc/TraceRouteManager.jsx'
+      - 'app/loc/views/admin-panels/FeatureHeroImages.jsx'
+      - 'app/loc/home-block-model.js'
+      - 'app/loc/scope-data.js'
+      - 'app/modular/ui.jsx'
+      - 'scripts/test-home-block-order.mjs'
       - 'app/loc/model/class-group-items.mjs'
       - 'app/modular/features/trace/**'
       - 'app/styles/features.css'
@@ -35,6 +40,8 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Verify Admin Hero management contracts
+        run: node --test scripts/test-home-block-order.mjs
       - name: Exercise Trace regressions and reject any new failures
         shell: bash
         run: |

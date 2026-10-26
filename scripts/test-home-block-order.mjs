@@ -30,15 +30,22 @@ test('management Hero keeps four Scope and five LOC independent title slots',()=
     ['系統管理','人員作品管理','關鍵詞','痕跡圖管理','文章管理']);
   for(const feature of ['admin','manage','setting'])
     assert.equal(HomeBlock.shouldUseSingleFeatureHeroImage(feature),true);
+  assert.equal(HomeBlock.MANAGEMENT_HERO_IMAGE_URL,'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
+  assert.equal(HomeBlock.MANAGEMENT_HERO_SLOTS[0].englishTitle,'TimeAnchor');
+  assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/culture/manage','lo3rwang',true,'culture')?.key,'time');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/statics/manage','lo3rwang',true,'statics')?.key,'keywords');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/trace/manage','lo3rwang',true,'trace')?.key,'spatial');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/search/manage','lo3rwang',true,'search')?.key,'advanced');
   assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/manage/search','lo3rwang')?.key,'advanced');
   assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/manage','lo3rwang')?.key,'spatial');
-  assert.equal(HomeBlock.managementHeroSlot('/admin','loc')?.key,'system');
+  assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
   assert.equal(HomeBlock.managementHeroSlot('/admin/search','loc')?.key,'articles');
   const slot=HomeBlock.MANAGEMENT_HERO_SLOTS[0];
   assert.equal(HomeBlock.managementHeroCopy([{block_order:slot.order,block_title:'自訂時間錨點'}],slot).title,'自訂時間錨點');
 });
 
-test('Article Control owns moved panels and compact management Hero editing',()=>{
+test('Article Control and feature-aligned management Hero editor remain functional',()=>{
   const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
   const articles=read('app/loc/SearchManagement.jsx');
   const spatial=read('app/loc/ScopeManagement.jsx');
@@ -55,9 +62,12 @@ test('Article Control owns moved panels and compact management Hero editing',()=
   assert.doesNotMatch(spatial,/section==='others'/);
   assert.match(spatial,/requestedSection.*section/);
   assert.match(hero,/management-hero-copy-row/);
-  assert.doesNotMatch(hero,/management-hero-copy-card/);
-  assert.match(hero,/\{block_title:title\}/);
+  assert.doesNotMatch(hero,/id:'manage',label:'頁面控管'/);
+  assert.match(hero,/pageOverride="scope_manage"/);
+  assert.match(hero,/block_title:title/);
   assert.match(hero,/儲存 Hero 圖片路徑/);
+  assert.match(hero,/儲存後資料庫讀回不一致/);
+  assert.match(hero,/uid:HomeBlock.createUid\(\)/);
   assert.match(css,/\.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*background-size:100% 100%,cover/);
   assert.match(css,/\.article-control-stacked/);
 });
