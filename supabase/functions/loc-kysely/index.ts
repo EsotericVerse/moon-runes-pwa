@@ -8,6 +8,7 @@ import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
 import {resolveSqlExecutionPort} from "../../../app/loc/providers/sql-engine-ports.mjs";
 import {resolveDatabaseRouting} from "../../../app/loc/providers/routing-config.mjs";
+import {scopedDatabaseListRelation} from "../../../app/loc/providers/database-list-relation.mjs";
 
 const corsHeaders = {
   "access-control-allow-origin": "*",
@@ -79,6 +80,15 @@ async function checkAdminRole(claims:Record<string,unknown>){
   if(!valid)throw Object.assign(new Error("Administrator permission required"),{httpStatus:403});
   return control;
 }
+// Resolve the database list from the registered Scope Group, not a fixed LOC table.
+async function databaseListForControl(control:any):Promise<string>{
+  const groups=await control.selectFrom("silver.manage")
+    .select("id").where("manage_role","=","group")
+    .where("active","=",true).where("parent_scope_id","is",null)
+    .limit(2).execute();
+  if(groups.length!==1)throw new Error("Expected exactly one active root Scope Group for database routing");
+  return scopedDatabaseListRelation(groups[0].id);
+}
 async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claims:Record<string,unknown>){
   if(role!=="authenticated")throw Object.assign(new Error("Sign in as administrator"),{httpStatus:403});
   if(!input||typeof input!=="object"||Array.isArray(input))throw Object.assign(new Error("Invalid target payload"),{httpStatus:400});
@@ -103,11 +113,12 @@ async function saveDatabaseTarget(input:Record<string,unknown>,role:string,claim
     label,project_id:provider==="supabase"?location.projectId:String(input.project_id||"")||null,
     project_url:location.link,region,updated_at:new Date()
   };
+  const listRelation=await databaseListForControl(control);
   return control.transaction().execute(async trx=>{
     if(profile)await saveVaultConnection(trx,alias,profile);
-    const exists=await trx.selectFrom("silver.database_targets").select("target_id").where("target_id","=",targetId).executeTakeFirst();
-    if(exists)await trx.updateTable("silver.database_targets").set(record).where("target_id","=",targetId).execute();
-    else await trx.insertInto("silver.database_targets").values({...record,target_id:targetId,selected:false}).execute();
+    const exists=await trx.selectFrom(listRelation).select("target_id").where("target_id","=",targetId).executeTakeFirst();
+    if(exists)await trx.updateTable(listRelation).set(record).where("target_id","=",targetId).execute();
+    else await trx.insertInto(listRelation).values({...record,target_id:targetId,selected:false}).execute();
     return {target_id:targetId,provider,engine,selected:targetId===routing.primaryId};
   });
 }
@@ -230,7 +241,8 @@ Deno.serve(async (request) => {
       // Only an explicitly requested, enabled backup needs its saved connection profile.
       // This metadata lookup is NOT a routing decision.
       const control=await databaseForTarget(controlTarget);
-      const selected=await control.selectFrom("silver.database_targets")
+      const listRelation=await databaseListForControl(control);
+      const selected=await control.selectFrom(listRelation)
         .select(["target_id","provider","engine","connection_alias","connection_mode","project_url"])
         .where("target_id","=",routing.backupId).executeTakeFirst();
       if(!selected)return json({error:{message:"Configured backup connection was not found"}},503);
