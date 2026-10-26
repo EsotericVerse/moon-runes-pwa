@@ -98,3 +98,25 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  assert.match(parser,/sourcePlace=platform==='facebook'/);
  assert.match(src('app/loc/archive-source-signatures.mjs'),/your_facebook_activity/);
 });
+
+test('Facebook nested visited-place ZIP retains explicit visit time and location',async()=>{
+ const enc=value=>[...new TextEncoder().encode(value)]
+   .map(code=>String.fromCharCode(code)).join('');
+ const visit={fbid:'tagged-visit-01',label_values:[
+   {label:enc('造訪時間'),timestamp_value:1720000000},
+   {title:enc('地標'),dict:[{dict:[{label:enc('名稱'),value:enc('某車站')}]}]}
+ ]};
+ const zipped=zipSync({
+   'archive/your_facebook_activity/places_you_have_been_tagged_in.json':
+     strToU8(JSON.stringify([visit]))
+ });
+ const file=asFile('fb-places.zip',zipped);
+ const detection=await detectZipArchiveSource(file);
+ assert.ok(detection.sources.includes('facebook'));
+ const records=[];
+ await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
+ const imported=records.map(facebookArchiveGalaxyRow).filter(Boolean);
+ assert.equal(imported.length,1);
+ assert.equal(imported[0].source_place,enc('某車站'));
+ assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
+});
