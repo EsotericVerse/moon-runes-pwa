@@ -4,7 +4,7 @@
 const KEY_PREFIX='loc:trace:default-route:';
 export const TRACE_DEFAULT_ROUTE_CHANGED='loc:trace:default-route-changed';
 const validScope=scope=>['loc','lo3rwang','lrunes'].includes(String(scope||''));
-const validUid=uid=>/^[A-Za-z0-9]{8}$/.test(String(uid||''));
+const validUid=uid=>/^(?:[A-Za-z0-9]{4}|[A-Za-z0-9]{8})$/.test(String(uid||''));
 export function readDefaultTraceRoute(scopeId){
   if(!validScope(scopeId)||typeof window==='undefined')return '';
   try{

@@ -16,6 +16,32 @@ function sourceId(value){
   return id;
 }
 const relation=id=>'silver.'+sourceId(id)+'_trace';
+
+// The published database still stores the ordered Queue in anchor_uids and
+// the historical identity in eight-character uid. Newer staged migrations use
+// anchor_list and four-character uid. Probe only on a proven missing-column
+// response; remember the successful column per Scope for subsequent requests.
+// Never retry authorization, network or validation errors as schema drift.
+const traceQueueColumnByScope=new Map();
+function missingTraceQueueColumn(error,column){
+  return Boolean(error&&['42703','PGRST204'].includes(String(error.code))
+    &&String(error.message||'').includes(column));
+}
+async function traceQueueRequest(scopeId,request){
+  let field=traceQueueColumnByScope.get(scopeId)||'anchor_list';
+  let result=await request(field);
+  if(result.error&&missingTraceQueueColumn(result.error,field)){
+    const alternative=field==='anchor_list'?'anchor_uids':'anchor_list';
+    result=await request(alternative);
+    if(!result.error)traceQueueColumnByScope.set(scopeId,alternative);
+  }else if(!result.error){
+    traceQueueColumnByScope.set(scopeId,field);
+  }
+  return result;
+}
+const withTraceQueue=row=>row&&Array.isArray(row.anchor_list)?row
+  :({...row,anchor_list:Array.isArray(row?.anchor_uids)?row.anchor_uids:[]});
+
 // County IDs are derived once on writes, not computed for every keystroke in
 // the route composer. Unknown/border/overseas coordinates remain NULL.
 function countyIdFromAddress(address){
@@ -74,21 +100,22 @@ function locationFields({address='',floor_label='',floor_level=null}={}){
 export async function readTraceData(scopeId){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_list,created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
+  const columns=field=>'uid,trace_type,title,description,longitude,latitude,radius_m,'+field+',created_at,times,county_id,address,floor_label,floor_level'+(union?',scope_id':'');
   // Read only when the selected Trace screen mounts. A former 2,000-row cap
   // silently hid historical places as imports grew; bounded pages preserve all.
   // This does not run on every autocomplete keystroke.
   const rows=[],pageSize=800;
   for(let offset=0;;offset+=pageSize){
-    let request=dbPublicClient.schema('silver').from(id+'_trace')
-      .select(columns).order('created_at',{ascending:true})
-      .order('uid',{ascending:true});
-    // The LOC union can contain the same UID in different Scopes; stable
-    // pagination must include scope_id as the final tie-breaker.
-    if(union)request=request.order('scope_id',{ascending:true});
-    const result=await request.range(offset,offset+pageSize-1);
+    const result=await traceQueueRequest(id,field=>{
+      let request=dbPublicClient.schema('silver').from(id+'_trace')
+        .select(columns(field)).order('created_at',{ascending:true})
+        .order('uid',{ascending:true});
+      // LOC's union may contain the same UID in different source Scopes.
+      if(union)request=request.order('scope_id',{ascending:true});
+      return request.range(offset,offset+pageSize-1);
+    });
     const batch=verified(result,id+' 痕跡讀取')||[];
-    rows.push(...batch.map(row=>({...row,source_scope:union?row.scope_id:id})));
+    rows.push(...batch.map(row=>({...withTraceQueue(row),source_scope:union?row.scope_id:id})));
     if(batch.length<pageSize)break;
   }
   return {
@@ -111,24 +138,28 @@ export const traceCurrentKey=(scopeId,route,{nativeOnly=false}={})=>[
 export const traceAllAnchorsKey=(scopeId,{nativeOnly=false}={})=>
   nativeOnly?['trace-all-anchors',scopeId,'native']:['trace-all-anchors',scopeId];
 
-const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_list,created_at,times,county_id,address,floor_label,floor_level';
+// Anchor records never need Queue columns; removing them avoids a schema
+// dependency on both versions of the route-only field.
+const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,created_at,times,county_id,address,floor_label,floor_level';
 
 export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,anchor_list,created_at,category,"class",class_group'+(union?',scope_id':'');
-  let request=dbPublicClient.schema('silver').from(id+'_trace')
-    .select(columns).eq('trace_type','map');
-  if(union&&nativeOnly)request=request.eq('scope_id','loc');
-  const result=await request.order('created_at',{ascending:false}).limit(2000);
+  const result=await traceQueueRequest(id,field=>{
+    let request=dbPublicClient.schema('silver').from(id+'_trace')
+      .select('uid,trace_type,title,description,'+field+',created_at,category,"class",class_group'+(union?',scope_id':''))
+      .eq('trace_type','map');
+    if(union&&nativeOnly)request=request.eq('scope_id','loc');
+    return request.order('created_at',{ascending:false}).limit(2000);
+  });
   return (verified(result,'痕跡列表讀取')||[])
-    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+    .map(row=>({...withTraceQueue(row),source_scope:union?row.scope_id:id}));
 }
 
 export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const ids=[...new Set((Array.isArray(anchorUids)?anchorUids:[])
-    .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{4}$/.test(uid)))];
+    .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{4}$|^[A-Za-z0-9]{8}$/.test(uid)))];
   if(ids.length>80)throw Error('單張痕跡圖的站點超過上限。');
   if(!ids.length)return [];
   const union=id==='loc';
@@ -343,7 +374,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
 export async function updateTraceAnchor({scopeId,uid,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
   const id=sourceId(scopeId);
   const anchorId=String(uid||'').trim();
-  if(!/^[A-Za-z0-9]{4}$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
+  if(!/^(?:[A-Za-z0-9]{4}|[A-Za-z0-9]{8})$/.test(anchorId))throw Error('定錨點 UID 格式無效。');
   if(!validCoordinates(longitude,latitude))throw Error('經緯度超出有效範圍。');
   if(!validRadius(radius_m))throw Error('空間範圍必須介於 10 公尺與 20,000 公里。');
   const changes={
@@ -382,23 +413,29 @@ function validatedTraceMapValues({scopeId,title,description='',category='',class
 }
 function traceMapUid(uid){
   const id=String(uid||'').trim();
-  if(!/^[A-Za-z0-9]{4}$/.test(id))throw Error('痕跡圖 UID 格式無效。');
+  if(!/^(?:[A-Za-z0-9]{4}|[A-Za-z0-9]{8})$/.test(id))throw Error('痕跡圖 UID 格式無效。');
   return id;
 }
 export async function addTraceMap({scopeId,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const data={trace_type:'map',
     ...validatedTraceMapValues({scopeId:id,title,description,category,className,group,anchorUids,anchors})};
-  const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
+  const {anchor_list,...base}=data;
+  const result=await traceQueueRequest(id,field=>
+    dbAuthRelation(relation(id)).insert({...base,[field]:anchor_list}).select('uid').single());
   return verified(result,'新增痕跡圖');
 }
 export async function updateTraceMap({scopeId,uid,title,description='',category='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const changes=validatedTraceMapValues({scopeId:id,title,description,category,className,group,anchorUids,anchors});
-  let request=dbAuthRelation(relation(id)).update(changes)
-    .eq('uid',traceMapUid(uid)).eq('trace_type','map');
-  if(id==='loc')request=request.eq('scope_id','loc');
-  return verified(await request.select('uid').single(),'更新痕跡圖');
+  const {anchor_list,...base}=changes;
+  const result=await traceQueueRequest(id,field=>{
+    let request=dbAuthRelation(relation(id)).update({...base,[field]:anchor_list})
+      .eq('uid',traceMapUid(uid)).eq('trace_type','map');
+    if(id==='loc')request=request.eq('scope_id','loc');
+    return request.select('uid').single();
+  });
+  return verified(result,'更新痕跡圖');
 }
 export async function deleteTraceMap({scopeId,uid}){
   const id=sourceId(scopeId);

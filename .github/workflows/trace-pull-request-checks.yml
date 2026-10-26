@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs scripts/test-space-graph.mjs scripts/test-trace-geojson.mjs scripts/test-trace-article-link-contract.mjs > /tmp/trace-focused.log 2>&1
+          node --test scripts/test-trace-autocomplete.mjs scripts/test-trace-map-save.mjs scripts/test-trace-hierarchy.mjs scripts/test-space-graph.mjs scripts/test-trace-geojson.mjs scripts/test-trace-article-link-contract.mjs scripts/test-trace-live-schema-compat.mjs > /tmp/trace-focused.log 2>&1
           focused_status=$?
           set -e
           grep -E '^#|not ok|ok [0-9]+' /tmp/trace-focused.log | tail -n 14 || true

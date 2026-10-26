@@ -98,7 +98,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setFocusLocation({longitude:reference.longitude,latitude:reference.latitude,
       name:title.trim(),radius_m:Number(radius)||500});
 
-    setQuickNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
+    setNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
       ' 不會重用或修改。請核對門牌、樓層及目前店家後，再以自己的 Scope 新增。');
   };
   const save=async()=>{

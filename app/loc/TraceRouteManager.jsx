@@ -27,7 +27,7 @@ export default function TraceRouteManager({scopeId}){
   const cache=useResourceCache();
   const searchParams=useSearchParams();
   const requestedFrame=searchParams?.get('frame')||'';
-  const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
+  const [activeScope,setActiveScope]=useState(scopeId);
   const [selectedUid,setSelectedUid]=useState('');
   const [categoryFilter,setCategoryFilter]=useState(ALL_CATEGORIES);
   const [classFilter,setClassFilter]=useState(ALL_CLASSES);
@@ -151,7 +151,7 @@ export default function TraceRouteManager({scopeId}){
   // A Trace page's Edit action opens the exact current Frame, not an
   // unrelated browser-local default. Revalidate by UID in the fetched index.
   useEffect(()=>{
-    if(!/^[A-Za-z0-9]{4}$/.test(requestedFrame)||!canEdit||!index.data)return;
+    if(!/^(?:[A-Za-z0-9]{4}|[A-Za-z0-9]{8})$/.test(requestedFrame)||!canEdit||!index.data)return;
     const key=activeScope+':'+requestedFrame;
     if(openedFrame.current===key)return;
     const target=index.data.find(map=>map.source_scope===activeScope&&map.uid===requestedFrame);

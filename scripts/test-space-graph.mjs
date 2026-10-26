@@ -83,3 +83,12 @@ test('historical route queues read anchor_uids until the DB cutover',()=>{
   const graph=resolveSpaceGraph(legacy,[a,b]);
   assert.deepEqual(graph.lines.map(x=>[x.from,x.to]),[['a001','A001']]);
 });
+
+test('mixed old and new member fields do not bridge missing route stops',()=>{
+  const historical={uid:'OLD00001',source_scope:scope,trace_type:'map',
+    anchor_uids:['a001','MISSING','A001']};
+  const graph=resolveSpaceGraph(historical,all);
+  assert.deepEqual(graph.routes[0].nodes,['a001','MISSING','A001']);
+  assert.deepEqual(graph.lines,[]);
+  assert.deepEqual(graph.missing,['MISSING']);
+});

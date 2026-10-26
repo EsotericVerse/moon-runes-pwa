@@ -72,7 +72,7 @@ export function resolveSpaceGraph(selection,records=[],{scopeId}={}){
   };
   const addRoute=route=>{
     if(!route||spaceType(route)!==SPACE_PERIOD)return false;
-    const routeId=spaceId(route),nodes=normalizedIds(route.anchor_list);
+    const routeId=spaceId(route),nodes=normalizedIds(spaceMembers(route));
     routes.push({id:routeId,title:String(route.title||''),nodes});
     nodes.forEach(addPoint);
     nodes.slice(1).forEach((id,index)=>{
