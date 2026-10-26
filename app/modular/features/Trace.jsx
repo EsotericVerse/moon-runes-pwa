@@ -105,7 +105,7 @@ export default function Trace({scopeId='loc'}){
       :traceAllAnchorsKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
-      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids,
+      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_list,
           {nativeOnly:periodScopeId==='loc'})
       :readAllTraceAnchors(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
@@ -118,7 +118,7 @@ export default function Trace({scopeId='loc'}){
       maps:showingAll?maps:[currentMap]};
   },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
-  const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
+  const selectedAvailable=selectedPlace&&(selectedPlace.trace_type!=='space_anchor'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
   // A Frame is the spatial context. Its article/culture/statistics panel
@@ -160,7 +160,7 @@ export default function Trace({scopeId='loc'}){
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
           {!maps.length?<option value="">尚未建立痕跡圖</option>:null}
           {maps.map(map=><option key={map.uid} value={map.uid}>
-            {map.title}（{map.anchor_uids?.length||0} 站）
+            {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'）
           </option>)}
           <option value="all">全部定錨點（手動載入）</option>
         </select>
@@ -178,8 +178,9 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
+    {scopeId==='loc'?<p className="scope-status">LOC 空間聚合尚未重建，請先在作者／符文 Scope 整理地點與路線；此頁目前不查詢已刪除的 loc_trace。</p>:null}
     {supported&&!traceIndex.isPending&&!maps.length?<p className="scope-status">
-      尚未建立痕跡圖。請在管理頁建立一組站點路線，或手動選擇「全部定錨點」。
+      尚未建立路線圖或痕跡圖。請在管理頁先將地點加入 Spool，或手動選擇「全部定錨點」。
     </p>:null}
 
     <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker

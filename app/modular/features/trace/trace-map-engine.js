@@ -1,3 +1,4 @@
+import {spaceCoordinates} from './space-graph.mjs';
 // First-party React Trace loads MapLibre from the project's pinned npm package.
 // Public sample anchors are isolated from Galaxy. Deliberate place-search terms
 // go only to the chosen geocoding service; map tiles do not receive article bodies
@@ -48,24 +49,16 @@ function pillarGeojson(anchors){
     geometry:{type:'Polygon',coordinates:[ringAround(place,45)]}
   }))};
 }
-function pickedArea(lng,lat,radius){
-  return {type:'FeatureCollection',features:Number.isFinite(lng)&&Number.isFinite(lat)?[{
-    type:'Feature',properties:{radius_m:radius},geometry:{type:'Polygon',coordinates:[ringAround({lng,lat},radius)]}
-  }]:[]};
-}
 function isValidSavedAnchor(anchor){
-  if(anchor?.trace_type!=='anchor')return false;
-  if(anchor.longitude==null||anchor.latitude==null)return false;
-  if(String(anchor.longitude).trim()===''||String(anchor.latitude).trim()==='')return false;
-  const lng=Number(anchor.longitude),lat=Number(anchor.latitude);
-  return Number.isFinite(lng)&&Number.isFinite(lat)&&Math.abs(lng)<=180&&Math.abs(lat)<=90;
+  if(anchor?.trace_type!=='space_anchor')return false;
+  return Boolean(spaceCoordinates(anchor));
 }
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(isValidSavedAnchor)
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.address||''),floor_label:String(a.floor_label||''),floor_level:a.floor_level??null,
-        radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
-      geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),floor_label:'',
+        uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
+      geometry:{type:'Point',coordinates:spaceCoordinates(a)}}))};
 }
 function emptyRoute(){
   return {type:'FeatureCollection',features:[]};
@@ -77,7 +70,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,radiusMeters=500,anchors=[]}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,anchors=[]}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -86,12 +79,9 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let markers=[];
   let pickedMarker=null;
   let pickedPosition=null;
-  let radius=Number(radiusMeters)||500;
   let savedAnchors=anchors;
   let selectedSavedRoute=null;
-  function refreshRadius(){
-    if(loaded&&pickedPosition)map.getSource('loc-trace-picked-area')?.setData(pickedArea(pickedPosition.lng,pickedPosition.lat,radius));
-  }
+  let selectedSavedGraph=null;
   function setAnchors(next){
     savedAnchors=Array.isArray(next)?next:[];
     if(!loaded)return;
@@ -100,24 +90,29 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     // Updating GeoJSON never resets the viewport. Only explicit navigation may.
   }
   function savedRoutePoints(route=selectedSavedRoute){
-    if(!Array.isArray(route?.anchor_uids))return [];
+    if(!Array.isArray(route?.anchor_list))return [];
     const byId=new globalThis.Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
-    return route.anchor_uids.map(uid=>byId.get(String(uid))||null);
+    const ids=route.trace_type==='space_trace'
+      ?[...new Set(route.anchor_list.flat(Infinity))]:route.anchor_list;
+    return ids.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
+    if(selectedSavedGraph)return selectedSavedGraph;
+    // A trace is a collection of unrelated pairs; no temporary Queue bridges.
+    if(route?.trace_type==='space_trace')return emptyRoute();
     const points=savedRoutePoints(route);
     const features=[];
     points.forEach((place,index)=>{
       if(!place)return;
-      const coordinates=[Number(place.longitude),Number(place.latitude)];
+      const coordinates=spaceCoordinates(place);
       features.push({type:'Feature',properties:{order:index+1,title:String(place.title||''),
         uid:String(place.uid||''),source_scope:String(place.source_scope||''),
-        address:String(place.address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
+        address:String(place.postal_address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
         geometry:{type:'Point',coordinates}});
       const previous=points[index-1];
       if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
         geometry:{type:'LineString',coordinates:[
-          [Number(previous.longitude),Number(previous.latitude)],coordinates
+          spaceCoordinates(previous),coordinates
         ]}});
     });
     return {type:'FeatureCollection',features};
@@ -126,27 +121,29 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
   }
   function setSavedRoute(route){
-    const next=route?.trace_type==='map'?route:null;
+    const next=['space_road','space_trace'].includes(route?.trace_type)?route:null;
     const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
+    selectedSavedGraph=null;
     refreshSavedRoute();
     // SWR refreshes may return a new object representing the same route.
     if(!loaded||!selectedSavedRoute||!changed)return;
     const valid=savedRoutePoints().filter(Boolean);
     if(valid.length===1){
-      map.flyTo({center:[Number(valid[0].longitude),Number(valid[0].latitude)],
+      map.flyTo({center:spaceCoordinates(valid[0]),
         zoom:12.5,pitch:45,bearing:0,essential:true});
     }else if(valid.length>1){
       const bounds=new LngLatBounds();
-      valid.forEach(point=>bounds.extend([Number(point.longitude),Number(point.latitude)]));
+      valid.forEach(point=>bounds.extend(spaceCoordinates(point)));
       map.fitBounds(bounds,{padding:Math.max(32,Math.min(90,Math.round(map.getContainer().clientWidth*.07))),
         pitch:0,bearing:0,maxZoom:13,duration:500});
     }
   }
-  function setRadius(value){
-    const n=Number(value);
-    if(Number.isFinite(n)&&n>=10&&n<=20000000){radius=n;refreshRadius();}
+  function setSavedGraph(graph){
+    selectedSavedGraph=graph?.type==='FeatureCollection'&&Array.isArray(graph.features)
+      ?graph:null;
+    refreshSavedRoute();
   }
   const canPickLocation=typeof onLocationPick==='function';
   // The user's "home" is a public station-area navigation origin, not a
@@ -195,7 +192,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       });
     }else pickedMarker.setLngLat([lng,lat]);
     pickedPosition={lng,lat};
-    refreshRadius();
     onLocationPick({lng,lat,...(name?{name}:{})});
     status('locationPicked');
   }
@@ -214,15 +210,14 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       .setText(place.name)
       .addTo(map);
   }
-  function focusCoordinates({longitude,latitude,name='',radius_m}={}){
+  function focusCoordinates({longitude,latitude,name=''}={}){
     const lng=Number(longitude),lat=Number(latitude);
     if(removed||!Number.isFinite(lng)||!Number.isFinite(lat)||Math.abs(lng)>180||Math.abs(lat)>90)return;
-    if(radius_m!=null)setRadius(radius_m);
-    const zoom=Math.max(2,Math.min(16,14.5-Math.log2(Math.max(radius,100)/500)));
+    const zoom=14.5;
     if(canPickLocation)map.flyTo({center:[lng,lat],zoom,pitch:59,bearing:-23,essential:true});
     else centerIfFar(lng,lat);
     if(canPickLocation)pickLocation(lng,lat,name);
-    else {pickedPosition={lng,lat};refreshRadius();}
+    else {pickedPosition={lng,lat};}
     if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
   }
   function overview(){
@@ -283,11 +278,11 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props.uid)
           &&String(row.source_scope||'')===String(props.source_scope||''));
         if(anchor){
-          centerIfFar(anchor.longitude,anchor.latitude);
+          centerIfFar(...spaceCoordinates(anchor));
           onAnchorSelect(anchor);
           new Popup({closeButton:true,offset:18})
-            .setLngLat([Number(anchor.longitude),Number(anchor.latitude)])
-            .setText([anchor.title,anchor.address,anchor.floor_label].filter(Boolean).join(' · '))
+            .setLngLat(spaceCoordinates(anchor))
+            .setText([anchor.title,anchor.postal_address].filter(Boolean).join(' · '))
             .addTo(map);
         }
       };
@@ -297,12 +292,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         map.on('mouseleave',layer,()=>{map.getCanvas().style.cursor='';});
       }
     }
-    map.addSource('loc-trace-picked-area',{type:'geojson',data:pickedArea(NaN,NaN,radius)});
-    map.addLayer({id:'loc-trace-picked-fill',type:'fill',source:'loc-trace-picked-area',
-      paint:{'fill-color':'#f7ba66','fill-opacity':0.14}});
-    map.addLayer({id:'loc-trace-picked-outline',type:'line',source:'loc-trace-picked-area',
-      paint:{'line-color':'#f7ba66','line-width':2,'line-opacity':0.85}});
-    refreshRadius();
     // Saved routes connect user-selected anchors in their recorded sequence.
     // A straight connection is not presented as an actual historical road.
     map.addSource('loc-trace-user-routes',{type:'geojson',data:savedRouteData()});
@@ -315,7 +304,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       paint:{'circle-radius':12,'circle-color':'#ffcb73','circle-stroke-color':'#30253e',
         'circle-stroke-width':2}});
     map.addLayer({id:'loc-trace-user-route-order',type:'symbol',source:'loc-trace-user-routes',
-      filter:['==',['geometry-type'],'Point'],
+      filter:['all',['==',['geometry-type'],'Point'],['==',['get','kind'],'space_stop']],
       layout:{'text-field':['to-string',['get','order']],'text-size':12,
         'text-allow-overlap':true},
       paint:{'text-color':'#30253e'}});
@@ -327,7 +316,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props?.uid||'')
           &&String(row.source_scope||'')===String(props?.source_scope||''));
         if(!anchor)return;
-        centerIfFar(anchor.longitude,anchor.latitude);
+        centerIfFar(...spaceCoordinates(anchor));
         onAnchorSelect(anchor);
       };
       for(const layer of ['loc-trace-user-route-stops','loc-trace-user-route-order']){
@@ -405,6 +394,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,centerIfFar,goOrigin,setRadius,setAnchors,setSavedRoute,overview,showRoadRoute,
+  return {focus,focusCoordinates,centerIfFar,goOrigin,setAnchors,setSavedRoute,setSavedGraph,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }

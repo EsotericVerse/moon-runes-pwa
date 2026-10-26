@@ -1,6 +1,6 @@
 // Class -> Group -> Item is a presentation model shared by the keyword library
 // and Trace. Items retain their native identities and responsibilities.
-// Trace Item: named saved map with an ordered anchor_uids list; keyword Item:
+// Trace Item: named saved map with an ordered anchor_list list; keyword Item:
 // individual keyword row. No keyword analyzer runs for Trace.
 export const normalizeClassificationText=value=>String(value??'').normalize('NFKC').trim();
 export const classificationSearchKey=value=>normalizeClassificationText(value).toLocaleLowerCase('zh-Hant');

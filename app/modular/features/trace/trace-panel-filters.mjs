@@ -34,14 +34,14 @@ export function traceArticleFilters(places,{startDate='',endDate='',sourceName='
     ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
   ];
 }
-export function groupedTraceDays(rows=[]){
+export function groupedTraceDays(rows=[],{key='source_place'}={}){
   const group=new Map();
   for(const row of rows){
     const day=String(row.createtime||'').slice(0,10);
-    const category=String(row.source_place||'').trim();
+    const category=String(row[key]||'').trim();
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!category)continue;
-    const key=day+'|'+category;
-    group.set(key,(group.get(key)||0)+1);
+    const groupKey=day+'|'+category;
+    group.set(groupKey,(group.get(groupKey)||0)+1);
   }
   return [...group].map(([key,item_count])=>{
     const sep=key.indexOf('|');
@@ -53,4 +53,19 @@ export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片']);
 export function traceMediaMatches(articles=[],media=[]){
   const linked=new Set(media.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean));
   return articles.filter(row=>linked.has(String(row.uid||'').trim()));
+}
+
+/** Four-character article identity; original source_place remains display-only. */
+export function traceArticleIdFilters(placeIds,{startDate='',endDate='',sourceName=''}={}){
+  const ids=[...new Set((Array.isArray(placeIds)?placeIds:[])
+    .map(id=>String(id||'').trim().toUpperCase())
+    .filter(id=>/^[A-Z0-9]{4}$/.test(id)))];
+  if(!ids.length)return [{column:'place_id',operator:'eq',value:'__NO_PLACE_ID__'}];
+  return [
+    {column:'place_id',operator:ids.length===1?'eq':'in',value:ids.length===1?ids[0]:ids},
+    {column:'searchable',operator:'eq',value:true},
+    ...(sourceName.trim()?[{column:'source_name',operator:'ilike',value:sourceName.trim()}]:[]),
+    ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
+    ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+  ];
 }

@@ -13,14 +13,13 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(entry,/mode==='map'\)return <TraceRouteManager/);
   assert.doesNotMatch(entry,/function MapEditor\(/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
-  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_list/);
   assert.match(page,/enabled:Boolean\(current\)/);
-  assert.match(page,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
-  assert.match(page,/enabled:editorOpen&&Boolean\(county&&debouncedQuery\)/);
+  assert.match(page,/readTraceAnchorSuggestions\(activeScope,debouncedQuery,8\)/);
+  assert.match(page,/enabled:editorOpen&&Boolean\(debouncedQuery\)/);
   assert.doesNotMatch(page,/readTraceData\(|readAllTraceAnchors\(/);
-  assert.match(db,/request=request\.or\(filters\.join\(','\)\)/);
-  assert.match(db,/\['title\.ilike\.'\+literal,'address\.ilike\.'\+literal\]/);
-  assert.match(db,/uid\.eq\./);
+  assert.match(db,/search_scope_trace_place_names/);
+  assert.doesNotMatch(page,/countyOptions|readTraceAddressReferences|createReferenceAnchor/);
 });
 
 test('Category/Class/Group/Item routes use shared hierarchy and saved Frame index; article search remains separate',()=>{
@@ -32,9 +31,9 @@ test('Category/Class/Group/Item routes use shared hierarchy and saved Frame inde
   assert.match(page,/searchTraceRoutes\(maps,/);
   assert.match(page,/validateTraceRouteLabels\(category,className,group\)/);
   assert.match(db,/validateTraceRouteLabels\(category,className,group\)/);
-  assert.match(db,/anchor_uids:chosen/);
+  assert.match(db,/anchor_list:chosen/);
   assert.match(db,/nativeOnly/);
-  assert.match(results,/column:'source_place'/);
+  assert.match(results,/column:'place_id'/);
   assert.doesNotMatch(results,/column:'content'/);
   assert.match(page,/將選取錨點加入 Queue/);
   assert.match(page,/MAX_STOPS=80/);
@@ -50,7 +49,7 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
   let reads=0,clears=0;
   const expected={uid:'MAP00001',source_scope:'lo3rwang',title:'成長路線測試',
     description:'保留路線',category:'旅遊',class:'夜市',class_group:'北部',
-    anchor_uids:['AAA00001','BBB00002']};
+    anchor_list:['AAA00001','BBB00002']};
   const args={
     busy:false,canEdit:true,editorOpen:true,setBusy:x=>states.push(x),
     setNotice:x=>messages.push(x),setIsError:()=>{},
@@ -154,82 +153,16 @@ test('selected Frame connects points by saved order without a road-network requi
   assert.doesNotMatch(page,/router\.push|featureNavigationHref/);
 });
 
-test('LOC management initially shows existing author Frames while preserving Scope-owned Queue IDs',()=>{
+test('LOC Frame management uses existing Scope-owned UIDs without auto-creating places',()=>{
   const page=manager();
-  const data=read('app/modular/features/trace/trace-data.js');
-  assert.match(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
+  assert.match(page,/useState\(scopeId\)/);
+  assert.doesNotMatch(page,/useState\(scopeId==='loc'\?'lo3rwang':scopeId\)/);
   assert.match(page,/readTraceMapIndex\(scopeId\)/);
-  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
+  assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_list,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
-  assert.match(page,/readTraceAddressReferences\(activeScope,debouncedReference,8\)/);
-  assert.match(page,/addTraceAnchor\(\{scopeId:owner,\.\.\.fields,forceNewIdentity:true\}\)/);
-  assert.match(page,/readCurrentTraceAnchors\(owner,\[uid\],\{nativeOnly:owner==='loc'\}\)/);
-  assert.match(data,/neq\('scope_id',owner\)/);
-  assert.match(data,/not\('longitude','is',null\)\.not\('latitude','is',null\)/);
-  assert.match(data,/source_scope:row\.scope_id/);
-  assert.match(page,/＋ 建立自己的錨點並加入 Queue/);
+  assert.doesNotMatch(page,/createReferenceAnchor|readTraceAddressReferences|forceNewIdentity/);
 });
 
-function referenceHarness({owner='loc',delayed=false,denied=false,cacheFailed=false}={}){
-  const page=manager();
-  const start=page.indexOf('  const createReferenceAnchor=async()=>{');
-  const end=page.indexOf('  const shift=(index,step)=>{',start);
-  assert.ok(start>0&&end>start);
-  const body=page.slice(start,end).trim().replace(/^const createReferenceAnchor=/,'').replace(/;\s*$/,'');
-  const draft={source_scope:'lo3rwang',source_uid:'FOREIGN1',title:'參考店家',
-    address:'新北市板橋區文化路100號2樓',floor_label:'2樓',floor_level:2,
-    longitude:121.45,latitude:25,radius_m:500,description:''};
-  const state={writes:[],reads:0,queue:[],extra:[],messages:[]};
-  const pendingReference={current:null};
-  const deps={
-    busy:false,canEdit:true,referenceDraft:draft,queue:[],MAX_STOPS:80,activeScope:owner,
-    pendingReference,setReferencePending:()=>{},setBusy:()=>{},setNotice:x=>state.messages.push(x),setIsError:()=>{},
-    addTraceAnchor:async input=>{
-      if(denied)throw Error('RLS 拒絕寫入');
-      state.writes.push(input);return {uid:'OWN00001'};
-    },
-    readCurrentTraceAnchors:async(scopeId,ids,options)=>{
-      assert.equal(scopeId,owner);
-      assert.deepEqual(ids,['OWN00001']);
-      assert.equal(options.nativeOnly,owner==='loc');
-      state.reads++;
-      return delayed&&state.reads===1?[]:[{uid:'OWN00001',source_scope:owner,title:'參考店家'}];
-    },
-    setExtraAnchors:fn=>{state.extra=fn(state.extra);},
-    setQueue:fn=>{state.queue=fn(state.queue);},
-    setReferenceDraft:()=>{},setReferenceQuery:()=>{},setReferenceOpen:()=>{},
-    cache:{invalidate:async()=>{if(cacheFailed)throw Error('cache');}},
-    traceAllAnchorsKey:id=>['trace-all-anchors',id],
-  };
-  const keys=Object.keys(deps);
-  const create=new Function(...keys,'return ('+body+');')(...keys.map(key=>deps[key]));
-  return {create,state,pendingReference};
-}
-test('cross-Scope address creates a new own UID, never writing foreign UID or changing source',async()=>{
-  const {create,state}=referenceHarness();
-  assert.equal(await create(),true);
-  assert.equal(state.writes.length,1);
-  assert.equal(state.writes[0].scopeId,'loc');
-  assert.ok(!('source_scope' in state.writes[0]));
-  assert.ok(!('source_uid' in state.writes[0]));
-  assert.equal(state.writes[0].floor_level,2);
-  assert.deepEqual(state.queue,['OWN00001']);
-  assert.equal(state.extra[0].source_scope,'loc');
-});
-test('cross-Scope anchor delayed readback does not cause double insert; RLS denial adds no Queue entry',async()=>{
-  const retry=referenceHarness({owner:'lrunes',delayed:true,cacheFailed:true});
-  assert.equal(await retry.create(),false);
-  assert.equal(retry.state.writes.length,1);
-  assert.deepEqual(retry.state.queue,[]);
-  assert.equal(await retry.create(),true);
-  assert.equal(retry.state.writes.length,1);
-  assert.equal(retry.state.reads,2);
-  assert.deepEqual(retry.state.queue,['OWN00001']);
-  const denied=referenceHarness({denied:true});
-  assert.equal(await denied.create(),false);
-  assert.equal(denied.state.writes.length,0);
-  assert.deepEqual(denied.state.queue,[]);
-});
 test('searches are bounded, address-aware, read-only and escape OR metacharacters',async()=>{
   const file=read('app/modular/features/trace/trace-data.js');
   const match=file.match(/export async function readTraceAddressReferences[\s\S]*?\n\}/);
@@ -258,10 +191,10 @@ test('searches are bounded, address-aware, read-only and escape OR metacharacter
   assert.equal(calls.filter(call=>call[0]==='from').length,1);
 });
 
-test('Frame save does not silently discard a pending cross-Scope reference',()=>{
-  const page=manager();
-  assert.match(page,/if\(referenceDraft\|\|pendingReference\.current\)/);
-  assert.match(page,/請先建立自己的參考錨點/);
+test('Frame editor never auto-inserts extra anchors from cross-Scope suggestions',()=>{
+ const page=manager();
+ assert.doesNotMatch(page,/pendingReference|referenceDraft|createReferenceAnchor/);
+ assert.match(page,/onClick=\{addPoint\}>＋/);
 });
 
 test('LOC native duplicate checks never enumerate foreign public-union anchors',async()=>{
@@ -316,44 +249,12 @@ test('one autocomplete suggestion is not implicitly selected before the user cho
   assert.equal(choose(candidate,'同名景點2','TW-NWT',[candidate]),null);
 });
 
-test('cross-Scope address can require a fresh own UID without touching duplicate/alias reuse',async()=>{
-  const db=read('app/modular/features/trace/trace-data.js');
-  const code=db.match(/export async function addTraceAnchor[\s\S]*?(?=\n\/\/ One authorized insert)/);
-  assert.ok(code,'real addTraceAnchor implementation found');
-  const actions={inspected:0,inserts:[]};
-  const dbAuthRelation=()=>({
-    insert:record=>{
-      actions.inserts.push(record);
-      return {select:()=>({single:async()=>({data:{uid:record.uid},error:null})})};
-    }
-  });
-  const deps={
-    sourceId:x=>x,validCoordinates:()=>true,validRadius:()=>true,
-    createUid8:()=> 'OWN00002',verifiedText:x=>x,descriptionText:x=>x,
-    countyIdAt:async()=>null,locationFields:({address,floor_label,floor_level})=>({address,floor_label,floor_level}),
-    inspectTraceAnchorBeforeWrite:async()=>{actions.inspected++;throw Error('would reuse existing anchor');},
-    reuseExistingAnchor:async()=>{throw Error('must never alias-update');},
-    dbAuthRelation,relation:id=>id,verified:result=>result.data
-  };
-  const create=new Function(...Object.keys(deps),
-    code[0].replace('export async function','async function')+';return addTraceAnchor;')
-    (...Object.values(deps));
-  const result=await create({scopeId:'loc',title:'參考地點',longitude:121.5,latitude:25,
-    address:'',forceNewIdentity:true});
-  assert.equal(result.uid,'OWN00002');
-  assert.equal(actions.inspected,0,'explicit independent reference must skip alias reuse');
-  assert.equal(actions.inserts.length,1);
-  assert.ok(!('forceNewIdentity' in actions.inserts[0]));
-  assert.equal(actions.inserts[0].uid,'OWN00002');
-  assert.match(manager(),/forceNewIdentity:true/);
-});
-
 test('public LOC Trace can view its own native Frames, not hidden behind author or union entries',()=>{
   const publicTrace=read('app/modular/features/Trace.jsx');
   const db=read('app/modular/features/trace/trace-data.js');
   assert.match(publicTrace,/<option value="loc">LOC 自有痕跡<\/option>/);
   assert.match(publicTrace,/readTraceMapIndex\(scopeId\)/);
-  assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
+  assert.match(publicTrace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,\s*\{nativeOnly:periodScopeId==='loc'\}\)/);
   assert.match(publicTrace,/readAllTraceAnchors\(periodScopeId,\{nativeOnly:periodScopeId==='loc'\}\)/);
   assert.match(publicTrace,/traceMapIndexKey\(scopeId\)/);
   assert.match(db,/export const traceMapIndexKey=\(scopeId,\{nativeOnly=false\}=\{\}\)=>/);
@@ -368,7 +269,7 @@ test('LOC public Trace auto discovers an existing author Frame without moving it
   assert.match(page,/allMaps\.filter\(row=>row\.source_scope===periodScopeId\)/);
   assert.match(page,/<option value="auto">自動顯示已儲存痕跡<\/option>/);
   assert.match(page,/<option value="lo3rwang">作者作品<\/option>/);
-  assert.match(page,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+  assert.match(page,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
 });
 test('LOC manager discovers existing author Frames in one safe union index',()=>{
   const managerSource=manager();

@@ -2,7 +2,7 @@ import {categoryClassGroupIndex,classificationSearchKey,normalizeClassificationT
   from '../../../loc/model/class-group-items.mjs';
 
 // Keyword Class/Group/Item navigation is the reused presentation skeleton.
-// Trace Item is one named Frame with its own anchor_uids; not an anchor.
+// Trace Item is one named Frame with its own anchor_list; not an anchor.
 // Older Frames lacking the top-level category stay visible under 未分類.
 export const TRACE_UNCLASSIFIED='未分類';
 export const traceCategoryOf=route=>normalizeClassificationText(route?.category);

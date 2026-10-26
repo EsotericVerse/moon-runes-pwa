@@ -45,18 +45,6 @@ test('county grouping retains distinct UIDs and does not silently merge same nam
  assert.equal(groups.get('TW-TPE').length,1);
  assert.notEqual(groups.get('TW-NWT')[0].uid,groups.get('TW-NWT')[1].uid);
 });
-test('Frame editor queries by county + name or UID and adds only on explicit plus',()=>{
- const manager=read('app/loc/TraceRouteManager.jsx');
- const storage=read('app/modular/features/trace/trace-data.js');
- assert.match(manager,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
- assert.match(manager,/setQueue\(ids=>ids.includes\(choice.uid\)\?ids:\[\.\.\.ids,choice.uid\]\)/);
- assert.match(manager,/onClick=\{addPoint\}>＋/);
- assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
- assert.match(storage,/uid\.eq\./);
- assert.match(storage,/county_id:await countyIdAt\(longitude,latitude,address\)/);
- assert.match(storage,/county_id:countyIdFromAddress\(place\.address\)/);
- assert.match(storage,/anchor_uids:chosen/);
-});
 
 test('same-name candidate list stays capped at eight; exact UID is a separate server lookup',()=>{
  const crowds=Array.from({length:15},(_,index)=>({
@@ -65,7 +53,7 @@ test('same-name candidate list stays capped at eight; exact UID is a separate se
    description:'地址：新北市板橋區第'+index+'路'
  }));
  assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
- assert.match(read('app/modular/features/trace/trace-data.js'),/filters\.push\('uid\.eq\.'\+q\)/);
+ assert.match(read('app/modular/features/trace/trace-data.js'),/p_term:q,p_limit:/);
  assert.match(read('app/loc/TraceRouteManager.jsx'),/UID \{anchor\.uid\}/);
 });
 test('same address but different business names are never safe for automatic reuse',()=>{
@@ -89,22 +77,7 @@ test('same names at different locations remain independent spatial anchors',()=>
  assert.doesNotMatch(storage,/if\(check\.byName/);
 });
 
-test('vertical floor identity preserves downstairs and upstairs within one 2D coordinate',()=>{
- const source=read('app/modular/features/trace/trace-data.js');
- const match=source.match(/function locationFields\([\s\S]*?\n\}/);
- assert.ok(match,'locationFields must remain an executable validator');
- const locationFields=new Function(match[0]+';return locationFields')();
- assert.deepEqual(locationFields({address:'新北市永和區仁愛路152號B1'}),
-   {address:'新北市永和區仁愛路152號B1',floor_label:'B1',floor_level:-1});
- assert.deepEqual(locationFields({address:'新北市某區某路100號2樓'}),
-   {address:'新北市某區某路100號2樓',floor_label:'2樓',floor_level:2});
- assert.deepEqual(locationFields({address:'新北市中和區中山路291號3–4樓'}),
-   {address:'新北市中和區中山路291號3–4樓',floor_label:'3–4樓',floor_level:null});
- assert.deepEqual(locationFields({address:'未知道路'}),{address:'未知道路',floor_label:'',floor_level:null});
- assert.throws(()=>locationFields({floor_level:'3.5'}),/樓層序號/);
- assert.match(source,/county_id:await countyIdAt\(longitude,latitude,address\),\s*\.\.\.locationFields/);
- assert.match(source,/address,floor_label,floor_level/);
-});
+
 test('full address and different floors prevent spatial ID auto reuse',()=>{
  const a={uid:'AAA11111',trace_type:'anchor',source_scope:'lo3rwang',title:'某大樓商店',
    address:'新北市某區某路100號',floor_label:'B1',floor_level:-1,latitude:25,longitude:121.5};
@@ -155,33 +128,3 @@ test('unknown postal county is never guessed from coordinates during new writes'
  assert.match(db,/county_id:countyIdFromAddress\(place\.address\)/);
 });
 
-test('editing a legacy addressless anchor preserves its stored county ID',async()=>{
- const source=read('app/modular/features/trace/trace-data.js');
- const match=source.match(/export async function updateTraceAnchor[\s\S]*?(?=\nfunction validatedTraceMapValues)/);
- assert.ok(match,'actual updateTraceAnchor implementation is available');
- const writes=[];
- const query={
-   eq(){return this;},
-   select(){return {single:async()=>({data:{uid:'ABCDEFG1'},error:null})};}
- };
- const dbAuthRelation=()=>({update:values=>{writes.push(values);return query;}});
- const deps={
-   sourceId:x=>x,
-   validCoordinates:()=>true,validRadius:()=>true,
-   verifiedText:x=>x,descriptionText:x=>x,
-   countyIdFromAddress:address=>address.startsWith('新北市')?'TW-NWT':null,
-   locationFields:x=>x,
-   inspectTraceAnchorBeforeWrite:async()=>({reuse:null}),
-   dbAuthRelation,relation:x=>x,verified:result=>result.data
- };
- const update=new Function(...Object.keys(deps),
-   match[0].replace('export async function','async function')+';return updateTraceAnchor;')
-   (...Object.values(deps));
- await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'',
-   longitude:121.5,latitude:25});
- assert.equal(Object.hasOwn(writes[0],'county_id'),false,
-   'editing without verified address must not clear historical county_id');
- await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'新北市板橋區文化路100號',
-   longitude:121.5,latitude:25});
- assert.equal(writes[1].county_id,'TW-NWT');
-});

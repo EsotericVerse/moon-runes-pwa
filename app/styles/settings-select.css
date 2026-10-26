@@ -554,3 +554,49 @@
     padding:.6rem;
   }
 }
+
+
+/* Keep main's shared management navigation and wide Frame/Queue panels.
+   Only the anchor form is container-responsive, even inside nested LOC cards. */
+.scope-management-layout--anchor{
+  container:scope-anchor-form / inline-size;
+  min-width:0;
+  max-width:100%;
+}
+.scope-management-layout--anchor .management-workspace,
+.scope-management-layout--anchor .management-workspace-panel,
+.scope-management-layout--anchor .management-workspace-panel>.loc-card{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.scope-management-layout--anchor .management-workspace-panel :is(
+  .scope-management-fields,.loc-trace-quick-field,.loc-trace-quick-results,
+  .loc-trace-reference-panel,.loc-trace-map-shell
+){
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.scope-management-layout--anchor .management-workspace-panel :is(input,select,textarea){
+  box-sizing:border-box;
+  max-width:100%;
+}
+.scope-management-layout--anchor .loc-trace-quick-results>.loc-button{
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@container scope-anchor-form (max-width: 39rem){
+  .scope-management-layout--anchor .management-workspace-panel .scope-management-fields{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout--anchor .loc-trace-quick-field{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .scope-management-layout--anchor .loc-trace-quick-field>.loc-button{
+    width:100%;
+    white-space:normal;
+  }
+}

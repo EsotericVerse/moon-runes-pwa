@@ -59,7 +59,7 @@ test('Trace mounts installed MapLibre from a lazy React chunk with Next.js ESM w
   assert.ok(!existsSync(pathOf('public/trace-map.mjs')),'CDN transport must be removed');
   assert.match(react,/示例/);
   assert.match(react,/routeBusy/);
-  assert.match(react,/searchTracePlaces/);
+  assert.doesNotMatch(react,/searchTracePlaces|photon|nominatim/);
   assert.match(react,/focusCoordinates/);
   assert.match(engine,/loc-trace-picked-area/);
   assert.match(engine,/setRadius/);
@@ -84,7 +84,7 @@ test('Trace management selects spatial coordinates from map clicks and sample st
   assert.match(engine,/pickedMarker\.on\('dragend'/);
   assert.match(engine,/pickedMarker\?\.remove\(\)/);
   assert.match(editor,/新增空間定錨點/);
-  assert.match(scope,/shortLabel:'空間定錨點'/);
+  assert.match(scope,/shortLabel:'地點管理'/);
   assert.doesNotMatch(admin,/shortLabel:'空間定錨點'/);
   assert.match(traceRoute,/forcedView="manage" forcedScope="loc"/);
 });
@@ -121,8 +121,8 @@ test('Check-in backfill uses only empty source_place and user-confirmed date ran
   const editor=read('app/loc/PlaceBatchFill.jsx');
   const manager=read('app/loc/ScopeManagement.jsx');
   const trace=read('app/loc/TraceManagement.jsx');
-  assert.match(manager,/value:'placeFill'/);
-  assert.match(manager,/dynamic\(\(\)=>import\('\.\/PlaceBatchFill'\)/);
+  assert.match(manager,/value:'placeManage'/);
+  assert.match(read('app/loc/PlaceManagement.jsx'),/dynamic\(\(\)=>import\('\.\/PlaceBatchFill'\)/);
   assert.match(editor,/selectCultureTimeRows\(scope\)/);
   assert.match(editor,/p_start_date:startDate,p_end_date:endDate/);
   assert.match(editor,/p_apply:false/);
@@ -140,44 +140,28 @@ test('Check-in backfill uses only empty source_place and user-confirmed date ran
 });
 
 
-test('Trace geocoding resolves unique check-in names only on demand and inserts only verified anchors',()=>{
-  const manager=read('app/loc/ScopeManagement.jsx');
-  const geocode=read('app/loc/TracePlaceGeocoder.jsx');
-  const trace=read('app/modular/features/trace/trace-data.js');
-  assert.ok(manager.includes("section==='traceGeocode'&&routeScopeId!=='loc'"));
-  assert.ok(manager.includes("section==='placeFill'&&routeScopeId!=='loc'"),'preserve date-range place filling');
-  assert.ok(manager.includes("dynamic(()=>import('./TracePlaceGeocoder')"));
-  assert.ok(geocode.includes(".select('source_place')"));
-  assert.ok(geocode.includes(".not('source_place','is',null)"));
-  assert.ok(geocode.includes(".neq('source_place','')"));
-  assert.ok(geocode.includes("new Map()"),'deduplicate place names in memory');
-  assert.ok(geocode.includes("MIN_SEARCH_GAP_MS=1250"));
-  assert.ok(geocode.includes("localStorage.setItem"));
-  assert.ok(geocode.includes("policyAccepted"),'require informed geocoder consent');
-  assert.ok(geocode.includes("window.confirm("),'batch writes require explicit confirmation');
-  assert.ok(geocode.includes("found[item.name]?.status==='review'"),'ambiguous places need review');
-  assert.ok(geocode.includes("addTraceAnchorsBatch({scopeId,places:payload})"));
-  assert.doesNotMatch(geocode,/updateRows\(|deleteRows\(|\.update\(/);
-  assert.ok(trace.includes("const previous=await readTraceData(id)"),'re-read existing anchors before writing');
-  assert.ok(trace.includes("pending.slice(offset,offset+80)"),'bounded bulk inserts');
-  assert.ok(trace.includes("dbAuthRelation(relation(id)).insert(chunk)"),'existing authenticated RLS write path');
-  assert.ok(!trace.includes("update silver.")&&!geocode.includes("update silver."),'never modify Galaxy schema or article fields');
+test('paid third-party place geocoding is absent from all Trace surfaces',()=>{
+ const mgr=read('app/loc/ScopeManagement.jsx');
+ const editor=read('app/loc/TraceManagement.jsx');
+ const map=read('app/modular/features/trace/TraceMap.jsx');
+ assert.doesNotMatch(mgr,/traceGeocode|TracePlaceGeocoder/);
+ assert.doesNotMatch(editor,/searchTracePlaces|quickLocate|trace-geocoding/);
+ assert.doesNotMatch(map,/searchTracePlaces|lookupPlace|photon|nominatim/);
+ assert.ok(!existsSync(pathOf('app/loc/TracePlaceGeocoder.jsx')));
+ assert.ok(!existsSync(pathOf('app/modular/features/trace/trace-geocoding.js')));
+ assert.match(mgr,/value:'placeManage'/);
+ assert.match(read('app/loc/PlaceManagement.jsx'),/mode="cleanup"/);
 });
-
-
-test('Trace anchor quick-location button uses current place name and previews without auto-writing',()=>{
-  const editor=read('app/loc/TraceManagement.jsx');
-  const react=read('app/modular/features/trace/TraceMap.jsx');
-  const styles=read('app/styles/features.css');
-  assert.ok(editor.includes('onClick={quickLocate}'),'one quick-location button');
-  assert.ok(editor.includes("searchTracePlaces(query)"),'lookup uses selected check-in name');
-  assert.ok(editor.includes('exactTracePlaceMatch(query,found[0])'),'only exact single result auto-selects');
-  assert.ok(editor.includes('setQuickCandidates(found)'),'ambiguous results are presented to user');
-  assert.ok(editor.includes('setFocusLocation({longitude:lng,latitude:lat,name:query,radius_m:Number(radius)||500})'));
-  assert.ok(editor.includes("setQuickNotice('已快速移至"),'preview is not a silent save');
-  assert.ok(editor.includes('setQuickCandidates([]);setQuickNotice('),'new place name clears stale candidates');
-  assert.ok(react.includes('{!selectingLocation?<><form'),'editor does not show duplicate place-search form');
-  assert.ok(styles.includes('.loc-trace-quick-field'),'inline control has responsive layout');
+test('Frame queue accepts arbitrary places by name without county/GPS choice',()=>{
+ const manager=read('app/loc/TraceRouteManager.jsx');
+ const api=read('app/modular/features/trace/trace-data.js');
+ assert.ok(manager.includes('readTraceAnchorSuggestions(activeScope,debouncedQuery,8)'));
+ assert.doesNotMatch(manager,/countyOptions|readTraceAddressReferences|createReferenceAnchor/);
+ assert.ok(manager.includes('onClick={addPoint}>＋'));
+ assert.ok(api.includes('search_scope_trace_place_names'));
+ const fn=api.slice(api.indexOf('export async function readTraceAnchorSuggestions('),
+   api.indexOf('export async function readTracePopularAnchors('));
+ assert.doesNotMatch(fn,/county_id|longitude|latitude|address/);
 });
 
 test('Public Trace presents on-demand selected-place articles / Culture / Statistics',()=>{
@@ -189,7 +173,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/<option value="loc">LOC 自有痕跡<\/option>/);
   assert.ok(feature.indexOf('const periodScopeId=')<feature.indexOf('},[periodScopeId]);'),
     'derived Scope must be initialized before any effect dependency accesses it');
-  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids,/);
+  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
   assert.match(feature,/onAnchorSelect=\{choosePlace\}/);
   assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
@@ -198,7 +182,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/\{value:'statistics',label:'統計'\}/);
   assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
   assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
-  assert.match(results,/traceArticleFilters\(sourcePlaces,/);
+  assert.match(results,/traceArticleIdFilters\(placeIds,/);
   assert.match(results,/<CultureTimeline items=\{riverItems\}/);
   assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
   assert.doesNotMatch(feature,/featureNavigationHref|router\.push/);

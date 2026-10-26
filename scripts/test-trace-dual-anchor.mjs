@@ -10,7 +10,7 @@ test('Banqiao station uses only verified old and high-speed names',()=>{
 });
 test('saved route joins anchored places but deduplicates title and retains scope boundaries',()=>{
   const a=anchor('AAA00001','板橋車站'),b=anchor('BBB00002','福隆海水浴場');
-  const map={uid:'MAP00001',trace_type:'map',source_scope:'lo3rwang',anchor_uids:[a.uid,b.uid]};
+  const map={uid:'MAP00001',trace_type:'map',source_scope:'lo3rwang',anchor_list:[a.uid,b.uid]};
   const places=traceArticlePlaces(map,[a,b,{...anchor('AAA00001','另一範圍'),source_scope:'lrunes'}]);
   assert.equal(places.length,5);
   assert.ok(places.includes('福隆海水浴場'));
@@ -18,7 +18,7 @@ test('saved route joins anchored places but deduplicates title and retains scope
 });
 test('never do brand-only or distance-only fuzzy expansion',()=>{
   assert.deepEqual(traceArticlePlaces(anchor('AAA00001','拉亞漢堡行天宮店')),['拉亞漢堡行天宮店']);
-  assert.deepEqual(traceArticlePlaces({uid:'MAP00001',trace_type:'map',source_scope:'lo3rwang',anchor_uids:['unknown']},[]),[]);
+  assert.deepEqual(traceArticlePlaces({uid:'MAP00001',trace_type:'map',source_scope:'lo3rwang',anchor_list:['unknown']},[]),[]);
 });
 test('trace data and on-demand reports work without ISR or article preloading',()=>{
   const route=source('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js');
@@ -29,7 +29,7 @@ test('trace data and on-demand reports work without ISR or article preloading',(
   assert.match(client,/return false/);
   assert.doesNotMatch(trace,/readNumericIsr\(scopeId,'traces'\)/);
   assert.match(trace,/maps\.map\(map/);
-  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_uids\)/);
+  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list\)/);
   assert.match(report,/enabled:enabled&&tab==='articles'/);
   assert.match(report,/enabled:useSummary/);
   assert.match(report,/readPlaceSummary\(targetScope/);
