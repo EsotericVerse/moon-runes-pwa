@@ -9,7 +9,7 @@ import {archiveEntrySignatures,summarizeArchiveSources} from './archive-source-s
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
-import {facebookBackupPlace} from './facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -110,7 +110,8 @@ function normalize(row,{platform,kind,path,index,conversation}){
     item.noteTweetId||item.uri||'');
   const timestamp=item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
-    item.string_map_data?.['Creation Time']?.timestamp;
+    item.string_map_data?.['Creation Time']?.timestamp??
+    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
   const createdAt=iso(timestamp);
   const originalTimestamp=timestamp===undefined?'':String(timestamp);
   const relative=cleanPath(path).replace(/^.*?(?=messages\/)/i,'');
