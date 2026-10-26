@@ -38,11 +38,10 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [focusLocation,setFocusLocation]=useState(null);
   const [quickCandidates,setQuickCandidates]=useState([]);
   const [quickBusy,setQuickBusy]=useState(false);
+  // Existing references are searched only on an explicit action, not per key.
+  // Names, street addresses and floor/unit strings share the same lookup.
+  const [referenceText,setReferenceText]=useState('');
   const [sharedTerm,setSharedTerm]=useState('');
-  useEffect(()=>{
-    const timer=setTimeout(()=>setSharedTerm(title.trim()),300);
-    return()=>clearTimeout(timer);
-  },[title]);
   const sharedReferences=useAsyncResource(['trace-shared-spatial-references',sharedTerm],
     ()=>readSharedSpatialReferences(sharedTerm),
     {enabled:!editingUid&&sharedTerm.length>=2,revalidateOnFocus:false,revalidateOnReconnect:false});
@@ -207,8 +206,21 @@ function AnchorEditor({scopeId,spatial,reload}){
           {quickBusy?'定位中…':'快速定位'}
         </button>
       </div>
+      {!editingUid?<div className="loc-trace-quick-field">
+        <label>查找 LOC 已有地點／門牌／樓層
+          <input type="search" maxLength={100} value={referenceText}
+            onChange={e=>setReferenceText(e.target.value)}
+            placeholder="可輸入店名、地址、B1 或室別；留空使用上面的地點名稱"
+            disabled={busy||quickBusy}/>
+        </label>
+        <button className="loc-button" type="button"
+          onClick={()=>setSharedTerm((referenceText.trim()||address.trim()||title.trim()).slice(0,100))}
+          disabled={busy||quickBusy||(referenceText.trim()||address.trim()||title.trim()).length<2}>
+          查詢已有錨點
+        </button>
+      </div>:null}
       {!editingUid&&sharedTerm.length>=2?<div className="loc-trace-quick-results" role="group" aria-label="LOC 已有空間地址參考">
-        <strong>LOC 已有錨點／地址參考</strong>
+        <strong>LOC 已有錨點／地址參考：{sharedTerm}</strong>
         <p className="scope-status">自己的錨點會開啟編輯；其他 Scope 的資料只帶入位置參考，仍建立自己的新 UID。沒有門牌的紀錄不代表地址已核實。</p>
         {sharedReferences.isPending?<p className="scope-status">正在比對現有空間錨點…</p>:null}
         {sharedReferences.error?<p role="status" className="scope-status scope-error">
