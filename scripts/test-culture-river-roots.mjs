@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {readFileSync} from 'node:fs';
 import {summarizeCultureRiverRoots,selectCultureRiverChildren,buildCultureRiverRootPayload} from '../app/loc/culture-river-roots.mjs';
 const taxonomy={
   categories:[{category_code:'facebook',enabled:true},{category_code:'others',enabled:true}],
@@ -70,4 +71,16 @@ test('empty and single-source Scopes retain correct parent counts without a chil
   ]);
   assert.equal(single.groups.length,1);
   assert.equal(single.groups[0].item_count,7);
+});
+
+test('progressive Culture component uses SQL once and does not require numeric ISR',()=>{
+  const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.match(source,/const stagedSourceRiver=Boolean\(publishedTaxonomy\)/);
+  assert.match(source,/queryFn:async\(\)=>\{\s*const \{text,media\}=await selectScopeDailyCounts\(scopeData/);
+  assert.match(source,/return buildCultureRiverRootPayload\(\{text,media\},publishedTaxonomy\)/);
+  assert.match(source,/return selectCultureRiverChildren\(sourceRootQuery\.data\.numericRows,publishedTaxonomy,expandedSourceRoots\)/);
+  assert.match(source,/\(!stagedSourceRiver\|\|expandedSourceReady\)/);
+  assert.match(source,/numericRows:requestedChildren/);
+  assert.doesNotMatch(source,/readNumericIsr|usesNumericIsr|systemChildrenQuery|customChildrenQuery|mediaChildrenQuery/);
+  assert.equal((source.match(/await selectScopeDailyCounts\(scopeData/g)||[]).length,1);
 });
