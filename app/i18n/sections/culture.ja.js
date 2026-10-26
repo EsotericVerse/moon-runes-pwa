@@ -5,7 +5,7 @@ export default {
   "combinedSources": "ソースの合計",
   "combinedRiver": "ソース全体のタイムライン",
   "classificationRiver": "作品体系の全体像",
-  "structure": "タイムトレース・イベント・アンカー",
+  "structure": "時期・イベント・アンカー",
   "period": "時期",
   "allTime": "全期間",
   "allWorks": "すべての作品",
