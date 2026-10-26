@@ -162,7 +162,7 @@ test('native LOC Frame is the initial management Scope and keeps foreign UIDs ou
   assert.match(page,/readCurrentTraceAnchors\(activeScope,current\.anchor_uids,/);
   assert.match(page,/account\.canManageScopeSync\(activeScope\)/);
   assert.match(page,/readTraceAddressReferences\(activeScope,debouncedReference,8\)/);
-  assert.match(page,/addTraceAnchor\(\{scopeId:owner,\.\.\.fields\}\)/);
+  assert.match(page,/addTraceAnchor\(\{scopeId:owner,\.\.\.fields,forceNewIdentity:true\}\)/);
   assert.match(page,/readCurrentTraceAnchors\(owner,\[uid\],\{nativeOnly:owner==='loc'\}\)/);
   assert.match(data,/neq\('scope_id',owner\)/);
   assert.match(data,/not\('longitude','is',null\)\.not\('latitude','is',null\)/);
