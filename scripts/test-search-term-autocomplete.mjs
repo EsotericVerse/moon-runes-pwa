@@ -50,11 +50,11 @@ test('offline rebuild and runtime autocomplete exclude spatial check-in candidat
 
 test('batch rebuilding canonicalizes title families and rejects platform activity templates',()=>{
   const rebuild=readFileSync(new URL('../scripts/sql/rebuild-scope-search-terms.sql',import.meta.url),'utf8');
-  assert.match(rebuild,/having count\\(distinct uid\\)>=3/i);
+  assert.match(rebuild,/having count\(distinct uid\)>=3/i);
   assert.match(rebuild,/Wang Oscar/);
-  assert.match(rebuild,/split_part\\(regexp_replace\\(btrim\\(title\\)/);
-  assert.match(rebuild,/^.*?group by regexp_replace\\(lower\\(btrim\\(term\\)\\)/m);
-  assert.match(rebuild,/count\\(distinct g\\.uid\\)/);
+  assert.match(rebuild,/split_part\(regexp_replace\(btrim\(title\)/);
+  assert.match(rebuild,/group by regexp_replace\(lower\(btrim\(term\)\)/);
+  assert.match(rebuild,/count\(distinct g\.uid\)/);
   assert.match(rebuild,/0::integer n,'keyword'/);
-  assert.doesNotMatch(rebuild,/'place'::text kind|btrim\\(source_place\\)/);
+  assert.doesNotMatch(rebuild,/'place'::text kind|btrim\(source_place\)/);
 });
