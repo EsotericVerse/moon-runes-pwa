@@ -522,8 +522,16 @@ test('LOC group member editing and system Admin panels are disjoint; media targe
   assert.match(page,/LocGroupMemberList/);
   assert.doesNotMatch(page,/admin-panels\/AdminRegistry|AdminReservedScopeIds/);
   assert.match(admin,/section==='registry'/);
-  assert.match(admin,/section==='reserved'/);
-  assert.match(admin,/section==='blocklist'/);
+  assert.match(admin,/section==='lists'/);
+  assert.match(admin,/section==='network'/);
+  assert.match(admin,/<AdminReservedScopeIds\/>/);
+  assert.match(admin,/<AdminEmailBlocklist\/>/);
+  assert.match(admin,/<DatabaseTarget\/>/);
+  assert.match(admin,/<IsrDomainTarget\/>/);
+  assert.doesNotMatch(admin,/section==='reserved'/);
+  assert.doesNotMatch(admin,/section==='blocklist'/);
+  assert.doesNotMatch(admin,/section==='database'/);
+  assert.doesNotMatch(admin,/section==='isr'/);
   assert.doesNotMatch(admin,/TraceManagementPanel/);
   assert.match(target,/AUTHOR_SCOPE_ID='lo3rwang'/);
   assert.match(target,/scopeData\?\.galaxyMedia/);
@@ -531,6 +539,37 @@ test('LOC group member editing and system Admin panels are disjoint; media targe
   assert.match(searchManage,/label:'治理原則',shortLabel:'治理原則'/);
   assert.match(publicSearch,/UI_COPY\.features\.trace\.detailsLabel/);
   assert.match(zh,/"detailsLabel": "治理原則"/);
+});
+
+test('Admin first tab is People; lists and network consolidate existing secure editors',()=>{
+  const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+  const admin=read('app/loc/views/AdminHomeView.jsx');
+  const cache=read('app/loc/views/admin-panels/IsrDomainTarget.jsx');
+  const dock=read('app/modular/edit-dock.jsx');
+  const reserved=read('app/loc/views/admin-panels/AdminReservedScopeIds.jsx');
+  const email=read('app/loc/views/admin-panels/AdminEmailBlocklist.jsx');
+  const registry=read('app/loc/views/admin-panels/AdminRegistry.jsx');
+  const menu=admin.match(/const ADMIN_OPTIONS=Object\.freeze\(\[([\s\S]*?)\]\);/);
+  assert.ok(menu,'Admin options are missing');
+  assert.deepEqual([...menu[1].matchAll(/value:'([^']+)'/g)].map(x=>x[1]),
+    ['registry','lists','network','featureHero','themes']);
+  assert.match(admin,/useManagementSection\(ADMIN_OPTIONS,'registry'/);
+  for(const [oldId,newId] of Object.entries({
+    database:'network',isr:'network',reserved:'lists',blocklist:'lists'
+  }))assert.ok(admin.includes(oldId+":'"+newId+"'"),'legacy section '+oldId+' not mapped');
+  assert.match(admin,/section==='lists'\?<\>[\s\S]*?<AdminReservedScopeIds\/>[\s\S]*?<AdminEmailBlocklist\/>[\s\S]*?<\/\>/);
+  assert.match(admin,/section==='network'\?<\>[\s\S]*?<DatabaseTarget\/>[\s\S]*?<IsrDomainTarget\/>[\s\S]*?<\/\>/);
+  assert.match(cache,/<h2>快取<\/h2>/);
+  assert.match(cache,/MAX_ISR_DOMAINS/);
+  assert.match(cache,/admin-cache-mode/);
+  assert.match(dock,/const dirty=\[\.\.\.registeredEditors\.current\]\.filter/);
+  assert.match(dock,/for\(const editor of editors\)/);
+  assert.match(reserved,/useEditDockForm/);
+  assert.match(email,/useEditDockForm/);
+  assert.match(registry,/useEditDockForm/);
+  assert.match(reserved,/silver\.block_scopeid/);
+  assert.match(email,/silver\.email_blocklist/);
+  assert.doesNotMatch(admin,/updateRows|deleteRows|insertRows/);
 });
 
 test('Culture second river waits for its first source snapshot and avoids lazy density remounts',()=>{
