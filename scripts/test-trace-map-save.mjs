@@ -54,6 +54,7 @@ function saveHarness({edit=false,firstReadMiss=false,writeFails=false,cacheFails
     busy:false,canEdit:true,editorOpen:true,setBusy:x=>states.push(x),
     setNotice:x=>messages.push(x),setIsError:()=>{},
     validateTraceRouteLabels:(cls,grp)=>({class:cls,class_group:grp}),
+    normalize:value=>String(value||'').trim(),
     queue:['AAA00001','BBB00002'],MAX_STOPS:80,missing:[],activeScope:'lo3rwang',
     title:'成長路線測試',description:'保留路線',className:'跟朋友',group:'夜市',
     anchors:new Map([
