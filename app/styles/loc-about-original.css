@@ -330,8 +330,7 @@
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"])[data-loc-view="home"] .loc-home>.loc-home-block--hero:not(.loc-home-block--hero-side)>.loc-home-block__media img{
   filter:none;
   mask-image:none;
-  /* Background mode is full-bleed; side mode retains object-fit:contain. */
-  object-fit:cover;
+  object-fit:contain;
   object-position:center center;
 }
 /* The former author's editorial gradient shades copy without blacking out
