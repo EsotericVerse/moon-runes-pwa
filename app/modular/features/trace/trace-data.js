@@ -3,6 +3,7 @@
 import {dbPublicClient,dbAuthRelation} from '../../../loc/db-client.mjs';
 import {createUid8} from '../../../loc/uid';
 import {traceCountyId} from './trace-county-id.mjs';
+import {validateTraceRouteLabels} from './trace-route-classes.mjs';
 import {anchorAddress,findAnchorWriteMatches,normalizeAnchorAddress,organizeAnchorCandidates} from './trace-organizer.mjs';
 
 // Exactly one source table per Scope. Source-table SQL triggers mirror changes
@@ -82,27 +83,30 @@ export const traceAllAnchorsKey=scopeId=>['trace-all-anchors',scopeId];
 
 const TRACE_DISPLAY_COLUMNS='uid,trace_type,title,description,longitude,latitude,radius_m,anchor_uids,created_at,times,county_id';
 
-export async function readTraceMapIndex(scopeId){
+export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const union=id==='loc';
-  const columns='uid,trace_type,title,description,anchor_uids,created_at'+(union?',scope_id':'');
-  const result=await dbPublicClient.schema('silver').from(id+'_trace')
-    .select(columns).eq('trace_type','map')
-    .order('created_at',{ascending:false}).limit(2000);
+  const columns='uid,trace_type,title,description,anchor_uids,created_at,"class",class_group'+(union?',scope_id':'');
+  let request=dbPublicClient.schema('silver').from(id+'_trace')
+    .select(columns).eq('trace_type','map');
+  if(union&&nativeOnly)request=request.eq('scope_id','loc');
+  const result=await request.order('created_at',{ascending:false}).limit(2000);
   return (verified(result,'痕跡列表讀取')||[])
     .map(row=>({...row,source_scope:union?row.scope_id:id}));
 }
 
-export async function readCurrentTraceAnchors(scopeId,anchorUids=[]){
+export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=false}={}){
   const id=sourceId(scopeId);
   const ids=[...new Set((Array.isArray(anchorUids)?anchorUids:[])
     .map(uid=>String(uid||'').trim()).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))];
   if(ids.length>80)throw Error('單張痕跡圖的站點超過上限。');
   if(!ids.length)return [];
   const union=id==='loc';
-  const result=await dbPublicClient.schema('silver').from(id+'_trace')
+  let request=dbPublicClient.schema('silver').from(id+'_trace')
     .select(TRACE_DISPLAY_COLUMNS+(union?',scope_id':''))
-    .eq('trace_type','anchor').in('uid',ids).limit(80);
+    .eq('trace_type','anchor').in('uid',ids);
+  if(union&&nativeOnly)request=request.eq('scope_id','loc');
+  const result=await request.limit(80);
   const found=(verified(result,'Current 痕跡錨點讀取')||[])
     .map(row=>({...row,source_scope:union?row.scope_id:id}));
   const byUid=new Map(found.map(row=>[row.uid,row]));
@@ -112,6 +116,32 @@ export async function readCurrentTraceAnchors(scopeId,anchorUids=[]){
 
 // "All anchors" is an explicit choice, not an eager bootstrap dependency.
 // Paginate: a single 2,000-row cap would silently hide old check-ins.
+// Search the server only after a user types inside a selected county.
+export async function readTraceAnchorSuggestions(scopeId,countyId,term,limit=8){
+  const id=sourceId(scopeId),q=String(term||'').trim().slice(0,100);
+  const county=String(countyId||'');
+  if(!q||!county)return [];
+  const union=id==='loc';
+  let request=dbPublicClient.schema('silver').from(id+'_trace')
+    .select('uid,title,trace_type,county_id,longitude,latitude'+(union?',scope_id':''))
+    .eq('trace_type','anchor').ilike('title','%'+q.replace(/[\\%_]/g,'\\export async function readAllTraceAnchors(scopeId){')+'%');
+  if(county==='OTHER')request=request.is('county_id',null);
+  else request=request.eq('county_id',county);
+  if(union)request=request.eq('scope_id','loc');
+  const result=await request.order('title',{ascending:true})
+    .order('uid',{ascending:true}).limit(Math.min(Math.max(1,limit),8));
+  return (verified(result,'空間錨點自動完成')||[])
+    .map(row=>({...row,source_scope:union?row.scope_id:id}));
+}
+export async function readTracePopularAnchors(scopeId){
+  const id=sourceId(scopeId);
+  const result=await dbPublicClient.schema('silver').rpc('trace_popular_anchors',{
+    p_scope_id:id,p_limit:10
+  });
+  return (verified(result,'常用空間錨點')||[])
+    .map(row=>({...row,trace_type:'anchor',source_scope:id}));
+}
+
 export async function readAllTraceAnchors(scopeId){
   const id=sourceId(scopeId),union=id==='loc',pageSize=800;
   const rows=[];
@@ -277,7 +307,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
   return verified(result,'更新定錨點');
 }
 
-function validatedTraceMapValues({scopeId,title,description='',anchorUids=[],anchors=[]}){
+function validatedTraceMapValues({scopeId,title,description='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const chosen=Array.isArray(anchorUids)?anchorUids:[];
   if(chosen.length<2||chosen.length>80||new Set(chosen).size!==chosen.length)
@@ -287,6 +317,7 @@ function validatedTraceMapValues({scopeId,title,description='',anchorUids=[],anc
     throw Error('痕跡圖不能引用不同 Scope 或不存在的定錨點。');
   return {
     title:verifiedText(title,'痕跡圖名稱'),description:descriptionText(description),
+    ...validateTraceRouteLabels(className,group),
     anchor_uids:chosen
   };
 }
@@ -295,16 +326,16 @@ function traceMapUid(uid){
   if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error('痕跡圖 UID 格式無效。');
   return id;
 }
-export async function addTraceMap({scopeId,title,description='',anchorUids=[],anchors=[]}){
+export async function addTraceMap({scopeId,title,description='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
   const data={uid:createUid8(),trace_type:'map',
-    ...validatedTraceMapValues({scopeId:id,title,description,anchorUids,anchors})};
+    ...validatedTraceMapValues({scopeId:id,title,description,className,group,anchorUids,anchors})};
   const result=await dbAuthRelation(relation(id)).insert(data).select('uid').single();
   return verified(result,'新增痕跡圖');
 }
-export async function updateTraceMap({scopeId,uid,title,description='',anchorUids=[],anchors=[]}){
+export async function updateTraceMap({scopeId,uid,title,description='',className='',group='',anchorUids=[],anchors=[]}){
   const id=sourceId(scopeId);
-  const changes=validatedTraceMapValues({scopeId:id,title,description,anchorUids,anchors});
+  const changes=validatedTraceMapValues({scopeId:id,title,description,className,group,anchorUids,anchors});
   let request=dbAuthRelation(relation(id)).update(changes)
     .eq('uid',traceMapUid(uid)).eq('trace_type','map');
   if(id==='loc')request=request.eq('scope_id','loc');
