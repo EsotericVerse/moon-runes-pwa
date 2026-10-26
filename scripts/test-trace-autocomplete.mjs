@@ -41,27 +41,28 @@ test('county grouping retains distinct UIDs and does not silently merge same nam
  assert.equal(groups.get('TW-TPE').length,1);
  assert.notEqual(groups.get('TW-NWT')[0].uid,groups.get('TW-NWT')[1].uid);
 });
-test('code saves ordered station UIDs and stores county_id on every anchor write path',()=>{
- const manager=read('app/loc/TraceManagement.jsx');
+test('Frame editor queries by county + name or UID and adds only on explicit plus',()=>{
+ const manager=read('app/loc/TraceRouteManager.jsx');
  const storage=read('app/modular/features/trace/trace-data.js');
- assert.match(manager,/traceAnchorSuggestions\(available,county,pointQuery,selected,8\)/);
- assert.match(manager,/traceAnchorCompletionUid\(matches,pointUid\)/);
- assert.match(manager,/selected\.includes\(completionUid\)/);
- assert.match(manager,/setSelected\(ids=>\[\.\.\.ids,completionUid\]\)/);
+ assert.match(manager,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
+ assert.match(manager,/setQueue\(ids=>\[\.\.\.ids,choice\.uid\]\)/);
+ assert.match(manager,/onClick=\{addPoint\}>＋/);
+ assert.match(manager,/setPointQuery\(event\.target\.value\);setPicked\(null\)/);
+ assert.match(storage,/uid\.eq\./);
  assert.match(storage,/county_id:await countyIdAt\(longitude,latitude\)/);
  assert.match(storage,/county_id:traceCountyId\(countyForCoordinates\(place\.longitude,place\.latitude\)\)/);
  assert.match(storage,/anchor_uids:chosen/);
 });
 
-test('many identically named businesses can be disambiguated by UID or address',()=>{
+test('same-name candidate list stays capped at eight; exact UID is a separate server lookup',()=>{
  const crowds=Array.from({length:15},(_,index)=>({
    uid:'X'+String(index).padStart(7,'0'),trace_type:'anchor',
    county_id:'TW-NWT',title:'同名店',
    description:'地址：新北市板橋區第'+index+'路'
  }));
  assert.equal(traceAnchorSuggestions(crowds,'TW-NWT','同名店').length,8);
- assert.deepEqual(traceAnchorSuggestions(crowds,'TW-NWT','同名店 X0000012').map(a=>a.uid),['X0000012']);
- assert.deepEqual(traceAnchorSuggestions(crowds,'TW-NWT','同名店 第12路').map(a=>a.uid),['X0000012']);
+ assert.ok(read('app/modular/features/trace/trace-data.js').includes("'title.ilike.'+pattern+',uid.eq.'+q"));
+ assert.match(read('app/loc/TraceRouteManager.jsx'),/UID \{anchor\.uid\}/);
 });
 test('same address but different business names are never safe for automatic reuse',()=>{
  const previous={uid:'OLD12345',trace_type:'anchor',source_scope:'lo3rwang',title:'舊餐廳',
