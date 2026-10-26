@@ -171,13 +171,15 @@ export async function readTraceAnchorSuggestions(scopeId,countyId,term,limit=8){
   const union=id==='loc';
   const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
   let request=dbPublicClient.schema('silver').from(id+'_trace')
-    .select('uid,title,trace_type,county_id,longitude,latitude'+(union?',scope_id':''))
+    .select('uid,title,trace_type,county_id,address,floor_label,floor_level,longitude,latitude'+(union?',scope_id':''))
     .eq('trace_type','anchor');
-  // An exact eight-character UID can identify an otherwise hidden same-name
-  // candidate beyond the first eight title suggestions.
-  request=/^[A-Za-z0-9]{8}$/.test(q)
-    ?request.or('title.ilike.'+pattern+',uid.eq.'+q)
-    :request.ilike('title',pattern);
+  // Address and place label are independent searchable evidence; matching a
+  // full postal address must not depend on a place having the same title.
+  // Quote the OR filter literal so commas and parentheses stay data.
+  const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
+  const filters=['title.ilike.'+literal,'address.ilike.'+literal];
+  if(/^[A-Za-z0-9]{8}$/.test(q))filters.push('uid.eq.'+q);
+  request=request.or(filters.join(','));
   if(county==='OTHER')request=request.is('county_id',null);
   else request=request.eq('county_id',county);
   if(union)request=request.eq('scope_id','loc');
