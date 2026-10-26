@@ -81,10 +81,25 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/const page=slot\.page/);
   assert.match(hero,/page_name:page,block_order:1/);
   assert.match(hero,/pageOverride="scope_admin"/);
-  for(const [id,label] of [['management-time','時間定錨'],['management-keywords','關鍵詞'],['management-spatial','空間定錨'],['management-advanced','進階搜尋']]){
-    assert.ok(hero.includes(`id:'${id}',label:'${label}'`));
-  }
-  assert.match(hero,/!feature\.managementKey/);
+  // Six Admin feature tabs only; these four management Heroes belong INSIDE
+  // their respective panels, not as separate navigation buttons.
+  const definitions=hero.match(/const FEATURES=Object\\.freeze\\((\\[[\\s\\S]*?\\])\\.map\\(feature=>/);
+  assert.ok(definitions,'six feature definitions must be present');
+  const features=Function('return '+definitions[1])();
+  assert.deepEqual(features.map(({id,label,managementKey=null})=>[id,label,managementKey]),[
+    ['culture','文化','time'],
+    ['statics','統計','keywords'],
+    ['trace','痕跡','spatial'],
+    ['search','搜尋','advanced'],
+    ['admin','系統管理',null],
+    ['setting','個人設定',null]
+  ]);
+  assert.match(hero,/FEATURES\\.map\\(item=><button/);
+  assert.doesNotMatch(hero,/FEATURE_GROUPS|management-time|management-keywords|management-spatial|management-advanced/);
+  assert.match(hero,/<ScopeEditableBlocks/);
+  assert.match(hero,/const scopeSlot=feature\\.managementKey\\?HomeBlock\\.MANAGEMENT_HERO_SLOTS\\.find/);
+  assert.match(hero,/<h4>\\{scopeSlot\\.label\\}<\\/h4>/);
+  assert.match(hero,/<ManagementHeroDetails slot=\\{scopeSlot\\} onDirtyChange=\\{trackDirty\\}\\/>/);
   assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
   assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);
   assert.doesNotMatch(read('app/modular/ui.jsx'),/group_manage/);
