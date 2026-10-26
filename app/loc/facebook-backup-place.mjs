@@ -49,6 +49,21 @@ export function facebookBackupPlace(row){
   return names.length===1?names[0]:'';
 }
 
+// Plain Facebook JSON imports may contain posts under data[0].post,
+// rather than under Galaxy's generic content/body aliases.
+export function facebookBackupPostText(row){
+  if(!row||typeof row!=='object'||Array.isArray(row))return '';
+  for(const candidate of [row.content,row.text,row.caption,row.title,row.description,
+    ...(Array.isArray(row.data)?row.data.flatMap(item=>[item?.post,item?.text]):[])]){
+    if(typeof candidate==='string'&&candidate.trim())return candidate.trim();
+  }
+  return '';
+}
+export function facebookBackupTimestamp(row){
+  return row?.timestamp??row?.creation_timestamp??row?.created_at??
+    row?.string_map_data?.['Creation Time']?.timestamp??null;
+}
+
 // Stable source-record ID for repeat imports. No external IDs are conflated
 // with the owner's Trace UID; this is only the Galaxy article's 8-char ID.
 const UID_CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
