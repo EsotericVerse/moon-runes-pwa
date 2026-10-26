@@ -25,6 +25,7 @@ import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
+import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
 import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
@@ -74,7 +75,7 @@ function labelOf(item,index,periodName=UI_COPY.format.period(index+1)){
 function sortPeriods(rows=[]){
   return [...rows].filter(item=>item?.start_date||item?.end_date).sort((a,b)=>
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))||
-    Number(a.order||0)-Number(b.order||0)
+    String(a.uid||'').localeCompare(String(b.uid||''))
   );
 }
 function periodRange(rows=[],scope='',allTime=UI_COPY.culture.allTime){
@@ -610,7 +611,7 @@ export default function Culture(){
   ,[query.data,scopeId]);
   const timeEditorItems=useMemo(()=>timelineItems.filter(item=>
     timeEditorSection==='anchor-style'
-      ?['anchor','style_comment'].includes(item.entry_type)
+      ?item.entry_type==='anchor'
       :item.entry_type===timeEditorSection
   ),[timelineItems,timeEditorSection]);
   const activeStructureKey=selectedPeriodKey||structurePreference.preferredKey;
@@ -623,7 +624,7 @@ export default function Culture(){
   // Keep every Time record in the first river. The selected period controls
   // the initial camera window, not which historic anchors are accessible.
   const anchorRecords=useMemo(()=>timelineItems
-    .filter(item=>item.entry_type==='anchor'&&item.record_id)
+    .filter(item=>item.entry_type==='anchor'&&item.uid)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.display_label||'').localeCompare(String(b.display_label||''))),[timelineItems]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
@@ -726,7 +727,7 @@ export default function Culture(){
     if(!id)return;
     switchTimelineEditor('edit-'+id,()=>{
       const recordType=String(item?.entryType||item?.raw?.entry_type||'');
-      if(recordType==='anchor'||recordType==='style_comment')setSuggestedRecordType(recordType);
+      if(['anchor','period','event'].includes(recordType))setSuggestedRecordType(recordType);
       setSelectedTimelineInfo(item||null);
       setSelectedTimelineRecordId(id);
       setSelectedTimelineDate('');
@@ -759,12 +760,7 @@ export default function Culture(){
       // Scope permissions are enforced by the database write RPC.
       const date=dayKeyFromTimelineValue(item?.start);
       if(!date)throw new Error(l.invalidAnchorDate);
-      await updateRows(scopeData.time,{
-        time_date:date,
-        date_status:'exact',
-        year_value:null,
-        updated_at:new Date().toISOString()
-      },{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      await updateRows(scopeData.time,{time_date:date},{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
       await refreshTimelineData();
       setEditError('');
       return {...item,start:date};
@@ -775,21 +771,9 @@ export default function Culture(){
   }
   async function removeTimelineRecord(item,row){
     if(!row?.recordId||!scopeData?.time)return null;
-    const source=row?.raw||{};
-    if(row.entryType==='anchor'){
-      const anchorId=String(source?.resource_id||row.resourceId||'').trim();
-      const referenced=[...timelineItems,...(query.data?.styleComments||[])].some(candidate=>
-        String(candidate?.entry_type||'')!=='anchor'&&
-        Array.isArray(candidate?.anchor_ids)&&candidate.anchor_ids.map(String).includes(anchorId)
-      );
-      if(referenced){
-        setEditError(l.anchorReferenced);
-        return null;
-      }
-    }
     try{
       // Scope permissions are enforced by the database write RPC.
-      await deleteRows(scopeData.time,{filters:[{column:'record_id',operator:'eq',value:row.recordId}]});
+      await deleteRows(scopeData.time,{filters:[{column:'uid',operator:'eq',value:row.recordId}]});
       setSelectedTimelineRecordId('');
       setSelectedTimelineDate('');
       setEditError('');
@@ -1028,14 +1012,13 @@ export default function Culture(){
       // authorization check. The database RPC remains the final guard.
       const verified=await account.refresh();
       if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('請先登入具備此 Scope 權限的帳號。');
-      const updatedAt=new Date().toISOString();
-      await insertRows(scopeData.time,dates.map(date=>({
-        record_type:'anchor',label:'建議定錨 '+date,
-        resource_id:'anchor:'+globalThis.crypto.randomUUID(),
-        note:null,status:'active',display_order:null,visibility:null,
-        time_date:date,anchor_ids:null,date_status:'exact',year_value:null,
-        updated_at:updatedAt
-      })));
+      const used=new Set((query.data?.timelineItems||[]).filter(row=>row?.entry_type==='anchor').map(row=>String(row.uid||'')));
+      const payload=dates.map(date=>{
+        const uid=allocateTimeUid([...used].map(uid=>({uid})));
+        used.add(uid);
+        return {uid,type:'anchor',title:'建議定錨 '+date,description:null,time_date:date,anchor_ids:null};
+      });
+      await insertRows(scopeData.time,payload);
       setSelectedVirtualAnchorDates([]);
       await refreshTimelineData();
     }catch(error){setEditError(String(error?.message||error));}
@@ -1212,10 +1195,8 @@ export default function Culture(){
             </div>:null}
             <div className='scope-culture-time-input-area'>
               {timeEditorSection==='anchor-style'?<div className='scope-culture-record-kind' role='group' aria-label='新增或編輯類型'>
-                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='anchor':suggestedRecordType!=='style_comment'}
-                  className='loc-button' onClick={()=>beginTimelineCreation('anchor','')}>定錨點</button>
-                <button type='button' aria-pressed={selectedTimelineRecordId?String(selectedTimelineInfo?.entryType||selectedTimelineInfo?.raw?.entry_type)==='style_comment':suggestedRecordType==='style_comment'}
-                  className='loc-button' onClick={()=>beginTimelineCreation('style_comment','')}>風格標籤</button>
+                <button type='button' aria-pressed={true} className='loc-button'
+                  onClick={()=>beginTimelineCreation('anchor','')}>定錨點</button>
               </div>:null}
               <CultureTimelineEditor key={scopeId+':'+timeEditorSection+':'+timelineEditorRevision}
                 scopeId={scopeId}
@@ -1223,7 +1204,7 @@ export default function Culture(){
                 selectedRecordId={selectedTimelineRecordId}
                 suggestedAnchorDate={selectedTimelineDate}
                 suggestedRecordType={suggestedRecordType}
-                defaultRecordType={timeEditorSection==='anchor-style'?(suggestedRecordType==='style_comment'?'style_comment':'anchor'):timeEditorSection}
+                defaultRecordType={timeEditorSection==='anchor-style'?'anchor':timeEditorSection}
                 suggestedRequestNonce={suggestedRequestNonce}
                 onClose={()=>{setSelectedTimelineRecordId('');setSelectedTimelineDate('');setSelectedTimelineInfo(null);setSuggestedRequestNonce(0)}}/>
             </div>
