@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
@@ -9,7 +10,7 @@ import {TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
   readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,
   addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
 import {TRACE_COUNTY_IDS} from '../modular/features/trace/trace-county-id.mjs';
-import {routeClasses,routeGroups,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
+import {routeClasses,routeGroups,traceClassLabel,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
 import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
   from '../modular/features/trace/trace-route-preference.mjs';
 
@@ -19,15 +20,19 @@ const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
 const countyOptions=[...Object.entries(TRACE_COUNTY_IDS).map(([name,id])=>({name,id})),
   {id:'OTHER',name:'未判定／其他地區'}];
 const MAX_STOPS=80;
+const ALL_CLASSES='__trace_all_classes__';
+const ALL_GROUPS='__trace_all_groups__';
 const normalize=value=>String(value||'').trim();
 
 export default function TraceRouteManager({scopeId}){
   const account=useAccount();
   const cache=useResourceCache();
+  const searchParams=useSearchParams();
+  const requestedFrame=searchParams?.get('frame')||'';
   const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
   const [selectedUid,setSelectedUid]=useState('');
-  const [classFilter,setClassFilter]=useState('');
-  const [groupFilter,setGroupFilter]=useState('');
+  const [classFilter,setClassFilter]=useState(ALL_CLASSES);
+  const [groupFilter,setGroupFilter]=useState(ALL_GROUPS);
   const [routeFilter,setRouteFilter]=useState('');
   const [editingUid,setEditingUid]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
@@ -47,13 +52,14 @@ export default function TraceRouteManager({scopeId}){
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
   const pendingSaved=useRef(null);
+  const openedFrame=useRef('');
 
   useEffect(()=>{
     const timer=setTimeout(()=>setDebouncedQuery(normalize(pointQuery)),240);
     return()=>clearTimeout(timer);
   },[pointQuery]);
   useEffect(()=>{
-    setSelectedUid('');setClassFilter('');setGroupFilter('');setRouteFilter('');
+    setSelectedUid('');setClassFilter(ALL_CLASSES);setGroupFilter(ALL_GROUPS);setRouteFilter('');
     setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
     setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
     pendingSaved.current=null;setNotice('');setIsError(false);
@@ -80,8 +86,8 @@ export default function TraceRouteManager({scopeId}){
   const availableClasses=useMemo(()=>routeClasses(maps),[maps]);
   const availableGroups=useMemo(()=>routeGroups(maps,classFilter),[maps,classFilter]);
   const listed=useMemo(()=>searchTraceRoutes(maps,{
-    ...(classFilter?{className:classFilter}:{}),
-    ...(groupFilter?{group:groupFilter}:{}),query:routeFilter
+    ...(classFilter!==ALL_CLASSES?{className:classFilter}:{}),
+    ...(classFilter!==ALL_CLASSES&&groupFilter!==ALL_GROUPS?{group:groupFilter}:{}),query:routeFilter
   }),[maps,classFilter,groupFilter,routeFilter]);
   const canEdit=activeScope==='loc'
     ?account.canManageGroupSync('loc')
@@ -138,6 +144,17 @@ export default function TraceRouteManager({scopeId}){
     setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
     setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
   };
+  // A Trace page's Edit action opens the exact current Frame, not an
+  // unrelated browser-local default. Revalidate by UID in the fetched index.
+  useEffect(()=>{
+    if(!/^[A-Za-z0-9]{8}$/.test(requestedFrame)||!canEdit||!index.data)return;
+    const key=activeScope+':'+requestedFrame;
+    if(openedFrame.current===key)return;
+    const target=index.data.find(map=>map.uid===requestedFrame);
+    if(!target)return;
+    openedFrame.current=key;
+    edit(target);
+  },[activeScope,canEdit,index.data,requestedFrame]);
   const pickAnchor=item=>{
     setCounty(item.county_id||'OTHER');
     setPointQuery(item.title);setPicked(item);
@@ -162,7 +179,7 @@ export default function TraceRouteManager({scopeId}){
   };
   const save=async event=>{
     event?.preventDefault?.();
-    if(busy||!canEdit||!editorOpen)return;
+    if(busy||!canEdit||!editorOpen)return false;
     setBusy(true);setNotice('');setIsError(false);
     try{
       const labels=validateTraceRouteLabels(className,group);
@@ -191,7 +208,8 @@ export default function TraceRouteManager({scopeId}){
       let cacheWarning=false;
       try{await refreshFrame(activeScope);}catch{cacheWarning=true;}
       setNotice('痕跡圖已儲存並重新讀取確認。'+(cacheWarning?'其他已開啟頁面可能需要手動重新整理。':''));
-    }catch(error){setIsError(true);setNotice(String(error?.message||error));}
+      return true;
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));return false;}
     finally{setBusy(false);}
   };
   const remove=async map=>{
@@ -246,17 +264,17 @@ export default function TraceRouteManager({scopeId}){
     <div className="loc-trace-route-browse">
       <label>Class
         <select className="scope-select" value={classFilter}
-          onChange={event=>{setClassFilter(event.target.value);setGroupFilter('');}}>
-          <option value="">全部 Class</option>
-          {availableClasses.map(value=><option key={value} value={value}>{value}</option>)}
+          onChange={event=>{setClassFilter(event.target.value);setGroupFilter(ALL_GROUPS);}}>
+          <option value={ALL_CLASSES}>全部 Class</option>
+          {availableClasses.map(value=><option key={value||'_empty'} value={value}>{traceClassLabel(value)}</option>)}
         </select>
       </label>
       <label>領域
         <select className="scope-select" value={groupFilter}
-          disabled={!classFilter}
+          disabled={classFilter===ALL_CLASSES}
           onChange={event=>setGroupFilter(event.target.value)}>
-          <option value="">全部領域</option>
-          {availableGroups.filter(Boolean).map(value=><option key={value} value={value}>{value}</option>)}
+          <option value={ALL_GROUPS}>全部領域</option>
+          {availableGroups.map(value=><option key={value||'_empty'} value={value}>{value||'未分組'}</option>)}
         </select>
       </label>
       <label>尋找痕跡圖
