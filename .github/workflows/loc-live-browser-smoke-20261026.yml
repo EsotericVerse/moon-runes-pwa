@@ -1,0 +1,44 @@
+name: One-time LOC browser hydration recovery smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/loc-live-browser-smoke-20261026.yml
+permissions:
+  contents: read
+jobs:
+  guest-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - name: Headless Chrome against actual published LOC without deployments
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME" ]; then
+            echo "::error::No headless Chrome installed on GitHub runner."
+            exit 1
+          fi
+          echo "Browser: $CHROME"
+          for route in culture statics lo3rwang/culture lo3rwang/statics; do
+            label="${route//\//-}"
+            url="https://loc.lo3rwang.cc/$route/"
+            echo "Testing $url"
+            timeout 65s "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --disable-background-networking --virtual-time-budget=17000 \
+              --dump-dom "$url" >"/tmp/loc-$label.html" 2>"/tmp/loc-$label.stderr"
+            test -s "/tmp/loc-$label.html"
+            if grep -qE '目前資料庫連結失敗|目前資料庫連線失敗|資料庫連結失敗' "/tmp/loc-$label.html"; then
+              echo "::error::$url still displays database connection failure"
+              exit 1
+            fi
+            bytes="$(wc -c <"/tmp/loc-$label.html")"
+            timelines="$(grep -o 'vis-timeline' "/tmp/loc-$label.html" | wc -l || true)"
+            charts="$(grep -o 'recharts\|scope-stat-chart\|scope-stat-data' "/tmp/loc-$label.html" | wc -l || true)"
+            errors="$(grep -o 'scope-error' "/tmp/loc-$label.html" | wc -l || true)"
+            echo "BROWSER LOADED: $url, bytes=$bytes, timelineMarkers=$timelines, chartMarkers=$charts, errorClassCount=$errors"
+            if [ "$errors" -gt 0 ]; then
+              echo "::warning::Rendered DOM contains generic scope-error markers; inspect affected routes before claiming acceptance."
+            fi
+          done
