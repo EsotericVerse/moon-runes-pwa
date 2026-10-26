@@ -11,6 +11,6 @@ export async function loadScopeSearchTerms(scopeId,{signal}={}){
     orders:[{column:'document_count',ascending:false}],
     limit:SEARCH_TERM_LIMIT,signal
   });
-  return rows.filter(row=>typeof row.term==='string'&&row.term.trim())
+  return rows.filter(row=>row.term_kind!=='place'&&typeof row.term==='string'&&row.term.trim())
     .slice(0,SEARCH_TERM_LIMIT);
 }
