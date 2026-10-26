@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {runInNewContext} from 'node:vm';
 import {existsSync,readFileSync} from 'node:fs';
 
 const pathOf=path=>new URL('../'+path,import.meta.url);
@@ -222,4 +223,22 @@ test('Trace map resizes with mouse or keyboard while remaining inside the deskto
   assert.match(map,/onKeyDown=\{keyboardMapResize\}/);
   assert.match(map,/spatialData\?\.anchors\?\.some\(/);
   assert.match(map,/selectingLocation\?copy\.examples:copy\.all/);
+});
+
+test('Trace automatically loads all Scope anchors only when no saved route exists',()=>{
+  const trace=read('app/modular/features/Trace.jsx');
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const expression=trace.match(/const showingAll=([^;]+);/)?.[1];
+  assert.ok(expression,'Trace must derive its all-anchors fallback');
+  const evaluate=(currentTraceChoice,currentMap,maps)=>
+    runInNewContext(expression,{currentTraceChoice,currentMap,maps});
+  assert.equal(evaluate('auto',null,[]),true,'no route loads all anchors automatically');
+  assert.equal(evaluate('auto',{uid:'A123'},[{uid:'A123'}]),false,'saved Current route stays lazy');
+  assert.equal(evaluate('all',null,[{uid:'A123'}]),true,'manual all-anchors choice is preserved');
+  assert.match(trace,/enabled:supported&&routeListOpen&&traceIndex\.data!==undefined&&\(Boolean\(currentMap\)\|\|showingAll\)/);
+  assert.match(trace,/if\(!routeListOpen\|\|traceIndex\.data===undefined\)return null/);
+  assert.match(trace,/anchorsQuery\.isSuccess&&periodScopeId!=='loc'/);
+  assert.match(map,/autoOverviewScopeRef\.current===scope/);
+  assert.match(map,/mapRef\.current\?\.overview\(\)/);
+  assert.match(map,/spatialData===null\?'正在取得空間定錨點資料/);
 });
