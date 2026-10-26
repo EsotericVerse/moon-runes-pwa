@@ -7,20 +7,20 @@ BEGIN
   THEN RAISE EXCEPTION 'Scoped Trace tables are missing'; END IF;
   SELECT count(*) INTO c_before FROM silver.lo3rwang_trace WHERE trace_type='space_road';
   IF c_before>1 THEN RAISE EXCEPTION 'Unexpected number of original routes'; END IF;
-  FOREACH obj IN ARRAY ARRAY['lo3rwang','lrunes'] LOOP
-    EXECUTE format('ALTER TABLE silver.%I DROP CONSTRAINT %I',obj||'_trace',obj||'_trace_record_shape');
-    EXECUTE format('ALTER TABLE silver.%I DROP CONSTRAINT %I',obj||'_trace',obj||'_trace_trace_type_check');
-    EXECUTE format('ALTER TABLE silver.%I DISABLE TRIGGER %I',obj||'_trace',obj||'_trace_identity_guard');
-    EXECUTE format('UPDATE silver.%I SET trace_type=''space_period'' WHERE trace_type=''space_road''',obj||'_trace');
-    EXECUTE format('ALTER TABLE silver.%I ENABLE TRIGGER %I',obj||'_trace',obj||'_trace_identity_guard');
-  END LOOP;
-  FOR obj IN SELECT unnest(ARRAY['validate_scoped_trace_map','protect_scoped_trace_anchor']) LOOP
+  FOR obj IN SELECT unnest(ARRAY['validate_scoped_trace_map','protect_scoped_trace_anchor','merge_scope_trace_place_names']) LOOP
     SELECT pg_get_functiondef(p.oid) INTO ddl FROM pg_proc p
       JOIN pg_namespace ns ON ns.oid=p.pronamespace
       WHERE ns.nspname='silver' AND p.proname=obj;
     IF ddl IS NULL OR position('space_road' IN ddl)=0
     THEN RAISE EXCEPTION 'Unexpected missing old Trace function: %',obj; END IF;
     EXECUTE replace(ddl,'space_road','space_period');
+  END LOOP;
+  FOREACH obj IN ARRAY ARRAY['lo3rwang','lrunes'] LOOP
+    EXECUTE format('ALTER TABLE silver.%I DROP CONSTRAINT %I',obj||'_trace',obj||'_trace_record_shape');
+    EXECUTE format('ALTER TABLE silver.%I DROP CONSTRAINT %I',obj||'_trace',obj||'_trace_trace_type_check');
+    EXECUTE format('ALTER TABLE silver.%I DISABLE TRIGGER %I',obj||'_trace',obj||'_trace_identity_guard');
+    EXECUTE format('UPDATE silver.%I SET trace_type=''space_period'' WHERE trace_type=''space_road''',obj||'_trace');
+    EXECUTE format('ALTER TABLE silver.%I ENABLE TRIGGER %I',obj||'_trace',obj||'_trace_identity_guard');
   END LOOP;
   FOREACH obj IN ARRAY ARRAY['lo3rwang','lrunes'] LOOP
     EXECUTE format('ALTER TABLE silver.%I ADD CONSTRAINT %I CHECK (trace_type IN (''space_anchor'',''space_period'',''space_trace''))',obj||'_trace',obj||'_trace_trace_type_check');
