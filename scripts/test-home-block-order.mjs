@@ -22,27 +22,40 @@ test('ordinary blocks may still change order',()=>{
   }
 });
 
-test('management Hero keeps four Scope and five LOC independent title slots',()=>{
+test('management Hero uses nine dedicated page_name documents, not group_manage orders',()=>{
+  const scope=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(x=>x.audience==='scope');
+  const admin=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(x=>x.audience==='loc');
   assert.equal(HomeBlock.MANAGEMENT_HERO_SLOTS.length,9);
-  assert.deepEqual(HomeBlock.MANAGEMENT_HERO_SLOTS.filter(x=>x.audience==='scope').map(x=>x.label),
-    ['時間定錨','關鍵詞','空間定錨','進階搜尋']);
-  assert.deepEqual(HomeBlock.MANAGEMENT_HERO_SLOTS.filter(x=>x.audience==='loc').map(x=>x.label),
-    ['系統管理','人員作品管理','關鍵詞','痕跡圖管理','文章管理']);
-  for(const feature of ['admin','manage','setting'])
-    assert.equal(HomeBlock.shouldUseSingleFeatureHeroImage(feature),true);
+  assert.deepEqual(scope.map(x=>[x.label,x.page,x.englishTitle]),[
+    ['時間定錨','TimeAnchor','TimeAnchor'],
+    ['關鍵詞','ScopeKeyword','ScopeKeyword'],
+    ['空間定錨','SpaceAnchor','SpaceAnchor'],
+    ['進階搜尋','ScopeAdvSearch','ScopeAdvSearch']
+  ]);
+  assert.deepEqual(admin.map(x=>[x.label,x.page]),[
+    ['系統管理','scope_admin'],
+    ['人員作品管理','GalaxyManage'],
+    ['關鍵詞','Groupkeyword'],
+    ['痕跡圖管理','GroupSpace'],
+    ['文章管理','GroupArticle']
+  ]);
+  for(const slot of scope)assert.equal(HomeBlock.managementHeroImagePage(slot),'scope_manage');
+  for(const slot of admin)assert.equal(HomeBlock.managementHeroImagePage(slot),'scope_admin');
   assert.equal(HomeBlock.MANAGEMENT_HERO_IMAGE_URL,'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
-  assert.equal(HomeBlock.MANAGEMENT_HERO_SLOTS[0].englishTitle,'TimeAnchor');
+  assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
+  assert.equal(HomeBlock.featureHeroPageFor('trace'),'group_trace');
+  assert.doesNotMatch(readFileSync(new URL('../app/modular/published-blocks/index.js',import.meta.url),'utf8'),/group_governance/);
   assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/culture/manage','lo3rwang',true,'culture')?.key,'time');
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/statics/manage','lo3rwang',true,'statics')?.key,'keywords');
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/trace/manage','lo3rwang',true,'trace')?.key,'spatial');
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/search/manage','lo3rwang',true,'search')?.key,'advanced');
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/manage/search','lo3rwang')?.key,'advanced');
-  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/manage','lo3rwang')?.key,'spatial');
-  assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
-  assert.equal(HomeBlock.managementHeroSlot('/admin/search','loc')?.key,'articles');
-  const slot=HomeBlock.MANAGEMENT_HERO_SLOTS[0];
-  assert.equal(HomeBlock.managementHeroCopy([{block_order:slot.order,block_title:'自訂時間錨點'}],slot).title,'自訂時間錨點');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/culture/manage','lo3rwang',true,'culture')?.page,'TimeAnchor');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/statics/manage','lo3rwang',true,'statics')?.page,'ScopeKeyword');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/trace/manage','lo3rwang',true,'trace')?.page,'SpaceAnchor');
+  assert.equal(HomeBlock.managementHeroSlot('/lo3rwang/search/manage','lo3rwang',true,'search')?.page,'ScopeAdvSearch');
+  assert.equal(HomeBlock.managementHeroSlot('/admin/search','loc')?.page,'GroupArticle');
+  assert.equal(HomeBlock.managementHeroSlot('/culture/manage','loc',true,'culture')?.page,'GalaxyManage');
+  assert.equal(HomeBlock.managementHeroSlot('/statics/manage','loc',true,'statics')?.page,'Groupkeyword');
+  assert.equal(HomeBlock.managementHeroSlot('/trace/manage','loc',true,'trace')?.page,'GroupSpace');
+  const slot=scope[0];
+  assert.equal(HomeBlock.managementHeroCopy([{block_order:1,block_title:'自訂時間錨點'}],slot).title,'自訂時間錨點');
 });
 
 test('Article Control and feature-aligned management Hero editor remain functional',()=>{
@@ -64,6 +77,18 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/management-hero-copy-row/);
   assert.doesNotMatch(hero,/id:'manage',label:'頁面控管'/);
   assert.match(hero,/pageOverride="scope_manage"/);
+  assert.doesNotMatch(hero,/['"]group_manage['"]/);
+  assert.match(hero,/const page=slot\.page/);
+  assert.match(hero,/page_name:page,block_order:1/);
+  assert.match(hero,/pageOverride="scope_admin"/);
+  for(const [id,label] of [['management-time','時間定錨'],['management-keywords','關鍵詞'],['management-spatial','空間定錨'],['management-advanced','進階搜尋']]){
+    assert.ok(hero.includes(`id:'${id}',label:'${label}'`));
+  }
+  assert.match(hero,/!feature\.managementKey/);
+  assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
+  assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);
+  assert.doesNotMatch(read('app/modular/ui.jsx'),/group_manage/);
+  assert.match(read('app/loc/scope-data.js'),/const name=String\(page\|\|'index'\)\.trim\(\);/);
   assert.match(hero,/block_title:title/);
   assert.match(hero,/儲存 Hero 圖片路徑/);
   assert.match(hero,/儲存後資料庫讀回不一致/);

@@ -555,7 +555,8 @@ button,a,.loc-control,.loc-button,
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--search{--scope-feature-hero-image:url('../../pics/LOC-search.jpg')}
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--trace{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
 .scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
-.scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-manage.jpg')}
+.scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
+.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/local-setting.jpg')}
 @media(max-width:760px){
   .scope-feature-hero--artwork{
