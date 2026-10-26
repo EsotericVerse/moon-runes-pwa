@@ -197,14 +197,16 @@ export async function readTracePopularAnchors(scopeId){
     .map(row=>({...row,trace_type:'anchor',source_scope:id}));
 }
 
-export async function readAllTraceAnchors(scopeId){
+export async function readAllTraceAnchors(scopeId,{nativeOnly=false}={}){
   const id=sourceId(scopeId),union=id==='loc',pageSize=800;
   const rows=[];
   for(let offset=0;;offset+=pageSize){
-    const result=await dbPublicClient.schema('silver').from(id+'_trace')
+    let request=dbPublicClient.schema('silver').from(id+'_trace')
       .select(TRACE_DISPLAY_COLUMNS+(union?',scope_id':''))
-      .eq('trace_type','anchor')
-      .order('created_at',{ascending:true}).order('uid',{ascending:true})
+      .eq('trace_type','anchor');
+    if(union&&nativeOnly)request=request.eq('scope_id','loc');
+    const result=await request.order('created_at',{ascending:true})
+      .order('uid',{ascending:true})
       .range(offset,offset+pageSize-1);
     const batch=verified(result,'全部痕跡錨點讀取')||[];
     rows.push(...batch.map(row=>({...row,source_scope:union?row.scope_id:id})));
@@ -255,7 +257,10 @@ async function reuseExistingAnchor({scopeId,candidate,existing}){
 }
 export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid=''}){
   const id=sourceId(scopeId);
-  const existing=comparableAnchors(await readTraceData(id),id,excludeUid);
+  // Route/anchor writes inspect only the owner Scope. In particular a native
+  // LOC write must not download every author's anchor from the public union.
+  const anchors=await readAllTraceAnchors(id,{nativeOnly:id==='loc'});
+  const existing=comparableAnchors({anchors},id,excludeUid);
   return classifyNewAnchor({...anchor,source_scope:id,trace_type:'anchor'},existing);
 }
 export async function addTraceAnchor({scopeId,title,description='',address='',floor_label='',floor_level=null,longitude,latitude,radius_m=500}){
