@@ -5,6 +5,13 @@
 BEGIN;
 SET LOCAL lock_timeout='8s';
 SET LOCAL statement_timeout='45s';
+-- Retain Galaxy article UID/source_place exactly; place_id is a nullable link.
+ALTER TABLE silver.lo3rwang_galaxy ADD COLUMN IF NOT EXISTS place_id varchar(4);
+ALTER TABLE silver.lrunes_galaxy ADD COLUMN IF NOT EXISTS place_id varchar(4);
+CREATE INDEX IF NOT EXISTS lo3rwang_galaxy_place_id_idx
+ ON silver.lo3rwang_galaxy(place_id) WHERE place_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS lrunes_galaxy_place_id_idx
+ ON silver.lrunes_galaxy(place_id) WHERE place_id IS NOT NULL;
 LOCK TABLE silver.lo3rwang_trace,silver.lrunes_trace,silver.loc_trace
  IN ACCESS EXCLUSIVE MODE;
 

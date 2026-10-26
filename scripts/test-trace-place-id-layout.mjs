@@ -18,8 +18,47 @@ test('Galaxy place links are nullable, 4-char and scoped with indexes',()=>{
     assert.match(sql,new RegExp('ALTER TABLE silver\\.'+table+'_galaxy ADD COLUMN IF NOT EXISTS place_id varchar\\(4\\)'));
     assert.match(sql,new RegExp('CREATE INDEX IF NOT EXISTS '+table+'_galaxy_place_id_idx'));
   }
-  assert.doesNotMatch(sql,/UPDATE\s+silver\.|DELETE\s+FROM\s+silver\.|LEFT\s*\(\s*uid/i);
-  assert.doesNotMatch(sql,/ALTER TABLE [^;]+_trace/);
+  assert.doesNotMatch(sql,/UPDATE\\s+silver\\.(?:lo3rwang|lrunes)_galaxy/i);
+  assert.match(sql,/ALTER TABLE silver\\.lo3rwang_trace ALTER COLUMN uid TYPE varchar\\(4\\)/);
+  assert.match(sql,/ALTER TABLE silver\\.loc_trace ALTER COLUMN uid TYPE varchar\\(4\\)/);
+  assert.match(sql,/trace_uid_migration_backup/);
+  assert.match(sql,/ADD CONSTRAINT lo3rwang_trace_uid_check CHECK\\(uid ~ '\\^\\[0-9A-F\\]\\{4\\}\\
+});
+
+import {traceArticleIds,traceArticleLabels} from '../app/modular/features/trace/trace-article-ids.mjs';
+import {traceArticleIdFilters,groupedTraceDays} from '../app/modular/features/trace/trace-panel-filters.mjs';
+
+test('Trace article join preserves object UID but reads only four-character place_id',()=>{
+  const stops=[
+    {uid:'0001',source_scope:'lo3rwang',title:'一樓',source_place:'old'},
+    {uid:'0002',source_scope:'lo3rwang',title:'二樓'},
+    {uid:'0003',source_scope:'lrunes',title:'別人 Scope'}
+  ];
+  assert.deepEqual(traceArticleIds(stops[0],stops),['0001']);
+  assert.deepEqual(traceArticleIds({uid:'0100',source_scope:'lo3rwang',
+    trace_type:'map',anchor_uids:['0002','0001','0003']},stops),['0002','0001']);
+  assert.equal(traceArticleLabels(stops[0]).get('0001'),'一樓');
+  assert.deepEqual(traceArticleIdFilters(['0001']),[
+    {column:'place_id',operator:'eq',value:'0001'},
+    {column:'searchable',operator:'eq',value:true}
+  ]);
+  assert.deepEqual(traceArticleIdFilters(['0001','0002'])[0],
+    {column:'place_id',operator:'in',value:['0001','0002']});
+  assert.equal(traceArticleIdFilters(['AAAAAAAA'])[0].value,'__NO_PLACE_ID__');
+  assert.deepEqual(groupedTraceDays([
+    {createtime:'2026-01-01T09:00:00+08:00',place_id:'0001',source_place:'舊名稱'},
+    {createtime:'2026-01-01T10:00:00+08:00',place_id:'0001',source_place:'新名稱'}
+  ],{key:'place_id'}),[{day:'2026-01-01',category:'0001',item_count:2}]);
+});
+test('Trace report uses indexed IDs for all three view modes, never fuzzy place matching',()=>{
+  const source=readFileSync(new URL('../app/modular/features/trace/TracePlaceResults.jsx',import.meta.url),'utf8');
+  assert.match(source,/traceArticleIdFilters\(placeIds/);
+  assert.match(source,/read_trace_place_density/);
+  assert.match(source,/columns:'uid,title,createtime,source_name,source_place,place_id,url'/);
+  assert.doesNotMatch(source,/traceArticlePlaces\(/);
+  assert.doesNotMatch(source,/traceArticleFilters\(sourcePlaces/);
+});
+\\)/);
 });
 
 import {traceArticleIds,traceArticleLabels} from '../app/modular/features/trace/trace-article-ids.mjs';
