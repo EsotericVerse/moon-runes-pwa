@@ -88,6 +88,21 @@ function periodRange(rows=[],scope='',allTime=UI_COPY.culture.allTime){
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
+// An independent anchor may sit outside every Period. Only the last anchor
+// determines the unclassified fallback window; never infer a saved end anchor.
+function structurePeriodPreference(periods=[],items=[]){
+  const anchors=items.filter(item=>item?.entry_type==='anchor'&&/^\d{4}-\d{2}-\d{2}$/.test(String(item?.start_date||'')))
+    .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date)));
+  const lastAnchor=anchors.at(-1)||null;
+  const date=String(lastAnchor?.start_date||'');
+  const containing=date?[...periods].reverse().find(item=>{
+    const start=String(item.start_date||'');
+    const end=String(item.end_date||'9999-12-31');
+    return (!start||start<=date)&&date<=end;
+  }):null;
+  const fallback=!lastAnchor?([...periods].reverse().find(item=>item.open_end)||periods.at(-1)):null;
+  return {lastAnchor,preferredKey:containing||fallback?periodKey(containing||fallback):lastAnchor?'after':'all'};
+}
 function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+' 群組';
@@ -218,7 +233,8 @@ export default function Culture(){
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('latest');
-  const [cultureTimeKind,setCultureTimeKind]=useState('period');
+  // Events are displayed inside their Period, not as a competing time mode.
+  const cultureTimeKind='period';
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -252,7 +268,6 @@ export default function Culture(){
     setStyleFilter('none');
     setKeywordOptionsScope('');
     setKeywordPeriodKey('latest');
-    setCultureTimeKind('period');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
     setOpenCultureRoots([]);
@@ -273,8 +288,10 @@ export default function Culture(){
   // because a different Culture panel or query refreshed the page.
   const primaryPeriods=useMemo(()=>isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId),[isAggregateScope,allPeriods,scopeId]);
   const openPeriod=isAggregateScope?null:(openByScope.get(scopeId)||null);
-  // The newest recorded period, not the open/current flag, is the default.
   const latestPeriod=primaryPeriods.at(-1)||null;
+  const structurePreference=useMemo(()=>structurePeriodPreference(primaryPeriods,
+    (query.data?.timelineItems||[]).filter(item=>item.scope_id===scopeId)),
+  [primaryPeriods,query.data?.timelineItems,scopeId]);
   // Articles may exist even when no formal Period has been created. Use an
   // ordinary bounded date window; never treat an empty Time table as invalid.
   const allTimePeriod=useMemo(()=>{
@@ -288,15 +305,14 @@ export default function Culture(){
     };
   },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
   useEffect(()=>{
-    if(isAggregateScope||!primaryPeriods.length)return;
-    const preferred=periodKey(latestPeriod)||'all';
+    if(isAggregateScope||!query.data)return;
+    const preferred=structurePreference.preferredKey;
     const scopeChanged=periodSelectionScopeRef.current!==scopeId;
     periodSelectionScopeRef.current=scopeId;
-    // A new Scope always starts at its own latest period; manual selections
-    // within the same Scope are preserved across query refreshes.
     setSelectedPeriodKey(current=>scopeChanged?preferred:
-      (current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
-  },[scopeId,isAggregateScope,latestPeriod,primaryPeriods]);
+      (current==='all'||(current==='after'&&structurePreference.lastAnchor)
+        ||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
+  },[scopeId,isAggregateScope,query.data,structurePreference,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
     :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||latestPeriod||allTimePeriod);
@@ -625,13 +641,13 @@ export default function Culture(){
       ?['anchor','style_comment'].includes(item.entry_type)
       :item.entry_type===timeEditorSection
   ),[timelineItems,timeEditorSection]);
-  const currentStructurePeriod=selectedPeriodKey==='all'
-    ?allTimePeriod
-    :(!isAggregateScope&&selectedWorkPeriod&&selectedWorkPeriod.period!=='all')
-      ?selectedWorkPeriod
-      :(openPeriod||primaryPeriods.find(item=>String(item?.status||'').toLowerCase()==='current')||primaryPeriods.at(-1)||null);
-  const currentStructureStart=String(currentStructurePeriod?.start_date||'').slice(0,10);
-  const currentStructureEnd=String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
+  const activeStructureKey=selectedPeriodKey||structurePreference.preferredKey;
+  const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
+  const currentStructureStart=activeStructureKey==='all'?''
+    :String(currentStructurePeriod?.start_date||structurePreference.lastAnchor?.start_date||'').slice(0,10);
+  // Today is a viewport endpoint only, never a stored Period end anchor.
+  const currentStructureEnd=activeStructureKey==='all'?''
+    :String(currentStructurePeriod?.end_date||new Date().toISOString().slice(0,10)).slice(0,10);
   // Keep every Time record in the first river. The selected period controls
   // the initial camera window, not which historic anchors are accessible.
   const anchorRecords=useMemo(()=>timelineItems
@@ -1309,14 +1325,24 @@ export default function Culture(){
 
             </>:<>
               <section className='scope-card scope-culture-structure-river'>
-                <h3>{UI_COPY.culture.structure}</h3>
+                <div className='scope-culture-structure-toolbar'>
+                  <h3>{UI_COPY.culture.structure}</h3>
+                  <label><span>{l.period}</span>
+                    <select className='scope-select' aria-label='第一條河道時期選擇'
+                      value={activeStructureKey} onChange={event=>setSelectedPeriodKey(event.target.value)}>
+                      <option value='all'>{l.allPeriods}</option>
+                      {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
+                      {structurePreference.lastAnchor?<option value='after'>最後定錨點至目前</option>:null}
+                    </select>
+                  </label>
+                </div>
                 {timelineItems.length?<CultureTimeline
                   items={timelineItems}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='overview'
-                  windowStart={(keywordPeriodKey==='custom'||cultureTimeKind==='event')&&keywordWindowValid?keywordWindowStart:currentStructureStart}
-                  windowEnd={(keywordPeriodKey==='custom'||cultureTimeKind==='event')&&keywordWindowValid?keywordWindowEnd:currentStructureEnd}
+                  windowStart={currentStructureStart}
+                  windowEnd={currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
                   editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
@@ -1333,24 +1359,6 @@ export default function Culture(){
                   <div className='scope-culture-river-selectors'>
                     <div className='scope-culture-time-picker'>
                       <label>
-                        <select className='scope-select' aria-label={l.periodLabel} value={cultureTimeKind}
-                          onChange={event=>{
-                            const kind=event.target.value;
-                            setCultureTimeKind(kind);
-                            if(kind==='event'){
-                              setKeywordPeriodKey(cultureEventOptions.length
-                                ?'event:'+String(cultureEventOptions[0].id||cultureEventOptions[0].entry_id||cultureEventOptions[0].record_id):'');
-                            }else{
-                              setKeywordPeriodKey('latest');
-                              setSelectedPeriodKey(periodKey(latestPeriod)||'all');
-                            }
-                          }}>
-                          <option value='period'>{l.period}</option>
-                          <option value='event'>{l.eventOption}</option>
-                        </select>
-                      </label>
-                      <span aria-hidden='true'>：</span>
-                      <label>
                         <select className='scope-select' aria-label={cultureTimeKind==='event'?l.eventOption:l.period}
                           value={keywordPeriodKey} onChange={event=>{
                             const next=event.target.value;
@@ -1359,10 +1367,7 @@ export default function Culture(){
                               if(!keywordCustomEnd)setKeywordCustomEnd(keywordWindowEnd);
                             }
                             setKeywordPeriodKey(next);
-                            if(cultureTimeKind==='event')return;
-                            if(next==='latest')setSelectedPeriodKey(periodKey(latestPeriod)||'all');
-                            else if(next==='all')setSelectedPeriodKey('all');
-                            else if(next!=='custom')setSelectedPeriodKey(next);
+
                           }}>
                           {cultureTimeKind==='event'
                             ?(cultureEventOptions.length
