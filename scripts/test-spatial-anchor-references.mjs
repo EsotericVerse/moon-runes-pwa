@@ -155,3 +155,21 @@ test('ZIP parser takes Facebook tagged visit time from explicit metadata, not GP
   assert.match(archive,/platform==='facebook'&&actualKind==='post'\?facebookBackupTimestamp\(item\):null/);
   assert.doesNotMatch(archive,/timestamp\s*=\s*item\.longitude/);
 });
+
+test('external geocoder candidates never auto-confirm from a name match alone',()=>{
+  const code=readFileSync(new URL('../app/loc/TracePlaceGeocoder.jsx',import.meta.url),'utf8');
+  const match=code.match(/function geographyChoices\([\s\S]*?\n\}/);
+  assert.ok(match);
+  const validNumber=value=>value!=null&&String(value).trim()!==''&&Number.isFinite(Number(value));
+  const geographyChoices=new Function('validDateOrNumber','postalAddressFromNominatim',
+    match[0]+';return geographyChoices')(validNumber,postalAddressFromNominatim);
+  const one=geographyChoices([{lon:'121.46',lat:'25.03',name:'相同名稱',
+    address:{state:'新北市',suburb:'板橋區',road:'文化路',house_number:'100號'}}],'相同名稱');
+  assert.equal(one.choices.length,1);
+  assert.equal(one.status,'review');
+  assert.equal(one.selected,-1);
+  assert.equal(one.choices[0].address,'新北市板橋區文化路100號');
+  const none=geographyChoices([],'相同名稱');
+  assert.equal(none.status,'notfound');
+  assert.equal(none.selected,-1);
+});
