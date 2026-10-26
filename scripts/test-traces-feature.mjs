@@ -198,7 +198,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/\{value:'statistics',label:'統計'\}/);
   assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
   assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
-  assert.match(results,/traceArticleFilters\(sourcePlaces,/);
+  assert.match(results,/traceArticleIdFilters\(placeIds,/);
   assert.match(results,/<CultureTimeline items=\{riverItems\}/);
   assert.match(results,/<StatisticsMultiChart type=\{chartType\}/);
   assert.doesNotMatch(feature,/featureNavigationHref|router\.push/);

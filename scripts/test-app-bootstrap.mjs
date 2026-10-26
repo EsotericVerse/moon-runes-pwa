@@ -334,7 +334,7 @@ test('Settings document import is iOS only, and the existing importer uses local
   assert.match(settings,/native&&Capacitor\.getPlatform\(\)==='ios'\?\[option\('files'/);
   assert.doesNotMatch(settings,/activeSection==='files'&&!native/);
   assert.doesNotMatch(settings,/loc-import-scope|requestedScope|managedScopes|ManagementImportPanel/);
-  assert.match(localImport,/importChoice==='yes'\?<ManagementImportPanel scopeId="local"\/>/);
+  assert.match(localImport,/<ManagementImportPanel scopeId="local"\/>/);
   assert.match(panel,/scopeId==='local'&&Capacitor\.isNativePlatform\(\)&&Capacitor\.getPlatform\(\)==='ios'/);
   assert.match(dbClient,/if\(name==='local'\|\|name\.startsWith\('local_'\)\)return true/);
 });

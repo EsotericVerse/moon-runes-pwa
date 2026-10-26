@@ -49,7 +49,7 @@ test('Culture, Statistics, Periods, Daily Runes and Trace have direct data provi
   assert.match(culture,/selectScopePeriodSourceSnapshot/);
   assert.match(stats,/selectScopeCultureData\(scopeId\)/);
   assert.match(daily,/selectDailyRuneRange\(range\)/);
-  assert.match(traces,/readPlaceSummary\(targetScope/);
+  assert.match(traces,/read_trace_place_density/);
   assert.match(places,/read_scope_place_statistics/);
   assert.match(places,/Capacitor\.isNativePlatform/);
 });
