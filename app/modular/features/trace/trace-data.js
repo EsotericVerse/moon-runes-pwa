@@ -152,7 +152,8 @@ export async function readTraceAddressReferences(scopeId,term,limit=8){
   const literal='"'+pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
   const result=await dbPublicClient.schema('silver').from('loc_trace')
     .select('scope_id,uid,trace_type,title,description,address,floor_label,floor_level,county_id,longitude,latitude,radius_m')
-    .eq('trace_type','anchor').neq('scope_id',owner).neq('address','')
+    .eq('trace_type','anchor').neq('scope_id',owner)
+    .not('longitude','is',null).not('latitude','is',null)
     .or('title.ilike.'+literal+',address.ilike.'+literal)
     .order('title',{ascending:true}).order('uid',{ascending:true})
     .limit(Math.min(Math.max(1,Number(limit)||8),8));
