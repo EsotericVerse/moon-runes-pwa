@@ -1320,8 +1320,8 @@ body{
   width:100%;
   min-width:0;
   max-width:100%;
-  /* The old contain rule letterboxed the image in the middle. */
-  background-size:100% 100%,cover;
+  /* Match the verified feature Heroes: keep the entire image visible. */
+  background-size:100% 100%,contain;
 }
 .management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
 .management-hero-copy-group{display:grid;gap:.65rem;min-width:0}
