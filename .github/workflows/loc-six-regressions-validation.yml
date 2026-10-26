@@ -33,8 +33,8 @@ jobs:
         env:
           LOC_REQUIRE_CULTURE_BROWSER: '1'
         run: node scripts/test-culture-dynamic-browser.mjs
-      - name: ISR stays disabled
-        run: node scripts/verify-release-isr.mjs
+      - name: Verify exported assets omit remote ISR endpoints
+        run: node scripts/verify-release-static-export.mjs
       - name: Preserve test diagnostics
         if: always()
         uses: actions/upload-artifact@v4

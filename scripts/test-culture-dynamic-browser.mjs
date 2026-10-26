@@ -21,7 +21,7 @@ const wait=async(fn,timeout=20000)=>{
 const builtCulture=existsSync('out/lo3rwang/culture/index.html');
 if(!builtCulture&&process.env.LOC_REQUIRE_CULTURE_BROWSER!=='1'){
   test('Culture live Chrome integration (requires the project static export)',
-    {skip:'Run after npm run build with LOC_REQUIRE_CULTURE_BROWSER=1'},()=>{});
+    {skip:'Run after npm run build:static with LOC_REQUIRE_CULTURE_BROWSER=1'},()=>{});
 }else{
 if(!builtCulture)throw new Error('Culture browser integration requires out/lo3rwang/culture/index.html; run npm run build:static first');
 // Use the repository's supported build:static output. The export tool
