@@ -19,7 +19,13 @@ function sourceId(value){
 const relation=id=>'silver.'+sourceId(id)+'_trace';
 // County IDs are derived once on writes, not computed for every keystroke in
 // the route composer. Unknown/border/overseas coordinates remain NULL.
-async function countyIdAt(longitude,latitude){
+function countyIdFromAddress(address){
+  const start=String(address||'').trim().match(/^(.{2,3}[縣市])/u);
+  return start?traceCountyId(start[1]):null;
+}
+async function countyIdAt(longitude,latitude,address=''){
+  const explicit=countyIdFromAddress(address);
+  if(explicit)return explicit;
   const {countyForCoordinates}=await import('./trace-county-lookup.mjs');
   return traceCountyId(countyForCoordinates(longitude,latitude));
 }
@@ -238,7 +244,7 @@ export async function addTraceAnchor({scopeId,title,description='',address='',fl
     uid:createUid8(),trace_type:'anchor',title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
     source_scope:id,
-    county_id:await countyIdAt(longitude,latitude),
+    county_id:await countyIdAt(longitude,latitude,address),
     ...locationFields({address,floor_label,floor_level})
   };
   const {reuse}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
@@ -265,7 +271,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       title:verifiedText(place.title,'打卡地點名稱'),
       description:descriptionText(place.description||''),
       longitude:Number(place.longitude),latitude:Number(place.latitude),
-      county_id:traceCountyId(countyForCoordinates(place.longitude,place.latitude)),
+      county_id:countyIdFromAddress(place.address)||traceCountyId(countyForCoordinates(place.longitude,place.latitude)),
       radius_m:Number(place.radius_m??500),
       ...locationFields(place)};
     if(!validCoordinates(place.longitude,place.latitude))
@@ -323,7 +329,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
     title:verifiedText(title,'定錨點名稱'),
     description:descriptionText(description),
     longitude:Number(longitude),latitude:Number(latitude),radius_m:Number(radius_m),
-    county_id:await countyIdAt(longitude,latitude),
+    county_id:await countyIdAt(longitude,latitude,address),
     ...locationFields({address,floor_label,floor_level})
   };
   const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
