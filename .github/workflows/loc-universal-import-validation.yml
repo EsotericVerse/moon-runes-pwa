@@ -1,0 +1,48 @@
+name: LOC universal import verification (no deployment)
+on:
+  push:
+    branches:
+      - fix/loc-universal-archive-import-20261026
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: loc-universal-import-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Import functional regression
+        shell: bash
+        run: |
+          set -o pipefail
+          node --test scripts/test-universal-archive-import.mjs scripts/test-facebook-backup-place.mjs scripts/test-archive-structure-inspector.mjs 2>&1 | tee import-tests.log
+      - name: Bootstrap regressions
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:bootstrap 2>&1 | tee bootstrap.log
+      - name: Production build without deployment
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+      - name: Keep diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal-import-validation
+          path: |
+            import-tests.log
+            bootstrap.log
+            build.log
+          if-no-files-found: ignore
+          retention-days: 2
