@@ -76,3 +76,10 @@ test('legacy Frame queues remain readable without rewriting historic IDs',()=>{
   const graph=resolveSpaceGraph(oldRoute,[oldA,oldB]);
   assert.deepEqual(graph.lines.map(x=>[x.from,x.to]),[[oldA.uid,oldB.uid]]);
 });
+
+
+test('historical route queues read anchor_uids until the DB cutover',()=>{
+  const legacy={uid:'MAP00001',source_scope:scope,trace_type:'map',anchor_uids:['a001','A001']};
+  const graph=resolveSpaceGraph(legacy,[a,b]);
+  assert.deepEqual(graph.lines.map(x=>[x.from,x.to]),[['a001','A001']]);
+});

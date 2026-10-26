@@ -89,6 +89,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let radius=Number(radiusMeters)||500;
   let savedAnchors=anchors;
   let selectedSavedRoute=null;
+  let selectedSavedGraph=null;
   function refreshRadius(){
     if(loaded&&pickedPosition)map.getSource('loc-trace-picked-area')?.setData(pickedArea(pickedPosition.lng,pickedPosition.lat,radius));
   }
@@ -105,6 +106,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     return route.anchor_list.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
+    if(selectedSavedGraph)return selectedSavedGraph;
     const points=savedRoutePoints(route);
     const features=[];
     points.forEach((place,index)=>{
@@ -130,6 +132,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
+    selectedSavedGraph=null;
     refreshSavedRoute();
     // SWR refreshes may return a new object representing the same route.
     if(!loaded||!selectedSavedRoute||!changed)return;
@@ -143,6 +146,11 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       map.fitBounds(bounds,{padding:Math.max(32,Math.min(90,Math.round(map.getContainer().clientWidth*.07))),
         pitch:0,bearing:0,maxZoom:13,duration:500});
     }
+  }
+  function setSavedGraph(graph){
+    selectedSavedGraph=graph?.type==='FeatureCollection'&&Array.isArray(graph.features)
+      ?graph:null;
+    refreshSavedRoute();
   }
   function setRadius(value){
     const n=Number(value);
@@ -405,6 +413,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,centerIfFar,goOrigin,setRadius,setAnchors,setSavedRoute,overview,showRoadRoute,
+  return {focus,focusCoordinates,centerIfFar,goOrigin,setRadius,setAnchors,setSavedRoute,setSavedGraph,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }

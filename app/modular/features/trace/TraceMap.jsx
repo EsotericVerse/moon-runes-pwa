@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
+import {spaceGraphGeojson} from './space-graph-geojson.mjs';
 import {classifyTraceAnchors,locatableTraceAnchor} from './trace-spatial-classification.mjs';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
@@ -171,8 +172,16 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   useEffect(()=>{mapRef.current?.setRadius(radiusMeters);},[radiusMeters]);
   useEffect(()=>{
     mapRef.current?.setAnchors(spatialData?.anchors||[]);
-    mapRef.current?.setSavedRoute(
-      (spatialData?.maps||[]).find(map=>map.uid===selectedRouteUid)||null);
+    const selectedMap=(spatialData?.maps||[]).find(map=>
+      String(map.uid||map.id)===selectedRouteUid)||null;
+    mapRef.current?.setSavedRoute(selectedMap);
+    // An area is a saved set of routes, not a single joined queue.
+    // Only explicit saved segments survive the geographic projection.
+    mapRef.current?.setSavedGraph(selectedMap
+      ?spaceGraphGeojson(selectedMap,[
+        ...(spatialData?.anchors||[]),...(spatialData?.maps||[])
+      ],{scopeId:selectedMap.source_scope||selectedMap.scope_id})
+      :null);
   },[spatialData,selectedRouteUid]);
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);

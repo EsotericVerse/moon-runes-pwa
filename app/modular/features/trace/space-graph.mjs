@@ -28,6 +28,10 @@ export function spaceCoordinates(record){
 function sameScope(row,owner){
   return !owner||spaceScope(row)===owner;
 }
+export function spaceMembers(record){
+  return Array.isArray(record?.anchor_list)?record.anchor_list
+    :(Array.isArray(record?.anchor_uids)?record.anchor_uids:[]);
+}
 function normalizedIds(input){
   return (Array.isArray(input)?input:[])
     .map(id=>String(id??'').trim()).filter(Boolean);
@@ -41,11 +45,11 @@ export function spaceRouteIds(selection,routes=[]){
     .map(row=>[spaceId(row),row]));
   const addRoute=route=>{
     if(spaceType(route)!==SPACE_PERIOD)return;
-    normalizedIds(route.anchor_list).forEach(id=>ids.add(id));
+    normalizedIds(spaceMembers(route)).forEach(id=>ids.add(id));
   };
   if(spaceType(selection)===SPACE_PERIOD)addRoute(selection);
   if(spaceType(selection)===SPACE_TRACE){
-    normalizedIds(selection.anchor_list).forEach(id=>{
+    normalizedIds(spaceMembers(selection)).forEach(id=>{
       const route=all.get(id);
       if(route)addRoute(route);
     });
