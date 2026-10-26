@@ -34,7 +34,7 @@ test('Category/Class/Group/Item routes use shared hierarchy and saved Frame inde
   assert.match(db,/validateTraceRouteLabels\(category,className,group\)/);
   assert.match(db,/anchor_uids:chosen/);
   assert.match(db,/nativeOnly/);
-  assert.match(results,/traceArticleIdFilters\(placeIds/);
+  assert.match(results,/column:'place_id'/);
   assert.doesNotMatch(results,/column:'content'/);
   assert.match(page,/將選取錨點加入 Queue/);
   assert.match(page,/MAX_STOPS=80/);
