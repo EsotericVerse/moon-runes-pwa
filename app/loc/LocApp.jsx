@@ -157,7 +157,9 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
             title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title'}[forcedView])}
             description={t('uiExtra.feature.groupGuide')}
           />
-        </FeaturePage>:<ActiveView section={forcedSection} scopeId={scopeId}/>}
+        </FeaturePage>:<ActiveView section={forcedSection} scopeId={scopeId}
+          scopeGroup={scopeMeta?.featureScope||scopeMeta?.registry?.parent_scope_id||
+            (scopeMeta?.aggregateChildren?scopeId:null)}/>}
       </FeatureGate>
     </Suspense>
   </div>;
