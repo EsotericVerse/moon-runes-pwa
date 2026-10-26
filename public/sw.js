@@ -92,7 +92,7 @@ async function htmlStrategy(event){
 }
 // A Service Worker stays installed for all modes. 'off' simply bypasses its
 // optional response caches; browser built-in HTTP caching is outside SW control.
-let runtimeCacheMode='cache';
+let runtimeCacheMode='off';
 self.addEventListener('message',event=>{
   if(event.data?.type!=='LOC_CACHE_POLICY')return;
   const mode=event.data.mode;
