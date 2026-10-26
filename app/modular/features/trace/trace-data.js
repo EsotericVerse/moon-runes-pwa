@@ -135,24 +135,15 @@ function comparableAnchors(data,scopeId,excludeUid=''){
   return (data?.anchors||[]).filter(row=>row.source_scope===scopeId&&row.uid!==excludeUid);
 }
 function classifyNewAnchor(candidate,known){
-  const byName=known.find(row=>normalizedName(row.title)===normalizedName(candidate.title));
   const matches=findAnchorWriteMatches(candidate,known);
   const safe=matches.filter(item=>item.safeReuse);
   // Two or more seemingly equivalent records indicate that the *existing*
   // database needs a reviewed consolidation, not a new automatic decision.
   const reuse=safe.length===1?safe[0].b:null;
-  const conflicts=matches.filter(item=>
-    item.type==='address-coordinate-conflict'
-    ||item.type==='same-address'&&!item.safeReuse);
-  return {byName,reuse,conflicts,matches};
-}
-function distinctTitleOrThrow(candidate,byName,matches){
-  if(!byName)return false;
-  const match=matches.find(item=>item.b.uid===byName.uid);
-  if(!match||match.meters===null||match.meters>60
-    ||match.type==='near-different-address'||match.type==='address-coordinate-conflict')
-    throw Error('同名定錨點「'+candidate.title+'」的地址或座標不一致。請先到「整理空間定錨點」核對，不能以同名覆蓋。');
-  return true;
+  // All uncertain same-name / same-address cases remain distinct identities.
+  // Organizer shows candidates for review; it never blocks a new historical
+  // store simply because its label or premises were previously used.
+  return {reuse,matches};
 }
 async function reuseExistingAnchor({scopeId,candidate,existing}){
   const name=String(candidate.title).trim(),oldNote=String(existing.description||'');
@@ -192,9 +183,7 @@ export async function addTraceAnchor({scopeId,title,description='',longitude,lat
     source_scope:id,
     county_id:await countyIdAt(longitude,latitude)
   };
-  const {byName,reuse,conflicts,matches}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
-  if(distinctTitleOrThrow(data,byName,matches))return {uid:byName.uid,reused:true};
-  if(conflicts.length)throw Error('附近有同址但座標不一致的定錨點，請先到「整理空間定錨點」核對。');
+  const {reuse}=await inspectTraceAnchorBeforeWrite({scopeId:id,anchor:data});
   if(reuse)return reuseExistingAnchor({scopeId:id,candidate:data,existing:reuse});
   const {source_scope,...record}=data;
   return verified(await dbAuthRelation(relation(id)).insert(record).select('uid').single(),'新增定錨點');
@@ -224,26 +213,16 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
       throw Error(data.title+' 的經緯度無效，請先確認候選位置。');
     if(!validRadius(data.radius_m))throw Error(data.title+' 的空間範圍無效。');
     const old=classifyNewAnchor(data,known);
-    if(distinctTitleOrThrow(data,old.byName,old.matches)){
-      skipped++;continue;
-    }
-    if(old.reuse&&!old.conflicts.length){
+    if(old.reuse){
       reuseQueue.push({candidate:data,existing:old.reuse});skipped++;continue;
     }
     // Keep candidates of uncertain identity as distinct records, so they can
     // be reviewed after import without losing the original check-in title.
     const sameBatch=classifyNewAnchor(data,pending);
-    if(distinctTitleOrThrow(data,sameBatch.byName,sameBatch.matches)){
-      duplicatesInBatch++;skipped++;continue;
-    }
-    if(sameBatch.reuse&&!sameBatch.conflicts.length){
-      // No row has been inserted yet. Retain the alias in the record to be
-      // inserted with the primary title.
-      const original=sameBatch.reuse;
-      const addition='打卡別名：'+data.title+'。';
-      const updated=String(original.description||'')+(original.description?'\n':'')+addition;
-      if(updated.length>2000)throw Error('批次同址別名過多，無法安全保留完整名稱。');
-      original.description=updated;skipped++;duplicatesInBatch++;continue;
+    if(sameBatch.reuse){
+      // Same-name near-identical coordinates: one place, not a second record.
+      // Distinct names at one address are separate historical identities.
+      skipped++;duplicatesInBatch++;continue;
     }
     pending.push(data);
   }
@@ -289,8 +268,8 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',longit
   };
   const check=await inspectTraceAnchorBeforeWrite({scopeId:id,
     anchor:{...changes,source_scope:id,trace_type:'anchor'},excludeUid:anchorId});
-  if(check.byName||check.reuse||check.conflicts.length)
-    throw Error('更新後會與既有定錨點同名或同址，請先到「整理空間定錨點」確認並處理，避免破壞已儲存路線。');
+  if(check.reuse)
+    throw Error('更新後與既有相同名稱、相同位置的定錨點重疊；請先核對 UID。');
   let request=dbAuthRelation(relation(id)).update(changes)
     .eq('uid',anchorId).eq('trace_type','anchor');
   if(id==='loc')request=request.eq('scope_id','loc');
