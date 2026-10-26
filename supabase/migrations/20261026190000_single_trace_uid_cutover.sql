@@ -22,19 +22,26 @@ CREATE TABLE IF NOT EXISTS silver.trace_uid_migration_backup (
   trace_type text NOT NULL,
   old_anchor_uids text[] NOT NULL,
   archived_at timestamptz NOT NULL DEFAULT now(),
+  original_record jsonb,
   PRIMARY KEY(scope_id,old_uid),
   UNIQUE(scope_id,new_uid)
 );
+ALTER TABLE silver.trace_uid_migration_backup ADD COLUMN IF NOT EXISTS original_record jsonb;
 ALTER TABLE silver.trace_uid_migration_backup ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON silver.trace_uid_migration_backup FROM PUBLIC,anon,authenticated;
 
-INSERT INTO silver.trace_uid_migration_backup(scope_id,old_uid,new_uid,trace_type,old_anchor_uids)
- SELECT 'lo3rwang',uid,trace_id,trace_type,anchor_uids FROM silver.lo3rwang_trace
+-- Preserve the first exact record for each identity. Do not overwrite
+-- the historical snapshot or touch Galaxy.source_place.
+INSERT INTO silver.trace_uid_migration_backup
+(scope_id,old_uid,new_uid,trace_type,old_anchor_uids,original_record)
+ SELECT 'lo3rwang',uid,trace_id,trace_type,anchor_uids,to_jsonb(t) FROM silver.lo3rwang_trace t
  UNION ALL
- SELECT 'lrunes',uid,trace_id,trace_type,anchor_uids FROM silver.lrunes_trace
+ SELECT 'lrunes',uid,trace_id,trace_type,anchor_uids,to_jsonb(t) FROM silver.lrunes_trace t
  UNION ALL
- SELECT 'loc',uid,trace_id,trace_type,anchor_uids FROM silver.loc_trace WHERE scope_id='loc'
-ON CONFLICT (scope_id,old_uid) DO NOTHING;
+ SELECT 'loc',uid,trace_id,trace_type,anchor_uids,to_jsonb(t) FROM silver.loc_trace t WHERE scope_id='loc'
+ON CONFLICT (scope_id,old_uid) DO UPDATE SET
+ original_record=EXCLUDED.original_record
+ WHERE silver.trace_uid_migration_backup.original_record IS NULL;
 
 DO $verify$
 DECLARE n bigint;
@@ -50,6 +57,8 @@ BEGIN
    WHERE trace_id IS NULL OR trace_id !~ '^[0-9A-F]{4}$'
  ) broken;
  IF n<>0 THEN RAISE EXCEPTION 'Invalid 4-character identity; migration aborted'; END IF;
+ IF EXISTS (SELECT 1 FROM silver.trace_uid_migration_backup WHERE original_record IS NULL)
+ THEN RAISE EXCEPTION 'Missing protected original Trace record'; END IF;
  IF (SELECT count(*) FROM silver.trace_uid_migration_backup)
    <> (SELECT count(*) FROM silver.lo3rwang_trace)
      +(SELECT count(*) FROM silver.lrunes_trace)
