@@ -14,7 +14,7 @@ import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -48,7 +48,7 @@ function useBulkWriteCooldown(){
 }
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
-  if(/your_posts|status_updates|facebook_activity/i.test(value))return 'Facebook';
+  if(/your_posts|status_updates|facebook_activity|places_you_have_been_tagged_in/i.test(value))return 'Facebook';
   for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
     if(value.includes(key))return key;
   }
@@ -75,7 +75,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
-  const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
+  const uid=String(value('uid')||entry?.import_uid||(isFacebook?facebookBackupImportUid(row):createUid8())).trim().toUpperCase();
   const rawDate=value('createtime')||(isFacebook?facebookBackupTimestamp(row):null);
   const createdAt=isFacebook?parseImportCreatedTime(rawDate):iso(rawDate);
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
