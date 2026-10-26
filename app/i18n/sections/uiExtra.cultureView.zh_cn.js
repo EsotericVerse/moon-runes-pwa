@@ -1,4 +1,7 @@
 export default {
+  "timeTrace": "时间痕迹",
+  "allTimeTraces": "全部时间痕迹",
+  "recentTimeTrace": "最近时间痕迹",
   "noDataInPeriod": "该时间区间内没有数据。",
   "system": "作品分类",
   "custom": "个人分类",
