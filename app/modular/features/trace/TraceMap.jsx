@@ -281,18 +281,14 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
           }}>
           <option value="">不顯示路線</option>
           {savedMaps.map(route=><option key={route.uid} value={route.uid}>
-            {route.title}（{route.anchor_list?.length||0} 站）</option>)}
+            {route.title}（{route.trace_type==='space_trace'?'痕跡 '+route.anchor_list.length+' 段':'路線 '+route.anchor_list.length+' 站'}）</option>)}
         </select>
       </label>
       <p className="scope-status">依你儲存的站點順序畫出連線與站序；連線不代表實際走過的道路。</p>
     </div>:null}
     <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
-        {spatialData?.anchors?.some(anchor=>anchor.trace_type==='anchor'
-          &&anchor.longitude!=null&&anchor.latitude!=null
-          &&String(anchor.longitude).trim()!==''&&String(anchor.latitude).trim()!==''
-          &&Number.isFinite(Number(anchor.longitude))&&Number.isFinite(Number(anchor.latitude))
-          &&Math.abs(Number(anchor.longitude))<=180&&Math.abs(Number(anchor.latitude))<=90)
+        {spatialData?.anchors?.some(anchor=>anchor.trace_type==='space_anchor'&&Boolean(spaceCoordinates(anchor)))
           ?copy.all:(selectingLocation?copy.examples:copy.all)}
       </button>
       {selectingLocation?<>{DEMO_PLACES.map(place=><button key={place.id} type="button" aria-pressed={selected===place.id}

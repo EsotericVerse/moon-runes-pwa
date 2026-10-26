@@ -118,7 +118,7 @@ export default function Trace({scopeId='loc'}){
       maps:showingAll?maps:[currentMap]};
   },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
-  const selectedAvailable=selectedPlace&&(selectedPlace.trace_type==='map'
+  const selectedAvailable=selectedPlace&&(selectedPlace.trace_type!=='space_anchor'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
   // A Frame is the spatial context. Its article/culture/statistics panel
@@ -160,7 +160,7 @@ export default function Trace({scopeId='loc'}){
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
           {!maps.length?<option value="">尚未建立痕跡圖</option>:null}
           {maps.map(map=><option key={map.uid} value={map.uid}>
-            {map.title}（{map.anchor_list?.length||0} 站）
+            {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'）
           </option>)}
           <option value="all">全部定錨點（手動載入）</option>
         </select>
@@ -179,7 +179,7 @@ export default function Trace({scopeId='loc'}){
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
     {supported&&!traceIndex.isPending&&!maps.length?<p className="scope-status">
-      尚未建立痕跡圖。請在管理頁建立一組站點路線，或手動選擇「全部定錨點」。
+      尚未建立路線圖或痕跡圖。請在管理頁先將地點加入 Spool，或手動選擇「全部定錨點」。
     </p>:null}
 
     <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker

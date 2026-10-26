@@ -5,12 +5,11 @@ import {dbAuthClient} from './db-client.mjs';
 import {reviewPlaceNameGroups,compactPlaceName} from '../modular/features/trace/trace-place-names.mjs';
 
 const canonical=items=>[...items].sort((a,b)=>
-  String(a.created_at||'').localeCompare(String(b.created_at||''))||
   String(a.uid||'').localeCompare(String(b.uid||'')))[0];
 
 export default function TraceOrganizer({scopeId,spatial,reload}){
   const anchors=useMemo(()=>(spatial.anchors||[]).filter(item=>
-    item.trace_type==='anchor'&&item.source_scope===scopeId),[spatial.anchors,scopeId]);
+    item.trace_type==='space_anchor'&&item.source_scope===scopeId),[spatial.anchors,scopeId]);
   const {automatic,uncertain}=useMemo(()=>reviewPlaceNameGroups(anchors),[anchors]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
@@ -94,7 +93,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   },[anchors,placeName]);
   return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱合併">
     <h3>地點管理 · 名稱整理</h3>
-    <p className="scope-status">只比對地點名稱與已儲存別名，不使用地址、縣市或 GPS 判定相同。保留最早建立的名稱和 UID；不同樓層／不同實體保持獨立。任何整理都不修改 Galaxy.source_place。</p>
+    <p className="scope-status">只比對地點名稱與已儲存別名，不使用地址、縣市或 GPS 判定相同。保留選定的標準名稱和 UID；資料合併需人工確認，同名不一定是同一地點。任何整理都不修改 Galaxy.source_place。</p>
     <div className="scope-stat-controls" role="status">
       <span>目前地點：{anchors.length}</span>
       <span>明確名稱變體：{automatic.length} 組</span>
@@ -114,7 +113,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     </section>:null}
     <section className="scope-card">
       <h4>名稱相似，需要確認</h4>
-      <p className="scope-status">勾選確定同一地點的名稱，按一次「儲存已勾選」。不勾選就保留原 UID；不同樓層不要合併。</p>
+      <p className="scope-status">勾選確定同一地點的名稱，按一次「儲存已勾選」。不勾選就保留原 UID；只有確認同一地點才能合併。</p>
       {!uncertain.length?<p className="scope-status">目前沒有需要人工判斷的名稱候選。</p>:null}
       {uncertain.slice(0,80).map(group=>{
         const keep=canonical(group.items);
@@ -126,7 +125,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
               onChange={event=>setChecked(current=>({...current,[group.key]:{
                 ...current[group.key],[item.uid]:event.target.checked
               }}))}/>
-            {item.title} · UID {item.uid}{item.floor_label?' · '+item.floor_label:''}
+            {item.title} · UID {item.uid}
           </label>)}
           <div className="scope-stat-controls">
             <button type="button" className="loc-button primary" disabled={busy||!ownPlaces}
@@ -146,7 +145,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
       {matches.length?<div className="loc-trace-route-suggestions" role="group" aria-label="既有地點">
         {matches.map(item=><button className="loc-button" type="button" key={item.uid}
           onClick={()=>{setSelectedUid(item.uid);setNewAlias('');}}>
-          {item.title} · UID {item.uid}{item.floor_label?' · '+item.floor_label:''}
+          {item.title} · UID {item.uid}
         </button>)}
       </div>:null}
       {place?<div className="scope-management-fields">

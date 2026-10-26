@@ -1,3 +1,4 @@
+import {spaceCoordinates} from './space-graph.mjs';
 // First-party React Trace loads MapLibre from the project's pinned npm package.
 // Public sample anchors are isolated from Galaxy. Deliberate place-search terms
 // go only to the chosen geocoding service; map tiles do not receive article bodies
@@ -54,18 +55,15 @@ function pickedArea(lng,lat,radius){
   }]:[]};
 }
 function isValidSavedAnchor(anchor){
-  if(anchor?.trace_type!=='anchor')return false;
-  if(anchor.longitude==null||anchor.latitude==null)return false;
-  if(String(anchor.longitude).trim()===''||String(anchor.latitude).trim()==='')return false;
-  const lng=Number(anchor.longitude),lat=Number(anchor.latitude);
-  return Number.isFinite(lng)&&Number.isFinite(lat)&&Math.abs(lng)<=180&&Math.abs(lat)<=90;
+  if(anchor?.trace_type!=='space_anchor')return false;
+  return Boolean(spaceCoordinates(anchor));
 }
 function existingAnchorPoints(anchors){
   return {type:'FeatureCollection',features:(Array.isArray(anchors)?anchors:[])
     .filter(isValidSavedAnchor)
-    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.address||''),floor_label:String(a.floor_label||''),floor_level:a.floor_level??null,
+    .map((a,i)=>({type:'Feature',id:i,properties:{title:String(a.title||''),address:String(a.postal_address||''),floor_label:String(a.floor_label||''),floor_level:a.floor_level??null,
         radius_m:a.radius_m||500,uid:String(a.uid||''),source_scope:String(a.source_scope||'')},
-      geometry:{type:'Point',coordinates:[Number(a.longitude),Number(a.latitude)]}}))};
+      geometry:{type:'Point',coordinates:spaceCoordinates(a)}}))};
 }
 function emptyRoute(){
   return {type:'FeatureCollection',features:[]};
@@ -111,15 +109,15 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     const features=[];
     points.forEach((place,index)=>{
       if(!place)return;
-      const coordinates=[Number(place.longitude),Number(place.latitude)];
+      const coordinates=spaceCoordinates(place);
       features.push({type:'Feature',properties:{order:index+1,title:String(place.title||''),
         uid:String(place.uid||''),source_scope:String(place.source_scope||''),
-        address:String(place.address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
+        address:String(place.postal_address||''),floor_label:String(place.floor_label||''),floor_level:place.floor_level??null},
         geometry:{type:'Point',coordinates}});
       const previous=points[index-1];
       if(previous)features.push({type:'Feature',properties:{kind:'saved-trace-segment'},
         geometry:{type:'LineString',coordinates:[
-          [Number(previous.longitude),Number(previous.latitude)],coordinates
+          spaceCoordinates(previous),coordinates
         ]}});
     });
     return {type:'FeatureCollection',features};
@@ -138,11 +136,11 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(!loaded||!selectedSavedRoute||!changed)return;
     const valid=savedRoutePoints().filter(Boolean);
     if(valid.length===1){
-      map.flyTo({center:[Number(valid[0].longitude),Number(valid[0].latitude)],
+      map.flyTo({center:spaceCoordinates(valid[0]),
         zoom:12.5,pitch:45,bearing:0,essential:true});
     }else if(valid.length>1){
       const bounds=new LngLatBounds();
-      valid.forEach(point=>bounds.extend([Number(point.longitude),Number(point.latitude)]));
+      valid.forEach(point=>bounds.extend(spaceCoordinates(point)));
       map.fitBounds(bounds,{padding:Math.max(32,Math.min(90,Math.round(map.getContainer().clientWidth*.07))),
         pitch:0,bearing:0,maxZoom:13,duration:500});
     }
@@ -291,11 +289,11 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props.uid)
           &&String(row.source_scope||'')===String(props.source_scope||''));
         if(anchor){
-          centerIfFar(anchor.longitude,anchor.latitude);
+          centerIfFar(...spaceCoordinates(anchor));
           onAnchorSelect(anchor);
           new Popup({closeButton:true,offset:18})
-            .setLngLat([Number(anchor.longitude),Number(anchor.latitude)])
-            .setText([anchor.title,anchor.address,anchor.floor_label].filter(Boolean).join(' · '))
+            .setLngLat(spaceCoordinates(anchor))
+            .setText([anchor.title,anchor.postal_address].filter(Boolean).join(' · '))
             .addTo(map);
         }
       };
@@ -335,7 +333,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props?.uid||'')
           &&String(row.source_scope||'')===String(props?.source_scope||''));
         if(!anchor)return;
-        centerIfFar(anchor.longitude,anchor.latitude);
+        centerIfFar(...spaceCoordinates(anchor));
         onAnchorSelect(anchor);
       };
       for(const layer of ['loc-trace-user-route-stops','loc-trace-user-route-order']){

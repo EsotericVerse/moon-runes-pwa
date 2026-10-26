@@ -49,7 +49,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const [showAllVisits,setShowAllVisits]=useState(false);
   const [visibleCount,setVisibleCount]=useState(PAGE_SIZE);
   const name=String(place?.title||'').trim();
-  const isMap=place?.trace_type==='map';
+  const isMap=place?.trace_type==='space_road'||place?.trace_type==='space_trace';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
   const scope=useMemo(()=>defaultScopeData(targetScope),[targetScope]);
   const placeIds=useMemo(()=>traceArticleIds(place,anchors),[place,anchors]);
@@ -163,7 +163,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   // Use saved times, never inferred timestamps from the route or article period.
   const visits=useMemo(()=>{
     const stops=isMap
-      ?(place?.anchor_list||[]).map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===targetScope)).filter(Boolean)
+      ?(place?.anchor_list||[]).flat(Infinity).map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===targetScope)).filter(Boolean)
       :(place?[place]:[]);
     return stops.flatMap((stop,stopIndex)=>(Array.isArray(stop.times)?stop.times:[])
       .flatMap((when,visitIndex)=>{
@@ -218,14 +218,14 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
 
   if(!name)return <section className="loc-card loc-trace-works" aria-label="地圖下方文章報表">
     <h2>文章列表／時間長河／統計圖</h2>
-    <p className="scope-status">選擇一個空間定錨點，或一張痕跡圖，再選時期；報表在這裡展開，不會跳到搜尋。</p>
+    <p className="scope-status">選擇一個空間定錨點、路線圖或痕跡圖，再選時期；報表在這裡展開，不會跳到搜尋。</p>
   </section>;
   const loading=tab==='articles'?(selectedMediaType?mediaFiltered.isPending:list.isPending):summary.isPending;
   const error=tab==='articles'?(selectedMediaType?mediaFiltered.error:list.error):summary.error;
   return <section className="loc-card loc-trace-works" aria-label={name+'文章報表'}>
     <header className="loc-trace-works-title">
       <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
-      <span className="scope-status">{isMap?(place.anchor_list?.length||0)+' 站 · ':''}
+      <span className="scope-status">{isMap?(place.trace_type==='space_trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):'''}
         {!enabled?'沒有可對應的打卡地點'
           :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}
@@ -253,7 +253,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有有效的四碼 Trace ID，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
-    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有已連結此 Trace ID 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。</p>:null}
+    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有 place_id 屬於此 Spool 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。</p>:null}
     {tab==='articles'&&rows.length?<IncrementalList
       items={rows}
       batchSize={PAGE_SIZE}

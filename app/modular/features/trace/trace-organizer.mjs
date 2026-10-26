@@ -1,3 +1,4 @@
+import {spaceCoordinates} from './space-graph.mjs';
 // Pure, read-only grouping rules for the Trace organizer.
 // Address evidence is stronger than geographic proximity; proximity alone never merges.
 const REGIONS=Object.freeze(['基隆市','臺北市','新北市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣']);
@@ -8,13 +9,13 @@ export function normalizeAnchorAddress(value){
 export function anchorAddress(anchor){
   // Prefer the structured field. Legacy approved descriptions still provide
   // evidence until their contents have been individually reviewed.
-  if(String(anchor?.address||'').trim())return String(anchor.address).trim();
-  const text=String(anchor?.description||'');
+  if(String(anchor?.postal_address||'').trim())return String(anchor.postal_address).trim();
+  const text=typeof anchor?.description==='string'?anchor.description:String(anchor?.description?.text||'');
   return (text.match(/地址[：:]\s*([^。；;\n]+)/)?.[1]||'').trim();
 }
 export function countyOfAnchor(anchor){
   const title=String(anchor?.title||'');
-  const note=String(anchor?.description||'');
+  const note=typeof anchor?.description==='string'?anchor.description:String(anchor?.description?.text||'');
   const address=anchorAddress(anchor);
   const text=address+' '+title+' '+note;
   const found=text.match(/(基隆市|臺北市|台北市|新北市|桃園市|新竹市|新竹縣|苗栗縣|臺中市|台中市|彰化縣|南投縣|雲林縣|嘉義市|嘉義縣|臺南市|台南市|高雄市|屏東縣|宜蘭縣|花蓮縣|臺東縣|台東縣|澎湖縣|金門縣|連江縣)/);
@@ -43,8 +44,8 @@ export function groupAnchorsByCounty(anchors){
     .map(([county,items])=>({county,items:items.sort((a,b)=>String(a.title).localeCompare(String(b.title),'zh-Hant'))}));
 }
 function distance(a,b){
-  const latA=Number(a.latitude)*Math.PI/180,latB=Number(b.latitude)*Math.PI/180;
-  const lngDiff=(Number(b.longitude)-Number(a.longitude))*Math.PI/180;
+  const latA=Number(spaceCoordinates(a)?.[1])*Math.PI/180,latB=Number(spaceCoordinates(b)?.[1])*Math.PI/180;
+  const lngDiff=(Number(spaceCoordinates(b)?.[0])-Number(spaceCoordinates(a)?.[0]))*Math.PI/180;
   const dLat=latB-latA;
   return Math.round(2*6371008.8*Math.asin(Math.min(1,Math.sqrt(Math.sin(dLat/2)**2+
     Math.cos(latA)*Math.cos(latB)*Math.sin(lngDiff/2)**2))));
@@ -54,14 +55,10 @@ function distance(a,b){
 function compareAnchorPair(a,b){
   if(a.source_scope!==b.source_scope)return null;
   const aa=anchorAddress(a),ba=anchorAddress(b);
-  const floors=[a.floor_label,b.floor_label].map(v=>String(v||'').trim().toLowerCase());
-  const levels=[a.floor_level,b.floor_level].map(v=>v==null?null:Number(v));
-  const floorConflict=Boolean(floors[0]&&floors[1]&&floors[0]!==floors[1])
-    ||Boolean(levels[0]!==null&&levels[1]!==null&&levels[0]!==levels[1]);
+  const floorConflict=false;
   const match=aa&&ba&&normalizeAnchorAddress(aa)===normalizeAnchorAddress(ba);
   const both=Boolean(aa&&ba);
-  const valid=[a.latitude,a.longitude,b.latitude,b.longitude]
-    .every(v=>v!=null&&String(v).trim()!==''&&Number.isFinite(Number(v)));
+  const valid=Boolean(spaceCoordinates(a)&&spaceCoordinates(b));
   const meters=valid?distance(a,b):null;
   const nameMatch=String(a.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase()
     ===String(b.title||'').normalize('NFKC').replace(/\s/g,'').toLowerCase();
@@ -77,14 +74,14 @@ function compareAnchorPair(a,b){
     safeReuse:false};
 }
 export function findAnchorWriteMatches(anchor,existing=[]){
-  const incoming={...anchor,uid:'__incoming__',trace_type:'anchor'};
+  const incoming={...anchor,uid:'__incoming__',trace_type:'space_anchor'};
   return (Array.isArray(existing)?existing:[])
-    .filter(row=>row?.trace_type==='anchor')
+    .filter(row=>row?.trace_type==='space_anchor')
     .map(row=>compareAnchorPair(incoming,row))
     .filter(Boolean);
 }
 export function organizeAnchorCandidates(anchors){
-  const list=(anchors||[]).filter(a=>a.trace_type==='anchor');
+  const list=(anchors||[]).filter(a=>a.trace_type==='space_anchor');
   const results=[];
   for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
     const candidate=compareAnchorPair(list[i],list[j]);

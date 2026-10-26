@@ -2,250 +2,108 @@
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
+import Select from 'react-select';
 import {useEditDockForm} from '../modular/edit-dock';
-const TraceRouteManager=dynamic(()=>import('./TraceRouteManager'),{
-  loading:()=> <p className="scope-status" role="status">正在開啟痕跡圖管理…</p>
-});
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
-import {dbAuthClient} from './db-client.mjs';
-import {readSharedSpatialReferences} from '../modular/features/trace/trace-spatial-reference-data';
-import {findAnchorWriteMatches} from '../modular/features/trace/trace-organizer.mjs';
 import {
   TRACE_SCOPES,traceKey,traceAllAnchorsKey,
-  readTraceData,addTraceAnchor,updateTraceAnchor,validCoordinates
+  readTraceData,addTraceAnchor,updateTraceAnchor
 } from '../modular/features/trace/trace-data';
 
-const TraceOrganizer=dynamic(()=>import('./TraceOrganizer'),{loading:()=> <p className="scope-status">正在整理空間定錨點…</p>});
-
+const TraceRouteManager=dynamic(()=>import('./TraceRouteManager'),{
+  loading:()=> <p className="scope-status" role="status">正在開啟路線／痕跡圖管理…</p>
+});
+const TraceOrganizer=dynamic(()=>import('./TraceOrganizer'),{
+  loading:()=> <p className="scope-status">正在載入地點名稱整理…</p>
+});
 const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
-  ssr:false,loading:()=> <p className="scope-status" role="status">正在開啟空間定錨地圖…</p>
+  ssr:false,loading:()=> <p className="scope-status">正在載入地圖…</p>
 });
 
 function AnchorEditor({scopeId,spatial,reload}){
   const cache=useResourceCache();
-  const ownAnchors=spatial.anchors.filter(row=>row.source_scope===scopeId);
+  const ownAnchors=useMemo(()=>(spatial.anchors||[]).filter(row=>row.source_scope===scopeId),
+    [spatial.anchors,scopeId]);
   const [editingUid,setEditingUid]=useState('');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
-  const [address,setAddress]=useState('');
-  const [floorLabel,setFloorLabel]=useState('');
-  const [floorLevel,setFloorLevel]=useState('');
+  const [postalAddress,setPostalAddress]=useState('');
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
-  const [radius,setRadius]=useState('');
   const [focusLocation,setFocusLocation]=useState(null);
-  // Existing references are searched only on an explicit action, not per key.
-  // Names, street addresses and floor/unit strings share the same lookup.
-  const [referenceText,setReferenceText]=useState('');
-  const [sharedTerm,setSharedTerm]=useState('');
-  const sharedReferences=useAsyncResource(['trace-shared-spatial-references',sharedTerm],
-    ()=>readSharedSpatialReferences(sharedTerm),
-    {enabled:!editingUid&&sharedTerm.length>=2,revalidateOnFocus:false,revalidateOnReconnect:false});
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const dirty=Boolean(editingUid||title||description||address||floorLabel||floorLevel||longitude||latitude||radius);
-  const duplicateCandidates=useMemo(()=>{
-    if(!title.trim()||!validCoordinates(longitude,latitude))return [];
-    return findAnchorWriteMatches({
-      uid:'__incoming__',source_scope:scopeId,trace_type:'anchor',title,
-      description,address,floor_label:floorLabel,floor_level:floorLevel,longitude,latitude
-    },ownAnchors.filter(row=>row.uid!==editingUid));
-  },[spatial.anchors,scopeId,editingUid,title,description,address,floorLabel,floorLevel,longitude,latitude]);
-  const closeCandidates=duplicateCandidates.filter(item=>
-    item.type==='near-unverified'||item.type==='same-address'
-    ||item.type==='different-floor'||item.type==='address-coordinate-conflict'||item.type==='same-name-different-location');
+  const [isError,setIsError]=useState(false);
+  const options=useMemo(()=>ownAnchors.map(row=>({value:row.uid,label:row.title+' · '+row.uid})),[ownAnchors]);
+  const dirty=Boolean(editingUid||title||description||postalAddress||longitude||latitude);
   const pickExisting=uid=>{
-
-    const anchor=ownAnchors.find(row=>row.uid===uid);
-    setEditingUid(anchor?.uid||'');
-    setTitle(anchor?.title||'');
-    setDescription(anchor?.description||'');
-    setAddress(anchor?.address||'');
-    setFloorLabel(anchor?.floor_label||'');
-    setFloorLevel(anchor?.floor_level==null?'':String(anchor.floor_level));
-    setLongitude(anchor?.longitude==null?'':String(anchor.longitude));
-    setLatitude(anchor?.latitude==null?'':String(anchor.latitude));
-    setRadius(anchor?.radius_m==null?'500':String(anchor.radius_m));
-    if(anchor?.longitude!=null&&anchor?.latitude!=null)setFocusLocation({longitude:anchor.longitude,latitude:anchor.latitude,name:anchor.title,radius_m:anchor.radius_m||500});
-    setNotice('');
-  };
-  const popular=useAsyncResource(['trace-place-names',scopeId,500],async()=>{
-    const {data,error}=await dbAuthClient.schema('silver').rpc('trace_place_suggestions',{
-      p_scope_id:scopeId,p_limit:500
-    });
-    if(error)throw new Error(error.message||'打卡名稱讀取失敗');
-    return data||[];
-  },{enabled:scopeId!=='loc',revalidateOnFocus:false,revalidateOnReconnect:false});
-  const useSharedReference=reference=>{
-    if(reference.source_scope===scopeId){
-      // A current-Scope hit is an existing anchor identity, not a template
-      // for creating another anchor with a fresh UID.
-      pickExisting(reference.uid);
-      return;
-    }
-    // The reference's Scope and UID are never copied to the new anchor.
-    // Reusing reviewed coordinates/address is not reusing a historical place.
-    if(!validCoordinates(reference.longitude,reference.latitude))return;
-    // Address-first searches may not have a title in the new-anchor form.
-    // Prefill the candidate label only as an editable suggestion.
-    if(!title.trim()&&reference.title)setTitle(reference.title);
-    setAddress(reference.address||'');
-    setFloorLabel(reference.floor_label||'');
-    setFloorLevel(reference.floor_level==null?'':String(reference.floor_level));
-    setLongitude(String(reference.longitude));
-    setLatitude(String(reference.latitude));
-    setFocusLocation({longitude:reference.longitude,latitude:reference.latitude,
-      name:title.trim(),radius_m:Number(radius)||500});
-
-    setNotice('已帶入 '+reference.source_scope+' 的地址／座標參考，原錨點 UID '+reference.uid+
-      ' 不會重用或修改。請核對門牌、樓層及目前店家後，再以自己的 Scope 新增。');
+    const row=ownAnchors.find(item=>item.uid===uid);
+    setEditingUid(row?.uid||'');
+    setTitle(row?.title||'');
+    setDescription(row?.description||'');
+    setPostalAddress(row?.postal_address||'');
+    setLongitude(row?.longitude==null?'':String(row.longitude));
+    setLatitude(row?.latitude==null?'':String(row.latitude));
+    if(row?.longitude!=null&&row?.latitude!=null)
+      setFocusLocation({longitude:row.longitude,latitude:row.latitude,name:row.title});
   };
   const save=async()=>{
     if(busy)return false;
-    setBusy(true);setNotice('');
+    setBusy(true);setIsError(false);setNotice('');
     try{
-      if(closeCandidates.some(item=>item.type==='near-unverified')&&!window.confirm(
-        '附近已有位置接近、但尚未證明同址的定錨點。確定要保留為獨立地點？寫入後可至「整理空間定錨點」進一步核對。'
-      ))return false;
-      const location={title,description,address,floor_label:floorLabel,floor_level:floorLevel,
-        longitude,latitude,radius_m:radius||500};
+      if(!title.trim())throw Error('請填入空間定錨點標題');
+      const input={scopeId,title,description,address:postalAddress,longitude,latitude};
       const saved=editingUid
-        ?await updateTraceAnchor({scopeId,uid:editingUid,...location})
-        :await addTraceAnchor({scopeId,...location});
-      // Persistence is already confirmed by the authorized write's UID.
-      // If a secondary read/metadata refresh fails, never tell the user to
-      // submit the same new anchor again; that can create a second UID.
-      let anchorReadSynced=true;
-      try{await reload();}catch{anchorReadSynced=false;}
-      try{await revalidateServerMetadata();}catch{anchorReadSynced=false;}
-      let anchorCacheSynced=true;
-      try{
-        await Promise.all([
-          cache.invalidate({queryKey:['loc-place-summary',scopeId]}),
-          cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
-          cache.invalidate({queryKey:['trace-current',scopeId]})
-        ]);
-      }catch{anchorCacheSynced=false;}
-      setEditingUid('');
-      setTitle('');setDescription('');setAddress('');setFloorLabel('');setFloorLevel('');
-      setLongitude('');setLatitude('');setRadius('');
-      setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
-        :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
-        :'空間定錨點已儲存，地址／樓層資訊已保留。'
-        +(anchorReadSynced?'':'資料庫已回報儲存成功，但重新讀取失敗；請重新載入查看，勿重複新增。')
-        +(anchorCacheSynced?'':'部分已開啟的痕跡快取可能需要重新整理。'));
+        ?await updateTraceAnchor({...input,uid:editingUid})
+        :await addTraceAnchor(input);
+      let refreshFailed=false;
+      try{await reload();}catch{refreshFailed=true;}
+      try{await revalidateServerMetadata();}catch{refreshFailed=true;}
+      await Promise.allSettled([
+        cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
+        cache.invalidate({queryKey:['trace-map-index',scopeId]}),
+        cache.invalidate({queryKey:['trace-current',scopeId]})
+      ]);
+      setEditingUid('');setTitle('');setDescription('');setPostalAddress('');
+      setLongitude('');setLatitude('');
+      setNotice('定錨點 '+saved.uid+' 已保存。'+(refreshFailed?'重新讀取未完成，請勿重複提交。':''));
       return true;
-    }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
+    }catch(e){setIsError(true);setNotice(String(e.message||e));return false;}
     finally{setBusy(false);}
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card">
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
-    {ownAnchors.length?<div className="scope-management-fields">
-      <label>編輯既有空間定錨點（不需要重新新增）
-        <select className="scope-select" value={editingUid} onChange={event=>pickExisting(event.target.value)} disabled={busy}>
-          <option value="">新增新地點</option>
-          {ownAnchors.map(anchor=><option key={anchor.uid} value={anchor.uid}>
-            {anchor.title} · {anchor.address||'地址待確認'}{anchor.floor_label?' · '+anchor.floor_label:''} · UID {anchor.uid}
-          </option>)}
-        </select>
-      </label>
-    </div>:null}
-    <p className="scope-status">既有地點直接開啟編輯；地址、縣市和樓層是補充資訊，不參與同一地點的合併判斷。</p>
+    <p className="scope-status">地點名稱、文字說明與經緯度分開處理；經緯度儲存於 address Array，文字地址存 description.address。不使用縣市分類、周圍半徑或付費地理查詢。</p>
+    <label>編輯既有地點（直接搜尋標題）
+      <Select instanceId={'trace-anchor-edit-'+scopeId} inputId={'trace-anchor-edit-'+scopeId}
+        options={options} isClearable value={options.find(o=>o.value===editingUid)||null}
+        onChange={choice=>pickExisting(choice?.value||'')} isDisabled={busy}
+        placeholder="搜尋標題，或留空新增" classNamePrefix="loc-react-select"/>
+    </label>
     <div className="scope-management-fields">
-      <div className="loc-trace-quick-field">
-        <label>空間定錨點名稱<input type="text" maxLength={120} list={'trace-place-'+scopeId}
-          value={title} onChange={e=>{
-
-            setTitle(e.target.value);
-          }}
-          placeholder="選既有 Facebook 打卡名稱，或自行輸入" disabled={busy}/>
-          <datalist id={'trace-place-'+scopeId}>
-            {(popular.data||[]).map(item=><option key={item.name} value={item.name}/>)}
-          </datalist>
-        </label>
-      </div>
-      {!editingUid?<div className="loc-trace-quick-field">
-        <label>查找 LOC 已有地點／門牌／樓層
-          <input type="search" maxLength={100} value={referenceText}
-            onChange={e=>setReferenceText(e.target.value)}
-            placeholder="可輸入店名、地址、B1 或室別；留空使用上面的地點名稱"
-            disabled={busy}/>
-        </label>
-        <button className="loc-button" type="button"
-          onClick={()=>setSharedTerm((referenceText.trim()||address.trim()||title.trim()).slice(0,100))}
-          disabled={busy||(referenceText.trim()||address.trim()||title.trim()).length<2}>
-          查詢已有錨點
-        </button>
-      </div>:null}
-      {!editingUid&&sharedTerm.length>=2?<div className="loc-trace-quick-results" role="group" aria-label="LOC 已有空間地址參考">
-        <strong>LOC 已有錨點／地址參考：{sharedTerm}</strong>
-        <p className="scope-status">自己的錨點會開啟編輯；其他 Scope 的資料只帶入位置參考，仍建立自己的新 UID。沒有門牌的紀錄不代表地址已核實。</p>
-        {sharedReferences.isPending?<p className="scope-status">正在比對現有空間錨點…</p>:null}
-        {sharedReferences.error?<p role="status" className="scope-status scope-error">
-          讀取公用地址參考失敗：{String(sharedReferences.error?.message||sharedReferences.error)}
-        </p>:null}
-        {(sharedReferences.data||[]).map(reference=><button
-          key={reference.source_scope+':'+reference.uid} type="button" className="loc-button"
-          onClick={()=>useSharedReference(reference)} disabled={busy}>
-          {reference.source_scope===scopeId?'編輯自己的錨點：':'選用位置參考：'}
-          {reference.title||'未命名'} · {reference.address||'門牌未核實'}
-          {reference.floor_label?' · '+reference.floor_label:''}
-          {' · '+reference.source_scope+' · UID '+reference.uid}
-        </button>)}
-        {!sharedReferences.isPending&&!sharedReferences.error&&!sharedReferences.data?.length?
-          <p className="scope-status">目前沒有可用的既有地點；可手動補充位置。</p>:null}
-      </div>:null}
-      <label>完整地址（含門牌、樓層／室別；未確認可留空）
-        <input type="text" maxLength={320} autoComplete="street-address" value={address}
-          onChange={e=>setAddress(e.target.value)} placeholder="例如：新北市某區某路100號2樓" disabled={busy}/>
-      </label>
-      <label>樓層／室別（顯示用；可填 B1、2樓、3–4樓）
-        <input type="text" maxLength={40} value={floorLabel} onChange={e=>setFloorLabel(e.target.value)}
-          placeholder="例如：B1" disabled={busy}/>
-      </label>
-      <label>樓層序號（立體層級，可選；B1 輸入 -1；跨樓層留空）
-        <input type="number" min={-100} max={300} step={1} value={floorLevel}
-          onChange={e=>setFloorLevel(e.target.value)} placeholder="未知" disabled={busy}/>
-      </label>
-      <p className="scope-status">地址含樓層可區分同棟不同場所；GPS 可在確認後再補上；未知座標儲存為空值，不繪製地圖點。樓層序號不代表海拔或實測高度。此地點若不適合公開，請勿填入私人住址。</p>
-      <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
-      <label>經度（可留空）<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
-      <label>緯度（可留空）<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
-      <label>周圍搜尋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} placeholder="500" onChange={e=>setRadius(e.target.value)} disabled={busy}/></label>
+      <label>地點標題<input maxLength={120} value={title} onChange={e=>setTitle(e.target.value)}
+        disabled={busy} placeholder="空間定錨點名稱"/></label>
+      <label>文字地址（非必填）<input maxLength={320} value={postalAddress}
+        onChange={e=>setPostalAddress(e.target.value)} disabled={busy}/></label>
+      <label>說明<textarea rows={2} maxLength={2000} value={description}
+        onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
+      <label>經度（可留空）<input type="number" min={-180} max={180} step="any"
+        value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
+      <label>緯度（可留空）<input type="number" min={-90} max={90} step="any"
+        value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
+      <button className="loc-button primary" type="button" disabled={busy||!title.trim()} onClick={save}>
+        {busy?'儲存中…':'儲存地點'}
+      </button>
     </div>
-    {closeCandidates.length?<div className="scope-card" role="status">
-      <strong>儲存前：附近／同址檢查（{closeCandidates.length} 組）</strong>
-      {closeCandidates.slice(0,5).map(item=><p key={item.b.uid} className="scope-status">
-        {item.b.title} · {item.meters??'未知'} 公尺 · {item.safeReuse
-          ?'同址候選（仍需人工確認是否相同地點）'
-          :item.type==='different-floor'?'同棟不同樓層；保留為不同定錨點'
-          :item.type==='near-unverified'?'附近候選；需核對是否不同地點'
-          :item.type==='address-coordinate-conflict'?'地址相同但座標衝突，需先整理'
-          :'請確認是否為同一地點'}
-      </p>)}
-    </div>:null}
-
-    {popular.data?.length?<div className="scope-stat-controls" role="group" aria-label="常用打卡地點名稱">
-      <p className="scope-status">常用 Facebook 打卡名稱（沿用原字串，座標請在地圖確認）：</p>
-      {popular.data.slice(0,10).map(item=><button className="loc-button" type="button"
-        key={item.name} disabled={busy} onClick={()=>{
-
-          setTitle(item.name);
-        }}>
-        {item.name}（{item.article_count}）
-      </button>)}
-    </div>:null}
-    {popular.error?<p role="status" className="scope-status scope-error">
-      打卡名稱讀取失敗：{String(popular.error.message||popular.error)}
-    </p>:null}
-    <TraceMap spatialData={spatial} radiusMeters={Number(radius)||500} focusLocation={focusLocation} onLocationPick={({lng,lat,name})=>{
-      if(name)setTitle(current=>current.trim()?current:name);
-      setLongitude(String(Math.round(lng*1e6)/1e6));
-      setLatitude(String(Math.round(lat*1e6)/1e6));
-    }}/>
-    {notice?<p role="status" className="scope-status">{notice}</p>:null}
+    <TraceMap spatialData={spatial} focusLocation={focusLocation}
+      onLocationPick={({lng,lat,name})=>{
+        if(name)setTitle(t=>t.trim()||name);
+        setLongitude(String(Math.round(lng*1e6)/1e6));
+        setLatitude(String(Math.round(lat*1e6)/1e6));
+      }}/>
+    {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
   </section>;
 }
 
@@ -258,7 +116,7 @@ export default function TraceManagementPanel({scopeId,mode='anchor'}){
   });
   if(!enabled)return <p className="scope-status">此 Scope 尚未配置痕跡資料表。</p>;
   if(mode==='map')return <TraceRouteManager key={scopeId+'-map'} scopeId={scopeId}/>;
-  if(query.isPending)return <p className="scope-status" role="status">正在載入空間定錨點與痕跡圖…</p>;
+  if(query.isPending)return <p className="scope-status" role="status">正在載入空間定錨點…</p>;
   if(query.error)return <p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}</p>;
   const spatial=query.data||{anchors:[],maps:[]};
   return mode==='cleanup'
