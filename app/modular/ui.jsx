@@ -63,7 +63,7 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
     ()=>selectScopeBlocks('loc','group_manage'),{enabled:managementMode});
   const managementImageQuery=useAsyncResource(['scope-blocks','loc','scope_manage'],
     ()=>selectScopeBlocks('loc','scope_manage'),{enabled:managementMode});
-  const heroImageRow=managementMode?managementImageQuery.data?.[0]:(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
+  const heroImageRow=managementMode?managementImageQuery.data?.find(row=>Number(row.block_order)===1):(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
   const heroImageOverride=heroImageUrlOf(heroImageRow);
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)

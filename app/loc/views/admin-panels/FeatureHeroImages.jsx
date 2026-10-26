@@ -109,8 +109,8 @@ function ImageSlot({feature,variant,onDirtyChange}){
   </label>;
 }
 
-// Independent, admin-owned management text for four Scope and five LOC entries.
-// group_manage/order 1 is preserved, and scope_manage/order 1 remains image-only.
+// Four compact Scope titles plus five LOC titles, all Admin-owned.
+// Keep the historic group_manage rows and one scope_manage/order 1 image.
 function ManagementHeroCopyFields({onDirtyChange}){
   const {mutate}=useSWRConfig();
   const [rows,setRows]=useState(null);
@@ -126,18 +126,13 @@ function ManagementHeroCopyFields({onDirtyChange}){
       try{
         const data=await selectScopeBlocks('loc','group_manage');
         if(!live)return;
-        const current=Object.fromEntries(slots.map(slot=>{
+        const titles=Object.fromEntries(slots.map(slot=>{
           const row=(data||[]).find(value=>Number(value.block_order)===slot.order);
-          return [slot.key,{
-            eyebrow:String(row?.block_eyebrow||''),
-            title:String(row?.block_title||slot.label),
-            subtitle:String(row?.block_subtitle||''),
-            text:String(row?.block_text||'')
-          }];
+          return [slot.key,String(row?.block_title||slot.label)];
         }));
         setRows(data);
-        setDrafts(current);
-        initial.current=JSON.stringify(current);
+        setDrafts(titles);
+        initial.current=JSON.stringify(titles);
         setStatus('');
       }catch(error){if(live)setStatus(String(error?.message||'讀取失敗。'));}
     })();
@@ -148,7 +143,6 @@ function ManagementHeroCopyFields({onDirtyChange}){
     onDirtyChange?.('management-copy',dirty);
     return()=>onDirtyChange?.('management-copy',false);
   },[dirty,onDirtyChange]);
-  const patch=(key,field,value)=>setDrafts(current=>({...current,[key]:{...current[key],[field]:value}}));
   async function save(){
     if(busy||rows===null)return false;
     setBusy(true);setStatus('');
@@ -156,25 +150,21 @@ function ManagementHeroCopyFields({onDirtyChange}){
       const {updateRows,insertRows}=await import('../../db-client.mjs');
       const before=JSON.parse(initial.current||'{}');
       for(const slot of slots){
-        const draft=drafts[slot.key];
-        if(!draft||JSON.stringify(before[slot.key])===JSON.stringify(draft))continue;
-        if(!draft.title.trim())throw new Error(slot.label+'：標題不得空白。');
-        const values={
-          block_eyebrow:draft.eyebrow.trim(),
-          block_title:draft.title.trim(),
-          block_subtitle:draft.subtitle.trim(),
-          block_text:draft.text.trim()
-        };
-        if(values.block_title.length>64||values.block_eyebrow.length>64||values.block_subtitle.length>128)
-          throw new Error(slot.label+'：文字長度超過資料庫欄位上限。');
+        const title=String(drafts[slot.key]||'').trim();
+        if(title.length===0||title.length>64)
+          throw new Error(slot.label+'：標題須為 1 至 64 字。');
+        if(before[slot.key]===drafts[slot.key])continue;
         const original=(rows||[]).find(row=>Number(row.block_order)===slot.order);
         if(original?.uid){
-          const {error}=await updateRows('silver.loc_blocks',values,{filters:[{column:'uid',operator:'eq',value:original.uid}]});
+          // Only change the title; preserve all existing eyebrow/subtitle/body.
+          const {error}=await updateRows('silver.loc_blocks',{block_title:title},
+            {filters:[{column:'uid',operator:'eq',value:original.uid}]});
           if(error)throw new Error(error.message);
         }else{
           const {error}=await insertRows('silver.loc_blocks',[{
             uid:HomeBlock.createUid(),page_name:'group_manage',block_order:slot.order,
-            block_entity:[],block_image:null,...values
+            block_entity:[],block_image:null,block_title:title,
+            block_eyebrow:'',block_subtitle:'',block_text:''
           }]);
           if(error)throw new Error(error.message);
         }
@@ -182,7 +172,7 @@ function ManagementHeroCopyFields({onDirtyChange}){
       invalidateScopeBlockPage('loc','group_manage');
       await mutate(['scope-blocks','loc','group_manage']);
       await mutate(['app-bootstrap','loc','group_manage']);
-      setStatus('已更新。公開 JS 快照需在下一次內容發布時同步。');
+      setStatus('管理頁標題已儲存。');
       setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(String(error?.message||'儲存失敗。'));return false;}
@@ -190,22 +180,22 @@ function ManagementHeroCopyFields({onDirtyChange}){
   }
   useEditDockForm({save,isBusy:()=>busy,isDirty:()=>dirty});
   return <div className="management-hero-copy-editor">
-    <p className="scope-status">共用「頁面控管」一張 Hero 圖；以下只編輯各入口顯示的文字，不會改動一般瀏覽頁 Hero。</p>
+    <p className="scope-status">「頁面控管」沿用一張 Hero 圖。只需修改入口顯示的標題，不改動各功能的公開頁 Hero。</p>
     {['scope','loc'].map(audience=><section key={audience} className="management-hero-copy-group">
-      <h4>{audience==='scope'?'一般 Scope 編輯選單（四項）':'LOC 管理選單（五項；系統管理僅 Admin 可用）'}</h4>
+      <h4>{audience==='scope'?'Scope 管理（四個標題）':'LOC 管理（五個標題；系統管理限 Admin）'}</h4>
       <div className="management-hero-copy-grid">
-        {slots.filter(slot=>slot.audience===audience).map(slot=><fieldset className="management-hero-copy-card" key={slot.key} disabled={rows===null||busy}>
-          <legend>{slot.label}</legend>
-          <label>眉標<input type="text" maxLength={64} value={drafts[slot.key]?.eyebrow||''} onChange={e=>patch(slot.key,'eyebrow',e.target.value)}/></label>
-          <label>標題<input type="text" required maxLength={64} value={drafts[slot.key]?.title||''} onChange={e=>patch(slot.key,'title',e.target.value)}/></label>
-          <label>副標<input type="text" maxLength={128} value={drafts[slot.key]?.subtitle||''} onChange={e=>patch(slot.key,'subtitle',e.target.value)}/></label>
-          <label>說明<textarea rows={2} value={drafts[slot.key]?.text||''} onChange={e=>patch(slot.key,'text',e.target.value)}/></label>
-        </fieldset>)}
+        {slots.filter(slot=>slot.audience===audience).map(slot=><label className="management-hero-copy-row" key={slot.key}>
+          <span>{slot.label}</span>
+          <input type="text" maxLength={64} required
+            disabled={rows===null||busy} aria-label={slot.label+' Hero 標題'}
+            value={drafts[slot.key]||''}
+            onChange={e=>setDrafts(current=>({...current,[slot.key]:e.target.value}))}/>
+        </label>)}
       </div>
     </section>)}
     {status?<p role="status" className="scope-status">{status}</p>:null}
     <button className="loc-button primary" type="button" disabled={busy||rows===null||!dirty} onClick={save}>
-      {busy?'儲存中…':'儲存管理頁文字'}
+      {busy?'儲存中…':'儲存管理頁標題'}
     </button>
   </div>;
 }
