@@ -207,7 +207,7 @@ async function upgradeNativeLocalTime(conn){
       else await conn.execute(step.sql+';');
     }
     const count=Number((await conn.query('SELECT count(*) AS n FROM local_time')).values?.[0]?.n)||0;
-    const expected=oldRows.filter(row=>row.record_type!=='style_comment').length;
+    const expected=convertLegacyTimeRows(oldRows).rows.length;
     if(count!==expected)throw new Error('Native Time migration count mismatch');
     await conn.commitTransaction();
   }catch(error){await conn.rollbackTransaction();throw error;}
