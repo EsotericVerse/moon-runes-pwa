@@ -18,7 +18,7 @@ export default function MyPhoneHome(){
     {native?<div className="scope-content">
       <section className="loc-card">
         <p className="scope-status">本機資料空間 · SQLite（local）</p>
-        <p>下方保留原始檔案；要將內容疊加入本機 SQLite，請到「設定 → 文件匯入」選 Yes。</p>
+        <p>使用「設定 → 文件匯入」可解析並確認寫入本機 SQLite；下方原始檔案庫只保存檔案，不會自動變成 Galaxy 文章。</p>
         <div className="scope-result-links">
           {[
             {id:'culture',label:'文化'},

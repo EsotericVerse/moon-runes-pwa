@@ -255,7 +255,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
   return {created:createMedia.length,connected};
 }
 
-function UniversalImport({scopeId,format,onFormatChange,saveEnabled=true}) {
+function UniversalImport({scopeId,format,onFormatChange}) {
   const {locale}=useUiLocale();
   const UI_COPY=useUiCopy();
   const t=useUiText();
@@ -369,7 +369,6 @@ function UniversalImport({scopeId,format,onFormatChange,saveEnabled=true}) {
   }
   async function run(){
     if(busy||!rows.length)return;
-    if(!saveEnabled){setStatus('已解析完成；目前設定為只預覽，不寫入資料庫。');return;}
     if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
@@ -493,10 +492,9 @@ function UniversalImport({scopeId,format,onFormatChange,saveEnabled=true}) {
         <p>{t('uiExtra.importUI.saveHint')}</p>
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!saveEnabled||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
-      {!saveEnabled?<p className="scope-status">目前為預覽模式，未啟用資料庫寫入。</p>:null}
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
@@ -508,14 +506,14 @@ function UniversalImport({scopeId,format,onFormatChange,saveEnabled=true}) {
 }
 
 
-export default function ManagementImportPanel({scopeId,saveEnabled=true}){
+export default function ManagementImportPanel({scopeId}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
   return <div className="scope-management-imports">
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
-      <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat} saveEnabled={saveEnabled}/>
+      <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat}/>
     </section>
   </div>;
 }

@@ -4,7 +4,7 @@ import featureZh from '../i18n/features.zh_tw.js';
 
 import {useEffect,useRef,useState} from 'react';
 import {Capacitor} from '@capacitor/core';
-import {createPrivateLocalStore,isTextPrivateFile,privateFilePath,PRIVATE_FILE_MAX_BYTES} from './private-local-files.mjs';
+import {createPrivateLocalStore,isTextPrivateFile,privateFilePath} from './private-local-files.mjs';
 
 const byteLabel=(size,l)=>{
   if(!Number.isFinite(size))return l.unknownSize;
@@ -58,9 +58,6 @@ export default function PrivateLocalFiles(){
     const failures=[];
     try{
       for(const file of files){
-        if(file.size>PRIVATE_FILE_MAX_BYTES){
-          failures.push(file.name+l.fileTooLarge);continue;
-        }
         try{
           await store.importFile(file,(written,total)=>setProgress({
             name:file.name,written,total,completed,count:files.length

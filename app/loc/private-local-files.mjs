@@ -2,11 +2,9 @@
 // Dependencies are injected so the complete file lifecycle can be tested without an iPhone.
 // The caller must supply Capacitor Filesystem and Directory.LibraryNoCloud (not Documents/Cache).
 import {detectPrivateFileContent,PRIVATE_SNIFF_BYTES} from './private-file-detection.mjs';
-import {ARCHIVE_MAX_BYTES} from './import-batch.mjs';
 export const PRIVATE_FILE_ROOT='loc-private-files/v1';
 export const PRIVATE_FILE_INDEX=PRIVATE_FILE_ROOT+'/index.json';
 export const PRIVATE_FILE_CHUNK_BYTES=256*1024;
-export const PRIVATE_FILE_MAX_BYTES=ARCHIVE_MAX_BYTES;
 export const PRIVATE_PREVIEW_MAX_BYTES=512*1024;
 
 const FILE_ID=/^[a-f0-9]{32}$/;
@@ -109,7 +107,6 @@ export function createPrivateLocalStore(filesystem,directory){
   async function importFile(file,onProgress){
     if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<0)
       throw new Error('選擇的檔案無法讀取。');
-    if(file.size>PRIVATE_FILE_MAX_BYTES)throw new Error('單一檔案暫時限制 '+Math.round(PRIVATE_FILE_MAX_BYTES/1048576)+' MiB；原始檔案未被修改。');
     const name=String(file.name||'');
     if(!name||name.length>500)throw new Error('檔案名稱不正確或過長。');
     await ensureFilesFolder();
