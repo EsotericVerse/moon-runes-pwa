@@ -473,7 +473,7 @@ function MapEditor({scopeId,spatial,reload}){
             role="combobox" aria-autocomplete="list"
             aria-expanded={Boolean(pointQuery.trim()&&matches.length)}
             aria-controls="trace-route-anchor-matches"
-            placeholder={county?'輸入名稱，例如：小柏':'請先選縣市'}
+            placeholder={county?'輸入地點名稱、地址或 UID':'請先選縣市'}
             value={pointQuery} disabled={busy||!county||!available.length}
             onChange={event=>{setPointQuery(event.target.value);setPointUid('');}}/>
           {county&&pointQuery.trim()?<div id="trace-route-anchor-matches"
@@ -485,7 +485,7 @@ function MapEditor({scopeId,spatial,reload}){
               <span>{anchor.title}</span>
               <small>UID {anchor.uid} · {Number(anchor.latitude).toFixed(4)}, {Number(anchor.longitude).toFixed(4)}</small>
             </button>):<span className="scope-status">此縣市沒有符合名稱的定錨點</span>}
-            {matches.length===8?<span className="scope-status">只顯示前八筆，請繼續輸入以縮小範圍。</span>:null}
+            {matches.length===8?<span className="scope-status">只顯示前八筆；若有同名地點，可加上行政區、地址或 UID 繼續縮小範圍。</span>:null}
           </div>:null}
         </div>
         <button className="loc-button loc-trace-route-add" type="button"
