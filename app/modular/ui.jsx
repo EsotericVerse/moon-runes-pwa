@@ -47,24 +47,27 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const searchParams=useSearchParams();
   const editDock=useEditDock();
   const editing=Boolean(searchParams?.get('edit')==='1'||(editDock?.active&&editDock.scopeId===scopeId));
-  const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing);
+  const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing,featureId);
   const managementMode=Boolean(managementSlot);
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
   const artworkId=managementMode?'manage':featureId;
   const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[artworkId]?' scope-feature-hero--artwork scope-feature-hero--'+artworkId:'');
   const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
-  // Edit workspaces share one image (loc/scope_manage), never their normal
-  // feature artwork. Each entry reads its own text row from group_manage.
+  // Management entries share a single editable image and independently saved
+  // text. The Admin and Personal Settings landing Heroes stay separate.
   const groupHeroQuery=useAsyncResource(['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
     ()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),{enabled:!managementMode&&(sharedEnabled||hasFeatureHero)});
   const scopeHeroImageQuery=useAsyncResource(['scope-blocks','loc','scope_'+featureId],
-    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:!managementMode&&hasFeatureHero&&scopeId!=='loc'});
+    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:!managementMode&&hasFeatureHero&&(scopeId!=='loc'||HomeBlock.shouldUseSingleFeatureHeroImage(featureId))});
   const managementTextQuery=useAsyncResource(['scope-blocks','loc','group_manage'],
     ()=>selectScopeBlocks('loc','group_manage'),{enabled:managementMode});
   const managementImageQuery=useAsyncResource(['scope-blocks','loc','scope_manage'],
     ()=>selectScopeBlocks('loc','scope_manage'),{enabled:managementMode});
-  const heroImageRow=managementMode?managementImageQuery.data?.find(row=>Number(row.block_order)===1):(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
-  const heroImageOverride=heroImageUrlOf(heroImageRow);
+  const heroImageRow=managementMode
+    ?managementImageQuery.data?.find(row=>Number(row.block_order)===1)
+    :((scopeId==='loc'&&!HomeBlock.shouldUseSingleFeatureHeroImage(featureId))
+      ?groupHeroQuery.data:scopeHeroImageQuery.data)?.find(row=>Number(row.block_order)===1);
+  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?HomeBlock.MANAGEMENT_HERO_IMAGE_URL:'');
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)
     :sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
