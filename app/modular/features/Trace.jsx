@@ -32,7 +32,7 @@ export default function Trace({scopeId='loc'}){
   const reportTopRef=useRef(null);
   const [scrollRequest,setScrollRequest]=useState(0);
   const [mapOnly,setMapOnly]=useState(false);
-  const [locPeriodScope,setLocPeriodScope]=useState('lo3rwang');
+  const [locPeriodScope,setLocPeriodScope]=useState('loc');
   const periodScopeId=scopeId==='loc'?locPeriodScope:scopeId;
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
@@ -75,9 +75,9 @@ export default function Trace({scopeId='loc'}){
 
   // Phase 1: load the light index, never all historical check-ins at startup.
   const traceIndex=useAsyncResource({
-    queryKey:traceMapIndexKey(periodScopeId),
+    queryKey:traceMapIndexKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen,
-    queryFn:()=>readTraceMapIndex(periodScopeId),
+    queryFn:()=>readTraceMapIndex(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const maps=traceIndex.data||[];
@@ -92,12 +92,13 @@ export default function Trace({scopeId='loc'}){
   // that any one stop was occupied for its entire duration.
   const anchorsQuery=useAsyncResource({
     queryKey:currentMap
-      ?traceCurrentKey(periodScopeId,currentMap)
-      :traceAllAnchorsKey(periodScopeId),
+      ?traceCurrentKey(periodScopeId,currentMap,{nativeOnly:periodScopeId==='loc'})
+      :traceAllAnchorsKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
-      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids)
-      :readAllTraceAnchors(periodScopeId),
+      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_uids,
+          {nativeOnly:periodScopeId==='loc'})
+      :readAllTraceAnchors(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const spatialData=useMemo(()=>{
@@ -136,6 +137,7 @@ export default function Trace({scopeId='loc'}){
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
           onChange={event=>{setLocPeriodScope(event.target.value);setSelectedPlace(null);}}>
+          <option value="loc">LOC 自有痕跡</option>
           <option value="lo3rwang">作者作品</option>
           <option value="lrunes">月之符文</option>
         </select>
