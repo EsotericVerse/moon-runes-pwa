@@ -47,7 +47,7 @@ export function convertLegacyTimeRows(legacy=[]){
     rows.push({uid,type:'time_period',
       title:String(row.label||'')+'｜原時期錨點範圍',
       description:'舊時期的原定錨範圍，由真實時間定錨點動態計算。',
-      time_date:null,anchor_ids:[segment],status:'legacy_boundary'});
+      address:null,anchor_ids:[segment],status:'legacy_boundary'});
   }
   for(let i=0;i<original.length;i++){
     const row=original[i],uid=allocated[i].uid;
@@ -68,7 +68,7 @@ export function convertLegacyTimeRows(legacy=[]){
     const note=String(row.note||'').trim(),style=String(row.style_description||'').trim();
     rows.push({uid,type,title:String(row.label||''),
       description:[note,style].filter(Boolean).join('\n')||null,
-      time_date:row.time_date||null,anchor_ids,status:row.status||null});
+      address:row.time_date||null,anchor_ids,status:row.status||null});
   }
   return {rows,archive,periodBaselines};
 }
