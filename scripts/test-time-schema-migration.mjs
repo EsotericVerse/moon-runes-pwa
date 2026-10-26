@@ -13,22 +13,27 @@ const legacy=[
 ];
 test('all Time identities use one unique four-character uid',()=>{
   const {rows,archive}=convertLegacyTimeRows(legacy);
-  assert.equal(rows.length,6);
+  assert.equal(rows.length,8);
   assert.equal(archive.length,7);
   assert.equal(new Set(archive.map(x=>x.migrated_uid)).size,7);
   assert.ok(rows.every(row=>/^[0-9A-F]{4}$/.test(row.uid)));
+  assert.equal(new Set(rows.map(x=>x.uid)).size,8);
   assert.ok(rows.every(row=>!('resource_id' in row)&&!('record_id' in row)));
 });
-test('legacy period and multi-anchor event edges map to canonical UID links',()=>{
+test('legacy period becomes time_trace and its original boundary becomes a real time_period',()=>{
   const {rows}=convertLegacyTimeRows(legacy);
   const [a,b,c]=rows.filter(x=>x.type==='anchor');
-  const [p1,p2]=rows.filter(x=>x.type==='period');
-  const [e]=rows.filter(x=>x.type==='event');
-  assert.deepEqual(p1.anchor_ids,[a.uid+'-'+b.uid]);
-  assert.deepEqual(p2.anchor_ids,[c.uid+'-0']);
-  assert.deepEqual(e.anchor_ids,[a.uid+'-'+b.uid,b.uid+'-'+c.uid]);
-  assert.equal(p1.time_date,null,'period is not an independent date');
-  assert.equal(a.time_date,'1980-06-23');
+  const [trace1,trace2]=rows.filter(x=>x.type==='time_trace');
+  const boundaryEvents=rows.filter(x=>x.type==='time_period'&&x.status==='legacy_boundary');
+  const [event]=rows.filter(x=>x.type==='time_period'&&x.status!=='legacy_boundary');
+  assert.equal(boundaryEvents.length,2);
+  assert.deepEqual(trace1.anchor_ids,[boundaryEvents[0].uid]);
+  assert.deepEqual(trace2.anchor_ids,[boundaryEvents[1].uid]);
+  assert.deepEqual(boundaryEvents[0].anchor_ids,[a.uid+'-'+b.uid]);
+  assert.deepEqual(boundaryEvents[1].anchor_ids,[c.uid+'-0']);
+  assert.deepEqual(event.anchor_ids,[a.uid+'-'+b.uid,b.uid+'-'+c.uid]);
+  assert.equal(trace1.address,null,'time traces do not own independent dates');
+  assert.equal(a.address,'1980-06-23');
 });
 test('archived labels survive feature removal without becoming live time rows',()=>{
   const {rows,archive}=convertLegacyTimeRows(legacy);
