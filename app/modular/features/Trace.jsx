@@ -3,6 +3,8 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
+import ScopeLink from '../ScopeLink';
+import {navigationHref} from '../scope-registry';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {traceWindow} from './trace/trace-panel-filters.mjs';
 import {
@@ -151,6 +153,10 @@ export default function Trace({scopeId='loc'}){
           <option value="all">全部定錨點（手動載入）</option>
         </select>
       </label>:null}
+      {currentMap&&routeListOpen?<ScopeLink className="loc-button"
+        href={navigationHref(periodScopeId,'manage')+'?section=traceMap'}>
+        編輯目前痕跡圖
+      </ScopeLink>:null}
     </div>
     {supported&&traceIndex.isPending?<p className="scope-status" role="status">正在載入痕跡列表…</p>:null}
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
