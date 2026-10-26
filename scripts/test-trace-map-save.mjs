@@ -18,7 +18,8 @@ test('route manager reads only selected Frame, never scans all anchors to open m
   assert.match(page,/readTraceAnchorSuggestions\(activeScope,county,debouncedQuery,8\)/);
   assert.match(page,/enabled:editorOpen&&Boolean\(county&&debouncedQuery\)/);
   assert.doesNotMatch(page,/readTraceData\(|readAllTraceAnchors\(/);
-  assert.match(db,/\.eq\('trace_type','anchor'\)\.ilike\('title'/);
+  assert.match(db,/request\.ilike\('title',pattern\)/);
+  assert.match(db,/uid\.eq\./);
 });
 
 test('Class/Group and route names use the saved Frame index; article search remains separate',()=>{
