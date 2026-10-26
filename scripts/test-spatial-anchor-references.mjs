@@ -1,7 +1,7 @@
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-import {spatialReferenceCandidates,spatialReferenceLikePattern,spatialReferenceChoicesForName} from '../app/modular/features/trace/trace-spatial-references.mjs';
+import {spatialReferenceCandidates,spatialReferenceLikePattern,spatialReferenceChoicesForName,spatialReferenceLabelVariants,spatialReferenceLabelKey} from '../app/modular/features/trace/trace-spatial-references.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp,facebookBackupImportUid} from '../app/loc/facebook-backup-place.mjs';
 import {mappedImportValue,parseImportCreatedTime} from '../app/loc/import-batch.mjs';
 import {postalAddressFromNominatim} from '../app/modular/features/trace/trace-postal-evidence.mjs';
@@ -120,4 +120,17 @@ test('shared address searches are explicit and bulk geocoding reuses LOC first',
   assert.match(geo,/await readSharedSpatialReferencesByNames\(group\)/);
   assert.match(geo,/spatialReferenceChoicesForName\(name,refs\)/);
   assert.match(geo,/refreshRequired/);
+});
+
+test('台/臺 is search-equivalent but recorded addresses and Scope UIDs stay unchanged',()=>{
+  assert.deepEqual(spatialReferenceLabelVariants('台北車站'),['台北車站','臺北車站']);
+  assert.equal(spatialReferenceLabelKey('臺北車站'),spatialReferenceLabelKey('台北車站'));
+  const ref={uid:'AAAA0001',source_scope:'loc',title:'臺北車站',
+    address:'臺北市中正區某路1號',longitude:121.5,latitude:25};
+  const choices=spatialReferenceChoicesForName('台北車站',[ref]);
+  assert.equal(choices.choices.length,1);
+  assert.equal(choices.choices[0].uid,'AAAA0001');
+  assert.equal(choices.choices[0].address,'臺北市中正區某路1號');
+  const query=readFileSync(new URL('../app/modular/features/trace/trace-spatial-reference-data.js',import.meta.url),'utf8');
+  assert.match(query,/spellings=\[\.\.\.new Set\(unique\.flatMap\(spatialReferenceLabelVariants\)\)\]/);
 });
