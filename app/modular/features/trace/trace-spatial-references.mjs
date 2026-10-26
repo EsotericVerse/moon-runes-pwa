@@ -13,7 +13,8 @@ export function spatialReferenceCandidates(groups,limit=8){
     for(const item of group||[]){
       const scope=String(item?.scope_id||item?.source_scope||'');
       const uid=String(item?.uid||'');
-      if(!scope||!uid||item.latitude==null||item.longitude==null)continue;
+      if(!scope||!uid||item.latitude==null||item.longitude==null||
+        String(item.latitude).trim()===''||String(item.longitude).trim()==='')continue;
       const lng=Number(item.longitude),lat=Number(item.latitude);
       if(!Number.isFinite(lng)||!Number.isFinite(lat)||Math.abs(lng)>180||Math.abs(lat)>90)continue;
       if(seen.has(scope+':'+uid))continue;
