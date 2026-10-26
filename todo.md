@@ -452,3 +452,13 @@
 - [ ] **管理模式 Hero 單圖與獨立文字｜待查證。** 以文件開頭 **「待查證｜既有『頁面控管』Hero 四組文案與單圖」** 最新規格為準。保留現有七種 Hero 類別、Admin／Manage／Setting 三個獨立設定；僅擴充原本 `scope_manage`：Scope 四個文字框共用原本一個圖片路徑。LOC 五個管理文字另依實際路由查證。已提交程式不等於正式頁面通過驗證。
 - [ ] **實際視覺回歸**：在正式 GitHub Pages URL 逐一打開 Scope 四種入口與 LOC 五種入口，確認 Hero 圖 `cover` 填滿、不再置中縮小；地圖載入前後 Hero、選單、主容器寬度一致，MapLibre canvas 不撐開父 Grid。需覆蓋桌機、手機、權限拒絕、切頁與重新載入；單靠 CSS 靜態檢查或 main commit 不能勾選。
 - [ ] **資料發布一致性**：Admin 儲存 `group_manage` 後核對 Supabase 與已發布的 `app/modular/published-blocks/loc/group_manage.js`；須按既有受控 `sync:public` 發布流程更新快照，且不得因本項自行啟用 Cloudflare 自動部署／ISR。檢查 GitHub Pages 生效版本與 Service Worker 快取，不要用 mr 部署紀錄代替正式站。
+
+
+## 2026-10-27｜空間點線面／3D 文字密度／《語文爭霸》（使用者明確交辦紀錄）
+
+- **原則與完整設計紀錄：** [`md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md`](./md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md)；Galaxy `silver.lo3rwang_galaxy.uid=E5C74D0E`（個人開發文件；`searchable=false`、`statistics_able=false`）。此處追蹤工作，不能代替功能驗收。
+- [ ] **空間優先｜P0，未完成：** 以 `space_anchor` 點、`space_period` 有序路線（線）、`space_trace` 多路線組合（面）接通 Supabase 無損資料轉換、MapLibre、CRUD、索引與同 Scope 關聯；不可假連線，不可捏造 GPS，不動時間線在改的部分。現有 `anchor/map` 與 `anchor_list` DB 欄位仍不一致；現階段 **NOT FOR MERGE／未驗證**。
+- [ ] **文章對應｜P0，隨空間端：** Galaxy 現有 `place_id`、`group_lists`、`createtime` 串回地點／路線／痕跡的真實文章列表；同日多地點以原打卡時間輔助候選，分清已確認與推定關聯，按需分頁和展開原文。
+- [ ] **立體文字密度｜後續呈現：** 「我的最愛」時間、地點、關鍵詞群組等現有篩選作 X/Y/Z 可變 3D 軸；含 `(月,日,地點)`、`(地點,符文,2026 年出現次數)` 等情境，按密度單元點開與其條件完全一致的文章列表；`group_lists` 不可冒充詞頻次數。
+- [ ] **《語文爭霸》｜延伸玩法／尚未實作：** 自己的 Galaxy 文章作起手據點、66 符文與同盟組織為勢力，時間和地點選戰場、文字關鍵詞密度決定版圖強弱；沿用 3D 痕跡地形與網頁策略遊戲可控 UI，勢力與同盟計分規則待另行驗證，不擅認定。
+- **限制：** 不改動原始打卡／文章；空間和時間兩線平行；不自動啟用 Cloudflare／ISR，也不在未完成狀態送 `main` 程式碼。雙份開發設計文件為進度紀錄，不是已交付產品。
