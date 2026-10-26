@@ -15,7 +15,7 @@ import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookArchiveGalaxyRow} from './facebook-backup-place.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -64,15 +64,20 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
   const isFacebook=String(source||'').trim().toLowerCase()==='facebook';
-  const place=repairMojibakeText(value('source_place')||
-    (isFacebook?facebookBackupPlace(row):'')).trim();
+  // The generic "place" alias can hold a Meta object. Only actual text
+  // belongs in Galaxy.source_place; never stringify [object Object].
+  const mappedPlace=value('source_place');
+  const placeText=typeof mappedPlace==='string'?mappedPlace:
+    (isFacebook?facebookBackupPlace(row):'');
+  const place=repairMojibakeText(placeText).trim();
   const facebookText=isFacebook?facebookBackupPostText(row):'';
   const content=normalizeGalaxyContent(value('content')||facebookText||
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
   const uid=String(value('uid')||entry?.import_uid||createUid8()).trim().toUpperCase();
-  const createdAt=iso(value('createtime')||(isFacebook?facebookBackupTimestamp(row):null));
+  const rawDate=value('createtime')||(isFacebook?facebookBackupTimestamp(row):null);
+  const createdAt=isFacebook?parseImportCreatedTime(rawDate):iso(rawDate);
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
