@@ -163,7 +163,7 @@ test('native LOC Frame is the initial management Scope and keeps foreign UIDs ou
   assert.match(page,/addTraceAnchor\(\{scopeId:owner,\.\.\.fields\}\)/);
   assert.match(page,/readCurrentTraceAnchors\(owner,\[uid\],\{nativeOnly:owner==='loc'\}\)/);
   assert.match(data,/neq\('scope_id',owner\)/);
-  assert.match(data,/neq\('address',''\)/);
+  assert.match(data,/not\('longitude','is',null\)\.not\('latitude','is',null\)/);
   assert.match(data,/source_scope:row\.scope_id/);
   assert.match(page,/＋ 建立自己的錨點並加入 Queue/);
 });
