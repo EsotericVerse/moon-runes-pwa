@@ -20,6 +20,20 @@
 
 ## 待實作｜恢復 ISR 與全域共用快取（含圖片；Service Worker 保留）
 
+### 分支生命週期登記｜ISR-RECOVERY-01
+
+- [ ] **任務：Admin 三段全站快取模式** `[PLANNED / NOT FOR MERGE]`
+  - **分支：** `task/isr-three-mode-admin-cache`（尚未建立；需從包含本紀錄的最新 `main` 建立）
+  - **基準 main：** `a1aa41ad14782dd619906b0ef5644452164d4f00`（登記前基準；建立分支時另記實際基準）。
+  - **完整目標：** 在既有 Admin → ISR 設定加入三種可儲存及讀回的全站模式：「不開快取」「打開快取」「打開 ISR」。模式必須真實控制應用快取與資料查詢來源；保留 Service Worker/PWA、原有 JS Routes/Config/Blocks、Scope 權限；快取模式與 ISR 模式不可互相假冒，ISR 不可用時恢復直接查 Supabase/SQLite。不對私人資料／跨 Scope 快取；公開圖片包含在可控快取策略中。
+  - **負責：** ISR／全域設定工程線；已有 Admin ISR 網域面板、silver.loc_cache_settings 與 ISR-off 讀取路徑。
+  - **完成門檻：** DB 授權／公開唯讀模式同步、三段切換立即生效與讀回、圖片及原有 SW 繼續運作、數值／自動完成共用快取真實命中及安全回退、四大功能回歸、CI／Build／log 警告檢查、整合 `main`、關閉 PR 和刪除已合併分支。
+  - **部署與成本限制：** 分支實作及驗證不授權 GitHub Pages、iOS IPA、Cloudflare ISR/Preview 或任何實際部署；正式發布由使用者手動決定。不得以部署驗證替代工程 CI。
+  - **目前進度：** 已核對目前 Admin 僅有 ISR 網域選擇、資料庫現有 schema 及權限；尚未修改執行程式或資料庫。起始實作先整理控制面與資料面的可驗證切換。
+  - **下一步：** 建立上列分支，更新狀態 `IN PROGRESS`，由 Admin 設定與共享模式讀取開始實作。若中斷，使用此條目及遠端 branch HEAD 接續，禁止另開替代分支。
+
+
+
 - [ ] **ISR-RECOVERY-01｜ISR／全域共用快取恢復、手動切換與故障退路** `[已決議／待實作與 CI 驗證]`
   - **保留 Service Worker，絕不移除。** 既有 PWA、公開圖片 Cache First、適用的 JS/CSS 快取及既有離線能力繼續保留；只依測試與成本證據精簡重複快取責任。**原本的 JS 政策不變**：Scope Route + Config 的 JS 模組、按頁載入 Blocks、按需資料查詢與既有運算流程不得因加入 ISR 而回退為大量 JSON 解析或整頁預載。
   - **讓適合多人重用的內容進入全域共用快取，包括圖片。** 將公開圖片納入邊緣共用快取（可使用 CDN/HTTP Cache，毋須硬塞進 Next.js ISR 頁面），並按資料特性恢復 ISR／伺服器共用快取：文化／統計摘要、搜尋與空間定錨點自動完成候選、時間定錨點相關候選／統計，以及其他適合的公開可重複成果。快取策略逐類審核來源、TTL、失效／更新、Scope 隔離、版本、冷啟動、成本與必要的資料保護；**不得快取私有資料、授權回應、登入資訊或造成跨 Scope 洩漏**。
