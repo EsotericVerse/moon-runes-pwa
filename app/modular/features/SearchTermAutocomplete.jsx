@@ -35,6 +35,7 @@ export default function SearchTermAutocomplete({scopeId,query,onQueryChange,plac
   const options=useMemo(()=>rankScopeSearchSuggestions(index,terms,query,8),[index,terms,query]);
 
   return <Autocomplete
+    id="scope-search-query"
     className="scope-search-input-autocomplete"
     freeSolo
     size="small"
@@ -58,7 +59,6 @@ export default function SearchTermAutocomplete({scopeId,query,onQueryChange,plac
     autoHighlight
     sx={{flex:'1 1 20rem',minWidth:0}}
     renderInput={params=><TextField {...params}
-      id="scope-search-query"
       label={undefined}
       placeholder={placeholder}
       inputProps={{...params.inputProps,'aria-label':label,autoComplete:'off'}}
