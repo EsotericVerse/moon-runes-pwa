@@ -39,7 +39,9 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
   const [revision,setRevision]=useState(0);
   const originalRow=rows?.find(row=>Number(row.block_order)===1);
   const original=imageUrlOf(originalRow);
-  const dirty=rows!==null&&(value.trim()!==original||(!originalRow&&Boolean(defaultUrl)));
+  const dirty=rows!==null&&value.trim()!==(original||defaultUrl);
+  const needsSeed=rows!==null&&Boolean(defaultUrl)&&!original;
+  const canSave=dirty||needsSeed;
 
   useEffect(()=>{
     let active=true;
@@ -108,7 +110,7 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       <input type="url" className="scope-search-input" placeholder="https://loc.lo3rwang.cc/pics/..."
         value={value} disabled={rows===null||busy} onChange={event=>setValue(event.target.value)}/>
     </label>
-    <button type="button" className="loc-button" disabled={rows===null||busy||!dirty} onClick={save}>
+    <button type="button" className="loc-button" disabled={rows===null||busy||!canSave} onClick={save}>
       {busy?'儲存中…':'儲存 Hero 圖片路徑'}
     </button>
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -124,7 +126,8 @@ function ManagementHeroDetails({slot,onDirtyChange}){
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
   const row=rows?.find(item=>Number(item.block_order)===slot.order);
-  const dirty=rows!==null&&(!row||JSON.stringify(draft)!==initial.current);
+  const dirty=rows!==null&&JSON.stringify(draft)!==initial.current;
+  const canSave=dirty||(rows!==null&&!row);
   useEffect(()=>{
     let live=true;
     (async()=>{
@@ -210,7 +213,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
         onChange={event=>setDraft(current=>({...current,text:event.target.value}))}/>
     </label>
     {status?<p className="scope-status" role="status">{status}</p>:null}
-    <button className="loc-button primary" type="button" disabled={busy||rows===null||!dirty} onClick={save}>
+    <button className="loc-button primary" type="button" disabled={busy||rows===null||!canSave} onClick={save}>
       {busy?'儲存中…':'儲存管理區塊'}
     </button>
   </section>;
@@ -271,7 +274,13 @@ export default function FeatureHeroImages(){
           pageOverride="scope_manage" defaultUrl={HomeBlock.MANAGEMENT_HERO_IMAGE_URL}
           onDirtyChange={trackDirty}/>
       </section>:null}
-      {feature.id==='admin'?<details className="loc-card scope-inline-card" onToggle={event=>setGroupOpen(event.currentTarget.open)}>
+      {feature.id==='admin'?<details className="loc-card scope-inline-card" onToggle={event=>{
+        const open=event.currentTarget.open;
+        if(!open&&pendingEdits.current.size&&!window.confirm('管理項目尚有未儲存的修改，確定放棄嗎？')){
+          event.currentTarget.open=true;return;
+        }
+        setGroupOpen(open);
+      }}>
         <summary>Group 管理入口設定</summary>
         {groupOpen?<><label className="scope-management-wide-field">
           <span>管理項目</span>
