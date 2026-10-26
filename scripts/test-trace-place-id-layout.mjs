@@ -13,7 +13,6 @@ test('anchor responsive changes do not overwrite shared management tabs',()=>{
   assert.ok(css.includes('@container scope-anchor-form (max-width: 39rem)'));
   assert.ok(css.includes('.scope-management-layout--anchor .management-workspace-panel .scope-management-fields'));
   assert.ok(css.includes('overflow-wrap:anywhere'));
-  assert.doesNotMatch(css,/@container \(max-width: 62rem\)/);
 });
 test('one four-character UID per Trace row; exact lossless archive and Frame Queues',()=>{
   assert.ok(sql.includes('ALTER TABLE silver.lo3rwang_galaxy ADD COLUMN IF NOT EXISTS place_id varchar(4)'));

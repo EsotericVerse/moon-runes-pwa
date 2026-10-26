@@ -19,5 +19,5 @@ export function traceArticleIds(selection,anchors=[]){
 export function traceArticleLabels(selection,anchors=[]){
   return new Map(selectedAnchors(selection,anchors)
     .filter(row=>shortId(row.uid))
-    .map(row=>[shortId(row.trace_id),String(row.title||row.uid)]));
+    .map(row=>[shortId(row.uid),String(row.title||row.uid)]));
 }

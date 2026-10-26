@@ -162,7 +162,7 @@ test('editing a legacy addressless anchor preserves its stored county ID',async(
  const writes=[];
  const query={
    eq(){return this;},
-   select(){return {single:async()=>({data:{uid:'ABCDEFG1'},error:null})};}
+   select(){return {single:async()=>({data:{uid:'A001'},error:null})};}
  };
  const dbAuthRelation=()=>({update:values=>{writes.push(values);return query;}});
  const deps={
@@ -177,11 +177,11 @@ test('editing a legacy addressless anchor preserves its stored county ID',async(
  const update=new Function(...Object.keys(deps),
    match[0].replace('export async function','async function')+';return updateTraceAnchor;')
    (...Object.values(deps));
- await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'',
+ await update({scopeId:'lo3rwang',uid:'A001',title:'更名',address:'',
    longitude:121.5,latitude:25});
  assert.equal(Object.hasOwn(writes[0],'county_id'),false,
    'editing without verified address must not clear historical county_id');
- await update({scopeId:'lo3rwang',uid:'ABCDEFG1',title:'更名',address:'新北市板橋區文化路100號',
+ await update({scopeId:'lo3rwang',uid:'A001',title:'更名',address:'新北市板橋區文化路100號',
    longitude:121.5,latitude:25});
  assert.equal(writes[1].county_id,'TW-NWT');
 });

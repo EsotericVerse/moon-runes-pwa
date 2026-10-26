@@ -324,12 +324,12 @@ test('cross-Scope address can require a fresh own UID without touching duplicate
   const dbAuthRelation=()=>({
     insert:record=>{
       actions.inserts.push(record);
-      return {select:()=>({single:async()=>({data:{uid:record.uid},error:null})})};
+      return {select:()=>({single:async()=>({data:{uid:'00F2'},error:null})})};
     }
   });
   const deps={
     sourceId:x=>x,validCoordinates:()=>true,validRadius:()=>true,
-    createUid8:()=> 'OWN00002',verifiedText:x=>x,descriptionText:x=>x,
+    verifiedText:x=>x,descriptionText:x=>x,
     countyIdAt:async()=>null,locationFields:({address,floor_label,floor_level})=>({address,floor_label,floor_level}),
     inspectTraceAnchorBeforeWrite:async()=>{actions.inspected++;throw Error('would reuse existing anchor');},
     reuseExistingAnchor:async()=>{throw Error('must never alias-update');},
@@ -340,11 +340,11 @@ test('cross-Scope address can require a fresh own UID without touching duplicate
     (...Object.values(deps));
   const result=await create({scopeId:'loc',title:'參考地點',longitude:121.5,latitude:25,
     address:'',forceNewIdentity:true});
-  assert.equal(result.uid,'OWN00002');
+  assert.equal(result.uid,'00F2');
   assert.equal(actions.inspected,0,'explicit independent reference must skip alias reuse');
   assert.equal(actions.inserts.length,1);
   assert.ok(!('forceNewIdentity' in actions.inserts[0]));
-  assert.equal(actions.inserts[0].uid,'OWN00002');
+  assert.equal(Object.hasOwn(actions.inserts[0],'uid'),false,'DB must allocate one collision-free Scope UID');
   assert.match(manager(),/forceNewIdentity:true/);
 });
 
