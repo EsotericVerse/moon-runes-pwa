@@ -59,6 +59,21 @@ export default function Trace({scopeId='loc'}){
     setScrollRequest(value=>value+1);
   };
 
+
+  // Phase 1: load the light index, never all historical check-ins at startup.
+  const traceIndex=useAsyncResource({
+    queryKey:traceMapIndexKey(scopeId),
+    enabled:supported&&routeListOpen,
+    queryFn:()=>readTraceMapIndex(scopeId),
+    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const allMaps=traceIndex.data||[];
+  const periodScopeId=scopeId==='loc'
+    ?(locPeriodScope==='auto'
+      ?visibleScopes.find(id=>allMaps.some(row=>row.source_scope===id))||'loc'
+      :locPeriodScope)
+    :scopeId;
+  const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
@@ -75,21 +90,6 @@ export default function Trace({scopeId='loc'}){
     if(value==='all'){setCurrentTraceChoice('all');return;}
     if(setDefaultTraceRoute(periodScopeId,value))setCurrentTraceChoice(value);
   };
-
-  // Phase 1: load the light index, never all historical check-ins at startup.
-  const traceIndex=useAsyncResource({
-    queryKey:traceMapIndexKey(scopeId),
-    enabled:supported&&routeListOpen,
-    queryFn:()=>readTraceMapIndex(scopeId),
-    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
-  });
-  const allMaps=traceIndex.data||[];
-  const periodScopeId=scopeId==='loc'
-    ?(locPeriodScope==='auto'
-      ?visibleScopes.find(id=>allMaps.some(row=>row.source_scope===id))||'loc'
-      :locPeriodScope)
-    :scopeId;
-  const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
   const currentMap=useMemo(()=>{
     if(currentTraceChoice==='all')return null;
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
