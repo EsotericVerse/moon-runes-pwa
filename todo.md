@@ -319,3 +319,10 @@
 - **時機**：先在 Supabase 完成所有已授權功能／schema／資料修正及其驗收；**中途不連動、不逐項同步**。
 - **是否執行**：不是完成 LOC 待辦的必要條件。需要 Neon 作備援時再由使用者決定是否進行；不需要則直接略過。
 - **若執行**：只有在使用者明確授權的最後階段，才做**一次 Supabase → Neon 單向整批對齊**；比對 schema／RLS／函式／觸發器與**逐列主鍵及內容**（僅筆數相同不足以證明一致），具備備份／回復機制並讀回核對。Neon 不變成權威來源、不雙向自動同步，**也不因此啟動 Vercel／Cloudflare 的 ISR 部署**。
+
+
+## UI／Hero 修正與後續驗證（2026-10-26，管理模式）
+
+- [ ] **管理模式 Hero 單圖與九項獨立文字**：Admin → 功能區塊設定 → 頁面控管，Scope 四項「時間定錨、關鍵詞、空間定錨、進階搜尋」及 LOC 五項「系統管理、人員作品管理、關鍵詞、痕跡圖管理、文章管理」各自編輯眉標、標題、副標和說明；「系統管理」僅 Admin 入口。原始公開功能頁各自的 Hero 文字和圖片不得被管理編輯模式覆蓋。編輯／管理頁統一使用 silver.loc_blocks 的 `scope_manage` 第 1 列 **唯一圖片**，九項文字使用 `group_manage` 第 2–10 列，保留原本第 1 列「頁面控管」。空白項只預填大項標題，不杜撰介紹。
+- [ ] **實際視覺回歸**：在正式 GitHub Pages URL 逐一打開 Scope 四種入口與 LOC 五種入口，確認 Hero 圖 `cover` 填滿、不再置中縮小；地圖載入前後 Hero、選單、主容器寬度一致，MapLibre canvas 不撐開父 Grid。需覆蓋桌機、手機、權限拒絕、切頁與重新載入；單靠 CSS 靜態檢查或 main commit 不能勾選。
+- [ ] **資料發布一致性**：Admin 儲存 `group_manage` 後核對 Supabase 與已發布的 `app/modular/published-blocks/loc/group_manage.js`；須按既有受控 `sync:public` 發布流程更新快照，且不得因本項自行啟用 Cloudflare 自動部署／ISR。檢查 GitHub Pages 生效版本與 Service Worker 快取，不要用 mr 部署紀錄代替正式站。

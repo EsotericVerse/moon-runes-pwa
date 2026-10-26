@@ -3,6 +3,8 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
+import {usePathname,useSearchParams} from 'next/navigation';
+import {useEditDock} from './edit-dock';
 import {useAsyncResource} from '../loc/use-async-resource';
 import {UI_COPY} from '../i18n/ui-copy';
 import {useUiCopy} from '../i18n/ui-locale';
@@ -41,37 +43,47 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const resolvedSubtitle=localizedScope?.[featureId]||scope?.featureSubtitles?.[featureId]||profile.subtitle||'';
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
+  const pathname=usePathname();
+  const searchParams=useSearchParams();
+  const editDock=useEditDock();
+  const editing=Boolean(searchParams?.get('edit')==='1'||(editDock?.active&&editDock.scopeId===scopeId));
+  const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing);
+  const managementMode=Boolean(managementSlot);
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);
-  const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[featureId]?' scope-feature-hero--artwork scope-feature-hero--'+featureId:'');
+  const artworkId=managementMode?'manage':featureId;
+  const heroClassName='loc-card scope-hero scope-feature-hero'+(HomeBlock.FEATURE_HERO_ORDER[artworkId]?' scope-feature-hero--artwork scope-feature-hero--'+artworkId:'');
   const hasFeatureHero=Boolean(HomeBlock.FEATURE_HERO_ORDER[featureId]);
-  // group_<feature> carries both LOC's own hero text (admin-edited, read by
-  // every Scope) and LOC's own hero image override, so loc viewers need only
-  // this one query; a non-loc Scope view also needs its own scope_<feature>
-  // row for its image override (that row never carries text).
+  // Edit workspaces share one image (loc/scope_manage), never their normal
+  // feature artwork. Each entry reads its own text row from group_manage.
   const groupHeroQuery=useAsyncResource(['scope-blocks','loc',HomeBlock.featureHeroPageFor(featureId)],
-    ()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),{enabled:sharedEnabled||hasFeatureHero});
+    ()=>selectScopeBlocks('loc',HomeBlock.featureHeroPageFor(featureId)),{enabled:!managementMode&&(sharedEnabled||hasFeatureHero)});
   const scopeHeroImageQuery=useAsyncResource(['scope-blocks','loc','scope_'+featureId],
-    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:hasFeatureHero&&scopeId!=='loc'});
-  const heroImageRow=(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
+    ()=>selectScopeBlocks('loc','scope_'+featureId),{enabled:!managementMode&&hasFeatureHero&&scopeId!=='loc'});
+  const managementTextQuery=useAsyncResource(['scope-blocks','loc','group_manage'],
+    ()=>selectScopeBlocks('loc','group_manage'),{enabled:managementMode});
+  const managementImageQuery=useAsyncResource(['scope-blocks','loc','scope_manage'],
+    ()=>selectScopeBlocks('loc','scope_manage'),{enabled:managementMode});
+  const heroImageRow=managementMode?managementImageQuery.data?.[0]:(scopeId==='loc'?groupHeroQuery.data:scopeHeroImageQuery.data)?.[0];
   const heroImageOverride=heroImageUrlOf(heroImageRow);
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
-  const shared=sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
+  const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)
+    :sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
   const fallbackCopy={
     title:profile.title,
     subtitle:finalSubtitle,
     description:resolvedDescription
   };
 
-  return <main className="scope-main">
+  return <main className={'scope-main'+(managementMode?' scope-main--edit-workspace':'')}>
     <section className="scope-page">
-      <header className={heroClassName} style={heroStyle} data-feature-hero-source={shared?'loc':'default'}>
+      <header className={heroClassName} style={heroStyle} data-feature-hero-source={managementMode?'loc-manage':shared?'loc':'default'}>
         <FeatureHeroContent
           scopeId={scopeId}
           eyebrow={shared?.eyebrow||''}
-          title={titleOverride||shared?.title||fallbackCopy.title}
-          subtitle={shared?shared.subtitle:fallbackCopy.subtitle}
-          description={shared?shared.description:fallbackCopy.description}
-          rich={Boolean(shared)}
+          title={managementMode?shared?.title||managementSlot.label:titleOverride||shared?.title||fallbackCopy.title}
+          subtitle={managementMode?shared?.subtitle||'':shared?shared.subtitle:fallbackCopy.subtitle}
+          description={managementMode?shared?.description||'':shared?shared.description:fallbackCopy.description}
+          rich={Boolean(shared)&&!managementMode}
         />
       </header>
       <div className="scope-content">{children}</div>
