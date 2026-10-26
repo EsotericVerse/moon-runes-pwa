@@ -1,0 +1,380 @@
+'use client';
+
+import {useEffect,useMemo,useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
+import {useAccount} from './use-account';
+import {useAsyncResource,useResourceCache} from './use-async-resource';
+import {TRACE_SCOPES,traceKey,traceMapIndexKey,traceCurrentKey,readTraceMapIndex,
+  readCurrentTraceAnchors,readTraceAnchorSuggestions,readTracePopularAnchors,
+  addTraceMap,updateTraceMap,deleteTraceMap} from '../modular/features/trace/trace-data';
+import {TRACE_COUNTY_IDS,traceCountyName} from '../modular/features/trace/trace-county-id.mjs';
+import {routeClasses,routeGroups,searchTraceRoutes,validateTraceRouteLabels} from '../modular/features/trace/trace-route-classes.mjs';
+import {readDefaultTraceRoute,setDefaultTraceRoute,clearDefaultTraceRoute,chooseDefaultTraceRoute}
+  from '../modular/features/trace/trace-route-preference.mjs';
+
+const TraceMap=dynamic(()=>import('../modular/features/trace/TraceMap'),{
+  ssr:false,loading:()=> <p className="scope-status" role="status">正在載入此痕跡圖地圖…</p>
+});
+const countyOptions=[...Object.entries(TRACE_COUNTY_IDS).map(([name,id])=>({name,id})),
+  {id:'OTHER',name:'未判定／其他地區'}];
+const MAX_STOPS=80;
+const normalize=value=>String(value||'').trim();
+
+export default function TraceRouteManager({scopeId}){
+  const account=useAccount();
+  const cache=useResourceCache();
+  const [activeScope,setActiveScope]=useState(scopeId==='loc'?'lo3rwang':scopeId);
+  const [selectedUid,setSelectedUid]=useState('');
+  const [classFilter,setClassFilter]=useState('');
+  const [groupFilter,setGroupFilter]=useState('');
+  const [routeFilter,setRouteFilter]=useState('');
+  const [editingUid,setEditingUid]=useState('');
+  const [editorOpen,setEditorOpen]=useState(false);
+  const [title,setTitle]=useState('');
+  const [description,setDescription]=useState('');
+  const [className,setClassName]=useState('');
+  const [group,setGroup]=useState('');
+  const [queue,setQueue]=useState([]);
+  const [extraAnchors,setExtraAnchors]=useState([]);
+  const [county,setCounty]=useState('');
+  const [pointQuery,setPointQuery]=useState('');
+  const [debouncedQuery,setDebouncedQuery]=useState('');
+  const [picked,setPicked]=useState(null);
+  const [popularOpen,setPopularOpen]=useState(false);
+  const [showMap,setShowMap]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [notice,setNotice]=useState('');
+  const [isError,setIsError]=useState(false);
+  const pendingSaved=useRef(null);
+
+  useEffect(()=>{
+    const timer=setTimeout(()=>setDebouncedQuery(normalize(pointQuery)),240);
+    return()=>clearTimeout(timer);
+  },[pointQuery]);
+  useEffect(()=>{
+    setSelectedUid('');setClassFilter('');setGroupFilter('');setRouteFilter('');
+    setEditingUid('');setEditorOpen(false);setShowMap(false);setQueue([]);setExtraAnchors([]);
+    setCounty('');setPointQuery('');setPicked(null);setPopularOpen(false);
+    pendingSaved.current=null;setNotice('');setIsError(false);
+  },[activeScope]);
+
+  // Index contains only saved Frame metadata, never the entire spatial anchor table.
+  const index=useAsyncResource({
+    queryKey:['trace-manager-index',activeScope],
+    enabled:TRACE_SCOPES.includes(activeScope),
+    queryFn:()=>readTraceMapIndex(activeScope,{nativeOnly:activeScope==='loc'}),
+    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const maps=index.data||[];
+  const preferredUid=readDefaultTraceRoute(activeScope);
+  const current=maps.find(map=>map.uid===selectedUid)
+    ||chooseDefaultTraceRoute(maps,activeScope,preferredUid);
+  const route=useAsyncResource({
+    queryKey:current?traceCurrentKey(activeScope,current):null,
+    enabled:Boolean(current),
+    queryFn:()=>readCurrentTraceAnchors(activeScope,current.anchor_uids,
+      {nativeOnly:activeScope==='loc'}),
+    revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const availableClasses=useMemo(()=>routeClasses(maps),[maps]);
+  const availableGroups=useMemo(()=>routeGroups(maps,classFilter),[maps,classFilter]);
+  const listed=useMemo(()=>searchTraceRoutes(maps,{
+    ...(classFilter?{className:classFilter}:{}),
+    ...(groupFilter?{group:groupFilter}:{}),query:routeFilter
+  }),[maps,classFilter,groupFilter,routeFilter]);
+  const canEdit=activeScope==='loc'
+    ?account.canManageGroupSync('loc')
+    :account.canManageScopeSync(activeScope);
+
+  // The selected Frame and specifically selected autocomplete entries
+  // are the only anchor rows retained by the editor.
+  const anchors=useMemo(()=>{
+    const byId=new Map([...(route.data||[]),...extraAnchors].map(row=>[row.uid,row]));
+    return byId;
+  },[route.data,extraAnchors]);
+  const missing=queue.filter(uid=>!anchors.has(uid));
+  const autocomplete=useAsyncResource({
+    queryKey:['trace-frame-anchor-completion',activeScope,county,debouncedQuery],
+    enabled:editorOpen&&Boolean(county&&debouncedQuery),
+    queryFn:()=>readTraceAnchorSuggestions(activeScope,county,debouncedQuery,8),
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const suggestions=debouncedQuery===normalize(pointQuery)?autocomplete.data||[]:[];
+  const choice=picked&&picked.title===pointQuery&&
+    (picked.county_id||'OTHER')===county?picked
+    :suggestions.length===1?suggestions[0]:null;
+  const popular=useAsyncResource({
+    queryKey:['trace-frame-popular',activeScope],
+    enabled:editorOpen&&popularOpen,
+    queryFn:()=>readTracePopularAnchors(activeScope),
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const dirty=editorOpen&&Boolean(editingUid||title||description||className||group||queue.length);
+  const clearEntry=()=>{
+    setEditingUid('');setTitle('');setDescription('');setClassName('');setGroup('');
+    setQueue([]);setExtraAnchors([]);setCounty('');setPointQuery('');setPicked(null);
+    pendingSaved.current=null;setPopularOpen(false);
+  };
+  const mayLeave=()=>!dirty||window.confirm('目前有尚未儲存的痕跡圖修改，確定放棄？');
+  const chooseScope=value=>{
+    if(busy||!mayLeave())return;
+    setActiveScope(value);
+  };
+  const chooseMap=map=>{
+    if(busy||!mayLeave())return;
+    clearEntry();setEditorOpen(false);setSelectedUid(map.uid);setShowMap(true);
+    setNotice('');setIsError(false);
+  };
+  const startNew=()=>{
+    if(busy||!mayLeave())return;
+    clearEntry();setEditorOpen(true);setShowMap(false);setNotice('');setIsError(false);
+  };
+  const edit=map=>{
+    if(busy||!mayLeave())return;
+    clearEntry();setSelectedUid(map.uid);setEditingUid(map.uid);
+    setTitle(map.title||'');setDescription(map.description||'');
+    setClassName(map.class||'');setGroup(map.class_group||'');
+    setQueue(Array.isArray(map.anchor_uids)?[...map.anchor_uids]:[]);
+    setEditorOpen(true);setShowMap(true);setNotice('');setIsError(false);
+  };
+  const pickAnchor=item=>{
+    setCounty(item.county_id||'OTHER');
+    setPointQuery(item.title);setPicked(item);
+  };
+  const addPoint=()=>{
+    if(!choice||queue.includes(choice.uid)||queue.length>=MAX_STOPS)return;
+    setExtraAnchors(rows=>rows.some(x=>x.uid===choice.uid)?rows:[...rows,choice]);
+    setQueue(ids=>[...ids,choice.uid]);setPointQuery('');setPicked(null);
+  };
+  const shift=(index,step)=>{
+    setQueue(ids=>{
+      const next=index+step;
+      if(next<0||next>=ids.length)return ids;
+      const copy=[...ids];[copy[index],copy[next]]=[copy[next],copy[index]];
+      return copy;
+    });
+  };
+  const refreshFrame=async updatedScope=>{
+    await Promise.allSettled([...new Set([updatedScope,'loc'])].map(id=>
+      cache.invalidate({queryKey:traceMapIndexKey(id)})));
+    await cache.invalidate({queryKey:['trace-current',updatedScope]});
+  };
+  const save=async event=>{
+    event?.preventDefault?.();
+    if(busy||!canEdit||!editorOpen)return;
+    setBusy(true);setNotice('');setIsError(false);
+    try{
+      const labels=validateTraceRouteLabels(className,group);
+      if(queue.length<2||queue.length>MAX_STOPS||new Set(queue).size!==queue.length)
+        throw Error('請依照順序加入 2～80 個不重複的定錨點。');
+      if(missing.length)throw Error('目前 Frame 有未取得的錨點，請先確認全部站點已載入。');
+      const input={scopeId:activeScope,title,description,className:labels.class,
+        group:labels.class_group,anchorUids:queue,anchors:[...anchors.values()]};
+      let saved=pendingSaved.current;
+      if(saved&&(saved.editingUid!==editingUid||saved.scopeId!==activeScope))
+        throw Error('上次寫入尚未確認，請重新載入後再操作。');
+      if(!saved){
+        const result=editingUid?await updateTraceMap({...input,uid:editingUid}):await addTraceMap(input);
+        if(!result?.uid)throw Error('資料庫沒有回傳 Frame UID。');
+        saved={uid:result.uid,editingUid,scopeId:activeScope};pendingSaved.current=saved;
+      }
+      const latest=await index.mutate();
+      const found=latest?.find(map=>map.uid===saved.uid);
+      if(!found||found.title!==normalize(title)
+        ||normalize(found.description)!==normalize(description)
+        ||normalize(found.class)!==labels.class
+        ||normalize(found.class_group)!==labels.class_group
+        ||JSON.stringify(found.anchor_uids||[])!==JSON.stringify(queue))
+        throw Error('寫入已回應，但重讀尚未確認。保留草稿；再按儲存只會重讀，不會重複新增。');
+      setSelectedUid(saved.uid);clearEntry();setEditorOpen(false);setShowMap(true);
+      await refreshFrame(activeScope);
+      setNotice('痕跡圖已儲存並重新讀取確認。');
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));}
+    finally{setBusy(false);}
+  };
+  const remove=async map=>{
+    if(busy||!canEdit||!window.confirm('刪除「'+map.title+'」痕跡圖？不會刪除空間錨點或 Galaxy 文章。'))return;
+    setBusy(true);setNotice('');setIsError(false);
+    try{
+      await deleteTraceMap({scopeId:activeScope,uid:map.uid});
+      const latest=await index.mutate();
+      if(latest?.some(row=>row.uid===map.uid))
+        throw Error('資料庫刪除已回應，但重讀仍找到路線。');
+      if(readDefaultTraceRoute(activeScope)===map.uid)clearDefaultTraceRoute(activeScope,map.uid);
+      if(selectedUid===map.uid){setSelectedUid('');setShowMap(false);}
+      if(editingUid===map.uid){clearEntry();setEditorOpen(false);}
+      await refreshFrame(activeScope);
+      setNotice('痕跡圖已刪除並重讀確認；空間錨點與文章未受影響。');
+    }catch(error){setIsError(true);setNotice(String(error?.message||error));}
+    finally{setBusy(false);}
+  };
+  const markDefault=map=>{
+    if(!setDefaultTraceRoute(activeScope,map.uid)){
+      setIsError(true);setNotice('無法保存此瀏覽器的預設 Frame。');return;
+    }
+    setSelectedUid(map.uid);setNotice('已設為此瀏覽器的預設痕跡圖。');
+  };
+  const previewFrame=editorOpen&&queue.length>=2&&missing.length===0
+    ?{uid:editingUid||'DRAFT000',source_scope:activeScope,trace_type:'map',
+      title:title||'編輯預覽',anchor_uids:queue}:current;
+  const previewAnchors=editorOpen&&queue.length>=2&&missing.length===0
+    ?queue.map(uid=>anchors.get(uid))
+    :route.data||[];
+  const showPreview=showMap&&Boolean(previewFrame)&&!route.isPending;
+
+  return <section className="loc-card scope-feature-card loc-trace-map-manager" aria-label="痕跡圖 Frame 管理">
+    <header className="loc-trace-map-manager-heading">
+      <div><h3>痕跡圖管理</h3>
+        <p className="scope-status">Class → 領域 → 具名痕跡圖。站點 Queue 僅於選中 Frame 後載入；選錨點必須按 ＋ 才加入。</p>
+      </div>
+      <button className="loc-button" type="button" disabled={busy||!canEdit}
+        onClick={startNew}>新增痕跡圖</button>
+    </header>
+    {scopeId==='loc'?<label>作品範圍
+      <select className="scope-select" value={activeScope} disabled={busy}
+        onChange={event=>chooseScope(event.target.value)}>
+        <option value="lo3rwang">作者作品</option>
+        <option value="lrunes">月之符文</option>
+        <option value="loc">LOC 自有痕跡</option>
+      </select>
+    </label>:null}
+    {!canEdit?<p className="scope-status">可查看路線；編輯需該 Scope 的管理權限（寫入仍由 Supabase RLS 驗證）。</p>:null}
+    <div className="loc-trace-route-browse">
+      <label>Class
+        <select className="scope-select" value={classFilter}
+          onChange={event=>{setClassFilter(event.target.value);setGroupFilter('');}}>
+          <option value="">全部 Class</option>
+          {availableClasses.map(value=><option key={value} value={value}>{value}</option>)}
+        </select>
+      </label>
+      <label>領域
+        <select className="scope-select" value={groupFilter}
+          disabled={!classFilter}
+          onChange={event=>setGroupFilter(event.target.value)}>
+          <option value="">全部領域</option>
+          {availableGroups.filter(Boolean).map(value=><option key={value} value={value}>{value}</option>)}
+        </select>
+      </label>
+      <label>尋找痕跡圖
+        <input type="search" value={routeFilter}
+          onChange={event=>setRouteFilter(event.target.value)}
+          placeholder="輸入名稱／領域，不搜尋文章內容"/>
+      </label>
+    </div>
+    {index.isPending?<p role="status" className="scope-status">正在載入痕跡圖索引…</p>:null}
+    {index.error?<p role="alert" className="scope-status scope-error">{String(index.error.message||index.error)}</p>:null}
+    {!index.isPending&&!index.error?<div className="loc-trace-saved-maps">
+      <h4>已儲存痕跡圖（{listed.length}）</h4>
+      {listed.map(map=><div key={map.uid} className="loc-trace-saved-map">
+        <button className="loc-trace-saved-map-summary" type="button"
+          aria-current={current?.uid===map.uid?'true':undefined}
+          onClick={()=>chooseMap(map)}>
+          <span aria-hidden="true">{current?.uid===map.uid?'▾':'▸'}</span>
+          <span>{map.title}</span><span className="scope-status">{map.anchor_uids?.length||0} 站</span>
+        </button>
+        {current?.uid===map.uid?<div className="loc-trace-saved-map-body">
+          {map.description?<p>{map.description}</p>:null}
+          {route.isPending?<p role="status" className="scope-status">正在讀取目前 Frame 的站點…</p>:null}
+          {route.error?<p role="alert" className="scope-status scope-error">{String(route.error.message||route.error)}</p>:null}
+          {route.data?<ol className="loc-trace-selection-order">
+            {map.anchor_uids?.map((uid,j)=><li key={uid+':'+j}>
+              {route.data.find(x=>x.uid===uid)?.title||'尚未對應的錨點 UID '+uid}
+            </li>)}
+          </ol>:null}
+          <div className="scope-stat-controls">
+            <button className="loc-button" type="button" disabled={busy||!canEdit} onClick={()=>edit(map)}>編輯這張痕跡圖</button>
+            <button className="loc-button" type="button" disabled={busy} onClick={()=>{setShowMap(value=>!value);}}>
+              {showMap?'收合地圖':'顯示地圖'}
+            </button>
+            <button className="loc-button" type="button" disabled={busy} onClick={()=>markDefault(map)}>設為預設</button>
+            <button className="loc-button" type="button" disabled={busy||!canEdit} onClick={()=>remove(map)}>刪除</button>
+          </div>
+        </div>:null}
+      </div>)}
+      {!listed.length?<p className="scope-status">此分類沒有痕跡圖；可建立新的 Frame。</p>:null}
+    </div>:null}
+    {showPreview?<TraceMap spatialData={{anchors:previewAnchors,maps:[previewFrame]}}
+      selectedRouteUid={previewFrame.uid} hideRoutePicker/>:null}
+    {editorOpen?<form className="loc-trace-route-composer" onSubmit={save}>
+      <h4>{editingUid?'編輯痕跡圖':'新增痕跡圖'}</h4>
+      <div className="scope-management-fields">
+        <label>痕跡圖名稱 <input value={title} maxLength={120} required disabled={busy}
+          onChange={event=>setTitle(event.target.value)}/></label>
+        <label>Class <input value={className} maxLength={100} disabled={busy}
+          placeholder="例如：跟朋友" onChange={event=>{setClassName(event.target.value);if(!event.target.value.trim())setGroup('');}}/></label>
+        <label>領域（Group）<input value={group} maxLength={100} disabled={busy||!className.trim()}
+          placeholder="例如：夜市" onChange={event=>setGroup(event.target.value)}/></label>
+        <label>路線說明 <textarea value={description} maxLength={2000} rows={3} disabled={busy}
+          onChange={event=>setDescription(event.target.value)}/></label>
+      </div>
+      <div className="loc-trace-route-pickers" role="group" aria-label="加入空間定錨點">
+        <label>縣市
+          <select className="scope-select" value={county} disabled={busy}
+            onChange={event=>{setCounty(event.target.value);setPointQuery('');setPicked(null);}}>
+            <option value="">選擇縣市</option>
+            {countyOptions.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+        </label>
+        <div className="loc-trace-route-autocomplete">
+          <label htmlFor="trace-map-anchor-search">空間錨點自動完成</label>
+          <input id="trace-map-anchor-search" className="scope-select" type="search" autoComplete="off"
+            role="combobox" aria-autocomplete="list" aria-expanded={Boolean(county&&pointQuery.trim())}
+            aria-controls="trace-map-anchor-options" placeholder={county?'輸入地點名稱':'先選縣市'}
+            value={pointQuery} disabled={busy||!county}
+            onChange={event=>{setPointQuery(event.target.value);setPicked(null);}}/>
+          {county&&pointQuery.trim()&&!picked?<div id="trace-map-anchor-options"
+            role="listbox" className="loc-trace-route-suggestions">
+            {debouncedQuery!==normalize(pointQuery)||autocomplete.isPending
+              ?<p className="scope-status" role="status">搜尋錨點中…</p>
+              :autocomplete.error?<p className="scope-status scope-error" role="alert">{String(autocomplete.error.message||autocomplete.error)}</p>
+              :suggestions.length?suggestions.map(anchor=><button type="button" role="option"
+                aria-selected={choice?.uid===anchor.uid} className="loc-button" key={anchor.uid}
+                onClick={()=>pickAnchor(anchor)}>
+                <span>{anchor.title}</span><small>UID {anchor.uid} · {Number(anchor.latitude).toFixed(4)}, {Number(anchor.longitude).toFixed(4)}</small>
+              </button>):<p className="scope-status">沒有符合的空間錨點</p>}
+            {suggestions.length===8?<p className="scope-status">僅顯示前八筆，繼續輸入可縮小範圍。</p>:null}
+          </div>:null}
+        </div>
+        <button className="loc-button loc-trace-route-add" type="button"
+          aria-label="將選取錨點加入 Queue" disabled={busy||!choice||queue.includes(choice.uid)||queue.length>=MAX_STOPS}
+          onClick={addPoint}>＋</button>
+      </div>
+      <div className="scope-stat-controls">
+        <button className="loc-button" type="button" disabled={busy}
+          onClick={()=>setPopularOpen(open=>!open)}>常用前 10 名</button>
+      </div>
+      {popularOpen?<div className="loc-trace-quick-results">
+        {popular.isPending?<p className="scope-status">載入常用站點…</p>:null}
+        {popular.error?<p role="alert" className="scope-status scope-error">{String(popular.error.message||popular.error)}</p>:null}
+        {(popular.data||[]).map(item=><button className="loc-button" type="button" key={item.uid}
+          disabled={queue.includes(item.uid)||busy} onClick={()=>pickAnchor(item)}>
+          {item.title}（{item.usage_count}）</button>)}
+        {popular.data&&!popular.data.length?<p className="scope-status">目前沒有重複使用的常用站點。</p>:null}
+      </div>:null}
+      <h4>站點 Queue（{queue.length}／{MAX_STOPS}）</h4>
+      {missing.length?<p className="scope-status" role="status">正在讀取目前 Frame 的既有站點…</p>:null}
+      <ol className="loc-trace-selection-order">
+        {queue.map((uid,index)=><li key={uid}>
+          <span>{anchors.get(uid)?.title||'載入中的錨點 '+uid}</span>
+          <div className="loc-trace-route-queue-actions">
+            <button className="loc-button" type="button" disabled={busy||index===0}
+              onClick={()=>shift(index,-1)} aria-label={'上移第'+(index+1)+'站'}>↑</button>
+            <button className="loc-button" type="button" disabled={busy||index===queue.length-1}
+              onClick={()=>shift(index,1)} aria-label={'下移第'+(index+1)+'站'}>↓</button>
+            <button className="loc-button" type="button" disabled={busy}
+              onClick={()=>setQueue(ids=>ids.filter(x=>x!==uid))}>移除</button>
+          </div>
+        </li>)}
+      </ol>
+      {!queue.length?<p className="scope-status">目前沒有站點。兩站不需要相鄰；連線只表示行經順序。</p>:null}
+      <div className="scope-stat-controls">
+        <button className="loc-button primary" type="submit" disabled={busy||!canEdit||!title.trim()||queue.length<2||missing.length>0}>
+          {busy?'儲存中…':editingUid?'儲存痕跡圖修改':'儲存新痕跡圖'}
+        </button>
+        <button className="loc-button" type="button" disabled={busy}
+          onClick={()=>{if(mayLeave()){clearEntry();setEditorOpen(false);}}}>取消</button>
+      </div>
+    </form>:null}
+    {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
+  </section>;
+}
