@@ -387,3 +387,9 @@ test('Trace Map cannot resize or escape its parent layout at narrow mobile width
   assert.match(css,/\.loc-trace-map-shell\{[^}]*max-width:100%/);
   assert.match(css,/\.loc-trace-panel\{[^}]*max-width:100%/);
 });
+
+test('LOC trace management entry shows existing Frame manager before anchor editor',()=>{
+  const source=read('app/loc/ScopeManagement.jsx');
+  assert.match(source,/useManagementSection\(options,isLoc\?'traceMap':''\)/);
+  assert.match(source,/section==='traceMap'\?<TraceManagementPanel scopeId=\{routeScopeId\} mode="map"/);
+});
