@@ -205,40 +205,6 @@ ALTER TABLE silver.lo3rwang_time
      AND cardinality(anchor_ids)>0)
  );
 
--- Existing legacy events used to appear beside periods, not inside them.
--- Preserve their visibility: associate event(s) with every old time trace
--- whose TRUE dated anchor window intersects the event. The boundary event
--- remains first to maintain historical date filters without inventing dates.
-WITH event_windows AS (
-  SELECT e.uid, min(a.address) AS start_date, max(a.address) AS end_date
-  FROM silver.lo3rwang_time e
-  JOIN LATERAL unnest(e.anchor_ids) ref(uid) ON true
-  JOIN silver.lo3rwang_time a ON a.type='anchor' AND a.uid=ref.uid
-  WHERE e.type='time_period' AND e.status IS DISTINCT FROM 'legacy_boundary'
-  GROUP BY e.uid
-),
-trace_windows AS (
-  SELECT tr.uid, min(a.address) AS start_date, max(a.address) AS end_date
-  FROM silver.lo3rwang_time tr
-  JOIN silver.lo3rwang_time boundary
-    ON boundary.type='time_period' AND boundary.uid=tr.anchor_ids[1]
-    AND boundary.status='legacy_boundary'
-  JOIN LATERAL unnest(boundary.anchor_ids) ref(uid) ON true
-  JOIN silver.lo3rwang_time a ON a.type='anchor' AND a.uid=ref.uid
-  WHERE tr.type='time_trace'
-  GROUP BY tr.uid
-),
-links AS (
-  SELECT tw.uid, array_agg(ew.uid ORDER BY ew.start_date,ew.uid) AS event_uids
-  FROM trace_windows tw
-  JOIN event_windows ew ON ew.start_date<=tw.end_date AND ew.end_date>=tw.start_date
-  GROUP BY tw.uid
-)
-UPDATE silver.lo3rwang_time tr
-SET anchor_ids=tr.anchor_ids||links.event_uids
-FROM links
-WHERE tr.type='time_trace' AND tr.uid=links.uid;
-
 -- Every trace only lists existing time_period UIDs; each event's tokens
 -- resolve to existing anchor UIDs. The reader tolerates future deleted links.
 DO $$
@@ -354,40 +320,6 @@ ALTER TABLE silver.lrunes_time
    (type='time_trace' AND anchor_ids IS NOT NULL
      AND cardinality(anchor_ids)>0)
  );
-
--- Existing legacy events used to appear beside periods, not inside them.
--- Preserve their visibility: associate event(s) with every old time trace
--- whose TRUE dated anchor window intersects the event. The boundary event
--- remains first to maintain historical date filters without inventing dates.
-WITH event_windows AS (
-  SELECT e.uid, min(a.address) AS start_date, max(a.address) AS end_date
-  FROM silver.lrunes_time e
-  JOIN LATERAL unnest(e.anchor_ids) ref(uid) ON true
-  JOIN silver.lrunes_time a ON a.type='anchor' AND a.uid=ref.uid
-  WHERE e.type='time_period' AND e.status IS DISTINCT FROM 'legacy_boundary'
-  GROUP BY e.uid
-),
-trace_windows AS (
-  SELECT tr.uid, min(a.address) AS start_date, max(a.address) AS end_date
-  FROM silver.lrunes_time tr
-  JOIN silver.lrunes_time boundary
-    ON boundary.type='time_period' AND boundary.uid=tr.anchor_ids[1]
-    AND boundary.status='legacy_boundary'
-  JOIN LATERAL unnest(boundary.anchor_ids) ref(uid) ON true
-  JOIN silver.lrunes_time a ON a.type='anchor' AND a.uid=ref.uid
-  WHERE tr.type='time_trace'
-  GROUP BY tr.uid
-),
-links AS (
-  SELECT tw.uid, array_agg(ew.uid ORDER BY ew.start_date,ew.uid) AS event_uids
-  FROM trace_windows tw
-  JOIN event_windows ew ON ew.start_date<=tw.end_date AND ew.end_date>=tw.start_date
-  GROUP BY tw.uid
-)
-UPDATE silver.lrunes_time tr
-SET anchor_ids=tr.anchor_ids||links.event_uids
-FROM links
-WHERE tr.type='time_trace' AND tr.uid=links.uid;
 
 -- Every trace only lists existing time_period UIDs; each event's tokens
 -- resolve to existing anchor UIDs. The reader tolerates future deleted links.
