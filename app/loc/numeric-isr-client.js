@@ -23,7 +23,7 @@ export async function readNumericIsr(scopeId,kind,params={}){
     signal:AbortSignal.timeout(2500)});
   if(!response.ok)throw new Error('ISR HTTP '+response.status);
   const data=await response.json();
-  if(data===null||data===undefined||typeof data!=='object')
+  if(data===null||data===undefined||(typeof data!=='object'&&!(kind==='earliest'&&typeof data==='string')))
     throw new Error('Invalid ISR response');
   return data;
 }
