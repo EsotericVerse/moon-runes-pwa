@@ -505,3 +505,51 @@
   .classification-inline__assignment{grid-template-columns:minmax(0,1fr)}
   .classification-inline__actions>.loc-button{flex:1 1 auto}
 }
+
+/* Spatial anchor editing uses a readable, bounded form. The wide Trace map
+   and all other management tabs retain their existing layout contract. */
+.scope-management-layout--anchor{
+  max-width:76rem;
+  margin-inline:auto;
+}
+.scope-management-layout--anchor .management-workspace>.management-section-nav{
+  width:fit-content;
+  max-width:100%;
+  margin-inline:auto;
+}
+.scope-management-layout--anchor .management-workspace>.management-section-nav .management-section-nav__item{
+  flex:0 0 auto;
+  min-width:0;
+  padding:.55rem .85rem;
+}
+.scope-management-layout--anchor .management-workspace>.management-workspace-panel>.scope-feature-card{
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+.scope-management-layout--anchor .management-workspace-panel .scope-management-fields{
+  gap:.65rem .85rem;
+  padding:.75rem;
+}
+.scope-management-layout--anchor .scope-management-fields>.loc-trace-quick-field,
+.scope-management-layout--anchor .scope-management-fields>.loc-trace-quick-results,
+.scope-management-layout--anchor .scope-management-fields>.scope-status{
+  grid-column:1/-1;
+  min-width:0;
+}
+@media(max-width:680px){
+  .scope-management-layout--anchor .management-workspace>.management-section-nav{
+    width:100%;
+  }
+  .scope-management-layout--anchor .management-workspace>.management-section-nav .management-section-nav__item{
+    min-height:44px;
+    padding:.55rem .7rem;
+  }
+  .scope-management-layout--anchor .management-workspace-panel .scope-management-fields{
+    grid-template-columns:minmax(0,1fr);
+    padding:.6rem;
+  }
+}

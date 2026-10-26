@@ -54,7 +54,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
   return <FeaturePage featureId={isLoc?'trace':'manage'}>
 
-    <div className="scope-management-layout">
+    <div className={section==='traceAnchor'?'scope-management-layout scope-management-layout--anchor':'scope-management-layout'}>
     <div className="management-workspace">
       <ManagementSectionNav id="scope-sections" title="管理" panelId="scope-management-panel"
         items={options} value={section} onChange={next=>{
