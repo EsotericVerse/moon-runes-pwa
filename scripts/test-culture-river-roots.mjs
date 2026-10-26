@@ -77,7 +77,9 @@ test('progressive Culture component uses SQL once and does not require numeric I
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(source,/const stagedSourceRiver=Boolean\(publishedTaxonomy\)/);
   assert.match(source,/queryFn:async\(\)=>\{\s*const \{text,media\}=await selectScopeDailyCounts\(scopeData/);
-  assert.match(source,/return buildCultureRiverRootPayload\(\{text,media\},publishedTaxonomy\)/);
+  assert.match(source,/return buildCultureRiverRootPayload\(\{/);
+  assert.match(source,/text:text\.filter\(inside\),media:media\.filter\(inside\)/);
+  assert.match(source,/timePeriodContainsDate\(/);
   assert.match(source,/return selectCultureRiverChildren\(sourceRootQuery\.data\.numericRows,publishedTaxonomy,expandedSourceRoots\)/);
   assert.match(source,/\(!stagedSourceRiver\|\|expandedSourceReady\)/);
   assert.match(source,/numericRows:requestedChildren/);
