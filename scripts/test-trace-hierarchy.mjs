@@ -23,7 +23,7 @@ test('four layers reuse shared index and Item means one Frame, not a Queue stop'
  assert.deepEqual(index.get('旅遊').get('夜市').get('北部')[0].anchor_uids,['AAA00001','BBB00002']);
  assert.notEqual(index.get('旅遊').get('夜市').get('北部')[0],
    index.get('生活').get('夜市').get('北部')[0]);
- assert.deepEqual(traceCategories(routes),['旅遊','生活','']);
+ assert.deepEqual(traceCategories(routes),['生活','旅遊','']);
  assert.deepEqual(routeClasses(routes,'旅遊'),['夜市','游泳','登山']);
  assert.deepEqual(routeGroups(routes,'旅遊','夜市'),['北部']);
 });
