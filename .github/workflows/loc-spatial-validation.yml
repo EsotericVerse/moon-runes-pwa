@@ -1,0 +1,52 @@
+name: LOC spatial A branch validation (no deployment)
+
+# Isolated engineering check only. Never deploy Pages, Cloudflare, ISR, R2, DO or Vercel.
+on:
+  push:
+    branches:
+      - feat/loc-spatial-anchors-20261026
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loc-spatial-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Existing dependency security gate
+        run: npm run audit:security
+      - name: Full Node regression suite
+        shell: bash
+        run: |
+          set -o pipefail
+          node --experimental-vm-modules --test --test-concurrency=4 scripts/test-*.mjs 2>&1 | tee node-tests.log
+      - name: Next production build (no deployment)
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee next-build.log
+      - name: Check ISR remains disabled
+        run: node scripts/verify-release-isr.mjs
+      - name: Preserve diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spatial-validation-logs
+          path: |
+            node-tests.log
+            next-build.log
+          if-no-files-found: ignore
+          retention-days: 3
