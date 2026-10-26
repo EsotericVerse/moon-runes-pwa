@@ -139,7 +139,7 @@ FROM extra_events e CROSS JOIN original_count oc CROSS JOIN baseline_count bc;
 
 UPDATE silver.lo3rwang_time t
 SET anchor_ids=silver._cutover_time_segments('lo3rwang',t.anchor_ids,'event')
-WHERE record_type='event';
+WHERE record_type='event' AND status IS DISTINCT FROM 'legacy_split';
 
 UPDATE silver.lo3rwang_time t SET anchor_ids=ARRAY[b.uid::text]
 FROM pg_temp.time_legacy_baselines b
@@ -255,7 +255,7 @@ FROM extra_events e CROSS JOIN original_count oc CROSS JOIN baseline_count bc;
 
 UPDATE silver.lrunes_time t
 SET anchor_ids=silver._cutover_time_segments('lrunes',t.anchor_ids,'event')
-WHERE record_type='event';
+WHERE record_type='event' AND status IS DISTINCT FROM 'legacy_split';
 
 UPDATE silver.lrunes_time t SET anchor_ids=ARRAY[b.uid::text]
 FROM pg_temp.time_legacy_baselines b
