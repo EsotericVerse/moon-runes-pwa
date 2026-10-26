@@ -8,7 +8,7 @@ import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query'
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
-import {resolveTimeSegments,timePeriodSortDate,timeDateWindows} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows} from './time-anchor-ranges.mjs';
 
 
 
@@ -27,29 +27,27 @@ export async function selectCultureTimeRows(scope,birthday=''){
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
     columns:TIME_COLUMNS,
-    filters:[{column:'type',operator:'in',value:['anchor','period','event']}],
+    filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}],
     orders:[{column:'uid',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,offset:0
   });
   const anchors=rows.filter(row=>row.type==='anchor');
-  const periods=rows.filter(row=>row.type==='period');
-  const events=rows.filter(row=>row.type==='event');
   const byUid=new Map(anchors.map(row=>[String(row.uid),row]));
-  const normalize=(row,type)=>{
+  const normalize=(row,type,eventMap)=>{
     const id=String(row.uid||'');
     const ranges=type==='anchor'?[{
       index:0,start_date:timeDate(row),end_date:timeDate(row),
       start_anchor_id:id,end_anchor_id:null,anchor_ids:[id],point:true,invalid:false
-    }]:resolveTimeSegments(row.anchor_ids,byUid,{period:type==='period'});
+    }]:type==='period'
+      ?resolveTimeTrace(row.anchor_ids,eventMap).ranges
+      :resolveTimeSegments(row.anchor_ids,byUid,{period:false});
+    const invalidTraceLinks=type==='period'
+      ?resolveTimeTrace(row.anchor_ids,eventMap).invalidLinks:[];
     const dated=ranges.filter(range=>range.start_date).sort((a,b)=>
       a.start_date.localeCompare(b.start_date)||a.index-b.index);
     const first=dated[0],last=dated.at(-1);
-    const openStart=false;
     const openEnd=Boolean(last?.open_end);
-    const startDate=first?.start_date||null;
-    const endDate=openEnd?null:last?.end_date||null;
-    return {
-      ...row,scope_id:scopeId,
+    return {...row,scope_id:scopeId,
       entry_key:type+':'+id,entry_type:type,
       title:row.title||id,summary:row.description||'',
       era_id:type==='period'?id:null,period:type==='period'?id:null,
@@ -60,16 +58,21 @@ export async function selectCultureTimeRows(scope,birthday=''){
       start_anchor_id:first?.start_anchor_id||null,
       end_anchor_id:last?.end_anchor_id||null,
       event_id:type==='event'?id:null,
-      open_start:openStart,open_end:openEnd,
-      start_date:startDate,end_date:endDate,
-      invalid_anchor_links:ranges.filter(range=>range.invalid).flatMap(range=>range.missing_anchor_ids||[])
-    };
+      open_start:false,open_end:openEnd,
+      start_date:first?.start_date||null,
+      end_date:openEnd?null:last?.end_date||null,
+      invalid_anchor_links:[
+        ...invalidTraceLinks,
+        ...ranges.filter(range=>range.invalid).flatMap(range=>range.missing_anchor_ids||[])
+      ]};
   };
-  return [
-    ...anchors.map(row=>normalize(row,'anchor')),
-    ...periods.map(row=>normalize(row,'period')),
-    ...events.map(row=>normalize(row,'event'))
-  ];
+  const events=rows.filter(row=>row.type==='time_period')
+    .map(row=>normalize(row,'event',new Map()));
+  const byEventUid=new Map(events.map(row=>[String(row.uid),row]));
+  const periods=rows.filter(row=>row.type==='time_trace')
+    .map(row=>normalize(row,'period',byEventUid));
+  return [...anchors.map(row=>normalize(row,'anchor',new Map())),
+    ...periods,...events];
 }
 
 function openPeriodRangeFromRows(scopeId,rows=[]){
