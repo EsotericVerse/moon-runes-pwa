@@ -79,9 +79,9 @@ async function imageStrategy(event){
     try{
       const source=new URL(request.url),cdn=new URL(source.pathname+source.search,runtimeImageOrigin);
       // Only this site's public immutable image directories are mirrored.
-      if(/^\\/(?:pics|assets|vendor)\\//.test(source.pathname)){
+      if(/^\/(?:pics|assets|vendor)\//.test(source.pathname)){
         const edge=await fetch(cdn.href,{mode:'cors',credentials:'omit'});
-        if(edge.ok&&/^image\\//i.test(edge.headers.get('content-type')||''))
+        if(edge.ok&&/^image\//i.test(edge.headers.get('content-type')||''))
           response=edge;
       }
     }catch{ /* Missing edge deploy/CORS: use unchanged original image URL. */ }
