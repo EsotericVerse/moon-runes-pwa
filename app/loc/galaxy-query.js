@@ -434,10 +434,10 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   });
   if(mediaOnly||contentType==='multimedia')return [media];
   const timeline=makeProvider({
-    id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'record_id',
-    columns:['record_id','record_type','label','resource_id','note','time_date','anchor_ids','status','date_status','year_value','visibility','style_description'],
-    searchFields:['label','note','status','style_description'],dateColumn:'time_date',
-    filters:[{column:'record_type',operator:'in',value:['anchor','period','event']}]
+    id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'uid',
+    columns:['uid','type','title','description','time_date','anchor_ids','status'],
+    searchFields:['title','description','status'],dateColumn:'time_date',
+    filters:[{column:'type',operator:'in',value:['anchor','period','event']}]
   });
   // A single ordinary search includes multimedia: no duplicate search mode.
   if(contentType==='timeline')return [timeline];
