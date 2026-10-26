@@ -28,6 +28,9 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [editingUid,setEditingUid]=useState('');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
+  const [address,setAddress]=useState('');
+  const [floorLabel,setFloorLabel]=useState('');
+  const [floorLevel,setFloorLevel]=useState('');
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
   const [radius,setRadius]=useState('');
@@ -39,17 +42,17 @@ function AnchorEditor({scopeId,spatial,reload}){
   useEffect(()=>()=>{quickRequest.current+=1;},[]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const dirty=Boolean(editingUid||title||description||longitude||latitude||radius);
+  const dirty=Boolean(editingUid||title||description||address||floorLabel||floorLevel||longitude||latitude||radius);
   const duplicateCandidates=useMemo(()=>{
     if(!title.trim()||!validCoordinates(longitude,latitude))return [];
     return findAnchorWriteMatches({
       uid:'__incoming__',source_scope:scopeId,trace_type:'anchor',title,
-      description,longitude,latitude
+      description,address,floor_label:floorLabel,floor_level:floorLevel,longitude,latitude
     },ownAnchors.filter(row=>row.uid!==editingUid));
-  },[spatial.anchors,scopeId,editingUid,title,description,longitude,latitude]);
+  },[spatial.anchors,scopeId,editingUid,title,description,address,floorLabel,floorLevel,longitude,latitude]);
   const closeCandidates=duplicateCandidates.filter(item=>
     item.type==='near-unverified'||item.type==='same-address'
-    ||item.type==='address-coordinate-conflict'||item.type==='same-name-different-location');
+    ||item.type==='different-floor'||item.type==='address-coordinate-conflict'||item.type==='same-name-different-location');
   const pickExisting=uid=>{
     quickRequest.current+=1;
     setQuickBusy(false);setQuickCandidates([]);setQuickNotice('');
@@ -57,6 +60,9 @@ function AnchorEditor({scopeId,spatial,reload}){
     setEditingUid(anchor?.uid||'');
     setTitle(anchor?.title||'');
     setDescription(anchor?.description||'');
+    setAddress(anchor?.address||'');
+    setFloorLabel(anchor?.floor_label||'');
+    setFloorLevel(anchor?.floor_level==null?'':String(anchor.floor_level));
     setLongitude(anchor?.longitude==null?'':String(anchor.longitude));
     setLatitude(anchor?.latitude==null?'':String(anchor.latitude));
     setRadius(anchor?.radius_m==null?'500':String(anchor.radius_m));
@@ -108,9 +114,11 @@ function AnchorEditor({scopeId,spatial,reload}){
       if(closeCandidates.some(item=>item.type==='near-unverified')&&!window.confirm(
         '附近已有位置接近、但尚未證明同址的定錨點。確定要保留為獨立地點？寫入後可至「整理空間定錨點」進一步核對。'
       ))return false;
+      const location={title,description,address,floor_label:floorLabel,floor_level:floorLevel,
+        longitude,latitude,radius_m:radius||500};
       const saved=editingUid
-        ?await updateTraceAnchor({scopeId,uid:editingUid,title,description,longitude,latitude,radius_m:radius||500})
-        :await addTraceAnchor({scopeId,title,description,longitude,latitude,radius_m:radius||500});
+        ?await updateTraceAnchor({scopeId,uid:editingUid,...location})
+        :await addTraceAnchor({scopeId,...location});
       await reload();
       await revalidateServerMetadata();
       // The database write has already succeeded; a secondary cache
@@ -124,10 +132,11 @@ function AnchorEditor({scopeId,spatial,reload}){
         ]);
       }catch{anchorCacheSynced=false;}
       setEditingUid('');
-      setTitle('');setDescription('');setLongitude('');setLatitude('');setRadius('');
+      setTitle('');setDescription('');setAddress('');setFloorLabel('');setFloorLevel('');
+      setLongitude('');setLatitude('');setRadius('');
       setNotice(editingUid?'空間定錨點已更新，已檢查重複位置。'
         :saved?.reused?'已沿用同址定錨點；未建立重複紀錄'+(saved.aliasAdded?'，並保留打卡別名「'+saved.aliasAdded+'」。':'。')
-        :'空間定錨點已儲存，已完成新增前重複檢查。'
+        :'空間定錨點已儲存，地址／樓層資訊已保留。'
         +(anchorCacheSynced?'':'部分已開啟的痕跡快取可能需要重新整理。'));
       return true;
     }catch(error){setNotice(String(error?.message||'新增空間定錨點失敗。'));return false;}
@@ -141,7 +150,7 @@ function AnchorEditor({scopeId,spatial,reload}){
         <select className="scope-select" value={editingUid} onChange={event=>pickExisting(event.target.value)} disabled={busy}>
           <option value="">新增新地點</option>
           {ownAnchors.map(anchor=><option key={anchor.uid} value={anchor.uid}>
-            {anchor.title} · {anchor.latitude}, {anchor.longitude}
+            {anchor.title} · {anchor.address||'地址待確認'}{anchor.floor_label?' · '+anchor.floor_label:''} · UID {anchor.uid}
           </option>)}
         </select>
       </label>
@@ -165,6 +174,19 @@ function AnchorEditor({scopeId,spatial,reload}){
           {quickBusy?'定位中…':'快速定位'}
         </button>
       </div>
+      <label>完整地址（含門牌、樓層／室別；未確認可留空）
+        <input type="text" maxLength={320} autoComplete="street-address" value={address}
+          onChange={e=>setAddress(e.target.value)} placeholder="例如：新北市某區某路100號2樓" disabled={busy}/>
+      </label>
+      <label>樓層／室別（顯示用；可填 B1、2樓、3–4樓）
+        <input type="text" maxLength={40} value={floorLabel} onChange={e=>setFloorLabel(e.target.value)}
+          placeholder="例如：B1" disabled={busy}/>
+      </label>
+      <label>樓層序號（立體層級，可選；B1 輸入 -1；跨樓層留空）
+        <input type="number" min={-100} max={300} step={1} value={floorLevel}
+          onChange={e=>setFloorLevel(e.target.value)} placeholder="未知" disabled={busy}/>
+      </label>
+      <p className="scope-status">地址含樓層可區分同棟不同場所；GPS 只作地圖定位。樓層序號不代表海拔或實測高度。此地點若不適合公開，請勿填入私人住址。</p>
       <label>說明<textarea maxLength={2000} rows={2} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度<input type="number" min={-180} max={180} step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度<input type="number" min={-90} max={90} step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
@@ -174,7 +196,8 @@ function AnchorEditor({scopeId,spatial,reload}){
       <strong>儲存前：附近／同址檢查（{closeCandidates.length} 組）</strong>
       {closeCandidates.slice(0,5).map(item=><p key={item.b.uid} className="scope-status">
         {item.b.title} · {item.meters??'未知'} 公尺 · {item.safeReuse
-          ?'完整地址相同，儲存時沿用原定錨點'
+          ?'同址候選（仍需人工確認是否相同地點）'
+          :item.type==='different-floor'?'同棟不同樓層；保留為不同定錨點'
           :item.type==='near-unverified'?'附近候選；需核對是否不同地點'
           :item.type==='address-coordinate-conflict'?'地址相同但座標衝突，需先整理'
           :'請確認是否為同一地點'}
