@@ -12,7 +12,7 @@ import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid} from
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,status';
 const TYPES=['anchor','time_period','time_trace'];
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
-const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時期／時間痕跡'};
+const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時間痕跡'};
 const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],status:''});
 const day=value=>value?String(value).slice(0,10):'';
 function nextTimeUid(rows){
@@ -130,8 +130,12 @@ export default function CultureTimelineEditor({
     original.current=fresh;setDraft(fresh);setSelectedId('');setMessage('');onClose?.();
   };
   const change=(key,value)=>setDraft(row=>({...row,[key]:value}));
-  const segments=decodeTimeSegments(draft.anchor_ids);
-  const setSegments=next=>change('anchor_ids',next.map(range=>encodeTimeSegment(range.start,range.end)));
+  const segments=draft.type==='time_trace'
+    ?draft.anchor_ids.map(uid=>({start:uid,end:'',raw:uid}))
+    :decodeTimeSegments(draft.anchor_ids);
+  const setSegments=next=>change('anchor_ids',draft.type==='time_trace'
+    ?next.map(range=>range.start)
+    :(next.length?encodeTimeSegment(next[0].start,next[0].end):[]));
   const updateSegment=(index,key,value)=>{
     const copy=segments.map(row=>({...row}));
     copy[index][key]=value;
@@ -142,6 +146,7 @@ export default function CultureTimelineEditor({
   const addSegment=()=>{
     const choices=draft.type==='time_trace'?eventChoices:anchorChoices;
     if(!choices.length)return;
+    if(draft.type==='time_period'&&segments.length)return;
     setSegments([...segments,{start:String(choices[0].uid),end:''}]);
   };
   const refresh=async()=>{
@@ -172,7 +177,8 @@ export default function CultureTimelineEditor({
       }else{
         if(draft.type==='time_period'&&!anchorChoices.length)throw new Error('請先建立時間定錨點');
         if(draft.type==='time_trace'&&!eventChoices.length)throw new Error('請先建立事件');
-        if(!segments.length)throw new Error('請加入至少一個已存在的時間定錨點');
+        if(!segments.length)throw new Error(draft.type==='time_trace'?'請先加入事件':'請加入一個或兩個時間定錨點');
+        if(draft.type==='time_period'&&segments.length!==1)throw new Error('事件只能有一個起點及可選的結束錨點');
         const unchangedLinks=Boolean(selectedId)&&
           JSON.stringify(draft.anchor_ids)===JSON.stringify(original.current.anchor_ids);
         for(const segment of segments){
@@ -183,15 +189,15 @@ export default function CultureTimelineEditor({
             if(segment.end)throw new Error('時間痕跡只列事件 UID，不另外寫日期。');
             continue;
           }
-          if(segment.end&&segment.end!=='0'&&!anchors.has(segment.end)&&!unchangedLinks)
+          if(segment.end&&!anchors.has(segment.end)&&!unchangedLinks)
             throw new Error('找不到結束定錨點：'+segment.end);
-          if(segment.end&&segment.end!=='0'&&anchors.has(segment.start)&&anchors.has(segment.end)&&
+          if(segment.end&&anchors.has(segment.start)&&anchors.has(segment.end)&&
             day(anchors.get(segment.end)?.address)<=day(anchors.get(segment.start)?.address))
             throw new Error('結束定錨點必須晚於起始定錨點');
         }
         payload.anchor_ids=draft.type==='time_trace'
           ?segments.map(segment=>segment.start)
-          :segments.map(segment=>encodeTimeSegment(segment.start,segment.end));
+          :encodeTimeSegment(segments[0].start,segments[0].end);
       }
       if(selectedId){
         await updateRows(timeTable,payload,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
@@ -215,7 +221,7 @@ export default function CultureTimelineEditor({
   dockActions.current={save:()=>save({preventDefault(){}}),
     isDirty:()=>JSON.stringify(draft)!==JSON.stringify(original.current),
     isBusy:()=>busy};
-  return <section ref={editorRef} className="scope-culture-inline-editor" role="region" aria-label="時間定錨與時期編輯">
+  return <section ref={editorRef} className="scope-culture-inline-editor" role="region" aria-label="時間定錨、事件與時間痕跡編輯">
     <header className="scope-culture-inline-heading">
       <h4>{selectedId?'編輯':'新增'}{displayType[draft.type]}</h4>
     </header>
@@ -250,7 +256,7 @@ export default function CultureTimelineEditor({
       </div>
       {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
         {draft.type==='time_trace'&&!eventChoices.length
-          ?<p className="scope-status scope-error">請先建立事件，才能新增時期。</p>
+          ?<p className="scope-status scope-error">請先建立事件，才能新增時間痕跡。</p>
           :draft.type==='time_period'&&!anchorChoices.length
             ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增事件。</p>:null}
         {segments.map((segment,index)=><div key={index} className="scope-culture-quick-primary">
@@ -269,8 +275,7 @@ export default function CultureTimelineEditor({
             <select className="scope-select" value={segment.end}
               onChange={e=>updateSegment(index,'end',e.target.value)}>
               <option value="">單一定錨點</option>
-              <option value="0">開放至今</option>
-              {segment.end&&segment.end!=='0'&&!anchors.has(segment.end)?
+              {segment.end&&!anchors.has(segment.end)?
                 <option value={segment.end}>已失效：{segment.end}</option>:null}
               {anchorChoices.filter(row=>row.uid!==segment.start)
                 .map(row=><option key={row.uid} value={row.uid}>{day(row.address)}｜{row.title}</option>)}
@@ -280,11 +285,11 @@ export default function CultureTimelineEditor({
             onClick={()=>setSegments(segments.filter((_,i)=>i!==index))}>移除</button>
         </div>)}
         <button type="button" className="loc-button"
-          disabled={draft.type==='time_trace'?!eventChoices.length:!anchorChoices.length}
-          onClick={addSegment}>{draft.type==='time_trace'?'＋ 加入事件':'＋ 新增定錨點／時間區間'}</button>
+          disabled={draft.type==='time_trace'?!eventChoices.length:!anchorChoices.length||segments.length>0}
+          onClick={addSegment}>{draft.type==='time_trace'?'＋ 加入事件':'＋ 新增事件定錨點'}</button>
         {segments.some(seg=>draft.type==='time_trace'
           ?!eventByUid.has(seg.start)
-          :resolveTimeSegments([seg.raw],anchors).some(r=>r.invalid))?
+          :resolveTimeSegments(draft.anchor_ids,anchors).some(r=>r.invalid))?
           <p className="scope-status scope-error">部分定錨點連線已失效，請修正對應區間。</p>:null}
       </div>:null}
       <label className="scope-culture-quick-notes">說明
