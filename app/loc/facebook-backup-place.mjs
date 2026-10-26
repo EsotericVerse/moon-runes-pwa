@@ -1,3 +1,5 @@
+import {repairMojibakeText} from './content-policy.js';
+
 // Facebook Takeout *text* place metadata, not EXIF or media file lookup.
 // Never infer a check-in from post prose, filename, GPS or generic post title.
 const PLACE_KEYS=['place','location','checkin','check_in','venue'];
@@ -136,8 +138,12 @@ export function facebookArchiveUid(key){
 }
 export function facebookArchiveGalaxyRow(record){
   if(record?.platform!=='facebook'||record?.kind!=='post')return null;
-  const source_place=asName(record.sourcePlace)||facebookBackupPlace(record.raw);
-  const original=String(record.text||'').trim();
+  // Meta can encode UTF-8 text as Latin-1 code points. Preserve the
+  // original record and source ID, but repair the user-visible Galaxy fields.
+  // Never infer a place from post prose or EXIF.
+  const source_place=repairMojibakeText(
+    asName(record.sourcePlace)||facebookBackupPlace(record.raw));
+  const original=repairMojibakeText(String(record.text||'').trim());
   // A place-only check-in is still a post; accurately label its metadata,
   // rather than inventing an author-written caption.
   const content=original||(source_place?'Facebook 打卡地點：'+source_place:'');
