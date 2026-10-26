@@ -2,13 +2,18 @@
 // County is an indexed stored ID; station identity is always the anchor UID.
 // A visible label or same coordinates must never act as a key.
 export function traceAnchorSuggestions(anchors=[],countyId='',query='',selectedUids=[],limit=8){
-  const term=String(query||'').trim().normalize('NFKC').toLocaleLowerCase('zh-Hant');
-  if(!countyId||!term)return [];
+  const terms=String(query||'').trim().normalize('NFKC')
+    .toLocaleLowerCase('zh-Hant').split(/\\s+/).filter(Boolean);
+  if(!countyId||!terms.length)return [];
   const taken=new Set(selectedUids);
   const output=[];
   for(const anchor of anchors){
     if(anchor.trace_type!=='anchor'||anchor.county_id!==countyId||taken.has(anchor.uid))continue;
-    if(!String(anchor.title||'').normalize('NFKC').toLocaleLowerCase('zh-Hant').includes(term))continue;
+    // Both district/address and UID are searchable. With >8 identically
+    // named stores, refining by name alone is impossible.
+    const haystack=[anchor.title,anchor.uid,anchor.description]
+      .join(' ').normalize('NFKC').toLocaleLowerCase('zh-Hant');
+    if(!terms.every(term=>haystack.includes(term)))continue;
     output.push(anchor);
     if(output.length>=limit)break;
   }
