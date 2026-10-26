@@ -427,9 +427,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       <label><UiText id="uiExtra.importUI.fileSource"/>
         <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
       </label>
-      <button type="button" className="loc-button" disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
-      </button>
     </div>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}
       source={source} onSourceChange={setSource} sourceDisabled={!rows.length} suggested={suggested}/>
@@ -479,6 +476,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         </article>)}
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
+    </section>:null}
+    {rows.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+      <div>
+        <h3>{t('uiExtra.importUI.saveSection')}</h3>
+        <p>{t('uiExtra.importUI.saveHint')}</p>
+      </div>
+      <button type="button" className="loc-button scope-import-save-button"
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+      </button>
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
