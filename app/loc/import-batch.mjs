@@ -103,7 +103,7 @@ export function importRowsFromJson(payload,recordPath=''){
   if(selected&&container===undefined)throw new Error('找不到資料陣列路徑：'+selected);
   if(Array.isArray(container))return container;
   if(container&&typeof container==='object'){
-    for(const key of ['items','posts','data','records']){
+    for(const key of ['items','posts','data','records','status_updates','your_posts']){
       if(Array.isArray(container[key]))return container[key];
     }
     if(selected)return [container];
