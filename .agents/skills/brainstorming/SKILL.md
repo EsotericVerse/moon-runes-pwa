@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+description: "Use for ideation or genuinely unresolved consequential product/design choices. When requirements and implementation authorization are already clear, use intent checks internally and proceed without repeated questions, mandatory design approvals or extra user-managed planning."
 ---
 
 # Brainstorming
@@ -19,21 +19,23 @@ hundred decisions they never mention the way they would have made them.
 Before you reply, ask yourself: what do I know about what they want, and
 why?
 
-- **Everything that matters is in the request** ("make the icon cornflower
-  blue"). This is a quick, clear task. Do it, and say what you did.
-- **Something non-trivial is missing.** Start the conversation.
+- **The user already specified the goal, constraints and authorization.**
+  Treat product choices as resolved: inspect existing work, select
+  appropriate engineering methods internally, execute and verify. Do not
+  request a fresh approach vote, design-doc sign-off, user-managed tests
+  or repeated approval merely because implementation is complicated.
+- **A consequential product decision remains unknown, or the user requested
+  ideation.** Use the approaches, tradeoffs and design discussion below
+  proportionately; ask only what can change the user-facing outcome.
+  Preserve accepted decisions via the authorized archive workflow.
+- **Implementation planning is the agent's work.** When a plan is helpful,
+  prepare it internally using available tools or Skills; the unavailable
+  `superpowers:writing-plans` command is not a prerequisite.
 
-Before you start implementing, you must, in order:
-
-1. Lay out the approaches in a message of their own, and have your
-   human partner pick one (see Lay out the approaches).
-2. Write the design doc, short or full (see Size the Work).
-3. Get their approval of that doc.
-4. Invoke the superpowers:writing-plans skill.
-
-Two things aren't implementing: a spike they said yes to (see Spike to
-feel things out), and doing what they asked once they've opted out of
-the questions.
+The remaining interview, approaches and design-approval procedures apply
+**only during requested brainstorming or while a consequential product
+decision is genuinely unsettled**; they are not mandatory preconditions
+for an authorized, clearly specified implementation.
 
 ## Look Before You Ask
 
@@ -84,6 +86,8 @@ brainstorming:
 That's the whole message.
 
 ## The Conversation
+
+This section applies to a **requested design discussion with unresolved choices**, not an authorized implementation turn. When the outcome and authorization are clear, execute and report evidence instead of insisting on another question.
 
 Each message ends with one question: a single sentence with no list of
 example answers hanging off it. Use plain language, pitched just a little

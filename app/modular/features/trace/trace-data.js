@@ -55,16 +55,19 @@ function locationFields({address='',floor_label='',floor_level=null}={}){
   // The address itself can include a floor, as in ...152號B1 or ...100號2樓.
   // Extract only unambiguous suffixes; multi-floor units keep the label but
   // have no single numeric vertical level.
-  const suffix=full.match(/(地下[0-9]+樓|B[0-9]+|[0-9]+[-~–～至][0-9]+樓|[0-9]+樓(?:之[0-9]+)?|[0-9]+F)$/i);
+  // This is a suffix recognizer, NOT an address-identity parser: keep the
+  // original text unmodified, including optional units after a known floor.
+  const suffix=full.match(/((?:地下[0-9]+樓|B[0-9]+|[0-9]+[-~–～至][0-9]+樓|[0-9]+樓|[0-9]+F)(?:之[0-9]+)?(?:\s*[0-9A-Za-z]+室)?)$/i);
   const floor=String(floor_label||'').trim()||suffix?.[1]||'';
   if(full.length>320)throw Error('完整地址最多 320 字。');
   if(floor.length>40)throw Error('樓層／室別最多 40 字。');
   const raw=String(floor_level??'').trim();
   let level=raw===''?null:Number(raw);
-  if(level===null){
-    const solo=floor.match(/^(?:地下([0-9]+)樓|B([0-9]+)|([0-9]+)樓(?:之[0-9]+)?|([0-9]+)F)$/i);
-    if(solo)level=solo[1]||solo[2]? -Number(solo[1]||solo[2]):Number(solo[3]||solo[4]);
-  }
+  const solo=floor.match(/^(?:地下([0-9]+)樓|B([0-9]+)|([0-9]+)樓|([0-9]+)F)(?:之[0-9]+)?(?:\s*[0-9A-Za-z]+室)?$/i);
+  const inferred=solo?(solo[1]||solo[2]? -Number(solo[1]||solo[2]):Number(solo[3]||solo[4])):null;
+  if(level===null)level=inferred;
+  else if(inferred!==null&&level!==inferred)
+    throw Error('樓層序號與地址／樓層標記不一致；請先確認實際樓層。');
   if(level!==null&&(!Number.isInteger(level)||level===0||level < -100||level>300))
     throw Error('樓層序號需為 -100～-1 或 1～300；未知或跨樓層可留空。');
   return {address:full,floor_label:floor,floor_level:level};

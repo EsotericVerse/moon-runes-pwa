@@ -25,7 +25,7 @@ import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 
-import {selectGalaxyContent} from '../../loc/galaxy-query';
+import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -34,8 +34,7 @@ import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
-import {summarizeCultureRiverRoots,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
-import {readNumericIsr,usesNumericIsr} from '../../loc/numeric-isr-client';
+import {buildCultureRiverRootPayload,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -262,26 +261,12 @@ export default function Culture(){
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
-  // Culture's primary Period navigation reads the shared, server-cached
-  // public Time index immediately. The original Time request still supplies
-  // Events, Anchors and the first river without delaying Period selection.
-  const periodIsrEnabled=usesNumericIsr(scopeId)&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView;
-  const periodNavigationQuery=useAsyncResource({
-    queryKey:['culture-time-periods',scopeId],
-    enabled:periodIsrEnabled,
-    queryFn:()=>readNumericIsr(scopeId,'periods'),
-    revalidateOnFocus:false,
-    revalidateOnReconnect:false
-  });
+  // Time structure is authoritative without any remote ISR Period request.
   const openRows=useMemo(()=>(query.data?.openRanges||[])
     .filter(item=>isAggregateScope||String(item?.scope_id||'')===scopeId),[isAggregateScope,scopeId,query.data]);
   const openByScope=useMemo(()=>new Map(openRows.map(item=>[String(item.scope_id||''),item])),[openRows]);
 
-  const allPeriods=useMemo(()=>sortPeriods(
-    periodIsrEnabled&&!periodNavigationQuery.error
-      ?periodNavigationQuery.data||[]
-      :query.data?.eras?.eras||[]
-  ),[periodIsrEnabled,periodNavigationQuery.data,periodNavigationQuery.error,query.data]);
+  const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const classificationScope=scopeId;
   const scopeData=query.data?.scope||null;
   // Use a stable periods array: date-navigation effects must not re-run just
@@ -391,71 +376,41 @@ export default function Culture(){
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const sourceTaxonomy=publishedTaxonomy||sourceTaxonomyQuery.data;
-  const stagedSourceRiver=usesNumericIsr(scopeId)&&Boolean(publishedTaxonomy);
+  // Staged rendering is a UI strategy, not an ISR feature.
+  const stagedSourceRiver=Boolean(publishedTaxonomy)&&!isAggregateScope&&scopeId!=='local';
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
   const sourceRootQuery=useAsyncResource({
-    queryKey:['culture-period-roots','v1',classificationScope,classificationWindowStart,classificationWindowEnd],
-    enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope
+    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd],
+    enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
-      const args={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
-      try{return await readNumericIsr(scopeId,'culture-roots',args);}
-      catch(error){
-        // Static Pages can precede a manually updated Cloudflare Worker.
-        if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
-        const legacyRows=await readNumericIsr(scopeId,'culture',args);
-        return {...summarizeCultureRiverRoots(legacyRows,publishedSourceTaxonomy(scopeId)||{}),legacyRows};
-      }
-    }
+      const {text,media}=await selectScopeDailyCounts(scopeData,{
+        startDate:classificationWindowStart,endDate:classificationWindowEnd,
+        includeUndated:true,requireAggregate:true
+      });
+      return buildCultureRiverRootPayload({text,media},publishedTaxonomy);
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  // Each clicked parent owns a separate SWR key. Opening another parent does
-  // not refetch the first one's detail; closing a parent only hides its rows.
-  const sourceChildrenEnabled=stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
-    &&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid&&Boolean(sourceRootQuery.data);
-  const loadSourceChildren=async root=>{
-    const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,includeUndated:true};
-    const taxonomy=publishedSourceTaxonomy(scopeId)||{};
-    if(sourceRootQuery.data?.legacyRows)
-      return selectCultureRiverChildren(sourceRootQuery.data.legacyRows,taxonomy,[root]);
-    try{return await readNumericIsr(scopeId,'culture-children',{...range,roots:[root]});}
-    catch(error){
-      if(!/HTTP (400|404)\b/.test(String(error?.message||'')))throw error;
-      const full=await readNumericIsr(scopeId,'culture',range);
-      return selectCultureRiverChildren(full,taxonomy,[root]);
-    }
-  };
-  const systemChildrenQuery=useAsyncResource({
-    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'system'],
-    enabled:sourceChildrenEnabled&&openCultureRoots.includes('system'),
-    queryFn:()=>loadSourceChildren('system')
-  });
-  const customChildrenQuery=useAsyncResource({
-    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'custom'],
-    enabled:sourceChildrenEnabled&&openCultureRoots.includes('custom'),
-    queryFn:()=>loadSourceChildren('custom')
-  });
-  const mediaChildrenQuery=useAsyncResource({
-    queryKey:['culture-period-children','v1',scopeId,classificationWindowStart,classificationWindowEnd,'media'],
-    enabled:sourceChildrenEnabled&&openCultureRoots.includes('media'),
-    queryFn:()=>loadSourceChildren('media')
-  });
-  const requestedChildren=useMemo(()=>[
-    ...(openCultureRoots.includes('system')?[systemChildrenQuery.data]:[]),
-    ...(openCultureRoots.includes('custom')?[customChildrenQuery.data]:[]),
-    ...(openCultureRoots.includes('media')?[mediaChildrenQuery.data]:[])
-  ],[openCultureRoots,systemChildrenQuery.data,customChildrenQuery.data,mediaChildrenQuery.data]);
-  const expandedSourceReady=requestedChildren.length>0&&requestedChildren.every(Array.isArray);
+  // Expand from the previously fetched SQL day/category aggregates in memory.
+  // There are no network or DB requests just to open a child lane.
+  const expandedSourceRootsKey=expandedSourceRoots.join(',');
+  const requestedChildren=useMemo(()=>{
+    if(!stagedSourceRiver||!sourceRootQuery.data?.numericRows||!expandedSourceRoots.length)return [];
+    return selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots);
+  },[stagedSourceRiver,sourceRootQuery.data,publishedTaxonomy,expandedSourceRootsKey]);
+  const expandedSourceReady=Boolean(sourceRootQuery.data)&&expandedSourceRoots.length>0;
   // This SWR step only formats the already-fetched numeric rows locally.
   // The initial overview never depends on it.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v5',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRoots.join(','):'all'],
+    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,stagedSourceRiver?expandedSourceRootsKey:'all'],
     enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
       const range={startDate:classificationWindowStart,endDate:classificationWindowEnd};
       return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
-        ?{...range,numericRows:requestedChildren.flat()}:range);
+        ?{...range,numericRows:requestedChildren}:range);
     }
   });
   const keywordClassQuery=useAsyncResource({
@@ -792,15 +747,20 @@ export default function Culture(){
     });
   }
 
+  async function refreshCultureSourceSummary(){
+    await Promise.all([
+      resourceCache.invalidate({queryKey:['culture-period-roots','v2',scopeId]}),
+      resourceCache.invalidate({queryKey:['culture-period-source-snapshot','v6',scopeId]})
+    ]);
+  }
   async function refreshTimelineData(){
-    // An authorized Time edit invalidates the server-side numeric cache before
-    // SWR retries. The SQL fallback is deliberately not used for public ISR.
+    // Time edits refresh the direct database query and SWR resource keys.
     if(scopeId!=='local')await revalidateServerMetadata();
     await Promise.all([
-      resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
       resourceCache.invalidate({queryKey:['culture-period-settings',scopeId]}),
-      resourceCache.invalidate({queryKey:['search-style-keyword']})
+      resourceCache.invalidate({queryKey:['search-style-keyword']}),
+      refreshCultureSourceSummary()
     ]);
   }
   async function moveTimelineRecord(item,row){
@@ -1147,6 +1107,7 @@ export default function Culture(){
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key)setFullText(content);
       setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
+      await refreshCultureSourceSummary();
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.saveFailed));
@@ -1165,6 +1126,7 @@ export default function Culture(){
       const key=String(work?.key||('galaxy:'+uid));
       if(fullTextKey===key){setFullTextKey('');setFullText('');}
       setEditingWorkKey('');setAuthorizedWorkKey('');setEditDraft(null);
+      await refreshCultureSourceSummary();
       periodWorksPage.reload();
     }catch(exception){
       setEditError(String(exception?.message||exception||l.deleteFailed));
@@ -1484,13 +1446,13 @@ export default function Culture(){
                 {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時期、事件或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
-                {styleFilter!=='trace'&&[systemChildrenQuery.error,customChildrenQuery.error,mediaChildrenQuery.error,sourceSnapshotQuery.error]
-                  .filter(Boolean).map((error,index)=><p key={index} className='scope-status scope-error' role='alert'>
-                    {featureDataErrorMessage(error,UI_COPY)}</p>)}
-                {styleFilter!=='trace'&&stagedSourceRiver&&openCultureRoots.length>0&&
-                  (systemChildrenQuery.isPending||customChildrenQuery.isPending||mediaChildrenQuery.isPending||sourceSnapshotQuery.isPending)
-                  ?<p className='scope-status' role='status'>正在讀取展開河道的細部分布…</p>:null}
-                {styleFilter!=='trace'&&!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
+                {styleFilter!=='trace'&&sourceSnapshotQuery.error
+                   ?<p className='scope-status scope-error' role='alert'>
+                     {featureDataErrorMessage(sourceSnapshotQuery.error,UI_COPY)}</p>:null}
+                 {styleFilter!=='trace'&&stagedSourceRiver&&openCultureRoots.length>0
+                   &&sourceSnapshotQuery.isPending
+                   ?<p className='scope-status' role='status'>正在展開河道的細部分布…</p>:null}
+                 {styleFilter!=='trace'&&!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
                   <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
                   <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
                     onClick={createSelectedSuggestedAnchors}>

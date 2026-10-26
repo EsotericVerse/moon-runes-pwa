@@ -231,7 +231,9 @@ test('Trace loads only Frame metadata at entry; content modes remain scoped and 
   assert.match(filters,/traceWindow\(window='3m'/);
   assert.match(panel,/source_name/);
   assert.match(panel,/sourceFilter/);
-  assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
+  // Culture owns its direct Time structure; only Statistics retains the
+  // dedicated Period-navigation cache. Trace must not require either ISR.
+  assert.ok(culture.includes("queryKey:['culture-timeline',scopeId]"));
   assert.match(stats,/queryKey:\['culture-time-periods',scopeId\]/);
 });
 

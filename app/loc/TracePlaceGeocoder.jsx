@@ -6,6 +6,9 @@ import {useAsyncResource} from './use-async-resource';
 import {useAccount} from './use-account';
 import {traceKey,readTraceData,addTraceAnchorsBatch,validRadius} from '../modular/features/trace/trace-data';
 import {revalidateServerMetadata} from './scope-data';
+import {postalAddressFromNominatim} from '../modular/features/trace/trace-postal-evidence.mjs';
+import {readSharedSpatialReferencesByNames} from '../modular/features/trace/trace-spatial-reference-data';
+import {spatialReferenceChoicesForName,spatialReferenceLabelKey} from '../modular/features/trace/trace-spatial-references.mjs';
 
 const STORAGE_PREFIX='loc-trace-geocode-v1:';
 const PAGE_SIZE=12;
@@ -31,11 +34,15 @@ function geographyChoices(payload,name){
   const choices=source.filter(item=>validDateOrNumber(item.lon)&&validDateOrNumber(item.lat))
     .slice(0,4).map(item=>({
       longitude:Number(item.lon),latitude:Number(item.lat),
+      // Only a structured street + house-number result supplies postal
+      // evidence. Provider POI display labels are not assumed to be addresses.
+      address:postalAddressFromNominatim(item),
       label:String(item.display_name||item.name||name).slice(0,240),
       title:String(item.namedetails?.name||item.name||item.display_name?.split(',')[0]||'').trim()
     }));
-  const exact=choices.map((item,index)=>normalized(item.title)===normalized(name)?index:-1).filter(i=>i>=0);
-  return {choices,selected:exact.length===1?exact[0]:-1,status:!choices.length?'notfound':exact.length===1?'ready':'review'};
+  // A name match is NOT evidence that the correct historical place, business,
+  // or floor has been found. Every external result needs explicit selection.
+  return {choices,selected:-1,status:choices.length?'review':'notfound'};
 }
 
 // Public reads transfer only non-empty check-in names; never load 30k article bodies.
@@ -85,6 +92,7 @@ export default function TracePlaceGeocoder({scopeId}){
   const [policyAccepted,setPolicyAccepted]=useState(false);
   const [radius,setRadius]=useState('500');
   const [saving,setSaving]=useState(false);
+  const [refreshRequired,setRefreshRequired]=useState(false);
   const [processed,setProcessed]=useState(0);
   const [notice,setNotice]=useState('');
   const [audit,setAudit]=useState(null);
@@ -153,14 +161,32 @@ export default function TracePlaceGeocoder({scopeId}){
     setFailure('');setNotice('');setProcessed(0);
     let completed=0;
     try{
-      for(const name of names){
+      for(let offset=0;offset<names.length;offset+=20){
         if(stopRef.current)break;
-        const result=await lookUp(name);
-        if(!result)break;
-        remember(name,result);
-        completed+=1;setProcessed(completed);
+        const group=names.slice(offset,offset+20);
+        // One local LOC-union lookup per 20 names, before any external request.
+        // A matching name does not prove which historical business/floor it is.
+        const reviewed=await readSharedSpatialReferencesByNames(group);
+        const byName=new Map();
+        for(const reference of reviewed){
+          const name=spatialReferenceLabelKey(reference.title);
+          if(!byName.has(name))byName.set(name,[]);
+          byName.get(name).push(reference);
+        }
+        for(const name of group){
+          if(stopRef.current)break;
+          const refs=byName.get(spatialReferenceLabelKey(name))||[];
+          if(refs.length){
+            remember(name,spatialReferenceChoicesForName(name,refs));
+          }else{
+            const result=await lookUp(name);
+            if(!result)break;
+            remember(name,result);
+          }
+          completed+=1;setProcessed(completed);
+        }
       }
-      setNotice('本次已查詢 '+completed+' 處。只有名稱高度吻合的候選會預選，其餘必須人工確認。');
+      setNotice('本次已處理 '+completed+' 處。優先使用 LOC 已有錨點；既有地點需要核對後選取，缺少參考才查詢外部服務。');
     }catch(error){
       if(!stopRef.current)setFailure('查詢已停止：'+String(error.message||error)+'。既有結果已保存在本機，可續查。');
     }finally{busyRef.current=false;setRunning(false);}
@@ -177,12 +203,15 @@ export default function TracePlaceGeocoder({scopeId}){
     remember(name,{...old,selected:value,status:'ready'});
   };
   async function saveReady(){
-    if(running||saving||!ready.length)return;
+    if(running||saving||refreshRequired||!ready.length)return;
     if(!validRadius(radius)){setFailure('搜尋半徑請設定為 10 公尺至 20,000 公里。');return;}
     const payload=ready.map(item=>({
       title:item.name,
       longitude:found[item.name].choices[found[item.name].selected].longitude,
       latitude:found[item.name].choices[found[item.name].selected].latitude,
+      address:found[item.name].choices[found[item.name].selected].address||'',
+      floor_label:found[item.name].choices[found[item.name].selected].floor_label||'',
+      floor_level:found[item.name].choices[found[item.name].selected].floor_level??null,
       radius_m:Number(radius)
     }));
     const names=previewEnds(payload).map(item=>item.name).join('\n');
@@ -190,23 +219,42 @@ export default function TracePlaceGeocoder({scopeId}){
     setSaving(true);setFailure('');setNotice('');setAudit(null);
     try{
       const result=await addTraceAnchorsBatch({scopeId,places:payload});
-      await revalidateServerMetadata();
-      await traces.mutate();
+      // A successful database write stays successful even if a later
+      // metadata/cache refresh fails. Never encourage a duplicate insert.
       setAudit(result);
-      setNotice('本批新增 '+result.count+' 個；略過已存在或批內同址 '+result.skipped
-        +' 個；安全沿用舊錨點並保留名稱 '+result.consolidated+' 處。'
-        +(result.reviewCount?'還有 '+result.reviewCount+' 組候選，請到「整理空間定錨點」核對。':'沒有發現待核對候選。')
-        +(result.auditError?' 匯入後檢查未完成：'+result.auditError:''));
+      let refreshProblem='';
+      try{await revalidateServerMetadata();}
+      catch(error){refreshProblem='中繼資訊更新失敗：'+String(error?.message||error);}
+      try{
+        const fresh=await traces.mutate();
+        if(!Array.isArray(fresh?.anchors))throw Error('無法確認最新錨點清單');
+        setRefreshRequired(false);
+      }catch(error){
+        setRefreshRequired(true);
+        refreshProblem+=(refreshProblem?'；':'')+'錨點重讀失敗：'+String(error?.message||error);
+      }
+      setNotice('本批成功新增 '+result.count+' 個；略過 '+result.skipped+
+        ' 個；同址別名整理 '+result.consolidated+' 處。'
+        +(result.reviewCount?'另有 '+result.reviewCount+' 組候選需要核對。':'')
+        +(result.auditError?' 寫入後稽核未完成：'+result.auditError:'')
+        +(refreshProblem?' 資料已寫入，但'+refreshProblem+'；請勿重複新增。':''));
     }catch(error){
-      await traces.mutate().catch(()=>{});
-      setFailure(String(error.message||error));
+      let confirmed=false;
+      try{
+        const fresh=await traces.mutate();
+        confirmed=Array.isArray(fresh?.anchors);
+      }catch{}
+      setRefreshRequired(!confirmed);
+      setFailure('批次作業中斷：'+String(error?.message||error)+
+        (confirmed?'。已重新讀取最新錨點清單，可僅對仍缺少的地點再操作。':
+          '。是否部分寫入尚未確認，已暫停再次儲存；須先成功重新讀取錨點。'));
     }finally{setSaving(false);}
   }
 
   if(!authorized)return <p className="scope-status">需要此 Scope 的管理權限。</p>;
   return <section className="loc-card scope-feature-card">
     <h3>打卡地點 → 空間定錨點</h3>
-    <p className="scope-status">從 Galaxy 既有的 source_place 去重，搜尋經緯度並建立同名空間定錨點。只讀取打卡地點名稱，不變更任何 Galaxy 文章。地理位置來自 OpenStreetMap Nominatim，候選可能不完整或有同名地點。</p>
+    <p className="scope-status">從 Galaxy 既有的 source_place 整理打卡名稱，先從 LOC 公開錨點查已知地址與座標；沒有參考才向 OpenStreetMap Nominatim 查詢。候選都要核對，新的錨點使用自己的 Scope UID，不修改 Galaxy 文章或別人的錨點。</p>
     {places.isPending||traces.isPending?<p role="status" className="scope-status">正在讀取打卡名稱與現有定錨點…</p>:null}
     {places.error||traces.error?<p role="alert" className="scope-status scope-error">{String(places.error?.message||traces.error?.message||'')}</p>:null}
     {!places.isPending&&!traces.isPending&&!places.error&&!traces.error?<>
@@ -216,18 +264,27 @@ export default function TracePlaceGeocoder({scopeId}){
       </p>
       <label className="scope-setting-toggle">
         <input type="checkbox" checked={policyAccepted} onChange={event=>setPolicyAccepted(event.target.checked)}/>
-        <span>我了解查詢會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
+        <span>我了解只有 LOC 沒有對應地名參考時，才會將打卡地點名稱傳送至公開 Nominatim，並已閱讀 <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">其使用政策</a>。這是單一使用者發起、可停止並快取結果的一次性整理，不適合做為大量用戶的長期批次服務。</span>
       </label>
       <div className="scope-management-fields"><label>批次定錨的涵蓋半徑（公尺）<input type="number" min={10} max={20000000} step={10} value={radius} onChange={event=>setRadius(event.target.value)} disabled={running||saving}/></label></div>
       <div className="scope-stat-controls">
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchNext}>查詢接下來 20 處</button>
         <button className="loc-button" type="button" disabled={!policyAccepted||running||saving||!pending.some(item=>!found[item.name])} onClick={searchAll}>查詢其餘地點</button>
         {running?<button className="loc-button" type="button" onClick={()=>{stopRef.current=true;requestRef.current?.abort()}}>停止</button>:null}
-        <button className="loc-button primary" type="button" disabled={running||saving||!ready.length||!validRadius(radius)} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
+        <button className="loc-button primary" type="button" disabled={running||saving||refreshRequired||!ready.length||!validRadius(radius)} onClick={saveReady}>{saving?'儲存中…':'確認並批次儲存 '+ready.length+' 處'}</button>
       </div>
       <p role="status" className="scope-status">
         {running?'已完成本次 '+processed+' 處；可停止並從本機快取續查。':'每次按鈕操作才查詢，不會在開啟頁面時自動查位置。'}
       </p>
+      {refreshRequired?<button className="loc-button" type="button" disabled={saving||running}
+        onClick={async()=>{
+          try{
+            const fresh=await traces.mutate();
+            if(!Array.isArray(fresh?.anchors))throw Error('資料庫尚未回傳最新錨點清單');
+            setRefreshRequired(false);setFailure('');
+            setNotice('錨點已重新讀取。已存在的打卡名稱不會再次進入批次新增。');
+          }catch(error){setFailure('重新讀取失敗：'+String(error?.message||error));}
+        }}>重新讀取錨點後再繼續</button>:null}
       <div className="scope-stat-controls">
         <label>顯示
           <select className="scope-select" value={filter} disabled={running||saving}
@@ -246,6 +303,7 @@ export default function TracePlaceGeocoder({scopeId}){
             <strong>{item.name}</strong> <span className="scope-status">（{item.count} 篇）</span>
             {result?.status==='ready'?<p className="scope-status">已選位置：{result.choices[result.selected]?.label}（{result.choices[result.selected]?.latitude}, {result.choices[result.selected]?.longitude}）</p>:null}
             {result?.status==='review'?<p className="scope-status">同名或相似候選，請核對位置再選取：</p>:null}
+            {result?.moreChoices?<p className="scope-status" role="status">同名候選超過 8 個，只列出前 8 個。請在空間錨點管理中以門牌或 UID 查詢，避免選錯位置。</p>:null}
             {result?.status==='notfound'?<p className="scope-status">沒有找到。可在一般空間定錨點頁面改用地圖手動選取。</p>:null}
             {Boolean(result?.choices?.length)?<label>候選位置
               <select className="scope-select" value={result.selected>=0?String(result.selected):''}

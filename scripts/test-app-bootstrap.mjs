@@ -363,30 +363,25 @@ test('Culture river keeps three collapsed parents, expandable child lanes and to
   assert.match(river,/scope-candidate-insight/);
 });
 
-test('Culture and Statistics use a shared ISR Period index as primary navigation',()=>{
+test('Culture and Statistics Period data read directly when remote ISR is disabled',()=>{
   const route=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
   const adapter=readFileSync(new URL('../app/loc/numeric-isr-client.js',import.meta.url),'utf8');
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
-  assert.match(route,/if\(kind==='periods'\)\{/);
-  assert.match(route,/\.select\('time_table,birthday'\)/);
-  assert.match(route,/\.in\('record_type',\['anchor','period'\]\)/);
-  assert.match(route,/last==='0'\?null:previousDay\(/);
-  assert.match(route,/revalidate,tags:\[LOC_NUMERIC_CACHE_TAG\]/);
-  assert.match(adapter,/'daily-earliest','periods'/);
-  assert.match(culture,/queryKey:\['culture-time-periods',scopeId\]/);
-  assert.match(culture,/queryFn:\(\)=>readNumericIsr\(scopeId,'periods'\)/);
-  assert.match(culture,/periodIsrEnabled&&!periodNavigationQuery\.error/);
-  assert.match(stats,/queryKey:\['culture-time-periods',scopeId\]/);
-  assert.match(stats,/readNumericIsr\(scopeId,'periods'\)/);
-  assert.match(stats,/\[selectedPeriodKey,setSelectedPeriodKey\]=useState\('latest'\)/);
-  assert.match(stats,/sourceChart&&periodNavigationReady/);
-  assert.match(stats,/mediaDimension&&periodNavigationReady/);
-  assert.doesNotMatch(stats,/periodOptionsRequested/);
-  assert.match(editor,/revalidateServerMetadata\(\)/);
-  assert.match(editor,/resourceCache\.invalidate\(\{queryKey:\['culture-time-periods',scopeId\]\}\)/);
-  assert.match(culture,/resourceCache\.invalidate\(\{queryKey:\['culture-time-periods',scopeId\]\}\)/);
+  assert.ok(route.includes('status:410'));
+  assert.ok(route.includes('no-store'));
+  assert.ok(!route.includes('read_scope_statistics')&&!route.includes('revalidateTag'));
+  assert.ok(adapter.includes('return false;'));
+  assert.ok(!adapter.includes('fetch('));
+  assert.ok(culture.includes('selectScopeCultureData(scopeId)'));
+  assert.ok(culture.includes('query.data?.eras?.eras'));
+  assert.ok(stats.includes("queryKey:['culture-time-periods',scopeId]"));
+  assert.ok(stats.includes("if(usesNumericIsr(scopeId))return readNumericIsr(scopeId,'periods')"));
+  assert.ok(stats.includes('selectScopeCultureData(scopeId)'));
+  assert.ok(stats.includes('sourceChart&&periodNavigationReady'));
+  assert.ok(stats.includes('mediaDimension&&periodNavigationReady'));
+  assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
 test('Culture period and event selectors expose different second-option catalogs',()=>{
@@ -488,12 +483,21 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.doesNotMatch(editor,/classification-page__layout|statistics_source_categories|statistics_scope_others_groups/);
 });
 
-test('Scope import keeps one action row and no Source Refresh or data reorganization',()=>{
+test('Scope import separates local preview from explicit Galaxy save',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/scope-import-primary-row/);
   assert.match(panel,/uiExtra\.importUI\.importLanguage/);
   assert.match(panel,/uiExtra\.importUI\.fileSource/);
   assert.match(panel,/uiExtra\.importUI\.batchImport/);
+  assert.match(panel,/className="scope-import-save"/);
+  assert.match(panel,/uiExtra\.importUI\.saveSection/);
+  assert.match(panel,/uiExtra\.importUI\.saveHint/);
+  assert.match(panel,/scope-import-save-button/);
+  const chooseAndPreview=panel.split('scope-import-primary-row')[1].split('</div>')[0];
+  assert.doesNotMatch(chooseAndPreview,/onClick=\{run\}/);
+  assert.match(panel,/scope-import-save[\s\S]*onClick=\{run\}/);
+  const css=readFileSync(new URL('../app/styles/features.css',import.meta.url),'utf8');
+  assert.match(css,/\.scope-import-save-button/);
   assert.match(panel,/<ImportFormatSettings/);
   assert.doesNotMatch(panel,/function SourceRefresh|function DuplicateDetection|findGalaxyDuplicates/);
 });
@@ -525,8 +529,9 @@ test('Culture second river waits for its first source snapshot and avoids lazy d
   const river=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
   assert.match(culture,/stagedSourceRiver\?sourceRootQuery\.data:sourceSnapshotQuery\.data/);
   assert.match(culture,/openCultureRoots\.length>0/);
-  assert.match(culture,/readNumericIsr\(scopeId,'culture-children'/);
-  assert.match(culture,/legacyRows=await readNumericIsr\(scopeId,'culture'/);
+  assert.ok(culture.includes('selectScopeDailyCounts(scopeData,{'));
+  assert.ok(culture.includes('selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots)'));
+  assert.ok(!culture.includes('readNumericIsr('));
   assert.doesNotMatch(culture,/\(!sourceSnapshotQuery\.data\|\|riverRangeLoading\|\|cultureRiver\.hasSourceData\)/);
   assert.match(river,/heightVariant==='double'\?null:hiddenDates/);
   assert.match(river,/timeline\.setOptions\(\{hiddenDates:/);

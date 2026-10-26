@@ -1,3 +1,5 @@
+import {repairMojibakeText} from './content-policy.js';
+
 // Facebook Takeout *text* place metadata, not EXIF or media file lookup.
 // Never infer a check-in from post prose, filename, GPS or generic post title.
 const PLACE_KEYS=['place','location','checkin','check_in','venue'];
@@ -22,10 +24,51 @@ function namedPlace(value){
   }
   return '';
 }
+// Meta's labelled export can be UTF-8 bytes written as Latin-1 characters.
+// Decode only field labels to recognize an explicit check-in; keep the
+// original place value for the existing import encoding repair.
+function labelText(value){
+  const raw=String(value||'').trim();
+  if([...raw].some(char=>char.charCodeAt(0)>255))return raw;
+  try{return new TextDecoder('utf-8',{fatal:true})
+    .decode(Uint8Array.from(raw,char=>char.charCodeAt(0)));}
+  catch{return raw;}
+}
+function explicitTaggedPlaces(row){
+  const fields=Array.isArray(row?.label_values)?row.label_values:[];
+  // Only a documented visit event is a check-in. Meta profile settings
+  // (primary_location/primary_public_location) also contain labelled
+  // geography, but must NEVER be imported as a historical visit.
+  if(!fields.some(field=>labelText(field?.label)==='造訪時間'&&
+    field?.timestamp_value!==undefined&&field?.timestamp_value!==null))return [];
+  const found=[];
+  for(const field of fields){
+    const outerLandmark=labelText(field?.title)==='地標';
+    for(const landmark of Array.isArray(field?.dict)?field.dict:[]){
+      // Real "places_you_have_been_tagged_in" exports label the outer
+      // field as 地標. Other Meta variants label the nested field.
+      if(!outerLandmark&&labelText(landmark?.title)!=='地標')continue;
+      for(const detail of Array.isArray(landmark?.dict)?landmark.dict:[]){
+        if(labelText(detail?.label)!=='名稱')continue;
+        const name=asName(detail?.value);
+        if(name)found.push(name);
+      }
+    }
+  }
+  return found;
+}
 function placeCandidates(row){
   const direct=PLACE_KEYS.map(field=>namedPlace(row?.[field])).filter(Boolean);
   if(direct.length)return direct; // Explicit post location outranks attachment metadata.
-  const found=[];
+  const found=explicitTaggedPlaces(row);
+  // Some text-only Meta exports place the check-in on data[i], not an
+  // attachment. These are location metadata, never inferred from post prose.
+  for(const item of Array.isArray(row?.data)?row.data:[]){
+    for(const field of PLACE_KEYS){
+      const name=namedPlace(item?.[field]);
+      if(name)found.push(name);
+    }
+  }
   const attachments=[...(Array.isArray(row?.attachments)?row.attachments:[]),
     ...(Array.isArray(row?.data)?row.data:[]).flatMap(item=>
       Array.isArray(item?.attachments)?item.attachments:[])];
@@ -60,13 +103,28 @@ export function facebookBackupPostText(row){
   return '';
 }
 export function facebookBackupTimestamp(row){
-  return row?.timestamp??row?.creation_timestamp??row?.created_at??
-    row?.string_map_data?.['Creation Time']?.timestamp??null;
+  const direct=row?.timestamp??row?.creation_timestamp??row?.created_at??
+    row?.string_map_data?.['Creation Time']?.timestamp;
+  if(direct!==undefined&&direct!==null)return direct;
+  // This is a real Meta "visited place" timestamp, not a fabricated
+  // date inferred from coordinates or other posts.
+  const labeled=(Array.isArray(row?.label_values)?row.label_values:[])
+    .find(item=>labelText(item?.label)==='造訪時間');
+  return labeled?.timestamp_value??null;
 }
 
 // Stable source-record ID for repeat imports. No external IDs are conflated
 // with the owner's Trace UID; this is only the Galaxy article's 8-char ID.
 const UID_CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+export function facebookBackupImportUid(row){
+  // Plain JSON has no outer archive key; use a deterministic source key so
+  // the same backup is not assigned new random Galaxy IDs on every import.
+  const native=String(row?.id||row?.post_id||row?.fbid||'').trim();
+  // fbid can identify a location/page instead of an individual visit.
+  // Include the original timestamp and record to preserve separate visits.
+  const identity=JSON.stringify([native,facebookBackupTimestamp(row),row||{}]);
+  return facebookArchiveUid('facebook:json:'+identity);
+}
 export function facebookArchiveUid(key){
   const text=String(key||'');
   if(!text)throw Error('Facebook 紀錄缺少來源識別，無法安全重複匯入。');
@@ -80,8 +138,12 @@ export function facebookArchiveUid(key){
 }
 export function facebookArchiveGalaxyRow(record){
   if(record?.platform!=='facebook'||record?.kind!=='post')return null;
-  const source_place=asName(record.sourcePlace)||facebookBackupPlace(record.raw);
-  const original=String(record.text||'').trim();
+  // Meta can encode UTF-8 text as Latin-1 code points. Preserve the
+  // original record and source ID, but repair the user-visible Galaxy fields.
+  // Never infer a place from post prose or EXIF.
+  const source_place=repairMojibakeText(
+    asName(record.sourcePlace)||facebookBackupPlace(record.raw));
+  const original=repairMojibakeText(String(record.text||'').trim());
   // A place-only check-in is still a post; accurately label its metadata,
   // rather than inventing an author-written caption.
   const content=original||(source_place?'Facebook 打卡地點：'+source_place:'');
