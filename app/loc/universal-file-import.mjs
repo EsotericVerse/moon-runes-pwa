@@ -1,6 +1,6 @@
 // Browser-side document/table adapter. The parser package owns format decoding;
 // LOC owns only the existing import row contract and source-preserving field mapping.
-import {importRowsFromJson} from './import-batch.mjs';
+import {ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from './import-batch.mjs';
 
 export {UNIVERSAL_IMPORT_ACCEPT} from './import-batch.mjs';
 const TABLE_FORMATS=new Set(['csv','tsv','xlsx','ods']);
@@ -203,6 +203,8 @@ export async function parseUniversalImportFile(file,{recordPath='',officeParser,
   if(!file||typeof file.name!=='string')throw new Error('請選擇有效的匯入檔案。');
   const type=extensionOf(file.name);
   if(type==='json'){
+    if(!Number.isFinite(file.size)||file.size<=0||file.size>ARCHIVE_JSON_MAX_BYTES)
+      throw new Error('JSON 檔案為空或超過 50 MiB 單檔上限；未讀取或解析。');
     const parsed=JSON.parse(await decodeImportText(file,importLocale));
     return importRowsFromJson(parsed,recordPath);
   }
