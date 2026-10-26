@@ -77,10 +77,17 @@ export default function IsrDomainTarget(){
     if(!dirty)return true;
     setBusy(true);setStatus('');
     try{
-      const rows=normalizeIsrDomains(domains,selected);
       if(!CACHE_MODE_OPTIONS.some(item=>item.value===cacheMode))
         throw new Error('無效快取模式');
-      const origin=cacheMode==='isr'?rows.find(item=>item.id===selected)?.origin||'':'';
+      // A broken or half-edited ISR domain list must never prevent an
+      // emergency switch back to 'off' or ordinary local cache.
+      let rows=null,domainValidationError=null;
+      try{rows=normalizeIsrDomains(domains,selected);}
+      catch(error){
+        domainValidationError=error;
+        if(cacheMode==='isr'||!runtimeDirty)throw error;
+      }
+      const origin=cacheMode==='isr'?rows?.find(item=>item.id===selected)?.origin||'':'';
       if(cacheMode==='isr'&&!origin)throw new Error('請先選擇有效 ISR Domain。');
       const timestamp=new Date().toISOString();
       // Update mode first; no explicit permission to deploy a Worker or change DNS.
@@ -98,7 +105,7 @@ export default function IsrDomainTarget(){
         setCacheMode(saved.mode);
         applyCachePolicy(saved);
       }
-      if(domainsDirty){
+      if(domainsDirty&&rows){
         const {data,error}=await dbAuthRelation(TABLE)
           .update({domains:rows,provider:selected,updated_at:timestamp})
           .eq('id',1).eq('updated_at',original.current.updated_at)
@@ -113,7 +120,9 @@ export default function IsrDomainTarget(){
         setDomains(savedRows.map(item=>({...item})));
         setSelected(saved.provider);
       }
-      setStatus('全站快取模式與 ISR Domain 已儲存。沒有執行部署或修改 DNS。');
+      setStatus(domainValidationError
+        ?'快取模式已切換並儲存；ISR Domain 資料無效，尚未儲存。請修正網域清單。'
+        :'全站快取模式與 ISR Domain 已儲存。沒有執行部署或修改 DNS。');
       return true;
     }catch(error){
       setStatus(String(error?.message||error||'設定儲存失敗，請核對狀態後再試。'));
