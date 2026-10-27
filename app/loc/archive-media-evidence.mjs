@@ -129,7 +129,11 @@ export function createArchiveEvidenceCollector(){
         if(ref.platform&&!image.platform)image.platform=ref.platform;
         records.delete(ref.entry_path);
       }
-      return [...records.values()].map(item=>({
+      return [...records.values()]
+        .filter(item=>Boolean(publicUrl(item.url))||
+          (Number.isFinite(item.latitude)&&Number.isFinite(item.longitude))||
+          Boolean(item.camera_local_time))
+        .map(item=>({
         scope_id:scopeId,archive_id:archiveId,entry_path:item.entry_path,
         platform:item.platform||null,media_type:item.media_type,
         galaxy_uids:[...item.galaxy_uids],source_files:[...item.source_files],
@@ -153,7 +157,7 @@ export function archiveMediaUuid(scopeId,archiveId,entryPath){
     '-a'+hex.slice(17,20)+'-'+hex.slice(20,32);
 }
 export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
-  const media=[],exif=[];
+  const media=[],exif=[],mediaLinks=[];
   for(const entry of evidence){
     const id=archiveMediaUuid(entry.scope_id,entry.archive_id,entry.entry_path);
     const owners=(entry.galaxy_uids||[]).filter(uid=>knownUids.has(uid));
@@ -163,14 +167,17 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
       meta_tags:null,createtime:null,source_place:null
     };
-    const links=owners.length?owners:[null];
-    for(const uid of links)media.push({...row,galaxy_link:uid});
+    const hasUrl=Boolean(row.url);
+    if(hasUrl){
+      media.push({...row,galaxy_link:owners[0]||null});
+      for(const uid of owners)mediaLinks.push({uid,media_id:id});
+    }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_id:id,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_id:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
   }
-  return {media,exif};
+  return {media,exif,mediaLinks};
 }
