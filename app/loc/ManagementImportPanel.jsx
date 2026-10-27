@@ -579,8 +579,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <p>{t('uiExtra.importUI.saveHint')}</p>
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+        disabled={busy||!analysisCurrent||(!archiveReady&&!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownLabel(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
     {progress?<div role="status" className="scope-import-progress">
