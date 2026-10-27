@@ -308,8 +308,9 @@ export default function FeatureHeroImages(){
           </select>
         </label>
         <ManagementHeroDetails key={locSlot.key} slot={locSlot} onDirtyChange={trackDirty}/>
-        <ImageSlot feature={feature} variant={MANAGEMENT_VARIANT}
-          pageOverride="scope_admin" defaultUrl="https://loc.lo3rwang.cc/pics/LOC-admin.jpg"
+        <ImageSlot key={locSlot.page} feature={feature} variant={MANAGEMENT_VARIANT}
+          pageOverride={HomeBlock.managementHeroImagePage(locSlot)}
+          defaultUrl={HomeBlock.managementHeroDefaultImage(locSlot)}
           onDirtyChange={trackDirty}/>
         </>:null}
       </details>:null}
