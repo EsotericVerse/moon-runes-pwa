@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  assertPrivateArchiveDestination,assertArchiveRecordDestination,
+  assertPrivateArchiveDestination,isPublicArchiveRecord,isPrivateArchiveEntry,assertArchiveRecordDestination,
   assertArchiveEntryDestination,assertStandaloneImportDestination
 } from '../app/loc/archive-import-safety.mjs';
 
@@ -80,4 +80,23 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'conversations.json',nativeLocal:true
   }));
+});
+
+test('Mixed Threads and Messenger ZIP discovery allows public posts but skips chat rows',()=>{
+  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['threads','messenger','facebook']));
+  const post={platform:'threads',kind:'post',sourcePath:'activity/threads/threads_posts.json',
+    raw:{id:'p1',text:'公開測試貼文'}};
+  const privateMessage={platform:'messenger',kind:'message',
+    sourcePath:'your_facebook_activity/messages/inbox/person/message_1.json',
+    raw:{sender_name:'fixture',content:'測試私訊'}};
+  assert.equal(isPublicArchiveRecord(post),true);
+  assert.equal(isPublicArchiveRecord(privateMessage),false);
+  assert.equal(isPrivateArchiveEntry('messages/inbox/person/photo.jpg'),true);
+  assert.equal(isPrivateArchiveEntry('threads/photos/public.jpg'),false);
+});
+test('Threads-named files containing chat structures are not accepted as posts',()=>{
+  assert.equal(isPublicArchiveRecord({platform:'threads',kind:'post',
+    sourcePath:'threads_posts.json',raw:{participants:['a','b'],messages:[{text:'private'}]}}),false);
+  assert.equal(isPublicArchiveRecord({platform:'threads',kind:'post',
+    sourcePath:'threads_posts.json',raw:{sender_name:'fixture',content:'private'}}),false);
 });
