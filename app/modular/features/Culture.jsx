@@ -222,6 +222,11 @@ export default function Culture(){
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
   const [focusedAnchorDate,setFocusedAnchorDate]=useState('');
   const [openCultureRoots,setOpenCultureRoots]=useState([]);
+  // Anchor suggestions never compute just because a lane's daily data
+  // arrived -- that would auto-run the PELT worker as a side effect of
+  // expanding a source lane. They only compute once the user explicitly
+  // opens the "建議定錨點" panel itself; see anchorSuggestOpen below.
+  const [anchorSuggestOpen,setAnchorSuggestOpen]=useState(false);
   const [selectedRiverGroup,setSelectedRiverGroup]=useState('');
   const [creatingSuggestedAnchors,setCreatingSuggestedAnchors]=useState(false);
   const workScrollRef=useRef(null);
@@ -821,6 +826,10 @@ export default function Culture(){
   // (secondRiverBuckets is empty until then): suggestions are never computed
   // just from opening the Culture page.
   const densityInputBuckets=secondRiverBuckets;
+  // Close the panel again whenever the underlying daily data changes (a
+  // different lane expanded, the period changed) so a stale, already-open
+  // panel doesn't silently keep showing suggestions for the old data.
+  useEffect(()=>{setAnchorSuggestOpen(false)},[densityInputBuckets]);
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
@@ -831,9 +840,9 @@ export default function Culture(){
   // Render the selected period immediately. Multi-year PELT executes in a
   // worker, so change-point suggestions cannot freeze the Time River.
   const riverAnalysis=useRiverDensityAnalysis(densityInputBuckets,existingAnchorDates,
-    !isAggregateScope&&!isLrunesDaily&&!isLocItemView&&styleFilter!=='trace'&&Boolean(densityInputBuckets.length));
+    anchorSuggestOpen&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&styleFilter!=='trace'&&Boolean(densityInputBuckets.length));
   const styleRiverAnalysis=useRiverDensityAnalysis(keywordDrillItems,existingAnchorDates,
-    styleFilter==='rune66'&&Boolean(keywordDrillItems.length));
+    anchorSuggestOpen&&styleFilter==='rune66'&&Boolean(keywordDrillItems.length));
   const locRiverAnalysis=useRiverDensityAnalysis(locCombinedSourceRiverItems,EMPTY_CULTURE_GROUPS,
     isAggregateScope&&Boolean(locCombinedSourceRiverItems.length));
   const virtualAnchorItems=useMemo(()=>{
@@ -1404,29 +1413,40 @@ export default function Culture(){
                  {styleFilter!=='trace'&&stagedSourceRiver&&openCultureRoots.length>0
                    &&sourceSnapshotQuery.isPending
                    ?<p className='scope-status' role='status'>正在展開河道的細部分布…</p>:null}
-                 {styleFilter!=='trace'&&!riverRangeLoading&&riverAnalysis.suggestions.length>0?<div className='scope-culture-anchor-actions'>
-                  <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
-                  <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
-                    onClick={createSelectedSuggestedAnchors}>
-                    {creatingSuggestedAnchors?'正在新增…':'新增選取的建議定錨點（'+selectedVirtualAnchorDates.length+'）'}
-                  </button>
-                  {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
-                  <details className='scope-culture-anchor-picker'>
-                    <summary><span className='scope-culture-anchor-picker-mark' aria-hidden='true'/><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
-                    <div className='scope-culture-anchor-choices'>
-                      {riverAnalysis.suggestions.map(item=>{
-                        const route=featureNavigationHref(scopeId,'culture');
-                        const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
-                        return <div key={item.date} className='scope-status'>
-                          <label><input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)}
-                            onChange={()=>toggleVirtualAnchor(item.date)}/>
-                            {formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}
-                          </label>
-                          <ScopeLink href={href}>前往時間編輯</ScopeLink>
-                        </div>;
-                      })}
-                    </div>
-                  </details>
+                 {/* Anchor suggestions never compute on their own just because a lane's
+                     daily data arrived -- the PELT worker only runs once the user
+                     explicitly opens this panel. Before that, only a plain, inert
+                     toggle shows; no candidate dates, no computation. */}
+                 {styleFilter!=='trace'&&!riverRangeLoading&&!anchorSuggestOpen&&densityInputBuckets.length>0
+                   ?<button type='button' className='scope-culture-anchor-trigger'
+                     onClick={()=>setAnchorSuggestOpen(true)}>
+                     <span className='scope-culture-anchor-picker-mark' aria-hidden='true'/>建議定錨點
+                   </button>:null}
+                 {styleFilter!=='trace'&&!riverRangeLoading&&anchorSuggestOpen?<div className='scope-culture-anchor-actions'>
+                  {riverAnalysis.suggestions.length>0?<>
+                    <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
+                    <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
+                      onClick={createSelectedSuggestedAnchors}>
+                      {creatingSuggestedAnchors?'正在新增…':'新增選取的建議定錨點（'+selectedVirtualAnchorDates.length+'）'}
+                    </button>
+                    {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
+                    <details className='scope-culture-anchor-picker' open>
+                      <summary><span className='scope-culture-anchor-picker-mark' aria-hidden='true'/><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
+                      <div className='scope-culture-anchor-choices'>
+                        {riverAnalysis.suggestions.map(item=>{
+                          const route=featureNavigationHref(scopeId,'culture');
+                          const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
+                          return <div key={item.date} className='scope-status'>
+                            <label><input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)}
+                              onChange={()=>toggleVirtualAnchor(item.date)}/>
+                              {formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}
+                            </label>
+                            <ScopeLink href={href}>前往時間編輯</ScopeLink>
+                          </div>;
+                        })}
+                      </div>
+                    </details>
+                  </>:<p className='scope-status' role='status'>正在分析建議定錨點…</p>}
                 </div>:null}
                 {styleFilter!=='trace'&&classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)
