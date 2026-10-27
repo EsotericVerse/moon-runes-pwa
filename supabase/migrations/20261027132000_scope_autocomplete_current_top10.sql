@@ -24,6 +24,7 @@ DECLARE
   v_config regclass;
   v_places jsonb := '[]'::jsonb;
   v_days jsonb := '[]'::jsonb;
+  v_events jsonb := '[]'::jsonb;
   v_result jsonb;
 BEGIN
   IF v_id !~ '^[a-z][a-z0-9]{0,14}$' OR v_id IN ('admin','local') THEN
@@ -97,7 +98,23 @@ BEGIN
     $days$,v_galaxy,v_time) INTO v_days;
   END IF;
 
-  v_result:=jsonb_build_object('space',v_places,'time',v_days,
+  IF v_time IS NOT NULL THEN
+    EXECUTE format($events$
+      WITH usage AS (
+        SELECT unnest(anchor_ids) AS event_uid
+        FROM %s WHERE type='time_trace'
+      ), ranked AS (
+        SELECT e.uid::text uid,e.title::text title,count(u.event_uid)::bigint hits
+        FROM %s e LEFT JOIN usage u ON u.event_uid=e.uid
+        WHERE e.type='time_period'
+        GROUP BY e.uid,e.title
+      )
+      SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'count',hits)
+        ORDER BY hits DESC,title,uid),'[]'::jsonb) FROM ranked WHERE hits>0
+    $events$,v_time,v_time) INTO v_events;
+  END IF;
+
+  v_result:=jsonb_build_object('space',v_places,'time',v_days,'event',v_events,
     'updated_at',to_char(now() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'));
   EXECUTE format('UPDATE %s SET autocomplete_current=$1 WHERE id=$2 RETURNING autocomplete_current',v_config)
     INTO v_result USING v_result,v_id;
