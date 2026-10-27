@@ -27,6 +27,8 @@ export function archiveAttachmentReferences(record){
   const roots=[record.photos,record.videos,record.audio_files,record.attachments,record.media,
     ...(Array.isArray(record.data)?record.data.flatMap(item=>
       [item?.attachments,item?.media,item?.photos,item?.videos].filter(Boolean)):[])];
+  if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||
+      /^(image|photo|video|audio)/i.test(String(record.media_type||'')))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
   let examined=0;
@@ -40,8 +42,10 @@ export function archiveAttachmentReferences(record){
     const mediaHint=/image|photo|video|audio|voice/i.test(hint);
     const paths=URI_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
       .map(pathValue).filter(validRef);
-    const urls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
-      .map(rawPath).filter(v=>publicUrl(v)&&(MEDIA_EXT.test(v)||mediaHint));
+    const allUrls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string').map(rawPath);
+    for(const maybePath of allUrls)if(!HTTP.test(maybePath)&&MEDIA_EXT.test(maybePath)&&
+        validRef(maybePath))paths.push(maybePath);
+    const urls=allUrls.filter(v=>publicUrl(v));
     const directUrl=urls[0]||paths.find(v=>HTTP.test(v))||null;
     const relative=paths.filter(v=>!HTTP.test(v));
     for(const uri of relative.length?relative:directUrl?[directUrl]:[]){
