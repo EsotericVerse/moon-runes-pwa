@@ -7,7 +7,7 @@ export const PRIVATE_ARCHIVE_SOURCES=Object.freeze([
 const privateSources=new Set(PRIVATE_ARCHIVE_SOURCES);
 const publishablePlatforms=new Set(['facebook','threads','instagram','x']);
 const publishableKinds=new Set(['post','media','story']);
-const privatePath=/(?:^|\/)(?:messages?|inbox|archived_threads|message_requests|filtered_threads|direct_messages?|dm)(?:\/|$)|(?:^|\/)(?:conversations?|chat_history|messages?)(?:[_\d-]*\.json|\.xml)$/i;
+const privatePath=/(?:^|\/)(?:messages?|inbox|archived_threads|message_requests|filtered_threads|direct[-_]?messages?|dm)(?:\/|$)|(?:^|\/)(?:conversations?|chat_history|messages?|direct[-_]?messages?(?:[-_]?group)?|dm[-_]?conversations?)(?:[-_]?part\d+)?\.(?:json|js|xml)$/i;
 const privateFilename=/(?:^|[\\/_ .-])(?:messenger|chatgpt|openai|claude|anthropic|gemini|bard|copilot|grok|perplexity|msn|whatsapp|telegram|discord|wechat|teams|chat[_ -]?history|conversations?|messages?)(?:$|[\\/_ .-])/i;
 const destinationError=()=>new Error('私人對話封存只能匯入個人手機的本地 SQLite；公開網站禁止接收 Messenger、AI 對話與其他聊天備份。');
 export function isPrivateArchiveSource(source){
@@ -17,7 +17,8 @@ export function isPrivateArchiveRecord(record){
   const platform=String(record?.platform||'').toLowerCase().trim();
   const kind=String(record?.kind||'').toLowerCase().trim();
   return isPrivateArchiveSource(platform)||kind==='message'||kind==='conversation'||
-    Boolean(record?.conversationId)||privatePath.test(String(record?.sourcePath||'').replace(/\\/g,'/'));
+    Boolean(record?.conversationId)||privatePath.test(String(record?.sourcePath||'').replace(/\\/g,'/'))||
+    Boolean(record?.raw?.directMessage||record?.raw?.dmConversation||record?.raw?.messageCreate);
 }
 export function assertPrivateArchiveDestination(nativeLocal,platforms=[]){
   if(nativeLocal)return;
