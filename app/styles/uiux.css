@@ -487,21 +487,31 @@ button,a,.loc-control,.loc-button,
   box-shadow:0 12px 36px rgb(0 0 0 / .09),inset 0 1px 0 rgb(255 255 255 / .025);
 }
 
-/* Feature artwork must follow the generic card background shorthand. */
-/* Eight authored feature artworks: one LOC image and one shared Scope image
-   per feature. Keep the existing header element, text sizing and theme intact. */
+/* All seven feature Heroes use exactly one image frame and one responsive rule.
+   The picture fills the full frame; the gradient is transparent over the image. */
 .scope-feature-hero--artwork{
-  min-height:clamp(18rem,32vw,28rem);
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  aspect-ratio:16/9;
+  min-height:clamp(540px,56.25vw,820px);
+  padding:clamp(1.6rem,4vw,3.75rem);
+  border-radius:var(--loc-ui-radius-xl);
   background-color:#101725;
   background-image:
-    linear-gradient(90deg,rgba(3,6,15,.94) 0%,rgba(3,6,15,.82) 36%,rgba(3,6,15,.34) 72%,rgba(3,6,15,.22) 100%),
+    linear-gradient(90deg,rgba(3,6,15,.76) 0%,rgba(3,6,15,.34) 46%,rgba(3,6,15,.08) 100%),
     var(--scope-feature-hero-image);
-  /* Contained 16:9 artwork should stay against the right of a wide Hero;
-     the authored darker left half remains behind the reading column. */
-  background-position:center center,right center;
+  background-position:center center,center center;
   background-repeat:no-repeat,no-repeat;
-  /* Overlay fills the Hero while the original artwork fits without cropping. */
-  background-size:100% 100%,contain;
+  background-size:100% 100%,cover;
+}
+@media(max-width:760px){
+  .scope-feature-hero--artwork{
+    aspect-ratio:auto;
+    min-height:clamp(480px,110vw,650px);
+    padding:1.35rem;
+    background-position:center center,60% center;
+  }
 }
 .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"],[data-loc-scope="admin"],[data-loc-scope="local"])
   .scope-feature-hero--artwork:not(.is-editing){
@@ -519,20 +529,6 @@ button,a,.loc-control,.loc-button,
 .scope-feature-hero--artwork .scope-hero-description :where(p,li,strong){
   color:#f5f7fc!important;
   text-shadow:0 2px 14px rgba(0,0,0,.55);
-}
-
-/* System management follows the full LOC homepage Hero scale; keep its
-   artwork un-cropped and preserve its existing design and typography. */
-.loc-next-main[data-loc-scope="admin"] .scope-feature-hero--admin{
-  min-height:clamp(430px,50vw,620px);
-  padding:clamp(1.6rem,4vw,3.75rem);
-  border-radius:var(--loc-ui-radius-xl);
-}
-@media(max-width:760px){
-  .loc-next-main[data-loc-scope="admin"] .scope-feature-hero--admin{
-    min-height:clamp(460px,118vw,570px);
-    padding:1.35rem;
-  }
 }
 
 /* Management entry pages share one composition: left-aligned content,
@@ -1272,36 +1268,7 @@ body{
 
 .scope-stat-data-pending{display:grid;gap:.75rem;min-width:0}
 
-@media(max-width:760px){
-  .loc-next-main:is([data-loc-scope="loc"],[data-loc-scope="lo3rwang"]) .scope-feature-hero--artwork{
-    min-height:clamp(12.5rem,30svh,15rem);
-  }
-}
-
-
-/* Management pages: keep their authored artwork while giving the working area
-   more room above the fold. */
-.scope-feature-hero--artwork:is(
-  .scope-feature-hero--admin,
-  .scope-feature-hero--manage,
-  .scope-feature-hero--setting
-){
-  min-height:clamp(16rem,20vw,20rem);
-  padding:clamp(1.05rem,2vw,1.65rem);
-}
-@media(max-width:760px){
-  .scope-feature-hero--artwork:is(
-    .scope-feature-hero--admin,
-    .scope-feature-hero--manage,
-    .scope-feature-hero--setting
-  ){
-    min-height:15rem;
-    padding:1rem;
-  }
-}
-
-/* Management and editing Hero use the single scope_manage artwork.
-   Grid min-content tracks must never let MapLibre canvases widen the Hero. */
+/* Keep management workspace content from widening the shared Hero frame. */
 .scope-main--edit-workspace,
 .scope-main--edit-workspace>.scope-page,
 .scope-main--edit-workspace .scope-content{
@@ -1321,29 +1288,6 @@ body{
   width:100%;
   min-width:0;
   max-width:100%;
-}
-/* Full-width 16:9 artwork on LOC management entries. Preserve the source
-   proportions and keep the reading overlay translucent instead of letterboxing. */
-.loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
-  box-sizing:border-box;
-  aspect-ratio:16/9;
-  min-height:clamp(540px,56.25vw,820px);
-  padding:clamp(1.6rem,4vw,3.75rem);
-  border-radius:var(--loc-ui-radius-xl);
-  background-image:
-    linear-gradient(90deg,rgba(3,6,15,.76) 0%,rgba(3,6,15,.34) 46%,rgba(3,6,15,.08) 100%),
-    var(--scope-feature-hero-image);
-  background-size:100% 100%,cover;
-  background-position:center center,center center;
-  background-repeat:no-repeat,no-repeat;
-}
-@media(max-width:760px){
-  .loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
-    aspect-ratio:auto;
-    min-height:clamp(480px,110vw,650px);
-    padding:1.35rem;
-    background-position:center center,60% center;
-  }
 }
 .management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
 .management-hero-copy-group{display:grid;gap:.65rem;min-width:0}
