@@ -20,25 +20,33 @@ export function isPrivateArchiveRecord(record){
     Boolean(record?.conversationId)||privatePath.test(String(record?.sourcePath||'').replace(/\\/g,'/'))||
     Boolean(record?.raw?.directMessage||record?.raw?.dmConversation||record?.raw?.messageCreate);
 }
+// Discovery is only a hint. In a mixed Meta ZIP, a private Messenger
+// signature must not turn genuine Threads / Facebook posts into an error.
+// Actual records are inspected individually before they can become articles.
 export function assertPrivateArchiveDestination(nativeLocal,platforms=[]){
   if(nativeLocal)return;
-  if(platforms.some(isPrivateArchiveSource))throw destinationError();
-  if(!platforms.some(name=>publishablePlatforms.has(String(name||'').toLowerCase())))
-    throw new Error('無法證實這份 ZIP 只有可公開匯入的社群貼文；請在個人手機本地匯入。');
+  if(!platforms.some(name=>publishablePlatforms.has(String(name||'').toLowerCase()))){
+    if(platforms.some(isPrivateArchiveSource))throw destinationError();
+    throw new Error('無法證實這份 ZIP 含有可公開匯入的社群貼文；請在個人手機本地匯入。');
+  }
+}
+export function isPrivateArchiveEntry(path){
+  const normalized=String(path||'').replace(/\\/g,'/');
+  return privatePath.test(normalized);
 }
 export function assertArchiveEntryDestination(path,nativeLocal=false){
-  if(nativeLocal)return;
-  const normalized=String(path||'').replace(/\\/g,'/');
-  if(privatePath.test(normalized))throw destinationError();
+  if(!nativeLocal&&isPrivateArchiveEntry(path))throw destinationError();
+}
+export function isPublicArchiveRecord(record){
+  if(!record||isPrivateArchiveRecord(record))return false;
+  const platform=String(record.platform||'').trim().toLowerCase();
+  const kind=String(record.kind||'').trim().toLowerCase();
+  return publishablePlatforms.has(platform)&&publishableKinds.has(kind);
 }
 export function assertArchiveRecordDestination(record,nativeLocal=false){
   if(nativeLocal)return;
   if(isPrivateArchiveRecord(record))throw destinationError();
-  // Unknown ZIP schema is not accepted as a public article. Explicit public
-  // social-post/media formats can continue to use the existing import flow.
-  const platform=String(record?.platform||'').trim().toLowerCase();
-  const kind=String(record?.kind||'').trim().toLowerCase();
-  if(!publishablePlatforms.has(platform)||!publishableKinds.has(kind))
+  if(!isPublicArchiveRecord(record))
     throw new Error('公開網站只接受可辨識的社群貼文／媒體 ZIP；未知格式請在個人手機本地匯入，不能當作公開文章。');
 }
 export function assertStandaloneImportDestination({nativeLocal=false,fileName='',rows=[],source=''}={}){
