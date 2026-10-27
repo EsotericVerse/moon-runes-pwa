@@ -22,6 +22,13 @@ export function isPrivateArchiveRecord(record){
 export function assertPrivateArchiveDestination(nativeLocal,platforms=[]){
   if(nativeLocal)return;
   if(platforms.some(isPrivateArchiveSource))throw destinationError();
+  if(!platforms.some(name=>publishablePlatforms.has(String(name||'').toLowerCase())))
+    throw new Error('無法證實這份 ZIP 只有可公開匯入的社群貼文；請在個人手機本地匯入。');
+}
+export function assertArchiveEntryDestination(path,nativeLocal=false){
+  if(nativeLocal)return;
+  const normalized=String(path||'').replace(/\\/g,'/');
+  if(privatePath.test(normalized))throw destinationError();
 }
 export function assertArchiveRecordDestination(record,nativeLocal=false){
   if(nativeLocal)return;
