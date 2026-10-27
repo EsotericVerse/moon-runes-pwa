@@ -380,17 +380,92 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   async function run(){
-    if(busy||!rows.length)return;
-    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
+    if(busy||(!rows.length&&!archiveReady))return;
+    if(writeCooldown.remainingMs()>0){
+      setStatus('大量匯入冷卻中：剩餘 '+cooldownLabel(writeCooldown.remainingMs())+'，歸零後可再次開始。');
+      return;
+    }
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    if(!archiveReady&&!analyzed.valid.length&&!analyzed.mediaOnly.length){
+      setStatus(t('uiExtra.importUI.noValidItems'));return;
+    }
     setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
-    setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
+    const total=archiveReady?.count||(analyzed.valid.length+analyzed.mediaOnly.length);
+    setProgress({completed:0,total,percent:0});
     try{
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
+      if(archiveReady){
+        const {streamArchiveGalaxyRows}=await import('./archive-import-pipeline.mjs');
+        let processed=0,written=0,skipped=0,windows=0;
+        const publish=(phase,windowNumber=windows+1,completed=processed,writeCount=written,skipCount=skipped)=>{
+          setArchiveTransfer({phase,window:windowNumber,processed:completed,total:archiveReady.count,written:writeCount,skipped:skipCount});
+          setProgress({completed,total:archiveReady.count,percent:Math.round(completed/Math.max(1,archiveReady.count)*100)});
+        };
+        publish('reading');
+        try{
+          const result=await streamArchiveGalaxyRows(archiveReady.file,{
+            onWindow:async(entries,windowNumber)=>{
+              windows=windowNumber;
+              setStatus('正在寫入第 '+windowNumber+' 輪，每輪最多 30,000 筆；完成後自動接續。');
+              publish('checking',windowNumber);
+              const normalized=entries.map(entry=>normalizeJsonImportEntry(entry,entry.raw.source_name||selected,format.fields,t));
+              const valid=normalized.filter(item=>item.record);
+              const unique=[],seenUid=new Set();
+              for(const item of valid){
+                if(seenUid.has(item.record.uid))continue;
+                seenUid.add(item.record.uid);unique.push(item.record);
+              }
+              const existingUid=new Set();
+              for(let offset=0;offset<unique.length;offset+=200){
+                const ids=unique.slice(offset,offset+200).map(record=>record.uid);
+                const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
+                if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
+                for(const row of data||[])existingUid.add(String(row.uid||'').trim());
+              }
+              const payload=unique.filter(record=>!existingUid.has(record.uid));
+              const windowSkipped=entries.length-payload.length;
+              await writeImportBatches(payload,{
+                batchSize:validImportBatchSize(format.batchSize),
+                writeBatch:batch=>insertRows(galaxy,batch),
+                onProgress:p=>publish('writing',windowNumber,processed+windowSkipped+p.completed,written+p.completed,skipped+windowSkipped)
+              });
+              const mediaItems=normalized.filter(item=>item.record);
+              const mediaOnly=normalized.filter(item=>item.mediaOnlyRecord).map(item=>item.mediaOnlyRecord);
+              if(mediaItems.some(item=>item.mediaRecords?.length||item.mediaRefs?.length)||mediaOnly.length){
+                await syncImportedMedia({
+                  normalized:mediaItems,mediaOnly,
+                  knownArticleIds:new Map(unique.map(item=>[item.uid,item.uid])),
+                  galaxy,galaxyMedia,batchSize:format.batchSize,t
+                });
+              }
+              processed+=entries.length;
+              written+=payload.length;
+              skipped+=windowSkipped;
+              publish('continuing',windowNumber);
+              setStatus('第 '+windowNumber+' 輪完成；已新增 '+written.toLocaleString()+' 筆，正在接續處理下一輪。');
+            },
+            onProgress:p=>{
+              if(p.windows===windows)
+                setStatus('正在讀取 ZIP：已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔；已完成 '+processed.toLocaleString()+'／'+archiveReady.count.toLocaleString()+' 筆。');
+            }
+          });
+          if(result.records!==archiveReady.count||processed!==archiveReady.count)
+            throw Error('來源紀錄數量發生變化，請重新選擇 ZIP 並核對內容。');
+        }catch(error){
+          publish('interrupted',Math.max(1,windows));
+          throw Error('匯入在第 '+Math.max(1,windows)+' 輪中斷；目前已完成 '+processed.toLocaleString()+
+            '／'+archiveReady.count.toLocaleString()+' 筆。再次按開始會重新掃描並略過 Galaxy 已有的 UID，接續未完成部分。'+String(error?.message||error));
+        }
+        publish('complete',windows);
+        setStatus('ZIP 全部 '+windows+' 輪完成：新增 '+written.toLocaleString()+' 筆，略過 '+skipped.toLocaleString()+' 筆。');
+        setArchiveReady(null);setRows([]);
+        if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
+        writeCooldown.start();
+        return;
+      }
       const unique=[],seenUid=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
