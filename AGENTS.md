@@ -20,11 +20,11 @@
 ## 部署與語法檢查現況
 
 - **絕對不能讓 Cloudflare 部署當語法檢查器。** `main` 一有 push 就會自動觸發 Cloudflare Build/Deploy；如果 commit 裡還帶著基本語法錯誤（多一個 `{`、少一個括號之類），等於是拿一次會計費的正式部署去抓一個本來免費、幾秒鐘就能在本機抓到的錯誤——push 幾次、燒幾次部署資源，帳單就是這樣堆出來的，這是不能接受的浪費。正確順序永遠是：Agent 在本機 workspace 跑 `npm run check:syntax`（零成本、幾秒鐘），確認語法乾淨之後才 commit／push 到 `main`；不是先推上去，再靠部署失敗的 log 回頭抓語法錯。它不保證抓到所有語法問題（連基本的括號配對都可能漏掉），所以改完東西 Agent 還要自己再核對一次行為是否正確——這是 Agent 自己的責任，不需要使用者手動確認，也不該花到任何計費資源才發現。repo 裡另外放了 `.githooks/pre-push`，本機跑 `git config core.hooksPath .githooks` 設定一次，之後 `git push` 前會自動在本機跑一次 `check:syntax`，語法沒過直接擋下，不會送到會計費的那一步——這是機制上的保險，不是只靠 Agent 記得做。
-- **正式網站是 `loc` 這個 Cloudflare Pages 專案，不是 `loc-isr`。**（2026-10-27 確認）Cloudflare 上有兩個分開的專案連著同一個 repo：`loc`（Pages，正式對外網站，Git 連著 `main`、自動部署已啟用）、`loc-isr`（Workers，ISR 用，目前沒有被任何正式網域指到、沒在服務流量，Git 已主動斷開連線）。Agent 完成必要檢查並推送／合併 `main` 後，由 `loc` 自動 Build / Deploy；`loc-isr` 現在不會再自動建置。不要求使用者每次手動部署，也不以舊的手動部署限制阻止已完成的程式交付。**要重新啟用 ISR／把流量導去 `loc-isr` 之前，先把它的 Git 重新連回去，並確認跟 `loc` 不會同時自動部署（兩邊都連著等於同一次 push 建置兩次、吃兩倍 Cloudflare 建置分鐘數）。**
+- **正式網站由 Cloudflare 自動建置、部署。** Cloudflare 連結 GitHub `main`；Agent 完成必要檢查並推送／合併 `main` 後，由 Cloudflare 自動 Build / Deploy。不要求使用者每次手動部署，也不以舊的手動部署限制阻止已完成的程式交付。**Cloudflare 上可能同時存在不只一個專案連著同一個 repo；哪個專案是正式部署入口、ISR 開不開、要不要重連/斷開哪個專案的 Git，都是使用者自己決定跟操作的事，不是 Agent 該主動去查「現在狀態是什麼」然後動手調整——會變的現況不屬於這份文件，問使用者最新狀況就好。**
 - **平台分工。** GitHub Pages 的手動 `workflow_dispatch` 不是正式網站部署或每次合併的必要關卡；不啟用 Vercel 備援部署，也不額外重複觸發 Cloudflare Build / Deploy。
-- **純文件改動不會觸發 Cloudflare 建置。** `loc` 跟 `loc-isr` 的「組建監看式路徑」都已設排除 `AGENTS.md`、`*.md`、`.githooks/**`、`node_modules/**`、`.git/`，所以單獨改 `AGENTS.md`／`todo.md` 這類文件、push 到 `main` 不會消耗建置分鐘數；但只要 commit 裡混了任何程式碼改動，還是會正常觸發建置，不要誤以為所有 commit 都免費。
-- **GitHub Actions 裡的 `ios-device-build.yml`（iOS IPA 建置，跑 macOS runner）固定是純手動（`workflow_dispatch`），不會自動跟著 push/PR 觸發。** macOS runner 每分鐘計費是 Linux 的好幾倍，之前被設成自動觸發時曾經在兩天內跑了上百次、堆出很大的「消耗金額」（repo 是 public 所以實際帳單是 $0，但不代表可以隨便讓它自動跑）；不要把這支工作流程的觸發條件改回 `push`／`pull_request`，需要新 IPA 時手動在 GitHub 上觸發就好。
-- **ISR 目前沒有啟用／沒有流量指到它。** 不得因此擅自改動 ISR、DNS、R2、Durable Objects 或付費資源設定；要恢復 ISR 是使用者自己的決定，不是 Agent 看到「反正沒在用」就能主動去重連或調整。
+- **純文件改動（`.md`）不一定會觸發 Cloudflare 建置**，如果專案的組建監看式路徑有排除設定；但這是每個專案各自的 Cloudflare 設定，不是全域保證，改完文件還是可能觸發建置，不要預設一定免費。
+- **不要把 CI／建置相關的 workflow 觸發條件從手動（`workflow_dispatch`）改回自動（`push`／`pull_request`）**，尤其是用到 macOS runner（計費比 Linux 貴很多）的工作流程——這類工作流程一旦被設成自動觸發，會在短時間內重複執行、不知不覺堆高用量，之前就因此發生過。
+- **不得擅自改動 ISR、DNS、R2、Durable Objects、Cloudflare 專案的 Git 連接狀態或其他付費資源設定。** 這些永遠要使用者自己決定要不要動，Agent 只負責被明確要求時才操作、操作完回報結果，不主動去查現況、也不主動建議調整。
 - **資料安全不變。** 不因自動部署而刪除 Supabase／Neon／Galaxy 資料；資料庫修改仍要核對正式 schema，並遵守授權和資料保護檢查。
 
 ---
