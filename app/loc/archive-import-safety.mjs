@@ -16,9 +16,14 @@ export function isPrivateArchiveSource(source){
 export function isPrivateArchiveRecord(record){
   const platform=String(record?.platform||'').toLowerCase().trim();
   const kind=String(record?.kind||'').toLowerCase().trim();
+  const raw=record?.raw||{};
   return isPrivateArchiveSource(platform)||kind==='message'||kind==='conversation'||
     Boolean(record?.conversationId)||privatePath.test(String(record?.sourcePath||'').replace(/\\/g,'/'))||
-    Boolean(record?.raw?.directMessage||record?.raw?.dmConversation||record?.raw?.messageCreate);
+    Boolean(raw.directMessage||raw.dmConversation||raw.messageCreate)||
+    (raw.mapping&&typeof raw.mapping==='object')||
+    Array.isArray(raw.chat_messages)||
+    (Array.isArray(raw.messages)&&(raw.participants||raw.conversation_id))||
+    Boolean(raw.sender_name&&(raw.content||raw.text));
 }
 // Discovery is only a hint. In a mixed Meta ZIP, a private Messenger
 // signature must not turn genuine Threads / Facebook posts into an error.
