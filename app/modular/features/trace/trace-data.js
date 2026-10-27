@@ -58,18 +58,12 @@ function readRow(row,scope){
     longitude:coordinates?.[0]??null,latitude:coordinates?.[1]??null,
     source_scope:row.scope_id||scope,anchor_list:Array.isArray(row.anchor_list)?row.anchor_list:[]};
 }
-async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false}={}){
-  // The LOC materialized union was deliberately dropped. Never query it
-  // until the owner Scope place data has been reviewed and a new union built.
-  if(id==='loc')return [];
-  const union=false,rows=[],size=750;
+async function readPages(id,{columns=CORE_COLUMNS,filter=null}={}){
+  const rows=[],size=750;
   for(let offset=0;;offset+=size){
     let query=dbPublicClient.schema('silver').from(id+'_trace')
-      .select(columns+(union?',scope_id':'')).order('uid',{ascending:true})
-      .range(offset,offset+size-1);
+      .select(columns).order('uid',{ascending:true}).range(offset,offset+size-1);
     if(filter)query=query.eq('trace_type',filter);
-    if(union&&nativeOnly)query=query.eq('scope_id','loc');
-    if(union)query=query.order('scope_id',{ascending:true});
     const batch=checked(await query,'空間資料讀取')||[];
     rows.push(...batch.map(row=>readRow(row,id)));
     if(batch.length<size)break;
@@ -88,17 +82,15 @@ export async function readTraceMapIndex(scopeId,{nativeOnly=false}={}){
 }
 export const traceMemberUids=record=>[...new Set((record?.anchor_list||[])
   .flat(Infinity).map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
-export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=false}={}){
+export async function readCurrentTraceAnchors(scopeId,anchorUids=[]){
   const id=idScope(scopeId);
-  if(id==='loc')return [];
   const ids=[...new Set((anchorUids||[]).flat(Infinity)
     .map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
   if(!ids.length)return [];
   if(ids.length>800)throw Error('地點數量超過上限');
-  let query=dbPublicClient.schema('silver').from(id+'_trace')
-    .select(CORE_COLUMNS+(id==='loc'?',scope_id':''))
-    .eq('trace_type','space_anchor').in('uid',ids).limit(900);
-  if(id==='loc'&&nativeOnly)query=query.eq('scope_id','loc');
+  const query=dbPublicClient.schema('silver').from(id+'_trace')
+    .select(CORE_COLUMNS).eq('trace_type','space_anchor')
+    .in('uid',ids).limit(900);
   const rows=(checked(await query,'空間地點讀取')||[]).map(row=>readRow(row,id));
   const byId=new Map(rows.map(row=>[row.uid,row]));
   return ids.map(uid=>byId.get(uid)).filter(Boolean);
