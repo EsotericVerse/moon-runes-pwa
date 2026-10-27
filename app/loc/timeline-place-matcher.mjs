@@ -97,19 +97,48 @@ export function accumulateTimelineArticles(matches){
     if(!uid||!window)continue;
     let entry=byUid.get(uid);
     if(!entry){entry={uid,title:String(hit.title||''),createtime:hit.createtime,
-      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),disputed:false};byUid.set(uid,entry);}
+      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),disputed:false};byUid.set(uid,entry);}
     for(const candidate of window.candidates)entry.candidates.set(candidate.uid,candidate);
+    if(Number.isFinite(window.lat)&&Number.isFinite(window.lng))
+      entry.coordinates.add(window.lat.toFixed(6)+','+window.lng.toFixed(6));
     if(window.disputed)entry.disputed=true;
   }
   const ready=[],disputes=[],unchanged=[];
   for(const item of byUid.values()){
     const candidates=[...item.candidates.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
     const unique=candidates.length===1&&!item.disputed;
-    if(unique&&!item.existingPlaceId)ready.push({...item,candidates,placeId:candidates[0].uid});
-    else if(unique&&item.existingPlaceId===candidates[0].uid)unchanged.push(item);
-    else disputes.push({...item,candidates,reason:item.existingPlaceId?'已存在不同的 place_id':'附近多個定錨點／來源信心不足'});
+    const coordinates=[...item.coordinates].sort();
+    const article={...item,candidates,coordinates,
+      groupKey:coordinates.length===1?'point:'+coordinates[0]:'article:'+item.uid};
+    if(unique&&(!item.existingPlaceId||item.existingPlaceId===candidates[0].uid))
+      ready.push({...article,placeId:candidates[0].uid});
+    else disputes.push({...article,reason:coordinates.length>1?'文章跨多組座標，必須逐篇確認':
+      item.existingPlaceId?'既有 place_id 與候選位置不同':
+      '附近多個定錨點／來源信心不足'});
   }
   const byDate=(a,b)=>String(a.createtime||'').localeCompare(String(b.createtime||''))||a.uid.localeCompare(b.uid);
   ready.sort(byDate);disputes.sort(byDate);
   return {ready,disputes,unchanged};
+}
+
+/* Review is by exact Timeline coordinates, not one dialog per article.
+   Separate articles matched at multiple coordinates: never infer a single place. */
+export function groupTimelineMissingPlaces(analysis){
+  const groups=new Map();
+  for(const row of [...(analysis?.ready||[]),...(analysis?.disputes||[])]){
+    const key=row.groupKey||'article:'+row.uid;
+    if(!groups.has(key))groups.set(key,{key,coordinates:row.coordinates||[],rows:[]});
+    groups.get(key).rows.push(row);
+  }
+  return [...groups.values()].map(group=>{
+    const choices=new Map();
+    for(const row of group.rows)
+      for(const candidate of row.candidates||[])choices.set(candidate.uid,candidate);
+    const candidates=[...choices.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
+    const unanimous=group.key.startsWith('point:')&&group.rows.every(row=>
+      row.candidates.length===1&&!row.disputed&&row.candidates[0].uid===candidates[0]?.uid&&
+      (!row.existingPlaceId||row.existingPlaceId===candidates[0]?.uid));
+    return {...group,candidates,defaultPlaceId:unanimous?candidates[0]?.uid||'':'',
+      disputed:!unanimous};
+  }).sort((a,b)=>b.rows.length-a.rows.length||a.key.localeCompare(b.key));
 }
