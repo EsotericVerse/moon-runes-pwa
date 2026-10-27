@@ -1412,7 +1412,7 @@ export default function Culture(){
                   </button>
                   {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
                   <details className='scope-culture-anchor-picker'>
-                    <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
+                    <summary><span className='scope-culture-anchor-picker-mark' aria-hidden='true'/><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=>{
                         const route=featureNavigationHref(scopeId,'culture');

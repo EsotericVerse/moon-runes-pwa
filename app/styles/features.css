@@ -465,7 +465,11 @@
 .scope-period-timeline .vis-item.scope-virtual-anchor .vis-item-content::after{content:'';position:absolute;left:12px;top:13px;width:5px;height:5px;border-radius:50%;background:color-mix(in srgb,var(--loc-accent) 38%,#fff1ae);box-shadow:0 0 8px 3px color-mix(in srgb,var(--loc-accent) 24%,transparent)}
 .scope-period-timeline .vis-item.scope-virtual-anchor.is-selected .vis-item-content::before{border-color:#edc66a;box-shadow:0 0 0 7px color-mix(in srgb,var(--loc-accent) 9%,transparent),0 0 17px color-mix(in srgb,var(--loc-accent) 33%,transparent)}
 .scope-culture-anchor-picker{flex:1 1 100%;min-width:0}
-.scope-culture-anchor-picker summary{cursor:pointer;font-weight:650;color:var(--loc-text)}
+.scope-culture-anchor-picker summary{cursor:pointer;font-weight:650;color:var(--loc-text);list-style:none;display:flex;align-items:center;gap:.4rem}
+.scope-culture-anchor-picker summary::-webkit-details-marker{display:none}
+.scope-culture-anchor-picker-mark{display:inline-flex;align-items:center;justify-content:center;width:1.1rem;height:1.1rem;border:1px solid var(--loc-line);border-radius:3px;font-size:.8rem;line-height:1;color:var(--loc-muted);flex:none}
+.scope-culture-anchor-picker-mark::before{content:'+'}
+.scope-culture-anchor-picker[open] .scope-culture-anchor-picker-mark::before{content:'−'}
 .scope-culture-anchor-choices{display:flex;flex-wrap:wrap;gap:.45rem;max-height:12rem;overflow:auto;margin-top:.5rem}
 .scope-culture-anchor-choices label{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border:1px solid var(--loc-line);border-radius:var(--loc-radius-sm);cursor:pointer}
 .scope-culture-anchor-choices label:has(input:checked){border-color:var(--loc-accent);color:var(--loc-text)}
