@@ -274,11 +274,11 @@ test('Trace reads each real Scope table and distinguishes zero LOC rows from 581
       return query;
     }};
   }};
-  const executable=source.replace(/^import [^\\n]*\\n/gm,'')
-    .replace(/\\bexport (?=(?:const|async function))/g,'');
+  const executable=source.replace(/^import [^\n]*\n/gm,'')
+    .replace(/\bexport (?=(?:const|async function))/g,'');
   const {readTraceData,readTraceMapIndex,readAllTraceAnchors,readCurrentTraceAnchors}
     =new Function('dbPublicClient',executable+
-      '\\nreturn {readTraceData,readTraceMapIndex,readAllTraceAnchors,readCurrentTraceAnchors};')(dbPublicClient);
+      '\nreturn {readTraceData,readTraceMapIndex,readAllTraceAnchors,readCurrentTraceAnchors};')(dbPublicClient);
   assert.deepEqual(await readTraceData('loc'),{anchors:[],maps:[]});
   assert.deepEqual(await readTraceMapIndex('loc'),[]);
   assert.equal((await readTraceData('lo3rwang')).anchors.length,581);
