@@ -16,6 +16,7 @@ import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
+import StatsFreshness,{useRefreshCooldown} from './StatsFreshness';
 
 // Defer Galaxy's data/query engine until the selected statistics mode needs it.
 const loadGalaxyStatistics=()=>import('../../loc/galaxy-query');
@@ -371,6 +372,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     },
     enabled:mediaDimension&&periodNavigationReady&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
   });
+  const refreshGate=useRefreshCooldown(mediaQuery.dataUpdatedAt);
   const crossTagQuery=useAsyncResource({
     queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
@@ -596,9 +598,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeSourceSelection)}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style'&&crossTagRequested)crossTagQuery.refetch();}} disabled={mediaFetching}>
+      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style'&&crossTagRequested)crossTagQuery.refetch();}} disabled={mediaFetching||refreshGate.cooling}>
         {mediaFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
+      <StatsFreshness updatedAt={mediaQuery.dataUpdatedAt} remainingMs={refreshGate.remainingMs}/>
     </div>:null}
     {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
     {rankingType==='media_style'&&crossTagRequested&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
