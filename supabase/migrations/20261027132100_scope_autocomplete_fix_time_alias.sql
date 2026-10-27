@@ -60,8 +60,7 @@ BEGIN
           LEFT JOIN name_counts n ON n.place_name=a.title
       )
       SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'count',hits)
-        ORDER BY hits DESC,title,uid),'[]'::jsonb) FROM ranked
-      WHERE hits>0
+        ORDER BY hits DESC,title,uid),'[]'::jsonb) FROM (SELECT uid,title,hits FROM ranked WHERE hits>0 ORDER BY hits DESC,title,uid LIMIT 10) popular
     $places$,v_galaxy,v_trace) INTO v_places;
   END IF;
 
@@ -81,8 +80,7 @@ BEGIN
         WHERE a.type='anchor'
       )
       SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'date',anchor_day,'count',hits)
-        ORDER BY hits DESC,anchor_day,uid),'[]'::jsonb) FROM ranked
-      WHERE hits>0
+        ORDER BY hits DESC,anchor_day,uid),'[]'::jsonb) FROM (SELECT uid,title,anchor_day,hits FROM ranked WHERE hits>0 ORDER BY hits DESC,anchor_day,uid LIMIT 10) popular
     $days$,v_galaxy,v_time) INTO v_days;
   END IF;
 
@@ -98,7 +96,7 @@ BEGIN
         GROUP BY e.uid,e.title
       )
       SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'count',hits)
-        ORDER BY hits DESC,title,uid),'[]'::jsonb) FROM ranked WHERE hits>0
+        ORDER BY hits DESC,title,uid),'[]'::jsonb) FROM (SELECT uid,title,hits FROM ranked WHERE hits>0 ORDER BY hits DESC,title,uid LIMIT 10) popular
     $events$,v_time,v_time) INTO v_events;
   END IF;
 
