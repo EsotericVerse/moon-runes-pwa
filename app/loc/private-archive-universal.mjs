@@ -14,7 +14,7 @@ import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
-const MAX_EXTRACTED=100*1024*1024;
+const MAX_EXTRACTED=1024*1024*1024;
 // Large Meta backups may contain tens of thousands of *ignored* media entries.
 // Count entries but never decompress ignored media; retain a finite ZIP entry cap.
 const MAX_FILES=100000,MAX_TEXT_DOCUMENT=8*1024*1024;
@@ -390,7 +390,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
       extractedBytes+=data.length;
       received+=data.length;
       if(received>MAX_SNIFF_INFLATE)throw new Error('ZIP 取樣檔案解壓超過 2 MiB，已停止辨識。');
-      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 100 MiB，已停止辨識。');
+      if(extractedBytes>MAX_EXTRACTED)throw new Error('ZIP 解壓資料超過 1024 MiB，已停止辨識。');
       if(length<ZIP_SNIFF_BYTES){
         const part=data.subarray(0,ZIP_SNIFF_BYTES-length);
         samples.push(part);length+=part.length;
@@ -494,7 +494,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
         extracted+=data.length;
-        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 100 MiB，拒絕繼續展開。');
+        if(extracted>MAX_EXTRACTED)throw new Error('解壓超過 1024 MiB，拒絕繼續展開。');
         textSize+=data.length;
         if(textSize>sizeLimit)throw new Error(path+'：解壓後單檔超過安全上限。');
         if(isStructured)sink.push(data,Boolean(final));
