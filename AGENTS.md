@@ -17,7 +17,7 @@
 
 ## 現況
 
-- **基本語法檢查交給 CI，不靠人工記得跑。** `npm run check:syntax` 已經做成自動觸發的 `.github/workflows/syntax-check.yml`，push／PR 到 `main` 就自動跑，不需要使用者手動確認，也不是靠 Agent 每次記得手動執行。它不保證抓到所有語法問題（連基本的括號配對都可能漏掉），所以 Agent 自己改完東西仍要負責再核對一次行為是否正確——但這是 Agent 的責任，不是要使用者去檢查。
+- **絕對不能讓 Cloudflare 部署當語法檢查器。** `main` 一有 push 就會自動觸發 Cloudflare Build/Deploy；如果 commit 裡還帶著基本語法錯誤（多一個 `{`、少一個括號之類），等於是拿一次會計費的正式部署去抓一個本來免費、幾秒鐘就能在本機抓到的錯誤——push 幾次、燒幾次部署資源，帳單就是這樣堆出來的，這是不能接受的浪費。正確順序永遠是：Agent 在本機 workspace 跑 `npm run check:syntax`（零成本、幾秒鐘），確認語法乾淨之後才 commit／push 到 `main`；不是先推上去，再靠部署失敗的 log 回頭抓語法錯。它不保證抓到所有語法問題（連基本的括號配對都可能漏掉），所以改完東西 Agent 還要自己再核對一次行為是否正確——這是 Agent 自己的責任，不需要使用者手動確認，也不該花到任何計費資源才發現。
 - **正式網站由 Cloudflare 自動建置、部署。** Cloudflare 連結 GitHub `main`；Agent 完成必要檢查並推送／合併 `main` 後，由 Cloudflare 自動 Build / Deploy。不要求使用者每次手動部署，也不以舊的手動部署限制阻止已完成的程式交付。
 - **平台分工。** GitHub Pages 的手動 `workflow_dispatch` 不是正式網站部署或每次合併的必要關卡；不啟用 Vercel 備援部署，也不額外重複觸發 Cloudflare Build / Deploy。
 - **ISR 已啟用。** Cloudflare 自動部署和 ISR／快取是不同責任；不得據此擅自改動 ISR、DNS、R2、Durable Objects 或付費資源設定。
