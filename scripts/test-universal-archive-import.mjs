@@ -4,6 +4,7 @@ import {zipSync,strToU8} from 'fflate';
 import {detectZipArchiveSource,inspectPrivateArchive} from '../app/loc/private-archive-universal.mjs';
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
 import {readImageExif} from '../app/loc/archive-exif.mjs';
+import {createArchiveEvidenceCollector,prepareArchiveMedia} from '../app/loc/archive-media-evidence.mjs';
 
 function asFile(name,bytes){
   const data=new Uint8Array(bytes);
@@ -138,4 +139,57 @@ test('Meta-style nested times are found without per-platform key lists',async()=
   });
   const times=a.results.map(r=>new Date(r.createtime).getTime()).sort((x,y)=>x-y);
   assert.deepEqual(times,[1720000000000,1721000000000]);
+});
+
+test('Threads, Facebook and Instagram ZIP images retain media URL and private EXIF evidence for Galaxy Media',async()=>{
+  const jpeg=gpsJpeg();
+  const file=asFile('meta-backups.zip',zipSync({
+    'activity/threads/threads_posts.json':j([{id:'th1',title:'Threads 照片',timestamp:1720000000,
+      photos:[{uri:'threads/photos/t.jpg',url:'https://media.example.test/threads.jpg',type:'image'}]}]),
+    'your_facebook_activity/posts/your_posts_1.json':j([{id:'fb1',timestamp:1720000000,
+      data:[{post:'Facebook 照片',attachments:[{data:[{media:{
+        uri:'facebook/photos/f.jpg',url:'https://media.example.test/facebook.jpg',type:'image'
+      }}]}]}]}]),
+    'your_instagram_activity/posts/ig_posts.json':j([{id:'ig1',title:'Instagram 照片',timestamp:1720000000,
+      media:[{uri:'instagram/media/i.jpg',url:'https://media.example.test/instagram.jpg',type:'image'}]}]),
+    'threads/photos/t.jpg':jpeg,
+    'facebook/photos/f.jpg':jpeg,
+    'instagram/media/i.jpg':jpeg
+  }));
+  const collector=createArchiveEvidenceCollector(),uids=new Set();
+  const summary=await inspectPrivateArchive(file,{
+    onRecord:record=>{
+      const article=archiveGalaxyRow(record);
+      if(article){uids.add(article.uid);collector.onRecord(record,article.uid);}
+    },
+    onMediaEntry:item=>collector.onMediaEntry(item),
+    onMediaMetadata:item=>collector.onExif(item)
+  });
+  const rows=collector.rows({scopeId:'lo3rwang',archiveName:file.name,archiveSize:file.size});
+  const plan=prepareArchiveMedia(rows,uids);
+  assert.equal(summary.exifWithGps,3);
+  assert.equal(rows.length,3);
+  assert.equal(plan.media.length,3);
+  assert.equal(plan.exif.length,3);
+  assert.deepEqual(new Set(plan.exif.map(e=>e.platform)),new Set(['threads','facebook','instagram']));
+  assert.equal(plan.media.every(row=>row.url?.startsWith('https://media.example.test/')),true);
+  assert.equal(plan.media.every(row=>row.galaxy_link&&uids.has(row.galaxy_link)),true);
+  assert.equal(plan.media.every(row=>!('latitude' in row)&&!('longitude' in row)),true);
+  assert.equal(plan.exif.every(row=>Math.abs(row.latitude-25.0333)<0.01),true);
+});
+test('Media-only archive remains importable and its EXIF is retained',async()=>{
+  const file=asFile('photos.zip',zipSync({'photos/only.jpg':gpsJpeg()}));
+  const collector=createArchiveEvidenceCollector();
+  const summary=await inspectPrivateArchive(file,{
+    onRecord:()=>{throw new Error('Unexpected article');},
+    onMediaEntry:item=>collector.onMediaEntry(item),
+    onMediaMetadata:item=>collector.onExif(item)
+  });
+  const rows=collector.rows({scopeId:'lo3rwang',archiveName:file.name,archiveSize:file.size});
+  const plan=prepareArchiveMedia(rows,new Set());
+  assert.equal(summary.acceptedRows,0);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.exif.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.media[0].galaxy_link,null);
 });
