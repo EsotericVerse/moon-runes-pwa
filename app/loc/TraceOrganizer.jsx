@@ -4,6 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {dbAuthClient} from './db-client.mjs';
 import {reviewPlaceNameGroups,compactPlaceName} from '../modular/features/trace/trace-place-names.mjs';
 import {renameTraceAnchorTitles} from '../modular/features/trace/trace-data';
+import {readAutocompleteCurrent,refreshAutocompleteCurrent,currentTop10,currentPlaceCounts} from './autocomplete-current.mjs';
 
 const canonical=items=>[...items].sort((a,b)=>
   String(a.uid||'').localeCompare(String(b.uid||'')))[0];
@@ -33,6 +34,17 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const [error,setError]=useState(false);
   const [checked,setChecked]=useState({});
   const [placeName,setPlaceName]=useState('');
+  const [popularOpen,setPopularOpen]=useState(false);
+  const [currentSnapshot,setCurrentSnapshot]=useState(null);
+  const [rankingBusy,setRankingBusy]=useState(false);
+  const [allPlaceCounts,setAllPlaceCounts]=useState(null);
+  const [allCountsBusy,setAllCountsBusy]=useState(false);
+  const [allCountsError,setAllCountsError]=useState('');
+  useEffect(()=>{
+    let live=true;
+    readAutocompleteCurrent(scopeId).then(value=>{if(live)setCurrentSnapshot(value);}).catch(()=>{});
+    return()=>{live=false;};
+  },[scopeId]);
   const [selectedUid,setSelectedUid]=useState('');
   const [aliases,setAliases]=useState([]);
   const [newAlias,setNewAlias]=useState('');
@@ -126,10 +138,43 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     }
   };
   const matches=useMemo(()=>{
+    if(popularOpen){
+      const byId=new Map(anchors.map(anchor=>[String(anchor.uid),anchor]));
+      return currentTop10(currentSnapshot,'space')
+        .map(row=>byId.get(String(row.uid))).filter(Boolean);
+    }
     const q=compactPlaceName(placeName);
     if(!q)return [];
     return anchors.filter(item=>compactPlaceName(item.title).includes(q)).slice(0,30);
-  },[anchors,placeName]);
+  },[anchors,placeName,popularOpen,currentSnapshot]);
+  const placeCounts=currentPlaceCounts(currentSnapshot);
+  async function loadAllCounts(){
+    if(allPlaceCounts!==null||allCountsBusy)return;
+    setAllCountsBusy(true);setAllCountsError('');
+    try{
+      const {readPlaceSummary}=await import('./place-summary-client');
+      const summary=await readPlaceSummary(scopeId);
+      const totals=new Map();
+      for(const row of summary.rows||[]){
+        const label=String(row.category||'').trim(),count=Number(row.item_count)||0;
+        if(label&&count>0)totals.set(label,(totals.get(label)||0)+count);
+      }
+      setAllPlaceCounts([...totals].map(([title,count])=>({title,count}))
+        .sort((a,b)=>b.count-a.count||a.title.localeCompare(b.title,'zh-Hant')));
+    }catch(e){setAllCountsError(String(e.message||e));}
+    finally{setAllCountsBusy(false);}
+  }
+  async function refreshPopular(){
+    if(rankingBusy||!ownPlaces)return;
+    setRankingBusy(true);setError(false);setNotice('');
+    try{
+      const updated=await refreshAutocompleteCurrent(scopeId);
+      setCurrentSnapshot(updated);
+      setAllPlaceCounts(null);
+      setNotice('熱門候選已重新統計並保存；目前前 10 名可直接雙擊選用。');
+    }catch(e){setError(true);setNotice(String(e.message||e));}
+    finally{setRankingBusy(false);}
+  }
   return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱整理">
     <h3>地點管理 · 名稱整理</h3>
     <p className="scope-status">只列出同 Scope、相同座標、完整名稱字元完全一致（順序可以不同）的候選；不使用「大學」「高鐵」「站」等部分共同文字推測。勾選不會自動合併；可選擇任意一筆作為標準名稱，全部 UID 原樣保留。</p>
@@ -192,10 +237,36 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
       })}
       {reviewGroups.length>80?<p className="scope-status">目前展開前 80 組；「全部勾選」涵蓋所有 {reviewGroups.length} 組，批次套用前請確認。</p>:null}
     </section>
+    <section className="scope-card" aria-label="空間定錨點出現次數與熱門候選">
+      <h4>熱門地點前 10 名</h4>
+      <p className="scope-status">統計 Galaxy 文章對應的地點；place_id 優先，未對應時僅採完全相同且唯一的定錨點名稱。不合併同名不同 UID。雙擊自動完成會讀取這份已保存的排名，不會重跑統計。</p>
+      <button type="button" className="loc-button" disabled={rankingBusy||busy||!ownPlaces}
+        onClick={refreshPopular}>{rankingBusy?'正在重新統計…':'重新統計地點／時間出現次數'}</button>
+      {currentSnapshot?.updated_at?<p className="scope-status">上次更新：{currentSnapshot.updated_at}</p>:null}
+      {!placeCounts.length?<p className="scope-status">尚未建立出現次數快照，或沒有可確認的地點對應。</p>:null}
+      {placeCounts.length?<ol className="loc-trace-selection-order">
+        {placeCounts.map(item=><li key={item.uid}>
+          {item.title} · {Number(item.count||0).toLocaleString('zh-TW')} 次
+        </li>)}
+      </ol>:null}
+      <details onToggle={event=>{if(event.currentTarget.open)void loadAllCounts();}}>
+        <summary>按需查看所有原始打卡地點的出現次數</summary>
+        <p className="scope-status">這裡按 source_place 原始名稱計數；不將同名地點自動合併成同一 UID。只有展開時才讀取完整統計，並不儲存在前 10 名快照內。</p>
+        {allCountsBusy?<p className="scope-status">正在讀取出現次數…</p>:null}
+        {allCountsError?<p className="scope-status scope-error" role="alert">{allCountsError}</p>:null}
+        {allPlaceCounts!==null?<ol className="loc-trace-selection-order">
+          {allPlaceCounts.map(item=><li key={item.title}>
+            {item.title} · {Number(item.count||0).toLocaleString('zh-TW')} 次
+          </li>)}
+        </ol>:null}
+      </details>
+    </section>
     <section className="scope-card">
       <h4>管理已確認的地點名稱</h4>
       <label>搜尋既有地點
-        <input type="search" value={placeName} placeholder="輸入名稱，不限縣市" onChange={event=>setPlaceName(event.target.value)}/>
+        <input type="search" value={placeName} placeholder="輸入名稱，不限縣市（雙擊熱門前10）"
+          onDoubleClick={()=>setPopularOpen(true)}
+          onChange={event=>{setPlaceName(event.target.value);setPopularOpen(false);}}/>
       </label>
       {matches.length?<div className="loc-trace-route-suggestions" role="group" aria-label="既有地點">
         {matches.map(item=><button className="loc-button" type="button" key={item.uid}

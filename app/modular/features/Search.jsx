@@ -246,6 +246,7 @@ export default function Search({managementMode=false}){
   const resourceCache=useResourceCache();
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
+  const [searchPopularOpen,setSearchPopularOpen]=useState(false);
   const [placeOnly,setPlaceOnly]=useState(false);
   const [selectedPlaceArticles,setSelectedPlaceArticles]=useState([]);
   const [bulkPlace,setBulkPlace]=useState('');
@@ -974,7 +975,7 @@ export default function Search({managementMode=false}){
       :contentType==='lyrics_work'?'suggestionsLyrics'
       :contentType==='text_work'?'suggestionsText':'suggestionsAll';
     return String(t('uiExtra.searchUI.'+key)||'').split('\n')
-      .map(line=>line.split('|')[0].trim()).filter(Boolean).slice(0,6);
+      .map(line=>line.split('|')[0].trim()).filter(Boolean).slice(0,10);
   },[contentType,t]);
   function followSearchSuggestion(term,patch={}){
     const text=String(term||'').trim();
@@ -991,8 +992,10 @@ export default function Search({managementMode=false}){
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
-        <input id="scope-search-query" list={suggestedTitles.length?'scope-search-loaded-titles':undefined}
-          value={query} onChange={event=>setQuery(event.target.value)}
+        <input id="scope-search-query" list={!searchPopularOpen&&suggestedTitles.length?'scope-search-loaded-titles':undefined}
+          value={query} onDoubleClick={()=>setSearchPopularOpen(true)}
+          onChange={event=>{setQuery(event.target.value);setSearchPopularOpen(false);}}
+          aria-expanded={searchPopularOpen}
           placeholder={managementMode?'':UI_COPY.search.textPlaceholder} aria-label={UI_COPY.search.textPromptLabel}/>
         {suggestedTitles.length?<datalist id="scope-search-loaded-titles">
           {suggestedTitles.map(title=><option key={title} value={title}/>)}
@@ -1008,6 +1011,14 @@ export default function Search({managementMode=false}){
           }}>瀏覽文章列表（不需輸入關鍵詞）</button>:null}
         <button type="button" className="loc-button" onClick={clearSearchFilters}>{t('uiExtra.searchUI.clearAll')}</button>
       </form>
+      {searchPopularOpen?<div className="scope-search-suggestions" role="group" aria-label="雙擊建議搜尋前10項">
+        <span className="scope-status">建議搜尋（最多 10 項）</span>
+        <div className="scope-search-active-filters">
+          {suggestedTerms.map(term=><button key={term} type="button" className="loc-button"
+            onClick={()=>{setQuery(term);setSearchPopularOpen(false);followSearchSuggestion(term);}}>{term}</button>)}
+          {!suggestedTerms.length?<span className="scope-status">目前沒有已發布的搜尋建議。</span>:null}
+        </div>
+      </div>:null}
       {!managementMode&&suggestedTerms.length?<div className="scope-search-suggestions" aria-label="建議搜尋">
         <span className="scope-status">建議搜尋</span>
         <div className="scope-search-active-filters">
