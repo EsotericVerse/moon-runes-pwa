@@ -16,6 +16,8 @@ import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
+import {facebookArchiveUid} from './facebook-backup-place.mjs';
+import {comparableImportText,dedupeIncomingImport,findExistingImportDuplicates} from './import-duplicate-check.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
@@ -44,6 +46,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const row=entry?.raw||entry||{};
   const value=field=>mappedImportValue(row,field,fieldMap);
   const isFacebook=String(source||'').trim().toLowerCase()==='facebook';
+  const isThreads=String(source||'').trim().toLowerCase()==='threads';
   // The generic "place" alias can hold a Meta object. Only actual text
   // belongs in Galaxy.source_place; never stringify [object Object].
   const mappedPlace=value('source_place');
@@ -51,13 +54,20 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook?facebookBackupPlace(row):'');
   const place=repairMojibakeText(placeText).trim();
   const facebookText=isFacebook?facebookBackupPostText(row):'';
-  const content=normalizeGalaxyContent(value('content')||facebookText||
+  const threadsText=isThreads?(row.media?.find?.(item=>typeof item?.title==='string')?.title||
+    row.string_list_data?.find?.(item=>typeof item?.value==='string')?.value||''):'';
+  const content=normalizeGalaxyContent(value('content')||facebookText||threadsText||
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
-  const uid=String(value('uid')||entry?.import_uid||(isFacebook?facebookBackupImportUid(row):createUid8())).trim().toUpperCase();
-  const rawDate=value('createtime')||(isFacebook?facebookBackupTimestamp(row):null);
-  const createdAt=isFacebook?parseImportCreatedTime(rawDate):iso(rawDate);
+  const rawDate=value('createtime')||
+    (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
+    (isFacebook?facebookBackupTimestamp(row):null);
+  const createdAt=parseImportCreatedTime(rawDate);
+  const nativeThreadsId=isThreads?String(row.id||row.post_id||row.thread_id||'').trim():'';
+  const stableThreadsKey=isThreads&&(nativeThreadsId||createdAt&&comparableImportText(content))
+    ?'threads:json:'+JSON.stringify([nativeThreadsId||null,createdAt,comparableImportText(content)]):'';
+  const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim().toUpperCase();
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
@@ -400,31 +410,77 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      const unique=[],seenUid=new Set();
-      let duplicateCount=0;
-      for(const record of analyzed.valid){
-        if(seenUid.has(record.uid)){duplicateCount++;continue;}
-        seenUid.add(record.uid);
-        unique.push(record);
-      }
-      const existingUid=new Set(),existingByNative=new Map();
+      // Same Scope, same source, same actual second and comparable text
+      // (punctuation, symbols, repeated newlines and spaces ignored).
+      // The database is read only for matching seconds, never full-scanned.
+      const incoming=dedupeIncomingImport(analyzed.valid);
+      const unique=incoming.unique;
+      let duplicateCount=incoming.duplicates;
+      const existingUid=new Set();
       for(let offset=0;offset<unique.length;offset+=200){
         const ids=unique.slice(offset,offset+200).map(record=>record.uid);
         const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
         for(const row of data||[])existingUid.add(String(row.uid||'').trim());
       }
-      const payload=unique.filter(record=>!existingUid.has(record.uid));
-      const knownArticleIds=new Map(unique.map(row=>[row.uid,row.uid]));
+      // Exact-UID matches need no second database search at all.
+      const toCompare=unique.filter(record=>!existingUid.has(record.uid));
+      const existingBySameSecond=await findExistingImportDuplicates(toCompare,{
+        readSeconds:async(source,seconds)=>{
+          const or=seconds.map(second=>{
+            const from=new Date(second*1000).toISOString();
+            const to=new Date((second+1)*1000).toISOString();
+            return 'and(createtime.gte.'+from+',createtime.lt.'+to+')';
+          }).join(',');
+          const collected=[];
+          for(let start=0;;start+=500){
+            const relation=dbAuthRelation(galaxy)
+              .select('uid,source_name,createtime,content')
+              .ilike('source_name',source);
+            // PostgREST executes one bounded OR query for 24 exact seconds.
+            // Local adapters without .or use one bounded second at a time.
+            if(typeof relation.or!=='function'){
+              for(const second of seconds){
+                for(let offset=0;;offset+=500){
+                  const from=new Date(second*1000).toISOString();
+                  const to=new Date((second+1)*1000).toISOString();
+                  const {data,error}=await dbAuthRelation(galaxy)
+                    .select('uid,source_name,createtime,content').ilike('source_name',source)
+                    .gte('createtime',from).lt('createtime',to).range(offset,offset+499);
+                  if(error)throw new Error('重複文章比對失敗：'+error.message);
+                  collected.push(...(data||[]));
+                  if((data||[]).length<500)break;
+                }
+              }
+              return collected;
+            }
+            const {data,error}=await relation.or(or).range(start,start+499);
+            if(error)throw new Error('重複文章比對失敗：'+error.message);
+            collected.push(...(data||[]));
+            if((data||[]).length<500)break;
+          }
+          return collected;
+        }
+      });
+      const payload=unique.filter(record=>!existingUid.has(record.uid)&&!existingBySameSecond.has(record.uid));
+      duplicateCount+=unique.length-payload.length;
+      const knownArticleIds=new Map();
+      for(const record of analyzed.valid){
+        const canonical=incoming.aliases.get(record.uid)||record.uid;
+        knownArticleIds.set(record.uid,existingBySameSecond.get(canonical)||canonical);
+      }
       await writeImportBatches(payload,{
         batchSize:validImportBatchSize(format.batchSize),
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
-      const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(unique.map(row=>row.uid)));
+      const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
+      const canonicalArchiveMedia=archivePlan.media.map(record=>({
+        ...record,galaxy_link:knownArticleIds.get(String(record.galaxy_link||''))||record.galaxy_link
+      }));
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
-        mediaOnly:[...analyzed.mediaOnly,...archivePlan.media],
+        mediaOnly:[...analyzed.mediaOnly,...canonicalArchiveMedia],
         extraLinks:archivePlan.mediaLinks,
         knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
       });
@@ -441,7 +497,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
         exifSaved+=chunk.length;
       }
-      const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
+      const skipped=analyzed.invalid.length+duplicateCount;
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
