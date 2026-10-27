@@ -57,16 +57,30 @@ BEGIN
   RETURN NOT COALESCE(blocked,false);
 END $fn$;
 
+
+-- RLS expressions must call only functions the anon role may execute.
+-- This SECURITY DEFINER bridge reads JWT-derived identity without granting
+-- direct access to silver.can_manage_scope or exposing hidden records.
+CREATE OR REPLACE FUNCTION silver.can_read_hidden_scope_records(p_scope text)
+RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','silver' AS $fn$
+BEGIN
+  IF auth.uid() IS NULL THEN RETURN false; END IF;
+  RETURN silver.can_manage_scope(p_scope);
+END $fn$;
+REVOKE ALL ON FUNCTION silver.can_read_hidden_scope_records(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.can_read_hidden_scope_records(text) TO anon,authenticated;
+
 DO $policy$
 DECLARE s text;
 BEGIN
   FOREACH s IN ARRAY ARRAY['lo3rwang','lrunes','loc'] LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON silver.%I',s||'_trace_public_read',s||'_trace');
-    EXECUTE format('CREATE POLICY %I ON silver.%I FOR SELECT TO public USING (silver.can_manage_scope(%L) OR silver.is_spatial_record_public(%L,uid::text))',s||'_trace_public_read',s||'_trace',s,s);
+    EXECUTE format('CREATE POLICY %I ON silver.%I FOR SELECT TO public USING (silver.can_read_hidden_scope_records(%L) OR silver.is_spatial_record_public(%L,uid::text))',s||'_trace_public_read',s||'_trace',s,s);
   END LOOP;
   FOREACH s IN ARRAY ARRAY['lo3rwang','lrunes'] LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON silver.%I',s||'_time_v2_public_read',s||'_time');
-    EXECUTE format('CREATE POLICY %I ON silver.%I FOR SELECT TO public USING (silver.can_manage_scope(%L) OR silver.is_time_record_public(%L,uid::text))',s||'_time_v2_public_read',s||'_time',s,s);
+    EXECUTE format('CREATE POLICY %I ON silver.%I FOR SELECT TO public USING (silver.can_read_hidden_scope_records(%L) OR silver.is_time_record_public(%L,uid::text))',s||'_time_v2_public_read',s||'_time',s,s);
   END LOOP;
 END $policy$;
 REVOKE ALL ON FUNCTION silver.is_time_record_public(text,text) FROM PUBLIC;
