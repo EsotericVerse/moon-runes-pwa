@@ -1352,3 +1352,52 @@
 .loc-trace-other-scopes-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:.5rem;min-width:0}
 .loc-trace-other-scopes-list>.loc-button{display:grid;gap:.3rem;justify-items:start;min-width:0;min-height:44px;white-space:normal;text-align:left;overflow-wrap:anywhere}
 .loc-trace-other-scopes-list>.loc-button span{color:var(--loc-muted);font-size:.85rem}
+
+/* Scope anchor editor: theme-aware text, full-width notes and reviewed quick updates. */
+.loc-trace-anchor-editor .scope-management-fields>.loc-trace-description-field{grid-column:1/-1}
+.loc-trace-anchor-editor .loc-trace-description-field textarea{
+  width:100%;min-height:11rem;resize:vertical;line-height:1.65;
+  background:var(--loc-panel);color:var(--loc-text)
+}
+.loc-trace-anchor-editor .loc-react-select__control,
+.loc-trace-anchor-editor .loc-react-select__menu,
+.loc-trace-anchor-editor .loc-react-select__menu-list{
+  background:var(--loc-panel)!important;color:var(--loc-text)!important;
+  border-color:var(--loc-line)!important
+}
+.loc-trace-anchor-editor .loc-react-select__single-value,
+.loc-trace-anchor-editor .loc-react-select__input-container,
+.loc-trace-anchor-editor .loc-react-select__input-container input{
+  color:var(--loc-text)!important;-webkit-text-fill-color:var(--loc-text)!important
+}
+.loc-trace-anchor-editor .loc-react-select__placeholder,
+.loc-trace-anchor-editor .loc-react-select__indicator{color:var(--loc-muted)!important}
+.loc-trace-anchor-editor .loc-react-select__option{
+  background:var(--loc-panel)!important;color:var(--loc-text)!important;
+  cursor:pointer
+}
+.loc-trace-anchor-editor .loc-react-select__option--is-focused{
+  background:var(--loc-accent-surface-strong)!important
+}
+.loc-trace-anchor-editor .loc-react-select__option--is-selected{
+  background:var(--loc-primary-start)!important;color:var(--loc-text)!important
+}
+.loc-trace-anchor-editor .loc-react-select__control--is-focused{
+  border-color:var(--loc-accent-border)!important;
+  box-shadow:0 0 0 1px var(--loc-accent-border)!important
+}
+.loc-trace-quick-update{margin:.8rem 0;color:var(--loc-text)}
+.loc-trace-quick-update>summary{cursor:pointer;color:var(--loc-text);font-weight:650}
+.loc-trace-quick-update-group{
+  display:grid;gap:.55rem;margin:.75rem 0;padding:.8rem;
+  border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm);
+  background:var(--loc-panel-2);color:var(--loc-text)
+}
+.loc-trace-quick-update-group p{margin:0;overflow-wrap:anywhere}
+.loc-trace-quick-update-group>label{display:grid;gap:.3rem;min-width:0;color:var(--loc-text)}
+.loc-trace-quick-update-group select{
+  width:100%;min-width:0;min-height:44px;padding:.5rem;
+  background:var(--loc-panel);color:var(--loc-text);
+  border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)
+}
+.loc-trace-quick-update-group>.loc-button{justify-self:start}
