@@ -593,7 +593,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     } 第 {archiveTransfer.window} 輪，每輪最多 30,000 筆；已處理 {archiveTransfer.processed.toLocaleString()}／{archiveTransfer.total.toLocaleString()} 筆，新增 {archiveTransfer.written.toLocaleString()} 筆，略過 {archiveTransfer.skipped.toLocaleString()} 筆。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
-      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
+      <p>{archiveTransfer?'已處理 '+Number(progress.completed||0).toLocaleString()+'／'+Number(progress.total||0).toLocaleString()+' 筆（'+(progress.percent||0)+'%）；實際新增與略過筆數見上方。':<UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/>}</p>
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
