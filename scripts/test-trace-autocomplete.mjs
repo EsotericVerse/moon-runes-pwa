@@ -68,7 +68,24 @@ test('name organizer recognizes actual space_anchor type without auto-merging di
  assert.equal(reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.5,25.1])]).automatic.length,1);
  const different=reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.6,25.1])]);
  assert.equal(different.automatic.length,0);
- assert.equal(different.uncertain.length,1);
+ assert.equal(different.uncertain.length,0);
+});
+test('strict full-name permutation review excludes shared generic words and other coordinates',()=>{
+ const row=(uid,title,address=[121.5,25.1],source_scope='lo3rwang')=>
+  ({uid,title,address,source_scope,trace_type:'space_anchor'});
+ const ambiguous=[
+  row('A001','高鐵台南站'),row('A002','高鐵台中站'),
+  row('A003','國立台灣大學'),row('A004','國立政治大學'),
+  row('A005','小柏小傑'),row('A006','小傑小柏'),
+  row('A007','小傑小柏',[121.51,25.1]),
+  row('A008','小柏小傑',[121.5,25.1],'lrunes')
+ ];
+ const candidates=reviewPlaceNameGroups(ambiguous);
+ assert.equal(candidates.automatic.length,1);
+ assert.deepEqual(candidates.automatic[0].items.map(row=>row.uid),['A005','A006']);
+ assert.equal(candidates.uncertain.length,0);
+ assert.deepEqual(reviewReorderedCoordinateNames(ambiguous)[0].items.map(row=>row.uid),
+  ['A005','A006']);
 });
 test('anchor quick-update preserves UID, is visible and uses theme-colored full-width editor',()=>{
  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
