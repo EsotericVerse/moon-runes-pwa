@@ -205,7 +205,7 @@ export default function Culture(){
   });
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
-  const [structureWindowKey,setStructureWindowKey]=useState('all');
+  const [structureWindowKey,setStructureWindowKey]=useState('');
   const [expandedTimeTraceIds,setExpandedTimeTraceIds]=useState([]);
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
@@ -255,7 +255,7 @@ export default function Culture(){
     setOpenCultureRoots([]);
     setSelectedRiverGroup('');
     setFocusedAnchorDate('');
-    setStructureWindowKey('all');
+    setStructureWindowKey('');
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
@@ -623,20 +623,22 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
-  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
-    [timelineItems,expandedTimeTraceIds]);
+  // The current trace opens first; other trace groups retain their own dates.
+  const activeStructureKey=structureWindowKey==='all'?'all'
+    :primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
+      ?structureWindowKey:structurePreference.preferredKey;
+  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds,activeStructureKey),
+    [timelineItems,expandedTimeTraceIds,activeStructureKey]);
   const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
     current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
-  // The first river starts with an all-anchor camera without changing the
-  // default recent-period SQL query. Manual period selection retains its behavior.
-  const activeStructureKey=structureWindowKey==='all'||primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
-    ?structureWindowKey:'all';
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
     :String(currentStructurePeriod?.start_date||'').slice(0,10);
   // A trace stops at its final real anchor; no virtual today endpoint.
+  const lastAnchorDate=String(structurePreference.lastAnchor?.start_date||'').slice(0,10);
+  const savedTraceEnd=String(currentStructurePeriod?.end_date||'').slice(0,10);
   const currentStructureEnd=activeStructureKey==='all'?''
-    :String(currentStructurePeriod?.end_date||'').slice(0,10);
+    :structureWindowKey===''&&lastAnchorDate>savedTraceEnd?lastAnchorDate:savedTraceEnd;
   // Keep the first river grouped by time_trace UID. A selected trace changes
   // only the camera viewport, never the saved anchor/event/trace graph.
   const anchorRecords=useMemo(()=>timelineItems
@@ -1299,7 +1301,7 @@ export default function Culture(){
                   editable={false}
                 />:<p className='scope-status'>{UI_COPY.uiExtra.dataErrors.empty}</p>}
                 {selectedTimelineInfo?<div className='scope-card scope-culture-timeline-selection' role='status'>
-                  <strong>{selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
+                  <strong>{selectedTimelineInfo.raw?.title||selectedTimelineInfo.content||selectedTimelineInfo.raw?.display_label||selectedTimelineInfo.title||translateUiField(locale,'時間長河紀錄')}</strong>
                   <p className='scope-status'>{String(selectedTimelineInfo.start||'').slice(0,10)}{selectedTimelineInfo.end?' ～ '+String(selectedTimelineInfo.end).slice(0,10):''}</p>
                   {selectedTimelineInfo.title?<p>{selectedTimelineInfo.title}</p>:null}
                 </div>:null}
