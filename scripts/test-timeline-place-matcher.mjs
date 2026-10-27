@@ -64,6 +64,7 @@ test('UI is owner-only, conflict choices start skipped, source_place never writt
  assert.match(ui,/if\(!window\.confirm\(/);
  assert.match(ui,/const \[decisions,setDecisions\]=useState\(\{\}\)/);
  assert.match(ui,/p_scope_id:scopeId,p_updates:batch/);
+ assert.match(ui,/disputes:previous\.disputes\.filter\(row=>!resolved\.has\(row\.uid\)\)/);
  assert.doesNotMatch(migration,/SET source_place|SET\s+source_place|g\.source_place/);
  assert.match(migration,/g\.place_id IS NOT DISTINCT FROM \$3/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
