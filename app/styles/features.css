@@ -1364,32 +1364,56 @@
   width:100%;min-height:11rem;resize:vertical;line-height:1.65;
   background:var(--loc-panel);color:var(--loc-text)
 }
-.loc-trace-anchor-editor .loc-react-select__control,
-.loc-trace-anchor-editor .loc-react-select__menu,
-.loc-trace-anchor-editor .loc-react-select__menu-list{
-  background:var(--loc-panel)!important;color:var(--loc-text)!important;
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__control,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__menu,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__menu-list{
+  background:var(--loc-panel)!important;
+  color:var(--loc-text)!important;
   border-color:var(--loc-line)!important
 }
-.loc-trace-anchor-editor .loc-react-select__single-value,
-.loc-trace-anchor-editor .loc-react-select__input-container,
-.loc-trace-anchor-editor .loc-react-select__input-container input{
-  color:var(--loc-text)!important;-webkit-text-fill-color:var(--loc-text)!important
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__single-value,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container input{
+  color:var(--loc-text)!important;
+  -webkit-text-fill-color:var(--loc-text)!important
 }
-.loc-trace-anchor-editor .loc-react-select__placeholder,
-.loc-trace-anchor-editor .loc-react-select__indicator{color:var(--loc-muted)!important}
-.loc-trace-anchor-editor .loc-react-select__option{
-  background:var(--loc-panel)!important;color:var(--loc-text)!important;
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container input{
+  background:transparent!important;border:0!important;box-shadow:none!important
+}
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__placeholder,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__indicator,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__no-options-message{
+  color:var(--loc-muted)!important
+}
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option{
+  background:var(--loc-panel)!important;
+  color:var(--loc-text)!important;
   cursor:pointer
 }
-.loc-trace-anchor-editor .loc-react-select__option--is-focused{
-  background:var(--loc-accent-surface-strong)!important
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option--is-focused{
+  background:var(--loc-accent-surface-strong)!important;
+  color:var(--loc-text)!important
 }
-.loc-trace-anchor-editor .loc-react-select__option--is-selected{
-  background:var(--loc-primary-start)!important;color:var(--loc-text)!important
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option--is-selected{
+  background:var(--loc-rune-selected-bg)!important;
+  color:var(--loc-text)!important;
+  font-weight:600
 }
-.loc-trace-anchor-editor .loc-react-select__control--is-focused{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__control--is-focused{
   border-color:var(--loc-accent-border)!important;
   box-shadow:0 0 0 1px var(--loc-accent-border)!important
+}
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.loc-trace-article-choice) select{
+  color-scheme:inherit;
+  color:var(--loc-text)!important
+}
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.loc-trace-article-choice) select option{
+  background:var(--loc-panel);
+  color:var(--loc-text)
+}
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.loc-trace-article-choice) select option:checked{
+  background:var(--loc-rune-selected-bg);
+  color:var(--loc-text)
 }
 .loc-trace-quick-update{margin:.8rem 0;color:var(--loc-text)}
 .loc-trace-quick-update>summary{cursor:pointer;color:var(--loc-text);font-weight:650}
