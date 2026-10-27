@@ -58,6 +58,27 @@ test('Private media paths cannot leak EXIF from mixed online archives',()=>{
   assert.doesNotThrow(()=>assertArchiveEntryDestination('facebook/photos/p.jpg',false));
   assert.doesNotThrow(()=>assertArchiveEntryDestination('messages/inbox/photo.jpg',true));
 });
+test('Private and unknown archive rejections carry a security-block code, not a JSON parse error',()=>{
+  for(const fn of [
+    ()=>assertPrivateArchiveDestination(false,['messenger']),
+    ()=>assertArchiveRecordDestination({platform:'threads',kind:'message',sourcePath:'threads/messages.json'},false)
+  ])assert.throws(fn,error=>error?.code==='LOC_PRIVATE_ARCHIVE_BLOCKED');
+  assert.throws(()=>assertArchiveRecordDestination({platform:'document',kind:'document'},false),
+    error=>error?.code==='LOC_UNVERIFIED_ARCHIVE_BLOCKED');
+});
+test('Threads post JSON is allowed without misclassifying it as private chat',()=>{
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'your_threads__your_posts.json',
+    nativeLocal:false,
+    rows:[{source_name:'Threads',content:'公開貼文範例',kind:'post'}]
+  }));
+  assert.doesNotThrow(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'post',sourcePath:'threads/your_posts_1.json'
+  },false));
+  assert.throws(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'message',sourcePath:'threads/messages_1.json'
+  },false));
+});
 test('Direct imported chats cannot bypass private-only rule with renamed source',()=>{
   assert.throws(()=>assertStandaloneImportDestination({
     fileName:'conversations.json',source:'Other',rows:[],nativeLocal:false

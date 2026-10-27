@@ -347,7 +347,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
     }catch(error){
       setRows([]);setArchiveEvidence([]);
-      setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
+      const wasBlocked=['LOC_PRIVATE_ARCHIVE_BLOCKED','LOC_UNVERIFIED_ARCHIVE_BLOCKED'].includes(error?.code);
+      setStatus(wasBlocked
+        ?'第 '+(index+1)+' 檔已阻止匯入：'+String(error?.message||error)+'；本次未寫入資料庫。'
+        :t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }finally{
       setBusy(false);
     }
