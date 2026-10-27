@@ -153,7 +153,7 @@ export function archiveMediaUuid(scopeId,archiveId,entryPath){
     '-a'+hex.slice(17,20)+'-'+hex.slice(20,32);
 }
 export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
-  const media=[],exif=[];
+  const media=[],exif=[],mediaLinks=[];
   for(const entry of evidence){
     const id=archiveMediaUuid(entry.scope_id,entry.archive_id,entry.entry_path);
     const owners=(entry.galaxy_uids||[]).filter(uid=>knownUids.has(uid));
@@ -163,8 +163,8 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
       meta_tags:null,createtime:null,source_place:null
     };
-    const links=owners.length?owners:[null];
-    for(const uid of links)media.push({...row,galaxy_link:uid});
+    media.push({...row,galaxy_link:owners[0]||null});
+    for(const uid of owners)mediaLinks.push({uid,media_id:id});
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
         media_id:id,archive_id:entry.archive_id,entry_path:entry.entry_path,
@@ -172,5 +172,5 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
   }
-  return {media,exif};
+  return {media,exif,mediaLinks};
 }
