@@ -111,6 +111,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     let changed=0,completed=0;
     try{
       for(const {group,uids} of groups){
+        setNotice('正在統一名稱：'+(completed+1)+' / '+groups.length+' 組…');
         changed+=await renameGroup(group,uids);
         completed++;
         setChecked(previous=>({...previous,[group.key]:{}}));
@@ -129,9 +130,9 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     if(!q)return [];
     return anchors.filter(item=>compactPlaceName(item.title).includes(q)).slice(0,30);
   },[anchors,placeName]);
-  return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱合併">
+  return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱整理">
     <h3>地點管理 · 名稱整理</h3>
-    <p className="scope-status">只列出同 Scope、相同座標、完整名稱字元完全一致（順序可以不同）的候選；不使用「大學」「高鐵」「站」等部分共同文字推測。勾選不會自動合併；可選擇任意一筆保留為標準名稱與 UID。</p>
+    <p className="scope-status">只列出同 Scope、相同座標、完整名稱字元完全一致（順序可以不同）的候選；不使用「大學」「高鐵」「站」等部分共同文字推測。勾選不會自動合併；可選擇任意一筆作為標準名稱，全部 UID 原樣保留。</p>
     <div className="scope-stat-controls" role="status">
       <span>目前地點：{anchors.length}</span>
       <span>完整名稱排列候選：{automatic.length} 組</span>
@@ -189,7 +190,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
           </div>
         </details>;
       })}
-      {reviewGroups.length>80?<p className="scope-status">已顯示前 80 組，完成後重新載入下一批。</p>:null}
+      {reviewGroups.length>80?<p className="scope-status">目前展開前 80 組；「全部勾選」涵蓋所有 {reviewGroups.length} 組，批次套用前請確認。</p>:null}
     </section>
     <section className="scope-card">
       <h4>管理已確認的地點名稱</h4>
