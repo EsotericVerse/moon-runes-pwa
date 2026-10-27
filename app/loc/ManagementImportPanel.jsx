@@ -401,7 +401,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
         for(const row of data||[])existingUid.add(String(row.uid||'').trim());
       }
-      const existingBySameSecond=await findExistingImportDuplicates(unique,{
+      // Exact-UID matches need no second database search at all.
+      const toCompare=unique.filter(record=>!existingUid.has(record.uid));
+      const existingBySameSecond=await findExistingImportDuplicates(toCompare,{
         readSeconds:async(source,seconds)=>{
           const or=seconds.map(second=>{
             const from=new Date(second*1000).toISOString();
@@ -451,9 +453,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
       const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
+      // Media from a duplicate source article must attach to the surviving UID.
+      const canonicalArchiveMedia=archivePlan.media.map(record=>({
+        ...record,galaxy_link:knownArticleIds.get(String(record.galaxy_link||''))||record.galaxy_link
+      }));
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
-        mediaOnly:[...analyzed.mediaOnly,...archivePlan.media],
+        mediaOnly:[...analyzed.mediaOnly,...canonicalArchiveMedia],
         extraLinks:archivePlan.mediaLinks,
         knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
       });
