@@ -126,18 +126,18 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/儲存 Hero 圖片路徑/);
   assert.match(hero,/儲存後資料庫讀回不一致/);
   assert.match(hero,/uid:HomeBlock.createUid\(\)/);
-  const heroFrame=css.match(/\.scope-feature-hero--artwork\s*\{([^}]+)\}/)?.[1]||'';
+  const heroFrame=css.match(/\.scope-feature-hero\.scope-feature-hero--artwork\s*\{([^}]+)\}/)?.[1]||'';
   assert.match(heroFrame,/aspect-ratio:16\/9/);
   assert.match(heroFrame,/min-height:clamp\(540px,56\.25vw,820px\)/);
   assert.match(heroFrame,/background-size:100% 100%,cover/);
   assert.match(heroFrame,/background-position:center center,center center/);
   assert.doesNotMatch(heroFrame,/contain|right center/);
-  assert.match(css,/@media\(max-width:760px\)\{\s*\.scope-feature-hero--artwork\s*\{[^}]*min-height:clamp\(480px,110vw,650px\)/);
+  assert.match(css,/@media\(max-width:760px\)\{\s*\.scope-feature-hero\.scope-feature-hero--artwork\s*\{[^}]*min-height:clamp\(480px,110vw,650px\)/);
   const activeHeightSelectors=[...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter(match=>match[1].includes('scope-feature-hero--')&&/min-height\s*:/.test(match[2]))
     .map(match=>match[1].replace(/\/\*[\s\S]*?\*\//g,'').trim());
-  assert.deepEqual(activeHeightSelectors,['.scope-feature-hero--artwork','.scope-feature-hero--artwork']);
-  assert.equal((css.match(/\.scope-feature-hero--artwork\s*\{/g)||[]).length,2);
+  assert.deepEqual(activeHeightSelectors,['.scope-feature-hero.scope-feature-hero--artwork','.scope-feature-hero.scope-feature-hero--artwork']);
+  assert.equal((css.match(/\.scope-feature-hero\.scope-feature-hero--artwork\s*\{/g)||[]).length,2);
   assert.ok(['culture','statics','search','trace','admin','manage','setting']
     .every(id=>Boolean(HomeBlock.FEATURE_HERO_ORDER[id])));
   assert.doesNotMatch(css,/data-loc-scope="loc"\] \.scope-feature-hero--manage\{--scope-feature-hero-image:url\('\.\.\/\.\.\/pics\/LOC-admin\.jpg'\)/);
