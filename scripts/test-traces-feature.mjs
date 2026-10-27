@@ -131,7 +131,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
     'derived Scope must be initialized before any effect dependency accesses it');
   assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
-  assert.match(feature,/onAnchorSelect=\{choosePlace\}/);
+  assert.match(feature,/onAnchorSelect=\{chooseMapAnchor\}/);
   assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
   assert.match(feature,/\{value:'articles',label:'文章列表'\}/);
   assert.match(feature,/\{value:'timeline',label:'文化'\}/);
@@ -241,4 +241,29 @@ test('Trace automatically loads all Scope anchors only when no saved route exist
   assert.match(map,/autoOverviewScopeRef\.current===scope/);
   assert.match(map,/mapRef\.current\?\.overview\(\)/);
   assert.match(map,/spatialData===null\?'正在取得空間定錨點資料/);
+});
+
+test('public guest can preview exactly two map points without any mutation API',async()=>{
+ const {pickTraceDemoStop,traceDemoRoute}=await import('../app/modular/features/trace/trace-demo-route.mjs');
+ const row=(uid,title,scope='lo3rwang',address=[121.5,25.1])=>({
+   uid,title,source_scope:scope,trace_type:'space_anchor',address});
+ const [a,b,c]=[row('A001','起點'),row('B002','終點'),row('C003','第三點')];
+ let selected=pickTraceDemoStop([],a,'lo3rwang');
+ assert.deepEqual(selected,['A001']);
+ selected=pickTraceDemoStop(selected,b,'lo3rwang');
+ assert.deepEqual(selected,['A001','B002']);
+ assert.deepEqual(pickTraceDemoStop(selected,c,'lo3rwang'),selected);
+ assert.deepEqual(pickTraceDemoStop(selected,b,'lo3rwang'),selected);
+ const preview=traceDemoRoute(selected,[a,b,c],'lo3rwang');
+ assert.equal(preview.uid,'DEMO');
+ assert.equal(preview.trace_type,'space_period');
+ assert.deepEqual(preview.anchor_list,['A001','B002']);
+ assert.equal(traceDemoRoute(['A001','C003'],[a,b],'lo3rwang'),null);
+ assert.deepEqual(pickTraceDemoStop([],row('X001','跨 Scope','lrunes'),'lo3rwang'),[]);
+ assert.deepEqual(pickTraceDemoStop([],row('X001','無座標','lo3rwang',null),'lo3rwang'),[]);
+ const publicPage=read('app/modular/features/Trace.jsx');
+ assert.match(publicPage,/兩點路線試玩（不儲存）/);
+ assert.match(publicPage,/onAnchorSelect=\{chooseMapAnchor\}/);
+ assert.match(publicPage,/selectedRouteUid=\{twoPointDemo\?/);
+ assert.doesNotMatch(publicPage,/addTraceMap|updateTraceMap|deleteTraceMap/);
 });
