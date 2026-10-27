@@ -9,7 +9,7 @@ import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from '
 // have to match -- read and write are different queries with different
 // costs -- but keeping one tuned number instead of two that drift apart
 // under separate testing is less confusing to reason about and re-tune.
-export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
+export const KEYWORD_CLASSIFICATION_BATCH_SIZE=500;
 // Reset changes potentially tens of thousands of classified rows; keep each
 // authorized database write comfortably below the 30s statement timeout.
 const KEYWORD_RESET_BATCH_SIZE=750;
@@ -157,30 +157,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const rows=Array.isArray(payload?.rows)?payload.rows:[];
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
-    // Full eligible-uid universe for this run, independent of `rows` --
-    // `rows` may now be a narrowed subset (only the articles a changed
-    // keyword item could affect; see runKeywordAnalysisBatch). 'sync' needs
-    // the FULL set to correctly find orphans: using just `rows`' uids here
-    // would wrongly clear every untouched-but-still-eligible row. Falls
-    // back to rows' own uids when the caller doesn't pass one (e.g. a full
-    // run where rows already is the full set).
-    const eligibleUids=Array.isArray(payload?.eligibleUids)?payload.eligibleUids:rows.map(row=>row.uid);
+    const eligibleDocumentCount=Number.isInteger(payload?.eligibleDocumentCount)
+      ?Math.max(0,payload.eligibleDocumentCount)
+      :Array.isArray(payload?.eligibleUids)?payload.eligibleDocumentCount:rows.length;
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    // Set-based UPDATE...FROM jsonb_to_recordset joined on the uid primary key
-    // (silver.apply_keyword_classification, mode='chunk'), inside a 60s
-    // statement_timeout set on that function itself. Earlier rounds of
-    // tuning this value (1000/3000/5000/1500) were chasing the wrong thing:
-    // the real constraint was the `authenticator` role's statement_timeout
-    // (8s, applied at actual connection login -- unaffected by this
-    // function's own 60s override, which only covers mode='chunk' calls,
-    // not the plain reads elsewhere in the classification flow). That role
-    // timeout is now raised to 30s, so this batch size was never the
-    // bottleneck. The back-to-back-click cooldown is handled client-side
-    // (see KeywordLibraryPanel.jsx) by greying out the button for 30s after
-    // a run completes, not by anything in this function.
-    const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
+    // Each JSONB recordset UPDATE runs under the authenticated connection's
+    // 30s statement_timeout. Keep transactions bounded; a timeout rolls back
+    // the whole failed chunk. Retry only that chunk with a smaller size.
+    // Successfully committed earlier chunks stay intact (diff-only writes).
+    let batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
     // The SQL function itself validates every uid in the batch exists and
@@ -189,31 +176,40 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // rows actually written, purely for reporting.
     let count=0;
     let changedCount=0;
-    for(let offset=0;offset<rows.length;offset+=batchSize){
+    for(let offset=0;offset<rows.length;){
       const batch=rows.slice(offset,offset+batchSize);
-      const affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
+      let affected;
+      try{
+        affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
+      }catch(error){
+        const timedOut=/canceling statement due to statement timeout/i
+          .test(String(error?.message||error));
+        if(!timedOut||batchSize<=100)throw error;
+        batchSize=Math.max(100,Math.floor(batchSize/2));
+        continue; // The canceled statement committed no rows; retry this offset.
+      }
       changedCount+=affected;
       count+=batch.length;
+      offset+=batch.length;
       onProgress?.({phase:'write',completed:count,total:rows.length});
     }
 
-    // Clears rows that dropped out of this run's eligible set (shrank below
-    // minChars, became non-searchable, or were deleted) without a blanket
-    // wipe of everything still correctly classified -- see the migration's
-    // mode='sync'. Only needs the uid list, not full row payloads.
+    // DB-side sync uses the same statistics_able predicate as the UID
+    // universe. Never serialize 144k UIDs into one JSON parameter, and never
+    // compare only this run's narrowed candidate UIDs (would wipe others).
     onProgress?.({phase:'sync',completed:count,total:rows.length});
-    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',uids:eligibleUids});
+    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',scopeBased:true});
 
     onProgress?.({phase:'finalizing',completed:count,total:rows.length});
     const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
     // documentCount (DB's count(*) where group_lists<>'false') is NOT the
-    // same population as eligibleUids.length: eligibleUids is every row
+    // same population as eligibleDocumentCount: eligibleUids is every row
     // with statistics_able=true, but a row only gets a non-'false'
     // group_lists if it ALSO passes isEligibleRow's minChars/searchable
     // gate upstream. Those two counts were never meant to be equal --
     // comparing them for strict equality was the bug. Sanity-bound instead.
-    if(documentCount<0||documentCount>eligibleUids.length){
-      throw new Error(`Keyword classification finalize out of range: counted ${documentCount}, eligible universe ${eligibleUids.length}`);
+    if(documentCount<0||documentCount>eligibleDocumentCount){
+      throw new Error(`Keyword classification finalize out of range: counted ${documentCount}, eligible universe ${eligibleDocumentCount}`);
     }
     return {count,changedCount,orphansCleared,documentCount};
   }
