@@ -11,8 +11,9 @@ const recoverableReadError=error=>{
   const code=String(error?.code||'');
   const status=Number(error?.status||error?.cause?.status||0);
   if(status===429||status>=500)return true;
+  if(error?.name==='TimeoutError'||error?.cause?.name==='TimeoutError')return true;
   if(code.startsWith('08')||code==='53300')return true;
-  return status===0&&(error instanceof TypeError||/network|fetch failed|timeout|connection|unavailable/i.test(String(error?.message||'')));
+  return status===0&&(error instanceof TypeError||/network|fetch failed|timeout|timed out|connection|unavailable/i.test(String(error?.message||'')));
 };
 
 // A cancelled search must stop the actual HTTP request, not just ignore its result.
@@ -56,39 +57,45 @@ function resultError(result,table,source){
   error.cause=cause||undefined;
   return error;
 }
+// Reads never hang: a request that gets no answer within READ_TIMEOUT_MS is treated
+// as a recoverable failure (primary -> backup), not as a user cancellation.
+export const READ_TIMEOUT_MS=8000;
 export async function executePublicRead(table,buildQuery,{source='auto',authenticated=false,signal=null}={}){
-  if(signal?.aborted)throw abortError();
+  const cancel=signal;
+  const timeout=AbortSignal.timeout(READ_TIMEOUT_MS);
+  signal=cancel?AbortSignal.any([cancel,timeout]):timeout;
+  if(cancel?.aborted)throw abortError();
   // Device data must never require a cloud routing decision or fall back to
   // Supabase/Neon. The routed DB client sends these relations to local SQLite.
   if(/^silver\.local(?:_[a-z0-9_]+)?$/.test(String(table))){
     const localClient=authenticated?dbAuthClient:dbPublicClient;
     const result=await withSignal(buildQuery(publicRelation(localClient,table)),signal);
-    if(signal?.aborted)throw abortError();
+    if(cancel?.aborted)throw abortError();
     const failure=resultError(result,table,'local');
     if(failure)throw failure;
     return {...result,__dataSource:'local'};
   }
   const routing=await selectedDatabaseRouting(dbConfiguredPublicClient);
-  if(signal?.aborted)throw abortError();
+  if(cancel?.aborted)throw abortError();
   // Hidden Galaxy rows require the signed-in SDK and server-enforced Scope RLS.
   // Never fall back to an anonymous or backup transport for authenticated reads.
   if(authenticated){
     if(!routing.primaryControl)throw new Error('Authenticated hidden search requires Supabase as the primary database');
     try{
       const result=await withSignal(buildQuery(publicRelation(dbAuthClient,table)),signal);
-      if(signal?.aborted)throw abortError();
+      if(cancel?.aborted)throw abortError();
       const failure=resultError(result,table,'authenticated');
       if(failure)throw failure;
       return {...result,__dataSource:'authenticated'};
     }catch(error){
-      if(signal?.aborted||isAbortError(error))throw abortError();
+      if(cancel?.aborted||isAbortError(error))throw abortError();
       // Only on a recoverable failure (Supabase throttled/unreachable), and only
       // as an anonymous read: rows that need the signed-in RLS session are not
       // in the backup and simply will not be returned. Shown as backup source.
       if(!routing.backupId||!dbBackupPublicClient||!recoverableReadError(error))throw error;
       try{
         const backupResult=await withSignal(buildQuery(publicRelation(dbBackupPublicClient,table)),signal);
-        if(signal?.aborted)throw abortError();
+        if(cancel?.aborted)throw abortError();
         const backupFailure=resultError(backupResult,table,'backup');
         if(backupFailure)throw backupFailure;
         markBackupReadSucceeded(table);
@@ -106,7 +113,7 @@ export async function executePublicRead(table,buildQuery,{source='auto',authenti
   if(!primaryClient)throw new Error('Selected primary database is unavailable');
   const run=async(client,label)=>{
     const result=await withSignal(buildQuery(publicRelation(client,table)),signal);
-    if(signal?.aborted)throw abortError();
+    if(cancel?.aborted)throw abortError();
     const failure=resultError(result,table,label);
     if(failure)throw failure;
     return {...result,__dataSource:label};
@@ -117,7 +124,7 @@ export async function executePublicRead(table,buildQuery,{source='auto',authenti
       markPrimaryReadSucceeded(table);
       return value;
     }catch(error){
-      if(signal?.aborted||isAbortError(error))throw abortError();
+      if(cancel?.aborted||isAbortError(error))throw abortError();
       markPrimaryReadFailed(table,error);
       throw error;
     }
