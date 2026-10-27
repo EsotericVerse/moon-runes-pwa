@@ -100,7 +100,7 @@ export function accumulateTimelineArticles(matches){
       existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),disputed:false};byUid.set(uid,entry);}
     for(const candidate of window.candidates)entry.candidates.set(candidate.uid,candidate);
     if(Number.isFinite(window.lat)&&Number.isFinite(window.lng))
-      entry.coordinates.add(window.lat.toFixed(6)+','+window.lng.toFixed(6));
+      entry.coordinates.add(String(window.lat)+','+String(window.lng));
     if(window.disputed)entry.disputed=true;
   }
   const ready=[],disputes=[],unchanged=[];
