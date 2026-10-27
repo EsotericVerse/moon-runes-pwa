@@ -1,488 +1,282 @@
-## 2026-10-27｜目前有效待辦與 AGENTS.md 優先級（使用者最新決定）
+## 2026-10-27｜目前有效待辦（使用者最新決定）
 
-- **已完成／移出未完成清單：** LOC-TODO-01、03（使用者確認）；LOC-TODO-12（使用者回報已處理）；LOC-PLACE-01 的 DB 工作（使用者確認）。
-- **已取消／刪除任務：** LOC-TODO-07、15、35；LOC-PLACE-02。ID 不重用，歷史可查 Git；不得因舊 TODO 或字串檢查讓取消工作復活。
-- **暫緩：** LOC-TODO-11（Facebook 地址與樓層）、LOC-PLACE-05（文章 `place_id` 批次關聯，等 Trace ID 整理）、LOC-PLACE-06（LOC 來源 `scopeid` 顯示，不急）；雲端 ISR／R2／DO 繼續停用。
-- **需求縮限：** LOC-TODO-10 以 React Select 地名候選為主，縣市不是必填，不做樓層相關工作；LOC-PLACE-03 部分已有，04 沿用 React Select，不重複造介面。
-- **狀態記載與驗證分開：** 使用者回報完成即停止重列為待辦，但不冒稱本次已跑程式或正式資料庫測試。舊分支、CI、資料數量是當時快照，不可覆蓋上述最新決議。
-- **2026-10-27 關於 #580：** 使用者確認衝突源自 TODO 的字串差異，該字串**已移除**。不要用舊 TODO 文案宣稱合併仍有程式衝突；PR 是否另有獨立可重現的 CI／程式問題依當時結果核實。
-- **ISR 最新狀態／部署成本政策（2026-10-27 最新更正）：** 使用者明確確認 **ISR 已開啟**，不得再稱目前停用或列待恢復，也**不可擅自關掉再重開**。Cloudflare／GitHub 自動部署仍不得啟用，功能在 `main` 集中修正、自測後，由使用者自行決定一次手動部署，避免反覆付費。**LOC 1.2 Release 仍必須在穩定且正式部署後，由使用者一人操作五分鐘，比較 ISR、功能、Cloudflare 流量與成本；不必找十位真人。**
+- **結案：** LOC-TODO-01、03、12；LOC-PLACE-01 的 DB 工作。
+- **取消：** LOC-TODO-07、15、35；LOC-PLACE-02。ID 不重用，歷史可查 Git。
+- **暫緩：** LOC-TODO-11（Facebook 地址／樓層）、LOC-PLACE-05（文章 `place_id` 批次關聯，等 Trace ID 整理完）、LOC-PLACE-06（LOC 來源 `scopeid` 顯示，不急）。雲端 ISR／R2／DO 繼續停用。
+- **縮限：** LOC-TODO-10 以 React Select 地名候選為主，縣市非必填，不做樓層；LOC-PLACE-03 部分已有，04 沿用 React Select，不重複造介面。
+- **ISR：已開啟，保持現狀，不要切換或重新部署。** Cloudflare／GitHub 自動部署仍不開；功能在 `main` 集中修完、自測後，由使用者決定一次手動部署。LOC 1.2 Release 門檻：穩定且已部署後，使用者自己操作五分鐘比較 ISR／功能／流量／成本。
+- **#580：** 衝突源自已移除的 TODO 字串，不是程式衝突。
 
-### 按 AGENTS.md 的 1–9 動態優先序（不是固定全域排序）
-- **2026-10-27 空間修正實績：** 已送 `main`：`ef341215`（路線圖 canonical `space_period`、地名直接搜尋、保留 UID 大小寫）、`50b5ec3a`（消除縣市／樓層及舊 Frame 文字斷言，保留有效回歸）、`da50573f`（SQL 遷移調整），正式 Supabase 已套用遷移；讀回 581 `space_anchor`＋1 `space_period`，UID `0019` 與 5 站順序保留，六個 Trigger 啟用。**程式及 DB 已修正，尚未因本作業重新部署 GitHub Pages**，正式環境及完整 Build 還須另驗。
+### 動態優先序（AGENTS.md 1–9，依目標/依賴/嚴重度/成本判斷，非固定排序）
 
-1. **9／高：** 目前空間點線面與痕跡圖真正的程式／資料互動缺口；**#580 的 TODO 字串衝突使用者確認已移除**，不可繼續當成資料庫或程式缺陷，僅處理另外實際可重現的問題及必要 CI。禁止自動部署。
-2. **8／高：** TIME-01～05 動態時期與時間錨點，沿用現有隔離分支，防止文化／統計／搜尋受損。
-3. **7／高：** LOC-TODO-08／09 與空間整合（Frame／Queue、四層、Current、選站、儲存與重讀）；LOC-PLACE-03／04 的簡化補完。
-4. **6／中高：** LOC-TODO-06 搜尋，及實際出錯時的文化／統計／管理資料路徑（17～22、34）；ISR 關閉下維持四大功能正常。
-5. **5／中：** TODO2、LOC-TODO-25～29 的實際匯入／SQLite／手機互動，以及 TODO1 的已定框架契約；先依功能相依順序實作。
-6. **4／中低：** LOC-TODO-05、23、24 與其餘有真實使用缺口的 UI／語系／快取修整，不追逐無感的查詢數微調。
-7. **3／低：** LOC-PLACE-06 只在 LOC 顯示來源 `scopeid`，LOC-TODO-16 舊照片地點整合與後續空間密度展示。
-8. **2／空想狀態／有空再想／可不做：** LOC-TODO-30、31、33 的符文特效／3D 桌遊延伸、《語文爭霸》只是想法，**實際不急，甚至不做也沒關係**，不列入必做功能、集中驗收或本次部署前置。LOC-TODO-32 是獨立既有功能故障，若仍發生才追查。
-9. **1／目前暫緩：** LOC-TODO-11、LOC-PLACE-05；ISR **目前已開啟，保持現有設定不動**。五分鐘測試仍為 1.2 Release 門檻，但不是開發期反覆部署或重設 ISR 的理由。
+1. **9／高：** 空間點線面與痕跡圖的程式／資料互動缺口。禁止自動部署。
+2. **8／高：** TIME-01～05 動態時期與時間錨點（沿用隔離分支，不動文化／統計／搜尋）。
+3. **7／高：** LOC-TODO-08／09 與空間整合（Frame／Queue、四層、Current、選站）；LOC-PLACE-03／04 補完。
+4. **6／中高：** LOC-TODO-06 搜尋，及文化／統計／管理資料路徑（17～22、34）；ISR 關閉下四大功能要正常。
+5. **5／中：** TODO2 匯入、LOC-TODO-25～29 手機／SQLite，及 TODO1 框架契約。
+6. **4／中低：** LOC-TODO-05、23、24 等 UI／語系／快取修整。
+7. **3／低：** LOC-PLACE-06、LOC-TODO-16。
+8. **2／有空再想：** LOC-TODO-30、31、33（符文特效／3D 桌遊／《語文爭霸》），不急不做都可以。LOC-TODO-32 若不再發生就不追。
+9. **1／暫緩：** LOC-TODO-11、LOC-PLACE-05。
 
-> **優先級原則：** 以目前使用者目標、依賴、嚴重程度、使用感與成本判斷；真正的權限／資料完整性事故可立即升為最高優先。Security ≫ Portable > Loading = UI > Code 是工程權衡，不能當成文字一致性或反覆阻擋工作交付的藉口。已完成待集中驗收的內容不再加入未完成工作排序。
+> Security ≫ Portable > Loading = UI > Code 是工程權衡，不是用來反覆卡進度的理由。已完成待驗收的不再排進未完成清單。
 
 ---
 
-## 2026-10-26｜Hero 對應及資料庫歸屬修復（PR #587；程式已合併／未部署／待集中驗收）
+## 2026-10-26｜Hero 對應與資料庫歸屬修復（PR #587，已合併main，待驗收）
 
-- [x] **痕跡 Hero 名稱去重：** 正式保留 `silver.loc_blocks(page_name='group_trace', uid='BRP7JEFQ')`，完整保留「文字在真實的立體場景出現的痕跡」及 `LOC-gn.jpg`；在 `main` 改完正式讀寫對應與 published JS 模組後，依指定 UID 僅刪除 `group_governance/997BFF13` 一筆。Supabase 再次 SELECT 確認只剩一筆，舊列全文與 UID 留於 `docs/hero-page-name-repair-20261026.md`。
-- [x] **管理 Hero 各自 `page_name`：** 八筆舊 `group_manage` 項目原 UID 原資料移至 `TimeAnchor`／`ScopeKeyword`／`SpaceAnchor`／`ScopeAdvSearch`／`GalaxyManage`／`Groupkeyword`／`GroupSpace`／`GroupArticle`，並設定對應英文標題，原標題與正文保留；系統管理文案使用 `scope_admin`，修正大小寫敏感的 DB 查詢及各項儲存／顯示讀取，不再以 `group_manage.block_order` 當項目識別。
-- [x] **Hero 圖片位置：** 原 CSS 中 14 個 Hero 圖片網址補入現有 `silver.loc_blocks.block_image`（僅填空值，未覆寫原有設定）；Scope 四項管理共用 `scope_manage` 的 `scope-gn.jpg`，Admin 五項管理共用 `scope_admin` 的 `LOC-admin.jpg`，設定 UI 仍可修改及儲存；修復 `block_image` 為 TEXT 的 JSON 序列化。
-- [x] **合併與測試證據：** 原 branch `fix/admin-scope-hero-page-ownership-20261026`；[PR #587](https://github.com/EsotericVerse/moon-runes-pwa/pull/587)（merged）；main SHA `d8020bc6f4208b8d3022dd014130cc580432c1c4`；[Actions #40352344908](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40352344908) 終態 success，管理 Hero 5/5、Trace 73/73、Bootstrap 218/218、Next.js 257/257、Chrome 桌機／手機 Trace 和 ISR 停用檢查通過。CI 未涵蓋真實登入 Admin 的 E2E 寫入。
-- [ ] **待工程端／集中驗收：** 授權 Admin 真實操作圖片、文案儲存與重進頁讀回，無權限寫入拒絕、各管理 Hero 的路由及圖片顯示、使用者手動部署後的正式站版本／SW 更新。**未部署；未允許開 Cloudflare 自動部署或 ISR。**
-- [ ] **舊資料待判定（不擅自刪除）：** `group_manage` 還有兩筆舊資料：`E090E4CA`（頁面控管，內文含成員／匯入說明）與 `MGHERO06`（舊系統管理空內容）。其餘八筆均已重新歸位。此兩筆已不作新的 Hero 讀寫來源；是否與現有管理文字整併／封存，須以不遺失原文為前提處理。
+- [x] 痕跡 Hero 名稱去重，保留 `group_trace/BRP7JEFQ`，刪掉重複的 `group_governance/997BFF13`。
+- [x] 管理 Hero 各自獨立 `page_name`（TimeAnchor／ScopeKeyword／SpaceAnchor／ScopeAdvSearch／GalaxyManage／Groupkeyword／GroupSpace／GroupArticle）。
+- [x] Hero 圖片補齊 `block_image`；Scope 四項共用 `scope-gn.jpg`，Admin 五項共用 `LOC-admin.jpg`。
+- 證據：main SHA `d8020bc6`，CI [#40352344908](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40352344908) success。
+- [ ] 待驗收：Admin 真實寫入/讀回、各入口路由與圖片顯示、使用者手動部署後確認正式站。
+- [ ] 待判定：`group_manage` 還有 `E090E4CA`、`MGHERO06` 兩筆舊資料，是否整併暫未決定，不擅自刪。
 
 ---
 
 ## 2026-10-26｜Admin 選單整併（人員首頁／名單管理／網路設定）
 
-- [x] **ADMIN-NAV-20261026｜程式整合及適用 CI 通過** `[MERGED / CLOSED / 等待集中手動部署與驗收]`
-  - **原分支：** `task/admin-network-lists-nav`；**PR：** [#586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)（已合併／關閉）；**main merge SHA：** `53f7c2b7664679558ef0135faecdbbac6f021991`；**分支最後 HEAD：** `e4eed9a9a063f25284acf47a20021606434e446a`；**建立基準 main：** `30695966749094655a4d4e65941a7550643743ac`。
-  - **已完成：** Admin 預設「人員」，頂部五選單「人員／名單管理／網路設定／區塊／配色」；「名單管理」共頁載入原保留名稱備註與 Email 黑名單；「網路設定」共頁載入資料庫設定與可切換 off/cache/isr 的「快取」及最多 32 家可選 ISR Domain。保留 `?section=database/isr/reserved/blocklist` 舊深連結映射，兩組原面板保留各自的資料庫表與權限、原 EditDock 全部 dirty editor 的儲存／切換管理。沒有移動或更改 `silver.loc_blocks` 管理 Hero 文字；先前使用者自行補寫的內容全部維持。
-  - **CI 實際證據：** [Actions #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676) **終態 success**；期間／定錨測試 **8/8**、選單與文化相關 Bootstrap 聚焦測試 **9/9**、文化分組 **5/5**、Next.js 257/257 靜態頁 Build；log 已核對，僅現有依賴 `punycode`／`url.parse` DeprecationWarning，無此次新增的測試或編譯失敗。完整 Bootstrap 全集及真實 Admin 帳號共頁寫入並非這次 CI 涵蓋，不能虛稱已實測。
-  - **待集中驗收與工程後續：** 使用者決定手動部署後核實正式版 SHA、Admin 預設人員、舊連結導向、網路快取三模式與資料庫設定、名單新增／移除／備註寫入及取消切換；不同編輯同頁未儲存提示、正確 RLS、手機版。因未在真實登入環境端到端操作寫入，**此為程式／CI 整合完成，不等於已線上驗收**。沒有觸發 GitHub Pages、IPA、Cloudflare ISR、R2 或任何正式部署。
-  - **分支清理：** PR 已關閉，現有 GitHub 連接器沒有刪除 Git branch 功能；遠端分支標記 `MERGED / NEVER REUSE`，不得重新使用；待有受控刪除手段時清理。
-
+- [x] **ADMIN-NAV-20261026**（PR [#586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)，main `53f7c2b7`）：Admin 預設「人員」，五個選單人員/名單管理/網路設定/區塊/配色；舊深連結 `?section=` 保留映射。CI [#40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676) success（期間/定錨 8/8、Bootstrap 聚焦 9/9、文化分組 5/5、Build 257/257）。
+- [ ] 待驗收：正式版 SHA、Admin 預設、舊連結導向、網路快取三模式、名單寫入、RLS、手機版。
+- 分支清理：PR 已關閉；GitHub 連接器無刪分支功能，遠端分支標 `MERGED / NEVER REUSE`。
 
 ---
 
-## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585；待集中驗收／未部署）
-> **狀態：程式已合併 main；等待使用者集中手動部署，正式功能仍待工程端驗證及集中驗收。** 此為最新指令，後方「不得合併頁面控管」與「只編輯四個簡短標題」已被取代。**原分支編號／名稱：** `feat/hero-management-consolidation-20261026`；**PR：** [#585](https://github.com/EsotericVerse/moon-runes-pwa/pull/585)（merged）；**main merge SHA：** `8ae9c3f2581d568f1bacf54088e4b1a0dec16502`。**CI：** [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) 終態 success：管理 Hero 回歸 5/5、聚焦 Trace 73/73、Bootstrap 211/211、Next build 257/257、Chrome Trace 桌機／手機與 ISR 停用檢查通過。尚未進行真實 Admin 登入寫入／讀回、手機／桌機管理編輯互動及正式站版本驗證，**不能把「合併 main」視為已部署或使用者已驗收**。
+## 2026-10-26｜Admin「區塊」合併與管理 Hero（PR #585，已合併main，待驗收）
 
-- [x] **程式實作：** 區塊選單移除獨立「頁面控管」，管理類別只保留「系統管理」與「個人設定」；各自保留英文標題／中文大標題／標題說明／正文及獨立首頁圖連結。
-- [x] **程式實作：** 文化、統計、痕跡、搜尋普通 Hero 原欄位不變、保留群組圖／個人圖；分別新增「管理」TimeAnchor／時間定錨、Keywords／關鍵詞、SpaceAnchor／空間定錨、AdvancedSearch／進階搜尋，支援英文標題、中文大標題、標題說明、正文（初始空白）。
-- [x] **程式實作：** 管理 Hero 沿用既有 `scope_manage` 共用圖片欄位，預設 `https://loc.lo3rwang.cc/pics/scope-gn.jpg`；儲存改以 `silver.loc_blocks` 完整 UID 寫入並實際資料庫讀回比對（程式契約已測，生產權限寫入尚未實測）。Group 管理入口文案保留於「系統管理」下，不新增資料表。
-- [ ] **待工程端真實功能與整批驗收：** 已授權 Admin 儲存→Supabase 讀回→重進頁→文字／圖片變更生效、無權限使用者禁止寫入、不同管理入口與一般 Hero 互不干擾、桌機手機編輯操作；使用者手動部署後再檢查正式版本和 Service Worker。此項與 PR 編號集中記錄，**不要求使用者逐分支驗收**。
-- [x] **交付邊界：** 未開啟 Cloudflare 自動部署／ISR，未觸碰 `time`、`trace`、`keywords` 表結構；這三表的合併構想僅為後續討論，**本 PR 不授權執行**。
+main `8ae9c3f2`，CI [#40341015031](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40341015031) success。
 
----
-
-# LOC 1.1 RC｜功能完整與無 ISR 依賴：三線整合 TODO（2026-10-26）
-
-## 集中待驗收｜整批功能驗收清單（CI 通過後加入）
-
-> **這裡是集中驗收看板，不是未完成工作清單。** 一般功能須先由工程端完成、實際功能自測、適用 CI 全數通過並合併 `main`，才加入下方「工程完成／待集中部署」區。之後由使用者自行決定一次手動部署，工程端核實部署成功、線上版本與基本實際功能，才移至「已部署／集中待驗收」。讓使用者一次驗收多項完整功能，不必逐 PR、逐小修等待或替工程端除錯。未完成、CI 失敗／未驗證項目留在原本 TODO，不能冒充待驗收。
-
-### 工程完成、CI 通過、已合併 main｜等待集中手動部署
-
-- [x] **Admin 系統管理五選單整併** `[工程程式與適用 CI 通過／已合併／未部署]`：`ADMIN-NAV-20261026`、原分支 `task/admin-network-lists-nav`、[PR #586](https://github.com/EsotericVerse/moon-runes-pwa/pull/586)、`main 53f7c2b7`、[CI #40347854676](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676)。預計同批驗收：Admin 首頁人員；名單管理（保留名稱＋黑名單）；網路設定（資料庫＋快取／多家 ISR）；舊連結；原 Hero 文字不變。正式登入寫入及線上狀態尚未驗證，**不得視為已部署或使用者驗收**。
-
-- [x] **Admin 全站三段快取模式** `[工程程式及 CI 完成／main 已合併／待使用者集中手動部署]`：`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → `main 2c73439c`；[Bootstrap 216/216 + Build/Chrome #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)、[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 成功。預定集中驗收：Admin → ISR 設定 → `off/cache/isr` 切換、儲存、重新讀取及退路。**尚未部署；真實 Admin 登入寫入、外部 ISR 快取命中尚未在線上驗證，不得當作已由使用者驗收。**
-
-符合門檻後每項記錄：`功能／TODO ID｜整合 main SHA｜成功 CI run／測試證據｜工程功能驗證｜可驗收的實際操作｜部署狀態`。可持續累積成一整批，不因某個分支合併就請使用者立即驗收。
-
-### 已部署、版本確認、基本線上檢查完成｜集中待使用者驗收
-
-本區僅能由上區項目在**使用者手動部署成功且工程端確認實際生效**後移入；列出一口氣可完成的功能驗收路徑、預期結果與必要的版本差異。使用者只驗收整體功能與使用感，不必逐項檢查程式碼或 CI。
-
-### 急迫修復｜獨立快速通道
-
-真正急迫的服務故障／安全或資料完整性問題，或使用者明確要求立刻恢復的功能，不必等集中批次；工程端先完成必要的聚焦安全與功能檢查，迅速修復並整合 `main`，再由使用者決定立刻手動部署（除非另有明確單次授權）。工程端確認線上恢復後補完完整適用 CI 與回歸檢查，紀錄當時未驗證部分；不得把未部署的修復稱為已生效，也不得自行重啟 Cloudflare／ISR 或自動部署。
+- [x] 區塊選單移除「頁面控管」，管理類別只留「系統管理」「個人設定」。
+- [x] 文化/統計/痕跡/搜尋各新增對應「管理」子項（TimeAnchor/Keywords/SpaceAnchor/AdvancedSearch）。
+- [x] 管理 Hero 沿用 `scope_manage` 共用圖，寫入 `silver.loc_blocks`。
+- [ ] 待驗收：Admin 儲存→讀回→重進頁、無權限拒絕寫入、桌機/手機。
+- 邊界：未開 ISR/自動部署；`time`/`trace`/`keywords` 表結構沒動，合併構想僅討論未授權執行。
 
 ---
 
-## ISR 既有功能與歷史擴充構想｜目前已開啟，仍禁止自動部署
+# LOC 1.1 RC｜功能完整與無 ISR 依賴
 
- > **2026-10-27 最新覆寫：** 使用者確認 ISR **已開啟**；以前關閉的說法已過時，**不得切換設定或反覆部署**。以下擴充構想不是目前必做；LOC 1.2 Release 的單人五分鐘功能／ISR／流量／成本測試仍須等所有功能穩定，由使用者自行選擇一次手動部署後進行。
+## 集中驗收看板
 
-### 歷史分支生命週期登記｜原 ISR-RECOVERY-01（非現行工作）
+> 工程完成、CI 通過、合併 main 的功能先放這裡集中列；使用者手動部署成功、工程端確認生效後才算「已部署待使用者驗收」；使用者整批驗收使用感，不逐項看 CI。急迫的安全/資料問題走快速通道，不用等集中批次。
 
-- [x] **Admin 三段全站快取模式：工程實作已整合；待集中部署與使用者驗收** `[MERGED / PR CLOSED / NEVER REUSE BRANCH]`
-  - **原始工作分支：** `task/isr-three-mode-admin-cache`；**PR：** [#584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584)（已合併並關閉）；**main 合併 SHA：** `2c73439c8a19a9b8448bb12b23e7028b32d227b4`；**分支最終 HEAD：** `7b29bb8d8bad78ccd86dc85d7b7a24c6789236a3`。工作沿用同一分支完成，沒有開替代分支。
-  - **已完成的程式：** Admin → ISR 設定三模式「不開快取／打開快取／打開 ISR」，儲存至 `silver.loc_cache_runtime` 並可讀回；公開讀取、管理員 RLS 寫入、Service Worker 不移除、JS Route/Config/Blocks 及原資料庫直接讀取路徑不變。一般快取和 ISR 是不同模式；公開圖片可走選用邊緣來源，遇超時／失敗回原站；ISR 數值摘要不可用時回 Supabase RPC。網域清單編輯無效也不阻擋管理者切回 off/cache。
-  - **資料庫唯讀核對：** Supabase 單筆設定目前 `mode=cache`、`origin=''`；RLS 有 anon/authenticated SELECT 與 `silver.can_manage_global()` 的 authenticated UPDATE（欄位級 UPDATE 權限已核對）。這是資料庫契約查驗，**沒有以真實 Admin 登入執行模式寫入／重讀端對端測試**。
-  - **CI／Build：** [Trace/Admin Hero #40342012352](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352) 終態 success：Bootstrap **216/216**、Next.js Build、Chrome Trace 桌機／手機、ISR 防護檢查；[Culture #40342012350](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012350) 終態 success。PR 已在 CI 完成後整合 `main`，正式 GitHub Pages/IPA/Cloudflare 部署均**未觸發**。
-  - **既有功能／Release 驗收分開：** 已整合的 Admin 模式留待使用者集中手動部署後查驗；不要求開發期恢復遠端 ISR 或跨使用者壓力測試。**但 LOC 1.2 Release 必須完成屆時由使用者親自啟用 ISR 的五分鐘實測**，不得由工程端為了這項測試自行部署。
-  - **分支善後：** PR 已合併／關閉；目前連接器不提供刪除 Git branch 操作，該遠端分支目前仍存在，標記 `MERGED / NEVER REUSE`，不可再拿它承接新工作；如果日後具備安全刪除方式，才清理該已合併分支。此限制不影響既有 `main` 的程式整合狀態。
+### 已合併main、待集中手動部署
 
-- **原 ISR-RECOVERY-01｜全域共用快取擴充（歷史規劃，非現行開發待辦）** `[開發期保持關閉／LOC 1.2 Release 另須 ISR 五分鐘實測]`
-  - **保留 Service Worker，絕不移除。** 既有 PWA、公開圖片 Cache First、適用的 JS/CSS 快取及既有離線能力繼續保留；只依測試與成本證據精簡重複快取責任。**原本的 JS 政策不變**：Scope Route + Config 的 JS 模組、按頁載入 Blocks、按需資料查詢與既有運算流程不得因加入 ISR 而回退為大量 JSON 解析或整頁預載。
-  - **讓適合多人重用的內容進入全域共用快取，包括圖片。** 將公開圖片納入邊緣共用快取（可使用 CDN/HTTP Cache，毋須硬塞進 Next.js ISR 頁面），並按資料特性恢復 ISR／伺服器共用快取：文化／統計摘要、搜尋與空間定錨點自動完成候選、時間定錨點相關候選／統計，以及其他適合的公開可重複成果。快取策略逐類審核來源、TTL、失效／更新、Scope 隔離、版本、冷啟動、成本與必要的資料保護；**不得快取私有資料、授權回應、登入資訊或造成跨 Scope 洩漏**。
-  - **明確提供可由管理者手動修改／選擇的快取模式，作為 ISR 故障處置。** 至少支援「**ISR／全域快取啟用**」與「**ISR 停用、直接查原有資料來源**」兩種明確模式；切換時保持 Service Worker 及 JS 政策正常，不需要重新設計文化／統計／搜尋／痕跡功能。應核實現有設定入口與已授權的配置／切換方式，採用簡單、安全、可回退的方案，不能只靠臨時改原始碼或請使用者逐功能手動修復。遇到 ISR 不可用時，不得把快取失敗誤報成「資料庫連結失敗」，核心功能仍可回到已驗證的 Supabase RPC／查詢或手機 SQLite 讀取路徑；明確區分手動控制與必要的故障退路。
-  - **部署完全由使用者決定。** 平時多項功能整批完成、CI 通過、合併 `main` 並列入集中待驗收，再由使用者自己觸發一次手動部署；急迫狀況是否連續部署也由使用者控制。**本 TODO 只授權規劃與後續實作追蹤，不表示現在已啟用 ISR、Cloudflare 自動建置／Preview、R2／DO 寫入、Vercel 備援或任何實際部署**。在明確啟用之前，現行 ISR 停用與費用保護不變。
-  - **歷史擴充構想與實際 Release 門檻不同：** 全域共用快取擴充、跨使用者命中與圖片快取優化非目前必做；**實際 LOC 1.2 Release 基本條件**是功能穩定後、使用者自主一次手動部署／開啟 ISR，以一人五分鐘連續操作核對功能正確、Cloudflare 流量與成本訊號。工程期先驗證無 ISR 正常、權限與回退，避免先行產生付費部署。
-  - **歷史關聯：** LOC-TODO-02（無 ISR 也必須可用）、已結案 LOC-TODO-03、LOC-TODO-05、LOC-TODO-04／06。這份 ISR 擴充設計只是保留紀錄，**不授權或要求恢復**。
+- [x] **Admin 系統管理五選單整併**（`ADMIN-NAV-20261026`，main `53f7c2b7`，[CI](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40347854676)）
+- [x] **Admin 全站三段快取模式**（`task/isr-three-mode-admin-cache` → [PR #584](https://github.com/EsotericVerse/moon-runes-pwa/pull/584) → main `2c73439c`，[CI](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40342012352)）：ISR 設定三模式 off/cache/isr，存 `silver.loc_cache_runtime`；驗收路徑 Admin→ISR設定→切換/儲存/讀取。
 
 ---
 
-## 待查證｜既有「頁面控管」Hero 四組文案與單圖（2026-10-26，優先）
+## ISR 歷史擴充構想｜已開啟，仍禁止自動部署
 
-> **狀態：待查證／尚未交付。** 以下依使用者再次確認的七種既有 Hero 分類及原有選單架構記錄。**不新增或合併 Admin／Manage／Setting 選單，不把「頁面控管」改名為「頁面管理」**。先前實作 `1d7d91f` 已在 `main`，但使用者看不到畫面生效，程式與正式發布都尚未驗收。此節覆蓋文件末端較舊的管理 Hero 描述。
+這些是未來可做的延伸，不是現在的必做項：
 
-- [ ] **保留原有七類 Hero 架構。** 「文化／統計／痕跡／搜尋」各自有 **Scope Group / Scope ID** 圖片與文字設定；另外「管理相關」維持 **Admin / Manage / Setting** 三個互不合併的獨立 Hero 類別（原本就是如此，不是新需求）。既有 Admin「功能區塊設定」第七項及其餘項目不應被重建、移位或誤認成新管理入口。
-- [ ] **只擴充原本的「頁面控管」 → `scope_manage`。** 在 **Admin → 功能區塊設定 → 頁面控管** 裡，原先 `scope_manage` 僅有「頁面控管」一組文字與一個圖片路徑。現在文字改為 **四個獨立輸入框**，依序「時間定錨／關鍵詞／空間定錨／進階搜尋」；**空間定錨**承接原本的頁面控管入口；**同一個原本圖片路徑欄位不變、四者共用同一張 Hero 圖**。不為四者新增四張圖，也不將每個文字框擴張成眉標、標題、副標、說明多欄位。
-- [ ] **Scope ID 進入管理功能時切換文案，不切換圖片。** 四個入口各自顯示對應文字，但仍使用 `scope_manage` 同一個圖片路徑；應核對實際路由、編輯 Dock、權限與標題載入行為。原有 **文化／統計／痕跡／搜尋** 普通瀏覽 Hero 的 Group／Scope 雙設定維持原狀；`admin` 和 `setting` 的獨立 Hero 亦維持原狀。
-- [ ] **LOC 管理入口是另一路由及文案需求，勿與 Admin/Manage Hero 類別混為一談。** LOC 管理時的五個入口文案為「系統管理／人員作品管理／關鍵詞／痕跡圖管理／文章管理」，其中「系統管理」僅 Admin 可進；先前使用者亦指定管理入口的 Hero 圖相同、文字不同。核對各入口的實際路由與 `admin`／`manage` 責任，不得因共用圖片而合併原有獨立選單。新增的五項文字編輯區如有需要，仍在既有 Admin 功能區塊設定中呈現，不取代 Scope 的上述四個欄位。
-- [ ] **修正「頁面控管」 Hero CSS 與地圖撐版。** 原本 `scope_manage` 的 Hero CSS 顯示已有問題，必須獨立核對背景圖是否正確鋪滿及圖片容器寬高；地圖 MapLibre 初次載入與互動後，不能撐大 Hero、整頁、Grid 或管理選單。桌機／手機、換頁／重新進頁均需自主回歸。
-- [ ] **保存與生效驗證。** 只在核實既有 `silver.loc_blocks` 契約與 Admin 寫入路徑後修改，保存四段文字＋原單一路徑，讀回後確認所有入口正確、權限沒有退化。確認 GitHub `main`、PR merge、完整 CI／build、實際網站載入版本與 Service Worker 快取。**目前網站看不到變動，因此不能把 commit 當成交付**；不得藉此擅開 Cloudflare 自動部署／ISR。
-- [ ] **其他獨立故障仍待查證。** 正式站選 ZIP 仍出現舊的 512 MiB 提示（原始碼 1024 MiB 不代表已發布）；PR #580 現為 **Draft／未合併**，相關 Trace／place 四碼改動尚未進入 `main`（詳見 A 線分支生命週期紀錄）。此類問題與本次頁面控管 UI 分開追蹤。
-
+- 全域共用快取擴充（公開圖片進邊緣快取、文化/統計/搜尋摘要恢復 ISR）：逐類審核 TTL/失效/Scope 隔離，不快取私有資料。
+- ISR 故障時的手動切換模式（isr/off 兩種），不得把快取失敗誤報成資料庫連結失敗。
+- Neon 單次整批對齊：只在 Supabase 全部完成後、使用者明確授權才做一次單向對齊，不雙向同步，不藉此啟動部署。
 
 ---
 
+## 待查證｜「頁面控管」Hero 四組文案與單圖（2026-10-26）
 
-> **目前主要目標：** LOC 的**空間定錨點、痕跡圖、其他系統**三條工作線，各自完成實際功能並整合，讓使用者能順手使用**文化、統計、搜尋、痕跡**四大功能；即使 **ISR 關閉，也必須能正常運作**。完成不是「有畫面／有函式／CI 綠燈」，還包含真實資料、持續操作、重讀、效能與權限安全。
->
-> **2026-10-27 更正：ISR 已開啟，不需要重新啟用。** 保持現有 ISR／Cloudflare 設定，不觸發部署；先完成工程自測與合併 `main`，最後由使用者手動集中部署並進行五分鐘實測。
->
-> **追蹤範圍：** 以本檔**未取消的 LOC-TODO 與 LOC-PLACE／TIME 項目**為現行待辦；已結案的 01、03、12 不再列待做，07／15／35 與 LOC-PLACE-02 已依使用者指示移除，11／LOC-PLACE-05 暫緩。歷史追蹤可由 Git 紀錄取得，取消 ID 不回收；TRACE-01～25 屬歷史細項，以 2026-10-27 最新更正覆蓋舊要求。這是工作與驗收規劃，不代表完成或啟用任何服務；舊測試結果只作當時紀錄，實際狀態仍需驗證。
+> 保留現有七種 Hero 類別（文化/統計/痕跡/搜尋各自 Scope Group/ID 圖文；Admin/Manage/Setting 三個獨立）。只擴充原 `scope_manage`：四個文字框（時間定錨/關鍵詞/空間定錨/進階搜尋）共用原本一張圖。commit `1d7d91f` 已進main，但畫面還沒生效，未驗收。
 
-## 一、工作原則：從使用者目標反推工程，而不是拿小進度驗收
+- [ ] Scope 四個入口切換文案、共用同一圖片路徑。
+- [ ] LOC 管理入口（系統管理/人員作品管理/關鍵詞/痕跡圖管理/文章管理）是另一套路由文案，不跟 Admin/Manage Hero 混。
+- [ ] 修正 `scope_manage` Hero CSS，MapLibre 初次載入不能撐大版面。
+- [ ] 其他獨立故障：ZIP 選取仍顯示舊的 512 MiB 提示；PR #580 仍是 Draft 未合併。
 
-- **三線可以獨立實作、自測與同步調查，但共同對齊上述功能目標。** 現行仍開放項屬實作／缺口追蹤（原始編號不重用），不代表每個小項都需要使用者驗收，也不代表符文連線遊戲、通知清理等與本階段四大功能無直接相依的長線工作必須全部結案才能測 ISR。
-- **AI 自行負責解法與品質：** 按當下資料與環境選用適合的 Skills、既有模組、資料源，必要時主動搜尋 skills.sh；自行完成動態資料串接、負載控制、回歸、權限測試、可觀察查詢與 CI，檢查冷／熱載入、連續操作與重新進頁。沒有現成 Skill 不能成為不做的理由；搜尋 Skill 也不等於取得安裝授權。
-- **使用者有權且會親自驗收完整功能。** 工程端先排除已知問題，功能真正可用後再提供一次有意義的整體操作；不要每增加 1% 改善、每修一個按鈕、每跑一次 CI 或每合併一段就請使用者驗收。使用者也可以隨時自行查看成果，但不承擔工程除錯、監控設定與代碼檢查。
-- **TODO 可以先由 AI 完成、驗證並更新狀態，不需要逐項請使用者簽收。** 只要單項原定完整功能已通過真實資料、動態互動、權限、效能及相關回歸／適用 CI，AI 就可把對應項目更新為 `[x]`（工程已自證可用），註明實際證據；未通過不可勾選。`[x]` 不代表使用者已親自驗收。**使用者只在三線整合後的完整使用情境中驗收「使用感覺」**；若後續實際體驗指出問題，再依證據重新開啟相關 TODO、由 AI 修復，不保留舊 branch 等簽收。
-- **避免靜態敷衍：** 不能只有假資料或一次性的靜態畫面。需要檢查「變更設定→結果立即更新→儲存→重進頁→切換 Scope／時間／關鍵詞／資料來源→再次使用」，以及匯入後的真實資料，確認動態路徑不破裂；載入慢到不順手也不算交付。
-- **權限與資料保護不退讓：** Supabase 為現行權威主庫，預期公開資料維持 All Read，寫入另驗權；手機 SQLite 有獨立資料契約；Neon 不逐項同步。不要刪資料、破壞 schema、重新匯入 Timeline、寫 Galaxy 設計紀錄或啟動部署，除非另有明確授權。依風險採用同一個 task branch 隔離或乾淨 main 上的低風險修正，不強制一律開分支。
+---
 
-## 二、跨線主目標：以實際功能為交付
+## 目前主要目標
 
-- [ ] **TODO1｜我的最愛框架** `[跨線主目標]` `[規格已明確／實作與效果待驗證]`
-  - **目標：** 手機免費版與手機收費版提供不同程度的框架設定。**免費版只能作基本訂立／基本設定；收費版可以完整自訂**。設定應直接影響實際呈現與資料選用，不是只有展示選單；以現有資料、維度與組件組合，不把不同責任的功能硬合併。
-  - **你要驗收的結果：** 在**設定頁的框架設定**完成選擇或自訂後，**立即就能觀看對應痕跡**；重新進頁、切換／更新設定仍正確，基本版限制與付費版完整自訂能力明確而可用。
-  - **延伸一：** 框架設定能相應改變**文化首頁**與**統計首頁**的布局／呈現和相關內容，並保有四大功能可用性；不可只改靜態外觀卻不接真實資料。
-  - **延伸二：** 切換為手機**本地 SQLite/local** 讀取後，框架設定與痕跡觀看仍正常；恢復遠端來源時不遺失原有資料或設定。
-  - **工程歸屬／交叉依賴：** 其他系統主導免費／付費限制與設定入口；空間定錨線提供可選錨點；痕跡圖線提供 Current Frame、路線與風格呈現。參考 LOC-TODO-08、09、13、20、21、22、25～29；既有程式或資料契約需先查，不能猜測付費額度或新增未授權限制。
+LOC 的空間定錨點、痕跡圖、其他系統三條線，各自完成功能並整合，讓文化/統計/搜尋/痕跡四大功能順手可用，即使 ISR 關閉也要正常。完成的標準包含真實資料、持續操作、重讀、效能、權限——不是「有畫面/有函式/CI 綠燈」就算。
 
-- [ ] **TODO2｜匯入** `[跨線主目標]` `[萬用 ZIP 主流程已進 main／正式匯入與整合效果待驗證]`
-  - **目標：** 使用者**只要提供關鍵的 JSON**，相關內容便可透過正確的解析、對應與建立流程匯入適用資料庫，建立必要關聯，無須使用者手動補建一堆資料。匯入流程應沿用已核實的 Schema／檔案格式，**不憑空補造欄位、地址、時間或錨點**。
-  - **你要驗收的結果：** 比對**匯入資料筆數與實際落庫筆數／關聯**，然後直接使用**文化、統計、痕跡、搜尋**，都能找到並正確操作剛匯入的真實資料；不是僅看到匯入成功訊息或靜態樣例。
-  - **工程自測：** JSON 的關鍵欄位、原文／時間／地點及關鍵詞映射、合法空資料、不同來源、重複匯入、中斷重試、權限、筆數及參照一致性；涉及本地 SQLite 時同樣要驗證。對 Facebook 打卡備份以 JSON／文字為主要地點來源，**不要求原照片；ZIP 含 JPEG／PNG 時可本機唯讀解析 EXIF GPS／拍攝時間，不匯入圖片，也不得憑 GPS 直接編造地名**；MD 與字元解碼屬既有匯入能力，不能讓它們阻礙本項 JSON 主流程。
-  - **已實作並整合 main（2026-10-26，commit 586bf37）：** [x] 以既有 fflate／streamparser 共用 ZIP 解析器串接「來源辨識→文章預覽→獨立開始匯入」；[x] 來源檔名線索與檔內格式辨識／萬用 fallback；[x] Facebook 原始 URL 與明確地點、Threads 貼文、ChatGPT conversations 文字轉 Galaxy 欄位；[x] ZIP JPEG／PNG 有界 EXIF GPS／拍攝時間唯讀解析、影像不持久化；[x] 專屬回歸測試加入現有 bootstrap 測試入口。**已進 main 與單模組語法／資料映射／JPEG EXIF 測試，不代表完整 CI 或正式環境已驗證；Cloudflare 部署保持關閉。**
-  - **仍待驗證／補強：** [ ] 完整 bootstrap／build、各平台真實 ZIP 解析與大量資料筆數、權限及實際寫入、重複匯入／中斷重試；[ ] EXIF 圖片與文章可靠對應、GPS 轉地點名稱前的證據檢查；[ ] EXIF 診斷顯示與多格式擴充（目前主要 JPEG／PNG）、地理隱私限制；[ ] 不同 Scope、手機 SQLite 與文化／統計／搜尋／痕跡的實際結果一致。
-  - **工程歸屬／交叉依賴：** 其他系統主導匯入介面和 DB 路徑；空間定錨線核對地點／錨點；痕跡圖線核對建立後的可觀看／可選／可排序，並連到四大功能。參考仍有效的 LOC-TODO-16、18、24～28；LOC-TODO-11 為暫緩、12 已處理、15 已取消，TRACE-24 只作歷史匯入測試紀錄。**不得因追蹤此項就自行執行大型正式資料匯入。**
+ISR 現已開啟，保持現狀不動；先完成工程自測合併 main，再由使用者手動集中部署並做五分鐘實測。
 
-## 三、三條工作線（保留原有工作與缺口）
+追蹤範圍：本檔未取消的 LOC-TODO/LOC-PLACE/TIME 項目。已結案 01/03/12 不再列；07/15/35、LOC-PLACE-02 已取消；11、LOC-PLACE-05 暫緩。TRACE-01～25 是歷史細項，被 2026-10-27 的最新決定覆蓋。
+
+## 一、工作原則
+
+- 三線可獨立實作/自測，但共同對齊四大功能目標；不是每個小項都要使用者驗收。
+- AI 自行負責解法與品質：選合適 skill、自行完成資料串接、權限測試、CI；沒有現成 skill 不是不做的理由，但找 skill 不等於取得安裝授權。
+- 使用者在三線整合後的完整使用情境中驗收「使用感覺」，不是每改一個按鈕、每跑一次 CI 就驗收。
+- TODO 可由 AI 自行完成、驗證並更新為 `[x]`（註明證據），不用逐項請簽收；`[x]` 代表工程自證，不代表使用者已驗收。體驗有問題再依證據重開。
+- 避免靜態敷衍：要檢查「改設定→立即生效→儲存→重讀→切換 Scope/時間/關鍵詞→再用」的完整路徑，載入慢到不順手不算交付。
+- 權限與資料保護：Supabase 為權威主庫，公開資料 All Read，寫入另驗權；手機 SQLite 獨立契約；Neon 不逐項同步。不刪資料、不破壞 schema、不擅自部署。依風險決定要不要開隔離分支。
+
+## 二、跨線主目標
+
+- [ ] **TODO1｜我的最愛框架**：手機免費版基本設定、收費版完整自訂，設定要直接影響實際呈現（不是純展示選單）。延伸：框架設定要能改變文化/統計首頁布局；切到本地 SQLite 時框架與痕跡觀看仍正常。依賴：LOC-TODO-08/09/13/20/21/22/25～29。
+
+- [ ] **TODO2｜匯入**：使用者只需提供關鍵 JSON，自動解析、對應、建立關聯，不手動補資料；不憑空補造欄位/地址/時間/錨點。
+  - **已進 main（2026-10-26，commit `586bf37`）：** [x] fflate/streamparser 共用 ZIP 解析＋來源辨識；[x] 檔名線索與格式辨識 fallback；[x] Facebook/Threads/ChatGPT 轉 Galaxy 欄位；[x] ZIP 內 JPEG/PNG 唯讀 EXIF GPS/時間解析（不存圖）；[x] 專屬回歸測試已併入 bootstrap。
+  - 仍待補：完整 bootstrap/build、真實大量 ZIP 解析、重複匯入/中斷重試、EXIF 對應準確性、不同 Scope 一致性。
+
+## 三、三條工作線
 
 ### A｜空間定錨點
 
-**線目標：** 空間定錨點能輕易搜尋、觀看、選取、反覆使用，既有資料完整，真正作為痕跡圖站點來源。採 React Select 地名候選；縣市選填、不處理樓層需求。Scope 權限保持正確；地圖與時間資料按需載入，不依賴 ISR。
+目標：地名可搜尋選取，React Select 自動完成，縣市選填不處理樓層，既有資料完整作痕跡圖站點來源。
 
-**目前 A 線有效範圍：** LOC-TODO-10、13、16 與 LOC-PLACE-03／04；LOC-TODO-11 暫緩、12 已處理、15 已取消，LOC-PLACE-05 暫緩、06 簡化為來源 scopeid 顯示。空間與 B 線沿用既有 ID／時間／文章關聯，不另建重複模型。
+有效範圍：LOC-TODO-10/13/16、LOC-PLACE-03/04（11/12/15 已結案或暫緩）。
 
-#### A 線已完成的工程步驟（2026-10-26；不等於整線功能結案）
+**A 線已完成：**
+- [x] 程式整合至 main（PR [#576](https://github.com/EsotericVerse/moon-runes-pwa/pull/576)，commit `9a16b163`）。
+- [x] 地址/樓層/UID 基本程式與隔離測試（`test-spatial-anchor-references.mjs`）。
+- [x] 跨 Scope 公開位置參考唯讀路徑（585 筆已存錨點可查）。
+- [x] Facebook JSON/ZIP 打卡解析（巢狀 place、文字解碼、media/訊息過濾）。
+- [x] CI 基準比對（[#40289943249](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40289943249)：bootstrap 175/175、build 257/257）；原 6 項回歸失敗已查因修正（PR [#579](https://github.com/EsotericVerse/moon-runes-pwa/pull/579)，main `57bf4732`，[CI](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40294025869) 263/264）。
+- [ ] 尚未閉環：正式 UI 寫入/重讀、地圖站點選取、Queue 互動、冷熱載入效能，還沒部署到公開站點。
 
-- [x] **A 線程式整合至 main。** PR [#576](https://github.com/EsotericVerse/moon-runes-pwa/pull/576) 已合併，main commit [`9a16b163`](https://github.com/EsotericVerse/moon-runes-pwa/commit/9a16b163aa27cfa09ce34752a0d3543a4e11533f)；保留 B 線 Frame／Queue 責任，臨時 A 線 CI workflow 已自合併內容移除。
-- [x] **地址／樓層／UID 基本程式與隔離測試。** 完整地址原文、B1／指定樓層／室別資料處理、同名與同座標不同 UID／Scope 候選保留、臺／台搜尋等價、不由地名或 GPS 猜門牌／樓層；由 `scripts/test-spatial-anchor-references.mjs` 等測試確認程式邊界。這是模組測試，不代表 3D 高度或正式地圖已驗收。
-- [x] **跨 Scope 公開位置參考的唯讀路徑。** 可查 `silver.loc_trace` 的已存地址／座標候選，選外部 Scope 的候選僅帶入位置資料，不直接重用或修改他人的 UID；已用 Supabase 只讀查詢確認 anon 可讀現存錨點（585 筆），並以程式測試覆核身份隔離。正式角色寫入和重進頁驗證另列未完成。
-- [x] **Facebook JSON／ZIP 文字打卡解析及防護測試。** 巢狀 place、原文、打卡時間、Meta 文字解碼、`source_place` 映射，混合 ZIP 過濾媒體與訊息；實測 ZIP 內超過舊 10 MiB 限制的 JSON。程式設定 ZIP 1 GiB、解壓 100 MiB、單檔 JSON 50 MiB、ZIP 最多 100,000 項的限制；沒有直接大量寫入正式 Galaxy。
-- [x] **合併候選的既有 CI／建置驗證與基準比對完成。** [Actions #40289943249](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40289943249)：`test:bootstrap` 175/175 通過、Next.js production build 257/257 頁成功、安全稽核通過、ISR 停用檢查通過。完整 Node 套件 258/264，與同次 main 基準 209/215 **相同 6 項失敗**，該次完整檢查確實失敗（歷史基準）；後續已修復，見下方最新工程證據。合併後 [遊戲 CI #40290317423](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40290317423) 29/29 通過。
-- [x] **原有 6 項完整 Node 回歸失敗已查因並修正整合。** PR [#579](https://github.com/EsotericVerse/moon-runes-pwa/pull/579) 已合併至 `main` [`57bf4732`](https://github.com/EsotericVerse/moon-runes-pwa/commit/57bf4732683cf8784b282d2ef88616b8797f787a)：修正 2 項地圖 Popup 測試替身、1 項過寬的刪除斷言、2 項不符合新版 Trace Frame／Queue 的舊 UI 測試，以及 1 項文化 Chrome 測試執行時序；另對齊通用 ZIP→Facebook 轉接器測試與「全部時間」預設標籤。隔離 [CI #40294025869](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40294025869) **完整 Node 263/264 通過、0 失敗、1 項預建置 Chrome 測試按階段略過且在 `build:static` 後另行執行成功**；Bootstrap 175/175 通過、安全稽核與靜態匯出檢查通過，Chrome 文化河道 8 主群組／16 子群組、展開 680ms、額外 RPC 0。與最新 B/C main 整合後 [Trace PR CI #40295252951](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40295252951) 完整通過：Trace 測試、Bootstrap、Next build、實際 Chrome 桌面／手機版痕跡頁及 ISR 停用檢查均成功。未部署公開站點、未寫正式資料；這次勾選的是**測試缺陷修復**，不是 A 線端到端／全部正式功能結案。
-- [ ] **A 線尚未自證的功能閉環。** 正式 UI（Guest／可寫角色）、實際寫入→資料庫重讀→重新進頁、地圖站點選取、Queue 交互、歷史資料一致性、冷熱載入與查詢量／一般操作延遲，仍需工程端執行驗證；最新 A 線程式尚未自動部署到公開站點。以 LOC-TODO-10／13／16 與實際仍需補足的 A 線互動為準；11／05 暫緩、12 已處理、15 已取消，歷史 TRACE 的縣市必填／樓層任務不再作完成門檻。不請使用者逐項替代除錯。
+- [ ] **LOC-TODO-10｜錨點地名自動完成** [P1]：React Select，縣市非必填不限制搜尋，不做樓層；常用前十名，按＋加入 Queue。
+- [ ] **LOC-TODO-11｜Facebook 備份打卡** [暫緩]：地址/樓層辨識暫不做，JSON/ZIP 解析成果保留。
+- [x] **LOC-TODO-12｜`source_place` 錯誤映射** [已處理]。
+- [ ] **LOC-TODO-13｜地點周邊文章與時間密度連動** [P1]：依已存地點/打卡時間查附近文章，連動 TimeRiver，不從座標推算造訪時間。
+- [ ] **LOC-TODO-16｜2001–2013 歷史地點整理** [P2]：去重但保留不同造訪時間，不捏造缺漏日期。
 
+A 線舊版 TRACE-01～14（必填縣市/樓層辨識/3D樓層）已取消為驗收要求，資料保留但不列新 UI 門檻；僅供歷史比對，不再逐條列出。
 
-- [ ] **LOC-TODO-10｜錨點地名自動完成與常用建議** `[P1]` `[程式部分已有／簡化待完成]`
-  - 使用既有 React Select 自動完成／搜尋選擇；地名為入口，**縣市非必填、亦不要求依縣市才能搜尋；不做樓層辨識、樓層篩選或樓層 3D 驗收**。沿用本 Scope 錨點、同名候選與常用前十名，按 `＋` 才加入 Queue。只保留真正有需要的身份／Scope 區分與有效搜尋；不新增付費定位服務。
+**A 線分支生命週期（LOC-PLACE-01～06）：**
+- 隔離分支 `fix/loc-place-id-layout-20261026`，PR [#580](https://github.com/EsotericVerse/moon-runes-pwa/pull/580)（Draft，未合併）。狀態 `FROZEN / UNVERIFIED`：與正式資料庫尚不相容，CI [#40344096224](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40344096224) failure（移除了 5 項既有回歸測試，被 baseline 門檻攔下）。
+- 下一步：merge 最新 main、補回被移除的回歸測試、核對 UID 遷移映射，全部驗證過才合併關閉 #580。
 
-- [ ] **LOC-TODO-11｜Facebook 備份打卡資訊** `[暫緩｜2026-10-27 使用者決定]`
-  - 現階段**不做**進一步 Facebook 地址／樓層辨識、資料回填或匯入重工；已有 JSON／ZIP 解析成果保留。待使用者重新指定後再評估，不把樓層或縣市完整解析列為驗收前置。
+**唯一命名契約（2026-10-27 最新）：** `silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵，不留 `uid`/`trace_uid`/`trace_id` 並行欄位；`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖；`galaxy.place_id varchar(4)` 指向同 Scope 的 anchor `id`；`galaxy.uid`/`source_place` 不變。欄位 `anchor_uids` 已正式更名為 `anchor_list`（遷移 `20261027001000_trace_anchor_list_column.sql`，正式 Supabase 尚未執行 DDL，CI [#40356720053](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40356720053) 仍 failure，門檻同上）。LOC-PLACE-02 舊 UID 遷移已取消；03/04 沿用既有流程＋React Select；05 暫緩；06 只需顯示來源 scopeid。
 
-- [x] **LOC-TODO-12｜`galaxy.source_place` 打卡欄位錯誤映射清理** `[已處理｜2026-10-27 使用者回報]`
-  - Suno 等多媒體誤入 `source_place` 的修正，依使用者回報視為已處理並移出待辦；此處不表示本輪重新實測程式／資料庫。如後續有具體復現，再開新的缺陷處理，不主動批次覆寫 Galaxy 或同步 Neon。
+- [x] **LOC-PLACE-01｜Scope 四碼 Trace/Galaxy ID（DB）**：已結案。
+- [ ] **LOC-PLACE-03｜文章打卡整理入口** [P1]：補齊既有「整理定錨點」功能的實際缺漏互動。
+- [ ] **LOC-PLACE-04｜React Select 地點候選** [P1]：不選縣市不處理樓層，有歧義才顯示候選。
+- [ ] **LOC-PLACE-05｜place_id 關聯回填** [暫緩]：等 Trace ID 整理完再談。
 
-- [ ] **LOC-TODO-13｜地點周邊文章、時間密度與地圖連動** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：依已核實的地點、範圍、**獨立保存的日期／打卡時間**查附近地點與 Galaxy 文章，與 TimeRiver／時間密度連動；沿用文化文章及分頁模組，按需取得全文。**不從座標、距離或地圖軌跡推算造訪時間**；無地址、無 source_place、無文章或無錨點皆為合法中性空狀態，且不能把真正 SQL／權限錯誤偽裝成零筆。
+### TIME-ANCHOR-RANGES-20261027｜時間定錨與動態不連續時期（2026-10-27 定案，尚未實作）
 
+核心：先有定錨點才能定時期；時期沒有獨立日期，全部動態從 `time.uid` 對應日期計算；改動定錨點後重算所有引用它的時期。一個時期可以只有一個定錨點，也可以是多個不連續區段（例：`[[A001],[B001,C001],[D001,E001]]`）。使用者可選區段順序，不需要 `display_order`。
 
-- [ ] **LOC-TODO-16｜照片整理的 2001–2013 年歷史地點與經緯度** `[P2]` `[部分整理／待整合]`
-  - 完成條件／待辦：核對先前整理的歷史行程地點、日期（含不確定或無效日期）及地理座標，去重但保留不同造訪時間，納入既有空間錨點架構。不得捏造缺漏日期或地點。
+- [ ] **TIME-01｜四碼身份命名**：`silver.<scopeid>_time.record_id` 改名遷移為 `uid varchar(4)`；`record_type→type`、`label→title`、`note/style_description→description`；`resource_id` 零損失遷移對照後移除。`_trace` 主鍵另為 `trace.id`，兩表不混。
+- [ ] **TIME-02｜移除冗餘欄位**：移除 `display_order`、`date_status`、`year_value`、`visibility`、`created_at`、`updated_at`；風格標籤退場（既存 `style_comment` 要先備份才能刪）。
+- [ ] **TIME-03｜多區段時期陣列／動態重算**：`anchor_ids` 為有序錨點/區段集合，只用真實 anchor 的四碼 uid 解析每段起訖；改動錨點日期後全部重算，不用 `display_order` 或 `status='current'`。
+- [ ] **TIME-04｜刪改完整性**：被引用錨點失效時，對應連線自然失效，不級聯刪除時期、不沿用舊日期、不靜默重配。備份舊 UUID→新 uid 對照與原陣列順序。
+- [ ] **TIME-05｜全程式與 SQLite 對齊**：同步 `CultureTimelineEditor`/`culture-query`/`Culture`/`Statistics`/`Search`/Galaxy 時間查詢/SQLite/RPC/RLS/CI，全部測過才合併 main。
 
-#### A 線空間錨點細項（TRACE-01～14；僅供歷史比對）
-
-> **2026-10-27 使用者覆寫：** 下列舊 TRACE 敘述中的「必填縣市、精細地址、樓層辨識／樓層候選／3D 樓層」均已取消為開發與驗收要求；已有原始資料仍保留，不新增相關 UI 或驗收門檻。LOC-TODO-11／TRACE-24 相關 Facebook 延伸作業暫緩；被取消的 ID 不得由歷史 TRACE 反向恢復。
-
-- **TRACE-01｜完整地址** — 保留縣市／行政區／路街巷弄／門牌／樓層／室別的完整原文；新增、編輯、查詢、地圖讀寫一致，絕不從 GPS 猜門牌。 **現況：** 地址／樓層欄位及編輯程式已合併，基本欄位解析測試通過；實際寫入、重讀、地圖呈現尚未完成自證。 （歸入 LOC-TODO-10、11）
-
-- **TRACE-02｜成熟地址模組與正規化** — 先確認既有或成熟台灣地址模組支援縣市、門牌、樓層及室別；正規化臺／台、村里省略、地址格式差異，不自行多造一套解析器。 **現況：** 未完成。 （歸入 LOC-TODO-10、11）
-
-- **TRACE-03｜同棟不同樓層／室別查詢** — 能用完整地址查 B1、2 樓、3–4 樓、不同室別及同門牌不同單位；不是只儲存樓層文字。 **現況：** B1、室別、區間樓層及同址不同樓層的資料／候選測試已通過；正式 UI 查詢與寫入重讀尚未驗證。 （歸入 LOC-TODO-10、11）
-
-- **TRACE-04｜立體空間錨點** — 同經緯度不同樓層在 3D 地圖具有獨立可選位置；樓層號非海拔，沒有量測不得虛構公尺高度。 **現況：** 未完成。 （歸入 LOC-TODO-08、13）
-
-- **TRACE-05｜縣市由地址導出** — 以地址判斷取代永續儲存的 county_id；在更改欄位前，必須先保住沒有完整地址的舊錨點及海外／未知縣市查詢。 **現況：** 依然依賴 county_id。 （歸入 LOC-TODO-10）
-
-- **TRACE-06｜同址不同店家與歷史時期** — 同址改名、換店及歷史場所保留獨立錨點 UID，不按地址自行合併或覆寫。 **現況：** 部分防護已有，尚未完成。 （歸入 LOC-TODO-08、10）
-
-- **TRACE-07｜同名／同 GPS 不能認作同錨點** — 名稱相同但地點不同、座標誤差、同棟樓上樓下與完全同 GPS 的不同店均各自保留 UID。 **現況：** 部分防護已有，尚未完成。 （歸入 LOC-TODO-08、10）
-
-- **TRACE-08｜舊資料與關聯零損失** — 保留 Galaxy source_place、已建錨點及原始地點、各站時間、痕跡 Queue 次序與 Scope 所有權；舊資料未知地址不可自動補造。 **現況：** 缺完整資料一致性證據。 （歸入 LOC-TODO-08、11、13）
-
-- **TRACE-09｜路線選站只自動完成自己的錨點** — 縣市／地名搜尋只回傳當前 Scope 的錨點；同名以 UID 辨別，選中後按＋才加入 Queue。 **現況：** 已有部分流程，尚未整體完成。 （歸入 LOC-TODO-10）
-
-- **TRACE-10｜LOC 全 Scope 地址參考聯集** — 新增錨點時可用 silver.loc_trace 的全 Scope 已核對地址作候選；參考資料與 LOC 自己的痕跡圖是兩件事。 **現況：** 查詢與選取候選的程式已接通，Supabase anon 唯讀及模組測試已有證據；真實瀏覽器互動、持續查詢和權限寫入仍待自證。 （歸入 LOC-TODO-08、10）
-
-- **TRACE-11｜跨 Scope 複用地址座標但另建 UID** — 選用公用候選可複製完整地址、樓層、座標，不修改來源資料、不沿用別人的 UID，建立個人新錨點。 **現況：** 程式與模組測試已確認位置資料帶入、不沿用來源 Scope UID；正式權限寫入與新 UID 持久化重讀未驗證。 （歸入 LOC-TODO-08、10）
-
-- **TRACE-12｜同址／相似名稱／不同樓層候選** — 建錨點時可搜尋精確門牌、同樓層、上下樓及歷史商家；未確認只能提示，不能自動合併。 **現況：** 未完成。 （歸入 LOC-TODO-10、11）
-
-- **TRACE-13｜常用前十名及難忘地點** — 按真實使用頻次提供常用前十名，仍允許手動保留重要地點，同錨點可重複用於其他痕跡圖。 **現況：** 部分流程已有，尚未整體完成。 （歸入 LOC-TODO-10）
-
-- **TRACE-14｜地址參考優先、地理服務按需呼叫** — 優先已存參考，缺資料才查外部定位；使用適度快取，避免逐字遠端查詢及無必要 SQL，且不依賴 ISR。 **現況：** 批次地點整理的程式已優先查本地參考，缺資料才呼叫外部服務；冷／熱查詢次數、實際等待及完整互動仍待量測。 （歸入 LOC-TODO-10）
-
-### A 線分支生命週期｜原 LOC-PLACE-01～06（2026-10-26 當時紀錄，非最新未完成清單）
-
-- **隔離分支：** `fix/loc-place-id-layout-20261026`；**PR：** [#580](https://github.com/EsotericVerse/moon-runes-pwa/pull/580)（已轉 Draft、未合併）；**查核分支 HEAD：** `2afc89bb556fd30d021c59af79c57d952124e960`；**查核基準 main：** `d8020bc6f4208b8d3022dd014130cc580432c1c4`，雙方均有新提交，需先以 merge 整合最新 main，不能直接覆蓋。
-- **狀態：FROZEN / UNVERIFIED / NOT FOR MERGE。** A 線本次 **LOC-PLACE-01～06 無任何可確認整項完成**；分支已有 UI／資料查詢／對照 migration 程式及部分單元測試，但與正式資料庫尚不相容，不加入集中待驗收，亦不得由 GitHub CI 的部分綠燈宣稱完成。
-- **資料證據（read-only Supabase）：** `silver.lo3rwang_trace` 582 筆 `uid` 全部仍為八碼，含 1 筆 map；LOC 聯集相應 582 筆亦八碼；錯增 `trace.trace_id` 四碼欄位仍存在；`lo3rwang_galaxy` 35,141 篇中 `place_id` 已設 0 篇。已新增的 nullable `place_id varchar(4)` 與索引只能記為**部分 schema 步驟**，不能視為資料／功能驗收通過，不能擅自刪除 Trace／Galaxy 資料。
-- **CI 證據：** [#40344096224](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40344096224) **failure**。專項 69/69 零失敗，然而對比最新 main 原有測試 73 項，分支刪除了跨 Scope 身份、延遲讀回防重複寫入、Frame 待處理站點等既有驗證（五個測試名稱不見、僅補兩項）；舊基準檢查器 `total<73` 因此攔下。**不得透過降低 73 門檻或跳過測試讓 CI 假綠**；需恢復等價回歸、確認不再適用的案例有相應新功能證據。該次 Next build 成功、Chrome 因前置步驟 failure **skipped**；實際授權寫入／重讀／RLS 及長時間負載尚未自證。
-- **下一步：** 保留並整合最新 main，補回被移除的跨 Scope／Queue 回歸測試，核對 migrations 的原 UID → 四碼映射、完整 Frame Queue 與回復機制；在不觸發使用者封鎖的 Cloudflare／ISR／自動部署前提下，完成實際 Supabase 權限寫入與讀回、真實介面及所有適用 CI。全部驗證並與正式 DB 具相容方案時，才安全整合 main、關閉 #580、紀錄最終 SHA 並標可集中驗收。不得要求使用者逐項替工程端測試。
-
-#### A 線新增：Scope 內四碼 id 與文章地點索引（保留 2026-10-26 工程歷史；依 2026-10-27 使用者更正）
-
-> **本次交付指示（2026-10-26）**：**先從最新 main merge 進同一工作分支，再做完下列功能、自測與權限／資料核對，最後才把已完整自證的項目標「待驗收」**；未完成不得標成功、不得反覆開 PR 洗通知。**最新使用者定案（取代本節此前全部 uid／trace_id 方案）：`silver.<scopeid>_trace.id varchar(4)` 是唯一 Trace 主鍵；不得保留 Trace 的 `uid`、`trace_uid` 或 `trace_id` 等並行身份欄位**。`trace_type='anchor'|'map'` 區分空間定錨點與痕跡圖。`silver.<scopeid>_galaxy.place_id varchar(4)` 只指向同 Scope、`trace_type='anchor'` 的 `trace.id`。**文章自身的 `galaxy.uid` 和原始 `source_place` 不變**；`galaxy.uid` 是另一種文章物件的既有識別碼，並非 Trace 的第二身份。
-> **2026-10-27 最新範圍覆寫：** 使用者確認資料庫 ID 已處理；**原 LOC-PLACE-02 舊 UID 遷移工作取消**，不得因歷史敘述再啟動。LOC-PLACE-03／04 只接續已有整理流程和 React Select；`place_id` 大量關聯（LOC-PLACE-05）暫緩；LOC 聯集（06）只需顯示來源 `scopeid`，不急。舊段落保留作 #580 分支的歷史實作記錄，非目前工程交付範圍。
-
-> **Queue 更名工程紀錄（未合併／未部署）：** 已在原分支 `fix/loc-place-id-layout-20261026` merge 最新 main，將 UI、Trace 讀寫／文章映射與相關測試調整為 `anchor_list`，另準備交易式遷移 `20261027001000_trace_anchor_list_column.sql`，一次更名三張 Scope Trace 表並重寫相依觸發器／RPC，保留原本的 array 站序及 5 站資料。**本次正式 Supabase 未執行 DDL**；2026-10-27 專項 CI [#40356720053](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40356720053) 最終 failure（69/69 test passed、但原版 baseline 驗證至少要求 73 項，且先前跨 Scope regressions 被減少），不得降低門檻或誤報完成。新欄位需與尚未完成的 `trace.id varchar(4)` 遷移一併啟用；目前保留 Draft #580，狀態仍 **FROZEN / UNVERIFIED / NOT FOR MERGE**。
-
-> **最新 Queue 欄位命名（2026-10-27）：** Trace 表原有 `anchor_uids` **正式更名為 `anchor_list`**，同一張 map／Frame 內維持有序的本 Scope `trace.id`（四碼）陣列；不另外新增 Queue 或平行欄位。遷移須保留舊紀錄及每個站點的**原始順序與重複語義**，同步更新 SQL 函式／觸發器／RLS 影響範圍、前後端讀寫、路線／時間顯示及驗證案例；在正式版本相容且自測通過前不得對 live 表單獨改名。
-
-> **唯一命名契約（最新）：** `silver.<scopeid>_trace.id varchar(4)` ↔ `silver.<scopeid>_galaxy.place_id varchar(4)`；Trace 不存在 `uid`、`trace_uid`、`trace_id` 三種替代欄位。`place_id` 等值關聯到本 Scope 的 anchor `id`，不額外分配第二套 ID；Frame 也使用本 Scope 的 `trace.id`。各 Scope 的 ID 可獨立從頭配置，不能跨 Scope 當作同一筆。LOC 聯集以 **`(scope_id,id)`** 辨識來源；聯集顯示的進階整理延後。舊 Trace 八碼 `uid` 必須有可回復的對照映射，禁止截斷或破壞 Queue；文章 `galaxy.uid`／`source_place` 永遠保留。
-
-- [x] **LOC-PLACE-01｜Scope 四碼 Trace／Galaxy 地點 ID（資料庫部分）** [使用者確認 DB 已 OK／2026-10-27]：不再列為待執行 schema 工作，也不為了舊 TODO 重建或再遷移資料庫。程式端若真有 ID 不相容，併入正在進行的空間功能整合處理；沒有故障證據不得擴大工作。
-- [ ] **LOC-PLACE-03｜現有文章打卡整理入口** [P1] [部分已做／補齊剩餘]：保留現有「管理選單 → 整理定錨點」已完成的功能，只補實際缺漏的既有文章地點整理互動；文章先正常匯入，`galaxy.source_place` 保留原始字串，不因整理而改寫。不得把此項等同大規模 place_id 回填。
-- [ ] **LOC-PLACE-04｜React Select 地點候選與人工判別** [P1] [沿用既有介面／部分已做]：採現有 React Select 自動完成與候選選取，**不必選縣市、不處理樓層**。有可靠名稱對應者可直接帶入；有歧義才顯示候選，不做付費定位或大量重複比較。保留同名不同實際地點各自身份，不要求重建獨立 UI。
-- [ ] **LOC-PLACE-05｜文章 `place_id` 關聯與持久沿用** [暫緩／低優先｜2026-10-27 使用者決定]：`galaxy.place_id` 對應 Trace 錨點 ID 的批次回填、已知名稱對照持久化及往後匯入沿用，**等 Trace ID 整理完再談，現在不急、不作 A 線近期完成前置**。不修改原始 `source_place` 或 Galaxy 文章 UID。
-- [ ] **LOC-PLACE-06｜LOC 顯示來源 `scopeid`** [P2／不急｜2026-10-27 縮限]：LOC 聯集資料呈現時多顯示來源 `scopeid` 即可；不要求為此重建跨 Scope 表或識別碼系統，不混淆不同 Scope 的同碼 ID。由既有資料直接取值，等當前空間工作順手整合即可。
-
-### TIME-ANCHOR-RANGES-20261027｜時間定錨與動態、不連續時期（使用者 2026-10-27 最新定案；尚未實作）
-
-> **正確核心：先有定錨點，才能定時期。時期沒有獨立可寫死的時間，全部以已存在的 `time.uid` 對應日期動態計算；改動定錨點後立即重算所有使用它的時期，不允許殘留舊日期或虛構錨點。** 一個「時期」可以只有**一個已存在的時間定錨點**，也可包含多個有順序、彼此不連續的起訖區段；中斷時間不得被填滿。概念示例：`anchor_ids = [[A001],[B001,C001],[D001,E001]]`，表示單點 A001、B001–C001、D001–E001；每個元素都是該 Scope 真正的 `time.uid`，不是日期字串。**此處嵌套陣列僅為語義示意，不預先決定 PostgreSQL 採何種儲存格式；實作必須能無歧義保留「單點／每段兩端／分段中斷」資訊，兼顧既有 `text[]` 與事件多錨點，不得直接強制轉型破壞資料。** 使用者可選擇區段順序，無需 `display_order` 欄位。
-
-- [ ] **TIME-01｜單一四碼身份及命名**：`silver.<scopeid>_time.record_id` **直接改名／遷移為 `uid varchar(4)`**（不是 `id`），同一 Scope 內唯一；`record_type → type`、`label → title`、`note`／`style_description → description`。過去 `resource_id` 文字識別碼只作零損失遷移對照，完成轉換後移除，所有時間錨點、事件、時期與查詢直接使用 `time.uid`。`_trace` 的主鍵另為 `trace.id varchar(4)`；兩張表是不同資料類型，不可混淆。
-- [ ] **TIME-02｜移除冗餘欄位及風格標籤入口**：移除 `display_order`、`date_status`、`year_value`、`visibility`、`created_at`、`updated_at`；對全 NULL 且無合法依賴的冗餘欄位按實測移除。風格標籤從時間編輯／展示／篩選流程退場，相關風格查詢交由既有進階搜尋；既存 `style_comment` 文字（實測 lo3rwang 8 筆）不可未備份先刪。非空的 `status`、`resource_id`、`display_order` 等先確認全部消費者與回復方案，不能只改 live schema 讓文化功能壞掉。保留真正錨點的 `time_date` 作唯一日期來源。
-- [ ] **TIME-03｜多區段時期陣列／動態重算**：`type='period'` 的 `anchor_ids` 為**有序錨點／區段集合**，可表示 `A`（單點）、`A–B`（單段）、`A–B, C–D, ...`（多個不連續區段），中間沒有被覆蓋的日期不屬於時期；僅以真實 `type='anchor'` 記錄的四碼 `uid` 解析每段起訖。使用者編輯時期只選錨點和區段，不直接寫日期；修改任何錨點的 `time_date` 後所有引用重算，無需重建時期。日期排序以各段實際時間為基礎，可按區段順序展示；不再用 `display_order` 選「最新時期」或依 `status='current'` 冒充動態狀態。開放尾端時期需保留真實已確定的起點，不能偽造終點。
-- [ ] **TIME-04｜刪改完整性及零損失回填**：被引用的錨點遭刪除或失效時，**其對應引用／連線自然失效，不得級聯刪除時期、不准沿用舊日期、造假錨點、靜默重配其他錨點或把兩個區段接成一段**；有效的單點與其他區段照常顯示。保留原有時期記錄與未受影響的關聯；失效端點可提示需修正，但不能以此強迫整個時期消失。須處理 live 的既有 `anchor_ids text[]`、包含 `0` 的開放邊界、事件多錨點、各 Scope 的 P1–P7／符文時期、歷史風格文字；備份舊 `record_id` UUID、`resource_id` → 新四碼 `uid` 對照與全部陣列原順序，嚴禁截斷或把兩個不同物件合併。
-- [ ] **TIME-05｜全程式與 SQLite 對齊、驗證後整批整合**：同步修正 `CultureTimelineEditor`、`culture-query`、`Culture`、`Statistics`、`Search`、Galaxy 時間查詢、時間軸拖曳／吸附、Period 選單、SQLite `local_time`、匯入匯出、Supabase RPC／RLS／函式／索引／回退與 CI。測試單一定錨點的時期、多個不連續區段、間隙不被列入、當前時期動態變動、錨點日期改動、刪除錨點後只有連線失效且時期仍存在、空 Scope、不同 Scope、權限與正式資料重新讀取，所有受影響功能通過才合併 `main`。Cloudflare、ISR、自動部署仍保持關閉。
-
-
-#### 實作隔離工作｜TIME-01～05（2026-10-27）
-
-- **分支：** `fix/time-dynamic-periods-20261027`；**基準 main：** `bc1672f095593bb83476792263f0747d10ea77ec`；**狀態：IMPLEMENTING / NOT FOR MERGE**。這是使用者明確要求立即實作的文化時間模型改造，不是只寫 TODO。範圍：`_time.record_id → uid` 四碼與完整舊 ID 對照、`record_type → type`、`label → title`、`note/style_description → description`、`resource_id` 清除、欄位精簡、風格標籤入口退場、時期單點和多段有序區間、受損錨點引用的失效處理；文化／搜尋／統計／SQLite／資料庫 RPC 與權限回歸。
-- **安全界線：** 對正式資料的不可逆欄位刪除必須先完整備份與驗證代碼、遷移相容性；舊時期和事件不能遺失，Cloudflare/ISR/Neon 均不得變更。未完成資料庫／應用同步及 CI 時保持分支隔離、不提前 merge 或聲稱完成。
-- **驗證：** 建構／測試、時間段間隙、單點、重複錨點、失效連線、刪除／調整定錨點後動態重算、跨 Scope/SQLite、真實讀寫與 RLS。**下一步：** 完成同分支全套實作及回歸後合併最新 main 自證。
+**實作隔離：** 分支 `fix/time-dynamic-periods-20261027`，基準 main `bc1672f0`，狀態 `IMPLEMENTING / NOT FOR MERGE`。安全界線：對正式資料的不可逆欄位刪除要先完整備份；舊時期不能遺失。驗證完整套實作與回歸後才合併最新 main。
 
 ### B｜痕跡圖
 
-**線目標：** 使用空間錨點建立、管理、觀看具名痕跡圖 Frame；選 Current、入列、改序、刪除、重讀都能正常使用；地圖、文章、時間和風格聯動。**分類骨架直接重用既有關鍵詞的分層模型與介面／索引／操作方式（舊框架作模板），不另造平行分類體系；痕跡圖、關鍵詞項目與文章仍有各自的資料身份與用途。**
+目標：用空間錨點建立/管理/觀看具名痕跡圖 Frame；選 Current、入列、改序、刪除、重讀都正常；地圖/文章/時間/風格聯動。分類骨架重用既有關鍵詞的分層模型，不另造平行體系。
 
-> **【2026-10-26 使用者已明確確認｜痕跡圖分類模型｜必須依此修正實作】**
-> - **四層：大分類 → Class → Group → Item（具名痕跡圖 Frame）**。範例：**旅遊（大分類）→ 夜市（Class）→ 北部（Group）→ 某一張痕跡圖（Item）**；同一骨架亦可為 **旅遊 → 游泳 → 北部 → 某一張痕跡圖**，或 **旅遊 → 登山 → 北部 → 某一張痕跡圖**。這是示例，不是固定、必須預先寫入的分類值。
-> - **痕跡圖本身是 Item，不是 Queue 裡的單一站點。** 一個 Item 對應一張可編輯、可保存、可重讀的 Frame；該 Frame **內部**另有依順序排列的空間錨點 UID Queue。Queue 是 Item 的內容／路線次序，不是分類的第五層，也不是 Group。
-> - **重用既有模型，不重造輪子。** 先檢查及沿用 `app/loc/model/class-group-items.mjs` 與關鍵詞既有分類瀏覽／編輯的組合能力；現有 Trace 的 `trace-route-classes.mjs` 只承載部分層級，需按四層規格整合共用骨架，避免另建一套 Trace 獨立分類引擎／目錄。保留既有資料、UID、Scope/RLS 與 Frame Queue；不得把痕跡圖資料列硬寫進 `*_keywords`、把關鍵詞命中計算套用到痕跡圖、擅建新分類表或擅改文章 `class_id`。
-> - **當前狀態：【需求已確認；實作尚未完整驗收】。** 現有 Frame 管理畫面／程式仍以「Class → Group → Frame」三層呈現，缺「大分類」的完整分類／搜尋／儲存／重讀流程；須完成從既有關鍵詞骨架複用到痕跡圖四層的真實功能驗收，不因已有三層 UI 或隔離分支修改就標為完成。
+**分類模型（2026-10-26 已確認）：** 四層「大分類 → Class → Group → Item（具名痕跡圖 Frame）」，例：旅遊（大分類）→ 夜市（Class）→ 北部（Group）→ 某張痕跡圖（Item）。痕跡圖本身是 Item，不是 Queue 裡的單一站點；Item 內部另有依順序排列的空間錨點 UID Queue。沿用 `app/loc/model/class-group-items.mjs` 與關鍵詞既有分類能力；現有 `trace-route-classes.mjs` 只承載部分層級，需整合為共用骨架。現狀：需求已確認，實作尚未完整驗收（現有畫面仍是三層）。
 
-**使用者指定的額外功能目標：** **痕跡圖能納入／引用既有關鍵詞組，用關鍵詞風格呈現。** 需實際設定、儲存、切換並看到相關風格或內容變化，重讀仍正確；先核實現行資料模型，避免為了這個需求把痕跡圖 Item、作品 Class 和關鍵詞群組混作同一物件。
+額外目標：痕跡圖能引用既有關鍵詞組做風格呈現，需要先核實資料模型，避免把痕跡圖 Item、作品 Class、關鍵詞群組混成同一物件。
 
-**直接歸屬的原有工作：** LOC-TODO-08、09、14；LOC-TODO-13 為 A 線實作、B 線必須共同驗證的動態地圖／文章／時間依賴。
+- [ ] **LOC-TODO-08｜具名痕跡圖 Frame 與四層分類** [P1]：沿用關鍵詞分層骨架；Frame 只引用該 Scope 自己的空間錨點，`anchor_list` 可編排；站點按順序直連，不要求道路通達。
+- [ ] **LOC-TODO-09｜Current Frame／預設切換** [P1]：單一選取，起始只取輕量索引；空 Scope 正常顯示不當成錯誤。
+- [ ] **LOC-TODO-14｜雙空間×雙時間四錨交叉分析** [P2]：空間範圍×時間範圍×關鍵詞密度交叉查詢，連動 TimeRiver/統計。
 
-- [ ] **LOC-TODO-08｜具名痕跡圖 Frame 與大分類／Class／Group／Item** `[P1]` `[四層規格已確認／實作尚未完整自證]`
-  - **【已確認新規格】** 沿用現有關鍵詞分層骨架，支援**大分類 → Class → Group → Item（具名痕跡圖 Frame）**，例如 **旅遊 → 夜市 → 北部 → 痕跡圖**；可依層級建立、選取、搜尋、編輯、儲存、重新載入，並以現有共同分類模型實現，不另造平行分類引擎。**Item 就是一張 Frame，Queue 是 Frame 內的有序站點，不是 Item 本身或另一個分類層。** Frame 只引用**該 Scope 自己的**空間錨點 UID，其 `anchor_list` Queue 可編排；不可將關鍵詞資料列或文章 `class_id` 直接當作痕跡圖分類／物件身份。錨點多次打卡、同址不同樓層與跨 Scope 候選不得自動合併 UID。站點按順序直接連線，**無需相鄰／道路通達，也不宣稱是真實道路導航**。驗收重讀、改序、重試、刪除不傷錨點與文章、Scope 授權／RLS。
-
-- [ ] **LOC-TODO-09｜Current Frame／預設痕跡切換與載入** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：維持目前／預設 Frame 的單一選取，起始僅取得輕量索引與選中路線的錨點；切換、重新整理、離線可用性、空路線以及**沒有任何 Frame／錨點的合法空 Scope** 均要正常顯示，不得強制建立假資料、不應把零筆當成 SQL 錯誤。
-
-- [ ] **LOC-TODO-14｜雙空間 × 雙時間四錨交叉分析** `[P2]` `[規劃內／待查證]`
-  - 完成條件／待辦：完成可操作的空間範圍、時間範圍與關鍵詞密度交叉查詢，與既有 TimeRiver／統計／文章連動；不得另造與既有時期矛盾的時間線。
-
-#### B 線痕跡圖細項（TRACE-15～23；原紀錄完整保留）
-
-- **TRACE-15｜LOC 能管理自己的原生痕跡圖** — LOC 不能被強制切到 lo3rwang；原生 LOC 與各 Scope 的痕跡圖、聯集候選與權限必須分清。 **現況：** 未完成。 （歸入 LOC-TODO-08）
-
-- **TRACE-16｜大分類／Class／Group／Item 分類與管理【2026-10-26 使用者確認】** — **旅遊（大分類）→ 夜市（Class）→ 北部（Group）→ 一張具名痕跡圖（Item）**；游泳、登山也只是同一大分類下不同的 Class 範例。**Item 是痕跡圖 Frame，不是 Frame Queue 裡的站點**；Queue 由該 Frame 內有序錨點 UID 組成。重用關鍵詞既有分層模型和分類管理能力，不重建獨立 Trace 目錄或把 Frame 當關鍵詞項目寫入關鍵詞資料表。**現況：** 已確認規格；現有三層管理／保存路徑不足，四層互動、儲存、重讀及舊資料相容仍未驗收。 （歸入 LOC-TODO-08）
-
-- **TRACE-17｜Queue 搜尋、按＋入列、換序和移除** — 可由自己的錨點加入站點，調整與儲存站序、不同痕跡圖可重複引用相同定錨點。 **現況：** 部分流程已有，尚未整體完成。 （歸入 LOC-TODO-08、10）
-
-- **TRACE-18｜Current 預設痕跡圖／按需載入** — 能選擇當前預設痕跡圖，進頁先載入需要的站點與地圖，不一次拉全部路線和文章。 **現況：** 部分流程已有，尚未整體完成。 （歸入 LOC-TODO-09）
-
-- **TRACE-19｜每站個別時間與行程對齊** — 三日行程各站有自己的抵達／停留／時間窗，和文章時間對齊；不可只用整趟起迄假裝每站時間。 **現況：** 尚未完整串接。 （歸入 LOC-TODO-08、13）
-
-- **TRACE-20｜新增編輯刪除與重新讀取完整自證** — 至少兩站→儲存→DB 重讀→重新進頁還在→公開地圖可選→編輯／重新排序／刪除；寫入失敗保留草稿，空資料／權限／手機桌機都由代理自行測試。 **現況：** 部分程式已有，缺完整執行證據。 （歸入 LOC-TODO-08）
-
-- **TRACE-21｜真正 3D 痕跡圖呈現** — 正確繪出路線站序／連線、地址及樓層，同址不同樓層可各自選取；地圖視野、觸控、手機捲動正常，不能顯示示例冒充資料。 **現況：** 部分 2D／標籤已寫，立體區分未完成。 （歸入 LOC-TODO-08、13）
-
-- **TRACE-22｜同頁文章列表／TimeRiver／統計密度** — 點擊地點或路線，在原頁按需顯示文章、時間長河、關鍵詞／時間密度及統計；文化第二河道和地點統計也應接通。 **現況：** 部分介面已有，尚未完整自證。 （歸入 LOC-TODO-13、14）
-
-- **TRACE-23｜從空間建議時間定錨點** — 先指定地點或生活範圍再對齊文章分布，用既有 PELT 方法建議時間錨點；不能只做先選時間再找空間，也不能捏造變化門檻。 **現況：** 未完成。 （歸入 LOC-TODO-14）
+B 線舊版 TRACE-15～23（四層分類、Queue、Current、每站時間、3D 呈現、文章同頁列表、PELT 建議錨點）大部分仍是「部分已有、尚未整體完成」狀態，併入上面三項追蹤，不再逐條重複列。
 
 ### C｜其他系統
 
-**線目標：** 讓文化、統計、搜尋、設定、匯入、手機 SQLite、權限／快取及其他既有系統可用、順手、不拖垮整站；負責跨線主目標 TODO1 與 TODO2 的設定及匯入入口，並提供 Supabase／Cloudflare 的可核對效能證據。
+目標：讓文化/統計/搜尋/設定/匯入/手機 SQLite/權限/快取可用、順手、不拖垮整站；負責 TODO1/TODO2 的設定與匯入入口。
 
-**本次共同驗收相關：** 查核無 ISR 時四大功能正常；文化第二河道不卡頓、統計動態正確、搜尋連續操作可用；手機免費／收費框架及本地 SQLite 能用；匯入後各功能結果可讀。Cloudflare 成本與部署清理保留為既有工作，但**不能把重新部署／啟用 ISR 當成完成這條線的必要條件**。
+共同驗收：ISR 關閉時四大功能正常；文化第二河道不卡；統計動態正確；搜尋連續操作可用；手機框架與本地 SQLite 能用。Cloudflare 成本清理是既有工作，不等於要重新部署/開 ISR 才算完成。
 
-#### C1｜系統成本、快取與搜尋（已刪 LOC-TODO-07）
+**C1｜系統成本、快取與搜尋：**
+- [x] **LOC-TODO-01｜Cloudflare 歷史部署清理**：已結案。
+- [ ] **LOC-TODO-02｜移除 ISR 強制依賴** [P0]：PR #569 已合併main（`7038d42`），移除 R2/DO ISR 綁定，獨立回歸 24/24 通過。未執行：完整 build/正式網站/iOS 實機讀取、重開站後 R2 零寫入驗收。**2026-10-26 故障後已修復並重新部署**（GitHub Pages run [40284884702](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40284884702)，commit `d0577149`：Bootstrap 135/135、build 256/256 成功）；後續 headless Chrome 實測四頁無資料庫連結失敗（[run 40285855308](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285855308)）。剩餘：長時間連續使用、登入/Admin、舊分頁 SW 更新待驗收。
+- [x] **LOC-TODO-03｜Cloudflare 成本根因**：已結案。
+- [ ] **LOC-TODO-04｜文化第二河道首次載入卡頓** [P1]：PR [#575](https://github.com/EsotericVerse/moon-runes-pwa/pull/575)，main `9cbd0404` 已解除 ISR 綁定，展開不額外查 SQL（[CI](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40287876436)：bootstrap 138/138、682ms、0 新增 RPC）。剩餘：五分鐘持續操作、10/100人併發、正式部署後驗證。
+- [ ] **LOC-TODO-05｜Service Worker 與公開 Blocks 快取** [P1]：核實 Cache First 行為、冷熱讀取、過期失效。
+- [ ] **LOC-TODO-06｜全域搜尋與自動完成** [P1]：不要求選 scopeid、不曝光全 Scope 清單。
 
-- [x] **LOC-TODO-01｜Cloudflare `mr` 專案歷史部署清理** `[已結案｜2026-10-27 使用者確認]`
-  - 使用者確認清理已完成；不再要求刪除任何部署或專案。Cloudflare 自動部署／ISR 停用規則不變。
+**C2｜文化、統計、分類與管理：**
+- [ ] **LOC-TODO-17｜`silver.manage`/`silver.loc` 職責** [P1]：依現行 schema 核對唯一 Registry；`silver.loc_config`/`scope_registry` 已退休。
+- [ ] **LOC-TODO-18｜`txt_class` 取代 `sources`/`statistics_*`** [P1]：維持單層字串陣列，不新增階層目錄。
+- [ ] **LOC-TODO-19｜作品分類/個人分類選單命名** [P1]：Admin「作品分類」、Scope「個人分類」。
+- [ ] **LOC-TODO-20｜文化來源×Class/Group 河道顯示** [P1]：原地展開不跳頁。
+- [ ] **LOC-TODO-21｜統計圖表分頁** [P1]：原有分頁邏輯已驗證（`StatisticsMultiChart.jsx`：單獨項目 8/頁、混合 10/頁，PR #577 已併入 bootstrap 175/175）；剩餘：多頁真實資料環境下的連續切頁、各類圖表、零資料驗證。
+- [ ] **LOC-TODO-22｜深度進階統計兩層選擇器** [P1]：PR [#577](https://github.com/EsotericVerse/moon-runes-pwa/pull/577)，main `5746bcde` 已做「全部/作品來源/多媒體/關鍵詞」頁簽＋兩層選單（[CI](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40292920980) 通過，86ms）。剩餘：真實空關鍵詞 Scope、手機實機、五分鐘持續切換。
+- [ ] **LOC-TODO-23｜時間編輯內嵌表單** [P2]：河道在上、輸入框在下，不跳浮動視窗。
+- [ ] **LOC-TODO-24｜繁中/簡中/英文/日文語系** [P1]：涵蓋編輯模式/文化/統計/搜尋/痕跡/設定。
 
-- [ ] **LOC-TODO-02｜移除 ISR 強制依賴與中斷鏈** `[P0]` `[程式已合併／部署驗收未完成]`
-  - **2026-10-26 的已核實結果：** PR #569 合併到 `main`（`7038d42`），移除 OpenNext R2／DO ISR 綁定、停用舊遠端 numeric/revalidate API；既有文化、統計、時期、地點、痕跡與每日符文保留 DB RPC／SWR／Service Worker／必要時 SQLite 路徑。獨立的無編譯 Node 回歸測試 **24／24 通過**，取代前次 21／24 的中途失敗結果。
-  - **未結案的範圍：** 未執行 Next.js 完整建置、正式網站／瀏覽器／iOS 實機讀取、重新開站後 R2 實際零寫入驗收。**停用令無限期有效，不可把重開部署／ISR 當結案必要操作；未取得授權則記錄此驗收限制，保留 `[ ]`。**
-  - **2026-10-26 緊急故障調查：** 使用者回報文化／統計在關閉 ISR 後顯示資料庫連結失敗，但搜尋正常。DNS 已確認 `loc.lo3rwang.cc` 指向 GitHub Pages（非 ISR Worker）；關閉 ISR 前的靜態建置預設嵌入 `https://isr.lo3rwang.cc`，目前 main 已移除，但**正式站是否仍載入舊版 JS 尚缺線上資產證據**。`main` 提交 `1b80602` 新增 GitHub Pages 編譯產物 JS／HTML 的舊 ISR 網址阻擋檢查；本地 Node 已測正常、舊網址、跳脫網址三種情境。GitHub Pages 發布維持手動，**本次未部署、未驗證線上功能恢復**；不應用重新啟用 ISR 作修復。
-  - **2026-10-26 緊急正式網站更新：** GitHub Pages Run [40284884702](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40284884702) 以 commit `d0577149` **成功完成正式部署**：安全檢查成功、遊戲 29/29、Bootstrap 135/135、Next.js 靜態 256/256、Guest/Admin 30 個路由及 2 個 PWA 資產通過、編譯後 JS/HTML 不含已退役 `isr.lo3rwang.cc`。先前兩次嘗試未部署即遭過時測試阻擋，後續已修正測試。發布完成後，一次性 GitHub Pages push trigger 與 marker 已刪除，回復 `workflow_dispatch` 唯一手動入口；Cloudflare/ISR/R2 沒有重啟。**仍需線上實際 Browser／Network 核對文化、統計讀取，以及 SW 老客戶端更新；目前網頁連線工具無法讀取 live 資產，不可宣稱實際頁面 100% 驗收。** Build log 僅見無 Next 建置快取、punycode/Actions Node 相容性相關警告，未見本次編譯錯誤。
+**C3｜手機 APP、SQLite 與匯入：**
+- [ ] **LOC-TODO-25｜雲端/本地來源切換** [P1]：可勾選的本地 SQLite 開關，切回雲端保留原檔。
+- [ ] **LOC-TODO-26｜SQLite 下四大功能可用** [P1]：本地與遠端同一功能契約但不混成同一資料表。
+- [ ] **LOC-TODO-27｜SQLite 本地匯入/匯出** [P1]：只在手機端顯示，匯出只輸出本地檔案。
+- [ ] **LOC-TODO-28｜Markdown 匯入與繁簡編碼** [P1]：兼容 UTF-8/Big5，不強迫使用者判斷編碼。
+- [ ] **LOC-TODO-29｜手機設定頁響應式** [P1]：修正左右欄擠壓、管理選單手機分頁。
 
-  - **2026-10-26 發布後公開網路實測：** 一次性 GitHub Actions [40285508839](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285508839) 通過：正式首頁、文化、統計的 HTTP 均為 200，且含新版 Next.js 靜態資產。GitHub runner 使用現行公開 publishable key 呼叫真實 Supabase REST RPC：文化讀取 500 列、Scope overview 500 列、LOC overview 114 列，三種匿名資料路徑均成功。一次性 smoke workflow 已移除，Pages 已恢復手動發布。此證據包含真實 HTTP／RPC，但非互動式瀏覽器檢測；已開啟的舊分頁必須重新載入才會使用新 JS，仍保留完整 Browser UI／Network 和持續操作驗收，本項不提前結案。
+**C4｜符文、每日記錄與遊戲：**
+- **LOC-TODO-30｜66 枚符文特效一致性** [有空再想/可不做]：抽取對象 1–66，不可 9 個共用粗糙特效代替。
+- **LOC-TODO-31｜3D 桌遊發牌/卡背** [有空再想/可不做]：卡背用符文專屬視覺，不用單一「月」字代替。
+- [ ] **LOC-TODO-32｜每日符文紀錄不能新增** [P1]：唯讀查證顯示表單/後端/RLS 都存在且正常，近 24 小時 API 日誌未見新增請求，**故障未重現**。下一步：授權測試 session 重現完整表單→INSERT→讀回。
+- **LOC-TODO-33｜3D 多人連線桌遊** [有空再想/可不做]。
 
-  - **2026-10-26 真實 Chrome 渲染實測：** 一次性 GitHub Actions [40285855308](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40285855308) 在 Linux headless Chrome 實際載入並執行正式站 JS，驗證 `/culture/`、`/statics/`、`/lo3rwang/culture/`、`/lo3rwang/statics/` 四頁均未顯示資料庫連結失敗或 scope-error（0 個），文化出現 vis-timeline、統計有圖表標記，測試全部成功。GitHub Pages 發布及 GitHub runner 公開 HTTP、Supabase RPC 均已通過；一次性工作流程已刪除。**此為 Guest、冷啟動四頁的功能恢復證據，不代表長時連續使用、登入/Admin、舊分頁 SW 更新、所有空資料／切換操作已全面驗收；維持剩餘需求為開放項。**
+**C5｜發行與品質：**
+- [ ] **LOC-TODO-34｜LOC 1.1 RC 全站驗收** [P1]：Guest/Admin 首頁/文化/統計/搜尋/痕跡/設定/管理讀寫、RLS、回歸、瀏覽器與 iOS 實機；合法空 Scope 不能 400/500。條件不足就維持 RC，不發 1.1。
 
+**C 線跨線項：**
+- **TRACE-24｜Facebook 備份文字打卡匯入**：JSON/ZIP 解析已通過隔離測試；地址/樓層延伸暫緩（歸 LOC-TODO-11）。
+- **TRACE-25｜AGENTS/Markdown/Galaxy 一致性**：Markdown 統整中，Galaxy 本次未授權修改（歸 LOC-TODO-34）。
 
-- [x] **LOC-TODO-03｜Cloudflare 成本、快取膨脹與過度部署根因** `[已結案｜2026-10-27 使用者確認]`
-  - 使用者確認成本與帳單問題已處理；不再列為調查待辦。不得因歷史紀錄重啟 Worker／R2／DO／部署。
+## 四、整體驗收（七項同一個目標，不是七次零碎驗收）
 
-- [ ] **LOC-TODO-04｜文化第二條時間河道首次載入卡頓** `[P1]` `[ISR-off 分段載入已整合／長時間情境仍待量測]`
-  - 完成條件／待辦：只抓當前必要的資料；分類、河道展開按需查詢並原地更新，避免畫面閃爍、整頁重載與初始化等所有統計查完才顯示。驗收冷啟動／空資料／單類別等情境。
-  - **2026-10-26 工程證據：** PR [#575](https://github.com/EsotericVerse/moon-runes-pwa/pull/575)，main `9cbd0404`。解除第二河道分段載入對 ISR 的綁定；首次主分類與展開子類沿用同一次 Supabase 日／來源彙總，展開不額外查 SQL；資料修改時更新相關 SWR keys。GitHub Actions [40287876436](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40287876436) 已完成完整 Bootstrap 138/138、文化 5/5、其他 16/16、靜態建置與四頁本機 Chrome 實際渲染，點擊展示 8 主群組／16 子群組、682ms、**新增彙總 RPC 0 次**。未觸發 Pages/Cloudflare 部署；暫時 CI 已移除。
-  - **剩餘工程驗證：** 已涵蓋空資料與單分類模擬；整體五分鐘持續操作、實際空 Scope 在瀏覽器的視覺呈現、10/100 位同時互動，以及正式網站下次授權發布後新版本驗證尚未執行。請不要把單次 CI／互動成功冒充全部使用情境已驗收。
+ISR 五分鐘實測仍是 1.2 Release 門檻，但 ISR 已開啟不需再開一次；功能穩定後使用者自行集中手動部署，一人操作五分鐘。
 
-- [ ] **LOC-TODO-05｜Service Worker 與公開 Blocks 快取** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：核實首頁、各 Scope 的公開 Blocks／Bootstrap／Config 靜態快照及 SW Cache First 行為（內容變更時更新版本），檢查冷／熱讀取、過期失效、Guest 讀取與 SQL/RPC 次數；區分 HTTP 請求、連線數與 SQL 執行數。不得借修快取重新啟用 ISR、R2／DO 或頻繁焦點重查，也不得為了少數查詢重寫成熟模組。
+- [ ] 1. 空間定錨點易觀看、易用於排痕跡圖。
+- [ ] 2. 痕跡圖基本管理順利（大分類→Class→Group→Item），Frame 與站點 Queue 分離。
+- [ ] 3. 痕跡圖可加入關鍵詞組作風格呈現，不混淆資料身份。
+- [ ] 4. 觀察 Supabase logs 查詢數，辨別重複查詢/空轉/過量下載。
+- [ ] 5. 觀察 Cloudflare 流量，不因檢視就重啟服務。
+- [ ] 6. LOC 1.2 ISR 五分鐘實測：功能穩定後使用者手動部署，一人連續操作五分鐘核對功能與成本。
+- [ ] 7. 文化/統計/搜尋/痕跡四大功能正常使用，依下表分級驗證。
 
-- [ ] **LOC-TODO-06｜LOC 全域搜尋與自動完成、進階搜尋** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：主頁搜尋自動完成與輸入提示確實有效；全域搜尋**不得要求選 scopeid、不得曝光不必要的全 Scope 清單**；維持普通與進階搜尋分工，測試有權限與無權限、空結果、輸入建議。
+### 40/60/100 分動態驗收水準
 
+先在 ISR 關閉狀態驗證。
 
-#### C2｜文化、統計、分類與管理（原 LOC-TODO-17～24）
-
-- [ ] **LOC-TODO-17｜`silver.manage`／`silver.loc` 職責與程式依存** `[P1]` `[部分實作／待全面驗收]`
-  - 完成條件／待辦：依**現行 Supabase 真實 schema** 核對 `silver.manage` 唯一 Registry／管理授權與 `silver.loc` 單一設定；`silver.loc_config`、`silver.scope_registry` 已退休，不得以臨時相容視圖掩蓋舊引用。檢查路由、資料匯入／匯出、API、SQL 函式、RLS、觸發器；缺表／SQLSTATE 不能偽裝普通 404。**此階段僅處理 Supabase，Neon 不連動、也不是本項結案條件。**
-
-- [ ] **LOC-TODO-18｜`txt_class` 取代 `sources` 與 `statistics_*`** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：作品分類與個人分類維持 `txt_class` 的**單層字串陣列**，不新增階層目錄、分類 ID、關鍵詞群組或虛構 Class。比對 live Supabase 讀寫依存及文化／統計原功能；退休 `sources` 與 `statistics_*` 的引用不能留下 404／錯誤。**任何刪表、改內容與破壞性 schema 操作需要另外確認授權，不由此 TODO 自動觸發**。
-
-- [ ] **LOC-TODO-19｜作品分類／個人分類管理選單** `[P1]` `[尚未自證]`
-  - 完成條件／待辦：Admin 來源管理改『作品分類』，Scope 自訂分類改『個人分類』，兩者資料責任明確；不要錯用關鍵詞 Class/Group 的層級結構。
-
-- [ ] **LOC-TODO-20｜文化來源 × Class／Group 河道顯示** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：分類與來源合併的河道直接在當前河道展開，不跳轉頁面；單一非零分類避免多餘重複河道；完全無資料顯示中性訊息；單項 0 正確顯示。
-
-- [ ] **LOC-TODO-21｜統計圖表與關鍵詞項目分頁** `[P1]` `[分頁模型自證／全圖型與空資料待驗證]`
-  - 完成條件／待辦：長條、折線、雷達、圓餅等統計可用、正確按需聚合，不用大量 Galaxy 全文下載替代伺服器端統計；**關鍵詞項目統計原有分頁保留**。不能把符文 0–66 的資料契約套到其他關鍵詞系統；文章 `class_id` 1–9、`class_group` 最多 8＋fallback 9、Scope 單一 current Class 的語義不混淆；驗收零資料和快速切換。
-  - **2026-10-26 已驗證：** 原有 `StatisticsMultiChart.jsx` 的項目排行分頁仍存在：單獨項目每頁 8 筆、Class＋項目混合顯示每頁 10 筆，頁碼控制同時更新圖表用的 `visibleGroupRows`／`visibleCombined`。既有 Bootstrap 對 12 個不同關鍵詞項目的真實程式模型測試，混合模式兩頁為 10＋2、單獨項目兩頁為 8＋4，Class 歸屬不串組；PR #577 的 Bootstrap 175/175 通過並保留這些檢查。未改動原有分頁邏輯或擅改符文契約。
-  - **未結案：** 尚缺實際有多頁項目的使用者資料環境下，連續切頁與雷達／圓餅等各類圖表、零資料／無關鍵詞 Scope、權限與效能端到端驗證；不得以 12 筆模型測試代表全部正式圖表已完成。
-
-- [ ] **LOC-TODO-22｜深度進階統計兩層選擇器與頁簽** `[P1]` `[主流程已整合／零關鍵詞與長時間操作待驗證]`
-  - 完成條件／待辦：比較維度保留『全部／作品來源／多媒體／關鍵詞』；下方比較項目由兩個 option 分別選擇類別與項目，不合併成一個龐大選單；無關鍵詞時隱藏關鍵詞頁簽。
-  - **2026-10-26 工程成果：** PR [#577](https://github.com/EsotericVerse/moon-runes-pwa/pull/577) 合併至 main `5746bcde`：保留現有按需彙總、關鍵詞 Class／Group 及查詢，將每個比較項目改成『全部／作品來源／多媒體／關鍵詞』頁簽與兩個相依的「類別 → 項目」選單，手機版垂直折疊。無關鍵詞統計資料時由 `keywordTabAvailable` 控制不顯示該維度。GitHub Actions [40292920980](https://github.com/EsotericVerse/moon-runes-pwa/actions/runs/40292920980)：獨立選單測試 2/2、Bootstrap 175/175、Next.js 靜態 256/256、LOC／作者統計頁 Chrome 渲染和 ISR-off 檢查通過；實際 Chrome 展開進階統計、切「全部」看到 5 類，再切多媒體分類／項目，UI 更新 **86ms**，沒有 DB 錯誤。測試已納入常規 Bootstrap，臨時 CI 已清除。
-  - **仍未結案：** 沒有真實空關鍵詞 Scope 的完整 Chrome 操作，以及五分鐘持續切換與手機實機驗收；此輪未發布正式 GitHub Pages。這些未覆蓋的情境不得憑單次 CI 判定通過。
-
-- [ ] **LOC-TODO-23｜時間編輯內嵌表單與左右欄** `[P2]` `[尚未自證]`
-  - 完成條件／待辦：河道在上、新增定錨點／風格標籤／事件／時期的輸入框在下方，不反覆跳浮動視窗；恢復左右欄在桌面顯示與行動端合理折疊。
-
-- [ ] **LOC-TODO-24｜繁中／簡中／英文／日文完整語系** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：繁中、簡中、英文、日文動態文字涵蓋『進入編輯模式』、文化／統計／搜尋／痕跡／設定等，空字串／零資料也有正確語系；**匯入檔解碼選項只做字元讀入，不擅加作品語系欄**。
-
-#### C3｜手機 APP、SQLite 與匯入（原 LOC-TODO-25～29）
-
-- [ ] **LOC-TODO-25｜「我的手機」雲端／本地來源切換** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：手機設定提供可勾選／取消的本地 SQLite 來源開關；切回雲端時保留原檔，權限與圖示／狀態清楚；一般訪客不應直接落入難懂的資料庫設定頁。
-
-- [ ] **LOC-TODO-26｜SQLite 下四大功能完整可用** `[P1]` `[部分實作／尚缺實機自證]`
-  - 完成條件／待辦：IPA 既有文化／時間河道、統計、搜尋、管理選單能使用本地 SQLite；維持本地與遠端 Postgres **同一可觀察功能契約但互不混成同一資料表／權限模型**，涵蓋既有分類操作及零筆資料。測試切換、離線、原檔保留及實機；不以建置成功宣告驗收。
-
-- [ ] **LOC-TODO-27｜SQLite 本地檔案匯入／匯出選項** `[P1]` `[尚未自證]`
-  - 完成條件／待辦：只有手機端顯示『我的手機』和相關本地匯入；匯出僅輸出本地檔案，不提供其他 Scope 指向選項；檔案可保存、重新匯入與切換來源。
-
-- [ ] **LOC-TODO-28｜Markdown 匯入與繁簡中文編碼** `[P1]` `[部分實作／尚未自證]`
-  - 完成條件／待辦：支援 MD；匯入語系可選繁體／簡體，程式兼容 UTF-8／Big5 等常見編碼再統一儲存；不強迫使用者判斷編碼、不額外保存文章語系欄位。
-
-- [ ] **LOC-TODO-29｜手機設定頁響應式與管理選單分頁** `[P1]` `[尚缺實機自證]`
-  - 完成條件／待辦：修正 IPA 左右欄被擠壓、過寬、按鈕難點等問題；管理選單手機專用上方分頁，對照實際機型／尺寸進行驗收。
-
-#### C4｜符文、每日記錄與遊戲（原 LOC-TODO-30～33）
-
-- **LOC-TODO-30｜66 枚符文特效品質一致** `[空想狀態／有空再想／不急／可不做]`（保留已做部分，無必交或逐枚驗收期限）
-  - 完成條件／待辦：**符文資料全集是 0–66（67 個 ID）**，其中抽取與特效交付對象為 1–66 共 66 枚；0 德仍保留資料但不抽。66 枚效果需同等精細且動作符合字義，不可以 9 個共用粗糙特效代替；特效未逐枚驗證前不可標完工。
-
-- **LOC-TODO-31｜3D 桌遊發牌、卡背、文字與三操作鈕** `[空想狀態／有空再想／不急／可不做]`（既有成果保留，非現行交付）
-  - 完成條件／待辦：完成開局發牌與翻牌可見度；卡背採已指定的符文專屬視覺，不用單一『月』字代替；『繼續抽牌／停止抽牌看籤詩／重新開始抽牌』及暗背景文字對比要正常。
-
-- [ ] **LOC-TODO-32｜每日符文紀錄不能新增** `[P1]` `[寫入前置條件已稽核／新增故障未重現]`
-  - 完成條件／待辦：重現並修正新增紀錄問題，驗證儲存、讀回、權限與四向／特殊符文規則；不擅改符文資料。
-  - **2026-10-26 唯讀查證：** `app/daily/log/DailyLogClient.jsx` 的表單確實會按 `canWrite` 與當日主抽／補抽槽位走雲端 `insertDailyRuneRecord` 或手機本地 SQLite，後端使用授權的 `dbAuthRelation('silver.lrunes_daily')`。Supabase live schema 的 `record_id`、`record_date`、`draw_kind`、`rune_number`、`direction` 都存在，`authenticated` 對表有 INSERT/SELECT，RLS 針對寫入另以 `silver.can_manage_scope('lrunes')` 嚴格控管，複合日期種類唯一鍵存在。最近 24 小時 API 日誌未見 `lrunes_daily` 新增請求，**不能因此判定新增正常或已修復**。未取得授權者 session 寫入回應，沒有執行測試 INSERT、修改 RLS 或替使用者新增任何記錄。下一步需在已授權測試 session 重現完整表單→INSERT→讀回，另驗 Web IndexedDB 不可用時是否影響雲端記錄顯示及原生 SQLite 路徑。
-
-- **LOC-TODO-33｜真正 3D 多人連線桌遊** `[空想狀態／有空再想／不急／可不做]`
-  - 完成條件／待辦：完成 2–4 人連線、發牌與狀態同步、每四局 Resonance、平分 PK、計分與既定卡牌規則。現有單機 3D 桌面不等於連線對戰已驗收。
-
-#### C5｜發行與品質（LOC-TODO-34；原 35 已取消）
-
-- [ ] **LOC-TODO-34｜LOC 1.1 RC 全站驗收** `[P1]` `[未完成完整驗收]`
-  - 完成條件／待辦：Guest 與 Admin（同等驗收目標）的首頁、文化、統計、搜尋、痕跡、設定、管理與受保護寫入，核實讀取、RLS、依賴審查、回歸測試、瀏覽器與 iOS 實機。合法空 Scope 不能出 400／500，`DB_QUERY_BATCH_SIZE/MaxRows=65535` 不得擅改。**Cloudflare ISR 停用令高於舊版 1.1 驗收文字，不能為了 1.1 而重新部署、啟動 Vercel ISR 或恢復快取寫入**；條件不足就維持 RC，不發正式 1.1。
-
-
-#### C 線跨線資料／設計細項（TRACE-24～25；原紀錄完整保留）
-
-- **TRACE-24｜Facebook 備份文字打卡匯入** — 直接解析貼文／打卡備份 JSON 和時間，存 Galaxy source_place；純打卡、混合 ZIP、重複匯入和中斷情境都須跑通；若 ZIP 含 JPEG／PNG 可本機唯讀解析 EXIF，不保存影像、不要求額外照片。 **現況：** JSON／ZIP 解析曾通過隔離測試；依 2026-10-27 使用者決定，Facebook 地址／樓層延伸作業暫緩，不列近期待辦。 （歷史關聯 LOC-TODO-11）
-
-- **TRACE-25｜AGENTS／Markdown／Galaxy 開發決議一致性** — 現行開發指示與已同意決議維持版本一致；普通 TODO 不等同授權寫 Galaxy 文章，真正設計文檔另按 AGENTS 明確批准後雙份存檔。 **現況：** Markdown 統整中，Galaxy 本次未授權修改。 （歸入 LOC-TODO-34）
-
-## 四、使用者指定的七項整體驗收（同一個目標，不是七次零碎驗收）
-
- > **2026-10-27 更正：** ISR 五分鐘實測仍是 LOC 1.2 Release 必要門檻，但**ISR 已開啟，不需再開一次**。功能穩定後由使用者自行集中手動部署，一人操作五分鐘，觀察功能、Cloudflare 流量／成本，不需找十位真人。
-
-- [ ] **1. 空間定錨點易觀看、易用於排痕跡圖。** 地圖／清單找得到錨點；選取加入 Queue、移動站序和回看順手；不同 UID、同名、同址樓層、時間關係和 Scope 邊界不亂。
-- [ ] **2. 痕跡圖基本管理順利使用。** **沿用既有關鍵詞分層框架**，按「大分類 → Class → Group → Item（痕跡圖）」瀏覽／新增／編輯／搜尋；Frame 本身與其站點 Queue 明確分離。建立、開啟、Current、站序調整、儲存、重新讀取及刪除均可用；分類與路線不因切頁或刷新失去，錯誤／空資料有合理提示。
-- [ ] **3. 痕跡圖可加入關鍵詞組作關鍵詞風格。** 分類**骨架**重用關鍵詞模型（大分類／Class／Group／Item），但 **Item 的內容仍是痕跡圖而非關鍵詞項目**。另可引用既有關鍵詞組供風格呈現，設定、切換、重進頁後仍產生正確的動態風格；不可因此混淆資料身份、觸發痕跡圖關鍵詞分類運算或改寫關鍵詞原始資料。
-- [ ] **4. 觀察 Supabase logs 的查詢數。** 在相同代表性操作下檢查實際請求／查詢與 RPC 背後 SQL，辨別重複查詢、空轉、過量下載；保留可比較的無 ISR 基準，不虛構固定「必須個位數」門檻，也不以 HTTP 次數冒充 SQL 次數。
-- [ ] **5. 觀察 Cloudflare 流量。** 先核對 Cloudflare 目前停用狀態下的已授權流量／請求／計費相關指標，辨別訪問、構建、Worker 與快取行為；不因檢視流量就重啟任何服務。
-- [ ] **6. LOC 1.2 Release 必要驗收｜ISR 五分鐘實測：** 功能全部穩定且工程端在不部署環境完成測試後，由使用者自行手動集中部署；使用者一人連續操作文化、統計、搜尋、痕跡五分鐘，核對實際功能與 Cloudflare 流量、成本及資料庫負載。**ISR 已啟用，不需切換或重新開啟**。10／100 人併發是另外的進階分級，不是這項基本驗收。
-- [ ] **7. 文化、統計、搜尋、痕跡四大功能正常使用。** 依本節 40／60／100 分分級持續操作與驗證；實際資料、互動篩選、連續操作、重新讀取、匯入後結果、不同 Scope 權限與必要手機 local 路徑均可用。**先在 ISR 關閉時證明四大功能正常，1.2 Release 前再由使用者親自開啟 ISR 做第 6 項五分鐘實測**。只通過靜態截圖不算。
-
-### 四大功能的 40／60／100 分動態驗收水準（2026-10-26）
-
-> **使用者已完整提供驗收標準，不再要求使用者設計測試步驟。** 先在 **ISR 關閉** 狀態驗證；工程端自行準備適當的操作與併發測試、量測證據。這一節是上述七項整體驗收的**可量測品質分級**，不是新增七輪之外的零碎驗收。
-
-| 成績 | 使用者驗收水準 |
+| 分數 | 標準 |
 |---|---|
-| **40 分｜最低及格線** | **單人**於**五分鐘內持續連續點擊／切換**文化、統計、痕跡、搜尋，功能與資料反應完全正常。除了**大量匯入**外，各一般操作都在 **5 秒內**得到正確、可用的回應；使用者過去已看過每頁約 1 秒出現，**5 秒是上限，不是故意把既有秒開效能降到五秒**。 |
-| **60 分｜多人及格水準** | **10 人同時使用**相同四大功能，維持上述五分鐘操作、回應速度、結果正確性與穩定度，不因多人切換／查詢造成失敗、卡住、錯誤資料或異常資源消耗。 |
-| **100 分｜最高驗收水準** | **100 人同時使用**時，四大功能仍維持正常回應與操作品質，符合相同的 **一般操作不超過 5 秒**及連續操作要求。 |
+| 40（最低及格） | 單人五分鐘內連續切換四大功能，一般操作 5 秒內回應（大量匯入除外）。 |
+| 60（多人及格） | 10 人同時使用維持相同標準，不因多人造成失敗或異常資源消耗。 |
+| 100（最高） | 100 人同時使用仍維持正常回應。 |
 
-- **如何才算有證據：** 五分鐘內不是單次展示或掛著 100 個閒置分頁，而是代表性真實資料、持續實際操作與獨立的同時使用者工作階段；記錄操作成功與失敗、各次回應時間／異常、Supabase 查詢量及 Cloudflare 流量／成本訊號，檢查連續搜尋、頁面切換、篩選變更、回到頁面、讀寫與不同權限邊界。若已知體驗接近秒開，還應檢查是否出現實質退化；**最高五秒只是底線**。
-- **大量匯入單獨驗證：** 不受一般互動五秒門檻限制，但必須有可理解的執行進度或處理狀態、正確筆數與資料關聯；匯入後四大功能照常操作、查詢與展示。不能以大量匯入的例外掩護平常頁面的卡頓。
-- **分數依實際完成的最高層級證據呈現：** 使用者可單人完成五分鐘真實使用的基本驗收；**不要求使用者召集 10／100 位真人**。若工程端能在不啟動未授權雲端付費資源的環境做受控併發模擬，可將模擬證據與真實多人實測明確區分；沒有實測 10／100 人的層級須標為「尚未驗證」，**不能因此阻止已通過基本條件的 1.2 Release**，也不得用單人體感推定多人結果。
-- **開發階段不授權部署不變：** **ISR 已由使用者開啟，不再擅改現有設定**；不得為測試自行觸發 GitHub Pages／Cloudflare／Vercel 部署或付費負載。程式先驗證，待使用者決定手動部署才進行 1.2 的五分鐘單人實測。
+大量匯入單獨驗證（不受 5 秒限制，但要有進度提示和正確筆數）。使用者可單人完成基本驗收，不要求召集 10/100 位真人；工程端可做受控併發模擬，但要跟真實多人實測分開標示。
 
-**整體成果與 LOC 1.2 Release 的界線：** 各開發項目可在**未部署、ISR 關閉**時以完整 CI、Build、實際資料／權限／回歸證據完成，不要求邊改邊部署。**LOC 1.2 正式 Release 則仍需：功能整體穩定後，由使用者自主安排一次手動部署與 ISR 啟用，再親自完成第 6 項五分鐘功能／Cloudflare 流量與成本實測。** 10／100 人同時操作是進階性能分級，不要求使用者找真人測試，也不是 1.2 的基本發行門檻。
+## 五、其他設計界線
 
-## 五、其他保留的設計界線與維護原則
+- 符文佔領地圖、3D 時空雷達：創意構想，非已交辦功能。
+- 路線只表示錨點行經順序，不要求道路連通。
+- 相同地點可在不同旅程重複引用；時間定錨與空間定錨是不同物件。
+- 公開內容 All Read，寫入需 RLS 授權。
 
-## 目前不作為「未完成交付」的構想／已定規則
+## 六、維護與工程交付原則
 
-- 符文佔領地圖區域、以地圖當對戰桌、3D 時空雷達：屬後續創意構想，**未自行升格為已交辦完成期限的功能**。
-- 路線只表示錨點的行經順序，不要求相鄰／道路連通；道路、鐵路、飛行路由若要加入，須獨立定義，不覆蓋現有 Frame 語義。
-- 相同地點在不同旅程可重複引用；不同時間打卡不應一律合併。時間定錨與空間定錨是不同物件。
-- LOC 專案權限保留已指定的公開內容 **All Read**，而新增／編輯／刪除必須由真正授權與 RLS 控制。
+1. 先對照目標與現有條件，優先解決安全/資料完整/操作順暢/成本的真問題，不機械逐張開分支。
+2. 完成一項要有真實操作/動態資料/失敗空結果/回歸證據，CI 綠燈不是唯一標準。
+3. 高風險/跨檔功能用同一 task branch 做完整交付，驗證完就合併並清理分支；未完成的標 `FROZEN/UNVERIFIED/NOT FOR MERGE`，低風險文件改動可直接進乾淨 main。
+4. 保護原始資料：不無授權清資料、不跨 Scope 合併 UID、不啟動 Cloudflare/Vercel ISR。
+5. ID 不回收；已取消/已結案的項目不重新列入。
 
-## 六、維護與工程交付
+## 最後的可選作業：Neon 單次整批對齊（非必要）
 
-1. **先對照目標與目前條件。** 根據最新使用者指令、`AGENTS.md`、必要 Skills、現有 `main` 與當次資料／運行證據調整排程，優先解決影響安全、資料完整、操作順暢和成本的真問題；不要機械地逐張 TODO 開分支、逐個找使用者驗收。
-2. **保留現況，不把規劃冒充功能。** 原有未完成、部分實作、待查證、歷史測試紀錄都保留原意。完成一項時要有真實操作、動態資料、失敗／空結果、重試、權限和必要回歸的證據；CI 結束且相關 logs 已檢查，只綠燈不算。
-3. **依風險隔離，但分支不等人來驗收。** 高風險／跨檔／共享功能用同一短期 task branch 或工作區完成一個完整可用的工程交付；驗證完成即安全整合 `main`，並關閉／清理已合併分支，不必等使用者逐項簽收。未完成、停工或缺證據時，保留既有工作於非活躍 **FROZEN／UNVERIFIED／NOT FOR MERGE** 分支，記下未完成原因並暫停；不把半成品合進 `main`，不為了等待而再造新分支，也不刪未合併成果。低風險文件更改可直接進乾淨 `main`。使用者僅在整體功能已可用時驗收操作體驗。
-4. **保護原始資料、角色與部署狀態。** 所有公開資料預期 All Read，寫入驗權；不無授權清除 Galaxy／Supabase／Neon 資料、不重匯 Timeline、不跨 Scope 合併 UID、不自動寫 Galaxy／Markdown 雙檔、不啟動 Cloudflare／Vercel ISR。
-5. **ID 不回收，但允許依使用者指示結案、取消與暫緩。** 2026-10-27 取消的 LOC-TODO-07／15／35、LOC-PLACE-02 不得作為新工作或 CI 文字一致性關卡；已完成 01／03／12 不得重新列未完成。歷史版本由 Git 保留。其他任務的工程完成狀態依適當證據更新。
+只在 Supabase 全部完成且使用者明確授權時，做一次單向對齊（schema/RLS/函式/逐列核對），不雙向同步，不因此啟動部署。
 
-## 最後的可選作業：Neon 單次整批對齊（非目前必要待辦）
+---
 
-- **時機**：先在 Supabase 完成所有已授權功能／schema／資料修正及其驗收；**中途不連動、不逐項同步**。
-- **是否執行**：不是完成 LOC 待辦的必要條件。需要 Neon 作備援時再由使用者決定是否進行；不需要則直接略過。
-- **若執行**：只有在使用者明確授權的最後階段，才做**一次 Supabase → Neon 單向整批對齊**；比對 schema／RLS／函式／觸發器與**逐列主鍵及內容**（僅筆數相同不足以證明一致），具備備份／回復機制並讀回核對。Neon 不變成權威來源、不雙向自動同步，**也不因此啟動 Vercel／Cloudflare 的 ISR 部署**。
+## UI／Hero 修正與後續驗證（2026-10-26）
 
+- [ ] 管理模式 Hero 單圖與獨立文字：以「待查證」節最新規格為準，已提交程式不等於畫面通過驗證。
+- [ ] 實際視覺回歸：正式站逐一打開 Scope 四種、LOC 五種入口，確認 Hero 圖 cover 填滿、地圖不撐版，涵蓋桌機/手機/權限/重新載入。
+- [ ] 資料發布一致性：Admin 儲存後核對 Supabase 與已發布的 `group_manage.js` 快照一致。
 
-## UI／Hero 修正與後續驗證（2026-10-26，管理模式）
+---
 
-- [ ] **管理模式 Hero 單圖與獨立文字｜待查證。** 以文件開頭 **「待查證｜既有『頁面控管』Hero 四組文案與單圖」** 最新規格為準。保留現有七種 Hero 類別、Admin／Manage／Setting 三個獨立設定；僅擴充原本 `scope_manage`：Scope 四個文字框共用原本一個圖片路徑。LOC 五個管理文字另依實際路由查證。已提交程式不等於正式頁面通過驗證。
-- [ ] **實際視覺回歸**：在正式 GitHub Pages URL 逐一打開 Scope 四種入口與 LOC 五種入口，確認 Hero 圖 `cover` 填滿、不再置中縮小；地圖載入前後 Hero、選單、主容器寬度一致，MapLibre canvas 不撐開父 Grid。需覆蓋桌機、手機、權限拒絕、切頁與重新載入；單靠 CSS 靜態檢查或 main commit 不能勾選。
-- [ ] **資料發布一致性**：Admin 儲存 `group_manage` 後核對 Supabase 與已發布的 `app/modular/published-blocks/loc/group_manage.js`；須按既有受控 `sync:public` 發布流程更新快照，且不得因本項自行啟用 Cloudflare 自動部署／ISR。檢查 GitHub Pages 生效版本與 Service Worker 快取，不要用 mr 部署紀錄代替正式站。
+## 2026-10-27｜空間點線面／3D 文字密度／《語文爭霸》（使用者交辦，追蹤中）
 
+設計紀錄：[`md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md`](./md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md)；Galaxy `uid=E5C74D0E`（個人開發文件，不公開不列統計）。
 
-## 2026-10-27｜空間點線面／3D 文字密度／《語文爭霸》（使用者明確交辦紀錄）
-
-- **原則與完整設計紀錄：** [`md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md`](./md/2026-10-27-loc-spatial-anchors-3d-language-conquest.md)；Galaxy `silver.lo3rwang_galaxy.uid=E5C74D0E`（個人開發文件；`searchable=false`、`statistics_able=false`）。此處追蹤工作，不能代替功能驗收。
-- [ ] **空間優先｜P0，未完成：** 以 `space_anchor` 點、`space_period` 有序路線（線）、`space_trace` 多路線組合（面）接通 Supabase 無損資料轉換、MapLibre、CRUD、索引與同 Scope 關聯；不可假連線，不可捏造 GPS，不動時間線在改的部分。現有 `anchor/map` 與 `anchor_list` DB 欄位仍不一致；現階段 **NOT FOR MERGE／未驗證**。
-- [ ] **文章對應｜P0，隨空間端：** Galaxy 現有 `place_id`、`group_lists`、`createtime` 串回地點／路線／痕跡的真實文章列表；同日多地點以原打卡時間輔助候選，分清已確認與推定關聯，按需分頁和展開原文。
-- [ ] **立體文字密度｜後續呈現：** 「我的最愛」時間、地點、關鍵詞群組等現有篩選作 X/Y/Z 可變 3D 軸；含 `(月,日,地點)`、`(地點,符文,2026 年出現次數)` 等情境，按密度單元點開與其條件完全一致的文章列表；`group_lists` 不可冒充詞頻次數。
-- **《語文爭霸》｜空想狀態／有空再想／不急／可不做：** 自己的 Galaxy 文章作起手據點、66 符文與同盟組織為勢力，時間和地點選戰場、文字關鍵詞密度決定版圖強弱；沿用 3D 痕跡地形與網頁策略遊戲可控 UI。僅保留創意，不列工程必要事項。
-- **限制：** 不改動原始打卡／文章；空間和時間兩線平行；不自動啟用 Cloudflare／ISR，也不在未完成狀態送 `main` 程式碼。雙份開發設計文件為進度紀錄，不是已交付產品。
+- [ ] **空間優先** [P0]：`space_anchor`（點）/`space_period`（有序路線/線）/`space_trace`（多路線組合/面）接通 Supabase/MapLibre/CRUD；現有 `anchor/map` 與 `anchor_list` 欄位仍不一致，`NOT FOR MERGE`。
+- [ ] **文章對應** [P0，隨空間]：Galaxy `place_id`/`group_lists`/`createtime` 串回地點/路線/痕跡的文章列表；同日多地點分清已確認與推定關聯。
+- [ ] **立體文字密度**：「我的最愛」時間/地點/關鍵詞群組作 X/Y/Z 可變 3D 軸，按密度單元點開對應文章列表。
+- **《語文爭霸》**（有空再想/可不做）：自己的 Galaxy 文章作據點，66 符文與同盟為勢力，時間地點選戰場，關鍵詞密度決定版圖。
+- 限制：不改動原始打卡/文章；空間時間兩線平行；不自動啟用 Cloudflare/ISR，未完成不送 main。
