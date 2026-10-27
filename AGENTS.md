@@ -53,6 +53,8 @@
 3. **Loading = UI：** 效能/體感同等重要，互相權衡。
 4. **Code：** 不主動做風格/架構 review；不要在不必要的地方隨興加上工程用註解。
 
+- **這四層都要先蓋在「基本功能真的能用」之上，不是平行獨立的。** 頁面還 404、功能還跑不起來的時候，先讓它能用，不要搶先去談效能調校或安全加固——優化跟強化是建立在東西先能動之上的，不是比基本功能更優先。同理，UI/Loading 層不是功能越多越好：為了方便堆出一大堆使用者用不到的選項，只會讓人眼花撩亂反而不會用，技術上做得到不代表該做。判斷基準永遠是「這對一個最基本的使用者現在有沒有實際幫助」，不是「能不能做」或「炫不炫」。
+
 ### Skill 對應優先層級
 - **Security：** 新 skill/package → `find-skills`；auth/輸入輸出/密鑰相關 → `code-review-expert` 的 `security-checklist.md`（只當檢查清單用，不跑完整 review）；Postgres/Supabase schema → `supabase-postgres-best-practices`；Supabase Auth/Edge/Realtime → `supabase`；MCP server → `mcp-builder`。
 - **Portable：** 寫新程式碼前先找既有實作；改 LOC 詞彙/Scope 邊界/ADR → `domain-modeling`。
