@@ -41,7 +41,7 @@ test('spatial trace may be made from routes only; saved trace still draws linked
   const start=source.indexOf('function validatedConnections(');
   const end=source.indexOf('// A Spatial Trace',start);
   assert.ok(start>=0&&end>start);
-  const fn=new Function('idScope','VALID_ID',source.slice(start,end)+'\\nreturn validatedConnections;')(
+  const fn=new Function('idScope','VALID_ID',source.slice(start,end)+'\nreturn validatedConnections;')(
     value=>value,/^[A-Za-z0-9]{4}$/);
   assert.deepEqual(fn({scopeId:'lo3rwang',type:'space_trace',anchorUids:[],
     anchors:[],hasRoutes:true}),[]);
