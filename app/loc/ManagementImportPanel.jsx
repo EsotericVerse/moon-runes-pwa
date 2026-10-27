@@ -8,7 +8,7 @@ import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
 registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
-import {useDeferredValue,useMemo,useRef,useState} from 'react';
+import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
@@ -34,16 +34,42 @@ const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'
 // an established cause. Keep this as a precaution against rapid re-clicks
 // until the real mechanism is confirmed.
 const BULK_WRITE_COOLDOWN_MS=300000;
-function useBulkWriteCooldown(){
-  const [active,setActive]=useState(false);
-  const availableAtRef=useRef(0);
+const cooldownClock=ms=>{
+  const seconds=Math.ceil(Math.max(0,ms)/1000);
+  return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+};
+function useBulkWriteCooldown(scopeId){
+  const key='loc:bulk-import-cooldown:'+scopeId;
+  const [deadline,setDeadline]=useState(0);
+  const [remaining,setRemaining]=useState(0);
+  useEffect(()=>{
+    let restored=0;
+    try{restored=Number(sessionStorage.getItem(key))||0;}catch{/* Storage may be disabled. */}
+    const end=restored>Date.now()?restored:0;
+    setDeadline(end);setRemaining(Math.max(0,end-Date.now()));
+  },[key]);
+  useEffect(()=>{
+    if(!deadline)return;
+    const update=()=>{
+      const left=Math.max(0,deadline-Date.now());
+      setRemaining(left);
+      if(!left){
+        try{sessionStorage.removeItem(key);}catch{/* Optional persistence. */}
+        setDeadline(0);
+      }
+    };
+    update();
+    const timer=setInterval(update,1000);
+    return ()=>clearInterval(timer);
+  },[deadline,key]);
   return {
-    active,
-    remainingMs(){return availableAtRef.current-Date.now()},
+    active:remaining>0,
+    remaining,
+    remainingMs(){return Math.max(0,deadline-Date.now())},
     start(){
-      availableAtRef.current=Date.now()+BULK_WRITE_COOLDOWN_MS;
-      setActive(true);
-      setTimeout(()=>setActive(false),BULK_WRITE_COOLDOWN_MS);
+      const end=Date.now()+BULK_WRITE_COOLDOWN_MS;
+      try{sessionStorage.setItem(key,String(end));}catch{/* Optional persistence. */}
+      setDeadline(end);setRemaining(BULK_WRITE_COOLDOWN_MS);
     }
   };
 }
@@ -272,7 +298,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
-  const writeCooldown=useBulkWriteCooldown();
+  const writeCooldown=useBulkWriteCooldown(scopeId);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
@@ -493,9 +519,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </div>
       <button type="button" className="loc-button scope-import-save-button"
         disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownClock(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
+    {writeCooldown.active?<p role="timer" className="scope-status">開始匯入暫停中：剩餘 {cooldownClock(writeCooldown.remaining)}。五分鐘倒數結束後，按鈕會自動恢復可按。</p>:null}
+    {rows.length&&!busy&&!writeCooldown.active&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
+    {rows.length&&!busy&&!writeCooldown.active&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {busy&&progress?.percent===100?<p className="scope-status" role="status">文章寫入已達 100%，仍在整理媒體與文章關聯；完成後才會解除處理中狀態。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
