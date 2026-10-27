@@ -1,7 +1,6 @@
 import {spaceCoordinates} from './space-graph.mjs';
-// Place identity candidates are based on recorded NAMES, never GPS or address.
-// Only exact orthographic/brand-order variants are eligible for automatic grouping.
-// Uncertain names are suggestions requiring an explicit user decision.
+// Review candidates require identical complete name characters (including repeats)
+// and the exact same recorded coordinates and Scope. No fuzzy token matching.
 const BRANDS=['worldgym','家樂福'];
 const CITY_PREFIXES=['新北市','新北','臺北市','台北市','台北','桃園市','台中市','臺中市','台南市','臺南市','高雄市'];
 export function compactPlaceName(value){
@@ -25,21 +24,23 @@ export function placeNameKey(value){
 }
 // Read-only, O(n) exact-position candidate grouping. An identical GPS fix is
 // evidence for review, never permission to delete a UID or merge article links.
+export function exactNameCharacters(value){
+  return [...String(value||'').normalize('NFKC').replace(/[\\s\\u3000]+/gu,'')].sort().join('');
+}
 export function reviewReorderedCoordinateNames(anchors=[]){
   const byKey=new Map();
   for(const anchor of anchors){
     if(anchor?.trace_type!=='space_anchor')continue;
     const position=spaceCoordinates(anchor);
-    const normalized=compactPlaceName(anchor.title);
-    if(!position||normalized.length<2)continue;
-    const characters=[...normalized].sort().join('');
+    const characters=exactNameCharacters(anchor.title);
+    if(!position||characters.length<2)continue;
     const scope=String(anchor.source_scope||'');
     const key=JSON.stringify([scope,position,characters]);
     if(!byKey.has(key))byKey.set(key,{key,position,items:[]});
     byKey.get(key).items.push(anchor);
   }
   return [...byKey.values()].filter(group=>group.items.length>1&&
-    new Set(group.items.map(row=>compactPlaceName(row.title))).size>1)
+    new Set(group.items.map(row=>String(row.title||''))).size>1)
     .map(group=>({...group,items:group.items.sort((a,b)=>
       String(a.uid||'').localeCompare(String(b.uid||'')))}))
     .sort((a,b)=>b.items.length-a.items.length||a.key.localeCompare(b.key));
@@ -78,30 +79,23 @@ export function reviewPlaceNameGroups(anchors=[]){
   const byKey=new Map();
   for(const anchor of anchors){
     if(anchor?.trace_type!=='space_anchor')continue;
-    const key=placeNameKey(anchor.title);
-    if(!key)continue;
+    const coordinates=spaceCoordinates(anchor);
+    const characters=exactNameCharacters(anchor.title);
+    if(!coordinates||!characters)continue;
+    const key=JSON.stringify([String(anchor.source_scope||''),coordinates,characters]);
     if(!byKey.has(key))byKey.set(key,[]);
     byKey.get(key).push(anchor);
   }
   const automatic=[],uncertain=[];
   for(const [key,rows] of byKey){
     if(rows.length<2)continue;
-    const ordered=[...rows].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||''))||
+    const ordered=[...rows].sort((a,b)=>
+      String(a.created_at||'').localeCompare(String(b.created_at||''))||
       String(a.uid||'').localeCompare(String(b.uid||'')));
-    if(ordered.every(row=>samePlaceFloor(ordered[0],row)&&sameRecordedPosition(ordered[0],row))){
-      automatic.push({key,canonical:ordered[0],items:ordered});
-    }else uncertain.push({key,reason:'名稱相近但位置未能證明相同，保留獨立確認',items:ordered});
-  }
-  // Uncertain alternatives only: no GPS, address matching or automatic merge.
-  const existing=new Set(uncertain.flatMap(group=>group.items.map(row=>row.uid)));
-  for(const row of anchors.filter(a=>a?.trace_type==='space_anchor')){
-    if(existing.has(row.uid))continue;
-    const others=anchors.filter(other=>other?.trace_type==='space_anchor'&&other.uid!==row.uid&&
-      placeNameKey(other.title)!==placeNameKey(row.title)&&uncertainPlaceName(row.title,other.title));
-    if(others.length) {
-      uncertain.push({key:'possible:'+row.uid,reason:'名稱相似，需確認',items:[row,...others]});
-      for(const item of [row,...others])existing.add(item.uid);
-    }
+    const group={key,canonical:ordered[0],items:ordered,
+      reason:'同座標、完整名稱字元相同'};
+    if(ordered.every(row=>samePlaceFloor(ordered[0],row)))automatic.push(group);
+    else uncertain.push({...group,reason:'名稱字元與座標相同，但樓層不同，請確認'});
   }
   return {automatic:automatic.sort((a,b)=>b.items.length-a.items.length),
     uncertain:uncertain.sort((a,b)=>b.items.length-a.items.length)};
