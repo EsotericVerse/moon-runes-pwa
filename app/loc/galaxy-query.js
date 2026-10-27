@@ -1,4 +1,5 @@
 'use client';
+import {isAbortError} from './db-query.mjs';
 
 
 import {StatisticsFacets} from './statistics-facets';
@@ -188,7 +189,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
   return dailyCountRows(rows,categoryColumn,{includeEmpty,includeUndated});
 }
 
-export async function selectCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
+async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
   const resolved=[
     ...filters,
     ...timeFilters('createtime',startDate,endDate),
@@ -553,7 +554,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
  * without changing the facet response contract.
  */
 
-export async function selectMediaStatisticsFacetRows(scope,dimension,{startDate='',endDate=''}={}){
+async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   if(!['media_type','media_platform','media_style'].includes(dimension)){
     throw new Error('Unknown media statistics dimension');
@@ -696,7 +697,7 @@ async function scopeDensityRows(scope,{startDate='',endDate=''}={}){
     .sort((a,b)=>a.day.localeCompare(b.day));
 }
 
-export async function selectScopeDensityRows(scopes,{startDate='',endDate=''}={}){
+async function selectScopeDensityRowsRaw(scopes,{startDate='',endDate=''}={}){
   const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
   return (await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeDensityRows(scope,range))))
     .flat()
@@ -728,7 +729,7 @@ export async function selectFirstScopeStatisticsDate(scope){
 // One request per chart. The database returns the earliest date, the exact daily
 // counts and the small source taxonomy together; the row-level readers below only
 // serve while the functions are not installed (for example on a backup database).
-export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
+async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   if(usesNumericIsr(current.id)){
     try{return await readNumericIsr(current.id,'statistics',{startDate,endDate});}
@@ -746,7 +747,7 @@ export async function selectScopeOverview(scope,{startDate='',endDate=''}={}){
   ]);
   return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases};
 }
-export async function selectScopeEarliest(scope){
+async function selectScopeEarliestRaw(scope){
   const current=scopeOf(scope);
   if(usesNumericIsr(current.id)){
     try{return await readNumericIsr(current.id,'earliest');}
@@ -760,7 +761,7 @@ export async function selectScopeEarliest(scope){
   return selectFirstScopeStatisticsDate(current);
 }
 // LOC is a set: one call returns each Scope's daily totals and the earliest date of the set.
-export async function selectLocStatistics({startDate='',endDate=''}={}){
+async function selectLocStatisticsRaw({startDate='',endDate=''}={}){
   if(usesNumericIsr('loc')){
     try{return await readNumericIsr('loc','loc-statistics',{startDate,endDate});}
     catch{ /* Optional ISR failure: existing LOC statistics RPC. */ }
@@ -827,3 +828,23 @@ export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={})
     return {day:key.slice(0,split),source:key.slice(split+1),item_count:Number(item_count)||0};
   }).sort((a,b)=>a.day.localeCompare(b.day)||SOURCE_BUCKET_ORDER.indexOf(a.source)-SOURCE_BUCKET_ORDER.indexOf(b.source));
 }
+
+// Statistics read failure (database unreachable) is shown as an empty result, never as a
+// stale or made-up number. The footer already reports the database status.
+// Cancellation (AbortError) is not a failure and is rethrown.
+function emptyOnFailure(fn,fallback){
+  return async(...args)=>{
+    try{return await fn(...args);}
+    catch(error){
+      if(isAbortError(error))throw error;
+      console.warn('[statistics] read failed; showing empty result',error?.message||error);
+      return structuredClone(fallback);
+    }
+  };
+}
+export const selectCategoryCounts=emptyOnFailure(selectCategoryCountsRaw,[]);
+export const selectMediaStatisticsFacetRows=emptyOnFailure(selectMediaStatisticsFacetRowsRaw,[]);
+export const selectScopeDensityRows=emptyOnFailure(selectScopeDensityRowsRaw,[]);
+export const selectScopeOverview=emptyOnFailure(selectScopeOverviewRaw,{earliest:'',rows:[],categories:[],aliases:[]});
+export const selectScopeEarliest=emptyOnFailure(selectScopeEarliestRaw,'');
+export const selectLocStatistics=emptyOnFailure(selectLocStatisticsRaw,{earliest:'',scopes:[],rows:[]});
