@@ -3,6 +3,7 @@
 import useSWR,{useSWRConfig,unstable_serialize} from 'swr';
 import useSWRInfinite,{unstable_serialize as serializeInfinite} from 'swr/infinite';
 import {useMemo} from 'react';
+import {flashMessage} from './flash-message';
 
 // LOC reads are client-triggered resources: SWR owns request deduplication and
 // the browser-session cache; these hooks expose a small shared status contract.
@@ -13,7 +14,11 @@ export function useAsyncResource(keyOrOptions,fetcherArg,optionsArg={}){
   const fetcher=legacy?keyOrOptions.queryFn:fetcherArg;
   const options=legacy?keyOrOptions:optionsArg;
   const {enabled=true,queryKey,queryFn,...swrOptions}=options;
-  const resource=useSWR(enabled?key:null,fetcher,swrOptions);
+  const {onError:userOnError,...rest}=swrOptions;
+  const resource=useSWR(enabled?key:null,fetcher,{...rest,onError:(error,k,config)=>{
+    flashMessage('資料讀取失敗，請稍後再試');
+    userOnError?.(error,k,config);
+  }});
   return {
     ...resource,
     isPending:resource.isLoading,
