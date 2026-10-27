@@ -163,11 +163,14 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
       meta_tags:null,createtime:null,source_place:null
     };
-    media.push({...row,galaxy_link:owners[0]||null});
-    for(const uid of owners)mediaLinks.push({uid,media_id:id});
+    const hasUrl=Boolean(row.url);
+    if(hasUrl){
+      media.push({...row,galaxy_link:owners[0]||null});
+      for(const uid of owners)mediaLinks.push({uid,media_id:id});
+    }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_id:id,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_id:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
