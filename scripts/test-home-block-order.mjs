@@ -40,7 +40,16 @@ test('management Hero uses nine dedicated page_name documents, not group_manage 
     ['文章管理','GroupArticle']
   ]);
   for(const slot of scope)assert.equal(HomeBlock.managementHeroImagePage(slot),'scope_manage');
-  for(const slot of admin)assert.equal(HomeBlock.managementHeroImagePage(slot),'scope_admin');
+  for(const slot of admin)assert.equal(HomeBlock.managementHeroImagePage(slot),
+    slot.key==='system'?'scope_admin':slot.page);
+  assert.deepEqual(admin.map(slot=>HomeBlock.managementHeroDefaultImage(slot)),[
+    'https://loc.lo3rwang.cc/pics/LOC-admin.jpg',
+    'https://loc.lo3rwang.cc/pics/LOC-culture.jpg',
+    'https://loc.lo3rwang.cc/pics/LOC-statics.jpg',
+    'https://loc.lo3rwang.cc/pics/LOC-gn.jpg',
+    'https://loc.lo3rwang.cc/pics/LOC-search.jpg'
+  ]);
+  assert.equal(HomeBlock.managementHeroDefaultImage(scope[0]),'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
   assert.equal(HomeBlock.MANAGEMENT_HERO_IMAGE_URL,'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
   assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
   assert.equal(HomeBlock.featureHeroPageFor('trace'),'group_trace');
@@ -80,7 +89,8 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.doesNotMatch(hero,/['"]group_manage['"]/);
   assert.match(hero,/const page=slot\.page/);
   assert.match(hero,/page_name:page,block_order:1/);
-  assert.match(hero,/pageOverride="scope_admin"/);
+  assert.match(hero,/pageOverride=\{HomeBlock\.managementHeroImagePage\(locSlot\)\}/);
+  assert.match(hero,/defaultUrl=\{HomeBlock\.managementHeroDefaultImage\(locSlot\)\}/);
   // Five Admin feature tabs only; management Heroes and Personal Settings are
   // embedded inside their parent panels, not separate navigation buttons.
   const definitions=hero.match(/const FEATURES=Object\.freeze\((\[[\s\S]*?\])\.map\(feature=>/);
@@ -108,6 +118,8 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.equal(HomeBlock.featureHeroPageFor('setting'),'group_setting');
   assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
   assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);
+  assert.match(read('app/modular/ui.jsx'),/managementHeroDefaultImage\(managementSlot\)/);
+  assert.doesNotMatch(read('app/modular/ui.jsx'),/managementSlot\.audience==='loc'\?'https:\/\/loc\.lo3rwang\.cc\/pics\/LOC-admin\.jpg'/);
   assert.doesNotMatch(read('app/modular/ui.jsx'),/group_manage/);
   assert.match(read('app/loc/scope-data.js'),/const name=String\(page\|\|'index'\)\.trim\(\);/);
   assert.match(hero,/block_title:title/);
@@ -115,6 +127,8 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/儲存後資料庫讀回不一致/);
   assert.match(hero,/uid:HomeBlock.createUid\(\)/);
   assert.match(css,/\.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*background-size:100% 100%,contain/);
+  assert.match(css,/\.loc-next-main\[data-loc-scope="loc"\] \.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*min-height:clamp\(430px,50vw,620px\)/);
+  assert.doesNotMatch(css,/data-loc-scope="loc"\] \.scope-feature-hero--manage\{--scope-feature-hero-image:url\('\.\.\/\.\.\/pics\/LOC-admin\.jpg'\)/);
   assert.match(css,/\.article-control-stacked/);
 });
 
