@@ -5,7 +5,9 @@
 import {currentCachePolicy} from './cache-mode-client.mjs';
 
 const ID=/^[a-z][a-z0-9]{0,14}$/;
-const KINDS=new Set(['culture','statistics','earliest','loc-statistics','facet']);
+// Only kinds the server route serves (see app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js).
+// Anything else goes straight to the direct data provider without a wasted request.
+const KINDS=new Set(['culture','statistics','earliest','loc-statistics']);
 export function usesNumericIsr(scopeId){
   const config=currentCachePolicy();
   return config.mode==='isr'&&Boolean(config.origin)&&ID.test(String(scopeId||''))&&scopeId!=='local';
@@ -20,7 +22,7 @@ export async function readNumericIsr(scopeId,kind,params={}){
   }
   if(params.includeUndated)url.searchParams.set('includeUndated','true');
   const response=await fetch(url.href,{credentials:'omit',headers:{Accept:'application/json'},
-    signal:AbortSignal.timeout(2500)});
+    signal:AbortSignal.timeout(800)});
   if(!response.ok)throw new Error('ISR HTTP '+response.status);
   const data=await response.json();
   if(data===null||data===undefined||(typeof data!=='object'&&!(kind==='earliest'&&typeof data==='string')))
