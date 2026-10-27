@@ -47,6 +47,8 @@ test('Only an unambiguous full relative path can associate an article with ZIP m
   const collector=createArchiveEvidenceCollector();
   collector.onMediaEntry({path:'a/media/photo.jpg'});
   collector.onMediaEntry({path:'b/media/photo.jpg'});
+  collector.onExif({path:'a/media/photo.jpg',metadata:{latitude:25.001,longitude:121.5}});
+  collector.onExif({path:'b/media/photo.jpg',metadata:{latitude:25.002,longitude:121.5}});
   collector.onRecord({platform:'threads',attachments:[{uri:'media/photo.jpg'}]},'AAAA0000');
   const rows=collector.rows({scopeId:'local',archiveName:'ambiguous.zip',archiveSize:31});
   assert.equal(rows.filter(v=>v.found_in_zip).length,2);
@@ -66,6 +68,15 @@ test('An EXIF image with no public URL is GPS-only, not a fake Galaxy Media row'
   assert.equal(plan.exif.length,1);
   assert.equal(plan.exif[0].media_id,null);
   assert.equal(plan.exif[0].latitude,25.033);
+});
+test('ZIP images with neither URL nor EXIF are not imported as media',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onMediaEntry({path:'instagram/photos/empty.jpg'});
+  const rows=collector.rows({scopeId:'lo3rwang',archiveName:'ig.zip',archiveSize:56});
+  const plan=prepareArchiveMedia(rows,new Set());
+  assert.equal(rows.length,0);
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.exif.length,0);
 });
 test('Archive media UUID is stable for idempotent re-import',()=>{
   const a=archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/a.jpg');
