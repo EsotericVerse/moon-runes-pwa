@@ -151,7 +151,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
 
 // Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
-async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
+async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Attach only to article UIDs established by the import plan.
       const plans=normalized.flatMap(item=>{
@@ -217,6 +217,11 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
         batchSize:validImportBatchSize(batchSize),
         writeBatch:batch=>insertRows(galaxyMedia,batch)
       });
+      for(const link of extraLinks){
+        const uid=knownArticleIds.get(String(link.uid||'').trim());
+        const mediaId=resolvedIds.get(String(link.media_id||''))||String(link.media_id||'');
+        if(uid&&byId.has(mediaId))attach(uid,mediaId);
+      }
       let connected=0;
       const linkedUids=[...related.keys()];
       for(let offset=0;offset<linkedUids.length;offset+=200){
@@ -387,6 +392,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
         mediaOnly:[...analyzed.mediaOnly,...archivePlan.media],
+        extraLinks:archivePlan.mediaLinks,
         knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
       });
       let exifSaved=0;
