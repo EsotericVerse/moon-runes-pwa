@@ -557,9 +557,9 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     // Each phase needs its own percent/label; letting an unlisted phase fall
     // through to write's formula re-displays a stale "已寫入 N/N 篇" at the
     // same percent write just finished at, which looks like a stall/glitch.
-    onProgress:({phase,completed,total})=>{
+    onProgress:({phase,completed,total,seconds=5,retrying=false})=>{
       const percent=phase==='prepare'?61
-        :phase==='write'?61+30*(total?completed/total:1)
+        :phase==='write'||phase==='cooldown'?61+30*(total?completed/total:1)
         :phase==='sync'?95
         :phase==='finalizing'?99
         :61+38*(total?completed/total:1);
@@ -567,6 +567,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE)));
       const label=phase==='prepare'?'準備寫入文章 Attr'
         :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
+        :phase==='cooldown'?('已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇；'+(retrying?'逾時後縮批重試，':'')+'等待 '+Number(seconds||5)+' 秒後繼續')
         :phase==='sync'?'正在清除不再符合資格的文章'
         :phase==='finalizing'?'正在定錨並核對寫入數量'
         :'處理中';
