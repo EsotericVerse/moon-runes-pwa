@@ -115,8 +115,8 @@ test('UI at 10,000 of 29,818 reflects 71 percent and revised batch estimates',()
     completedBatches:20,estimatedBatches:100,seconds:5,retrying:true});
   assert.equal(events[0].percent,71);
   assert.equal(events[1].percent,71);
-  assert.match(events[0].label,/已完成 20 \\/ 60 批/);
-  assert.match(events[1].label,/已完成 20 \\/ 100 批/);
+  assert.ok(events[0].label.includes('已完成 20 / 60 批'));
+  assert.ok(events[1].label.includes('已完成 20 / 100 批'));
   assert.match(events[1].label,/縮批至 250 篇/);
   assert.match(events[1].label,/等待 5 秒/);
   assert.equal(events[1].completed,10000);
