@@ -209,7 +209,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // rather than one full-table UPDATE which can exceed statement_timeout.
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'reading',completed:0,total:0});
-    const {data:scopeRows,error:scopeError}=await authClient.schema('silver').from('loc')
+    const {data:scopeRows,error:scopeError}=await authClient.schema('silver').from('manage')
       .select('galaxy_table').eq('id',scope).limit(1);
     if(scopeError)throw new Error(scopeError.message||'Scope mapping read failed');
     if(!scopeRows?.length)throw new Error('Scope mapping not found');
