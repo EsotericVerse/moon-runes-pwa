@@ -88,7 +88,7 @@ export function reviewPlaceNameGroups(anchors=[]){
   }
   const automatic=[],uncertain=[];
   for(const [key,rows] of byKey){
-    if(rows.length<2)continue;
+    if(rows.length<2||new Set(rows.map(row=>String(row.title||''))).size<2)continue;
     const ordered=[...rows].sort((a,b)=>
       String(a.created_at||'').localeCompare(String(b.created_at||''))||
       String(a.uid||'').localeCompare(String(b.uid||'')));
