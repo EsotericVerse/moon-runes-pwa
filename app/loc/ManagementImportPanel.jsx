@@ -563,7 +563,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </section>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；EXIF 解析 {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆。影像不儲存；GPS 僅供位置證據，不能直接當作打卡地名。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
-      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
+      {archiveReady?<p className="scope-status">ZIP 完整紀錄 {archiveReady.count.toLocaleString()} 筆，以下僅顯示 5 筆預覽。儲存時自動按每 30,000 筆接續處理。</p>:<p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>}
       <div className="scope-management-records">
         {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
           <strong>{record.title||record.uid}</strong>
