@@ -91,6 +91,20 @@ test('strict full-name permutation review excludes shared generic words and othe
  assert.deepEqual(reviewReorderedCoordinateNames(ambiguous)[0].items.map(row=>row.uid),
   ['A005','A006']);
 });
+test('spatial management dropdowns use Theme colors in route, anchor and organizer editors',()=>{
+ const styles=readFileSync(new URL('../app/styles/features.css',import.meta.url),'utf8');
+ const route=readFileSync(new URL('../app/loc/TraceRouteManager.jsx',import.meta.url),'utf8');
+ const anchor=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+ const organizer=readFileSync(new URL('../app/loc/TraceOrganizer.jsx',import.meta.url),'utf8');
+ for(const source of [route,anchor])assert.match(source,/classNamePrefix="loc-react-select"/);
+ assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager\) \.loc-react-select__option--is-selected/);
+ assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager\) \.loc-react-select__input-container input/);
+ assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager,\.loc-trace-article-choice\) select option/);
+ assert.match(styles,/background:var\(--loc-rune-selected-bg\)/);
+ assert.match(styles,/color:var\(--loc-text\)/);
+ assert.match(organizer,/<select className="scope-select"/);
+});
+
 test('anchor quick-update preserves UID, is visible and uses theme-colored full-width editor',()=>{
  const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
  const organizer=readFileSync(new URL('../app/loc/TraceOrganizer.jsx',import.meta.url),'utf8');
