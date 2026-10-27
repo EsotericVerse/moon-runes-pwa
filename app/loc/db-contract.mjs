@@ -11,7 +11,7 @@ import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from '
 // under separate testing is less confusing to reason about and re-tune.
 export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
 // Read pages stay at 5k; DB writes are deliberately slower to limit pressure.
-export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=250;
+export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500;
 export const KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE=25;
 export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=5000;
 // Reset changes potentially tens of thousands of classified rows; keep each
