@@ -22,6 +22,7 @@ export function useRiverDensityAnalysis(rows,anchorDates,enabled){
         setSettled({rows,anchorDates,
           analysis:error?{...EMPTY_ANALYSIS,error:'時間密度變化點分析失敗，河道仍可使用。'}:result||EMPTY_ANALYSIS
         });
+        worker.terminate();
       };
       worker.onerror=()=>{
         if(active)setSettled({rows,anchorDates,
