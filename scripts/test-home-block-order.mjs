@@ -126,8 +126,13 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/儲存 Hero 圖片路徑/);
   assert.match(hero,/儲存後資料庫讀回不一致/);
   assert.match(hero,/uid:HomeBlock.createUid\(\)/);
-  assert.match(css,/\.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*background-size:100% 100%,contain/);
-  assert.match(css,/\.loc-next-main\[data-loc-scope="loc"\] \.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{[^}]*min-height:clamp\(430px,50vw,620px\)/);
+  const managementHeroRule=css.match(/\.loc-next-main\[data-loc-scope="loc"\] \.scope-main--edit-workspace \.scope-feature-hero--manage\s*\{([^}]+)\}/)?.[1]||'';
+  assert.ok(managementHeroRule.includes('aspect-ratio:16/9'));
+  assert.ok(managementHeroRule.includes('min-height:clamp(540px,56.25vw,820px)'));
+  assert.ok(managementHeroRule.includes('background-size:100% 100%,cover'));
+  assert.ok(managementHeroRule.includes('background-position:center center,center center'));
+  assert.doesNotMatch(managementHeroRule,/contain|right center/);
+  assert.match(css,/min-height:clamp\(480px,110vw,650px\)/);
   assert.doesNotMatch(css,/data-loc-scope="loc"\] \.scope-feature-hero--manage\{--scope-feature-hero-image:url\('\.\.\/\.\.\/pics\/LOC-admin\.jpg'\)/);
   assert.match(css,/\.article-control-stacked/);
 });
