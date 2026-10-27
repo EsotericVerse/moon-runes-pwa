@@ -18,7 +18,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,importSecond,dedupeIncomingImport,findExistingImportDuplicates} from './import-duplicate-check.mjs';
-import {isPublishableArchiveRecord,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {isPublishableArchiveRecord,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -345,7 +345,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
-      const list=await parseUniversalImportFile(file,{recordPath,importLocale:language});
+      const parsed=await parseUniversalImportFile(file,{recordPath,importLocale:language});
+      const list=filterStandalonePublicRows(parsed,nativeLocal);
       assertStandaloneImportDestination({nativeLocal,fileName:file.name,rows:list});
       const prepared=list.map(row=>({
         raw:row,
@@ -354,7 +355,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       setRows(prepared);
       // Galaxy Markdown metadata suggests an initial source; the user may override it.
       setSource(String(list[0]?.source_name||'').trim()||sourceSuggestion(file.name));
-      setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
+      setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()})+
+        (parsed.length!==list.length?'；已略過 '+(parsed.length-list.length).toLocaleString()+' 筆私人紀錄。':''));
     }catch(error){
       setRows([]);setArchiveEvidence([]);
       setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
