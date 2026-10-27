@@ -144,7 +144,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   return {
     key:identity?[scope,source,identity].join(':'):[source,scope,title].join('-'),
     source:displaySource,title:String(title),
-    checkInPlace:isGalaxy?String(row.source_place||'').trim():'',
+    checkInPlace:'',
     date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
     styleTagMatch:Boolean(row.style_keyword_tag),
@@ -364,10 +364,6 @@ export default function Search({managementMode=false}){
     }).map(item=>item.row);
   },[results,scopeId,availableScopes,articleSort]);
   // Suggestions come from loaded results only; do not imply a database-wide ranking.
-  const suggestedPlaces=useMemo(()=>[...new Set(results
-    .filter(row=>row.resourceType==='galaxy')
-    .map(row=>String(row.checkInPlace||'').trim())
-    .filter(Boolean))].slice(0,4),[results]);
   const suggestedTitles=useMemo(()=>[...new Set(results
     .filter(row=>row.resourceType==='galaxy')
     .map(row=>String(row.title||'').trim())
@@ -491,7 +487,7 @@ export default function Search({managementMode=false}){
         // exactly matches a style tag.
         cursor,
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
-        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:Boolean(options.placeOnly),
+        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:managementMode&&Boolean(options.placeOnly),
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         sortDirection:options.sortDirection,signal
       });
@@ -660,7 +656,7 @@ export default function Search({managementMode=false}){
     if(managementMode)setScopeFilter(filters.scopeFilter);
     const term=place||value;
     setPlaceOnly(Boolean(place));
-    if(term){setQuery(term);executeSearch(term,null,{overrideOptions:{...filters,placeOnly:Boolean(place),mediaOnly:false,browse:false}});}
+    if(term){setQuery(term);executeSearch(term,null,{overrideOptions:{...filters,placeOnly:managementMode&&Boolean(place),mediaOnly:false,browse:false}});}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,managementMode,managementAuthorized]);
 
 
@@ -1022,10 +1018,6 @@ export default function Search({managementMode=false}){
       {!managementMode&&results.length>0&&matchedQueryRef.current?<div className="scope-search-suggestions" aria-label="延伸搜尋">
         <span className="scope-status">延伸搜尋（保留原本的時間與來源條件）</span>
         <div className="scope-search-active-filters">
-          <button type="button" className="loc-button"
-            onClick={()=>followSearchSuggestion(matchedQueryRef.current,{placeOnly:!placeOnly})}>
-            {placeOnly?'搜尋全部內容':'只查打卡地點'}
-          </button>
           {contentType!=='multimedia'?<button type="button" className="loc-button"
             onClick={()=>followSearchSuggestion(matchedQueryRef.current,{contentType:'multimedia',placeOnly:false,sourceFilter:''})}>搜尋多媒體</button>:null}
           {contentType!=='text_work'?<button type="button" className="loc-button"
@@ -1034,14 +1026,14 @@ export default function Search({managementMode=false}){
             onClick={()=>{setAdvancedOpen(true);setAdvancedTab('time');}}>限定時間</button>
         </div>
       </div>:null}
-      <div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
+      {managementMode?<div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
         <button type="button" className="loc-button" aria-pressed={!placeOnly}
           onClick={()=>{setPlaceOnly(false);resetSearchState();}}>全部內容</button>
         <button type="button" className="loc-button" aria-pressed={placeOnly}
           onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
-      </div>
+      </div>:null}
       {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 source_place；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
-      {placeOnly&&!managementMode?<div className="loc-search-next-step">
+      {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{
           const target=new URL(scopeHref('loc','admin/search'));
@@ -1144,14 +1136,6 @@ export default function Search({managementMode=false}){
       aria-label={t('uiExtra.searchUI.followupSearch')}>
       <p className="scope-status">{t('uiExtra.searchUI.followupSearch')}</p>
       <div className="scope-search-place-mode">
-        {!placeOnly?<button type="button" className="loc-button"
-          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:true,contentType:'',sourceFilter:''})}>
-          {t('uiExtra.searchUI.searchPlaceOnly')}
-        </button>:<button type="button" className="loc-button"
-          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:false})}>
-          {UI_COPY.search.allContent}
-        </button>}
-
         <button type="button" className="loc-button" onClick={()=>{
           setAdvancedOpen(true);setAdvancedTab('time');
           advancedRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
