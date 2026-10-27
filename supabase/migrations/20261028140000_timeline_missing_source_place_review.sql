@@ -26,8 +26,8 @@ BEGIN
    WHERE (a.item->>'index') IS NULL OR (a.item->>'index') !~ '^[0-9]{1,6}$'
      OR (a.item->>'start_time') IS NULL
      OR (a.item->>'end_time') IS NULL
-     OR (a.item->>'start_time') !~ '^\\d{4}-\\d\\d-\\d\\dT'
-     OR (a.item->>'end_time') !~ '^\\d{4}-\\d\\d-\\d\\dT') THEN
+     OR (a.item->>'start_time') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
+     OR (a.item->>'end_time') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T') THEN
    RAISE EXCEPTION 'Timeline 區間欄位錯誤';
  END IF;
  IF EXISTS(SELECT 1 FROM jsonb_to_recordset(p_windows)
