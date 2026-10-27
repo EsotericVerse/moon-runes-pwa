@@ -8,7 +8,7 @@ import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
 registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
-import {useDeferredValue,useEffect,useMemo,useState} from 'react';
+import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
@@ -34,27 +34,42 @@ const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'
 // an established cause. Keep this as a precaution against rapid re-clicks
 // until the real mechanism is confirmed.
 const BULK_WRITE_COOLDOWN_MS=300000;
-const cooldownLabel=ms=>{
+const cooldownClock=ms=>{
   const seconds=Math.ceil(Math.max(0,ms)/1000);
   return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 };
-function useBulkWriteCooldown(){
-  const [availableAt,setAvailableAt]=useState(0);
+function useBulkWriteCooldown(scopeId){
+  const key='loc:bulk-import-cooldown:'+scopeId;
+  const [deadline,setDeadline]=useState(0);
   const [remaining,setRemaining]=useState(0);
   useEffect(()=>{
-    if(!availableAt)return;
-    const update=()=>setRemaining(Math.max(0,availableAt-Date.now()));
+    let restored=0;
+    try{restored=Number(sessionStorage.getItem(key))||0;}catch{/* Storage may be disabled. */}
+    const end=restored>Date.now()?restored:0;
+    setDeadline(end);setRemaining(Math.max(0,end-Date.now()));
+  },[key]);
+  useEffect(()=>{
+    if(!deadline)return;
+    const update=()=>{
+      const left=Math.max(0,deadline-Date.now());
+      setRemaining(left);
+      if(!left){
+        try{sessionStorage.removeItem(key);}catch{/* Optional persistence. */}
+        setDeadline(0);
+      }
+    };
     update();
     const timer=setInterval(update,1000);
     return ()=>clearInterval(timer);
-  },[availableAt]);
+  },[deadline,key]);
   return {
     active:remaining>0,
     remaining,
-    remainingMs(){return Math.max(0,availableAt-Date.now())},
+    remainingMs(){return Math.max(0,deadline-Date.now())},
     start(){
-      setAvailableAt(Date.now()+BULK_WRITE_COOLDOWN_MS);
-      setRemaining(BULK_WRITE_COOLDOWN_MS);
+      const end=Date.now()+BULK_WRITE_COOLDOWN_MS;
+      try{sessionStorage.setItem(key,String(end));}catch{/* Optional persistence. */}
+      setDeadline(end);setRemaining(BULK_WRITE_COOLDOWN_MS);
     }
   };
 }
@@ -275,8 +290,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [fileName,setFileName]=useState('');
   const [archiveDetection,setArchiveDetection]=useState(null);
   const [archiveSummary,setArchiveSummary]=useState(null);
-  const [archiveReady,setArchiveReady]=useState(null);
-  const [archiveTransfer,setArchiveTransfer]=useState(null);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -302,7 +315,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setArchiveReady(null);setArchiveTransfer(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
@@ -319,35 +332,36 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setArchiveDetection(result);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const preview=[],uidOwners=new Map(),sourceNames=new Set(),exifSamples=[];
-        let count=0,ignored=0;
-        const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+        const imported=[],uidOwners=new Map(),exifSamples=[];
+        let ignored=0;
+        const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           const article=archiveGalaxyRow(record);
           if(!article){ignored++;return;}
           const previous=uidOwners.get(article.uid);
           if(previous&&previous!==record.key)
             throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
           uidOwners.set(article.uid,record.key);
-          count++;
-          sourceNames.add(article.source_name);
-          if(preview.length<5)preview.push({raw:article,import_uid:article.uid});
+          if(imported.length>=100000)
+            throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
+          imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
+          // In-memory preview only; image and EXIF are not uploaded or stored.
           if(exifSamples.length<5)exifSamples.push(item);
         }});
         setArchiveSummary({...summary,exifSamples});
-        if(!count){
+        if(!imported.length){
           setSource(result.sources.length===1?result.sources[0]:'');
           setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
             (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
           return;
         }
-        setArchiveReady({file,count});
-        setRows(preview);
-        setSource(sourceNames.size===1?[...sourceNames][0]:'Mixed');
-        setStatus('ZIP 已完整解析 '+count.toLocaleString()+' 篇文章／會話；略過 '+
+        setRows(imported);
+        const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
+        setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
+        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+
-          ' 筆。下方僅預覽前 5 筆；儲存時每 30,000 筆自動接續寫入 Galaxy。');
+          ' 筆。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
@@ -381,92 +395,17 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   async function run(){
-    if(busy||(!rows.length&&!archiveReady))return;
-    if(writeCooldown.remainingMs()>0){
-      setStatus('大量匯入冷卻中：剩餘 '+cooldownLabel(writeCooldown.remainingMs())+'，歸零後可再次開始。');
-      return;
-    }
+    if(busy||!rows.length)return;
+    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!archiveReady&&!analyzed.valid.length&&!analyzed.mediaOnly.length){
-      setStatus(t('uiExtra.importUI.noValidItems'));return;
-    }
+    if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
     setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
-    const total=archiveReady?.count||(analyzed.valid.length+analyzed.mediaOnly.length);
-    setProgress({completed:0,total,percent:0});
+    setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      if(archiveReady){
-        const {streamArchiveGalaxyRows}=await import('./archive-import-pipeline.mjs');
-        let processed=0,written=0,skipped=0,windows=0;
-        const publish=(phase,windowNumber=windows+1,completed=processed,writeCount=written,skipCount=skipped)=>{
-          setArchiveTransfer({phase,window:windowNumber,processed:completed,total:archiveReady.count,written:writeCount,skipped:skipCount});
-          setProgress({completed,total:archiveReady.count,percent:Math.round(completed/Math.max(1,archiveReady.count)*100)});
-        };
-        publish('reading');
-        try{
-          const result=await streamArchiveGalaxyRows(archiveReady.file,{
-            onWindow:async(entries,windowNumber)=>{
-              windows=windowNumber;
-              setStatus('正在寫入第 '+windowNumber+' 輪，每輪最多 30,000 筆；完成後自動接續。');
-              publish('checking',windowNumber);
-              const normalized=entries.map(entry=>normalizeJsonImportEntry(entry,entry.raw.source_name||selected,format.fields,t));
-              const valid=normalized.filter(item=>item.record);
-              const unique=[],seenUid=new Set();
-              for(const item of valid){
-                if(seenUid.has(item.record.uid))continue;
-                seenUid.add(item.record.uid);unique.push(item.record);
-              }
-              const existingUid=new Set();
-              for(let offset=0;offset<unique.length;offset+=200){
-                const ids=unique.slice(offset,offset+200).map(record=>record.uid);
-                const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
-                if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
-                for(const row of data||[])existingUid.add(String(row.uid||'').trim());
-              }
-              const payload=unique.filter(record=>!existingUid.has(record.uid));
-              const windowSkipped=entries.length-payload.length;
-              await writeImportBatches(payload,{
-                batchSize:validImportBatchSize(format.batchSize),
-                writeBatch:batch=>insertRows(galaxy,batch),
-                onProgress:p=>publish('writing',windowNumber,processed+windowSkipped+p.completed,written+p.completed,skipped+windowSkipped)
-              });
-              const mediaItems=normalized.filter(item=>item.record);
-              const mediaOnly=normalized.filter(item=>item.mediaOnlyRecord).map(item=>item.mediaOnlyRecord);
-              if(mediaItems.some(item=>item.mediaRecords?.length||item.mediaRefs?.length)||mediaOnly.length){
-                await syncImportedMedia({
-                  normalized:mediaItems,mediaOnly,
-                  knownArticleIds:new Map(unique.map(item=>[item.uid,item.uid])),
-                  galaxy,galaxyMedia,batchSize:format.batchSize,t
-                });
-              }
-              processed+=entries.length;
-              written+=payload.length;
-              skipped+=windowSkipped;
-              publish('continuing',windowNumber);
-              setStatus('第 '+windowNumber+' 輪完成；已新增 '+written.toLocaleString()+' 筆，正在接續處理下一輪。');
-            },
-            onProgress:p=>{
-              if(p.windows===windows)
-                setStatus('正在讀取 ZIP：已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔；已完成 '+processed.toLocaleString()+'／'+archiveReady.count.toLocaleString()+' 筆。');
-            }
-          });
-          if(result.records!==archiveReady.count||processed!==archiveReady.count)
-            throw Error('來源紀錄數量發生變化，請重新選擇 ZIP 並核對內容。');
-        }catch(error){
-          publish('interrupted',Math.max(1,windows));
-          throw Error('匯入在第 '+Math.max(1,windows)+' 輪中斷；目前已完成 '+processed.toLocaleString()+
-            '／'+archiveReady.count.toLocaleString()+' 筆。再次按開始會重新掃描並略過 Galaxy 已有的 UID，接續未完成部分。'+String(error?.message||error));
-        }
-        publish('complete',windows);
-        setStatus('ZIP 全部 '+windows+' 輪完成：新增 '+written.toLocaleString()+' 筆，略過 '+skipped.toLocaleString()+' 筆。');
-        setArchiveReady(null);setRows([]);
-        if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
-        writeCooldown.start();
-        return;
-      }
       const unique=[],seenUid=new Set();
       let duplicateCount=0;
       for(const record of analyzed.valid){
@@ -564,7 +503,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </section>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；EXIF 解析 {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆。影像不儲存；GPS 僅供位置證據，不能直接當作打卡地名。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
-      {archiveReady?<p className="scope-status">ZIP 完整紀錄 {archiveReady.count.toLocaleString()} 筆，以下僅顯示 5 筆預覽。儲存時自動按每 30,000 筆接續處理。</p>:<p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>}
+      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
         {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
           <strong>{record.title||record.uid}</strong>
@@ -580,21 +519,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <p>{t('uiExtra.importUI.saveHint')}</p>
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!archiveReady&&!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownLabel(writeCooldown.remaining):archiveTransfer?.phase==='interrupted'?'接續匯入':t('uiExtra.importUI.batchImport')}
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
+        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownClock(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
-    {writeCooldown.active?<p className="scope-status" role="timer">距離下次大量匯入還有 {cooldownLabel(writeCooldown.remaining)}；倒數歸零後按鈕自動恢復。</p>:null}
-    {archiveTransfer?<p className="scope-status" role="status">{
-      archiveTransfer.phase==='complete'?'整份 ZIP 已完成。':
-      archiveTransfer.phase==='interrupted'?'匯入中斷，重新開始可接續未寫入的 UID。':
-      archiveTransfer.phase==='continuing'?'本輪已完成，正在自動接續下一輪…':
-      archiveTransfer.phase==='writing'?'正在分批寫入 Galaxy…':
-      archiveTransfer.phase==='checking'?'正在檢查已有 UID…':'正在讀取下一輪資料…'
-    } 第 {archiveTransfer.window} 輪，每輪最多 30,000 筆；已處理 {archiveTransfer.processed.toLocaleString()}／{archiveTransfer.total.toLocaleString()} 筆，新增 {archiveTransfer.written.toLocaleString()} 筆，略過 {archiveTransfer.skipped.toLocaleString()} 筆。</p>:null}
+    {writeCooldown.active?<p role="timer" className="scope-status">開始匯入暫停中：剩餘 {cooldownClock(writeCooldown.remaining)}。五分鐘倒數結束後，按鈕會自動恢復可按。</p>:null}
+    {rows.length&&!busy&&!writeCooldown.active&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
+    {rows.length&&!busy&&!writeCooldown.active&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {busy&&progress?.percent===100?<p className="scope-status" role="status">文章寫入已達 100%，仍在整理媒體與文章關聯；完成後才會解除處理中狀態。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
-      <p>{archiveTransfer?'已處理 '+Number(progress.completed||0).toLocaleString()+'／'+Number(progress.total||0).toLocaleString()+' 筆（'+(progress.percent||0)+'%）；實際新增與略過筆數見上方。':<UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/>}</p>
+      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
+      {progress.total>0?<p className="scope-status">共 {Number(progress.total).toLocaleString()} 筆，每 5,000 筆回報一次（第 {Math.max(1,Math.ceil(Number(progress.completed||0)/5000))} / {Math.max(1,Math.ceil(Number(progress.total)/5000))} 批）</p>:null}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
