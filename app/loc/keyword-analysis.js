@@ -2,7 +2,7 @@
 
 import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
+import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
@@ -482,17 +482,11 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   const changedItemNos=changedItemNosOf(catalogRows,storedShas);
   const narrowedFilter=Array.isArray(changedItemNos)?candidateOrFilter(changedItemNos):'';
 
-  // Full eligible-uid universe, independent of how narrow the content read
-  // below ends up being. Needed for the 'sync' orphan-clear step -- using
-  // just this run's (possibly narrowed) candidate uids there would wrongly
-  // clear every untouched-but-still-eligible article.
-  reportBatchProgress(onProgress,'reading',0,0,2,'讀取符合資格的文章 uid 清單');
-  const eligibleUidResult=await selectAllRows(scope.galaxy,{
-    columns:'uid',
-    filters:[{column:'statistics_able',operator:'eq',value:true}],
-    pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE
-  });
-  const eligibleUids=(eligibleUidResult.rows||[]).map(row=>String(row?.uid||'').trim()).filter(Boolean);
+  // The database's statistics_able predicate defines the FULL eligible
+  // universe. Reuse the already fetched count instead of downloading ~144k UIDs
+  // merely to pass them back for a sync that the database can do itself.
+  reportBatchProgress(onProgress,'reading',0,0,2,'確認符合統計資格的文章總數');
+  const eligibleDocumentCount=Math.max(0,Number(fingerprint.count)||0);
 
   // Count-first: when the keyword-sha diff lets us narrow at all, find out
   // exactly how many articles the narrowed filter actually matches BEFORE
@@ -557,7 +551,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       '讀取完成；符合分析資格 '+processedDocumentCount.toLocaleString()+' 篇');
   }
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
-  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta,eligibleUids},{
+  const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta,eligibleDocumentCount},{
     // Mirrors applyKeywordClassification's own phase sequence (db-contract.mjs):
     // prepare -> write (ramping) -> sync (clears orphaned rows) -> finalizing.
     // Each phase needs its own percent/label; letting an unlisted phase fall
@@ -569,10 +563,10 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
         :phase==='sync'?95
         :phase==='finalizing'?99
         :61+38*(total?completed/total:1);
-      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_BATCH_SIZE));
-      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_BATCH_SIZE)));
+      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE));
+      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE)));
       const label=phase==='prepare'?'準備寫入文章 Attr'
-        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
+        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
         :phase==='sync'?'正在清除不再符合資格的文章'
         :phase==='finalizing'?'正在定錨並核對寫入數量'
         :'處理中';
@@ -582,17 +576,17 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   // written.count must match what THIS run actually chunked/wrote (a
   // narrowed subset when only some items changed, or 0 on the count-first
   // skip above). written.documentCount (DB's count(*) where group_lists<>
-  // 'false') is NOT the same population as eligibleUids.length any more
+  // 'false') is NOT the same population as eligibleDocumentCount any more
   // than it ever was: only statistics_able rows that also pass
   // isEligibleRow (minChars/searchable) ever get a non-'false' group_lists,
-  // so documentCount is legitimately smaller than eligibleUids.length --
+  // so documentCount is legitimately smaller than eligibleDocumentCount --
   // comparing them for equality was the bug (it compared two different
   // populations). Sanity-bound it instead.
   if(written.count!==payloadRows.length){
     throw new Error('關鍵詞批次寫回不完整：預期處理 '+payloadRows.length+' 篇，實際處理 '+written.count);
   }
-  if(written.documentCount<0||written.documentCount>eligibleUids.length){
-    throw new Error('關鍵詞批次寫回異常：總計分類文章數 '+written.documentCount+' 超出符合資格文章數 '+eligibleUids.length);
+  if(written.documentCount<0||written.documentCount>eligibleDocumentCount){
+    throw new Error('關鍵詞批次寫回異常：總計分類文章數 '+written.documentCount+' 超出符合資格文章數 '+eligibleDocumentCount);
   }
   clearKeywordAnalysisCache();
   const [{data:verifiedRows,error:verificationError},verifiedCount]=await Promise.all([
@@ -617,7 +611,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     keywordMinChars:minChars,
     keywordMinDocuments:minDocuments,
     keywordDocumentCount:verifiedCount,
-    statisticsEnabled:eligibleUids.length>minDocuments,
+    statisticsEnabled:eligibleDocumentCount>minDocuments,
     staticstime:verified.staticstime,
     skipped:false
   };
