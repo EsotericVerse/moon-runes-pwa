@@ -18,8 +18,8 @@ BEGIN
    RAISE EXCEPTION 'Invalid Timeline window array';
  END IF;
  total:=jsonb_array_length(p_windows);
- IF total NOT BETWEEN 1 AND 40 OR p_limit NOT BETWEEN 1 AND 750
-   OR p_offset<0 OR p_offset>100000 THEN
+ IF total NOT BETWEEN 1 AND 40 OR p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 750
+   OR p_offset IS NULL OR p_offset<0 OR p_offset>100000 THEN
    RAISE EXCEPTION 'Timeline 預覽必須分段，每批最多 40 個區間';
  END IF;
  IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_windows) a(item)
