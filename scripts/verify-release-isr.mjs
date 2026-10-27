@@ -23,9 +23,9 @@ for(const route of [
 const numericSource=read(numeric),invalidateSource=read(invalidation);
 // ISR routes are prepared but refuse requests unless Admin enables mode=isr.
 // Deployment continues to be a separate manual user action.
-if(!numericSource.includes('loc_cache_runtime')||!numericSource.includes("mode!=='isr'")||
+if(numericSource.includes('loc_cache_runtime')||!numericSource.includes("STATIC_CACHE_POLICY.mode!=='isr'")||
    !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
-  throw Error('ISR must remain admin-gated; revalidation writes remain disabled');
+  throw Error('Numeric route must use static JS cache mode; revalidation remains disabled');
 if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource))
   throw Error('Optional numeric endpoint must use public RPC and standard HTTP caching');
 const openNext=read('open-next.config.ts'),wrangler=readJson('wrangler.jsonc');
@@ -39,9 +39,9 @@ if(!numericClient.includes("mode==='isr'")||!numericClient.includes('readNumeric
   !numericClient.includes('credentials:\'omit\''))
   throw Error('Remote ISR must remain optional and use only anonymous public reads');
 const cacheMode=read('app/loc/cache-mode-client.mjs');
-if(!cacheMode.includes('loc_cache_runtime')||!cacheMode.includes('DEFAULT_POLICY')||
-  !cacheMode.includes("mode:'off'"))
-  throw Error('Public three-mode policy must fail safely without enabling ISR');
+if(cacheMode.includes('loc_cache_runtime')||!cacheMode.includes('STATIC_CACHE_POLICY')||
+  !read('app/loc/cache-mode-static.mjs').includes("mode:'cache'"))
+  throw Error('Cache policy must use a static JS module instead of SQL');
 const sw=read('public/sw.js');
 if(!sw.includes("runtimeCacheMode==='off'")||!sw.includes('LOC_CACHE_POLICY'))
   throw Error('SW must preserve its installation but support cache bypass');
