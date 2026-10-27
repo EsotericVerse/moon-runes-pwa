@@ -51,7 +51,7 @@ export function resolveSpaceGraph(selection,records=[],{scopeId}={}){
     nodes.forEach(addPoint);
     for(let i=1;i<nodes.length;i++)addLine(nodes[i-1],nodes[i],spaceId(selection),i-1);
   }else if(spaceType(selection)===SPACE_TRACE){
-    spaceMembers(selection).forEach((part,index)=>{
+    [...(selection.route_list||[]),...spaceMembers(selection)].forEach((part,index)=>{
       if(typeof part==='string'&&BASE62_FOUR.test(part)){
         const route=byId.get(part);
         if(!route||spaceType(route)!==SPACE_PERIOD){missing.add(part);return;}

@@ -5,16 +5,16 @@ import {useSearchParams} from 'next/navigation';
 import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
 import {useEditDock} from '../edit-dock';
-import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
+import {dbAuthClient,deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,hidden_depth';
 const TYPES=['anchor','time_period','time_trace'];
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
 const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時間痕跡'};
-const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[]});
+const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],hidden_depth:-1});
 const day=value=>value?String(value).slice(0,10):'';
 function nextTimeUid(rows){
   const taken=new Set(rows.map(row=>String(row.uid||'')));
@@ -47,6 +47,9 @@ export default function CultureTimelineEditor({
   const [draft,setDraft]=useState(()=>blank(defaultType));
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
+  const [visibilitySelection,setVisibilitySelection]=useState([]);
+  const [visibilityDepth,setVisibilityDepth]=useState(2);
+  const [visibilityBusy,setVisibilityBusy]=useState(false);
   const [message,setMessage]=useState('');
   const [tracePairs,setTracePairs]=useState([]);
   const [pairFrom,setPairFrom]=useState(null);
@@ -62,7 +65,7 @@ export default function CultureTimelineEditor({
     queryFn:async()=>{
       const {rows}=await selectRows(timeTable,{
         columns:TIME_COLUMNS,filters:[{column:'type',operator:'in',value:TYPES}],
-        orders:[{column:'uid',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0
+        orders:[{column:'uid',ascending:true}],limit:DB_QUERY_BATCH_SIZE,offset:0,authenticated:true
       });
       return rows;
     }
@@ -194,7 +197,7 @@ export default function CultureTimelineEditor({
       const type=String(draft.type||'');
       if(!TYPES.includes(type))throw new Error('不支援的時間紀錄類型');
       const payload={type,title,description:String(draft.description||'').trim()||null,
-        address:null,anchor_ids:null};
+        address:null,anchor_ids:null,hidden_depth:Number(draft.hidden_depth??-1)};
       let extraPeriodRows=[];
       if(type==='anchor'){
         const timeDate=day(draft.address);
@@ -265,6 +268,24 @@ export default function CultureTimelineEditor({
     }catch(error){setMessage(error?.message||'刪除失敗');}
     finally{setBusy(false);}
   };
+  const bulkSetVisibility=async depth=>{
+    if(!['lo3rwang','lrunes'].includes(dataScope)||visibilityBusy||!visibilitySelection.length)return;
+    if(!window.confirm('確定批次設定 '+visibilitySelection.length+' 筆時間紀錄？父層隱藏會影響其所屬事件與定錨點。'))return;
+    setVisibilityBusy(true);setMessage('');
+    try{
+      let count=0;
+      for(let i=0;i<visibilitySelection.length;i+=150){
+        const ids=visibilitySelection.slice(i,i+150);
+        const {data,error}=await dbAuthClient.schema('silver').from(dataScope+'_time')
+          .update({hidden_depth:depth}).in('uid',ids).select('uid');
+        if(error)throw error;
+        if(data.length!==ids.length)throw Error('部分時間紀錄未成功寫入');
+        count+=data.length;
+      }
+      await query.mutate();await refresh();
+      setVisibilitySelection([]);setMessage('已更新 '+count+' 筆時間隱藏設定。');
+    }catch(e){setMessage(String(e.message||e));}finally{setVisibilityBusy(false);}
+  };
   dockActions.current={save:()=>save({preventDefault(){}}),
     isDirty:()=>JSON.stringify(draft)!==JSON.stringify(original.current),
     isBusy:()=>busy};
@@ -285,6 +306,26 @@ export default function CultureTimelineEditor({
       </select>
     </label>:null}
     {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
+    <details className="scope-card">
+      <summary>大量隱藏／公開時間定錨、事件、時間痕跡（已選 {visibilitySelection.length} 筆）</summary>
+      <div className="scope-stat-controls">
+        <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection(rows.map(row=>row.uid))}>全部勾選</button>
+        <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection([])}>清除勾選</button>
+        <select className="scope-select" aria-label="批次時間隱藏層級" value={visibilityDepth}
+          onChange={e=>setVisibilityDepth(Number(e.target.value))}>
+          <option value={0}>單獨隱藏</option><option value={1}>隱藏到第二層</option><option value={2}>全部隱藏（含時間定錨點）</option>
+        </select>
+        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(visibilityDepth)}>大量隱藏</button>
+        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(-1)}>大量公開</button>
+      </div>
+      <div style={{maxHeight:'16rem',overflow:'auto'}}>
+        {rows.map(row=><label key={row.uid} style={{display:'block'}}>
+          <input type="checkbox" checked={visibilitySelection.includes(row.uid)} disabled={visibilityBusy}
+            onChange={e=>setVisibilitySelection(ids=>e.target.checked?[...ids.filter(uid=>uid!==row.uid),row.uid]:ids.filter(uid=>uid!==row.uid))}/>
+          {displayType[row.type]}｜{row.title} · {row.uid}
+        </label>)}
+      </div>
+    </details>
     <form className="scope-culture-quick-form" onSubmit={save}>
       {!selectedId?<label>種類
         <select className="scope-select" value={draft.type} onChange={e=>setDraft(blank(e.target.value))}>
@@ -295,6 +336,13 @@ export default function CultureTimelineEditor({
         <label className="scope-culture-quick-name">名稱
           <input ref={inputRef} className="scope-search-input" value={draft.title} required
             onChange={event=>change('title',event.target.value)}/>
+        </label>
+        <label>可見性
+          <select className="scope-select" value={draft.hidden_depth??-1} onChange={e=>change('hidden_depth',Number(e.target.value))}>
+            <option value={-1}>公開</option><option value={0}>單獨隱藏</option>
+            {draft.type!=='anchor'?<option value={1}>隱藏到第二層</option>:null}
+            {draft.type==='time_trace'?<option value={2}>全部隱藏（含時間定錨點）</option>:null}
+          </select>
         </label>
         {draft.type==='anchor'?<label>定錨日期
           <input className="scope-select" type="date" required value={day(draft.address)}
