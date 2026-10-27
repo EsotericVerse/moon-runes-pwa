@@ -31,6 +31,19 @@ test('Meta messages and AI conversations are never treated as public posts',()=>
     assert.doesNotThrow(()=>assertArchiveRecordDestination(record,true));
   }
 });
+test('Twitter/X direct message JS files and directMessage payloads cannot publish',()=>{
+  for(const path of ['data/direct-messages.js','data/direct-message.js','data/direct-messages-group.js','data/direct_messages.js']){
+    assert.throws(()=>assertArchiveEntryDestination(path,false),/私人對話/);
+    assert.throws(()=>assertArchiveRecordDestination({platform:'x',kind:'post',sourcePath:path},false),/私人對話/);
+  }
+  assert.throws(()=>assertArchiveRecordDestination({
+    platform:'x',kind:'post',sourcePath:'data/archive.js',
+    raw:{directMessage:{messageCreate:{text:'fixture'}}}
+  },false),/私人對話/);
+  assert.doesNotThrow(()=>assertArchiveRecordDestination({
+    platform:'x',kind:'post',sourcePath:'data/tweets.js'
+  },false));
+});
 test('Unknown archive text documents cannot be routed to online Galaxy',()=>{
   assert.throws(()=>assertArchiveRecordDestination({
     platform:'document',kind:'document',sourcePath:'old-chat.xml'
