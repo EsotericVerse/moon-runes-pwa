@@ -2,7 +2,7 @@
 
 import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
+import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
@@ -563,10 +563,10 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
         :phase==='sync'?95
         :phase==='finalizing'?99
         :61+38*(total?completed/total:1);
-      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_BATCH_SIZE));
-      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_BATCH_SIZE)));
+      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE));
+      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE)));
       const label=phase==='prepare'?'準備寫入文章 Attr'
-        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
+        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
         :phase==='sync'?'正在清除不再符合資格的文章'
         :phase==='finalizing'?'正在定錨並核對寫入數量'
         :'處理中';
