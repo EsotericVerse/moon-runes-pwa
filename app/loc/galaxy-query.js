@@ -430,7 +430,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
-    columns:['media_id','galaxy_link','media_type','title','url','meta_tags','createtime'],
+    columns:['media_id','media_type','title','meta_tags','createtime'],
     searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime'
   });
   if(mediaOnly||contentType==='multimedia')return [media];
@@ -531,7 +531,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
-      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link',
+      columns:'uid,title,createtime,source_name',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
       authenticated:privateScopes.has(scope.id),
@@ -635,7 +635,7 @@ export async function selectMediaCrossPairWorks(scope,pair,{
   let source='auto';
   while(true){
     const page=await selectRows(current.galaxyMedia,{
-      columns:'media_id,title,url,meta_tags,createtime',
+      columns:'media_id,title,meta_tags,createtime',
       filters,orders:[{column:'media_id',ascending:true}],
       limit:batchSize,offset:cursor,source
     });

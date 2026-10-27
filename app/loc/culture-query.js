@@ -667,12 +667,12 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
 
   const [galaxyResult,mediaResult]=await Promise.all([
     galaxyIds.length?selectRows(scope.galaxy,{
-      columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
+      columns:'uid,source_name,createtime,title',
       filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectRows(scope.galaxyMedia,{
-      columns:'media_id,galaxy_link,media_type,title,url,meta_tags,createtime',
+      columns:'media_id,media_type,title,meta_tags,createtime',
       filters:[{column:'media_id',operator:'in',value:mediaIds}],
       limit:mediaIds.length
     }):Promise.resolve({rows:[]})

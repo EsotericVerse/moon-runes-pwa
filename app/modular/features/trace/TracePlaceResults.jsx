@@ -74,7 +74,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,url',
+        columns:'uid,title,createtime,source_name,place_id',
         filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
@@ -94,7 +94,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,url,statistics_able',
+        columns:'uid,title,createtime,source_name,place_id,statistics_able',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];
