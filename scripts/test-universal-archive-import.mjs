@@ -36,6 +36,41 @@ test('Threads ZIP flows past detection into actual Galaxy-ready articles with or
   assert.equal(a.results[0].content,'台南散步');
   assert.equal(a.results[0].url,'https://www.threads.net/@writer/post/abc123');
 });
+test('Public Threads posts are imported from mixed Meta ZIP without reading private message entries',async()=>{
+  const privateMessage={participants:[{name:'private-user'}],
+    messages:[{sender_name:'private-user',content:'must-never-appear',timestamp_ms:1720000000000}]};
+  const file=asFile('full-meta-backup.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {id:'threads-public',title:'公開文字',timestamp:1720000000}
+    ]}),
+    'your_facebook_activity/messages/inbox/private/message_1.json':j(privateMessage),
+    'your_facebook_activity/messages/inbox/private/secret.jpg':gpsJpeg(),
+    'conversations.json':j([{id:'chat-private',mapping:{secret:'do-not-parse'}}])
+  }));
+  const detected=await detectZipArchiveSource(file,{skipPrivateEntries:true});
+  assert.ok(detected.sources.includes('threads'));
+  assert.equal(detected.inspectedFiles,1,'private JSON and EXIF must not be inflated during public source inspection');
+  assert.ok(!detected.structure?.sources?.some?.(entry=>String(entry).includes('private')));
+  const records=[],media=[],exif=[];
+  const summary=await inspectPrivateArchive(file,{
+    skipPrivateEntries:true,
+    onRecord:r=>records.push(r),
+    onMediaEntry:r=>media.push(r),
+    onMediaMetadata:r=>exif.push(r)
+  });
+  assert.equal(records.length,1);
+  assert.equal(records[0].platform,'threads');
+  assert.equal(records[0].text,'公開文字');
+  assert.equal(summary.totalRows,1);
+  assert.equal(summary.acceptedRows,1);
+  assert.equal(summary.mediaFiles,0);
+  assert.deepEqual(media,[]);
+  assert.deepEqual(exif,[]);
+  const localRecords=[];
+  await inspectPrivateArchive(file,{onRecord:r=>localRecords.push(r)});
+  assert.ok(localRecords.some(r=>r.platform==='messenger'));
+});
+
 test('Facebook ZIP keeps place, time and original permalink',async()=>{
   const a=await parsed('facebook-2026.zip',{
     'your_facebook_activity/posts/your_posts_1.json':j([{
