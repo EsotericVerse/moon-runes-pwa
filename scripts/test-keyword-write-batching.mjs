@@ -16,7 +16,7 @@ test('failed 500-row write rolls back and retries 250-row chunks without skippin
   const successes=[],attempts=[],events=[];
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
-    KEYWORD_CLASSIFICATION_BATCH_SIZE:500,
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
     keywordClassificationWrite:async(_scope,arg)=>{
       attempts.push({mode:arg.mode,rows:arg.rows?.length,scopeBased:arg.scopeBased,uids:arg.uids});
       if(arg.mode==='chunk'){
@@ -48,7 +48,7 @@ test('sync does not accidentally clear unmodified rows from narrowed reanalysis'
   const writes=[];
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
-    KEYWORD_CLASSIFICATION_BATCH_SIZE:500,
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
     keywordClassificationWrite:async(_scope,arg)=>{
       writes.push(arg);
       return arg.mode==='finalize'?10:arg.rows?.length||0;
@@ -62,7 +62,7 @@ test('sync does not accidentally clear unmodified rows from narrowed reanalysis'
 test('non-timeout failures fail rather than being silently retried',async()=>{
   let attempts=0;
   const run=extractBatchMethod({
-    normalizeScopeId:scope=>scope,KEYWORD_CLASSIFICATION_BATCH_SIZE:500,
+    normalizeScopeId:scope=>scope,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
     keywordClassificationWrite:async(_scope,arg)=>{
       if(arg.mode==='chunk'){attempts++;throw Error('permission denied');}
       return 0;
@@ -82,7 +82,8 @@ test('no full UID sweep or 144k-UID sync payload in cloud and local',()=>{
   assert.ok(start>=0&&end>start);
   assert.doesNotMatch(runner,/columns:'uid',\s*filters:\[\{column:'statistics_able'/);
   assert.match(runner,/eligibleDocumentCount/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_BATCH_SIZE=500/);
+  assert.match(contract,/KEYWORD_CLASSIFICATION_BATCH_SIZE=5000/);
+  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500/);
   assert.match(local,/p_rows\?\.scopeBased===true/);
   assert.match(migration,/g\.statistics_able is distinct from true/);
   assert.match(migration,/if not silver\.can_manage_scope\(v_scope\)/);
