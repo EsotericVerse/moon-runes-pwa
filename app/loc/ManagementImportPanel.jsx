@@ -8,7 +8,7 @@ import importUIZh from '../i18n/sections/uiExtra.importUI.zh_tw.js';
 registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
-import {useDeferredValue,useMemo,useRef,useState} from 'react';
+import {useDeferredValue,useEffect,useMemo,useState} from 'react';
 import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
@@ -34,16 +34,27 @@ const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'
 // an established cause. Keep this as a precaution against rapid re-clicks
 // until the real mechanism is confirmed.
 const BULK_WRITE_COOLDOWN_MS=300000;
+const cooldownLabel=ms=>{
+  const seconds=Math.ceil(Math.max(0,ms)/1000);
+  return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+};
 function useBulkWriteCooldown(){
-  const [active,setActive]=useState(false);
-  const availableAtRef=useRef(0);
+  const [availableAt,setAvailableAt]=useState(0);
+  const [remaining,setRemaining]=useState(0);
+  useEffect(()=>{
+    if(!availableAt)return;
+    const update=()=>setRemaining(Math.max(0,availableAt-Date.now()));
+    update();
+    const timer=setInterval(update,1000);
+    return ()=>clearInterval(timer);
+  },[availableAt]);
   return {
-    active,
-    remainingMs(){return availableAtRef.current-Date.now()},
+    active:remaining>0,
+    remaining,
+    remainingMs(){return Math.max(0,availableAt-Date.now())},
     start(){
-      availableAtRef.current=Date.now()+BULK_WRITE_COOLDOWN_MS;
-      setActive(true);
-      setTimeout(()=>setActive(false),BULK_WRITE_COOLDOWN_MS);
+      setAvailableAt(Date.now()+BULK_WRITE_COOLDOWN_MS);
+      setRemaining(BULK_WRITE_COOLDOWN_MS);
     }
   };
 }
@@ -264,6 +275,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [fileName,setFileName]=useState('');
   const [archiveDetection,setArchiveDetection]=useState(null);
   const [archiveSummary,setArchiveSummary]=useState(null);
+  const [archiveReady,setArchiveReady]=useState(null);
+  const [archiveTransfer,setArchiveTransfer]=useState(null);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -289,7 +302,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setArchiveReady(null);setArchiveTransfer(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
