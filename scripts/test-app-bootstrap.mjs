@@ -246,9 +246,13 @@ test('keyword reset uses paged authorized writes before clearing summary',async(
   const calls=[];
   const relation=name=>({
     select(columns,options={}){
-      if(name==='loc'){
+      assert.notEqual(name,'loc','author reset must not read silver.loc');
+      assert.notEqual(name,'loc_galaxy','author reset must not touch silver.loc_galaxy');
+      if(name==='manage'){
         assert.equal(columns,'galaxy_table');
-        return {eq(){return this;},async limit(){return {data:[{galaxy_table:'galaxy'}],error:null};}};
+        return {eq(column,value){
+          assert.equal(column,'id');assert.equal(value,'lo3rwang');return this;
+        },async limit(){return {data:[{galaxy_table:'galaxy'}],error:null};}};
       }
       assert.equal(name,'lo3rwang_galaxy');
       if(options.head)return Promise.resolve({count:rows.length,error:null});
@@ -290,6 +294,20 @@ test('keyword reset uses paged authorized writes before clearing summary',async(
   assert.deepEqual(calls,['begin','stale','chunk','chunk','chunk','reset']);
   assert.equal(progress.at(-1).phase,'completed');
   assert.equal(progress.at(-1).completed,1510);
+});
+
+test('keyword counts read only the current Scope through on-demand HEAD requests',()=>{
+  const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
+  const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+  assert.match(contract,/authClient\.schema\('silver'\)\.from\('manage'\)[\s\S]*?\.select\('galaxy_table'\)/);
+  assert.doesNotMatch(contract,/authClient\.schema\('silver'\)\.from\('loc'\)/);
+  assert.match(contract,/from\(scope\+'_'\+suffix\)/);
+  assert.match(panel,/if\(workspace!=='run'\|\|!canEdit\|\|!scopeData\?\.galaxy\)return/);
+  assert.match(panel,/selectCount\(scopeData\.galaxy,\{idColumn:'uid'\}\)/);
+  assert.match(panel,/selectCount\(scopeData\.galaxy,\{\s*idColumn:'uid',filters:/);
+  assert.match(panel,/setGalaxyTotalCount\(Math\.max\(0,Number\(total\)\|\|0\)\)/);
+  assert.match(panel,/window\.confirm\(l\.confirmReset\+'\\n'\+scopeData\.galaxy\)/);
+  assert.doesNotMatch(panel,/setInterval\(/);
 });
 
 test('keyword reset reports progress and editing notice remains inside the dock',()=>{
