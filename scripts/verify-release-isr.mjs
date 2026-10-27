@@ -23,7 +23,7 @@ for(const route of [
 const numericSource=read(numeric),invalidateSource=read(invalidation);
 // ISR routes are prepared but refuse requests unless Admin enables mode=isr.
 // Deployment continues to be a separate manual user action.
-if(!numericSource.includes('loc_cache_runtime')||!numericSource.includes("mode!=='isr'")||
+if(!numericSource.includes('CACHE_POLICY')||!numericSource.includes("mode!=='isr'")||
    !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
   throw Error('ISR must remain admin-gated; revalidation writes remain disabled');
 if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource))
@@ -39,8 +39,8 @@ if(!numericClient.includes("mode==='isr'")||!numericClient.includes('readNumeric
   !numericClient.includes('credentials:\'omit\''))
   throw Error('Remote ISR must remain optional and use only anonymous public reads');
 const cacheMode=read('app/loc/cache-mode-client.mjs');
-if(!cacheMode.includes('loc_cache_runtime')||!cacheMode.includes('DEFAULT_POLICY')||
-  !cacheMode.includes("mode:'off'"))
+if(!cacheMode.includes('cache-policy.config')||!cacheMode.includes('CACHE_POLICY')||
+  cacheMode.includes('loc_cache_runtime'))
   throw Error('Public three-mode policy must fail safely without enabling ISR');
 const sw=read('public/sw.js');
 if(!sw.includes("runtimeCacheMode==='off'")||!sw.includes('LOC_CACHE_POLICY'))
