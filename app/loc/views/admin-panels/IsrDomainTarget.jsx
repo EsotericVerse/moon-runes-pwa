@@ -9,16 +9,19 @@ export default function IsrDomainTarget(){
   const {mode,provider,domains}=CACHE_POLICY;
   const modeLabel=CACHE_MODE_OPTIONS.find(item=>item.value===mode)?.label||mode;
   const selected=domains.find(item=>item.id===provider);
+  const isrActive=mode==='isr'&&Boolean(selected?.origin)&&Boolean(CACHE_POLICY.origin);
   return <section className="loc-card admin-workspace">
     <h2>快取</h2>
-    <p className="scope-status">目前全站快取策略由 app/loc/cache-policy.config.mjs 設定（唯讀顯示）。修改設定檔後需重新部署才會生效。</p>
-    <div className="scope-management-fields">
-      <span>目前全站快取策略：{modeLabel}（{mode}）</span>
-      <span>目前選用的 ISR：{selected?`${selected.label}（${selected.origin}）`:'未設定'}</span>
-    </div>
-    <h3>ISR Domain 清單（{domains.length}）</h3>
+    <p className="scope-status">設定位於 app/loc/cache-policy.config.mjs。修改後需重新部署才會生效。</p>
+    <dl className="scope-management-fields">
+      <dt>快取模式</dt>
+      <dd>{modeLabel}（{mode}）</dd>
+      <dt>ISR 狀態</dt>
+      <dd>{isrActive?`開啟，使用 ${selected.label}（${selected.origin}）`:'未開啟（origin 未設定）'}</dd>
+    </dl>
+    <h3>ISR 網域（{domains.length}）</h3>
     <ul className="scope-status">
-      {domains.map(item=><li key={item.id}>{item.label}：{item.origin}{item.id===provider?'（目前選用）':''}</li>)}
+      {domains.map(item=><li key={item.id}>{item.label}：{item.origin}</li>)}
     </ul>
   </section>;
 }
