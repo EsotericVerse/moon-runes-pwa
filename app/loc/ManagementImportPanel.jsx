@@ -583,6 +583,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownLabel(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
+    {writeCooldown.active?<p className="scope-status" role="timer">距離下次大量匯入還有 {cooldownLabel(writeCooldown.remaining)}；倒數歸零後按鈕自動恢復。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
