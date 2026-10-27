@@ -37,6 +37,9 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const [popularOpen,setPopularOpen]=useState(false);
   const [currentSnapshot,setCurrentSnapshot]=useState(null);
   const [rankingBusy,setRankingBusy]=useState(false);
+  const [allPlaceCounts,setAllPlaceCounts]=useState(null);
+  const [allCountsBusy,setAllCountsBusy]=useState(false);
+  const [allCountsError,setAllCountsError]=useState('');
   useEffect(()=>{
     let live=true;
     readAutocompleteCurrent(scopeId).then(value=>{if(live)setCurrentSnapshot(value);}).catch(()=>{});
@@ -145,12 +148,29 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     return anchors.filter(item=>compactPlaceName(item.title).includes(q)).slice(0,30);
   },[anchors,placeName,popularOpen,currentSnapshot]);
   const placeCounts=currentPlaceCounts(currentSnapshot);
+  async function loadAllCounts(){
+    if(allPlaceCounts!==null||allCountsBusy)return;
+    setAllCountsBusy(true);setAllCountsError('');
+    try{
+      const {readPlaceSummary}=await import('./place-summary-client');
+      const summary=await readPlaceSummary(scopeId);
+      const totals=new Map();
+      for(const row of summary.rows||[]){
+        const label=String(row.category||'').trim(),count=Number(row.item_count)||0;
+        if(label&&count>0)totals.set(label,(totals.get(label)||0)+count);
+      }
+      setAllPlaceCounts([...totals].map(([title,count])=>({title,count}))
+        .sort((a,b)=>b.count-a.count||a.title.localeCompare(b.title,'zh-Hant')));
+    }catch(e){setAllCountsError(String(e.message||e));}
+    finally{setAllCountsBusy(false);}
+  }
   async function refreshPopular(){
     if(rankingBusy||!ownPlaces)return;
     setRankingBusy(true);setError(false);setNotice('');
     try{
       const updated=await refreshAutocompleteCurrent(scopeId);
       setCurrentSnapshot(updated);
+      setAllPlaceCounts(null);
       setNotice('熱門候選已重新統計並保存；目前前 10 名可直接雙擊選用。');
     }catch(e){setError(true);setNotice(String(e.message||e));}
     finally{setRankingBusy(false);}
@@ -224,19 +244,22 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
         onClick={refreshPopular}>{rankingBusy?'正在重新統計…':'重新統計地點／時間出現次數'}</button>
       {currentSnapshot?.updated_at?<p className="scope-status">上次更新：{currentSnapshot.updated_at}</p>:null}
       {!placeCounts.length?<p className="scope-status">尚未建立出現次數快照，或沒有可確認的地點對應。</p>:null}
-      {placeCounts.length?<><ol className="loc-trace-selection-order">
-        {placeCounts.slice(0,10).map(item=><li key={item.uid}>
+      {placeCounts.length?<ol className="loc-trace-selection-order">
+        {placeCounts.map(item=><li key={item.uid}>
           {item.title} · {Number(item.count||0).toLocaleString('zh-TW')} 次
         </li>)}
-      </ol>
-      {placeCounts.length>10?<details>
-        <summary>查看全部已對應地點（{placeCounts.length} 筆）</summary>
-        <ol className="loc-trace-selection-order">
-          {placeCounts.map(item=><li key={item.uid}>
-            {item.title} · UID {item.uid} · {Number(item.count||0).toLocaleString('zh-TW')} 次
+      </ol>:null}
+      <details onToggle={event=>{if(event.currentTarget.open)void loadAllCounts();}}>
+        <summary>按需查看所有原始打卡地點的出現次數</summary>
+        <p className="scope-status">這裡按 source_place 原始名稱計數；不將同名地點自動合併成同一 UID。只有展開時才讀取完整統計，並不儲存在前 10 名快照內。</p>
+        {allCountsBusy?<p className="scope-status">正在讀取出現次數…</p>:null}
+        {allCountsError?<p className="scope-status scope-error" role="alert">{allCountsError}</p>:null}
+        {allPlaceCounts!==null?<ol className="loc-trace-selection-order">
+          {allPlaceCounts.map(item=><li key={item.title}>
+            {item.title} · {Number(item.count||0).toLocaleString('zh-TW')} 次
           </li>)}
-        </ol>
-      </details>:null}</>:null}
+        </ol>:null}
+      </details>
     </section>
     <section className="scope-card">
       <h4>管理已確認的地點名稱</h4>
