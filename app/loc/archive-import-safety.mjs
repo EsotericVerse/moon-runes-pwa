@@ -48,7 +48,12 @@ export function assertStandaloneImportDestination({nativeLocal=false,fileName=''
     const row=input?.raw||input||{};
     if(isPrivateArchiveSource(row.source_name)||isPrivateArchiveSource(row.platform)||
       ['message','conversation'].includes(String(row.kind||'').toLowerCase())||
-      privatePath.test(String(row.sourcePath||row.source_path||'')))
+      privatePath.test(String(row.sourcePath||row.source_path||''))||
+      // ChatGPT/Claude/Meta conversation JSON may be passed under a generic file name.
+      (row.mapping&&typeof row.mapping==='object')||
+      Array.isArray(row.chat_messages)||
+      (Array.isArray(row.messages)&&(row.participants||row.conversation_id))||
+      Array.isArray(row.conversations))
       throw destinationError();
   }
 }
