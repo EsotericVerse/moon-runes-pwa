@@ -584,6 +584,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </button>
     </section>:null}
     {writeCooldown.active?<p className="scope-status" role="timer">距離下次大量匯入還有 {cooldownLabel(writeCooldown.remaining)}；倒數歸零後按鈕自動恢復。</p>:null}
+    {archiveTransfer?<p className="scope-status" role="status">{
+      archiveTransfer.phase==='complete'?'整份 ZIP 已完成。':
+      archiveTransfer.phase==='interrupted'?'匯入中斷，重新開始可接續未寫入的 UID。':
+      archiveTransfer.phase==='continuing'?'本輪已完成，正在自動接續下一輪…':
+      archiveTransfer.phase==='writing'?'正在分批寫入 Galaxy…':
+      archiveTransfer.phase==='checking'?'正在檢查已有 UID…':'正在讀取下一輪資料…'
+    } 第 {archiveTransfer.window} 輪，每輪最多 30,000 筆；已處理 {archiveTransfer.processed.toLocaleString()}／{archiveTransfer.total.toLocaleString()} 筆，新增 {archiveTransfer.written.toLocaleString()} 筆，略過 {archiveTransfer.skipped.toLocaleString()} 筆。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
