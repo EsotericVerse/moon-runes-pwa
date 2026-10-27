@@ -969,9 +969,18 @@ export default function Culture(){
         }
       });
     }
-    if(virtualAnchorItems.length){
-      groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,className:'scope-candidate-lane'});
-      items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
+    // "建議定錨點" is a permanent lane/track, exactly like the source-category
+    // lanes above -- it must stay on the chart whenever there is underlying
+    // daily data to potentially analyze, even before anyone has clicked it.
+    // Only its *content* (the computed candidate markers) is deferred: the
+    // lane itself is just collapsible like any other lane, and clicking it
+    // (via onGroupToggle) is what sets anchorSuggestOpen and starts the
+    // PELT worker -- never pushing/popping the lane's existence itself.
+    if(styleFilter!=='trace'&&densityInputBuckets.length>0){
+      groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,
+        className:'scope-candidate-lane',collapsible:true,expanded:anchorSuggestOpen});
+      if(virtualAnchorItems.length)
+        items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
     }
     if(showKeywordRiver){
       items.push(...keywordDrillItems.map((item,index)=>({
@@ -995,7 +1004,7 @@ export default function Culture(){
       }
     }
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale,classificationWindowStart,classificationWindowEnd]);
+  },[groupedSources,secondRiverBuckets,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale,classificationWindowStart,classificationWindowEnd,styleFilter,densityInputBuckets,anchorSuggestOpen]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
@@ -1415,13 +1424,9 @@ export default function Culture(){
                    ?<p className='scope-status' role='status'>正在展開河道的細部分布…</p>:null}
                  {/* Anchor suggestions never compute on their own just because a lane's
                      daily data arrived -- the PELT worker only runs once the user
-                     explicitly opens this panel. Before that, only a plain, inert
-                     toggle shows; no candidate dates, no computation. */}
-                 {styleFilter!=='trace'&&!riverRangeLoading&&!anchorSuggestOpen&&densityInputBuckets.length>0
-                   ?<button type='button' className='scope-culture-anchor-trigger'
-                     onClick={()=>setAnchorSuggestOpen(true)}>
-                     <span className='scope-culture-anchor-picker-mark' aria-hidden='true'/>建議定錨點
-                   </button>:null}
+                     explicitly clicks open the "建議定錨點" lane itself on the chart
+                     above (see the dual:source:candidates group / onGroupToggle).
+                     This panel is just the detail view for an already-opened lane. */}
                  {styleFilter!=='trace'&&!riverRangeLoading&&anchorSuggestOpen?<div className='scope-culture-anchor-actions'>
                   {riverAnalysis.suggestions.length>0?<>
                     <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
@@ -1462,6 +1467,12 @@ export default function Culture(){
                     items={cultureRiver.items}
                     extraGroups={cultureRiver.groups}
                     onGroupToggle={id=>{
+                      if(id==='dual:source:candidates'){
+                        // The lane itself is the click target now -- opening it is
+                        // exactly what starts the (click-gated) PELT analysis.
+                        setAnchorSuggestOpen(current=>!current);
+                        return;
+                      }
                       if(id.startsWith('dual:keyword:')){
                         const groupId=id.slice('dual:keyword:'.length);
                         if(keywordGroupOptions.some(group=>group.id===groupId))
