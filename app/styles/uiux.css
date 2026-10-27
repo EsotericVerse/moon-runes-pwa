@@ -1321,21 +1321,28 @@ body{
   width:100%;
   min-width:0;
   max-width:100%;
-  /* Match the verified feature Heroes: keep the entire image visible. */
-  background-size:100% 100%,contain;
 }
-/* LOC management Heroes use the verified System Admin artwork geometry;
-   the System Admin Hero itself remains unchanged. */
+/* Full-width 16:9 artwork on LOC management entries. Preserve the source
+   proportions and keep the reading overlay translucent instead of letterboxing. */
 .loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
-  min-height:clamp(430px,50vw,620px);
+  box-sizing:border-box;
+  aspect-ratio:16/9;
+  min-height:clamp(540px,56.25vw,820px);
   padding:clamp(1.6rem,4vw,3.75rem);
   border-radius:var(--loc-ui-radius-xl);
-  background-position:center center,right center;
+  background-image:
+    linear-gradient(90deg,rgba(3,6,15,.76) 0%,rgba(3,6,15,.34) 46%,rgba(3,6,15,.08) 100%),
+    var(--scope-feature-hero-image);
+  background-size:100% 100%,cover;
+  background-position:center center,center center;
+  background-repeat:no-repeat,no-repeat;
 }
 @media(max-width:760px){
   .loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
-    min-height:clamp(460px,118vw,570px);
+    aspect-ratio:auto;
+    min-height:clamp(480px,110vw,650px);
     padding:1.35rem;
+    background-position:center center,60% center;
   }
 }
 .management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
