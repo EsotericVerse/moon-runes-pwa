@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
+import Select from 'react-select';
 import {useSearchParams} from 'next/navigation';
 import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
@@ -7,7 +8,7 @@ import {useEditDock} from '../edit-dock';
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
-import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid} from '../../loc/time-anchor-ranges.mjs';
+import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
 const TYPES=['anchor','time_period','time_trace'];
@@ -47,6 +48,9 @@ export default function CultureTimelineEditor({
   const [selectedId,setSelectedId]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+  const [tracePairs,setTracePairs]=useState([]);
+  const [pairFrom,setPairFrom]=useState(null);
+  const [pairTo,setPairTo]=useState(null);
   const original=useRef(blank(defaultType));
   const requestSeen=useRef('');
   const dockActions=useRef({save:null,isDirty:()=>false,isBusy:()=>false});
@@ -70,6 +74,19 @@ export default function CultureTimelineEditor({
   const anchorChoices=useMemo(()=>[...anchors.values()]
     .sort((a,b)=>day(a.address).localeCompare(day(b.address))||
       String(a.uid).localeCompare(String(b.uid))),[anchors]);
+  const anchorOptions=useMemo(()=>anchorChoices.map(row=>
+    ({value:row.uid,label:(day(row.address)?day(row.address)+'｜':'')+row.title})),[anchorChoices]);
+  const anchorOptionOf=uid=>anchorOptions.find(option=>option.value===uid)
+    ||(uid?{value:uid,label:'已失效：'+uid}:null);
+  const periodKeyOf=ids=>[...ids].sort().join(',');
+  const existingPeriodByPair=useMemo(()=>{
+    const map=new Map();
+    for(const period of eventChoices){
+      const ids=(Array.isArray(period.anchor_ids)?period.anchor_ids:[]).filter(Boolean);
+      if(ids.length===2)map.set(periodKeyOf(ids),period.uid);
+    }
+    return map;
+  },[eventChoices]);
   const rows=useMemo(()=>[...all].sort((a,b)=>{
     const position=row=>{
       if(row.type==='anchor')return day(row.address);
@@ -127,7 +144,8 @@ export default function CultureTimelineEditor({
 
   const reset=()=>{
     const fresh=blank(defaultType);
-    original.current=fresh;setDraft(fresh);setSelectedId('');setMessage('');onClose?.();
+    original.current=fresh;setDraft(fresh);setSelectedId('');setMessage('');
+    setTracePairs([]);setPairFrom(null);setPairTo(null);onClose?.();
   };
   const change=(key,value)=>setDraft(row=>({...row,[key]:value}));
   const segments=draft.type==='time_trace'
@@ -149,6 +167,13 @@ export default function CultureTimelineEditor({
     if(draft.type==='time_period'&&segments.length)return;
     setSegments([...segments,{start:String(choices[0].uid),end:''}]);
   };
+  const addPair=()=>{
+    const from=pairFrom?.value,to=pairTo?.value;
+    if(!from||!to||from===to)return;
+    if(tracePairs.some(pair=>periodKeyOf(pair)===periodKeyOf([from,to])))return;
+    setTracePairs(items=>[...items,[from,to]]);setPairFrom(null);setPairTo(null);
+  };
+  const removePair=index=>setTracePairs(items=>items.filter((_,i)=>i!==index));
   const refresh=async()=>{
     if(dataScope!=='local')await revalidateServerMetadata();
     await Promise.all([
@@ -170,14 +195,18 @@ export default function CultureTimelineEditor({
       if(!TYPES.includes(type))throw new Error('不支援的時間紀錄類型');
       const payload={type,title,description:String(draft.description||'').trim()||null,
         address:null,anchor_ids:null};
+      let extraPeriodRows=[];
       if(type==='anchor'){
         const timeDate=day(draft.address);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(timeDate))throw new Error('請先指定有效的定錨日期');
         payload.address=timeDate;
       }else{
         if(draft.type==='time_period'&&!anchorChoices.length)throw new Error('請先建立時間定錨點');
-        if(draft.type==='time_trace'&&!eventChoices.length)throw new Error('請先建立事件');
-        if(!segments.length)throw new Error(draft.type==='time_trace'?'請先加入事件':'請加入一個或兩個時間定錨點');
+        if(draft.type==='time_trace'&&!segments.length&&!tracePairs.length&&!eventChoices.length)
+          throw new Error('請先建立事件');
+        if(draft.type==='time_trace'&&!segments.length&&!tracePairs.length)
+          throw new Error('請先加入事件，或用定錨點連線加入');
+        if(draft.type==='time_period'&&!segments.length)throw new Error('請加入一個或兩個時間定錨點');
         if(draft.type==='time_period'&&segments.length!==1)throw new Error('事件只能有一個起點及可選的結束錨點');
         const unchangedLinks=Boolean(selectedId)&&
           JSON.stringify(draft.anchor_ids)===JSON.stringify(original.current.anchor_ids);
@@ -195,14 +224,32 @@ export default function CultureTimelineEditor({
             day(anchors.get(segment.end)?.address)<=day(anchors.get(segment.start)?.address))
             throw new Error('結束定錨點必須晚於起始定錨點');
         }
+        let pairPeriodUids=[];
+        if(draft.type==='time_trace'&&tracePairs.length){
+          if(tracePairs.some(pair=>!anchors.has(pair[0])||!anchors.has(pair[1])))
+            throw new Error('連線的定錨點有已失效的，請移除');
+          const taken=new Set(all.map(row=>String(row.uid)));
+          for(const pair of tracePairs){
+            const existingUid=existingPeriodByPair.get(periodKeyOf(pair));
+            if(existingUid){pairPeriodUids.push(existingUid);continue;}
+            const uid=allocateTimeUid([...all,...extraPeriodRows]);
+            taken.add(uid);
+            const [a,b]=pair;
+            const titleA=anchors.get(a)?.title||a,titleB=anchors.get(b)?.title||b;
+            extraPeriodRows.push({uid,type:'time_period',title:titleA+' → '+titleB,
+              description:null,address:null,anchor_ids:encodeTimeSegment(a,b)});
+            pairPeriodUids.push(uid);
+          }
+        }
         payload.anchor_ids=draft.type==='time_trace'
-          ?segments.map(segment=>segment.start)
+          ?[...segments.map(segment=>segment.start),...pairPeriodUids]
           :encodeTimeSegment(segments[0].start,segments[0].end);
       }
+      if(extraPeriodRows.length)await insertRows(timeTable,extraPeriodRows);
       if(selectedId){
         await updateRows(timeTable,payload,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
       }else{
-        await insertRows(timeTable,[{uid:nextTimeUid(all),...payload}]);
+        await insertRows(timeTable,[{uid:nextTimeUid([...all,...extraPeriodRows]),...payload}]);
       }
       await refresh();reset();setMessage('已儲存。');return true;
     }catch(error){setMessage(error?.message||'儲存失敗');editDock?.setNotice?.(error?.message||'儲存失敗');return false;}
@@ -255,31 +302,26 @@ export default function CultureTimelineEditor({
         </label>:null}
       </div>
       {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
-        {draft.type==='time_trace'&&!eventChoices.length
-          ?<p className="scope-status scope-error">請先建立事件，才能新增時間痕跡。</p>
-          :draft.type==='time_period'&&!anchorChoices.length
-            ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增事件。</p>:null}
+        {draft.type==='time_period'&&!anchorChoices.length
+          ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增事件。</p>:null}
         {segments.map((segment,index)=><div key={index} className="scope-culture-quick-primary">
-          <label>{draft.type==='time_trace'?'第 '+(index+1)+' 個事件':'第 '+(index+1)+' 段起點'}
-            <select className="scope-select" value={segment.start}
-              onChange={e=>updateSegment(index,'start',e.target.value)}>
-              {!(draft.type==='time_trace'?eventByUid:anchors).has(segment.start)?
-                <option value={segment.start}>已失效：{segment.start}</option>:null}
-              {(draft.type==='time_trace'?eventChoices:anchorChoices)
-                .map(row=><option key={row.uid} value={row.uid}>
-                  {draft.type==='time_trace'?'事件｜':day(row.address)+'｜'}{row.title}
-                </option>)}
-            </select>
+          <label>{draft.type==='time_trace'?'第 '+(index+1)+' 個事件':'起點'}
+            <Select classNamePrefix="loc-react-select" isClearable={false}
+              options={draft.type==='time_trace'?eventChoices.map(row=>({value:row.uid,label:'事件｜'+row.title})):anchorOptions}
+              value={draft.type==='time_trace'
+                ?(eventByUid.has(segment.start)?{value:segment.start,label:'事件｜'+eventByUid.get(segment.start).title}:{value:segment.start,label:'已失效：'+segment.start})
+                :anchorOptionOf(segment.start)}
+              onChange={option=>updateSegment(index,'start',option?.value||'')}
+              placeholder={draft.type==='time_trace'?'搜尋事件標題':'搜尋定錨點標題'}
+              noOptionsMessage={()=>'沒有符合項目'}/>
           </label>
           {draft.type==='time_period'?<label>結束（可只有單一定錨點）
-            <select className="scope-select" value={segment.end}
-              onChange={e=>updateSegment(index,'end',e.target.value)}>
-              <option value="">單一定錨點</option>
-              {segment.end&&!anchors.has(segment.end)?
-                <option value={segment.end}>已失效：{segment.end}</option>:null}
-              {anchorChoices.filter(row=>row.uid!==segment.start)
-                .map(row=><option key={row.uid} value={row.uid}>{day(row.address)}｜{row.title}</option>)}
-            </select>
+            <Select classNamePrefix="loc-react-select" isClearable
+              options={anchorOptions.filter(option=>option.value!==segment.start)}
+              value={segment.end?anchorOptionOf(segment.end):null}
+              onChange={option=>updateSegment(index,'end',option?.value||'')}
+              placeholder="搜尋定錨點標題（單一定錨點留空）"
+              noOptionsMessage={()=>'沒有符合項目'}/>
           </label>:null}
           <button type="button" className="loc-button"
             onClick={()=>setSegments(segments.filter((_,i)=>i!==index))}>移除</button>
@@ -291,6 +333,34 @@ export default function CultureTimelineEditor({
           ?!eventByUid.has(seg.start)
           :resolveTimeSegments(draft.anchor_ids,anchors).some(r=>r.invalid))?
           <p className="scope-status scope-error">部分定錨點連線已失效，請修正對應區間。</p>:null}
+        {draft.type==='time_trace'?<div className="scope-culture-quick-anchor-connect">
+          <h5>或：用定錨點連線加入（自動建立對應事件）</h5>
+          {!anchorChoices.length?<p className="scope-status scope-error">請先建立時間定錨點。</p>:
+          <div className="scope-culture-quick-primary">
+            <label>起點
+              <Select classNamePrefix="loc-react-select" isClearable
+                options={anchorOptions} value={pairFrom}
+                onChange={setPairFrom} placeholder="搜尋定錨點標題"
+                noOptionsMessage={()=>'沒有符合項目'}/>
+            </label>
+            <label>終點
+              <Select classNamePrefix="loc-react-select" isClearable
+                options={anchorOptions.filter(option=>option.value!==pairFrom?.value)} value={pairTo}
+                onChange={setPairTo} placeholder="搜尋定錨點標題"
+                noOptionsMessage={()=>'沒有符合項目'}/>
+            </label>
+            <button type="button" className="loc-button"
+              disabled={!pairFrom||!pairTo||pairFrom.value===pairTo?.value}
+              onClick={addPair}>＋ 加入連線</button>
+          </div>}
+          <div className="scope-culture-quick-anchor-connect-list">
+            {tracePairs.map((pair,index)=><div key={pair.join(':')+':'+index} className="scope-culture-quick-anchor-connect-item">
+              <span>{anchors.get(pair[0])?.title||pair[0]} — {anchors.get(pair[1])?.title||pair[1]}
+                {existingPeriodByPair.has(periodKeyOf(pair))?'（沿用既有事件）':'（存檔時自動建立事件）'}</span>
+              <button type="button" className="loc-button" onClick={()=>removePair(index)}>移除</button>
+            </div>)}
+          </div>
+        </div>:null}
       </div>:null}
       <label className="scope-culture-quick-notes">說明
         <textarea className="scope-search-input" rows={3} value={draft.description||''}

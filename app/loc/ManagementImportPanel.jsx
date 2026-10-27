@@ -285,7 +285,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
-  const writeCooldown=useBulkWriteCooldown();
+  const writeCooldown=useBulkWriteCooldown(scopeId);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
@@ -313,7 +313,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
-        const {detectZipArchiveSource,inspectPrivateArchive}=await import('./private-archive-universal.mjs');
+        const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
+        const totalEntries=await zipEntryCount(file);
         const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
         setArchiveDetection(result);
         // Inspect every supported source through the shared ZIP scanner.

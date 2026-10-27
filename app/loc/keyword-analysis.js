@@ -111,7 +111,7 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   }
   const totals=[...runeTotals.values()];
   return {
-    documentCount:documents.length,
+    documentCount:processedDocumentCount,
     classifiedCount,
     unclassifiedCount,
     tieCount,
@@ -280,6 +280,45 @@ function metaOf(catalogRows,classMap,currentClassId,fingerprint){
     fingerprint
   };
 }
+// Stateful version of resolveDynamicClassifications: the running class counts are
+// order-dependent, so they persist across pages in the same ascending order.
+function createDynamicResolver(catalogRows){
+  const classMap=buildClassMap(catalogRows);
+  const defaultGroup=defaultGroupOf(catalogRows);
+  const counts=new Map(classMap.ordered.map(item=>[item.group,0]));
+  return {
+    classMap,
+    async resolvePage(documents,onProgress){
+      const engine=await classifyDocumentsIncrementally(documents,catalogRows,onProgress);
+      const out=[];
+      for(const row of engine.classifications||[]){
+        const candidates=(row?.tied_groups||[]).filter(group=>classMap.groupToClassId.has(group));
+        let group='';
+        if(candidates.length>1){
+          const minimum=Math.min(...candidates.map(candidate=>counts.get(candidate)||0));
+          const minimumCandidates=candidates.filter(candidate=>(counts.get(candidate)||0)===minimum);
+          group=[...minimumCandidates].sort((a,b)=>
+            (classMap.groupToClassId.get(a)||99)-(classMap.groupToClassId.get(b)||99)
+          )[0]||'';
+        }else if(candidates.length===1){
+          group=candidates[0];
+        }else{
+          const resolvedGroup=String(row?.classification_group||'').trim();
+          if(classMap.groupToClassId.has(resolvedGroup))group=resolvedGroup;
+          else if(defaultGroup&&classMap.groupToClassId.has(defaultGroup))group=defaultGroup;
+        }
+        if(group)counts.set(group,(counts.get(group)||0)+1);
+        out.push({
+          uid:String(row?.uid||'').trim(),
+          class_id:group?(classMap.groupToClassId.get(group)||null):null,
+          group_lists:groupListsOf(row)
+        });
+      }
+      return out;
+    }
+  };
+}
+
 async function resolveDynamicClassifications(documents,catalogRows,onProgress){
   const classMap=buildClassMap(catalogRows);
   const defaultGroup=defaultGroupOf(catalogRows);
@@ -472,9 +511,9 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     });
   }
 
-  let documents=[];
   let resolved;
   let payloadRows=[];
+  let processedDocumentCount=0;
   if(candidateCount===0){
     reportBatchProgress(onProgress,'reading',0,0,20,'關鍵詞異動未影響任何文章，僅更新比對基準');
     resolved={
@@ -484,45 +523,38 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     };
   }else{
     reportBatchProgress(onProgress,'reading',0,0,3,'讀取文章與目前的關鍵詞庫');
-    const textResult=await selectAllRows(scope.galaxy,{
-      // title and createtime are not selected: matching only reads content
-      // (see documentOf/textOf), and nothing downstream reads the `date`
-      // field that createtime used to feed. createtime is still the order
-      // column below -- PostgREST can order by a column that isn't selected.
-      columns:'uid,content,searchable',
-      // statistics_able is the eligibility gate itself -- filter it in the
-      // query (fewer rows read, fewer rows paged through) instead of
-      // selecting it and discarding non-qualifying rows in isEligibleRow.
-      // orFilter narrows further to the uids a changed item could actually
-      // affect (see changedItemNosOf/candidateOrFilter); empty when nothing
-      // can be narrowed (changedItemNos===null), same as before this change.
-      filters:[{column:'statistics_able',operator:'eq',value:true}],
-      orFilter:narrowedFilter,
-      orders:[{column:'createtime',ascending:true}],
-      // Size the page to what's actually needed: candidateCount is the exact
-      // narrowed total when known, so a run that only touches a handful of
-      // articles asks for a handful, not a blanket max-size page every time.
-      pageSize:candidateCount?Math.min(KEYWORD_CLASSIFICATION_BATCH_SIZE,candidateCount):KEYWORD_CLASSIFICATION_BATCH_SIZE,
-      onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
-        3+17*(total?completed/total:1),
-        '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
-    });
-    const rawRows=textResult.rows||[];
-    const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));
-    documents=eligibleRows.map(documentOf);
-    reportBatchProgress(onProgress,'reading',rawRows.length,rawRows.length,20,
-      '讀取完成；符合分析資格 '+documents.length.toLocaleString()+' 篇');
-    resolved=await resolveDynamicClassifications(documents,catalogRows,onProgress);
-    const eligibleByUid=resolved.byUid;
-    payloadRows=eligibleRows.map(row=>{
-      const uid=String(row?.uid||'').trim();
-      const result=eligibleByUid.get(uid);
-      return {
-        uid,
-        class_id:result?.class_id||null,
-        group_lists:result?.group_lists??''
-      };
-    });
+    // Stream pages of articles: classify each page, keep only uid/class results,
+    // and drop article text before the next page. Dynamic tie counts carry over.
+    const resolver=createDynamicResolver(catalogRows);
+    resolved={classMap:resolver.classMap};
+    const pageSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
+    const totalForProgress=candidateCount??0;
+    let offset=0;
+    for(;;){
+      const page=await selectRows(scope.galaxy,{
+        columns:'uid,content,searchable',
+        filters:[{column:'statistics_able',operator:'eq',value:true}],
+        orFilter:narrowedFilter,
+        orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
+        limit:pageSize,
+        offset,
+        count:offset===0?'exact':null
+      });
+      const rows=page.rows||[];
+      if(!rows.length)break;
+      const eligible=rows.filter(row=>isEligibleRow(row,minChars));
+      const pageDocs=eligible.map(documentOf);
+      const pageRows=await resolver.resolvePage(pageDocs,null);
+      for(const row of pageRows)payloadRows.push(row);
+      processedDocumentCount+=pageDocs.length;
+      offset+=rows.length;
+      reportBatchProgress(onProgress,'reading',offset,Math.max(offset,totalForProgress||Number(page.count)||offset),
+        3+17*Math.min(1,offset/Math.max(1,totalForProgress||Number(page.count)||offset)),
+        '已讀取 '+offset.toLocaleString()+' 篇（符合分析 '+processedDocumentCount.toLocaleString()+' 篇，每 '+pageSize.toLocaleString()+' 篇回報一次）');
+      if(rows.length<pageSize)break;
+    }
+    reportBatchProgress(onProgress,'reading',offset,offset,20,
+      '讀取完成；符合分析資格 '+processedDocumentCount.toLocaleString()+' 篇');
   }
   const keywordMeta=metaOf(catalogRows,resolved.classMap,currentClassId,fingerprint);
   const written=await applyKeywordClassification(normalizedScopeId,{rows:payloadRows,meta:keywordMeta,eligibleUids},{
@@ -537,8 +569,10 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
         :phase==='sync'?95
         :phase==='finalizing'?99
         :61+38*(total?completed/total:1);
+      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_BATCH_SIZE));
+      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_BATCH_SIZE)));
       const label=phase==='prepare'?'準備寫入文章 Attr'
-        :phase==='write'?'資料庫已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇'
+        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
         :phase==='sync'?'正在清除不再符合資格的文章'
         :phase==='finalizing'?'正在定錨並核對寫入數量'
         :'處理中';

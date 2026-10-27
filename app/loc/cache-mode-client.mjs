@@ -2,7 +2,7 @@
 
 // Provider-neutral public cache policy; one tiny public DB row controls all web clients.
 // No Cloudflare control-plane access, credentials, or deployment is needed to switch.
-import {dbPublicClient} from './db-client.mjs';
+import {CACHE_POLICY} from './cache-policy.config.mjs';
 
 export const CACHE_MODE_OPTIONS=Object.freeze([
   {value:'off',label:'不開快取'},
@@ -31,20 +31,7 @@ export function applyCachePolicy(next){
     window.dispatchEvent(new CustomEvent(CACHE_POLICY_EVENT,{detail:policy}));
   return policy;
 }
-export async function loadCachePolicy({force=false}={}){
-  if(!force&&lastFetch&&Date.now()-lastFetch<POLICY_REFRESH_MS)return policy;
-  if(inFlight)return inFlight;
-  inFlight=(async()=>{
-    try{
-      const {data,error}=await dbPublicClient.schema('silver').from('loc_cache_runtime')
-        .select('mode,origin').eq('id',1).maybeSingle();
-      if(error||!data)throw new Error(error?.message||'Cache policy row not available');
-      return applyCachePolicy(data);
-    }catch{
-      // Missing configuration/primary connectivity must never activate ISR.
-      // Safe default: no optional cache, normal direct database queries.
-      return applyCachePolicy(DEFAULT_POLICY);
-    }finally{inFlight=null;}
-  })();
-  return inFlight;
+// Policy is a static JS config (app/loc/cache-policy.config.mjs); no database read.
+export async function loadCachePolicy(){
+  return applyCachePolicy(CACHE_POLICY);
 }

@@ -14,6 +14,7 @@ export function EditDockProvider({children}){
   const [scopeId,setScopeId]=useState('');
   const [hasSave,setHasSave]=useState(false);
   const [busy,setBusy]=useState(false);
+  const committing=useRef(false);
   const [notice,setNotice]=useState('');
   const [switchTarget,setSwitchTarget]=useState('');
   const [switchError,setSwitchError]=useState('');
@@ -108,7 +109,7 @@ export function EditDockProvider({children}){
     navigate(target);
   },[end,navigate]);
   const save=useCallback(async({stayInEditMode=false}={})=>{
-    if(busy)return;
+    if(busy||committing.current)return;
     // A management section can mount independent Database / ISR / Email
     // editors simultaneously. Save every dirty editor through the existing
     // six-feature Save action; never silently save just the first mounted one.
@@ -122,7 +123,7 @@ export function EditDockProvider({children}){
       setNotice('正在儲存其他設定，請完成後再操作。');
       return;
     }
-    setBusy(true);
+    committing.current=true;setBusy(true);
     setNotice('');
     try{
       for(const editor of editors){
@@ -133,7 +134,7 @@ export function EditDockProvider({children}){
     }catch(error){
       setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
     }finally{
-      setBusy(false);
+      committing.current=false;setBusy(false);
     }
   },[busy]);
   const dirtyEditors=useCallback(()=>[...registeredEditors.current].filter(editor=>
@@ -197,10 +198,10 @@ export function EditDockProvider({children}){
     else navigate(target,switchHistory.current,switchScroll.current);
   },[busy,switchTarget,clearEditor,navigate]);
   const saveAndSwitch=useCallback(async()=>{
-    if(busy||!switchTarget)return;
+    if(busy||committing.current||!switchTarget)return;
     const target=switchTarget;
     const editors=dirtyEditors();
-    setBusy(true);setSwitchError('');
+    committing.current=true;setBusy(true);setSwitchError('');
     try{
       for(const editor of editors){
         if(typeof editor.save!=='function')throw new Error('目前編輯內容無法儲存，已取消切換。');
@@ -217,7 +218,7 @@ export function EditDockProvider({children}){
       else navigate(target,switchHistory.current,switchScroll.current);
     }catch(error){
       setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
-    }finally{setBusy(false);}
+    }finally{committing.current=false;setBusy(false);}
   },[busy,switchTarget,dirtyEditors,clearEditor,navigate]);
   const value=useMemo(()=>({
     active:Boolean(scopeId),scopeId,hasSave,busy,notice,begin,end,

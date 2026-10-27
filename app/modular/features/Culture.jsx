@@ -23,6 +23,7 @@ import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
+import {useRiverDensityAnalysis} from '../modules/culture-timeline/use-river-density-analysis';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
 import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
@@ -60,7 +61,6 @@ function isInteractiveTarget(target){
 // Time has ONE management entry. Type selection belongs to the editor form.
 const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_CULTURE_GROUPS=Object.freeze([]);
-const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
 function classificationRiverLabel(item){
   return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):'';
@@ -630,8 +630,16 @@ export default function Culture(){
       ?structureWindowKey:'all';
   const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
     [timelineItems,expandedTimeTraceIds]);
-  const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
-    current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
+  const toggleTimeTrace=groupId=>{
+    const open=!expandedTimeTraceIds.includes(groupId);
+    setExpandedTimeTraceIds(current=>
+      current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
+    if(open&&groupId.startsWith('trace:')){
+      const trace=primaryPeriods.find(period=>
+        'trace:'+String(period.scope_id||scopeId)+':'+periodKey(period)===groupId);
+      if(trace)setStructureWindowKey(periodKey(trace));
+    }
+  };
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
     :String(currentStructurePeriod?.start_date||'').slice(0,10);
@@ -820,39 +828,14 @@ export default function Culture(){
       .map(item=>String(item?.start_date||item?.date||'').slice(0,10))
       .filter(Boolean)
   ,[timelineItems]);
-  // Unselected modes must not execute the density-change algorithm.
-  // Import the changepoint analysis only when a visible river has data.
-  // Basic timeline modes must not download the karaul detection engine eagerly.
-  const [riverDensityAnalyzer,setRiverDensityAnalyzer]=useState(null);
-  const needsRiverDensity=Boolean(
-    isAggregateScope?locCombinedSourceRiverItems.length:
-      styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
-  );
-  useEffect(()=>{
-    if(!needsRiverDensity||riverDensityAnalyzer)return undefined;
-    let active=true;
-    import('../modules/culture-timeline/river-density-analysis.mjs')
-      .then(module=>{
-        if(active)setRiverDensityAnalyzer(()=>module.analyzeRiverDensity);
-      })
-      .catch(error=>{if(active)console.error('Culture river-density module failed to load',error);});
-    return ()=>{active=false;};
-  },[needsRiverDensity,riverDensityAnalyzer]);
-  const riverAnalysis=useMemo(
-    ()=>riverDensityAnalyzer&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView&&densityInputBuckets.length
-      ?riverDensityAnalyzer(densityInputBuckets,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
-    [riverDensityAnalyzer,isAggregateScope,isLrunesDaily,isLocItemView,densityInputBuckets,existingAnchorDates]
-  );
-  const styleRiverAnalysis=useMemo(
-    ()=>riverDensityAnalyzer&&styleFilter==='rune66'&&keywordDrillItems.length
-      ?riverDensityAnalyzer(keywordDrillItems,existingAnchorDates):EMPTY_RIVER_ANALYSIS,
-    [riverDensityAnalyzer,styleFilter,keywordDrillItems,existingAnchorDates]
-  );
-  const locRiverAnalysis=useMemo(
-    ()=>riverDensityAnalyzer&&isAggregateScope&&locCombinedSourceRiverItems.length
-      ?riverDensityAnalyzer(locCombinedSourceRiverItems,[]):EMPTY_RIVER_ANALYSIS,
-    [riverDensityAnalyzer,isAggregateScope,locCombinedSourceRiverItems]
-  );
+  // Render the selected period immediately. Multi-year PELT executes in a
+  // worker, so change-point suggestions cannot freeze the Time River.
+  const riverAnalysis=useRiverDensityAnalysis(densityInputBuckets,existingAnchorDates,
+    !isAggregateScope&&!isLrunesDaily&&!isLocItemView&&styleFilter!=='trace'&&Boolean(densityInputBuckets.length));
+  const styleRiverAnalysis=useRiverDensityAnalysis(keywordDrillItems,existingAnchorDates,
+    styleFilter==='rune66'&&Boolean(keywordDrillItems.length));
+  const locRiverAnalysis=useRiverDensityAnalysis(locCombinedSourceRiverItems,EMPTY_CULTURE_GROUPS,
+    isAggregateScope&&Boolean(locCombinedSourceRiverItems.length));
   const virtualAnchorItems=useMemo(()=>{
     const total=Math.max(1,Number(riverAnalysis.totalCount)||0);
     return riverAnalysis.suggestions.map(item=>{
@@ -1353,6 +1336,7 @@ export default function Culture(){
                     </>:null}
                   </div>
                   {styleFilter!=='trace'&&riverRangeLoading?<span className='scope-status' role='status'>{UI_COPY.common.loading}</span>:null}
+                  {riverAnalysis.error?<span className='scope-status scope-error' role='status'>{riverAnalysis.error}</span>:null}
                 </div>
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
                   <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
