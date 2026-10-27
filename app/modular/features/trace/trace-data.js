@@ -194,7 +194,7 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
   return {count,skipped,consolidated:0,duplicatesInBatch:skipped,reviewCount:review.length,
     reviewPreview:review.slice(0,8),auditError:''};
 }
-function validatedConnections({scopeId,type,anchorUids=[],anchors=[]}){
+function validatedConnections({scopeId,type,anchorUids=[],anchors=[],hasRoutes=false}){
   const id=idScope(scopeId),list=Array.isArray(anchorUids)?anchorUids:[];
   if(!['space_period','space_trace'].includes(type))throw Error('無效的連線類型');
   const ids=list.flat(Infinity);
@@ -203,7 +203,7 @@ function validatedConnections({scopeId,type,anchorUids=[],anchors=[]}){
   if(type==='space_period'){
     if(list.length<2||list.length>80||list.some(Array.isArray)||new Set(list).size!==list.length)
       throw Error('路線需依序排列 2～80 個不同地點');
-  }else if(list.length<1||list.length>400||list.some(pair=>
+  }else if((!hasRoutes&&list.length<1)||list.length>400||list.some(pair=>
     !Array.isArray(pair)||pair.length!==2||pair[0]===pair[1]||pair.some(Array.isArray)))
     throw Error('痕跡圖需由一組以上的起點／終點配對組成');
   return list;
@@ -225,8 +225,8 @@ async function validatedRouteList(scopeId,type,routeUids=[]){
 }
 const validUid=value=>VALID_ID.test(textValue(value));
 export async function addTraceMap({scopeId,title,description='',type='space_period',anchorUids=[],anchors=[],routeUids=[],hiddenDepth=-1}){
-  const id=writableScope(scopeId),anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
-  const route_list=await validatedRouteList(id,type,routeUids);
+  const id=writableScope(scopeId),route_list=await validatedRouteList(id,type,routeUids);
+  const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   return checked(await dbAuthRelation(relation(id)).insert({
     trace_type:type,title:nonempty(title,'名稱'),description:descriptionObject(description),
     anchor_list,route_list,hidden_depth:visibleDepth(hiddenDepth)
@@ -235,8 +235,8 @@ export async function addTraceMap({scopeId,title,description='',type='space_peri
 export async function updateTraceMap({scopeId,uid,title,description='',type='space_period',anchorUids=[],anchors=[],routeUids=[],hiddenDepth=-1}){
   const id=writableScope(scopeId),key=textValue(uid);
   if(!validUid(key))throw Error('無效 UID');
-  const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors});
   const route_list=await validatedRouteList(id,type,routeUids);
+  const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   let query=dbAuthRelation(relation(id)).update({
     title:nonempty(title,'名稱'),description:descriptionObject(description),anchor_list,route_list,
     hidden_depth:visibleDepth(hiddenDepth)
