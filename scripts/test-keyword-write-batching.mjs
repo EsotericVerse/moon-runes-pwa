@@ -95,6 +95,33 @@ test('ordinary 500-row write waits five seconds only between committed batches',
   assert.deepEqual(writes.map(x=>x.lastBatchSize),[500,500,200]);
 });
 
+test('UI at 10,000 of 29,818 reflects 71 percent and revised batch estimates',()=>{
+  const analysis=source('app/loc/keyword-analysis.js');
+  const start=analysis.indexOf('    onProgress:({phase,completed,total,seconds=5');
+  const end=analysis.indexOf('\n    }\n  });',start);
+  assert.ok(start>=0&&end>start,'Analysis UI callback must exist');
+  const text=analysis.slice(start,end+6).trim().replace(/^onProgress:/,'');
+  const events=[];
+  const onProgress=new Function('reportBatchProgress','onProgress',
+    'KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE','return ('+text+');')(
+    (callback,phase,completed,total,percent,label,details)=>{
+      callback({phase,completed,total,percent:Math.round(percent),label,...details});
+    },
+    event=>events.push(event),500
+  );
+  onProgress({phase:'write',completed:10000,total:29818,batchSize:500,
+    completedBatches:20,estimatedBatches:60,lastBatchSize:500});
+  onProgress({phase:'cooldown',completed:10000,total:29818,batchSize:250,
+    completedBatches:20,estimatedBatches:100,seconds:5,retrying:true});
+  assert.equal(events[0].percent,71);
+  assert.equal(events[1].percent,71);
+  assert.match(events[0].label,/已完成 20 \\/ 60 批/);
+  assert.match(events[1].label,/已完成 20 \\/ 100 批/);
+  assert.match(events[1].label,/縮批至 250 篇/);
+  assert.match(events[1].label,/等待 5 秒/);
+  assert.equal(events[1].completed,10000);
+});
+
 test('sync does not accidentally clear unmodified rows from narrowed reanalysis',async()=>{
   const writes=[];
   const run=extractBatchMethod({
