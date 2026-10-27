@@ -58,3 +58,19 @@ test('Archive media UUID is stable for idempotent re-import',()=>{
   assert.equal(a,archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/a.jpg'));
   assert.notEqual(a,archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/b.jpg'));
 });
+
+test('One ZIP image shared by two articles makes one media row and two links',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onMediaEntry({path:'threads/media/common.jpg'});
+  for(const uid of ['AAAA0001','AAAA0002'])collector.onRecord({
+    platform:'threads',attachments:[{uri:'threads/media/common.jpg'}]
+  },uid);
+  collector.onExif({path:'threads/media/common.jpg',metadata:{latitude:25.1,longitude:121.5}});
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:100});
+  const plan=prepareArchiveMedia(evidence,new Set(['AAAA0001','AAAA0002']));
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.mediaLinks.length,2);
+  assert.equal(new Set(plan.mediaLinks.map(v=>v.uid)).size,2);
+  assert.equal(new Set(plan.mediaLinks.map(v=>v.media_id)).size,1);
+  assert.equal(plan.exif.length,1);
+});
