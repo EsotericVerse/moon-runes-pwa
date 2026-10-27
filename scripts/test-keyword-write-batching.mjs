@@ -8,8 +8,9 @@ function extractBatchMethod(stubs){
   const start=contract.indexOf('  async function applyKeywordClassification(');
   const end=contract.indexOf('\n  // Manually-triggered full wipe',start);
   assert.ok(start>=0&&end>start,'Keyword classification method must exist');
-  return new Function(...Object.keys(stubs),
-    contract.slice(start,end)+'\nreturn applyKeywordClassification;')(...Object.values(stubs));
+  const deps={...stubs,keywordClassificationWrite:stubs.keywordClassificationWriteUnchecked};
+  return new Function(...Object.keys(deps),
+    contract.slice(start,end)+'\nreturn applyKeywordClassification;')(...Object.values(deps));
 }
 test('failed 500-row write rolls back and retries 250-row chunks without skipping entries',async()=>{
   const rows=Array.from({length:1200},(_,i)=>({uid:'ID'+i,class_id:1,group_lists:'1:1'}));
