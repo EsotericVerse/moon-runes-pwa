@@ -7,6 +7,7 @@ import ScopeLink from '../ScopeLink';
 import {navigationHref} from '../scope-registry';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {traceWindow} from './trace/trace-panel-filters.mjs';
+import {pickTraceDemoStop,traceDemoRoute} from './trace/trace-demo-route.mjs';
 import {
   readDefaultTraceRoute,setDefaultTraceRoute,chooseDefaultTraceRoute,
   TRACE_DEFAULT_ROUTE_CHANGED
@@ -32,6 +33,8 @@ export default function Trace({scopeId='loc'}){
   const reportTopRef=useRef(null);
   const [scrollRequest,setScrollRequest]=useState(0);
   const [mapOnly,setMapOnly]=useState(false);
+  const [twoPointDemo,setTwoPointDemo]=useState(false);
+  const [demoStopIds,setDemoStopIds]=useState([]);
   // /trace is a public index for all published Scope Frames. Prefer LOC
   // native when it exists; otherwise show a real saved author/rune Frame.
   // A missing LOC-native route must not hide existing author routes.
@@ -95,6 +98,7 @@ export default function Trace({scopeId='loc'}){
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
   },[traceIndex.data,periodScopeId,currentTraceChoice]);
   const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
+  useEffect(()=>{setDemoStopIds([]);},[periodScopeId,currentMap?.uid,showingAll]);
 
   // Phase 2: cache the current route's 2–80 sites by its membership revision.
   // Repeated visits have their own timestamps; a multi-day trip does not imply
@@ -118,12 +122,22 @@ export default function Trace({scopeId='loc'}){
       maps:showingAll?maps:[currentMap]};
   },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
 
+  const demoRoute=useMemo(()=>traceDemoRoute(demoStopIds,spatialData?.anchors||[],periodScopeId),
+    [demoStopIds,spatialData?.anchors,periodScopeId]);
+  const demoSpatialData=useMemo(()=>twoPointDemo&&spatialData
+    ?{anchors:spatialData.anchors,maps:demoRoute?[demoRoute]:[]}
+    :spatialData,[twoPointDemo,spatialData,demoRoute]);
+  const chooseMapAnchor=anchor=>{
+    if(!twoPointDemo){choosePlace(anchor);return;}
+    setDemoStopIds(ids=>pickTraceDemoStop(ids,anchor,periodScopeId));
+  };
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type!=='space_anchor'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
   // A Frame is the spatial context. Its article/culture/statistics panel
   // appears below the map without an extra click or a search-page route.
-  const reportPlace=selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null);
+  const reportPlace=twoPointDemo?null:
+    (selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null));
   // On phones, point selection reveals the existing in-page report area,
   // which shows its Loading state while Galaxy metadata is fetched.
   useEffect(()=>{
@@ -142,6 +156,10 @@ export default function Trace({scopeId='loc'}){
         onClick={()=>setMapOnly(value=>!value)}>
         {mapOnly?'返回完整痕跡操作':'純地圖展示（收合其他區域）'}
       </button>
+      {supported?<button type="button" className="loc-button" aria-pressed={twoPointDemo}
+        onClick={()=>{setTwoPointDemo(value=>!value);setDemoStopIds([]);setSelectedPlace(null);}}>
+        {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
+      </button>:null}
       {supported&&scopeId==='loc'?<label>
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
@@ -184,9 +202,19 @@ export default function Trace({scopeId='loc'}){
         :'尚未建立路線圖或痕跡圖，也沒有已儲存的空間定錨點。'}
     </p>:null}
 
-    <TraceMap mapOnly={mapOnly} spatialData={spatialData} hideRoutePicker
-      selectedRouteUid={currentMap?.uid||''}
-      onAnchorSelect={choosePlace}/>
+    {twoPointDemo?<div className="scope-stat-controls" role="group" aria-label="兩點路線試玩">
+      <p className="scope-status" role="status" aria-live="polite">
+        {demoRoute?'已選兩點：'+demoStopIds.map(uid=>spatialData?.anchors.find(row=>row.uid===uid)?.title||uid).join(' → ')+'。僅供預覽，不會儲存。':
+          demoStopIds.length===1?'已選起點：'+(spatialData?.anchors.find(row=>row.uid===demoStopIds[0])?.title||demoStopIds[0])+'。請再點地圖上的第二個定錨點。':
+          '點地圖上兩個已有座標的定錨點，即可預覽兩點連線。一般訪客不能儲存。'}
+      </p>
+      <button className="loc-button" type="button" onClick={()=>setDemoStopIds([])} disabled={!demoStopIds.length}>
+        清除並重新選兩點
+      </button>
+    </div>:null}
+    <TraceMap mapOnly={mapOnly} spatialData={demoSpatialData} hideRoutePicker
+      selectedRouteUid={twoPointDemo?(demoRoute?.uid||''):(currentMap?.uid||'')}
+      onAnchorSelect={chooseMapAnchor}/>
 
     {!mapOnly&&reportPlace?<div ref={reportTopRef} className="loc-trace-report-toolbar" role="group" aria-label="地圖下方目前地點內容框">
       <strong>{reportPlace.title}</strong>

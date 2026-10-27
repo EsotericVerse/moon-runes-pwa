@@ -40,6 +40,7 @@ export default function TraceRouteManager({scopeId}){
   const [selectedStop,setSelectedStop]=useState('');
   const [from,setFrom]=useState('');
   const [to,setTo]=useState('');
+  const [mapStart,setMapStart]=useState('');
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [error,setError]=useState(false);
@@ -77,18 +78,21 @@ export default function TraceRouteManager({scopeId}){
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length);
   const chosenIds=type==='space_period'?queue:unique(pairs.flat());
-  const preview=editorOpen&&chosenIds.length>=2
-    ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
-      title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs}:current;
-  const previewAnchors=editorOpen?chosenIds.map(uid=>anchorMap.get(uid)).filter(Boolean):(currentAnchors.data||[]);
+  const preview=editorOpen
+    ?(chosenIds.length>=2
+      ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
+        title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs}
+      :null)
+    :current;
+  const previewAnchors=currentAnchors.data||[];
   const clear=()=>{
     setEditingUid('');setTitle('');setDescription('');setSpool([]);setQueue([]);setPairs([]);
-    setFrom('');setTo('');setSelectedStop('');setSelectedAnchor(null);setSavedReceipt(null);
+    setFrom('');setTo('');setMapStart('');setSelectedStop('');setSelectedAnchor(null);setSavedReceipt(null);
   };
   const allowLeave=()=>!incomplete||window.confirm('尚未儲存，確定放棄修改？');
   const openNew=kind=>{
     if(busy||!allowLeave())return;
-    clear();setType(kind);setEditorOpen(true);setShowMap(false);setError(false);setNotice('');
+    clear();setType(kind);setEditorOpen(true);setShowMap(true);setError(false);setNotice('');
   };
   const openEdit=row=>{
     if(busy||!allowLeave())return;
@@ -134,6 +138,20 @@ export default function TraceRouteManager({scopeId}){
     if(!from||!to||from===to||pairs.length>=MAX_LINES)return;
     if(pairs.some(pair=>pair[0]===from&&pair[1]===to))return;
     setPairs(items=>[...items,[from,to]]);setFrom('');setTo('');
+  };
+  const addMapSelectedAnchor=anchor=>{
+    const uid=String(anchor?.uid||'');
+    if(busy||!own||!editorOpen||!anchorMap.has(uid))return;
+    setSpool(items=>items.includes(uid)?items:[...items,uid]);
+    if(type==='space_period'){
+      setQueue(items=>items.includes(uid)||items.length>=MAX_ROAD?items:[...items,uid]);
+    }else if(!mapStart){
+      setMapStart(uid);
+    }else if(uid!==mapStart){
+      setPairs(items=>items.length>=MAX_LINES||items.some(pair=>pair[0]===mapStart&&pair[1]===uid)
+        ?items:[...items,[mapStart,uid]]);
+      setMapStart('');
+    }
   };
   const refresh=async()=>{
     await Promise.allSettled([cache.invalidate({queryKey:traceMapIndexKey(owner)}),
@@ -191,7 +209,7 @@ export default function TraceRouteManager({scopeId}){
     {owner==='loc'?<p className="scope-status">LOC 空間聚合已暫停並刪除；請先選擇來源 Scope 整理地點。完成後才重建 LOC。</p>:null}
     <header className="loc-trace-map-manager-heading">
       <div><h3>路線圖／痕跡圖管理</h3>
-        <p className="scope-status">先用 React Select 自動完成標題並加入 Spool，再從 Spool 配置路線或獨立線段。不依賴縣市、常用排名或付費地理搜尋。</p>
+        <p className="scope-status">新增或編輯時可直接點地圖上的既有定錨點加入路線；也可以用自動完成搜尋。路線依點選順序排列，不需要縣市篩選或付費地理服務。</p>
       </div>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_period')}>新增路線圖</button>
@@ -231,6 +249,15 @@ export default function TraceRouteManager({scopeId}){
         <label>名稱<input required maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
         <label>說明<textarea rows={2} maxLength={2000} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       </div>
+      <div className="scope-stat-controls">
+        <button type="button" className="loc-button" disabled={busy} onClick={()=>setShowMap(value=>!value)}>
+          {showMap?'收起地圖選點':'展開地圖選點'}
+        </button>
+        <span className="scope-status">{type==='space_period'?'點地圖上的定錨點，依序加入 Queue。':'先點起點，再點終點，即建立一段痕跡連線。'}{mapStart?' 已選起點：'+(anchorMap.get(mapStart)?.title||mapStart):''}</span>
+      </div>
+      {showMap?<TraceMap spatialData={{anchors:allAnchors,maps:preview?[preview]:[]}}
+        selectedRouteUid={preview?.uid||''} hideRoutePicker
+        onAnchorSelect={addMapSelectedAnchor}/>:null}
       <h4>1. Spool — 收集可配置的地點</h4>
       {anchorIndex.isPending?<p className="scope-status">正在載入本 Scope 的地點標題…</p>:null}
       {anchorIndex.error?<p role="alert" className="scope-error">{String(anchorIndex.error.message||anchorIndex.error)}</p>:null}
@@ -303,7 +330,7 @@ export default function TraceRouteManager({scopeId}){
           onClick={()=>{if(allowLeave()){clear();setEditorOpen(false);}}}>取消</button>
       </div>
     </form>:null}
-    {showMap&&preview?<TraceMap spatialData={{anchors:previewAnchors,maps:[preview]}}
+    {!editorOpen&&showMap&&preview?<TraceMap spatialData={{anchors:previewAnchors,maps:[preview]}}
       selectedRouteUid={preview.uid} hideRoutePicker/>:null}
     {notice?<p role={error?'alert':'status'} className={'scope-status'+(error?' scope-error':'')}>{notice}</p>:null}
   </section>;
