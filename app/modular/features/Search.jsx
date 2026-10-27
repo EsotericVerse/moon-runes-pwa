@@ -992,7 +992,7 @@ export default function Search({managementMode=false}){
     <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
-        <input id="scope-search-query" list={suggestedTitles.length?'scope-search-loaded-titles':undefined}
+        <input id="scope-search-query" list={!searchPopularOpen&&suggestedTitles.length?'scope-search-loaded-titles':undefined}
           value={query} onDoubleClick={()=>setSearchPopularOpen(true)}
           onChange={event=>{setQuery(event.target.value);setSearchPopularOpen(false);}}
           aria-expanded={searchPopularOpen}
