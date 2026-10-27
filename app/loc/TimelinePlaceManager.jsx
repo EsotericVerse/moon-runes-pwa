@@ -5,7 +5,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
-import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles} from './timeline-place-matcher.mjs';
+import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces} from './timeline-place-matcher.mjs';
 
 const WINDOW_BATCH=40,RESULT_PAGE=750,WRITE_BATCH=150;
 const friendlyError=e=>String(e?.message||e||'未知錯誤');
@@ -19,7 +19,10 @@ export default function TimelinePlaceManager({scopeId}){
   const [writing,setWriting]=useState(false);
   const [progress,setProgress]=useState(null);
   const [analysis,setAnalysis]=useState(null);
-  const [decisions,setDecisions]=useState({});
+  const [groupChoices,setGroupChoices]=useState({});
+  const [itemChoices,setItemChoices]=useState({});
+  const [excluded,setExcluded]=useState({});
+  const [groupPages,setGroupPages]=useState({});
   const [page,setPage]=useState(0);
   const [notice,setNotice]=useState('');
   const runRef=useRef(0);
@@ -34,14 +37,14 @@ export default function TimelinePlaceManager({scopeId}){
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
   function reset(){
     runRef.current++;
-    setSelectedFile(null);setAnalysis(null);setDecisions({});setProgress(null);setNotice('');setPage(0);
+    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);
     if(fileRef.current)fileRef.current.value='';
   }
   async function analyze(){
     if(!enabled||!selectedFile||analyzing||writing||anchorQuery.isPending)return;
     if(!eligible.length){setNotice('目前沒有具有座標的空間定錨點，因此沒有可補寫的 place_id。');return;}
     const run=++runRef.current;
-    setAnalyzing(true);setAnalysis(null);setDecisions({});setPage(0);setNotice('');
+    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');
     try{
       if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
       setProgress({done:0,total:0,message:'正在本機讀取 Timeline JSON…'});
@@ -67,7 +70,7 @@ export default function TimelinePlaceManager({scopeId}){
         let offset=0;
         while(true){
           if(run!==runRef.current)return;
-          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_place_windows',{
+          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_missing_place_windows',{
             p_scope_id:scopeId,p_windows:batch,p_limit:RESULT_PAGE,p_offset:offset
           });
           const rows=checked(result,'查詢 Galaxy 文章時間');
@@ -88,31 +91,41 @@ export default function TimelinePlaceManager({scopeId}){
       setAnalysis({...classified,visitCount:visits.length,empty:matched.withoutAnchor,
         ambiguous:matched.ambiguousWindows,articleCount:classified.ready.length+
         classified.disputes.length+classified.unchanged.length});
-      setNotice('已完成預覽。確定項目不會立即寫入；糾紛點要由管理者選擇，無候選位置留空。');
+      setNotice('已完成空白打卡地點預覽。相同經緯度集中列出；請選擇位置並檢查不同樓層，確認前不寫入。');
     }catch(e){
       if(run===runRef.current)setNotice('地點比對失敗：'+friendlyError(e));
     }finally{if(run===runRef.current)setAnalyzing(false);}
   }
-  const manualChanges=useMemo(()=>analysis?.disputes.filter(row=>
-    (row.candidates||[]).some(candidate=>candidate.uid===decisions[row.uid])
-    &&decisions[row.uid]!==row.existingPlaceId)||[],[analysis,decisions]);
-  const ready=analysis?.ready||[];
-  const canWrite=Boolean(ready.length||manualChanges.length);
+  const reviewGroups=useMemo(()=>groupTimelineMissingPlaces(analysis),[analysis]);
+  // Every article starts checked; the group and per-article selectors decide its place.
+  const selectedUpdates=useMemo(()=>reviewGroups.flatMap(group=>group.rows.flatMap(row=>{
+    if(excluded[row.uid])return [];
+    const placeId=itemChoices[row.uid]||groupChoices[group.key]||group.defaultPlaceId;
+    if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))return [];
+    // A pre-existing place_id is authoritative. Never overwrite a different ID.
+    if(row.existingPlaceId&&row.existingPlaceId!==placeId)return [];
+    return [{uid:row.uid,place_id:placeId,expected_place_id:row.existingPlaceId||null,manual:true}];
+  })),[reviewGroups,groupChoices,itemChoices,excluded]);
+  const canWrite=selectedUpdates.length>0;
+  const selectGroup=(group,selected)=>setExcluded(current=>{
+    const next={...current};
+    for(const row of group.rows){
+      if(selected)delete next[row.uid];
+      else next[row.uid]=true;
+    }
+    return next;
+  });
   async function apply(){
     if(!analysis||!canWrite||writing||analyzing)return;
-    const updates=[
-      ...ready.map(row=>({uid:row.uid,place_id:row.placeId,expected_place_id:null,manual:false})),
-      ...manualChanges.map(row=>({uid:row.uid,place_id:decisions[row.uid],
-        expected_place_id:row.existingPlaceId||null,manual:true}))
-    ];
-    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章的 place_id？\n\n'
-      +'自動確定 '+ready.length+' 篇、人工裁定 '+manualChanges.length+' 篇。\n'
-      +'source_place、文章內容、時間定錨與 Timeline 行蹤都不會修改。'))return;
+    const updates=selectedUpdates;
+    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\\n\\n'
+      +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\\n'
+      +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
     setWriting(true);setNotice('');let completed=0;
     try{
       for(let i=0;i<updates.length;i+=WRITE_BATCH){
         const batch=updates.slice(i,i+WRITE_BATCH);
-        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_place_ids',{
+        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
           p_scope_id:scopeId,p_updates:batch
         });
         completed+=Number(checked(result,'批次寫入 place_id')||0);
@@ -120,11 +133,13 @@ export default function TimelinePlaceManager({scopeId}){
       }
       // Keep unresolved disputes on screen after writing the definite rows.
       // The user can decide them later without re-importing private Timeline JSON.
-      const resolved=new Set(manualChanges.map(row=>row.uid));
-      setAnalysis(previous=>previous?{...previous,ready:[],
+      const resolved=new Set(updates.map(row=>row.uid));
+      setAnalysis(previous=>previous?{...previous,
+        ready:previous.ready.filter(row=>!resolved.has(row.uid)),
         disputes:previous.disputes.filter(row=>!resolved.has(row.uid)),
-        unchanged:[...previous.unchanged,...previous.ready,...manualChanges]}:null);
-      setDecisions({});
+        unchanged:[...previous.unchanged,...previous.ready.filter(row=>resolved.has(row.uid)),
+          ...previous.disputes.filter(row=>resolved.has(row.uid))]}:null);
+      setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});
       setPage(0);
       await revalidateServerMetadata();
       await Promise.allSettled([
@@ -132,21 +147,21 @@ export default function TimelinePlaceManager({scopeId}){
         cache.invalidate({queryKey:['trace-current',scopeId]}),
         cache.invalidate({queryKey:['loc-place-summary',scopeId]})
       ]);
-      setNotice('已成功補寫 '+completed+' 篇文章的 place_id；source_place 完全沒有改動。');
+      setNotice('已補寫 '+completed+' 篇原本空白的 source_place，並補齊需要的 place_id；既有打卡文字保持不變。');
     }catch(e){
-      setNotice('已完成 '+completed+' 篇，其餘未寫入。'+friendlyError(e)+'。請重新選擇 JSON 並執行預覽，避免重複更新。');
-      setAnalysis(null);setDecisions({});
+      setNotice('已完成 '+completed+' 篇，其餘未寫入。'+friendlyError(e)+'。請重新預覽再寫入，避免覆蓋其他編輯。');
+      setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});
     }finally{setWriting(false);}
   }
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
     <h3>地點整理 · Google Timeline</h3>
-    <p className="scope-status">只在這個管理頁的瀏覽器記憶體解析 Timeline JSON。按文章 createtime 對應造訪時間，搜尋 500 公尺內既有空間定錨點（包含管理者的隱藏項目）。只補寫 place_id；不比對 Facebook，不使用時間定錨，不儲存私人路徑。</p>
+    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 source_place 尚未填寫的文章；同座標集中審查樓層或不同店家。最後只補寫空白打卡地點與缺少的 place_id，不儲存私人行蹤。</p>
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;setAnalysis(null);setDecisions({});setProgress(null);setNotice('');setPage(0);
+            runRef.current++;setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -167,39 +182,74 @@ export default function TimelinePlaceManager({scopeId}){
       <p className="scope-status">Timeline 造訪區間：{analysis.visitCount.toLocaleString()}；
         500 公尺外／無定錨點：{analysis.empty.toLocaleString()}；
         候選有歧義的造訪區間：{analysis.ambiguous.toLocaleString()}。</p>
-      <p className="scope-status">文章：確定可補 ID {ready.length.toLocaleString()} 篇，
-        糾紛點 {analysis.disputes.length.toLocaleString()} 篇，
-        已有相同 ID {analysis.unchanged.length.toLocaleString()} 篇。
-        其他沒有時間或位置交集的文章維持原狀。</p>
-      {analysis.disputes.length>0?<div>
-        <h4>糾紛點處理 · 管理者逐筆裁定</h4>
-        <p className="scope-status">全部預設跳過；只有明確選定才會在確認時寫入。文章清單不展示地點資訊，候選位置僅在展開裁定選項後顯示。</p>
-        {analysis.disputes.slice(page*50,(page+1)*50).map(row=>
-          <details key={row.uid} className="scope-card">
-            <summary>{row.createtime?.slice(0,16)||'時間不明'} · {row.title||'未命名文章'}（{row.uid}）</summary>
-            <p className="scope-status">{row.reason}</p>
-            <label>糾紛點裁定
-              <select className="scope-select" disabled={writing} value={decisions[row.uid]||''}
-                onChange={e=>setDecisions(current=>({...current,[row.uid]:e.target.value}))}>
-                <option value="">維持原狀／不更新</option>
-                {row.candidates.map(c=><option key={c.uid} value={c.uid}>
-                  {c.title} · 約 {c.meters} 公尺
-                </option>)}
+      <p className="scope-status">待補打卡文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
+        同座標審查群組：{reviewGroups.length.toLocaleString()} 組；
+        其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
+        已有 source_place 的文章不列入也不會更新。</p>
+      {reviewGroups.length>0?<div>
+        <h4>按經緯度分組審查 · 預設全勾選</h4>
+        <p className="scope-status">每組選擇一次既有空間定錨點，也可以逐篇改選其他樓層。所有文章預設勾選，但沒有選定地點、存在不同 place_id 或跨座標的文章不會自動寫入。</p>
+        {reviewGroups.slice(page*10,(page+1)*10).map(group=>{
+          const chosen=groupChoices[group.key]??group.defaultPlaceId;
+          const groupPage=groupPages[group.key]||0;
+          const checkedCount=group.rows.filter(row=>!excluded[row.uid]).length;
+          return <details key={group.key} className="scope-card">
+            <summary>{group.key.startsWith('point:')?'座標 '+group.coordinates[0]:'多個座標／須逐篇確認'} · {group.rows.length.toLocaleString()} 篇 · 已勾 {checkedCount.toLocaleString()} 篇</summary>
+            <div className="scope-stat-controls">
+              <button type="button" className="loc-button" disabled={writing} onClick={()=>selectGroup(group,true)}>全選這組</button>
+              <button type="button" className="loc-button" disabled={writing} onClick={()=>selectGroup(group,false)}>取消這組全選</button>
+            </div>
+            <label>這組文章預設的定錨點（可逐篇覆蓋）
+              <select className="scope-select" disabled={writing} value={chosen}
+                onChange={e=>setGroupChoices(current=>({...current,[group.key]:e.target.value}))}>
+                <option value="">尚未選擇 · 全部暫不寫入</option>
+                {group.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title} · 約 {c.meters} 公尺（{c.uid}）</option>)}
               </select>
             </label>
-          </details>
-        )}
-        <div className="scope-stat-controls">
-          <button type="button" className="loc-button" disabled={page<=0}
-            onClick={()=>setPage(x=>x-1)}>上一頁</button>
-          <span>{page+1} / {Math.ceil(analysis.disputes.length/50)} 頁</span>
-          <button type="button" className="loc-button" disabled={(page+1)*50>=analysis.disputes.length}
-            onClick={()=>setPage(x=>x+1)}>下一頁</button>
-        </div>
+            <div role="group" aria-label="這組文章勾選清單">
+              {group.rows.slice(groupPage*50,(groupPage+1)*50).map(row=>{
+                const selected=itemChoices[row.uid]||chosen;
+                const valid=Boolean(selected&&row.candidates.some(c=>c.uid===selected)&&
+                  (!row.existingPlaceId||row.existingPlaceId===selected));
+                return <div key={row.uid} className="scope-management-fields">
+                  <label>
+                    <input type="checkbox" disabled={writing} checked={!excluded[row.uid]}
+                      onChange={e=>setExcluded(current=>({...current,[row.uid]:!e.target.checked}))}/>
+                    {String(row.createtime||'').slice(0,16)||'時間不明'} · {row.title||'未命名文章'}（{row.uid}）
+                  </label>
+                  <label>單篇地點／樓層（可選）
+                    <select className="scope-select" disabled={writing} value={itemChoices[row.uid]||''}
+                      onChange={e=>setItemChoices(current=>({...current,[row.uid]:e.target.value}))}>
+                      <option value="">沿用這組設定</option>
+                      {row.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title}（{c.uid}）</option>)}
+                    </select>
+                  </label>
+                  {row.existingPlaceId?<p className="scope-status">既有 place_id：{row.existingPlaceId}（只可補打卡名稱，不覆寫既有 ID）</p>:null}
+                  {row.reason?<p className="scope-status">{row.reason}</p>:null}
+                  {!valid?<p className="scope-status">這篇尚未符合寫入條件，不會寫入。</p>:null}
+                </div>;
+              })}
+            </div>
+            {group.rows.length>50?<div className="scope-stat-controls">
+              <button type="button" className="loc-button" disabled={groupPage===0||writing}
+                onClick={()=>setGroupPages(current=>({...current,[group.key]:groupPage-1}))}>上一頁</button>
+              <span>{groupPage+1} / {Math.ceil(group.rows.length/50)} 頁</span>
+              <button type="button" className="loc-button" disabled={(groupPage+1)*50>=group.rows.length||writing}
+                onClick={()=>setGroupPages(current=>({...current,[group.key]:groupPage+1}))}>下一頁</button>
+            </div>:null}
+          </details>;
+        })}
+        {reviewGroups.length>10?<div className="scope-stat-controls">
+          <button type="button" className="loc-button" disabled={page===0||writing}
+            onClick={()=>setPage(x=>x-1)}>上一組</button>
+          <span>群組 {page+1} / {Math.ceil(reviewGroups.length/10)} 頁</span>
+          <button type="button" className="loc-button" disabled={(page+1)*10>=reviewGroups.length||writing}
+            onClick={()=>setPage(x=>x+1)}>下一組</button>
+        </div>:null}
       </div>:null}
-      <p className="scope-status">準備寫入：確定 {ready.length.toLocaleString()} 篇＋人工裁定 {manualChanges.length.toLocaleString()} 篇。</p>
+      <p className="scope-status">準備補寫空白打卡地點：{selectedUpdates.length.toLocaleString()} 篇；未勾選或尚有歧義者跳過。</p>
       <button type="button" className="loc-button primary" disabled={!canWrite||writing||analyzing}
-        onClick={apply}>{writing?'正在批次寫入…':'確認並大量補寫 place_id'}</button>
+        onClick={apply}>{writing?'正在批次寫入…':'確認批次補寫 source_place／place_id'}</button>
     </section>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
