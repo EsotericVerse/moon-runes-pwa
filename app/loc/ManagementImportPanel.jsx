@@ -280,15 +280,20 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
     const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
+    const isThreadsJson=!isZip&&/\.json$/i.test(file.name)&&
+      /(?:^|[-_. ])(?:threads|text_post_app_text_posts)(?:$|[-_. ])/i.test(file.name);
     setBusy(true);
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
-      if(isZip){
-        // Archive names are not a privacy decision: inspect actual source signatures
-        // and apply per-record protection to mixed Threads/Facebook backups.
+      if(isZip||isThreadsJson){
+        // ZIP and standalone Threads JSON use the same structured scanner;
+        // source names are only hints, each record must be a public post.
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
-        const totalEntries=await zipEntryCount(file);
-        const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
+        const totalEntries=isZip?await zipEntryCount(file):1;
+        const result=isZip
+          ?await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')})
+          :{kind:'threads',sources:['threads'],confidence:1,
+            evidence:[{source:'threads',path:file.name,verified:false}],structure:null,audit:null};
         setArchiveDetection(result);
         assertPrivateArchiveDestination(nativeLocal,result.sources);
         // Inspect every supported source through the shared ZIP scanner.
