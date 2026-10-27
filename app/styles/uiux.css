@@ -496,7 +496,9 @@ button,a,.loc-control,.loc-button,
   background-image:
     linear-gradient(90deg,rgba(3,6,15,.94) 0%,rgba(3,6,15,.82) 36%,rgba(3,6,15,.34) 72%,rgba(3,6,15,.22) 100%),
     var(--scope-feature-hero-image);
-  background-position:center center,center center;
+  /* Contained 16:9 artwork should stay against the right of a wide Hero;
+     the authored darker left half remains behind the reading column. */
+  background-position:center center,right center;
   background-repeat:no-repeat,no-repeat;
   /* Overlay fills the Hero while the original artwork fits without cropping. */
   background-size:100% 100%,contain;
