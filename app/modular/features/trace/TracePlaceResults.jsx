@@ -32,7 +32,7 @@ function TraceWork({row,scope}){
   });
   return <Article uid={row.uid} title={row.title||'未命名文章'}
     date={String(row.createtime||'').slice(0,10)}
-    source={row.source_name||''} checkInPlace={row.source_place||''}
+    source={row.source_name||''}
     scopeId={scope?.id} editOnCardClick={false}>
     <WorkFullText open={opened} loading={opened&&body.isPending}
       error={body.error?String(body.error.message||body.error):''}
@@ -74,7 +74,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
       const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,source_place,place_id,url',
+        columns:'uid,title,createtime,source_name,place_id,url',
         filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
@@ -94,7 +94,7 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,source_place,place_id,url,statistics_able',
+        columns:'uid,title,createtime,source_name,place_id,url,statistics_able',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];
@@ -228,16 +228,16 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   </section>;
   const loading=tab==='articles'?(selectedMediaType?mediaFiltered.isPending:list.isPending):summary.isPending;
   const error=tab==='articles'?(selectedMediaType?mediaFiltered.error:list.error):summary.error;
-  return <section className="loc-card loc-trace-works" aria-label={name+'文章報表'}>
+  return <section className="loc-card loc-trace-works" aria-label="文章報表">
     <header className="loc-trace-works-title">
-      <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
+      <div><p className="loc-eyebrow">文章報表</p><h2>文章列表／時間長河／統計圖</h2></div>
       <span className="scope-status">{isMap?(place.trace_type==='space_trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):''}
         {!enabled?'沒有可對應的打卡地點'
           :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}
       </span>
     </header>
-    {!sourceFilter&&!selectedMediaType?<div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
+    {tab!=='articles'&&!sourceFilter&&!selectedMediaType?<div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
       <p className="scope-status">
         {visibleVisits.length?'已保存 '+visibleVisits.length+' 次具體造訪時間；各站獨立記錄。'
           :'目前沒有可確認的造訪時刻；不會以整趟旅程起訖日期代替各站時間。'}
@@ -255,7 +255,6 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
     </div>:null}
     {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
     {sourceFilter||selectedMediaType?<p className="scope-status">篩選條件：{sourceFilter?'作品來源 '+sourceFilter:'全部來源'} · {selectedMediaType?'媒體 '+selectedMediaType:'全部媒體'}（三種模式一致）</p>:null}
-    <p className="scope-status">文章只依目前 Scope 的四碼 Trace ID／Galaxy place_id 精確關聯；原始 source_place 僅用來顯示，不作模糊匹配。</p>
     {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有有效的四碼 Trace ID，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}

@@ -49,10 +49,10 @@ const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,u
 const MEDIA_ATTR_ORDER=['media_id','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='media_id',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
-  'uid','title','content','createtime','source_place',
+  'uid','title','content','createtime','source_place','place_id',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
   'media_link','statistics_able','class_id','group_lists'
 ]);
@@ -144,7 +144,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   return {
     key:identity?[scope,source,identity].join(':'):[source,scope,title].join('-'),
     source:displaySource,title:String(title),
-    checkInPlace:isGalaxy?String(row.source_place||'').trim():'',
+    checkInPlace:'',
     date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:body,scopeId:scope,resourceType,resourceId,
     styleTagMatch:Boolean(row.style_keyword_tag),
@@ -364,10 +364,6 @@ export default function Search({managementMode=false}){
     }).map(item=>item.row);
   },[results,scopeId,availableScopes,articleSort]);
   // Suggestions come from loaded results only; do not imply a database-wide ranking.
-  const suggestedPlaces=useMemo(()=>[...new Set(results
-    .filter(row=>row.resourceType==='galaxy')
-    .map(row=>String(row.checkInPlace||'').trim())
-    .filter(Boolean))].slice(0,4),[results]);
   const suggestedTitles=useMemo(()=>[...new Set(results
     .filter(row=>row.resourceType==='galaxy')
     .map(row=>String(row.title||'').trim())
@@ -491,7 +487,7 @@ export default function Search({managementMode=false}){
         // exactly matches a style tag.
         cursor,
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
-        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:Boolean(options.placeOnly),
+        contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:managementMode&&Boolean(options.placeOnly),
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
         sortDirection:options.sortDirection,signal
       });
@@ -660,7 +656,7 @@ export default function Search({managementMode=false}){
     if(managementMode)setScopeFilter(filters.scopeFilter);
     const term=place||value;
     setPlaceOnly(Boolean(place));
-    if(term){setQuery(term);executeSearch(term,null,{overrideOptions:{...filters,placeOnly:Boolean(place),mediaOnly:false,browse:false}});}
+    if(term){setQuery(term);executeSearch(term,null,{overrideOptions:{...filters,placeOnly:managementMode&&Boolean(place),mediaOnly:false,browse:false}});}
   },[searchParams,scopeId,scopesQuery.isSuccess,scopesQuery.data,managementMode,managementAuthorized]);
 
 
@@ -1022,10 +1018,6 @@ export default function Search({managementMode=false}){
       {!managementMode&&results.length>0&&matchedQueryRef.current?<div className="scope-search-suggestions" aria-label="延伸搜尋">
         <span className="scope-status">延伸搜尋（保留原本的時間與來源條件）</span>
         <div className="scope-search-active-filters">
-          <button type="button" className="loc-button"
-            onClick={()=>followSearchSuggestion(matchedQueryRef.current,{placeOnly:!placeOnly})}>
-            {placeOnly?'搜尋全部內容':'只查打卡地點'}
-          </button>
           {contentType!=='multimedia'?<button type="button" className="loc-button"
             onClick={()=>followSearchSuggestion(matchedQueryRef.current,{contentType:'multimedia',placeOnly:false,sourceFilter:''})}>搜尋多媒體</button>:null}
           {contentType!=='text_work'?<button type="button" className="loc-button"
@@ -1034,14 +1026,14 @@ export default function Search({managementMode=false}){
             onClick={()=>{setAdvancedOpen(true);setAdvancedTab('time');}}>限定時間</button>
         </div>
       </div>:null}
-      <div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
+      {managementMode?<div className="scope-search-place-mode" role="group" aria-label="搜尋範圍">
         <button type="button" className="loc-button" aria-pressed={!placeOnly}
           onClick={()=>{setPlaceOnly(false);resetSearchState();}}>全部內容</button>
         <button type="button" className="loc-button" aria-pressed={placeOnly}
           onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
-      </div>
+      </div>:null}
       {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 source_place；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
-      {placeOnly&&!managementMode?<div className="loc-search-next-step">
+      {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{
           const target=new URL(scopeHref('loc','admin/search'));
@@ -1144,24 +1136,11 @@ export default function Search({managementMode=false}){
       aria-label={t('uiExtra.searchUI.followupSearch')}>
       <p className="scope-status">{t('uiExtra.searchUI.followupSearch')}</p>
       <div className="scope-search-place-mode">
-        {!placeOnly?<button type="button" className="loc-button"
-          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:true,contentType:'',sourceFilter:''})}>
-          {t('uiExtra.searchUI.searchPlaceOnly')}
-        </button>:<button type="button" className="loc-button"
-          onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:false})}>
-          {UI_COPY.search.allContent}
-        </button>}
-        {suggestedPlaces.filter(place=>!placeOnly||place!==matchedQueryRef.current).map(place=>
-          <button key={place} type="button" className="loc-button"
-            onClick={()=>searchFromSuggestion(place,{placeOnly:true,contentType:'',sourceFilter:''})}>
-            {t('uiExtra.searchUI.checkInPlace')}：{place}
-          </button>)}
         <button type="button" className="loc-button" onClick={()=>{
           setAdvancedOpen(true);setAdvancedTab('time');
           advancedRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
         }}>{t('uiExtra.searchUI.filterTime')}</button>
       </div>
-      {suggestedPlaces.length?<p className="scope-status">{t('uiExtra.searchUI.loadedPageSuggestions')}</p>:null}
     </section>:null}
     {managementMode&&(results.length>0||selectedPlaceArticles.length>0||bulkPlace.trim())?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
       <h3>從搜尋文章列表批次補寫地點</h3>
@@ -1222,7 +1201,7 @@ export default function Search({managementMode=false}){
               <input type="checkbox" checked={selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
                 disabled={bulkBusy||Boolean(row.checkInPlace)||(Boolean(selectedScope)&&selectedScope!==row.scopeId)||selectedPlaceArticles.length>=200&&!selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
                 onChange={event=>togglePlaceArticle(row,event.target.checked)}/>
-              {row.checkInPlace?'已有打卡地點：'+row.checkInPlace:'補寫打卡地點'}
+              {row.checkInPlace?'已設定地點，無法補寫':'可補寫地點'}
             </label>:null}
           {scopeId==='loc'&&scopeLabel(row.scopeId)&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
@@ -1235,7 +1214,6 @@ export default function Search({managementMode=false}){
           source={row.styleTagMatch?'':row.source}
           scopeId={locPublicSearch?'':row.scopeId}
           date={row.date}
-          checkInPlace={row.checkInPlace}
           body={draft?'':row.resourceType==='galaxy_media'?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
@@ -1253,7 +1231,7 @@ export default function Search({managementMode=false}){
           editError={editError}
           showInlineEditorActions={!editDock?.active}
           showHidden={managementMode}
-          attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
+          attributeFields={managementMode&&editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
           mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}
           attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}
           showBodyEditor={row.resourceType==='galaxy'}

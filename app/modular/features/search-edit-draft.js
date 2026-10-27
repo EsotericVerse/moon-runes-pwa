@@ -36,6 +36,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
     source_place:String(row.source_place||''),
+    place_id:String(row.place_id||'').trim(),
     searchable:row.searchable!==false,
     UpdateTime:String(row.UpdateTime||''),
     url:String(row.url||''),
@@ -96,6 +97,11 @@ function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
   const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
   if(differs('searchable'))changed.searchable=current.searchable!==false;
   if(differs('createtime'))changed.createtime=isoOrNull(current.createtime,t);
+  if(differs('place_id')){
+    const next=String(current.place_id||'').trim();
+    if(next&&!/^[A-Za-z0-9]{4}$/.test(next))throw new Error('定錨點 ID 必須為四碼');
+    changed.place_id=next||null;
+  }
   for(const key of ['source_place','url','source_id','ref_id','source_name']){
     if(differs(key))changed[key]=nullableText(current[key]);
   }
