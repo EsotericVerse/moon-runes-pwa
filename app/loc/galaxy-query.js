@@ -9,7 +9,7 @@ import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,forEachAllRowsPage,selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
+import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
 import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
 import {selectFirstDailyRuneDate} from './daily-runes';
@@ -139,6 +139,20 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
     selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate,includeEmpty:includeEmptyMedia,includeUndated})
   ]);
   return {text,media};
+}
+
+// One number per source/media category for a window, no per-day grouping
+// (silver.read_scope_category_totals). This is what a collapsed Culture
+// river lane needs to size its flat water-level bar; the full day x
+// category aggregate (selectScopeDailyCounts) is only fetched once a lane
+// is expanded.
+export async function selectScopeCategoryTotals(scope,{startDate='',endDate=''}={}){
+  const current=scopeOf(scope);
+  const rows=await readScopeCategoryTotals(current.id,{startDate:dateOnly(startDate),endDate:dateOnly(endDate)});
+  const pick=kind=>rows.filter(row=>row.kind===kind)
+    .map(row=>({category:row.category,item_count:Number(row.item_count)||0}))
+    .filter(row=>row.item_count>0);
+  return {text:pick('source'),media:pick('media')};
 }
 
 // Shared public taxonomy reader for Statistics and Search. Never requires

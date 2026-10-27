@@ -100,3 +100,48 @@ test('Threads-named files containing chat structures are not accepted as posts',
   assert.equal(isPublicArchiveRecord({platform:'threads',kind:'post',
     sourcePath:'threads_posts.json',raw:{sender_name:'fixture',content:'private'}}),false);
 });
+
+test('Private and unknown archive rejections carry a security-block code, not a JSON parse error',()=>{
+  for(const fn of [
+    ()=>assertPrivateArchiveDestination(false,['messenger']),
+    ()=>assertArchiveRecordDestination({platform:'threads',kind:'message',sourcePath:'threads/messages.json'},false)
+  ])assert.throws(fn,error=>error?.code==='LOC_PRIVATE_ARCHIVE_BLOCKED');
+  assert.throws(()=>assertArchiveRecordDestination({platform:'document',kind:'document'},false),
+    error=>error?.code==='LOC_UNVERIFIED_ARCHIVE_BLOCKED');
+});
+test('Threads post JSON is allowed without misclassifying it as private chat',()=>{
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'your_threads__your_posts.json',
+    nativeLocal:false,
+    rows:[{source_name:'Threads',content:'公開貼文範例',kind:'post'}]
+  }));
+  assert.doesNotThrow(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'post',sourcePath:'threads/your_posts_1.json'
+  },false));
+  assert.throws(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'message',sourcePath:'threads/messages_1.json'
+  },false));
+});
+test('Direct imported chats cannot bypass private-only rule with renamed source',()=>{
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'conversations.json',source:'Other',rows:[],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'generic.json',rows:[{source_name:'Messenger',content:'fixture'}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'posts.json',rows:[{kind:'message',platform:'facebook'}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{mapping:{abc:{message:{author:{role:'user'}}}}}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{participants:['A','B'],messages:[{text:'fixture'}]}],nativeLocal:false
+  }),/私人對話/);
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'posts.json',rows:[{source_name:'Facebook'}],nativeLocal:false
+  }));
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'conversations.json',nativeLocal:true
+  }));
+});
