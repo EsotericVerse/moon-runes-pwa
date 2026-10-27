@@ -14,12 +14,8 @@ const uniqueByUid=rows=>{
   }
   return [...byUid.values()];
 };
-export function buildTimeTraceRiver(source=[],expandedTraceIds=[],focusedTraceId=''){
+export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
   const traces=uniqueByUid(source.filter(row=>row?.entry_type==='period'));
-  const focused=text(focusedTraceId);
-  const orderedTraces=focused
-    ?[...traces.filter(row=>text(row.uid)===focused),...traces.filter(row=>text(row.uid)!==focused)]
-    :traces;
   const events=new Map(uniqueByUid(source.filter(row=>row?.entry_type==='event'))
     .map(row=>[text(row.scope_id)+':'+text(row.uid),row]));
   const anchors=new Map(uniqueByUid(source.filter(row=>row?.entry_type==='anchor'))
@@ -42,7 +38,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[],focusedTraceId
         &&end>=start&&(!range?.invalid||range?.point);
     });
   };
-  for(const [traceIndex,trace] of orderedTraces.entries()){
+  for(const [traceIndex,trace] of traces.entries()){
     const scope=text(trace.scope_id),id=text(trace.uid);
     const groupId='trace:'+scope+':'+id;
     const isExpanded=expanded.has(groupId);

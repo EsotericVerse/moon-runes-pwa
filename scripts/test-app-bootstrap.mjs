@@ -404,7 +404,8 @@ test('Culture upper time_trace selector stays independent; lower river selects o
   const timeline=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
   assert.match(timeline,/instance\.fit\(\{animation:false\}\)/,
     'unselected first-river window must fit loaded timeline rows');
-  assert.match(source,/buildTimeTraceRiver\(timelineItems,expandedTimeTraceIds,activeStructureKey\)/);
+  assert.match(source,/buildTimeTraceRiver\(timelineItems,expandedTimeTraceIds\)/);
+  assert.match(source,/structureWindowKey==='all'\|\|!structureWindowKey\?'all'/);
   assert.match(source,/onGroupToggle=\{toggleTimeTrace\}/);
   assert.match(source,/windowStart=\{currentStructureStart\}/);
   assert.match(source,/windowEnd=\{currentStructureEnd\}/);
