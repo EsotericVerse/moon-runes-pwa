@@ -16,8 +16,10 @@ test('failed 500-row write rolls back and retries 250-row chunks without skippin
   const successes=[],attempts=[],events=[];
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
+    flashMessage:()=>{},
+    WRITE_FAILED_NOTICE:'儲存失敗',
     KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
-    keywordClassificationWrite:async(_scope,arg)=>{
+    keywordClassificationWriteUnchecked:async(_scope,arg)=>{
       attempts.push({mode:arg.mode,rows:arg.rows?.length,scopeBased:arg.scopeBased,uids:arg.uids});
       if(arg.mode==='chunk'){
         if(arg.rows.length>250)throw Error('canceling statement due to statement timeout');
@@ -48,8 +50,10 @@ test('sync does not accidentally clear unmodified rows from narrowed reanalysis'
   const writes=[];
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
+    flashMessage:()=>{},
+    WRITE_FAILED_NOTICE:'儲存失敗',
     KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
-    keywordClassificationWrite:async(_scope,arg)=>{
+    keywordClassificationWriteUnchecked:async(_scope,arg)=>{
       writes.push(arg);
       return arg.mode==='finalize'?10:arg.rows?.length||0;
     }
@@ -62,8 +66,10 @@ test('sync does not accidentally clear unmodified rows from narrowed reanalysis'
 test('non-timeout failures fail rather than being silently retried',async()=>{
   let attempts=0;
   const run=extractBatchMethod({
-    normalizeScopeId:scope=>scope,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
-    keywordClassificationWrite:async(_scope,arg)=>{
+    normalizeScopeId:scope=>scope,
+    flashMessage:()=>{},
+    WRITE_FAILED_NOTICE:'儲存失敗',KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
+    keywordClassificationWriteUnchecked:async(_scope,arg)=>{
       if(arg.mode==='chunk'){attempts++;throw Error('permission denied');}
       return 0;
     }
