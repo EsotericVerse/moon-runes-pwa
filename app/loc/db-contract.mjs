@@ -10,9 +10,10 @@ import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from '
 // costs -- but keeping one tuned number instead of two that drift apart
 // under separate testing is less confusing to reason about and re-tune.
 export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
-// Small independent write transaction: avoid turning 5k-row reads into 10x
-// as many database reads just because SQL UPDATE needs tighter limits.
+// Read pages stay at 5k; DB writes are deliberately slower to limit pressure.
 export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500;
+export const KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE=25;
+export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=5000;
 // Reset changes potentially tens of thousands of classified rows; keep each
 // authorized database write comfortably below the 30s statement timeout.
 const KEYWORD_RESET_BATCH_SIZE=750;
@@ -162,16 +163,13 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
     const eligibleDocumentCount=Number.isInteger(payload?.eligibleDocumentCount)
       ?Math.max(0,payload.eligibleDocumentCount)
-      :Array.isArray(payload?.eligibleUids)?payload.eligibleDocumentCount:rows.length;
+      :Array.isArray(payload?.eligibleUids)?payload.eligibleUids.length:rows.length;
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    // A timeout we recover from must not emit a misleading 'save failed'
-    // toast; only the exhausted/non-retryable error emits that notice.
-    // Each JSONB recordset UPDATE runs under the authenticated connection's
-    // 30s statement_timeout. Keep transactions bounded; a timeout rolls back
-    // the whole failed chunk. Retry only that chunk with a smaller size.
-    // Successfully committed earlier chunks stay intact (diff-only writes).
+    // Each chunk RPC resolves before another is sent. Then wait 5 seconds
+    // to limit continuous DB pressure; a timed-out transaction is retried
+    // at a smaller size after the same delay, without replaying successes.
     let batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
@@ -181,25 +179,42 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // rows actually written, purely for reporting.
     let count=0;
     let changedCount=0;
+    let completedBatches=0;
+    const estimateBatches=()=>completedBatches+
+      Math.ceil(Math.max(0,rows.length-count)/batchSize);
+    async function coolDown(retrying){
+      const secondsTotal=Math.ceil(KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000);
+      for(let seconds=secondsTotal;seconds>0;seconds--){
+        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
+          seconds,retrying,batchSize,completedBatches,estimatedBatches:estimateBatches()});
+        await new Promise(resolve=>setTimeout(resolve,1000));
+      }
+    }
     for(let offset=0;offset<rows.length;){
       const batch=rows.slice(offset,offset+batchSize);
       let affected;
       try{
+        // Await the RPC and transaction commit before starting another write.
         affected=await keywordClassificationWriteUnchecked(scope,{mode:'chunk',rows:batch});
       }catch(error){
         const timedOut=/canceling statement due to statement timeout/i
           .test(String(error?.message||error));
-        if(!timedOut||batchSize<=100){
+        if(!timedOut||batchSize<=KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE){
           flashMessage(WRITE_FAILED_NOTICE);
           throw error;
         }
-        batchSize=Math.max(100,Math.floor(batchSize/2));
+        batchSize=Math.max(KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE,Math.floor(batchSize/2));
+        await coolDown(true);
         continue; // The canceled statement committed no rows; retry this offset.
       }
       changedCount+=affected;
       count+=batch.length;
       offset+=batch.length;
-      onProgress?.({phase:'write',completed:count,total:rows.length});
+      completedBatches++;
+      onProgress?.({phase:'write',completed:count,total:rows.length,
+        completedBatches,estimatedBatches:estimateBatches(),batchSize,
+        lastBatchSize:batch.length});
+      if(offset<rows.length)await coolDown(false);
     }
 
     // DB-side sync uses the same statistics_able predicate as the UID

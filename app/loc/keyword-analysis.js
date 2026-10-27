@@ -55,14 +55,15 @@ function documentOf(row){
     content:String(row.content||'')
   };
 }
-function reportBatchProgress(onProgress,phase,completed,total,percent,label){
+function reportBatchProgress(onProgress,phase,completed,total,percent,label,details={}){
   if(typeof onProgress!=='function')return;
   onProgress({
     phase,
     completed,
     total,
     percent:Math.max(0,Math.min(100,Math.round(percent))),
-    label
+    label,
+    ...details
   });
 }
 
@@ -557,20 +558,23 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     // Each phase needs its own percent/label; letting an unlisted phase fall
     // through to write's formula re-displays a stale "已寫入 N/N 篇" at the
     // same percent write just finished at, which looks like a stall/glitch.
-    onProgress:({phase,completed,total})=>{
+    onProgress:({phase,completed,total,seconds=5,retrying=false,batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE,completedBatches=0,estimatedBatches=0,lastBatchSize=0})=>{
       const percent=phase==='prepare'?61
-        :phase==='write'?61+30*(total?completed/total:1)
+        :phase==='write'||phase==='cooldown'?61+30*(total?completed/total:1)
         :phase==='sync'?95
         :phase==='finalizing'?99
         :61+38*(total?completed/total:1);
-      const batchTotal=Math.max(1,Math.ceil(total/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE));
-      const batchNo=Math.max(1,Math.min(batchTotal,Math.ceil(completed/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE)));
+      const progressLabel='已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇';
+      const batchLabel='已完成 '+completedBatches+' / '+estimatedBatches+' 批';
       const label=phase==='prepare'?'準備寫入文章 Attr'
-        :phase==='write'?'已寫入 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（第 '+batchNo+' / '+batchTotal+' 批，每 '+KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE.toLocaleString()+' 篇回報一次）'
+        :phase==='write'?progressLabel+'（'+batchLabel+'，本批 '+lastBatchSize+' 篇；下批上限 '+batchSize+' 篇）'
+        :phase==='cooldown'?progressLabel+'（'+batchLabel+'，'+(retrying?'逾時後縮批至 '+batchSize+' 篇，':'下一批 '+batchSize+' 篇，')+'等待 '+seconds+' 秒）'
         :phase==='sync'?'正在清除不再符合資格的文章'
         :phase==='finalizing'?'正在定錨並核對寫入數量'
         :'處理中';
-      reportBatchProgress(onProgress,phase,completed,total,percent,label);
+      reportBatchProgress(onProgress,phase,completed,total,percent,label,{
+        completedBatches,estimatedBatches,batchSize,seconds:phase==='cooldown'?seconds:0,retrying
+      });
     }
   });
   // written.count must match what THIS run actually chunked/wrote (a
