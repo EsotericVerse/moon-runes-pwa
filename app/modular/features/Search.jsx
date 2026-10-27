@@ -49,10 +49,10 @@ const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,u
 const MEDIA_ATTR_ORDER=['media_id','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='media_id',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
-  'uid','title','content','createtime','source_place',
+  'uid','title','content','createtime','source_place','place_id',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
   'media_link','statistics_able','class_id','group_lists'
 ]);
@@ -1151,17 +1151,12 @@ export default function Search({managementMode=false}){
           onClick={()=>searchFromSuggestion(matchedQueryRef.current,{placeOnly:false})}>
           {UI_COPY.search.allContent}
         </button>}
-        {suggestedPlaces.filter(place=>!placeOnly||place!==matchedQueryRef.current).map(place=>
-          <button key={place} type="button" className="loc-button"
-            onClick={()=>searchFromSuggestion(place,{placeOnly:true,contentType:'',sourceFilter:''})}>
-            {t('uiExtra.searchUI.checkInPlace')}：{place}
-          </button>)}
+
         <button type="button" className="loc-button" onClick={()=>{
           setAdvancedOpen(true);setAdvancedTab('time');
           advancedRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
         }}>{t('uiExtra.searchUI.filterTime')}</button>
       </div>
-      {suggestedPlaces.length?<p className="scope-status">{t('uiExtra.searchUI.loadedPageSuggestions')}</p>:null}
     </section>:null}
     {managementMode&&(results.length>0||selectedPlaceArticles.length>0||bulkPlace.trim())?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
       <h3>從搜尋文章列表批次補寫地點</h3>
@@ -1222,7 +1217,7 @@ export default function Search({managementMode=false}){
               <input type="checkbox" checked={selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
                 disabled={bulkBusy||Boolean(row.checkInPlace)||(Boolean(selectedScope)&&selectedScope!==row.scopeId)||selectedPlaceArticles.length>=200&&!selectedPlaceArticles.some(item=>item.uid===row.resourceId&&item.scopeId===row.scopeId)}
                 onChange={event=>togglePlaceArticle(row,event.target.checked)}/>
-              {row.checkInPlace?'已有打卡地點：'+row.checkInPlace:'補寫打卡地點'}
+              {row.checkInPlace?'已設定地點，無法補寫':'可補寫地點'}
             </label>:null}
           {scopeId==='loc'&&scopeLabel(row.scopeId)&&(index===0||orderedResults[index-1]?.scopeId!==row.scopeId)
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
@@ -1235,7 +1230,6 @@ export default function Search({managementMode=false}){
           source={row.styleTagMatch?'':row.source}
           scopeId={locPublicSearch?'':row.scopeId}
           date={row.date}
-          checkInPlace={row.checkInPlace}
           body={draft?'':row.resourceType==='galaxy_media'?'':/<[a-z][^>]*>/i.test(String(row.snippet||''))?String(row.snippet):highlightSearchText(row.snippet,matchedQueryRef.current)}
           hidden={false}
           relationLinks={row.relationLinks||[]}
@@ -1253,7 +1247,7 @@ export default function Search({managementMode=false}){
           editError={editError}
           showInlineEditorActions={!editDock?.active}
           showHidden={managementMode}
-          attributeFields={editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
+          attributeFields={managementMode&&editable?(row.resourceType==='galaxy'?GALAXY_ATTR_FIELDS:row.resourceType==='galaxy_media'?MEDIA_ATTR_FIELDS:null):null}
           mediaScopeId={editable&&row.resourceType==='galaxy'?row.scopeId:''}
           attributeTitle={row.resourceType==='galaxy_media'?t('uiExtra.searchUI.mediaAttributes'):t('uiExtra.searchUI.attributeTitle')}
           showBodyEditor={row.resourceType==='galaxy'}
