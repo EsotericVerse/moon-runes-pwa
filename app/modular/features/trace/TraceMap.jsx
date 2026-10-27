@@ -89,6 +89,7 @@ const STRINGS={
   }
 };
 
+import {readAutocompleteCurrent,currentTop10} from '../../../loc/autocomplete-current.mjs';
 export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
@@ -101,6 +102,16 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   anchorSelectRef.current=onAnchorSelect;
   const selectingLocation=typeof onLocationPick==='function';
   const [anchorQuery,setAnchorQuery]=useState('');
+  const [popularOpen,setPopularOpen]=useState(false);
+  const [popularSnapshot,setPopularSnapshot]=useState(null);
+  async function openPopularAnchors(){
+    const owners=[...new Set((spatialData?.anchors||[]).map(row=>row.source_scope).filter(Boolean))];
+    const id=owners.length===1?owners[0]:'';
+    if(!id)return;
+    setPopularOpen(true);
+    try{setPopularSnapshot(await readAutocompleteCurrent(id));}
+    catch{setPopularSnapshot(null);}
+  }
   const [anchorUid,setAnchorUid]=useState('');
   const savedAnchors=spatialData?.anchors||[];
   const savedMaps=spatialData?.maps||[];
@@ -114,9 +125,14 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       ||String(anchor.uid||anchor.id||'').toLocaleLowerCase().includes(q))
       .slice(0,12);
   },[spatialData?.anchors,anchorQuery]);
+  const popularAnchors=useMemo(()=>{
+    if(!popularOpen)return [];
+    const byUid=new Map(savedAnchors.map(row=>[String(row.uid||row.id),row]));
+    return currentTop10(popularSnapshot,'space')
+      .map(item=>byUid.get(String(item.uid))).filter(Boolean);
+  },[popularOpen,popularSnapshot,spatialData?.anchors]);
   useEffect(()=>{
-    setAnchorQuery('');
-    setAnchorUid('');
+    setAnchorQuery('');setAnchorUid('');setPopularOpen(false);
   },[spatialData?.anchors]);
   const autoOverviewScopeRef=useRef('');
   const [ready,setReady]=useState(false);
@@ -254,16 +270,17 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       <label>空間定錨點
         <input type="search" value={anchorQuery} className="scope-select"
           placeholder="輸入地點名稱或 UID，不限縣市"
-          onChange={event=>{setAnchorQuery(event.target.value);setAnchorUid('');}}
+          onDoubleClick={openPopularAnchors}
+          onChange={event=>{setAnchorQuery(event.target.value);setAnchorUid('');setPopularOpen(false);}}
           autoComplete="off" aria-label="搜尋空間定錨點"/>
       </label>
-      {anchorQuery.trim()?<div className="loc-trace-quick-results" role="group"
+      {(anchorQuery.trim()||popularOpen)?<div className="loc-trace-quick-results" role="group"
         aria-label="符合的空間定錨點">
-        {anchorMatches.map(anchor=><button type="button" className="loc-button"
+        {(popularOpen?popularAnchors:anchorMatches).map(anchor=><button type="button" className="loc-button"
           aria-pressed={anchorUid===String(anchor.uid||anchor.id)}
           key={(anchor.source_scope||'')+':'+(anchor.uid||anchor.id)}
           onClick={()=>{
-            setAnchorUid(String(anchor.uid||anchor.id));
+            setAnchorUid(String(anchor.uid||anchor.id));setPopularOpen(false);
             setAnchorQuery(String(anchor.title||''));
             const coordinates=spaceCoordinates(anchor);
             if(coordinates)mapRef.current?.focusCoordinates({
@@ -274,8 +291,8 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
           {anchor.title} · {anchor.uid||anchor.id}
           {!spaceCoordinates(anchor)?'（待補地圖座標）':''}
         </button>)}
-        {!anchorMatches.length?<p className="scope-status">目前載入的地點沒有符合項目。</p>:null}
-        {anchorMatches.length===12?<p className="scope-status">顯示前 12 筆，可繼續輸入縮小範圍。</p>:null}
+        {!(popularOpen?popularAnchors:anchorMatches).length?<p className="scope-status">{popularOpen?'尚未建立熱門候選，請在地點管理中重新統計。':'目前載入的地點沒有符合項目。'}</p>:null}
+        {!popularOpen&&anchorMatches.length===12?<p className="scope-status">顯示前 12 筆，可繼續輸入縮小範圍。</p>:null}
       </div>:null}
       <p className="scope-status">不限縣市；選取地點可查看文章。有真實座標才定位，沒有座標仍保留地點。</p>
     </div>:null}
