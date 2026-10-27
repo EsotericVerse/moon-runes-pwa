@@ -314,8 +314,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(previous&&previous!==record.key)
             throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
           uidOwners.set(article.uid,record.key);
-          if(imported.length>=30000)
-            throw Error('備份文字紀錄超過本次 30,000 筆安全上限，未匯入。');
+          if(imported.length>=100000)
+            throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
           // In-memory preview only; image and EXIF are not uploaded or stored.
