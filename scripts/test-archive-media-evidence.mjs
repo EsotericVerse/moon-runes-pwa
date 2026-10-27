@@ -37,10 +37,10 @@ test('EXIF-only local ZIP photograph is kept without inventing a public URL or p
   collector.onExif({path:'photos/only.jpg',metadata:{latitude:25.03,longitude:121.52}});
   const rows=collector.rows({scopeId:'local',archiveName:'photos.zip',archiveSize:99});
   const plan=prepareArchiveMedia(rows,new Set());
-  assert.equal(plan.media.length,1);
-  assert.equal(plan.media[0].url,null);
-  assert.equal(plan.media[0].createtime,null);
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
+  assert.equal(plan.exif[0].media_id,null);
   assert.equal(plan.exif[0].latitude,25.03);
 });
 test('Only an unambiguous full relative path can associate an article with ZIP media',()=>{
@@ -51,6 +51,21 @@ test('Only an unambiguous full relative path can associate an article with ZIP m
   const rows=collector.rows({scopeId:'local',archiveName:'ambiguous.zip',archiveSize:31});
   assert.equal(rows.filter(v=>v.found_in_zip).length,2);
   assert.equal(rows.filter(v=>v.found_in_zip).every(v=>v.galaxy_uids.length===0),true);
+});
+test('An EXIF image with no public URL is GPS-only, not a fake Galaxy Media row',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onMediaEntry({path:'facebook/photos/private.jpg'});
+  collector.onRecord({platform:'facebook',attachments:[{uri:'facebook/photos/private.jpg'}]},'AAAA0001');
+  collector.onExif({path:'facebook/photos/private.jpg',metadata:{
+    latitude:25.033,longitude:121.519,cameraLocalTime:'2020:04:05 06:07:08'
+  }});
+  const entries=collector.rows({scopeId:'lo3rwang',archiveName:'fb.zip',archiveSize:1024});
+  const plan=prepareArchiveMedia(entries,new Set(['AAAA0001']));
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
+  assert.equal(plan.exif.length,1);
+  assert.equal(plan.exif[0].media_id,null);
+  assert.equal(plan.exif[0].latitude,25.033);
 });
 test('Archive media UUID is stable for idempotent re-import',()=>{
   const a=archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/a.jpg');
@@ -63,7 +78,7 @@ test('One ZIP image shared by two articles makes one media row and two links',()
   const collector=createArchiveEvidenceCollector();
   collector.onMediaEntry({path:'threads/media/common.jpg'});
   for(const uid of ['AAAA0001','AAAA0002'])collector.onRecord({
-    platform:'threads',attachments:[{uri:'threads/media/common.jpg'}]
+    platform:'threads',attachments:[{uri:'threads/media/common.jpg',url:'https://cdn.example.test/common.jpg'}]
   },uid);
   collector.onExif({path:'threads/media/common.jpg',metadata:{latitude:25.1,longitude:121.5}});
   const evidence=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:100});
