@@ -9,7 +9,10 @@ import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from '
 // have to match -- read and write are different queries with different
 // costs -- but keeping one tuned number instead of two that drift apart
 // under separate testing is less confusing to reason about and re-tune.
-export const KEYWORD_CLASSIFICATION_BATCH_SIZE=500;
+export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
+// Small independent write transaction: avoid turning 5k-row reads into 10x
+// as many database reads just because SQL UPDATE needs tighter limits.
+export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500;
 // Reset changes potentially tens of thousands of classified rows; keep each
 // authorized database write comfortably below the 30s statement timeout.
 const KEYWORD_RESET_BATCH_SIZE=750;
@@ -167,7 +170,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // 30s statement_timeout. Keep transactions bounded; a timeout rolls back
     // the whole failed chunk. Retry only that chunk with a smaller size.
     // Successfully committed earlier chunks stay intact (diff-only writes).
-    let batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
+    let batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
     // The SQL function itself validates every uid in the batch exists and
