@@ -549,3 +549,19 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
     throw new Error('沒有辨識到可匯入的紀錄。請查看備份格式，不會寫入正式資料。');
   return summary;
 }
+
+// Total entry count from the ZIP end-of-central-directory record. Reads only the
+// tail of the file (no decompression). Returns null when it cannot be determined
+// (ZIP64 or malformed), so callers fall back to the streaming counter.
+export async function zipEntryCount(file){
+  const tailSize=Math.min(file.size,65557);
+  const tail=new Uint8Array(await file.slice(file.size-tailSize).arrayBuffer());
+  const view=new DataView(tail.buffer);
+  for(let i=tail.length-22;i>=0;i--){
+    if(view.getUint32(i,true)===0x06054b50){
+      const total=view.getUint16(i+10,true);
+      return total===0xffff?null:total;
+    }
+  }
+  return null;
+}
