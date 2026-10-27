@@ -14,7 +14,9 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const reviewGroups=useMemo(()=>[
     ...automatic.map(group=>({...group,reason:'名稱與座標相符，但 UID 合併仍需人工確認'})),
     ...uncertain
-  ],[automatic,uncertain]);
+  ].sort((a,b)=>b.items.length-a.items.length||
+    String(canonical(a.items)?.title||'').localeCompare(String(canonical(b.items)?.title||''),'zh-Hant')||
+    a.key.localeCompare(b.key)),[automatic,uncertain]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [error,setError]=useState(false);
