@@ -78,9 +78,12 @@ export default function TraceRouteManager({scopeId}){
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length);
   const chosenIds=type==='space_period'?queue:unique(pairs.flat());
-  const preview=editorOpen&&chosenIds.length>=2
-    ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
-      title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs}:current;
+  const preview=editorOpen
+    ?(chosenIds.length>=2
+      ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
+        title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs}
+      :null)
+    :current;
   const previewAnchors=currentAnchors.data||[];
   const clear=()=>{
     setEditingUid('');setTitle('');setDescription('');setSpool([]);setQueue([]);setPairs([]);
