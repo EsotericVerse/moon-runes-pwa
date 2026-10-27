@@ -18,7 +18,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,importSecond,dedupeIncomingImport,findExistingImportDuplicates} from './import-duplicate-check.mjs';
-import {assertPrivateArchiveDestination,assertArchiveRecordDestination,assertArchiveEntryDestination,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {assertPrivateArchiveDestination,isPublishableArchiveRecord,isPrivateArchiveEntryPath,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -294,7 +294,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
-        assertStandaloneImportDestination({nativeLocal,fileName:file.name});
+        // ZIP filename alone is not evidence of private content. Inspect first,
+        // then accept only recognized public posts, skipping DM archive entries.
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=await zipEntryCount(file);
         const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
@@ -306,7 +307,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const collector=createArchiveEvidenceCollector();
         let ignored=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
-          assertArchiveRecordDestination(record,nativeLocal);
+          if(!nativeLocal&&!isPublishableArchiveRecord(record)){ignored++;return;}
           const article=archiveGalaxyRow(record);
           // Media-only posts still carry URLs even when no Galaxy text exists.
           collector.onRecord(record,article?.uid||null);
@@ -319,11 +320,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
-          assertArchiveEntryDestination(item.path,nativeLocal);
+          if(!nativeLocal&&isPrivateArchiveEntryPath(item.path))return;
           collector.onExif(item);
           if(exifSamples.length<5)exifSamples.push(item);
         },onMediaEntry:item=>{
-          assertArchiveEntryDestination(item.path,nativeLocal);
+          if(!nativeLocal&&isPrivateArchiveEntryPath(item.path))return;
           collector.onMediaEntry(item);
         }});
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size});
@@ -470,7 +471,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
         exifSaved+=chunk.length;
       }
-      const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
+      const skipped=analyzed.invalid.length+duplicateCount;
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
