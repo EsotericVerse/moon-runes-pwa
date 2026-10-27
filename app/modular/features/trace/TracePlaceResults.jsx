@@ -228,16 +228,16 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   </section>;
   const loading=tab==='articles'?(selectedMediaType?mediaFiltered.isPending:list.isPending):summary.isPending;
   const error=tab==='articles'?(selectedMediaType?mediaFiltered.error:list.error):summary.error;
-  return <section className="loc-card loc-trace-works" aria-label={name+'文章報表'}>
+  return <section className="loc-card loc-trace-works" aria-label="文章報表">
     <header className="loc-trace-works-title">
-      <div><p className="loc-eyebrow">{isMap?'痕跡圖 · 多定錨點':'空間定錨點 · 單一地點'}</p><h2>{name}</h2></div>
+      <div><p className="loc-eyebrow">文章報表</p><h2>文章列表／時間長河／統計圖</h2></div>
       <span className="scope-status">{isMap?(place.trace_type==='space_trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):''}
         {!enabled?'沒有可對應的打卡地點'
           :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}
       </span>
     </header>
-    {!sourceFilter&&!selectedMediaType?<div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
+    {tab!=='articles'&&!sourceFilter&&!selectedMediaType?<div className="loc-trace-visit-times" aria-label="空間定錨點造訪時間">
       <p className="scope-status">
         {visibleVisits.length?'已保存 '+visibleVisits.length+' 次具體造訪時間；各站獨立記錄。'
           :'目前沒有可確認的造訪時刻；不會以整趟旅程起訖日期代替各站時間。'}
