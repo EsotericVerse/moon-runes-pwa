@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertPrivateArchiveDestination,assertArchiveRecordDestination,
-  assertArchiveEntryDestination,assertStandaloneImportDestination
+  assertArchiveEntryDestination,assertStandaloneImportDestination,filterStandalonePublicRows
 } from '../app/loc/archive-import-safety.mjs';
 
 test('Messenger, ChatGPT, and other chat archives never enter online Galaxy',()=>{
@@ -82,5 +82,25 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
   }));
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'conversations.json',nativeLocal:true
+  }));
+});
+
+test('Mixed Threads posts and private messages in plain JSON keep only public rows',()=>{
+  const rows=[
+    {source_name:'Threads',kind:'post',content:'公開文章',createtime:'2026-10-28T00:00:00Z'},
+    {source_name:'Messenger',kind:'message',content:'private'},
+    {source_name:'Threads',kind:'post',content:'第二篇公開文章'},
+    {platform:'chatgpt',mapping:{a:{message:{author:{role:'user'}}}}}
+  ];
+  const filtered=filterStandalonePublicRows(rows);
+  assert.equal(filtered.length,2);
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'threads.json',rows:filtered,source:'Threads'
+  }));
+  assert.throws(()=>filterStandalonePublicRows([rows[1],rows[3]]),/私人對話/);
+  assert.equal(filterStandalonePublicRows(rows,true).length,4);
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'threads-messages.json',source:'Threads',
+    rows:[{platform:'threads',kind:'post',content:'公開文章'}]
   }));
 });
