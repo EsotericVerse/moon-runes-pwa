@@ -289,6 +289,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         let ignored=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           const article=archiveGalaxyRow(record);
+          // Media-only posts still carry URLs even when no Galaxy text exists.
+          collector.onRecord(record,article?.uid||null);
           if(!article){ignored++;return;}
           const previous=uidOwners.get(article.uid);
           if(previous&&previous!==record.key)
@@ -296,7 +298,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           uidOwners.set(article.uid,record.key);
           if(imported.length>=100000)
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
-          collector.onRecord(record,article.uid);
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
           collector.onExif(item);
