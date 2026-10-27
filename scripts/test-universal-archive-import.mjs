@@ -125,3 +125,17 @@ test('Threads ZIP post with time nested under media[] gets createtime from creat
   assert.ok(a.results[0].createtime,'createtime must not be empty');
   assert.equal(new Date(a.results[0].createtime).getTime(),1788635184*1000);
 });
+
+test('Meta-style nested times are found without per-platform key lists',async()=>{
+  const a=await parsed('meta-nested.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      data:[{post:'測試貼文'}],
+      attachments:[{data:[{media:{uri:'',creation_timestamp:1720000000,title:'測試貼文'}}]}]
+    }]),
+    'activity/instagram/posts.json':j([{
+      media:[{uri:'',taken_at:1721000000,title:'IG 測試'}]
+    }])
+  });
+  const times=a.results.map(r=>new Date(r.createtime).getTime()).sort((x,y)=>x-y);
+  assert.deepEqual(times,[1720000000000,1721000000000]);
+});
