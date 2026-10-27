@@ -14,7 +14,7 @@ export default function PopularSelect({scopeId='',kind='space',options=[],onInpu
   const visible=popular&&!inputText.trim()
     ?currentPopularOptions(options,snapshot,kind):options;
   async function openPopular(event){
-    if(event.target?.closest?.('button'))return;
+    if(props.isDisabled||event.target?.closest?.('button'))return;
     setInputText('');
     setPopular(true);
     setLoading(true);
@@ -24,7 +24,7 @@ export default function PopularSelect({scopeId='',kind='space',options=[],onInpu
   }
   return <div className="loc-popular-autocomplete" onDoubleClick={openPopular}
     style={{width:'100%',minWidth:0}}>
-    <Select {...props} options={popular&&!inputText.trim()?visible:options}
+    <Select {...props} inputValue={inputText} options={popular&&!inputText.trim()?visible:options}
       onInputChange={(value,meta)=>{
         if(meta.action==='input-change'){setInputText(value);if(value.trim())setPopular(false);}
         return onInputChange?.(value,meta)??value;
