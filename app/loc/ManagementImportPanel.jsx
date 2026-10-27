@@ -580,7 +580,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </div>
       <button type="button" className="loc-button scope-import-save-button"
         disabled={busy||!analysisCurrent||(!archiveReady&&!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownLabel(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
+        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownLabel(writeCooldown.remaining):archiveTransfer?.phase==='interrupted'?'接續匯入':t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
     {writeCooldown.active?<p className="scope-status" role="timer">距離下次大量匯入還有 {cooldownLabel(writeCooldown.remaining)}；倒數歸零後按鈕自動恢復。</p>:null}
