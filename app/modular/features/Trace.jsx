@@ -177,7 +177,6 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
-    {scopeId==='loc'?<p className="scope-status">LOC 空間聚合尚未重建，請先在作者／符文 Scope 整理地點與路線；此頁目前不查詢已刪除的 loc_trace。</p>:null}
     {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
       {anchorsQuery.data?.length
         ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
