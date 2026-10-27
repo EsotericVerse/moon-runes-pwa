@@ -77,7 +77,6 @@ export default function Trace({scopeId='loc'}){
       :locPeriodScope)
     :scopeId;
   const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
-  useEffect(()=>{setDemoStopIds([]);},[periodScopeId]);
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
@@ -99,6 +98,7 @@ export default function Trace({scopeId='loc'}){
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
   },[traceIndex.data,periodScopeId,currentTraceChoice]);
   const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
+  useEffect(()=>{setDemoStopIds([]);},[periodScopeId,currentMap?.uid,showingAll]);
 
   // Phase 2: cache the current route's 2–80 sites by its membership revision.
   // Repeated visits have their own timestamps; a multi-day trip does not imply
@@ -136,7 +136,8 @@ export default function Trace({scopeId='loc'}){
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
   // A Frame is the spatial context. Its article/culture/statistics panel
   // appears below the map without an extra click or a search-page route.
-  const reportPlace=selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null);
+  const reportPlace=twoPointDemo?null:
+    (selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null));
   // On phones, point selection reveals the existing in-page report area,
   // which shows its Loading state while Galaxy metadata is fetched.
   useEffect(()=>{
