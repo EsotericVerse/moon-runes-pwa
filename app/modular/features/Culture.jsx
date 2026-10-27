@@ -630,8 +630,16 @@ export default function Culture(){
       ?structureWindowKey:'all';
   const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
     [timelineItems,expandedTimeTraceIds]);
-  const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
-    current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
+  const toggleTimeTrace=groupId=>{
+    const open=!expandedTimeTraceIds.includes(groupId);
+    setExpandedTimeTraceIds(current=>
+      current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
+    if(open&&groupId.startsWith('trace:')){
+      const trace=primaryPeriods.find(period=>
+        'trace:'+String(period.scope_id||scopeId)+':'+periodKey(period)===groupId);
+      if(trace)setStructureWindowKey(periodKey(trace));
+    }
+  };
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
   const currentStructureStart=activeStructureKey==='all'?''
     :String(currentStructurePeriod?.start_date||'').slice(0,10);

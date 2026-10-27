@@ -46,14 +46,18 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
     groups.push({id:groupId,label:text(trace.title)||'時間痕跡 '+id,
       collapsible:true,expanded:isExpanded,order:traceIndex*10000,
       className:'scope-time-trace-parent'});
-    for(const anchor of datedAnchors){
-      if(!withinTrace(anchor,trace))continue;
+    const traceAnchors=datedAnchors.filter(anchor=>withinTrace(anchor,trace));
+    for(const anchor of traceAnchors)assigned.add(scope+':'+text(anchor.uid));
+    if(!isExpanded)continue;
+    const anchorGroup='trace-anchors:'+scope+':'+id;
+    if(traceAnchors.length)groups.push({id:anchorGroup,label:'定錨點',
+      order:traceIndex*10000+1,className:'scope-time-trace-child'});
+    for(const anchor of traceAnchors){
       const anchorId=text(anchor.uid),title=text(anchor.title)||anchorId;
-      assigned.add(scope+':'+anchorId);
       items.push({id:groupId+':anchor:'+anchorId,
         uid:anchorId,scope_id:scope,entry_type:'anchor',
-        group_key:groupId,group_label:trace.title,
-        group_order:traceIndex*10000,
+        group_key:anchorGroup,group_label:'定錨點',
+        group_order:traceIndex*10000+1,
         start_date:text(anchor.start_date).slice(0,10),
         display_label:'●',title,
         class_name:'scope-time-original-anchor',
@@ -66,7 +70,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
       seenEvents.add(eventId);
       const event=events.get(scope+':'+eventId);
       const eventGroup='trace-event:'+scope+':'+id+':'+eventId;
-      if(isExpanded)groups.push({id:eventGroup,order:traceIndex*10000+position+1,
+      groups.push({id:eventGroup,order:traceIndex*10000+position+2,
         label:'事件｜'+(event?.title||'失效連線 '+eventId),
         className:'scope-time-trace-child'});
       if(!event)continue;
@@ -80,15 +84,14 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
         // envelope spanning different events and never a fake now endpoint.
         items.push({id:groupId+':'+eventId+':'+segment+':period',
           uid:event.uid,scope_id:scope,entry_type:'event',
-          group_key:groupId,group_label:trace.title,
+          group_key:eventGroup,group_label:event.title||eventId,
           start_date:from,...(validEnd?{end_date:until}:{}),
           display_label:event.title||eventId,title:event.title||eventId,
           description:event.summary||event.description||'',
           time_trace_uid:id,time_period_uid:eventId,
           invalid_anchor_links:range.missing_anchor_ids||[],
-          group_order:traceIndex*10000,
+          group_order:traceIndex*10000+position+2,
           ...(range.invalid?{class_name:'scope-time-trace-broken'}:{})});
-        if(!isExpanded)continue;
         const references=[range.start_anchor_id,range.end_anchor_id]
           .filter(Boolean).map(text);
         const seenAnchors=new Set();
@@ -105,7 +108,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
             title:anchor.title||anchorId,
             description:anchor.summary||anchor.description||'',
             time_trace_uid:id,time_period_uid:eventId,
-            group_order:traceIndex*10000+position+1});
+            group_order:traceIndex*10000+position+2});
         }
       }
     }
@@ -117,8 +120,10 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
     const groupId='time-anchors:'+scope;
     const label=traces.length
       ?'未歸屬定錨點':(scopes.length>1?scope+' · 定錨點':'定錨點');
+    const isExpanded=expanded.has(groupId);
     groups.push({id:groupId,label,order:traces.length*10000+index+1,
-      className:'scope-time-anchor-parent'});
+      collapsible:true,expanded:isExpanded,className:'scope-time-anchor-parent'});
+    if(!isExpanded)continue;
     for(const anchor of unassigned.filter(row=>text(row.scope_id)===scope)){
       const uid=text(anchor.uid),title=text(anchor.title)||uid;
       items.push({id:groupId+':'+uid,uid,scope_id:scope,entry_type:'anchor',
