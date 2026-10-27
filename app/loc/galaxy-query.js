@@ -253,7 +253,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,source_place,createtime,url,source_id,target_id,ref_id,media_link,searchable',
+    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link,searchable',
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
@@ -531,7 +531,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
-      columns:'uid,title,createtime,source_place,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link',
+      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
       authenticated:privateScopes.has(scope.id),
