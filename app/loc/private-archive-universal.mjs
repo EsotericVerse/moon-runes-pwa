@@ -12,7 +12,7 @@ import {canonicalArchiveText} from './archive-record-identity.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
-import {isPrivateArchiveEntryPath} from './archive-import-safety.mjs';
+import {isPrivateArchiveEntry} from './archive-import-safety.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -388,7 +388,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivate
     aborted(signal);
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 100,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
-    if(!path||path.endsWith('/')||(skipPrivateEntries&&isPrivateArchiveEntryPath(path))){
+    if(!path||path.endsWith('/')||(skipPrivateEntries&&isPrivateArchiveEntry(path))){
       // Never sample, decode, classify or log the private entry in public mode.
       discardZipEntry(unzip,entry);return;
     }
@@ -468,7 +468,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
-      if(skipPrivateEntries&&isPrivateArchiveEntryPath(path)){
+      if(skipPrivateEntries&&isPrivateArchiveEntry(path)){
         // Do not parse private chat text, decode EXIF, or build a preview.
         discardZipEntry(unzip,entry);return;
       }
@@ -562,7 +562,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
     if(!known||sessions.some(s=>!s.ended))throw new Error('壓縮檔內容不存在或未完整展開。');
   }else{
     const path=file.name||'unnamed';
-    if(skipPrivateEntries&&isPrivateArchiveEntryPath(path))
+    if(skipPrivateEntries&&isPrivateArchiveEntry(path))
       throw new Error('私人對話不會在公開網站掃描。');
     const sample=new Uint8Array(await file.slice(0,Math.min(file.size,512)).arrayBuffer());
     const textHead=new TextDecoder('utf-8',{fatal:false}).decode(sample);

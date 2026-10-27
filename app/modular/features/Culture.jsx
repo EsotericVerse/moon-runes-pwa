@@ -28,7 +28,7 @@ import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs
 import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
-import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
+import {selectGalaxyContent,selectScopeCategoryTotals,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -37,7 +37,7 @@ import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
-import {buildCultureRiverRootPayload,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
+import {buildCultureRiverRootTotals} from '../../loc/culture-river-roots.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -375,43 +375,36 @@ export default function Culture(){
   // Staged rendering is a UI strategy, not an ISR feature.
   const stagedSourceRiver=Boolean(publishedTaxonomy)&&!isAggregateScope&&scopeId!=='local';
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
+  // Collapsed lanes only need one total per source/media category (cheap:
+  // no day grouping). The full day x category breakdown is fetched below,
+  // only once a lane is actually expanded.
   const sourceRootQuery=useAsyncResource({
-    queryKey:['culture-period-roots','v2',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
+    queryKey:['culture-period-roots','v3-totals',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
     enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
-      const {text,media}=await selectScopeDailyCounts(scopeData,{
-        startDate:classificationWindowStart,endDate:classificationWindowEnd,
-        includeUndated:true,requireAggregate:true
+      const {text,media}=await selectScopeCategoryTotals(scopeData,{
+        startDate:classificationWindowStart,endDate:classificationWindowEnd
       });
-      const inside=row=>!classificationPeriodRanges||timePeriodContainsDate(
-        {ranges:classificationPeriodRanges},String(row.day||''),{today:classificationWindowEnd});
-      return buildCultureRiverRootPayload({
-        text:text.filter(inside),media:media.filter(inside)
-      },publishedTaxonomy);
+      return buildCultureRiverRootTotals({text,media},publishedTaxonomy);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  // Expand from the previously fetched SQL day/category aggregates in memory.
-  // There are no network or DB requests just to open a child lane.
   const expandedSourceRootsKey=expandedSourceRoots.join(',');
-  const requestedChildren=useMemo(()=>{
-    if(!stagedSourceRiver||!sourceRootQuery.data?.numericRows||!expandedSourceRoots.length)return [];
-    return selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots);
-  },[stagedSourceRiver,sourceRootQuery.data,publishedTaxonomy,expandedSourceRootsKey]);
-  const expandedSourceReady=Boolean(sourceRootQuery.data)&&expandedSourceRoots.length>0;
-  // This SWR step only formats the already-fetched numeric rows locally.
-  // The initial overview never depends on it.
+  const expandedSourceReady=expandedSourceRoots.length>0;
+  // Only runs once a lane is expanded (or immediately for non-staged scopes,
+  // which never show the flat totals view). This is the day x category
+  // aggregate: the same one a collapsed lane used to always fetch.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v6',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
+    queryKey:['culture-period-source-snapshot','v7',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
     enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
-      const range={startDate:classificationWindowStart,endDate:classificationWindowEnd,
-        periodRanges:classificationPeriodRanges};
-      return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
-        ?{...range,numericRows:requestedChildren}:range);
+      return selectScopePeriodSourceSnapshot(scopeData,{
+        startDate:classificationWindowStart,endDate:classificationWindowEnd,
+        periodRanges:classificationPeriodRanges
+      });
     }
   });
   const keywordClassQuery=useAsyncResource({
@@ -824,8 +817,10 @@ export default function Culture(){
   ).filter(item=>!keywordDrillSource||String(item.category||'')===keywordDrillSource),
   [sourceSnapshotQuery.data,keywordDrillSource]);
   const secondRiverBuckets=classificationBuckets;
-  const initialRootBuckets=sourceRootQuery.data?.rootBuckets||EMPTY_CULTURE_GROUPS;
-  const densityInputBuckets=stagedSourceRiver?initialRootBuckets:secondRiverBuckets;
+  // Anchor-suggestion density analysis only has data once a lane is expanded
+  // (secondRiverBuckets is empty until then): suggestions are never computed
+  // just from opening the Culture page.
+  const densityInputBuckets=secondRiverBuckets;
 
   const existingAnchorDates=useMemo(()=>
     timelineItems
@@ -878,13 +873,10 @@ export default function Culture(){
       for(const name of group.source_names)bySource.set(name,group);
       for(const name of group.media_types)bySource.set('媒體 · '+name,group);
     }
-    const totals=new Map(),subtotals=new Map();
+    // Children (expanded lanes) still draw the real per-day river, built
+    // from secondRiverBuckets, which only has data once a lane is expanded.
+    const subtotals=new Map();
     const add=(map,key,count)=>map.set(key,(map.get(key)||0)+count);
-    // The first paint uses compact root summaries; child data is requested on expand.
-    for(const item of initialRootBuckets){
-      const day=String(item.start_date||'').slice(0,10);
-      if(day&&item.item_count>0)add(totals,String(item.category)+'\u0000'+day,Number(item.item_count));
-    }
     for(const item of secondRiverBuckets){
       const raw=String(item.category||''),day=String(item.start_date||'').slice(0,10);
       if(!day)continue;
@@ -892,45 +884,51 @@ export default function Culture(){
       const parent=group?.root||(raw.startsWith('媒體 · ')?'media':'custom');
       const child=group?.key||parent+':unclassified';
       const count=Number(item.item_count)||0;
-      if(!stagedSourceRiver)add(totals,parent+'\u0000'+day,count);
       add(subtotals,child+'\u0000'+day,count);
     }
-    const maximum=map=>{
+    const childMaximum=(()=>{
       const result=new Map();
-      for(const [key,n] of map){
-        const type=key.slice(0,key.indexOf('\u0000'));
-        result.set(type,Math.max(result.get(type)||0,n));
+      for(const [key,n] of subtotals){
+        const code=key.slice(0,key.indexOf('\u0000'));
+        result.set(code,Math.max(result.get(code)||0,n));
       }
       return result;
-    };
-    const parentMaximum=maximum(totals),childMaximum=maximum(subtotals);
-    // Counts on the left are totals for the selected time window (not the
-    // maximum density of a single day). Do not read any extra article rows.
-    const totalCounts=map=>{
+    })();
+    const childCounts=(()=>{
       const counts=new Map();
-      for(const [key,count] of map){
+      for(const [key,count] of subtotals){
         if(!Number.isFinite(count)||count<=0)continue;
-        const id=key.slice(0,key.indexOf('\u0000'));
-        counts.set(id,(counts.get(id)||0)+count);
+        const code=key.slice(0,key.indexOf('\u0000'));
+        counts.set(code,(counts.get(code)||0)+count);
       }
       return counts;
-    };
-    const rootCounts=totalCounts(totals),childCounts=totalCounts(subtotals);
+    })();
+    // Root (collapsed) lanes: one flat bar sized by this source's share of
+    // the period total -- built straight from groupedSources, which already
+    // carries the window-total item_count (from the totals-only RPC for a
+    // staged scope, or from the full per-day snapshot otherwise). No per-day
+    // data is read just to size a collapsed lane.
+    const rootCounts=new Map();
+    for(const group of groupedSources)rootCounts.set(group.root,(rootCounts.get(group.root)||0)+(Number(group.item_count)||0));
+    const periodTotal=[...rootCounts.values()].reduce((sum,n)=>sum+n,0)||1;
     const numberedLabel=(label,count)=>label+'（'+count.toLocaleString(locale)+'）';
-    const row=(id,day,count,label,order,max,kind)=>({
+    const dayRow=(id,day,count,label,order,max,kind)=>({
       id:'dual:'+id+':'+day,entry_id:'dual:'+id+':'+day,
       entry_type:kind,group_key:'dual:'+id,group_label:label,group_order:order,
       start_date:day,end_date:nextRiverDay(day),item_count:count,
       density_ratio:count/Math.max(1,max),display_label:'',
       title:day+' · '+label+' · '+count.toLocaleString(locale)
     });
+    const flatRow=(id,count,label,order,kind)=>({
+      id:'dual:'+id+':flat',entry_id:'dual:'+id+':flat',
+      entry_type:kind,group_key:'dual:'+id,group_label:label,group_order:order,
+      start_date:classificationWindowStart,end_date:nextRiverDay(classificationWindowEnd),
+      item_count:count,density_ratio:count/periodTotal,display_label:'',
+      title:label+' · '+count.toLocaleString(locale)+' / '+periodTotal.toLocaleString(locale)
+    });
     const items=[],groups=[];
-    const activeChildren=stagedSourceRiver
-      ?new Set(groupedSources.filter(group=>group.item_count>0).map(group=>group.key))
-      :new Set([...subtotals].filter(([,count])=>count>0)
-        .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
-    const activeRoots=new Set([...totals].filter(([,count])=>count>0)
-      .map(([key])=>key.slice(0,key.indexOf('\u0000'))));
+    const activeChildren=new Set(groupedSources.filter(group=>group.item_count>0).map(group=>group.key));
+    const activeRoots=new Set([...rootCounts].filter(([,count])=>count>0).map(([key])=>key));
     for(const parent of roots){
       // Hide zero-count parent lanes in the requested interval entirely.
       const parentCount=rootCounts.get(parent.id)||0;
@@ -945,12 +943,9 @@ export default function Culture(){
       groups.push({id:'dual:root:'+parent.id,label:numberedLabel(label,parentCount),order:parent.order,
         className:'scope-dual-river-root',collapsible:members.length!==1,
         selectable:Boolean(onlyChild),sourceKey:onlyChild?.key||'',expanded});
-      for(const [key,count] of totals){
-        const [type,day]=key.split('\u0000');
-        if(type===parent.id&&count>0)items.push(row('root:'+parent.id,day,count,label,parent.order,parentMaximum.get(parent.id),'source_total'));
-      }
+      items.push(flatRow('root:'+parent.id,parentCount,label,parent.order,'source_total'));
       // A lone populated child is already represented by the parent lane.
-      if(!expanded||onlyChild||(stagedSourceRiver&&!sourceSnapshotQuery.data))continue;
+      if(!expanded||onlyChild||!sourceSnapshotQuery.data)continue;
       members.forEach((group,index)=>{
         const count=childCounts.get(group.key)||0;
         // After expansion, use the actual loaded date buckets. Empty children
@@ -961,7 +956,7 @@ export default function Culture(){
           className:'scope-dual-river-child',selectable:true,sourceKey:group.key});
         for(const [key,count] of subtotals){
           const [code,day]=key.split('\u0000');
-          if(code===group.key&&count>0)items.push({...row('child:'+group.key,day,count,group.label,parent.order+index+1,childMaximum.get(group.key),'source_group'),source_group_code:group.key});
+          if(code===group.key&&count>0)items.push({...dayRow('child:'+group.key,day,count,group.label,parent.order+index+1,childMaximum.get(group.key),'source_group'),source_group_code:group.key});
         }
       });
     }
@@ -991,7 +986,7 @@ export default function Culture(){
       }
     }
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,initialRootBuckets,stagedSourceRiver,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale]);
+  },[groupedSources,secondRiverBuckets,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale,classificationWindowStart,classificationWindowEnd]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,
@@ -1417,7 +1412,7 @@ export default function Culture(){
                   </button>
                   {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
                   <details className='scope-culture-anchor-picker'>
-                    <summary><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
+                    <summary><span className='scope-culture-anchor-picker-mark' aria-hidden='true'/><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
                     <div className='scope-culture-anchor-choices'>
                       {riverAnalysis.suggestions.map(item=>{
                         const route=featureNavigationHref(scopeId,'culture');

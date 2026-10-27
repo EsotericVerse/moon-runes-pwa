@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  assertPrivateArchiveDestination,assertArchiveRecordDestination,
-  assertArchiveEntryDestination,assertStandaloneImportDestination,filterStandalonePublicRows
+  assertPrivateArchiveDestination,isPublicArchiveRecord,isPrivateArchiveEntry,assertArchiveRecordDestination,
+  assertArchiveEntryDestination,assertStandaloneImportDestination
 } from '../app/loc/archive-import-safety.mjs';
 
 test('Messenger, ChatGPT, and other chat archives never enter online Galaxy',()=>{
@@ -12,9 +12,6 @@ test('Messenger, ChatGPT, and other chat archives never enter online Galaxy',()=
   }
   assert.throws(()=>assertPrivateArchiveDestination(false,[]),/無法證實/);
   assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['facebook','threads']));
-  // Mixed Meta archives are processed file by file; chat entries are skipped
-  // without rejecting an otherwise valid Threads/Facebook post archive.
-  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['threads','messenger']));
 });
 test('Recognized Facebook, Instagram, Threads and X posts stay importable online',()=>{
   for(const platform of ['facebook','instagram','threads','x'])
@@ -85,22 +82,66 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
   }));
 });
 
-test('Mixed Threads posts and private messages in plain JSON keep only public rows',()=>{
-  const rows=[
-    {source_name:'Threads',kind:'post',content:'公開文章',createtime:'2026-10-28T00:00:00Z'},
-    {source_name:'Messenger',kind:'message',content:'private'},
-    {source_name:'Threads',kind:'post',content:'第二篇公開文章'},
-    {platform:'chatgpt',mapping:{a:{message:{author:{role:'user'}}}}}
-  ];
-  const filtered=filterStandalonePublicRows(rows);
-  assert.equal(filtered.length,2);
+test('Mixed Threads and Messenger ZIP discovery allows public posts but skips chat rows',()=>{
+  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['threads','messenger','facebook']));
+  const post={platform:'threads',kind:'post',sourcePath:'activity/threads/threads_posts.json',
+    raw:{id:'p1',text:'公開測試貼文'}};
+  const privateMessage={platform:'messenger',kind:'message',
+    sourcePath:'your_facebook_activity/messages/inbox/person/message_1.json',
+    raw:{sender_name:'fixture',content:'測試私訊'}};
+  assert.equal(isPublicArchiveRecord(post),true);
+  assert.equal(isPublicArchiveRecord(privateMessage),false);
+  assert.equal(isPrivateArchiveEntry('messages/inbox/person/photo.jpg'),true);
+  assert.equal(isPrivateArchiveEntry('threads/photos/public.jpg'),false);
+});
+test('Threads-named files containing chat structures are not accepted as posts',()=>{
+  assert.equal(isPublicArchiveRecord({platform:'threads',kind:'post',
+    sourcePath:'threads_posts.json',raw:{participants:['a','b'],messages:[{text:'private'}]}}),false);
+  assert.equal(isPublicArchiveRecord({platform:'threads',kind:'post',
+    sourcePath:'threads_posts.json',raw:{sender_name:'fixture',content:'private'}}),false);
+});
+
+test('Private and unknown archive rejections carry a security-block code, not a JSON parse error',()=>{
+  for(const fn of [
+    ()=>assertPrivateArchiveDestination(false,['messenger']),
+    ()=>assertArchiveRecordDestination({platform:'threads',kind:'message',sourcePath:'threads/messages.json'},false)
+  ])assert.throws(fn,error=>error?.code==='LOC_PRIVATE_ARCHIVE_BLOCKED');
+  assert.throws(()=>assertArchiveRecordDestination({platform:'document',kind:'document'},false),
+    error=>error?.code==='LOC_UNVERIFIED_ARCHIVE_BLOCKED');
+});
+test('Threads post JSON is allowed without misclassifying it as private chat',()=>{
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
-    fileName:'threads.json',rows:filtered,source:'Threads'
+    fileName:'your_threads__your_posts.json',
+    nativeLocal:false,
+    rows:[{source_name:'Threads',content:'公開貼文範例',kind:'post'}]
   }));
-  assert.throws(()=>filterStandalonePublicRows([rows[1],rows[3]]),/私人對話/);
-  assert.equal(filterStandalonePublicRows(rows,true).length,4);
+  assert.doesNotThrow(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'post',sourcePath:'threads/your_posts_1.json'
+  },false));
+  assert.throws(()=>assertArchiveRecordDestination({
+    platform:'threads',kind:'message',sourcePath:'threads/messages_1.json'
+  },false));
+});
+test('Direct imported chats cannot bypass private-only rule with renamed source',()=>{
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'conversations.json',source:'Other',rows:[],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'generic.json',rows:[{source_name:'Messenger',content:'fixture'}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'posts.json',rows:[{kind:'message',platform:'facebook'}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{mapping:{abc:{message:{author:{role:'user'}}}}}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{participants:['A','B'],messages:[{text:'fixture'}]}],nativeLocal:false
+  }),/私人對話/);
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
-    fileName:'threads-messages.json',source:'Threads',
-    rows:[{platform:'threads',kind:'post',content:'公開文章'}]
+    fileName:'posts.json',rows:[{source_name:'Facebook'}],nativeLocal:false
+  }));
+  assert.doesNotThrow(()=>assertStandaloneImportDestination({
+    fileName:'conversations.json',nativeLocal:true
   }));
 });

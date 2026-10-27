@@ -5,6 +5,7 @@ import {detectZipArchiveSource,inspectPrivateArchive} from '../app/loc/private-a
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
 import {readImageExif} from '../app/loc/archive-exif.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from '../app/loc/archive-media-evidence.mjs';
+import {assertPrivateArchiveDestination,isPublicArchiveRecord,isPrivateArchiveEntry} from '../app/loc/archive-import-safety.mjs';
 
 function asFile(name,bytes){
   const data=new Uint8Array(bytes);
@@ -36,41 +37,6 @@ test('Threads ZIP flows past detection into actual Galaxy-ready articles with or
   assert.equal(a.results[0].content,'台南散步');
   assert.equal(a.results[0].url,'https://www.threads.net/@writer/post/abc123');
 });
-test('Public Threads posts are imported from mixed Meta ZIP without reading private message entries',async()=>{
-  const privateMessage={participants:[{name:'private-user'}],
-    messages:[{sender_name:'private-user',content:'must-never-appear',timestamp_ms:1720000000000}]};
-  const file=asFile('full-meta-backup.zip',zipSync({
-    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
-      {id:'threads-public',title:'公開文字',timestamp:1720000000}
-    ]}),
-    'your_facebook_activity/messages/inbox/private/message_1.json':j(privateMessage),
-    'your_facebook_activity/messages/inbox/private/secret.jpg':gpsJpeg(),
-    'conversations.json':j([{id:'chat-private',mapping:{secret:'do-not-parse'}}])
-  }));
-  const detected=await detectZipArchiveSource(file,{skipPrivateEntries:true});
-  assert.ok(detected.sources.includes('threads'));
-  assert.equal(detected.inspectedFiles,1,'private JSON and EXIF must not be inflated during public source inspection');
-  assert.ok(!detected.structure?.sources?.some?.(entry=>String(entry).includes('private')));
-  const records=[],media=[],exif=[];
-  const summary=await inspectPrivateArchive(file,{
-    skipPrivateEntries:true,
-    onRecord:r=>records.push(r),
-    onMediaEntry:r=>media.push(r),
-    onMediaMetadata:r=>exif.push(r)
-  });
-  assert.equal(records.length,1);
-  assert.equal(records[0].platform,'threads');
-  assert.equal(records[0].text,'公開文字');
-  assert.equal(summary.totalRows,1);
-  assert.equal(summary.acceptedRows,1);
-  assert.equal(summary.mediaFiles,0);
-  assert.deepEqual(media,[]);
-  assert.deepEqual(exif,[]);
-  const localRecords=[];
-  await inspectPrivateArchive(file,{onRecord:r=>localRecords.push(r)});
-  assert.ok(localRecords.some(r=>r.platform==='messenger'));
-});
-
 test('Facebook ZIP keeps place, time and original permalink',async()=>{
   const a=await parsed('facebook-2026.zip',{
     'your_facebook_activity/posts/your_posts_1.json':j([{
@@ -228,3 +194,87 @@ test('Media-only archive remains importable and its EXIF is retained',async()=>{
   assert.equal(plan.exif.length,1);
   assert.equal(plan.exif[0].media_id,null);
 });
+
+test('Threads ZIP with Facebook Messenger backup only imports public posts',async()=>{
+  const file=asFile('threads-mixed.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {id:'threads-100',title:'公開 Threads 貼文',timestamp:1720000000,
+        text:'這是一篇公開貼文'}
+    ]}),
+    'your_facebook_activity/messages/inbox/example/message_1.json':j({
+      participants:[{name:'Test A'},{name:'Test B'}],
+      messages:[{sender_name:'Test A',timestamp_ms:1720000000000,
+        content:'這是測試私訊，禁止轉成公開文章'}]
+    })
+  }));
+  const detected=await detectZipArchiveSource(file);
+  assert.ok(detected.sources.includes('threads'));
+  assert.ok(detected.sources.includes('messenger'));
+  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,detected.sources));
+  const publicRows=[];
+  let rejected=0;
+  await inspectPrivateArchive(file,{onRecord:record=>{
+    if(!isPublicArchiveRecord(record)){rejected++;return;}
+    const article=archiveGalaxyRow(record);
+    if(article)publicRows.push(article);
+  }});
+  assert.equal(publicRows.length,1);
+  assert.equal(publicRows[0].source_name,'Threads');
+  assert.equal(publicRows[0].content.includes('公開'),true);
+  assert.equal(publicRows[0].content.includes('私訊'),false);
+  assert.ok(rejected>=1);
+  assert.equal(isPrivateArchiveEntry('your_facebook_activity/messages/inbox/example/photo.jpg'),true);
+});
+test('Standalone Threads public JSON uses archive scanner without publishing private messages',async()=>{
+  const file=asFile('threads_posts.json',j({text_post_app_text_posts:[
+    {id:'threads-101',timestamp:1720000000,text:'僅公開貼文'},
+    {sender_name:'Test Sender',timestamp_ms:1720000000000,content:'私訊格式不公開'}
+  ]}));
+  const accepted=[];
+  let skipped=0;
+  await inspectPrivateArchive(file,{onRecord:record=>{
+    if(!isPublicArchiveRecord(record)){skipped++;return;}
+    const article=archiveGalaxyRow(record);
+    if(article)accepted.push(article);
+  }});
+  assert.equal(accepted.length,1);
+  assert.equal(accepted[0].source_name,'Threads');
+  assert.equal(accepted[0].content,'僅公開貼文');
+  assert.ok(skipped>=1);
+});
+
+test('Public Threads posts are imported from mixed Meta ZIP without reading private message entries',async()=>{
+  const privateMessage={participants:[{name:'private-user'}],
+    messages:[{sender_name:'private-user',content:'must-never-appear',timestamp_ms:1720000000000}]};
+  const file=asFile('full-meta-backup.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {id:'threads-public',title:'公開文字',timestamp:1720000000}
+    ]}),
+    'your_facebook_activity/messages/inbox/private/message_1.json':j(privateMessage),
+    'your_facebook_activity/messages/inbox/private/secret.jpg':gpsJpeg(),
+    'conversations.json':j([{id:'chat-private',mapping:{secret:'do-not-parse'}}])
+  }));
+  const detected=await detectZipArchiveSource(file,{skipPrivateEntries:true});
+  assert.ok(detected.sources.includes('threads'));
+  assert.equal(detected.inspectedFiles,1,'private JSON and EXIF must not be inflated during public source inspection');
+  assert.ok(!detected.structure?.sources?.some?.(entry=>String(entry).includes('private')));
+  const records=[],media=[],exif=[];
+  const summary=await inspectPrivateArchive(file,{
+    skipPrivateEntries:true,
+    onRecord:r=>records.push(r),
+    onMediaEntry:r=>media.push(r),
+    onMediaMetadata:r=>exif.push(r)
+  });
+  assert.equal(records.length,1);
+  assert.equal(records[0].platform,'threads');
+  assert.equal(records[0].text,'公開文字');
+  assert.equal(summary.totalRows,1);
+  assert.equal(summary.acceptedRows,1);
+  assert.equal(summary.mediaFiles,0);
+  assert.deepEqual(media,[]);
+  assert.deepEqual(exif,[]);
+  const localRecords=[];
+  await inspectPrivateArchive(file,{onRecord:r=>localRecords.push(r)});
+  assert.ok(localRecords.some(r=>r.platform==='messenger'));
+});
+
