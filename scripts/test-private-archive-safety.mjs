@@ -12,6 +12,9 @@ test('Messenger, ChatGPT, and other chat archives never enter online Galaxy',()=
   }
   assert.throws(()=>assertPrivateArchiveDestination(false,[]),/無法證實/);
   assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['facebook','threads']));
+  // Mixed Meta archives are processed file by file; chat entries are skipped
+  // without rejecting an otherwise valid Threads/Facebook post archive.
+  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,['threads','messenger']));
 });
 test('Recognized Facebook, Instagram, Threads and X posts stay importable online',()=>{
   for(const platform of ['facebook','instagram','threads','x'])
