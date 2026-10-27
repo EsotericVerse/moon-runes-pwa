@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS local_file_meta (
 // the same validated row conversion inside a transaction before opening Time.
 const TIME_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_time \([\s\S]*?\);/)[0];
 
-const ARCHIVE_EXIF_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_archive_media_exif \\([\\s\\S]*?\\);/)[0];
+const ARCHIVE_EXIF_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_archive_media_exif \([\s\S]*?\);/)[0];
 const ARCHIVE_EXIF_COLUMNS=['archive_id','entry_path','media_id','platform','latitude','longitude','camera_local_time','imported_at'];
 function archiveExifMigrationStatements(){
   return [
