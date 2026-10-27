@@ -138,7 +138,10 @@ export default function TimelinePlaceManager({scopeId}){
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
-          onChange={e=>{reset();setSelectedFile(e.currentTarget.files?.[0]||null);}}/>
+          onChange={e=>{const file=e.currentTarget.files?.[0]||null;
+            runRef.current++;setAnalysis(null);setDecisions({});setProgress(null);setNotice('');setPage(0);
+            setSelectedFile(file);
+          }}/>
       </label>
       <p className="scope-status">可比對空間定錨點：{eligible.length.toLocaleString()}；只辨識造訪地點，移動路線不直接視為文章的確定位置。</p>
     </div>
