@@ -96,6 +96,7 @@ export default function TimelinePlaceManager({scopeId}){
       if(run===runRef.current)setNotice('地點比對失敗：'+friendlyError(e));
     }finally{if(run===runRef.current)setAnalyzing(false);}
   }
+  const ready=analysis?.ready||[];
   const reviewGroups=useMemo(()=>groupTimelineMissingPlaces(analysis),[analysis]);
   // Every article starts checked; the group and per-article selectors decide its place.
   const selectedUpdates=useMemo(()=>reviewGroups.flatMap(group=>group.rows.flatMap(row=>{
@@ -118,8 +119,8 @@ export default function TimelinePlaceManager({scopeId}){
   async function apply(){
     if(!analysis||!canWrite||writing||analyzing)return;
     const updates=selectedUpdates;
-    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\\n\\n'
-      +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\\n'
+    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\n\n'
+      +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\n'
       +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
     setWriting(true);setNotice('');let completed=0;
     try{
@@ -128,7 +129,7 @@ export default function TimelinePlaceManager({scopeId}){
         const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
           p_scope_id:scopeId,p_updates:batch
         });
-        completed+=Number(checked(result,'批次寫入 place_id')||0);
+        completed+=Number(checked(result,'批次補寫 source_place')||0);
         setNotice('已寫入 '+completed+' / '+updates.length+' 篇…');
       }
       // Keep unresolved disputes on screen after writing the definite rows.
