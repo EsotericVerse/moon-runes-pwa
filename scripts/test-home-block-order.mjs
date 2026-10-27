@@ -127,12 +127,24 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/儲存後資料庫讀回不一致/);
   assert.match(hero,/uid:HomeBlock.createUid\(\)/);
   const heroFrame=css.match(/\.scope-feature-hero\.scope-feature-hero--artwork\s*\{([^}]+)\}/)?.[1]||'';
-  assert.match(heroFrame,/aspect-ratio:16\/9/);
-  assert.match(heroFrame,/min-height:clamp\(540px,56\.25vw,820px\)/);
+  assert.match(heroFrame,/aspect-ratio:auto/);
+  assert.match(heroFrame,/min-height:clamp\(290px,34vw,440px\)/);
   assert.match(heroFrame,/background-size:100% 100%,cover/);
   assert.match(heroFrame,/background-position:center center,center center/);
   assert.doesNotMatch(heroFrame,/contain|right center/);
-  assert.match(css,/@media\(max-width:760px\)\{\s*\.scope-feature-hero\.scope-feature-hero--artwork\s*\{[^}]*min-height:clamp\(480px,110vw,650px\)/);
+  assert.match(css,/@media\(max-width:760px\)\{\s*\.scope-feature-hero\.scope-feature-hero--artwork\s*\{[^}]*min-height:clamp\(230px,56vw,335px\)/);
+  assert.match(css,/--loc-type-hero-feature-title:clamp\(2\.25rem,3vw,3\.25rem\)/);
+  assert.match(css,/--loc-type-hero-feature-title:clamp\(1\.625rem,1\.2rem \+ 2vw,2\.125rem\)/);
+  assert.match(css,/--loc-type-hero-feature-subtitle:clamp\(1rem,\.95rem \+ \.35vw,1\.125rem\)/);
+  assert.match(css,/--loc-type-hero-feature-copy:1rem/);
+  // Against the established homepage minimums: functional headers must never
+  // claim a taller default frame at common phone, tablet or desktop widths.
+  const clamp=(min,fluid,max)=>Math.max(min,Math.min(fluid,max));
+  for(const width of [320,375,430,560,760,768,1024,1280]){
+    const feature=width<=760?clamp(230,width*.56,335):clamp(290,width*.34,440);
+    const homepage=width<=760?clamp(460,width*1.18,570):clamp(430,width*.5,620);
+    assert.ok(feature<homepage,`Feature Hero exceeds homepage at ${width}px`);
+  }
   const activeHeightSelectors=[...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter(match=>match[1].includes('scope-feature-hero--')&&/min-height\s*:/.test(match[2]))
     .map(match=>match[1].replace(/\/\*[\s\S]*?\*\//g,'').trim());
