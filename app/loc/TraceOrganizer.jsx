@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {dbAuthClient} from './db-client.mjs';
 import {reviewPlaceNameGroups,compactPlaceName} from '../modular/features/trace/trace-place-names.mjs';
+import {renameTraceAnchorTitles} from '../modular/features/trace/trace-data';
 
 const canonical=items=>[...items].sort((a,b)=>
   String(a.uid||'').localeCompare(String(b.uid||'')))[0];
@@ -66,9 +67,9 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const selectGroup=(group,yes)=>setChecked(current=>({...current,[group.key]:
     Object.fromEntries(group.items.filter(item=>item.uid!==keepOf(group).uid)
       .map(item=>[item.uid,yes]))}));
-  const selectAllVisible=yes=>setChecked(current=>{
+  const selectAllGroups=yes=>setChecked(current=>{
     const next={...current};
-    for(const group of visibleGroups)next[group.key]=Object.fromEntries(
+    for(const group of reviewGroups)next[group.key]=Object.fromEntries(
       group.items.filter(item=>item.uid!==keepOf(group).uid).map(item=>[item.uid,yes]));
     return next;
   });
@@ -79,54 +80,45 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     try{window.localStorage.setItem('loc-trace-distinct-v1:'+scopeId,JSON.stringify(next));}
     catch{setError(true);setNotice('本次已排除候選，但瀏覽器無法保存此選擇。');}
   };
-  const mergeGroup=async(group,uids)=>{
+  const renameGroup=async(group,uids)=>{
     const keep=keepOf(group);
-    const remove=[...new Set(uids)].filter(uid=>uid!==keep.uid);
-    if(!remove.length)throw Error('請先勾選要合併至 '+keep.title+' 的地點。');
-    // The existing RPC deletes removed anchors and does not rewrite Galaxy place_id.
-    // Refuse route-linked UIDs rather than corrupt saved route references.
-    if((spatial.maps||[]).some(route=>(route.anchor_list||[]).flat(Infinity)
-      .some(uid=>remove.includes(uid))))
-      throw Error('勾選地點已被路線或痕跡圖引用；請先調整引用，不能直接刪除該 UID。');
-    const {data,error:mergeError}=await dbAuthClient.schema('silver')
-      .rpc('merge_scope_trace_place_names',{
-        p_scope_id:scopeId,p_keep_uid:keep.uid,p_remove_uids:remove
-      });
-    if(mergeError)throw mergeError;
-    return Number(data||0);
+    const change=[...new Set(uids)].filter(uid=>uid!==keep.uid&&
+      group.items.some(item=>item.uid===uid&&item.title!==keep.title));
+    if(!change.length)return 0;
+    return renameTraceAnchorTitles({scopeId,uids:change,title:keep.title});
   };
   const saveChecked=async group=>{
     if(busy||!ownPlaces)return;
     const uids=selectedIds(group);
-    if(!uids.length){setError(true);setNotice('請先勾選同一地點的 UID。');return;}
-    if(!window.confirm('確定保留「'+keepOf(group).title+'」（'+keepOf(group).uid+'），合併並刪除其餘 '+uids.length+' 個 Trace UID？\n路線與文章若仍引用這些 UID，可能需要事先調整。'))return;
+    if(!uids.length){setError(true);setNotice('請先勾選要統一名稱的地點。');return;}
+    if(!window.confirm('確定將 '+uids.length+' 筆地點改名為「'+keepOf(group).title+'」？\\n每筆 UID、文章和路線都會保留。'))return;
     setBusy(true);setError(false);setNotice('');
     try{
-      const removed=await mergeGroup(group,uids);
+      const changed=await renameGroup(group,uids);
       setChecked(previous=>({...previous,[group.key]:{}}));
-      setNotice('已合併 '+removed+' 筆至「'+keepOf(group).title+'」；其餘沒有勾選的資料保留獨立。');
+      setNotice('已統一 '+changed+' 筆地點名稱；所有 UID、文章與路線都保留。');
       await reload();
-    }catch(mergeError){setError(true);setNotice(String(mergeError.message||mergeError));}
+    }catch(e){setError(true);setNotice(String(e.message||e));}
     finally{setBusy(false);}
   };
   const saveAllChecked=async()=>{
     if(busy||!ownPlaces)return;
-    const groups=visibleGroups.map(group=>({group,uids:selectedIds(group)})).filter(item=>item.uids.length);
+    const groups=reviewGroups.map(group=>({group,uids:selectedIds(group)})).filter(item=>item.uids.length);
     const count=groups.reduce((sum,item)=>sum+item.uids.length,0);
-    if(!count){setNotice('請先勾選要合併的地點。');return;}
-    if(!window.confirm('確定依各組選定的保留 UID，批次合併 '+groups.length+' 組、刪除 '+count+' 個 UID？\n操作無法復原，請先確認每組是同一地點。'))return;
+    if(!count){setNotice('請先勾選要統一名稱的地點。');return;}
+    if(!window.confirm('確定依各組指定的標準名稱，批次更新 '+groups.length+' 組、最多 '+count+' 筆？\\n僅更新標題；不刪除 UID、文章或路線。'))return;
     setBusy(true);setError(false);setNotice('');
-    let merged=0,completed=0;
+    let changed=0,completed=0;
     try{
       for(const {group,uids} of groups){
-        merged+=await mergeGroup(group,uids);
+        changed+=await renameGroup(group,uids);
         completed++;
         setChecked(previous=>({...previous,[group.key]:{}}));
       }
-      setNotice('已合併 '+completed+' 組、'+merged+' 筆；保留各組選擇的標準名稱。');
+      setNotice('已整理 '+completed+' 組、更新 '+changed+' 筆名稱；全部 UID 保留。');
     }catch(e){
       setError(true);
-      setNotice('已完成 '+completed+' 組，剩餘未處理。原因：'+String(e.message||e));
+      setNotice('已完成 '+completed+' 組，其餘未處理。原因：'+String(e.message||e));
     }finally{
       if(completed)try{await reload();}catch(e){setError(true);setNotice(n=>n+' 重新讀取失敗：'+String(e.message||e));}
       setBusy(false);
@@ -142,19 +134,19 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     <p className="scope-status">只列出同 Scope、相同座標、完整名稱字元完全一致（順序可以不同）的候選；不使用「大學」「高鐵」「站」等部分共同文字推測。勾選不會自動合併；可選擇任意一筆保留為標準名稱與 UID。</p>
     <div className="scope-stat-controls" role="status">
       <span>目前地點：{anchors.length}</span>
-      <span>同名同座標：{automatic.length} 組</span>
+      <span>完整名稱排列候選：{automatic.length} 組</span>
       <span>需要確認：{uncertain.length} 組</span>
     </div>
     <section className="scope-card">
-      <h4>重複名稱候選 · 依筆數排序</h4>
-      <p className="scope-status">從組內選一筆要保留的名稱與 UID；可單組全選或全部勾選。全部勾選不會直接儲存。不是同一地點可排除此組，下次在同一瀏覽器不再顯示。</p>
+      <h4>名稱排列候選 · 依筆數排序</h4>
+      <p className="scope-status">從組內選一筆較好的名稱作為標準。可單組全選或全部候選全選；儲存後只統一名稱，保留每一筆 UID。不是同一地點可排除此組。</p>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy||!ownPlaces||!visibleGroups.length}
-          onClick={()=>selectAllVisible(true)}>全部勾選（目前顯示 {visibleGroups.length} 組）</button>
-        <button type="button" className="loc-button" disabled={busy} onClick={()=>selectAllVisible(false)}>全部取消勾選</button>
+          onClick={()=>selectAllGroups(true)}>全部勾選（所有 {reviewGroups.length} 組）</button>
+        <button type="button" className="loc-button" disabled={busy} onClick={()=>selectAllGroups(false)}>全部取消勾選</button>
         <button type="button" className="loc-button primary" disabled={busy||!ownPlaces||
-          !visibleGroups.some(group=>selectedIds(group).length)}
-          onClick={saveAllChecked}>儲存全部已勾選</button>
+          !reviewGroups.some(group=>selectedIds(group).length)}
+          onClick={saveAllChecked}>統一全部已勾選名稱</button>
         {dismissed.length?<button type="button" className="loc-button" disabled={busy} onClick={()=>{
           setDismissed([]);
           try{window.localStorage.removeItem('loc-trace-distinct-v1:'+scopeId);}catch{}
@@ -167,7 +159,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
         const selected=selectedIds(group);
         return <details key={group.key} className="loc-trace-article-choice">
           <summary>{keep.title} · {group.items.length} 筆 · {group.reason}</summary>
-          <label>保留哪一筆名稱／UID？
+          <label>使用哪一筆作為標準名稱？
             <select className="scope-select" disabled={busy} value={keep.uid}
               onChange={event=>{
                 setKeepers(current=>({...current,[group.key]:event.target.value}));
@@ -191,7 +183,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
             <button type="button" className="loc-button" disabled={busy}
               onClick={()=>selectGroup(group,false)}>取消本組勾選</button>
             <button type="button" className="loc-button primary" disabled={busy||!ownPlaces||!selected.length}
-              onClick={()=>saveChecked(group)}>儲存已勾選（{selected.length} 筆）</button>
+              onClick={()=>saveChecked(group)}>統一已勾選名稱（{selected.length} 筆）</button>
             <button type="button" className="loc-button" disabled={busy}
               onClick={()=>markDistinct(group)}>不是同一地點 · 保持獨立</button>
           </div>
