@@ -150,13 +150,13 @@ function AnchorEditor({scopeId,spatial,reload}){
         {busy?'儲存中…':'儲存地點'}
       </button>
     </div>
+    {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
     <TraceMap spatialData={spatial} focusLocation={focusLocation}
       onLocationPick={({lng,lat,name})=>{
         if(name)setTitle(t=>t.trim()||name);
         setLongitude(String(Math.round(lng*1e6)/1e6));
         setLatitude(String(Math.round(lat*1e6)/1e6));
       }}/>
-    {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
   </section>;
 }
 
