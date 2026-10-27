@@ -331,7 +331,8 @@
   filter:none;
   mask-image:none;
   object-fit:contain;
-  object-position:center center;
+  /* Preserve the full image and align its focus opposite the text. */
+  object-position:right center;
 }
 /* The former author's editorial gradient shades copy without blacking out
    or cropping the image with the landscape-only LOC brightness/mask effect. */
