@@ -11,6 +11,10 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const anchors=useMemo(()=>(spatial.anchors||[]).filter(item=>
     item.trace_type==='space_anchor'&&item.source_scope===scopeId),[spatial.anchors,scopeId]);
   const {automatic,uncertain}=useMemo(()=>reviewPlaceNameGroups(anchors),[anchors]);
+  const reviewGroups=useMemo(()=>[
+    ...automatic.map(group=>({...group,reason:'名稱與座標相符，但 UID 合併仍需人工確認'})),
+    ...uncertain
+  ],[automatic,uncertain]);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [error,setError]=useState(false);
@@ -56,23 +60,6 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     if(mergeError)throw mergeError;
     return Number(data||0);
   };
-  const runAutomatic=async()=>{
-    if(busy||!automatic.length||!ownPlaces)return;
-    setBusy(true);setError(false);setNotice('');
-    let completed=0,groups=0;
-    try{
-      for(const group of automatic){
-        completed+=await mergeGroup(group,group.items.slice(1).map(item=>item.uid));
-        groups++;
-      }
-      setNotice('已完成 '+groups+' 組明確名稱變體合併，共整理 '+completed+' 個重複 UID；首筆名稱不變。');
-    }catch(mergeError){
-      setError(true);setNotice('已完成 '+groups+' 組。後續已停止：'+String(mergeError.message||mergeError));
-    }finally{
-      try{await reload();}catch(e){setError(true);setNotice(current=>current+' 資料庫已回報寫入，但重讀失敗：'+String(e.message||e));}
-      setBusy(false);
-    }
-  };
   const saveChecked=async(group)=>{
     if(busy||!ownPlaces)return;
     const uids=Object.keys(checked[group.key]||{}).filter(uid=>checked[group.key][uid]);
@@ -96,26 +83,14 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     <p className="scope-status">只比對地點名稱與已儲存別名，不使用地址、縣市或 GPS 判定相同。保留選定的標準名稱和 UID；資料合併需人工確認，同名不一定是同一地點。任何整理都不修改 Galaxy.source_place。</p>
     <div className="scope-stat-controls" role="status">
       <span>目前地點：{anchors.length}</span>
-      <span>明確名稱變體：{automatic.length} 組</span>
+      <span>同名同座標：{automatic.length} 組</span>
       <span>需要確認：{uncertain.length} 組</span>
     </div>
-    {ownPlaces&&automatic.length?<section className="scope-card">
-      <h4>可直接整理的文字變體</h4>
-      <p className="scope-status">空白、大小寫、台／臺與明確品牌＋分店名稱順序差異，自動歸入最早的 UID，不要求先新增錨點。</p>
-      <button className="loc-button primary" type="button" disabled={busy} onClick={runAutomatic}>
-        {busy?'整理中…':'合併明確文字變體（'+automatic.length+' 組）'}
-      </button>
-      <details><summary>查看整理候選</summary>
-        {automatic.slice(0,80).map(group=><p key={group.key}>
-          <strong>{group.canonical.title}</strong> · {group.items.map(item=>item.title+' ('+item.uid+')').join('、')}
-        </p>)}
-      </details>
-    </section>:null}
     <section className="scope-card">
-      <h4>名稱相似，需要確認</h4>
+      <h4>重複名稱候選，需要確認後才能合併 UID</h4>
       <p className="scope-status">勾選確定同一地點的名稱，按一次「儲存已勾選」。不勾選就保留原 UID；只有確認同一地點才能合併。</p>
-      {!uncertain.length?<p className="scope-status">目前沒有需要人工判斷的名稱候選。</p>:null}
-      {uncertain.slice(0,80).map(group=>{
+      {!reviewGroups.length?<p className="scope-status">目前沒有需要人工判斷的名稱候選。</p>:null}
+      {reviewGroups.slice(0,80).map(group=>{
         const keep=canonical(group.items);
         return <details key={group.key} className="loc-trace-article-choice">
           <summary>{keep.title} · {group.items.length} 筆 · {group.reason||'名稱不同'}</summary>
@@ -135,7 +110,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
           </div>
         </details>;
       })}
-      {uncertain.length>80?<p className="scope-status">已顯示前 80 組，完成後重新載入下一批。</p>:null}
+      {reviewGroups.length>80?<p className="scope-status">已顯示前 80 組，完成後重新載入下一批。</p>:null}
     </section>
     <section className="scope-card">
       <h4>管理已確認的地點名稱</h4>
