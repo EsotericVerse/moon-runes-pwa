@@ -505,7 +505,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
       pageSize:candidateCount?Math.min(KEYWORD_CLASSIFICATION_BATCH_SIZE,candidateCount):KEYWORD_CLASSIFICATION_BATCH_SIZE,
       onProgress:({completed,total})=>reportBatchProgress(onProgress,'reading',completed,total,
         3+17*(total?completed/total:1),
-        '讀取文章 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇')
+        '已讀取 '+completed.toLocaleString()+' / '+total.toLocaleString()+' 篇（每 '+KEYWORD_CLASSIFICATION_BATCH_SIZE.toLocaleString()+' 篇回報一次）')
     });
     const rawRows=textResult.rows||[];
     const eligibleRows=rawRows.filter(row=>isEligibleRow(row,minChars));

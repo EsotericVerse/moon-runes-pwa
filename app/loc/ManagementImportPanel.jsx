@@ -529,6 +529,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
+      {progress.total>0?<p className="scope-status">共 {Number(progress.total).toLocaleString()} 筆，每 5,000 筆回報一次（第 {Math.max(1,Math.ceil(Number(progress.completed||0)/5000))} / {Math.max(1,Math.ceil(Number(progress.total)/5000))} 批）</p>:null}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
