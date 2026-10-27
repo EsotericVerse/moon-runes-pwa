@@ -49,6 +49,37 @@ const iso=value=>{
   const epoch=numeric===null?Date.parse(String(value)):numeric>100000000000?numeric:numeric*1000;
   return Number.isFinite(epoch)?new Date(epoch).toISOString():null;
 };
+const PLAUSIBLE_EPOCH_MIN=946684800, PLAUSIBLE_EPOCH_MAX=4102444800;
+function plausibleEpoch(n){
+  return Number.isFinite(n)&&((n>=PLAUSIBLE_EPOCH_MIN&&n<=PLAUSIBLE_EPOCH_MAX)||
+    (n>=PLAUSIBLE_EPOCH_MIN*1000&&n<=PLAUSIBLE_EPOCH_MAX*1000));
+}
+// Recursively finds a creation time anywhere in one archive record. Keys must
+// look like creation/time/date fields (update/edit/expiry fields are skipped),
+// and numbers must be plausible Unix seconds or milliseconds.
+function findArchiveTimestamp(node,depth=0){
+  if(!node||typeof node!=='object'||depth>5)return null;
+  if(Array.isArray(node)){
+    for(const value of node.slice(0,100)){
+      const found=findArchiveTimestamp(value,depth+1);
+      if(found!=null)return found;
+    }
+    return null;
+  }
+  const entries=Object.entries(node);
+  for(const [key,value] of entries){
+    if(!/(creat|time|date|taken|publish)/i.test(key)||/(update|modif|expir|edit)/i.test(key))continue;
+    if(typeof value==='number'&&plausibleEpoch(value))return value;
+    if(typeof value==='string'&&/^\d{10,13}(\.\d+)?$/.test(value)&&plausibleEpoch(Number(value)))return value;
+  }
+  for(const [,value] of entries){
+    if(value&&typeof value==='object'){
+      const found=findArchiveTimestamp(value,depth+1);
+      if(found!=null)return found;
+    }
+  }
+  return null;
+}
 const hash=text=>{
   // Stable, non-cryptographic archive identity hint. Content conflicts are still checked.
   let a=2166136261,b=2166136261;
@@ -129,7 +160,9 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const timestamp=item.create_time??item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
     item.string_map_data?.['Creation Time']?.timestamp??
-    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
+    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null)??
+    // Generic fallback for Meta-style nesting (media[], string_map_data, label_values, attachments).
+    findArchiveTimestamp(item);
   const createdAt=iso(timestamp);
   const originalTimestamp=timestamp===undefined?'':String(timestamp);
   const relative=cleanPath(path).replace(/^.*?(?=messages\/)/i,'');

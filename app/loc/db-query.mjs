@@ -236,3 +236,30 @@ export async function selectAllRows(table,{
   }
   return {rows,count:total,dataSource:source};
 }
+
+// Streams a full table one offset/limit page at a time. Each page is handed to
+// onPage and then released; nothing accumulates across pages, so peak memory is
+// one page, not the whole table. A short pause between pages keeps the database
+// from being hit by one unbroken scan.
+export const STREAM_PAGE_PAUSE_MS=120;
+export async function forEachAllRowsPage(table,{
+  columns,
+  filters=[],
+  orFilter='',
+  orders=[],
+  pageSize=DB_QUERY_BATCH_SIZE,
+  pausePageMs=STREAM_PAGE_PAUSE_MS,
+  signal=null
+}={},onPage){
+  const size=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(pageSize)||DB_QUERY_BATCH_SIZE)));
+  let offset=0;
+  for(;;){
+    const {rows}=await selectRows(table,{columns,filters,orFilter,orders,limit:size,offset,signal});
+    if(!rows.length)break;
+    await onPage(rows);
+    if(rows.length<size)break;
+    offset+=rows.length;
+    if(pausePageMs>0)await new Promise(resolve=>setTimeout(resolve,pausePageMs));
+  }
+  return offset;
+}

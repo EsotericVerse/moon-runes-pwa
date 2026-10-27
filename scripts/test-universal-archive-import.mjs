@@ -112,3 +112,30 @@ test('EXIF GPS is inspected locally from ZIP without importing image bytes',asyn
   assert.equal(a.results[0].content,'這是文章');
   assert.equal(a.results[0].source_place,undefined);
 });
+
+test('Threads ZIP post with time nested under media[] gets createtime from creation_timestamp',async()=>{
+  const a=await parsed('threads-nested.zip',{
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {media:[{uri:'',creation_timestamp:1788635184,title:'自己各時期的歌詞',
+        cross_post_source:{source_app:'FB'}}]}
+    ]})
+  });
+  assert.ok(a.detected.sources.includes('threads'));
+  assert.equal(a.results.length,1);
+  assert.ok(a.results[0].createtime,'createtime must not be empty');
+  assert.equal(new Date(a.results[0].createtime).getTime(),1788635184*1000);
+});
+
+test('Meta-style nested times are found without per-platform key lists',async()=>{
+  const a=await parsed('meta-nested.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      data:[{post:'測試貼文'}],
+      attachments:[{data:[{media:{uri:'',creation_timestamp:1720000000,title:'測試貼文'}}]}]
+    }]),
+    'activity/instagram/posts.json':j([{
+      media:[{uri:'',taken_at:1721000000,title:'IG 測試'}]
+    }])
+  });
+  const times=a.results.map(r=>new Date(r.createtime).getTime()).sort((x,y)=>x-y);
+  assert.deepEqual(times,[1720000000000,1721000000000]);
+});
