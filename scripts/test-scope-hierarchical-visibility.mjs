@@ -35,3 +35,21 @@ test('trace article lists do not expose hidden location metadata',()=>{
  const trace=read('app/modular/features/trace/TracePlaceResults.jsx');
  assert.doesNotMatch(trace,/checkInPlace=|source_name,source_place/);
 });
+
+test('spatial trace may be made from routes only; saved trace still draws linked stops',()=>{
+  const source=read('app/modular/features/trace/trace-data.js');
+  const start=source.indexOf('function validatedConnections(');
+  const end=source.indexOf('// A Spatial Trace',start);
+  assert.ok(start>=0&&end>start);
+  const fn=new Function('idScope','VALID_ID',source.slice(start,end)+'\\nreturn validatedConnections;')(
+    value=>value,/^[A-Za-z0-9]{4}$/);
+  assert.deepEqual(fn({scopeId:'lo3rwang',type:'space_trace',anchorUids:[],
+    anchors:[],hasRoutes:true}),[]);
+  assert.throws(()=>fn({scopeId:'lo3rwang',type:'space_trace',anchorUids:[],
+    anchors:[],hasRoutes:false}),/痕跡圖/);
+  const manager=read('app/loc/TraceRouteManager.jsx');
+  assert.match(manager,/currentRouteMembers/);
+  assert.match(manager,/currentMemberUids/);
+  assert.match(manager,/maps:\[preview,\.\.\.currentRouteMembers\]/);
+  assert.match(manager,/type==='space_trace'&&routeUids\.length>0/);
+});
