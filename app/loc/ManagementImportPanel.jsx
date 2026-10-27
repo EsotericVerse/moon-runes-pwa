@@ -16,6 +16,7 @@ import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
+import {assertPrivateArchiveDestination,assertArchiveRecordDestination,assertArchiveEntryDestination,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -283,16 +284,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
+        assertStandaloneImportDestination({nativeLocal,fileName:file.name});
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=await zipEntryCount(file);
         const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
         setArchiveDetection(result);
+        assertPrivateArchiveDestination(nativeLocal,result.sources);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],uidOwners=new Map(),exifSamples=[];
         const collector=createArchiveEvidenceCollector();
         let ignored=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+          assertArchiveRecordDestination(record,nativeLocal);
           const article=archiveGalaxyRow(record);
           // Media-only posts still carry URLs even when no Galaxy text exists.
           collector.onRecord(record,article?.uid||null);
@@ -305,9 +309,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
+          assertArchiveEntryDestination(item.path,nativeLocal);
           collector.onExif(item);
           if(exifSamples.length<5)exifSamples.push(item);
-        },onMediaEntry:item=>collector.onMediaEntry(item)});
+        },onMediaEntry:item=>{
+          assertArchiveEntryDestination(item.path,nativeLocal);
+          collector.onMediaEntry(item);
+        }});
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size});
         setArchiveEvidence(mediaEvidence);
         setArchiveSummary({...summary,exifSamples,mediaEvidenceCount:mediaEvidence.length});
@@ -328,6 +336,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
       const list=await parseUniversalImportFile(file,{recordPath,importLocale:language});
+      assertStandaloneImportDestination({nativeLocal,fileName:file.name,rows:list});
       const prepared=list.map(row=>({
         raw:row,
         import_uid:createUid8()
@@ -361,6 +370,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    try{assertStandaloneImportDestination({nativeLocal,fileName,rows,source});}
+    catch(error){setStatus(String(error?.message||error));return;}
     setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
