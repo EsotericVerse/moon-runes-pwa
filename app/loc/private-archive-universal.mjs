@@ -12,6 +12,7 @@ import {canonicalArchiveText} from './archive-record-identity.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
+import {isPrivateArchiveEntryPath} from './archive-import-safety.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -361,7 +362,7 @@ function textDocument(bytes,name,summary,onRecord){
 // vendor-specific rules live in archive-source-signatures.mjs.
 const ZIP_SNIFF_BYTES=65536;
 const ZIP_SNIFF_FILES=160;
-export async function detectZipArchiveSource(file,{signal,onProgress}={}){
+export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivateEntries=false}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的 ZIP 備份檔。');
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('ZIP 超過 1024 MiB 安全限制；未讀取檔案內容。');
@@ -387,7 +388,10 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     aborted(signal);
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 100,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
-    if(!path||path.endsWith('/')){discardZipEntry(unzip,entry);return;}
+    if(!path||path.endsWith('/')||(skipPrivateEntries&&isPrivateArchiveEntryPath(path))){
+      // Never sample, decode, classify or log the private entry in public mode.
+      discardZipEntry(unzip,entry);return;
+    }
     const fileAudit=audit.addFile(path);
     filenames.add(path.split('/').at(-1).toLowerCase());
     inspectEvidence(path,'');
@@ -444,7 +448,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
-export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMediaEntry,onProgress,flush,signal}={}){
+export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMediaEntry,onProgress,flush,signal,skipPrivateEntries=false}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
@@ -464,6 +468,10 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
+      if(skipPrivateEntries&&isPrivateArchiveEntryPath(path)){
+        // Do not parse private chat text, decode EXIF, or build a preview.
+        discardZipEntry(unzip,entry);return;
+      }
       if(importableMediaExtension.test(path))onMediaEntry?.({path});
       if(exifImage.test(path)&&typeof onMediaMetadata==='function'&&[0,8].includes(entry.compression)&&
         (entry.originalSize===undefined||entry.originalSize<=32*1024*1024)&&
@@ -554,6 +562,8 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
     if(!known||sessions.some(s=>!s.ended))throw new Error('壓縮檔內容不存在或未完整展開。');
   }else{
     const path=file.name||'unnamed';
+    if(skipPrivateEntries&&isPrivateArchiveEntryPath(path))
+      throw new Error('私人對話不會在公開網站掃描。');
     const sample=new Uint8Array(await file.slice(0,Math.min(file.size,512)).arrayBuffer());
     const textHead=new TextDecoder('utf-8',{fatal:false}).decode(sample);
     const looksJson=/^\s*[\[{]/.test(textHead)||YTD.test(textHead);
