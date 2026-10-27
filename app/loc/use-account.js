@@ -88,6 +88,10 @@ async function loadManagementAccount(mutate){
   }catch(error){
     // An older request must not erase a newer account's verified grants.
     if(obsolete())return signedOutState;
+    // A failed permission read (e.g. database blocked) must not erase verified
+    // grants already cached for this user; keep the last known authorization.
+    const cached=cachedManagementAccount();
+    if(cached)return cached;
     clearAuthorization();
     scopeMetadata=[];
     return failedState(error);
