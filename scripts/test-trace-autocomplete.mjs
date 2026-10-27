@@ -5,6 +5,7 @@ import './test-spatial-anchor-references.mjs';
 import './test-facebook-backup-place.mjs';
 import {traceAnchorSuggestions,traceAnchorCompletionUid} from '../app/modular/features/trace/trace-anchor-autocomplete.mjs';
 import {findAnchorWriteMatches} from '../app/modular/features/trace/trace-organizer.mjs';
+import {reviewReorderedCoordinateNames,reviewPlaceNameGroups} from '../app/modular/features/trace/trace-place-names.mjs';
 
 const anchors=[
  {uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor',title:'小柏小傑',postal_address:'臺北'},
@@ -44,4 +45,46 @@ test('route composer offers React Select and does not require a county selector'
  assert.ok(source.includes('onClick={addToSpool}'));
  assert.ok(!source.includes('selectedCounty'));
  assert.ok(!source.includes('county_id'));
+});
+
+test('quick-update candidates require matching exact GPS, Scope and name characters',()=>{
+ const point=(uid,title,address=[121.4638,25.0143],source_scope='lo3rwang')=>({
+   uid,title,address,source_scope,trace_type:'space_anchor'
+ });
+ const rows=[
+  point('A001','小柏小傑'),point('A002','小傑小柏'),
+  point('A003','小柏小傑',[121.4639,25.0143]),
+  point('A004','小柏小傑',null),
+  point('A005','小傑小柏',[121.4638,25.0143],'lrunes')
+ ];
+ const candidates=reviewReorderedCoordinateNames(rows);
+ assert.equal(candidates.length,1);
+ assert.deepEqual(candidates[0].items.map(row=>row.uid),['A001','A002']);
+ assert.equal(reviewReorderedCoordinateNames([point('A001','板橋車站'),point('A002','板橋車站')]).length,0);
+});
+test('name organizer recognizes actual space_anchor type without auto-merging distinct positions',()=>{
+ const row=(uid,address)=>({uid,source_scope:'lo3rwang',trace_type:'space_anchor',
+   title:'板橋車站',address});
+ assert.equal(reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.5,25.1])]).automatic.length,1);
+ const different=reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.6,25.1])]);
+ assert.equal(different.automatic.length,0);
+ assert.equal(different.uncertain.length,1);
+});
+test('anchor quick-update preserves UID, is visible and uses theme-colored full-width editor',()=>{
+ const ui=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
+ const organizer=readFileSync(new URL('../app/loc/TraceOrganizer.jsx',import.meta.url),'utf8');
+ const db=readFileSync(new URL('../app/modular/features/trace/trace-data.js',import.meta.url),'utf8');
+ const styles=readFileSync(new URL('../app/styles/features.css',import.meta.url),'utf8');
+ assert.match(ui,/reviewReorderedCoordinateNames\(ownAnchors\)/);
+ assert.match(ui,/onClick=\{\(\)=>quickRename\(group\)\}/);
+ assert.match(ui,/renameTraceAnchorTitles/);
+ assert.match(ui,/rows=\{6\}/);
+ assert.match(ui,/loc-trace-description-field/);
+ assert.match(db,/\.update\(\{title:nonempty\(title,'地點標題'\)\}\)/);
+ assert.match(db,/\.eq\('trace_type','space_anchor'\)\.in\('uid',ids\)/);
+ assert.match(styles,/\.loc-trace-description-field\{grid-column:1\/-1\}/);
+ assert.match(styles,/\.loc-react-select__single-value/);
+ assert.match(styles,/var\(--loc-text\)/);
+ assert.ok(ui.indexOf("{notice?<p") < ui.indexOf("<TraceMap spatialData={spatial}"));
+ assert.doesNotMatch(organizer,/runAutomatic|合併明確文字變體/);
 });
