@@ -62,11 +62,15 @@ test('quick-update candidates require matching exact GPS, Scope and name charact
  assert.deepEqual(candidates[0].items.map(row=>row.uid),['A001','A002']);
  assert.equal(reviewReorderedCoordinateNames([point('A001','板橋車站'),point('A002','板橋車站')]).length,0);
 });
-test('name organizer recognizes actual space_anchor type without auto-merging distinct positions',()=>{
- const row=(uid,address)=>({uid,source_scope:'lo3rwang',trace_type:'space_anchor',
-   title:'板橋車站',address});
- assert.equal(reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.5,25.1])]).automatic.length,1);
- const different=reviewPlaceNameGroups([row('A001',[121.5,25.1]),row('A002',[121.6,25.1])]);
+test('name organizer only shows actionable complete-string reorders at the same recorded point',()=>{
+ const row=(uid,title,address)=>({uid,source_scope:'lo3rwang',trace_type:'space_anchor',
+   title,address});
+ assert.equal(reviewPlaceNameGroups([row('A001','板橋車站',[121.5,25.1]),
+   row('A002','板橋車站',[121.5,25.1])]).automatic.length,0);
+ assert.equal(reviewPlaceNameGroups([row('A001','站車板橋',[121.5,25.1]),
+   row('A002','板橋車站',[121.5,25.1])]).automatic.length,1);
+ const different=reviewPlaceNameGroups([row('A001','站車板橋',[121.5,25.1]),
+   row('A002','板橋車站',[121.6,25.1])]);
  assert.equal(different.automatic.length,0);
  assert.equal(different.uncertain.length,0);
 });
