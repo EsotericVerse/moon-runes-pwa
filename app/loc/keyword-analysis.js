@@ -111,7 +111,7 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   }
   const totals=[...runeTotals.values()];
   return {
-    documentCount:processedDocumentCount,
+    documentCount:documents.length,
     classifiedCount,
     unclassifiedCount,
     tieCount,
@@ -613,7 +613,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     '已完成 '+payloadRows.length.toLocaleString()+' 篇文章 Attr 寫入與定錨驗證');
   return {
     ...resolved,
-    documentCount:documents.length,
+    documentCount:processedDocumentCount,
     keywordMinChars:minChars,
     keywordMinDocuments:minDocuments,
     keywordDocumentCount:verifiedCount,
