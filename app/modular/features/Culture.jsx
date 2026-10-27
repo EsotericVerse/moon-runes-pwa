@@ -623,12 +623,13 @@ export default function Culture(){
   const timelineItems=useMemo(()=>
     (query.data?.timelineItems||[]).filter(item=>isAggregateScope||item.scope_id===scopeId)
   ,[query.data,scopeId]);
-  // The current trace opens first; other trace groups retain their own dates.
-  const activeStructureKey=structureWindowKey==='all'?'all'
+  // Keep the time traces in their saved chronological order. The first view
+  // shows every trace, not only the last-selected trace at the top.
+  const activeStructureKey=structureWindowKey==='all'||!structureWindowKey?'all'
     :primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
-      ?structureWindowKey:structurePreference.preferredKey;
-  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds,activeStructureKey),
-    [timelineItems,expandedTimeTraceIds,activeStructureKey]);
+      ?structureWindowKey:'all';
+  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
+    [timelineItems,expandedTimeTraceIds]);
   const toggleTimeTrace=groupId=>setExpandedTimeTraceIds(current=>
     current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;

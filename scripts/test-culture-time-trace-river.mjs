@@ -90,12 +90,18 @@ test('each Scope has its own permanent anchor lane and stable identifiers',()=>{
   assert.deepEqual(data.items.map(x=>x.id),['time-anchors:example:A001','time-anchors:other:A001']);
 });
 
-test('focused trace moves to the top without changing UID and date ownership',()=>{
-  const normal=buildTimeTraceRiver(source);
-  const focused=buildTimeTraceRiver(source,[],'T002');
-  assert.equal(focused.groups[0].id,'trace:example:T002');
-  assert.deepEqual(new Set(focused.items.map(x=>x.id)),new Set(normal.items.map(x=>x.id)));
-  assert.ok(focused.items.filter(x=>x.entry_type==='anchor').every(x=>x.display_label==='●'));
+test('time trace rows retain chronological order instead of moving active periods to the first lane',()=>{
+  const data=buildTimeTraceRiver(source);
+  assert.deepEqual(data.groups.map(group=>group.id),
+    ['trace:example:T001','trace:example:T002']);
+  assert.deepEqual(data.items.filter(item=>item.entry_type==='anchor')
+    .map(item=>[item.uid,item.group_key]),[
+      ['A001','trace:example:T001'],['A002','trace:example:T001'],
+      ['A003','trace:example:T001'],['A004','trace:example:T001'],
+      ['A003','trace:example:T002'],['A004','trace:example:T002']
+    ]);
+  assert.ok(data.items.filter(x=>x.entry_type==='anchor')
+    .every(x=>x.display_label==='●'));
 });
 test('disconnected traces never absorb anchors in the gap',()=>{
   const data=buildTimeTraceRiver([
@@ -117,4 +123,17 @@ test('invalid trace ranges do not swallow unrelated anchors',()=>{
       ranges:[{start_date:'2026-01-01',end_date:'2026-03-01',invalid:true,point:false}]})
   ]);
   assert.equal(data.items.find(x=>x.uid==='A101')?.group_key,'time-anchors:example');
+});
+
+test('a later time trace cannot move early anchors onto its lane',()=>{
+  const data=buildTimeTraceRiver([
+    row('A100','anchor','P1 定錨點','1988-01-01'),
+    row('A200','anchor','P6 定錨點','2026-07-01'),
+    row('T100','period','P1','1980-01-01','2000-01-01'),
+    row('T200','period','P6','2026-01-01','2026-10-06')
+  ]);
+  assert.deepEqual(data.groups.map(x=>x.id),
+    ['trace:example:T100','trace:example:T200']);
+  assert.equal(data.items.find(x=>x.uid==='A100')?.group_key,'trace:example:T100');
+  assert.equal(data.items.find(x=>x.uid==='A200')?.group_key,'trace:example:T200');
 });
