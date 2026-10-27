@@ -23,6 +23,7 @@ export default {
   "mediaImage": "Images",
   "mediaVideo": "Videos",
   "candidateLane": "Suggested anchors",
+  "candidateLaneLoading": "Suggested anchors (loading…)",
   "timelineEdit": "Edit timeline",
   "exitTimelineEdit": "Exit timeline editing",
   "timelineContent": "Timeline content",

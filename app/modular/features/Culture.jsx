@@ -977,7 +977,11 @@ export default function Culture(){
     // (via onGroupToggle) is what sets anchorSuggestOpen and starts the
     // PELT worker -- never pushing/popping the lane's existence itself.
     if(styleFilter!=='trace'&&densityInputBuckets.length>0){
-      groups.push({id:'dual:source:candidates',label:l.candidateLane,order:900,
+      // Opened but nothing computed yet (worker still running) -- show a
+      // plain "loading" label on the lane itself, not just in the panel
+      // below the chart.
+      const anchorLaneLoading=anchorSuggestOpen&&!virtualAnchorItems.length;
+      groups.push({id:'dual:source:candidates',label:anchorLaneLoading?l.candidateLaneLoading:l.candidateLane,order:900,
         className:'scope-candidate-lane',collapsible:true,expanded:anchorSuggestOpen});
       if(virtualAnchorItems.length)
         items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
