@@ -61,7 +61,6 @@ function isInteractiveTarget(target){
 // Time has ONE management entry. Type selection belongs to the editor form.
 const EMPTY_RIVER_FOCUS=Object.freeze({});
 const EMPTY_CULTURE_GROUPS=Object.freeze([]);
-const EMPTY_RIVER_ANALYSIS=Object.freeze({density:[],changepoints:[],hiddenDates:[],suggestions:[],totalCount:0});
 function emptyRiverLabel(){return '';}
 function classificationRiverLabel(item){
   return item?.entry_type==='virtual_anchor'?(item.display_label||'◇'):'';
