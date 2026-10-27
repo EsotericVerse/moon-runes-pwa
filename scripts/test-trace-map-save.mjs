@@ -16,8 +16,8 @@ test('route editor loads only owned Scope records and IDs; no county required',(
  const page=manager();
  assert.match(page,/account\.canManageScopeSync\(owner\)/);
  assert.match(page,/\.filter\(row=>row\.source_scope===owner\)/);
- assert.match(page,/readTraceMapIndex\(scopeId\)/);
- assert.match(page,/readCurrentTraceAnchors\(owner,current\.anchor_list/);
+ assert.match(page,/readTraceMapIndex\(scopeId,\{includeHidden:own\}\)/);
+ assert.match(page,/readCurrentTraceAnchors\(owner,currentMemberUids/);
  assert.match(page,/readAllTraceAnchors\(owner/);
  assert.doesNotMatch(page,/countyOptions|selectedCounty|county_id/);
 });
@@ -29,10 +29,11 @@ function saveHarness({writeFails=false,readMiss=false}={}){
  const written=[],notice=[],receipt={current:null};
  let reads=0,cleared=0;
  const row={uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',
-   title:'旅程',anchor_list:['A001','B002']};
+   title:'旅程',anchor_list:['A001','B002'],route_list:[],hidden_depth:-1};
  const args={
   busy:false,own:true,editorOpen:true,setBusy:()=>{},setNotice:v=>notice.push(v),setError:()=>{},
   title:'旅程',type:'space_period',queue:['A001','B002'],MAX_ROAD:80,
+  hiddenDepth:-1,routeUids:[],
   pairs:[],MAX_LINES:400,validPair:()=>true,chosenIds:['A001','B002'],
   anchorMap:new Map([['A001',{}],['B002',{}]]),owner:'lo3rwang',description:'',
   allAnchors:[{uid:'A001',source_scope:'lo3rwang'},{uid:'B002',source_scope:'lo3rwang'}],
@@ -81,7 +82,7 @@ test('new spatial connections validate Scope membership and 4-char UID',()=>{
 test('route owner can click visible map anchors to append the ordered Queue',()=>{
  const page=manager();
  assert.match(page,/onAnchorSelect=\{addMapSelectedAnchor\}/);
- assert.match(page,/spatialData=\{\{anchors:allAnchors,maps:preview\?\[preview\]:\[\]\}\}/);
+ assert.match(page,/spatialData=\{\{anchors:allAnchors,maps:preview\?\[preview,\.\.\.records\.filter/);
  assert.match(page,/setQueue\(items=>items\.includes\(uid\)\|\|items\.length>=MAX_ROAD/);
  assert.match(page,/!editorOpen&&showMap&&preview/);
  const start=page.indexOf('  const addMapSelectedAnchor=anchor=>{');

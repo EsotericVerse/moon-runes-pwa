@@ -112,7 +112,7 @@ test('paid third-party place geocoding is absent from all Trace surfaces',()=>{
 test('Frame Queue uses existing selected UIDs with no county prerequisite',()=>{
  const ui=read('app/loc/TraceRouteManager.jsx');
  const db=read('app/modular/features/trace/trace-data.js');
- assert.match(ui,/import Select from 'react-select'/);
+ assert.match(ui,/import PopularSelect from '\.\/PopularSelect'/);
  assert.match(ui,/onClick=\{addToSpool\}/);
  assert.match(ui,/onClick=\{addRoadStop\}/);
  assert.match(ui,/readAllTraceAnchors\(owner/);
@@ -129,7 +129,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/<option value="loc">LOC 自有痕跡<\/option>/);
   assert.ok(feature.indexOf('const periodScopeId=')<feature.indexOf('},[periodScopeId]);'),
     'derived Scope must be initialized before any effect dependency accesses it');
-  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list,/);
+  assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,members,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
   assert.match(feature,/onAnchorSelect=\{chooseMapAnchor\}/);
   assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
@@ -150,8 +150,8 @@ test('Search recommendations execute real queries and only suggest loaded place 
   assert.match(search,/function searchFromSuggestion\(/);
   assert.match(search,/onSuggestionClick=\{term=>searchFromSuggestion\(term\)\}/);
   assert.match(search,/executeSearch\(term,null,\{overrideOptions:/);
-  assert.match(search,/suggestedPlaces=useMemo\(/);
-  assert.match(search,/searchFromSuggestion\(place,\{placeOnly:true/);
+  assert.doesNotMatch(search,/suggestedPlaces=useMemo\(/);
+  assert.doesNotMatch(search,/searchFromSuggestion\(place,\{placeOnly:true/);
   assert.match(search,/<datalist id="scope-search-loaded-titles">/);
   assert.match(blocks,/blocksToPlainText\(html\)\.split/);
   assert.match(blocks,/!slot\.entities\.some\(entity=>recommendationTerm\(entity\.text\)\)/);
