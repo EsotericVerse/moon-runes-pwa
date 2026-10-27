@@ -68,6 +68,13 @@ test('same Timeline coordinate groups hundreds of distinct article rows without 
  assert.equal(groups[0].defaultPlaceId,'');
  assert.deepEqual(groups[0].candidates.map(c=>c.uid),['A001','A002']);
 });
+test('nearby but distinct coordinates never automatically share one review group',()=>{
+ const hits=[25.0123000,25.0123001].map((lat,i)=>({
+  uid:String(i).padStart(8,'0'),place_id:null,
+  window:{lat,lng:121.4567,candidates:[{uid:'A001',title:'甲',meters:0}],disputed:false}
+ }));
+ assert.equal(groupTimelineMissingPlaces(accumulateTimelineArticles(hits)).length,2);
+});
 test('one article matched at different coordinates cannot be swept into a bulk group',()=>{
  const hit=(lat,placeId)=>({uid:'11111111',place_id:null,window:{
    lat,lng:121,candidates:[{uid:placeId,title:placeId,meters:1}],disputed:false
