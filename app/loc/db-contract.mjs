@@ -166,6 +166,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
+    // A timeout we recover from must not emit a misleading 'save failed'
+    // toast; only the exhausted/non-retryable error emits that notice.
     // Each JSONB recordset UPDATE runs under the authenticated connection's
     // 30s statement_timeout. Keep transactions bounded; a timeout rolls back
     // the whole failed chunk. Retry only that chunk with a smaller size.
@@ -183,11 +185,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       const batch=rows.slice(offset,offset+batchSize);
       let affected;
       try{
-        affected=await keywordClassificationWrite(scope,{mode:'chunk',rows:batch});
+        affected=await keywordClassificationWriteUnchecked(scope,{mode:'chunk',rows:batch});
       }catch(error){
         const timedOut=/canceling statement due to statement timeout/i
           .test(String(error?.message||error));
-        if(!timedOut||batchSize<=100)throw error;
+        if(!timedOut||batchSize<=100){
+          flashMessage(WRITE_FAILED_NOTICE);
+          throw error;
+        }
         batchSize=Math.max(100,Math.floor(batchSize/2));
         continue; // The canceled statement committed no rows; retry this offset.
       }
