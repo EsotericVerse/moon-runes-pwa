@@ -24,28 +24,23 @@ const source=[
   row('T002','period','時間痕跡乙','2026-02-01','2026-02-06',{anchor_ids:['E002']})
 ];
 
-test('collapsed trace roots retain a permanent lane for every saved anchor',()=>{
+test('collapsed first river shows only trace labels and no child rows',()=>{
   const data=buildTimeTraceRiver(source);
   assert.deepEqual(data.groups.map(x=>x.label),['時間痕跡甲','時間痕跡乙']);
   assert.ok(data.groups.every(x=>x.collapsible&&!x.expanded));
-  assert.deepEqual(data.items.filter(x=>x.entry_type==='anchor').map(x=>x.uid),
-    ['A001','A002','A003','A004','A003','A004']);
-  assert.ok(data.items.filter(x=>x.entry_type==='anchor')
-    .every(x=>x.group_key.startsWith('trace:example:')&&x.display_label==='●'));
-  assert.deepEqual(data.items.filter(x=>x.entry_type==='event').map(x=>x.group_key),
-    ['trace:example:T001','trace:example:T001','trace:example:T002']);
-  assert.ok(!data.items.some(x=>x.end_date&&x.end_date.includes('now')));
-  assert.equal(data.items.find(x=>x.time_period_uid==='E001').end_date,undefined,
-    'single-day event must be a point, not a range');
+  assert.deepEqual(data.items,[]);
 });
 test('trace expansion adds ordered event groups and actual endpoints',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001']);
   assert.deepEqual(data.groups.map(x=>x.id),[
-    'trace:example:T001','trace-event:example:T001:E002',
+    'trace:example:T001','trace-anchors:example:T001',
+    'trace-event:example:T001:E002',
     'trace-event:example:T001:E001','trace-event:example:T001:GONE',
     'trace:example:T002'
   ]);
-  assert.equal(data.items.filter(x=>x.entry_type==='anchor').length,9);
+  assert.equal(data.items.filter(x=>x.entry_type==='anchor').length,7);
+  assert.deepEqual(data.items.filter(x=>x.entry_type==='event').map(x=>x.group_key),
+    ['trace-event:example:T001:E002','trace-event:example:T001:E001']);
   assert.deepEqual(data.items.filter(x=>x.entry_type==='anchor'&&
     x.group_key.startsWith('trace-event:')).map(x=>x.start_date),
     ['2026-02-01','2026-02-06','2026-01-01']);
@@ -54,7 +49,7 @@ test('trace expansion adds ordered event groups and actual endpoints',()=>{
 test('one event can be reused under two traces without merging separated intervals',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001','trace:example:T002']);
   assert.equal(data.items.filter(x=>x.entry_type==='anchor'&&x.uid==='A003').length,4,
-    'anchor appears in two traces and their two expanded event rows');
+    'an anchor appears in both expanded traces and their two child event rows');
   assert.equal(data.items.filter(x=>x.entry_type==='event'&&x.time_trace_uid==='T001').length,2);
   assert.equal(data.items.filter(x=>x.time_trace_uid==='T001'&&x.start_date==='2026-01-01'
     &&x.end_date==='2026-02-06').length,0,'gap must not be filled');
@@ -77,7 +72,9 @@ test('unlinked dated anchors are visible even when no traces exist',()=>{
   ];
   const data=buildTimeTraceRiver(items);
   assert.deepEqual(data.groups.map(x=>x.id),['time-anchors:example']);
-  assert.deepEqual(data.items.map(x=>({uid:x.uid,start:x.start_date,kind:x.entry_type})),[
+  assert.deepEqual(data.items,[]);
+  const expanded=buildTimeTraceRiver(items,['time-anchors:example']);
+  assert.deepEqual(expanded.items.map(x=>({uid:x.uid,start:x.start_date,kind:x.entry_type})),[
     {uid:'FREE',start:'2026-08-15',kind:'anchor'}
   ]);
 });
@@ -87,21 +84,28 @@ test('each Scope has its own permanent anchor lane and stable identifiers',()=>{
     row('A001','anchor','乙','2026-01-02',null,{scope_id:'other'})
   ]);
   assert.deepEqual(data.groups.map(x=>x.label),['example · 定錨點','other · 定錨點']);
-  assert.deepEqual(data.items.map(x=>x.id),['time-anchors:example:A001','time-anchors:other:A001']);
+  assert.deepEqual(data.items,[]);
+  const expanded=buildTimeTraceRiver([
+    row('A001','anchor','甲','2026-01-01'),
+    row('A001','anchor','乙','2026-01-02',null,{scope_id:'other'})
+  ],['time-anchors:example','time-anchors:other']);
+  assert.deepEqual(expanded.items.map(x=>x.id),['time-anchors:example:A001','time-anchors:other:A001']);
 });
 
 test('time trace rows retain chronological order instead of moving active periods to the first lane',()=>{
   const data=buildTimeTraceRiver(source);
   assert.deepEqual(data.groups.map(group=>group.id),
     ['trace:example:T001','trace:example:T002']);
-  assert.deepEqual(data.items.filter(item=>item.entry_type==='anchor')
-    .map(item=>[item.uid,item.group_key]),[
-      ['A001','trace:example:T001'],['A002','trace:example:T001'],
-      ['A003','trace:example:T001'],['A004','trace:example:T001'],
-      ['A003','trace:example:T002'],['A004','trace:example:T002']
+  assert.deepEqual(data.items,[]);
+  const opened=buildTimeTraceRiver(source,['trace:example:T001','trace:example:T002']);
+  assert.deepEqual(opened.items.filter(item=>item.entry_type==='anchor'&&
+    item.group_key.startsWith('trace-anchors:')).map(item=>[item.uid,item.group_key]),[
+      ['A001','trace-anchors:example:T001'],['A002','trace-anchors:example:T001'],
+      ['A003','trace-anchors:example:T001'],['A004','trace-anchors:example:T001'],
+      ['A003','trace-anchors:example:T002'],['A004','trace-anchors:example:T002']
     ]);
-  assert.ok(data.items.filter(x=>x.entry_type==='anchor')
-    .every(x=>x.display_label==='●'));
+  assert.ok(opened.items.filter(x=>x.entry_type==='anchor')
+    .every(x=>x.group_key.startsWith('trace-anchors:')?x.display_label==='●':true));
 });
 test('disconnected traces never absorb anchors in the gap',()=>{
   const data=buildTimeTraceRiver([
@@ -112,8 +116,16 @@ test('disconnected traces never absorb anchors in the gap',()=>{
       ranges:[{start_date:'2026-01-01',end_date:'2026-01-05'},
         {start_date:'2026-03-25',end_date:'2026-03-31'}]})
   ]);
-  assert.deepEqual(data.items.filter(x=>x.group_key==='trace:example:T009').map(x=>x.uid),['A101','A103']);
-  assert.deepEqual(data.items.filter(x=>x.group_key==='time-anchors:example').map(x=>x.uid),['A102']);
+  const expanded=buildTimeTraceRiver([
+    row('A101','anchor','頭','2026-01-02'),
+    row('A102','anchor','空隙','2026-02-01'),
+    row('A103','anchor','尾','2026-03-29'),
+    row('T009','period','間斷時期','2026-01-01','2026-03-31',{
+      ranges:[{start_date:'2026-01-01',end_date:'2026-01-05'},
+        {start_date:'2026-03-25',end_date:'2026-03-31'}]})
+  ],['trace:example:T009','time-anchors:example']);
+  assert.deepEqual(expanded.items.filter(x=>x.group_key==='trace-anchors:example:T009').map(x=>x.uid),['A101','A103']);
+  assert.deepEqual(expanded.items.filter(x=>x.group_key==='time-anchors:example').map(x=>x.uid),['A102']);
   assert.equal(data.groups.find(x=>x.id==='time-anchors:example')?.label,'未歸屬定錨點');
 });
 test('invalid trace ranges do not swallow unrelated anchors',()=>{
@@ -122,7 +134,13 @@ test('invalid trace ranges do not swallow unrelated anchors',()=>{
     row('T009','period','失效時期','2026-01-01','2026-03-01',{
       ranges:[{start_date:'2026-01-01',end_date:'2026-03-01',invalid:true,point:false}]})
   ]);
-  assert.equal(data.items.find(x=>x.uid==='A101')?.group_key,'time-anchors:example');
+  assert.deepEqual(data.items,[]);
+  const expanded=buildTimeTraceRiver([
+    row('A101','anchor','有效日期','2026-02-01'),
+    row('T009','period','失效時期','2026-01-01','2026-03-01',{
+      ranges:[{start_date:'2026-01-01',end_date:'2026-03-01',invalid:true,point:false}]})
+  ],['time-anchors:example','trace:example:T009']);
+  assert.equal(expanded.items.find(x=>x.uid==='A101')?.group_key,'time-anchors:example');
 });
 
 test('a later time trace cannot move early anchors onto its lane',()=>{
@@ -134,6 +152,22 @@ test('a later time trace cannot move early anchors onto its lane',()=>{
   ]);
   assert.deepEqual(data.groups.map(x=>x.id),
     ['trace:example:T100','trace:example:T200']);
-  assert.equal(data.items.find(x=>x.uid==='A100')?.group_key,'trace:example:T100');
-  assert.equal(data.items.find(x=>x.uid==='A200')?.group_key,'trace:example:T200');
+  assert.deepEqual(data.items,[]);
+  const expanded=buildTimeTraceRiver([
+    row('A100','anchor','P1 定錨點','1988-01-01'),
+    row('A200','anchor','P6 定錨點','2026-07-01'),
+    row('T100','period','P1','1980-01-01','2000-01-01'),
+    row('T200','period','P6','2026-01-01','2026-10-06')
+  ],['trace:example:T100','trace:example:T200']);
+  assert.equal(expanded.items.find(x=>x.uid==='A100')?.group_key,'trace-anchors:example:T100');
+  assert.equal(expanded.items.find(x=>x.uid==='A200')?.group_key,'trace-anchors:example:T200');
+});
+
+test('expanding one trace never pre-opens another trace',()=>{
+ const first=buildTimeTraceRiver(source,['trace:example:T001']);
+ assert.ok(first.groups.some(x=>x.id==='trace-anchors:example:T001'));
+ assert.ok(!first.groups.some(x=>x.id==='trace-anchors:example:T002'));
+ assert.ok(!first.items.some(x=>x.group_key.includes('T002')));
+ const collapsed=buildTimeTraceRiver(source);
+ assert.equal(collapsed.items.length,0);
 });
