@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
-import Select from 'react-select';
+import PopularSelect from './PopularSelect';
 import {useEditDockForm} from '../modular/edit-dock';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
@@ -106,7 +106,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
     <p className="scope-status">地點名稱、文字說明與經緯度分開處理；經緯度儲存於 address Array，文字地址存 description.address。不使用縣市分類、周圍半徑或付費地理查詢。</p>
     <label>編輯既有地點（直接搜尋標題）
-      <Select instanceId={'trace-anchor-edit-'+scopeId} inputId={'trace-anchor-edit-'+scopeId}
+      <PopularSelect scopeId={scopeId} kind="space" instanceId={'trace-anchor-edit-'+scopeId} inputId={'trace-anchor-edit-'+scopeId}
         options={options} isClearable value={options.find(o=>o.value===editingUid)||null}
         onChange={choice=>pickExisting(choice?.value||'')} isDisabled={busy}
         placeholder="搜尋標題，或留空新增" classNamePrefix="loc-react-select"/>
