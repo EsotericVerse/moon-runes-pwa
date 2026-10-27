@@ -558,7 +558,6 @@ button,a,.loc-control,.loc-button,
 .loc-next-main[data-loc-scope="loc"] .scope-feature-hero--trace{--scope-feature-hero-image:url('../../pics/LOC-gn.jpg')}
 .scope-feature-hero--admin{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/scope-gn.jpg')}
-.loc-next-main[data-loc-scope="loc"] .scope-feature-hero--manage{--scope-feature-hero-image:url('../../pics/LOC-admin.jpg')}
 .scope-feature-hero--setting{--scope-feature-hero-image:url('../../pics/local-setting.jpg')}
 @media(max-width:760px){
   .scope-feature-hero--artwork{
@@ -1324,6 +1323,20 @@ body{
   max-width:100%;
   /* Match the verified feature Heroes: keep the entire image visible. */
   background-size:100% 100%,contain;
+}
+/* LOC management Heroes use the verified System Admin artwork geometry;
+   the System Admin Hero itself remains unchanged. */
+.loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
+  min-height:clamp(430px,50vw,620px);
+  padding:clamp(1.6rem,4vw,3.75rem);
+  border-radius:var(--loc-ui-radius-xl);
+  background-position:center center,right center;
+}
+@media(max-width:760px){
+  .loc-next-main[data-loc-scope="loc"] .scope-main--edit-workspace .scope-feature-hero--manage{
+    min-height:clamp(460px,118vw,570px);
+    padding:1.35rem;
+  }
 }
 .management-hero-copy-editor{display:grid;gap:1rem;min-width:0}
 .management-hero-copy-group{display:grid;gap:.65rem;min-width:0}
