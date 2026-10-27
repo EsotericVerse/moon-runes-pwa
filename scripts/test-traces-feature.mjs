@@ -242,3 +242,52 @@ test('Trace automatically loads all Scope anchors only when no saved route exist
   assert.match(map,/mapRef\.current\?\.overview\(\)/);
   assert.match(map,/spatialData===null\?'正在取得空間定錨點資料/);
 });
+
+test('Trace reads each real Scope table and distinguishes zero LOC rows from 581 author anchors',async()=>{
+  const source=read('app/modular/features/trace/trace-data.js');
+  const locRows=[],authorRows=Array.from({length:581},(_,i)=>({
+    uid:String(i).padStart(4,'0'),trace_type:'space_anchor',
+    title:'地點 '+i,description:{text:''},anchor_list:[],times:[],
+    address:[121.5,25.02]
+  }));
+  const tables={loc_trace:locRows,lo3rwang_trace:authorRows,lrunes_trace:[]};
+  const calls=[];
+  const dbPublicClient={schema:schema=>{
+    assert.equal(schema,'silver');
+    return {from:table=>{
+      assert.ok(Object.hasOwn(tables,table),'must use an actual Scope table: '+table);
+      const call={table,columns:'',from:0,to:749,conditions:[],ids:null};
+      calls.push(call);
+      const query={
+        select(columns){call.columns=columns;return this;},
+        order(){return this;},
+        range(from,to){call.from=from;call.to=to;return this;},
+        eq(key,value){call.conditions.push([key,value]);return this;},
+        in(_key,ids){call.ids=ids;return this;},
+        limit(){return this;},
+        then(resolve,reject){
+          let rows=tables[table].filter(row=>call.conditions.every(([key,v])=>row[key]===v));
+          if(call.ids)rows=rows.filter(row=>call.ids.includes(row.uid));
+          return Promise.resolve({data:rows.slice(call.from,call.to+1),error:null}).then(resolve,reject);
+        }
+      };
+      return query;
+    }};
+  }};
+  const executable=source.replace(/^import [^\\n]*\\n/gm,'')
+    .replace(/\\bexport (?=(?:const|async function))/g,'');
+  const {readTraceData,readTraceMapIndex,readAllTraceAnchors,readCurrentTraceAnchors}
+    =new Function('dbPublicClient',executable+
+      '\\nreturn {readTraceData,readTraceMapIndex,readAllTraceAnchors,readCurrentTraceAnchors};')(dbPublicClient);
+  assert.deepEqual(await readTraceData('loc'),{anchors:[],maps:[]});
+  assert.deepEqual(await readTraceMapIndex('loc'),[]);
+  assert.equal((await readTraceData('lo3rwang')).anchors.length,581);
+  assert.equal((await readAllTraceAnchors('lo3rwang')).length,581);
+  locRows.push({...authorRows[0],uid:'A001'});
+  const matched=await readCurrentTraceAnchors('loc',['A001']);
+  assert.equal(matched.length,1);
+  assert.equal(matched[0].source_scope,'loc');
+  assert.ok(calls.some(call=>call.table==='loc_trace'),'empty LOC must be queried');
+  assert.ok(calls.some(call=>call.table==='lo3rwang_trace'),'author scope must be queried');
+  assert.ok(calls.every(call=>!call.columns.includes('scope_id')),'no nonexistent union column');
+});
