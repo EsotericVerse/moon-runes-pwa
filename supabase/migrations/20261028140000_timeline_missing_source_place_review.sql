@@ -117,3 +117,5 @@ REVOKE ALL ON FUNCTION silver.preview_timeline_missing_place_windows(text,jsonb,
 REVOKE ALL ON FUNCTION silver.apply_timeline_missing_places(text,jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION silver.preview_timeline_missing_place_windows(text,jsonb,integer,integer) TO authenticated;
 GRANT EXECUTE ON FUNCTION silver.apply_timeline_missing_places(text,jsonb) TO authenticated;
+
+NOTIFY pgrst, 'reload schema';
