@@ -94,7 +94,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,url,statistics_able',
+        columns:'uid,title,createtime,source_name,place_id,statistics_able',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];

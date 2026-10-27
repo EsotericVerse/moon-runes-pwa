@@ -5,7 +5,7 @@ import {Capacitor} from '@capacitor/core';
 // Web: use the existing DB-side aggregate RPC, not a full article scan.
 // Native/local SQLite retains the original on-device row-level reader.
 export async function readPlaceSummary(scopeId,{startDate='',endDate=''}={}){
-  const [{selectAllRows,selectRows},{defaultScopeData},{dbPublicClient}]=await Promise.all([
+  const [{forEachAllRowsPage,selectRows},{defaultScopeData},{dbPublicClient}]=await Promise.all([
     import('./db-query.mjs'),import('./scope-data'),import('./db-client.mjs')
   ]);
   const scope=defaultScopeData(scopeId);
@@ -33,19 +33,19 @@ export async function readPlaceSummary(scopeId,{startDate='',endDate=''}={}){
     ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
     ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
   ];
-  const {rows}=await selectAllRows(scope.galaxy,{
-    columns:'uid,source_place,createtime',filters
-  });
+  // Stream page by page and keep only the per-day counters; no uid or row list.
   const summary=new Map();
-  for(const row of rows){
-    const place=String(row.source_place||'').trim();
-    if(!place||!row.createtime)continue;
-    const day=new Intl.DateTimeFormat('sv-SE',{
-      timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
-    }).format(new Date(row.createtime));
-    const key=day+'\u0000'+place;
-    summary.set(key,(summary.get(key)||0)+1);
-  }
+  await forEachAllRowsPage(scope.galaxy,{columns:'source_place,createtime',filters},rows=>{
+    for(const row of rows){
+      const place=String(row.source_place||'').trim();
+      if(!place||!row.createtime)continue;
+      const day=new Intl.DateTimeFormat('sv-SE',{
+        timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+      }).format(new Date(row.createtime));
+      const key=day+'\u0000'+place;
+      summary.set(key,(summary.get(key)||0)+1);
+    }
+  });
   return {
     rows:[...summary].map(([key,item_count])=>{
       const [day,category]=key.split('\u0000');
