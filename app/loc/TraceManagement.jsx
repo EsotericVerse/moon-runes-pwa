@@ -8,7 +8,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {
   TRACE_SCOPES,traceKey,traceAllAnchorsKey,
-  readTraceData,addTraceAnchor,updateTraceAnchor,renameTraceAnchorTitles
+  readTraceData,addTraceAnchor,updateTraceAnchor,renameTraceAnchorTitles,updateTraceVisibilityBulk
 } from '../modular/features/trace/trace-data';
 import {reviewReorderedCoordinateNames} from '../modular/features/trace/trace-place-names.mjs';
 
@@ -27,6 +27,9 @@ function AnchorEditor({scopeId,spatial,reload}){
   const ownAnchors=useMemo(()=>(spatial.anchors||[]).filter(row=>row.source_scope===scopeId),
     [spatial.anchors,scopeId]);
   const [editingUid,setEditingUid]=useState('');
+  const [hiddenDepth,setHiddenDepth]=useState(-1);
+  const [bulkUids,setBulkUids]=useState([]);
+  const [bulkBusy,setBulkBusy]=useState(false);
   const [standardTitles,setStandardTitles]=useState({});
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
@@ -46,6 +49,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setTitle(row?.title||'');
     setDescription(row?.description||'');
     setPostalAddress(row?.postal_address||'');
+    setHiddenDepth(Number(row?.hidden_depth??-1));
     setLongitude(row?.longitude==null?'':String(row.longitude));
     setLatitude(row?.latitude==null?'':String(row.latitude));
     if(row?.longitude!=null&&row?.latitude!=null)
@@ -59,7 +63,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setBusy(true);setIsError(false);setNotice('');
     try{
       if(!title.trim())throw Error('請填入空間定錨點標題');
-      const input={scopeId,title,description,address:postalAddress,longitude,latitude};
+      const input={scopeId,title,description,address:postalAddress,longitude,latitude,hiddenDepth};
       const saved=editingUid
         ?await updateTraceAnchor({...input,uid:editingUid})
         :await addTraceAnchor(input);
@@ -72,7 +76,7 @@ function AnchorEditor({scopeId,spatial,reload}){
         cache.invalidate({queryKey:['trace-current',scopeId]})
       ]);
       setEditingUid('');setTitle('');setDescription('');setPostalAddress('');
-      setLongitude('');setLatitude('');
+      setLongitude('');setLatitude('');setHiddenDepth(-1);
       setNotice('定錨點 '+saved.uid+' 已保存。'+(refreshFailed?'重新讀取未完成，請勿重複提交。':''));
       return true;
     }catch(e){setIsError(true);setNotice(String(e.message||e));return false;}
@@ -100,6 +104,19 @@ function AnchorEditor({scopeId,spatial,reload}){
         +(refreshFailed?' 重新讀取未完成，請勿重複提交。':''));
     }catch(e){setIsError(true);setNotice(String(e.message||e));}
     finally{setBusy(false);}
+  };
+  const bulkApply=async depth=>{
+    if(bulkBusy||busy||!bulkUids.length||scopeId==='loc')return;
+    if(!window.confirm('確定更新 '+bulkUids.length+' 個空間定錨點的公開設定？'))return;
+    setBulkBusy(true);setNotice('');
+    try{
+      let count=0;
+      for(let i=0;i<bulkUids.length;i+=200)
+        count+=await updateTraceVisibilityBulk({scopeId,uids:bulkUids.slice(i,i+200),hiddenDepth:depth});
+      setBulkUids([]);await reload();
+      setNotice('已更新 '+count+' 個空間定錨點。');
+    }catch(e){setIsError(true);setNotice(String(e.message||e));}
+    finally{setBulkBusy(false);}
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card loc-trace-anchor-editor">
@@ -135,11 +152,32 @@ function AnchorEditor({scopeId,spatial,reload}){
       })}
       {renameGroups.length>80?<p className="scope-status">目前顯示前 80 組，整理後會載入下一批。</p>:null}
     </details>
+    <details className="scope-card">
+      <summary>大量設定空間定錨點隱藏（已選 {bulkUids.length} 筆）</summary>
+      <div className="scope-stat-controls">
+        <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids(ownAnchors.map(row=>row.uid))}>全選所有定錨點</button>
+        <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids([])}>清除</button>
+        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(0)}>大量隱藏</button>
+        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(-1)}>大量公開</button>
+      </div>
+      <div style={{maxHeight:'16rem',overflow:'auto'}}>
+        {ownAnchors.map(row=><label key={row.uid} style={{display:'block'}}>
+          <input type="checkbox" disabled={bulkBusy} checked={bulkUids.includes(row.uid)}
+            onChange={e=>setBulkUids(ids=>e.target.checked?[...ids.filter(uid=>uid!==row.uid),row.uid]:ids.filter(uid=>uid!==row.uid))}/>
+          {row.title} · {row.uid}
+        </label>)}
+      </div>
+    </details>
     <div className="scope-management-fields">
       <label>地點標題<input maxLength={120} value={title} onChange={e=>setTitle(e.target.value)}
         disabled={busy} placeholder="空間定錨點名稱"/></label>
       <label>文字地址（非必填）<input maxLength={320} value={postalAddress}
         onChange={e=>setPostalAddress(e.target.value)} disabled={busy}/></label>
+      <label>可見性
+        <select className="scope-select" value={hiddenDepth} onChange={e=>setHiddenDepth(Number(e.target.value))} disabled={busy}>
+          <option value={-1}>公開</option><option value={0}>單獨隱藏</option>
+        </select>
+      </label>
       <label className="loc-trace-description-field">說明<textarea rows={6} maxLength={2000} value={description}
         onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
       <label>經度（可留空）<input type="number" min={-180} max={180} step="any"
@@ -164,7 +202,7 @@ function AnchorEditor({scopeId,spatial,reload}){
 // The parent manager owns authorization, edit mode and tab navigation.
 export default function TraceManagementPanel({scopeId,mode='anchor'}){
   const enabled=TRACE_SCOPES.includes(scopeId);
-  const query=useAsyncResource(traceKey(scopeId),()=>readTraceData(scopeId),{
+  const query=useAsyncResource(traceKey(scopeId,{includeHidden:true}),()=>readTraceData(scopeId,{includeHidden:true}),{
     enabled:enabled&&mode!=='map',revalidateOnFocus:false,revalidateOnReconnect:false
   });
   if(!enabled)return <p className="scope-status">此 Scope 尚未配置痕跡資料表。</p>;

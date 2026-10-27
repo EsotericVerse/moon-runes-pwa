@@ -13,7 +13,7 @@ import {
   TRACE_DEFAULT_ROUTE_CHANGED
 } from './trace/trace-route-preference.mjs';
 import {
-  TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,
+  TRACE_SCOPES,traceMapIndexKey,traceCurrentKey,traceAllAnchorsKey,traceMemberUids,
   readTraceMapIndex,readCurrentTraceAnchors,readAllTraceAnchors
 } from './trace/trace-data';
 
@@ -98,6 +98,12 @@ export default function Trace({scopeId='loc'}){
     return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
   },[traceIndex.data,periodScopeId,currentTraceChoice]);
   const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
+  const linkedRoutes=useMemo(()=>currentMap?.trace_type==='space_trace'
+    ?maps.filter(row=>row.trace_type==='space_period'&&(currentMap.route_list||[]).includes(row.uid))
+    :[],[currentMap,maps]);
+  const members=useMemo(()=>currentMap
+    ?[...new Set([...traceMemberUids(currentMap),...linkedRoutes.flatMap(traceMemberUids)])]:[],
+    [currentMap,linkedRoutes]);
   useEffect(()=>{setDemoStopIds([]);},[periodScopeId,currentMap?.uid,showingAll]);
 
   // Phase 2: cache the current route's 2–80 sites by its membership revision.
@@ -105,11 +111,11 @@ export default function Trace({scopeId='loc'}){
   // that any one stop was occupied for its entire duration.
   const anchorsQuery=useAsyncResource({
     queryKey:currentMap
-      ?traceCurrentKey(periodScopeId,currentMap,{nativeOnly:periodScopeId==='loc'})
+      ?traceCurrentKey(periodScopeId,{...currentMap,anchor_list:members},{nativeOnly:periodScopeId==='loc'})
       :traceAllAnchorsKey(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     enabled:supported&&routeListOpen&&traceIndex.data!==undefined&&(Boolean(currentMap)||showingAll),
     queryFn:()=>currentMap
-      ?readCurrentTraceAnchors(periodScopeId,currentMap.anchor_list,
+      ?readCurrentTraceAnchors(periodScopeId,members,
           {nativeOnly:periodScopeId==='loc'})
       :readAllTraceAnchors(periodScopeId,{nativeOnly:periodScopeId==='loc'}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
@@ -119,8 +125,8 @@ export default function Trace({scopeId='loc'}){
     if(!showingAll&&!currentMap)return {anchors:[],maps:[]};
     if(anchorsQuery.data===undefined)return null;
     return {anchors:anchorsQuery.data,
-      maps:showingAll?maps:[currentMap]};
-  },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll]);
+      maps:showingAll?maps:[currentMap,...linkedRoutes]};
+  },[routeListOpen,traceIndex.data,anchorsQuery.data,currentMap,showingAll,linkedRoutes]);
 
   const demoRoute=useMemo(()=>traceDemoRoute(demoStopIds,spatialData?.anchors||[],periodScopeId),
     [demoStopIds,spatialData?.anchors,periodScopeId]);
@@ -267,7 +273,7 @@ export default function Trace({scopeId='loc'}){
 
 
     {!mapOnly&&reportPlace?<TracePlaceResults place={reportPlace}
-      anchors={spatialData?.anchors||[]} scopeId={periodScopeId}
+      anchors={spatialData?.anchors||[]} maps={spatialData?.maps||[]} scopeId={periodScopeId}
       tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>:null}
   </FeaturePage>;
 }
