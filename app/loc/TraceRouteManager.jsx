@@ -83,7 +83,7 @@ export default function TraceRouteManager({scopeId}){
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length||routeUids.length||hiddenDepth!==-1);
   const chosenIds=type==='space_period'?queue:unique(pairs.flat());
   const preview=editorOpen
-    ?(chosenIds.length>=2
+    ?(chosenIds.length>=2||type==='space_trace'&&routeUids.length>0
       ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
         title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs,route_list:routeUids}
       :null)
@@ -172,7 +172,7 @@ export default function TraceRouteManager({scopeId}){
       if(!title.trim())throw Error('請輸入名稱');
       if(type==='space_period'&&(queue.length<2||queue.length>MAX_ROAD))
         throw Error('路線至少兩站，依先後順序建立');
-      if(type==='space_trace'&&(!pairs.length||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
+      if(type==='space_trace'&&(!(pairs.length||routeUids.length)||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
         throw Error('痕跡圖必須至少有一條有效的起點與終點線段');
       if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('Spool 內有尚未載入的定錨點');
       const input={scopeId:owner,type,title,description,hiddenDepth,routeUids:type==='space_trace'?routeUids:[],
@@ -376,7 +376,7 @@ export default function TraceRouteManager({scopeId}){
       </>}
       <div className="scope-stat-controls">
         <button className="loc-button primary" type="submit" disabled={busy||!own||anchorIndex.isPending||Boolean(anchorIndex.error)||!title.trim()||
-          (type==='space_period'?queue.length<2:pairs.length<1)}>
+          (type==='space_period'?queue.length<2:!(pairs.length||routeUids.length))}>
           {busy?'儲存中…':'儲存'+(type==='space_period'?'路線圖':'痕跡圖')}
         </button>
         <button type="button" className="loc-button" disabled={busy}
