@@ -1430,3 +1430,38 @@
   border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)
 }
 .loc-trace-quick-update-group>.loc-button{justify-self:start}
+
+
+/* Location management: section selectors must be visually recognizable as
+   clickable disclosure controls on both desktop and mobile. */
+.loc-place-disclosure>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+  width:100%;min-width:0;min-height:52px;padding:.8rem 1rem;
+  border:1px solid var(--loc-accent-border);border-radius:var(--loc-ui-radius-md);
+  background:var(--loc-surface-soft);color:var(--loc-heading);
+  list-style:none;cursor:pointer;line-height:1.45;
+}
+.loc-place-disclosure>summary::-webkit-details-marker{display:none}
+.loc-place-disclosure>summary::marker{content:''}
+.loc-place-disclosure>summary:hover,
+.loc-place-disclosure[open]>summary{
+  background:var(--loc-ui-accent-soft);border-color:var(--loc-accent)
+}
+.loc-place-disclosure>summary:focus-visible{
+  outline:2px solid var(--loc-accent);outline-offset:2px
+}
+.loc-place-disclosure-title{display:grid;gap:.15rem;min-width:0;overflow-wrap:anywhere}
+.loc-place-disclosure-title strong{font-size:1rem;font-weight:750}
+.loc-place-disclosure-title small{color:var(--loc-muted);font-size:.85rem;font-weight:450}
+.loc-place-disclosure-indicator{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;min-width:4.5rem;padding:.35rem .6rem;
+  border:1px solid var(--loc-accent-border);border-radius:var(--loc-radius-sm);
+  background:var(--loc-panel);color:var(--loc-heading);
+  font-size:.82rem;font-weight:750;white-space:nowrap
+}
+.loc-place-disclosure-body{padding-top:.8rem;min-width:0}
+@media(max-width:520px){
+  .loc-place-disclosure>summary{padding:.75rem;gap:.5rem}
+  .loc-place-disclosure-indicator{min-width:3.8rem;padding:.3rem .45rem}
+}
