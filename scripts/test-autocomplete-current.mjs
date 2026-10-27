@@ -49,6 +49,7 @@ test('search/map/input autocomplete and management refresh retain Scope boundari
   assert.match(search,/onDoubleClick=\{\(\)=>setSearchPopularOpen\(true\)\}/);
   assert.match(map,/onDoubleClick=\{openPopularAnchors\}/);
   assert.match(manage,/refreshAutocompleteCurrent\(scopeId\)/);
+  assert.match(manage,/onToggle=\{event=>\{if\(event.currentTarget.open\)void loadAllCounts\(\);\}\}/);
   assert.match(batch,/onDoubleClick=\{openPopular\}/);
 });
 test('cached statistics are gated by RLS, exact place identity, and manual refresh',()=>{
@@ -56,6 +57,7 @@ test('cached statistics are gated by RLS, exact place identity, and manual refre
   assert.match(sql,/SECURITY INVOKER/);
   assert.match(sql,/silver\.can_manage_scope\(v_id\)/);
   assert.match(sql,/a\.name_matches=1/);
+  assert.equal((sql.match(/LIMIT 10\) popular/g)||[]).length,3);
   assert.match(sql,/g\.place_id/);
   assert.match(sql,/g\.source_place/);
   assert.match(sql,/g\.createtime/);
