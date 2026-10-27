@@ -47,20 +47,39 @@ export function assertArchiveRecordDestination(record,nativeLocal=false){
   if(!isPublishableArchiveRecord(record))
     throw new Error('公開網站只接受可辨識的社群貼文／媒體 ZIP；未知格式請在個人手機本地匯入，不能當作公開文章。');
 }
+// Keep unrelated public articles even when a JSON export also contains chats.
+// This guard never promotes a private row to a public article based on filename.
+export function isPrivateStandaloneRow(input){
+  const row=input?.raw||input||{};
+  return isPrivateArchiveSource(row.source_name)||isPrivateArchiveSource(row.platform)||
+    ['message','conversation'].includes(String(row.kind||'').toLowerCase())||
+    isPrivateArchiveEntryPath(row.sourcePath||row.source_path||'')||
+    (row.mapping&&typeof row.mapping==='object')||
+    Array.isArray(row.chat_messages)||
+    (Array.isArray(row.messages)&&(row.participants||row.conversation_id))||
+    Array.isArray(row.conversations)||
+    Boolean(row.directMessage||row.dmConversation||row.messageCreate);
+}
+export function filterStandalonePublicRows(rows=[],nativeLocal=false){
+  if(nativeLocal)return rows;
+  const safe=rows.filter(row=>!isPrivateStandaloneRow(row));
+  if(!safe.length&&rows.length)throw destinationError();
+  return safe;
+}
 export function assertStandaloneImportDestination({nativeLocal=false,fileName='',rows=[],source=''}={}){
   if(nativeLocal)return;
+  if(isPrivateArchiveSource(source))throw destinationError();
+  if(rows.some(isPrivateStandaloneRow))throw destinationError();
   const name=String(fileName||'').toLowerCase().replace(/\\/g,'/');
-  if(privateFilename.test(name)||isPrivateArchiveSource(source))throw destinationError();
-  for(const input of rows){
-    const row=input?.raw||input||{};
-    if(isPrivateArchiveSource(row.source_name)||isPrivateArchiveSource(row.platform)||
-      ['message','conversation'].includes(String(row.kind||'').toLowerCase())||
-      privatePath.test(String(row.sourcePath||row.source_path||''))||
-      // ChatGPT/Claude/Meta conversation JSON may be passed under a generic file name.
-      (row.mapping&&typeof row.mapping==='object')||
-      Array.isArray(row.chat_messages)||
-      (Array.isArray(row.messages)&&(row.participants||row.conversation_id))||
-      Array.isArray(row.conversations))
-      throw destinationError();
+  // A private-looking filename remains blocked unless each surviving row
+  // explicitly declares a recognized public social-post record.
+  if(privateFilename.test(name)){
+    const clearlyPublic=rows.length>0&&rows.every(input=>{
+      const row=input?.raw||input||{};
+      const platform=String(row.platform||row.source_name||'').trim().toLowerCase();
+      const kind=String(row.kind||'post').trim().toLowerCase();
+      return publishablePlatforms.has(platform)&&publishableKinds.has(kind);
+    });
+    if(!clearlyPublic)throw destinationError();
   }
 }
