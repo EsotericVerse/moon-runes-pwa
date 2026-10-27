@@ -155,8 +155,22 @@ export const MANAGEMENT_HERO_SLOTS=Object.freeze([
   {key:'trace',label:'痕跡圖管理',audience:'loc',page:'GroupSpace',englishTitle:'GroupSpace'},
   {key:'articles',label:'文章管理',audience:'loc',page:'GroupArticle',englishTitle:'GroupArticle'}
 ]);
+const LOC_MANAGEMENT_HERO_IMAGES=Object.freeze({
+  members:'https://loc.lo3rwang.cc/pics/LOC-culture.jpg',
+  locKeywords:'https://loc.lo3rwang.cc/pics/LOC-statics.jpg',
+  trace:'https://loc.lo3rwang.cc/pics/LOC-gn.jpg',
+  articles:'https://loc.lo3rwang.cc/pics/LOC-search.jpg'
+});
 export function managementHeroImagePage(slot){
-  return slot?.audience==='loc'?'scope_admin':'scope_manage';
+  // System Admin keeps scope_admin; individual LOC management entries own
+  // their own image field alongside their separately saved Hero text.
+  return slot?.audience==='loc'&&slot.key!=='system'?slot.page:
+    slot?.audience==='loc'?'scope_admin':'scope_manage';
+}
+export function managementHeroDefaultImage(slot){
+  return slot?.audience==='loc'
+    ?LOC_MANAGEMENT_HERO_IMAGES[slot.key]||'https://loc.lo3rwang.cc/pics/LOC-admin.jpg'
+    :MANAGEMENT_HERO_IMAGE_URL;
 }
 
 export function managementHeroSlot(pathname='',scopeId='',editing=false,featureId=''){
@@ -268,5 +282,6 @@ export const HomeBlock=Object.freeze({
   MANAGEMENT_HERO_IMAGE_URL,
   managementHeroSlot,
   managementHeroImagePage,
+  managementHeroDefaultImage,
   managementHeroCopy
 });
