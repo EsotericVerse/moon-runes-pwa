@@ -77,6 +77,19 @@ CREATE TABLE IF NOT EXISTS local_galaxy_media (
   source_place TEXT,
   rune_references TEXT
 );
+CREATE TABLE IF NOT EXISTS local_archive_media_exif (
+  archive_id TEXT NOT NULL,
+  entry_path TEXT NOT NULL,
+  media_id TEXT,
+  platform TEXT,
+  latitude REAL,
+  longitude REAL,
+  camera_local_time TEXT,
+  imported_at TEXT NOT NULL,
+  PRIMARY KEY (archive_id,entry_path),
+  CHECK((latitude IS NULL AND longitude IS NULL) OR
+    (latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180))
+);
 CREATE TABLE IF NOT EXISTS local_time (
   uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
   type TEXT NOT NULL CHECK(type IN ('anchor','time_period','time_trace')),
@@ -170,6 +183,42 @@ CREATE TABLE IF NOT EXISTS local_file_meta (
 // Keep pre-cutover device data recoverable. Both SQL.js and native SQLite run
 // the same validated row conversion inside a transaction before opening Time.
 const TIME_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_time \([\s\S]*?\);/)[0];
+
+const ARCHIVE_EXIF_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_archive_media_exif \([\s\S]*?\);/)[0];
+const ARCHIVE_EXIF_COLUMNS=['archive_id','entry_path','media_id','platform','latitude','longitude','camera_local_time','imported_at'];
+function archiveExifMigrationStatements(){
+  return [
+    {sql:'ALTER TABLE local_archive_media_exif RENAME TO local_archive_media_exif_backup',values:[]},
+    {sql:ARCHIVE_EXIF_TABLE_CREATE,values:[]},
+    {sql:'INSERT INTO local_archive_media_exif ('+ARCHIVE_EXIF_COLUMNS.join(',')+') SELECT '+ARCHIVE_EXIF_COLUMNS.join(',')+' FROM local_archive_media_exif_backup',values:[]},
+    {sql:'DROP TABLE local_archive_media_exif_backup',values:[]}
+  ];
+}
+function upgradeWebLocalArchiveExif(db){
+  const columns=rowsOf(db,'PRAGMA table_info(local_archive_media_exif)');
+  if(!columns.some(row=>row.name==='media_id'&&Number(row.notnull)===1))return;
+  const before=Number(rowsOf(db,'SELECT count(*) n FROM local_archive_media_exif')[0]?.n)||0;
+  db.run('BEGIN');
+  try{
+    for(const step of archiveExifMigrationStatements())db.run(step.sql,step.values);
+    const after=Number(rowsOf(db,'SELECT count(*) n FROM local_archive_media_exif')[0]?.n)||0;
+    if(before!==after)throw new Error('SQLite EXIF migration count mismatch');
+    db.run('COMMIT');
+  }catch(error){db.run('ROLLBACK');throw error;}
+}
+async function upgradeNativeLocalArchiveExif(conn){
+  const columns=(await conn.query('PRAGMA table_info(local_archive_media_exif)')).values||[];
+  if(!columns.some(row=>row.name==='media_id'&&Number(row.notnull)===1))return;
+  const before=Number((await conn.query('SELECT count(*) n FROM local_archive_media_exif')).values?.[0]?.n)||0;
+  await conn.beginTransaction();
+  try{
+    for(const step of archiveExifMigrationStatements())await conn.execute(step.sql+';');
+    const after=Number((await conn.query('SELECT count(*) n FROM local_archive_media_exif')).values?.[0]?.n)||0;
+    if(before!==after)throw new Error('Native SQLite EXIF migration count mismatch');
+    await conn.commitTransaction();
+  }catch(error){await conn.rollbackTransaction();throw error;}
+}
+
 const TIME_COLUMNS=['uid','type','title','description','address','anchor_ids','status'];
 const TIME_INSERT_SQL='INSERT INTO local_time ('+TIME_COLUMNS.join(',')+') VALUES ('+TIME_COLUMNS.map(()=>'?').join(',')+')';
 const oldTimePresent=columns=>columns.some(row=>row.name==='record_id')&&!columns.some(row=>row.name==='uid');
@@ -282,6 +331,7 @@ async function webDatabase(){
     const db=bytes?new SQL.Database(new Uint8Array(bytes)):createFreshSQL(SQL);
     db.run(SCHEMA);
     upgradeWebLocalTime(db);
+    upgradeWebLocalArchiveExif(db);
     if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
       db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
@@ -300,6 +350,7 @@ async function nativeDatabase(){
     await conn.open();
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
     await upgradeNativeLocalTime(conn);
+    await upgradeNativeLocalArchiveExif(conn);
     const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
     if(!columns.some(row=>row.name==='txt_class'))
       await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
@@ -766,9 +817,45 @@ export async function restoreKeywordLibraryFromDefault(defaultRows=[]){
   return runBatchLocal(statements);
 }
 
+
+async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
+  try{
+    if(p_scope_id!=='local')throw new Error('Invalid local EXIF scope');
+    if(!Array.isArray(p_rows)||p_rows.length>200)throw new Error('EXIF batch exceeds 200 entries');
+    const statements=[];
+    for(const item of p_rows){
+      const id=String(item?.media_id||''),archive=String(item?.archive_id||'');
+      const path=String(item?.entry_path||'');
+      const lat=item.latitude??null,lng=item.longitude??null;
+      const valid=(lat===null&&lng===null)||
+        (Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180);
+      if((id&&!/^[a-f0-9-]{36}$/i.test(id))||!archive||!path||archive.length>400||
+          path.length>2048||!valid)throw new Error('Invalid local archive EXIF metadata');
+      if(lat===null&&!item.camera_local_time)continue;
+      if(id){
+        const exists=await selectLocal('SELECT media_id FROM local_galaxy_media WHERE media_id=? LIMIT 1',[id]);
+        if(!exists.length)throw new Error('EXIF media is not registered');
+      }
+      statements.push({sql:`INSERT INTO local_archive_media_exif
+        (archive_id,entry_path,media_id,platform,latitude,longitude,camera_local_time,imported_at)
+        VALUES(?,?,?,?,?,?,?,?)
+        ON CONFLICT(archive_id,entry_path) DO UPDATE SET
+          media_id=excluded.media_id,platform=coalesce(excluded.platform,platform),
+          latitude=coalesce(excluded.latitude,latitude),
+          longitude=coalesce(excluded.longitude,longitude),
+          camera_local_time=coalesce(excluded.camera_local_time,camera_local_time),
+          imported_at=excluded.imported_at`,
+        values:[archive,path,id||null,item.platform||null,lat,lng,item.camera_local_time||null,new Date().toISOString()]});
+    }
+    const count=statements.length?await runBatchLocal(statements):0;
+    return {data:count,error:null};
+  }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
+}
+
 export async function rpcLocal(name,args={}){
   switch(name){
     case 'management_write':return managementWriteLocal(args);
+    case 'save_archive_media_exif':return saveArchiveMediaExifLocal(args);
     case 'read_scope_statistics':return readScopeStatisticsLocal(args);
     case 'read_scope_overview':return readScopeOverviewLocal(args);
     case 'read_scope_earliest':return readScopeEarliestLocal(args);

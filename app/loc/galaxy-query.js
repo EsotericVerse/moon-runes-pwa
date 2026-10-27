@@ -8,7 +8,7 @@ import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs'
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {publicContentFilters} from './content-policy';
-import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
+import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,forEachAllRowsPage,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
 import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
@@ -42,18 +42,38 @@ function countBy(rows,keyOf,{includeEmpty=false}={}){
   return counts;
 }
 function categoryCountRows(rows,column,{limit=Infinity,includeEmpty=false}={}){
-  return [...countBy(rows,row=>String(row?.[column]||'').trim(),{includeEmpty}).entries()]
+  return termCountRows(countBy(rows,row=>String(row?.[column]||'').trim(),{includeEmpty}),{limit});
+}
+function termCountRows(counts,{limit=Infinity,includeEmpty=false}={}){
+  return [...counts.entries()]
+    .filter(([term])=>includeEmpty||term)
     .map(([term,item_count])=>({term,item_count}))
     .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term))
     .slice(0,limit);
 }
+function dailyKeyOf(row,column,{includeEmpty=false,includeUndated=false}={}){
+  const category=String(row?.[column]||'').trim();
+  const day=String(row?.createtime||'').slice(0,10);
+  if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
+  return day+'\u0000'+category;
+}
+// Streams one table page by page and keeps only the counters, never the rows.
+async function countStreamed(table,{columns,filters=[]},keyOf){
+  const counts=new Map();
+  await forEachAllRowsPage(table,{columns,filters},rows=>{
+    for(const row of rows){
+      const key=keyOf(row);
+      if(key===null||key===undefined)continue;
+      counts.set(key,(counts.get(key)||0)+1);
+    }
+  });
+  return counts;
+}
 function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}){
-  const counts=countBy(rows,row=>{
-    const category=String(row?.[column]||'').trim();
-    const day=String(row?.createtime||'').slice(0,10);
-    if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
-    return day+'\u0000'+category;
-  },{includeEmpty:true});
+  const counts=countBy(rows,row=>dailyKeyOf(row,column,{includeEmpty,includeUndated}),{includeEmpty:true});
+  return dailyRowsFromCounts(counts);
+}
+function dailyRowsFromCounts(counts){
   return [...counts.entries()].map(([key,item_count])=>{
     const split=key.indexOf('\u0000');
     return {day:key.slice(0,split),category:key.slice(split+1),item_count};
@@ -141,7 +161,8 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
     columns:'source_name',
     filters
   })).rows;
-  const normalized=categoryCountRows(rows,'source_name',{limit:safeLimit,includeEmpty:true}).map(row=>({
+  const counts=await countStreamed(current.galaxy,{columns:'source_name',filters},row=>String(row?.source_name||'').trim());
+  const normalized=termCountRows(counts,{limit:safeLimit,includeEmpty:true}).map(row=>({
     scope_id:current.id,
     source_name:row.term,
     item_count:row.item_count
@@ -164,11 +185,9 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
     ...timeFilters('createtime',startDate,endDate),
     {column:'statistics_able',operator:'eq',value:true}
   ]);
-  const rows=(await selectAllRows(current.galaxy,{
-    columns:'source_name,createtime',
-    filters
-  })).rows;
-  return dailyCountRows(rows,'source_name',{includeEmpty:true}).map(row=>({
+  const counts=await countStreamed(current.galaxy,{columns:'source_name,createtime',filters},
+    row=>dailyKeyOf(row,'source_name',{includeEmpty:true}));
+  return dailyRowsFromCounts(counts).map(row=>({
     scope_id:current.id,
     source_name:row.category,
     day:row.day,
@@ -182,11 +201,9 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     ...timeFilters('createtime',startDate,endDate),
     ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
-  const rows=(await selectAllRows(table,{
-    columns:`${categoryColumn},createtime`,
-    filters:resolved
-  })).rows;
-  return dailyCountRows(rows,categoryColumn,{includeEmpty,includeUndated});
+  const counts=await countStreamed(table,{columns:`${categoryColumn},createtime`,filters:resolved},
+    row=>dailyKeyOf(row,categoryColumn,{includeEmpty,includeUndated}));
+  return dailyRowsFromCounts(counts);
 }
 
 async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
@@ -196,11 +213,9 @@ async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDat
     {column:categoryColumn,operator:'neq',value:''}
   ];
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const rows=(await selectAllRows(table,{
-    columns:categoryColumn,
-    filters:resolved
-  })).rows;
-  return categoryCountRows(rows,categoryColumn,{limit:safeLimit});
+  const counts=await countStreamed(table,{columns:categoryColumn,filters:resolved},
+    row=>String(row?.[categoryColumn]||'').trim());
+  return termCountRows(counts,{limit:safeLimit});
 }
 
 function mediaIdsOf(value){

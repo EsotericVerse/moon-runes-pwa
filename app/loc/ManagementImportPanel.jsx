@@ -9,13 +9,15 @@ registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
-import {insertRows,dbAuthRelation,updateRows} from './db-client.mjs';
+import {insertRows,dbAuthRelation,dbAuthClient,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
+import {assertPrivateArchiveDestination,assertArchiveRecordDestination,assertArchiveEntryDestination,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -24,55 +26,6 @@ const ZIP_LAYOUT_KEYS=Object.freeze({
 });
 const ZIP_FIELD_KEYS=Object.freeze(['id','text','author','time','relation','attachment','collection']);
 const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',copilot:'Microsoft Copilot',perplexity:'Perplexity', 'meta-ai':'Meta AI',facebook:'Facebook',messenger:'Messenger',instagram:'Instagram',threads:'Threads',whatsapp:'WhatsApp',x:'X / Twitter',telegram:'Telegram',discord:'Discord',line:'LINE',slack:'Slack',teams:'Microsoft Teams',snapchat:'Snapchat',wechat:'WeChat',tiktok:'TikTok',reddit:'Reddit',linkedin:'LinkedIn',pinterest:'Pinterest',youtube:'YouTube','google-takeout':'Google Takeout'});
-// Same cooldown pattern as keyword classification (KeywordLibraryPanel.jsx):
-// a purely client-side, no-DB-attribute 5-minute gate after a bulk write
-// completes. NOTE: this is a debounce against re-triggering a bulk write
-// while a prior one may still be settling, not a confirmed fix for a known
-// root cause -- live Supabase edge_logs for the read-side failure this was
-// modeled on actually showed Postgres error 57014 (query_canceled), not a
-// rate-limit/abuse rejection, so "Supabase bans repeated requests" is NOT
-// an established cause. Keep this as a precaution against rapid re-clicks
-// until the real mechanism is confirmed.
-const BULK_WRITE_COOLDOWN_MS=300000;
-const cooldownClock=ms=>{
-  const seconds=Math.ceil(Math.max(0,ms)/1000);
-  return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
-};
-function useBulkWriteCooldown(scopeId){
-  const key='loc:bulk-import-cooldown:'+scopeId;
-  const [deadline,setDeadline]=useState(0);
-  const [remaining,setRemaining]=useState(0);
-  useEffect(()=>{
-    let restored=0;
-    try{restored=Number(sessionStorage.getItem(key))||0;}catch{/* Storage may be disabled. */}
-    const end=restored>Date.now()?restored:0;
-    setDeadline(end);setRemaining(Math.max(0,end-Date.now()));
-  },[key]);
-  useEffect(()=>{
-    if(!deadline)return;
-    const update=()=>{
-      const left=Math.max(0,deadline-Date.now());
-      setRemaining(left);
-      if(!left){
-        try{sessionStorage.removeItem(key);}catch{/* Optional persistence. */}
-        setDeadline(0);
-      }
-    };
-    update();
-    const timer=setInterval(update,1000);
-    return ()=>clearInterval(timer);
-  },[deadline,key]);
-  return {
-    active:remaining>0,
-    remaining,
-    remainingMs(){return Math.max(0,deadline-Date.now())},
-    start(){
-      const end=Date.now()+BULK_WRITE_COOLDOWN_MS;
-      try{sessionStorage.setItem(key,String(end));}catch{/* Optional persistence. */}
-      setDeadline(end);setRemaining(BULK_WRITE_COOLDOWN_MS);
-    }
-  };
-}
 function sourceSuggestion(name=''){
   const value=String(name).toLowerCase();
   if(/your_posts|status_updates|facebook_activity|places_you_have_been_tagged_in/i.test(value))return 'Facebook';
@@ -199,7 +152,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
 
 // Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
-async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
+async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Attach only to article UIDs established by the import plan.
       const plans=normalized.flatMap(item=>{
@@ -236,7 +189,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
       const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
-      const createMedia=[],related=new Map(),seenMedia=new Set();
+      const createMedia=[],related=new Map(),seenMedia=new Set(),resolvedIds=new Map();
       function attach(uid,id){
         if(!uid||!id)return;
         if(!related.has(uid))related.set(uid,new Set());
@@ -251,8 +204,8 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
       }
       for(const raw of plans){
         const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
-        const known=record.media_id?byId.get(String(record.media_id)):(key?byKey.get(key):null);
-        if(known){attach(owner,known.media_id);continue;}
+        const known=(record.media_id?byId.get(String(record.media_id)):null)||(key?byKey.get(key):null);
+        if(known){if(record.media_id)resolvedIds.set(String(record.media_id),String(known.media_id));attach(owner,known.media_id);continue;}
         if(key&&seenMedia.has(key))continue;
         if(key)seenMedia.add(key);
         const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
@@ -265,6 +218,11 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
         batchSize:validImportBatchSize(batchSize),
         writeBatch:batch=>insertRows(galaxyMedia,batch)
       });
+      for(const link of extraLinks){
+        const uid=knownArticleIds.get(String(link.uid||'').trim());
+        const mediaId=resolvedIds.get(String(link.media_id||''))||String(link.media_id||'');
+        if(uid&&byId.has(mediaId))attach(uid,mediaId);
+      }
       let connected=0;
       const linkedUids=[...related.keys()];
       for(let offset=0;offset<linkedUids.length;offset+=200){
@@ -278,7 +236,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],knownArticleIds=new
         }
       }
 
-  return {created:createMedia.length,connected};
+  return {created:createMedia.length,connected,resolvedIds};
 }
 
 function UniversalImport({scopeId,format,onFormatChange}) {
@@ -290,6 +248,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [fileName,setFileName]=useState('');
   const [archiveDetection,setArchiveDetection]=useState(null);
   const [archiveSummary,setArchiveSummary]=useState(null);
+  const [archiveEvidence,setArchiveEvidence]=useState([]);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -298,7 +257,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
-  const writeCooldown=useBulkWriteCooldown(scopeId);
   const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
@@ -315,7 +273,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveEvidence([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
@@ -326,16 +284,22 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
       if(isZip){
+        assertStandaloneImportDestination({nativeLocal,fileName:file.name});
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=await zipEntryCount(file);
         const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
         setArchiveDetection(result);
+        assertPrivateArchiveDestination(nativeLocal,result.sources);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],uidOwners=new Map(),exifSamples=[];
+        const collector=createArchiveEvidenceCollector();
         let ignored=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+          assertArchiveRecordDestination(record,nativeLocal);
           const article=archiveGalaxyRow(record);
+          // Media-only posts still carry URLs even when no Galaxy text exists.
+          collector.onRecord(record,article?.uid||null);
           if(!article){ignored++;return;}
           const previous=uidOwners.get(article.uid);
           if(previous&&previous!==record.key)
@@ -345,11 +309,17 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
-          // In-memory preview only; image and EXIF are not uploaded or stored.
+          assertArchiveEntryDestination(item.path,nativeLocal);
+          collector.onExif(item);
           if(exifSamples.length<5)exifSamples.push(item);
+        },onMediaEntry:item=>{
+          assertArchiveEntryDestination(item.path,nativeLocal);
+          collector.onMediaEntry(item);
         }});
-        setArchiveSummary({...summary,exifSamples});
-        if(!imported.length){
+        const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size});
+        setArchiveEvidence(mediaEvidence);
+        setArchiveSummary({...summary,exifSamples,mediaEvidenceCount:mediaEvidence.length});
+        if(!imported.length&&!mediaEvidence.length){
           setSource(result.sources.length===1?result.sources[0]:'');
           setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
@@ -359,13 +329,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setRows(imported);
         const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
         setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
-        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話；略過 '+
+        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話，媒體 '+mediaEvidence.length.toLocaleString()+' 筆；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+
           ' 筆。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
       const list=await parseUniversalImportFile(file,{recordPath,importLocale:language});
+      assertStandaloneImportDestination({nativeLocal,fileName:file.name,rows:list});
       const prepared=list.map(row=>({
         raw:row,
         import_uid:createUid8()
@@ -375,7 +346,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       setSource(String(list[0]?.source_name||'').trim()||sourceSuggestion(file.name));
       setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
     }catch(error){
-      setRows([]);
+      setRows([]);setArchiveEvidence([]);
       setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }finally{
       setBusy(false);
@@ -395,11 +366,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   async function run(){
-    if(busy||!rows.length)return;
-    if(writeCooldown.remainingMs()>0){setStatus(t('uiExtra.importUI.writeCooldownActive'));return;}
+    if(busy||(!rows.length&&!archiveEvidence.length))return;
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!analyzed.valid.length&&!analyzed.mediaOnly.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    try{assertStandaloneImportDestination({nativeLocal,fileName,rows,source});}
+    catch(error){setStatus(String(error?.message||error));return;}
     setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
@@ -427,13 +399,32 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
-      const mediaSummary=await syncImportedMedia({normalized:analyzed.normalized,mediaOnly:analyzed.mediaOnly,knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t});
+      const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(unique.map(row=>row.uid)));
+      const mediaSummary=await syncImportedMedia({
+        normalized:analyzed.normalized,
+        mediaOnly:[...analyzed.mediaOnly,...archivePlan.media],
+        extraLinks:archivePlan.mediaLinks,
+        knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
+      });
+      let exifSaved=0;
+      for(let offset=0;offset<archivePlan.exif.length;offset+=200){
+        const chunk=archivePlan.exif.slice(offset,offset+200).map(row=>({
+          ...row,media_id:mediaSummary.resolvedIds.get(row.media_id)||row.media_id
+        }));
+        const {data,error}=await dbAuthClient.schema('silver').rpc('save_archive_media_exif',{
+          p_scope_id:scopeId,p_rows:chunk
+        });
+        if(error)throw new Error('媒體已儲存，但 EXIF 私人座標保存失敗：'+(error.message||error));
+        if(Number(data)!==chunk.length)
+          throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
+        exifSaved+=chunk.length;
+      }
       const skipped=analyzed.invalid.length+duplicateCount+unique.length-payload.length;
       setProgress({completed:payload.length+mediaSummary.created,total:payload.length+mediaSummary.created,percent:100});
-      setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped}));
-      setRows([]);
+      setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:payload.length,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
+        (archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+      setRows([]);setArchiveEvidence([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
-      writeCooldown.start();
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
     finally{setBusy(false);}
   }
@@ -501,7 +492,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </details>:null}
       <p className="scope-status">{t('uiExtra.importUI.zipReadOnly')}</p>
     </section>:null}
-    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；EXIF 解析 {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆。影像不儲存；GPS 僅供位置證據，不能直接當作打卡地名。</p>:null}
+    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；EXIF 解析 {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，EXIF 略過 {archiveSummary.exifSkipped.toLocaleString()} 張。影像本體不儲存；媒體 URL／關聯會寫入 Galaxy Media，EXIF GPS／拍攝時間只存入私人證據資料，不能直接當作打卡地名。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
@@ -513,19 +504,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
-    {rows.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+    {rows.length||archiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length)||writeCooldown.active} onClick={run}>
-        {busy?UI_COPY.management.importing:writeCooldown.active?'冷卻中 '+cooldownClock(writeCooldown.remaining):t('uiExtra.importUI.batchImport')}
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length)} onClick={run}>
+        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
-    {writeCooldown.active?<p role="timer" className="scope-status">開始匯入暫停中：剩餘 {cooldownClock(writeCooldown.remaining)}。五分鐘倒數結束後，按鈕會自動恢復可按。</p>:null}
-    {rows.length&&!busy&&!writeCooldown.active&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
-    {rows.length&&!busy&&!writeCooldown.active&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
+    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
     {busy&&progress?.percent===100?<p className="scope-status" role="status">文章寫入已達 100%，仍在整理媒體與文章關聯；完成後才會解除處理中狀態。</p>:null}
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>

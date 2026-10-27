@@ -11,6 +11,7 @@ import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
 import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
+import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
 // Reject oversized archives before reading any bytes. Only approved entries are inflated.
@@ -24,6 +25,7 @@ const YTD=/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.YTD\.[\w-]+\.part\d+\s*=\s*/;
 const textExtension=/\.(?:json|js|txt|md|csv|tsv|html?|xml|log|jsonl)$/i;
 const exifImage=/\.(?:jpe?g|png)$/i;
 const mediaExtension=/\.(?:jpe?g|png|gif|webp|heic|bmp|avif|tiff?|mp4|mov|avi|mkv|webm|m4v|pdf|mp3|ogg|wav|flac|m4a|aac|zip|7z|rar|tar|gz|woff2?|svg|ico|exe|dll|bin|sqlite|db)$/i;
+const importableMediaExtension=/\.(?:jpe?g|png|gif|webp|heic|bmp|avif|tiff?|mp4|mov|avi|mkv|webm|m4v|mp3|ogg|wav|flac|m4a|aac)$/i;
 const SKIP_ZIP_BYTES=new Uint8Array(0);
 const skippedZipEntry=path=>!path||path.endsWith('/')||path.split('/').some(part=>part==='..'||part==='__MACOSX')||!textExtension.test(path)||mediaExtension.test(path);
 // Do not inflate or even buffer ignored compressed entries: fflate buffers an
@@ -49,6 +51,37 @@ const iso=value=>{
   const epoch=numeric===null?Date.parse(String(value)):numeric>100000000000?numeric:numeric*1000;
   return Number.isFinite(epoch)?new Date(epoch).toISOString():null;
 };
+const PLAUSIBLE_EPOCH_MIN=946684800, PLAUSIBLE_EPOCH_MAX=4102444800;
+function plausibleEpoch(n){
+  return Number.isFinite(n)&&((n>=PLAUSIBLE_EPOCH_MIN&&n<=PLAUSIBLE_EPOCH_MAX)||
+    (n>=PLAUSIBLE_EPOCH_MIN*1000&&n<=PLAUSIBLE_EPOCH_MAX*1000));
+}
+// Recursively finds a creation time anywhere in one archive record. Keys must
+// look like creation/time/date fields (update/edit/expiry fields are skipped),
+// and numbers must be plausible Unix seconds or milliseconds.
+function findArchiveTimestamp(node,depth=0){
+  if(!node||typeof node!=='object'||depth>5)return null;
+  if(Array.isArray(node)){
+    for(const value of node.slice(0,100)){
+      const found=findArchiveTimestamp(value,depth+1);
+      if(found!=null)return found;
+    }
+    return null;
+  }
+  const entries=Object.entries(node);
+  for(const [key,value] of entries){
+    if(!/(creat|time|date|taken|publish)/i.test(key)||/(update|modif|expir|edit)/i.test(key))continue;
+    if(typeof value==='number'&&plausibleEpoch(value))return value;
+    if(typeof value==='string'&&/^\d{10,13}(\.\d+)?$/.test(value)&&plausibleEpoch(Number(value)))return value;
+  }
+  for(const [,value] of entries){
+    if(value&&typeof value==='object'){
+      const found=findArchiveTimestamp(value,depth+1);
+      if(found!=null)return found;
+    }
+  }
+  return null;
+}
 const hash=text=>{
   // Stable, non-cryptographic archive identity hint. Content conflicts are still checked.
   let a=2166136261,b=2166136261;
@@ -107,14 +140,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
     actualKind==='post'?(extractCaption(item)||txt(data['Title']?.value)||null):
     extractCaption(item));
   const sourcePlace=actualKind==='post'?facebookBackupPlace(item):'';
-  const attachments=[
-    ...(Array.isArray(item.photos)?item.photos:[]),
-    ...(Array.isArray(item.videos)?item.videos:[]),
-    ...(Array.isArray(item.audio_files)?item.audio_files:[]),
-    ...(Array.isArray(item.attachments)?item.attachments:[]),
-    ...(Array.isArray(item.media)?item.media:[]),
-    ...(item.uri?[{uri:item.uri}]:[])
-  ].map(v=>({uri:txt(v?.uri)||txt(v?.media?.uri)||null})).filter(v=>v.uri).slice(0,200);
+  const attachments=archiveAttachmentReferences(item);
   if(kind==='message'&&text===null&&!attachments.length)
     return {error:'訊息沒有文字或可辨識附件'};
   if(kind==='post'&&text===null&&!attachments.length&&!sourcePlace)
@@ -129,7 +155,9 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const timestamp=item.create_time??item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
     item.string_map_data?.['Creation Time']?.timestamp??
-    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
+    (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null)??
+    // Generic fallback for Meta-style nesting (media[], string_map_data, label_values, attachments).
+    findArchiveTimestamp(item);
   const createdAt=iso(timestamp);
   const originalTimestamp=timestamp===undefined?'':String(timestamp);
   const relative=cleanPath(path).replace(/^.*?(?=messages\/)/i,'');
@@ -416,7 +444,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress}={}){
     structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
-export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onProgress,flush,signal}={}){
+export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMediaEntry,onProgress,flush,signal}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
@@ -436,15 +464,16 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
+      if(importableMediaExtension.test(path))onMediaEntry?.({path});
       if(exifImage.test(path)&&typeof onMediaMetadata==='function'&&[0,8].includes(entry.compression)&&
         (entry.originalSize===undefined||entry.originalSize<=32*1024*1024)&&
-        exifExtracted<100*1024*1024&&summary.exifImages<2500){
+        exifExtracted<MAX_EXTRACTED&&summary.exifImages<MAX_FILES){
         summary.mediaFiles++;summary.exifImages++;known=true;
         const chunks=[];let stored=0,received=0;
         entry.ondata=(error,data,final)=>{
           if(error)throw error;
           received+=data.length;exifExtracted+=data.length;
-          if(received>32*1024*1024||exifExtracted>100*1024*1024){
+          if(received>32*1024*1024||exifExtracted>MAX_EXTRACTED){
             if(final)summary.exifSkipped++;
             return;
           }
@@ -545,7 +574,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onPro
     }
   }
   await flush?.(true);
-  if(!summary.acceptedRows)
+  if(!summary.acceptedRows&&!(summary.mediaFiles>0&&typeof onMediaEntry==='function'))
     throw new Error('沒有辨識到可匯入的紀錄。請查看備份格式，不會寫入正式資料。');
   return summary;
 }
