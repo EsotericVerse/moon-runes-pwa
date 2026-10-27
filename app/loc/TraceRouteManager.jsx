@@ -62,6 +62,12 @@ export default function TraceRouteManager({scopeId}){
   const visibleRecords=records.filter(row=>row.title.toLocaleLowerCase().includes(filter.trim().toLocaleLowerCase()));
   const current=records.find(row=>row.uid===selectedUid)
     ||chooseDefaultTraceRoute(records,owner,readDefaultTraceRoute(owner));
+  const currentRouteMembers=current?.trace_type==='space_trace'
+    ?records.filter(row=>row.trace_type==='space_period'&&(current.route_list||[]).includes(row.uid))
+    :[];
+  const currentMemberUids=current
+    ?[...new Set([...traceMemberUids(current),...currentRouteMembers.flatMap(traceMemberUids)])]
+    :[];
   const anchorIndex=useAsyncResource({
     queryKey:traceAllAnchorsKey(owner,{nativeOnly:owner==='loc',includeHidden:own}),
     enabled:editorOpen,
@@ -69,9 +75,9 @@ export default function TraceRouteManager({scopeId}){
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const currentAnchors=useAsyncResource({
-    queryKey:current?traceCurrentKey(owner,current,{nativeOnly:owner==='loc',includeHidden:own}):null,
+    queryKey:current?traceCurrentKey(owner,{...current,anchor_list:currentMemberUids},{nativeOnly:owner==='loc',includeHidden:own}):null,
     enabled:Boolean(current)&&!editorOpen,
-    queryFn:()=>readCurrentTraceAnchors(owner,current.anchor_list,{nativeOnly:owner==='loc',includeHidden:own}),
+    queryFn:()=>readCurrentTraceAnchors(owner,currentMemberUids,{nativeOnly:owner==='loc',includeHidden:own}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const allAnchors=anchorIndex.data||[];
@@ -383,7 +389,7 @@ export default function TraceRouteManager({scopeId}){
           onClick={()=>{if(allowLeave()){clear();setEditorOpen(false);}}}>取消</button>
       </div>
     </form>:null}
-    {!editorOpen&&showMap&&preview?<TraceMap spatialData={{anchors:previewAnchors,maps:[preview]}}
+    {!editorOpen&&showMap&&preview?<TraceMap spatialData={{anchors:previewAnchors,maps:[preview,...currentRouteMembers]}}
       selectedRouteUid={preview.uid} hideRoutePicker/>:null}
     {notice?<p role={error?'alert':'status'} className={'scope-status'+(error?' scope-error':'')}>{notice}</p>:null}
   </section>;
