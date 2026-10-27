@@ -80,20 +80,20 @@ BEGIN
   IF v_galaxy IS NOT NULL AND v_time IS NOT NULL THEN
     EXECUTE format($days$
       WITH frequencies AS (
-        SELECT (g.createtime AT TIME ZONE 'Asia/Taipei')::date AS day,
+        SELECT (g.createtime AT TIME ZONE 'Asia/Taipei')::date AS anchor_day,
           count(*)::bigint hits
         FROM %s g
         WHERE g.statistics_able IS TRUE AND g.searchable IS TRUE
           AND g.content <> '' AND g.createtime IS NOT NULL
         GROUP BY 1
       ), ranked AS (
-        SELECT a.uid::text uid,a.title::text title,a.address::text day,
+        SELECT a.uid::text uid,a.title::text title,a.address::text AS anchor_day,
           coalesce(f.hits,0)::bigint hits
-        FROM %s a LEFT JOIN frequencies f ON f.day=a.address
+        FROM %s a LEFT JOIN frequencies f ON f.anchor_day=a.address
         WHERE a.type='anchor'
       )
-      SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'date',day,'count',hits)
-        ORDER BY hits DESC,day,uid),'[]'::jsonb) FROM ranked
+      SELECT coalesce(jsonb_agg(jsonb_build_object('uid',uid,'title',title,'date',anchor_day,'count',hits)
+        ORDER BY hits DESC,anchor_day,uid),'[]'::jsonb) FROM ranked
       WHERE hits>0
     $days$,v_galaxy,v_time) INTO v_days;
   END IF;
