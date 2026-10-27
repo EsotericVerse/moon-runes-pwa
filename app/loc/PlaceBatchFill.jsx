@@ -7,6 +7,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {defaultScopeData,revalidateServerMetadata} from './scope-data';
 import {selectCultureTimeRows} from './culture-query';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
+import {readAutocompleteCurrent,currentTop10} from './autocomplete-current.mjs';
 
 const DATE=/^\d{4}-\d{2}-\d{2}$/;
 function validDate(value){
@@ -32,6 +33,8 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
   const [place,setPlace]=useState('');
+  const [popularOpen,setPopularOpen]=useState(false);
+  const [popularSnapshot,setPopularSnapshot]=useState(null);
   const [periodId,setPeriodId]=useState('');
   const [preview,setPreview]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -51,6 +54,12 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
     ...anchors.filter(row=>row.source_scope===scopeId).map(row=>String(row.title||'').trim()),
     ...(suggestions.data||[]).map(row=>String(row.name||'').trim())
   ].filter(Boolean))];
+  const popularLocations=currentTop10(popularSnapshot,'space').map(row=>String(row.title||'').trim()).filter(Boolean);
+  async function openPopular(){
+    setPopularOpen(true);
+    try{setPopularSnapshot(await readAutocompleteCurrent(scopeId));}
+    catch{setPopularSnapshot(null);}
+  }
   const isValid=validDate(startDate)&&validDate(endDate)&&startDate<=endDate&&
     place.trim().length>0&&place.trim().length<=200;
   const criteria=[scopeId,startDate,endDate,place.trim()].join('|');
@@ -132,9 +141,10 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
       <label>補寫的打卡地點名稱
         <input type="text" list={'place-batch-'+scopeId} maxLength={200} value={place} disabled={busy}
           placeholder="輸入既有 Facebook 打卡名稱或空間定錨點名稱"
-          onChange={event=>change(setPlace,event.target.value)}/>
+          onDoubleClick={openPopular}
+          onChange={event=>{setPopularOpen(false);change(setPlace,event.target.value);}}/>
         <datalist id={'place-batch-'+scopeId}>
-          {locations.map(name=><option key={name} value={name}/>)}
+          {(popularOpen?popularLocations:locations).map(name=><option key={name} value={name}/>)}
         </datalist>
       </label>
     </div>
