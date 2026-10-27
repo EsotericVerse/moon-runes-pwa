@@ -6,11 +6,18 @@ import PanelLoading from './PanelLoading';
 
 const TraceManagement=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceBatchFill=dynamic(()=>import('./PlaceBatchFill'),{loading:PanelLoading});
+const TimelinePlaceManager=dynamic(()=>import('./TimelinePlaceManager'),{loading:PanelLoading});
 
 export default function PlaceManagement({scopeId}){
   const [editing,setEditing]=useState(false);
   const [quickFill,setQuickFill]=useState(false);
+  const [timelineOpen,setTimelineOpen]=useState(false);
   return <section aria-label="地點管理">
+    {scopeId!=='loc'?<details className="scope-card" open={timelineOpen}
+      onToggle={event=>setTimelineOpen(event.currentTarget.open)}>
+      <summary>地點整理 · Google Timeline JSON 匯入／糾紛點</summary>
+      {timelineOpen?<TimelinePlaceManager scopeId={scopeId}/>:null}
+    </details>:null}
     <TraceManagement scopeId={scopeId} mode="cleanup"/>
     <details className="scope-card" open={editing}
       onToggle={event=>setEditing(event.currentTarget.open)}>

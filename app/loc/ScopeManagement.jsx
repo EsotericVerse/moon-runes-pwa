@@ -14,7 +14,7 @@ const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:Pane
 const PlaceManagement=dynamic(()=>import('./PlaceManagement'),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
-  {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'名稱合併、勾選儲存、別名、補充和快速補打卡。'},
+  {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'空間定錨、Google Timeline 地點整理、糾紛點與補充資料。'},
   {value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',description:'從已有地點自動完成選點，組合有序 Frame。'},
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
