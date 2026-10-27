@@ -1,3 +1,4 @@
+import {flashMessage} from './flash-message.js';
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
@@ -51,7 +52,26 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if((changed&&saved.entries.some(row=>row.scopeid===changed))||
       (targetEmail&&targetEmail===saved.email))clearAuthorization();
   }
-  async function managementWrite(payload){
+  // A failed write must never look saved: show a visible notice, then rethrow so the caller also sees the error.
+  const WRITE_FAILED_NOTICE='儲存失敗，資料尚未寫入資料庫，請稍後再試。';
+  function withWriteNotice(run){
+    return async(...args)=>{
+      try{return await run(...args);}
+      catch(error){flashMessage(WRITE_FAILED_NOTICE);throw error;}
+    };
+  }
+  const managementWrite=withWriteNotice(managementWriteUnchecked);
+  const insertRows=withWriteNotice(insertRowsUnchecked);
+  const updateRows=withWriteNotice(updateRowsUnchecked);
+  const deleteRows=withWriteNotice(deleteRowsUnchecked);
+  const keywordClassificationWrite=withWriteNotice(keywordClassificationWriteUnchecked);
+  const copyRune66KeywordClass=withWriteNotice(copyRune66KeywordClassUnchecked);
+  const moveScopeBlock=withWriteNotice(moveScopeBlockUnchecked);
+  const deleteScope=withWriteNotice(deleteScopeUnchecked);
+  const provisionScope=withWriteNotice(provisionScopeUnchecked);
+  const manageScopeRegistry=withWriteNotice(manageScopeRegistryUnchecked);
+
+  async function managementWriteUnchecked(payload){
     preflightWrite(payload?.p_table);
     const {data,error}=await authClient.schema('silver').rpc('management_write',payload);
     if(error)throw new Error(error.message||'Management write failed');
@@ -67,7 +87,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{count:0};
   }
 
-  async function insertRows(table,rows){
+  async function insertRowsUnchecked(table,rows){
     const list=Array.isArray(rows)?rows:[];
     // Check every row before starting batch writes; fail without partial import.
     for(const row of list)validateGalaxyWrite(table,row);
@@ -89,7 +109,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count};
   }
 
-  async function updateRows(table,values,{filters=[]}={}){
+  async function updateRowsUnchecked(table,values,{filters=[]}={}){
     validateGalaxyWrite(table,values);
     const result=await managementWrite({
       p_table:table,
@@ -103,7 +123,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {...result,count:affected};
   }
 
-  async function deleteRows(table,{filters=[]}={}){
+  async function deleteRowsUnchecked(table,{filters=[]}={}){
     const result=await managementWrite({
       p_table:table,
       p_operation:'delete',
@@ -122,7 +142,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return scope;
   }
 
-  async function keywordClassificationWrite(scopeId,payload){
+  async function keywordClassificationWriteUnchecked(scopeId,payload){
     const scope=normalizeScopeId(scopeId);
     preflightWrite('silver.'+scope+'_keywords');
     const {data,error}=await authClient.schema('silver').rpc('apply_keyword_classification',{
@@ -461,7 +481,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data===true;
   }
 
-  async function copyRune66KeywordClass(scopeId){
+  async function copyRune66KeywordClassUnchecked(scopeId){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
     preflightWrite('silver.'+scope+'_keywords');
@@ -470,7 +490,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function moveScopeBlock(scopeId,pageName,uid,direction){
+  async function moveScopeBlockUnchecked(scopeId,pageName,uid,direction){
     const scope=normalizeScopeId(scopeId);
     const page=String(pageName||'').trim().toLowerCase();
     const blockUid=String(uid||'').trim();
@@ -483,7 +503,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function deleteScope(scopeId){
+  async function deleteScopeUnchecked(scopeId){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
     preflightWrite('silver.manage');
@@ -493,7 +513,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function provisionScope(values={}){
+  async function provisionScopeUnchecked(values={}){
     const scopeId=normalizeScopeId(values.scope_id);
     preflightWrite('silver.manage');
     const payload={
@@ -513,7 +533,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data||{};
   }
 
-  async function manageScopeRegistry(operation,scopeId,values={}){
+  async function manageScopeRegistryUnchecked(operation,scopeId,values={}){
     const scope=normalizeScopeId(scopeId);
     const op=String(operation||'').trim().toLowerCase();
     if(!['create_group','update'].includes(op))throw new Error('Unsupported Scope Registry operation');
