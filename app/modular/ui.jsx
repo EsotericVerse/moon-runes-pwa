@@ -77,7 +77,7 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
     ?managementImageQuery.data?.find(row=>Number(row.block_order)===1)
     :((scopeId==='loc'&&!HomeBlock.shouldUseSingleFeatureHeroImage(featureId))
       ?groupHeroQuery.data:scopeHeroImageQuery.data)?.find(row=>Number(row.block_order)===1);
-  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?(managementSlot.audience==='loc'?'https://loc.lo3rwang.cc/pics/LOC-admin.jpg':HomeBlock.MANAGEMENT_HERO_IMAGE_URL):'');
+  const heroImageOverride=heroImageUrlOf(heroImageRow)||(managementMode?HomeBlock.managementHeroDefaultImage(managementSlot):'');
   const heroStyle=heroImageOverride?{'--scope-feature-hero-image':`url("${heroImageOverride}")`}:undefined;
   const shared=managementMode?HomeBlock.managementHeroCopy(managementTextQuery.data,managementSlot)
     :sharedEnabled?HomeBlock.featureHeroFor(groupHeroQuery.data):null;
