@@ -146,6 +146,20 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'更新空間定錨點');
 }
+// Bulk rename preserves every Trace UID, coordinate, timestamp and route reference.
+// It changes title only; the caller explicitly selects a reviewed canonical spelling.
+export async function renameTraceAnchorTitles({scopeId,uids,title}){
+  const id=writableScope(scopeId);
+  const ids=[...new Set((uids||[]).map(value=>textValue(value)))];
+  if(!ids.length||ids.length>100||ids.some(uid=>!VALID_ID.test(uid)))
+    throw Error('快速更新定錨點清單無效');
+  const result=checked(await dbAuthRelation(relation(id))
+    .update({title:nonempty(title,'地點標題')})
+    .eq('trace_type','space_anchor').in('uid',ids)
+    .select('uid'),'快速更新地點名稱')||[];
+  if(result.length!==ids.length)throw Error('部分地點未能更新，請重新載入確認 UID');
+  return result.length;
+}
 export async function addTraceAnchorsBatch({scopeId,places=[]}){
   const id=writableScope(scopeId);
   if(id==='loc')throw Error('請在作品 Scope 儲存地點');

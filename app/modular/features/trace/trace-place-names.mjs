@@ -1,3 +1,4 @@
+import {spaceCoordinates} from './space-graph.mjs';
 // Place identity candidates are based on recorded NAMES, never GPS or address.
 // Only exact orthographic/brand-order variants are eligible for automatic grouping.
 // Uncertain names are suggestions requiring an explicit user decision.
@@ -21,6 +22,32 @@ export function placeNameKey(value){
     if(branch.length>=2)return brand+':'+branch;
   }
   return compact;
+}
+// Read-only, O(n) exact-position candidate grouping. An identical GPS fix is
+// evidence for review, never permission to delete a UID or merge article links.
+export function reviewReorderedCoordinateNames(anchors=[]){
+  const byKey=new Map();
+  for(const anchor of anchors){
+    if(anchor?.trace_type!=='space_anchor')continue;
+    const position=spaceCoordinates(anchor);
+    const normalized=compactPlaceName(anchor.title);
+    if(!position||normalized.length<2)continue;
+    const characters=[...normalized].sort().join('');
+    const scope=String(anchor.source_scope||'');
+    const key=JSON.stringify([scope,position,characters]);
+    if(!byKey.has(key))byKey.set(key,{key,position,items:[]});
+    byKey.get(key).items.push(anchor);
+  }
+  return [...byKey.values()].filter(group=>group.items.length>1&&
+    new Set(group.items.map(row=>compactPlaceName(row.title))).size>1)
+    .map(group=>({...group,items:group.items.sort((a,b)=>
+      String(a.uid||'').localeCompare(String(b.uid||'')))}))
+    .sort((a,b)=>b.items.length-a.items.length||a.key.localeCompare(b.key));
+}
+
+function sameRecordedPosition(a,b){
+  const first=spaceCoordinates(a),second=spaceCoordinates(b);
+  return Boolean(first&&second&&first[0]===second[0]&&first[1]===second[1]);
 }
 export function samePlaceFloor(a,b){
   const x=String(a?.floor_label||'').trim().toLowerCase();
@@ -50,7 +77,7 @@ export function uncertainPlaceName(a,b){
 export function reviewPlaceNameGroups(anchors=[]){
   const byKey=new Map();
   for(const anchor of anchors){
-    if(anchor?.trace_type!=='anchor')continue;
+    if(anchor?.trace_type!=='space_anchor')continue;
     const key=placeNameKey(anchor.title);
     if(!key)continue;
     if(!byKey.has(key))byKey.set(key,[]);
@@ -61,15 +88,15 @@ export function reviewPlaceNameGroups(anchors=[]){
     if(rows.length<2)continue;
     const ordered=[...rows].sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||''))||
       String(a.uid||'').localeCompare(String(b.uid||'')));
-    if(ordered.every(row=>samePlaceFloor(ordered[0],row))){
+    if(ordered.every(row=>samePlaceFloor(ordered[0],row)&&sameRecordedPosition(ordered[0],row))){
       automatic.push({key,canonical:ordered[0],items:ordered});
-    }else uncertain.push({key,reason:'不同樓層，保留獨立確認',items:ordered});
+    }else uncertain.push({key,reason:'名稱相近但位置未能證明相同，保留獨立確認',items:ordered});
   }
   // Uncertain alternatives only: no GPS, address matching or automatic merge.
   const existing=new Set(uncertain.flatMap(group=>group.items.map(row=>row.uid)));
-  for(const row of anchors.filter(a=>a?.trace_type==='anchor')){
+  for(const row of anchors.filter(a=>a?.trace_type==='space_anchor')){
     if(existing.has(row.uid))continue;
-    const others=anchors.filter(other=>other?.trace_type==='anchor'&&other.uid!==row.uid&&
+    const others=anchors.filter(other=>other?.trace_type==='space_anchor'&&other.uid!==row.uid&&
       placeNameKey(other.title)!==placeNameKey(row.title)&&uncertainPlaceName(row.title,other.title));
     if(others.length) {
       uncertain.push({key:'possible:'+row.uid,reason:'名稱相似，需確認',items:[row,...others]});
