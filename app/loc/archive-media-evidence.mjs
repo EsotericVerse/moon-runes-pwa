@@ -129,7 +129,11 @@ export function createArchiveEvidenceCollector(){
         if(ref.platform&&!image.platform)image.platform=ref.platform;
         records.delete(ref.entry_path);
       }
-      return [...records.values()].map(item=>({
+      return [...records.values()]
+        .filter(item=>Boolean(publicUrl(item.url))||
+          (Number.isFinite(item.latitude)&&Number.isFinite(item.longitude))||
+          Boolean(item.camera_local_time))
+        .map(item=>({
         scope_id:scopeId,archive_id:archiveId,entry_path:item.entry_path,
         platform:item.platform||null,media_type:item.media_type,
         galaxy_uids:[...item.galaxy_uids],source_files:[...item.source_files],
