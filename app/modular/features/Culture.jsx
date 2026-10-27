@@ -653,6 +653,7 @@ export default function Culture(){
   const anchorRecords=useMemo(()=>timelineItems
     .filter(item=>item.entry_type==='anchor'&&item.uid)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.display_label||'').localeCompare(String(b.display_label||''))),[timelineItems]);
+  const locScopeIntervalItems=useMemo(()=>query.data?.scopeTimeRanges||[],[query.data]);
   const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
   const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
   const locCombinedSourceTotal=useMemo(()=>locSourceGroups.reduce((sum,item)=>sum+Number(item?.item_count||0),0),[locSourceGroups]);
@@ -672,8 +673,12 @@ export default function Culture(){
   })),[locSourceRiverItems,locSourceGroupLabel]);
   const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
   const locIntersectionScopeIds=useMemo(()=>query.data?.intersectionScopeIds||[],[query.data]);
-  const locDistributionStart=String(query.data?.intersectionStart||'');
-  const locDistributionEnd=String(query.data?.intersectionEnd||new Date().toISOString().slice(0,10));
+  const locIntersectionStart=String(query.data?.intersectionStart||'');
+  const locIntersectionEnd=String(query.data?.intersectionEnd||'');
+  const locDistributionStart=locScopeIntervalItems.map(item=>String(item?.start_date||''))
+    .filter(Boolean).sort()[0]||locIntersectionStart;
+  const locDistributionEnd=locScopeIntervalItems.map(item=>String(item?.end_date||item?.start_date||''))
+    .filter(Boolean).sort().at(-1)||locIntersectionEnd||new Date().toISOString().slice(0,10);
   const locScopeRiverItems=useMemo(()=>{
     const perScopeMax=new Map();
     let globalMax=0;
@@ -726,7 +731,7 @@ export default function Culture(){
   },[locScopeDistributionItems,locIntersectionScopeIds,locDistributionStart,l,locale]);
   // An empty Time/Galaxy/Media database is a legitimate new Scope. Keep the
   // controls and empty-state river, not an absent Culture screen.
-  const hasTimelineSurface=isAggregateScope?Boolean(locSourceRiverItems.length||query.data?.scopes?.length):Boolean(query.data);
+  const hasTimelineSurface=isAggregateScope?Boolean(locScopeIntervalItems.length||locSourceRiverItems.length||query.data?.scopes?.length):Boolean(query.data);
 
   function switchTimelineEditor(target,apply){
     // Reuse the edit dock's Save / Discard / Cancel safeguard when the
@@ -1223,9 +1228,9 @@ export default function Culture(){
 
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
-                <h3>{UI_COPY.culture.intersectionRiver}</h3>
-                {locScopeRiverItems.length?<CultureTimeline
-                  items={locScopeRiverItems}
+                <h3>各 Scope 時間區間</h3>
+                {locScopeIntervalItems.length?<CultureTimeline
+                  items={locScopeIntervalItems}
                   labelOf={emptyRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
                   mode='source'
@@ -1233,10 +1238,25 @@ export default function Culture(){
                   windowEnd={requestedWindowEnd||locDistributionEnd}
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
-                  hiddenDates={locRiverAnalysis.hiddenDates}
                 />:null}
+                {!locIntersectionScopeIds.length&&locScopeIntervalItems.length
+                  ?<p className='scope-status'>目前預設的交會時期沒有重疊；上方仍顯示各 Scope 已保存的時間區間。</p>:null}
+                {locScopeRiverItems.length?<section className='scope-culture-interval-density'>
+                  <h4>{UI_COPY.culture.intersectionRiver}</h4>
+                  <CultureTimeline
+                    items={locScopeRiverItems}
+                    labelOf={emptyRiverLabel}
+                    focus={EMPTY_RIVER_FOCUS}
+                    mode='source'
+                    windowStart={requestedWindowStart||locIntersectionStart}
+                    windowEnd={requestedWindowEnd||locIntersectionEnd}
+                    fixedMin={locIntersectionStart}
+                    fixedMax={locIntersectionEnd}
+                    hiddenDates={locRiverAnalysis.hiddenDates}
+                  />
+                </section>:null}
                 <div className='scope-result-links'>
-                  {locIntersectionScopeIds.map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
+                  {[...new Set(locScopeIntervalItems.map(item=>item.scope_id))].map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
                 </div>
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>

@@ -272,7 +272,7 @@ export async function selectScopeCultureData(scopeId){
       return {
         scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],intersectionStart:''
+        works:[],scopeTimeRanges:[],intersectionStart:''
       };
     }
 
@@ -290,6 +290,28 @@ export async function selectScopeCultureData(scopeId){
       };
     }));
 
+    // LOC Culture plots each saved interval, not only a single shared period.
+    // A single linked anchor remains a point; disconnected gaps stay empty.
+    const scopeTimeRanges=bundles.flatMap((bundle,scopeIndex)=>
+      bundle.context.filter(row=>row.entry_type==='period').flatMap(row=>
+        (row.ranges||[])
+          .filter(range=>range.start_date&&(!range.invalid||range.point))
+          .map((range,index)=>({
+            id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index,
+            entry_id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index,
+            entry_type:'scope_time_range',
+            scope_id:bundle.runtimeId,
+            group_label:bundle.runtimeId,
+            group_order:scopeIndex,
+            start_date:range.start_date,
+            end_date:range.end_date||range.start_date,
+            title:[row.title||'時間痕跡',range.start_date,
+              range.end_date&&range.end_date!==range.start_date?'～ '+range.end_date:''].filter(Boolean).join(' · '),
+            display_label:''
+          }))
+      )
+    );
+
     const validBundles=bundles.filter(bundle=>Boolean(bundle.openRange?.start_date));
     const openRanges=validBundles.map(bundle=>bundle.openRange);
     const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
@@ -300,7 +322,8 @@ export async function selectScopeCultureData(scopeId){
       return {
         scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[]
+        works:[],scopeTimeRanges,scopes:bundles.map(bundle=>bundle.scope),
+        intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[]
       };
     }
 
@@ -327,6 +350,7 @@ export async function selectScopeCultureData(scopeId){
       eras:{eras:[]},
       periods:[],
       openRanges,
+      scopeTimeRanges,
       scopeRanges:buildLocScopeDistribution(aggregateRows),
       timelineItems:[],
       sourceRiverItems:built.sourceRiverItems,
