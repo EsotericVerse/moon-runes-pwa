@@ -25,7 +25,8 @@ export async function readAutocompleteCurrent(scopeId,{fresh=false}={}){
     return value&&typeof value==='object'?value:null;
   })();
   loaded.set(id,request);
-  try{return await request;}catch(e){loaded.delete(id);throw e;}
+  try{const snapshot=await request;if(!snapshot)loaded.delete(id);return snapshot;}
+  catch(e){loaded.delete(id);throw e;}
 }
 export async function refreshAutocompleteCurrent(scopeId){
   const id=String(scopeId||'').trim().toLowerCase();
