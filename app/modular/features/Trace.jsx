@@ -217,7 +217,7 @@ export default function Trace({scopeId='loc'}){
       onAnchorSelect={chooseMapAnchor}/>
 
     {!mapOnly&&reportPlace?<div ref={reportTopRef} className="loc-trace-report-toolbar" role="group" aria-label="地圖下方目前地點內容框">
-      <strong>{reportPlace.title}</strong>
+      <strong>文章內容</strong>
       <div className="scope-stat-controls" role="group" aria-label="地點呈現模式">
         {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
           <button type="button" key={item.value} className="loc-button"
