@@ -179,10 +179,22 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // rows actually written, purely for reporting.
     let count=0;
     let changedCount=0;
+    let completedBatches=0;
+    const estimateBatches=()=>completedBatches+
+      Math.ceil(Math.max(0,rows.length-count)/batchSize);
+    async function coolDown(retrying){
+      const secondsTotal=Math.ceil(KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000);
+      for(let seconds=secondsTotal;seconds>0;seconds--){
+        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
+          seconds,retrying,batchSize,completedBatches,estimatedBatches:estimateBatches()});
+        await new Promise(resolve=>setTimeout(resolve,1000));
+      }
+    }
     for(let offset=0;offset<rows.length;){
       const batch=rows.slice(offset,offset+batchSize);
       let affected;
       try{
+        // Await the RPC and transaction commit before starting another write.
         affected=await keywordClassificationWriteUnchecked(scope,{mode:'chunk',rows:batch});
       }catch(error){
         const timedOut=/canceling statement due to statement timeout/i
@@ -192,20 +204,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
           throw error;
         }
         batchSize=Math.max(KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE,Math.floor(batchSize/2));
-        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
-          seconds:KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000,retrying:true});
-        await new Promise(resolve=>setTimeout(resolve,KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS));
+        await coolDown(true);
         continue; // The canceled statement committed no rows; retry this offset.
       }
       changedCount+=affected;
       count+=batch.length;
       offset+=batch.length;
-      onProgress?.({phase:'write',completed:count,total:rows.length});
-      if(offset<rows.length){
-        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
-          seconds:KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000,retrying:false});
-        await new Promise(resolve=>setTimeout(resolve,KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS));
-      }
+      completedBatches++;
+      onProgress?.({phase:'write',completed:count,total:rows.length,
+        completedBatches,estimatedBatches:estimateBatches(),batchSize,
+        lastBatchSize:batch.length});
+      if(offset<rows.length)await coolDown(false);
     }
 
     // DB-side sync uses the same statistics_able predicate as the UID
