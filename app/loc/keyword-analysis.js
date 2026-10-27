@@ -645,8 +645,9 @@ function emptyStored(config,extra={}){
 }
 // Exact counts for the stored classification, reduced from row-level data. Used only
 // when the database-side RPC (silver.read_rune66_summary) is not available.
-function aggregateStoredRows(rows){
-  const agg={eligible:0,classDays:new Map(),itemCounts:new Map(),itemDocuments:new Map()};
+function newStoredAggregate(){return {eligible:0,classDays:new Map(),itemCounts:new Map(),itemDocuments:new Map()};}
+// Additive: call once per page so only the small aggregate is kept, never the full row set.
+function addStoredRows(agg,rows){
   for(const row of rows||[]){
     const lists=normalizedGroupLists(row?.group_lists);
     if(lists===false)continue;
@@ -663,12 +664,30 @@ function aggregateStoredRows(rows){
       agg.itemDocuments.set(itemId,(agg.itemDocuments.get(itemId)||0)+1);
     }
   }
+  return agg;
+}
+function finishStoredAggregate(agg){
   return {
     eligible:agg.eligible,
     classDays:[...agg.classDays].map(([key,count])=>{const split=key.indexOf('|');return {class_id:Number(key.slice(0,split)),day:key.slice(split+1),count};}),
     itemCounts:agg.itemCounts,
     itemDocuments:agg.itemDocuments
   };
+}
+function aggregateStoredRows(rows){return finishStoredAggregate(addStoredRows(newStoredAggregate(),rows));}
+// Reads one offset/limit page at a time, handing each page to fn and then letting it go.
+// A short pause between pages keeps the database from being hammered by one long scan.
+const PAGE_PAUSE_MS=120;
+async function forEachStoredPage(table,{columns,filters=[],orders=[],pageSize=KEYWORD_CLASSIFICATION_BATCH_SIZE},fn){
+  let offset=0;
+  for(;;){
+    const {rows}=await selectRows(table,{columns,filters,orders,limit:pageSize,offset});
+    if(!rows.length)break;
+    await fn(rows);
+    if(rows.length<pageSize)break;
+    offset+=rows.length;
+    await new Promise(resolve=>setTimeout(resolve,PAGE_PAUSE_MS));
+  }
 }
 // Same shape, taken straight from the database's exact counts.
 function aggregateSummaryRpcRows(rows){
@@ -773,7 +792,9 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
         keywordSummaryRpcInstalled=false;
       }
     }
-    const rows=await selectAllRows(scope.galaxy,{
+    const allowed=Array.isArray(sourceNames)?new Set(sourceNames.map(name=>String(name||'').trim().toLowerCase())):null;
+    const agg=newStoredAggregate();
+    await forEachStoredPage(scope.galaxy,{
       columns:category||Array.isArray(sourceNames)?'uid,createtime,class_id,group_lists,source_name':'uid,createtime,class_id,group_lists',
       filters:[
         {column:'searchable',operator:'eq',value:true},
@@ -781,14 +802,15 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
         ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
         ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
       ],
-      orders:[{column:'createtime',ascending:true}]
+      orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}]
+    },rows=>{
+      const classified=category||allowed?rows.filter(row=>
+        (!category||assignedSource(row.source_name,sourceAliases,sourceCategories)===category)
+        &&(!allowed||allowed.has(String(row.source_name||'').trim().toLowerCase()))
+      ):rows;
+      addStoredRows(agg,classified);
     });
-    const allowed=Array.isArray(sourceNames)?new Set(sourceNames.map(name=>String(name||'').trim().toLowerCase())):null;
-    const classified=category||allowed?(rows.rows||[]).filter(row=>
-      (!category||assignedSource(row.source_name,sourceAliases,sourceCategories)===category)
-      &&(!allowed||allowed.has(String(row.source_name||'').trim().toLowerCase()))
-    ):rows.rows||[];
-    return storedSummary(aggregateStoredRows(classified),config,globalCount??undefined);
+    return storedSummary(finishStoredAggregate(agg),config,globalCount??undefined);
   })().catch(error=>{
     if(!category&&!Array.isArray(sourceNames))analysisPromises.delete(key);
     throw error;
