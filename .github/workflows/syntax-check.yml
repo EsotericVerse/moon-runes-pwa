@@ -1,0 +1,30 @@
+name: Syntax Check
+
+# Cheap, automatic gate: unlike the other workflows in this repo (which are
+# workflow_dispatch-only for cost control on expensive builds), this one is
+# intentionally fast enough to run on every push/PR without manual
+# triggering — it only parses source files, no Next build, no browser
+# tests, no deploy.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: syntax-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.4"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Parse JavaScript/JSX/TypeScript source files
+        run: npm run check:syntax
