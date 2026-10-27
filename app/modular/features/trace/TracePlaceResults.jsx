@@ -42,7 +42,7 @@ function TraceWork({row,scope}){
   </Article>;
 }
 
-export default function TracePlaceResults({place=null,anchors=[],scopeId='',period=null,
+export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId='',period=null,
   tab='articles',sourceName='',mediaType='',dateRange=null}){
   const [sort,setSort]=useState('desc');
   const [chartType,setChartType]=useState('bar');
@@ -52,8 +52,8 @@ export default function TracePlaceResults({place=null,anchors=[],scopeId='',peri
   const isMap=place?.trace_type==='space_period'||place?.trace_type==='space_trace';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
   const scope=useMemo(()=>defaultScopeData(targetScope),[targetScope]);
-  const placeIds=useMemo(()=>traceArticleIds(place,anchors),[place,anchors]);
-  const placeLabels=useMemo(()=>traceArticleLabels(place,anchors),[place,anchors]);
+  const placeIds=useMemo(()=>traceArticleIds(place,[...anchors,...maps]),[place,anchors,maps]);
+  const placeLabels=useMemo(()=>traceArticleLabels(place,[...anchors,...maps]),[place,anchors,maps]);
   const placesKey=placeIds.join('|');
   const startDate=validDate(dateRange?.startDate)?dateRange.startDate
     :validDate(period?.start_date)?String(period.start_date).slice(0,10):'';
