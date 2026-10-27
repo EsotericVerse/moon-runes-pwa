@@ -129,6 +129,8 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const timestamp=item.create_time??item.timestamp_ms??item.timestamp??item.creation_timestamp??
     item.taken_at??item.created_at??item.createdAt??item.date??item.core?.createdAt??
     item.string_map_data?.['Creation Time']?.timestamp??
+    // Threads text posts nest their time under media[] (creation_timestamp, Unix seconds).
+    (Array.isArray(item.media)?item.media.find(m=>m?.creation_timestamp!=null)?.creation_timestamp:undefined)??
     (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null);
   const createdAt=iso(timestamp);
   const originalTimestamp=timestamp===undefined?'':String(timestamp);
