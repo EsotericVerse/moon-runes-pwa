@@ -665,6 +665,14 @@ async function applyKeywordClassificationLocal({p_rows}={}){
       return {data:affected,error:null};
     }
     if(mode==='sync'){
+      if(p_rows?.scopeBased===true){
+        // Same eligibility predicate as the server, entirely on-device.
+        const updated=await runLocal(
+          `UPDATE local_galaxy SET class_id=NULL,group_lists='false'
+           WHERE (class_id IS NOT NULL OR group_lists IS NOT 'false')
+             AND (statistics_able IS NULL OR statistics_able<>1)`,[]);
+        return {data:updated,error:null};
+      }
       if(!Array.isArray(p_rows?.uids))throw new Error('uids must be an array');
       // JSON1 binds the entire eligible set as one parameter, avoiding SQL
       // variable limits and keeping unrelated rows unchanged.
