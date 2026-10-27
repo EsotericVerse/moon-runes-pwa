@@ -29,6 +29,41 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
   };
 }
 
+// Totals-only root payload: one group per source/media category with its
+// total item_count, no per-day buckets. Used for the collapsed river's flat
+// water-level bars -- the daily breakdown is fetched separately, only once
+// a lane is expanded (see selectScopeCategoryTotals / galaxy-query.js).
+export function buildCultureRiverRootTotals({text=[],media=[]}={},taxonomy={}){
+  const groups=new Map();
+  const add=(category,count,isMedia)=>{
+    category=String(category||'').trim();
+    if(count<=0)return;
+    // An empty media_type has nothing to label a lane with and must not
+    // create a clickable-but-empty child; an empty source_name is real
+    // (unclassified text), same as summarizeCultureRiverRoots above.
+    if(isMedia&&!category)return;
+    if(isMedia){
+      const raw='媒體 · '+category;
+      const key='media:'+category;
+      const group=groups.get(key)||{
+        category_key:'source:'+raw,category_type:'media',source_name:raw,
+        display_label:raw,item_count:0,source_names:[],media_types:[category]
+      };
+      group.item_count+=count;groups.set(key,group);
+      return;
+    }
+    const key='source:'+category;
+    const group=groups.get(key)||{
+      category_key:'source:'+category,category_type:'source',source_name:category,
+      display_label:category,item_count:0,source_names:[category],media_types:[]
+    };
+    group.item_count+=count;groups.set(key,group);
+  };
+  for(const row of text)add(row?.category,Number(row?.item_count)||0,false);
+  for(const row of media)add(row?.category,Number(row?.item_count)||0,true);
+  return {groups:[...groups.values()].sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name))};
+}
+
 export function selectCultureRiverChildren(rows=[],taxonomy={},roots=[]){
   const wanted=new Set(roots);
   return rows.filter(row=>{
