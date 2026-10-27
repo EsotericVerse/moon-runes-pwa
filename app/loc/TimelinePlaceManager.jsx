@@ -118,7 +118,14 @@ export default function TimelinePlaceManager({scopeId}){
         completed+=Number(checked(result,'批次寫入 place_id')||0);
         setNotice('已寫入 '+completed+' / '+updates.length+' 篇…');
       }
-      setAnalysis(null);setDecisions({});
+      // Keep unresolved disputes on screen after writing the definite rows.
+      // The user can decide them later without re-importing private Timeline JSON.
+      const resolved=new Set(manualChanges.map(row=>row.uid));
+      setAnalysis(previous=>previous?{...previous,ready:[],
+        disputes:previous.disputes.filter(row=>!resolved.has(row.uid)),
+        unchanged:[...previous.unchanged,...previous.ready,...manualChanges]}:null);
+      setDecisions({});
+      setPage(0);
       await revalidateServerMetadata();
       await Promise.allSettled([
         cache.invalidate({queryKey:['scope-trace',scopeId]}),
