@@ -18,7 +18,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,importSecond,dedupeIncomingImport,findExistingImportDuplicates} from './import-duplicate-check.mjs';
-import {assertPrivateArchiveDestination,isPublishableArchiveRecord,isPrivateArchiveEntryPath,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {isPublishableArchiveRecord,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -298,15 +298,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // then accept only recognized public posts, skipping DM archive entries.
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=await zipEntryCount(file);
-        const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
+        const result=await detectZipArchiveSource(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
         setArchiveDetection(result);
-        assertPrivateArchiveDestination(nativeLocal,result.sources);
+        // Never reject a whole Meta archive merely for including chat folders.
+        // Public mode only reads recognized public entry content.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],uidOwners=new Map(),exifSamples=[];
         const collector=createArchiveEvidenceCollector();
         let ignored=0;
-        const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+        const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           if(!nativeLocal&&!isPublishableArchiveRecord(record)){ignored++;return;}
           const article=archiveGalaxyRow(record);
           // Media-only posts still carry URLs even when no Galaxy text exists.
@@ -320,11 +321,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
-          if(!nativeLocal&&isPrivateArchiveEntryPath(item.path))return;
           collector.onExif(item);
           if(exifSamples.length<5)exifSamples.push(item);
         },onMediaEntry:item=>{
-          if(!nativeLocal&&isPrivateArchiveEntryPath(item.path))return;
           collector.onMediaEntry(item);
         }});
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size});
