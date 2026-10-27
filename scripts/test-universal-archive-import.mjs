@@ -188,8 +188,8 @@ test('Media-only archive remains importable and its EXIF is retained',async()=>{
   const rows=collector.rows({scopeId:'lo3rwang',archiveName:file.name,archiveSize:file.size});
   const plan=prepareArchiveMedia(rows,new Set());
   assert.equal(summary.acceptedRows,0);
-  assert.equal(plan.media.length,1);
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.media[0].url,null);
-  assert.equal(plan.media[0].galaxy_link,null);
+  assert.equal(plan.exif[0].media_id,null);
 });
