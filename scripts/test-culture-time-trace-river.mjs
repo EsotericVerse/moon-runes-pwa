@@ -26,12 +26,12 @@ const source=[
 
 test('collapsed trace roots retain a permanent lane for every saved anchor',()=>{
   const data=buildTimeTraceRiver(source);
-  assert.deepEqual(data.groups.map(x=>x.label),['定錨點','時間痕跡甲','時間痕跡乙']);
-  assert.ok(data.groups.slice(1).every(x=>x.collapsible&&!x.expanded));
+  assert.deepEqual(data.groups.map(x=>x.label),['時間痕跡甲','時間痕跡乙']);
+  assert.ok(data.groups.every(x=>x.collapsible&&!x.expanded));
   assert.deepEqual(data.items.filter(x=>x.entry_type==='anchor').map(x=>x.uid),
-    ['A001','A002','A003','A004']);
+    ['A001','A002','A003','A004','A003','A004']);
   assert.ok(data.items.filter(x=>x.entry_type==='anchor')
-    .every(x=>x.group_key==='time-anchors:example'));
+    .every(x=>x.group_key.startsWith('trace:example:')&&x.display_label==='●'));
   assert.deepEqual(data.items.filter(x=>x.entry_type==='event').map(x=>x.group_key),
     ['trace:example:T001','trace:example:T001','trace:example:T002']);
   assert.ok(!data.items.some(x=>x.end_date&&x.end_date.includes('now')));
@@ -41,12 +41,11 @@ test('collapsed trace roots retain a permanent lane for every saved anchor',()=>
 test('trace expansion adds ordered event groups and actual endpoints',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001']);
   assert.deepEqual(data.groups.map(x=>x.id),[
-    'time-anchors:example',
     'trace:example:T001','trace-event:example:T001:E002',
     'trace-event:example:T001:E001','trace-event:example:T001:GONE',
     'trace:example:T002'
   ]);
-  assert.equal(data.items.filter(x=>x.entry_type==='anchor').length,7);
+  assert.equal(data.items.filter(x=>x.entry_type==='anchor').length,9);
   assert.deepEqual(data.items.filter(x=>x.entry_type==='anchor'&&
     x.group_key.startsWith('trace-event:')).map(x=>x.start_date),
     ['2026-02-01','2026-02-06','2026-01-01']);
@@ -54,8 +53,8 @@ test('trace expansion adds ordered event groups and actual endpoints',()=>{
 });
 test('one event can be reused under two traces without merging separated intervals',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001','trace:example:T002']);
-  assert.equal(data.items.filter(x=>x.entry_type==='anchor'&&x.uid==='A003').length,3,
-    'anchor has one permanent marker and two expanded references');
+  assert.equal(data.items.filter(x=>x.entry_type==='anchor'&&x.uid==='A003').length,4,
+    'anchor appears in two traces and their two expanded event rows');
   assert.equal(data.items.filter(x=>x.entry_type==='event'&&x.time_trace_uid==='T001').length,2);
   assert.equal(data.items.filter(x=>x.time_trace_uid==='T001'&&x.start_date==='2026-01-01'
     &&x.end_date==='2026-02-06').length,0,'gap must not be filled');
@@ -89,4 +88,33 @@ test('each Scope has its own permanent anchor lane and stable identifiers',()=>{
   ]);
   assert.deepEqual(data.groups.map(x=>x.label),['example · 定錨點','other · 定錨點']);
   assert.deepEqual(data.items.map(x=>x.id),['time-anchors:example:A001','time-anchors:other:A001']);
+});
+
+test('focused trace moves to the top without changing UID and date ownership',()=>{
+  const normal=buildTimeTraceRiver(source);
+  const focused=buildTimeTraceRiver(source,[],'T002');
+  assert.equal(focused.groups[0].id,'trace:example:T002');
+  assert.deepEqual(new Set(focused.items.map(x=>x.id)),new Set(normal.items.map(x=>x.id)));
+  assert.ok(focused.items.filter(x=>x.entry_type==='anchor').every(x=>x.display_label==='●'));
+});
+test('disconnected traces never absorb anchors in the gap',()=>{
+  const data=buildTimeTraceRiver([
+    row('A101','anchor','頭','2026-01-02'),
+    row('A102','anchor','空隙','2026-02-01'),
+    row('A103','anchor','尾','2026-03-29'),
+    row('T009','period','間斷時期','2026-01-01','2026-03-31',{
+      ranges:[{start_date:'2026-01-01',end_date:'2026-01-05'},
+        {start_date:'2026-03-25',end_date:'2026-03-31'}]})
+  ]);
+  assert.deepEqual(data.items.filter(x=>x.group_key==='trace:example:T009').map(x=>x.uid),['A101','A103']);
+  assert.deepEqual(data.items.filter(x=>x.group_key==='time-anchors:example').map(x=>x.uid),['A102']);
+  assert.equal(data.groups.find(x=>x.id==='time-anchors:example')?.label,'未歸屬定錨點');
+});
+test('invalid trace ranges do not swallow unrelated anchors',()=>{
+  const data=buildTimeTraceRiver([
+    row('A101','anchor','有效日期','2026-02-01'),
+    row('T009','period','失效時期','2026-01-01','2026-03-01',{
+      ranges:[{start_date:'2026-01-01',end_date:'2026-03-01',invalid:true,point:false}]})
+  ]);
+  assert.equal(data.items.find(x=>x.uid==='A101')?.group_key,'time-anchors:example');
 });
