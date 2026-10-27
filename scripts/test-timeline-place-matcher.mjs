@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
- timelineVisitWindows,timelineCoordinates,matchTimelineWindows,accumulateTimelineArticles
+ timelineVisitWindows,timelineCoordinates,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces
 } from '../app/loc/timeline-place-matcher.mjs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const row=(uid,title,lat,lng)=>({uid,title,trace_type:'space_anchor',address:[lng,lat]});
@@ -38,15 +38,15 @@ test('outside 500m stays empty; two inside 500m become disputed',()=>{
  assert.equal(match.windows[0].disputed,true);
  assert.equal(matchTimelineWindows(windows,[anchors[2]]).withoutAnchor,1);
 });
-test('article is auto eligible only when one anchor and no prior ID',()=>{
+test('blank source_place is eligible even if matching place_id already exists',()=>{
  const window={candidates:[{uid:'A001',title:'甲',meters:20}],disputed:false};
  const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,window},
   {uid:'22222222',title:'已存在',createtime:'2026-01-01T00:10:00Z',place_id:'B002',window},
   {uid:'33333333',title:'相同',createtime:'2026-01-01T00:10:00Z',place_id:'A001',window}];
  const result=accumulateTimelineArticles(rows);
- assert.deepEqual(result.ready.map(x=>x.uid),['11111111']);
+ assert.deepEqual(result.ready.map(x=>x.uid),['11111111','33333333']);
  assert.deepEqual(result.disputes.map(x=>x.uid),['22222222']);
- assert.deepEqual(result.unchanged.map(x=>x.uid),['33333333']);
+ assert.deepEqual(result.unchanged.map(x=>x.uid),[]);
 });
 test('overlapping visits to different places never auto apply a guessed ID',()=>{
  const hit=(placeId)=>({uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',
@@ -55,17 +55,44 @@ test('overlapping visits to different places never auto apply a guessed ID',()=>
  assert.equal(x.ready.length,0);
  assert.equal(x.disputes.length,1);
 });
-test('UI is owner-only, conflict choices start skipped, source_place never written',()=>{
+test('same Timeline coordinate groups hundreds of distinct article rows without merging them',()=>{
+ const window={lat:25.0123,lng:121.4567,candidates:[
+   {uid:'A001',title:'一樓',meters:0},{uid:'A002',title:'二樓',meters:0}],disputed:true};
+ const hits=Array.from({length:300},(_,i)=>({
+   uid:String(i).padStart(8,'0'),title:'紀錄 '+i,place_id:null,createtime:'2026-01-01',
+   window
+ }));
+ const groups=groupTimelineMissingPlaces(accumulateTimelineArticles(hits));
+ assert.equal(groups.length,1);
+ assert.equal(groups[0].rows.length,300);
+ assert.equal(groups[0].defaultPlaceId,'');
+ assert.deepEqual(groups[0].candidates.map(c=>c.uid),['A001','A002']);
+});
+test('one article matched at different coordinates cannot be swept into a bulk group',()=>{
+ const hit=(lat,placeId)=>({uid:'11111111',place_id:null,window:{
+   lat,lng:121,candidates:[{uid:placeId,title:placeId,meters:1}],disputed:false
+ }});
+ const single={uid:'22222222',place_id:null,window:{
+   lat:25,lng:121,candidates:[{uid:'A001',title:'甲',meters:1}],disputed:false
+ }};
+ const groups=groupTimelineMissingPlaces(accumulateTimelineArticles([hit(25,'A001'),hit(26,'B002'),single]));
+ assert.equal(groups.length,2);
+ assert.ok(groups.some(g=>g.key==='article:11111111'&&g.defaultPlaceId===''));
+});
+test('UI is owner-only, grouped with default checkboxes, and source_place is protected',()=>{
  const ui=read('app/loc/TimelinePlaceManager.jsx');
  const page=read('app/loc/PlaceManagement.jsx');
- const migration=read('supabase/migrations/20261027225000_timeline_place_id_review.sql');
+ const migration=read('supabase/migrations/20261028140000_timeline_missing_source_place_review.sql');
  assert.match(page,/地點整理 · Google Timeline JSON 匯入／糾紛點/);
  assert.match(ui,/readAllTraceAnchors\(scopeId,\{includeHidden:true\}\)/);
  assert.match(ui,/if\(!window\.confirm\(/);
- assert.match(ui,/const \[decisions,setDecisions\]=useState\(\{\}\)/);
+ assert.match(ui,/groupTimelineMissingPlaces\(analysis\)/);
+ assert.match(ui,/const \[excluded,setExcluded\]=useState\(\{\}\)/);
+ assert.match(ui,/!excluded\[row\.uid\]/);
  assert.match(ui,/p_scope_id:scopeId,p_updates:batch/);
- assert.match(ui,/disputes:previous\.disputes\.filter\(row=>!resolved\.has\(row\.uid\)\)/);
- assert.doesNotMatch(migration,/SET source_place|SET\s+source_place|g\.source_place/);
- assert.match(migration,/g\.place_id IS NOT DISTINCT FROM \$3/);
+ assert.match(ui,/apply_timeline_missing_places/);
+ assert.match(migration,/SET source_place=\$1/);
+ assert.match(migration,/nullif\(btrim\(g\.source_place\),''\) IS NULL/);
+ assert.match(migration,/g\.place_id IS NOT DISTINCT FROM \$4/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
 });
