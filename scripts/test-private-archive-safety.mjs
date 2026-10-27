@@ -55,6 +55,12 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
   assert.throws(()=>assertStandaloneImportDestination({
     fileName:'posts.json',rows:[{kind:'message',platform:'facebook'}],nativeLocal:false
   }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{mapping:{abc:{message:{author:{role:'user'}}}}}],nativeLocal:false
+  }),/私人對話/);
+  assert.throws(()=>assertStandaloneImportDestination({
+    fileName:'renamed.json',rows:[{participants:['A','B'],messages:[{text:'fixture'}]}],nativeLocal:false
+  }),/私人對話/);
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'posts.json',rows:[{source_name:'Facebook'}],nativeLocal:false
   }));
