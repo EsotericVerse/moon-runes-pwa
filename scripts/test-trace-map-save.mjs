@@ -77,3 +77,28 @@ test('new spatial connections validate Scope membership and 4-char UID',()=>{
  assert.match(source,/new Set\(list\)\.size!==list\.length/);
  assert.match(source,/pair\[0\]===pair\[1\]/);
 });
+
+test('route owner can click visible map anchors to append the ordered Queue',()=>{
+ const page=manager();
+ assert.match(page,/onAnchorSelect=\{addMapSelectedAnchor\}/);
+ assert.match(page,/spatialData=\{\{anchors:allAnchors,maps:preview\?\[preview\]:\[\]\}\}/);
+ assert.match(page,/setQueue\(items=>items\.includes\(uid\)\|\|items\.length>=MAX_ROAD/);
+ assert.match(page,/!editorOpen&&showMap&&preview/);
+ const start=page.indexOf('  const addMapSelectedAnchor=anchor=>{');
+ const end=page.indexOf('  const refresh=async()=>{',start);
+ assert.ok(start>=0&&end>start);
+ const source=page.slice(start,end).trim().replace(/^const addMapSelectedAnchor=/,'')
+   .replace(/;\s*$/,'');
+ const state={queue:[],spool:[]},args={
+   busy:false,own:true,editorOpen:true,anchorMap:new Map([['A001',{}],['B002',{}],['C003',{}]]),
+   type:'space_period',MAX_ROAD:80,MAX_LINES:400,mapStart:'',
+   setSpool(fn){state.spool=fn(state.spool);},
+   setQueue(fn){state.queue=fn(state.queue);},
+   setMapStart(){},setPairs(){}
+ };
+ const handler=new Function(...Object.keys(args),'return ('+source+')')(...Object.values(args));
+ handler({uid:'A001'});handler({uid:'A001'});handler({uid:'B002'});
+ handler({uid:'NONEXIST'});
+ assert.deepEqual(state.queue,['A001','B002']);
+ assert.deepEqual(state.spool,['A001','B002']);
+});
