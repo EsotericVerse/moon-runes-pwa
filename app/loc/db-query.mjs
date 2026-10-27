@@ -74,11 +74,33 @@ export async function executePublicRead(table,buildQuery,{source='auto',authenti
   // Never fall back to an anonymous or backup transport for authenticated reads.
   if(authenticated){
     if(!routing.primaryControl)throw new Error('Authenticated hidden search requires Supabase as the primary database');
-    const result=await withSignal(buildQuery(publicRelation(dbAuthClient,table)),signal);
-    if(signal?.aborted)throw abortError();
-    const failure=resultError(result,table,'authenticated');
-    if(failure)throw failure;
-    return {...result,__dataSource:'authenticated'};
+    try{
+      const result=await withSignal(buildQuery(publicRelation(dbAuthClient,table)),signal);
+      if(signal?.aborted)throw abortError();
+      const failure=resultError(result,table,'authenticated');
+      if(failure)throw failure;
+      return {...result,__dataSource:'authenticated'};
+    }catch(error){
+      if(signal?.aborted||isAbortError(error))throw abortError();
+      // Only on a recoverable failure (Supabase throttled/unreachable), and only
+      // as an anonymous read: rows that need the signed-in RLS session are not
+      // in the backup and simply will not be returned. Shown as backup source.
+      if(!routing.backupId||!dbBackupPublicClient||!recoverableReadError(error))throw error;
+      try{
+        const backupResult=await withSignal(buildQuery(publicRelation(dbBackupPublicClient,table)),signal);
+        if(signal?.aborted)throw abortError();
+        const backupFailure=resultError(backupResult,table,'backup');
+        if(backupFailure)throw backupFailure;
+        markBackupReadSucceeded(table);
+        return {...backupResult,__dataSource:'backup'};
+      }catch(secondary){
+        markBackupReadFailed(table,secondary);
+        const aggregate=new AggregateError([error,secondary],'Authenticated and backup read failed for '+table);
+        aggregate.primaryError=error;
+        aggregate.backupError=secondary;
+        throw aggregate;
+      }
+    }
   }
   const primaryClient=routing.primaryControl?dbPublicClient:dbConfiguredPublicClient;
   if(!primaryClient)throw new Error('Selected primary database is unavailable');
