@@ -97,7 +97,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   // Stored per class_id (same value on every row of that class), so it rides
   // along in the main keyword SELECT below rather than a separate query.
   const [defaultGroupItemNo,setDefaultGroupItemNo]=useState('0');
-  const [keywordDocumentCount,setKeywordDocumentCount]=useState(0);
+  const [keywordDocumentCount,setKeywordDocumentCount]=useState(null);
+  const [galaxyTotalCount,setGalaxyTotalCount]=useState(null);
+  const [countReadError,setCountReadError]=useState('');
+  const [countVersion,setCountVersion]=useState(0);
+  const countReadId=useRef(0);
   const [staticstime,setStaticstime]=useState('');
   const [configSnapshot,setConfigSnapshot]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -140,7 +144,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
-      const [keywordResult,configResult,documentCount]=await Promise.all([
+      const [keywordResult,configResult]=await Promise.all([
         dbAuthRelation(TABLE)
           .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
           .order('class_name',{ascending:true})
@@ -149,10 +153,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         dbAuthRelation(CONFIG_TABLE)
           .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,staticstime')
           .eq('id',scopeId)
-          .limit(1),
-        selectCount(scopeData.galaxy,{
-          idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
-        })
+          .limit(1)
       ]);
       if(keywordResult.error)throw new Error(keywordResult.error.message||l.libraryReadError);
       if(configResult.error)throw new Error(configResult.error.message||l.settingsReadError);
@@ -164,7 +165,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const nextMinDocuments=Number.isInteger(configuredDocuments)&&configuredDocuments>=0?configuredDocuments:DEFAULT_KEYWORD_MIN_DOCUMENTS;
       const nextCurrentClassId=String(config.current_keyword_class_id||'');
       const nextShareEnabled=Boolean(config.keyword_class_share_enabled);
-      const nextDocumentCount=Math.max(0,Number(documentCount)||0);
       const nextStaticstime=String(config.staticstime||'');
 
       const next=keywordResult.data||[];
@@ -181,7 +181,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       setMinDocuments(nextMinDocuments);
       setCurrentClassId(nextCurrentClassId);
       setShareEnabled(nextShareEnabled);
-      setKeywordDocumentCount(nextDocumentCount);
       setStaticstime(nextStaticstime);
       setDefaultGroupItemNo(nextDefaultGroupItemNo);
       setConfigSnapshot({
@@ -216,6 +215,31 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   }
 
   useEffect(()=>{if(canEdit)load();},[canEdit,account.email,scopeId,TABLE,CONFIG_TABLE]);
+
+  // Counts are HEAD-only and read on demand when the analysis tab opens.
+  // Never fetch article bodies or poll the database for this display.
+  useEffect(()=>{
+    if(workspace!=='run'||!canEdit||!scopeData?.galaxy)return;
+    const request=++countReadId.current;
+    let cancelled=false;
+    setKeywordDocumentCount(null);
+    setGalaxyTotalCount(null);
+    setCountReadError('');
+    Promise.all([
+      selectCount(scopeData.galaxy,{idColumn:'uid'}),
+      selectCount(scopeData.galaxy,{
+        idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
+      })
+    ]).then(([total,classified])=>{
+      if(cancelled||request!==countReadId.current)return;
+      setGalaxyTotalCount(Math.max(0,Number(total)||0));
+      setKeywordDocumentCount(Math.max(0,Number(classified)||0));
+    }).catch(error=>{
+      if(cancelled||request!==countReadId.current)return;
+      setCountReadError(String(error?.message||error||'Count failed'));
+    });
+    return ()=>{cancelled=true;};
+  },[workspace,canEdit,scopeId,scopeData?.galaxy,countVersion]);
 
   const classes=useMemo(()=>{
     const map=new Map();
@@ -421,6 +445,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       // cooldown effect above picks up the new value and greys the button
       // out for the remainder of the 5-minute window on its own.
       await load('',selectedClass);
+      setCountVersion(version=>version+1);
       setMessage(
         result.skipped?
           l.skippedNoChange+Number(result.documentCount||0).toLocaleString()+l.skippedNoChangeSuffix:
@@ -442,16 +467,18 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   // Does not re-run analysis by itself; press 重新分析 afterward.
   async function resetBatch(){
     if(busy||loading||configDirty||draftDirty)return;
-    if(!window.confirm(l.confirmReset))return;
+    if(!window.confirm(l.confirmReset+'\n'+scopeData.galaxy))return;
     setBusy(true);setMessage('');setBatchProgress(null);
     setResetProgress({phase:'reading',completed:0,total:0});
     try{
       await resetKeywordClassification(scopeId,{onProgress:setResetProgress});
       await invalidateClassification();
       await load('',selectedClass);
+      setCountVersion(version=>version+1);
       setMessage(l.resetDone);
     }catch(error){
       await invalidateClassification().catch(()=>{});
+      setCountVersion(version=>version+1);
       setMessage(l.resetError+' '+String(error?.message||error));
     }finally{
       setResetProgress(null);
@@ -649,7 +676,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <h2>{compactKeywordTitle(l.keywordAnalysis)}</h2>
       <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_id===currentClassId)?.class_name||l.activeClassRequired}</p>
       {configDirty||draftDirty?<p className="scope-status">{l.settingsUnsaved}</p>:null}
-      <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.validArticles}{Number(keywordDocumentCount||0).toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
+      <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.totalArticles}{galaxyTotalCount===null?'—':galaxyTotalCount.toLocaleString()}{l.articleUnit}{l.validArticles}{keywordDocumentCount===null?'—':keywordDocumentCount.toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
+      {countReadError?<p className="scope-status scope-error" role="status">{countReadError}</p>:null}
       <div className="scope-preview-links">
         <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
         <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassId} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
