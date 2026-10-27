@@ -318,8 +318,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setArchiveDetection(result);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],uidOwners=new Map(),exifSamples=[];
-        let ignored=0;
+        const preview=[],uidOwners=new Map(),sourceNames=new Set(),exifSamples=[];
+        let count=0,ignored=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           const article=archiveGalaxyRow(record);
           if(!article){ignored++;return;}
@@ -327,27 +327,26 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(previous&&previous!==record.key)
             throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
           uidOwners.set(article.uid,record.key);
-          if(imported.length>=100000)
-            throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
-          imported.push({raw:article,import_uid:article.uid});
+          count++;
+          sourceNames.add(article.source_name);
+          if(preview.length<5)preview.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
-          // In-memory preview only; image and EXIF are not uploaded or stored.
           if(exifSamples.length<5)exifSamples.push(item);
         }});
         setArchiveSummary({...summary,exifSamples});
-        if(!imported.length){
+        if(!count){
           setSource(result.sources.length===1?result.sources[0]:'');
           setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
             (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
           return;
         }
-        setRows(imported);
-        const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
-        setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
-        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話；略過 '+
+        setArchiveReady({file,count});
+        setRows(preview);
+        setSource(sourceNames.size===1?[...sourceNames][0]:'Mixed');
+        setStatus('ZIP 已完整解析 '+count.toLocaleString()+' 篇文章／會話；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+
-          ' 筆。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
+          ' 筆。下方僅預覽前 5 筆；儲存時每 30,000 筆自動接續寫入 Galaxy。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
