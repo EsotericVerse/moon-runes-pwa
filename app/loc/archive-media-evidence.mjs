@@ -39,7 +39,6 @@ export function archiveAttachmentReferences(record){
     visited.add(value);
     if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth});continue;}
     const hint=String(value.media_type||value.type||value.mime_type||'');
-    const mediaHint=/image|photo|video|audio|voice/i.test(hint);
     const paths=URI_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
       .map(pathValue).filter(validRef);
     const allUrls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string').map(rawPath);
