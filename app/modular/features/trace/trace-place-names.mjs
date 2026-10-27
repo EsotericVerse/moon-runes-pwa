@@ -25,7 +25,8 @@ export function placeNameKey(value){
 // Read-only, O(n) exact-position candidate grouping. An identical GPS fix is
 // evidence for review, never permission to delete a UID or merge article links.
 export function exactNameCharacters(value){
-  return [...String(value||'').normalize('NFKC').replace(/[\\s\\u3000]+/gu,'')].sort().join('');
+  return [...String(value||'').normalize('NFKC').toLowerCase().replace(/臺/g,'台')
+    .replace(/[\p{P}\p{S}\p{Z}\s\u200b]/gu,'')].sort().join('');
 }
 export function reviewReorderedCoordinateNames(anchors=[]){
   const byKey=new Map();

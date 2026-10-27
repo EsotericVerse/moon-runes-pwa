@@ -77,6 +77,19 @@ CREATE TABLE IF NOT EXISTS local_galaxy_media (
   source_place TEXT,
   rune_references TEXT
 );
+CREATE TABLE IF NOT EXISTS local_archive_media_exif (
+  archive_id TEXT NOT NULL,
+  entry_path TEXT NOT NULL,
+  media_id TEXT NOT NULL,
+  platform TEXT,
+  latitude REAL,
+  longitude REAL,
+  camera_local_time TEXT,
+  imported_at TEXT NOT NULL,
+  PRIMARY KEY (archive_id,entry_path),
+  CHECK((latitude IS NULL AND longitude IS NULL) OR
+    (latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180))
+);
 CREATE TABLE IF NOT EXISTS local_time (
   uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
   type TEXT NOT NULL CHECK(type IN ('anchor','time_period','time_trace')),
@@ -766,9 +779,43 @@ export async function restoreKeywordLibraryFromDefault(defaultRows=[]){
   return runBatchLocal(statements);
 }
 
+
+async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
+  try{
+    if(p_scope_id!=='local')throw new Error('Invalid local EXIF scope');
+    if(!Array.isArray(p_rows)||p_rows.length>200)throw new Error('EXIF batch exceeds 200 entries');
+    const statements=[];
+    for(const item of p_rows){
+      const id=String(item?.media_id||''),archive=String(item?.archive_id||'');
+      const path=String(item?.entry_path||'');
+      const lat=item.latitude??null,lng=item.longitude??null;
+      const valid=(lat===null&&lng===null)||
+        (Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180);
+      if(!/^[a-f0-9-]{36}$/i.test(id)||!archive||!path||archive.length>400||
+          path.length>2048||!valid)throw new Error('Invalid local archive EXIF metadata');
+      if(lat===null&&!item.camera_local_time)continue;
+      const exists=await selectLocal('SELECT media_id FROM local_galaxy_media WHERE media_id=? LIMIT 1',[id]);
+      if(!exists.length)throw new Error('EXIF media is not registered');
+      statements.push({sql:`INSERT INTO local_archive_media_exif
+        (archive_id,entry_path,media_id,platform,latitude,longitude,camera_local_time,imported_at)
+        VALUES(?,?,?,?,?,?,?,?)
+        ON CONFLICT(archive_id,entry_path) DO UPDATE SET
+          media_id=excluded.media_id,platform=coalesce(excluded.platform,platform),
+          latitude=coalesce(excluded.latitude,latitude),
+          longitude=coalesce(excluded.longitude,longitude),
+          camera_local_time=coalesce(excluded.camera_local_time,camera_local_time),
+          imported_at=excluded.imported_at`,
+        values:[archive,path,id,item.platform||null,lat,lng,item.camera_local_time||null,new Date().toISOString()]});
+    }
+    const count=statements.length?await runBatchLocal(statements):0;
+    return {data:count,error:null};
+  }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
+}
+
 export async function rpcLocal(name,args={}){
   switch(name){
     case 'management_write':return managementWriteLocal(args);
+    case 'save_archive_media_exif':return saveArchiveMediaExifLocal(args);
     case 'read_scope_statistics':return readScopeStatisticsLocal(args);
     case 'read_scope_overview':return readScopeOverviewLocal(args);
     case 'read_scope_earliest':return readScopeEarliestLocal(args);
