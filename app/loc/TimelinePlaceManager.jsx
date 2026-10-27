@@ -100,7 +100,7 @@ export default function TimelinePlaceManager({scopeId}){
   // Every article starts checked; the group and per-article selectors decide its place.
   const selectedUpdates=useMemo(()=>reviewGroups.flatMap(group=>group.rows.flatMap(row=>{
     if(excluded[row.uid])return [];
-    const placeId=itemChoices[row.uid]||groupChoices[group.key]||group.defaultPlaceId;
+    const placeId=itemChoices[row.uid]||(groupChoices[group.key]??group.defaultPlaceId);
     if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))return [];
     // A pre-existing place_id is authoritative. Never overwrite a different ID.
     if(row.existingPlaceId&&row.existingPlaceId!==placeId)return [];
