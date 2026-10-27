@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import {invalidateScopeBlockPage,selectLiveScopeBlocks} from '../../scope-data';
 import {HomeBlock} from '../../home-block-model';
 import {heroImageUrl as imageUrlOf} from '../../hero-image.mjs';
-import {useEditDockForm} from '../../../modular/edit-dock';
+import {useEditDock,useEditDockForm} from '../../../modular/edit-dock';
 
 const ScopeEditableBlocks=dynamic(()=>import('../../ScopeEditableBlocks'),{loading:()=>null});
 
@@ -36,6 +36,9 @@ const locSlots=HomeBlock.MANAGEMENT_HERO_SLOTS.filter(slot=>slot.audience==='loc
 // Ordinary feature images remain independently editable.
 function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}) {
   const page=pageOverride||pageFor(variant.kind,feature);
+  const dock=useEditDock();
+  const inDock=Boolean(dock?.active&&dock.scopeId==='loc');
+  const savingNow=useRef(false);
   const {mutate}=useSWRConfig();
   const [rows,setRows]=useState(null);
   const [value,setValue]=useState('');
@@ -63,8 +66,8 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
   },[page,defaultUrl,revision]);
 
   async function save(){
-    if(busy||rows===null)return false;
-    setBusy(true);setStatus('');
+    if(savingNow.current||busy||rows===null)return false;
+    savingNow.current=true;setBusy(true);setStatus('');
     try{
       const {updateRows,insertRows}=await import('../../db-client.mjs');
       const trimmed=value.trim();
@@ -74,7 +77,8 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       }
       // silver.loc_blocks.block_image is TEXT carrying JSON, never a raw object.
       const image=trimmed?JSON.stringify({source:'custom',url:trimmed}):null;
-      const row=rows.find(item=>Number(item.block_order)===1);
+      const fresh=await selectLiveScopeBlocks('loc',page);
+      const row=fresh.find(item=>Number(item.block_order)===1);
       let result;
       if(row?.uid){
         result=await updateRows('silver.loc_blocks',{block_image:image},
@@ -103,7 +107,7 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       setRevision(n=>n+1);
       return true;
     }catch(error){setStatus(error?.message||'儲存失敗。');return false;}
-    finally{setBusy(false);}
+    finally{savingNow.current=false;setBusy(false);}
   }
   useEffect(()=>{
     onDirtyChange?.(page,dirty);
@@ -116,15 +120,18 @@ function ImageSlot({feature,variant,onDirtyChange,pageOverride='',defaultUrl=''}
       <input type="url" className="scope-search-input" placeholder="https://loc.lo3rwang.cc/pics/..."
         value={value} disabled={rows===null||busy} onChange={event=>setValue(event.target.value)}/>
     </label>
-    <button type="button" className="loc-button" disabled={rows===null||busy||!canSave} onClick={save}>
+    {!inDock?<button type="button" className="loc-button" disabled={rows===null||busy||!canSave} onClick={save}>
       {busy?'儲存中…':'儲存 Hero 圖片路徑'}
-    </button>
+    </button>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 
 function ManagementHeroDetails({slot,onDirtyChange}){
   const {mutate}=useSWRConfig();
+  const dock=useEditDock();
+  const inDock=Boolean(dock?.active&&dock.scopeId==='loc');
+  const savingNow=useRef(false);
   const [rows,setRows]=useState(null);
   const [draft,setDraft]=useState({eyebrow:'',title:'',subtitle:'',text:''});
   const initial=useRef('');
@@ -155,8 +162,8 @@ function ManagementHeroDetails({slot,onDirtyChange}){
     return()=>{live=false;};
   },[slot,page,revision]);
   async function save(){
-    if(busy||rows===null)return false;
-    setBusy(true);setStatus('');
+    if(savingNow.current||busy||rows===null)return false;
+    savingNow.current=true;setBusy(true);setStatus('');
     try{
       const eyebrow=draft.eyebrow.trim();
       const title=draft.title.trim();
@@ -168,7 +175,8 @@ function ManagementHeroDetails({slot,onDirtyChange}){
         block_subtitle:subtitle,block_text:draft.text
       };
       const {updateRows,insertRows}=await import('../../db-client.mjs');
-      const found=rows.find(item=>Number(item.block_order)===1);
+      const fresh=await selectLiveScopeBlocks('loc',page);
+      const found=fresh.find(item=>Number(item.block_order)===1);
       const result=found?.uid
         ?await updateRows('silver.loc_blocks',fields,{filters:[
           {column:'uid',operator:'eq',value:found.uid},
@@ -193,7 +201,7 @@ function ManagementHeroDetails({slot,onDirtyChange}){
       setRevision(v=>v+1);
       return true;
     }catch(error){setStatus(error?.message||'儲存失敗。');return false;}
-    finally{setBusy(false);}
+    finally{savingNow.current=false;setBusy(false);}
   }
   useEffect(()=>{
     onDirtyChange?.('management-'+page,dirty);
@@ -220,13 +228,15 @@ function ManagementHeroDetails({slot,onDirtyChange}){
         onChange={event=>setDraft(current=>({...current,text:event.target.value}))}/>
     </label>
     {status?<p className="scope-status" role="status">{status}</p>:null}
-    <button className="loc-button primary" type="button" disabled={busy||rows===null||!canSave} onClick={save}>
+    {!inDock?<button className="loc-button primary" type="button" disabled={busy||rows===null||!canSave} onClick={save}>
       {busy?'儲存中…':'儲存管理區塊'}
-    </button>
+    </button>:null}
   </section>;
 }
 
 export default function FeatureHeroImages(){
+  const dock=useEditDock();
+  const inDock=Boolean(dock?.active&&dock.scopeId==='loc');
   const [featureId,setFeatureId]=useState(FEATURES[0].id);
   const [locSlotKey,setLocSlotKey]=useState('members');
   const [groupOpen,setGroupOpen]=useState(false);
@@ -251,6 +261,7 @@ export default function FeatureHeroImages(){
   const locSlot=locSlots.find(slot=>slot.key===locSlotKey)||locSlots[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
+    {inDock?<p className="scope-status">修改完成後，使用功能列的「儲存」一次保存本頁變更。</p>:null}
     <div className="scope-preview-links" role="group" aria-label="功能區塊">
       {FEATURES.map(item=><button type="button" key={item.id}
         className={'loc-button'+(item.id===feature.id?' primary':'')}
