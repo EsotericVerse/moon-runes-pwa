@@ -83,7 +83,7 @@ test('UI is owner-only, grouped with default checkboxes, and source_place is pro
  const ui=read('app/loc/TimelinePlaceManager.jsx');
  const page=read('app/loc/PlaceManagement.jsx');
  const migration=read('supabase/migrations/20261028140000_timeline_missing_source_place_review.sql');
- assert.match(page,/地點整理 · Google Timeline JSON 匯入／糾紛點/);
+ assert.match(page,/Timeline 地點整理/);
  assert.match(ui,/readAllTraceAnchors\(scopeId,\{includeHidden:true\}\)/);
  assert.match(ui,/if\(!window\.confirm\(/);
  assert.match(ui,/groupTimelineMissingPlaces\(analysis\)/);
@@ -92,7 +92,7 @@ test('UI is owner-only, grouped with default checkboxes, and source_place is pro
  assert.match(ui,/p_scope_id:scopeId,p_updates:batch/);
  assert.match(ui,/apply_timeline_missing_places/);
  assert.match(migration,/SET source_place=\$1/);
- assert.match(migration,/nullif\(btrim\(g\.source_place\),''\) IS NULL/);
- assert.match(migration,/g\.place_id IS NOT DISTINCT FROM \$4/);
+ assert.match(migration,/g\.source_place IS NULL OR g\.source_place ~/);
+ assert.match(migration,/NULLIF\(btrim\(g\.place_id\),''\) IS NOT DISTINCT FROM \$4/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
 });
