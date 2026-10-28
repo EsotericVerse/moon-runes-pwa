@@ -68,12 +68,15 @@ test('same Timeline coordinate groups hundreds of distinct article rows without 
  assert.equal(groups[0].defaultPlaceId,'');
  assert.deepEqual(groups[0].candidates.map(c=>c.uid),['A001','A002']);
 });
-test('nearby but distinct coordinates never automatically share one review group',()=>{
+test('different GPS observations at one anchor share one review group',()=>{
  const hits=[25.0123000,25.0123001].map((lat,i)=>({
   uid:String(i).padStart(8,'0'),place_id:null,
   window:{lat,lng:121.4567,candidates:[{uid:'A001',title:'甲',meters:0}],disputed:false}
  }));
- assert.equal(groupTimelineMissingPlaces(accumulateTimelineArticles(hits)).length,2);
+ const groups=groupTimelineMissingPlaces(accumulateTimelineArticles(hits));
+ assert.equal(groups.length,1);
+ assert.equal(groups[0].key,'anchor:A001');
+ assert.equal(groups[0].rows.length,2);
 });
 test('one article matched at different coordinates cannot be swept into a bulk group',()=>{
  const hit=(lat,placeId)=>({uid:'11111111',place_id:null,window:{
@@ -84,7 +87,8 @@ test('one article matched at different coordinates cannot be swept into a bulk g
  }};
  const groups=groupTimelineMissingPlaces(accumulateTimelineArticles([hit(25,'A001'),hit(26,'B002'),single]));
  assert.equal(groups.length,2);
- assert.ok(groups.some(g=>g.key==='article:11111111'&&g.defaultPlaceId===''));
+ assert.ok(groups.some(g=>g.key==='anchor:A001'&&g.defaultPlaceId===''));
+ assert.equal(groups.reduce((n,g)=>n+g.rows.filter(row=>row.uid==='11111111').length,0),1);
 });
 test('UI is owner-only, grouped with default checkboxes, and source_place is protected',()=>{
  const ui=read('app/loc/TimelinePlaceManager.jsx');
@@ -138,15 +142,15 @@ test('per-tab Timeline review cache is owner-bound, scoped, and does not contain
  clearTimelineReviewSession(storage,'lo3rwang');assert.equal(map.size,0);
 });
 
-test('Timeline preview is index-backed and write I/O accepts 500 atomically',()=>{
+test('Timeline preview is index-backed and JS MaxRows equals SQL transport cap',()=>{
  const io=read('app/loc/query-batch-size.mjs');
- const writeSql=read('supabase/migrations/20261028160000_timeline_bulk_set_write_500.sql');
- const previewSql=read('supabase/migrations/20261028170000_timeline_preview_indexed_windows.sql');
+ const writeSql=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
+ const previewSql=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
  const ui=read('app/loc/TimelinePlaceManager.jsx');
- assert.match(io,/windowBatch:100,previewPage:3000,writeBatch:500/);
+ assert.match(io,/windowBatch:MAX_ROWS,previewPage:MAX_ROWS,writeBatch:MAX_ROWS/);
  assert.match(previewSql,/OFFSET 0/);
- assert.match(previewSql,/p_limit NOT BETWEEN 1 AND 3000/);
- assert.match(writeSql,/total NOT BETWEEN 1 AND 500/g);
+ assert.match(previewSql,/p_limit NOT BETWEEN 1 AND 10000/);
+ assert.match(writeSql,/total NOT BETWEEN 1 AND 10000/g);
  assert.doesNotMatch(writeSql,/FOR r IN/);
  assert.match(writeSql,/GET DIAGNOSTICS affected = ROW_COUNT/);
  assert.ok(ui.indexOf('loc-timeline-review-action')<ui.indexOf('loc-timeline-review-groups'));
