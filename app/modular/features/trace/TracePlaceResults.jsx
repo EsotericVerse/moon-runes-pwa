@@ -255,7 +255,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     </div>:null}
     {tab==='articles'?<ArticleSortSelect value={sort} onChange={setSort}/>:null}
     {sourceFilter||selectedMediaType?<p className="scope-status">篩選條件：{sourceFilter?'作品來源 '+sourceFilter:'全部來源'} · {selectedMediaType?'媒體 '+selectedMediaType:'全部媒體'}（三種模式一致）</p>:null}
-    {!enabled?<p className="scope-status" role="status">此路線或地點目前沒有有效的四碼 Trace ID，或尚未配置有效的作品資料表；可繼續使用地圖，報表會維持空白而不產生錯誤。</p>:null}
+    {!enabled?<p className="scope-status" role="status">此地點目前沒有可對應的文章紀錄，仍可繼續查看地圖。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
     {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有 place_id 屬於此 Spool 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。</p>:null}
