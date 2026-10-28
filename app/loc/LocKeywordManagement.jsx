@@ -106,7 +106,6 @@ export default function LocKeywordManagement(){
 
   return <section className="loc-card admin-workspace">
     <h2>關鍵詞管理</h2>
-    <p className="scope-status">LOC 管理大群組的 Scope、名稱和 Hash。Scope 內的關鍵詞明細維持原有管理方式。</p>
     {isPending?<p role="status">正在讀取關鍵詞大群組…</p>:null}
     {error?<p className="scope-status scope-error" role="alert">{String(error.message||error)}</p>:null}
     <div className="scope-stat-controls">
