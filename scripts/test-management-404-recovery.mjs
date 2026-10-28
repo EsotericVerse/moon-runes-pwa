@@ -18,7 +18,7 @@ test('manage links use a fresh static document, not RSC navigation',()=>{
   const link=read('app/modular/ScopeLink.jsx');
   assert.match(link,/isManagementHref\(href\)/);
   assert.match(link,/<a href=\{href\}/);
-  assert.match(link,/\/manage/);
+  assert.match(link,/new URL\(String\(href\)/);
 });
 test('real failed chunks recover once; unrelated errors do not',()=>{
   const w=browser('https://loc.example/lo3rwang/manage/?section=placeManage');
