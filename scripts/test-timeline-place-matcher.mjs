@@ -87,7 +87,7 @@ test('one article matched at different coordinates cannot be swept into a bulk g
  }};
  const groups=groupTimelineMissingPlaces(accumulateTimelineArticles([hit(25,'A001'),hit(26,'B002'),single]));
  assert.equal(groups.length,2);
- assert.ok(groups.some(g=>g.key==='anchor:A001'&&g.defaultPlaceId===''));
+ assert.ok(groups.some(g=>g.key==='article:11111111'&&g.defaultPlaceId===''));
  assert.equal(groups.reduce((n,g)=>n+g.rows.filter(row=>row.uid==='11111111').length,0),1);
 });
 test('UI is owner-only, grouped with default checkboxes, and source_place is protected',()=>{
