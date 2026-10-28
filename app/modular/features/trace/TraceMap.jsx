@@ -90,7 +90,7 @@ const STRINGS={
 };
 
 import {readAutocompleteCurrent,currentTop10} from '../../../loc/autocomplete-current.mjs';
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false,publicTrace=false,floatingControls=null,children=null}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false,publicTrace=false,showAnchorSearch=true,floatingControls=null,children=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const containerRef=useRef(null);
@@ -328,12 +328,12 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     <div className={"loc-trace-map-shell"+(publicTrace?" is-public-trace":"")}>
       {publicTrace?<div className="loc-trace-float-toolbar">
         {floatingControls}
-        <details className="loc-trace-float-search">
+        {showAnchorSearch?<details className="loc-trace-float-search">
           <summary>搜尋地點</summary>
           {anchorSearch}
           <button type="button" className="loc-button" disabled={!ready}
             onClick={()=>mapRef.current?.overview()}>全部定錨點</button>
-        </details>
+        </details>:null}
       </div>:null}
       {!selectingLocation?<button type="button" className="loc-button loc-trace-origin-button"
         disabled={!ready} onClick={()=>mapRef.current?.goOrigin()}>
