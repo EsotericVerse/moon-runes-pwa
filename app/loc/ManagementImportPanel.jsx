@@ -430,31 +430,33 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             return 'and(createtime.gte.'+from+',createtime.lt.'+to+')';
           }).join(',');
           const collected=[];
-          for(let start=0;;start+=MAX_ROWS){
+          for(let start=0;;){
             const relation=dbAuthRelation(galaxy)
-              .select('uid,source_name,createtime,content')
+              .select('uid,source_name,createtime,content',{count:'exact'})
               .ilike('source_name',source);
             // PostgREST executes one bounded OR query for 24 exact seconds.
             // Local adapters without .or use one bounded second at a time.
             if(typeof relation.or!=='function'){
               for(const second of seconds){
-                for(let offset=0;;offset+=MAX_ROWS){
+                for(let offset=0;;){
                   const from=new Date(second*1000).toISOString();
                   const to=new Date((second+1)*1000).toISOString();
-                  const {data,error}=await dbAuthRelation(galaxy)
-                    .select('uid,source_name,createtime,content').ilike('source_name',source)
+                  const {data,error,count}=await dbAuthRelation(galaxy)
+                    .select('uid,source_name,createtime,content',{count:'exact'}).ilike('source_name',source)
                     .gte('createtime',from).lt('createtime',to).range(offset,offset+MAX_ROWS-1);
                   if(error)throw new Error('重複文章比對失敗：'+error.message);
                   collected.push(...(data||[]));
-                  if((data||[]).length<MAX_ROWS)break;
+                  offset+=(data||[]).length;
+                  if(!(data||[]).length||(count!=null&&offset>=Number(count)))break;
                 }
               }
               return collected;
             }
-            const {data,error}=await relation.or(or).range(start,start+MAX_ROWS-1);
+            const {data,error,count}=await relation.or(or).order('uid',{ascending:true}).range(start,start+MAX_ROWS-1);
             if(error)throw new Error('重複文章比對失敗：'+error.message);
             collected.push(...(data||[]));
-            if((data||[]).length<MAX_ROWS)break;
+            start+=(data||[]).length;
+            if(!(data||[]).length||(count!=null&&start>=Number(count)))break;
           }
           return collected;
         }
