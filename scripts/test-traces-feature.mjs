@@ -13,7 +13,8 @@ test('Trace owns its route and Hero; explanatory Blocks remain in Search',()=>{
   const blocks=read('app/modular/features/TraceBlocks.jsx');
   assert.match(app,/trace:Trace/);
   assert.match(feature,/<FeaturePage featureId="trace">/);
-  assert.match(feature,/<TraceMap mapOnly=/);
+  assert.match(feature,/<TraceMap publicTrace floatingControls=\{floatingControls\}/);
+   assert.match(feature,/onAnchorSelect=\{chooseMapAnchor\}/);
   assert.match(feature,/enabled:supported&&routeListOpen/);
   assert.match(search,/import\('\.\/TraceBlocks'\)/);
   assert.match(blocks,/page="trace"/);
@@ -132,7 +133,10 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,members,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
   assert.match(feature,/onAnchorSelect=\{chooseMapAnchor\}/);
-  assert.match(feature,/<TracePlaceResults place=\{reportPlace\}/);
+  assert.match(feature,/<TracePlaceResults key=\{reportPlace\.source_scope/);
+   assert.match(feature,/place=\{reportPlace\}/);
+   assert.match(feature,/role="dialog" aria-modal="false"/);
+   assert.match(feature,/className="loc-trace-float-report"/);
   assert.match(feature,/\{value:'articles',label:'文章列表'\}/);
   assert.match(feature,/\{value:'timeline',label:'文化'\}/);
   assert.match(feature,/\{value:'statistics',label:'統計'\}/);

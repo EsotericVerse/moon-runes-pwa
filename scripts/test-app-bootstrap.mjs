@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import vm from 'node:vm';
 import {administrativeSourceTrend} from '../app/loc/statistics-admin-source.mjs';
+import {MAX_ROWS} from '../app/loc/query-batch-size.mjs';
 
 // Test the real public bootstrap entry without loading browser-only SDKs.
 // Mock only its database seams; assert the publicly observable requests and
@@ -236,8 +237,8 @@ test('advanced statistics uses dimension tabs and two dependent comparison selec
   assert.equal(family('instagram'),'', 'An unspecific platform must not be guessed as image/video');
 });
 
-// Manual reset must not send tens of thousands of classified rows through a
-// single UPDATE. Exercise the real database client with the existing RPC seam.
+// Manual reset uses the authoritative MaxRows batch bound; it must not
+// fetch or mutate another Scope's records. Exercise the real database client with the existing RPC seam.
 test('keyword reset uses paged authorized writes before clearing summary',async()=>{
   const {createDatabaseClient}=await import('../app/loc/db-contract.mjs');
   const rows=Array.from({length:1510},(_,i)=>({
@@ -275,7 +276,7 @@ test('keyword reset uses paged authorized writes before clearing summary',async(
     const {mode,rows:chunk}=payload.p_rows;
     calls.push(mode);
     if(mode==='chunk'){
-      assert.ok(chunk.length<=750);
+      assert.ok(chunk.length>0&&chunk.length<=MAX_ROWS);
       for(const item of chunk){
         const row=rows.find(row=>row.uid===item.uid);
         row.class_id=null;row.group_lists='false';
@@ -291,7 +292,7 @@ test('keyword reset uses paged authorized writes before clearing summary',async(
   const progress=[];
   const changed=await db.resetKeywordClassification('lo3rwang',{onProgress:p=>progress.push(p)});
   assert.equal(changed,1510);
-  assert.deepEqual(calls,['begin','stale','chunk','chunk','chunk','reset']);
+  assert.deepEqual(calls,['begin','stale','chunk','reset']);
   assert.equal(progress.at(-1).phase,'completed');
   assert.equal(progress.at(-1).completed,1510);
 });
@@ -583,7 +584,9 @@ test('Admin first tab is People; lists and network consolidate existing secure e
   const menu=admin.match(/const ADMIN_OPTIONS=Object\.freeze\(\[([\s\S]*?)\]\);/);
   assert.ok(menu,'Admin options are missing');
   assert.deepEqual([...menu[1].matchAll(/value:'([^']+)'/g)].map(x=>x[1]),
-    ['registry','lists','network','featureHero','themes']);
+    ['registry','lists','network','io','featureHero','themes']);
+   assert.match(admin,/section==='io'\?<section/);
+   assert.match(admin,/MAX_ROWS\.toLocaleString\(\)/);
   assert.match(admin,/useManagementSection\(ADMIN_OPTIONS,'registry'/);
   for(const [oldId,newId] of Object.entries({
     database:'network',isr:'network',reserved:'lists',blocklist:'lists'
@@ -641,7 +644,10 @@ test('Culture Time management uses one editor with anchor, event and trace types
   assert.match(culture,/onTimeClick=\{date=>beginTimelineCreation\('anchor',date\)\}/);
   assert.match(culture,/defaultRecordType='anchor'/);
   assert.match(editor,/const TYPES=\['anchor','time_period','time_trace'\]/);
-  assert.match(editor,/\{TYPES\.map\(type=><option/);
+  assert.match(editor,/const TYPE_TABS=\[\.\.\.TYPES\]\.reverse\(\)/);
+   assert.match(editor,/\{TYPE_TABS\.map\(type=><button/);
+   assert.match(editor,/aria-pressed=\{browseType===type\}/);
+   assert.match(editor,/onChange=\{option=>option\?selectRow\(option\.value\):beginNew\(\)\}/);
   assert.match(editor,/payload\.anchor_ids=draft\.type==='time_trace'/);
   assert.match(editor,/updateRows\(timeTable,payload/);
   assert.match(editor,/insertRows\(timeTable,/);

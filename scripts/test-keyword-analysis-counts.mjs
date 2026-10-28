@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
+import {MAX_ROWS} from '../app/loc/query-batch-size.mjs';
 const source=readFileSync(new URL('../app/loc/keyword-analysis.js',import.meta.url),'utf8');
 const extract=(start,end,name,deps)=>{
   const from=source.indexOf(start),to=source.indexOf(end,from);
@@ -14,7 +15,7 @@ test('incremental classification counts zero, one and multiple batches',async()=
       classifyRune66Documents:docs=>({classifications:docs.map(row=>({uid:row.uid})),
         classifiedCount:docs.length,unclassifiedCount:0,tieCount:0,
         runeTotals:[],groupTotals:[],unsupportedRules:[]}),
-      reportBatchProgress:()=>{},setTimeout
+      reportBatchProgress:()=>{},setTimeout,KEYWORD_CLASSIFICATION_BATCH_SIZE:MAX_ROWS
     });
   for(const count of [0,1,121]){
     const docs=Array.from({length:count},(_,i)=>({uid:'D'+i,content:'article'}));
