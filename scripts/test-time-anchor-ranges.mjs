@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {encodeTimeSegment,decodeTimeSegments,resolveTimeSegments,
-  timePeriodContainsDate,resolveTimeTrace,timeDateWindows
+  timePeriodContainsDate,resolveTimeTrace,timeDateWindows,intersectTimeDateWindows
 } from '../app/loc/time-anchor-ranges.mjs';
 const anchors=new Map([
  ['A001',{uid:'A001',address:'2000-01-01'}],
@@ -67,4 +67,38 @@ test('moving a real anchor changes event windows without updating the trace',()=
  const revised=new Map(anchors);revised.set('A002',{uid:'A002',address:'2000-01-09'});
  const revisedWindows=timeDateWindows(resolveTimeSegments(['A001','A002'],revised));
  assert.equal(revisedWindows[0].endDate,'2000-01-09');
+});
+
+test('a time_trace consisting of one time_period with a single anchor is a real point',()=>{
+ const event={uid:'E003',type:'time_period',ranges:resolveTimeSegments(['A003'],anchors)};
+ const trace=resolveTimeTrace(['E003'],[event]);
+ assert.deepEqual(timeDateWindows(trace.ranges),[{startDate:'2000-04-01',endDate:'2000-04-01'}]);
+ assert.deepEqual(intersectTimeDateWindows([
+   trace.ranges,
+   [{start_date:'2000-03-30',end_date:'2000-04-02'}]
+ ]),[{startDate:'2000-04-01',endDate:'2000-04-01'}]);
+ assert.deepEqual(intersectTimeDateWindows([
+   trace.ranges,
+   [{start_date:'2000-04-02',end_date:'2000-04-04'}]
+ ]),[]);
+});
+
+test('intersection of all saved intervals preserves disjoint overlaps and never fills gaps',()=>{
+ const a=[
+   {start_date:'2000-01-01',end_date:'2000-01-10'},
+   {start_date:'2000-04-01',end_date:'2000-04-10'}
+ ];
+ const b=[
+   {start_date:'2000-01-05',end_date:'2000-01-08'},
+   {start_date:'2000-04-03',end_date:'2000-04-06'}
+ ];
+ assert.deepEqual(intersectTimeDateWindows([a,b]),[
+   {startDate:'2000-01-05',endDate:'2000-01-08'},
+   {startDate:'2000-04-03',endDate:'2000-04-06'}
+ ]);
+ assert.deepEqual(intersectTimeDateWindows([a,b,[{start_date:'2000-04-06',end_date:'2000-04-06'}]]),[
+   {startDate:'2000-04-06',endDate:'2000-04-06'}
+ ]);
+ assert.deepEqual(intersectTimeDateWindows([a,[]]),[]);
+ assert.deepEqual(intersectTimeDateWindows([]),[]);
 });
