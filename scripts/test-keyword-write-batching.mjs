@@ -52,11 +52,11 @@ test('failed 500-row write rolls back and retries 250-row chunks without skippin
   assert.equal(events.filter(row=>row.phase==='write').at(-1).completedBatches,5);
   assert.equal(events.filter(row=>row.phase==='write').at(-1).estimatedBatches,5);
   assert.ok(events.some(row=>row.phase==='cooldown'&&row.retrying&&row.batchSize===250));
-  assert.equal(delays.length,25); // 1 failed attempt + 4 gaps, each five seconds.
+  assert.equal(delays.length,5); // Only the failed attempt backs off; successful commits do not wait.
   assert.ok(delays.every(delay=>delay===1000));
   assert.deepEqual(events.filter(row=>row.phase==='cooldown'&&row.retrying).map(x=>x.seconds),[5,4,3,2,1]);
 });
-test('ordinary 500-row write waits five seconds only between committed batches',async()=>{
+test('ordinary 500-row writes run sequentially with no forced cooldown',async()=>{
   const items=Array.from({length:1200},(_,i)=>({uid:'R'+i,class_id:2,group_lists:'2:1'}));
   const calls=[],timers=[],progress=[];
   let active=0,maxActive=0;
@@ -85,10 +85,8 @@ test('ordinary 500-row write waits five seconds only between committed batches',
   assert.equal(result.count,1200);
   assert.deepEqual(calls,[500,500,200]);
   assert.equal(maxActive,1);
-  assert.equal(timers.length,10);
-  assert.ok(timers.every(value=>value===1000));
-  assert.equal(progress.filter(x=>x.phase==='cooldown').length,10);
-  assert.deepEqual(progress.filter(x=>x.phase==='cooldown').map(x=>x.seconds),[5,4,3,2,1,5,4,3,2,1]);
+  assert.deepEqual(timers,[]);
+  assert.equal(progress.filter(x=>x.phase==='cooldown').length,0);
   const writes=progress.filter(x=>x.phase==='write');
   assert.deepEqual(writes.map(x=>x.completedBatches),[1,2,3]);
   assert.deepEqual(writes.map(x=>x.estimatedBatches),[3,3,3]);
