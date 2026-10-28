@@ -8,10 +8,11 @@ import {useEditDock} from '../modular/edit-dock';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
+import {recoverChunkOnce} from './chunk-recovery.mjs';
 
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
-const PlaceManagement=dynamic(()=>import('./PlaceManagement'),{loading:PanelLoading});
+const PlaceManagement=dynamic(()=>import('./PlaceManagement').catch(recoverChunkOnce),{loading:PanelLoading});
 
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'空間定錨、Google Timeline 地點整理、糾紛點與補充資料。'},

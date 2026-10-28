@@ -21,6 +21,7 @@ import {getDbSourceStatus,subscribeDbSourceStatus} from './loc/db-source-status.
 import {useNavigationPreferences} from './loc/use-navigation-preferences';
 import {NavigationPreferences} from './modular/navigation-preferences';
 import {navigationHref} from './modular/scope-registry.js';
+import {recoverChunkOnce} from './loc/chunk-recovery.mjs';
 import BottomNavIcon from './modular/BottomNavIcon';
 import {EditDockProvider,useEditDock} from './modular/edit-dock';
 // Only individual Scope homepages download the opt-in management entry.
@@ -318,6 +319,24 @@ function AppShellInner({children}){
     };
   },[pathname]);
   const editDock=useEditDock();
+  useEffect(()=>{
+    // Next can catch a failed lazy import before React reports the error.
+    // Recover other failed chunk loads here, but never reload for SQL/RPC 404s.
+    const recover=event=>{
+      const target=event?.target;
+      const script=target?.tagName==='SCRIPT'&&String(target.src||'').includes('/_next/static/')
+        ?new Error('Failed to load chunk '+target.src):null;
+      const failure=event?.reason||event?.error||script;
+      if(!failure)return;
+      try{void recoverChunkOnce(failure);}catch{}
+    };
+    window.addEventListener('error',recover,true);
+    window.addEventListener('unhandledrejection',recover);
+    return ()=>{
+      window.removeEventListener('error',recover,true);
+      window.removeEventListener('unhandledrejection',recover);
+    };
+  },[]);
   // Static export serves the same root HTML on multiple Scope subdomains.
   // Update the browser tab icon after the client resolves the actual Scope.
   useEffect(()=>{

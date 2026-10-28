@@ -7,6 +7,7 @@ import featureZh from '../i18n/sections/uiExtra.feature.zh_tw.js';
 registerDefaultSection('uiExtra.feature',featureZh);
 
 import dynamic from 'next/dynamic';
+import {recoverChunkOnce} from './chunk-recovery.mjs';
 import {Suspense,useEffect,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {Capacitor} from '@capacitor/core';
@@ -30,7 +31,7 @@ const SearchManagement=dynamic(()=>import('./SearchManagement'),{loading});
 const Trace=dynamic(()=>import('../modular/features/Trace'),{loading});
 const RunesHomeView=dynamic(()=>import('../lrunes/RunesClient'),{loading});
 const GameView=dynamic(()=>import('../lrunes/game/GameBoard'),{ssr:false,loading});
-const ManagementView=dynamic(()=>import('./ScopeManagement'),{loading});
+const ManagementView=dynamic(()=>import('./ScopeManagement').catch(recoverChunkOnce),{loading});
 const SourceManagementView=dynamic(()=>import('./LocSourceManagement'),{loading});
 const KeywordManagementView=dynamic(()=>import('./LocKeywordManagementPage'),{loading});
 const LocalSettingView=dynamic(()=>import('./views/LocalSettingView'),{loading});
