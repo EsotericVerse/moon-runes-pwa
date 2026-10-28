@@ -250,6 +250,8 @@ function rootArrayAny(head){
 }
 const fileSummary=()=>({
   matchedFiles:0,otherFiles:0,totalRows:0,acceptedRows:0,rejectedRows:0,
+  filesSeen:0,jsonFilesSeen:0,jsonFilesParsed:0,jsonFilesPrivate:0,
+  jsonFilesOversize:0,jsonFilesUnsupported:0,jsonFilesUnrecognized:0,
   suspiciousRows:0,duplicateRows:0,bytesRead:0,sourceFiles:[],sample:[],
   exifImages:0,exifWithGps:0,exifWithTime:0,exifSkipped:0,
   problems:[],byPlatform:{},unrecognizedFiles:[],mediaFiles:0,unmappedRows:0
@@ -288,6 +290,7 @@ function createSink(path,summary,onRecord,signal,sourceHint=null){
     if(!config||!config.array){
       unknown=true;
       summary.otherFiles++;
+      if(/\.json$/i.test(path))summary.jsonFilesUnrecognized++;
       if(summary.unrecognizedFiles.length<60)summary.unrecognizedFiles.push(cleanPath(path));
       return;
     }
@@ -323,6 +326,7 @@ function createSink(path,summary,onRecord,signal,sourceHint=null){
         if(last)feed(last);
         if(!ready&&!unknown)init();
         if(ready&&!parser.isEnded)parser.end();
+        if(ready&&/\.json$/i.test(path))summary.jsonFilesParsed++;
         finished=true;
       }
     },
@@ -374,6 +378,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivate
   const hint=archiveFilenameSource(file.name);
   if(hint)hits.set(hint,{confidence:1,path:file.name});
   let filesSeen=0,inspectedFiles=0,extractedBytes=0;
+  const fileInventory={allFiles:0,jsonFiles:0,privateJsonFiles:0};
   const filenames=new Set();
   const profiles=[];
   const audit=createArchiveCompletenessAudit();
@@ -388,6 +393,13 @@ export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivate
     aborted(signal);
     if(++filesSeen>MAX_FILES)throw new Error('ZIP 項目超過 100,000 筆，已停止辨識。');
     const path=cleanPath(entry.name);
+    if(path&&!path.endsWith('/')){
+      fileInventory.allFiles++;
+      if(/\.json$/i.test(path)){
+        fileInventory.jsonFiles++;
+        if(isPrivateArchiveEntry(path))fileInventory.privateJsonFiles++;
+      }
+    }
     if(!path||path.endsWith('/')||(skipPrivateEntries&&isPrivateArchiveEntry(path))){
       // Never sample, decode, classify or log the private entry in public mode.
       discardZipEntry(unzip,entry);return;
@@ -444,7 +456,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivate
   if(filenames.has('channels.json')&&filenames.has('users.json')&&
      (filenames.has('integration_logs.json')||filenames.has('groups.json')||filenames.has('dms.json')))
     hits.set('slack',{confidence:3,path:'channels.json + users.json + Slack workspace manifest'});
-  return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles,
+  return {...summarizeArchiveSources(hits),filesSeen,inspectedFiles,fileInventory,
     structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
@@ -468,7 +480,13 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       aborted(signal);
       if(++filesSeen>MAX_FILES)throw new Error('壓縮檔內項目超過 100,000 筆，安全停止。');
       const path=cleanPath(entry.name);
+      const json=/\.json$/i.test(path);
+      if(path&&!path.endsWith('/')){
+        summary.filesSeen++;
+        if(json)summary.jsonFilesSeen++;
+      }
       if(skipPrivateEntries&&isPrivateArchiveEntry(path)){
+        if(json)summary.jsonFilesPrivate++;
         // Do not parse private chat text, decode EXIF, or build a preview.
         discardZipEntry(unzip,entry);return;
       }
@@ -504,6 +522,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
         return;
       }
       if(skippedZipEntry(path)){
+        if(json)summary.jsonFilesUnsupported++;
         summary.otherFiles++;
         if(mediaExtension.test(path)){summary.mediaFiles++;if(exifImage.test(path))summary.exifSkipped++;}
         else if(summary.unrecognizedFiles.length<60)summary.unrecognizedFiles.push(path);
@@ -511,6 +530,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
         return;
       }
       if(![0,8].includes(entry.compression)){
+        if(json)summary.jsonFilesUnsupported++;
         summary.otherFiles++;
         report(summary,path+'：ZIP 壓縮格式不支援，已略過。');
         discardZipEntry(unzip,entry);
@@ -518,6 +538,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       }
       const sizeLimit=/\.(?:json|js)$/i.test(path)?MAX_STRUCTURED_DOCUMENT:MAX_TEXT_DOCUMENT;
       if(entry.originalSize!==undefined&&entry.originalSize>sizeLimit){
+        if(json)summary.jsonFilesOversize++;
         summary.otherFiles++;
         report(summary,path+'：解壓後單檔超過安全上限，已略過。');
         discardZipEntry(unzip,entry);
@@ -562,6 +583,8 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
     if(!known||sessions.some(s=>!s.ended))throw new Error('壓縮檔內容不存在或未完整展開。');
   }else{
     const path=file.name||'unnamed';
+    summary.filesSeen=1;
+    if(/\.json$/i.test(path))summary.jsonFilesSeen=1;
     if(skipPrivateEntries&&isPrivateArchiveEntry(path))
       throw new Error('私人對話不會在公開網站掃描。');
     const sample=new Uint8Array(await file.slice(0,Math.min(file.size,512)).arrayBuffer());
