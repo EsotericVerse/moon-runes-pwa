@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import {useEditDock} from '../modular/edit-dock';
 
 const ManagementMediaPublisher=dynamic(()=>import('./ManagementMediaPublisher'),{loading:()=>null});
-const SunoImportPanel=dynamic(()=>import('./SunoImportPanel'),{loading:()=>null});
+const SunoImportPanel=dynamic(()=>import('./SunoImportPanel'),{loading:()=> <p role="status" className="scope-status">正在載入 Suno 音樂編輯器…</p>});
 
 // Suno is a multimedia publishing workflow, not an independent management
 // category. Keep each editor's writes and authorization in its existing owner.
@@ -14,7 +14,7 @@ const MEDIA_KINDS=Object.freeze([
   {value:'suno',label:'Suno 音樂'}
 ]);
 
-export default function ManagementMediaWorkspace({scopeId,dockScopeId=scopeId}){
+export default function ManagementMediaWorkspace({scopeId,dockScopeId=scopeId,globalAdmin=false}){
   const [kind,setKind]=useState('media');
   const editDock=useEditDock();
   function choose(next){
@@ -29,7 +29,7 @@ export default function ManagementMediaWorkspace({scopeId,dockScopeId=scopeId}){
         aria-pressed={item.value===kind}
         onClick={()=>choose(item.value)}>{item.label}</button>)}
     </div>
-    {kind==='media'?<ManagementMediaPublisher scopeId={scopeId} dockScopeId={dockScopeId}/>:
-      <SunoImportPanel scopeId={scopeId} dockScopeId={dockScopeId}/>}
+    {kind==='media'?<ManagementMediaPublisher scopeId={scopeId} dockScopeId={dockScopeId} globalAdmin={globalAdmin}/>:
+      <SunoImportPanel scopeId={scopeId} dockScopeId={dockScopeId} globalAdmin={globalAdmin}/>}
   </section>;
 }
