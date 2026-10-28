@@ -21,10 +21,14 @@ async function harness(){
   const configModule=new vm.SourceTextModule(config,{context});
   await configModule.link(()=>{throw new Error('config must not import anything');});
   await configModule.evaluate();
+  const ioModule=new vm.SourceTextModule('export const applyRuntimeIoLimits=()=>({});',{context});
+  await ioModule.link(()=>{throw new Error('no imports expected');});
+  await ioModule.evaluate();
   const module=new vm.SourceTextModule(source,{context});
   await module.link(id=>{
-    assert.equal(id,'./cache-policy.config.mjs');
-    return configModule;
+    if(id==='./cache-policy.config.mjs')return configModule;
+    if(id==='./query-batch-size.mjs')return ioModule;
+    throw Error('Unexpected import: '+id);
   });
   await module.evaluate();
   return {api:module.namespace,events,storage};
@@ -46,30 +50,28 @@ test('ISR needs a trusted public HTTPS origin, not arbitrary input',async()=>{
   assert.equal(h.api.normalizeCachePolicy({mode:'invalid',origin:''}).mode,'off');
 });
 
-test('administrator can change browser cache mode and the choice survives policy refresh',async()=>{
+test('administrator saves a global ISR HTTPS destination and cannot select an empty origin',async()=>{
   const h=await harness();
-  h.api.setBrowserCacheChoice({mode:'off',provider:'cloudflare'});
-  assert.equal(h.api.currentCachePolicy().mode,'off');
-  assert.equal((await h.api.loadCachePolicy()).mode,'off');
-  h.api.setBrowserCacheChoice({mode:'isr',provider:'cloudflare'});
-  assert.equal(h.api.currentCachePolicy().origin,'');
-  assert.equal((await h.api.loadCachePolicy()).mode,'cache');
-  assert.equal(h.api.browserCacheChoice().mode,'isr');
-  assert.equal(h.storage.size,1);
+  assert.throws(()=>h.api.setBrowserCacheChoice({mode:'isr',provider:'cloudflare'}));
+  h.api.applyGlobalCacheConfig({
+    cache_mode:'isr',cache_provider:'cloudflare',
+    isr_domains:[{id:'cloudflare',label:'Cloudflare',origin:'https://isr.example.com'}]
+  });
+  assert.equal(h.api.currentCachePolicy().mode,'isr');
+  assert.equal(h.api.currentCachePolicy().origin,'https://isr.example.com');
   assert.equal(h.events.at(-1).type,'loc-cache-policy-changed');
-  assert.throws(()=>h.api.setBrowserCacheChoice({mode:'isr',provider:'https://evil.test'}));
-  h.api.resetBrowserCacheChoice();
-  assert.equal(h.api.currentCachePolicy().mode,'cache');
-  assert.equal(h.storage.size,0);
+  h.api.applyGlobalCacheConfig({cache_mode:'off',cache_provider:'cloudflare',
+    isr_domains:[{id:'cloudflare',label:'Cloudflare',origin:'https://isr.example.com'}]});
+  assert.equal(h.api.currentCachePolicy().mode,'off');
 });
 
-test('admin ISR panel uses working selects and discloses the local-only setting',()=>{
+test('Admin ISR panel edits domains and persists through the authorized Edit Dock',()=>{
   const panel=readFileSync(new URL('../app/loc/views/admin-panels/IsrDomainTarget.jsx',import.meta.url),'utf8');
-  assert.match(panel,/onChange=\{event=>update\(/);
-  assert.match(panel,/setBrowserCacheChoice\(next\)/);
-  assert.match(panel,/resetBrowserCacheChoice\(\)/);
-  assert.match(panel,/全站 ISR/);
-  assert.match(panel,/不寫入資料庫/);
+  assert.match(panel,/type="url"/);
+  assert.match(panel,/saveLocRuntimeConfig/);
+  assert.match(panel,/useEditDockForm/);
+  assert.match(panel,/normalizeIsrDomain/);
+  assert.doesNotMatch(panel,/setBrowserCacheChoice|resetBrowserCacheChoice/);
 });
 
 // Do not weaken the release verifier: the retired Worker endpoint must never
