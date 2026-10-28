@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {dbAuthClient} from './db-client.mjs';
+import {dbAuthClient,dbAuthEvents} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
@@ -74,7 +74,7 @@ export default function TimelinePlaceManager({scopeId}){
   const cache=useResourceCache();
   useEffect(()=>{
     let active=true;
-    dbAuthClient.auth.getUser().then(({data})=>{
+    dbAuthEvents.getUser().then(({data})=>{
       if(!active)return;
       const owner=data?.user?.id||'';
       const tooLarge=owner&&timelineReviewCacheOversized(sessionStorage,scopeId);

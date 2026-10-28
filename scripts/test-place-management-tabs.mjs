@@ -54,3 +54,16 @@ test('Service Worker never reuses stale management HTML after a deploy',()=>{
   assert.equal(isPublicHtml(request,url('/lrunes/manage/')),false);
   assert.equal(isPublicHtml(request,url('/lo3rwang/culture/')),true);
 });
+
+test('Timeline opens with the configured Auth SDK rather than the query-only database adapter',()=>{
+  const timeline=read('app/loc/TimelinePlaceManager.jsx');
+  const db=read('app/loc/db-client.mjs');
+  const provider=read('app/loc/providers/supabase.mjs');
+  const place=read('app/loc/PlaceManagement.jsx');
+  assert.match(timeline,/import \{dbAuthClient,dbAuthEvents\} from '\.\/db-client\.mjs';/);
+  assert.match(timeline,/dbAuthEvents\.getUser\(\)\.then\(\(\{data\}\)=>\{/);
+  assert.doesNotMatch(timeline,/dbAuthClient\.auth/);
+  assert.match(db,/export const dbAuthEvents=adapter\.auth;/);
+  assert.match(provider,/auth:authenticatedSdk\.auth/);
+  assert.match(place,/active==='timeline'\?<TimelinePlaceManager/);
+});
