@@ -97,7 +97,10 @@ export function accumulateTimelineArticles(matches){
     if(!uid||!window)continue;
     let entry=byUid.get(uid);
     if(!entry){entry={uid,title:String(hit.title||''),createtime:hit.createtime,
-      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),disputed:false};byUid.set(uid,entry);}
+      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),commonAnchors:null,disputed:false};byUid.set(uid,entry);}
+    const windowAnchors=new Set((window.candidates||[]).map(candidate=>candidate.uid));
+    entry.commonAnchors=entry.commonAnchors===null?windowAnchors:
+      new Set([...entry.commonAnchors].filter(uid=>windowAnchors.has(uid)));
     for(const candidate of window.candidates)entry.candidates.set(candidate.uid,candidate);
     if(Number.isFinite(window.lat)&&Number.isFinite(window.lng))
       entry.coordinates.add(String(window.lat)+','+String(window.lng));
@@ -110,8 +113,9 @@ export function accumulateTimelineArticles(matches){
     const coordinates=[...item.coordinates].sort();
     // A GPS reading is evidence, not a location identity. The closest
     // existing anchor is only a review bucket, never an automatic assignment.
-    const reviewAnchor=item.existingPlaceId&&candidates.some(c=>c.uid===item.existingPlaceId)
-      ?item.existingPlaceId:candidates[0]?.uid;
+    const common=candidates.filter(candidate=>item.commonAnchors?.has(candidate.uid));
+    const reviewAnchor=item.existingPlaceId&&common.some(c=>c.uid===item.existingPlaceId)
+      ?item.existingPlaceId:common[0]?.uid;
     const article={...item,candidates,coordinates,
       groupKey:reviewAnchor?'anchor:'+reviewAnchor:'article:'+item.uid};
     if(unique&&(!item.existingPlaceId||item.existingPlaceId===candidates[0].uid))
