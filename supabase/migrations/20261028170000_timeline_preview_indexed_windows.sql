@@ -45,15 +45,8 @@ BEGIN
    FROM w JOIN LATERAL (
      SELECT uid,title,createtime,place_id FROM silver.%I
      WHERE createtime>=w.start_time AND createtime<w.end_time
-       AND (source_place IS NULL OR source_place ~ '^[[:space:]　]*
-   ORDER BY g.uid,w.window_index LIMIT $2 OFFSET $3
- $query$,p_scope_id||'_galaxy')
- USING p_windows,p_limit,p_offset;
-END
-$fn$;
-
-)
-     OFFSET 0 -- preserve a parameterized createtime-index range lookup per window
+       AND (source_place IS NULL OR source_place ~ '^[[:space:]　]*$')
+     OFFSET 0
    ) g ON TRUE
    ORDER BY g.uid,w.window_index LIMIT $2 OFFSET $3
  $query$,p_scope_id||'_galaxy')
