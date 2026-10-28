@@ -58,7 +58,6 @@ export default function AdminReservedScopeIds(){
   if(!allowed)return <section className="loc-card scope-status scope-error" role="alert">只有 Admin 可以修改保留名稱備註。</section>;
   return <section className="loc-card admin-workspace scope-feature-card">
     <h2>保留名稱設定</h2>
-    <p className="scope-status">保留名稱由系統維護，不能新增、刪除或更名；此處僅能修改備註。請使用六大功能列的「儲存」。</p>
     <h3>目前保留的名稱（{rows.length}）</h3>
     {query.isPending?<p className="scope-status" role="status">正在載入保留名稱…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">{String(query.error.message||query.error)}</p>:null}
