@@ -78,8 +78,8 @@ export default function DatabaseTarget({scopeGroup}){
     }
     setSaving(true);setStatus('');
     try{
-      const {error}=await dbAuthRelation(listRelation).delete().eq('target_id',row.target_id);
-      if(error)throw new Error(error.message||'刪除資料庫目標失敗。');
+      const {data,error}=await dbAuthRelation(listRelation).delete().eq('target_id',row.target_id).select('target_id');
+      if(error||data?.length!==1)throw new Error(error?.message||'刪除資料庫目標失敗，未確認刪除。');
       setStatus('已刪除資料庫目標。');setRevision(v=>v+1);
     }catch(error){setStatus(error?.message||'刪除失敗。');}
     finally{setSaving(false);}
@@ -103,7 +103,7 @@ export default function DatabaseTarget({scopeGroup}){
         connection_alias:row.connection_alias,
         connection_mode:row.provider==='supabase'?(row.connection_mode||'pooler'):row.connection_mode,
         label:name,
-        project_id:row.project_id||null,
+        project_id:location.projectId||row.project_id||null,
         project_url:location.link,
         region:row.region||'',
         updated_at:new Date().toISOString()
@@ -112,11 +112,11 @@ export default function DatabaseTarget({scopeGroup}){
       const changes=row._new?payload:Object.fromEntries(
         Object.entries(payload).filter(([key])=>key==='updated_at'||row[key]!==previous?.[key])
       );
-      const {error}=row._new
+      const {data,error}=row._new
         ?await relation.insert({...changes,target_id:row.target_id,selected:false,
-            backup_selected:false,routing_mode:'single'})
-        :await relation.update(changes).eq('target_id',row.target_id);
-      if(error)throw new Error(error.message||'資料庫目標資訊儲存失敗。');
+            backup_selected:false,routing_mode:'single'}).select('target_id')
+        :await relation.update(changes).eq('target_id',row.target_id).select('target_id');
+      if(error||data?.length!==1)throw new Error(error?.message||'資料庫目標資訊未能寫入，請檢查管理權限。');
       setStatus('資料庫設定已儲存。');
       setRevision(v=>v+1);
       return true;
@@ -156,7 +156,7 @@ export default function DatabaseTarget({scopeGroup}){
           onChange={option=>{if(option)pick(option.value);}}
         />
       </div>
-      <button type="button" className="loc-button" onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
+      <button type="button" className="loc-button" disabled={saving} onClick={add}><UiText id="uiExtra.adminView.addDatabase"/></button>
     </div>
     {row?<div className="scope-management-fields">
       <h3 className="admin-workspace-section-heading"><UiText id="uiExtra.adminView.connectionDetails"/></h3>
@@ -179,6 +179,7 @@ export default function DatabaseTarget({scopeGroup}){
           title={protectedTarget?'主要或備援資料庫使用中，不可刪除':undefined}><UiText id="uiExtra.adminView.delete"/></button>
       </div>
     </div>:null}
+    <p className="scope-status">這裡管理資料庫連線清單。新增、編輯後請按功能列「儲存」；正式主／備援路由由部署設定決定，不會因為新增清單項目就自動切換。</p>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }
