@@ -71,3 +71,10 @@ test('admin ISR panel uses working selects and discloses the local-only setting'
   assert.match(panel,/全站 ISR/);
   assert.match(panel,/不寫入資料庫/);
 });
+
+// Do not weaken the release verifier: the retired Worker endpoint must never
+// be embedded into HTML or JavaScript, even while cache mode is selected.
+test('disabled ISR never publishes a retired endpoint in cache configuration',()=>{
+  assert.doesNotMatch(config,/https:\/\/isr\.lo3rwang\.cc/);
+  assert.match(config,/\{id:'cloudflare',label:'Cloudflare',origin:''\}/);
+});
