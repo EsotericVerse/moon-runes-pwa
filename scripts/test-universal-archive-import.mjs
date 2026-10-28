@@ -5,6 +5,7 @@ import {detectZipArchiveSource,inspectPrivateArchive} from '../app/loc/private-a
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
 import {readImageExif} from '../app/loc/archive-exif.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from '../app/loc/archive-media-evidence.mjs';
+import {assertPrivateArchiveDestination,isPublicArchiveRecord,isPrivateArchiveEntry} from '../app/loc/archive-import-safety.mjs';
 
 function asFile(name,bytes){
   const data=new Uint8Array(bytes);
@@ -192,4 +193,52 @@ test('Media-only archive remains importable and its EXIF is retained',async()=>{
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
   assert.equal(plan.exif[0].media_id,null);
+});
+
+test('Threads ZIP with Facebook Messenger backup only imports public posts',async()=>{
+  const file=asFile('threads-mixed.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {id:'threads-100',title:'公開 Threads 貼文',timestamp:1720000000,
+        text:'這是一篇公開貼文'}
+    ]}),
+    'your_facebook_activity/messages/inbox/example/message_1.json':j({
+      participants:[{name:'Test A'},{name:'Test B'}],
+      messages:[{sender_name:'Test A',timestamp_ms:1720000000000,
+        content:'這是測試私訊，禁止轉成公開文章'}]
+    })
+  }));
+  const detected=await detectZipArchiveSource(file);
+  assert.ok(detected.sources.includes('threads'));
+  assert.ok(detected.sources.includes('messenger'));
+  assert.doesNotThrow(()=>assertPrivateArchiveDestination(false,detected.sources));
+  const publicRows=[];
+  let rejected=0;
+  await inspectPrivateArchive(file,{onRecord:record=>{
+    if(!isPublicArchiveRecord(record)){rejected++;return;}
+    const article=archiveGalaxyRow(record);
+    if(article)publicRows.push(article);
+  }});
+  assert.equal(publicRows.length,1);
+  assert.equal(publicRows[0].source_name,'Threads');
+  assert.equal(publicRows[0].content.includes('公開'),true);
+  assert.equal(publicRows[0].content.includes('私訊'),false);
+  assert.ok(rejected>=1);
+  assert.equal(isPrivateArchiveEntry('your_facebook_activity/messages/inbox/example/photo.jpg'),true);
+});
+test('Standalone Threads public JSON uses archive scanner without publishing private messages',async()=>{
+  const file=asFile('threads_posts.json',j({text_post_app_text_posts:[
+    {id:'threads-101',timestamp:1720000000,text:'僅公開貼文'},
+    {sender_name:'Test Sender',timestamp_ms:1720000000000,content:'私訊格式不公開'}
+  ]}));
+  const accepted=[];
+  let skipped=0;
+  await inspectPrivateArchive(file,{onRecord:record=>{
+    if(!isPublicArchiveRecord(record)){skipped++;return;}
+    const article=archiveGalaxyRow(record);
+    if(article)accepted.push(article);
+  }});
+  assert.equal(accepted.length,1);
+  assert.equal(accepted[0].source_name,'Threads');
+  assert.equal(accepted[0].content,'僅公開貼文');
+  assert.ok(skipped>=1);
 });

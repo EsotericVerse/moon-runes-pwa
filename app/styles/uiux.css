@@ -48,7 +48,9 @@
   --loc-line-body:1.78;
   /* Shared Hero-only responsive typography; ordinary blocks stay unchanged. */
   --loc-type-hero-home-title:clamp(4rem,6.4vw,6.5rem);
-  --loc-type-hero-feature-title:clamp(3.125rem,5.2vw,4.75rem);
+  --loc-type-hero-feature-title:clamp(2.25rem,3vw,3.25rem);
+  --loc-type-hero-feature-subtitle:clamp(1.0625rem,1.4vw,1.375rem);
+  --loc-type-hero-feature-copy:clamp(1rem,1.1vw,1.125rem);
   --loc-type-home-section-title:clamp(1.5rem,2.1vw,1.875rem);
   --loc-type-hero-subtitle:clamp(1.25rem,1.8vw,1.875rem);
   --loc-type-hero-copy:clamp(1.125rem,1.45vw,1.375rem);
@@ -382,7 +384,7 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
 ) .scope-subtitle{
-  font-size:var(--loc-type-hero-subtitle)!important;
+  font-size:var(--loc-type-hero-feature-subtitle)!important;
   font-weight:var(--loc-weight-subtitle);
   line-height:1.42!important;
 }
@@ -404,8 +406,8 @@ button,a,.loc-control,.loc-button,
   .scope-feature-hero--manage,
   .scope-feature-hero--setting
 ) .scope-hero-description :where(p,li){
-  font-size:var(--loc-type-hero-copy);
-  line-height:var(--loc-line-hero-copy);
+  font-size:var(--loc-type-hero-feature-copy);
+  line-height:1.55;
 }
 
 .loc-hero-context{
@@ -487,15 +489,15 @@ button,a,.loc-control,.loc-button,
   box-shadow:0 12px 36px rgb(0 0 0 / .09),inset 0 1px 0 rgb(255 255 255 / .025);
 }
 
-/* All seven feature Heroes use exactly one image frame and one responsive rule.
-   The picture fills the full frame; the gradient is transparent over the image. */
+/* All seven feature Heroes share one compact, content-safe frame.
+   Background artwork keeps its intrinsic proportions (cover, never stretch). */
 .scope-feature-hero.scope-feature-hero--artwork{
   box-sizing:border-box;
   width:100%;
   min-width:0;
-  aspect-ratio:16/9;
-  min-height:clamp(540px,56.25vw,820px);
-  padding:clamp(1.6rem,4vw,3.75rem);
+  aspect-ratio:auto;
+  min-height:clamp(290px,34vw,440px);
+  padding:clamp(1.25rem,2.8vw,2.5rem);
   border-radius:var(--loc-ui-radius-xl);
   background-color:#101725;
   background-image:
@@ -508,8 +510,8 @@ button,a,.loc-control,.loc-button,
 @media(max-width:760px){
   .scope-feature-hero.scope-feature-hero--artwork{
     aspect-ratio:auto;
-    min-height:clamp(480px,110vw,650px);
-    padding:1.35rem;
+    min-height:clamp(230px,56vw,335px);
+    padding:clamp(1rem,4vw,1.35rem);
     background-position:center center,60% center;
   }
 }
@@ -892,7 +894,7 @@ button,a,.loc-control,.loc-button,
 @media(max-width:760px){
   :root{
     --loc-type-hero-home-title:clamp(2.5rem,10vw,3.75rem);
-    --loc-type-hero-feature-title:clamp(2.375rem,9vw,3.125rem);
+    --loc-type-hero-feature-title:clamp(1.75rem,5vw,2.25rem);
     --loc-type-home-section-title:clamp(1.375rem,5.5vw,1.625rem);
     --loc-type-hero-subtitle:clamp(1.125rem,4.8vw,1.375rem);
     --loc-type-hero-copy:clamp(1.0625rem,3.9vw,1.1875rem);
@@ -978,7 +980,9 @@ button,a,.loc-control,.loc-button,
     --loc-type-subtitle:clamp(1rem,.94rem + .3vw,1.14rem);
     --loc-type-body:clamp(1rem,.95rem + .25vw,1.1rem);
     --loc-type-hero-home-title:clamp(2rem,1.35rem + 3.5vw,3.3rem);
-    --loc-type-hero-feature-title:clamp(1.8rem,1.35rem + 2.2vw,2.7rem);
+    --loc-type-hero-feature-title:clamp(1.625rem,1.2rem + 2vw,2.125rem);
+    --loc-type-hero-feature-subtitle:clamp(1rem,.95rem + .35vw,1.125rem);
+    --loc-type-hero-feature-copy:1rem;
     --loc-type-home-section-title:clamp(1.3rem,1.05rem + 1.15vw,1.7rem);
     --loc-type-hero-subtitle:clamp(1rem,.92rem + .4vw,1.2rem);
     --loc-type-hero-copy:clamp(1rem,.95rem + .3vw,1.12rem);

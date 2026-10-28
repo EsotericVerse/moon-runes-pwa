@@ -16,7 +16,7 @@ import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
-import {assertPrivateArchiveDestination,assertArchiveRecordDestination,assertArchiveEntryDestination,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {assertPrivateArchiveDestination,isPublicArchiveRecord,isPrivateArchiveEntry,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -280,23 +280,31 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     const firstBytes=new Uint8Array(await file.slice(0,4).arrayBuffer());
     const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
+    const isThreadsJson=!isZip&&/\.json$/i.test(file.name)&&
+      /(?:^|[-_. ])(?:threads|text_post_app_text_posts)(?:$|[-_. ])/i.test(file.name);
     setBusy(true);
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
-      if(isZip){
-        assertStandaloneImportDestination({nativeLocal,fileName:file.name});
+      if(isZip||isThreadsJson){
+        // ZIP and standalone Threads JSON use the same structured scanner;
+        // source names are only hints, each record must be a public post.
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
-        const totalEntries=await zipEntryCount(file);
-        const result=await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')});
+        const totalEntries=isZip?await zipEntryCount(file):1;
+        const result=isZip
+          ?await detectZipArchiveSource(file,{onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')})
+          :{kind:'threads',sources:['threads'],confidence:1,
+            evidence:[{source:'threads',path:file.name,verified:false}],structure:null,audit:null};
         setArchiveDetection(result);
         assertPrivateArchiveDestination(nativeLocal,result.sources);
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],uidOwners=new Map(),exifSamples=[];
         const collector=createArchiveEvidenceCollector();
-        let ignored=0;
+        let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'共 '+totalEntries.toLocaleString()+' 個檔案，':'')+'已檢查 '+Number(p.matchedFiles||0).toLocaleString()+' 個文字檔，找到 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
-          assertArchiveRecordDestination(record,nativeLocal);
+          if(!nativeLocal&&!isPublicArchiveRecord(record)){
+            ignored++;privateSkipped++;return;
+          }
           const article=archiveGalaxyRow(record);
           // Media-only posts still carry URLs even when no Galaxy text exists.
           collector.onRecord(record,article?.uid||null);
@@ -309,14 +317,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
           imported.push({raw:article,import_uid:article.uid});
         },onMediaMetadata:item=>{
-          assertArchiveEntryDestination(item.path,nativeLocal);
+          if(!nativeLocal&&isPrivateArchiveEntry(item.path))return;
           collector.onExif(item);
           if(exifSamples.length<5)exifSamples.push(item);
         },onMediaEntry:item=>{
-          assertArchiveEntryDestination(item.path,nativeLocal);
+          if(!nativeLocal&&isPrivateArchiveEntry(item.path))return;
           collector.onMediaEntry(item);
         }});
-        const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size});
+        // On a public Scope, EXIF must be traceable to an approved public post.
+        // A loose photo in the ZIP can belong to a private chat even if its
+        // path does not contain "messages".
+        const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size})
+          .filter(item=>nativeLocal||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
         setArchiveEvidence(mediaEvidence);
         setArchiveSummary({...summary,exifSamples,mediaEvidenceCount:mediaEvidence.length});
         if(!imported.length&&!mediaEvidence.length){
@@ -329,9 +341,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setRows(imported);
         const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
         setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
-        setStatus('已解析 '+imported.length.toLocaleString()+' 篇文章／會話，媒體 '+mediaEvidence.length.toLocaleString()+' 筆；略過 '+
-          (ignored+summary.rejectedRows).toLocaleString()+
-          ' 筆。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
+        setStatus('已解析 '+imported.length.toLocaleString()+' 篇公開貼文，媒體 '+mediaEvidence.length.toLocaleString()+' 筆；略過 '+
+          (ignored+summary.rejectedRows).toLocaleString()+' 筆'+
+          (privateSkipped?'（含 '+privateSkipped.toLocaleString()+' 筆非公開／不支援紀錄）':'')+
+          '。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
@@ -347,7 +360,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()}));
     }catch(error){
       setRows([]);setArchiveEvidence([]);
-      setStatus(t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
+      const wasBlocked=['LOC_PRIVATE_ARCHIVE_BLOCKED','LOC_UNVERIFIED_ARCHIVE_BLOCKED'].includes(error?.code);
+      setStatus(wasBlocked
+        ?'第 '+(index+1)+' 檔已阻止匯入：'+String(error?.message||error)+'；本次未寫入資料庫。'
+        :t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }finally{
       setBusy(false);
     }
@@ -370,7 +386,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     const selected=source.trim();
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
-    try{assertStandaloneImportDestination({nativeLocal,fileName,rows,source});}
+    try{
+      if(archiveDetection){
+        assertPrivateArchiveDestination(nativeLocal,archiveDetection.sources);
+        if(!nativeLocal&&rows.some(item=>!['facebook','threads','instagram','x'].includes(String(item.raw?.source_name||'').toLowerCase())))
+          throw new Error('公開網站的 ZIP 不允許匯入私人對話或無法辨識的紀錄。');
+      }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
+    }
     catch(error){setStatus(String(error?.message||error));return;}
     setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
