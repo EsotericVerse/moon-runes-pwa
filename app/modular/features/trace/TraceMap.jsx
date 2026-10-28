@@ -272,7 +272,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
             });
             onAnchorSelect?.(anchor);
           }}>
-          {anchor.title} · {anchor.uid||anchor.id}
+          {anchor.title}
           {!spaceCoordinates(anchor)?'（待補地圖座標）':''}
         </button>)}
         {!(popularOpen?popularAnchors:anchorMatches).length?<p className="scope-status">{popularOpen?'尚未建立熱門候選，請在地點管理中重新統計。':'目前載入的地點沒有符合項目。'}</p>:null}
