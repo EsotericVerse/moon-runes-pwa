@@ -277,11 +277,13 @@
   overflow:visible;
 }
 .scope-period-timeline .vis-item.scope-period-density .vis-item-content{
-  display:none;
+  visibility:hidden;
+  min-height:12px;
   padding:0;
 }
 .scope-period-timeline .vis-item.scope-period-density.vis-range{
   min-width:3px;
+  min-height:14px;
 }
 
 .scope-governance-editable{display:grid;gap:1rem}
