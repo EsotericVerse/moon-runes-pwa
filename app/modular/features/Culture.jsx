@@ -28,7 +28,7 @@ import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs
 import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
-import {selectGalaxyContent,selectScopeCategoryTotals,selectScopeDailyCounts} from '../../loc/galaxy-query';
+import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -37,7 +37,7 @@ import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
-import {buildCultureRiverRootTotals} from '../../loc/culture-river-roots.mjs';
+import {buildCultureRiverRootPayload,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -380,36 +380,44 @@ export default function Culture(){
   // Staged rendering is a UI strategy, not an ISR feature.
   const stagedSourceRiver=Boolean(publishedTaxonomy)&&!isAggregateScope&&scopeId!=='local';
   const expandedSourceRoots=['system','custom','media'].filter(id=>openCultureRoots.includes(id));
-  // Collapsed lanes only need one total per source/media category (cheap:
-  // no day grouping). The full day x category breakdown is fetched below,
-  // only once a lane is actually expanded.
+  // Retrieve one bounded daily aggregate per selected period. Reuse it when
+  // expanding a group, so a UI interaction never starts a second SQL job.
   const sourceRootQuery=useAsyncResource({
-    queryKey:['culture-period-roots','v3-totals',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
+    queryKey:['culture-period-roots','v4-staged-numeric',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature],
     enabled:stagedSourceRiver&&styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&classificationWindowValid,
     queryFn:async()=>{
-      const {text,media}=await selectScopeCategoryTotals(scopeData,{
-        startDate:classificationWindowStart,endDate:classificationWindowEnd
+      const {text,media}=await selectScopeDailyCounts(scopeData,{
+        startDate:classificationWindowStart,endDate:classificationWindowEnd,
+        includeUndated:true,requireAggregate:true
       });
-      return buildCultureRiverRootTotals({text,media},publishedTaxonomy);
+      const inside=row=>!classificationPeriodRanges||timePeriodContainsDate(
+        {ranges:classificationPeriodRanges},String(row.day||''));
+      return buildCultureRiverRootPayload({
+        text:text.filter(inside),media:media.filter(inside)
+      },publishedTaxonomy);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const expandedSourceRootsKey=expandedSourceRoots.join(',');
-  const expandedSourceReady=expandedSourceRoots.length>0;
-  // Only runs once a lane is expanded (or immediately for non-staged scopes,
-  // which never show the flat totals view). This is the day x category
-  // aggregate: the same one a collapsed lane used to always fetch.
+  const requestedChildren=useMemo(()=>{
+    if(!stagedSourceRiver||!sourceRootQuery.data?.numericRows||!expandedSourceRoots.length)return [];
+    return selectCultureRiverChildren(sourceRootQuery.data.numericRows,publishedTaxonomy,expandedSourceRoots);
+  },[stagedSourceRiver,sourceRootQuery.data,publishedTaxonomy,expandedSourceRootsKey]);
+  const expandedSourceReady=Boolean(sourceRootQuery.data)&&expandedSourceRoots.length>0;
+  // In a published scope expanding a lane only transforms cached numeric rows.
   const sourceSnapshotQuery=useAsyncResource({
-    queryKey:['culture-period-source-snapshot','v7',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
+    queryKey:['culture-period-source-snapshot','v8-reused-numeric',classificationScope,classificationWindowStart,classificationWindowEnd,periodRangeSignature,stagedSourceRiver?expandedSourceRootsKey:'all'],
     enabled:styleFilter!=='trace'&&!isLrunesDaily&&!isLocItemView&&!isAggregateScope&&Boolean(scopeData)&&classificationWindowValid
       &&(!stagedSourceRiver||expandedSourceReady),
     queryFn:async()=>{
       const {selectScopePeriodSourceSnapshot}=await import('../../loc/culture-query');
-      return selectScopePeriodSourceSnapshot(scopeData,{
+      const range={
         startDate:classificationWindowStart,endDate:classificationWindowEnd,
         periodRanges:classificationPeriodRanges
-      });
+      };
+      return selectScopePeriodSourceSnapshot(scopeData,stagedSourceRiver
+        ?{...range,numericRows:requestedChildren}:range);
     }
   });
   const keywordClassQuery=useAsyncResource({
