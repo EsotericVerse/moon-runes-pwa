@@ -70,7 +70,7 @@ function reportBatchProgress(onProgress,phase,completed,total,percent,label,deta
 // Preserve the canonical per-document Rune engine while yielding after small batches.
 // This keeps the UI responsive and counts real completed documents, not elapsed time.
 async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
-  const batchSize=120;
+  const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
   const parts=[];
   const runeTotals=new Map();
   const groupTotals=new Map();
@@ -558,7 +558,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     // Each phase needs its own percent/label; letting an unlisted phase fall
     // through to write's formula re-displays a stale "已寫入 N/N 篇" at the
     // same percent write just finished at, which looks like a stall/glitch.
-    onProgress:({phase,completed,total,seconds=5,retrying=false,batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE,completedBatches=0,estimatedBatches=0,lastBatchSize=0})=>{
+    onProgress:({phase,completed,total,seconds=1,retrying=false,batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE,completedBatches=0,estimatedBatches=0,lastBatchSize=0})=>{
       const percent=phase==='prepare'?61
         :phase==='write'||phase==='cooldown'?61+30*(total?completed/total:1)
         :phase==='sync'?95
