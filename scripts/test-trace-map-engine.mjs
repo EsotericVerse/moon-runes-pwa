@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {spaceCoordinates} from '../app/modular/features/trace/space-graph.mjs';
 
 const engine=readFileSync(new URL('../app/modular/features/trace/trace-map-engine.js',import.meta.url),'utf8')
-  .replace(/^import .*?from 'maplibre-gl';\n/m,'')
+  .replace(/^import .*\n/gm,'')
   .replace(/setWorkerUrl\(new URL\([\s\S]*?\.toString\(\)\);/,'')
   .replace(/^export /gm,'');
 
-function setup({anchors=[],onAnchorSelect=()=>{}}={}){
+function setup({anchors=[],onAnchorSelect=()=>{},load=true}={}){
   const maps=[];
   class Bounds{
     constructor(){this.points=[];}
@@ -44,25 +45,25 @@ function setup({anchors=[],onAnchorSelect=()=>{}}={}){
     addTo(map){this.map=map;return this;}
     remove(){return this;}
   }
-  const make=new Function('Map','Marker','Popup','NavigationControl','LngLatBounds','setWorkerUrl',
+  const make=new Function('Map','Marker','Popup','NavigationControl','LngLatBounds','setWorkerUrl','spaceCoordinates',
     engine+'\nreturn createTraceMap');
-  const createTraceMap=make(FakeMap,Noop,FakePopup,Noop,Bounds,()=>{});
+  const createTraceMap=make(FakeMap,Noop,FakePopup,Noop,Bounds,()=>{},spaceCoordinates);
   const instance=createTraceMap({},{anchors,onAnchorSelect});
   const map=maps[0];
-  map.callbacks.load();
+  if(load)map.callbacks.load();
   return {instance,map};
 }
 const anchors=[
-  {uid:'AAAA0001',source_scope:'lo3rwang',trace_type:'anchor',title:'第一站',
+  {uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor',title:'第一站',
     description:'歷史名稱：舊站名。',longitude:120.2,latitude:22.8},
-  {uid:'BBBB0002',source_scope:'lo3rwang',trace_type:'anchor',title:'第二站',
+  {uid:'B002',source_scope:'lo3rwang',trace_type:'space_anchor',title:'第二站',
     longitude:121.5,latitude:25.1},
-  {uid:'CCCC0003',source_scope:'lo3rwang',trace_type:'anchor',title:'第三站',
+  {uid:'C003',source_scope:'lo3rwang',trace_type:'space_anchor',title:'第三站',
     longitude:121.51,latitude:25.05}
 ];
 test('saved route plots all numbered stops and preserves segment order',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_list:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',anchor_list:anchors.map(a=>a.uid)});
   const features=map.sources['loc-trace-user-routes'].data.features;
   assert.deepEqual(features.filter(f=>f.geometry.type==='Point')
     .map(f=>f.properties.order),[1,2,3]);
@@ -72,7 +73,7 @@ test('saved route plots all numbered stops and preserves segment order',()=>{
 });
 test('clearing route removes line and no saved anchors never shows sample markers',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',anchor_list:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',anchor_list:anchors.map(a=>a.uid)});
   instance.setSavedRoute(null);
   assert.deepEqual(map.sources['loc-trace-user-routes'].data.features,[]);
   assert.equal(map.sources['loc-trace-extrusions'],undefined);
@@ -117,7 +118,7 @@ test('clicking a far saved pin recenters only once; its original data reaches th
 test('numbered route stops are also clickable even when they overlap source pin',()=>{
   let selected=null;
   const {instance,map}=setup({anchors,onAnchorSelect:anchor=>{selected=anchor;}});
-  const route={uid:'ROUTE001',source_scope:'lo3rwang',trace_type:'map',
+  const route={uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',
     anchor_list:anchors.map(row=>row.uid)};
   instance.setSavedRoute(route);
   map.callbacks['click|loc-trace-user-route-stops']({
@@ -125,5 +126,25 @@ test('numbered route stops are also clickable even when they overlap source pin'
   assert.equal(selected.uid,anchors[1].uid);
   assert.equal(map.sources['loc-trace-user-routes'].data.features
     .filter(row=>row.geometry.type==='Point').length,3);
+  instance.destroy();
+});
+
+test('trace-only union keeps its saved lines on initial map load and frames all endpoints',()=>{
+  const {instance,map}=setup({anchors,load:false});
+  const union={uid:'LOC_UNION',source_scope:'lo3rwang',trace_type:'space_trace',
+    anchor_list:[],route_list:['R001']};
+  const graph={type:'FeatureCollection',features:[{
+    type:'Feature',properties:{kind:'saved-trace-segment'},
+    geometry:{type:'LineString',coordinates:[[120.2,22.8],[121.5,25.1]]}
+  }]};
+  instance.setSavedRoute(union);
+  instance.setSavedGraph(graph);
+  map.callbacks.load();
+  assert.equal(map.sources['loc-trace-user-routes'].data.features.length,1,
+    'rendered route union must not be cleared during initial loading');
+  assert.deepEqual(map.bounds.at(-1).points,[[120.2,22.8],[121.5,25.1]]);
+  const before=map.bounds.length;
+  instance.setSavedGraph(graph);
+  assert.equal(map.bounds.length,before,'same render must not reset user viewport');
   instance.destroy();
 });

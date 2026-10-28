@@ -127,7 +127,7 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   const engine=read('app/modular/features/trace/trace-map-engine.js');
   const results=read('app/modular/features/trace/TracePlaceResults.jsx');
   assert.match(feature,/readTraceMapIndex\(scopeId\)/);
-  assert.match(feature,/<option value="loc">LOC 自有痕跡<\/option>/);
+  assert.match(feature,/目前顯示（痕跡圖聯集）/);
   assert.ok(feature.indexOf('const periodScopeId=')<feature.indexOf('},[periodScopeId]);'),
     'derived Scope must be initialized before any effect dependency accesses it');
   assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,members,/);
@@ -138,8 +138,8 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
    assert.match(feature,/role="dialog" aria-modal="false"/);
    assert.match(feature,/className="loc-trace-float-report"/);
   assert.match(feature,/\{value:'articles',label:'文章列表'\}/);
-  assert.match(feature,/\{value:'timeline',label:'文化'\}/);
-  assert.match(feature,/\{value:'statistics',label:'統計'\}/);
+  assert.match(feature,/\{value:'timeline',label:'時間長河'\}/);
+  assert.match(feature,/\{value:'statistics',label:'統計圖'\}/);
   assert.match(engine,/map\.on\('click',layer,chooseAnchor\)/);
   assert.match(map,/onAnchorSelect:!selectingLocation\?anchor=>/);
   assert.match(results,/traceArticleIdFilters\(placeIds,/);
@@ -170,7 +170,7 @@ test('Trace loads only Frame metadata at entry; content modes remain scoped and 
   assert.match(trace,/\[routeListOpen\]=useState\(true\)/);
   assert.match(trace,/enabled:supported&&routeListOpen/);
   assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
-  assert.match(trace,/\[reportTab,setReportTab\]=useState\('articles'\)/);
+  assert.match(trace,/\[reportTab,setReportTab\]=useState\(null\)/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
   assert.match(filters,/traceWindow\(window='3m'/);
   assert.match(panel,/source_name/);
@@ -234,8 +234,8 @@ test('Trace automatically loads all Scope anchors only when no saved route exist
   const map=read('app/modular/features/trace/TraceMap.jsx');
   const expression=trace.match(/const showingAll=([^;]+);/)?.[1];
   assert.ok(expression,'Trace must derive its all-anchors fallback');
-  const evaluate=(currentTraceChoice,currentMap,maps)=>
-    runInNewContext(expression,{currentTraceChoice,currentMap,maps});
+  const evaluate=(currentTraceChoice,currentMap,maps,isLoc=false)=>
+    runInNewContext(expression,{currentTraceChoice,currentMap,maps,isLoc});
   assert.equal(evaluate('auto',null,[]),true,'no route loads all anchors automatically');
   assert.equal(evaluate('auto',{uid:'A123'},[{uid:'A123'}]),false,'saved Current route stays lazy');
   assert.equal(evaluate('all',null,[{uid:'A123'}]),true,'manual all-anchors choice is preserved');
@@ -280,7 +280,7 @@ test('Trace only loads article content after a map anchor click and displays rep
   assert.match(page,/const reportPlace=twoPointDemo\?null:\(selectedAvailable\?selectedPlace:null\)/);
   assert.match(page,/<TraceMap publicTrace floatingControls=\{floatingControls\}/);
   assert.match(page,/\{reportPlace\?<div className="loc-trace-float-report"/);
-  assert.match(page,/onClick=\{\(\)=>setSelectedPlace\(null\)\}>×<\/button>/);
+  assert.match(page,/onClick=\{\(\)=>\{setSelectedPlace\(null\);setReportTab\(null\);\}\}>×<\/button>/);
   assert.match(page,/<TracePlaceResults key=\{reportPlace\.source_scope/);
   assert.doesNotMatch(page,/reportTopRef|scrollIntoView|setMapOnly|!mapOnly&&reportPlace/);
   assert.match(map,/publicTrace&&children\?<div className="loc-trace-floating-content"/);

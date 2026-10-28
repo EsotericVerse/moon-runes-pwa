@@ -134,22 +134,18 @@ export default function Trace({scopeId='loc'}){
   const floatingControls=<>
     <div className="loc-trace-float-choices">
       {supported&&routeListOpen?<label>
-        <span>目前顯示（痕跡圖／路線圖）</span>
+        <span>目前顯示（痕跡圖聯集）</span>
         <select className="scope-select"
           value={showingAll?'all':currentMap?mapChoiceKey(currentMap):''}
           onChange={event=>chooseCurrentTrace(event.target.value)}
-          disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
-          {isLoc?['space_trace','space_period'].map(type=>{
-            const choices=maps.filter(map=>map.trace_type===type);
-            return choices.length?<optgroup key={type} label={type==='space_trace'?'痕跡圖':'路線圖'}>
-              {choices.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
-                {map.source_scope==='lrunes'?'月之符文 · ':'作者作品 · '}
-                {map.title}（{type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
-              </option>)}
-            </optgroup>:null;
-          }):maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
-            {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
-          </option>)}
+          disabled={traceIndex.isPending||Boolean(traceIndex.error)||!maps.length}>
+          {isLoc
+            ?(maps.length?maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
+              {map.source_scope==='lrunes'?'月之符文':'作者作品'} · {map.title}
+            </option>):<option value="">目前沒有可顯示的痕跡圖</option>)
+            :maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
+              {map.title}（{map.trace_type==='space_trace'?'痕跡圖':'路線圖'}）
+            </option>)}
 
         </select>
       </label>:null}
@@ -167,7 +163,7 @@ export default function Trace({scopeId='loc'}){
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
       痕跡列表讀取失敗：{String(traceIndex.error.message||traceIndex.error)}
     </p>:null}
-    {supported&&anchorsQuery.isPending?<p className="scope-status" role="status">正在載入 Current 痕跡的空間定錨點…</p>:null}
+    {supported&&anchorsQuery.isPending?<p className="scope-status" role="status">正在載入目前痕跡的地點…</p>:null}
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}

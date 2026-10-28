@@ -82,6 +82,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let savedAnchors=anchors;
   let selectedSavedRoute=null;
   let selectedSavedGraph=null;
+  let lastGraphFocusKey='';
   function setAnchors(next){
     savedAnchors=Array.isArray(next)?next:[];
     if(!loaded)return;
@@ -126,6 +127,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
     selectedSavedGraph=null;
+    if(changed)lastGraphFocusKey='';
     refreshSavedRoute();
     // SWR refreshes may return a new object representing the same route.
     if(!loaded||!selectedSavedRoute||!changed)return;
@@ -144,6 +146,32 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     selectedSavedGraph=graph?.type==='FeatureCollection'&&Array.isArray(graph.features)
       ?graph:null;
     refreshSavedRoute();
+    if(!loaded||!selectedSavedRoute||!selectedSavedGraph)return;
+    const coordinates=[];
+    for(const feature of selectedSavedGraph.features){
+      const geometry=feature?.geometry;
+      const candidates=geometry?.type==='Point'?[geometry.coordinates]
+        :geometry?.type==='LineString'?geometry.coordinates:[];
+      for(const point of candidates||[]){
+        if(!Array.isArray(point)||point.length<2)continue;
+        const [lng,lat]=point.map(Number);
+        if(Number.isFinite(lng)&&Number.isFinite(lat)&&Math.abs(lng)<=180&&Math.abs(lat)<=90)
+          coordinates.push([lng,lat]);
+      }
+    }
+    if(!coordinates.length)return;
+    const identity=(selectedSavedRoute.source_scope||'')+':'+selectedSavedRoute.uid;
+    const focusKey=identity+':'+JSON.stringify(coordinates);
+    if(lastGraphFocusKey===focusKey)return;
+    lastGraphFocusKey=focusKey;
+    if(coordinates.length===1){
+      map.flyTo({center:coordinates[0],zoom:12.5,pitch:0,bearing:0,essential:true});
+    }else{
+      const bounds=new LngLatBounds();
+      coordinates.forEach(point=>bounds.extend(point));
+      map.fitBounds(bounds,{padding:Math.max(32,Math.min(90,Math.round(map.getContainer().clientWidth*.07))),
+        pitch:0,bearing:0,maxZoom:13,duration:500});
+    }
   }
   const canPickLocation=typeof onLocationPick==='function';
   // The user's "home" is a public station-area navigation origin, not a
@@ -344,8 +372,10 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     // the current route is explicitly chosen by the parent.
     if(selectedSavedRoute){
       const openingRoute=selectedSavedRoute;
+      const openingGraph=selectedSavedGraph;
       selectedSavedRoute=null;
       setSavedRoute(openingRoute);
+      setSavedGraph(openingGraph);
     }
     status('ready');
   });

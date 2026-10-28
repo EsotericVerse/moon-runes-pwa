@@ -1,7 +1,28 @@
-// LOC publishes both saved routes and trace groups; public RLS is enforced
-// by readTraceMapIndex before this selection.
+// LOC displays a read-only union of published, saved route relationships.
+// Never infer visits, join unrelated routes, or expose hidden source records.
 export function publicTraceMapChoices(rows=[],scopeId='loc'){
-  return (Array.isArray(rows)?rows:[]).filter(row=>
+  const saved=(Array.isArray(rows)?rows:[]).filter(row=>
     (row?.trace_type==='space_period'||row?.trace_type==='space_trace')&&
     (scopeId==='loc'||row?.source_scope===scopeId));
+  if(scopeId!=='loc')return saved;
+  return ['lo3rwang','lrunes'].flatMap(source=>{
+    const own=saved.filter(row=>row.source_scope===source);
+    const routes=own.filter(row=>row.trace_type==='space_period');
+    const routeById=new Map(routes.map(row=>[row.uid,row]));
+    const routeIds=new Set(routes.map(row=>row.uid));
+    const seenPairs=new Set(),pairs=[];
+    for(const trace of own.filter(row=>row.trace_type==='space_trace')){
+      for(const uid of trace.route_list||[])if(routeById.has(uid))routeIds.add(uid);
+      for(const pair of trace.anchor_list||[]){
+        if(!Array.isArray(pair)||pair.length!==2||pair[0]===pair[1]||
+          pair.some(uid=>!/^[A-Za-z0-9]{4}$/.test(String(uid))))continue;
+        const key=pair.join(':');
+        if(!seenPairs.has(key)){seenPairs.add(key);pairs.push(pair);}
+      }
+    }
+    if(!routeIds.size&&!pairs.length)return [];
+    return [{uid:'LOC_UNION',trace_type:'space_trace',source_scope:source,
+      title:'痕跡圖聯集',description:'',anchor_list:pairs,route_list:[...routeIds],
+      read_only:true}];
+  });
 }
