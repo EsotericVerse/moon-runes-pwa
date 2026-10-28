@@ -45,8 +45,8 @@ const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{l
 const TraceBlocks=dynamic(()=>import('./TraceBlocks'),{loading:()=>null});
 
 
-const MEDIA_EDITOR_COLUMNS='uid,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
-const MEDIA_ATTR_ORDER=['uid','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
+const MEDIA_EDITOR_COLUMNS='uid,source_place,media_type,title,url,meta_tags,createtime,rune_references';
+const MEDIA_ATTR_ORDER=['uid','source_place','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
@@ -115,7 +115,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   const text=rowText(row);
   const isMedia=Boolean(row.uid&&(row.record_type==='galaxy_media'||
     String(row.__table||'').endsWith('_media')||
-    (row.media_type&&Object.prototype.hasOwnProperty.call(row,'galaxy_link'))));
+    (row.media_type&&!Object.prototype.hasOwnProperty.call(row,'content'))));
   const isGalaxy=Boolean(row.uid)&&!isMedia;
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
@@ -155,9 +155,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     editRow:resourceType?row:null,
     relationLinks:resourceType==='galaxy'
       ?galaxyRelationLinks(scope,row)
-      :(resourceType==='galaxy_media'&&row.galaxy_link
-        ?[{id:'galaxy:'+row.galaxy_link,label:copy.search.parentText,href:galaxyIdentityHref(scope,row.galaxy_link)}].filter(link=>link.href)
-        :[]),
+      :[],
     dedupeKey:resourceType==='galaxy'&&typeof row.content==='string'
       ?'article-copy:'+JSON.stringify([scope,
         String(row.title||'').normalize('NFKC').trim(),
@@ -169,7 +167,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
       ?'style-tag:'+String(title).normalize('NFKC').trim().toLocaleLowerCase('zh-Hant')
       :(resourceType==='galaxy'&&resourceId
       ?'galaxy:'+scope+':'+resourceId
-      :(resourceType==='galaxy_media'&&row.galaxy_link?'galaxy:'+scope+':'+row.galaxy_link:'result:'+scope+':'+(identity||title))),
+      :(resourceType==='galaxy_media'&&resourceId?'media:'+scope+':'+resourceId:'result:'+scope+':'+(identity||title))),
     links:uniqueExternalLinks([...(href?[{id:resourceType||'primary',href,label:resourceType==='galaxy_media'?copy.search.mediaLink:copy.search.externalLink}]:[]),...(Array.isArray(row.resolved_links)?row.resolved_links:[])]),
     destinations:[]
   };

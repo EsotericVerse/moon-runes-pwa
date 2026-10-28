@@ -86,30 +86,28 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   });
 
   // Only an explicitly selected media filter loads joined media metadata.
-  // galaxy_media.galaxy_link is the real article UID (not the media platform);
-  // batch by parent UID to keep each IN expression within the request budget.
+  // Match media IDs from each article's media_link without reverse dependencies.
   const mediaFiltered=useAsyncResource({
     queryKey:['trace-media-filter-v1',targetScope,placesKey,startDate,endDate,
       sourceFilter,selectedMediaType],
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,statistics_able',
+        columns:'uid,title,createtime,source_name,place_id,statistics_able,media_link',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];
-      const linked=[];
-      for(let i=0;i<articles.length;i+=120){
-        const ids=articles.slice(i,i+120).map(row=>String(row.uid||'').trim()).filter(Boolean);
-        if(!ids.length)continue;
+      const ids=[...new Set(articles.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
+      const matching=[];
+      for(let i=0;i<ids.length;i+=120){
         const {rows}=await selectAllRows(scope.galaxyMedia,{
-          columns:'galaxy_link,media_type',
-          filters:[{column:'galaxy_link',operator:'in',value:ids},
+          columns:'uid,media_type',
+          filters:[{column:'uid',operator:'in',value:ids.slice(i,i+120)},
             {column:'media_type',operator:'eq',value:selectedMediaType}]
         });
-        linked.push(...rows);
+        matching.push(...rows);
       }
-      return traceMediaMatches(articles,linked);
+      return traceMediaMatches(articles,matching);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });

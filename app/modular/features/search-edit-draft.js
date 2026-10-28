@@ -66,7 +66,6 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
 function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||''), title:String(row.title||''),
-    galaxy_link:String(row.galaxy_link||'').trim(),
     source_place:String(row.source_place||''),media_type:String(row.media_type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
     createtime:datetimeLocalValue(row.createtime),
@@ -78,11 +77,10 @@ function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
 }
 function changedMediaAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
-  for(const key of ['galaxy_link','source_place','media_type','url','meta_tags']){
+  for(const key of ['source_place','media_type','url','meta_tags']){
     if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
   }
   if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
-  if(changed.galaxy_link&&!/^[a-z0-9]{8}$/i.test(changed.galaxy_link))throw new Error(t('uiExtra.searchUI.mediaLinkUidInvalid'));
   if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
   if(current.rune_references!==initial.rune_references){
     const value=String(current.rune_references||'').trim();

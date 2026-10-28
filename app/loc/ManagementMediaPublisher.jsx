@@ -8,7 +8,9 @@ registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 import {useEffect,useRef,useState} from 'react';
 import {useEditDock} from '../modular/edit-dock';
-import {insertRows} from './db-client.mjs';
+import {insertRows,updateRows} from './db-client.mjs';
+import {selectRows} from './db-query.mjs';
+import {createUid8} from './uid';
 import {useAccount} from './use-account';
 import {hasIrrecoverableEncoding,repairMojibakeText} from './content-policy';
 
@@ -67,8 +69,15 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
       const sourcePlace=repairMojibakeText(draft.source_place).trim();
       if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.mediaEncoding'));
       if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
+      const scope=account.scopeDataFor(scopeId);
+      const article=galaxyLink?(await selectRows(scope?.galaxy,{
+        columns:'uid,media_link',filters:[{column:'uid',operator:'eq',value:galaxyLink}],
+        limit:1,authenticated:true
+      })).rows?.[0]:null;
+      if(galaxyLink&&!article)throw new Error('找不到指定的文章 UID。');
+      const mediaUid=createUid8();
       const record={
-        galaxy_link:galaxyLink||null,
+        uid:mediaUid,
         source_place:sourcePlace||null,
         media_type:mediaType,
         title:mediaTitle||null,
@@ -76,9 +85,14 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
         meta_tags:metaTags,
         createtime:mediaIso(draft.createtime)
       };
-      const galaxyMedia=account.scopeDataFor(scopeId)?.galaxyMedia;
+      const galaxyMedia=scope?.galaxyMedia;
       if(!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       await insertRows(galaxyMedia,[record]);
+      if(article){
+        const prior=Array.isArray(article.media_link)?article.media_link:[];
+        await updateRows(scope.galaxy,{media_link:[...new Set([...prior,mediaUid])]},
+          {filters:[{column:'uid',operator:'eq',value:article.uid}]});
+      }
       setStatus(t('uiExtra.importUI.mediaSaved'));
       setDraft(blankMedia());
       return true;
