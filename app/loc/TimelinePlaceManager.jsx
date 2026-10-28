@@ -5,7 +5,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
-import {TIMELINE_IO} from './query-batch-size.mjs';
+import {TIMELINE_IO,MAX_TIMELINE_BYTES} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession} from './timeline-review-session.mjs';
 import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
@@ -94,7 +94,7 @@ export default function TimelinePlaceManager({scopeId}){
     const run=++runRef.current;
     setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
-      if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
+      if(selectedFile.size>MAX_TIMELINE_BYTES)throw Error('Timeline JSON 超過檔案大小上限，請按年度拆分後匯入');
       setProgress({done:0,total:0,message:'正在本機讀取 Timeline JSON…'});
       const document=JSON.parse(await selectedFile.text());
       if(run!==runRef.current)return;
