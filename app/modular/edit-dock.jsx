@@ -5,6 +5,7 @@ import {usePathname,useRouter} from 'next/navigation';
 import {Capacitor} from '@capacitor/core';
 import {dbAuthEvents,signOutAccount} from '../loc/db-client.mjs';
 import {EDIT_OPERATION_TTL_MS,assertEditorSession,touchEditorSession,clearEditorSession} from '../loc/edit-session-ttl.mjs';
+import {clearHomeEditorAccess} from '../loc/home-edit-access.mjs';
 
 // UI only: a Scope's permission is checked before entering edit mode,
 // and every write still passes through its existing database authorization.
@@ -76,6 +77,7 @@ export function EditDockProvider({children}){
     setNotice('');
   },[]);
   const end=useCallback(()=>{
+    try{clearHomeEditorAccess(window.sessionStorage);}catch{}
     releaseOperation();
     clearEditor();
     pendingSectionAction.current=null;
