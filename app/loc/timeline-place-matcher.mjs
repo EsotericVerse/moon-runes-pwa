@@ -142,3 +142,22 @@ export function groupTimelineMissingPlaces(analysis){
       disputed:!unanimous};
   }).sort((a,b)=>b.rows.length-a.rows.length||a.key.localeCompare(b.key));
 }
+
+/* Resolve every group's location independently; never carry one group selection
+   into another group or silently overwrite an existing, different place_id. */
+export function selectedTimelineArticleUpdates(groups,groupChoices={},itemChoices={},excluded={}){
+  const updates=[];
+  for(const group of groups||[]){
+    const groupPlaceId=Object.prototype.hasOwnProperty.call(groupChoices,group.key)
+      ?groupChoices[group.key]:group.defaultPlaceId;
+    for(const row of group.rows||[]){
+      if(excluded[row.uid])continue;
+      const placeId=itemChoices[row.uid]||groupPlaceId;
+      if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))continue;
+      if(row.existingPlaceId&&row.existingPlaceId!==placeId)continue;
+      updates.push({uid:row.uid,place_id:placeId,
+        expected_place_id:row.existingPlaceId||null,manual:true});
+    }
+  }
+  return updates;
+}
