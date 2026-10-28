@@ -147,7 +147,7 @@ export default {
   "update": "更新",
   "unchanged": "変更なし",
   "skipped": "スキップ",
-  "sourceLabel": "ソース",
+  "sourceLabel": "インポート元",
   "noUid": "記事 UID が明示された有効なレコードがありません。",
   "duplicateTitle": "データ整理（重複検出）",
   "duplicateHelp": "インポート後に手動で実行します。createtime が完全に一致するものをまとめ、その中でさらに本文が完全に一致するものだけを重複とみなします。自動削除はされません。チェックしてから削除してください。",

@@ -893,6 +893,9 @@
   align-items:end;gap:.75rem;min-width:0
 }
 .scope-import-primary-row>label{min-width:0}
+.scope-import-source-choice{display:grid;gap:.3rem;max-width:38rem;min-width:0;font-weight:600}
+.scope-import-source-choice>input{width:100%;min-width:0;min-height:44px;padding:.5rem .65rem;box-sizing:border-box;
+  background:var(--loc-surface);color:var(--loc-text);border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-sm)}
 .scope-import-primary-row .scope-select,
 .scope-import-primary-row input[type=file]{
   box-sizing:border-box;width:100%;min-width:0;max-width:100%;min-height:44px

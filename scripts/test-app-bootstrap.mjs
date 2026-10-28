@@ -485,10 +485,11 @@ test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
   assert.match(css,/\.scope-culture-rune-list ul\{list-style:none/);
 });
 
-test('Culture only loads management permissions in time edit mode and gates its editor',()=>{
+test('Culture loads management permissions only after authorized homepage editing',()=>{
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(culture,/const isTimeEditingView=searchParams\?\.get\('edit'\)==='1'/);
-  assert.match(culture,/useAccount\(\{enabled:isTimeEditingView\}\)/);
+  assert.match(culture,/const canUseScopeEditor=Boolean\(editDock\?\.active&&editDock\.scopeId===scopeId\)/);
+  assert.match(culture,/const isTimeEditingView=canUseScopeEditor&&searchParams\?\.get\('edit'\)==='1'/);
+  assert.match(culture,/useAccount\(\{enabled:isTimeEditingView\|\|canUseScopeEditor\}\)/);
   assert.match(culture,/const permissionPending=account\.loading\|\|account\.permissionLoading/);
   assert.match(culture,/const editorAuthorized=Boolean\(account\.user&&account\.canManageScopeSync\(scopeId\)\)/);
   assert.match(culture,/editorAvailable&&!permissionPending&&editorAuthorized\?<div/);

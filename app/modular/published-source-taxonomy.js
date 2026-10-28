@@ -1,9 +1,9 @@
 // Flat public source classification, published with Scope Config.
 import {sourceTaxonomyFromArrays} from '../loc/source-classification.mjs';
 export const PUBLISHED_SOURCE_LISTS=Object.freeze({
-  loc:{system:['facebook','threads','instagram'],personal:[]},
-  lo3rwang:{system:['facebook','threads','instagram'],personal:['suno','kkcity','其他','方格子vocus','ptt','無名wretch','pixnet']},
-  lrunes:{system:['facebook','threads','instagram'],personal:['vocus','others','suno']}
+  loc:{system:['Facebook','Threads','Instagram'],personal:[]},
+  lo3rwang:{system:['Facebook','Threads','Instagram'],personal:['suno','kkcity','其他','方格子vocus','ptt','無名wretch','pixnet']},
+  lrunes:{system:['Facebook','Threads','Instagram'],personal:['vocus','others','suno']}
 });
 // A few display names were renamed without rewriting source_name in Galaxy.
 // Preserve their literal stored strings as read-only aliases, not new tables.

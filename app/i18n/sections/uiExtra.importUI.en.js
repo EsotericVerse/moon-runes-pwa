@@ -147,7 +147,7 @@ export default {
   "update": "Updated",
   "unchanged": "Unchanged",
   "skipped": "Skipped",
-  "sourceLabel": "Source",
+  "sourceLabel": "Import source",
   "noUid": "No valid records with an explicitly provided article UID.",
   "duplicateTitle": "Data cleanup (duplicate detection)",
   "duplicateHelp": "Run manually after an import: groups rows by an exact createtime match, then by exact matching content within that group. Nothing is deleted automatically -- check the rows you want removed, then delete.",
