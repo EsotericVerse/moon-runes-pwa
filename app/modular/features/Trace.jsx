@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {traceWindow} from './trace/trace-panel-filters.mjs';
+import {publicTraceMapChoices} from './trace/trace-map-choices.mjs';
 import {pickTraceDemoStop,traceDemoRoute} from './trace/trace-demo-route.mjs';
 import {
   readDefaultTraceRoute,setDefaultTraceRoute,chooseDefaultTraceRoute,
@@ -60,12 +61,10 @@ export default function Trace({scopeId='loc'}){
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const allMaps=traceIndex.data||[];
-  const maps=allMaps.filter(row=>isLoc
-    ?row.trace_type==='space_trace'
-    :row.source_scope===scopeId);
+  const maps=publicTraceMapChoices(allMaps,scopeId);
   const mapChoiceKey=row=>isLoc?row.source_scope+':'+row.uid:row.uid;
   const currentMap=useMemo(()=>isLoc
-    ?maps.find(row=>row.source_scope+':'+row.uid===currentTraceChoice)||maps[0]||null
+    ?maps.find(row=>row.source_scope+':'+row.uid===currentTraceChoice)||maps.find(row=>row.trace_type==='space_trace')||maps[0]||null
     :chooseDefaultTraceRoute(maps,scopeId,currentTraceChoice),
     [allMaps,scopeId,currentTraceChoice,isLoc]);
   const periodScopeId=isLoc?(currentMap?.source_scope||'loc'):scopeId;
@@ -135,13 +134,20 @@ export default function Trace({scopeId='loc'}){
   const floatingControls=<>
     <div className="loc-trace-float-choices">
       {supported&&routeListOpen?<label>
-        <span>Current 痕跡（空間時期）</span>
+        <span>目前顯示（痕跡圖／路線圖）</span>
         <select className="scope-select"
           value={showingAll?'all':currentMap?mapChoiceKey(currentMap):''}
           onChange={event=>chooseCurrentTrace(event.target.value)}
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
-          {maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
-            {isLoc?(map.source_scope==='lrunes'?'月之符文 · ':'作者作品 · '):''}
+          {isLoc?['space_trace','space_period'].map(type=>{
+            const choices=maps.filter(map=>map.trace_type===type);
+            return choices.length?<optgroup key={type} label={type==='space_trace'?'痕跡圖':'路線圖'}>
+              {choices.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
+                {map.source_scope==='lrunes'?'月之符文 · ':'作者作品 · '}
+                {map.title}（{type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
+              </option>)}
+            </optgroup>:null;
+          }):maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
             {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
 
