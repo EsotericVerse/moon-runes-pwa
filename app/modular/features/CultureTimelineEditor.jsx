@@ -202,14 +202,16 @@ export default function CultureTimelineEditor({
     setTracePairs(items=>[...items,[from,to]]);setPairFrom(null);setPairTo(null);
   };
   const removePair=index=>setTracePairs(items=>items.filter((_,i)=>i!==index));
-  const refresh=async()=>{
-    if(dataScope!=='local')await revalidateServerMetadata();
-    await Promise.all([
-      resourceCache.invalidate({queryKey:['culture-timeline',scopeId]}),
-      resourceCache.invalidate({queryKey:['culture-period-settings',dataScope]}),
-      resourceCache.invalidate({queryKey:['culture-time-periods',scopeId]}),
-      resourceCache.invalidate({queryKey:['culture-period-roots','v2',scopeId]}),
-      resourceCache.invalidate({queryKey:['culture-period-source-snapshot','v6',scopeId]})
+  const refresh=()=>{
+    if(dataScope!=='local')void revalidateServerMetadata();
+    // Never hold the Save lock while refetching UI data.
+    // In-place revalidation keeps existing records visible during refresh.
+    void Promise.allSettled([
+      resourceCache.revalidate({queryKey:['culture-timeline',scopeId]}),
+      resourceCache.revalidate({queryKey:['culture-period-settings',dataScope,timeTable]}),
+      resourceCache.revalidate({queryKey:['culture-time-periods',scopeId]}),
+      resourceCache.revalidate({queryKey:['culture-period-roots','v2',scopeId]}),
+      resourceCache.revalidate({queryKey:['culture-period-source-snapshot','v6',scopeId]})
     ]);
   };
   const save=async(event)=>{
@@ -279,7 +281,7 @@ export default function CultureTimelineEditor({
       }else{
         await insertRows(timeTable,[{uid:nextTimeUid([...all,...extraPeriodRows]),...payload}]);
       }
-      await refresh();reset();setMessage('已儲存。');return true;
+      refresh();reset();setMessage('已儲存。');return true;
     }catch(error){setMessage(error?.message||'儲存失敗');editDock?.setNotice?.(error?.message||'儲存失敗');return false;}
     finally{setBusy(false);}
   };
@@ -289,7 +291,7 @@ export default function CultureTimelineEditor({
     try{
       // Periods survive anchor deletion; only their affected UID links become invalid.
       await deleteRows(timeTable,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
-      await refresh();reset();setMessage('已刪除。');
+      refresh();reset();setMessage('已刪除。');
     }catch(error){setMessage(error?.message||'刪除失敗');}
     finally{setBusy(false);}
   };
@@ -307,7 +309,7 @@ export default function CultureTimelineEditor({
         if(data.length!==ids.length)throw Error('部分時間紀錄未成功寫入');
         count+=data.length;
       }
-      await query.mutate();await refresh();
+      void query.mutate();refresh();
       setVisibilitySelection([]);setMessage('已更新 '+count+' 筆時間隱藏設定。');
     }catch(e){setMessage(String(e.message||e));}finally{setVisibilityBusy(false);}
   };

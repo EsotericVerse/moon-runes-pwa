@@ -3,6 +3,7 @@ import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE,MAX_ROWS} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
 import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from './authorization-runtime.mjs';
+import {assertEditorSession} from './edit-session-ttl.mjs';
 
 // Keyword read, write and reset use the shared MaxRows.
 export const KEYWORD_CLASSIFICATION_BATCH_SIZE=MAX_ROWS;
@@ -39,7 +40,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   function preflightWrite(table){
     // JS-only first gate; local SQLite is an independent device-private scope.
     // The database RPC/RLS is always the second, authoritative gate.
-    if(typeof window!=='undefined')assertAuthorizationForTable(table);
+    if(typeof window!=='undefined'){
+      assertEditorSession(window.sessionStorage);
+      assertAuthorizationForTable(table);
+    }
   }
   function invalidateRelevantAuthorization(scopeid,newEmail=''){
     const saved=readAuthorization();

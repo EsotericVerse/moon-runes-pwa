@@ -524,7 +524,7 @@ function AppShellInner({children}){
         ?<AdminEditSystemButton key="system" href={editTabHref('admin','edit','1')}/>
         :tab.action
         ?<button type="button" key={tab.id}
-          disabled={editDock.busy}
+          disabled={editDock.busy&&tab.action!=='cancel'}
           onClick={()=>tab.action==='save'
             ?editDock.save({stayInEditMode:isFeatureEditMode})
             :editDock.discard(navigationHref(navScopeId,isFeatureEditMode?featureEditReturn:'',native),
