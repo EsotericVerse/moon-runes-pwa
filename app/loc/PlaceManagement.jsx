@@ -5,9 +5,9 @@ import dynamic from 'next/dynamic';
 import {useEditDock} from '../modular/edit-dock';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
-import {recoverChunkOnce} from './chunk-recovery.mjs';
+import TimelinePlaceManager from './TimelinePlaceManager';
 
-const TimelinePlaceManager=dynamic(()=>import('./TimelinePlaceManager').catch(recoverChunkOnce),{loading:PanelLoading});
+
 
 const TraceManagement=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceBatchFill=dynamic(()=>import('./PlaceBatchFill'),{loading:PanelLoading});

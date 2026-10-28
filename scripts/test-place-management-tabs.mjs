@@ -33,8 +33,11 @@ test('Subnavigation uses theme tokens, visible active/focus state and 2-column m
 
 test('Timeline analysis is isolated from initial management entry',()=>{
   const source=read('app/loc/PlaceManagement.jsx');
-  assert.match(source,/dynamic\(\(\)=>import\('\.\/TimelinePlaceManager'\)\.catch\(recoverChunkOnce\)/);
-  assert.doesNotMatch(source,/^import TimelinePlaceManager from/m);
+  // Timeline must be bundled with the management page. Loading its chunk
+  // only after selecting the tab can show a 404 instead of the review panel.
+  assert.match(source,/^import TimelinePlaceManager from '\.\/TimelinePlaceManager';/m);
+  assert.doesNotMatch(source,/dynamic\(\(\)=>import\('\.\/TimelinePlaceManager'/);
+  assert.doesNotMatch(source,/recoverChunkOnce/);
   const editor=read('app/loc/TraceManagement.jsx');
   assert.match(editor,/\{mapOpen\?<TraceMap/);
   assert.match(editor,/onClick=\{\(\)=>setMapOpen\(open=>!open\)\}/);
