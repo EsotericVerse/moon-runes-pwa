@@ -27,7 +27,7 @@ export async function GET(request,{params}){
   const {data:runtime,error:settingError}=await db.from('loc_runtime_config')
     .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
   const chosen=Array.isArray(runtime?.isr_domains)
-    ?runtime.isr_domains.find(item=>item.id===runtime.cache_provider):null;
+    ?runtime.isr_domains.find(item=>item.origin===runtime.cache_provider||item.id===runtime.cache_provider):null;
   const configuredOrigin=String(chosen?.origin||'').trim();
   if(settingError||runtime?.cache_mode!=='isr'||configuredOrigin!==url.origin)
     return reply(request,{error:'ISR not enabled for this domain'},503);

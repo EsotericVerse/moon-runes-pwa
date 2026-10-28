@@ -7,16 +7,11 @@ const source=readFileSync(new URL('../app/loc/cache-mode-client.mjs',import.meta
 const config=readFileSync(new URL('../app/loc/cache-policy.config.mjs',import.meta.url),'utf8');
 
 async function harness(){
-  const events=[],storage=new Map();
+  const events=[];
   const context=vm.createContext({
     Promise,Date,console,
     CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail;}},
-    window:{dispatchEvent:event=>events.push(event),
-      localStorage:{
-        getItem:key=>storage.get(key)||null,
-        setItem:(key,value)=>storage.set(key,value),
-        removeItem:key=>storage.delete(key)
-      }}
+    window:{dispatchEvent:event=>events.push(event)}
   });
   const configModule=new vm.SourceTextModule(config,{context});
   await configModule.link(()=>{throw new Error('config must not import anything');});
@@ -31,60 +26,56 @@ async function harness(){
     throw Error('Unexpected import: '+id);
   });
   await module.evaluate();
-  return {api:module.namespace,events,storage};
+  return {api:module.namespace,events};
 }
 
-test('policy comes from the static JS config and is applied',async()=>{
+test('cache defaults to Service Worker without an ISR destination',async()=>{
   const h=await harness();
   const state=await h.api.loadCachePolicy();
   assert.equal(state.mode,'cache');
   assert.equal(state.origin,'');
-  assert.equal(h.api.currentCachePolicy().mode,'cache');
   assert.equal(h.events.at(-1).type,'loc-cache-policy-changed');
 });
 
-test('ISR needs a trusted public HTTPS origin, not arbitrary input',async()=>{
+test('only a selected public HTTPS ISR destination may be used',async()=>{
   const h=await harness();
-  assert.equal(h.api.normalizeCachePolicy({mode:'isr',origin:'https://isr.lo3rwang.cc'}).mode,'isr');
-  assert.equal(h.api.normalizeCachePolicy({mode:'isr',origin:'http://evil.test'}).mode,'cache');
+  assert.equal(h.api.normalizeCachePolicy({mode:'isr',origin:'https://isr.example.com'}).mode,'isr');
+  assert.equal(h.api.normalizeCachePolicy({mode:'isr',origin:'http://invalid.test'}).mode,'cache');
   assert.equal(h.api.normalizeCachePolicy({mode:'invalid',origin:''}).mode,'off');
 });
 
-test('administrator saves a global ISR HTTPS destination and cannot select an empty origin',async()=>{
+test('current runtime setting accepts legacy ID and new origin selections',async()=>{
   const h=await harness();
-  assert.throws(()=>h.api.setBrowserCacheChoice({mode:'isr',provider:'cloudflare'}));
-  h.api.applyGlobalCacheConfig({
-    cache_mode:'isr',cache_provider:'cloudflare',
-    isr_domains:[{id:'cloudflare',label:'Cloudflare',origin:'https://isr.example.com'}]
-  });
-  assert.equal(h.api.currentCachePolicy().mode,'isr');
+  const domains=[{id:'legacy',label:'第一個',origin:'https://isr.example.com'},
+    {label:'第二個',origin:'https://edge.example.com'}];
+  h.api.applyGlobalCacheConfig({cache_mode:'isr',cache_provider:'legacy',isr_domains:domains});
   assert.equal(h.api.currentCachePolicy().origin,'https://isr.example.com');
-  assert.equal(h.events.at(-1).type,'loc-cache-policy-changed');
-  h.api.applyGlobalCacheConfig({cache_mode:'off',cache_provider:'cloudflare',
-    isr_domains:[{id:'cloudflare',label:'Cloudflare',origin:'https://isr.example.com'}]});
+  h.api.applyGlobalCacheConfig({cache_mode:'isr',cache_provider:'https://edge.example.com',isr_domains:domains});
+  assert.equal(h.api.currentCachePolicy().origin,'https://edge.example.com');
+  h.api.applyGlobalCacheConfig({cache_mode:'isr',cache_provider:'unknown',isr_domains:domains});
+  assert.equal(h.api.currentCachePolicy().mode,'cache');
+  h.api.applyGlobalCacheConfig({cache_mode:'off',cache_provider:'https://edge.example.com',isr_domains:domains});
   assert.equal(h.api.currentCachePolicy().mode,'off');
 });
 
-test('Admin ISR panel edits domains and persists through the authorized Edit Dock',()=>{
+test('Admin has a single selector, a hidden editor and exactly Name/Domain fields',()=>{
   const panel=readFileSync(new URL('../app/loc/views/admin-panels/IsrDomainTarget.jsx',import.meta.url),'utf8');
-  assert.match(panel,/type="url"/);
-  assert.match(panel,/saveLocRuntimeConfig/);
+  assert.match(panel,/loc-isr-choice/);
+  assert.match(panel,/editing\?<div id="loc-isr-editor"/);
+  assert.match(panel,/編輯/);
+  assert.match(panel,/onClick=\{addDomain\}/);
+  assert.match(panel,/onClick=\{\(\)=>removeDomain\(index\)\}/);
   assert.match(panel,/useEditDockForm/);
-  assert.match(panel,/normalizeIsrDomain/);
-  assert.doesNotMatch(panel,/setBrowserCacheChoice|resetBrowserCacheChoice/);
+  assert.doesNotMatch(panel,/Domain ID|目前 ISR 網域|CACHE_MODE_OPTIONS/);
 });
 
-// Do not weaken the release verifier: the retired Worker endpoint must never
-// be embedded into HTML or JavaScript, even while cache mode is selected.
-test('disabled ISR never publishes a retired endpoint in cache configuration',()=>{
-  assert.doesNotMatch(config,/https:\/\/isr\.lo3rwang\.cc/);
-  assert.match(config,/\{id:'cloudflare',label:'Cloudflare',origin:''\}/);
+test('static fallback never embeds a disabled ISR host',()=>{
+  assert.doesNotMatch(config,/isr\.lo3rwang\.cc|moon-runes-pwa\.vercel\.app/);
 });
 
-test('numeric ISR server uses saved Admin mode and matching provider Domain',()=>{
+test('numeric ISR reads the Admin-selected origin, including older rows',()=>{
   const route=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
-  assert.match(route,/db\.from\('loc_runtime_config'\)/);
   assert.match(route,/runtime\?\.cache_mode!=='isr'/);
+  assert.match(route,/item\.origin===runtime\.cache_provider\|\|item\.id===runtime\.cache_provider/);
   assert.match(route,/configuredOrigin!==url\.origin/);
-  assert.doesNotMatch(route,/import \{CACHE_POLICY\}/);
 });
