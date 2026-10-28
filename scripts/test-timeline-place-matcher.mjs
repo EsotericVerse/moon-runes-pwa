@@ -137,3 +137,19 @@ test('per-tab Timeline review cache is owner-bound, scoped, and does not contain
  assert.equal(String([...map.values()][0]).includes('11111111'),false);
  clearTimelineReviewSession(storage,'lo3rwang');assert.equal(map.size,0);
 });
+
+test('Timeline preview is index-backed and write I/O accepts 500 atomically',()=>{
+ const io=read('app/loc/query-batch-size.mjs');
+ const writeSql=read('supabase/migrations/20261028160000_timeline_bulk_set_write_500.sql');
+ const previewSql=read('supabase/migrations/20261028170000_timeline_preview_indexed_windows.sql');
+ const ui=read('app/loc/TimelinePlaceManager.jsx');
+ assert.match(io,/windowBatch:100,previewPage:3000,writeBatch:500/);
+ assert.match(previewSql,/OFFSET 0/);
+ assert.match(previewSql,/p_limit NOT BETWEEN 1 AND 3000/);
+ assert.match(writeSql,/total NOT BETWEEN 1 AND 500/g);
+ assert.doesNotMatch(writeSql,/FOR r IN/);
+ assert.match(writeSql,/GET DIAGNOSTICS affected = ROW_COUNT/);
+ assert.ok(ui.indexOf('loc-timeline-review-action')<ui.indexOf('loc-timeline-review-groups'));
+ assert.match(ui,/saveTimelineReviewSession/);
+ assert.match(ui,/selectedTimelineArticleUpdates/);
+});
