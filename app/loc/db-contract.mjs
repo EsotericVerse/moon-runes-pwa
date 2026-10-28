@@ -13,7 +13,8 @@ export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
 // Read pages stay at 5k; DB writes are deliberately slower to limit pressure.
 export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500;
 export const KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE=25;
-export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=5000;
+export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=1000;
+export const KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL=10000;
 // Reset changes potentially tens of thousands of classified rows; keep each
 // authorized database write comfortably below the 30s statement timeout.
 const KEYWORD_RESET_BATCH_SIZE=750;
@@ -167,8 +168,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    // Commit each batch before submitting the next. Back off only after
-    // a statement timeout; successful writes must not incur idle delays.
+    // Commit batches sequentially. Pause for one second only after each
+    // 10,000 successfully processed rows; retry a timed-out chunk after one second.
     let batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
@@ -179,6 +180,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let count=0;
     let changedCount=0;
     let completedBatches=0;
+    let nextPauseAt=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
     const estimateBatches=()=>completedBatches+
       Math.ceil(Math.max(0,rows.length-count)/batchSize);
     async function coolDown(retrying){
@@ -213,7 +215,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       onProgress?.({phase:'write',completed:count,total:rows.length,
         completedBatches,estimatedBatches:estimateBatches(),batchSize,
         lastBatchSize:batch.length});
-
+      if(offset<rows.length&&count>=nextPauseAt){
+        nextPauseAt+=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
+        await coolDown(false);
+      }
     }
 
     // DB-side sync uses the same statistics_able predicate as the UID
