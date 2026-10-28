@@ -25,7 +25,7 @@ const validPair=pair=>Array.isArray(pair)&&pair.length===2&&pair[0]&&pair[1]&&pa
 
 export default function TraceRouteManager({scopeId}){
   const account=useAccount(),cache=useResourceCache(),params=useSearchParams();
-  const [owner,setOwner]=useState(scopeId);
+  const [owner,setOwner]=useState(scopeId==='loc'?'lo3rwang':scopeId);
   const [selectedUid,setSelectedUid]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
   const [editingUid,setEditingUid]=useState('');
@@ -82,9 +82,9 @@ export default function TraceRouteManager({scopeId}){
   });
   const allAnchors=anchorIndex.data||[];
   const anchorMap=useMemo(()=>new Map(allAnchors.map(a=>[a.uid,a])),[allAnchors]);
-  const options=useMemo(()=>allAnchors.map(row=>({value:row.uid,label:row.title+' · '+row.uid})),[allAnchors]);
+  const options=useMemo(()=>allAnchors.map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[allAnchors]);
   const poolOptions=useMemo(()=>spool.map(uid=>anchorMap.get(uid))
-    .filter(Boolean).map(row=>({value:row.uid,label:row.title+' · '+row.uid})),[spool,anchorMap]);
+    .filter(Boolean).map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[spool,anchorMap]);
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length||routeUids.length||hiddenDepth!==-1);
   const chosenIds=type==='space_period'?queue:unique(pairs.flat());
@@ -180,7 +180,7 @@ export default function TraceRouteManager({scopeId}){
         throw Error('路線至少兩站，依先後順序建立');
       if(type==='space_trace'&&(!(pairs.length||routeUids.length)||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
         throw Error('痕跡圖必須至少有一條有效的起點與終點線段');
-      if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('Spool 內有尚未載入的定錨點');
+      if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('候選地點中有尚未載入的地點');
       const input={scopeId:owner,type,title,description,hiddenDepth,routeUids:type==='space_trace'?routeUids:[],
         anchorUids:type==='space_period'?queue:pairs,anchors:allAnchors};
       let receipt=savedReceipt;
@@ -242,9 +242,9 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_trace')}>新增痕跡圖</button>
       </div>
     </header>
-    {scopeId==='loc'?<label>資料 Scope
+    {scopeId==='loc'?<label>作品範圍
       <select className="scope-select" value={owner} onChange={e=>{if(allowLeave())setOwner(e.target.value);}}>
-        <option value="loc">LOC</option><option value="lo3rwang">作者</option><option value="lrunes">LunaRunes</option>
+        <option value="lo3rwang">作者作品</option><option value="lrunes">月之符文</option>
       </select>
     </label>:null}
     <label>搜尋已儲存的路線／痕跡圖
@@ -300,7 +300,7 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-button" disabled={busy} onClick={()=>setShowMap(value=>!value)}>
           {showMap?'收起地圖選點':'展開地圖選點'}
         </button>
-        <span className="scope-status">{type==='space_period'?'點地圖上的定錨點，依序加入 Queue。':'先點起點，再點終點，即建立一段痕跡連線。'}{mapStart?' 已選起點：'+(anchorMap.get(mapStart)?.title||mapStart):''}</span>
+        <span className="scope-status">{type==='space_period'?'點選地圖上的地點，依序加入路線。':'先點起點，再點終點，即建立一段痕跡連線。'}{mapStart?' 已選起點：'+(anchorMap.get(mapStart)?.title||mapStart):''}</span>
       </div>
       {showMap?<TraceMap spatialData={{anchors:allAnchors,maps:preview?[preview,...records.filter(row=>routeUids.includes(row.uid))]:[]}}
         selectedRouteUid={preview?.uid||''} hideRoutePicker
@@ -314,7 +314,7 @@ export default function TraceRouteManager({scopeId}){
           {route.title}（{route.uid}）
         </label>)}
       </details>:null}
-      <h4>1. Spool — 收集可配置的地點</h4>
+      <h4>選擇地點</h4>
       {anchorIndex.isPending?<p className="scope-status">正在載入本 Scope 的地點標題…</p>:null}
       {anchorIndex.error?<p role="alert" className="scope-error">{String(anchorIndex.error.message||anchorIndex.error)}</p>:null}
       <div className="loc-trace-route-pickers">
@@ -327,7 +327,7 @@ export default function TraceRouteManager({scopeId}){
             placeholder="輸入標題，自動完成（不限縣市）"
             noOptionsMessage={()=>'沒有符合地點'} classNamePrefix="loc-react-select"/>
         </div>
-        <button className="loc-button" type="button" disabled={!selectedAnchor||busy} onClick={addToSpool}>＋ 加入 Spool</button>
+        <button className="loc-button" type="button" disabled={!selectedAnchor||busy} onClick={addToSpool}>＋ 加入候選地點</button>
       </div>
       <div className="loc-trace-selection-order">
         {spool.map(uid=><div key={uid} className="loc-trace-route-queue-actions">
@@ -335,7 +335,7 @@ export default function TraceRouteManager({scopeId}){
           <button type="button" className="loc-button" disabled={busy} onClick={()=>removeFromSpool(uid)}>移除</button>
         </div>)}
       </div>
-      <h4>2. {type==='space_period'?'路線 Queue（依選點先後）':'痕跡線段（不限制順序、可重用端點）'}</h4>
+      <h4>{type==='space_period'?'安排路線站點順序':'安排痕跡線段'}</h4>
       {type==='space_period'?<>
         <div className="loc-trace-route-pickers">
           <PopularSelect scopeId={owner} kind="space" inputId="trace-queue-stop" instanceId="trace-queue-stop"
@@ -344,7 +344,7 @@ export default function TraceRouteManager({scopeId}){
             isDisabled={busy||queue.length>=MAX_ROAD} placeholder="選擇下一站（選過即消失）"
             classNamePrefix="loc-react-select"/>
           <button type="button" className="loc-button" onClick={addRoadStop}
-            disabled={busy||!selectedStop}>＋ 加入 Queue</button>
+            disabled={busy||!selectedStop}>＋ 加入路線</button>
         </div>
         <ol className="loc-trace-selection-order">{queue.map((uid,i)=><li key={uid}>
           <span>{anchorMap.get(uid)?.title||uid}</span>
@@ -358,13 +358,13 @@ export default function TraceRouteManager({scopeId}){
         <div className="loc-trace-route-pickers" role="group" aria-label="新增痕跡線段">
           <label>起點
             <select className="scope-select" value={from} onChange={e=>setFrom(e.target.value)} disabled={busy}>
-              <option value="">選擇 Spool 地點</option>
+              <option value="">選擇地點</option>
               {poolOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </label>
           <label>終點
             <select className="scope-select" value={to} onChange={e=>setTo(e.target.value)} disabled={busy}>
-              <option value="">選擇 Spool 地點</option>
+              <option value="">選擇地點</option>
               {poolOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </label>
