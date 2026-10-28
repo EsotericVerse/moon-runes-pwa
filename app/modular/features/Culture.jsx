@@ -37,7 +37,7 @@ import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
-import {buildCultureRiverRootPayload,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
+import {buildCultureRiverRootPayload,selectCultureRiverChildren,sourceRootDailyDensity} from '../../loc/culture-river-roots.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -957,7 +957,17 @@ export default function Culture(){
       groups.push({id:'dual:root:'+parent.id,label:numberedLabel(label,parentCount),order:parent.order,
         className:'scope-dual-river-root',collapsible:members.length!==1,
         selectable:Boolean(onlyChild),sourceKey:onlyChild?.key||'',expanded});
-      items.push(flatRow('root:'+parent.id,parentCount,label,parent.order,'source_total'));
+      // The first paint already owns dated root buckets. Draw daily density
+      // immediately instead of a nearly invisible full-era total bar.
+      const dailyRoots=stagedSourceRiver
+        ?sourceRootDailyDensity(sourceRootQuery.data?.rootBuckets,parent.id)
+        :[];
+      if(dailyRoots.length){
+        for(const day of dailyRoots)items.push(dayRow('root:'+parent.id,day.day,day.count,label,
+          parent.order,day.maximum,'source_total'));
+      }else{
+        items.push(flatRow('root:'+parent.id,parentCount,label,parent.order,'source_total'));
+      }
       // A lone populated child is already represented by the parent lane.
       if(!expanded||onlyChild||!sourceSnapshotQuery.data)continue;
       members.forEach((group,index)=>{
@@ -1021,7 +1031,7 @@ export default function Culture(){
       }
     }
     return {items,groups,hasSourceData:activeRoots.size>0};
-  },[groupedSources,secondRiverBuckets,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale,classificationWindowStart,classificationWindowEnd,styleFilter,densityInputBuckets,anchorSuggestOpen]);
+  },[groupedSources,secondRiverBuckets,openCultureRoots,sourceSnapshotQuery.data,virtualAnchorItems,showKeywordRiver,keywordDrillItems,keywordGroupOptions,keywordDrillGroup,l,locale,classificationWindowStart,classificationWindowEnd,styleFilter,densityInputBuckets,anchorSuggestOpen,stagedSourceRiver,sourceRootQuery.data?.rootBuckets]);
   const focusedCandidate=riverAnalysis.suggestions.find(item=>item.date===focusedAnchorDate);
   const anchorInsight=focusedCandidate?{
     date:focusedCandidate.date,before:Number(focusedCandidate.beforeCount)||0,

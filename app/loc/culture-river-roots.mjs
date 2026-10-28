@@ -94,3 +94,12 @@ export function buildCultureRiverRootPayload({text=[],media=[]}={},taxonomy={}){
   ];
   return {...summarizeCultureRiverRoots(numericRows,taxonomy),numericRows};
 }
+
+/** Initial Culture river: show the already-fetched per-day parent density. */
+export function sourceRootDailyDensity(buckets=[],root=''){
+  const days=(Array.isArray(buckets)?buckets:[])
+    .filter(row=>row?.category===root&&/^\d{4}-\d{2}-\d{2}$/.test(String(row?.start_date||''))
+      &&Number(row?.item_count)>0);
+  const maximum=Math.max(1,...days.map(row=>Number(row.item_count)));
+  return days.map(row=>({day:row.start_date,count:Number(row.item_count),maximum}));
+}

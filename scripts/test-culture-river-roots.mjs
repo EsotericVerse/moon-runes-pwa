@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {parse} from '@babel/parser';
-import {summarizeCultureRiverRoots,selectCultureRiverChildren,buildCultureRiverRootPayload} from '../app/loc/culture-river-roots.mjs';
+import {summarizeCultureRiverRoots,selectCultureRiverChildren,buildCultureRiverRootPayload,sourceRootDailyDensity} from '../app/loc/culture-river-roots.mjs';
 const taxonomy={
   categories:[{category_code:'facebook',enabled:true},{category_code:'others',enabled:true}],
   aliases:[{source_key:'facebook',category_code:'facebook'}]
@@ -105,4 +105,31 @@ test('Culture period loading uses declared render focus and imported period inte
   assert.ok(rangesImport?.specifiers.some(node=>node.type==='ImportSpecifier'
     &&node.imported.name==='timePeriodContainsDate'),
   'LOC culture must import the actual period-range predicate it calls');
+});
+
+test('Culture parent river paints dated density on entry without expanding a category',()=>{
+  const result=buildCultureRiverRootPayload({
+    text:[
+      {day:'2026-10-01',category:'Facebook',item_count:2},
+      {day:'2026-10-03',category:'Facebook',item_count:8},
+      {day:'2026-10-04',category:'Private',item_count:5}
+    ],
+    media:[{day:'2026-10-02',category:'music',item_count:3}]
+  },taxonomy);
+  assert.deepEqual(sourceRootDailyDensity(result.rootBuckets,'system'),[
+    {day:'2026-10-01',count:2,maximum:8},
+    {day:'2026-10-03',count:8,maximum:8}
+  ]);
+  assert.deepEqual(sourceRootDailyDensity(result.rootBuckets,'custom'),[
+    {day:'2026-10-04',count:5,maximum:5}
+  ]);
+  assert.deepEqual(sourceRootDailyDensity(result.rootBuckets,'media'),[
+    {day:'2026-10-02',count:3,maximum:3}
+  ]);
+  assert.deepEqual(sourceRootDailyDensity(result.rootBuckets,'empty'),[]);
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  assert.match(culture,/sourceRootDailyDensity\(sourceRootQuery\.data\?\.rootBuckets,parent\.id\)/);
+  assert.match(culture,/dailyRoots\.length/);
+  assert.match(culture,/dayRow\('root:'\+parent\.id,day\.day,day\.count,label,/);
+  assert.match(culture,/stagedSourceRiver,sourceRootQuery\.data\?\.rootBuckets\]\)/);
 });
