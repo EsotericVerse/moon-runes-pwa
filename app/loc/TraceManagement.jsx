@@ -129,7 +129,6 @@ function AnchorEditor({scopeId,spatial,reload}){
     </label>
     <details className="scope-card loc-trace-quick-update">
       <summary>快速更新｜相同位置、名稱排列不同（{renameGroups.length} 組）</summary>
-      <p className="scope-status">只列出同一 Scope、完全相同的經緯度，以及名稱字元相同但排列不同的地點。僅更新標題；保留每個 UID、座標、文章引用和路線，不會合併或刪除紀錄。</p>
       {!renameGroups.length?<p className="scope-status">目前沒有符合條件的名稱排列候選；沒有座標的地點不會猜測為同一位置。</p>:null}
       {renameGroups.slice(0,80).map(group=>{
         const names=[...new Set(group.items.map(item=>item.title))];
