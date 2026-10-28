@@ -1,0 +1,68 @@
+name: LOC controlled Cloudflare release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - ".githooks/**"
+      - ".github/ISSUE_TEMPLATE/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loc-cloudflare-production
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Validate deployment authorization
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Cloudflare release credentials are not configured. No deployment attempted."
+            exit 1
+          fi
+      - name: Debounce consecutive merges
+        if: github.event_name == 'push'
+        run: sleep 600
+      - name: Confirm latest main revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST="$(gh api repos/"$GITHUB_REPOSITORY"/commits/main --jq .sha)"
+          if [ "$LATEST" != "$GITHUB_SHA" ]; then
+            echo "::error::Outdated revision; refusing to deploy."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.4"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Syntax verification
+        run: npm run check:syntax
+      - name: Build site
+        run: npm run build:static
+      - name: Verify exported site
+        run: node scripts/verify-release-static-export.mjs
+      - name: Confirm revision before upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST="$(gh api repos/"$GITHUB_REPOSITORY"/commits/main --jq .sha)"
+          if [ "$LATEST" != "$GITHUB_SHA" ]; then
+            echo "::error::Newer version exists; skipping outdated upload."
+            exit 1
+          fi
+      - name: Deploy only verified build to Cloudflare Pages
+        run: npx wrangler pages deploy out --project-name loc --branch main --commit-hash "$GITHUB_SHA"
