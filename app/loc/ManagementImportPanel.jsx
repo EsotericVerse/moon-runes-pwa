@@ -20,7 +20,7 @@ import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,findExistingImportDuplicates} from './import-duplicate-check.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,writeImportBatches} from './import-batch.mjs';
 import {MAX_ROWS} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -445,7 +445,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
                   const to=new Date((second+1)*1000).toISOString();
                   const {data,error}=await dbAuthRelation(galaxy)
                     .select('uid,source_name,createtime,content').ilike('source_name',source)
-                    .gte('createtime',from).lt('createtime',to).range(offset,offset+499);
+                    .gte('createtime',from).lt('createtime',to).range(offset,offset+MAX_ROWS-1);
                   if(error)throw new Error('重複文章比對失敗：'+error.message);
                   collected.push(...(data||[]));
                   if((data||[]).length<MAX_ROWS)break;
