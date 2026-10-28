@@ -478,8 +478,8 @@ function AppShellInner({children}){
       href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
     {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,locAdminEdit?'痕跡製作':'空間定錨'),
       href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
-        ?editTabHref('trace/manage','section','traceAnchor')+'&edit=1'
-        :editScopeAvailable?editTabHref('manage','section','traceAnchor')+'&edit=1':''},
+        ?editTabHref('trace/manage','section','traceMap')+'&edit=1'
+        :editScopeAvailable?editTabHref('manage','section','placeManage')+'&edit=1':''},
     {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'文章控管'),
       href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}

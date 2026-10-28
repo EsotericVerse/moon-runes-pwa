@@ -37,6 +37,7 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [longitude,setLongitude]=useState('');
   const [latitude,setLatitude]=useState('');
   const [focusLocation,setFocusLocation]=useState(null);
+  const [mapOpen,setMapOpen]=useState(false);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
@@ -187,12 +188,14 @@ function AnchorEditor({scopeId,spatial,reload}){
       </button>
     </div>
     {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
-    <TraceMap spatialData={spatial} focusLocation={focusLocation}
+    <button className="loc-button" type="button" aria-expanded={mapOpen}
+      onClick={()=>setMapOpen(open=>!open)}>{mapOpen?'關閉座標地圖':'開啟座標地圖'}</button>
+    {mapOpen?<TraceMap spatialData={spatial} focusLocation={focusLocation}
       onLocationPick={({lng,lat,name})=>{
         if(name)setTitle(t=>t.trim()||name);
         setLongitude(String(Math.round(lng*1e6)/1e6));
         setLatitude(String(Math.round(lat*1e6)/1e6));
-      }}/>
+      }}/>:null}
   </section>;
 }
 

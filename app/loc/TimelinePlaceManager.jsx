@@ -10,7 +10,10 @@ import {TIMELINE_IO,MAX_TIMELINE_BYTES} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession,timelineReviewCacheOversized} from './timeline-review-session.mjs';
 import {accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
-const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
+// Keep request and response sizes bounded during browser-side review.
+const WINDOW_BATCH=Math.min(TIMELINE_IO.windowBatch,200);
+const RESULT_PAGE=Math.min(TIMELINE_IO.previewPage,500);
+const WRITE_BATCH=Math.min(TIMELINE_IO.writeBatch,500);
 const friendlyError=e=>String(e?.message||e||'未知錯誤');
 function checked(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);

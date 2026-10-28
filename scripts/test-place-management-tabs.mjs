@@ -31,10 +31,13 @@ test('Subnavigation uses theme tokens, visible active/focus state and 2-column m
   assert.doesNotMatch(component,/#[0-9A-Fa-f]{3,8}\b/);
 });
 
-test('Timeline tab loads from the Place Management bundle, not from an on-click chunk',()=>{
+test('Timeline analysis is isolated from initial management entry',()=>{
   const source=read('app/loc/PlaceManagement.jsx');
-  assert.match(source,/import TimelinePlaceManager from '\.\/TimelinePlaceManager'/);
-  assert.doesNotMatch(source,/dynamic\(\(\)=>import\('\.\/TimelinePlaceManager'\)/);
+  assert.match(source,/dynamic\(\(\)=>import\('\.\/TimelinePlaceManager'\)\.catch\(recoverChunkOnce\)/);
+  assert.doesNotMatch(source,/^import TimelinePlaceManager from/m);
+  const editor=read('app/loc/TraceManagement.jsx');
+  assert.match(editor,/\{mapOpen\?<TraceMap/);
+  assert.match(editor,/onClick=\{\(\)=>setMapOpen\(open=>!open\)\}/);
 });
 
 test('Service Worker never reuses stale management HTML after a deploy',()=>{

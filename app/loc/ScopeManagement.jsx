@@ -41,7 +41,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
     else return;
     window.location.replace(url.href);
   },[isLoc,requestedSection]);
-  const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
+  const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'',{traceAnchor:isLoc?'traceMap':'placeManage'});
   const selectedOption=options.find(option=>option.value===section)||options[0];
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>

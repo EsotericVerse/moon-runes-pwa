@@ -44,6 +44,13 @@ test('non-https native file views never refresh',()=>{
   assert.throws(()=>recoverChunkOnce(Error('ChunkLoadError'),{browser:w}),/ChunkLoadError/);
   assert.equal(w.reloads,0);
 });
+test('management links select real sections and preserve legacy links',()=>{
+  const shell=read('app/AppShell.jsx');
+  const management=read('app/loc/ScopeManagement.jsx');
+  assert.match(shell,/editTabHref\('manage','section','placeManage'\)/);
+  assert.match(shell,/editTabHref\('trace\/manage','section','traceMap'\)/);
+  assert.match(management,/traceAnchor:isLoc\?'traceMap':'placeManage'/);
+});
 test('both management lazy entries use the same recovery',()=>{
   assert.match(read('app/loc/LocApp.jsx'),/import\('\.\/ScopeManagement'\)\.catch\(recoverChunkOnce\)/);
   assert.match(read('app/loc/ScopeManagement.jsx'),/import\('\.\/PlaceManagement'\)\.catch\(recoverChunkOnce\)/);
