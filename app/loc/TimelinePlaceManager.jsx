@@ -6,7 +6,7 @@ import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {TIMELINE_IO} from './query-batch-size.mjs';
-import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession} from './timeline-review-session.mjs';
+import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession,timelineReviewCacheOversized} from './timeline-review-session.mjs';
 import {accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
 const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
@@ -67,8 +67,10 @@ export default function TimelinePlaceManager({scopeId}){
     dbAuthClient.auth.getUser().then(({data})=>{
       if(!active)return;
       const owner=data?.user?.id||'';
-      const snapshot=owner?loadTimelineReviewSession(sessionStorage,{scopeId,owner}):null;
+      const tooLarge=owner&&timelineReviewCacheOversized(sessionStorage,scopeId);
+      const snapshot=owner&&!tooLarge?loadTimelineReviewSession(sessionStorage,{scopeId,owner}):null;
       setSessionOwner(owner);
+      if(tooLarge)setSessionWarning('先前的審查暫存過大，已略過自動恢復，原資料未刪除；可以重新選檔分析。');
       if(snapshot){
         setAnalysis(snapshot.analysis);
         setGroupChoices(snapshot.groupChoices||{});
@@ -84,15 +86,13 @@ export default function TimelinePlaceManager({scopeId}){
   },[scopeId]);
   useEffect(()=>{
     if(!sessionReady)return;
-    if(!sessionEnabled){
-      try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
-      return;
-    }
+    if(!sessionEnabled)return;
     if(!sessionOwner||!analysis)return;
     const save=setTimeout(()=>{
       try{
-        saveTimelineReviewSession(sessionStorage,{scopeId,owner:sessionOwner,analysis,
+        const saved=saveTimelineReviewSession(sessionStorage,{scopeId,owner:sessionOwner,analysis,
           groupChoices,itemChoices,excluded,completedCount});
+        if(!saved)throw Error('審查資料超出安全暫存大小');
         setSessionWarning('');
       }catch{
         setSessionWarning('本次資料超過瀏覽器暫存容量，重新整理仍須重新比對；原始 Timeline 不會上傳。');
@@ -107,6 +107,13 @@ export default function TimelinePlaceManager({scopeId}){
   const eligible=useMemo(()=>(anchorQuery.data||[]).filter(row=>
     row.trace_type==='space_anchor'&&Array.isArray(row.address)&&row.address.length===2
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
+  function onToggleSessionCache(checked){
+    if(!checked){
+      try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
+      setSessionWarning('');
+    }
+    setSessionEnabled(checked);
+  }
   function reset(){
     runRef.current++;
     abortWorker();
@@ -261,7 +268,7 @@ export default function TimelinePlaceManager({scopeId}){
         已有 source_place 的文章不列入也不會更新。</p>
       <label className="loc-timeline-review-cache">
         <input type="checkbox" checked={sessionEnabled} disabled={!sessionReady||!sessionOwner||writing}
-          onChange={e=>setSessionEnabled(e.target.checked)}/>
+          onChange={e=>onToggleSessionCache(e.target.checked)}/>
         本分頁暫存審查進度（重新整理免重算；僅本機保存預覽，不保存原始 JSON）
       </label>
       {sessionWarning?<p className="scope-status scope-error" role="alert">{sessionWarning}</p>:null}
