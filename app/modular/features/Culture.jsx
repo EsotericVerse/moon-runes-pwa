@@ -185,11 +185,11 @@ export default function Culture(){
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
+  const editDock=useEditDock();
   const canUseScopeEditor=Boolean(editDock?.active&&editDock.scopeId===scopeId);
   const isTimeEditingView=canUseScopeEditor&&searchParams?.get('edit')==='1';
   // Public Culture does not load management grants; editing must verify them.
   const account=useAccount({enabled:isTimeEditingView||canUseScopeEditor});
-  const editDock=useEditDock();
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';

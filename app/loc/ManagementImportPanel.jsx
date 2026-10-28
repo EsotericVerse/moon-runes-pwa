@@ -276,7 +276,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const analyzed=useMemo(()=>{
     const selected=deferredSource.trim();
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,
-      canonicalImportSourceName(archiveDetection?(entry?.raw?.source_name||selected):selected,
+      canonicalImportSourceName(archiveDetection&&selected==='Mixed'?(entry?.raw?.source_name||selected):selected,
         sourceCategories.data?.system||[],sourceCategories.data?.personal||[]),format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
