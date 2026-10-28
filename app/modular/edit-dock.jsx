@@ -158,9 +158,10 @@ export function EditDockProvider({children}){
   const navigate=useCallback((target,history='replace',scroll=true)=>{
     if(!target)return;
     const url=new URL(String(target),window.location.href);
-    // Protected editor returns get a fresh document instead of reusing stale RSC routes.
-    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)||
-      /\/(?:manage|culture|trace)(?:\/|$)/i.test(url.pathname)){
+    // Keep same-origin editor navigation in the current React tree so the
+    // verified edit session and dock state survive the route transition.
+    // Only cross-origin and native HTML targets require document navigation.
+    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)){
       window.location.assign(url.href);
     }else{
       if(history==='push')router.push(url.pathname+url.search+url.hash,{scroll});

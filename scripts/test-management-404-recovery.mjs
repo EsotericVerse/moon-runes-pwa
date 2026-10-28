@@ -67,3 +67,10 @@ test('LunaRunes has the same owner-authorized keyword editor as other Scopes',()
   assert.match(page,/account\.canManageScopeSync\(scopeId\)/);
   assert.match(route,/forcedView=\"keywords\" forcedScope=\"lrunes\"/);
 });
+
+test('same-origin edit navigation stays client-side and keeps the editor session',()=>{
+  const dock=read('app/modular/edit-dock.jsx');
+  assert.match(dock,/url\.origin!==window\.location\.origin/);
+  assert.match(dock,/router\.replace\(url\.pathname\+url\.search\+url\.hash/);
+  assert.doesNotMatch(dock,/\/\(\?:manage\|culture\|trace\)/);
+});
