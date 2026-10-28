@@ -3,7 +3,7 @@ import UiText,{useUiText} from '../i18n/UiText';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {usePathname,useSearchParams} from 'next/navigation';
+import {usePathname} from 'next/navigation';
 import {useEditDock} from './edit-dock';
 import {useAsyncResource} from '../loc/use-async-resource';
 import {UI_COPY} from '../i18n/ui-copy';
@@ -44,9 +44,8 @@ export function FeaturePage({featureId,children,titleOverride=null,subtitle=null
   const resolvedDescription=description??profile.description;
   const finalSubtitle=subtitle||resolvedSubtitle;
   const pathname=usePathname();
-  const searchParams=useSearchParams();
   const editDock=useEditDock();
-  const editing=Boolean(searchParams?.get('edit')==='1'||(editDock?.active&&editDock.scopeId===scopeId));
+  const editing=Boolean(editDock?.active&&editDock.scopeId===scopeId);
   const managementSlot=HomeBlock.managementHeroSlot(pathname,scopeId,editing,featureId);
   const managementMode=Boolean(managementSlot);
   const sharedEnabled=HomeBlock.shouldUseSharedFeatureHero(scopeId,featureId);

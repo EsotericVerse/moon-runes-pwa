@@ -1,8 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {useEffect} from 'react';
-import {useSearchParams} from 'next/navigation';
 import UiText from '../../i18n/UiText';
 import {useAccount} from '../../loc/use-account';
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -22,12 +20,8 @@ export default function KeywordSettings(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const editDock=useEditDock();
-  const params=useSearchParams();
-  const authorized=Boolean(account.user&&scopeId!=='loc'&&scopeId!=='lrunes'&&!scope?.aggregateChildren&&account.canManageScopeSync(scopeId));
-  useEffect(()=>{
-    if(!authorized||params?.get('edit')!=='1')return;
-    editDock?.begin(scopeId);
-  },[authorized,scopeId,params?.get('edit'),editDock?.begin]);
+  const authorized=Boolean(account.user&&editDock?.active&&editDock.scopeId===scopeId&&
+    scopeId!=='loc'&&scopeId!=='lrunes'&&!scope?.aggregateChildren&&account.canManageScopeSync(scopeId));
   return <FeaturePage featureId="statics">
     {account.loading||account.permissionLoading
       ?<p className="scope-status"><UiText id="uiExtra.keywords.verifyingAccess"/></p>

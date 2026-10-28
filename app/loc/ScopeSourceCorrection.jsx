@@ -5,8 +5,17 @@ import {dbAuthClient,dbAuthRelation,readScopeCategoryTotals} from './db-client.m
 import {useAccount} from './use-account';
 import {useEditDock,useEditDockForm} from '../modular/edit-dock';
 import {defaultScopeData} from './scope-data';
+import {canonicalImportSourceName} from './source-name.mjs';
+import {useUiLocale} from '../i18n/ui-locale';
 export default function ScopeSourceCorrection({scopeId}){
   const account=useAccount();
+  const {locale}=useUiLocale();
+  const l=({
+    'zh-Hant':{title:'匯入來源更正',help:'僅更正此 Scope 的來源名稱，大小寫精確區分。系統分類由 Group 管理；個人分類可自行定義。',from:'目前來源名稱',to:'更正為',preview:'預覽更正筆數',confirm:'請使用首頁編輯功能列的「儲存」確認更正。',denied:'請先從 Scope 首頁進入編輯模式，並確認此 Scope 管理權限。'},
+    'zh-Hans':{title:'导入来源更正',help:'仅更正此 Scope 的来源名称，大小写严格区分。系统分类由 Group 管理；个人分类可以自定义。',from:'当前来源名称',to:'更正为',preview:'预览更正数量',confirm:'请使用首页编辑工具栏的“保存”确认更正。',denied:'请先从 Scope 首页进入编辑模式并确认管理权限。'},
+    en:{title:'Correct import source',help:'Change source_name only within this Scope. Group administrators own system categories; personal categories are customizable.',from:'Current source name',to:'Change to',preview:'Preview matching records',confirm:'Use Save in the homepage editing toolbar to apply.',denied:'Enter editing mode from the Scope homepage with management permission.'},
+    ja:{title:'インポート元の修正',help:'この Scope の出典名のみを修正します。システム分類は Group、個人分類は Scope が管理します。',from:'現在の出典名',to:'修正後の出典名',preview:'対象件数を確認',confirm:'ホームの編集ツールバーで「保存」を押してください。',denied:'Scope ホームから編集モードに入り、管理権限を確認してください。'}
+  })[locale]||({title:'匯入來源更正',help:'僅更正此 Scope 的來源名稱。',from:'目前來源名稱',to:'更正為',preview:'預覽更正筆數',confirm:'請使用首頁的「儲存」確認。',denied:'請先從 Scope 首頁進入編輯模式。'});
   const dock=useEditDock();
   const allowed=Boolean(account.user&&dock?.active&&dock.scopeId===scopeId&&account.canManageScopeSync(scopeId));
   const [before,setBefore]=useState(''),[after,setAfter]=useState('');
@@ -21,10 +30,12 @@ export default function ScopeSourceCorrection({scopeId}){
         return Array.isArray(data?.txt_class)?data.txt_class:[];
       }));
       const totals=await readScopeCategoryTotals(scopeId);
-      return [...new Set([...lists[0],...lists[1],...(totals||[]).filter(row=>row.kind==='source').map(row=>row.category)].filter(Boolean))];
+      return {system:lists[0],personal:lists[1],observed:(totals||[]).filter(row=>row.kind==='source').map(row=>row.category)};
     }
   });
-  const dirty=Boolean(before.trim()&&after.trim()&&before.trim()!==after.trim());
+  const canonicalAfter=canonicalImportSourceName(after,sourceLists.data?.system||[],sourceLists.data?.personal||[]);
+  const sourceOptions=[...new Set([...(sourceLists.data?.system||[]),...(sourceLists.data?.personal||[]),...(sourceLists.data?.observed||[])].filter(Boolean))];
+  const dirty=Boolean(before.trim()&&canonicalAfter&&before.trim()!==canonicalAfter);
   const signature=before+'\u0000'+after;
   const table=account.scopeDataFor(scopeId)?.galaxy||defaultScopeData(scopeId)?.galaxy;
   const clearPreview=()=>{setPreview(null);setNotice('');setCompleted(0);};
@@ -46,7 +57,7 @@ export default function ScopeSourceCorrection({scopeId}){
     try{
       for(let batch=0;batch<1000;batch++){
         const {data,error}=await dbAuthClient.schema('silver').rpc('rename_scope_source_name_batch',{
-          p_scope_id:scopeId,p_before:before.trim(),p_after:after.trim(),p_batch_size:1000
+          p_scope_id:scopeId,p_before:before.trim(),p_after:canonicalAfter,p_batch_size:1000
         });
         if(error)throw new Error(error.message);
         const count=Number(data)||0;
@@ -64,20 +75,20 @@ export default function ScopeSourceCorrection({scopeId}){
   }
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy,
     discard:()=>{setBefore('');setAfter('');setPreview(null);setNotice('');setCompleted(0);}});
-  if(!allowed)return <p className="scope-status scope-error" role="alert">請先從 Scope 首頁進入編輯模式，並確認此 Scope 管理權限。</p>;
+  if(!allowed)return <p className="scope-status scope-error" role="alert">{l.denied}</p>;
   return <section className="loc-card scope-feature-card">
-    <h2>匯入來源更正</h2>
-    <p className="scope-status">僅更正此 Scope 的 Galaxy source_name，大小寫精確區分。系統分類由 Group 管理；個人分類可自行定義。</p>
+    <h2>{l.title}</h2>
+    <p className="scope-status">{l.help}</p>
     {sourceLists.error?<p role="alert" className="scope-status scope-error">無法載入來源清單：{String(sourceLists.error.message||sourceLists.error)}</p>:null}
-    <datalist id={'scope-source-names-'+scopeId}>{(sourceLists.data||[]).map(name=><option key={name} value={name}/>)}</datalist>
+    <datalist id={'scope-source-names-'+scopeId}>{sourceOptions.map(name=><option key={name} value={name}/>)}</datalist>
     <div className="scope-management-fields">
-      <label>目前來源名稱<input type="text" list={'scope-source-names-'+scopeId} value={before} maxLength={80} disabled={busy}
+      <label>{l.from}<input type="text" list={'scope-source-names-'+scopeId} value={before} maxLength={80} disabled={busy}
         onChange={e=>{setBefore(e.target.value);clearPreview();}}/></label>
-      <label>更正為<input type="text" list={'scope-source-names-'+scopeId} value={after} maxLength={80} disabled={busy}
+      <label>{l.to}<input type="text" list={'scope-source-names-'+scopeId} value={after} maxLength={80} disabled={busy}
         onChange={e=>{setAfter(e.target.value);clearPreview();}}/></label>
     </div>
-    <button type="button" className="loc-button" onClick={inspect} disabled={busy||!dirty}>預覽更正筆數</button>
-    {preview?.signature===signature?<p role="status" className="scope-status">精確符合 {preview.count.toLocaleString()} 篇。請使用首頁編輯功能列的「儲存」確認更正。</p>:null}
+    <button type="button" className="loc-button" onClick={inspect} disabled={busy||!dirty}>{l.preview}</button>
+    {preview?.signature===signature?<p role="status" className="scope-status">{preview.count.toLocaleString()} · {l.confirm}</p>:null}
     {completed>0?<p role="status" className="scope-status">已更正 {completed.toLocaleString()} 篇。</p>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
   </section>;

@@ -537,7 +537,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
       </label>
     </div>
-    <label className="scope-import-source-choice">匯入來源
+    <label className="scope-import-source-choice"><UiText id="uiExtra.importUI.sourceLabel"/>
       <input type="text" list={'scope-import-sources-'+scopeId} maxLength={80} required
         value={source} onChange={event=>setSource(event.target.value)}
         disabled={busy||!rows.length} placeholder={suggested}/>
