@@ -96,7 +96,6 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">MEDIA</p>
     <h2>{UI_COPY.management.addMedia}</h2>
-    <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
         <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
