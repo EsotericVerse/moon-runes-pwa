@@ -63,7 +63,7 @@ export default {
   "pageTotal": "第 {page} / {pages} 頁 · 共 {total} 項",
   "memberCount": "群組合併總數",
   "memberDistribution": "所屬人員分布",
-  "groupAggregateHelp": "群組合併統計沿用原有公開來源資料；只有成員明確關閉的群組來源分類會從跨成員數值中排除。每日符文可獨立參與交互比較。",
+  "groupAggregateHelp": "",
   "viewMemberStat": "查看統計",
   "displayStyle": "表現風格",
   "keywordSettings": "關鍵詞設定",
