@@ -3,4 +3,4 @@
 export const DB_QUERY_BATCH_SIZE=10000;
 
 // Shared Timeline I/O sizes. SQL RPC caps must mirror these values.
-export const TIMELINE_IO=Object.freeze({windowBatch:40,previewPage:750,writeBatch:500});
+export const TIMELINE_IO=Object.freeze({windowBatch:100,previewPage:3000,writeBatch:500});
