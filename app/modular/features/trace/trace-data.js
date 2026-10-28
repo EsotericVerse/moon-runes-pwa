@@ -84,6 +84,8 @@ export async function readTraceData(scopeId,{includeHidden=false}={}){
 }
 export async function readTraceMapIndex(scopeId,{nativeOnly=false,includeHidden=false}={}){
   const id=idScope(scopeId);
+  if(id==='loc')return Promise.all(['lo3rwang','lrunes'].map(source=>readTraceMapIndex(source,{includeHidden})))
+    .then(groups=>groups.flat().filter(row=>row.trace_type==='space_trace'));
   return readPages(id,{columns:'uid,trace_type,title,description,anchor_list,route_list,hidden_depth',nativeOnly,includeHidden})
     .then(rows=>rows.filter(row=>row.trace_type==='space_period'||row.trace_type==='space_trace'));
 }
