@@ -58,7 +58,10 @@ export default function TimelinePlaceManager({scopeId}){
   },[scopeId]);
   useEffect(()=>{
     if(!sessionReady)return;
-    if(!sessionEnabled){clearTimelineReviewSession(sessionStorage,scopeId);return;}
+    if(!sessionEnabled){
+      try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
+      return;
+    }
     if(!sessionOwner||!analysis)return;
     const save=setTimeout(()=>{
       try{
@@ -68,9 +71,9 @@ export default function TimelinePlaceManager({scopeId}){
       }catch{
         setSessionWarning('本次資料超過瀏覽器暫存容量，重新整理仍須重新比對；原始 Timeline 不會上傳。');
       }
-    },400);
+    },writing?0:400);
     return ()=>clearTimeout(save);
-  },[scopeId,sessionReady,sessionEnabled,sessionOwner,analysis,groupChoices,itemChoices,excluded,completedCount]);
+  },[scopeId,sessionReady,sessionEnabled,sessionOwner,analysis,groupChoices,itemChoices,excluded,completedCount,writing]);
   const enabled=['lo3rwang','lrunes'].includes(scopeId);
   const anchorQuery=useAsyncResource(['timeline-place-anchors-owner',scopeId],()=>{
     return readAllTraceAnchors(scopeId,{includeHidden:true});
@@ -80,7 +83,7 @@ export default function TimelinePlaceManager({scopeId}){
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
   function reset(){
     runRef.current++;
-    clearTimelineReviewSession(sessionStorage,scopeId);
+    try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
     setSessionEnabled(false);setSessionWarning('');
     setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
     if(fileRef.current)fileRef.current.value='';
@@ -147,6 +150,7 @@ export default function TimelinePlaceManager({scopeId}){
     ()=>selectedTimelineArticleUpdates(reviewGroups,groupChoices,itemChoices,excluded),
     [reviewGroups,groupChoices,itemChoices,excluded]);
   const canWrite=selectedUpdates.length>0;
+  const writableUids=useMemo(()=>new Set(selectedUpdates.map(row=>row.uid)),[selectedUpdates]);
   const pendingCount=ready.length+(analysis?.disputes?.length||0);
   const unreadyCount=Math.max(0,pendingCount-selectedUpdates.length);
   const reviewPage=Math.min(page,Math.max(0,Math.ceil(reviewGroups.length/10)-1));
@@ -206,7 +210,7 @@ export default function TimelinePlaceManager({scopeId}){
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;clearTimelineReviewSession(sessionStorage,scopeId);setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+            runRef.current++;try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -252,9 +256,9 @@ export default function TimelinePlaceManager({scopeId}){
         {reviewGroups.slice(reviewPage*10,(reviewPage+1)*10).map(group=>{
           const chosen=groupChoices[group.key]??group.defaultPlaceId;
           const groupPage=groupPages[group.key]||0;
-          const checkedCount=group.rows.filter(row=>!excluded[row.uid]).length;
+          const writableCount=group.rows.filter(row=>writableUids.has(row.uid)).length;
           return <details key={group.key} className="scope-card">
-            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 已勾 {checkedCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
+            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 可寫入 {writableCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
             <div className="scope-stat-controls">
               <button type="button" className="loc-button" disabled={writing||!chosen}
                 onClick={()=>selectGroup(group,true,chosen)}>全選這組可寫入文章</button>
