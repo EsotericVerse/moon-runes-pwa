@@ -1434,3 +1434,21 @@
   border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)
 }
 .loc-trace-quick-update-group>.loc-button{justify-self:start}
+
+/* Google Timeline: one compact review row instead of stacked form labels. */
+.loc-timeline-review-row{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(10rem,17rem) auto;
+  gap:.4rem .65rem;align-items:center;min-width:0;
+  padding:.32rem .45rem;border-bottom:1px solid var(--loc-line);
+}
+.loc-timeline-review-row__article{display:flex;align-items:center;gap:.4rem;min-width:0;margin:0}
+.loc-timeline-review-row__article input{flex:none}
+.loc-timeline-review-row__date,.loc-timeline-review-row__uid{flex:none;font-size:.8rem;color:var(--loc-muted)}
+.loc-timeline-review-row__title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loc-timeline-review-row__place{width:100%;min-width:0;margin:0}
+.loc-timeline-review-row__status{font-size:.76rem;color:var(--loc-muted);white-space:nowrap}
+@media(max-width:720px){
+  .loc-timeline-review-row{grid-template-columns:minmax(0,1fr) minmax(8rem,42%)}
+  .loc-timeline-review-row__status{grid-column:1/-1}
+  .loc-timeline-review-row__uid{display:none}
+}
