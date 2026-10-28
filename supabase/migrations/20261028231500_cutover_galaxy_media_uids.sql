@@ -3,11 +3,11 @@
 do $$
 begin
   if exists(select 1 from silver.lo3rwang_galaxy_media m
-            left join loc_cleanup_archive.galaxy_media_uid_map_20261028 old
+            left join loc_media_migration.galaxy_media_uid_map_20261028 old
               on old.scope_id='lo3rwang' and old.old_media_id=m.media_id
             where old.uid is distinct from m.uid)
      or exists(select 1 from silver.lrunes_galaxy_media m
-            left join loc_cleanup_archive.galaxy_media_uid_map_20261028 old
+            left join loc_media_migration.galaxy_media_uid_map_20261028 old
               on old.scope_id='lrunes' and old.old_media_id=m.media_id
             where old.uid is distinct from m.uid) then
     raise exception 'Old-to-new media UID map incomplete or mismatched';
@@ -66,7 +66,7 @@ alter table silver.lrunes_galaxy rename column media_link_uid to media_link;
 alter table silver.archive_media_exif add column media_uid varchar(8);
 update silver.archive_media_exif e
 set media_uid=m.uid
-from loc_cleanup_archive.galaxy_media_uid_map_20261028 m
+from loc_media_migration.galaxy_media_uid_map_20261028 m
 where e.media_id=m.old_media_id and e.scope_id=m.scope_id;
 do $$
 begin
