@@ -271,10 +271,10 @@ export default function Culture(){
   // Use a stable periods array: date-navigation effects must not re-run just
   // because a different Culture panel or query refreshed the page.
   const primaryPeriods=useMemo(()=>isAggregateScope?[]:allPeriods.filter(item=>String(item?.scope_id||'')===scopeId),[isAggregateScope,allPeriods,scopeId]);
-  const latestPeriod=primaryPeriods.at(-1)||null;
   const structurePreference=useMemo(()=>structurePeriodPreference(primaryPeriods,
     (query.data?.timelineItems||[]).filter(item=>item.scope_id===scopeId)),
   [primaryPeriods,query.data?.timelineItems,scopeId]);
+  const closestPeriod=primaryPeriods.find(item=>periodKey(item)===structurePreference.preferredKey)||null;
   // Articles may exist even when no formal Period has been created. Use an
   // ordinary bounded date window; never treat an empty Time table as invalid.
   const allTimePeriod=useMemo(()=>{
@@ -297,11 +297,8 @@ export default function Culture(){
   },[scopeId,isAggregateScope,query.data,structurePreference,primaryPeriods]);
   const selectedWorkPeriod=selectedPeriodKey==='all'
     ?allTimePeriod
-    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||latestPeriod||allTimePeriod);
-  // Without a current period, the first effect selects the latest saved period.
-  // Do not scan all-time metadata only to immediately scan that period again.
-  // The latest period is already derived synchronously from loaded records.
-  // Do not hold up the source snapshot waiting for a separate UI selection effect.
+    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||closestPeriod||allTimePeriod);
+  // Use the nearest saved trace until the selected period is settled.
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
   // The lower Culture panel shares one selected interval across the source
@@ -309,9 +306,9 @@ export default function Culture(){
   // The upper Time structure river keeps its own period navigation.
   // Events are part of the selected Period window, never a selector mode.
   const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
-    :keywordPeriodKey==='latest'?(latestPeriod||selectedWorkPeriod||allTimePeriod)
+    :keywordPeriodKey==='latest'?(closestPeriod||selectedWorkPeriod||allTimePeriod)
     :keywordPeriodKey==='current'?(selectedWorkPeriod||allTimePeriod)
-    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||latestPeriod||selectedWorkPeriod;
+    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||closestPeriod||selectedWorkPeriod;
   const keywordWindowStart=keywordPeriodKey==='custom'
     ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
   const keywordWindowEnd=keywordPeriodKey==='custom'

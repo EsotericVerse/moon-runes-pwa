@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {structurePeriodPreference} from '../app/loc/culture-period-navigation.mjs';
 const anchor=date=>({entry_type:'anchor',start_date:date});
 const trace=(uid,ranges)=>({uid,period:uid,ranges});
@@ -33,4 +34,15 @@ test('tie chooses the more recent real endpoint',()=>{
  assert.equal(structurePeriodPreference([
   trace('T001',[range('2026-10-01')]),trace('T002',[range('2026-10-03')])
  ],[],'2026-10-02').preferredKey,'T002');
+});
+
+test('second Culture river selects the closest trace, not the last by start date',()=>{
+ const student=trace('0090',[range('2026-04-13','2026-06-10')]);
+ const revival=trace('0095',[range('2026-01-30','2026-10-06')]);
+ const selected=structurePeriodPreference([revival,student],[],'2026-10-28').preferredKey;
+ assert.equal(selected,'0095');
+ const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+ assert.match(source,/const closestPeriod=primaryPeriods\.find\(item=>periodKey\(item\)===structurePreference\.preferredKey\)/);
+ assert.match(source,/keywordPeriodKey==='latest'\?\(closestPeriod\|\|selectedWorkPeriod/);
+ assert.doesNotMatch(source,/primaryPeriods\.at\(-1\)/);
 });
