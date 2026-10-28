@@ -74,3 +74,19 @@ test('same-origin edit navigation stays client-side and keeps the editor session
   assert.match(dock,/router\.replace\(url\.pathname\+url\.search\+url\.hash/);
   assert.doesNotMatch(dock,/\/\(\?:manage\|culture\|trace\)/);
 });
+
+test('Scope Place Management restores the verified home editor state without denying authorized owners',()=>{
+  const manager=read('app/loc/ScopeManagement.jsx');
+  const restore=read('app/loc/HomeEditModeRestore.jsx');
+  assert.match(manager,/const hasManagementGrant=Boolean\(account\.user&&/);
+  assert.match(manager,/const editorReady=Boolean\(editDock\?\.active&&editDock\.scopeId===routeScopeId\)/);
+  assert.match(manager,/readHomeEditorAccess\(window\.sessionStorage\)/);
+  assert.match(manager,/marker\?\.scopeId===routeScopeId&&marker\.userId===account\.user\.id/);
+  assert.match(manager,/editDock\?\.begin\(routeScopeId\)/);
+  assert.match(manager,/if\(!hasManagementGrant\)/);
+  assert.match(manager,/if\(!editorReady\)/);
+  assert.match(manager,/正在恢復已授權的編輯模式/);
+  assert.match(manager,/請先從此 Scope 首頁進入編輯模式/);
+  assert.doesNotMatch(manager,/const canManageHere=Boolean\(editDock\?\.active/);
+  assert.match(restore,/marker\.userId===result\?\.user\?\.id/);
+});

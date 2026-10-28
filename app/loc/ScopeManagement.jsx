@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect} from 'react';
+import {useEffect,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
@@ -9,6 +9,7 @@ import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 import {recoverChunkOnce} from './chunk-recovery.mjs';
+import {readHomeEditorAccess} from './home-edit-access.mjs';
 
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
@@ -25,8 +26,22 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const editDock=useEditDock();
   const searchParams=useSearchParams();
   const isLoc=routeScopeId==='loc';
-  const canManageHere=Boolean(editDock?.active&&editDock.scopeId===routeScopeId)&&
-    (isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId));
+  // Account grants and the browser's edit-dock state are independent.
+  // A static-page navigation remounts the dock even for an authorized owner.
+  const hasManagementGrant=Boolean(account.user&&
+    (isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId)));
+  const editorReady=Boolean(editDock?.active&&editDock.scopeId===routeScopeId);
+  const [reentryChecked,setReentryChecked]=useState(false);
+  useEffect(()=>{
+    if(account.loading||account.permissionLoading||!hasManagementGrant||editorReady)return;
+    // Only restore a home-authorized, same-user, same-Scope edit session.
+    // URL ?edit=1 is never an authorization credential.
+    const marker=readHomeEditorAccess(window.sessionStorage);
+    if(marker?.scopeId===routeScopeId&&marker.userId===account.user.id)
+      editDock?.begin(routeScopeId);
+    setReentryChecked(true);
+  },[account.loading,account.permissionLoading,hasManagementGrant,editorReady,
+    account.user?.id,routeScopeId,editDock?.begin]);
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
@@ -47,7 +62,9 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
   </FeaturePage>;
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>請先至設定首頁登入。</p></section></FeaturePage>;
-  if(!canManageHere)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
+  if(account.error)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="alert"><p>管理權限查核失敗：{account.error}</p></section></FeaturePage>;
+  if(!hasManagementGrant)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
+  if(!editorReady)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="status"><p>{reentryChecked?'請先從此 Scope 首頁進入編輯模式。':'正在恢復已授權的編輯模式…'}</p></section></FeaturePage>;
   return <FeaturePage featureId={isLoc?'trace':'manage'}>
 
     <div className={section==='placeManage'?'scope-management-layout scope-management-layout--anchor':'scope-management-layout'}>
