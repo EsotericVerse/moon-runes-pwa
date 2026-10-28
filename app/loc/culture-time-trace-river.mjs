@@ -43,7 +43,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
     const groupId='trace:'+scope+':'+id;
     const isExpanded=expanded.has(groupId);
     const eventIds=list(trace.anchor_ids).map(text).filter(Boolean);
-    groups.push({id:groupId,label:text(trace.title)||'時間痕跡 '+id,
+    groups.push({id:groupId,label:text(trace.title)||'時代 '+id,
       collapsible:true,expanded:isExpanded,order:traceIndex*10000,
       className:'scope-time-trace-parent'});
     const traceAnchors=datedAnchors.filter(anchor=>withinTrace(anchor,trace));
@@ -71,7 +71,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
       const event=events.get(scope+':'+eventId);
       const eventGroup='trace-event:'+scope+':'+id+':'+eventId;
       groups.push({id:eventGroup,order:traceIndex*10000+position+2,
-        label:'事件｜'+(event?.title||'失效連線 '+eventId),
+        label:'期間｜'+(event?.title||'失效連線 '+eventId),
         className:'scope-time-trace-child'});
       if(!event)continue;
       const slices=list(event.ranges);

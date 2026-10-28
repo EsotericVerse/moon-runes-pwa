@@ -42,8 +42,9 @@ test('invalid/stale anchors in a connected pair are rejected before save, not si
   assert.match(editor,/throw new Error\('連線的定錨點有已失效的，請移除'\)/);
 });
 
-test('the display label stays 時間痕跡 for time_trace (not renamed to 時期)',()=>{
-  assert.match(editor,/time_trace:'時間痕跡'/);
+test('the display labels map time_trace to 時代 and time_period to 期間',()=>{
+  assert.match(editor,/time_trace:'時代'/);
+  assert.match(editor,/time_period:'期間'/);
   assert.doesNotMatch(editor,/時期/);
 });
 

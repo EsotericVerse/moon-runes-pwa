@@ -412,7 +412,7 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
 
 test('Culture upper time_trace selector stays independent; lower river selects only actual trace ranges',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
-  assert.match(source,/aria-label='第一條河道時間痕跡選擇'/);
+  assert.match(source,/aria-label='第一條河道時代選擇'/);
   assert.match(source,/const \[structureWindowKey,setStructureWindowKey\]=useState\(''\)/);
   assert.match(source,/const activeStructureKey=structureWindowKey==='all'/);
   assert.match(source,/setStructureWindowKey\(event\.target\.value\)/);

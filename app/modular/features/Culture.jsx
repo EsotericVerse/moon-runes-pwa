@@ -283,7 +283,7 @@ export default function Culture(){
     const oneYearAgo=new Date(endDate+'T00:00:00Z');
     oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear()-1);
     return {
-      period:'all',title:'未設定時間痕跡（最近一年）',display_label:'未設定時間痕跡（最近一年）',
+      period:'all',title:'未設定時代（最近一年）',display_label:'未設定時代（最近一年）',
       start_date:oneYearAgo.toISOString().slice(0,10),end_date:endDate,scope_id:classificationScope
     };
   },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
@@ -1188,7 +1188,7 @@ export default function Culture(){
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
             aria-label='時間編輯'>
             <div className='scope-culture-timeline-tools'>
-              <h3>時間定錨點／事件／時間痕跡</h3>
+              <h3>時間定錨點／事件／時代</h3>
             </div>
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
@@ -1315,7 +1315,7 @@ export default function Culture(){
                 <div className='scope-culture-structure-toolbar'>
                   <h3>{l.timeTrace}</h3>
                   <label><span>{l.timeTrace}</span>
-                    <select className='scope-select' aria-label='第一條河道時間痕跡選擇'
+                    <select className='scope-select' aria-label='第一條河道時代選擇'
                       value={activeStructureKey} onChange={event=>{
                          setStructureWindowKey(event.target.value);
                          setSelectedPeriodKey(event.target.value);
@@ -1360,8 +1360,8 @@ export default function Culture(){
                             setKeywordPeriodKey(next);
 
                           }}>
-                          <option value='latest'>{primaryPeriods.length?l.recentTimeTrace:'未設定時間痕跡（最近一年）'}</option>
-                           <option value='all'>{primaryPeriods.length?l.allTimeTraces:'最近一年（未設定時間痕跡）'}</option>
+                          <option value='latest'>{primaryPeriods.length?l.recentTimeTrace:'未設定時代（最近一年）'}</option>
+                           <option value='all'>{primaryPeriods.length?l.allTimeTraces:'最近一年（未設定時代）'}</option>
                            {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                            <option value='custom'>{l.customPeriod}</option>
                         </select>
@@ -1433,7 +1433,7 @@ export default function Culture(){
                 </section>:null}
                 {styleFilter==='trace'&&classificationWindowValid?<CulturePlaceRiver
                   scopeId={scopeId} startDate={classificationWindowStart} endDate={classificationWindowEnd}/>:null}
-                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時間痕跡、事件或自訂日期。</p>:null}
+                {!classificationWindowValid&&optionalTimeRangeUnfilled?<p className='scope-status' role='status'>尚未選擇時間範圍；可使用時代、期間或自訂日期。</p>:null}
                 {!classificationWindowValid&&!optionalTimeRangeUnfilled?<p className='scope-status scope-error' role='status'>請選擇有效的時間區間（起始日期不得晚於結束日期）。</p>:null}
                 {styleFilter!=='trace'&&sourceRootQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(sourceRootQuery.error,UI_COPY)}</p>:null}
                 {styleFilter!=='trace'&&sourceSnapshotQuery.error

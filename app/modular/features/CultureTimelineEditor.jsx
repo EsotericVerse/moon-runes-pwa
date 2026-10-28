@@ -13,7 +13,7 @@ import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,alloc
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,hidden_depth';
 const TYPES=['anchor','time_period','time_trace'];
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
-const displayType={anchor:'定錨點',time_period:'事件',time_trace:'時間痕跡'};
+const displayType={anchor:'定錨點',time_period:'期間',time_trace:'時代'};
 const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],hidden_depth:-1});
 const day=value=>value?String(value).slice(0,10):'';
 function nextTimeUid(rows){
@@ -206,19 +206,19 @@ export default function CultureTimelineEditor({
       }else{
         if(draft.type==='time_period'&&!anchorChoices.length)throw new Error('請先建立時間定錨點');
         if(draft.type==='time_trace'&&!segments.length&&!tracePairs.length&&!eventChoices.length)
-          throw new Error('請先建立事件');
+          throw new Error('請先建立期間');
         if(draft.type==='time_trace'&&!segments.length&&!tracePairs.length)
-          throw new Error('請先加入事件，或用定錨點連線加入');
+          throw new Error('請先加入期間，或用定錨點連線加入');
         if(draft.type==='time_period'&&!segments.length)throw new Error('請加入一個或兩個時間定錨點');
-        if(draft.type==='time_period'&&segments.length!==1)throw new Error('事件只能有一個起點及可選的結束錨點');
+        if(draft.type==='time_period'&&segments.length!==1)throw new Error('期間只能有一個起點及可選的結束錨點');
         const unchangedLinks=Boolean(selectedId)&&
           JSON.stringify(draft.anchor_ids)===JSON.stringify(original.current.anchor_ids);
         for(const segment of segments){
           const source=draft.type==='time_trace'?eventByUid:anchors;
           if(!isTimeUid(segment.start)||!source.has(segment.start)&&!unchangedLinks)
-            throw new Error('找不到引用的定錨點或事件：'+segment.start);
+            throw new Error('找不到引用的定錨點或期間：'+segment.start);
           if(draft.type==='time_trace'){
-            if(segment.end)throw new Error('時間痕跡只列事件 UID，不另外寫日期。');
+            if(segment.end)throw new Error('時代只列期間 UID，不另外寫日期。');
             continue;
           }
           if(segment.end&&!anchors.has(segment.end)&&!unchangedLinks)
@@ -270,7 +270,7 @@ export default function CultureTimelineEditor({
   };
   const bulkSetVisibility=async depth=>{
     if(!['lo3rwang','lrunes'].includes(dataScope)||visibilityBusy||!visibilitySelection.length)return;
-    if(!window.confirm('確定批次設定 '+visibilitySelection.length+' 筆時間紀錄？父層隱藏會影響其所屬事件與定錨點。'))return;
+    if(!window.confirm('確定批次設定 '+visibilitySelection.length+' 筆時間紀錄？父層隱藏會影響其所屬期間與定錨點。'))return;
     setVisibilityBusy(true);setMessage('');
     try{
       let count=0;
@@ -289,7 +289,7 @@ export default function CultureTimelineEditor({
   dockActions.current={save:()=>save({preventDefault(){}}),
     isDirty:()=>JSON.stringify(draft)!==JSON.stringify(original.current),
     isBusy:()=>busy};
-  return <section ref={editorRef} className="scope-culture-inline-editor" role="region" aria-label="時間定錨、事件與時間痕跡編輯">
+  return <section ref={editorRef} className="scope-culture-inline-editor" role="region" aria-label="時間定錨、期間與時代編輯">
     <header className="scope-culture-inline-heading">
       <h4>{selectedId?'編輯':'新增'}{displayType[draft.type]}</h4>
     </header>
@@ -307,7 +307,7 @@ export default function CultureTimelineEditor({
     </label>:null}
     {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
     <details className="scope-card">
-      <summary>大量隱藏／公開時間定錨、事件、時間痕跡（已選 {visibilitySelection.length} 筆）</summary>
+      <summary>大量隱藏／公開時間定錨、期間、時代（已選 {visibilitySelection.length} 筆）</summary>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection(rows.map(row=>row.uid))}>全部勾選</button>
         <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection([])}>清除勾選</button>
@@ -351,16 +351,16 @@ export default function CultureTimelineEditor({
       </div>
       {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
         {draft.type==='time_period'&&!anchorChoices.length
-          ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增事件。</p>:null}
+          ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增期間。</p>:null}
         {segments.map((segment,index)=><div key={index} className="scope-culture-quick-primary">
-          <label>{draft.type==='time_trace'?'第 '+(index+1)+' 個事件':'起點'}
+          <label>{draft.type==='time_trace'?'第 '+(index+1)+' 個期間':'起點'}
             <PopularSelect scopeId={dataScope} kind={draft.type==='time_trace'?'event':'time'} classNamePrefix="loc-react-select" isClearable={false}
-              options={draft.type==='time_trace'?eventChoices.map(row=>({value:row.uid,label:'事件｜'+row.title})):anchorOptions}
+              options={draft.type==='time_trace'?eventChoices.map(row=>({value:row.uid,label:'期間｜'+row.title})):anchorOptions}
               value={draft.type==='time_trace'
-                ?(eventByUid.has(segment.start)?{value:segment.start,label:'事件｜'+eventByUid.get(segment.start).title}:{value:segment.start,label:'已失效：'+segment.start})
+                ?(eventByUid.has(segment.start)?{value:segment.start,label:'期間｜'+eventByUid.get(segment.start).title}:{value:segment.start,label:'已失效：'+segment.start})
                 :anchorOptionOf(segment.start)}
               onChange={option=>updateSegment(index,'start',option?.value||'')}
-              placeholder={draft.type==='time_trace'?'搜尋事件標題':'搜尋定錨點標題'}
+              placeholder={draft.type==='time_trace'?'搜尋期間標題':'搜尋定錨點標題'}
               noOptionsMessage={()=>'沒有符合項目'}/>
           </label>
           {draft.type==='time_period'?<label>結束（可只有單一定錨點）
@@ -376,13 +376,13 @@ export default function CultureTimelineEditor({
         </div>)}
         <button type="button" className="loc-button"
           disabled={draft.type==='time_trace'?!eventChoices.length:!anchorChoices.length||segments.length>0}
-          onClick={addSegment}>{draft.type==='time_trace'?'＋ 加入事件':'＋ 新增事件定錨點'}</button>
+          onClick={addSegment}>{draft.type==='time_trace'?'＋ 加入期間':'＋ 新增期間定錨點'}</button>
         {segments.some(seg=>draft.type==='time_trace'
           ?!eventByUid.has(seg.start)
           :resolveTimeSegments(draft.anchor_ids,anchors).some(r=>r.invalid))?
           <p className="scope-status scope-error">部分定錨點連線已失效，請修正對應區間。</p>:null}
         {draft.type==='time_trace'?<div className="scope-culture-quick-anchor-connect">
-          <h5>或：用定錨點連線加入（自動建立對應事件）</h5>
+          <h5>或：用定錨點連線加入（自動建立對應期間）</h5>
           {!anchorChoices.length?<p className="scope-status scope-error">請先建立時間定錨點。</p>:
           <div className="scope-culture-quick-primary">
             <label>起點
@@ -404,7 +404,7 @@ export default function CultureTimelineEditor({
           <div className="scope-culture-quick-anchor-connect-list">
             {tracePairs.map((pair,index)=><div key={pair.join(':')+':'+index} className="scope-culture-quick-anchor-connect-item">
               <span>{anchors.get(pair[0])?.title||pair[0]} — {anchors.get(pair[1])?.title||pair[1]}
-                {existingPeriodByPair.has(periodKeyOf(pair))?'（沿用既有事件）':'（存檔時自動建立事件）'}</span>
+                {existingPeriodByPair.has(periodKeyOf(pair))?'（沿用既有期間）':'（存檔時自動建立期間）'}</span>
               <button type="button" className="loc-button" onClick={()=>removePair(index)}>移除</button>
             </div>)}
           </div>
