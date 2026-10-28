@@ -134,16 +134,12 @@ export function withImportCreatedTime(record,importedAt=new Date().toISOString()
   return {...record,createtime:parseImportCreatedTime(record?.createtime)||importedAt};
 }
 
-export function validImportBatchSize(value){
-  const size=Number(value);
-  if(!Number.isInteger(size)||size!==MAX_ROWS)throw new Error('匯入批次統一使用 MaxRows：'+MAX_ROWS+'。');
-  return MAX_ROWS;
-}
+export function validImportBatchSize(){return MAX_ROWS;}
 
-export async function writeImportBatches(records,{batchSize=MAX_ROWS,writeBatch,onProgress}={}){
+export async function writeImportBatches(records,{writeBatch,onProgress}={}){
   if(!Array.isArray(records))throw new Error('匯入批次資料必須是陣列。');
   if(typeof writeBatch!=='function')throw new Error('匯入寫入函式不存在。');
-  const size=validImportBatchSize(batchSize);
+  const size=MAX_ROWS;
   const total=records.length;
   let completed=0;
   for(let offset=0;offset<total;offset+=size){
