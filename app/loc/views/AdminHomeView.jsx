@@ -6,7 +6,6 @@ import adminViewZh from '../../i18n/sections/uiExtra.adminView.zh_tw.js';
 registerDefaultSection('admin',adminZh);
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 import {useEffect} from 'react';
-import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {useAccount} from '../use-account';
 import {useEditDock} from '../../modular/edit-dock';
@@ -47,8 +46,6 @@ export default function AdminHomeView({scopeGroup}){
   const UI_COPY=useUiCopy();
   const account=useAccount();
   const editDock=useEditDock();
-  const searchParams=useSearchParams();
-  const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
   // Preserve deep links created before the Admin sections were consolidated.
   const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{
@@ -63,8 +60,7 @@ export default function AdminHomeView({scopeGroup}){
     if(editDock?.active)editDock.switchSection(next,setSection);
     else setSection(next);
   };
-  // The edit flag only restores UI state; it never grants access.
-  // A direct Admin visit without the flag keeps the ordinary bottom nav.
+  // Admin edit mode remains guarded by the global management permission.
   useEffect(()=>{
     if(canManage)editDock?.begin('loc');
   },[editRequested,canManage,editDock?.begin]);
