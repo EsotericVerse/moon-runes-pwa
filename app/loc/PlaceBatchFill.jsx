@@ -122,7 +122,6 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
   }
   return <section className="loc-card scope-feature-card">
     <h3>快速補寫打卡地點</h3>
-    <p className="scope-status">本頁適合將整個日期區間的空白 source_place 統一補成同一個地點，不會改文章內容或既有 Facebook 打卡。這裡只預覽前後各三筆；需要完整文章列表及逐篇勾選，請使用 LOC 原有搜尋。</p>
     <div className="scope-management-fields">
       <label>從現有時期／事件帶入（可選）
         <select className="scope-select" value={periodId} disabled={busy||periods.isPending} onChange={event=>usePeriod(event.target.value)}>
