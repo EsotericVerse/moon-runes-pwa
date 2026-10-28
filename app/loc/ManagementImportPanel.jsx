@@ -145,7 +145,6 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
       <label><UiText id="uiExtra.importUI.recordPath"/>
         <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder={t('uiExtra.importUI.recordPathHint')}/>
       </label>
-      <p className="scope-status">MaxRows：{MAX_ROWS.toLocaleString()}（系統統一設定，無須調整批次大小）</p>
     </div>
     <div className="scope-management-fields">
       {IMPORT_FORMAT_FIELDS.map(key=><label key={key}>{t('uiExtra.importUI.field.'+key)}

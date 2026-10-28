@@ -121,8 +121,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     const q=anchorQuery.trim().normalize('NFKC').toLocaleLowerCase();
     if(!q)return [];
     return savedAnchors.filter(anchor=>
-      String(anchor.title||'').normalize('NFKC').toLocaleLowerCase().includes(q)
-      ||String(anchor.uid||anchor.id||'').toLocaleLowerCase().includes(q))
+      String(anchor.title||'').normalize('NFKC').toLocaleLowerCase().includes(q))
       .slice(0,12);
   },[spatialData?.anchors,anchorQuery]);
   const popularAnchors=useMemo(()=>{
@@ -254,7 +253,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   const anchorSearch=!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="空間定錨點自動完成搜尋">
       <label>空間定錨點
         <input type="search" value={anchorQuery} className="scope-select"
-          placeholder="輸入地點名稱或 UID，不限縣市"
+          placeholder="輸入地點名稱，不限縣市"
           onDoubleClick={openPopularAnchors}
           onChange={event=>{setAnchorQuery(event.target.value);setAnchorUid('');setPopularOpen(false);}}
           autoComplete="off" aria-label="搜尋空間定錨點"/>

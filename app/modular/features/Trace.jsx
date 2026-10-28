@@ -3,8 +3,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
-import ScopeLink from '../ScopeLink';
-import {navigationHref} from '../scope-registry';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {traceWindow} from './trace/trace-panel-filters.mjs';
 import {pickTraceDemoStop,traceDemoRoute} from './trace/trace-demo-route.mjs';
@@ -39,7 +37,7 @@ export default function Trace({scopeId='loc'}){
   const [locPeriodScope,setLocPeriodScope]=useState('auto');
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
-  const [reportTab,setReportTab]=useState('articles');
+  const [reportTab,setReportTab]=useState(null);
   // Historical Frames should not default to hiding older check-in articles.
   const [timeWindow,setTimeWindow]=useState('all');
   const [customStart,setCustomStart]=useState('');
@@ -52,7 +50,7 @@ export default function Trace({scopeId='loc'}){
   const choosePlace=anchor=>{
     if(!anchor?.uid)return;
     // The map's selected anchor is a Frame drill-down, not a Search navigation.
-    setReportTab('articles');
+    setReportTab(null);
     setSelectedPlace(anchor);
   };
 
@@ -157,7 +155,7 @@ export default function Trace({scopeId='loc'}){
           {maps.map(map=><option key={map.uid} value={map.uid}>
             {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
-          <option value="all">全部定錨點{!maps.length?'（無路線，自動顯示）':'（手動載入）'}</option>
+
         </select>
       </label>:null}
       <details className="loc-trace-more-controls">
@@ -167,10 +165,6 @@ export default function Trace({scopeId='loc'}){
         onClick={()=>{setTwoPointDemo(value=>!value);setDemoStopIds([]);setSelectedPlace(null);}}>
         {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
       </button>:null}
-      {currentMap&&routeListOpen?<ScopeLink className="loc-button"
-        href={navigationHref(periodScopeId,'manage')+'?section=traceMap&frame='+encodeURIComponent(currentMap.uid)}>
-        編輯目前痕跡圖
-      </ScopeLink>:null}
         </div>
       </details>
     </div>
@@ -182,7 +176,6 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
-    {scopeId==='loc'?<p className="scope-status">LOC 空間聚合尚未重建，請先在作者／符文 Scope 整理地點與路線；此頁目前不查詢已刪除的 loc_trace。</p>:null}
     {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
       {anchorsQuery.data?.length
         ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
@@ -209,15 +202,15 @@ export default function Trace({scopeId='loc'}){
         <div className="loc-trace-float-heading">
           <strong>{reportPlace.title}</strong>
           <button type="button" className="loc-button" aria-label="關閉地點內容"
-            onClick={()=>setSelectedPlace(null)}>×</button>
+            onClick={()=>{setSelectedPlace(null);setReportTab(null);}}>×</button>
         </div>
         <div className="loc-trace-float-tabs" role="group" aria-label="地點呈現模式">
-          {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
+          {[{value:'articles',label:'文章列表'},{value:'timeline',label:'時間長河'},{value:'statistics',label:'統計圖'}].map(item=>
             <button type="button" key={item.value} className="loc-button"
               aria-pressed={reportTab===item.value}
               onClick={()=>setReportTab(item.value)}>{item.label}</button>)}
         </div>
-        <details className="loc-trace-float-settings">
+        {reportTab?<details className="loc-trace-float-settings">
           <summary>文章與圖表設定</summary>
       <div className="loc-trace-report-settings">
         <label>時間
@@ -252,10 +245,10 @@ export default function Trace({scopeId='loc'}){
         </label>
         <p className="scope-status">來源對應作品的 source_name（例如 Threads）；媒體類型對應 galaxy_media.media_type。兩者可交叉篩選，三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
         </div>
-        </details>
-        <TracePlaceResults key={reportPlace.source_scope+':'+reportPlace.uid} place={reportPlace}
+        </details>:null}
+        {reportTab?<TracePlaceResults key={reportPlace.source_scope+':'+reportPlace.uid} place={reportPlace}
           anchors={spatialData?.anchors||[]} maps={spatialData?.maps||[]} scopeId={periodScopeId}
-          tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>
+          tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>:null}
 
       </div>:null}
     </TraceMap>

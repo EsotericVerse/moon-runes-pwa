@@ -6,7 +6,6 @@ import adminViewZh from '../../i18n/sections/uiExtra.adminView.zh_tw.js';
 registerDefaultSection('admin',adminZh);
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 import {useEffect} from 'react';
-import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {useAccount} from '../use-account';
 import {useEditDock} from '../../modular/edit-dock';
@@ -20,7 +19,7 @@ const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'人員',shortLabel:'人員',description:'系統人員、Email、Table 對應及群組部署。'},
   {value:'lists',label:'名單管理',shortLabel:'名單',description:'保留名稱備註及 Email 系統黑名單。'},
   {value:'network',label:'網路設定',shortLabel:'網路',description:'資料庫連線、備援及快取／ISR 平台。'},
-  {value:'io',label:'檔案 I/O 設定',shortLabel:'I/O',description:'MaxRows 與檔案大小限制（JS 唯讀設定）。'},
+  {value:'io',label:'系統設定',shortLabel:'系統設定',description:'系統匯入、匯出及批次限制。'},
   {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁 Hero 與展示資源。'},
   {value:'themes',label:'主題顏色設定',shortLabel:'配色',description:'調整網站主題和色彩。'}
 ]);
@@ -47,8 +46,6 @@ export default function AdminHomeView({scopeGroup}){
   const UI_COPY=useUiCopy();
   const account=useAccount();
   const editDock=useEditDock();
-  const searchParams=useSearchParams();
-  const editRequested=searchParams?.get('edit')==='1';
   const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGlobalSync());
   // Preserve deep links created before the Admin sections were consolidated.
   const [section,setSection]=useManagementSection(ADMIN_OPTIONS,'registry',{
@@ -63,10 +60,9 @@ export default function AdminHomeView({scopeGroup}){
     if(editDock?.active)editDock.switchSection(next,setSection);
     else setSection(next);
   };
-  // The edit flag only restores UI state; it never grants access.
-  // A direct Admin visit without the flag keeps the ordinary bottom nav.
+  // Admin edit mode remains guarded by the global management permission.
   useEffect(()=>{
-    if(editRequested&&canManage)editDock?.begin('loc');
+    if(canManage)editDock?.begin('loc');
   },[editRequested,canManage,editDock?.begin]);
   const selectedOption=ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0];
 
@@ -89,9 +85,8 @@ export default function AdminHomeView({scopeGroup}){
           <DatabaseTarget scopeGroup={scopeGroup}/>
           <IsrDomainTarget/>
         </>:null}
-        {section==='io'?<section className="loc-card scope-feature-card" aria-label="檔案 I/O 設定">
-          <h3>檔案 I/O · JS 統一設定</h3>
-          <p className="scope-status">唯一來源：app/loc/query-batch-size.mjs。這是系統規格，不提供一般使用者修改，也不寫入資料庫。</p>
+        {section==='io'?<section className="loc-card scope-feature-card" aria-label="系統設定">
+          <h3>系統設定</h3>
           <p><strong>MaxRows：</strong>{MAX_ROWS.toLocaleString()} 筆</p>
           <p><strong>備份檔案上限：</strong>{(MAX_ARCHIVE_BYTES/1048576).toLocaleString()} MiB</p>
           <p><strong>JSON 檔案上限：</strong>{MAX_JSON_BYTES/1048576} MiB</p>
