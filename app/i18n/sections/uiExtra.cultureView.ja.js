@@ -24,6 +24,7 @@ export default {
   "mediaVideo": "動画",
   "candidateLane": "推奨アンカー",
   "candidateLaneLoading": "推奨アンカー（読み込み中…）",
+  "candidateLaneNeedsExpansion": "推奨アンカー（先にカテゴリのレーンを展開してください）",
   "timelineEdit": "時間編集",
   "exitTimelineEdit": "時間編集を終了",
   "timelineContent": "タイムラインの項目",

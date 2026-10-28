@@ -24,6 +24,7 @@ export default {
   "mediaVideo": "影片",
   "candidateLane": "建議定錨點",
   "candidateLaneLoading": "建議定錨點（載入中…）",
+  "candidateLaneNeedsExpansion": "建議定錨點（請先展開任一分類河道）",
   "timelineEdit": "時間編輯",
   "exitTimelineEdit": "結束時間編輯",
   "timelineContent": "時間長河項目",

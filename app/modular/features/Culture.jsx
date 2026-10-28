@@ -976,13 +976,21 @@ export default function Culture(){
     // lane itself is just collapsible like any other lane, and clicking it
     // (via onGroupToggle) is what sets anchorSuggestOpen and starts the
     // PELT worker -- never pushing/popping the lane's existence itself.
-    if(styleFilter!=='trace'&&densityInputBuckets.length>0){
-      // Opened but nothing computed yet (worker still running) -- show a
-      // plain "loading" label on the lane itself, not just in the panel
-      // below the chart.
-      const anchorLaneLoading=anchorSuggestOpen&&!virtualAnchorItems.length;
-      groups.push({id:'dual:source:candidates',label:anchorLaneLoading?l.candidateLaneLoading:l.candidateLane,order:900,
-        className:'scope-candidate-lane',collapsible:true,expanded:anchorSuggestOpen});
+    // Visible whenever the second river itself has any lanes at all --
+    // exactly the same condition the source-category lanes above use
+    // (activeRoots.size>0) -- never tied to a specific lane having been
+    // expanded. Expanding a category is what actually produces daily
+    // buckets to analyze; the lane's existence does not wait for that.
+    if(styleFilter!=='trace'&&activeRoots.size>0){
+      // Opened but nothing computed yet -- show a "loading" label on the
+      // lane itself, except when there is nothing to analyze yet because no
+      // category has been expanded (no daily data exists at all), where we
+      // say so instead of implying a computation is silently running.
+      const anchorLaneWaitingForExpansion=anchorSuggestOpen&&!virtualAnchorItems.length&&!densityInputBuckets.length;
+      const anchorLaneLoading=anchorSuggestOpen&&!virtualAnchorItems.length&&densityInputBuckets.length>0;
+      groups.push({id:'dual:source:candidates',
+        label:anchorLaneLoading?l.candidateLaneLoading:anchorLaneWaitingForExpansion?l.candidateLaneNeedsExpansion:l.candidateLane,
+        order:900,className:'scope-candidate-lane',collapsible:true,expanded:anchorSuggestOpen});
       if(virtualAnchorItems.length)
         items.push(...virtualAnchorItems.map(item=>({...item,group_key:'dual:source:candidates',group_label:l.candidateLane,group_order:900})));
     }

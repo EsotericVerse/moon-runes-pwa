@@ -24,6 +24,7 @@ export default {
   "mediaVideo": "Videos",
   "candidateLane": "Suggested anchors",
   "candidateLaneLoading": "Suggested anchors (loading…)",
+  "candidateLaneNeedsExpansion": "Suggested anchors (expand a category lane first)",
   "timelineEdit": "Edit timeline",
   "exitTimelineEdit": "Exit timeline editing",
   "timelineContent": "Timeline content",

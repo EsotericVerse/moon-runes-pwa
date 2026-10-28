@@ -24,6 +24,7 @@ export default {
   "mediaVideo": "视频",
   "candidateLane": "建议锚点",
   "candidateLaneLoading": "建议锚点（载入中…）",
+  "candidateLaneNeedsExpansion": "建议锚点（请先展开任一分类河道）",
   "timelineEdit": "时间编辑",
   "exitTimelineEdit": "结束时间编辑",
   "timelineContent": "时间长河项目",
