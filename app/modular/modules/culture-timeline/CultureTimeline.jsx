@@ -459,6 +459,17 @@ export default function CultureTimeline({
     }
   },[rows,extraGroups,hasTimeKinds,editable,heightVariant,preserveTimelineInstance,ready,timelineMinHeight,timelineMaxHeight,labels]);
 
+  // The root total bars arrive after the initial chart has mounted.
+  // Repaint the existing chart on the first animation frame after its data update.
+  useEffect(()=>{
+    if(heightVariant!=='double'||!ready||!rows.some(row=>row.entryType==='source_total'))return;
+    let cancelled=false;
+    const frame=window.requestAnimationFrame(()=>{
+      if(!cancelled&&timelineRef.current)timelineRef.current.redraw();
+    });
+    return ()=>{cancelled=true;window.cancelAnimationFrame(frame);};
+  },[heightVariant,ready,rows]);
+
   // vis-timeline can accept a DataSet update while its virtualized range
   // items are not yet painted. Detect a genuinely blank numeric river using
   // already-loaded rows and expose the existing accessible list fallback.
