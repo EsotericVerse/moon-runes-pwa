@@ -38,14 +38,14 @@ test('outside 500m stays empty; two inside 500m become disputed',()=>{
  assert.equal(match.windows[0].disputed,true);
  assert.equal(matchTimelineWindows(windows,[anchors[2]]).withoutAnchor,1);
 });
-test('blank source_place is eligible even if matching place_id already exists',()=>{
+test('place_id controls review completion regardless of existing source_place',()=>{
  const window={candidates:[{uid:'A001',title:'甲',meters:20}],disputed:false};
- const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,window},
+ const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,source_place:'已打卡',window},
   {uid:'22222222',title:'已存在',createtime:'2026-01-01T00:10:00Z',place_id:'B002',window},
   {uid:'33333333',title:'相同',createtime:'2026-01-01T00:10:00Z',place_id:'A001',window}];
  const result=accumulateTimelineArticles(rows);
- assert.deepEqual(result.ready.map(x=>x.uid),['11111111','33333333']);
- assert.deepEqual(result.disputes.map(x=>x.uid),['22222222']);
+ assert.deepEqual(result.ready.map(x=>x.uid),['11111111']);
+ assert.deepEqual(result.disputes.map(x=>x.uid),[]);
  assert.deepEqual(result.unchanged.map(x=>x.uid),[]);
 });
 test('overlapping visits to different places never auto apply a guessed ID',()=>{
@@ -101,10 +101,13 @@ test('UI is owner-only, grouped with default checkboxes, and source_place is pro
  assert.match(ui,/const \[excluded,setExcluded\]=useState\(\{\}\)/);
  assert.match(ui,/!excluded\[row\.uid\]/);
  assert.match(ui,/p_scope_id:scopeId,p_updates:batch/);
- assert.match(ui,/apply_timeline_missing_places/);
- assert.match(migration,/SET source_place=\$1/);
- assert.match(migration,/g\.source_place IS NULL OR g\.source_place ~/);
- assert.match(migration,/NULLIF\(btrim\(g\.place_id\),''\) IS NOT DISTINCT FROM \$4/);
+ assert.match(ui,/apply_timeline_place_ids/);
+ assert.doesNotMatch(ui,/rpc\('apply_timeline_missing_places'/);
+ const revised=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
+ assert.match(revised,/AND NULLIF\(btrim\(place_id\),''\) IS NULL/);
+ assert.match(revised,/UPDATE silver\.%I g SET place_id = u\.place_id/);
+ assert.match(revised,/WHERE g\.uid = u\.uid AND NULLIF\(btrim\(g\.place_id\),''\) IS NULL/);
+ assert.match(revised,/preview_timeline_place_page_json/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
 });
 
@@ -118,8 +121,7 @@ test('two groups keep independent choices and one article override cannot leak t
  ];
  assert.deepEqual(selectedTimelineArticleUpdates(groups,{ 'point:1':'A002','point:2':'B001','point:3':'C001' }),[
   {uid:'11111111',place_id:'A002',expected_place_id:null,manual:true},
-  {uid:'22222222',place_id:'B001',expected_place_id:null,manual:true},
-  {uid:'33333333',place_id:'C001',expected_place_id:'C001',manual:true}
+  {uid:'22222222',place_id:'B001',expected_place_id:null,manual:true}
  ]);
  assert.deepEqual(selectedTimelineArticleUpdates(groups,{'point:1':'A001','point:2':'B001','point:3':'B001'},
    {'11111111':'A002'},{'22222222':true}).map(x=>x.place_id),['A002']);
