@@ -1,11 +1,11 @@
 // Browser-side document/table adapter. The parser package owns format decoding;
 // LOC owns only the existing import row contract and source-preserving field mapping.
 import {ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from './import-batch.mjs';
+import {MAX_DOCUMENT_BYTES} from './query-batch-size.mjs';
 
 export {UNIVERSAL_IMPORT_ACCEPT} from './import-batch.mjs';
 const TABLE_FORMATS=new Set(['csv','tsv','xlsx','ods']);
 const DOCUMENT_FORMATS=new Set(['docx','pptx','pdf','odt','odp','odg','rtf','md','html','htm','epub','tex']);
-const MAX_DOCUMENT_BYTES=128*1024*1024;
 const forbiddenHeaders=new Set(['__proto__','prototype','constructor']);
 
 // The selected *import language* is only an encoding fallback hint. It is
