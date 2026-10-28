@@ -108,6 +108,7 @@ export function accumulateTimelineArticles(matches){
   }
   const ready=[],disputes=[],unchanged=[];
   for(const item of byUid.values()){
+    if(item.existingPlaceId)continue; // Already anchored; never review twice.
     const candidates=[...item.candidates.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
     const unique=candidates.length===1&&!item.disputed;
     const coordinates=[...item.coordinates].sort();
@@ -164,7 +165,7 @@ export function selectedTimelineArticleUpdates(groups,groupChoices={},itemChoice
     const groupPlaceId=Object.prototype.hasOwnProperty.call(groupChoices,group.key)
       ?groupChoices[group.key]:group.defaultPlaceId;
     for(const row of group.rows||[]){
-      if(excluded[row.uid])continue;
+      if(excluded[row.uid]||row.existingPlaceId)continue;
       const placeId=itemChoices[row.uid]||groupPlaceId;
       if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))continue;
       if(row.existingPlaceId&&row.existingPlaceId!==placeId)continue;
