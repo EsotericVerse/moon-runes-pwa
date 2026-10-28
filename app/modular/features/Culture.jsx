@@ -1335,8 +1335,8 @@ export default function Culture(){
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
                 />:null}
-                {!locIntersectionScopeIds.length&&locScopeIntervalItems.length
-                  ?<p className='scope-status'>目前預設的交會時期沒有重疊；上方仍顯示各 Scope 已保存的時間區間。</p>:null}
+                {!locIntersectionScopeIds.length&&query.data?.scopes?.length
+                  ?<p className='scope-status' role='status'>目前各 Scope 的時代／時期沒有共同時間區間（單一定錨點亦計入）。</p>:null}
                 {locScopeRiverItems.length?<section className='scope-culture-interval-density'>
                   <h4>{UI_COPY.culture.intersectionRiver}</h4>
                   <CultureTimeline
@@ -1437,7 +1437,7 @@ export default function Culture(){
                         onChange={event=>{setStyleFilter(event.target.value);setKeywordDrillGroup('');}}>
                         <option value='none'>{l.noStyle}</option>
                         <option value='trace'>痕跡（地點）</option>
-                        <option value='rune66' disabled={!keywordClassQuery.data}>
+                        <option value='rune66'>
                           {keywordClassQuery.data?keywordClassQuery.data:l.keywordStyle}
                         </option>
                       </select>
