@@ -6,30 +6,40 @@ import {publicTraceMapChoices} from '../app/modular/features/trace/trace-map-cho
 const fixture=[
   {uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor'},
   {uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',anchor_list:['A001','A002']},
-  {uid:'T001',source_scope:'lo3rwang',trace_type:'space_trace',anchor_list:[['A001','A002']]},
+  {uid:'T001',source_scope:'lo3rwang',trace_type:'space_trace',
+    route_list:['R001'],anchor_list:[['A002','A003']]},
   {uid:'R001',source_scope:'lrunes',trace_type:'space_period',anchor_list:['B001','B002']},
   {uid:'X001',source_scope:'lrunes',trace_type:'space_anchor'}
 ];
 
-test('LOC public trace index exposes saved routes and traces from both scopes, not anchors',()=>{
+test('LOC shows exactly one read-only trace union per populated source, never raw route choices',()=>{
   const choices=publicTraceMapChoices(fixture,'loc');
   assert.deepEqual(choices.map(row=>row.source_scope+':'+row.uid),[
-    'lo3rwang:R001','lo3rwang:T001','lrunes:R001'
+    'lo3rwang:LOC_UNION','lrunes:LOC_UNION'
   ]);
-  assert.equal(choices.filter(row=>row.trace_type==='space_period').length,2);
+  assert.ok(choices.every(row=>row.trace_type==='space_trace'&&row.read_only));
+  assert.deepEqual(choices[0].route_list,['R001']);
+  assert.deepEqual(choices[0].anchor_list,[['A002','A003']]);
+  assert.deepEqual(choices[1].route_list,['R001']);
 });
 
-test('individual scope selection retains its scope and both map types',()=>{
+test('a saved route appears in LOC even when no standalone trace group is stored',()=>{
+  const rows=publicTraceMapChoices(fixture.filter(row=>row.trace_type!=='space_trace'),'loc');
+  assert.equal(rows.length,2);
+  assert.deepEqual(rows[0].route_list,['R001']);
+  assert.deepEqual(publicTraceMapChoices([], 'loc'),[]);
+});
+
+test('individual scopes retain their actual saved route and trace choices',()=>{
   assert.deepEqual(publicTraceMapChoices(fixture,'lo3rwang').map(row=>row.uid),['R001','T001']);
   assert.deepEqual(publicTraceMapChoices(fixture,'lrunes').map(row=>row.uid),['R001']);
 });
 
-test('public LOC Trace shows separate route / trace choices and selects route map by scope',()=>{
+test('LOC public selector lists only trace unions, while map loads referenced real routes',()=>{
   const source=readFileSync(new URL('../app/modular/features/Trace.jsx',import.meta.url),'utf8');
   assert.match(source,/const maps=publicTraceMapChoices\(allMaps,scopeId\)/);
-  assert.match(source,/\['space_trace','space_period'\]\.map\(type=>/);
-  assert.match(source,/type==='space_trace'\?'痕跡圖':'路線圖'/);
-  assert.match(source,/const mapChoiceKey=row=>isLoc\?row\.source_scope\+':'\+row\.uid:row\.uid/);
+  assert.match(source,/目前顯示（痕跡圖聯集）/);
+  assert.doesNotMatch(source,/\['space_trace','space_period'\]\.map\(type=>/);
   assert.match(source,/readCurrentTraceAnchors\(periodScopeId,members,/);
   assert.match(source,/maps:showingAll\?maps:\[currentMap,\.\.\.linkedRoutes\]/);
   assert.match(source,/selectedRouteUid=\{twoPointDemo\?/);
