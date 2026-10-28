@@ -12,7 +12,6 @@ import {useEditDock} from '../../modular/edit-dock';
 import {FeaturePage} from '../../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../../modular/ManagementSectionNav';
 import PanelLoading from '../PanelLoading';
-import {MAX_ROWS,MAX_ARCHIVE_BYTES,MAX_JSON_BYTES,MAX_DOCUMENT_BYTES,MAX_TIMELINE_BYTES} from '../query-batch-size.mjs';
 // Registry editing and source catalogs are independent admin capabilities.
 
 const ADMIN_OPTIONS=Object.freeze([
@@ -34,6 +33,7 @@ function Login({account}){
 
 const DatabaseTarget=dynamic(()=>import('./admin-panels/DatabaseTarget'),{loading:PanelLoading});
 const IsrDomainTarget=dynamic(()=>import('./admin-panels/IsrDomainTarget'),{loading:PanelLoading});
+const RuntimeIoSettings=dynamic(()=>import('./admin-panels/RuntimeIoSettings'),{loading:PanelLoading});
 const ThemeEditor=dynamic(()=>import('./admin-panels/ThemeEditor'),{loading:PanelLoading});
 const AdminEmailBlocklist=dynamic(()=>import('./admin-panels/AdminEmailBlocklist'),{loading:PanelLoading});
 const FeatureHeroImages=dynamic(()=>import('./admin-panels/FeatureHeroImages'),{loading:PanelLoading});
@@ -85,14 +85,7 @@ export default function AdminHomeView({scopeGroup}){
           <DatabaseTarget scopeGroup={scopeGroup}/>
           <IsrDomainTarget/>
         </>:null}
-        {section==='io'?<section className="loc-card scope-feature-card" aria-label="系統設定">
-          <h3>系統設定</h3>
-          <p><strong>MaxRows：</strong>{MAX_ROWS.toLocaleString()} 筆</p>
-          <p><strong>備份檔案上限：</strong>{(MAX_ARCHIVE_BYTES/1048576).toLocaleString()} MiB</p>
-          <p><strong>JSON 檔案上限：</strong>{MAX_JSON_BYTES/1048576} MiB</p>
-          <p><strong>文件檔案上限：</strong>{MAX_DOCUMENT_BYTES/1048576} MiB</p>
-          <p><strong>Timeline 檔案上限：</strong>{MAX_TIMELINE_BYTES/1048576} MiB</p>
-        </section>:null}
+        {section==='io'?<RuntimeIoSettings/>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
         {section==='themes'?<ThemeEditor/>:null}
 
