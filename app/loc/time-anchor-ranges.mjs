@@ -89,6 +89,34 @@ export function timePeriodsWithValidRanges(rows=[]){
 }
 // Merge only overlapping or adjoining valid ranges for efficient SQL selection.
 // Disconnected ranges remain separate and cannot inherit today's date.
+// Intersect every genuine Time interval across multiple sets of periods or
+// traces. Inclusive endpoints preserve a legitimate single-anchor point.
+// Inputs may be raw Time ranges or previously normalized date windows.
+export function intersectTimeDateWindows(windowSets=[]){
+  if(!Array.isArray(windowSets)||!windowSets.length)return [];
+  const normalized=windowSets.map(set=>timeDateWindows((Array.isArray(set)?set:[]).map(range=>({
+    start_date:range.startDate||range.start_date,
+    end_date:range.endDate||range.end_date||range.startDate||range.start_date,
+    invalid:range.invalid,point:range.point
+  }))));
+  if(normalized.some(set=>!set.length))return [];
+  let shared=normalized[0];
+  for(const windows of normalized.slice(1)){
+    const overlaps=[];
+    let i=0,j=0;
+    while(i<shared.length&&j<windows.length){
+      const left=shared[i],right=windows[j];
+      const startDate=left.startDate>right.startDate?left.startDate:right.startDate;
+      const endDate=left.endDate<right.endDate?left.endDate:right.endDate;
+      if(startDate<=endDate)overlaps.push({startDate,endDate});
+      if(left.endDate<=right.endDate)i++;
+      else j++;
+    }
+    shared=overlaps;
+    if(!shared.length)break;
+  }
+  return shared;
+}
 export function timeDateWindows(ranges=[]){
   const windows=(Array.isArray(ranges)?ranges:[])
     .filter(range=>range?.start_date&&(!range.invalid||range.point))
