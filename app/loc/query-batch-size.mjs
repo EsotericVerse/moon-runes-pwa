@@ -21,15 +21,19 @@ export function applyRuntimeIoLimits(settings={}){
       throw new Error(key+' 超出允許範圍');
     return number;
   };
-  MAX_ROWS=bounded('maxRows',100);
+  const values={
+    maxRows:bounded('maxRows',100),archiveMiB:bounded('archiveMiB',1),
+    jsonMiB:bounded('jsonMiB',1),documentMiB:bounded('documentMiB',1),
+    timelineMiB:bounded('timelineMiB',1)
+  };
+  MAX_ROWS=values.maxRows;
   DB_QUERY_BATCH_SIZE=MAX_ROWS;
-  MAX_ARCHIVE_BYTES=bounded('archiveMiB',1)*MiB;
-  MAX_JSON_BYTES=bounded('jsonMiB',1)*MiB;
-  MAX_DOCUMENT_BYTES=bounded('documentMiB',1)*MiB;
-  MAX_TIMELINE_BYTES=bounded('timelineMiB',1)*MiB;
+  MAX_ARCHIVE_BYTES=values.archiveMiB*MiB;
+  MAX_JSON_BYTES=values.jsonMiB*MiB;
+  MAX_DOCUMENT_BYTES=values.documentMiB*MiB;
+  MAX_TIMELINE_BYTES=values.timelineMiB*MiB;
   TIMELINE_IO=Object.freeze({windowBatch:MAX_ROWS,previewPage:MAX_ROWS,writeBatch:MAX_ROWS});
-  return {maxRows:MAX_ROWS,archiveMiB:MAX_ARCHIVE_BYTES/MiB,jsonMiB:MAX_JSON_BYTES/MiB,
-    documentMiB:MAX_DOCUMENT_BYTES/MiB,timelineMiB:MAX_TIMELINE_BYTES/MiB};
+  return values;
 }
 
 
