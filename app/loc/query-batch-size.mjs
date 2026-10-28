@@ -8,6 +8,7 @@ export const MAX_ARCHIVE_BYTES=1024*1024*1024;
 export const MAX_JSON_BYTES=50*1024*1024;
 export const MAX_DOCUMENT_BYTES=128*1024*1024;
 export const MAX_TIMELINE_BYTES=200*1024*1024;
+export const MAX_DAILY_TRANSFER_BYTES=24*1024*1024;
 
 // Timeline windows, preview results and writes all use the same MaxRows.
 export const TIMELINE_IO=Object.freeze({windowBatch:MAX_ROWS,previewPage:MAX_ROWS,writeBatch:MAX_ROWS});
