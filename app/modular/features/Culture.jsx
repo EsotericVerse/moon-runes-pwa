@@ -162,6 +162,48 @@ function nextRiverDay(value){
   date.setUTCDate(date.getUTCDate()+1);
   return date.toISOString().slice(0,10);
 }
+// Paint the collapsed source overview from the numeric totals already in memory.
+// vis-timeline is mounted only after a category is expanded, not for three
+// full-window total bars that do not require virtualized time-axis layout.
+function CultureSourceRootSummary({items,groups,windowStart,windowEnd,onGroupToggle,onGroupSelect}){
+  const totals=items.filter(item=>item.entry_type==='source_total');
+  const byGroup=new Map(totals.map(item=>[item.group_key,item]));
+  const largest=Math.max(1,...totals.map(item=>Number(item.item_count)||0));
+  return <div className='scope-period-timeline-wrap'>
+    <div className='scope-period-timeline' role='region' aria-label='作品分類總量時間長河'
+      style={{minHeight:0,overflow:'visible',padding:'.65rem',background:'var(--loc-panel)'}}>
+      <div style={{display:'grid',gridTemplateColumns:'clamp(108px,23vw,248px) minmax(0,1fr)',gap:'.4rem .55rem',alignItems:'center'}}>
+        <span className='scope-status'>分類總量</span>
+        <div style={{display:'flex',justifyContent:'space-between',gap:'.5rem',fontSize:'.8rem',color:'var(--loc-muted)'}}>
+          <time>{windowStart}</time><time>{windowEnd}</time>
+        </div>
+        {groups.map(group=>{
+          const row=byGroup.get(group.id);
+          const candidate=group.id==='dual:source:candidates';
+          if(!row&&!candidate)return null;
+          const count=Number(row?.item_count)||0;
+          const action=group.collapsible?()=>onGroupToggle?.(group.id)
+            :group.selectable?()=>onGroupSelect?.(group.id):null;
+          return <div key={group.id} style={{display:'contents'}}>
+            <div style={{minWidth:0}}>
+              {action?<button type='button' className='scope-river-group-button'
+                aria-expanded={group.collapsible?Boolean(group.expanded):undefined} onClick={action}>
+                {group.collapsible?'＋  ':''}{group.label}
+              </button>:<span>{group.label}</span>}
+            </div>
+            <div style={{minWidth:0,minHeight:candidate?32:40,display:'flex',alignItems:'center',padding:'.35rem .45rem',
+              border:'1px solid var(--loc-line)',borderRadius:'.5rem',background:'var(--loc-panel-2)'}}
+              role={row?'img':undefined} aria-label={row?group.label+'，'+count+'筆':''}>
+              {row?<div style={{width:'100%',height:Math.max(11,Math.round(11+19*count/largest)),
+                borderRadius:'999px',background:'var(--loc-accent)',
+                opacity:Math.max(.38,Math.min(1,count/largest)),boxShadow:'0 0 9px var(--loc-accent-border)'}}/>:null}
+            </div>
+          </div>;
+        })}
+      </div>
+    </div>
+  </div>;
+}
 function dayKeyFromTimelineValue(value){
   const date=value instanceof Date?value:new Date(value);
   if(Number.isNaN(date.getTime()))return '';
@@ -1030,6 +1072,29 @@ export default function Culture(){
     setFocusedAnchorDate(current=>riverAnalysis.suggestions.some(item=>item.date===current)?current:'');
   },[scopeId,classificationWindowStart,classificationWindowEnd,riverAnalysis.suggestions]);
 
+  const toggleCultureRiverGroup=id=>{
+    if(id==='dual:source:candidates'){
+      setAnchorSuggestOpen(current=>!current);
+      return;
+    }
+    if(id.startsWith('dual:keyword:')){
+      const groupId=id.slice('dual:keyword:'.length);
+      if(keywordGroupOptions.some(group=>group.id===groupId))
+        setKeywordDrillGroup(current=>current===groupId?'':groupId);
+      return;
+    }
+    if(!id.startsWith('dual:root:'))return;
+    const root=id.slice('dual:root:'.length);
+    setOpenCultureRoots(current=>current.includes(root)
+      ?current.filter(value=>value!==root):[...current,root]);
+  };
+  const selectCultureRiverGroup=id=>{
+    const key=cultureRiver.groups.find(group=>group.id===id)?.sourceKey
+      ||id.replace('dual:child:','');
+    setSelectedRiverGroup(current=>current===key?'':key);
+    setSelectedCategory('');
+    setWorksOpen(true);
+  };
   const toggleVirtualAnchor=date=>{
     setSelectedVirtualAnchorDates(current=>current.includes(date)?current.filter(item=>item!==date):[...current,date].sort());
   };
@@ -1481,34 +1546,20 @@ export default function Culture(){
                 {styleFilter!=='trace'&&classificationWindowValid&&!(stagedSourceRiver?sourceRootQuery.error:sourceSnapshotQuery.error)
                   &&(stagedSourceRiver?sourceRootQuery.data:sourceSnapshotQuery.data)&&cultureRiver.hasSourceData
                   ?<div className='scope-culture-double-river'>
-                  <CultureTimeline
+                  {styleFilter==='none'&&openCultureRoots.length===0
+                    &&cultureRiver.items.every(item=>item.entry_type==='source_total')
+                    ?<CultureSourceRootSummary
+                      items={cultureRiver.items}
+                      groups={cultureRiver.groups}
+                      windowStart={classificationWindowStart}
+                      windowEnd={classificationWindowEnd}
+                      onGroupToggle={toggleCultureRiverGroup}
+                      onGroupSelect={selectCultureRiverGroup}
+                    />:<CultureTimeline
                     items={cultureRiver.items}
                     extraGroups={cultureRiver.groups}
-                    onGroupToggle={id=>{
-                      if(id==='dual:source:candidates'){
-                        // The lane itself is the click target now -- opening it is
-                        // exactly what starts the (click-gated) PELT analysis.
-                        setAnchorSuggestOpen(current=>!current);
-                        return;
-                      }
-                      if(id.startsWith('dual:keyword:')){
-                        const groupId=id.slice('dual:keyword:'.length);
-                        if(keywordGroupOptions.some(group=>group.id===groupId))
-                          setKeywordDrillGroup(current=>current===groupId?'':groupId);
-                        return;
-                      }
-                      if(!id.startsWith('dual:root:'))return;
-                      const key=id.slice('dual:root:'.length);
-                      setOpenCultureRoots(current=>current.includes(key)
-                        ?current.filter(value=>value!==key):[...current,key]);
-                    }}
-                    onGroupSelect={id=>{
-                      const key=cultureRiver.groups.find(group=>group.id===id)?.sourceKey
-                        ||id.replace('dual:child:','');
-                      setSelectedRiverGroup(current=>current===key?'':key);
-                      setSelectedCategory('');
-                      setWorksOpen(true);
-                    }}
+                    onGroupToggle={toggleCultureRiverGroup}
+                    onGroupSelect={selectCultureRiverGroup}
                     anchorInsight={anchorInsight}
                     anchorLabels={{date:l.candidateDate,before:l.candidateBefore,after:l.candidateAfter,reason:l.candidateReason,close:l.candidateClose}}
                     onAnchorClose={()=>setFocusedAnchorDate('')}
@@ -1546,7 +1597,7 @@ export default function Culture(){
                         setSelectedCategory(key);
                       }
                     }}
-                  />
+                  />}
                   {showKeywordRiver&&keywordDrillGroup?<section className='scope-culture-rune-list'
                     role='region' aria-label={(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'符文群組')+'符文列表'}>
                     <header>
