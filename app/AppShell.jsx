@@ -475,7 +475,7 @@ function AppShellInner({children}){
     {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'人員作品管理'):translateUiField(activeLocale,'時間定錨'),
       href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞'),
-      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='lrunes'&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
+      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
     {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,locAdminEdit?'痕跡製作':'空間定錨'),
       href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
         ?editTabHref('trace/manage','section','traceMap')+'&edit=1'

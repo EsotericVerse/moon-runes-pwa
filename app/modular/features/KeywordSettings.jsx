@@ -21,7 +21,7 @@ export default function KeywordSettings(){
   const account=useAccount();
   const editDock=useEditDock();
   const authorized=Boolean(account.user&&editDock?.active&&editDock.scopeId===scopeId&&
-    scopeId!=='loc'&&scopeId!=='lrunes'&&!scope?.aggregateChildren&&account.canManageScopeSync(scopeId));
+    scopeId!=='loc'&&!scope?.aggregateChildren&&account.canManageScopeSync(scopeId));
   return <FeaturePage featureId="statics">
     {account.loading||account.permissionLoading
       ?<p className="scope-status"><UiText id="uiExtra.keywords.verifyingAccess"/></p>

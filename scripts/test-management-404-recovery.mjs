@@ -56,3 +56,14 @@ test('both management lazy entries use the same recovery',()=>{
   assert.match(read('app/loc/ScopeManagement.jsx'),/import\('\.\/PlaceManagement'\)\.catch\(recoverChunkOnce\)/);
   assert.match(read('app/AppShell.jsx'),/window\.addEventListener\('unhandledrejection',recover\)/);
 });
+
+test('LunaRunes has the same owner-authorized keyword editor as other Scopes',()=>{
+  const shell=read('app/AppShell.jsx');
+  const page=read('app/modular/features/KeywordSettings.jsx');
+  const route=read('app/lrunes/statics/keywords/page.jsx');
+  assert.doesNotMatch(shell,/navScopeId!==['\"]lrunes['\"]/);
+  assert.doesNotMatch(page,/scopeId!==['\"]lrunes['\"]/);
+  assert.match(shell,/editTabHref\('statics\/keywords','edit','1'\)/);
+  assert.match(page,/account\.canManageScopeSync\(scopeId\)/);
+  assert.match(route,/forcedView=\"keywords\" forcedScope=\"lrunes\"/);
+});
