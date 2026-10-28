@@ -1,9 +1,10 @@
 'use client';
 
 import {createContext,useCallback,useContext,useEffect,useMemo,useRef,useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
 import {Capacitor} from '@capacitor/core';
-import {dbAuthEvents} from '../loc/db-client.mjs';
+import {dbAuthEvents,signOutAccount} from '../loc/db-client.mjs';
+import {EDIT_OPERATION_TTL_MS,assertEditorSession,touchEditorSession,clearEditorSession} from '../loc/edit-session-ttl.mjs';
 
 // UI only: a Scope's permission is checked before entering edit mode,
 // and every write still passes through its existing database authorization.
@@ -11,10 +12,39 @@ const EditDockContext=createContext(null);
 
 export function EditDockProvider({children}){
   const router=useRouter();
+  const pathname=usePathname();
   const [scopeId,setScopeId]=useState('');
   const [hasSave,setHasSave]=useState(false);
   const [busy,setBusy]=useState(false);
   const committing=useRef(false);
+  const operationEpoch=useRef(0);
+  const operationTimer=useRef(null);
+  const lastPathname=useRef(null);
+  const releaseOperation=useCallback(()=>{
+    operationEpoch.current++;
+    if(operationTimer.current!==null)clearTimeout(operationTimer.current);
+    operationTimer.current=null;
+    committing.current=false;
+    setBusy(false);
+  },[]);
+  const beginOperation=useCallback(()=>{
+    const epoch=++operationEpoch.current;
+    committing.current=true;
+    setBusy(true);
+    if(operationTimer.current!==null)clearTimeout(operationTimer.current);
+    operationTimer.current=setTimeout(()=>{
+      if(operationEpoch.current!==epoch)return;
+      releaseOperation();
+      setNotice('暫存超過 5 分鐘，操作鎖已解除。請先確認資料是否寫入。');
+      setSwitchError('暫存逾時，尚未確認寫入狀態；可以取消返回。');
+    },EDIT_OPERATION_TTL_MS);
+    return epoch;
+  },[releaseOperation]);
+  const finishOperation=useCallback(epoch=>{
+    if(operationEpoch.current!==epoch)return false;
+    releaseOperation();
+    return true;
+  },[releaseOperation]);
   const [notice,setNotice]=useState('');
   const [switchTarget,setSwitchTarget]=useState('');
   const [switchError,setSwitchError]=useState('');
@@ -41,14 +71,42 @@ export function EditDockProvider({children}){
   const begin=useCallback(id=>{
     const idText=String(id||'').trim();
     if(!idText)return;
+    if(idText!=='local')try{touchEditorSession(window.sessionStorage);}catch{}
     setScopeId(idText);
     setNotice('');
   },[]);
   const end=useCallback(()=>{
+    releaseOperation();
     clearEditor();
+    pendingSectionAction.current=null;
+    setSwitchTarget('');
+    setSwitchError('');
     setScopeId('');
     setNotice('');
-  },[clearEditor]);
+  },[clearEditor,releaseOperation]);
+  useEffect(()=>{
+    if(lastPathname.current!==null&&pathname!==lastPathname.current)releaseOperation();
+    lastPathname.current=pathname;
+  },[pathname,releaseOperation]);
+  useEffect(()=>{
+    const expire=()=>{
+      releaseOperation();
+      setNotice('編輯 Session 已逾時，請重新登入後再儲存。');
+      void signOutAccount().catch(()=>{});
+    };
+    window.addEventListener('loc-editor-session-expired',expire);
+    return ()=>window.removeEventListener('loc-editor-session-expired',expire);
+  },[releaseOperation]);
+  useEffect(()=>{
+    if(!scopeId||scopeId==='local')return undefined;
+    const activity=()=>{try{touchEditorSession(window.sessionStorage);}catch{}};
+    window.addEventListener('pointerdown',activity,{passive:true});
+    window.addEventListener('keydown',activity,{passive:true});
+    return ()=>{
+      window.removeEventListener('pointerdown',activity);
+      window.removeEventListener('keydown',activity);
+    };
+  },[scopeId]);
 
   // A Google OAuth account change invalidates all editor UI permissions.
   // The backend still authorizes each write using the active JWT/RLS.
@@ -66,6 +124,7 @@ export function EditDockProvider({children}){
       const invalidated=event==='SIGNED_OUT'||identityChanged;
       if(!invalidated)return;
       if(activeScope.current==='local'&&Capacitor.isNativePlatform())return;
+      try{clearEditorSession(window.sessionStorage);}catch{}
       end();
     });
     return ()=>subscription.data.subscription.unsubscribe();
@@ -97,7 +156,9 @@ export function EditDockProvider({children}){
   const navigate=useCallback((target,history='replace',scroll=true)=>{
     if(!target)return;
     const url=new URL(String(target),window.location.href);
-    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)){
+    // Protected editor returns get a fresh document instead of reusing stale RSC routes.
+    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)||
+      /\/(?:manage|culture|trace)(?:\/|$)/i.test(url.pathname)){
       window.location.assign(url.href);
     }else{
       if(history==='push')router.push(url.pathname+url.search+url.hash,{scroll});
@@ -123,26 +184,29 @@ export function EditDockProvider({children}){
       setNotice('正在儲存其他設定，請完成後再操作。');
       return;
     }
-    committing.current=true;setBusy(true);
+    const epoch=beginOperation();
     setNotice('');
     try{
+      if(scopeId!=='local')assertEditorSession(window.sessionStorage);
       for(const editor of editors){
         const saved=await editor.save();
+        if(epoch!==operationEpoch.current)return;
         if(saved!==true)throw new Error('部分設定未儲存，已保留編輯內容。請檢查各區塊提示。');
       }
-      if(dirty.length)setNotice(stayInEditMode?'已暫存，可繼續編輯。':'目前修改已儲存。');
+      if(epoch===operationEpoch.current&&dirty.length)
+        setNotice(stayInEditMode?'已暫存，可繼續編輯。':'目前修改已儲存。');
     }catch(error){
-      setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
+      if(epoch===operationEpoch.current)setNotice(String(error?.message||'儲存失敗，請檢查內容。'));
     }finally{
-      committing.current=false;setBusy(false);
+      finishOperation(epoch);
     }
-  },[busy]);
+  },[busy,scopeId,beginOperation,finishOperation]);
   const dirtyEditors=useCallback(()=>[...registeredEditors.current].filter(editor=>
     typeof editor.isDirty==='function'&&editor.isDirty()
   ),[]);
   const discard=useCallback((target,{confirmOnlyWhenDirty=false}={})=>{
-    if(busy)return;
-    if((!confirmOnlyWhenDirty||dirtyEditors().length)&&
+    // An explicit Cancel must always escape a stalled Save lock.
+    if(!busy&&(!confirmOnlyWhenDirty||dirtyEditors().length)&&
       !window.confirm(confirmOnlyWhenDirty
         ?'確定放棄尚未儲存的變更並返回普通頁面？'
         :'確定放棄尚未儲存的編輯並返回首頁？'))return;
@@ -185,8 +249,11 @@ export function EditDockProvider({children}){
     setSwitchTarget('management-section:'+String(next));
   },[busy,dirtyEditors,clearEditor]);
   const cancelSwitch=useCallback(()=>{
-    if(!busy){pendingSectionAction.current=null;setSwitchTarget('');setSwitchError('');}
-  },[busy]);
+    releaseOperation();
+    pendingSectionAction.current=null;
+    setSwitchTarget('');
+    setSwitchError('');
+  },[releaseOperation]);
   const discardAndSwitch=useCallback(()=>{
     if(busy||!switchTarget)return;
     const target=switchTarget;
@@ -201,13 +268,15 @@ export function EditDockProvider({children}){
     if(busy||committing.current||!switchTarget)return;
     const target=switchTarget;
     const editors=dirtyEditors();
-    committing.current=true;setBusy(true);setSwitchError('');
+    const epoch=beginOperation();setSwitchError('');
     try{
+      if(scopeId!=='local')assertEditorSession(window.sessionStorage);
       for(const editor of editors){
         if(typeof editor.save!=='function')throw new Error('目前編輯內容無法儲存，已取消切換。');
         // A successful save must return true; false/undefined must never
         // be interpreted as a successful write.
         const saved=await editor.save({switching:true});
+        if(epoch!==operationEpoch.current)return;
         if(saved!==true)throw new Error('儲存尚未完成，已保留目前頁面與編輯內容。');
       }
       const action=pendingSectionAction.current;
@@ -217,9 +286,9 @@ export function EditDockProvider({children}){
       if(action)action();
       else navigate(target,switchHistory.current,switchScroll.current);
     }catch(error){
-      setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
-    }finally{committing.current=false;setBusy(false);}
-  },[busy,switchTarget,dirtyEditors,clearEditor,navigate]);
+      if(epoch===operationEpoch.current)setSwitchError(String(error?.message||'儲存失敗，已取消切換。'));
+    }finally{finishOperation(epoch);}
+  },[busy,scopeId,switchTarget,dirtyEditors,clearEditor,navigate,beginOperation,finishOperation]);
   const value=useMemo(()=>({
     active:Boolean(scopeId),scopeId,hasSave,busy,notice,begin,end,
     register,save,discard,complete,switchTo,switchSection,setNotice
@@ -228,14 +297,14 @@ export function EditDockProvider({children}){
     {children}
     <dialog ref={switchDialog} className="scope-edit-switch-dialog" aria-labelledby="scope-edit-switch-title"
       aria-describedby="scope-edit-switch-description"
-      onCancel={event=>{if(busy)event.preventDefault();else cancelSwitch();}}>
+      onCancel={event=>{event.preventDefault();cancelSwitch();}}>
       <h2 id="scope-edit-switch-title">有未儲存的編輯內容</h2>
       <p id="scope-edit-switch-description">切換頁面前，要如何處理目前的變更？</p>
       {switchError?<p role="alert" className="scope-status scope-error">{switchError}</p>:null}
       <div className="scope-edit-switch-actions">
         <button type="button" className="loc-button primary" disabled={busy} onClick={saveAndSwitch}>儲存並切換</button>
         <button type="button" className="loc-button" disabled={busy} onClick={discardAndSwitch}>放棄變更</button>
-        <button type="button" className="loc-button" disabled={busy} onClick={cancelSwitch}>取消</button>
+        <button type="button" className="loc-button" onClick={cancelSwitch}>取消</button>
       </div>
     </dialog>
   </EditDockContext.Provider>;

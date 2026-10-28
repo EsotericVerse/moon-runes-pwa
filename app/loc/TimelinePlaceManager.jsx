@@ -5,6 +5,7 @@ import {dbAuthClient} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
+import {EDIT_OPERATION_TTL_MS,assertEditorSession} from './edit-session-ttl.mjs';
 import {TIMELINE_IO} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession,timelineReviewCacheOversized} from './timeline-review-session.mjs';
 import {accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
@@ -34,10 +35,15 @@ export default function TimelinePlaceManager({scopeId}){
   const [sessionOwner,setSessionOwner]=useState('');
   const [sessionWarning,setSessionWarning]=useState('');
   const runRef=useRef(0);
+  const analyzeTimerRef=useRef(null);
   const workerRef=useRef(null);
   const fileRef=useRef(null);
   const abortWorker=()=>workerRef.current?.abort();
-  useEffect(()=>()=>{workerRef.current?.abort();},[]);
+  useEffect(()=>()=>{
+    runRef.current++;
+    workerRef.current?.abort();
+    if(analyzeTimerRef.current!==null)clearTimeout(analyzeTimerRef.current);
+  },[]);
   function parseInWorker(file,anchors){
     if(typeof Worker==='undefined')throw Error('此瀏覽器不支援背景解析 JSON');
     return new Promise((resolve,reject)=>{
@@ -126,6 +132,15 @@ export default function TimelinePlaceManager({scopeId}){
     if(!enabled||!selectedFile||analyzing||writing||anchorQuery.isPending)return;
     if(!eligible.length){setNotice('目前沒有具有座標的空間定錨點，因此沒有可補寫的 place_id。');return;}
     const run=++runRef.current;
+    const timer=setTimeout(()=>{
+      if(run!==runRef.current)return;
+      runRef.current++;
+      abortWorker();
+      setAnalyzing(false);
+      setProgress(null);
+      setNotice('Timeline 地點比對超過 5 分鐘，已停止。尚未寫入任何資料。');
+    },EDIT_OPERATION_TTL_MS);
+    analyzeTimerRef.current=timer;
     setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
       if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
@@ -173,7 +188,10 @@ export default function TimelinePlaceManager({scopeId}){
       setNotice('已完成空白打卡地點預覽。相同經緯度集中列出；請選擇位置並檢查不同樓層，確認前不寫入。');
     }catch(e){
       if(run===runRef.current)setNotice('地點比對失敗：'+friendlyError(e));
-    }finally{if(run===runRef.current)setAnalyzing(false);}
+    }finally{
+      clearTimeout(timer);
+      if(run===runRef.current){analyzeTimerRef.current=null;setAnalyzing(false);}
+    }
   }
   const ready=analysis?.ready||[];
   const reviewGroups=useMemo(()=>groupTimelineMissingPlaces(analysis),[analysis]);
@@ -204,11 +222,18 @@ export default function TimelinePlaceManager({scopeId}){
       +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
     try{
+      assertEditorSession(window.sessionStorage);
+      const run=runRef.current;
+      const deadline=Date.now()+EDIT_OPERATION_TTL_MS;
       for(let i=0;i<updates.length;i+=WRITE_BATCH){
+        if(run!==runRef.current)break;
+        if(Date.now()>=deadline)throw Error('批次寫入已達 5 分鐘操作期限；請核對已成功寫入筆數。');
+        assertEditorSession(window.sessionStorage);
         const batch=updates.slice(i,i+WRITE_BATCH);
         const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
           p_scope_id:scopeId,p_updates:batch
         });
+        if(run!==runRef.current)break;
         const affected=Number(checked(result,'批次補寫 source_place')||0);
         if(affected!==batch.length)throw Error('資料庫回報的寫入筆數不一致，請重新分析');
         completed+=affected;
@@ -253,7 +278,10 @@ export default function TimelinePlaceManager({scopeId}){
         onClick={analyze}>{analyzing?'比對中…':'分析 JSON 並預覽'}</button>
       <button type="button" className="loc-button" disabled={writing} onClick={reset}>清除暫存／重新選檔</button>
       {analyzing?<button type="button" className="loc-button" onClick={()=>{
-        runRef.current++;abortWorker();setAnalyzing(false);setNotice('已取消分析，尚未寫入任何資料。');
+        runRef.current++;abortWorker();
+        if(analyzeTimerRef.current!==null)clearTimeout(analyzeTimerRef.current);
+        analyzeTimerRef.current=null;
+        setAnalyzing(false);setNotice('已取消分析，尚未寫入任何資料。');
       }}>取消分析</button>:null}
     </div>
     {progress&&analyzing?<p role="status" className="scope-status">{progress.message} {progress.total?progress.done+' / '+progress.total+' 批':''}</p>:null}
