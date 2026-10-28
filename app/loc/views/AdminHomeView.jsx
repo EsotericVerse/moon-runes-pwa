@@ -63,7 +63,7 @@ export default function AdminHomeView({scopeGroup}){
   // Admin edit mode remains guarded by the global management permission.
   useEffect(()=>{
     if(canManage)editDock?.begin('loc');
-  },[editRequested,canManage,editDock?.begin]);
+  },[canManage,editDock?.begin]);
   const selectedOption=ADMIN_OPTIONS.find(option=>option.value===section)||ADMIN_OPTIONS[0];
 
   if(account.loading||account.permissionLoading)return <section className="loc-view"><div className="loc-card">{UI_COPY.admin.checking}</div></section>;
