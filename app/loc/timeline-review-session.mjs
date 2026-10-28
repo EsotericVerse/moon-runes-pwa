@@ -3,7 +3,13 @@ import {gzipSync,gunzipSync,strToU8,strFromU8} from 'fflate';
 // Opt-in, per-tab review cache: contains article previews, never the raw Timeline JSON.
 // The stored owner ID prevents another signed-in account from restoring this review.
 const TTL_MS=6*60*60*1000;
+const MAX_REVIEW_JSON_CHARS=8*1024*1024;
+const MAX_REVIEW_CACHE_CHARS=3*1024*1024;
 const key=scopeId=>'loc-timeline-review:'+scopeId;
+export function timelineReviewCacheOversized(storage,scopeId){
+  const cached=storage.getItem(key(scopeId));
+  return Boolean(cached&&cached.length>MAX_REVIEW_CACHE_CHARS);
+}
 function base64(bytes){
   let binary='';
   for(let i=0;i<bytes.length;i+=16384)
@@ -17,15 +23,24 @@ function unbase64(value){
 }
 export function saveTimelineReviewSession(storage,{scopeId,owner,analysis,groupChoices,itemChoices,excluded,completedCount}){
   if(!owner||!analysis)return false;
-  const snapshot={owner,savedAt:Date.now(),analysis:{...analysis,unchanged:[]},
+  // Only the resolved review metadata belongs in browser session storage.
+  // Never save raw Timeline coordinate evidence or full archive objects.
+  const withoutCoordinates=rows=>(rows||[]).map(({coordinates,commonAnchors,...row})=>row);
+  const snapshot={owner,savedAt:Date.now(),analysis:{...analysis,
+    ready:withoutCoordinates(analysis.ready),
+    disputes:withoutCoordinates(analysis.disputes),unchanged:[]},
     groupChoices,itemChoices,excluded,completedCount};
-  storage.setItem(key(scopeId),base64(gzipSync(strToU8(JSON.stringify(snapshot)),{level:4})));
+  const json=JSON.stringify(snapshot);
+  if(json.length>MAX_REVIEW_JSON_CHARS)return false;
+  const encoded=base64(gzipSync(strToU8(json),{level:4}));
+  if(encoded.length>MAX_REVIEW_CACHE_CHARS)return false;
+  storage.setItem(key(scopeId),encoded);
   return true;
 }
 export function loadTimelineReviewSession(storage,{scopeId,owner}){
   if(!owner)return null;
   const cached=storage.getItem(key(scopeId));
-  if(!cached)return null;
+  if(!cached||cached.length>MAX_REVIEW_CACHE_CHARS)return null;
   try{
     const snapshot=JSON.parse(strFromU8(gunzipSync(unbase64(cached))));
     if(snapshot.owner!==owner||!Number.isFinite(snapshot.savedAt)||Date.now()-snapshot.savedAt>TTL_MS
