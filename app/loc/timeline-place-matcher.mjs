@@ -139,10 +139,6 @@ export function groupTimelineMissingPlaces(analysis){
     groups.get(key).rows.push(row);
   }
   return [...groups.values()].map(group=>{
-    const choices=new Map();
-    for(const row of group.rows)
-      for(const candidate of row.candidates||[])choices.set(candidate.uid,candidate);
-    const candidates=[...choices.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
     const anchorId=group.key.startsWith('anchor:')?group.key.slice('anchor:'.length):'';
     // Always present the matching anchor as a group-level selection.
     // Ambiguous rows remain visibly disputed and can be changed individually.
