@@ -1,6 +1,5 @@
 import {withLocCors,locCorsPreflight} from '../../../../_cors';
 import {createPublicSupabaseClient,validScopeId} from '../../../../_server';
-import {CACHE_POLICY} from '../../../../../../loc/cache-policy.config.mjs';
 
 // Provider-neutral HTTP cache contract. A CDN/Worker may honor s-maxage=3600.
 // ISR is an optional separate origin; GitHub Pages never executes this route.
@@ -23,10 +22,15 @@ export async function GET(request,{params}){
   const start=url.searchParams.get('startDate')||'',end=url.searchParams.get('endDate')||'';
   if((start&&!day(start))||(end&&!day(end))||start&&end&&start>end)
     return reply(request,{error:'Invalid date range'},400);
-  // Fail closed unless the JS cache policy enables ISR (no database read).
-  if(CACHE_POLICY.mode!=='isr')
-    return reply(request,{error:'ISR not enabled'},503);
+  // The Admin setting is the single source of truth; do not rely on deployed JS.
   const db=createPublicSupabaseClient().schema('silver');
+  const {data:runtime,error:settingError}=await db.from('loc_runtime_config')
+    .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
+  const chosen=Array.isArray(runtime?.isr_domains)
+    ?runtime.isr_domains.find(item=>item.id===runtime.cache_provider):null;
+  const configuredOrigin=String(chosen?.origin||'').trim();
+  if(settingError||runtime?.cache_mode!=='isr'||configuredOrigin!==url.origin)
+    return reply(request,{error:'ISR not enabled for this domain'},503);
   let name,args;
   if(kind==='culture'){
     name='read_scope_statistics';args={p_scope_id:scopeId,p_start:day(start),p_end:day(end),

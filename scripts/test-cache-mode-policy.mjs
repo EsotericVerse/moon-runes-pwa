@@ -80,3 +80,11 @@ test('disabled ISR never publishes a retired endpoint in cache configuration',()
   assert.doesNotMatch(config,/https:\/\/isr\.lo3rwang\.cc/);
   assert.match(config,/\{id:'cloudflare',label:'Cloudflare',origin:''\}/);
 });
+
+test('numeric ISR server uses saved Admin mode and matching provider Domain',()=>{
+  const route=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
+  assert.match(route,/db\.from\('loc_runtime_config'\)/);
+  assert.match(route,/runtime\?\.cache_mode!=='isr'/);
+  assert.match(route,/configuredOrigin!==url\.origin/);
+  assert.doesNotMatch(route,/import \{CACHE_POLICY\}/);
+});

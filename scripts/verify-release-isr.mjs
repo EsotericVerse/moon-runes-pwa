@@ -23,7 +23,9 @@ for(const route of [
 const numericSource=read(numeric),invalidateSource=read(invalidation);
 // ISR routes are prepared but refuse requests unless Admin enables mode=isr.
 // Deployment continues to be a separate manual user action.
-if(!numericSource.includes('CACHE_POLICY')||!numericSource.includes("mode!=='isr'")||
+if(!numericSource.includes("db.from('loc_runtime_config')")||
+   !numericSource.includes("cache_mode!=='isr'")||
+   !numericSource.includes('configuredOrigin!==url.origin')||
    !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
   throw Error('ISR must remain admin-gated; revalidation writes remain disabled');
 if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource))
