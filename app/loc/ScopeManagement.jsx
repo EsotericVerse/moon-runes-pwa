@@ -25,9 +25,9 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const editDock=useEditDock();
   const searchParams=useSearchParams();
   const isLoc=routeScopeId==='loc';
-  const canManageHere=isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId);
+  const canManageHere=Boolean(editDock?.active&&editDock.scopeId===routeScopeId)&&
+    (isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId));
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
-  const editRequested=searchParams?.get('edit')==='1';
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
   const requestedSection=searchParams?.get('section');
@@ -43,10 +43,6 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   },[isLoc,requestedSection]);
   const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'');
   const selectedOption=options.find(option=>option.value===section)||options[0];
-  useEffect(()=>{
-    if(!account.user||!canManageHere||(!editRequested&&!['settings','placeManage','traceMap'].includes(section))||account.permissionLoading)return;
-    editDock?.begin(routeScopeId);
-  },[account.user,account.permissionLoading,canManageHere,editRequested,section,routeScopeId,isLoc,editDock?.begin]);
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
   </FeaturePage>;

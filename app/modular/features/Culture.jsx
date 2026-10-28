@@ -185,9 +185,10 @@ export default function Culture(){
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
-  const isTimeEditingView=searchParams?.get('edit')==='1';
+  const canUseScopeEditor=Boolean(editDock?.active&&editDock.scopeId===scopeId);
+  const isTimeEditingView=canUseScopeEditor&&searchParams?.get('edit')==='1';
   // Public Culture does not load management grants; editing must verify them.
-  const account=useAccount({enabled:isTimeEditingView});
+  const account=useAccount({enabled:isTimeEditingView||canUseScopeEditor});
   const editDock=useEditDock();
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
@@ -242,9 +243,6 @@ export default function Culture(){
   const [timelineEditorRevision,setTimelineEditorRevision]=useState(0);
   // Opening the time editor is a UI action, not an authorization check.
   // Verify the active user only when a write is actually requested.
-  useEffect(()=>{
-    if(isTimeEditingView&&scopeId&&scopeId!=='loc')editDock?.begin(scopeId);
-  },[isTimeEditingView,scopeId,editDock?.begin]);
   const [suggestedRecordType,setSuggestedRecordType]=useState('anchor');
   const [suggestedRequestNonce,setSuggestedRequestNonce]=useState(0);
   const [editDraft,setEditDraft]=useState(null);
@@ -1037,7 +1035,7 @@ export default function Culture(){
   };
 
   async function createSelectedSuggestedAnchors(){
-    if(creatingSuggestedAnchors||!scopeData?.time)return;
+    if(!canUseScopeEditor||creatingSuggestedAnchors||!scopeData?.time)return;
     const suggestedDates=new Set(riverAnalysis.suggestions.map(item=>item.date));
     const existingDates=new Set(existingAnchorDates);
     const dates=[...new Set(selectedVirtualAnchorDates)]
@@ -1063,6 +1061,7 @@ export default function Culture(){
   }
 
   async function startEditingWork(work){
+    if(!canUseScopeEditor)return;
     const uid=String(work?.uid||'').trim();
     if(!uid)return;
     const key=String(work?.key||('galaxy:'+uid));
@@ -1098,6 +1097,7 @@ export default function Culture(){
   }
 
   async function saveEditingWork(work){
+    if(!canUseScopeEditor)return;
     const uid=String(work?.uid||'').trim();
     if(!uid||!editDraft)return;
     setEditBusy(true);setEditError('');
@@ -1125,6 +1125,7 @@ export default function Culture(){
   }
 
   async function deleteEditingWork(work){
+    if(!canUseScopeEditor)return;
     const uid=String(work?.uid||'').trim();
     if(!uid)return;
     setEditBusy(true);setEditError('');
@@ -1411,7 +1412,7 @@ export default function Culture(){
                           <strong>{item.date}</strong>
                           <span>｜前 3 日 {Number(item.beforeCount||0).toLocaleString(locale)} 次／後 3 日 {Number(item.afterCount||0).toLocaleString(locale)} 次</span>
                           {(item.analysis||[]).length?<span>｜{item.analysis.join(' ')}</span>:null}
-                          <span>｜<ScopeLink href={href}>前往時間編輯，確認定錨點</ScopeLink></span>
+                          {canUseScopeEditor?<span>｜<ScopeLink href={href}>前往時間編輯，確認定錨點</ScopeLink></span>:null}
                         </div>;
                       })}
                     </div>:<p className='scope-status'>此時間區間暫無足夠的風格密度變化，或分析資料尚在載入。</p>}
@@ -1447,10 +1448,10 @@ export default function Culture(){
                  {styleFilter!=='trace'&&!riverRangeLoading&&anchorSuggestOpen?<div className='scope-culture-anchor-actions'>
                   {riverAnalysis.suggestions.length>0?<>
                     <span>{formatCultureUi(l.candidateSummary,{count:riverAnalysis.suggestions.length})}</span>
-                    <button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
+                    {canUseScopeEditor?<button type='button' className='loc-button' disabled={creatingSuggestedAnchors||!selectedVirtualAnchorDates.length}
                       onClick={createSelectedSuggestedAnchors}>
                       {creatingSuggestedAnchors?'正在新增…':'新增選取的建議定錨點（'+selectedVirtualAnchorDates.length+'）'}
-                    </button>
+                    </button>:null}
                     {editError?<p className='scope-status scope-error' role='alert'>{editError}</p>:null}
                     <details className='scope-culture-anchor-picker' open>
                       <summary><span className='scope-culture-anchor-picker-mark' aria-hidden='true'/><UiText id="uiExtra.cultureView.expandToCompareWorkVolumeChanges"/></summary>
@@ -1459,11 +1460,11 @@ export default function Culture(){
                           const route=featureNavigationHref(scopeId,'culture');
                           const href=route+(route.includes('?')?'&':'?')+'edit=1&anchorDate='+encodeURIComponent(item.date);
                           return <div key={item.date} className='scope-status'>
-                            <label><input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)}
+                            {canUseScopeEditor?<label><input type='checkbox' checked={selectedVirtualAnchorDates.includes(item.date)}
                               onChange={()=>toggleVirtualAnchor(item.date)}/>
                               {formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}
-                            </label>
-                            <ScopeLink href={href}>前往時間編輯</ScopeLink>
+                            </label>:<span>{formatCultureUi(l.candidateComparison,{date:item.date,before:Number(item.beforeCount||0).toLocaleString(locale),after:Number(item.afterCount||0).toLocaleString(locale),analysis:(item.analysis||[]).join(' ')})}</span>}
+                            {canUseScopeEditor?<ScopeLink href={href}>前往時間編輯</ScopeLink>:null}
                           </div>;
                         })}
                       </div>
@@ -1588,7 +1589,7 @@ export default function Culture(){
                     scrollRootRef={workScrollRef}
                     renderItem={(work,index)=>{
                       const workKey=String(work.key||('galaxy:'+work.uid));
-                      const canEditWork=authorizedWorkKey===workKey;
+                      const canEditWork=canUseScopeEditor&&authorizedWorkKey===workKey;
                       return <Article
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                       uid={work.uid}
@@ -1619,7 +1620,7 @@ export default function Culture(){
                           content={fullTextKey===workKey?fullText:''}
                           onToggle={()=>toggleWorkContent(work)}
                         />
-                        {fullTextKey===workKey?<button type='button' className='loc-button scope-work-edit-button'
+                        {fullTextKey===workKey&&canUseScopeEditor?<button type='button' className='loc-button scope-work-edit-button'
                           onClick={()=>startEditingWork(work)}>編輯</button>:null}
                         
                       </div>:null}

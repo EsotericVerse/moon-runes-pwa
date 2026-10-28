@@ -237,7 +237,8 @@ export default function Search({managementMode=false}){
   const t=useUiText();
   const {scopeId,scope}=useScopeRuntime();
   const editDock=useEditDock();
-  const account=useAccount({enabled:managementMode});
+  const publicScopeEditing=Boolean(editDock?.active&&editDock.scopeId===scopeId&&scopeId!=='loc');
+  const account=useAccount({enabled:managementMode||publicScopeEditing});
   // LOC's public Search is global. Only the separate authorized management
   // workspace may narrow the query to a specific Scope.
   const locPublicSearch=scopeId==='loc'&&!managementMode;
@@ -692,6 +693,7 @@ export default function Search({managementMode=false}){
   }
 
   async function startEditing(result){
+    if(!managementMode&&(!publicScopeEditing||result.scopeId!==scopeId))return;
     setEditingKey(result.key);setEditError('');
     setEditDraft(null);
     try{
@@ -729,6 +731,7 @@ export default function Search({managementMode=false}){
     }
   }
   async function saveEditing(result){
+    if(!managementMode&&(!publicScopeEditing||result?.scopeId!==scopeId))return false;
     if(!editDraft||!result?.editableTable||!result.editableField||editBusy)return false;
     setEditBusy(true);setEditError('');
     try{
@@ -788,6 +791,7 @@ export default function Search({managementMode=false}){
     finally{setEditBusy(false)}
   }
   async function deleteEditing(result){
+    if(!managementMode&&(!publicScopeEditing||result?.scopeId!==scopeId))return;
     if(!result?.editableTable||!result?.editableIdColumn||!result?.editResourceId)return;
     setEditBusy(true);setEditError('');
     try{
@@ -1197,7 +1201,7 @@ export default function Search({managementMode=false}){
         // Page blocks have no Galaxy attributes. Article editing and typed
         // metadata are available only to authorized Scope managers; guest
         // search and article reading cannot reveal metadata controls.
-        const canOfferEdit=Boolean(editTarget.resourceType==='galaxy'&&editTarget.editableTable&&
+        const canOfferEdit=Boolean(publicScopeEditing&&row.scopeId===scopeId&&editTarget.resourceType==='galaxy'&&editTarget.editableTable&&
           editTarget.editableIdColumn&&editTarget.editResourceId);
         const editable=Boolean(
           (managementMode&&canManageSearchScope(account,row.scopeId)&&editTarget.resourceType&&editTarget.editableTable&&editTarget.editableIdColumn&&editTarget.editResourceId)
@@ -1216,7 +1220,7 @@ export default function Search({managementMode=false}){
             ?<h2 className="scope-search-scope-heading">{scopeLabel(row.scopeId)}</h2>:null}
         <Article
           key={row.key}
-          editOnCardClick={!managementMode}
+          editOnCardClick={!managementMode&&canOfferEdit}
           managerMode={managementMode}
           uid={editTarget.editResourceId}
           title={row.title}

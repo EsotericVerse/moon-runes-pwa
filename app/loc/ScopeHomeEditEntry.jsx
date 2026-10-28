@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useState} from 'react';
 import UiText from '../i18n/UiText';
 import {useUiSection} from '../i18n/ui-locale';
 import {registerDefaultSection} from '../i18n/ui-copy';
@@ -21,10 +21,6 @@ export default function ScopeHomeEditEntry(){
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
-  useEffect(()=>{
-    if(scopeId!=='local'||!Capacitor.isNativePlatform()||Capacitor.getPlatform()!=='ios')return;
-    if(new URLSearchParams(window.location.search).get('edit')==='1')editDock?.begin('local');
-  },[scopeId,editDock?.begin]);
 
   async function enter(){
     if(busy)return;

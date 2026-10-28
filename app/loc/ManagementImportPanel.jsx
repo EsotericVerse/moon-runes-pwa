@@ -11,6 +11,8 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import {insertRows,dbAuthRelation,dbAuthClient,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
+import {useAsyncResource} from './use-async-resource';
+import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
@@ -29,14 +31,6 @@ const ZIP_LAYOUT_KEYS=Object.freeze({
 });
 const ZIP_FIELD_KEYS=Object.freeze(['id','text','author','time','relation','attachment','collection']);
 const ZIP_SOURCE_NAMES=Object.freeze({chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',copilot:'Microsoft Copilot',perplexity:'Perplexity', 'meta-ai':'Meta AI',facebook:'Facebook',messenger:'Messenger',instagram:'Instagram',threads:'Threads',whatsapp:'WhatsApp',x:'X / Twitter',telegram:'Telegram',discord:'Discord',line:'LINE',slack:'Slack',teams:'Microsoft Teams',snapchat:'Snapchat',wechat:'WeChat',tiktok:'TikTok',reddit:'Reddit',linkedin:'LinkedIn',pinterest:'Pinterest',youtube:'YouTube','google-takeout':'Google Takeout'});
-function sourceSuggestion(name=''){
-  const value=String(name).toLowerCase();
-  if(/your_posts|status_updates|facebook_activity|places_you_have_been_tagged_in/i.test(value))return 'Facebook';
-  for(const key of ['threads','facebook','pixnet','ptt','vocus','instagram']){
-    if(value.includes(key))return key;
-  }
-  return String(name).replace(/\.[a-z0-9]+$/i,'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'-')||'import';
-}
 function iso(value){
   if(!value)return null;
   const date=new Date(value);
@@ -132,16 +126,13 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
 
-function ImportFormatSettings({format,onChange,disabled=false,source='',onSourceChange,sourceDisabled=false,suggested=''}){
+function ImportFormatSettings({format,onChange,disabled=false}){
   const t=useUiText();
   const update=(key,value)=>onChange({...format,[key]:value});
   const updateField=(key,value)=>onChange({...format,fields:{...format.fields,[key]:value}});
   return <details className="loc-bubble scope-import-format">
     <summary><UiText id="uiExtra.importUI.formatSummary"/><span className="scope-import-format-mark" aria-hidden="true"/></summary>
     <div className="scope-management-fields">
-      <label><UiText id="uiExtra.importUI.sourceLabel"/>
-        <input disabled={disabled||sourceDisabled} value={source} onChange={e=>onSourceChange?.(e.target.value)} placeholder={suggested}/>
-      </label>
       <label><UiText id="uiExtra.importUI.recordPath"/>
         <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder={t('uiExtra.importUI.recordPathHint')}/>
       </label>
@@ -261,23 +252,39 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
+  const sourceCategories=useAsyncResource({
+    queryKey:['import-source-categories',scopeId],
+    enabled:!nativeLocal&&Boolean(account.user)&&account.canManageScopeSync(scopeId),
+    queryFn:async()=>{
+      const lists=await Promise.all(['loc',scopeId].map(async id=>{
+        const {data,error}=await dbAuthRelation('silver.'+id).select('txt_class').eq('id',id).maybeSingle();
+        if(error)throw new Error(error.message);
+        return Array.isArray(data?.txt_class)?data.txt_class:[];
+      }));
+      return {system:lists[0],personal:lists[1]};
+    }
+  });
+  const sourceOptions=[...new Set([...(sourceCategories.data?.system||[]),...(sourceCategories.data?.personal||[])])];
+  const canonicalSource=value=>canonicalImportSourceName(value,sourceCategories.data?.system||[],sourceCategories.data?.personal||[]);
   const [importLocale,setImportLocale]=useState('zh-Hant');
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
-  const suggested=useMemo(()=>sourceSuggestion(fileName),[fileName]);
+  const suggested=useMemo(()=>inferImportSourceFromFilename(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
   const analyzed=useMemo(()=>{
     const selected=deferredSource.trim();
-    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,entry?.raw?.source_name||selected,format.fields,t));
+    const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,
+      canonicalImportSourceName(archiveDetection?(entry?.raw?.source_name||selected):selected,
+        sourceCategories.data?.system||[],sourceCategories.data?.personal||[]),format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
       normalized:normalized.filter(item=>item.record),
       mediaOnly:normalized.filter(item=>item.mediaOnlyRecord).map(item=>item.mediaOnlyRecord),
       invalid:normalized.filter(item=>item.error)
     };
-  },[rows,deferredSource,format.fields,locale]);
+  },[rows,deferredSource,format.fields,locale,archiveDetection,sourceCategories.data]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
@@ -340,7 +347,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setArchiveEvidence(mediaEvidence);
         setArchiveSummary({...summary,exifSamples,mediaEvidenceCount:mediaEvidence.length});
         if(!imported.length&&!mediaEvidence.length){
-          setSource(result.sources.length===1?result.sources[0]:'');
+          setSource(result.sources.length===1?canonicalSource(result.sources[0]):'');
           setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
             (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
@@ -348,7 +355,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         }
         setRows(imported);
         const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
-        setSource(sourceNames.length===1?sourceNames[0]:'Mixed');
+        setSource(sourceNames.length===1?canonicalSource(sourceNames[0]):'Mixed');
         setStatus('已解析 '+imported.length.toLocaleString()+' 篇公開貼文，媒體 '+mediaEvidence.length.toLocaleString()+' 筆；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+' 筆'+
           (privateSkipped?'（含 '+privateSkipped.toLocaleString()+' 筆非公開／不支援紀錄）':'')+
@@ -364,8 +371,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         import_uid:createUid8()
       }));
       setRows(prepared);
-      // Galaxy Markdown metadata suggests an initial source; the user may override it.
-      setSource(String(list[0]?.source_name||'').trim()||sourceSuggestion(file.name));
+      // Use the filename as the default source; Scope editors may override it.
+      setSource(canonicalSource(inferImportSourceFromFilename(file.name)));
       setStatus(t('uiExtra.importUI.parsedFile',{index:index+1,total,count:list.length.toLocaleString()})+
         (parsed.length!==list.length?'；已略過 '+(parsed.length-list.length).toLocaleString()+' 筆私人紀錄。':''));
     }catch(error){
@@ -393,7 +400,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   }
   async function run(){
     if(busy||(!rows.length&&!archiveEvidence.length))return;
-    const selected=source.trim();
+    const selected=canonicalSource(source);
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
     if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
     try{
@@ -530,8 +537,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
       </label>
     </div>
-    <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}
-      source={source} onSourceChange={setSource} sourceDisabled={!rows.length} suggested={suggested}/>
+    <label className="scope-import-source-choice">匯入來源
+      <input type="text" list={'scope-import-sources-'+scopeId} maxLength={80} required
+        value={source} onChange={event=>setSource(event.target.value)}
+        disabled={busy||!rows.length} placeholder={suggested}/>
+      <datalist id={'scope-import-sources-'+scopeId}>
+        {sourceOptions.map(name=><option key={name} value={name}/>)}
+      </datalist>
+    </label>
+    <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
