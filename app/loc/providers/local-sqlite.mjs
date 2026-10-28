@@ -68,7 +68,6 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
 );
 CREATE TABLE IF NOT EXISTS local_galaxy_media (
   uid TEXT PRIMARY KEY NOT NULL,
-  galaxy_link TEXT,
   media_type TEXT NOT NULL,
   title TEXT,
   url TEXT,
@@ -221,7 +220,7 @@ async function upgradeNativeLocalArchiveExif(conn){
 
 
 const LOCAL_MEDIA_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_galaxy_media \([\s\S]*?\);/)[0];
-const LOCAL_MEDIA_COLUMNS=['uid','galaxy_link','media_type','title','url','meta_tags','createtime','source_place','rune_references'];
+const LOCAL_MEDIA_COLUMNS=['uid','media_type','title','url','meta_tags','createtime','source_place','rune_references'];
 function legacyMediaUid(value){
   const text=String(value||'').trim().toUpperCase();
   if(/^[A-Z0-9]{8}$/.test(text))return text;
@@ -230,24 +229,35 @@ function legacyMediaUid(value){
   return (BigInt('0x'+text.replaceAll('-',''))%(36n**8n)).toString(36).toUpperCase().padStart(8,'0');
 }
 function localMediaMigrationStatements(mediaRows,articles,exifRows){
-  const links=new Map(mediaRows.map(row=>[String(row.media_id),legacyMediaUid(row.media_id)]));
+  const oldId=row=>String(row.media_id||row.uid);
+  const links=new Map(mediaRows.map(row=>[oldId(row),legacyMediaUid(oldId(row))]));
   if(new Set(links.values()).size!==links.size)throw new Error('Local media UID collision');
+  const byArticle=new Map();
+  for(const row of mediaRows){
+    if(!row.galaxy_link)continue;
+    const articleUid=String(row.galaxy_link);
+    if(!byArticle.has(articleUid))byArticle.set(articleUid,[]);
+    byArticle.get(articleUid).push(links.get(oldId(row)));
+  }
   const steps=[
     {sql:'ALTER TABLE local_galaxy_media RENAME TO local_galaxy_media_legacy_backup',values:[]},
     {sql:LOCAL_MEDIA_TABLE_CREATE,values:[]},
     ...mediaRows.map(row=>({sql:'INSERT INTO local_galaxy_media ('+LOCAL_MEDIA_COLUMNS.join(',')+') VALUES ('+LOCAL_MEDIA_COLUMNS.map(()=>'?').join(',')+')',
-      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(String(row.media_id)):row[c]))}))
+      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(oldId(row)):row[c]))}))
   ];
   for(const row of articles){
-    if(!row.media_link)continue;
-    let ids;
-    try{ids=JSON.parse(row.media_link);}catch{throw new Error('Invalid legacy local media links');}
-    if(!Array.isArray(ids))throw new Error('Invalid legacy local media links');
-    const next=ids.map(id=>{
+    let ids=[];
+    if(row.media_link){
+      try{ids=JSON.parse(row.media_link);}catch{throw new Error('Invalid legacy local media links');}
+      if(!Array.isArray(ids))throw new Error('Invalid legacy local media links');
+    }
+    const forward=ids.map(id=>{
       if(!links.has(String(id)))throw new Error('Unresolved legacy local media link');
       return links.get(String(id));
     });
-    steps.push({sql:'UPDATE local_galaxy SET media_link=? WHERE uid=?',values:[JSON.stringify(next),row.uid]});
+    const next=[...new Set([...forward,...(byArticle.get(String(row.uid))||[])])];
+    if(next.length||row.media_link)steps.push({sql:'UPDATE local_galaxy SET media_link=? WHERE uid=?',
+      values:[JSON.stringify(next),row.uid]});
   }
   for(const row of exifRows){
     if(!row.media_id)continue;
@@ -259,9 +269,10 @@ function localMediaMigrationStatements(mediaRows,articles,exifRows){
   return steps;
 }
 function upgradeWebLocalMedia(db){
-  if(!rowsOf(db,'PRAGMA table_info(local_galaxy_media)').some(row=>row.name==='media_id'))return;
+  const columns=rowsOf(db,'PRAGMA table_info(local_galaxy_media)');
+  if(!columns.some(row=>row.name==='media_id'||row.name==='galaxy_link'))return;
   const rows=rowsOf(db,'SELECT * FROM local_galaxy_media');
-  const articles=rowsOf(db,'SELECT uid,media_link FROM local_galaxy WHERE media_link IS NOT NULL');
+  const articles=rowsOf(db,'SELECT uid,media_link FROM local_galaxy');
   const exif=rowsOf(db,'SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL');
   const steps=localMediaMigrationStatements(rows,articles,exif);
   db.run('BEGIN');
@@ -273,9 +284,10 @@ function upgradeWebLocalMedia(db){
   }catch(error){db.run('ROLLBACK');throw error;}
 }
 async function upgradeNativeLocalMedia(conn){
-  if(!(await conn.query('PRAGMA table_info(local_galaxy_media)')).values?.some(row=>row.name==='media_id'))return;
+  const columns=(await conn.query('PRAGMA table_info(local_galaxy_media)')).values||[];
+  if(!columns.some(row=>row.name==='media_id'||row.name==='galaxy_link'))return;
   const rows=(await conn.query('SELECT * FROM local_galaxy_media')).values||[];
-  const articles=(await conn.query('SELECT uid,media_link FROM local_galaxy WHERE media_link IS NOT NULL')).values||[];
+  const articles=(await conn.query('SELECT uid,media_link FROM local_galaxy')).values||[];
   const exif=(await conn.query('SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL')).values||[];
   const steps=localMediaMigrationStatements(rows,articles,exif);
   await conn.beginTransaction();

@@ -67,6 +67,7 @@ export default function SunoImportPanel({scopeId,dockScopeId=scopeId,globalAdmin
       const createtime=draft.createdDate?new Date(draft.createdDate+'T00:00:00+08:00').toISOString():new Date().toISOString();
       const lyricsUid=hasBlockNoteContent(lyrics)?createUid8():null;
       const styleUid=lyricsUid&&hasBlockNoteContent(stylePrompt)?createUid8():null;
+      const mediaUid=createUid8();
       const sourceId=draft.source_id.trim()||(styleUid?draft.ref_id.trim():'')||null;
       const scopeData=account.scopeDataFor(scopeId);
       if(!scopeData)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
@@ -76,7 +77,7 @@ export default function SunoImportPanel({scopeId,dockScopeId=scopeId,globalAdmin
           uid:lyricsUid,
           title,content:lyrics,createtime,
           source_id:sourceId,target_id:normalizeRelationIds(draft.target_id),ref_id:styleUid||draft.ref_id.trim()||null,
-          url:draft.url.trim()||null,searchable:true,source_name:'suno'
+          url:draft.url.trim()||null,searchable:true,source_name:'suno',media_link:[mediaUid]
         }]);
       }
       if(styleUid){
@@ -87,7 +88,7 @@ export default function SunoImportPanel({scopeId,dockScopeId=scopeId,globalAdmin
         }]);
       }
       await insertRows(galaxyMedia,[{
-        galaxy_link:lyricsUid,
+        uid:mediaUid,
         media_type:'suno',
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime

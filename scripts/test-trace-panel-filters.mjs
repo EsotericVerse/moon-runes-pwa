@@ -26,10 +26,11 @@ test('Threads is an exact case-insensitive source filter, not a media subtype',(
   assert.ok(!filters.some(f=>f.column==='media_type'));
 });
 
-test('media choices use real type labels and only galaxy_link-linked articles',()=>{
+test('media choices follow article media_link without reverse dependencies',()=>{
   assert.deepEqual([...TRACE_MEDIA_TYPES],['音樂','圖片','影片']);
-  const articles=[{uid:'AAAAAAAA',title:'Threads image'},{uid:'BBBBBBBB',title:'unrelated'}];
-  assert.deepEqual(traceMediaMatches(articles,[{galaxy_link:'AAAAAAAA',media_type:'圖片'}]),
+  const articles=[{uid:'AAAAAAAA',title:'Threads image',media_link:['MEDIA001','MEDIA002']},
+    {uid:'BBBBBBBB',title:'unrelated',media_link:[]}];
+  assert.deepEqual(traceMediaMatches(articles,[{uid:'MEDIA001',media_type:'圖片'}]),
     [articles[0]]);
 });
 
@@ -59,7 +60,7 @@ test('UI loads only the Frame index on entry; selected sites and report stay gat
   assert.match(trace,/!mapOnly&&reportPlace\?<TracePlaceResults/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
   assert.match(result,/mediaFiltered=useAsyncResource/);
-  assert.match(result,/galaxy_link,media_type/);
+  assert.match(result,/uid,media_type/);
   assert.match(result,/sourceFilter/);
   assert.match(result,/filteredDaily/);
   assert.match(result,/summary.data/);

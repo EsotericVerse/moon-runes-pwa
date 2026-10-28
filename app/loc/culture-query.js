@@ -696,7 +696,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectRows(scope.galaxyMedia,{
-      columns:'uid,galaxy_link,media_type,title,url,meta_tags,createtime',
+      columns:'uid,media_type,title,url,meta_tags,createtime',
       filters:[{column:'uid',operator:'in',value:mediaIds}],
       limit:mediaIds.length
     }):Promise.resolve({rows:[]})

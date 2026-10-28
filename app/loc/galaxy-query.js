@@ -459,7 +459,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
-    columns:['uid','galaxy_link','media_type','title','url','meta_tags','createtime'],
+    columns:['uid','media_type','title','url','meta_tags','createtime'],
     searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime'
   });
   if(mediaOnly||contentType==='multimedia')return [media];

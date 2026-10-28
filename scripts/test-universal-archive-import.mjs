@@ -174,7 +174,7 @@ test('Threads, Facebook and Instagram ZIP images retain media URL and private EX
   assert.equal(plan.exif.length,3);
   assert.deepEqual(new Set(plan.exif.map(e=>e.platform)),new Set(['threads','facebook','instagram']));
   assert.equal(plan.media.every(row=>row.url?.startsWith('https://media.example.test/')),true);
-  assert.equal(plan.media.every(row=>row.galaxy_link&&uids.has(row.galaxy_link)),true);
+  assert.equal(plan.media.every(row=>row.__article_uid&&uids.has(row.__article_uid)),true);
   assert.equal(plan.media.every(row=>!('latitude' in row)&&!('longitude' in row)),true);
   assert.equal(plan.exif.every(row=>Math.abs(row.latitude-25.0333)<0.01),true);
 });
