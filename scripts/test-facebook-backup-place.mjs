@@ -100,7 +100,7 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  assert.match(adapter,/facebookArchiveGalaxyRow\(record\)/);
  assert.match(ui,/await inspectPrivateArchive\(file,\{[\s\S]*?onRecord:record=>\{/);
  assert.match(ui,/setRows\(imported\)/);
- assert.match(ui,/setSource\(sourceNames\.length===1\?sourceNames\[0\]:'Mixed'\)/);
+ assert.match(ui,/setSource\(sourceNames\.length===1\?canonicalSource\(sourceNames\[0\]\):'Mixed'\)/);
  assert.match(parser,/sourcePlace=actualKind==='post'\?facebookBackupPlace\(item\):''/);
  assert.match(src('app/loc/archive-source-signatures.mjs'),/your_facebook_activity/);
 });
