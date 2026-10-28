@@ -394,7 +394,7 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
-  assert.ok(route.includes('CACHE_POLICY'));
+  assert.ok(route.includes("from('loc_runtime_config')"));
   assert.ok(route.includes("mode!=='isr'"));
   assert.ok(route.includes('no-store'));
   assert.ok(route.includes('read_scope_statistics'));
@@ -586,8 +586,8 @@ test('Admin first tab is People; lists and network consolidate existing secure e
   assert.ok(menu,'Admin options are missing');
   assert.deepEqual([...menu[1].matchAll(/value:'([^']+)'/g)].map(x=>x[1]),
     ['registry','lists','network','io','featureHero','themes']);
-   assert.match(admin,/section==='io'\?<section/);
-   assert.match(admin,/MAX_ROWS\.toLocaleString\(\)/);
+   assert.match(admin,/section==='io'\?<RuntimeIoSettings\/>/);
+   assert.match(read('app/loc/views/admin-panels/RuntimeIoSettings.jsx'),/key:'maxRows'/);
   assert.match(admin,/useManagementSection\(ADMIN_OPTIONS,'registry'/);
   for(const [oldId,newId] of Object.entries({
     database:'network',isr:'network',reserved:'lists',blocklist:'lists'
