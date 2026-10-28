@@ -22,7 +22,7 @@ const STRINGS={
     map:'可縮放、旋轉、傾斜的板橋地圖示範',
     note:'紫色立體柱是空間定錨示例，不代表真實建物或資料量。道路線僅為路網建議，不代表實際歷史行程。底圖採用 OpenFreeMap／OpenStreetMap，規劃示例路線時使用公開 OSRM 測試服務。',
     status:{
-      loading:'正在啟動地理底圖…',ready:'已顯示真實地理位置的立體定錨點；座標及高度為展示用。',
+      loading:'正在啟動地理底圖…',ready:'地圖已就緒。',
       mapError:'底圖可能暫時無法載入，請確認網路與地圖服務。',
       moduleError:'MapLibre 模組載入失敗，請檢查連線。',
       initError:'無法啟動 3D 地圖；請檢查瀏覽器 WebGL 與網路連線。',
