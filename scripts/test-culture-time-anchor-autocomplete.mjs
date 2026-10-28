@@ -5,8 +5,9 @@ import {readFileSync} from 'node:fs';
 const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../app/styles/features.css',import.meta.url),'utf8');
 
-test('time_period start/end anchors use React Select autocomplete, not plain <select>',()=>{
+test('time records use React Select and period anchors retain autocomplete',()=>{
   assert.ok(editor.includes("import Select from 'react-select'"));
+  assert.ok(editor.includes("import PopularSelect from '../../loc/PopularSelect'"));
   assert.match(editor,/anchorOptions=useMemo\(\(\)=>anchorChoices\.map\(row=>/);
   assert.match(editor,/options=\{anchorOptions\}/);
   assert.match(editor,/options=\{anchorOptions\.filter\(option=>option\.value!==segment\.start\)\}/);
@@ -42,12 +43,27 @@ test('invalid/stale anchors in a connected pair are rejected before save, not si
   assert.match(editor,/throw new Error\('連線的定錨點有已失效的，請移除'\)/);
 });
 
-test('the display label stays 時間痕跡 for time_trace (not renamed to 時期)',()=>{
-  assert.match(editor,/time_trace:'時間痕跡'/);
+test('the display labels map time_trace to 時代 and time_period to 期間',()=>{
+  assert.match(editor,/time_trace:'時代'/);
+  assert.match(editor,/time_period:'期間'/);
   assert.doesNotMatch(editor,/時期/);
 });
 
 test('connect-anchors UI has its own styled block, not reusing the plain segment rows unstyled',()=>{
   assert.match(styles,/\.scope-culture-quick-anchor-connect\{/);
   assert.match(styles,/\.scope-culture-quick-anchor-connect-item\{/);
+});
+
+test('time editor separates era, period, and anchors before searching',()=>{
+  assert.match(editor,/const TYPE_TABS=\[\.\.\.TYPES\]\.reverse\(\)/);
+  assert.match(editor,/role="group" aria-label="時間紀錄類型"/);
+  assert.match(editor,/rows\.filter\(row=>row\.type===browseType\)/);
+  assert.match(editor,/options=\{recordOptions\}/);
+  assert.match(editor,/isSearchable/);
+  assert.doesNotMatch(editor,/<select className="scope-select" value=\{selectedId\}/);
+  assert.match(editor,/setVisibilitySelection\(\[\]\)/);
+  assert.match(editor,/lastExternalSelectedId\.current/);
+  assert.match(editor,/切換紀錄會捨棄尚未儲存的修改/);
+  assert.match(styles,/\.scope-culture-record-browser\{/);
+  assert.match(styles,/\.scope-culture-inline-editor\) \.loc-react-select__control/);
 });

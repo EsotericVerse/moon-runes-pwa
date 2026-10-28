@@ -56,7 +56,7 @@ test('one event can be reused under two traces without merging separated interva
 });
 test('invalid event UID keeps trace group and broken link label without fake anchor',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001']);
-  assert.ok(data.groups.find(x=>x.label==='事件｜失效連線 GONE'));
+  assert.ok(data.groups.find(x=>x.label==='期間｜失效連線 GONE'));
   assert.ok(!data.items.some(x=>x.time_period_uid==='GONE'));
 });
 test('empty trace still appears and can be expanded',()=>{
