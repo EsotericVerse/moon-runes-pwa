@@ -3,8 +3,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
-import ScopeLink from '../ScopeLink';
-import {navigationHref} from '../scope-registry';
 import {useAsyncResource} from '../../loc/use-async-resource';
 import {traceWindow} from './trace/trace-panel-filters.mjs';
 import {pickTraceDemoStop,traceDemoRoute} from './trace/trace-demo-route.mjs';
@@ -157,7 +155,7 @@ export default function Trace({scopeId='loc'}){
           {maps.map(map=><option key={map.uid} value={map.uid}>
             {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
-          <option value="all">全部定錨點{!maps.length?'（無路線，自動顯示）':'（手動載入）'}</option>
+
         </select>
       </label>:null}
       <details className="loc-trace-more-controls">
@@ -167,10 +165,6 @@ export default function Trace({scopeId='loc'}){
         onClick={()=>{setTwoPointDemo(value=>!value);setDemoStopIds([]);setSelectedPlace(null);}}>
         {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
       </button>:null}
-      {currentMap&&routeListOpen?<ScopeLink className="loc-button"
-        href={navigationHref(periodScopeId,'manage')+'?section=traceMap&frame='+encodeURIComponent(currentMap.uid)}>
-        編輯目前痕跡圖
-      </ScopeLink>:null}
         </div>
       </details>
     </div>
@@ -182,7 +176,6 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
-    {scopeId==='loc'?<p className="scope-status">LOC 空間聚合尚未重建，請先在作者／符文 Scope 整理地點與路線；此頁目前不查詢已刪除的 loc_trace。</p>:null}
     {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
       {anchorsQuery.data?.length
         ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
