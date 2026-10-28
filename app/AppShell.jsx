@@ -26,6 +26,7 @@ import BottomNavIcon from './modular/BottomNavIcon';
 import {EditDockProvider,useEditDock} from './modular/edit-dock';
 // Only individual Scope homepages download the opt-in management entry.
 const ScopeHomeEditEntry=dynamic(()=>import('./loc/ScopeHomeEditEntry'),{loading:()=>null});
+const HomeEditModeRestore=dynamic(()=>import('./loc/HomeEditModeRestore'),{loading:()=>null});
 const AdminEditSystemButton=dynamic(()=>import('./loc/AdminEditSystemButton'),{loading:()=>null});
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import ScopeLink from './modular/ScopeLink';
@@ -319,6 +320,11 @@ function AppShellInner({children}){
     };
   },[pathname]);
   const editDock=useEditDock();
+  const [restoreHomeEdit,setRestoreHomeEdit]=useState(false);
+  useEffect(()=>{
+    try{setRestoreHomeEdit(Boolean(window.sessionStorage.getItem('loc-home-edit-entry-v1')));}
+    catch{setRestoreHomeEdit(false);}
+  },[pathname,scopeId]);
   useEffect(()=>{
     // Next can catch a failed lazy import before React reports the error.
     // Recover other failed chunk loads here, but never reload for SQL/RPC 404s.
@@ -538,6 +544,7 @@ function AppShellInner({children}){
       </div>:null}
     </header>
     {children}
+    {restoreHomeEdit?<HomeEditModeRestore scopeId={scopeId}/>:null}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={localWorkspace?'local':scopeId}>
       {editingDockVisible?editTabs.map(tab=>tab.widget==='system'
         ?<AdminEditSystemButton key="system" href={editTabHref('admin','edit','1')}/>

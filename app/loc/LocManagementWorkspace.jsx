@@ -1,7 +1,5 @@
 'use client';
 
-import {useEffect} from 'react';
-import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
 import {FeaturePage} from '../modular/ui';
@@ -12,13 +10,8 @@ import ManagementSectionNav from '../modular/ManagementSectionNav';
 export default function LocManagementWorkspace({featureId,navId,item,children,standalone=false}){
   const account=useAccount();
   const editDock=useEditDock();
-  const searchParams=useSearchParams();
-  const editRequested=searchParams?.get('edit')==='1';
-  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&account.canManageGroupSync('loc'));
-
-  useEffect(()=>{
-    if(editRequested&&canManage)editDock?.begin('loc');
-  },[editRequested,canManage,editDock?.begin]);
+  const canManage=Boolean(account.user&&!account.loading&&!account.permissionLoading&&
+    editDock?.active&&editDock.scopeId==='loc'&&account.canManageGroupSync('loc'));
 
   if(account.loading||account.permissionLoading)return <FeaturePage featureId={featureId}>
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>

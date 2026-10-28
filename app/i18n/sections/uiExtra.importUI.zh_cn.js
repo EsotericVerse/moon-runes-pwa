@@ -147,7 +147,7 @@ export default {
   "update": "更新",
   "unchanged": "不变",
   "skipped": "跳过",
-  "sourceLabel": "来源",
+  "sourceLabel": "导入来源",
   "noUid": "没有明确提供文章 UID 的有效记录。",
   "duplicateTitle": "数据重整（重复检测）",
   "duplicateHelp": "导入后手动执行：先比对 createtime 是否完全相同，再比对内文是否相同；两者都相同才视为重复。不会自动删除，请勾选后再删除。",

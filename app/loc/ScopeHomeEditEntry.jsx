@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useState} from 'react';
 import UiText from '../i18n/UiText';
 import {useUiSection} from '../i18n/ui-locale';
 import {registerDefaultSection} from '../i18n/ui-copy';
@@ -10,6 +10,7 @@ import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
+import {grantHomeEditorAccess} from './home-edit-access.mjs';
 
 // This control is shown only at the bottom of an individual Scope homepage.
 // No identity or management query runs until the visitor selects it.
@@ -21,10 +22,6 @@ export default function ScopeHomeEditEntry(){
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
 
-  useEffect(()=>{
-    if(scopeId!=='local'||!Capacitor.isNativePlatform()||Capacitor.getPlatform()!=='ios')return;
-    if(new URLSearchParams(window.location.search).get('edit')==='1')editDock?.begin('local');
-  },[scopeId,editDock?.begin]);
 
   async function enter(){
     if(busy)return;
@@ -34,6 +31,7 @@ export default function ScopeHomeEditEntry(){
       // Native device-local edits never require a cloud login; only the
       // local SQLite adapter may receive writes for this hidden Scope.
       if(scopeId==='local'&&Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'){
+        grantHomeEditorAccess(window.sessionStorage,'local','local-device');
         editDock?.begin('local');
         return;
       }
@@ -49,6 +47,7 @@ export default function ScopeHomeEditEntry(){
         setMessage('uiExtra.editBlocks.editPermissionDenied');
         return;
       }
+      grantHomeEditorAccess(window.sessionStorage,scopeId,result.user.id);
       // The homepage editor is mounted on this same Scope homepage.
       // Only switch its authorized UI state; never navigate to a new URL.
       // This also preserves the dynamic Scope shell's existing scopeid query.

@@ -1,8 +1,6 @@
 'use client';
 
-import {useEffect} from 'react';
 import dynamic from 'next/dynamic';
-import {useSearchParams} from 'next/navigation';
 import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {useAccount} from './use-account';
@@ -19,6 +17,7 @@ const ManagementMediaWorkspace=dynamic(()=>import('./ManagementMediaWorkspace'),
 const ManagementContentTarget=dynamic(()=>import('./ManagementContentTarget'),{loading:()=>null});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:()=>null});
 const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:()=>null});
+const ScopeSourceCorrection=dynamic(()=>import('./ScopeSourceCorrection'),{loading:()=>null});
 
 // These five selections are in one Article Control workspace. Moving a panel
 // never changes its Scope ownership, database tables or authorizer.
@@ -27,6 +26,7 @@ export const ARTICLE_CONTROL_SECTIONS=Object.freeze([
   {value:'publish',label:'發表文章與多媒體',shortLabel:'發表'},
   {value:'blocks',label:'修改建議與治理原則',shortLabel:'區塊修改'},
   {value:'import',label:'匯入',shortLabel:'匯入'},
+  {value:'source',label:'來源更正',shortLabel:'來源更正'},
   {value:'others',label:'個人分類',shortLabel:'個人分類'}
 ]);
 
@@ -45,21 +45,15 @@ export default function SearchManagement(){
   const {scopeId,scope}=useScopeRuntime();
   const account=useAccount();
   const editDock=useEditDock();
-  const searchParams=useSearchParams();
   const ready=!account.loading&&!account.permissionLoading;
   const isLocAdmin=scopeId==='loc';
   const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
-  const permitted=ready&&Boolean(account.user)&&
+  const permitted=ready&&Boolean(account.user&&editDock?.active&&editDock.scopeId===scopeId)&&
     (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
   const options=isLocAdmin?LOC_OPTIONS:ARTICLE_CONTROL_SECTIONS;
   const [activeSection,setSection]=useManagementSection(options,'search',
     isLocAdmin?{}:OLD_SCOPE_SECTION_ALIASES);
-  const editRequested=searchParams?.get('edit')==='1';
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
-  useEffect(()=>{
-    if(!permitted||(!editRequested&&!['publish','blocks','import','others','media','trace'].includes(activeSection)))return;
-    editDock?.begin(scopeId);
-  },[permitted,editRequested,activeSection,scopeId,editDock?.begin]);
 
   if(!ready)return <FeaturePage featureId="search">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
@@ -118,6 +112,8 @@ export default function SearchManagement(){
           ?<ManagementImportPanel key={scopeId+'-import'} scopeId={scopeId}/>:null}
         {!isLocAdmin&&activeSection==='others'
           ?<ScopeOthersSources key={scopeId+'-others'} scopeId={scopeId}/>:null}
+        {!isLocAdmin&&activeSection==='source'
+          ?<ScopeSourceCorrection key={scopeId+'-source'} scopeId={scopeId}/>:null}
 
         {isLocAdmin&&activeSection==='media'
           ?<ManagementContentTarget scopeId={scopeId} mode="media" globalAdmin/>:null}
