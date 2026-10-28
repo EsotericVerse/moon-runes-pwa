@@ -1,8 +1,9 @@
 // One format contract for JSON Import and Source Refresh. No database authority lives here.
+import {MAX_ROWS,MAX_ARCHIVE_BYTES,MAX_JSON_BYTES} from './query-batch-size.mjs';
 // Lightweight file-selection contracts remain separate from parser implementations.
 export const UNIVERSAL_IMPORT_ACCEPT='.zip,.json,.csv,.tsv,.xlsx,.ods,.docx,.pptx,.pdf,.odt,.odp,.odg,.rtf,.md,.html,.htm,.epub,.tex';
-export const ARCHIVE_MAX_BYTES=1024*1024*1024;
-export const ARCHIVE_JSON_MAX_BYTES=50*1024*1024;
+export const ARCHIVE_MAX_BYTES=MAX_ARCHIVE_BYTES;
+export const ARCHIVE_JSON_MAX_BYTES=MAX_JSON_BYTES;
 export const IMPORT_FIELD_ALIASES=Object.freeze({
   uid:['uid'],
   content:['content','body','text','message','description'],
@@ -135,11 +136,11 @@ export function withImportCreatedTime(record,importedAt=new Date().toISOString()
 
 export function validImportBatchSize(value){
   const size=Number(value);
-  if(!Number.isInteger(size)||size<1||size>200)throw new Error('單批筆數須介於 1～200。');
-  return size;
+  if(!Number.isInteger(size)||size!==MAX_ROWS)throw new Error('匯入批次統一使用 MaxRows：'+MAX_ROWS+'。');
+  return MAX_ROWS;
 }
 
-export async function writeImportBatches(records,{batchSize=100,writeBatch,onProgress}={}){
+export async function writeImportBatches(records,{batchSize=MAX_ROWS,writeBatch,onProgress}={}){
   if(!Array.isArray(records))throw new Error('匯入批次資料必須是陣列。');
   if(typeof writeBatch!=='function')throw new Error('匯入寫入函式不存在。');
   const size=validImportBatchSize(batchSize);
