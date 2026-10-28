@@ -75,18 +75,21 @@ test('same-origin edit navigation stays client-side and keeps the editor session
   assert.doesNotMatch(dock,/\/\(\?:manage\|culture\|trace\)/);
 });
 
-test('Scope Place Management restores the verified home editor state without denying authorized owners',()=>{
+test('authorized Scope Place Management enters even without a homepage edit marker',()=>{
   const manager=read('app/loc/ScopeManagement.jsx');
-  const restore=read('app/loc/HomeEditModeRestore.jsx');
+  const ttl=read('app/loc/edit-session-ttl.mjs');
   assert.match(manager,/const hasManagementGrant=Boolean\(account\.user&&/);
+  assert.match(manager,/account\.canManageScopeSync\(routeScopeId\)/);
+  assert.match(manager,/account\.canManageGroupSync\('loc'\)/);
   assert.match(manager,/const editorReady=Boolean\(editDock\?\.active&&editDock\.scopeId===routeScopeId\)/);
-  assert.match(manager,/readHomeEditorAccess\(window\.sessionStorage\)/);
-  assert.match(manager,/marker\?\.scopeId===routeScopeId&&marker\.userId===account\.user\.id/);
+  assert.match(manager,/if\(account\.loading\|\|account\.permissionLoading\|\|!hasManagementGrant\|\|editorReady\)return/);
+  assert.match(manager,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
   assert.match(manager,/editDock\?\.begin\(routeScopeId\)/);
+  assert.doesNotMatch(manager,/readHomeEditorAccess/);
+  assert.doesNotMatch(manager,/請先從此 Scope 首頁進入編輯模式/);
   assert.match(manager,/if\(!hasManagementGrant\)/);
   assert.match(manager,/if\(!editorReady\)/);
-  assert.match(manager,/正在恢復已授權的編輯模式/);
-  assert.match(manager,/請先從此 Scope 首頁進入編輯模式/);
-  assert.doesNotMatch(manager,/const canManageHere=Boolean\(editDock\?\.active/);
-  assert.match(restore,/marker\.userId===result\?\.user\?\.id/);
+  assert.match(manager,/編輯 Session 已逾時，請重新登入/);
+  assert.match(ttl,/EDIT_IDLE_TTL_MS=30\*60\*1000/);
+  assert.match(ttl,/EDIT_SESSION_TTL_MS=2\*60\*60\*1000/);
 });

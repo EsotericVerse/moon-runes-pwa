@@ -9,7 +9,7 @@ import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 import {recoverChunkOnce} from './chunk-recovery.mjs';
-import {readHomeEditorAccess} from './home-edit-access.mjs';
+import {editorSessionStatus} from './edit-session-ttl.mjs';
 
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
@@ -31,17 +31,20 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   const hasManagementGrant=Boolean(account.user&&
     (isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId)));
   const editorReady=Boolean(editDock?.active&&editDock.scopeId===routeScopeId);
-  const [reentryChecked,setReentryChecked]=useState(false);
+  const [sessionExpired,setSessionExpired]=useState(false);
   useEffect(()=>{
     if(account.loading||account.permissionLoading||!hasManagementGrant||editorReady)return;
-    // Only restore a home-authorized, same-user, same-Scope edit session.
-    // URL ?edit=1 is never an authorization credential.
-    const marker=readHomeEditorAccess(window.sessionStorage);
-    if(marker?.scopeId===routeScopeId&&marker.userId===account.user.id)
-      editDock?.begin(routeScopeId);
-    setReentryChecked(true);
+    // A verified Scope grant authorizes management entry. The transient edit
+    // dock is recreated after document navigation; a homepage marker is not
+    // required. Keep the 30-minute idle and 2-hour edit-session limits.
+    if(editorSessionStatus(window.sessionStorage).expired){
+      setSessionExpired(true);
+      return;
+    }
+    setSessionExpired(false);
+    editDock?.begin(routeScopeId);
   },[account.loading,account.permissionLoading,hasManagementGrant,editorReady,
-    account.user?.id,routeScopeId,editDock?.begin]);
+    routeScopeId,editDock?.begin]);
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
@@ -64,7 +67,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>請先至設定首頁登入。</p></section></FeaturePage>;
   if(account.error)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="alert"><p>管理權限查核失敗：{account.error}</p></section></FeaturePage>;
   if(!hasManagementGrant)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
-  if(!editorReady)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="status"><p>{reentryChecked?'請先從此 Scope 首頁進入編輯模式。':'正在恢復已授權的編輯模式…'}</p></section></FeaturePage>;
+  if(!editorReady)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="status"><p>{sessionExpired?'編輯 Session 已逾時，請重新登入後再進入管理。':'正在啟用已授權的管理介面…'}</p></section></FeaturePage>;
   return <FeaturePage featureId={isLoc?'trace':'manage'}>
 
     <div className={section==='placeManage'?'scope-management-layout scope-management-layout--anchor':'scope-management-layout'}>
