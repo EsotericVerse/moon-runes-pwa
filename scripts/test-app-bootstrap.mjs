@@ -594,7 +594,7 @@ test('Admin first tab is People; lists and network consolidate existing secure e
   }))assert.ok(admin.includes(oldId+":'"+newId+"'"),'legacy section '+oldId+' not mapped');
   assert.match(admin,/section==='lists'\?<\>[\s\S]*?<AdminReservedScopeIds\/>[\s\S]*?<AdminEmailBlocklist\/>[\s\S]*?<\/\>/);
   assert.match(admin,/section==='network'\?<\>[\s\S]*?<DatabaseTarget scopeGroup=\{scopeGroup\}\/>[\s\S]*?<IsrDomainTarget\/>[\s\S]*?<\/\>/);
-  assert.match(cache,/<h2>快取<\/h2>/);
+  assert.match(cache,/<h2>快取／ISR<\/h2>/);
   assert.match(cache,/CACHE_POLICY/);
   assert.doesNotMatch(cache,/dbAuthRelation|loc_cache_runtime|loc_cache_settings/);
   assert.match(dock,/const dirty=\[\.\.\.registeredEditors\.current\]\.filter/);
