@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import PopularSelect from '../../loc/PopularSelect';
+import Select from 'react-select';
 import {useSearchParams} from 'next/navigation';
 import {useUiCopy,useUiSection} from '../../i18n/ui-locale';
 import {useAsyncResource,useResourceCache} from '../../loc/use-async-resource';
@@ -12,6 +13,7 @@ import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,alloc
 
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,hidden_depth';
 const TYPES=['anchor','time_period','time_trace'];
+const TYPE_TABS=[...TYPES].reverse();
 const normalizeType=value=>({period:'time_trace',event:'time_period'}[value]||value);
 const displayType={anchor:'定錨點',time_period:'期間',time_trace:'時代'};
 const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],hidden_depth:-1});
@@ -46,6 +48,7 @@ export default function CultureTimelineEditor({
   const defaultType=TYPES.includes(normalizeType(defaultRecordType))?normalizeType(defaultRecordType):'anchor';
   const [draft,setDraft]=useState(()=>blank(defaultType));
   const [selectedId,setSelectedId]=useState('');
+  const [browseType,setBrowseType]=useState(defaultType);
   const [busy,setBusy]=useState(false);
   const [visibilitySelection,setVisibilitySelection]=useState([]);
   const [visibilityDepth,setVisibilityDepth]=useState(2);
@@ -56,6 +59,7 @@ export default function CultureTimelineEditor({
   const [pairTo,setPairTo]=useState(null);
   const original=useRef(blank(defaultType));
   const requestSeen=useRef('');
+  const lastExternalSelectedId=useRef('');
   const dockActions=useRef({save:null,isDirty:()=>false,isBusy:()=>false});
   const editorRef=useRef(null),inputRef=useRef(null);
 
@@ -103,23 +107,33 @@ export default function CultureTimelineEditor({
     return position(a).localeCompare(position(b))||
       String(a.uid).localeCompare(String(b.uid));
   }),[all,anchors,eventChoices]);
+  const recordOptions=useMemo(()=>rows.filter(row=>row.type===browseType).map(row=>({
+    value:String(row.uid),
+    label:(row.type==='anchor'&&day(row.address)?day(row.address)+'｜':'')+String(row.title||row.uid)
+  })),[rows,browseType]);
   const selectRow=id=>{
     const row=all.find(item=>String(item.uid)===String(id));
     if(!row)return;
-    setSelectedId(String(id));
+    if(String(id)!==selectedId&&dockActions.current.isDirty()
+      &&!window.confirm('切換紀錄會捨棄尚未儲存的修改，確定繼續？'))return;
+    onClose?.();
+    setSelectedId(String(id));setBrowseType(row.type);setVisibilitySelection([]);
+    setTracePairs([]);setPairFrom(null);setPairTo(null);
     const next=normalizeDraft(row);
     original.current=next;setDraft(next);setMessage('');
   };
   useEffect(()=>{
     const id=String(selectedRecordId||'').trim();
-    if(!id||!all.length)return;
-    if(id===selectedId&&dockActions.current.isDirty())return;
+    if(!id){lastExternalSelectedId.current='';return;}
+    if(!all.length||id===lastExternalSelectedId.current)return;
     const row=all.find(item=>String(item.uid)===id);
     if(row){
+      lastExternalSelectedId.current=id;
       const next=normalizeDraft(row);
-      setSelectedId(id);original.current=next;setDraft(next);setMessage('');
+      setSelectedId(id);setBrowseType(row.type);setVisibilitySelection([]);original.current=next;setDraft(next);setMessage('');
+      setTracePairs([]);setPairFrom(null);setPairTo(null);
     }
-  },[selectedRecordId,all,selectedId]);
+  },[selectedRecordId,all]);
   useEffect(()=>{
     const preferred=normalizeType(suggestedRecordType);
     const type=TYPES.includes(preferred)?preferred:'anchor';
@@ -128,7 +142,8 @@ export default function CultureTimelineEditor({
     if(requestSeen.current===key)return;
     requestSeen.current=key;
     const fresh={...blank(type),address:type==='anchor'?effectiveAnchorDate:''};
-    setDraft(fresh);original.current=fresh;setSelectedId('');setMessage('');
+    setDraft(fresh);original.current=fresh;setSelectedId('');setBrowseType(type);setMessage('');
+    setTracePairs([]);setPairFrom(null);setPairTo(null);
   },[suggestedRecordType,suggestedRequestNonce,effectiveAnchorDate,selectedRecordId]);
   useEffect(()=>{
     if(!editable||(!selectedRecordId&&!suggestedRequestNonce))return;
@@ -145,10 +160,20 @@ export default function CultureTimelineEditor({
   },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId]);
   if(!editable)return null;
 
-  const reset=()=>{
-    const fresh=blank(defaultType);
-    original.current=fresh;setDraft(fresh);setSelectedId('');setMessage('');
-    setTracePairs([]);setPairFrom(null);setPairTo(null);onClose?.();
+  const startNew=type=>{
+    const fresh=blank(type);
+    original.current=fresh;setDraft(fresh);setSelectedId('');setBrowseType(type);setMessage('');
+    setTracePairs([]);setPairFrom(null);setPairTo(null);
+  };
+  const reset=()=>{startNew(browseType);onClose?.();};
+  const switchBrowseType=type=>{
+    if(type===browseType)return;
+    if(dockActions.current.isDirty()&&!window.confirm('切換類型會捨棄尚未儲存的修改，確定繼續？'))return;
+    startNew(type);setVisibilitySelection([]);onClose?.();
+  };
+  const beginNew=()=>{
+    if(dockActions.current.isDirty()&&!window.confirm('新增紀錄會捨棄尚未儲存的修改，確定繼續？'))return;
+    startNew(browseType);onClose?.();
   };
   const change=(key,value)=>setDraft(row=>({...row,[key]:value}));
   const segments=draft.type==='time_trace'
@@ -294,22 +319,34 @@ export default function CultureTimelineEditor({
       <h4>{selectedId?'編輯':'新增'}{displayType[draft.type]}</h4>
     </header>
     {query.error?<p className="scope-status scope-error" role="alert">{query.error.message}</p>:null}
-    {rows.length?<label>現有時間紀錄（含失效連線，可重新選擇定錨點）
-      <select className="scope-select" value={selectedId} onChange={event=>{
-        if(event.target.value)selectRow(event.target.value);
-        else reset();
-      }}>
-        <option value="">新增紀錄</option>
-        {rows.map(row=><option key={row.uid} value={row.uid}>
-          {displayType[row.type]}｜{row.title}
-        </option>)}
-      </select>
-    </label>:null}
+    <div className="scope-culture-record-browser">
+      <div className="scope-culture-record-kind" role="group" aria-label="時間紀錄類型">
+        {TYPE_TABS.map(type=><button key={type} type="button" className="loc-button"
+          aria-pressed={browseType===type} onClick={()=>switchBrowseType(type)} disabled={busy}>
+          {displayType[type]} · {all.filter(row=>row.type===type).length}
+        </button>)}
+      </div>
+      <div className="scope-culture-record-browser-row">
+        <div className="scope-culture-record-browser-select">
+          <label htmlFor="culture-record-search">現有{displayType[browseType]}（依名稱搜尋）</label>
+          <Select inputId="culture-record-search" instanceId="culture-record-search"
+            classNamePrefix="loc-react-select" isClearable isSearchable
+            isDisabled={query.isPending||busy} maxMenuHeight={250}
+            options={recordOptions}
+            value={recordOptions.find(option=>option.value===selectedId)||null}
+            onChange={option=>option?selectRow(option.value):beginNew()}
+            placeholder={'搜尋'+displayType[browseType]+'名稱'}
+            noOptionsMessage={()=>recordOptions.length?'沒有符合項目':'此類型尚無紀錄'}/>
+        </div>
+        <button type="button" className="loc-button"
+          disabled={busy} onClick={beginNew}>＋ 新增{displayType[browseType]}</button>
+      </div>
+    </div>
     {query.isPending?<p className="scope-status" role="status">{copy.uiExtra.dataErrors.loading}</p>:null}
     <details className="scope-card">
-      <summary>大量隱藏／公開時間定錨、期間、時代（已選 {visibilitySelection.length} 筆）</summary>
+      <summary>大量隱藏／公開{displayType[browseType]}（已選 {visibilitySelection.length} 筆）</summary>
       <div className="scope-stat-controls">
-        <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection(rows.map(row=>row.uid))}>全部勾選</button>
+        <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection(rows.filter(row=>row.type===browseType).map(row=>row.uid))}>全部勾選</button>
         <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection([])}>清除勾選</button>
         <select className="scope-select" aria-label="批次時間隱藏層級" value={visibilityDepth}
           onChange={e=>setVisibilityDepth(Number(e.target.value))}>
@@ -319,7 +356,7 @@ export default function CultureTimelineEditor({
         <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(-1)}>大量公開</button>
       </div>
       <div style={{maxHeight:'16rem',overflow:'auto'}}>
-        {rows.map(row=><label key={row.uid} style={{display:'block'}}>
+        {rows.filter(row=>row.type===browseType).map(row=><label key={row.uid} style={{display:'block'}}>
           <input type="checkbox" checked={visibilitySelection.includes(row.uid)} disabled={visibilityBusy}
             onChange={e=>setVisibilitySelection(ids=>e.target.checked?[...ids.filter(uid=>uid!==row.uid),row.uid]:ids.filter(uid=>uid!==row.uid))}/>
           {displayType[row.type]}｜{row.title} · {row.uid}
@@ -327,11 +364,6 @@ export default function CultureTimelineEditor({
       </div>
     </details>
     <form className="scope-culture-quick-form" onSubmit={save}>
-      {!selectedId?<label>種類
-        <select className="scope-select" value={draft.type} onChange={e=>setDraft(blank(e.target.value))}>
-          {TYPES.map(type=><option key={type} value={type}>{displayType[type]}</option>)}
-        </select>
-      </label>:null}
       <div className="scope-culture-quick-primary">
         <label className="scope-culture-quick-name">名稱
           <input ref={inputRef} className="scope-search-input" value={draft.title} required

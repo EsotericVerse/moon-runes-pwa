@@ -430,7 +430,14 @@
   .admin-delete-confirm,.admin-deployment-layout>.scope-status{grid-column:1/-1;}
 }
 
-/* The Time River stays on top; only compact, always-ready native fields follow it. */
+/* Time records are browsed by type, never in one mixed native list. */
+.scope-culture-record-browser{display:grid;gap:.6rem;min-width:0;margin:.3rem 0 .8rem}
+.scope-culture-record-browser-row{display:flex;align-items:flex-end;gap:.65rem;flex-wrap:wrap}
+.scope-culture-record-browser-select{flex:1 1 22rem;min-width:12rem}
+.scope-culture-record-browser-select>label{display:block;margin-bottom:.3rem;font-size:.9rem;color:var(--loc-text)}
+.scope-culture-record-browser-row>.loc-button{min-height:2.4rem}
+@media(max-width:540px){.scope-culture-record-browser-select{flex-basis:100%}}
+
 .scope-culture-time-input-area{display:grid;gap:.5rem;margin-top:.85rem;min-width:0}
 .scope-culture-record-kind{display:flex;flex-wrap:wrap;gap:.45rem}
 .scope-culture-record-kind .loc-button{min-height:2.5rem;padding:.4rem .85rem}
@@ -1368,42 +1375,42 @@
   width:100%;min-height:11rem;resize:vertical;line-height:1.65;
   background:var(--loc-panel);color:var(--loc-text)
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__control,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__menu,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__menu-list{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__control,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__menu,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__menu-list{
   background:var(--loc-panel)!important;
   color:var(--loc-text)!important;
   border-color:var(--loc-line)!important
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__single-value,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container input{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__single-value,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__input-container,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__input-container input{
   color:var(--loc-text)!important;
   -webkit-text-fill-color:var(--loc-text)!important
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__input-container input{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__input-container input{
   background:transparent!important;border:0!important;box-shadow:none!important
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__placeholder,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__indicator,
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__no-options-message{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__placeholder,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__indicator,
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__no-options-message{
   color:var(--loc-muted)!important
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__option{
   background:var(--loc-panel)!important;
   color:var(--loc-text)!important;
   cursor:pointer
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option--is-focused{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__option--is-focused{
   background:var(--loc-accent-surface-strong)!important;
   color:var(--loc-text)!important
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__option--is-selected{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__option--is-selected{
   background:var(--loc-rune-selected-bg)!important;
   color:var(--loc-text)!important;
   font-weight:600
 }
-:is(.loc-trace-anchor-editor,.loc-trace-map-manager) .loc-react-select__control--is-focused{
+:is(.loc-trace-anchor-editor,.loc-trace-map-manager,.scope-culture-inline-editor) .loc-react-select__control--is-focused{
   border-color:var(--loc-accent-border)!important;
   box-shadow:0 0 0 1px var(--loc-accent-border)!important
 }

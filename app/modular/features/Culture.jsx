@@ -1188,7 +1188,7 @@ export default function Culture(){
           <div className='management-workspace-panel' id='time-editor-panel' role='region'
             aria-label='時間編輯'>
             <div className='scope-culture-timeline-tools'>
-              <h3>時間定錨點／事件／時代</h3>
+              <h3>時代／期間／時間定錨點</h3>
             </div>
             {query.isPending?<p className='scope-status' role='status'>正在載入時間紀錄…</p>:null}
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
