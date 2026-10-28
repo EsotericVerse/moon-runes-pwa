@@ -37,6 +37,6 @@ test('cancel remains available, logout and unmount release stale operations',()=
   assert.match(dock,/EDIT_OPERATION_TTL_MS/);
   assert.match(dock,/clearEditorSession\(window\.sessionStorage\)/);
   assert.match(shell,/disabled=\{editDock\.busy&&tab\.action!=='cancel'\}/);
-  assert.match(timeline,/runRef\.current\+\+;workerRef\.current\?\.abort\(\)/);
+  assert.match(timeline,/runRef\.current\+\+;\s*workerRef\.current\?\.abort\(\)/);
   assert.match(editor,/refresh\(\);reset\(\);setMessage\('已儲存。'\);return true/);
 });
