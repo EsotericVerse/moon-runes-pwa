@@ -110,6 +110,28 @@ function locSourceCategory(value=''){
   if(source.includes('instagram')||source.includes('reels')||source==='ig')return 'IG';
   return 'Others';
 }
+// Each Scope contributes the union of ALL its saved Time intervals.
+// Cross-Scope matching is an intersection of those sets, not a comparison
+// of their nearest-to-today time_trace or their broad bounding envelopes.
+function intersectLocTimeWindows(windowSets=[]){
+  if(!windowSets.length)return [];
+  let common=windowSets[0].map(window=>({...window}));
+  for(const windows of windowSets.slice(1)){
+    const overlaps=[];
+    let i=0,j=0;
+    while(i<common.length&&j<windows.length){
+      const left=common[i],right=windows[j];
+      const startDate=left.startDate>right.startDate?left.startDate:right.startDate;
+      const endDate=left.endDate<right.endDate?left.endDate:right.endDate;
+      if(startDate<=endDate)overlaps.push({startDate,endDate});
+      if(left.endDate<=right.endDate)i++;
+      else j++;
+    }
+    common=overlaps;
+    if(!common.length)break;
+  }
+  return common;
+}
 function buildLocScopeDistribution(rows=[]){
   const combined=new Map();
   for(const row of rows){
@@ -278,64 +300,81 @@ export async function selectScopeCultureData(scopeId){
 
     const bundles=await Promise.all(managedScopes.map(async scope=>{
       const context=await selectCultureTimeRows(scope,scope.birthday);
-      return {
-        scope,
-        dataId:scope.id,
-        runtimeId:scope.id,
-        galaxy:scope.galaxy,
-        galaxyMedia:scope.galaxyMedia,
-        time:scope.time,
-        context,
-        openRange:openPeriodRangeFromRows(scope.id,context)
-      };
+      return {scope,runtimeId:scope.id,context};
     }));
 
-    // LOC Culture plots each saved interval, not only a single shared period.
-    // A single linked anchor remains a point; disconnected gaps stay empty.
+    // Every saved time_trace contributes its actual time_period intervals.
+    // Merge within each Scope, then intersect the resulting sets across all
+    // Scopes that have defined periods. Never use the nearest trace.
+    const withWindows=bundles.map(bundle=>({
+      bundle,
+      windows:timeDateWindows(bundle.context
+        .filter(row=>row.entry_type==='period')
+        .flatMap(row=>row.ranges||[]))
+    })).filter(item=>item.windows.length>0);
+    const intersectionWindows=intersectLocTimeWindows(withWindows.map(item=>item.windows));
+    const intersectionStart=intersectionWindows[0]?.startDate||'';
+    const intersectionEnd=intersectionWindows.at(-1)?.endDate||'';
+    const intersectionScopeIds=intersectionWindows.length
+      ?withWindows.map(item=>item.bundle.runtimeId):[];
+    const openRanges=withWindows.map(({bundle,windows})=>({
+      scope_id:bundle.runtimeId,
+      start_date:windows[0].startDate,
+      end_date:windows.at(-1).endDate,
+      ranges:windows.map(window=>({
+        start_date:window.startDate,end_date:window.endDate
+      }))
+    }));
+
+    // The LOC timeline itself shows only shared dates. Clipping the visible
+    // per-Scope ranges avoids displaying a union disguised as an intersection.
     const scopeTimeRanges=bundles.flatMap((bundle,scopeIndex)=>
       bundle.context.filter(row=>row.entry_type==='period').flatMap(row=>
         (row.ranges||[])
           .filter(range=>range.start_date&&(!range.invalid||range.point))
-          .map((range,index)=>({
-            id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index,
-            entry_id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index,
-            entry_type:'scope_time_range',
-            scope_id:bundle.runtimeId,
-            group_label:bundle.runtimeId,
-            group_order:scopeIndex,
-            start_date:range.start_date,
-            end_date:range.end_date||range.start_date,
-            title:[row.title||'時代',range.start_date,
-              range.end_date&&range.end_date!==range.start_date?'～ '+range.end_date:''].filter(Boolean).join(' · '),
-            display_label:''
+          .flatMap((range,index)=>intersectionWindows.flatMap((shared,sharedIndex)=>{
+            const startDate=range.start_date>shared.startDate?range.start_date:shared.startDate;
+            const rangeEnd=range.end_date||range.start_date;
+            const endDate=rangeEnd<shared.endDate?rangeEnd:shared.endDate;
+            if(startDate>endDate)return [];
+            return [{
+              id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index+':'+sharedIndex,
+              entry_id:'loc-time:'+bundle.runtimeId+':'+row.uid+':'+index+':'+sharedIndex,
+              entry_type:'scope_time_range',
+              scope_id:bundle.runtimeId,
+              group_label:bundle.runtimeId,
+              group_order:scopeIndex,
+              start_date:startDate,end_date:endDate,
+              title:[row.title||'時代',startDate,endDate!==startDate?'～ '+endDate:''].filter(Boolean).join(' · '),
+              display_label:''
+            }];
           }))
       )
     );
 
-    const validBundles=bundles.filter(bundle=>Boolean(bundle.openRange?.start_date));
-    const openRanges=validBundles.map(bundle=>bundle.openRange);
-    const starts=openRanges.map(row=>String(row.start_date||'')).filter(Boolean).sort();
-    const ends=openRanges.map(row=>String(row.end_date||'')).filter(Boolean).sort();
-    const intersectionStart=starts.at(-1)||'';
-    const intersectionEnd=ends[0]||'';
-    if(!intersectionStart||!intersectionEnd||intersectionStart>intersectionEnd){
+    if(!intersectionWindows.length){
       return {
-        scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges:[],scopeRanges:[],
+        scopeId:id,scope:null,eras:{eras:[]},periods:[],openRanges,scopeRanges:[],
         timelineItems:[],sourceRiverItems:[],sourceGroups:[],events:[],trajectories:[],
-        works:[],scopeTimeRanges,scopes:bundles.map(bundle=>bundle.scope),
-        intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[]
+        works:[],scopeTimeRanges:[],scopes:bundles.map(bundle=>bundle.scope),
+        intersectionStart:'',intersectionEnd:'',intersectionScopeIds:[],
+        intersectionWindows:[]
       };
     }
 
-    const intersectionScopeIds=validBundles.map(bundle=>bundle.runtimeId);
-    const aggregateRows=(await Promise.all(validBundles.map(async bundle=>{
+    // One bounded aggregate per Scope. Sparse gaps between intersections
+    // are removed locally, without multiplying the database requests.
+    const aggregateRows=(await Promise.all(withWindows.map(async ({bundle})=>{
       const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(bundle.scope,{
         startDate:intersectionStart,
         endDate:intersectionEnd,
         includeEmptyMedia:true,
         requireAggregate:true
       });
-      const validDate=row=>timePeriodContainsDate(bundle.openRange,String(row.day||'').slice(0,10));
+      const validDate=row=>{
+        const day=String(row.day||'').slice(0,10);
+        return intersectionWindows.some(shared=>day>=shared.startDate&&day<=shared.endDate);
+      };
       return [
         ...textDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId})),
         ...mediaDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId}))
@@ -360,7 +399,8 @@ export async function selectScopeCultureData(scopeId){
       works:[],
       intersectionStart,
       intersectionEnd,
-      intersectionScopeIds
+      intersectionScopeIds,
+      intersectionWindows
     };
   }
 
