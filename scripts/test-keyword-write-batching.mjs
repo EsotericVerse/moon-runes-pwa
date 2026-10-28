@@ -41,9 +41,9 @@ test('SQL timeout retries a smaller batch after exactly one second without dupli
   assert.equal(result.count,9000);
   assert.equal(result.changedCount,9000);
   assert.deepEqual(successes,rows.map(row=>row.uid));
-  assert.deepEqual(attempts.filter(row=>row.mode==='chunk').map(x=>x.rows),[9000,4500,4500]);
-  assert.deepEqual(delays,[1000]);
-  assert.deepEqual(events.filter(x=>x.phase==='cooldown').map(x=>[x.retrying,x.seconds]),[[true,1]]);
+  assert.deepEqual(attempts.filter(row=>row.mode==='chunk').map(x=>x.rows),[9000,5000,2500,2500,2500,1500]);
+  assert.deepEqual(delays,[1000,1000]);
+  assert.deepEqual(events.filter(x=>x.phase==='cooldown').map(x=>[x.retrying,x.seconds]),[[true,1],[true,1]]);
 });
 test('one second of rest only after each full MaxRows of successful work',async()=>{
   const rows=Array.from({length:MAX_ROWS*2+1},(_,i)=>({uid:'R'+i,class_id:2,group_lists:'2:1'}));
