@@ -385,7 +385,7 @@ export async function selectScopeCultureData(scopeId){
     return {
       scopeId:id,
       scope:null,
-      scopes:validBundles.map(bundle=>bundle.scope),
+      scopes:withWindows.map(({bundle})=>bundle.scope),
       eras:{eras:[]},
       periods:[],
       openRanges,
