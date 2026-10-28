@@ -379,7 +379,7 @@ test('Culture river keeps three collapsed parents, expandable child lanes and to
   assert.match(culture,/id:'system',label:l\.system/);
   assert.match(culture,/id:'custom',label:l\.custom/);
   assert.match(culture,/id:'media',label:l\.media/);
-  assert.match(culture,/onGroupToggle=\{id=>/);
+  assert.match(culture,/onGroupToggle=\{toggleCultureRiverGroup\}/);
   assert.match(culture,/anchorInsight=\{anchorInsight\}/);
   assert.match(culture,/setFocusedAnchorDate\(date\)/);
   assert.match(river,/button\.setAttribute\('aria-expanded'/);
