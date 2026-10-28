@@ -34,9 +34,9 @@ export function touchEditorSession(storage,now=Date.now()){
 }
 export function assertEditorSession(storage,now=Date.now()){
   if(!touchEditorSession(storage,now)){
-    // Revoking the refresh session is stronger than a React-only UI lock.
+    // Leave the authenticated account intact; only the editor is locked.
     if(typeof window!=='undefined')window.dispatchEvent(new Event('loc-editor-session-expired'));
-    throw new Error('編輯 Session 已閒置超過 30 分鐘或超過 2 小時，請重新登入後再寫入。');
+    throw new Error('編輯 Session 已閒置超過 30 分鐘或超過 2 小時，請重新驗證編輯權限後再寫入。');
   }
   return true;
 }

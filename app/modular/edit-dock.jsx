@@ -3,7 +3,7 @@
 import {createContext,useCallback,useContext,useEffect,useMemo,useRef,useState} from 'react';
 import {usePathname,useRouter} from 'next/navigation';
 import {Capacitor} from '@capacitor/core';
-import {dbAuthEvents,signOutAccount} from '../loc/db-client.mjs';
+import {dbAuthEvents} from '../loc/db-client.mjs';
 import {EDIT_OPERATION_TTL_MS,assertEditorSession,touchEditorSession,clearEditorSession} from '../loc/edit-session-ttl.mjs';
 import {clearHomeEditorAccess} from '../loc/home-edit-access.mjs';
 import {isManagementHref} from './ScopeLink';
@@ -92,14 +92,12 @@ export function EditDockProvider({children}){
     lastPathname.current=pathname;
   },[pathname,releaseOperation]);
   useEffect(()=>{
-    const expire=()=>{
-      releaseOperation();
-      setNotice('編輯 Session 已逾時，請重新登入後再儲存。');
-      void signOutAccount().catch(()=>{});
-    };
+    // Editing expiry must revoke only local editor UI. Never sign the user out
+    // of Google/Supabase because the independent edit-session clock elapsed.
+    const expire=()=>end();
     window.addEventListener('loc-editor-session-expired',expire);
     return ()=>window.removeEventListener('loc-editor-session-expired',expire);
-  },[releaseOperation]);
+  },[end]);
   useEffect(()=>{
     if(!scopeId||scopeId==='local')return undefined;
     const activity=()=>{try{touchEditorSession(window.sessionStorage);}catch{}};
