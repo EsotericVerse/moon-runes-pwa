@@ -41,7 +41,8 @@ test('same name or position never silently reuses another anchor UID',()=>{
 });
 test('route composer offers React Select and does not require a county selector',()=>{
  const source=readFileSync(new URL('../app/loc/TraceRouteManager.jsx',import.meta.url),'utf8');
- assert.ok(source.includes("import Select from 'react-select'"));
+ assert.ok(source.includes("import PopularSelect from './PopularSelect'"));
+  assert.match(source,/<PopularSelect scopeId=\{owner\} kind="space"/);
  assert.ok(source.includes('onClick={addToSpool}'));
  assert.ok(!source.includes('selectedCounty'));
  assert.ok(!source.includes('county_id'));
@@ -97,8 +98,8 @@ test('spatial management dropdowns use Theme colors in route, anchor and organiz
  const anchor=readFileSync(new URL('../app/loc/TraceManagement.jsx',import.meta.url),'utf8');
  const organizer=readFileSync(new URL('../app/loc/TraceOrganizer.jsx',import.meta.url),'utf8');
  for(const source of [route,anchor])assert.match(source,/classNamePrefix="loc-react-select"/);
- assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager\) \.loc-react-select__option--is-selected/);
- assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager\) \.loc-react-select__input-container input/);
+ assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager,\.scope-culture-inline-editor\) \.loc-react-select__option--is-selected/);
+ assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager,\.scope-culture-inline-editor\) \.loc-react-select__input-container input/);
  assert.match(styles,/:is\(\.loc-trace-anchor-editor,\.loc-trace-map-manager,\.loc-trace-article-choice\) select option/);
  assert.match(styles,/background:var\(--loc-rune-selected-bg\)/);
  assert.match(styles,/color:var\(--loc-text\)/);

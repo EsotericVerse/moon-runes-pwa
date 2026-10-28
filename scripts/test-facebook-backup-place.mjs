@@ -185,6 +185,7 @@ test('standalone JSON over 50 MiB is rejected before loading the whole file',asy
   await assert.rejects(parseUniversalImportFile(file),/50 MiB/);
   assert.equal(touched,false);
   const engine=src('app/loc/private-archive-universal.mjs');
-  assert.match(engine,/MAX_EXTRACTED=100\*1024\*1024/);
+  assert.match(engine,/MAX_EXTRACTED=1024\*1024\*1024/);
+   assert.match(engine,/if\(extractedBytes>MAX_EXTRACTED\)/);
   assert.match(engine,/MAX_STRUCTURED_DOCUMENT=ARCHIVE_JSON_MAX_BYTES/);
 });

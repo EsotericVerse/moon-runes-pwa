@@ -226,19 +226,21 @@ test('activation removes legacy JSON Block caches but keeps current static cache
   assert.equal(h.stored.has('loc-public-static-v1'),true);
 });
 
-test('public home and manage HTML work offline, but search navigation never caches',async()=>{
+test('public home can work offline, while management and search bypass Service Worker HTML caching',async()=>{
   const h=createHarness();
   h.setResponseHeaders({'content-type':'text/html'});
   const home={...h.req('https://loc.lo3rwang.cc/','document'),mode:'navigate'};
   const manage={...h.req('https://loc.lo3rwang.cc/manage/manage/','document'),mode:'navigate'};
   const search={...h.req('https://loc.lo3rwang.cc/search/','document'),mode:'navigate'};
-  await h.dispatch('fetch',home);
-  await h.dispatch('fetch',manage);
+  assert.equal((await h.dispatch('fetch',home)).handled,true);
+  assert.equal((await h.dispatch('fetch',manage)).handled,false);
   assert.equal((await h.dispatch('fetch',search)).handled,false);
   h.setOnline(false);
   assert.ok((await h.dispatch('fetch',home)).result);
-  assert.ok((await h.dispatch('fetch',manage)).result);
-  assert.equal(h.requests.length,4);
+  assert.equal((await h.dispatch('fetch',manage)).handled,false);
+  assert.equal((await h.dispatch('fetch',search)).handled,false);
+  assert.deepEqual(h.requests,[home.url,home.url]);
+  assert.ok(![...h.stored.values()].some(entries=>entries.has(manage.url)||entries.has(search.url)));
 });
 
 test('search, numeric ISR, authenticated routes and game API are never intercepted',async()=>{
