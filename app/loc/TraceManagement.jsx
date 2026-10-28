@@ -121,7 +121,6 @@ function AnchorEditor({scopeId,spatial,reload}){
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card loc-trace-anchor-editor">
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
-    <p className="scope-status">地點名稱、文字說明與經緯度分開處理；經緯度儲存於 address Array，文字地址存 description.address。不使用縣市分類、周圍半徑或付費地理查詢。</p>
     <label>編輯既有地點（直接搜尋標題）
       <PopularSelect scopeId={scopeId} kind="space" instanceId={'trace-anchor-edit-'+scopeId} inputId={'trace-anchor-edit-'+scopeId}
         options={options} isClearable value={options.find(o=>o.value===editingUid)||null}
@@ -130,7 +129,6 @@ function AnchorEditor({scopeId,spatial,reload}){
     </label>
     <details className="scope-card loc-trace-quick-update">
       <summary>快速更新｜相同位置、名稱排列不同（{renameGroups.length} 組）</summary>
-      <p className="scope-status">只列出同一 Scope、完全相同的經緯度，以及名稱字元相同但排列不同的地點。僅更新標題；保留每個 UID、座標、文章引用和路線，不會合併或刪除紀錄。</p>
       {!renameGroups.length?<p className="scope-status">目前沒有符合條件的名稱排列候選；沒有座標的地點不會猜測為同一位置。</p>:null}
       {renameGroups.slice(0,80).map(group=>{
         const names=[...new Set(group.items.map(item=>item.title))];

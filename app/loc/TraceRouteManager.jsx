@@ -234,10 +234,8 @@ export default function TraceRouteManager({scopeId}){
   };
   useEditDockForm({save,isDirty:()=>incomplete,isBusy:()=>busy});
   return <section className="loc-card scope-feature-card loc-trace-map-manager" aria-label="路線與痕跡圖管理">
-    {owner==='loc'?<p className="scope-status">LOC 空間聚合已暫停並刪除；請先選擇來源 Scope 整理地點。完成後才重建 LOC。</p>:null}
     <header className="loc-trace-map-manager-heading">
       <div><h3>路線圖／痕跡圖管理</h3>
-        <p className="scope-status">新增或編輯時可直接點地圖上的既有定錨點加入路線；也可以用自動完成搜尋。路線依點選順序排列，不需要縣市篩選或付費地理服務。</p>
       </div>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_period')}>新增路線圖</button>
@@ -249,7 +247,6 @@ export default function TraceRouteManager({scopeId}){
         <option value="loc">LOC</option><option value="lo3rwang">作者</option><option value="lrunes">LunaRunes</option>
       </select>
     </label>:null}
-    {!own?<p className="scope-status">可公開閱讀；新增與編輯需該 Scope 的管理權限。</p>:null}
     <label>搜尋已儲存的路線／痕跡圖
       <input type="search" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="依標題搜尋"/>
     </label>

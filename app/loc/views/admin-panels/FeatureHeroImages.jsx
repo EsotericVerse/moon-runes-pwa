@@ -261,7 +261,6 @@ export default function FeatureHeroImages(){
   const locSlot=locSlots.find(slot=>slot.key===locSlotKey)||locSlots[0];
   return <section className="loc-card admin-workspace">
     <h2>功能區塊設定</h2>
-    {inDock?<p className="scope-status">修改完成後，使用功能列的「儲存」一次保存本頁變更。</p>:null}
     <div className="scope-preview-links" role="group" aria-label="功能區塊">
       {FEATURES.map(item=><button type="button" key={item.id}
         className={'loc-button'+(item.id===feature.id?' primary':'')}
@@ -284,6 +283,7 @@ export default function FeatureHeroImages(){
       />
       {(feature.singleSlot?SINGLE_VARIANT:SCOPE_VARIANTS).map(variant=>
         <ImageSlot feature={feature} variant={variant}
+          pageOverride={feature.id==='admin'?'group_admin':''}
           onDirtyChange={trackDirty} key={feature.id+variant.kind}/>)}
       {scopeSlot?<section className="loc-card scope-inline-card" aria-label={scopeSlot.label}>
         <h4>{scopeSlot.label}</h4>

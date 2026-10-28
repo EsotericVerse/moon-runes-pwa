@@ -98,7 +98,6 @@ export default function ScopeSettingsPanel({scopeId}){
       </div>
 
       {message?<p className="scope-status" role="status">{message}</p>:null}
-      <p className="scope-status">選擇主題後，使用六大功能列的「儲存」套用。</p>
     </div>:null}
   </section>;
 }

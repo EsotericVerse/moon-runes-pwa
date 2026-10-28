@@ -26,7 +26,7 @@ function mediaIso(value){
 // 新增多媒體 belongs with publishing content (it creates a Galaxy Media
 // record the same way publishing an article creates a Galaxy record), not
 // with 資料匯入 (batch/file import of existing external data).
-export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId}){
+export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,globalAdmin=false}){
   const UI_COPY=useUiCopy();
   const t=useUiText();
   useUiSection('management');
@@ -47,7 +47,9 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId}){
       isBusy:()=>dockActions.current.isBusy()
     });
   },[inDock,editDock?.register]);
-  if(!account.canManageScopeSync(scopeId))return null;
+  if(account.loading||account.permissionLoading)return <p className="scope-status" role="status">正在確認多媒體管理權限…</p>;
+  if(!account.canManageScopeSync(scopeId)&&!(globalAdmin&&account.canManageGlobalSync()))
+    return <p className="scope-status scope-error" role="alert">目前沒有多媒體寫入權限。</p>;
 
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
 
@@ -96,7 +98,6 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId}){
   return <section className="loc-card scope-feature-card">
     <p className="loc-eyebrow">MEDIA</p>
     <h2>{UI_COPY.management.addMedia}</h2>
-    <p><UiText id="uiExtra.importUI.mediaHelp"/></p>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
         <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>

@@ -28,7 +28,6 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const [draft,setDraft]=useState(null);
   const [gridColumns,setGridColumns]=useState(4);
   const listRef=useRef(null);
-  const lastInputRef=useRef(null);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const query=useAsyncResource(['txt-class-list',scopeId],async()=>{
@@ -66,10 +65,6 @@ export default function FlatClassificationEditor({scopeId='loc'}){
     });
     setNotice('');
   };
-  const add=()=>{
-    setDraft([...rows,'']);setNotice('');
-    requestAnimationFrame(()=>lastInputRef.current?.focus());
-  };
   async function save(){
     if(!allowed||busy||query.isPending||query.error)return false;
     if(!changed){setNotice(l.noChanges);return true;}
@@ -103,7 +98,6 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   if(!allowed)return <section className="loc-card scope-status scope-error" role="alert">{title}：{l.denied}</section>;
   return <section className="loc-card classification-inline">
     <h2>{title}</h2>
-    <p>{l.help}</p>
     {query.isPending?<p role="status" className="scope-status">{l.reading} {title}…</p>:null}
     {query.error?<p role="alert" className="scope-status scope-error">{String(query.error.message||query.error)}
       <button type="button" className="loc-button" onClick={()=>query.refetch()}>{l.retry}</button>
@@ -117,7 +111,6 @@ export default function FlatClassificationEditor({scopeId='loc'}){
             <label className="classification-inline__field">
               <span>{index+1}.</span>
               <input type="text" maxLength={80} required disabled={busy}
-                ref={index===rows.length-1?lastInputRef:null}
                 aria-label={l.item+' '+(index+1)}
                 value={name} onChange={event=>change(index,event.target.value)}/>
             </label>
@@ -138,10 +131,7 @@ export default function FlatClassificationEditor({scopeId='loc'}){
         })}
       </div>
       <div className="classification-inline__actions">
-        <button type="button" className="loc-button" disabled={busy} onClick={add}>{l.add}</button>
         <button className="loc-button primary" type="submit" disabled={busy||!changed}>{busy?l.saving:l.save+' '+title}</button>
-        <button type="button" className="loc-button" disabled={busy||!changed}
-          onClick={()=>{setDraft(null);setNotice('');}}>{l.revert}</button>
       </div>
     </form>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}

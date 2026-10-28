@@ -51,7 +51,7 @@ test('management Hero uses nine dedicated page_name documents, not group_manage 
   ]);
   assert.equal(HomeBlock.managementHeroDefaultImage(scope[0]),'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
   assert.equal(HomeBlock.MANAGEMENT_HERO_IMAGE_URL,'https://loc.lo3rwang.cc/pics/scope-gn.jpg');
-  assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
+  assert.equal(HomeBlock.featureHeroPageFor('admin'),'group_admin');
   assert.equal(HomeBlock.featureHeroPageFor('trace'),'group_trace');
   assert.doesNotMatch(readFileSync(new URL('../app/modular/published-blocks/index.js',import.meta.url),'utf8'),/group_governance/);
   assert.equal(HomeBlock.managementHeroSlot('/admin','loc'),null);
@@ -114,7 +114,7 @@ test('Article Control and feature-aligned management Hero editor remain function
   assert.match(hero,/page=\{HomeBlock\.featureHeroPageFor\(PERSONAL_SETTINGS_FEATURE\.id\)\}/);
   assert.match(hero,/<ImageSlot feature=\{PERSONAL_SETTINGS_FEATURE\} variant=\{SINGLE_VARIANT\[0\]\}/);
   assert.match(hero,/trackDirty\('setting-blocks',dirty\)/);
-  assert.equal(HomeBlock.featureHeroPageFor('admin'),'scope_admin');
+  assert.equal(HomeBlock.featureHeroPageFor('admin'),'group_admin');
   assert.equal(HomeBlock.featureHeroPageFor('setting'),'group_setting');
   assert.match(read('app/modular/ui.jsx'),/managementTextPage=managementSlot\?\.page/);
   assert.match(read('app/modular/ui.jsx'),/managementHeroImagePage\(managementSlot\)/);

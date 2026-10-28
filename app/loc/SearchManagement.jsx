@@ -72,7 +72,6 @@ export default function SearchManagement(){
   </FeaturePage>;
 
   return <FeaturePage featureId="search">
-    <p className="scope-status">{isLocAdmin?'跨 Scope 文章管理（包含未開放搜尋的文章）':'文章控管'}</p>
     <div className="management-workspace">
       <ManagementSectionNav id="management-search-sections" title={isLocAdmin?'文章管理':'文章控管'}
         panelId="management-search-panel" items={options}

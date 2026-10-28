@@ -222,7 +222,7 @@ export function shouldUseSingleFeatureHeroImage(featureId){
 
 export function featureHeroPageFor(featureId){
   const id=String(featureId||'');
-  return id==='admin'?'scope_admin':'group_'+id;
+  return 'group_'+id;
 }
 
 export function sharedFeatureHeroFor(rows){

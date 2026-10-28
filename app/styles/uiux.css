@@ -1294,8 +1294,8 @@ body{
 .management-hero-copy-row{display:grid;grid-template-columns:minmax(5rem,9rem) minmax(0,1fr);align-items:center;gap:.65rem;min-width:0}
 .management-hero-copy-row>span{font-weight:600}
 .management-hero-copy-row input{box-sizing:border-box;width:100%;min-width:0;font:inherit}
-.article-control-stacked{display:grid;gap:1.25rem;min-width:0}
-.article-control-stacked>section{min-width:0;max-width:100%}
+.article-control-stacked{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;min-width:0}
+.article-control-stacked>section{position:relative;isolation:isolate;min-width:0;max-width:100%;overflow-wrap:anywhere}
 .article-control-stacked>section>h3{margin:0 0 .75rem}
 @media(max-width:720px){
   .management-hero-copy-grid{grid-template-columns:minmax(0,1fr)}

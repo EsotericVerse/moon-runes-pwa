@@ -179,7 +179,6 @@ export default function DatabaseTarget({scopeGroup}){
           title={protectedTarget?'主要或備援資料庫使用中，不可刪除':undefined}><UiText id="uiExtra.adminView.delete"/></button>
       </div>
     </div>:null}
-    <p className="scope-status">修改資料庫設定後，使用六大功能列既有的「儲存」。</p>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }

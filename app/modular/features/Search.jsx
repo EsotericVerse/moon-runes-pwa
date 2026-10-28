@@ -247,6 +247,7 @@ export default function Search({managementMode=false}){
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
   const [searchPopularOpen,setSearchPopularOpen]=useState(false);
+  const [suggestionsOpen,setSuggestionsOpen]=useState(false);
   const [placeOnly,setPlaceOnly]=useState(false);
   const [selectedPlaceArticles,setSelectedPlaceArticles]=useState([]);
   const [bulkPlace,setBulkPlace]=useState('');
@@ -1019,13 +1020,6 @@ export default function Search({managementMode=false}){
           {!suggestedTerms.length?<span className="scope-status">目前沒有已發布的搜尋建議。</span>:null}
         </div>
       </div>:null}
-      {!managementMode&&suggestedTerms.length?<div className="scope-search-suggestions" aria-label="建議搜尋">
-        <span className="scope-status">建議搜尋</span>
-        <div className="scope-search-active-filters">
-          {suggestedTerms.map(term=><button key={term} type="button" className="loc-button"
-            onClick={()=>followSearchSuggestion(term,{placeOnly:false})}>{term}</button>)}
-        </div>
-      </div>:null}
       {!managementMode&&results.length>0&&matchedQueryRef.current?<div className="scope-search-suggestions" aria-label="延伸搜尋">
         <span className="scope-status">延伸搜尋（保留原本的時間與來源條件）</span>
         <div className="scope-search-active-filters">
@@ -1124,8 +1118,10 @@ export default function Search({managementMode=false}){
           </div>:null}
         </div>:null}
       </div>
-    {!managementMode?<div className="scope-search-reference-editor">
-      <ScopeEditableBlocks
+    {!managementMode?<details className="scope-search-reference-editor"
+      onToggle={event=>setSuggestionsOpen(event.currentTarget.open)}>
+      <summary>搜尋建議</summary>
+      {suggestionsOpen?<ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
         orders={[1]}
@@ -1138,8 +1134,8 @@ export default function Search({managementMode=false}){
         allowInlineChildAdd
         explicitEditButton
         onSuggestionClick={term=>searchFromSuggestion(term)}
-      />
-    </div>:null}
+      />:null}
+    </details>:null}
     </section>
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}

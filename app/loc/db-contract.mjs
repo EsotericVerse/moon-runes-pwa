@@ -6,11 +6,8 @@ import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from '
 import {assertEditorSession} from './edit-session-ttl.mjs';
 
 // Keyword read, write and reset use the shared MaxRows.
-export const KEYWORD_CLASSIFICATION_BATCH_SIZE=MAX_ROWS;
-export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=MAX_ROWS;
+export {MAX_ROWS as KEYWORD_CLASSIFICATION_BATCH_SIZE,MAX_ROWS as KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE,MAX_ROWS as KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL};
 export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=1000;
-export const KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL=MAX_ROWS;
-const KEYWORD_RESET_BATCH_SIZE=MAX_ROWS;
 
 // The existing management-write boundary enforces Galaxy metadata rules
 // consistently for publisher, search, culture and import paths.
@@ -166,7 +163,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
     // Sequential writes pause one second per MaxRows committed; timeout retries
     // back off for one second after shrinking the attempted chunk.
-    let batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE;
+    let batchSize=MAX_ROWS;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
     // The SQL function itself validates every uid in the batch exists and
@@ -176,7 +173,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let count=0;
     let changedCount=0;
     let completedBatches=0;
-    let nextPauseAt=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
+    let nextPauseAt=MAX_ROWS;
     const estimateBatches=()=>completedBatches+
       Math.ceil(Math.max(0,rows.length-count)/batchSize);
     async function coolDown(retrying){
@@ -212,7 +209,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         completedBatches,estimatedBatches:estimateBatches(),batchSize,
         lastBatchSize:batch.length});
       if(offset<rows.length&&count>=nextPauseAt){
-        nextPauseAt+=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
+        nextPauseAt+=MAX_ROWS;
         await coolDown(false);
       }
     }
@@ -277,7 +274,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         let query=galaxy.select('uid,class_id,group_lists')
           .order('uid',{ascending:true});
         if(cursor)query=query.gt('uid',cursor);
-        const {data,error}=await query.limit(KEYWORD_RESET_BATCH_SIZE);
+        const {data,error}=await query.limit(MAX_ROWS);
         if(error)throw new Error(error.message||'Galaxy classification page read failed');
         const page=data||[];
         if(!page.length)break;
@@ -289,7 +286,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         cursor=String(page[page.length-1].uid||'');
         if(!cursor)throw new Error('Galaxy classification paging returned an empty uid');
         onProgress?.({phase:'clearing',completed,total:totalRows});
-        if(page.length<KEYWORD_RESET_BATCH_SIZE)break;
+        if(page.length<MAX_ROWS)break;
       }
       onProgress?.({phase:'finalizing',completed,total:totalRows});
       // This last reset is now a near-no-op Galaxy UPDATE. It still clears
