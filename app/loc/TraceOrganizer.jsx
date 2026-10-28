@@ -177,7 +177,6 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   }
   return <section className="loc-card scope-feature-card" aria-label="地點管理及名稱整理">
     <h3>地點管理 · 名稱整理</h3>
-    <p className="scope-status">只列出同 Scope、相同座標、完整名稱字元完全一致（順序可以不同）的候選；不使用「大學」「高鐵」「站」等部分共同文字推測。勾選不會自動合併；可選擇任意一筆作為標準名稱，全部 UID 原樣保留。</p>
     <div className="scope-stat-controls" role="status">
       <span>目前地點：{anchors.length}</span>
       <span>完整名稱排列候選：{automatic.length} 組</span>
@@ -185,7 +184,6 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     </div>
     <section className="scope-card">
       <h4>名稱排列候選 · 依筆數排序</h4>
-      <p className="scope-status">從組內選一筆較好的名稱作為標準。可單組全選或全部候選全選；儲存後只統一名稱，保留每一筆 UID。不是同一地點可排除此組。</p>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy||!ownPlaces||!visibleGroups.length}
           onClick={()=>selectAllGroups(true)}>全部勾選（所有 {reviewGroups.length} 組）</button>
@@ -239,7 +237,6 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
     </section>
     <section className="scope-card" aria-label="空間定錨點出現次數與熱門候選">
       <h4>熱門地點前 10 名</h4>
-      <p className="scope-status">統計 Galaxy 文章對應的地點；place_id 優先，未對應時僅採完全相同且唯一的定錨點名稱。不合併同名不同 UID。雙擊自動完成會讀取這份已保存的排名，不會重跑統計。</p>
       <button type="button" className="loc-button" disabled={rankingBusy||busy||!ownPlaces}
         onClick={refreshPopular}>{rankingBusy?'正在重新統計…':'重新統計地點／時間出現次數'}</button>
       {currentSnapshot?.updated_at?<p className="scope-status">上次更新：{currentSnapshot.updated_at}</p>:null}
