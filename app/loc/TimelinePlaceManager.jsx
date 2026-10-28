@@ -22,6 +22,7 @@ export default function TimelinePlaceManager({scopeId}){
   const [progress,setProgress]=useState(null);
   const [analysis,setAnalysis]=useState(null);
   const [groupChoices,setGroupChoices]=useState({});
+  const [bulkPlaceId,setBulkPlaceId]=useState('');
   const [itemChoices,setItemChoices]=useState({});
   const [excluded,setExcluded]=useState({});
   const [groupPages,setGroupPages]=useState({});
@@ -85,14 +86,14 @@ export default function TimelinePlaceManager({scopeId}){
     runRef.current++;
     try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
     setSessionEnabled(false);setSessionWarning('');
-    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
     if(fileRef.current)fileRef.current.value='';
   }
   async function analyze(){
     if(!enabled||!selectedFile||analyzing||writing||anchorQuery.isPending)return;
     if(!eligible.length){setNotice('目前沒有具有座標的空間定錨點，因此沒有可補寫的 place_id。');return;}
     const run=++runRef.current;
-    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
+    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
       if(selectedFile.size>MAX_TIMELINE_BYTES)throw Error('Timeline JSON 超過檔案大小上限，請按年度拆分後匯入');
       setProgress({done:0,total:0,message:'正在本機讀取 Timeline JSON…'});
@@ -150,6 +151,26 @@ export default function TimelinePlaceManager({scopeId}){
     ()=>selectedTimelineArticleUpdates(reviewGroups,groupChoices,itemChoices,excluded),
     [reviewGroups,groupChoices,itemChoices,excluded]);
   const canWrite=selectedUpdates.length>0;
+  const bulkRows=useMemo(()=>{
+    if(!bulkPlaceId)return [];
+    return [...(analysis?.ready||[]),...(analysis?.disputes||[])].filter(row=>
+      row.candidates.some(candidate=>candidate.uid===bulkPlaceId)&&
+      (!row.existingPlaceId||row.existingPlaceId===bulkPlaceId));
+  },[analysis,bulkPlaceId]);
+  const applyBulkPlace=()=>{
+    if(!bulkPlaceId||!bulkRows.length||writing)return;
+    setItemChoices(current=>{
+      const next={...current};
+      for(const row of bulkRows)next[row.uid]=bulkPlaceId;
+      return next;
+    });
+    setExcluded(current=>{
+      const next={...current};
+      for(const row of bulkRows)delete next[row.uid];
+      return next;
+    });
+    setNotice('已將此定錨點套用到 '+bulkRows.length.toLocaleString()+' 篇候選文章，尚未寫入資料庫。');
+  };
   const writableUids=useMemo(()=>new Set(selectedUpdates.map(row=>row.uid)),[selectedUpdates]);
   const pendingCount=ready.length+(analysis?.disputes?.length||0);
   const unreadyCount=Math.max(0,pendingCount-selectedUpdates.length);
@@ -172,6 +193,7 @@ export default function TimelinePlaceManager({scopeId}){
       +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\n'
       +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
+    const writtenUids=new Set();
     try{
       for(let i=0;i<updates.length;i+=WRITE_BATCH){
         const batch=updates.slice(i,i+WRITE_BATCH);
@@ -181,12 +203,7 @@ export default function TimelinePlaceManager({scopeId}){
         const affected=Number(checked(result,'批次補寫 source_place')||0);
         if(affected!==batch.length)throw Error('資料庫回報的寫入筆數不一致，請重新分析');
         completed+=affected;
-        const resolved=new Set(batch.map(row=>row.uid));
-        setAnalysis(previous=>previous?{...previous,
-          ready:previous.ready.filter(row=>!resolved.has(row.uid)),
-          disputes:previous.disputes.filter(row=>!resolved.has(row.uid)),
-          unchanged:[...previous.unchanged,...previous.ready.filter(row=>resolved.has(row.uid)),
-            ...previous.disputes.filter(row=>resolved.has(row.uid))]}:null);
+        for(const row of batch)writtenUids.add(row.uid);
         setCompletedCount(count=>count+affected);
         setWriteProgress({done:completed,total:updates.length});
         setNotice('已成功寫入 '+completed+' / '+updates.length+' 篇；已從待處理清單移除。');
@@ -200,7 +217,14 @@ export default function TimelinePlaceManager({scopeId}){
       setNotice('寫入完成：'+completed+' 篇。其他未選地點或有歧義的文章仍保留在清單內。');
     }catch(e){
       setNotice('已成功寫入 '+completed+' 篇；其他文章保留在清單內。錯誤：'+friendlyError(e)+'。若資料同時被修改，請重新分析後再提交。');
-    }finally{setWriting(false);}
+    }finally{
+      if(writtenUids.size)setAnalysis(previous=>previous?{...previous,
+        ready:previous.ready.filter(row=>!writtenUids.has(row.uid)),
+        disputes:previous.disputes.filter(row=>!writtenUids.has(row.uid)),
+        unchanged:[...previous.unchanged,...previous.ready.filter(row=>writtenUids.has(row.uid)),
+          ...previous.disputes.filter(row=>writtenUids.has(row.uid))]}:null);
+      setWriting(false);
+    }
   }
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
@@ -210,7 +234,7 @@ export default function TimelinePlaceManager({scopeId}){
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+            runRef.current++;try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -241,6 +265,19 @@ export default function TimelinePlaceManager({scopeId}){
         本分頁暫存審查進度（重新整理免重算；僅本機保存預覽，不保存原始 JSON）
       </label>
       {sessionWarning?<p className="scope-status scope-error" role="alert">{sessionWarning}</p>:null}
+      <div className="scope-stat-controls" role="group" aria-label="一次選定空間定錨點">
+        <label>一次套用空間定錨點（500 公尺內候選）
+          <select className="scope-select" value={bulkPlaceId} disabled={writing}
+            onChange={e=>setBulkPlaceId(e.target.value)}>
+            <option value="">選擇已建立的空間定錨點</option>
+            {eligible.map(place=><option key={place.uid} value={place.uid}>{place.title||place.uid}（{place.uid}）</option>)}
+          </select>
+        </label>
+        <button type="button" className="loc-button" disabled={writing||!bulkRows.length}
+          onClick={applyBulkPlace}>
+          一次套用 {bulkRows.length.toLocaleString()} 篇候選文章
+        </button>
+      </div>
       <div className="loc-timeline-review-action" role="region" aria-label="Timeline 批次寫入">
         <div className="loc-timeline-review-action__summary" role="status" aria-live="polite">
           <strong>{writing?'正在寫入資料庫':pendingCount?'分析完成 · 尚未全部寫入':'已處理完成'}</strong>
