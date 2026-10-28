@@ -6,6 +6,7 @@ import {Capacitor} from '@capacitor/core';
 import {dbAuthEvents,signOutAccount} from '../loc/db-client.mjs';
 import {EDIT_OPERATION_TTL_MS,assertEditorSession,touchEditorSession,clearEditorSession} from '../loc/edit-session-ttl.mjs';
 import {clearHomeEditorAccess} from '../loc/home-edit-access.mjs';
+import {isManagementHref} from './ScopeLink';
 
 // UI only: a Scope's permission is checked before entering edit mode,
 // and every write still passes through its existing database authorization.
@@ -158,10 +159,11 @@ export function EditDockProvider({children}){
   const navigate=useCallback((target,history='replace',scroll=true)=>{
     if(!target)return;
     const url=new URL(String(target),window.location.href);
-    // Keep same-origin editor navigation in the current React tree so the
-    // verified edit session and dock state survive the route transition.
-    // Only cross-origin and native HTML targets require document navigation.
-    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)){
+    // Static management exports need a real HTML entrypoint, not an App Router
+    // RSC transition: Cloudflare Pages does not serve that dynamic RSC request.
+    // The authorized editor state is restored from sessionStorage on entry.
+    if(url.origin!==window.location.origin||/\/index\.html$/i.test(url.pathname)||
+      isManagementHref(url.href)){
       window.location.assign(url.href);
     }else{
       if(history==='push')router.push(url.pathname+url.search+url.hash,{scroll});
