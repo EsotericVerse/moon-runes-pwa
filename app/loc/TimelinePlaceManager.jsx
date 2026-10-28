@@ -58,7 +58,7 @@ export default function TimelinePlaceManager({scopeId}){
     return ()=>{active=false;};
   },[scopeId]);
   useEffect(()=>{
-    if(!sessionReady)return;
+    if(!sessionReady||writing)return;
     if(!sessionEnabled){
       try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
       return;
@@ -72,7 +72,7 @@ export default function TimelinePlaceManager({scopeId}){
       }catch{
         setSessionWarning('本次資料超過瀏覽器暫存容量，重新整理仍須重新比對；原始 Timeline 不會上傳。');
       }
-    },writing?0:400);
+    },400);
     return ()=>clearTimeout(save);
   },[scopeId,sessionReady,sessionEnabled,sessionOwner,analysis,groupChoices,itemChoices,excluded,completedCount,writing]);
   const enabled=['lo3rwang','lrunes'].includes(scopeId);
