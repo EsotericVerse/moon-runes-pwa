@@ -53,9 +53,9 @@ export default function TraceRouteManager({scopeId}){
   const openedFromUrl=useRef('');
   const own=owner!=='loc'&&account.canManageScopeSync(owner);
   const index=useAsyncResource({
-    queryKey:traceMapIndexKey(scopeId,{includeHidden:own}),
-    enabled:TRACE_SCOPES.includes(scopeId),
-    queryFn:()=>readTraceMapIndex(scopeId,{includeHidden:own}),
+    queryKey:traceMapIndexKey(owner,{includeHidden:own}),
+    enabled:TRACE_SCOPES.includes(owner)&&own,
+    queryFn:()=>readTraceMapIndex(owner,{includeHidden:own}),
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const records=(index.data||[]).filter(row=>row.source_scope===owner);

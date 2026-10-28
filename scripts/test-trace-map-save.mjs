@@ -16,7 +16,10 @@ test('route editor loads only owned Scope records and IDs; no county required',(
  const page=manager();
  assert.match(page,/account\.canManageScopeSync\(owner\)/);
  assert.match(page,/\.filter\(row=>row\.source_scope===owner\)/);
- assert.match(page,/readTraceMapIndex\(scopeId,\{includeHidden:own\}\)/);
+ assert.match(page,/readTraceMapIndex\(owner,\{includeHidden:own\}\)/);
+ assert.match(page,/traceMapIndexKey\(owner,\{includeHidden:own\}\)/);
+ assert.match(page,/enabled:TRACE_SCOPES.includes\(owner\)&&own/);
+ assert.doesNotMatch(page,/readTraceMapIndex\(scopeId,\{includeHidden:own\}\)/);
  assert.match(page,/readCurrentTraceAnchors\(owner,currentMemberUids/);
  assert.match(page,/readAllTraceAnchors\(owner/);
  assert.doesNotMatch(page,/countyOptions|selectedCounty|county_id/);
