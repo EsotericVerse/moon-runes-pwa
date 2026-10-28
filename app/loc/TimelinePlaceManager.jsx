@@ -187,7 +187,7 @@ export default function TimelinePlaceManager({scopeId}){
     </div>
     {progress&&analyzing?<p role="status" className="scope-status">{progress.message} {progress.total?progress.done+' / '+progress.total+' 批':''}</p>:null}
     {analysis?<section className="scope-card">
-      <h4>匹配預覽（尚未寫入）</h4>
+      <h4>Google Timeline · {pendingCount?'尚待確認／寫入':'本次預覽已處理完畢'}</h4>
       <p className="scope-status">Timeline 造訪區間：{analysis.visitCount.toLocaleString()}；
         500 公尺外／無定錨點：{analysis.empty.toLocaleString()}；
         候選有歧義的造訪區間：{analysis.ambiguous.toLocaleString()}。</p>
@@ -195,18 +195,29 @@ export default function TimelinePlaceManager({scopeId}){
         同座標審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
         已有 source_place 的文章不列入也不會更新。</p>
-      {reviewGroups.length>0?<div>
-        <h4>按經緯度分組審查 · 預設全勾選</h4>
-        <p className="scope-status">每組選擇一次既有空間定錨點，也可以逐篇改選其他樓層。所有文章預設勾選，但沒有選定地點、存在不同 place_id 或跨座標的文章不會自動寫入。</p>
-        {reviewGroups.slice(page*10,(page+1)*10).map(group=>{
+      <div className="loc-timeline-review-action" role="region" aria-label="Timeline 批次寫入">
+        <div className="loc-timeline-review-action__summary" role="status" aria-live="polite">
+          <strong>{writing?'正在寫入資料庫':pendingCount?'分析完成 · 尚未全部寫入':'已處理完成'}</strong>
+          <span>可寫入 {selectedUpdates.length.toLocaleString()} 篇 · 未選定或未勾選 {unreadyCount.toLocaleString()} 篇{completedCount?' · 已寫入 '+completedCount.toLocaleString()+' 篇':''}</span>
+          {writing&&writeProgress?<progress max={writeProgress.total} value={writeProgress.done} aria-label="文章批次寫入進度"/>:null}
+        </div>
+        <button type="button" className="loc-button primary" disabled={!canWrite||writing||analyzing}
+          onClick={apply}>{writing?'正在寫入…':canWrite?'確認寫入 '+selectedUpdates.length.toLocaleString()+' 篇':'沒有可寫入的文章'}</button>
+      </div>
+      {reviewGroups.length>0?<details className="loc-timeline-review-groups">
+        <summary>檢查或修改地點 · {reviewGroups.length.toLocaleString()} 組（點此展開）</summary>
+        <p className="scope-status">有樓層或候選地點歧義時，先在該組選定地點；不必逐篇設定同一個地點。</p>
+        {reviewGroups.slice(reviewPage*10,(reviewPage+1)*10).map(group=>{
           const chosen=groupChoices[group.key]??group.defaultPlaceId;
           const groupPage=groupPages[group.key]||0;
           const checkedCount=group.rows.filter(row=>!excluded[row.uid]).length;
           return <details key={group.key} className="scope-card">
-            <summary>{group.key.startsWith('point:')?'座標 '+group.coordinates[0]:'多個座標／須逐篇確認'} · {group.rows.length.toLocaleString()} 篇 · 已勾 {checkedCount.toLocaleString()} 篇</summary>
+            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 已勾 {checkedCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
             <div className="scope-stat-controls">
-              <button type="button" className="loc-button" disabled={writing} onClick={()=>selectGroup(group,true)}>全選這組</button>
-              <button type="button" className="loc-button" disabled={writing} onClick={()=>selectGroup(group,false)}>取消這組全選</button>
+              <button type="button" className="loc-button" disabled={writing||!chosen}
+                onClick={()=>selectGroup(group,true,chosen)}>選定地點並勾選可寫入文章</button>
+              <button type="button" className="loc-button" disabled={writing}
+                onClick={()=>selectGroup(group,false,chosen)}>取消這組全選</button>
             </div>
             <label>這組文章預設的定錨點（可逐篇覆蓋）
               <select className="scope-select" disabled={writing} value={chosen}
@@ -232,7 +243,7 @@ export default function TimelinePlaceManager({scopeId}){
                   <select className="scope-select loc-timeline-review-row__place" aria-label={'單篇地點／樓層 · '+row.uid}
                     disabled={writing} value={itemChoices[row.uid]||''}
                     onChange={e=>setItemChoices(current=>({...current,[row.uid]:e.target.value}))}>
-                    <option value="">沿用這組設定</option>
+                    <option value="">{chosen?'沿用：'+(group.candidates.find(candidate=>candidate.uid===chosen)?.title||chosen):'尚未選擇 · 不寫入'}</option>
                     {row.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title}（{c.uid}）</option>)}
                   </select>
                   {status.length?<span className="loc-timeline-review-row__status" title={status.join('；')}>{!valid?'不可寫入':row.existingPlaceId?'保留原 ID':'需確認'}</span>:null}
@@ -249,16 +260,13 @@ export default function TimelinePlaceManager({scopeId}){
           </details>;
         })}
         {reviewGroups.length>10?<div className="scope-stat-controls">
-          <button type="button" className="loc-button" disabled={page===0||writing}
-            onClick={()=>setPage(x=>x-1)}>上一組</button>
-          <span>群組 {page+1} / {Math.ceil(reviewGroups.length/10)} 頁</span>
-          <button type="button" className="loc-button" disabled={(page+1)*10>=reviewGroups.length||writing}
-            onClick={()=>setPage(x=>x+1)}>下一組</button>
+          <button type="button" className="loc-button" disabled={reviewPage===0||writing}
+            onClick={()=>setPage(reviewPage-1)}>上一組</button>
+          <span>群組 {reviewPage+1} / {Math.ceil(reviewGroups.length/10)} 頁</span>
+          <button type="button" className="loc-button" disabled={(reviewPage+1)*10>=reviewGroups.length||writing}
+            onClick={()=>setPage(reviewPage+1)}>下一組</button>
         </div>:null}
-      </div>:null}
-      <p className="scope-status">準備補寫空白打卡地點：{selectedUpdates.length.toLocaleString()} 篇；未勾選或尚有歧義者跳過。</p>
-      <button type="button" className="loc-button primary" disabled={!canWrite||writing||analyzing}
-        onClick={apply}>{writing?'正在批次寫入…':'確認批次補寫 source_place／place_id'}</button>
+      </details>:null}
     </section>:null}
     {notice?<p role="status" className="scope-status">{notice}</p>:null}
   </section>;
