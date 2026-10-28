@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic';
 import {useEditDock} from '../modular/edit-dock';
 import ManagementSectionNav from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
+import TimelinePlaceManager from './TimelinePlaceManager';
 
 const TraceManagement=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceBatchFill=dynamic(()=>import('./PlaceBatchFill'),{loading:PanelLoading});
-const TimelinePlaceManager=dynamic(()=>import('./TimelinePlaceManager'),{loading:PanelLoading});
 
 const PLACE_OPTIONS=Object.freeze([
   {value:'anchor',label:'空間定錨點',description:'新增或編輯地點、座標、隱藏權限'},

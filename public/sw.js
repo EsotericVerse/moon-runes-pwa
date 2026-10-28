@@ -7,6 +7,7 @@ const STATIC_CACHE='loc-public-static-v1', STATIC_PREFIX='loc-public-static-', M
 const LEGACY_BLOCK_PREFIX='loc-public-block';
 const PRIVATE_QUERY=/^(?:token|access_token|auth|authorization|jwt|key|api_key|sig|signature|expires?|policy|credential|x-amz-|x-goog-|x-ms-)/i;
 const PRIVATE_PATH=/(?:^|\/)(?:auth|private|account|user|session)(?:\/|$)/i;
+const MANAGEMENT_PATH=/(?:^|\/)manage(?:\/|$)/i;
 const IMAGE_EXT=/\.(?:avif|gif|jpe?g|png|svg|webp|bmp|ico)$/i;
 function urlFor(request){
   if(request.method!=='GET'||request.headers?.has('authorization'))return null;
@@ -27,7 +28,7 @@ function isStaticAsset(request,url){
     ['script','style',''].includes(request.destination||'');
 }
 function isPublicHtml(request,url){
-  if(url.origin!==self.location.origin||request.mode!=='navigate'||PRIVATE_PATH.test(url.pathname))return false;
+  if(url.origin!==self.location.origin||request.mode!=='navigate'||PRIVATE_PATH.test(url.pathname)||MANAGEMENT_PATH.test(url.pathname))return false;
   if(/(?:^|\/)search(?:\/|$)/i.test(url.pathname))return false;
   // The dynamic Scope shell uses this nonsecret route selector. All other
   // query pages bypass the worker (e.g. OAuth, search filters, RSC requests).

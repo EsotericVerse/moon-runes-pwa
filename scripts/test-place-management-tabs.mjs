@@ -30,3 +30,21 @@ test('Subnavigation uses theme tokens, visible active/focus state and 2-column m
   assert.match(component,/min-height:3\.35rem/);
   assert.doesNotMatch(component,/#[0-9A-Fa-f]{3,8}\b/);
 });
+
+test('Timeline tab loads from the Place Management bundle, not from an on-click chunk',()=>{
+  const source=read('app/loc/PlaceManagement.jsx');
+  assert.match(source,/import TimelinePlaceManager from '\.\/TimelinePlaceManager'/);
+  assert.doesNotMatch(source,/dynamic\(\(\)=>import\('\.\/TimelinePlaceManager'\)/);
+});
+
+test('Service Worker never reuses stale management HTML after a deploy',()=>{
+  const sw=read('public/sw.js');
+  const self={location:{origin:'https://loc.example'},addEventListener(){}};
+  const isPublicHtml=Function('self',sw+'\nreturn isPublicHtml')(self);
+  const url=pathname=>({origin:self.location.origin,pathname,search:'',searchParams:new URLSearchParams()});
+  const request={mode:'navigate'};
+  assert.equal(isPublicHtml(request,url('/lo3rwang/manage/')),false);
+  assert.equal(isPublicHtml(request,url('/lo3rwang/manage/search/')),false);
+  assert.equal(isPublicHtml(request,url('/lrunes/manage/')),false);
+  assert.equal(isPublicHtml(request,url('/lo3rwang/culture/')),true);
+});
