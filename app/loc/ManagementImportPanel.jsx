@@ -21,6 +21,7 @@ import {comparableImportText,dedupeIncomingImport,findExistingImportDuplicates} 
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,validImportBatchSize,writeImportBatches} from './import-batch.mjs';
+import {MAX_ROWS} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -144,11 +145,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
       <label><UiText id="uiExtra.importUI.recordPath"/>
         <input disabled={disabled} value={format.recordPath} onChange={e=>update('recordPath',e.target.value)} placeholder={t('uiExtra.importUI.recordPathHint')}/>
       </label>
-      <label><UiText id="uiExtra.importUI.batchSize"/>
-        <select disabled={disabled} value={format.batchSize} onChange={e=>update('batchSize',Number(e.target.value))}>
-          {[25,50,100,200].map(size=><option key={size} value={size}>{t('uiExtra.importUI.itemsPerBatch',{count:size})}</option>)}
-        </select>
-      </label>
+      <p className="scope-status">MaxRows：{MAX_ROWS.toLocaleString()}（系統統一設定，無須調整批次大小）</p>
     </div>
     <div className="scope-management-fields">
       {IMPORT_FORMAT_FIELDS.map(key=><label key={key}>{t('uiExtra.importUI.field.'+key)}
@@ -162,7 +159,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
 
 // Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
-async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,batchSize=100,t}={}){
+async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,t}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Attach only to article UIDs established by the import plan.
       const plans=normalized.flatMap(item=>{
@@ -172,23 +169,23 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }).concat(mediaOnly);
       const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
       const existingMedia=[];
-      for(let offset=0;offset<owners.length;offset+=200){
-        const batch=owners.slice(offset,offset+200);
+      for(let offset=0;offset<owners.length;offset+=MAX_ROWS){
+        const batch=owners.slice(offset,offset+MAX_ROWS);
         const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('galaxy_link',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingMediaFailed'));
         existingMedia.push(...(data||[]));
       }
       const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
-      for(let offset=0;offset<explicitIds.length;offset+=200){
-        const batch=explicitIds.slice(offset,offset+200);
+      for(let offset=0;offset<explicitIds.length;offset+=MAX_ROWS){
+        const batch=explicitIds.slice(offset,offset+MAX_ROWS);
         const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('media_id',batch);
         if(error)throw new Error(error.message||t('uiExtra.importUI.mediaIdCompareFailed'));
         existingMedia.push(...(data||[]));
       }
       // No full-table scan; unlinked media is matched only by explicit imported URLs.
       const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
-      for(let offset=0;offset<unlinkedUrls.length;offset+=200){
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('url',unlinkedUrls.slice(offset,offset+200));
+      for(let offset=0;offset<unlinkedUrls.length;offset+=MAX_ROWS){
+        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('url',unlinkedUrls.slice(offset,offset+MAX_ROWS));
         if(error)throw new Error(error.message||t('uiExtra.importUI.mediaUrlCompareFailed'));
         existingMedia.push(...(data||[]));
       }
@@ -225,7 +222,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         attach(owner,mediaId);
       }
       await writeImportBatches(createMedia,{
-        batchSize:validImportBatchSize(batchSize),
+        batchSize:MAX_ROWS,
         writeBatch:batch=>insertRows(galaxyMedia,batch)
       });
       for(const link of extraLinks){
@@ -235,8 +232,8 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }
       let connected=0;
       const linkedUids=[...related.keys()];
-      for(let offset=0;offset<linkedUids.length;offset+=200){
-        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+200));
+      for(let offset=0;offset<linkedUids.length;offset+=MAX_ROWS){
+        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+MAX_ROWS));
         if(error)throw new Error(error.message||t('uiExtra.importUI.mediaLinkReadFailed'));
         for(const row of data||[]){
           const uid=String(row.uid||'').trim();
@@ -419,8 +416,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingUid=new Set();
-      for(let offset=0;offset<unique.length;offset+=200){
-        const ids=unique.slice(offset,offset+200).map(record=>record.uid);
+      for(let offset=0;offset<unique.length;offset+=MAX_ROWS){
+        const ids=unique.slice(offset,offset+MAX_ROWS).map(record=>record.uid);
         const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
         if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
         for(const row of data||[])existingUid.add(String(row.uid||'').trim());
@@ -435,7 +432,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             return 'and(createtime.gte.'+from+',createtime.lt.'+to+')';
           }).join(',');
           const collected=[];
-          for(let start=0;;start+=500){
+          for(let start=0;;start+=MAX_ROWS){
             const relation=dbAuthRelation(galaxy)
               .select('uid,source_name,createtime,content')
               .ilike('source_name',source);
@@ -443,7 +440,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             // Local adapters without .or use one bounded second at a time.
             if(typeof relation.or!=='function'){
               for(const second of seconds){
-                for(let offset=0;;offset+=500){
+                for(let offset=0;;offset+=MAX_ROWS){
                   const from=new Date(second*1000).toISOString();
                   const to=new Date((second+1)*1000).toISOString();
                   const {data,error}=await dbAuthRelation(galaxy)
@@ -451,15 +448,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
                     .gte('createtime',from).lt('createtime',to).range(offset,offset+499);
                   if(error)throw new Error('重複文章比對失敗：'+error.message);
                   collected.push(...(data||[]));
-                  if((data||[]).length<500)break;
+                  if((data||[]).length<MAX_ROWS)break;
                 }
               }
               return collected;
             }
-            const {data,error}=await relation.or(or).range(start,start+499);
+            const {data,error}=await relation.or(or).range(start,start+MAX_ROWS-1);
             if(error)throw new Error('重複文章比對失敗：'+error.message);
             collected.push(...(data||[]));
-            if((data||[]).length<500)break;
+            if((data||[]).length<MAX_ROWS)break;
           }
           return collected;
         }
@@ -472,7 +469,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         knownArticleIds.set(record.uid,existingBySameSecond.get(canonical)||canonical);
       }
       await writeImportBatches(payload,{
-        batchSize:validImportBatchSize(format.batchSize),
+        batchSize:MAX_ROWS,
         writeBatch:batch=>insertRows(galaxy,batch),
         onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
       });
@@ -484,11 +481,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         normalized:analyzed.normalized,
         mediaOnly:[...analyzed.mediaOnly,...canonicalArchiveMedia],
         extraLinks:archivePlan.mediaLinks,
-        knownArticleIds,galaxy,galaxyMedia,batchSize:format.batchSize,t
+        knownArticleIds,galaxy,galaxyMedia,t
       });
       let exifSaved=0;
-      for(let offset=0;offset<archivePlan.exif.length;offset+=200){
-        const chunk=archivePlan.exif.slice(offset,offset+200).map(row=>({
+      for(let offset=0;offset<archivePlan.exif.length;offset+=MAX_ROWS){
+        const chunk=archivePlan.exif.slice(offset,offset+MAX_ROWS).map(row=>({
           ...row,media_id:mediaSummary.resolvedIds.get(row.media_id)||row.media_id
         }));
         const {data,error}=await dbAuthClient.schema('silver').rpc('save_archive_media_exif',{
@@ -600,7 +597,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     {progress?<div role="status" className="scope-import-progress">
       <progress value={progress.percent||0} max="100"/>
       <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
-      {progress.total>0?<p className="scope-status">共 {Number(progress.total).toLocaleString()} 筆，每 5,000 筆回報一次（第 {Math.max(1,Math.ceil(Number(progress.completed||0)/5000))} / {Math.max(1,Math.ceil(Number(progress.total)/5000))} 批）</p>:null}
+      {progress.total>0?<p className="scope-status">共 {Number(progress.total).toLocaleString()} 筆，每 MaxRows（{MAX_ROWS.toLocaleString()}）筆回報一次（第 {Math.max(1,Math.ceil(Number(progress.completed||0)/MAX_ROWS))} / {Math.max(1,Math.ceil(Number(progress.total)/MAX_ROWS))} 批）</p>:null}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
@@ -611,7 +608,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
 export default function ManagementImportPanel({scopeId}){
   useUiSection('management');
   useUiSection('uiExtra.importUI');
-  const [format,setFormat]=useState({recordPath:'',batchSize:100,fields:{}});
+  const [format,setFormat]=useState({recordPath:'',fields:{}});
   return <div className="scope-management-imports">
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
