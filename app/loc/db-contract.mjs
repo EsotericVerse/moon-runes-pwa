@@ -167,9 +167,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     await keywordClassificationWrite(scope,{mode:'begin'});
     onProgress?.({phase:'prepare',completed:0,total:rows.length});
 
-    // Each chunk RPC resolves before another is sent. Then wait 5 seconds
-    // to limit continuous DB pressure; a timed-out transaction is retried
-    // at a smaller size after the same delay, without replaying successes.
+    // Commit each batch before submitting the next. Back off only after
+    // a statement timeout; successful writes must not incur idle delays.
     let batchSize=KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE;
     // `affected` now means "rows actually changed" (mode='chunk' writes are
     // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
@@ -214,7 +213,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       onProgress?.({phase:'write',completed:count,total:rows.length,
         completedBatches,estimatedBatches:estimateBatches(),batchSize,
         lastBatchSize:batch.length});
-      if(offset<rows.length)await coolDown(false);
+
     }
 
     // DB-side sync uses the same statistics_able predicate as the UID
