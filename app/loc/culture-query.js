@@ -8,7 +8,7 @@ import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query'
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
-import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate,intersectTimeDateWindows} from './time-anchor-ranges.mjs';
 
 
 
@@ -109,28 +109,6 @@ function locSourceCategory(value=''){
   if(source.includes('threads'))return 'Threads';
   if(source.includes('instagram')||source.includes('reels')||source==='ig')return 'IG';
   return 'Others';
-}
-// Each Scope contributes the union of ALL its saved Time intervals.
-// Cross-Scope matching is an intersection of those sets, not a comparison
-// of their nearest-to-today time_trace or their broad bounding envelopes.
-function intersectLocTimeWindows(windowSets=[]){
-  if(!windowSets.length)return [];
-  let common=windowSets[0].map(window=>({...window}));
-  for(const windows of windowSets.slice(1)){
-    const overlaps=[];
-    let i=0,j=0;
-    while(i<common.length&&j<windows.length){
-      const left=common[i],right=windows[j];
-      const startDate=left.startDate>right.startDate?left.startDate:right.startDate;
-      const endDate=left.endDate<right.endDate?left.endDate:right.endDate;
-      if(startDate<=endDate)overlaps.push({startDate,endDate});
-      if(left.endDate<=right.endDate)i++;
-      else j++;
-    }
-    common=overlaps;
-    if(!common.length)break;
-  }
-  return common;
 }
 function buildLocScopeDistribution(rows=[]){
   const combined=new Map();
@@ -312,7 +290,7 @@ export async function selectScopeCultureData(scopeId){
         .filter(row=>row.entry_type==='period')
         .flatMap(row=>row.ranges||[]))
     })).filter(item=>item.windows.length>0);
-    const intersectionWindows=intersectLocTimeWindows(withWindows.map(item=>item.windows));
+    const intersectionWindows=intersectTimeDateWindows(withWindows.map(item=>item.windows));
     const intersectionStart=intersectionWindows[0]?.startDate||'';
     const intersectionEnd=intersectionWindows.at(-1)?.endDate||'';
     const intersectionScopeIds=intersectionWindows.length
