@@ -46,7 +46,7 @@ export default function IsrDomainTarget(){
       </p>
       <p className="scope-status">
         全站 ISR：{serverEnabled?'已啟用':'尚未啟用'}。
-        {choice.mode==='isr'&&!serverEnabled?'選擇 ISR 只會讓這台瀏覽器嘗試，服務端未啟用時會回退原資料來源。':''}
+        {choice.mode==='isr'&&!serverEnabled?'目前實際採用一般快取，不發送額外 ISR 請求。':''}
       </p>
       <button type="button" className="loc-button" onClick={restore}>恢復全站預設</button>
       {notice?<p className="scope-status" role="status">{notice}</p>:null}

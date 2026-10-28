@@ -52,8 +52,9 @@ test('administrator can change browser cache mode and the choice survives policy
   assert.equal(h.api.currentCachePolicy().mode,'off');
   assert.equal((await h.api.loadCachePolicy()).mode,'off');
   h.api.setBrowserCacheChoice({mode:'isr',provider:'cloudflare'});
-  assert.equal(h.api.currentCachePolicy().origin,'https://isr.lo3rwang.cc');
-  assert.equal((await h.api.loadCachePolicy()).mode,'isr');
+  assert.equal(h.api.currentCachePolicy().origin,'');
+  assert.equal((await h.api.loadCachePolicy()).mode,'cache');
+  assert.equal(h.api.browserCacheChoice().mode,'isr');
   assert.equal(h.storage.size,1);
   assert.equal(h.events.at(-1).type,'loc-cache-policy-changed');
   assert.throws(()=>h.api.setBrowserCacheChoice({mode:'isr',provider:'https://evil.test'}));

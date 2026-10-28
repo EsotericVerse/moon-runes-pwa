@@ -32,6 +32,8 @@ export function browserCacheChoice(){
 }
 function policyForChoice(choice){
   const domain=CACHE_POLICY.domains.find(item=>item.id===choice.provider);
+  if(choice.mode==='isr'&&(CACHE_POLICY.mode!=='isr'||!CACHE_POLICY.origin))
+    return normalizeCachePolicy({mode:'cache',origin:''});
   return normalizeCachePolicy({mode:choice.mode,origin:choice.mode==='isr'?domain?.origin:''});
 }
 export function setBrowserCacheChoice(choice){
@@ -39,7 +41,8 @@ export function setBrowserCacheChoice(choice){
     ||!CACHE_POLICY.domains.some(item=>item.id===choice?.provider))
     throw Error('快取模式或 ISR 網域不正確');
   const effective=policyForChoice(choice);
-  if(choice.mode==='isr'&&effective.mode!=='isr')throw Error('ISR 網域需為有效的 HTTPS 網址');
+  if(choice.mode==='isr'&&CACHE_POLICY.mode==='isr'&&effective.mode!=='isr')
+    throw Error('ISR 網域需為有效的 HTTPS 網址');
   window.localStorage.setItem(CHOICE_KEY,JSON.stringify({mode:choice.mode,provider:choice.provider}));
   return applyCachePolicy(effective);
 }
