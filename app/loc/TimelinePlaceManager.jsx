@@ -119,7 +119,7 @@ export default function TimelinePlaceManager({scopeId}){
         let offset=0;
         while(true){
           if(run!==runRef.current)return;
-          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_missing_place_windows',{
+          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_place_page_json',{
             p_scope_id:scopeId,p_windows:batch,p_limit:RESULT_PAGE,p_offset:offset
           });
           const rows=checked(result,'查詢 Galaxy 文章時間');
@@ -189,18 +189,18 @@ export default function TimelinePlaceManager({scopeId}){
   async function apply(){
     if(!analysis||!canWrite||writing||analyzing)return;
     const updates=selectedUpdates;
-    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\n\n'
-      +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\n'
-      +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
+    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章缺少的 place_id？\n\n'
+      +'已設定 place_id 的文章不會再次寫入；source_place 不更動。\n'
+      +'Timeline 原始資料不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
     const writtenUids=new Set();
     try{
       for(let i=0;i<updates.length;i+=WRITE_BATCH){
         const batch=updates.slice(i,i+WRITE_BATCH);
-        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
+        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_place_ids',{
           p_scope_id:scopeId,p_updates:batch
         });
-        const affected=Number(checked(result,'批次補寫 source_place')||0);
+        const affected=Number(checked(result,'批次補寫 place_id')||0);
         if(affected!==batch.length)throw Error('資料庫回報的寫入筆數不一致，請重新分析');
         completed+=affected;
         for(const row of batch)writtenUids.add(row.uid);
@@ -229,7 +229,7 @@ export default function TimelinePlaceManager({scopeId}){
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
     <h3>地點整理 · Google Timeline</h3>
-    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 source_place 尚未填寫的文章；依既有定錨點集中審查，必要時可分別指定樓層或不同店家。最後只補寫空白打卡地點與缺少的 place_id，不儲存私人行蹤。</p>
+    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 place_id 尚未填寫的文章；依既有定錨點集中審查，必要時可分別指定樓層或不同店家。只補寫缺少的 place_id，不改 source_place，不儲存私人行蹤。</p>
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
@@ -255,7 +255,7 @@ export default function TimelinePlaceManager({scopeId}){
       <p className="scope-status">Timeline 造訪區間：{analysis.visitCount.toLocaleString()}；
         500 公尺外／無定錨點：{analysis.empty.toLocaleString()}；
         候選有歧義的造訪區間：{analysis.ambiguous.toLocaleString()}。</p>
-      <p className="scope-status">待補打卡文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
+      <p className="scope-status">待補 place_id 文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
         按定錨點審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
         已有 source_place 的文章不列入也不會更新。</p>
