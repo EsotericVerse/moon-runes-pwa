@@ -184,7 +184,7 @@ function CultureSourceRootSummary({items,groups,windowStart,windowEnd,onGroupTog
           const count=Number(row?.item_count)||0;
           const action=group.collapsible?()=>onGroupToggle?.(group.id)
             :group.selectable?()=>onGroupSelect?.(group.id):null;
-          return <div key={group.id} style={{display:'contents'}}>
+          return <div key={group.id} className={row?'scope-dual-river-root':'scope-candidate-lane'} style={{display:'contents'}}>
             <div style={{minWidth:0}}>
               {action?<button type='button' className='scope-river-group-button'
                 aria-expanded={group.collapsible?Boolean(group.expanded):undefined} onClick={action}>
