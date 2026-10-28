@@ -17,7 +17,11 @@ function unbase64(value){
 }
 export function saveTimelineReviewSession(storage,{scopeId,owner,analysis,groupChoices,itemChoices,excluded,completedCount}){
   if(!owner||!analysis)return false;
-  const snapshot={owner,savedAt:Date.now(),analysis:{...analysis,unchanged:[]},
+  // Cache only article review decisions. GPS coordinates are transient evidence.
+  const withoutCoordinates=rows=>(rows||[]).map(({coordinates,commonAnchors,...article})=>article);
+  const snapshot={owner,savedAt:Date.now(),analysis:{...analysis,
+    ready:withoutCoordinates(analysis.ready),
+    disputes:withoutCoordinates(analysis.disputes),unchanged:[]},
     groupChoices,itemChoices,excluded,completedCount};
   storage.setItem(key(scopeId),base64(gzipSync(strToU8(JSON.stringify(snapshot)),{level:4})));
   return true;
