@@ -92,7 +92,7 @@ BEGIN
       AS u(uid text,place_id text,expected_place_id text,manual boolean)
     WHERE u.uid IS NULL OR u.uid !~ '^[A-Za-z0-9]{8}$'
        OR u.place_id IS NULL OR u.place_id !~ '^[A-Za-z0-9]{4}$'
-       OR (u.expected_place_id IS NOT NULL AND coalesce(u.manual,false) IS NOT TRUE)
+       OR u.expected_place_id IS NOT NULL
   ) THEN
     RAISE EXCEPTION 'UID／place_id 格式或手動覆寫權限不正確';
   END IF;
@@ -111,11 +111,11 @@ BEGIN
     UPDATE silver.%I g SET place_id = u.place_id
       FROM jsonb_to_recordset($1)
         AS u(uid text,place_id text,expected_place_id text,manual boolean)
-     WHERE g.uid = u.uid AND g.place_id IS NOT DISTINCT FROM u.expected_place_id
+     WHERE g.uid = u.uid AND NULLIF(btrim(g.place_id),'') IS NULL
   $query$,p_scope_id||'_galaxy') USING p_updates;
   GET DIAGNOSTICS affected = ROW_COUNT;
   IF affected <> total THEN
-    RAISE EXCEPTION '文章的 place_id 已改變，整批不寫入，請重新預覽';
+    RAISE EXCEPTION '文章的 place_id 已填寫或已變動，整批不寫入，請重新預覽';
   END IF;
   RETURN affected;
 END
@@ -128,8 +128,8 @@ GRANT EXECUTE ON FUNCTION silver.apply_timeline_place_ids(text,jsonb) TO authent
 NOTIFY pgrst, 'reload schema';
 
 -- Google Timeline remains transient, browser-only private evidence.
--- These opt-in RPCs only repair empty Galaxy source_place and optionally missing
--- place_id after explicit owner review. Do not store visits, routes or coordinates.
+-- Timeline review reads only articles missing place_id. The place_id-only write
+-- leaves source_place unchanged. Do not store visits, routes or coordinates.
 CREATE OR REPLACE FUNCTION silver.preview_timeline_missing_place_windows(
  p_scope_id text,p_windows jsonb,p_limit integer DEFAULT 10000,p_offset integer DEFAULT 0)
 RETURNS TABLE(article_uid text,article_title text,article_time timestamptz,
@@ -174,7 +174,7 @@ BEGIN
    FROM w JOIN LATERAL (
      SELECT uid,title,createtime,place_id FROM silver.%I
      WHERE createtime>=w.start_time AND createtime<w.end_time
-       AND (source_place IS NULL OR source_place ~ '^[[:space:]　]*$')
+       AND NULLIF(btrim(place_id),'') IS NULL
      OFFSET 0
    ) g ON TRUE
    ORDER BY g.uid,w.window_index LIMIT $2 OFFSET $3
@@ -185,4 +185,18 @@ $fn$;
 
 REVOKE ALL ON FUNCTION silver.preview_timeline_missing_place_windows(text,jsonb,integer,integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION silver.preview_timeline_missing_place_windows(text,jsonb,integer,integer) TO authenticated;
+NOTIFY pgrst, 'reload schema';
+
+-- JSON scalar avoids the REST API SETOF row cap for a MaxRows-size preview.
+CREATE OR REPLACE FUNCTION silver.preview_timeline_place_page_json(
+ p_scope_id text,p_windows jsonb,p_limit integer DEFAULT 10000,p_offset integer DEFAULT 0)
+RETURNS jsonb
+LANGUAGE sql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','silver'
+AS $fn$
+ SELECT coalesce(jsonb_agg(to_jsonb(r)), '[]'::jsonb)
+ FROM silver.preview_timeline_missing_place_windows(p_scope_id,p_windows,p_limit,p_offset) r
+$fn$;
+REVOKE ALL ON FUNCTION silver.preview_timeline_place_page_json(text,jsonb,integer,integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.preview_timeline_place_page_json(text,jsonb,integer,integer) TO authenticated;
 NOTIFY pgrst, 'reload schema';
