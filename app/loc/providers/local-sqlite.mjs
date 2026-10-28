@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
   group_lists TEXT NOT NULL DEFAULT 'false'
 );
 CREATE TABLE IF NOT EXISTS local_galaxy_media (
-  media_id TEXT PRIMARY KEY NOT NULL,
+  uid TEXT PRIMARY KEY NOT NULL,
   galaxy_link TEXT,
   media_type TEXT NOT NULL,
   title TEXT,
@@ -219,6 +219,77 @@ async function upgradeNativeLocalArchiveExif(conn){
   }catch(error){await conn.rollbackTransaction();throw error;}
 }
 
+
+const LOCAL_MEDIA_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_galaxy_media \([\s\S]*?\);/)[0];
+const LOCAL_MEDIA_COLUMNS=['uid','galaxy_link','media_type','title','url','meta_tags','createtime','source_place','rune_references'];
+function legacyMediaUid(value){
+  const text=String(value||'').trim().toUpperCase();
+  if(/^[A-Z0-9]{8}$/.test(text))return text;
+  if(!/^[0-9A-F]{8}-(?:[0-9A-F]{4}-){3}[0-9A-F]{12}$/.test(text))
+    throw new Error('Unrecognized local media identifier');
+  return (BigInt('0x'+text.replaceAll('-',''))%(36n**8n)).toString(36).toUpperCase().padStart(8,'0');
+}
+function localMediaMigrationStatements(mediaRows,articles,exifRows){
+  const links=new Map(mediaRows.map(row=>[String(row.media_id),legacyMediaUid(row.media_id)]));
+  if(new Set(links.values()).size!==links.size)throw new Error('Local media UID collision');
+  const steps=[
+    {sql:'ALTER TABLE local_galaxy_media RENAME TO local_galaxy_media_legacy_backup',values:[]},
+    {sql:LOCAL_MEDIA_TABLE_CREATE,values:[]},
+    ...mediaRows.map(row=>({sql:'INSERT INTO local_galaxy_media ('+LOCAL_MEDIA_COLUMNS.join(',')+') VALUES ('+LOCAL_MEDIA_COLUMNS.map(()=>'?').join(',')+')',
+      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(String(row.media_id)):row[c]))}))
+  ];
+  for(const row of articles){
+    if(!row.media_link)continue;
+    let ids;
+    try{ids=JSON.parse(row.media_link);}catch{throw new Error('Invalid legacy local media links');}
+    if(!Array.isArray(ids))throw new Error('Invalid legacy local media links');
+    const next=ids.map(id=>{
+      if(!links.has(String(id)))throw new Error('Unresolved legacy local media link');
+      return links.get(String(id));
+    });
+    steps.push({sql:'UPDATE local_galaxy SET media_link=? WHERE uid=?',values:[JSON.stringify(next),row.uid]});
+  }
+  for(const row of exifRows){
+    if(!row.media_id)continue;
+    if(!links.has(String(row.media_id)))throw new Error('Unresolved local EXIF media link');
+    steps.push({sql:'UPDATE local_archive_media_exif SET media_id=? WHERE archive_id=? AND entry_path=?',
+      values:[links.get(String(row.media_id)),row.archive_id,row.entry_path]});
+  }
+  steps.push({sql:'DROP TABLE local_galaxy_media_legacy_backup',values:[]});
+  return steps;
+}
+function upgradeWebLocalMedia(db){
+  if(!rowsOf(db,'PRAGMA table_info(local_galaxy_media)').some(row=>row.name==='media_id'))return;
+  const rows=rowsOf(db,'SELECT * FROM local_galaxy_media');
+  const articles=rowsOf(db,'SELECT uid,media_link FROM local_galaxy WHERE media_link IS NOT NULL');
+  const exif=rowsOf(db,'SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL');
+  const steps=localMediaMigrationStatements(rows,articles,exif);
+  db.run('BEGIN');
+  try{
+    for(const step of steps)db.run(step.sql,step.values);
+    if(Number(rowsOf(db,'SELECT count(*) n FROM local_galaxy_media')[0]?.n)!==rows.length)
+      throw new Error('Local media migration count mismatch');
+    db.run('COMMIT');
+  }catch(error){db.run('ROLLBACK');throw error;}
+}
+async function upgradeNativeLocalMedia(conn){
+  if(!(await conn.query('PRAGMA table_info(local_galaxy_media)')).values?.some(row=>row.name==='media_id'))return;
+  const rows=(await conn.query('SELECT * FROM local_galaxy_media')).values||[];
+  const articles=(await conn.query('SELECT uid,media_link FROM local_galaxy WHERE media_link IS NOT NULL')).values||[];
+  const exif=(await conn.query('SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL')).values||[];
+  const steps=localMediaMigrationStatements(rows,articles,exif);
+  await conn.beginTransaction();
+  try{
+    for(const step of steps){
+      if(step.values.length)await conn.run(step.sql,step.values,false);
+      else await conn.execute(step.sql+';');
+    }
+    if(Number((await conn.query('SELECT count(*) n FROM local_galaxy_media')).values?.[0]?.n)!==rows.length)
+      throw new Error('Native local media migration count mismatch');
+    await conn.commitTransaction();
+  }catch(error){await conn.rollbackTransaction();throw error;}
+}
+
 const TIME_COLUMNS=['uid','type','title','description','address','anchor_ids','status'];
 const TIME_INSERT_SQL='INSERT INTO local_time ('+TIME_COLUMNS.join(',')+') VALUES ('+TIME_COLUMNS.map(()=>'?').join(',')+')';
 const oldTimePresent=columns=>columns.some(row=>row.name==='record_id')&&!columns.some(row=>row.name==='uid');
@@ -332,6 +403,7 @@ async function webDatabase(){
     db.run(SCHEMA);
     upgradeWebLocalTime(db);
     upgradeWebLocalArchiveExif(db);
+    upgradeWebLocalMedia(db);
     if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
       db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
@@ -351,6 +423,7 @@ async function nativeDatabase(){
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
     await upgradeNativeLocalTime(conn);
     await upgradeNativeLocalArchiveExif(conn);
+    await upgradeNativeLocalMedia(conn);
     const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
     if(!columns.some(row=>row.name==='txt_class'))
       await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
@@ -824,16 +897,16 @@ async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
     if(!Array.isArray(p_rows)||p_rows.length>200)throw new Error('EXIF batch exceeds 200 entries');
     const statements=[];
     for(const item of p_rows){
-      const id=String(item?.media_id||''),archive=String(item?.archive_id||'');
+      const id=String(item?.media_uid||''),archive=String(item?.archive_id||'');
       const path=String(item?.entry_path||'');
       const lat=item.latitude??null,lng=item.longitude??null;
       const valid=(lat===null&&lng===null)||
         (Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180);
-      if((id&&!/^[a-f0-9-]{36}$/i.test(id))||!archive||!path||archive.length>400||
+      if((id&&!/^[A-Z0-9]{8}$/.test(id))||!archive||!path||archive.length>400||
           path.length>2048||!valid)throw new Error('Invalid local archive EXIF metadata');
       if(lat===null&&!item.camera_local_time)continue;
       if(id){
-        const exists=await selectLocal('SELECT media_id FROM local_galaxy_media WHERE media_id=? LIMIT 1',[id]);
+        const exists=await selectLocal('SELECT uid FROM local_galaxy_media WHERE uid=? LIMIT 1',[id]);
         if(!exists.length)throw new Error('EXIF media is not registered');
       }
       statements.push({sql:`INSERT INTO local_archive_media_exif

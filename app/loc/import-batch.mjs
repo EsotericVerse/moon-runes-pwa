@@ -24,7 +24,7 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
 });
 
 
-const IMPORT_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const IMPORT_MEDIA_UID=/^[A-Z0-9]{8}$/i;
 function importMediaType(url='',hint=''){
   const type=String(hint||'').trim().toLowerCase();
   if(type)return type;
@@ -52,10 +52,10 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
   for(const [index,item] of parseMediaArray(value).entries()){
     const source=typeof item==='string'?{url:item}:item;
     if(!source||typeof source!=='object')continue;
-    const explicitId=String(source.media_id||'').trim();
+    const explicitId=String(source.uid||'').trim().toUpperCase();
     const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
-    if(explicitId&&!IMPORT_UUID.test(explicitId))throw new Error('media_id 必須是 UUID。');
-    if((typeof item==='string'&&IMPORT_UUID.test(item))||(explicitId&&!rawUrl&&!source.media_type&&!source.type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)){
+    if(explicitId&&!IMPORT_MEDIA_UID.test(explicitId))throw new Error('媒體 uid 必須為 8 碼英數字。');
+    if((typeof item==='string'&&IMPORT_MEDIA_UID.test(item))||(explicitId&&!rawUrl&&!source.media_type&&!source.type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)){
       references.push(typeof item==='string'?item:explicitId);
       continue;
     }
@@ -63,7 +63,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
     if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)continue;
     const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
     const record={
-      ...(explicitId?{media_id:explicitId}:{}),
+      ...(explicitId?{uid:explicitId}:{}),
       galaxy_link:galaxy_link||null,
       source_place:String(source.source_place||'').trim()||null,
       media_type,

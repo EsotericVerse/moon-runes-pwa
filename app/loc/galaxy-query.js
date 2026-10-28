@@ -240,8 +240,8 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
   return (await selectRows(current.galaxyMedia,{
-    columns:'media_id,title,url,media_type',
-    filters:[{column:'media_id',operator:'in',value:ids}],
+    columns:'uid,title,url,media_type',
+    filters:[{column:'uid',operator:'in',value:ids}],
     limit:ids.length,
     signal
   })).rows;
@@ -264,7 +264,7 @@ export async function resolveGalaxyExternalLinks(scope,rows=[],{signal=null}={})
   if(!source.length)return [];
   const ids=[...new Set(source.flatMap(row=>mediaIdsOf(row?.media_link)))];
   const mediaRows=await mediaRowsFor(current,ids,{signal});
-  const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
+  const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
   return source.map(row=>({...row,resolved_links:resolvedLinks(row,mediaById)}));
 }
 
@@ -290,7 +290,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
     selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
     mediaRowsFor(current,mediaIdsOf(row.media_link))
   ]);
-  const mediaById=new Map(mediaRows.map(item=>[String(item.media_id),item]));
+  const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
   return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
 }
 
@@ -458,8 +458,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     searchFields:['content','source_name'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
-    id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'media_id',
-    columns:['media_id','galaxy_link','media_type','title','url','meta_tags','createtime'],
+    id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
+    columns:['uid','galaxy_link','media_type','title','url','meta_tags','createtime'],
     searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime'
   });
   if(mediaOnly||contentType==='multimedia')return [media];
@@ -595,8 +595,8 @@ async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',e
     catch{ /* Optional ISR failure: aggregate existing metadata. */ }
   }
   const filters=timeFilters('createtime',startDate,endDate);
-  const columns='media_id,media_type,url,meta_tags,createtime';
-  const orders=[{column:'media_id',ascending:true}];
+  const columns='uid,media_type,url,meta_tags,createtime';
+  const orders=[{column:'uid',ascending:true}];
   const aggregates=new Map();
   let offset=0,total=null,source='auto';
   while(total===null||offset<total){
@@ -625,12 +625,12 @@ async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',e
 export async function selectMediaCrossTagRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   const filters=timeFilters('createtime',startDate,endDate);
-  const orders=[{column:'media_id',ascending:true}];
+  const orders=[{column:'uid',ascending:true}];
   const rows=[];
   let offset=0,total=null,source='auto';
   while(total===null||offset<total){
     const page=await selectRows(current.galaxyMedia,{
-      columns:'media_id,meta_tags,createtime',
+      columns:'uid,meta_tags,createtime',
       filters,orders,limit:DB_QUERY_BATCH_SIZE,offset,
       count:offset===0?'exact':null,source
     });
@@ -664,8 +664,8 @@ export async function selectMediaCrossPairWorks(scope,pair,{
   let source='auto';
   while(true){
     const page=await selectRows(current.galaxyMedia,{
-      columns:'media_id,title,url,meta_tags,createtime',
-      filters,orders:[{column:'media_id',ascending:true}],
+      columns:'uid,title,url,meta_tags,createtime',
+      filters,orders:[{column:'uid',ascending:true}],
       limit:batchSize,offset:cursor,source
     });
     source=page.dataSource||source;
@@ -674,7 +674,7 @@ export async function selectMediaCrossPairWorks(scope,pair,{
       const rowOffset=cursor++;
       const tags=new Set(StatisticsFacets.base.mediaStyleTags(row.meta_tags).map(tag=>tag.normalize('NFKC').toLocaleLowerCase()));
       if(!tags.has(left)||!tags.has(right))continue;
-      rows.push({id:String(row.media_id),title:String(row.title||''),url:String(row.url||''),day:StatisticsFacets.base.mediaDay(row.createtime)});
+      rows.push({id:String(row.uid),title:String(row.title||''),url:String(row.url||''),day:StatisticsFacets.base.mediaDay(row.createtime)});
       if(rows.length>safeLimit){
         return {rows:rows.slice(0,safeLimit),nextOffset:rowOffset,hasMore:true};
       }
