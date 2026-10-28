@@ -131,6 +131,8 @@ export default function FlatClassificationEditor({scopeId='loc'}){
         })}
       </div>
       <div className="classification-inline__actions">
+        <button type="button" className="loc-button" disabled={busy}
+          onClick={()=>{setDraft([...rows,'']);setNotice('');}}>{l.add}</button>
         <button className="loc-button primary" type="submit" disabled={busy||!changed}>{busy?l.saving:l.save+' '+title}</button>
       </div>
     </form>:null}
