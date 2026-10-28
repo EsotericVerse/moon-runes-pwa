@@ -40,7 +40,7 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const [isError,setIsError]=useState(false);
-  const options=useMemo(()=>ownAnchors.map(row=>({value:row.uid,label:row.title+' · '+row.uid})),[ownAnchors]);
+  const options=useMemo(()=>ownAnchors.map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[ownAnchors]);
   const renameGroups=useMemo(()=>reviewReorderedCoordinateNames(ownAnchors),[ownAnchors]);
   const dirty=Boolean(editingUid||title||description||postalAddress||longitude||latitude);
   const pickExisting=uid=>{
