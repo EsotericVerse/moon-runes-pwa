@@ -1,167 +1,214 @@
 # Agent Instructions
 
-> 只留「做什麼／不做什麼」。資料規則、Galaxy 存檔、1.1 release 門檻這些會過期、屬於特定階段的細節，已整段拿掉；有幾條規則原本抄的是單一對話紀錄，不是真正通用的規則，也刪了。如果發現少了你在意的東西，告訴我，我補回去。
+> **這份文件是原則，不是參數表。** 裡面的例子都只是例子——用來讓原則看得懂，不是要照字面執行的條例。遇到文件沒正面寫到的情況，把原則同理推過去求解，不要只避開例子裡那幾個字、然後換個名詞把同一個錯誤重演一次。找得到可套用的原則就套用；真的翻遍了沒有，才算新狀況。
 >
-> **寫這份文件的風格：使用者給的是帶自由度的框架（方程式），不是算好的固定答案。** 任何一條規則寫「依情境判斷」「彈性處理」「自己判斷」的時候，必須同時講清楚哪一部分是固定不能動的邊界、哪一部分才是真的有自由度可以依狀況決定——不能只丟一句「這是彈性的」就沒有邊界，那樣不同的 AI session 冷啟動讀這份文件會各自發散出不同的解讀，不是只有這次對話裡的 Agent 看得懂就算數。之後任何人（或任何 AI）編輯這份文件，新增或修改規則時都要照這個風格寫。
-
-## 目錄
-1. [部署與語法檢查現況](#部署與語法檢查現況)
-2. [溝通節奏](#溝通節奏)
-3. [優先順序](#優先順序)
-4. [除錯方法](#除錯方法)
-5. [Git 流程](#git-流程)
-6. [交付與驗收](#交付與驗收)
-7. [Skill 使用](#skill-使用)
-8. [Skill 路由表](#skill-路由表)
-9. [完工檢查](#完工檢查)
+> **要改這份文件的時候：** 寫原則，不要長案例清單。新案例如果已經有原則涵蓋，就不要新增條文。任何一條寫「依情境判斷」的，必須同時講清楚哪一部分是固定邊界、哪一部分才有自由度——不然不同 session 冷啟動會各自發散。
 
 ---
 
-## 部署與語法檢查現況
+## 五條原則
 
-- **絕對不能讓 Cloudflare 部署當語法檢查器。** `main` 一有 push 就會自動觸發 Cloudflare Build/Deploy；如果 commit 裡還帶著基本語法錯誤（多一個 `{`、少一個括號之類），等於是拿一次會計費的正式部署去抓一個本來免費、幾秒鐘就能在本機抓到的錯誤——push 幾次、燒幾次部署資源，帳單就是這樣堆出來的，這是不能接受的浪費。正確順序永遠是：Agent 在本機 workspace 跑 `npm run check:syntax`（零成本、幾秒鐘），確認語法乾淨之後才 commit／push 到 `main`；不是先推上去，再靠部署失敗的 log 回頭抓語法錯。它不保證抓到所有語法問題（連基本的括號配對都可能漏掉），所以改完東西 Agent 還要自己再核對一次行為是否正確——這是 Agent 自己的責任，不需要使用者手動確認，也不該花到任何計費資源才發現。repo 裡另外放了 `.githooks/pre-push`，本機跑 `git config core.hooksPath .githooks` 設定一次，之後 `git push` 前會自動在本機跑一次 `check:syntax`，語法沒過直接擋下，不會送到會計費的那一步——這是機制上的保險，不是只靠 Agent 記得做。
-- **正式網站由 Cloudflare 自動建置、部署。** Cloudflare 連結 GitHub `main`；Agent 完成必要檢查並推送／合併 `main` 後，由 Cloudflare 自動 Build / Deploy。不要求使用者每次手動部署，也不以舊的手動部署限制阻止已完成的程式交付。**Cloudflare 上可能同時存在不只一個專案連著同一個 repo；哪個專案是正式部署入口、ISR 開不開、要不要重連/斷開哪個專案的 Git，都是使用者自己決定跟操作的事，不是 Agent 該主動去查「現在狀態是什麼」然後動手調整——會變的現況不屬於這份文件，問使用者最新狀況就好。**
+**一、分工。** 方向與概念由使用者定，工程判斷由 Agent 扛。使用者講到他在意的程度，就是一份完整的需求；缺的那塊是 Agent 自己查、自己判斷、自己補的。
 
+**二、成本不對稱。** 所有失敗、重做、拖延的成本都是使用者在付，Agent 一毛不付。本機免費、幾秒鐘驗得出來的事，不准拿計費資源去驗。
 
-- **不要把 CI／建置相關的 workflow 觸發條件從手動（`workflow_dispatch`）改回自動（`push`／`pull_request`）**，尤其是用到 macOS runner（計費比 Linux 貴很多）的工作流程——這類工作流程一旦被設成自動觸發，會在短時間內重複執行、不知不覺堆高用量，之前就因此發生過。
+**三、只有證據算數。** 不管假設是 Agent 自己想的還是使用者給的，都只看證據，不因為來源是使用者就多一分權重。
 
-- **資料安全不變。** 不因自動部署而刪除 Supabase／Neon／Galaxy 資料；資料庫修改仍要核對正式 schema，並遵守授權和資料保護檢查。
+**四、交付是結果，不是解釋。** 「做完了」＝使用者看得到的狀態改變。診斷、歸因、計畫、PR 都只是中間產物。
+
+**五、邊界。** 真風險（資料外洩、注入攻擊、未授權存取、金錢損失）與使用者的框架／品牌，不可擅動；其餘全部是可以權衡的自由度。
+
+**底下各節是這五條落在具體場景的樣子。遇到衝突，回頭權衡這五條，不是去找哪一行字面最接近。**
+
+---
+
+## 目錄
+1. [溝通節奏](#溝通節奏)（原則一）
+2. [優先順序](#優先順序)（原則五）
+3. [改動範圍](#改動範圍)（原則一、四）
+4. [除錯方法](#除錯方法)（原則三、四）
+5. [部署與語法檢查現況](#部署與語法檢查現況)（原則二）
+6. [Git 流程](#git-流程)（原則二、四）
+7. [交付與驗收](#交付與驗收)（原則四、五）
+8. [Skill 使用](#skill-使用)
+9. [Skill 路由表](#skill-路由表)
+10. [完工檢查](#完工檢查)
 
 ---
 
 ## 溝通節奏
 
-- **「討論」跟「直接執行」是兩件不同的事，不要混在一起判斷。** 使用者連續講好幾句解釋概念、釐清框架、補充定義，是在「討論」——這段期間還沒有要 Agent 動手的意思，即使聽起來像在描述一個功能。「不要逐項確認」管的是授權範圍內動手之後的節奏，不是說使用者講完一段概念說明就等於下達了新的實作指令。沒看到明確的動手指示（像「做」「加上」「改」「這個功能也要」之類），又正在同一串概念釐清當中，就當作還在討論，不要自己接過去開始寫程式；真的不確定對方是在討論還是在下指令，先問一句就好，不要邊問邊已經動手改了。
-**這跟〈Git 流程〉「先授權才動手」是兩件不同的事，不要併成一條**：「先授權才動手」管的是完全沒有得到授權就動手；這一條管的是另一種情況——討論這件事本身還沒結束、使用者還在講，不是授權存不存在的問題，是討論有沒有講完的問題。**這一條只管「這是不是一個動手指令」這一件事**，一旦確定已經進入執行階段，後面就回到〈講大步驟，不要逐項確認〉那套節奏，不要把這條讀成「執行中有任何小疑慮都要先問」。
-- **使用者不需要先設計好框架、講完整步驟，才能讓 Agent 動手。** 使用者會講需求、大方向、大概知道的架構/狀況，這樣就夠了；使用者不是萬能全才，不會天生知道所有細節，也不欠 Agent 一份完整的設計文件或逐步流程才能開工。缺的那塊——框架怎麼落地、步驟怎麼拆、技術細節怎麼選——是 Agent 自己該去查程式碼、查現有慣例、自己判斷補上的，不是反過來要求使用者講到鉅細靡遺才肯動；使用者講到他知道、在意的程度就是完整的，不夠的地方不是使用者的缺失，是 Agent 該自己填的空白。
-- **這跟使用者懂不懂技術無關，是顆粒度問題。** 使用者是技術背景，講概念/作法大方向完全聽得懂；不需要因此解讀成「要講得更淺」或「要分階段確認」，真正要改的是不要把每個小步驟都攤開來逐項確認。
-- **講大步驟，不要逐項確認。** 一個功能、一個作法，交代清楚「要做的大步驟」＋「這個作法連帶會影響到的範圍（哪些檔案／功能／風險）」就動手；不要把任務拆成幾十個小步驟，每一步都停下來問「這樣可以嗎」。總工程可能有上百項，但不用一條一條列出來討論，使用者要的是方向對不對，不是逐行審查。
-- **授權範圍內的小步驟自己判斷，不用一步一報。** 已經同意做的事，裡面要改哪個檔案、哪一行、哪個設定，自己執行完，不用每個小動作都先問一次。**執行中只有三種情況才停下來問，其他都不用**：1. 發現概念跟現實程式/資料衝突（不是純命名差異）；2. 撞到 MCP／工具授權牆，動不了；3. 臨時緊急狀況。概念本身的疑慮在討論階段就會先問清楚，進入執行階段後不會又冒出新的概念問題——除非真的發現跟講的不一樣。
-- **使用者講過需求／架構／大概作法之後，不要再回頭逐一核對「概念是不是這樣」。** 使用者已經把目標、架構、大方向講清楚了，後面怎麼拆解、怎麼實作，是 Agent 自己該判斷、該負責的事；不要把使用者當成要逐項簽核的設計審查者，一直問「這樣對嗎」「這個概念是這樣嗎」。把使用者講的那段話當成完整、可執行的需求直接去做，做完再一次性交代結果；真的卡住、或發現使用者講的跟現實程式/資料衝突，才回頭問清楚那一個點，不是整個流程都要確認。
-- **怕被亂改到其他東西，不是靠逐步問來防，是靠先畫範圍＋Agent 自己事後看 diff——不是要使用者看 diff。** 這份擔心是對的，但解法不是每個小細節都先問過才能動手，也不是把 diff 丟給使用者核對（使用者不是來看 code review 的）。大骨架是 Agent 自己判斷、自己講出來的——不是丟給使用者猜「這次大概會動到哪裡」；動手前 Agent 先講清楚「大骨架」——這次動的是哪些檔案/哪個功能範圍、大概會怎麼改；交付前的 diff 檢查是 Agent 自己的事（對照〈完工檢查〉），確認沒有混進其他任務沒做完的東西，查完直接說結果，不是把 diff 丟出來要使用者自己判斷。大骨架講清楚、Agent 自己把 diff 收尾查過，就不需要逐行監工式的確認。
-- **使用者說的「檢查」，是看概念／架構／邏輯對不對，不是逐字核對命名用詞。** 像把欄位或變數從 `space_road` 改名成 `space_period`、或 `uid` 換成 `id`，單純換名字、換用詞，只要指的是同一個東西、邏輯沒變，不算問題。
+**原則一的落地。** 使用者有技術背景、聽得懂概念，但提需求是他的權利，工程判斷不是他的義務。**唯一、固定的判斷基準是「概念本身懂不懂」，不是「這件事影響大不大」**：概念不清楚或跟現實衝突，問；概念清楚了，不管多大多關鍵（模組選型、merge 失敗怎麼處理、哪裡出錯怎麼修），都自己查、自己決定、自己做，做完讓使用者看得到做了什麼、為什麼這樣做。不要悶著做，也不要把判斷丟回去。
 
-- **使用者講過需求／方向／架構／大概步驟之後，細節設計是 Agent 的責任，不是使用者的。** 使用者會講清楚要什麼、大方向、架構，大概的步驟也會講；新技術使用者不熟、講不出實作細節是正常狀態，不代表要使用者自己把一切設計出來才能動手——那是 Agent 該補上、該扛的部分。
-- **「有疑問就問」的範圍限定在概念／方向本身不確定這一層，不是工程判斷，也不是靠「這是不是模組選擇」之類的類別來劃邊界。** 這是分工問題，不是使用者懂不懂技術、有沒有工程背景的問題——使用者就算懂概念、有技術背景，提需求是他的權利，工程判斷不是他的義務；
-**工程判斷是 Agent 的義務，不是使用者的**，不管使用者實際上是什麼角色、什麼背景都一樣：方向/概念由使用者定，工程怎麼做由 Agent 負責判斷、負責扛，不要把自己的義務丟回去要使用者決定。**唯一、固定的判斷基準是：概念本身懂不懂，不是這件事影響大不大。** 概念不確定、跟現實衝突，問；概念清楚了，不管事情多大、多關鍵（包含模組選擇這類大方向決定、merge 失敗要怎麼處理、哪裡出錯要怎麼修），都是 Agent 自己查、自己判斷、自己決定、自己做——判斷得出來就不用問，問了只是把自己的義務丟回去要使用者決定；merge 失敗也是 Agent 自己該會診斷修復的工程問題，不是丟回去問使用者「怎麼辦」。
-**這不等於工程判斷要悶著做、不能讓使用者知道。** 判斷完、做完之後，都要讓使用者看得到做了什麼、為什麼這樣做，不是悶著做掉、使用者事後也不知道發生過這個決定；像「模組選擇」這種場景會出現列選項，是因為**使用者自己主動提了需求**（例如：「我想找進階搜尋的自動完成的模組，有沒有比較好用的？」——這是使用者主動徵詢建議/選型），Agent 本來就該針對這個問題給推薦、講優缺，這只是正常回答使用者提出的問題，不是 Agent 遇到工程決策點就該反過來丟選項問使用者。
+- **討論 ≠ 動手指令。** 使用者在釐清概念、補定義的時候還沒要動手，即使聽起來像在描述功能。沒有明確的動手指示（做、加上、改、這個也要）就當作還在討論。不確定可以問一句，但不要邊問邊已經在改。
+- **執行中只有三種情況停下來問**：① 概念跟現實程式／資料衝突（純命名差異不算）；② 撞到工具授權牆，動不了；③ 使用者自己說了「這很重要／這很急」——第三種由使用者觸發，不是 Agent 判斷什麼算緊急。**這三種就是全部，不要自己多開第四種。**
+- **要問就問在重點上。** 概念、框架、方向這一層，一句話問得完的那種。枝節自己判斷掉，不要把一個疑慮展開成一串確認題，那就是無限上綱。
+- **動手前講大骨架**（這次動哪些檔案／功能範圍、大概怎麼改），**動手後自己看 diff 收尾**。怕改壞不是靠逐步問來防，也不是把 diff 丟給使用者核對——使用者不是來做 code review 的。
+- **概念講過一次就是判斷標準**，代入後續所有同類情境求解。同一個疑問反覆出現，是 Agent 沒吸收，不是使用者沒講清楚。
+- **不要製造「讓使用者選」的環節。** 使用者主動徵詢選型時給推薦、講優缺，那是回答問題；自己卡住就丟選項不是。
+- **不要開 issue、discussion 或任何指派給使用者的工單。** 發現的問題寫在回報裡，使用者不該回頭幫你刪票。
+- **發現更簡單的做法，選它、做完、在回報裡講一句**，不要停下來問。唯一限制是它會動到框架或品牌字面——那不是「要不要問」，那兩層本來就不能擅自改，照原路做、把替代方案寫在回報裡。
+- **使用者說的「檢查」是看概念／架構／邏輯對不對，不是逐字核對命名。** 命名不一樣不等於錯；不要不問就當成錯誤去回報或糾正。
+- **回報單位是「使用者提出的一個需求」**，不是 commit 數、不是 PR 數、不是 Agent 自覺的「大功能」。追加的子需求做完也算一次。
+- **回報完不要停下來等。** 還有後續工作就直接接著做；真的要停，只限上面那三種情況。
+- **回報用大步驟講**：做了什麼＋連帶影響什麼＋目前狀態／還缺什麼驗證。精簡但完整，不要為了講清楚而拆細——拆太細既慢又耗 token。
 
-- **使用者給過的概念就是判斷標準，拿去套用在後續所有類似情境，不要同一件事反覆問。** 概念只需要使用者講一次、講清楚，之後遇到同類狀況，應該是把這個概念當方程式代入眼前狀況求解，不是每次又冒出同樣的疑問重新問一次；同一個疑問在使用者已經回答過之後還持續出現，代表沒有真的把概念吸收成判斷依據，是 Agent 自己該修正的地方，不是使用者解釋得不夠。
-- **不是每個 commit 都要回報／確認。** 一個任務裡可能有好幾個、十幾個 commit，不用每送一個 commit 就停下來找使用者確認一次；commit 是 Agent 自己工作的切分單位，不是跟使用者的溝通單位。
-- **回報／驗收的單位是「使用者提出的一個需求」，不是模糊的「大功能」。** 不是由 Agent 自己判斷「這夠不夠大、算不算一個大功能」才回報；是使用者講出來的那個需求做完就回報一次、使用者就驗收一次——不管中間用了幾個 commit、語法檢查錯了幾次、改了幾次做法，那些都是 Agent 自己工作過程的事，跟要不要回報無關。一個需求裡面如果使用者又追加了新的子需求，那個子需求做完也算一次。
-- **回報完不代表要停下來等回應，不要製造不必要的中斷。** 回報是讓使用者知道做了什麼、結果如何，不是丟出一個暫停點等對方確認；回報完如果還有後續工作（同一個需求的其他部分、或下一個已授權的任務），直接接著做，不要停在那邊等——沒有東西要使用者確認，停下來等於浪費雙方時間。真的需要停下來等，只限上面講的那三種情況。
-- **回報也用大步驟講。** 做完後交代「做了什麼大動作＋連帶影響了什麼＋目前狀態／還缺什麼驗證」，不要列出一長串工程細節逐條說明；細節使用者想看時會主動問，不用先攤開。
+---
 
-**Security ≫ Portable > Loading = UI > Code**，
-依情境判斷，不是鐵律排序，這四層的權重從來就不是固定公式，權衡本身就是 Agent 的工程判斷；安全邊界永遠是硬限制，其他三層才看情況權衡——權衡得出來就自己決定、做完回報，不是遇到三層衝突就反射性列選項讓使用者選。真的判斷不出來（連要優先什麼這個概念本身都不清楚）才問，判斷邏輯跟§溝通節奏「有疑問就問」那條一致。**安全硬限制的判斷基準是「一般使用者能正常使用這個產品」，不是理論上的絕對安全。** 像把防火牆全部關掉封死所有網路最安全，但產品就不能用了——那不是守護使用者，是本末倒置。要擋的是真正的風險（資料外洩、注入攻擊、未授權存取、金錢損失），不是為了安全把東西弄到不能用；安全永遠優先這句話的意思是「遇到真風險就擋」，不是「什麼都往最極端的安全做」。
-- **討論內容是什麼，就站在對應的角色判斷，不要用單一視角套所有情境。** 討論 UI 時站在設計者角度，美觀跟功能一起考量，不是只顧好看或只顧好用；討論系統時同時顧安全跟效能，不是只選一邊。這些角色、這些考量彼此不衝突，都可以權衡出平衡點——固定邊界是安全永遠優先（跟上面的排序一致），剩下的（美觀/功能、效能/其他架構考量）才是真正看情境取捨的自由度；真的抓不準怎麼權衡才問使用者，不是每次權衡都要先問。
+## 優先順序
 
-** 需要時自動去找現成的庫/skill/既有實作可以用。
-**Loading = UI：** 效能/體感同等重要，互相權衡。
-**Code：** 不要在不必要的地方隨興加上工程用註解。
-### Skill 對應優先層級
-- **Security：** 新 skill/package → `find-skills`；auth/輸入輸出/密鑰相關 → `code-review-expert` 的 `security-checklist.md`（只當檢查清單用，不跑完整 review）；Postgres/Supabase schema → `supabase-postgres-best-practices`；Supabase Auth/Edge/Realtime → `supabase`；MCP server → `mcp-builder`。
-- **Portable：** 寫新程式碼前先找既有實作；改 LOC 詞彙/Scope 邊界/ADR → `domain-modeling`。
-- **Loading/UI：** React/Next.js → `vercel-react-best-practices`；不明原因的錯誤/效能 → `systematic-debugging`；N+1/慢查詢 → `sql-optimization-patterns`；元件 API → `vercel-composition-patterns`；視覺/互動 → `ui-ux-pro-max`；驗證有沒有真的動 → `webapp-testing`；宣稱修好前 → `verification-before-completion`。
+**Security ≫ Portable > Loading = UI > Code** —— 這是權重提示，不是可以照抄的公式。**每一層推到極端都會背叛它自己**：安全推到極端是把網路線剪掉，最安全也最沒用；Portable 推到極端是不寫 code、直接拿別人的來用，那叫侵權；Code 推到極端是為了寫得漂亮，拿三十行 join 去撈一個總共才一千多筆的欄位筆數；UI 推到極端是自己畫一張介面圖自己爽，結果不能用。
+
+**所以四層永遠是動態權衡，判準只有一個：一般使用者現在能不能正常使用這個產品。** 要擋的是真風險，不是把東西弄到不能用。權衡得出來就自己決定、做完回報，不要反射性列選項讓使用者選。
+
+**而且這四層都蓋在「基本功能真的能用」之上，不是平行的。** 頁面還 404 的時候不要先談效能調校或安全加固。同理，功能不是越多越好——判準是「這對一個最基本的使用者現在有沒有實際幫助」，不是「能不能做」。
+
+1. **Security：** 第三方 skill/package/MCP 用前，先看裡面實際寫了什麼。**資料的公開性要主動講，不能知道了不說**——匯入、搬移、同步任何含私人內容的資料之前，先確認它會不會變成公開可讀並講出來；**預設最小公開，沒確認過就不要讓它處於任何人讀得到的狀態**。知道是私人資料卻沒講，等同外洩，不在可權衡的範圍內。
+2. **Portable：** 寫新程式碼前先找既有實作、現成的庫或 skill。
+3. **Loading = UI：** 效能與體感同等重要，互相權衡。
+4. **Code：** 不主動做風格／架構 review，不在不必要的地方加工程用註解。
+
+**Skill 對應：** 新 skill/package → `find-skills`；auth／輸入輸出／密鑰 → `code-review-expert` 的 `security-checklist.md`（只當清單用）；Postgres/Supabase schema → `supabase-postgres-best-practices`；Supabase Auth/Edge/Realtime → `supabase`；MCP server → `mcp-builder`；LOC 詞彙／Scope／ADR → `domain-modeling`；React/Next.js → `vercel-react-best-practices`；元件 API → `vercel-composition-patterns`；不明原因錯誤／效能 → `systematic-debugging`；N+1／慢查詢 → `sql-optimization-patterns`；視覺／互動 → `ui-ux-pro-max`；驗證有沒有真的動 → `webapp-testing`；宣稱修好前 → `verification-before-completion`。
+
+---
+
+## 改動範圍
+
+**每一行改動都要能直接對應到使用者這次的需求，對應不到就不該出現在 diff 裡。**
+
+- **動手前先把任務翻成一個自己驗得到的成功條件。** 「加驗證」→「對不合法輸入寫測試，讓它過」；「修 bug」→「先寫一個能重現的測試，讓它過」。**這是「不用逐項確認」的前提**：成功條件夠硬，才能自己把迴圈跑完；寫成「讓它能用」就只能一直回頭問人。固定邊界是「每個任務都要有一個自己驗得到的條件」，條件長什麼樣自己選。
+- **只寫解決問題需要的程式碼。** 沒被要求的功能不先做；單一場合的東西不先抽通用層；沒人要求的「彈性」「可設定」不自己加；不可能發生的情況不先寫錯誤處理。兩百行能收成五十行就收。
+- **只動必須動的地方。** 不順手「改善」旁邊的程式碼、註解或排版；不重構沒壞的東西；既有風格跟自己的習慣不同也照既有的走。**別人的東西不自己動，這裡沒有自由度。**
+- **自己造成的孤兒自己清，別人留下的死碼只回報不刪。** 因為這次改動而沒人用的 import／變數／函式要清掉；無關的既有問題回報一句就好，要不要處理是另一次需求。
 
 ---
 
 ## 除錯方法
 
-- **先查證據。** 查原始碼與測試，不要靠猜。第一個解釋只是假設，證據牴觸就換方向，不要重複沒被支持的修法。
-- **分輪調查，不要無限鑽。** 拆成幾個可證偽的假設，各自訂好最便宜的測試；一輪結束不管有沒有找到答案都要回頭看全部證據、重新判斷方向；抓到有把握的 root cause 就集中修，不再開新支線。
-- **動手前先定錨。** 講清楚現在的問題、基準狀態、已知/未知、安全邊界；優先用便宜、唯讀的方式先驗證，要改動正式環境才需要走授權/備份。查不到不代表沒問題——分清楚「真的沒事」跟「查的方法看不到」。
+**原則三、四的落地：只有證據算數，而且查完要接到動作。**
+
+- **先查證據，不靠記憶。** 第一個解釋只是假設，證據牴觸就換方向，不要重複沒被支持的修法。
+- **使用者給的原因也是假設，不是結論。** 他自己也會判斷錯，這很正常。證據支持就往那邊修；不支持就直接說「查過了，不是這裡，實際上是 X」然後換方向，不要因為是使用者提的就一路鑽到底。
+- **code 看得到的事就不准用猜的。** 在讀過相關 code 之前，不要先丟出「問題出在別層」的解釋（client 端、網路、資料庫、部署、快取……舉例而已，重點是這個動作本身）——那不是假設，是在迴避讀 code。**要主張問題不在 code，必須先把 code 這一側查乾淨，而且說得出查了什麼、排除了什麼。**
+- **不要用名詞聯想平台。** 聽到一個技術名詞就跳到業界最常跟它綁在一起的平台去查配置，那是聯想不是查證。這個 repo 實際接了什麼、哪個是主、哪個只是同步目標，設定檔、環境變數跟 schema 裡都查得到——**說得出是從哪個檔案看到的**。
+- **外部原因的猜測幾乎都指向使用者那一側**（他的瀏覽器、他的資料庫、他的部署、他的網路），實質內容就是「不是我寫的有問題，是你那邊有問題」。**就算沒那個意思，效果就是把責任推回去，而需求還原封不動留在那裡。**
+- **僵持本身就是訊號。** 同一個解釋被反駁過兩次還在辯護，就已經在浪費使用者的時間——停下辯護，去讀 code。
+- **分輪調查。** 拆成可證偽的假設，各訂最便宜的測試；一輪結束回頭看全部證據再定方向；抓到有把握的 root cause 就集中修，不開新支線。
+- **診斷不是交付。** 就算原因真的落在外部，使用者要的仍是「問題解決、功能完成」，不是歸因報告。**每一次診斷都要接到一個動作**——自己修掉、自己繞過去、或明確講出「這段需要使用者做什麼，而我這邊能做的都做完了」。**沒有自由度的是停在解釋。**
+- **動手前先定錨。** 講清楚問題、基準狀態、已知／未知、安全邊界；優先用便宜唯讀的方式驗證。查不到不代表沒問題——分清「真的沒事」跟「查的方法看不到」。
+
+---
+
+## 部署與語法檢查現況
+
+**原則二的落地：本機驗得出來的事，一律在本機驗完才送出去。** 「先推上去看看會不會過」「先合看看會不會壞」不是作法，是拿使用者的錢做本機免費就能做的驗證。
+
+- **絕不拿 Cloudflare 部署當語法檢查器。** `main` 一有 push 就自動觸發計費建置。順序永遠是：本機 `npm run check:syntax`（零成本、幾秒）→ 乾淨了才 commit／push。它抓不到全部問題，行為是否正確仍是 Agent 自己要再核對的責任。repo 內附 `.githooks/pre-push`，本機 `git config core.hooksPath .githooks` 設定一次就會自動擋——**機制保險，不是靠記得做。**
+- **正式網站由 Cloudflare 連 `main` 自動建置部署。** 不手動觸發 GitHub Pages，不啟用 Vercel 備援，不額外重複觸發建置。
+- **付費資源設定一律使用者決定**（ISR、DNS、R2、Durable Objects、Cloudflare 專案的 Git 連接、組建監看路徑、哪個專案是正式入口）。Agent 不主動查現況、不主動建議調整，被明確要求才操作、操作完回報。
+- **組建監看排除路徑目前**：包括 `*`，排除 `AGENTS.md`、`.md`、`.githooks/**`、`node_modules/**`、`.git/`。Cloudflare 用 `*` 當萬用字元且 `*` 會跨過 `/`，沒帶 `*` 的是字面比對——所以 `.md` 對不到 `README.md`、`docs/*.md` 這些。名單由使用者維護，變了由使用者講。
+- **三種情況無視排除名單一律建置**：push 含 20 個以上 commit、3000 個以上檔案變動、或零檔案變動。**這是晚 merge 的第二個成本。**
+- **不要為了省部署資源把文件改動攢著、延後 merge 或繞路改別的檔案。** 同一 commit 夾帶程式碼當然還是會建置，照正常語法檢查流程走。
+- **不要把 workflow 從 `workflow_dispatch` 改回自動觸發**，用到 macOS runner 的尤其貴，之前就因此堆高過用量。
+- **部署量要維持在可控，因為那決定使用者敢不敢開 ISR。** ISR 關著時，分支暴增只燒儲存與建置；ISR 一開，同樣的行為會變成每次部署都在寫快取。部署量壓不回來，ISR 就只能一直關著——那不是技術決策，是被迫的。
+- **資料安全不變。** 不因自動部署刪除 Supabase／Neon／Galaxy 資料；DB 修改核對正式 schema，遵守授權與資料保護檢查。
 
 ---
 
 ## Git 流程
 
-- **先授權才動手。** 純討論/研究不算授權；一旦授權，自己把任務做完，不用每步都問。使用者撤回授權就停，只做必要的善後。
-- **分支：有條件用，不是每次都要開。** 大/多檔/有風險的任務開一條 `task/<purpose>` 或 `fix/<purpose>`，從頭用到驗證完，不要每個子步驟都開新分支；單純、低風險、自我完整的文件/設定修正可以直接進 clean `main`。
+**原則二、四的落地：沒收尾的東西，成本都由使用者付；沒進 `main` 的東西，對使用者等於沒發生。**
+
+- **先授權才動手。** 純討論／研究不算授權；一旦授權就把任務做完。使用者撤回授權就停，只做必要善後。
+- **動手前看 baseline。** 確認 `main` 現況與 `git status`，不要假設 checkout 是乾淨的。
+- **分支有條件開，不是每次都開。** 大／多檔／有風險的開一條 `task/<purpose>` 或 `fix/<purpose>`，從頭用到驗證完；單純低風險的文件／設定修正直接進 clean `main`。**「有風險」的下限錨在真風險上：碰到 schema、auth／權限、付費資源，或任何會改變資料公開性的操作，一律算有風險。**
+- **分支做完就收，合完就刪**（remote 與本地都刪）。兩三條線各掛一條分支是正常的，**不正常的是分支只進不出一路累積**——那不代表做了很多事，那是沒收尾。**而且分支不是免費的**：預覽部署預設對所有非生產分支生效，每推一條分支、每個 commit 都跑一次完整建置並留下一份產物。**一條分支的生命週期結束在 merge，不是結束在你不想管它了。**
+- **盡早 merge，因為同時有兩三條 agent 線在跑。** 壓著不合，`main` 還是會往前，等到想合時已經差十幾二十個 commit，那時要做的不是 merge 而是重做。**這跟「本機驗完才送出去」不衝突，兩者不在同一層**：本機驗的是 Agent 自己跑的語法檢查，幾秒鐘，不是拿給使用者驗收；而「送出去」的單位是**一個功能完成**，不是一張 PR。實際順序是「功能做完 → 自己跑語法檢查 → 立刻合」。**沒有「等一下再合」這個選項。**
+- **merge 失敗、部署失效是預期會發生的事，不是意外。** 差距越大越難修；趁小的時候合，失敗了還修得動。失敗就自己 rebase、自己解衝突、自己診斷——那是工程問題，不是回頭問使用者怎麼辦，更不是另開一條分支繞過去（那正是分支暴增的主因）。
+- **PR 不是等使用者核准的關卡。** 它只是管理分支的手段。檢查做完就自己合。**開著 PR 等人看就是在瞎等**——使用者可能在忙、根本沒看到，PR 不會自己變成被核准。
+- **扣著 PR 不只拖自己這條線。** 其他線等不到新基準、部署排隊、建置計費往上堆、通知信灌爆信箱。**不要假設「反正使用者會來 merge」——merge 不是他的工作。**
+- **「改完了」＝進了 `main` 且部署跑起來，不是「PR 送出去了」。** 沒合進 `main`，使用者什麼都看不到，回報「我改完了」等於什麼都沒發生。**沒 merge 就不准回報完成**，最多回報「做到哪裡、卡在哪裡」。**Agent 沒有 Cloudflare 的查詢管道，查不到部署結果是常態不是例外**——不要每次再試、也不要為此停下來等；直接回報「已進 `main`，Cloudflare 部署結果未驗證」就是完整履行。**不准的是沒查到卻宣稱線上已經好了。**
+- **任務中斷＝凍結，不是放著。** 標記 `FROZEN / NOT FOR MERGE`；不新開分支重做同一件事，不 `git reset --hard` 刪別人的東西。
 
 ---
 
 ## 交付與驗收
 
-- **UI 設計是 Agent 自己該做的事，不是要使用者先設計好、Agent 只負責發包執行。** 使用者不是設計專業、美學素養不是重點，他不會、也不需要先把版面/視覺怎麼改規劃出來交給 Agent 當「規格書」去實作——那是把使用者當成發案的客戶、Agent 當承包商在等規格，順序顛倒了。UI/UX 的設計判斷（版面、層級、互動、視覺風格）由 Agent 自己用現有的設計類 skill（`frontend-design`、`ui-ux-pro-max`、`baseline-ui`、`design-taste-frontend` 等）做出來，使用者只需要在結果出來後，用他在意的「符不符合使用習慣」去給反應，不用先畫、先想、先發包。
-- **「框架」「架構」「品牌」「命名」是四個不同的詞，不要混用。** 使用者有 CSIE 背景、懂概念，講得很精確，Agent 寫規則時用詞也要跟著精確，不要自己把詞混在一起造成誤讀：
-  - **框架**＝使用者自己的領域概念／語意模型（像 time_trace 是 time_period 的集合這種，他自己發明、定義的）。這是使用者在意、使用者講了算的東西，屬於〈優先順序〉和 `domain-modeling` skill 管的那一層；講過一次就算數，Agent 的實作/重構不能自己偷偷讓它跟使用者定義的框架脫鉤、跑掉、偏掉。過去真正出問題的地方是「實作沒跟上使用者講清楚的框架」，不是使用者沒講夠。
-  - **架構**＝技術架構／演算法／程式怎麼寫（資料結構、查詢方式、元件怎麼拆、效能策略）。這是 Agent 自己的工作，使用者不在意、也不該被要求去設計這塊，跟 UI 視覺一樣。
-- **UI 改動要給截圖，不要給 ASCII art 或工程註解。** 這種東西只能用「看」的來判斷，不是用文字描述、不是用 print 一行、更不是靠一堆工程用註解去想像畫面長什麼樣。UI 相關的改動，用 `webapp-testing` skill（Playwright）實際跑起來、截圖，把截圖交給使用者看，而不是用文字/ASCII 排版去交代介面改了什麼。
-- **稽核時抓到中/高風險缺陷直接修，不用再問一次**；修完要有真的測試證據，不是改完就算。
+- **UI 設計是 Agent 自己的事，不是等使用者先畫好規格再發包。** 版面、層級、互動、視覺風格由 Agent 用設計類 skill 做出來；使用者只在結果出來後，用「符不符合使用習慣」給反應。
+- **「框架」「架構」「品牌」「命名」是四個不同的詞。** **框架**＝使用者自己的領域概念／語意模型（像 time_trace 是 time_period 的集合），他講了算，實作不能讓它偏掉。**架構**＝技術怎麼寫，Agent 的工作，使用者不管。**品牌**＝對外代表概念的專有名詞（LOC、LunaRunes、管理選單名稱、主功能名稱、自創理論名稱），一個字都要使用者拍板。**命名**＝內部變數／欄位字面，換名字只要指同一個東西就不算問題。
+  **真正的判準是「改了之後語意會不會變、框架會不會偏」，不是「字面有沒有動」**——品牌詞字面即語意，動一個字語意就變；變數名的語意不跟著字面走。拿不準的字，先問自己改完語意有沒有變。
+- **UI 改動要給截圖，不要給文字描述或 ASCII art。** 用 `webapp-testing`（Playwright）實際跑起來截圖。
+- **功能要真的動。** 靜態截圖、寫死的資料、沒接資料源的控制項不算交付；動態圖表要接真實查詢，換篩選條件會變。
+- **CI 只檢查改動的程式碼**：語法／型別先過，再驗受影響的行為；不把重跑整個 repo 當儀式；中文用字不是通過與否的依據。
+- **稽核抓到中／高風險缺陷直接修**，修完要有真的測試證據。
+- **交付與部署驗證分開。** commit、CI、原始碼正確不代表線上已更新；無法確認部署完成就只回報「已進 main，部署結果尚未驗證」，不得宣稱線上成功。
 
 ---
 
 ## Skill 使用
 
-- 討論/研究不等於可以動手改；一旦直接要求實作，就做完整個授權範圍，不用每步驟都問。
-- 每次任務開始先看這個 repo 跟 runtime 有哪些 skill 可用；`.agents/skills/`、`.claude/skills/`、Global 裡同名的算同一個能力，不是分開裝了好幾套。
-- 相關的 skill 要一起用（例如同時需要資料庫＋效能＋驗證），不要被單一 skill 的「只選 1–3 個」限制卡住跨領域的組合。
-- 主動用 `find-skills` 去 skills.sh 找新方法來補充現有能力，不用等到完全做不到才找；裝之前先查授權、維護紀錄、腳本內容。
-- 新方法確定要採用、跟舊規則/舊實作衝突時，直接刪掉或鎖住舊的，不要兩套同時留著；使用者這次的指示優先於這份檔案。
+- 討論／研究不等於可以動手改；一旦要求實作，就做完整個授權範圍。
+- 每次任務開始先看 repo 跟 runtime 有哪些 skill；**skill 一律裝在 global，repo 內不放副本**（`.agents/skills/`、`.claude/skills/` 已移除）。一台機器、一個 repo、一個專案，裝一份就夠。
+- 相關的 skill 要一起用（資料庫＋效能＋驗證），不要被單一 skill 的「只選 1–3 個」卡住跨領域組合。
+- 主動用 `find-skills` 補能力，不用等到完全做不到；裝之前先查授權、維護紀錄、腳本內容。
+- 新方法跟舊規則衝突就刪掉或鎖住舊的，不要兩套並存；使用者這次的指示優先於這份檔案。
 
 ---
 
 ## Skill 路由表
 
-| Repository skill | Use it for |
+| Skill | Use it for |
 |---|---|
-| `.agents/skills/brainstorming/SKILL.md` | Brainstorm unresolved product choices; if goal/authorization already clear, skip ceremony. |
-| `.agents/skills/domain-modeling/SKILL.md` | LOC terminology, Scope/Registry boundaries, glossary, ADRs. |
-| `.agents/skills/vercel-react-best-practices/SKILL.md` | React/Next.js implementation and performance. |
-| `.agents/skills/vercel-composition-patterns/SKILL.md` | Component API design, compound components. |
-| `.agents/skills/supabase-postgres-best-practices/SKILL.md` | Any Postgres/Supabase schema, RLS, migration, performance work. |
-| `.agents/skills/sql-optimization-patterns/SKILL.md` | N+1, slow SQL, aggregation, EXPLAIN. |
-| `.agents/skills/supabase/SKILL.md` | Supabase Auth, Edge Functions, Realtime, Storage, CLI/MCP. |
-| `.agents/skills/ui-skills-root/SKILL.md` | Selecting a small set of relevant UI skills. |
-| `.agents/skills/frontend-design/SKILL.md` | Deliberate visual direction for new/reshaped UI. |
-| `.agents/skills/ui-ux-pro-max/SKILL.md` | Layout, color, typography, UX review (`python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>`). |
-| `.agents/skills/design-taste-frontend/SKILL.md` | Explicit public-page/app-screen redesign; use `references/app-screens.md` for admin screens. |
-| `.agents/skills/baseline-ui/SKILL.md` | Quick spacing/hierarchy/typography polish. |
-| `.agents/skills/fixing-accessibility/SKILL.md` | Keyboard access, ARIA, contrast, WCAG. |
-| `.agents/skills/fixing-metadata/SKILL.md` | Page metadata, social previews, structured data. |
-| `.agents/skills/fixing-motion-performance/SKILL.md` | Animation jank, layout thrashing. |
-| `.agents/skills/improve-ui/SKILL.md` | Read-only UI audit + implementation plan. |
-| `.agents/skills/web-design-guidelines/SKILL.md` | Read-only Web Interface Guidelines review. |
-| `.agents/skills/create-design-md/SKILL.md` | Create/update `DESIGN.md` from evidence. |
-| `.agents/skills/component-canvas/SKILL.md` | Interactive canvas of existing component variants. |
-| `.agents/skills/create-canvas/SKILL.md` | Freeform canvas for exploring ideas. |
-| `.agents/skills/sleek-design-mobile-apps/SKILL.md` | Mobile screens in Sleek / React Native / HTML. |
-| `.agents/skills/vercel-react-native-skills/SKILL.md` | React Native / Expo, native modules, mobile performance. |
-| `.agents/skills/agent-browser/SKILL.md` | General browser automation and testing. |
-| `.agents/skills/browser-use/SKILL.md` | Direct CDP / logged-in-session browser control. |
-| `.agents/skills/remotion-best-practices/SKILL.md` | Remotion video/animation workflow router. |
-| `.agents/skills/seo-audit/SKILL.md` | SEO audit/diagnosis. |
-| `.agents/skills/code-review-expert/SKILL.md` | Security checklist reference; full review only when explicitly asked. |
-| `.agents/skills/find-skills/SKILL.md` | Discover/install a skill for a real capability gap. |
-| `.agents/skills/skill-creator/SKILL.md` | Create/edit/evaluate a skill. |
-| `.agents/skills/grill-me/SKILL.md` / `grilling/SKILL.md` / `grill-with-docs/SKILL.md` | Stress-test a plan via interview; `grill-with-docs` also records ADRs. |
-| `.agents/skills/improve-codebase-architecture/SKILL.md` | User-invoked architecture review only (`disable-model-invocation`). |
-| `.agents/skills/tdd/SKILL.md` | Test-first development. |
-| `.agents/skills/setup-matt-pocock-skills/SKILL.md` | One-time repo setup for engineering skills. |
-| `.agents/skills/triage/SKILL.md` | Issue/PR triage. |
-| `.agents/skills/prototype/SKILL.md` | Throwaway prototype for a design question. |
-| `.agents/skills/hyperframes/SKILL.md` / `hyperframes-cli/SKILL.md` / `hyperframes-registry/SKILL.md` | HyperFrames video authoring, CLI jobs, component registry. |
-| `.agents/skills/media-use/SKILL.md` | Media for HyperFrames videos; HeyGen needs user's own key. |
-| `.agents/skills/systematic-debugging/SKILL.md` | Reproduce → trace root cause → fix minimally. |
-| `.agents/skills/webapp-testing/SKILL.md` | Playwright verification before claiming a UI change works. |
-| `.agents/skills/verification-before-completion/SKILL.md` | Fresh evidence before reporting done. |
-| `.agents/skills/mcp-builder/SKILL.md` | Build/review an MCP server. |
-| `.agents/skills/handoff/SKILL.md` | Compact a conversation into a handoff doc. |
+| `brainstorming` | Brainstorm unresolved product choices; if goal/authorization already clear, skip ceremony. |
+| `domain-modeling` | LOC terminology, Scope/Registry boundaries, glossary, ADRs. |
+| `vercel-react-best-practices` | React/Next.js implementation and performance. |
+| `vercel-composition-patterns` | Component API design, compound components. |
+| `supabase-postgres-best-practices` | Any Postgres/Supabase schema, RLS, migration, performance work. |
+| `sql-optimization-patterns` | N+1, slow SQL, aggregation, EXPLAIN. |
+| `supabase` | Supabase Auth, Edge Functions, Realtime, Storage, CLI/MCP. |
+| `ui-skills-root` | Selecting a small set of relevant UI skills. |
+| `frontend-design` | Deliberate visual direction for new/reshaped UI. |
+| `ui-ux-pro-max` | Layout, color, typography, UX review（附 `scripts/search.py`，路徑依 global 安裝位置）. |
+| `design-taste-frontend` | Explicit public-page/app-screen redesign; use `references/app-screens.md` for admin screens. |
+| `baseline-ui` | Quick spacing/hierarchy/typography polish. |
+| `fixing-accessibility` | Keyboard access, ARIA, contrast, WCAG. |
+| `fixing-metadata` | Page metadata, social previews, structured data. |
+| `fixing-motion-performance` | Animation jank, layout thrashing. |
+| `improve-ui` | Read-only UI audit + implementation plan. |
+| `web-design-guidelines` | Read-only Web Interface Guidelines review. |
+| `create-design-md` | Create/update `DESIGN.md` from evidence. |
+| `component-canvas` | Interactive canvas of existing component variants. |
+| `create-canvas` | Freeform canvas for exploring ideas. |
+| `agent-browser` | General browser automation and testing. |
+| `browser-use` | Direct CDP / logged-in-session browser control. |
+| `seo-audit` | SEO audit/diagnosis. |
+| `code-review-expert` | Security checklist reference; full review only when explicitly asked. |
+| `find-skills` | Discover/install a skill for a real capability gap. |
+| `skill-creator` | Create/edit/evaluate a skill. |
+| `grill-with-docs` | Stress-test a plan via interview; also records ADRs. |
+| `improve-codebase-architecture` | User-invoked architecture review only (`disable-model-invocation`). |
+| `tdd` | Test-first development. |
+| `triage` | Issue/PR triage. |
+| `prototype` | Throwaway prototype for a design question. |
+| `systematic-debugging` | Reproduce → trace root cause → fix minimally. |
+| `webapp-testing` | Playwright verification before claiming a UI change works. |
+| `verification-before-completion` | Fresh evidence before reporting done. |
+| `mcp-builder` | Build/review an MCP server. |
+| `handoff` | Compact a conversation into a handoff doc. |
 
-這個 repo 另外內建 `systematic-debugging`、`sql-optimization-patterns`、`verification-before-completion` 的本地副本；同名的 Global 版本跟這份一樣算一個能力，不要自動同步或覆蓋。沒裝在 runtime 或 repo 的 skill 只能當參考讀，不要當成已安裝。
+上表是 global 裝了什麼的對照，沒裝的只能當參考讀，不要當成已安裝。**用不到的 skill 就不要裝**——每個 skill 的描述每次冷啟動都要讀，裝著不用就是每個 session 都在付那個錢。
 
 ---
 
 ## 完工檢查
 
-- 檢查整份改動的 diff（含 staged/unstaged/untracked），確認沒有混進其他任務沒做完的東西。
-- 針對改到的程式碼跑語法/型別檢查與實際行為驗證，不是只看能不能 build。
-- 動態功能要拿真實/測試資料實際跑過一遍，靜態畫面不算驗證過。
-- 確認這次改動沒有讓它碰到的更高優先層級變差（例如為了效能犧牲安全）。
-- 結果真的有問題（壞、醜、半成品）就直接說清楚哪裡不行，不要交出去讓使用者自己發現。
-- Agent 之間交接要講清楚：改了什麼檔案、CI/測試證據、還卡在哪、下一步是什麼。
-- `main` 更新後確認最終 Git SHA，並在可查詢時核對 Cloudflare 自動 Build／Deploy；不再另行觸發 GitHub Pages 或 Vercel 部署。
+- 檢查整份 diff（含 staged/unstaged/untracked），確認沒混進其他任務沒做完的東西。
+- 針對改到的程式碼跑語法／型別檢查與實際行為驗證，不是只看能不能 build。
+- 動態功能要拿真實／測試資料跑過，靜態畫面不算驗證。
+- 確認這次改動沒讓更高優先層級變差（例如為了效能犧牲安全）。
+- 結果真的有問題（壞、醜、半成品）就直接說清楚哪裡不行，不要讓使用者自己發現。
+- Agent 之間交接講清楚：改了什麼檔案、CI／測試證據、卡在哪、下一步是什麼。
+- `main` 更新後確認最終 Git SHA；不另行觸發 GitHub Pages 或 Vercel 部署。
 
 <!-- BEGIN:nextjs-agent-rules -->
 
