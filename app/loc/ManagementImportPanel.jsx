@@ -104,7 +104,8 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const searchable=!(visibility===false||visibility===0||String(visibility).toLowerCase()==='false'||String(visibility)==='0');
   const record={
     uid,
-    title:resolveGalaxyTitle(rawTitle,content),
+    // Threads has no native post title; titleless imports use the first 10 Unicode characters.
+    title:(isThreads||!rawTitle)?Array.from(content).slice(0,10).join(''):resolveGalaxyTitle(rawTitle,content),
     content,
     createtime:createdAt,
     source_place:sourcePlace||null,
