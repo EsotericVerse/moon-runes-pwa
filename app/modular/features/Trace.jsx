@@ -30,11 +30,8 @@ export default function Trace({scopeId='loc'}){
   const [selectedPlace,setSelectedPlace]=useState(null);
   const [twoPointDemo,setTwoPointDemo]=useState(false);
   const [demoStopIds,setDemoStopIds]=useState([]);
-  // /trace is a public index for all published Scope Frames. Prefer LOC
-  // native when it exists; otherwise show a real saved author/rune Frame.
-  // A missing LOC-native route must not hide existing author routes.
-  const visibleScopes=['loc','lo3rwang','lrunes'];
-  const [locPeriodScope,setLocPeriodScope]=useState('auto');
+  // LOC shows the cross-Scope union of published Trace groups; routes are children.
+  const isLoc=scopeId==='loc';
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState(null);
@@ -63,36 +60,37 @@ export default function Trace({scopeId='loc'}){
     revalidateIfStale:false,revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const allMaps=traceIndex.data||[];
-  const periodScopeId=scopeId==='loc'
-    ?(locPeriodScope==='auto'
-      ?visibleScopes.find(id=>allMaps.some(row=>row.source_scope===id))||'loc'
-      :locPeriodScope)
-    :scopeId;
-  const maps=allMaps.filter(row=>row.source_scope===periodScopeId);
+  const maps=allMaps.filter(row=>isLoc
+    ?row.trace_type==='space_trace'
+    :row.source_scope===scopeId);
+  const mapChoiceKey=row=>isLoc?row.source_scope+':'+row.uid:row.uid;
+  const currentMap=useMemo(()=>isLoc
+    ?maps.find(row=>row.source_scope+':'+row.uid===currentTraceChoice)||maps[0]||null
+    :chooseDefaultTraceRoute(maps,scopeId,currentTraceChoice),
+    [allMaps,scopeId,currentTraceChoice,isLoc]);
+  const periodScopeId=isLoc?(currentMap?.source_scope||'loc'):scopeId;
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
     const reloadDefault=()=>{
-      setCurrentTraceChoice(readDefaultTraceRoute(periodScopeId)||'auto');
+      setCurrentTraceChoice(isLoc?'auto':readDefaultTraceRoute(scopeId)||'auto');
       setSelectedPlace(null);
     };
     reloadDefault();
-    window.addEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
+    if(!isLoc)window.addEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
     return()=>window.removeEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
-  },[periodScopeId]);
+  },[scopeId,isLoc]);
   const chooseCurrentTrace=value=>{
     setSelectedPlace(null);
+    if(isLoc){setCurrentTraceChoice(value);return;}
     if(value==='all'){setCurrentTraceChoice('all');return;}
-    if(setDefaultTraceRoute(periodScopeId,value))setCurrentTraceChoice(value);
+    if(setDefaultTraceRoute(scopeId,value))setCurrentTraceChoice(value);
   };
-  const currentMap=useMemo(()=>{
-    if(currentTraceChoice==='all')return null;
-    return chooseDefaultTraceRoute(maps,periodScopeId,currentTraceChoice);
-  },[traceIndex.data,periodScopeId,currentTraceChoice]);
-  const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
+  const showingAll=!isLoc&&(currentTraceChoice==='all'||(!currentMap&&!maps.length));
   const linkedRoutes=useMemo(()=>currentMap?.trace_type==='space_trace'
-    ?maps.filter(row=>row.trace_type==='space_period'&&(currentMap.route_list||[]).includes(row.uid))
-    :[],[currentMap,maps]);
+    ?allMaps.filter(row=>row.source_scope===currentMap.source_scope&&row.trace_type==='space_period'
+      &&(currentMap.route_list||[]).includes(row.uid))
+    :[],[currentMap,allMaps]);
   const members=useMemo(()=>currentMap
     ?[...new Set([...traceMemberUids(currentMap),...linkedRoutes.flatMap(traceMemberUids)])]:[],
     [currentMap,linkedRoutes]);
@@ -136,29 +134,20 @@ export default function Trace({scopeId='loc'}){
 
   const floatingControls=<>
     <div className="loc-trace-float-choices">
-      {supported&&scopeId==='loc'?<label>
-        <span>作品範圍</span>
-        <select className="scope-select" value={locPeriodScope}
-          onChange={event=>{setLocPeriodScope(event.target.value);setSelectedPlace(null);}}>
-          <option value="auto">自動顯示已儲存痕跡</option>
-          <option value="loc">LOC 自有痕跡</option>
-          <option value="lo3rwang">作者作品</option>
-          <option value="lrunes">月之符文</option>
-        </select>
-      </label>:null}
       {supported&&routeListOpen?<label>
         <span>Current 痕跡（空間時期）</span>
         <select className="scope-select"
-          value={showingAll?'all':currentMap?.uid||''}
+          value={showingAll?'all':currentMap?mapChoiceKey(currentMap):''}
           onChange={event=>chooseCurrentTrace(event.target.value)}
           disabled={traceIndex.isPending||Boolean(traceIndex.error)}>
-          {maps.map(map=><option key={map.uid} value={map.uid}>
+          {maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
+            {isLoc?(map.source_scope==='lrunes'?'月之符文 · ':'作者作品 · '):''}
             {map.title}（{map.trace_type==='space_trace'?'痕跡 '+map.anchor_list.length+' 段':'路線 '+map.anchor_list.length+' 站'}）
           </option>)}
 
         </select>
       </label>:null}
-      <details className="loc-trace-more-controls">
+      {!isLoc?<details className="loc-trace-more-controls">
         <summary>更多操作</summary>
         <div className="loc-trace-more-actions">
       {supported?<button type="button" className="loc-button" aria-pressed={twoPointDemo}
@@ -166,7 +155,7 @@ export default function Trace({scopeId='loc'}){
         {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
       </button>:null}
         </div>
-      </details>
+      </details>:null}
     </div>
     {supported&&traceIndex.isPending?<p className="scope-status" role="status">正在載入痕跡列表…</p>:null}
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
@@ -196,7 +185,7 @@ export default function Trace({scopeId='loc'}){
   return <FeaturePage featureId="trace">
     <TraceMap publicTrace floatingControls={floatingControls} spatialData={demoSpatialData} hideRoutePicker
       selectedRouteUid={twoPointDemo?(demoRoute?.uid||''):(currentMap?.uid||'')}
-      onAnchorSelect={chooseMapAnchor}>
+      showAnchorSearch={!isLoc} onAnchorSelect={chooseMapAnchor}>
       {reportPlace?<div className="loc-trace-float-report" role="dialog" aria-modal="false"
         aria-label={'地點內容：'+reportPlace.title}>
         <div className="loc-trace-float-heading">
