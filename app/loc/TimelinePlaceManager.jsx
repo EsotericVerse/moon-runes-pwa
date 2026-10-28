@@ -5,9 +5,10 @@ import {dbAuthClient} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
+import {TIMELINE_IO} from './query-batch-size.mjs';
 import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces} from './timeline-place-matcher.mjs';
 
-const WINDOW_BATCH=40,RESULT_PAGE=750,WRITE_BATCH=150;
+const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
 const friendlyError=e=>String(e?.message||e||'未知錯誤');
 function checked(result,label){
   if(result.error)throw Error(label+'：'+result.error.message);
@@ -212,22 +213,22 @@ export default function TimelinePlaceManager({scopeId}){
                 const selected=itemChoices[row.uid]||chosen;
                 const valid=Boolean(selected&&row.candidates.some(c=>c.uid===selected)&&
                   (!row.existingPlaceId||row.existingPlaceId===selected));
-                return <div key={row.uid} className="scope-management-fields">
-                  <label>
+                const status=[row.existingPlaceId?'既有 ID：'+row.existingPlaceId+'（不覆寫）':'',row.reason||'',!valid?'尚未符合寫入條件':''].filter(Boolean);
+                return <div key={row.uid} className="loc-timeline-review-row">
+                  <label className="loc-timeline-review-row__article">
                     <input type="checkbox" disabled={writing} checked={!excluded[row.uid]}
                       onChange={e=>setExcluded(current=>({...current,[row.uid]:!e.target.checked}))}/>
-                    {String(row.createtime||'').slice(0,16)||'時間不明'} · {row.title||'未命名文章'}（{row.uid}）
+                    <span className="loc-timeline-review-row__date">{String(row.createtime||'').slice(0,16)||'時間不明'}</span>
+                    <span className="loc-timeline-review-row__title" title={row.title||'未命名文章'}>{row.title||'未命名文章'}</span>
+                    <span className="loc-timeline-review-row__uid">{row.uid}</span>
                   </label>
-                  <label>單篇地點／樓層（可選）
-                    <select className="scope-select" disabled={writing} value={itemChoices[row.uid]||''}
-                      onChange={e=>setItemChoices(current=>({...current,[row.uid]:e.target.value}))}>
-                      <option value="">沿用這組設定</option>
-                      {row.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title}（{c.uid}）</option>)}
-                    </select>
-                  </label>
-                  {row.existingPlaceId?<p className="scope-status">既有 place_id：{row.existingPlaceId}（只可補打卡名稱，不覆寫既有 ID）</p>:null}
-                  {row.reason?<p className="scope-status">{row.reason}</p>:null}
-                  {!valid?<p className="scope-status">這篇尚未符合寫入條件，不會寫入。</p>:null}
+                  <select className="scope-select loc-timeline-review-row__place" aria-label={'單篇地點／樓層 · '+row.uid}
+                    disabled={writing} value={itemChoices[row.uid]||''}
+                    onChange={e=>setItemChoices(current=>({...current,[row.uid]:e.target.value}))}>
+                    <option value="">沿用這組設定</option>
+                    {row.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title}（{c.uid}）</option>)}
+                  </select>
+                  {status.length?<span className="loc-timeline-review-row__status" title={status.join('；')}>{!valid?'不可寫入':row.existingPlaceId?'保留原 ID':'需確認'}</span>:null}
                 </div>;
               })}
             </div>
