@@ -137,7 +137,6 @@ export default function ScopeGroupStatistics({taipeiDateKey,trendBucket,loadGala
     </div>
 
     <p className="scope-status">{startDate&&rangeEndDate?startDate+' ～ '+rangeEndDate:''}</p>
-    <p className="scope-status"><UiText id="uiExtra.statisticsView.groupAggregateHelp"/></p>
     <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={zoomRange} idPrefix="loc-stat">
       {!densityQuery.isPending&&!densityQuery.error&&trendData.length?<StatisticsMultiChart
         type={locChartType} rows={trendData} series={locSeries}
