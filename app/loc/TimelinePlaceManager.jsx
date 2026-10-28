@@ -139,7 +139,7 @@ export default function TimelinePlaceManager({scopeId}){
       setAnalysis({...classified,visitCount:visits.length,empty:matched.withoutAnchor,
         ambiguous:matched.ambiguousWindows,articleCount:classified.ready.length+
         classified.disputes.length+classified.unchanged.length});
-      setNotice('已完成空白打卡地點預覽。相同經緯度集中列出；請選擇位置並檢查不同樓層，確認前不寫入。');
+      setNotice('已完成地點預覽。依既有空間定錨點集中審查；只需確認有歧義的地點，不依 GPS 小數位重複操作。');
     }catch(e){
       if(run===runRef.current)setNotice('地點比對失敗：'+friendlyError(e));
     }finally{if(run===runRef.current)setAnalyzing(false);}
@@ -205,7 +205,7 @@ export default function TimelinePlaceManager({scopeId}){
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
     <h3>地點整理 · Google Timeline</h3>
-    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 source_place 尚未填寫的文章；同座標集中審查樓層或不同店家。最後只補寫空白打卡地點與缺少的 place_id，不儲存私人行蹤。</p>
+    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 source_place 尚未填寫的文章；依既有定錨點集中審查，必要時可分別指定樓層或不同店家。最後只補寫空白打卡地點與缺少的 place_id，不儲存私人行蹤。</p>
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
@@ -232,7 +232,7 @@ export default function TimelinePlaceManager({scopeId}){
         500 公尺外／無定錨點：{analysis.empty.toLocaleString()}；
         候選有歧義的造訪區間：{analysis.ambiguous.toLocaleString()}。</p>
       <p className="scope-status">待補打卡文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
-        同座標審查群組：{reviewGroups.length.toLocaleString()} 組；
+        按定錨點審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
         已有 source_place 的文章不列入也不會更新。</p>
       <label className="loc-timeline-review-cache">
@@ -252,20 +252,20 @@ export default function TimelinePlaceManager({scopeId}){
       </div>
       {reviewGroups.length>0?<details className="loc-timeline-review-groups">
         <summary>檢查或修改地點 · {reviewGroups.length.toLocaleString()} 組（點此展開）</summary>
-        <p className="scope-status">逐組選地點即可自動套用到該組所有可寫入文章；其他組的選擇不會改變。只有需要分開樓層時才逐篇選擇。</p>
+        <p className="scope-status">同一空間定錨點附近的不同 GPS 讀值已合併審查。單一明確地點自動選定；有多個候選地點時，只要選一次即可套用整組，需要區分店家或樓層再逐篇覆蓋。</p>
         {reviewGroups.slice(reviewPage*10,(reviewPage+1)*10).map(group=>{
           const chosen=groupChoices[group.key]??group.defaultPlaceId;
           const groupPage=groupPages[group.key]||0;
           const writableCount=group.rows.filter(row=>writableUids.has(row.uid)).length;
           return <details key={group.key} className="scope-card">
-            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 可寫入 {writableCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
+            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||group.candidates.find(candidate=>candidate.uid===group.suggestedPlaceId)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 可寫入 {writableCount.toLocaleString()} 篇 · {group.key.startsWith('anchor:')?(group.disputed?'定錨點附近 · 待確認':'定錨點附近 · 已自動對應'):'需逐篇確認'}</summary>
             <div className="scope-stat-controls">
               <button type="button" className="loc-button" disabled={writing||!chosen}
                 onClick={()=>selectGroup(group,true,chosen)}>全選這組可寫入文章</button>
               <button type="button" className="loc-button" disabled={writing}
                 onClick={()=>selectGroup(group,false,chosen)}>取消這組全選</button>
             </div>
-            <label>這組文章預設的定錨點（可逐篇覆蓋）
+            <label>一次指定這組文章的空間定錨點（必要時可逐篇覆蓋）
               <select className="scope-select" disabled={writing} value={chosen}
                 onChange={e=>{
                   setGroupChoices(current=>({...current,[group.key]:e.target.value}));
