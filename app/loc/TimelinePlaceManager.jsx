@@ -7,7 +7,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {TIMELINE_IO} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession} from './timeline-review-session.mjs';
-import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
+import {accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
 const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
 const friendlyError=e=>String(e?.message||e||'未知錯誤');
@@ -34,7 +34,33 @@ export default function TimelinePlaceManager({scopeId}){
   const [sessionOwner,setSessionOwner]=useState('');
   const [sessionWarning,setSessionWarning]=useState('');
   const runRef=useRef(0);
+  const workerRef=useRef(null);
   const fileRef=useRef(null);
+  const abortWorker=()=>workerRef.current?.abort();
+  useEffect(()=>()=>{workerRef.current?.abort();},[]);
+  function parseInWorker(file,anchors){
+    if(typeof Worker==='undefined')throw Error('此瀏覽器不支援背景解析 JSON');
+    return new Promise((resolve,reject)=>{
+      const worker=new Worker(new URL('./timeline-analysis.worker.mjs',import.meta.url),{type:'module'});
+      let finished=false;
+      const finish=(result,error)=>{
+        if(finished)return;
+        finished=true;
+        worker.terminate();
+        if(workerRef.current?.worker===worker)workerRef.current=null;
+        if(error)reject(error);else resolve(result);
+      };
+      workerRef.current={worker,abort:()=>finish(null,Error('已取消 JSON 分析'))};
+      worker.onmessage=event=>{
+        const data=event.data;
+        if(data?.ok)finish(data);
+        else finish(null,Error(data?.error||'JSON 背景解析失敗'));
+      };
+      worker.onerror=event=>finish(null,Error(event?.message||'JSON 背景處理器載入失敗'));
+      worker.onmessageerror=()=>finish(null,Error('JSON 背景處理器回傳資料失敗'));
+      try{worker.postMessage({file,anchors});}catch(error){finish(null,error);}
+    });
+  }
   const cache=useResourceCache();
   useEffect(()=>{
     let active=true;
@@ -83,6 +109,7 @@ export default function TimelinePlaceManager({scopeId}){
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
   function reset(){
     runRef.current++;
+    abortWorker();
     try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
     setSessionEnabled(false);setSessionWarning('');
     setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
@@ -95,15 +122,12 @@ export default function TimelinePlaceManager({scopeId}){
     setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
       if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
-      setProgress({done:0,total:0,message:'正在本機讀取 Timeline JSON…'});
-      const document=JSON.parse(await selectedFile.text());
+      setProgress({done:0,total:0,message:'正在瀏覽器背景處理 Timeline JSON…'});
+      const {visitCount,matched}=await parseInWorker(selectedFile,eligible);
       if(run!==runRef.current)return;
-      const visits=timelineVisitWindows(document);
-      if(!visits.length)throw Error('這份 JSON 沒有可辨識的造訪地點與時間（行車軌跡不會自動當成打卡）');
-      const matched=matchTimelineWindows(visits,eligible);
       const windows=matched.windows;
       if(!windows.length){
-        setAnalysis({ready:[],disputes:[],unchanged:[],visitCount:visits.length,
+        setAnalysis({ready:[],disputes:[],unchanged:[],visitCount,
           empty:matched.withoutAnchor,ambiguous:0,articleCount:0});
         setNotice('沒有任何 Timeline 造訪點落在既有空間定錨點 500 公尺內；不更新文章。');
         return;
@@ -136,7 +160,7 @@ export default function TimelinePlaceManager({scopeId}){
       }
       if(run!==runRef.current)return;
       const classified=accumulateTimelineArticles(articleMatches);
-      setAnalysis({...classified,visitCount:visits.length,empty:matched.withoutAnchor,
+      setAnalysis({...classified,visitCount,empty:matched.withoutAnchor,
         ambiguous:matched.ambiguousWindows,articleCount:classified.ready.length+
         classified.disputes.length+classified.unchanged.length});
       setNotice('已完成空白打卡地點預覽。相同經緯度集中列出；請選擇位置並檢查不同樓層，確認前不寫入。');
@@ -210,7 +234,7 @@ export default function TimelinePlaceManager({scopeId}){
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+            runRef.current++;abortWorker();try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -222,7 +246,7 @@ export default function TimelinePlaceManager({scopeId}){
         onClick={analyze}>{analyzing?'比對中…':'分析 JSON 並預覽'}</button>
       <button type="button" className="loc-button" disabled={writing} onClick={reset}>清除暫存／重新選檔</button>
       {analyzing?<button type="button" className="loc-button" onClick={()=>{
-        runRef.current++;setAnalyzing(false);setNotice('已取消分析，尚未寫入任何資料。');
+        runRef.current++;abortWorker();setAnalyzing(false);setNotice('已取消分析，尚未寫入任何資料。');
       }}>取消分析</button>:null}
     </div>
     {progress&&analyzing?<p role="status" className="scope-status">{progress.message} {progress.total?progress.done+' / '+progress.total+' 批':''}</p>:null}
