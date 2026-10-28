@@ -153,5 +153,4 @@ begin
    raise exception 'unsupported operation';
  end if;
 end;
-$function$
-
+$function$;
