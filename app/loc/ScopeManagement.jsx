@@ -9,7 +9,9 @@ import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 import {recoverChunkOnce} from './chunk-recovery.mjs';
-import {editorSessionStatus} from './edit-session-ttl.mjs';
+import {editorSessionStatus,clearEditorSession,touchEditorSession} from './edit-session-ttl.mjs';
+import {getAccountSession,dbAuthClient} from './db-client.mjs';
+import {setAuthorization,createScopeAuthorizer} from './authorization-runtime.mjs';
 
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
@@ -32,6 +34,8 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
     (isLoc?account.canManageGroupSync('loc'):account.canManageScopeSync(routeScopeId)));
   const editorReady=Boolean(editDock?.active&&editDock.scopeId===routeScopeId);
   const [sessionExpired,setSessionExpired]=useState(false);
+  const [renewing,setRenewing]=useState(false);
+  const [renewalError,setRenewalError]=useState('');
   useEffect(()=>{
     if(account.loading||account.permissionLoading||!hasManagementGrant||editorReady)return;
     // A verified Scope grant authorizes management entry. The transient edit
@@ -45,6 +49,34 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
     editDock?.begin(routeScopeId);
   },[account.loading,account.permissionLoading,hasManagementGrant,editorReady,
     routeScopeId,editDock?.begin]);
+  async function renewEditorSession(){
+    if(renewing||!hasManagementGrant||editorReady||!sessionExpired)return;
+    setRenewing(true);
+    setRenewalError('');
+    try{
+      // Reverify the authenticated Google identity, not a stale SWR grant
+      // or the URL's edit parameter. An idle lock cannot silently rearm.
+      const verified=await getAccountSession();
+      if(!verified?.user||String(verified.user.id)!==String(account.user.id)||
+        String(verified.user.email||'').toLowerCase()!==String(account.email||'').toLowerCase())
+        throw new Error('目前登入身分已變更，請重新登入後操作。');
+      const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
+      if(error)throw new Error('重新查核管理權限失敗：'+error.message);
+      setAuthorization(verified.user,Array.isArray(data)?data:[]);
+      const grants=createScopeAuthorizer(verified.user);
+      const authorized=isLoc?grants?.canManageGroupSync('loc'):grants?.canManageScopeSync(routeScopeId);
+      if(!authorized)throw new Error('重新驗證後，此帳號沒有該 Scope 的管理權限。');
+      clearEditorSession(window.sessionStorage);
+      if(!touchEditorSession(window.sessionStorage))
+        throw new Error('無法建立新的編輯 Session。');
+      setSessionExpired(false);
+      editDock?.begin(routeScopeId);
+    }catch(error){
+      setRenewalError(String(error?.message||'重新驗證失敗，請重新登入。'));
+    }finally{
+      setRenewing(false);
+    }
+  }
   const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
@@ -67,7 +99,12 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
   if(!account.user)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>請先至設定首頁登入。</p></section></FeaturePage>;
   if(account.error)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="alert"><p>管理權限查核失敗：{account.error}</p></section></FeaturePage>;
   if(!hasManagementGrant)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card"><p>目前帳號沒有此 Scope 的管理權限。</p></section></FeaturePage>;
-  if(!editorReady)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card" role="status"><p>{sessionExpired?'編輯 Session 已逾時，請重新登入後再進入管理。':'正在啟用已授權的管理介面…'}</p></section></FeaturePage>;
+  if(!editorReady)return <FeaturePage featureId="manage"><section className="loc-card scope-feature-card">
+    <p className="scope-status" role="status">{sessionExpired?'編輯 Session 已鎖定，請重新驗證後進入管理。':'正在啟用已授權的管理介面…'}</p>
+    {sessionExpired?<button className="loc-button" type="button" disabled={renewing}
+      onClick={renewEditorSession}>{renewing?'正在重新驗證…':'重新驗證並進入管理'}</button>:null}
+    {renewalError?<p className="scope-status scope-error" role="alert">{renewalError}</p>:null}
+  </section></FeaturePage>;
   return <FeaturePage featureId={isLoc?'trace':'manage'}>
 
     <div className={section==='placeManage'?'scope-management-layout scope-management-layout--anchor':'scope-management-layout'}>

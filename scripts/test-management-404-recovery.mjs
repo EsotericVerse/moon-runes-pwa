@@ -89,7 +89,29 @@ test('authorized Scope Place Management enters even without a homepage edit mark
   assert.doesNotMatch(manager,/請先從此 Scope 首頁進入編輯模式/);
   assert.match(manager,/if\(!hasManagementGrant\)/);
   assert.match(manager,/if\(!editorReady\)/);
-  assert.match(manager,/編輯 Session 已逾時，請重新登入/);
+  assert.match(manager,/編輯 Session 已鎖定，請重新驗證後進入管理/);
+  assert.match(manager,/重新驗證並進入管理/);
   assert.match(ttl,/EDIT_IDLE_TTL_MS=30\*60\*1000/);
   assert.match(ttl,/EDIT_SESSION_TTL_MS=2\*60\*60\*1000/);
+});
+
+test('expired management entry verifies Google identity and fresh Scope permissions before resetting the idle lock',()=>{
+  const manager=read('app/loc/ScopeManagement.jsx');
+  const ttl=read('app/loc/edit-session-ttl.mjs');
+  const auth=read('app/loc/db-contract.mjs');
+  assert.match(manager,/async function renewEditorSession\(\)/);
+  assert.match(manager,/const verified=await getAccountSession\(\)/);
+  assert.match(manager,/String\(verified\.user\.id\)!==String\(account\.user\.id\)/);
+  assert.match(manager,/get_my_scope_management/);
+  assert.match(manager,/setAuthorization\(verified\.user,Array\.isArray\(data\)\?data:\[\]\)/);
+  assert.match(manager,/createScopeAuthorizer\(verified\.user\)/);
+  assert.match(manager,/grants\?\.canManageGroupSync\('loc'\)/);
+  assert.match(manager,/grants\?\.canManageScopeSync\(routeScopeId\)/);
+  assert.match(manager,/if\(!authorized\)throw/);
+  assert.ok(manager.indexOf('if(!authorized)throw')<manager.indexOf('clearEditorSession(window.sessionStorage)'));
+  assert.ok(manager.indexOf('clearEditorSession(window.sessionStorage)')<manager.indexOf('touchEditorSession(window.sessionStorage)'));
+  assert.match(manager,/editDock\?\.begin\(routeScopeId\)/);
+  assert.match(manager,/onClick=\{renewEditorSession\}/);
+  assert.match(auth,/auth\.getUser\(session\.access_token\)/);
+  assert.match(ttl,/value\.locked/);
 });
