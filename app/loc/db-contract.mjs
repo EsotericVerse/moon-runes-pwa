@@ -1,23 +1,15 @@
 import {flashMessage} from './flash-message.js';
 import {assertPlainGalaxyAttributes} from './content-policy.js';
-import {DB_QUERY_BATCH_SIZE} from './query-batch-size.mjs';
+import {DB_QUERY_BATCH_SIZE,MAX_ROWS} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
 import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from './authorization-runtime.mjs';
 
-// Shared by the keyword-classification read (paging the document scan) and
-// write (chunking the UPDATE...FROM jsonb_to_recordset back). They don't
-// have to match -- read and write are different queries with different
-// costs -- but keeping one tuned number instead of two that drift apart
-// under separate testing is less confusing to reason about and re-tune.
-export const KEYWORD_CLASSIFICATION_BATCH_SIZE=5000;
-// Read pages stay at 5k; DB writes are deliberately slower to limit pressure.
-export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500;
-export const KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE=25;
+// Read, write, and reset share the single operator-defined MaxRows.
+export const KEYWORD_CLASSIFICATION_BATCH_SIZE=MAX_ROWS;
+export const KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=MAX_ROWS;
 export const KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=1000;
-export const KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL=10000;
-// Reset changes potentially tens of thousands of classified rows; keep each
-// authorized database write comfortably below the 30s statement timeout.
-const KEYWORD_RESET_BATCH_SIZE=750;
+export const KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL=MAX_ROWS;
+const KEYWORD_RESET_BATCH_SIZE=MAX_ROWS;
 
 // The existing management-write boundary enforces Galaxy metadata rules
 // consistently for publisher, search, culture and import paths.
@@ -96,7 +88,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const list=Array.isArray(rows)?rows:[];
     // Check every row before starting batch writes; fail without partial import.
     for(const row of list)validateGalaxyWrite(table,row);
-    const batchSize=200;
+    const batchSize=MAX_ROWS;
     let count=0;
     for(let offset=0;offset<list.length;offset+=batchSize){
       const batch=list.slice(offset,offset+batchSize);
@@ -200,11 +192,11 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       }catch(error){
         const timedOut=/canceling statement due to statement timeout/i
           .test(String(error?.message||error));
-        if(!timedOut||batchSize<=KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE){
+        if(!timedOut||batchSize<=1){
           flashMessage(WRITE_FAILED_NOTICE);
           throw error;
         }
-        batchSize=Math.max(KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE,Math.floor(batchSize/2));
+        batchSize=Math.max(1,Math.floor(batchSize/2));
         await coolDown(true);
         continue; // The canceled statement committed no rows; retry this offset.
       }
