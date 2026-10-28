@@ -51,8 +51,8 @@ export function groupedTraceDays(rows=[],{key='source_place'}={}){
 
 export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片']);
 export function traceMediaMatches(articles=[],media=[]){
-  const linked=new Set(media.map(row=>String(row.galaxy_link||'').trim()).filter(Boolean));
-  return articles.filter(row=>linked.has(String(row.uid||'').trim()));
+  const matchingIds=new Set(media.map(row=>String(row.uid||'').trim()).filter(Boolean));
+  return articles.filter(row=>Array.isArray(row.media_link)&&row.media_link.some(id=>matchingIds.has(String(id))));
 }
 
 /** Four-character article identity; original source_place remains display-only. */

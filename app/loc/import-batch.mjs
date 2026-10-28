@@ -47,7 +47,7 @@ function parseMediaArray(value){
 }
 // Preserve references to existing media IDs; prepare new media records without inventing
 // accessible URLs for archive-local attachment paths.
-export function normalizeImportMedia(value,{title='',createtime=null,source_place='',galaxy_link=''}={}){
+export function normalizeImportMedia(value,{title='',createtime=null,source_place='',article_uid=''}={}){
   const references=[],records=[],seen=new Set();
   for(const [index,item] of parseMediaArray(value).entries()){
     const source=typeof item==='string'?{url:item}:item;
@@ -64,7 +64,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
     const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
     const record={
       ...(explicitId?{uid:explicitId}:{}),
-      galaxy_link:galaxy_link||null,
+      __article_uid:article_uid||null,
       source_place:String(source.source_place||'').trim()||null,
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
@@ -73,7 +73,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
       createtime:createtime||null
     };
     if(source.rune_references!==undefined)record.rune_references=source.rune_references;
-    const key=explicitId?'id:'+explicitId:(external?JSON.stringify([external,media_type,galaxy_link]):'item:'+index);
+    const key=explicitId?'id:'+explicitId:(external?JSON.stringify([external,media_type]):'item:'+index);
     if(!seen.has(key)){seen.add(key);records.push(record);}
   }
   return {references:[...new Set(references)],records};

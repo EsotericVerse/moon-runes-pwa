@@ -170,7 +170,7 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
     };
     const hasUrl=Boolean(row.url);
     if(hasUrl){
-      media.push({...row,galaxy_link:owners[0]||null});
+      media.push({...row,__article_uid:owners[0]||null});
       for(const uid of owners)mediaLinks.push({uid,media_uid:id});
     }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)

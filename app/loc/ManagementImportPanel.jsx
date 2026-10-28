@@ -73,13 +73,13 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   let mediaRecords=[],mediaRefs=[];
   try{
     for(const item of mediaCandidates){
-      const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,source_place:sourcePlace,galaxy_link:uid});
+      const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,source_place:sourcePlace,article_uid:uid});
       mediaRecords.push(...media.records);
       mediaRefs.push(...media.references);
     }
     const seenMediaKeys=new Set();
     mediaRecords=mediaRecords.filter(record=>{
-      const key=record.uid?'id:'+record.uid:(record.url?JSON.stringify([record.url,record.media_type,record.galaxy_link]):null);
+      const key=record.uid?'id:'+record.uid:(record.url?JSON.stringify([record.url,record.media_type]):null);
       if(!key)return true;
       if(seenMediaKeys.has(key))return false;
       seenMediaKeys.add(key);return true;
@@ -94,7 +94,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
       if(rawId&&!/^[A-Z0-9]{8}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
       return {record:null,error:'',mediaOnlyRecord:{
         ...(rawId?{uid:rawId}:{}),
-        galaxy_link:String(value('galaxy_link')||'').trim()||null,
+        __article_uid:String(value('galaxy_link')||'').trim()||null,
         source_place:sourcePlace||null,
         media_type:type,title:rawTitle||null,url:url||null,
         meta_tags:String(value('meta_tags')||'').trim()||null,
@@ -184,19 +184,17 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       const plans=normalized.flatMap(item=>{
         const sourceUid=item.record?.uid;
         const owner=knownArticleIds.get(sourceUid);
-        return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,galaxy_link:owner}));
+        return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,__article_uid:owner}));
       }).concat(mediaOnly);
-      const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
       const existingMedia=[];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','galaxy_link',owners,t('uiExtra.importUI.existingMediaFailed')));
       const explicitIds=[...new Set([...plans.map(record=>record.uid).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
-      // No full-table scan; unlinked media is matched only by explicit imported URLs.
-      const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','url',unlinkedUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,media_type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
+      // Reuse matching media URLs across articles without duplicating media rows.
+      const candidateUrls=[...new Set(plans.map(row=>row.url).filter(Boolean))];
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,media_type','url',candidateUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
       const mediaKey=row=>{
         const url=String(row.url||'').trim();
-        return url?JSON.stringify([String(row.galaxy_link||'').trim(),url,String(row.media_type||'').trim()])
+        return url?JSON.stringify([url,String(row.media_type||'').trim()])
           :(row.uid?'id:'+row.uid:null);
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
@@ -215,7 +213,9 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         }
       }
       for(const raw of plans){
-        const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
+        const owner=String(raw.__article_uid||'').trim();
+        const record={...raw};delete record.__article_uid;
+        const key=mediaKey(record);
         const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
         if(known){if(record.uid)resolvedIds.set(String(record.uid),String(known.uid));attach(owner,known.uid);continue;}
         if(key&&seenMedia.has(key))continue;
@@ -474,7 +474,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       });
       const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
-        ...record,galaxy_link:knownArticleIds.get(String(record.galaxy_link||''))||record.galaxy_link
+        ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||record.__article_uid
       }));
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
