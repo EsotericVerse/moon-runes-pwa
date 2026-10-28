@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
- timelineVisitWindows,timelineCoordinates,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces
+ timelineVisitWindows,timelineCoordinates,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates
 } from '../app/loc/timeline-place-matcher.mjs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const row=(uid,title,lat,lng)=>({uid,title,trace_type:'space_anchor',address:[lng,lat]});
@@ -102,4 +102,38 @@ test('UI is owner-only, grouped with default checkboxes, and source_place is pro
  assert.match(migration,/g\.source_place IS NULL OR g\.source_place ~/);
  assert.match(migration,/NULLIF\(btrim\(g\.place_id\),''\) IS NOT DISTINCT FROM \$4/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
+});
+
+test('two groups keep independent choices and one article override cannot leak to other groups',()=>{
+ const candidate=(uid)=>({uid,title:uid,meters:1});
+ const row=(uid,candidates,existingPlaceId='')=>({uid,candidates,existingPlaceId});
+ const groups=[
+  {key:'point:1',defaultPlaceId:'',rows:[row('11111111',[candidate('A001'),candidate('A002')])]},
+  {key:'point:2',defaultPlaceId:'',rows:[row('22222222',[candidate('B001'),candidate('B002')])]},
+  {key:'point:3',defaultPlaceId:'',rows:[row('33333333',[candidate('C001')],'C001')]}
+ ];
+ assert.deepEqual(selectedTimelineArticleUpdates(groups,{ 'point:1':'A002','point:2':'B001','point:3':'C001' }),[
+  {uid:'11111111',place_id:'A002',expected_place_id:null,manual:true},
+  {uid:'22222222',place_id:'B001',expected_place_id:null,manual:true},
+  {uid:'33333333',place_id:'C001',expected_place_id:'C001',manual:true}
+ ]);
+ assert.deepEqual(selectedTimelineArticleUpdates(groups,{'point:1':'A001','point:2':'B001','point:3':'B001'},
+   {'11111111':'A002'},{'22222222':true}).map(x=>x.place_id),['A002']);
+});
+
+test('per-tab Timeline review cache is owner-bound, scoped, and does not contain raw JSON',async()=>{
+ const {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession}=
+   await import('../app/loc/timeline-review-session.mjs');
+ const map=new Map();const storage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};
+ const analysis={ready:[{uid:'11111111',title:'文章',candidates:[]}],disputes:[],unchanged:[]};
+ assert.equal(saveTimelineReviewSession(storage,{scopeId:'lo3rwang',owner:'owner-a',analysis,
+   groupChoices:{'point:1':'A001'},itemChoices:{},excluded:{},completedCount:0}),true);
+ assert.equal(loadTimelineReviewSession(storage,{scopeId:'lo3rwang',owner:'owner-b'}),null);
+ assert.equal(loadTimelineReviewSession(storage,{scopeId:'lrunes',owner:'owner-a'}),null);
+ assert.equal(loadTimelineReviewSession(storage,{scopeId:'lo3rwang',owner:'owner-a'}),null);
+ saveTimelineReviewSession(storage,{scopeId:'lo3rwang',owner:'owner-a',analysis,
+   groupChoices:{'point:1':'A001'},itemChoices:{},excluded:{},completedCount:0});
+ assert.deepEqual(loadTimelineReviewSession(storage,{scopeId:'lo3rwang',owner:'owner-a'}).analysis.ready,analysis.ready);
+ assert.equal(String([...map.values()][0]).includes('11111111'),false);
+ clearTimelineReviewSession(storage,'lo3rwang');assert.equal(map.size,0);
 });
