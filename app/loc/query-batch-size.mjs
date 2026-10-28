@@ -6,6 +6,7 @@ export const DB_QUERY_BATCH_SIZE=MAX_ROWS;
 // Byte limits share this file; file bytes and database rows are different units.
 export const MAX_ARCHIVE_BYTES=1024*1024*1024;
 export const MAX_JSON_BYTES=50*1024*1024;
+export const MAX_DOCUMENT_BYTES=128*1024*1024;
 export const MAX_TIMELINE_BYTES=200*1024*1024;
 
 // Timeline windows, preview results and writes all use the same MaxRows.
