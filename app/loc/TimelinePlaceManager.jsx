@@ -26,6 +26,8 @@ export default function TimelinePlaceManager({scopeId}){
   const [groupPages,setGroupPages]=useState({});
   const [page,setPage]=useState(0);
   const [notice,setNotice]=useState('');
+  const [writeProgress,setWriteProgress]=useState(null);
+  const [completedCount,setCompletedCount]=useState(0);
   const runRef=useRef(0);
   const fileRef=useRef(null);
   const cache=useResourceCache();
@@ -38,14 +40,14 @@ export default function TimelinePlaceManager({scopeId}){
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
   function reset(){
     runRef.current++;
-    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);
+    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
     if(fileRef.current)fileRef.current.value='';
   }
   async function analyze(){
     if(!enabled||!selectedFile||analyzing||writing||anchorQuery.isPending)return;
     if(!eligible.length){setNotice('目前沒有具有座標的空間定錨點，因此沒有可補寫的 place_id。');return;}
     const run=++runRef.current;
-    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');
+    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
       if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
       setProgress({done:0,total:0,message:'正在本機讀取 Timeline JSON…'});
@@ -109,10 +111,16 @@ export default function TimelinePlaceManager({scopeId}){
     return [{uid:row.uid,place_id:placeId,expected_place_id:row.existingPlaceId||null,manual:true}];
   })),[reviewGroups,groupChoices,itemChoices,excluded]);
   const canWrite=selectedUpdates.length>0;
-  const selectGroup=(group,selected)=>setExcluded(current=>{
+  const pendingCount=ready.length+(analysis?.disputes?.length||0);
+  const unreadyCount=Math.max(0,pendingCount-selectedUpdates.length);
+  const reviewPage=Math.min(page,Math.max(0,Math.ceil(reviewGroups.length/10)-1));
+  const selectGroup=(group,selected,chosen)=>setExcluded(current=>{
     const next={...current};
     for(const row of group.rows){
-      if(selected)delete next[row.uid];
+      const target=itemChoices[row.uid]||chosen;
+      const valid=Boolean(target&&row.candidates.some(candidate=>candidate.uid===target)
+        &&(!row.existingPlaceId||row.existingPlaceId===target));
+      if(selected&&valid)delete next[row.uid];
       else next[row.uid]=true;
     }
     return next;
@@ -123,36 +131,35 @@ export default function TimelinePlaceManager({scopeId}){
     if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\n\n'
       +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\n'
       +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
-    setWriting(true);setNotice('');let completed=0;
+    setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
     try{
       for(let i=0;i<updates.length;i+=WRITE_BATCH){
         const batch=updates.slice(i,i+WRITE_BATCH);
         const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
           p_scope_id:scopeId,p_updates:batch
         });
-        completed+=Number(checked(result,'批次補寫 source_place')||0);
-        setNotice('已寫入 '+completed+' / '+updates.length+' 篇…');
+        const affected=Number(checked(result,'批次補寫 source_place')||0);
+        if(affected!==batch.length)throw Error('資料庫回報的寫入筆數不一致，請重新分析');
+        completed+=affected;
+        const resolved=new Set(batch.map(row=>row.uid));
+        setAnalysis(previous=>previous?{...previous,
+          ready:previous.ready.filter(row=>!resolved.has(row.uid)),
+          disputes:previous.disputes.filter(row=>!resolved.has(row.uid)),
+          unchanged:[...previous.unchanged,...previous.ready.filter(row=>resolved.has(row.uid)),
+            ...previous.disputes.filter(row=>resolved.has(row.uid))]}:null);
+        setCompletedCount(count=>count+affected);
+        setWriteProgress({done:completed,total:updates.length});
+        setNotice('已成功寫入 '+completed+' / '+updates.length+' 篇；已從待處理清單移除。');
       }
-      // Keep unresolved disputes on screen after writing the definite rows.
-      // The user can decide them later without re-importing private Timeline JSON.
-      const resolved=new Set(updates.map(row=>row.uid));
-      setAnalysis(previous=>previous?{...previous,
-        ready:previous.ready.filter(row=>!resolved.has(row.uid)),
-        disputes:previous.disputes.filter(row=>!resolved.has(row.uid)),
-        unchanged:[...previous.unchanged,...previous.ready.filter(row=>resolved.has(row.uid)),
-          ...previous.disputes.filter(row=>resolved.has(row.uid))]}:null);
-      setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});
-      setPage(0);
       await revalidateServerMetadata();
       await Promise.allSettled([
         cache.invalidate({queryKey:['scope-trace',scopeId]}),
         cache.invalidate({queryKey:['trace-current',scopeId]}),
         cache.invalidate({queryKey:['loc-place-summary',scopeId]})
       ]);
-      setNotice('已補寫 '+completed+' 篇原本空白的 source_place，並補齊需要的 place_id；既有打卡文字保持不變。');
+      setNotice('寫入完成：'+completed+' 篇。其他未選地點或有歧義的文章仍保留在清單內。');
     }catch(e){
-      setNotice('已完成 '+completed+' 篇，其餘未寫入。'+friendlyError(e)+'。請重新預覽再寫入，避免覆蓋其他編輯。');
-      setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});
+      setNotice('已成功寫入 '+completed+' 篇；其他文章保留在清單內。錯誤：'+friendlyError(e)+'。若資料同時被修改，請重新分析後再提交。');
     }finally{setWriting(false);}
   }
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
@@ -163,7 +170,7 @@ export default function TimelinePlaceManager({scopeId}){
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);
+            runRef.current++;setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
