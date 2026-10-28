@@ -53,7 +53,6 @@ export default function LocGroupMemberList({groupId='loc'}){
   if(!allowed)return <section className="loc-card scope-status scope-error" role="alert">沒有群組人員修改權限。</section>;
   return <section className="loc-card admin-workspace">
     <h2>群組人員</h2>
-    <p className="scope-status">只允許修改已有人員的顯示名稱。Email、Table 名稱、新增及刪除僅屬系統管理。</p>
     {query.isPending?<p className="scope-status" role="status">正在讀取人員…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">{String(query.error.message||query.error)}
       <button type="button" className="loc-button" onClick={()=>query.refetch()}>重新讀取</button>
