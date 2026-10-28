@@ -1434,3 +1434,47 @@
   border:1px solid var(--loc-line);border-radius:var(--loc-ui-radius-sm)
 }
 .loc-trace-quick-update-group>.loc-button{justify-self:start}
+
+/* Google Timeline: one compact review row instead of stacked form labels. */
+.loc-timeline-review-row{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(10rem,17rem) auto;
+  gap:.4rem .65rem;align-items:center;min-width:0;
+  padding:.32rem .45rem;border-bottom:1px solid var(--loc-line);
+}
+.loc-timeline-review-row__article{display:flex;align-items:center;gap:.4rem;min-width:0;margin:0}
+.loc-timeline-review-row__article input{flex:none}
+.loc-timeline-review-row__date,.loc-timeline-review-row__uid{flex:none;font-size:.8rem;color:var(--loc-muted)}
+.loc-timeline-review-row__title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loc-timeline-review-row__place{width:100%;min-width:0;margin:0}
+.loc-timeline-review-row__status{font-size:.76rem;color:var(--loc-muted);white-space:nowrap}
+@media(max-width:720px){
+  .loc-timeline-review-row{grid-template-columns:minmax(0,1fr) minmax(8rem,42%)}
+  .loc-timeline-review-row__status{grid-column:1/-1}
+  .loc-timeline-review-row__uid{display:none}
+}
+
+.loc-timeline-review-action{
+  position:sticky;top:.5rem;z-index:5;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:.6rem;padding:.8rem;margin:.75rem 0;border:1px solid var(--loc-accent-border);
+  border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);color:var(--loc-text);
+  box-shadow:0 6px 20px rgb(0 0 0 / .1);
+}
+.loc-timeline-review-action__summary{display:grid;gap:.25rem;flex:1 1 17rem;min-width:0}
+.loc-timeline-review-action__summary span{font-size:.85rem;color:var(--loc-muted)}
+.loc-timeline-review-action__summary progress{width:100%;max-width:25rem;height:.5rem}
+.loc-timeline-review-action>.loc-button{min-height:44px;flex:0 0 auto}
+.loc-timeline-review-groups{margin:.6rem 0}
+.loc-timeline-review-groups>summary{
+  cursor:pointer;padding:.65rem .8rem;border:1px solid var(--loc-line);
+  border-radius:var(--loc-ui-radius-sm);font-weight:650;
+}
+.loc-timeline-review-groups>summary:focus-visible{outline:2px solid var(--loc-accent)}
+.loc-timeline-review-groups>.scope-card{margin:.6rem 0}
+@media(max-width:520px){.loc-timeline-review-action>.loc-button{width:100%}}
+
+.loc-timeline-review-cache{
+  display:flex;align-items:center;gap:.5rem;
+  margin:.45rem 0;font-size:.87rem;color:var(--loc-text)
+}
+.loc-timeline-review-cache input{flex:none}
