@@ -8,4 +8,4 @@
 
 set -e
 echo "pre-push: running npm run check:syntax (local, free, no CI/deploy involved)..."
-npm run check:syntax
+node scripts/check-js-syntax.mjs
