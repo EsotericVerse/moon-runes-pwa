@@ -26,7 +26,6 @@ export default function IsrDomainTarget(){
   };
   return <section className="loc-card admin-workspace">
     <h2>快取</h2>
-    <p className="scope-status">這裡可即時切換目前瀏覽器的快取模式，不寫入資料庫。全站預設仍由 JS 設定檔控制，需部署才會改變其他裝置。</p>
     <div className="scope-management-fields">
       <label>快取模式
         <select className="scope-select" aria-label="快取模式" value={choice.mode}
