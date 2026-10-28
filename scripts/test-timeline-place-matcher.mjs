@@ -38,14 +38,14 @@ test('outside 500m stays empty; two inside 500m become disputed',()=>{
  assert.equal(match.windows[0].disputed,true);
  assert.equal(matchTimelineWindows(windows,[anchors[2]]).withoutAnchor,1);
 });
-test('blank source_place is eligible even if matching place_id already exists',()=>{
+test('place_id controls review completion regardless of existing source_place',()=>{
  const window={candidates:[{uid:'A001',title:'甲',meters:20}],disputed:false};
- const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,window},
+ const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,source_place:'已打卡',window},
   {uid:'22222222',title:'已存在',createtime:'2026-01-01T00:10:00Z',place_id:'B002',window},
   {uid:'33333333',title:'相同',createtime:'2026-01-01T00:10:00Z',place_id:'A001',window}];
  const result=accumulateTimelineArticles(rows);
- assert.deepEqual(result.ready.map(x=>x.uid),['11111111','33333333']);
- assert.deepEqual(result.disputes.map(x=>x.uid),['22222222']);
+ assert.deepEqual(result.ready.map(x=>x.uid),['11111111']);
+ assert.deepEqual(result.disputes.map(x=>x.uid),[]);
  assert.deepEqual(result.unchanged.map(x=>x.uid),[]);
 });
 test('overlapping visits to different places never auto apply a guessed ID',()=>{
@@ -68,12 +68,15 @@ test('same Timeline coordinate groups hundreds of distinct article rows without 
  assert.equal(groups[0].defaultPlaceId,'');
  assert.deepEqual(groups[0].candidates.map(c=>c.uid),['A001','A002']);
 });
-test('nearby but distinct coordinates never automatically share one review group',()=>{
+test('different GPS observations at one anchor share one review group',()=>{
  const hits=[25.0123000,25.0123001].map((lat,i)=>({
   uid:String(i).padStart(8,'0'),place_id:null,
   window:{lat,lng:121.4567,candidates:[{uid:'A001',title:'甲',meters:0}],disputed:false}
  }));
- assert.equal(groupTimelineMissingPlaces(accumulateTimelineArticles(hits)).length,2);
+ const groups=groupTimelineMissingPlaces(accumulateTimelineArticles(hits));
+ assert.equal(groups.length,1);
+ assert.equal(groups[0].key,'anchor:A001');
+ assert.equal(groups[0].rows.length,2);
 });
 test('one article matched at different coordinates cannot be swept into a bulk group',()=>{
  const hit=(lat,placeId)=>({uid:'11111111',place_id:null,window:{
@@ -85,6 +88,7 @@ test('one article matched at different coordinates cannot be swept into a bulk g
  const groups=groupTimelineMissingPlaces(accumulateTimelineArticles([hit(25,'A001'),hit(26,'B002'),single]));
  assert.equal(groups.length,2);
  assert.ok(groups.some(g=>g.key==='article:11111111'&&g.defaultPlaceId===''));
+ assert.equal(groups.reduce((n,g)=>n+g.rows.filter(row=>row.uid==='11111111').length,0),1);
 });
 test('UI is owner-only, grouped with default checkboxes, and source_place is protected',()=>{
  const ui=read('app/loc/TimelinePlaceManager.jsx');
@@ -97,10 +101,13 @@ test('UI is owner-only, grouped with default checkboxes, and source_place is pro
  assert.match(ui,/const \[excluded,setExcluded\]=useState\(\{\}\)/);
  assert.match(ui,/!excluded\[row\.uid\]/);
  assert.match(ui,/p_scope_id:scopeId,p_updates:batch/);
- assert.match(ui,/apply_timeline_missing_places/);
- assert.match(migration,/SET source_place=\$1/);
- assert.match(migration,/g\.source_place IS NULL OR g\.source_place ~/);
- assert.match(migration,/NULLIF\(btrim\(g\.place_id\),''\) IS NOT DISTINCT FROM \$4/);
+ assert.match(ui,/apply_timeline_place_ids/);
+ assert.doesNotMatch(ui,/rpc\('apply_timeline_missing_places'/);
+ const revised=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
+ assert.match(revised,/AND NULLIF\(btrim\(place_id\),''\) IS NULL/);
+ assert.match(revised,/UPDATE silver\.%I g SET place_id = u\.place_id/);
+ assert.match(revised,/WHERE g\.uid = u\.uid AND NULLIF\(btrim\(g\.place_id\),''\) IS NULL/);
+ assert.match(revised,/preview_timeline_place_page_json/);
  assert.match(migration,/silver\.can_manage_scope\(p_scope_id\)/);
 });
 
@@ -114,8 +121,7 @@ test('two groups keep independent choices and one article override cannot leak t
  ];
  assert.deepEqual(selectedTimelineArticleUpdates(groups,{ 'point:1':'A002','point:2':'B001','point:3':'C001' }),[
   {uid:'11111111',place_id:'A002',expected_place_id:null,manual:true},
-  {uid:'22222222',place_id:'B001',expected_place_id:null,manual:true},
-  {uid:'33333333',place_id:'C001',expected_place_id:'C001',manual:true}
+  {uid:'22222222',place_id:'B001',expected_place_id:null,manual:true}
  ]);
  assert.deepEqual(selectedTimelineArticleUpdates(groups,{'point:1':'A001','point:2':'B001','point:3':'B001'},
    {'11111111':'A002'},{'22222222':true}).map(x=>x.place_id),['A002']);
@@ -138,15 +144,15 @@ test('per-tab Timeline review cache is owner-bound, scoped, and does not contain
  clearTimelineReviewSession(storage,'lo3rwang');assert.equal(map.size,0);
 });
 
-test('Timeline preview is index-backed and write I/O accepts 500 atomically',()=>{
+test('Timeline preview is index-backed and JS MaxRows equals SQL transport cap',()=>{
  const io=read('app/loc/query-batch-size.mjs');
- const writeSql=read('supabase/migrations/20261028160000_timeline_bulk_set_write_500.sql');
- const previewSql=read('supabase/migrations/20261028170000_timeline_preview_indexed_windows.sql');
+ const writeSql=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
+ const previewSql=read('supabase/migrations/20261028183000_timeline_io_maxrows_10000.sql');
  const ui=read('app/loc/TimelinePlaceManager.jsx');
- assert.match(io,/windowBatch:100,previewPage:3000,writeBatch:500/);
+ assert.match(io,/windowBatch:MAX_ROWS,previewPage:MAX_ROWS,writeBatch:MAX_ROWS/);
  assert.match(previewSql,/OFFSET 0/);
- assert.match(previewSql,/p_limit NOT BETWEEN 1 AND 3000/);
- assert.match(writeSql,/total NOT BETWEEN 1 AND 500/g);
+ assert.match(previewSql,/p_limit NOT BETWEEN 1 AND 10000/);
+ assert.match(writeSql,/total NOT BETWEEN 1 AND 10000/g);
  assert.doesNotMatch(writeSql,/FOR r IN/);
  assert.match(writeSql,/GET DIAGNOSTICS affected = ROW_COUNT/);
  assert.ok(ui.indexOf('loc-timeline-review-action')<ui.indexOf('loc-timeline-review-groups'));

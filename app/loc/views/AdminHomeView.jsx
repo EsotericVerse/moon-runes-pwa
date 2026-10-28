@@ -13,12 +13,14 @@ import {useEditDock} from '../../modular/edit-dock';
 import {FeaturePage} from '../../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../../modular/ManagementSectionNav';
 import PanelLoading from '../PanelLoading';
+import {MAX_ROWS,MAX_ARCHIVE_BYTES,MAX_JSON_BYTES,MAX_DOCUMENT_BYTES,MAX_TIMELINE_BYTES} from '../query-batch-size.mjs';
 // Registry editing and source catalogs are independent admin capabilities.
 
 const ADMIN_OPTIONS=Object.freeze([
   {value:'registry',label:'人員',shortLabel:'人員',description:'系統人員、Email、Table 對應及群組部署。'},
   {value:'lists',label:'名單管理',shortLabel:'名單',description:'保留名稱備註及 Email 系統黑名單。'},
   {value:'network',label:'網路設定',shortLabel:'網路',description:'資料庫連線、備援及快取／ISR 平台。'},
+  {value:'io',label:'檔案 I/O 設定',shortLabel:'I/O',description:'MaxRows 與檔案大小限制（JS 唯讀設定）。'},
   {value:'featureHero',label:'功能區塊設定',shortLabel:'區塊',description:'編輯功能頁 Hero 與展示資源。'},
   {value:'themes',label:'主題顏色設定',shortLabel:'配色',description:'調整網站主題和色彩。'}
 ]);
@@ -87,6 +89,15 @@ export default function AdminHomeView({scopeGroup}){
           <DatabaseTarget scopeGroup={scopeGroup}/>
           <IsrDomainTarget/>
         </>:null}
+        {section==='io'?<section className="loc-card scope-feature-card" aria-label="檔案 I/O 設定">
+          <h3>檔案 I/O · JS 統一設定</h3>
+          <p className="scope-status">唯一來源：app/loc/query-batch-size.mjs。這是系統規格，不提供一般使用者修改，也不寫入資料庫。</p>
+          <p><strong>MaxRows：</strong>{MAX_ROWS.toLocaleString()} 筆</p>
+          <p><strong>備份檔案上限：</strong>{(MAX_ARCHIVE_BYTES/1048576).toLocaleString()} MiB</p>
+          <p><strong>JSON 檔案上限：</strong>{MAX_JSON_BYTES/1048576} MiB</p>
+          <p><strong>文件檔案上限：</strong>{MAX_DOCUMENT_BYTES/1048576} MiB</p>
+          <p><strong>Timeline 檔案上限：</strong>{MAX_TIMELINE_BYTES/1048576} MiB</p>
+        </section>:null}
         {section==='featureHero'?<FeatureHeroImages/>:null}
         {section==='themes'?<ThemeEditor/>:null}
 

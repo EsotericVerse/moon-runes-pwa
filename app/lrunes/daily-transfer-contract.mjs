@@ -1,7 +1,8 @@
 // Daily rune portable format shared by iOS native and website. No implicit correction.
+import {MAX_ROWS,MAX_DAILY_TRANSFER_BYTES} from '../loc/query-batch-size.mjs';
 export const DAILY_TRANSFER_FORMAT='loc.lrunes.daily.v1';
-export const DAILY_TRANSFER_MAX_BYTES=24*1024*1024;
-export const DAILY_TRANSFER_BATCH=100;
+export const DAILY_TRANSFER_MAX_BYTES=MAX_DAILY_TRANSFER_BYTES;
+export const DAILY_TRANSFER_BATCH=MAX_ROWS;
 const KINDS=new Set(['main','supplement','history_1','history_2']);
 const DIRECTIONS=new Set(['正位','半正位','半逆位','逆位']);
 export const dailyTransferKey=row=>row.record_date+'|'+row.draw_kind;

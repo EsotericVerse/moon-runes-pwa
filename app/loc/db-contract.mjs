@@ -92,7 +92,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const list=Array.isArray(rows)?rows:[];
     // Check every row before starting batch writes; fail without partial import.
     for(const row of list)validateGalaxyWrite(table,row);
-    const batchSize=200;
+    const batchSize=MAX_ROWS;
     let count=0;
     for(let offset=0;offset<list.length;offset+=batchSize){
       const batch=list.slice(offset,offset+batchSize);

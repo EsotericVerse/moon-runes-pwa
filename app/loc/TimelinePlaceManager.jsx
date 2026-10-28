@@ -6,7 +6,7 @@ import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {EDIT_OPERATION_TTL_MS,assertEditorSession} from './edit-session-ttl.mjs';
-import {TIMELINE_IO} from './query-batch-size.mjs';
+import {TIMELINE_IO,MAX_TIMELINE_BYTES} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession,timelineReviewCacheOversized} from './timeline-review-session.mjs';
 import {accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
@@ -23,6 +23,7 @@ export default function TimelinePlaceManager({scopeId}){
   const [progress,setProgress]=useState(null);
   const [analysis,setAnalysis]=useState(null);
   const [groupChoices,setGroupChoices]=useState({});
+  const [bulkPlaceId,setBulkPlaceId]=useState('');
   const [itemChoices,setItemChoices]=useState({});
   const [excluded,setExcluded]=useState({});
   const [groupPages,setGroupPages]=useState({});
@@ -125,7 +126,7 @@ export default function TimelinePlaceManager({scopeId}){
     abortWorker();
     try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}
     setSessionEnabled(false);setSessionWarning('');
-    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+    setSelectedFile(null);setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
     if(fileRef.current)fileRef.current.value='';
   }
   async function analyze(){
@@ -141,9 +142,9 @@ export default function TimelinePlaceManager({scopeId}){
       setNotice('Timeline 地點比對超過 5 分鐘，已停止。尚未寫入任何資料。');
     },EDIT_OPERATION_TTL_MS);
     analyzeTimerRef.current=timer;
-    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
+    setAnalyzing(true);setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setPage(0);setNotice('');setWriteProgress(null);setCompletedCount(0);
     try{
-      if(selectedFile.size>200*1024*1024)throw Error('Timeline JSON 超過 200 MB，請按年度拆分後匯入');
+      if(selectedFile.size>MAX_TIMELINE_BYTES)throw Error('Timeline JSON 超過檔案大小上限，請按年度拆分後匯入');
       setProgress({done:0,total:0,message:'正在瀏覽器背景處理 Timeline JSON…'});
       const {visitCount,matched}=await parseInWorker(selectedFile,eligible);
       if(run!==runRef.current)return;
@@ -164,7 +165,7 @@ export default function TimelinePlaceManager({scopeId}){
         let offset=0;
         while(true){
           if(run!==runRef.current)return;
-          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_missing_place_windows',{
+          const result=await dbAuthClient.schema('silver').rpc('preview_timeline_place_page_json',{
             p_scope_id:scopeId,p_windows:batch,p_limit:RESULT_PAGE,p_offset:offset
           });
           const rows=checked(result,'查詢 Galaxy 文章時間');
@@ -185,7 +186,7 @@ export default function TimelinePlaceManager({scopeId}){
       setAnalysis({...classified,visitCount,empty:matched.withoutAnchor,
         ambiguous:matched.ambiguousWindows,articleCount:classified.ready.length+
         classified.disputes.length+classified.unchanged.length});
-      setNotice('已完成空白打卡地點預覽。相同經緯度集中列出；請選擇位置並檢查不同樓層，確認前不寫入。');
+      setNotice('已完成地點預覽。依既有空間定錨點集中審查；有歧義的地點才需要額外確認。');
     }catch(e){
       if(run===runRef.current)setNotice('地點比對失敗：'+friendlyError(e));
     }finally{
@@ -199,6 +200,26 @@ export default function TimelinePlaceManager({scopeId}){
     ()=>selectedTimelineArticleUpdates(reviewGroups,groupChoices,itemChoices,excluded),
     [reviewGroups,groupChoices,itemChoices,excluded]);
   const canWrite=selectedUpdates.length>0;
+  const bulkRows=useMemo(()=>{
+    if(!bulkPlaceId)return [];
+    return [...(analysis?.ready||[]),...(analysis?.disputes||[])].filter(row=>
+      row.candidates.some(candidate=>candidate.uid===bulkPlaceId)&&
+      (!row.existingPlaceId||row.existingPlaceId===bulkPlaceId));
+  },[analysis,bulkPlaceId]);
+  const applyBulkPlace=()=>{
+    if(!bulkPlaceId||!bulkRows.length||writing)return;
+    setItemChoices(current=>{
+      const next={...current};
+      for(const row of bulkRows)next[row.uid]=bulkPlaceId;
+      return next;
+    });
+    setExcluded(current=>{
+      const next={...current};
+      for(const row of bulkRows)delete next[row.uid];
+      return next;
+    });
+    setNotice('已將此定錨點套用到 '+bulkRows.length.toLocaleString()+' 篇候選文章，尚未寫入資料庫。');
+  };
   const writableUids=useMemo(()=>new Set(selectedUpdates.map(row=>row.uid)),[selectedUpdates]);
   const pendingCount=ready.length+(analysis?.disputes?.length||0);
   const unreadyCount=Math.max(0,pendingCount-selectedUpdates.length);
@@ -217,9 +238,9 @@ export default function TimelinePlaceManager({scopeId}){
   async function apply(){
     if(!analysis||!canWrite||writing||analyzing)return;
     const updates=selectedUpdates;
-    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章空白的 source_place，並補齊缺少的 place_id？\n\n'
-      +'只處理已勾選且地點有效的文章；已有打卡文字絕不覆寫。\n'
-      +'原有不同的 place_id 不會被覆寫，Timeline 原始資料也不會儲存。'))return;
+    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章缺少的 place_id？\\n\\n'
+      +'已有 place_id 的文章不會再次寫入；source_place 不更動。\\n'
+      +'Timeline 原始資料不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
     try{
       assertEditorSession(window.sessionStorage);
@@ -230,11 +251,11 @@ export default function TimelinePlaceManager({scopeId}){
         if(Date.now()>=deadline)throw Error('批次寫入已達 5 分鐘操作期限；請核對已成功寫入筆數。');
         assertEditorSession(window.sessionStorage);
         const batch=updates.slice(i,i+WRITE_BATCH);
-        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_missing_places',{
+        const result=await dbAuthClient.schema('silver').rpc('apply_timeline_place_ids',{
           p_scope_id:scopeId,p_updates:batch
         });
         if(run!==runRef.current)break;
-        const affected=Number(checked(result,'批次補寫 source_place')||0);
+        const affected=Number(checked(result,'批次補寫 place_id')||0);
         if(affected!==batch.length)throw Error('資料庫回報的寫入筆數不一致，請重新分析');
         completed+=affected;
         const resolved=new Set(batch.map(row=>row.uid));
@@ -261,12 +282,12 @@ export default function TimelinePlaceManager({scopeId}){
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
     <h3>地點整理 · Google Timeline</h3>
-    <p className="scope-status">Timeline JSON 只在瀏覽器記憶體解析。以文章時間比對 500 公尺內既有定錨點，只列出 source_place 尚未填寫的文章；同座標集中審查樓層或不同店家。最後只補寫空白打卡地點與缺少的 place_id，不儲存私人行蹤。</p>
+    <p className="scope-status">Timeline JSON 只在瀏覽器本機背景解析。以文章時間比對 500 公尺內既有定錨點，只列出 place_id 尚未填寫的文章；按定錨點集中審查。只補寫 place_id，不改 source_place，不儲存私人行蹤。</p>
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;abortWorker();try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+            runRef.current++;abortWorker();try{clearTimelineReviewSession(sessionStorage,scopeId);}catch{}setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setBulkPlaceId('');setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -290,16 +311,29 @@ export default function TimelinePlaceManager({scopeId}){
       <p className="scope-status">Timeline 造訪區間：{analysis.visitCount.toLocaleString()}；
         500 公尺外／無定錨點：{analysis.empty.toLocaleString()}；
         候選有歧義的造訪區間：{analysis.ambiguous.toLocaleString()}。</p>
-      <p className="scope-status">待補打卡文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
-        同座標審查群組：{reviewGroups.length.toLocaleString()} 組；
+      <p className="scope-status">待補 place_id 文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
+        按定錨點審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
-        已有 source_place 的文章不列入也不會更新。</p>
+        已有 place_id 的文章不列入；source_place 不修改。</p>
       <label className="loc-timeline-review-cache">
         <input type="checkbox" checked={sessionEnabled} disabled={!sessionReady||!sessionOwner||writing}
           onChange={e=>onToggleSessionCache(e.target.checked)}/>
         本分頁暫存審查進度（重新整理免重算；僅本機保存預覽，不保存原始 JSON）
       </label>
       {sessionWarning?<p className="scope-status scope-error" role="alert">{sessionWarning}</p>:null}
+      <div className="scope-stat-controls" role="group" aria-label="一次選定空間定錨點">
+        <label>一次套用空間定錨點（500 公尺內候選）
+          <select className="scope-select" value={bulkPlaceId} disabled={writing}
+            onChange={e=>setBulkPlaceId(e.target.value)}>
+            <option value="">選擇已建立的空間定錨點</option>
+            {eligible.map(place=><option key={place.uid} value={place.uid}>{place.title||place.uid}（{place.uid}）</option>)}
+          </select>
+        </label>
+        <button type="button" className="loc-button" disabled={writing||!bulkRows.length}
+          onClick={applyBulkPlace}>
+          一次套用 {bulkRows.length.toLocaleString()} 篇候選文章
+        </button>
+      </div>
       <div className="loc-timeline-review-action" role="region" aria-label="Timeline 批次寫入">
         <div className="loc-timeline-review-action__summary" role="status" aria-live="polite">
           <strong>{writing?'正在寫入資料庫':pendingCount?'分析完成 · 尚未全部寫入':'已處理完成'}</strong>
@@ -311,20 +345,20 @@ export default function TimelinePlaceManager({scopeId}){
       </div>
       {reviewGroups.length>0?<details className="loc-timeline-review-groups">
         <summary>檢查或修改地點 · {reviewGroups.length.toLocaleString()} 組（點此展開）</summary>
-        <p className="scope-status">逐組選地點即可自動套用到該組所有可寫入文章；其他組的選擇不會改變。只有需要分開樓層時才逐篇選擇。</p>
+        <p className="scope-status">同一個定錨點附近的不同 GPS 讀值已合併審查。有歧義時才需要逐篇確認。</p>
         {reviewGroups.slice(reviewPage*10,(reviewPage+1)*10).map(group=>{
           const chosen=groupChoices[group.key]??group.defaultPlaceId;
           const groupPage=groupPages[group.key]||0;
           const writableCount=group.rows.filter(row=>writableUids.has(row.uid)).length;
           return <details key={group.key} className="scope-card">
-            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 可寫入 {writableCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
+            <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||group.candidates.find(candidate=>candidate.uid===group.suggestedPlaceId)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 可寫入 {writableCount.toLocaleString()} 篇 · {group.key.startsWith('anchor:')?(group.disputed?'定錨點附近 · 待確認':'定錨點附近 · 已自動對應'):'需逐篇確認'}</summary>
             <div className="scope-stat-controls">
               <button type="button" className="loc-button" disabled={writing||!chosen}
                 onClick={()=>selectGroup(group,true,chosen)}>全選這組可寫入文章</button>
               <button type="button" className="loc-button" disabled={writing}
                 onClick={()=>selectGroup(group,false,chosen)}>取消這組全選</button>
             </div>
-            <label>這組文章預設的定錨點（可逐篇覆蓋）
+            <label>一次指定這組文章的空間定錨點（必要時可逐篇覆蓋）
               <select className="scope-select" disabled={writing} value={chosen}
                 onChange={e=>{
                   setGroupChoices(current=>({...current,[group.key]:e.target.value}));

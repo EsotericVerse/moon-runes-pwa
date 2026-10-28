@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
+import {MAX_ROWS} from '../app/loc/query-batch-size.mjs';
 
 const source=(path)=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 function extractBatchMethod(stubs){
@@ -8,96 +9,90 @@ function extractBatchMethod(stubs){
   const start=contract.indexOf('  async function applyKeywordClassification(');
   const end=contract.indexOf('\n  // Manually-triggered full wipe',start);
   assert.ok(start>=0&&end>start,'Keyword classification method must exist');
-  const deps={...stubs,keywordClassificationWrite:stubs.keywordClassificationWriteUnchecked};
+  const deps={KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL:MAX_ROWS,...stubs,keywordClassificationWrite:stubs.keywordClassificationWriteUnchecked};
   return new Function(...Object.keys(deps),
     contract.slice(start,end)+'\nreturn applyKeywordClassification;')(...Object.values(deps));
 }
-test('failed 500-row write rolls back and retries 250-row chunks without skipping entries',async()=>{
-  const rows=Array.from({length:1200},(_,i)=>({uid:'ID'+i,class_id:1,group_lists:'1:1'}));
+
+test('SQL timeout retries a smaller batch after exactly one second without duplicating rows',async()=>{
+  const rows=Array.from({length:9000},(_,i)=>({uid:'ID'+i,class_id:1,group_lists:'1:1'}));
   const successes=[],attempts=[],events=[],delays=[];
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
     flashMessage:()=>{},
     WRITE_FAILED_NOTICE:'儲存失敗',
-    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
-    KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE:25,
-    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:5000,
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:MAX_ROWS,
+    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:1000,
     setTimeout:(resolve,ms)=>{delays.push(ms);resolve();},
     keywordClassificationWriteUnchecked:async(_scope,arg)=>{
-      attempts.push({mode:arg.mode,rows:arg.rows?.length,scopeBased:arg.scopeBased,uids:arg.uids});
+      attempts.push({mode:arg.mode,rows:arg.rows?.length});
       if(arg.mode==='chunk'){
-        if(arg.rows.length>250)throw Error('canceling statement due to statement timeout');
+        if(arg.rows.length>4500)throw Error('canceling statement due to statement timeout');
         successes.push(...arg.rows.map(row=>row.uid));
         return arg.rows.length;
       }
-      if(arg.mode==='sync')return 0;
-      if(arg.mode==='finalize')return 500;
+      if(arg.mode==='finalize')return 9000;
       return 0;
     }
   });
-  const result=await run('lo3rwang',{rows,meta:{class_id:'class'},eligibleDocumentCount:1400},{
+  const result=await run('lo3rwang',{rows,meta:{class_id:'class'},eligibleDocumentCount:9000},{
     onProgress:event=>events.push(event)
   });
-  assert.equal(result.count,1200);
-  assert.equal(result.changedCount,1200);
-  assert.equal(result.documentCount,500);
+  assert.equal(result.count,9000);
+  assert.equal(result.changedCount,9000);
   assert.deepEqual(successes,rows.map(row=>row.uid));
-  assert.equal(attempts.find(row=>row.mode==='chunk').rows,500);
-  assert.equal(attempts.filter(row=>row.mode==='chunk'&&row.rows===500).length,1);
-  assert.ok(attempts.some(row=>row.mode==='chunk'&&row.rows===250));
-  assert.deepEqual(attempts.filter(row=>row.mode==='sync'),[{
-    mode:'sync',rows:undefined,scopeBased:true,uids:undefined
-  }]);
-  assert.equal(events.filter(row=>row.phase==='write').at(-1).completed,1200);
-  assert.equal(events.filter(row=>row.phase==='write').at(-1).completedBatches,5);
-  assert.equal(events.filter(row=>row.phase==='write').at(-1).estimatedBatches,5);
-  assert.ok(events.some(row=>row.phase==='cooldown'&&row.retrying&&row.batchSize===250));
-  assert.equal(delays.length,25); // 1 failed attempt + 4 gaps, each five seconds.
-  assert.ok(delays.every(delay=>delay===1000));
-  assert.deepEqual(events.filter(row=>row.phase==='cooldown'&&row.retrying).map(x=>x.seconds),[5,4,3,2,1]);
+  assert.deepEqual(attempts.filter(row=>row.mode==='chunk').map(x=>x.rows),[9000,5000,2500,2500,2500,1500]);
+  assert.deepEqual(delays,[1000,1000]);
+  assert.deepEqual(events.filter(x=>x.phase==='cooldown').map(x=>[x.retrying,x.seconds]),[[true,1],[true,1]]);
 });
-test('ordinary 500-row write waits five seconds only between committed batches',async()=>{
-  const items=Array.from({length:1200},(_,i)=>({uid:'R'+i,class_id:2,group_lists:'2:1'}));
-  const calls=[],timers=[],progress=[];
+test('one second of rest only after each full MaxRows of successful work',async()=>{
+  const rows=Array.from({length:MAX_ROWS*2+1},(_,i)=>({uid:'R'+i,class_id:2,group_lists:'2:1'}));
+  const chunks=[],timers=[],events=[];
   let active=0,maxActive=0;
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
     flashMessage:()=>{},WRITE_FAILED_NOTICE:'儲存失敗',
-    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
-    KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE:25,
-    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:5000,
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:MAX_ROWS,
+    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:1000,
     setTimeout:(resolve,ms)=>{timers.push(ms);resolve();},
-    keywordClassificationWriteUnchecked:async(_scope,request)=>{
-      if(request.mode==='chunk'){
+    keywordClassificationWriteUnchecked:async(_scope,arg)=>{
+      if(arg.mode==='chunk'){
         active++;maxActive=Math.max(maxActive,active);
-        const count=request.rows.length;
-        calls.push(count);
+        chunks.push(arg.rows.length);
         await Promise.resolve();active--;
-        return count;
+        return arg.rows.length;
       }
-      if(request.mode==='finalize')return 1200;
-      return 0;
+      return arg.mode==='finalize'?rows.length:0;
     }
   });
-  const result=await run('lo3rwang',{rows:items,eligibleDocumentCount:1200,meta:{class_id:'r'}},{
-    onProgress:event=>progress.push(event)
+  const result=await run('lo3rwang',{rows,eligibleDocumentCount:rows.length,meta:{class_id:'r'}},{
+    onProgress:event=>events.push(event)
   });
-  assert.equal(result.count,1200);
-  assert.deepEqual(calls,[500,500,200]);
+  assert.equal(result.count,rows.length);
+  assert.deepEqual(chunks,[MAX_ROWS,MAX_ROWS,1]);
   assert.equal(maxActive,1);
-  assert.equal(timers.length,10);
-  assert.ok(timers.every(value=>value===1000));
-  assert.equal(progress.filter(x=>x.phase==='cooldown').length,10);
-  assert.deepEqual(progress.filter(x=>x.phase==='cooldown').map(x=>x.seconds),[5,4,3,2,1,5,4,3,2,1]);
-  const writes=progress.filter(x=>x.phase==='write');
-  assert.deepEqual(writes.map(x=>x.completedBatches),[1,2,3]);
-  assert.deepEqual(writes.map(x=>x.estimatedBatches),[3,3,3]);
-  assert.deepEqual(writes.map(x=>x.lastBatchSize),[500,500,200]);
+  assert.deepEqual(timers,[1000,1000]);
+  assert.deepEqual(events.filter(x=>x.phase==='cooldown').map(x=>[x.completed,x.retrying]),[[MAX_ROWS,false],[MAX_ROWS*2,false]]);
+});
+test('under MaxRows finishes without a single idle delay',async()=>{
+  const rows=Array.from({length:1200},(_,i)=>({uid:'X'+i,class_id:2,group_lists:'2:1'}));
+  const timers=[];
+  const run=extractBatchMethod({
+    normalizeScopeId:scope=>scope,
+    flashMessage:()=>{},WRITE_FAILED_NOTICE:'儲存失敗',
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:MAX_ROWS,
+    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:1000,
+    setTimeout:(resolve,ms)=>{timers.push(ms);resolve();},
+    keywordClassificationWriteUnchecked:async(_scope,arg)=>arg.mode==='finalize'?rows.length:arg.rows?.length||0
+  });
+  const result=await run('lo3rwang',{rows,eligibleDocumentCount:rows.length,meta:{class_id:'r'}});
+  assert.equal(result.count,1200);
+  assert.deepEqual(timers,[]);
 });
 
 test('UI at 10,000 of 29,818 reflects 71 percent and revised batch estimates',()=>{
   const analysis=source('app/loc/keyword-analysis.js');
-  const start=analysis.indexOf('    onProgress:({phase,completed,total,seconds=5');
+  const start=analysis.indexOf('    onProgress:({phase,completed,total,seconds=1');
   const end=analysis.indexOf('\n    }\n  });',start);
   assert.ok(start>=0&&end>start,'Analysis UI callback must exist');
   const text=analysis.slice(start,end+6).trim().replace(/^onProgress:/,'');
@@ -109,16 +104,16 @@ test('UI at 10,000 of 29,818 reflects 71 percent and revised batch estimates',()
     },
     event=>events.push(event),500
   );
-  onProgress({phase:'write',completed:10000,total:29818,batchSize:500,
-    completedBatches:20,estimatedBatches:60,lastBatchSize:500});
-  onProgress({phase:'cooldown',completed:10000,total:29818,batchSize:250,
-    completedBatches:20,estimatedBatches:100,seconds:5,retrying:true});
+  onProgress({phase:'write',completed:10000,total:29818,batchSize:MAX_ROWS,
+    completedBatches:1,estimatedBatches:3,lastBatchSize:MAX_ROWS});
+  onProgress({phase:'cooldown',completed:10000,total:29818,batchSize:MAX_ROWS/2,
+    completedBatches:1,estimatedBatches:5,seconds:1,retrying:true});
   assert.equal(events[0].percent,71);
   assert.equal(events[1].percent,71);
-  assert.ok(events[0].label.includes('已完成 20 / 60 批'));
-  assert.ok(events[1].label.includes('已完成 20 / 100 批'));
-  assert.match(events[1].label,/縮批至 250 篇/);
-  assert.match(events[1].label,/等待 5 秒/);
+  assert.ok(events[0].label.includes('已完成 1 / 3 批'));
+  assert.ok(events[1].label.includes('已完成 1 / 5 批'));
+  assert.match(events[1].label,/縮批至 5000 篇/);
+  assert.match(events[1].label,/等待 1 秒/);
   assert.equal(events[1].completed,10000);
 });
 
@@ -128,9 +123,9 @@ test('sync does not accidentally clear unmodified rows from narrowed reanalysis'
     normalizeScopeId:scope=>scope,
     flashMessage:()=>{},
     WRITE_FAILED_NOTICE:'儲存失敗',
-    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
+    KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:MAX_ROWS,
     KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE:25,
-    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:5000,
+    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:1000,
     setTimeout:resolve=>resolve(),
     keywordClassificationWriteUnchecked:async(_scope,arg)=>{
       writes.push(arg);
@@ -147,9 +142,9 @@ test('non-timeout failures fail rather than being silently retried',async()=>{
   const run=extractBatchMethod({
     normalizeScopeId:scope=>scope,
     flashMessage:()=>{},
-    WRITE_FAILED_NOTICE:'儲存失敗',KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:500,
+    WRITE_FAILED_NOTICE:'儲存失敗',KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE:MAX_ROWS,
     KEYWORD_CLASSIFICATION_MIN_WRITE_BATCH_SIZE:25,
-    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:5000,
+    KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS:1000,
     setTimeout:resolve=>resolve(),
     keywordClassificationWriteUnchecked:async(_scope,arg)=>{
       if(arg.mode==='chunk'){attempts++;throw Error('permission denied');}
@@ -170,9 +165,9 @@ test('no full UID sweep or 144k-UID sync payload in cloud and local',()=>{
   assert.ok(start>=0&&end>start);
   assert.doesNotMatch(runner,/columns:'uid',\s*filters:\[\{column:'statistics_able'/);
   assert.match(runner,/eligibleDocumentCount/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_BATCH_SIZE=5000/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=500/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=5000/);
+  assert.match(contract,/KEYWORD_CLASSIFICATION_BATCH_SIZE=MAX_ROWS/);
+  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=MAX_ROWS/);
+  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=1000/);
   assert.match(local,/p_rows\?\.scopeBased===true/);
   assert.match(migration,/g\.statistics_able is distinct from true/);
   assert.match(migration,/if not silver\.can_manage_scope\(v_scope\)/);

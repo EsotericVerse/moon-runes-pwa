@@ -97,7 +97,10 @@ export function accumulateTimelineArticles(matches){
     if(!uid||!window)continue;
     let entry=byUid.get(uid);
     if(!entry){entry={uid,title:String(hit.title||''),createtime:hit.createtime,
-      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),disputed:false};byUid.set(uid,entry);}
+      existingPlaceId:String(hit.place_id||'').trim(),candidates:new Map(),coordinates:new Set(),commonAnchors:null,disputed:false};byUid.set(uid,entry);}
+    const windowAnchors=new Set((window.candidates||[]).map(candidate=>candidate.uid));
+    entry.commonAnchors=entry.commonAnchors===null?windowAnchors:
+      new Set([...entry.commonAnchors].filter(uid=>windowAnchors.has(uid)));
     for(const candidate of window.candidates)entry.candidates.set(candidate.uid,candidate);
     if(Number.isFinite(window.lat)&&Number.isFinite(window.lng))
       entry.coordinates.add(String(window.lat)+','+String(window.lng));
@@ -105,11 +108,17 @@ export function accumulateTimelineArticles(matches){
   }
   const ready=[],disputes=[],unchanged=[];
   for(const item of byUid.values()){
+    if(item.existingPlaceId)continue; // Already anchored; never review twice.
     const candidates=[...item.candidates.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
     const unique=candidates.length===1&&!item.disputed;
     const coordinates=[...item.coordinates].sort();
+    // A GPS reading is evidence, not a location identity. The closest
+    // existing anchor is only a review bucket, never an automatic assignment.
+    const common=candidates.filter(candidate=>item.commonAnchors?.has(candidate.uid));
+    const reviewAnchor=item.existingPlaceId&&common.some(c=>c.uid===item.existingPlaceId)
+      ?item.existingPlaceId:common[0]?.uid;
     const article={...item,candidates,coordinates,
-      groupKey:coordinates.length===1?'point:'+coordinates[0]:'article:'+item.uid};
+      groupKey:reviewAnchor?'anchor:'+reviewAnchor:'article:'+item.uid};
     if(unique&&(!item.existingPlaceId||item.existingPlaceId===candidates[0].uid))
       ready.push({...article,placeId:candidates[0].uid});
     else disputes.push({...article,reason:coordinates.length>1?'文章跨多組座標，必須逐篇確認':
@@ -121,8 +130,8 @@ export function accumulateTimelineArticles(matches){
   return {ready,disputes,unchanged};
 }
 
-/* Review is by exact Timeline coordinates, not one dialog per article.
-   Separate articles matched at multiple coordinates: never infer a single place. */
+/* Review is grouped by an existing anchor, not by GPS coordinate strings.
+   Article-level candidate validation still governs every proposed update. */
 export function groupTimelineMissingPlaces(analysis){
   const groups=new Map();
   for(const row of [...(analysis?.ready||[]),...(analysis?.disputes||[])]){
@@ -131,15 +140,20 @@ export function groupTimelineMissingPlaces(analysis){
     groups.get(key).rows.push(row);
   }
   return [...groups.values()].map(group=>{
-    const choices=new Map();
-    for(const row of group.rows)
-      for(const candidate of row.candidates||[])choices.set(candidate.uid,candidate);
-    const candidates=[...choices.values()].sort((a,b)=>a.meters-b.meters||a.uid.localeCompare(b.uid));
-    const unanimous=group.key.startsWith('point:')&&group.rows.every(row=>
-      row.candidates.length===1&&!row.disputed&&row.candidates[0].uid===candidates[0]?.uid&&
-      (!row.existingPlaceId||row.existingPlaceId===candidates[0]?.uid));
-    return {...group,candidates,defaultPlaceId:unanimous?candidates[0]?.uid||'':'',
-      disputed:!unanimous};
+    const anchorId=group.key.startsWith('anchor:')?group.key.slice('anchor:'.length):'';
+    // Always present the matching anchor as a group-level selection.
+    // Ambiguous rows remain visibly disputed and can be changed individually.
+    const unanimous=Boolean(anchorId)&&group.rows.every(row=>
+      row.candidates.length===1&&!row.disputed&&row.candidates[0].uid===anchorId&&
+      (!row.existingPlaceId||row.existingPlaceId===anchorId));
+    const candidateSet=new Map();
+    for(const row of group.rows)for(const candidate of row.candidates||[]){
+      const previous=candidateSet.get(candidate.uid);
+      if(!previous||candidate.meters<previous.meters)candidateSet.set(candidate.uid,candidate);
+    }
+    const available=[...candidateSet.values()].sort((a,b)=>a.uid===anchorId?-1:b.uid===anchorId?1:a.meters-b.meters||a.uid.localeCompare(b.uid));
+    return {...group,candidates:available,defaultPlaceId:unanimous?anchorId:'',
+      suggestedPlaceId:anchorId,disputed:!unanimous};
   }).sort((a,b)=>b.rows.length-a.rows.length||a.key.localeCompare(b.key));
 }
 
@@ -151,7 +165,7 @@ export function selectedTimelineArticleUpdates(groups,groupChoices={},itemChoice
     const groupPlaceId=Object.prototype.hasOwnProperty.call(groupChoices,group.key)
       ?groupChoices[group.key]:group.defaultPlaceId;
     for(const row of group.rows||[]){
-      if(excluded[row.uid])continue;
+      if(excluded[row.uid]||row.existingPlaceId)continue;
       const placeId=itemChoices[row.uid]||groupPlaceId;
       if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))continue;
       if(row.existingPlaceId&&row.existingPlaceId!==placeId)continue;
