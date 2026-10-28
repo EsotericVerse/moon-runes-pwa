@@ -1,11 +1,12 @@
 'use client';
 
-import {useMemo,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import {dbAuthClient} from './db-client.mjs';
 import {readAllTraceAnchors} from '../modular/features/trace/trace-data';
 import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {TIMELINE_IO} from './query-batch-size.mjs';
+import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession} from './timeline-review-session.mjs';
 import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces} from './timeline-place-matcher.mjs';
 
 const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
@@ -28,9 +29,48 @@ export default function TimelinePlaceManager({scopeId}){
   const [notice,setNotice]=useState('');
   const [writeProgress,setWriteProgress]=useState(null);
   const [completedCount,setCompletedCount]=useState(0);
+  const [sessionEnabled,setSessionEnabled]=useState(false);
+  const [sessionReady,setSessionReady]=useState(false);
+  const [sessionOwner,setSessionOwner]=useState('');
+  const [sessionWarning,setSessionWarning]=useState('');
   const runRef=useRef(0);
   const fileRef=useRef(null);
   const cache=useResourceCache();
+  useEffect(()=>{
+    let active=true;
+    dbAuthClient.auth.getUser().then(({data})=>{
+      if(!active)return;
+      const owner=data?.user?.id||'';
+      const snapshot=owner?loadTimelineReviewSession(sessionStorage,{scopeId,owner}):null;
+      setSessionOwner(owner);
+      if(snapshot){
+        setAnalysis(snapshot.analysis);
+        setGroupChoices(snapshot.groupChoices||{});
+        setItemChoices(snapshot.itemChoices||{});
+        setExcluded(snapshot.excluded||{});
+        setCompletedCount(snapshot.completedCount||0);
+        setSessionEnabled(true);
+        setNotice('已恢復本分頁暫存的審查結果，請確認地點後再寫入。');
+      }
+      setSessionReady(true);
+    }).catch(()=>{if(active)setSessionReady(true);});
+    return ()=>{active=false;};
+  },[scopeId]);
+  useEffect(()=>{
+    if(!sessionReady)return;
+    if(!sessionEnabled){clearTimelineReviewSession(sessionStorage,scopeId);return;}
+    if(!sessionOwner||!analysis)return;
+    const save=setTimeout(()=>{
+      try{
+        saveTimelineReviewSession(sessionStorage,{scopeId,owner:sessionOwner,analysis,
+          groupChoices,itemChoices,excluded,completedCount});
+        setSessionWarning('');
+      }catch{
+        setSessionWarning('本次資料超過瀏覽器暫存容量，重新整理仍須重新比對；原始 Timeline 不會上傳。');
+      }
+    },400);
+    return ()=>clearTimeout(save);
+  },[scopeId,sessionReady,sessionEnabled,sessionOwner,analysis,groupChoices,itemChoices,excluded,completedCount]);
   const enabled=['lo3rwang','lrunes'].includes(scopeId);
   const anchorQuery=useAsyncResource(['timeline-place-anchors-owner',scopeId],()=>{
     return readAllTraceAnchors(scopeId,{includeHidden:true});
@@ -40,6 +80,8 @@ export default function TimelinePlaceManager({scopeId}){
     &&row.address.every(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))),[anchorQuery.data]);
   function reset(){
     runRef.current++;
+    clearTimelineReviewSession(sessionStorage,scopeId);
+    setSessionEnabled(false);setSessionWarning('');
     setSelectedFile(null);setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
     if(fileRef.current)fileRef.current.value='';
   }
@@ -170,7 +212,7 @@ export default function TimelinePlaceManager({scopeId}){
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
           onChange={e=>{const file=e.currentTarget.files?.[0]||null;
-            runRef.current++;setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
+            runRef.current++;clearTimelineReviewSession(sessionStorage,scopeId);setSessionEnabled(false);setSessionWarning('');setAnalysis(null);setGroupChoices({});setItemChoices({});setExcluded({});setGroupPages({});setProgress(null);setNotice('');setPage(0);setWriteProgress(null);setCompletedCount(0);
             setSelectedFile(file);
           }}/>
       </label>
@@ -195,6 +237,12 @@ export default function TimelinePlaceManager({scopeId}){
         同座標審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
         已有 source_place 的文章不列入也不會更新。</p>
+      <label className="loc-timeline-review-cache">
+        <input type="checkbox" checked={sessionEnabled} disabled={!sessionReady||!sessionOwner||writing}
+          onChange={e=>setSessionEnabled(e.target.checked)}/>
+        本分頁暫存審查進度（重新整理免重算；僅本機保存預覽，不保存原始 JSON）
+      </label>
+      {sessionWarning?<p className="scope-status scope-error" role="alert">{sessionWarning}</p>:null}
       <div className="loc-timeline-review-action" role="region" aria-label="Timeline 批次寫入">
         <div className="loc-timeline-review-action__summary" role="status" aria-live="polite">
           <strong>{writing?'正在寫入資料庫':pendingCount?'分析完成 · 尚未全部寫入':'已處理完成'}</strong>
