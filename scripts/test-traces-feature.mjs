@@ -267,3 +267,21 @@ test('public guest can preview exactly two map points without any mutation API',
  assert.match(publicPage,/selectedRouteUid=\{twoPointDemo\?/);
  assert.doesNotMatch(publicPage,/addTraceMap|updateTraceMap|deleteTraceMap/);
 });
+
+test('Trace only loads article content after a map anchor click and displays report inside map',()=>{
+  const page=read('app/modular/features/Trace.jsx');
+  const map=read('app/modular/features/trace/TraceMap.jsx');
+  const engine=read('app/modular/features/trace/trace-map-engine.js');
+  const styles=read('app/styles/features.css');
+  assert.match(page,/const reportPlace=twoPointDemo\?null:\(selectedAvailable\?selectedPlace:null\)/);
+  assert.match(page,/<TraceMap publicTrace floatingControls=\{floatingControls\}/);
+  assert.match(page,/\{reportPlace\?<div className="loc-trace-float-report"/);
+  assert.match(page,/onClick=\{\(\)=>setSelectedPlace\(null\)\}>×<\/button>/);
+  assert.match(page,/<TracePlaceResults key=\{reportPlace\.source_scope/);
+  assert.doesNotMatch(page,/reportTopRef|scrollIntoView|setMapOnly|!mapOnly&&reportPlace/);
+  assert.match(map,/publicTrace&&children\?<div className="loc-trace-floating-content"/);
+  assert.match(map,/showAnchorPopup:!publicTrace/);
+  assert.match(engine,/if\(showAnchorPopup\)new Popup/);
+  assert.match(styles,/\.loc-trace-map-shell\.is-public-trace>\.loc-trace-map-frame/);
+  assert.match(styles,/calc\(100dvh - 8rem\)/);
+});

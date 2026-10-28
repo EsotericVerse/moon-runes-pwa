@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 import ScopeLink from '../ScopeLink';
@@ -30,9 +30,6 @@ const TracePlaceResults=dynamic(()=>import('./trace/TracePlaceResults'),{
 export default function Trace({scopeId='loc'}){
   const supported=TRACE_SCOPES.includes(scopeId);
   const [selectedPlace,setSelectedPlace]=useState(null);
-  const reportTopRef=useRef(null);
-  const [scrollRequest,setScrollRequest]=useState(0);
-  const [mapOnly,setMapOnly]=useState(false);
   const [twoPointDemo,setTwoPointDemo]=useState(false);
   const [demoStopIds,setDemoStopIds]=useState([]);
   // /trace is a public index for all published Scope Frames. Prefer LOC
@@ -43,7 +40,6 @@ export default function Trace({scopeId='loc'}){
   const [routeListOpen]=useState(true);
   const [currentTraceChoice,setCurrentTraceChoice]=useState('auto');
   const [reportTab,setReportTab]=useState('articles');
-  const [reportSettingsOpen,setReportSettingsOpen]=useState(false);
   // Historical Frames should not default to hiding older check-in articles.
   const [timeWindow,setTimeWindow]=useState('all');
   const [customStart,setCustomStart]=useState('');
@@ -56,10 +52,8 @@ export default function Trace({scopeId='loc'}){
   const choosePlace=anchor=>{
     if(!anchor?.uid)return;
     // The map's selected anchor is a Frame drill-down, not a Search navigation.
-    setMapOnly(false);
     setReportTab('articles');
     setSelectedPlace(anchor);
-    setScrollRequest(value=>value+1);
   };
 
 
@@ -140,32 +134,10 @@ export default function Trace({scopeId='loc'}){
   const selectedAvailable=selectedPlace&&(selectedPlace.trace_type!=='space_anchor'
     ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
     :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
-  // A Frame is the spatial context. Its article/culture/statistics panel
-  // appears below the map without an extra click or a search-page route.
-  const reportPlace=twoPointDemo?null:
-    (selectedAvailable?selectedPlace:(currentMap&&spatialData?.maps.length?currentMap:null));
-  // On phones, point selection reveals the existing in-page report area,
-  // which shows its Loading state while Galaxy metadata is fetched.
-  useEffect(()=>{
-    if(!scrollRequest||!reportPlace||mapOnly)return;
-    if(window.matchMedia?.('(max-width: 720px)')?.matches){
-      reportTopRef.current?.scrollIntoView({
-        behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',
-        block:'start'
-      });
-    }
-  },[scrollRequest,reportPlace,mapOnly]);
+  const reportPlace=twoPointDemo?null:(selectedAvailable?selectedPlace:null);
 
-  return <FeaturePage featureId="trace">
-    <div className="scope-stat-controls" role="group" aria-label="痕跡選擇與展示模式">
-      <button type="button" className="loc-button" aria-pressed={mapOnly}
-        onClick={()=>setMapOnly(value=>!value)}>
-        {mapOnly?'返回完整痕跡操作':'純地圖展示（收合其他區域）'}
-      </button>
-      {supported?<button type="button" className="loc-button" aria-pressed={twoPointDemo}
-        onClick={()=>{setTwoPointDemo(value=>!value);setDemoStopIds([]);setSelectedPlace(null);}}>
-        {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
-      </button>:null}
+  const floatingControls=<>
+    <div className="loc-trace-float-choices">
       {supported&&scopeId==='loc'?<label>
         <span>作品範圍</span>
         <select className="scope-select" value={locPeriodScope}
@@ -188,10 +160,19 @@ export default function Trace({scopeId='loc'}){
           <option value="all">全部定錨點{!maps.length?'（無路線，自動顯示）':'（手動載入）'}</option>
         </select>
       </label>:null}
+      <details className="loc-trace-more-controls">
+        <summary>更多操作</summary>
+        <div className="loc-trace-more-actions">
+      {supported?<button type="button" className="loc-button" aria-pressed={twoPointDemo}
+        onClick={()=>{setTwoPointDemo(value=>!value);setDemoStopIds([]);setSelectedPlace(null);}}>
+        {twoPointDemo?'結束兩點試玩':'兩點路線試玩（不儲存）'}
+      </button>:null}
       {currentMap&&routeListOpen?<ScopeLink className="loc-button"
         href={navigationHref(periodScopeId,'manage')+'?section=traceMap&frame='+encodeURIComponent(currentMap.uid)}>
         編輯目前痕跡圖
       </ScopeLink>:null}
+        </div>
+      </details>
     </div>
     {supported&&traceIndex.isPending?<p className="scope-status" role="status">正在載入痕跡列表…</p>:null}
     {supported&&traceIndex.error?<p className="scope-status scope-error" role="alert">
@@ -208,7 +189,7 @@ export default function Trace({scopeId='loc'}){
         :'尚未建立路線圖或痕跡圖，也沒有已儲存的空間定錨點。'}
     </p>:null}
 
-    {twoPointDemo?<div className="scope-stat-controls" role="group" aria-label="兩點路線試玩">
+    {twoPointDemo?<div className="loc-trace-demo-message" role="group" aria-label="兩點路線試玩">
       <p className="scope-status" role="status" aria-live="polite">
         {demoRoute?'已選兩點：'+demoStopIds.map(uid=>spatialData?.anchors.find(row=>row.uid===uid)?.title||uid).join(' → ')+'。僅供預覽，不會儲存。':
           demoStopIds.length===1?'已選起點：'+(spatialData?.anchors.find(row=>row.uid===demoStopIds[0])?.title||demoStopIds[0])+'。請再點地圖上的第二個定錨點。':
@@ -218,24 +199,27 @@ export default function Trace({scopeId='loc'}){
         清除並重新選兩點
       </button>
     </div>:null}
-    <TraceMap mapOnly={mapOnly} spatialData={demoSpatialData} hideRoutePicker
+  </>;
+  return <FeaturePage featureId="trace">
+    <TraceMap publicTrace floatingControls={floatingControls} spatialData={demoSpatialData} hideRoutePicker
       selectedRouteUid={twoPointDemo?(demoRoute?.uid||''):(currentMap?.uid||'')}
-      onAnchorSelect={chooseMapAnchor}/>
-
-    {!mapOnly&&reportPlace?<div ref={reportTopRef} className="loc-trace-report-toolbar" role="group" aria-label="地圖下方目前地點內容框">
-      <strong>文章內容</strong>
-      <div className="scope-stat-controls" role="group" aria-label="地點呈現模式">
-        {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
-          <button type="button" key={item.value} className="loc-button"
-            aria-pressed={reportTab===item.value}
-            onClick={()=>setReportTab(item.value)}>{item.label}</button>)}
-        <button type="button" className="loc-button"
-          aria-expanded={reportSettingsOpen}
-          onClick={()=>setReportSettingsOpen(value=>!value)}>設定</button>
-        {selectedPlace?<button type="button" className="loc-button"
-          onClick={()=>setSelectedPlace(null)}>回到整張路線</button>:null}
-      </div>
-      {reportSettingsOpen?<div className="loc-trace-report-settings">
+      onAnchorSelect={chooseMapAnchor}>
+      {reportPlace?<div className="loc-trace-float-report" role="dialog" aria-modal="false"
+        aria-label={'地點內容：'+reportPlace.title}>
+        <div className="loc-trace-float-heading">
+          <strong>{reportPlace.title}</strong>
+          <button type="button" className="loc-button" aria-label="關閉地點內容"
+            onClick={()=>setSelectedPlace(null)}>×</button>
+        </div>
+        <div className="loc-trace-float-tabs" role="group" aria-label="地點呈現模式">
+          {[{value:'articles',label:'文章列表'},{value:'timeline',label:'文化'},{value:'statistics',label:'統計'}].map(item=>
+            <button type="button" key={item.value} className="loc-button"
+              aria-pressed={reportTab===item.value}
+              onClick={()=>setReportTab(item.value)}>{item.label}</button>)}
+        </div>
+        <details className="loc-trace-float-settings">
+          <summary>文章與圖表設定</summary>
+      <div className="loc-trace-report-settings">
         <label>時間
           <select className="scope-select" value={timeWindow} onChange={event=>setTimeWindow(event.target.value)}>
             <option value="3m">最近三個月</option>
@@ -267,13 +251,13 @@ export default function Trace({scopeId='loc'}){
           </select>
         </label>
         <p className="scope-status">來源對應作品的 source_name（例如 Threads）；媒體類型對應 galaxy_media.media_type。兩者可交叉篩選，三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
+        </div>
+        </details>
+        <TracePlaceResults key={reportPlace.source_scope+':'+reportPlace.uid} place={reportPlace}
+          anchors={spatialData?.anchors||[]} maps={spatialData?.maps||[]} scopeId={periodScopeId}
+          tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>
+
       </div>:null}
-    </div>:null}
-
-
-
-    {!mapOnly&&reportPlace?<TracePlaceResults place={reportPlace}
-      anchors={spatialData?.anchors||[]} maps={spatialData?.maps||[]} scopeId={periodScopeId}
-      tab={reportTab} sourceName={sourceName} mediaType={mediaType} dateRange={dateRange}/>:null}
+    </TraceMap>
   </FeaturePage>;
 }

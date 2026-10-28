@@ -70,7 +70,7 @@ function routeGeometry(coordinates){
   }]};
 }
 
-export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,anchors=[]}={}){
+export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLocationPick=null,onAnchorSelect=null,anchors=[],showAnchorPopup=true}={}){
   if(!container)throw new Error('找不到地圖容器。');
   const controller=new AbortController();
   let removed=false;
@@ -218,7 +218,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     else centerIfFar(lng,lat);
     if(canPickLocation)pickLocation(lng,lat,name);
     else {pickedPosition={lng,lat};}
-    if(!canPickLocation)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
+    if(!canPickLocation&&showAnchorPopup)new Popup({closeButton:true,offset:20}).setLngLat([lng,lat]).setText(name||'搜尋位置').addTo(map);
   }
   function overview(){
     if(removed||!loaded)return;
@@ -277,9 +277,9 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props.uid)
           &&String(row.source_scope||'')===String(props.source_scope||''));
         if(anchor){
-          centerIfFar(...spaceCoordinates(anchor));
+          if(showAnchorPopup)centerIfFar(...spaceCoordinates(anchor));
           onAnchorSelect(anchor);
-          new Popup({closeButton:true,offset:18})
+          if(showAnchorPopup)new Popup({closeButton:true,offset:18})
             .setLngLat(spaceCoordinates(anchor))
             .setText([anchor.title,anchor.postal_address].filter(Boolean).join(' · '))
             .addTo(map);
@@ -315,7 +315,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
         const anchor=savedAnchors.find(row=>String(row.uid)===String(props?.uid||'')
           &&String(row.source_scope||'')===String(props?.source_scope||''));
         if(!anchor)return;
-        centerIfFar(...spaceCoordinates(anchor));
+        if(showAnchorPopup)centerIfFar(...spaceCoordinates(anchor));
         onAnchorSelect(anchor);
       };
       for(const layer of ['loc-trace-user-route-stops','loc-trace-user-route-order']){

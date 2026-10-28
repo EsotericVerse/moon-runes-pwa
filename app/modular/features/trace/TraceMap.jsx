@@ -90,7 +90,7 @@ const STRINGS={
 };
 
 import {readAutocompleteCurrent,currentTop10} from '../../../loc/autocomplete-current.mjs';
-export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false}){
+export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRouteSelect=null,selectedRouteUid='',focusLocation=null,spatialData=null,mapOnly=false,hideRoutePicker=false,publicTrace=false,floatingControls=null,children=null}){
   const {locale}=useUiLocale();
   const copy=STRINGS[locale]||STRINGS['zh-Hant'];
   const containerRef=useRef(null);
@@ -151,6 +151,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     try{
       instance=createTraceMap(containerRef.current,{
         anchors:spatialData?.anchors||[],
+        showAnchorPopup:!publicTrace,
         onSelect:id=>{if(active)setSelected(id);},
         onAnchorSelect:!selectingLocation?anchor=>{if(active)anchorSelectRef.current?.(anchor);}:null,
         onLocationPick:selectingLocation?coords=>{if(active)locationPickRef.current?.(coords);}:null,
@@ -250,23 +251,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     }
   }
 
-  return <section className={"loc-card loc-trace-panel"+(mapOnly?" is-map-only":"")} aria-label={copy.label}>
-    <header className="loc-trace-intro">
-      <div>
-        <p className="loc-eyebrow">{copy.eyebrow}</p>
-        <h2>{copy.title}</h2>
-      </div>
-      <p className="scope-status">{selectingLocation?(
-        locale==='zh-Hans'?'点击地图选择空间定锚点，或点击下方车站示例；经纬度将自动填写。':
-        locale==='en'?'Click any map location or a sample station to fill in coordinates automatically.':
-        locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
-        '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
-      ):(onAnchorSelect&&spatialData?.anchors?.length?
-        '搜尋空間定錨點，或選擇已儲存的路線／痕跡；地圖顯示已核對的座標與路線，下方可查看文章報表。':
-        spatialData===null?'正在取得空間定錨點資料；如有錯誤請查看上方訊息。':
-        '目前沒有已儲存的空間定錨點；可在管理頁建立。')}</p>
-    </header>
-    {!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="空間定錨點自動完成搜尋">
+  const anchorSearch=!selectingLocation?<div className="loc-trace-hierarchy" role="group" aria-label="空間定錨點自動完成搜尋">
       <label>空間定錨點
         <input type="search" value={anchorQuery} className="scope-select"
           placeholder="輸入地點名稱或 UID，不限縣市"
@@ -295,8 +280,25 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         {!popularOpen&&anchorMatches.length===12?<p className="scope-status">顯示前 12 筆，可繼續輸入縮小範圍。</p>:null}
       </div>:null}
       <p className="scope-status">不限縣市；選取地點可查看文章。有真實座標才定位，沒有座標仍保留地點。</p>
-    </div>:null}
-    {!selectingLocation&&!hideRoutePicker&&savedMaps.length?<div className="loc-trace-saved-route-picker">
+    </div>:null;
+  return <section className={"loc-card loc-trace-panel"+(mapOnly?" is-map-only":"")+(publicTrace?" is-public-trace":"")} aria-label={copy.label}>
+    {!publicTrace?<header className="loc-trace-intro">
+      <div>
+        <p className="loc-eyebrow">{copy.eyebrow}</p>
+        <h2>{copy.title}</h2>
+      </div>
+      <p className="scope-status">{selectingLocation?(
+        locale==='zh-Hans'?'点击地图选择空间定锚点，或点击下方车站示例；经纬度将自动填写。':
+        locale==='en'?'Click any map location or a sample station to fill in coordinates automatically.':
+        locale==='ja'?'地図上の位置または駅の例をクリックすると、座標を自動入力します。':
+        '直接點地圖選取空間定錨點，或點下方車站快捷位置；經緯度會自動填入。'
+      ):(onAnchorSelect&&spatialData?.anchors?.length?
+        '搜尋空間定錨點，或選擇已儲存的路線／痕跡；地圖顯示已核對的座標與路線，下方可查看文章報表。':
+        spatialData===null?'正在取得空間定錨點資料；如有錯誤請查看上方訊息。':
+        '目前沒有已儲存的空間定錨點；可在管理頁建立。')}</p>
+    </header>:null}
+    {!publicTrace?anchorSearch:null}
+    {!publicTrace&&!selectingLocation&&!hideRoutePicker&&savedMaps.length?<div className="loc-trace-saved-route-picker">
       <label>痕跡圖（已儲存路線）
         <select className="scope-select" value={selectedRouteUid}
           onChange={event=>{
@@ -310,7 +312,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
       </label>
       <p className="scope-status">路線依 Queue 順序連線；痕跡各段獨立顯示，不要求連續，也不代表實際道路。</p>
     </div>:null}
-    <div className="loc-trace-controls" role="group" aria-label={copy.controls}>
+    {!publicTrace?<div className="loc-trace-controls" role="group" aria-label={copy.controls}>
       <button type="button" className="loc-button" onClick={()=>{mapRef.current?.overview();setSelected('');}} disabled={!ready}>
         {spatialData?.anchors?.some(anchor=>anchor.trace_type==='space_anchor'&&Boolean(spaceCoordinates(anchor)))
           ?copy.all:(selectingLocation?copy.examples:copy.all)}
@@ -323,23 +325,34 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         disabled={!ready||routeBusy} onClick={toggleRoute}>
         {routeBusy?copy.busy:routeVisible?copy.hide:copy.show}
       </button></>:null}
-    </div>
-    <div className="loc-trace-map-shell">
+    </div>:null}
+    <div className={"loc-trace-map-shell"+(publicTrace?" is-public-trace":"")}>
+      {publicTrace?<div className="loc-trace-float-toolbar">
+        {floatingControls}
+        <details className="loc-trace-float-search">
+          <summary>搜尋地點</summary>
+          {anchorSearch}
+          <button type="button" className="loc-button" disabled={!ready}
+            onClick={()=>mapRef.current?.overview()}>全部定錨點</button>
+        </details>
+      </div>:null}
       {!selectingLocation?<button type="button" className="loc-button loc-trace-origin-button"
         disabled={!ready} onClick={()=>mapRef.current?.goOrigin()}>
         回原點 · 板橋車站
       </button>:null}
       <div className={'loc-trace-map-frame'+(expandedMap?' is-mobile-expanded':'')} ref={containerRef}
         role="application" aria-label={selectingLocation?copy.map:'空間定錨點與已儲存痕跡圖地圖'}/>
+      {publicTrace&&children?<div className="loc-trace-floating-content">{children}</div>:null}
+      {publicTrace&&status!=='ready'?<p className="loc-trace-float-map-status" role="status">{copy.status[status]||copy.status.loading}</p>:null}
     </div>
-    <div className="loc-trace-mobile-map-tools">
+    {!publicTrace?<div className="loc-trace-mobile-map-tools">
       <button type="button" className="loc-button" aria-pressed={expandedMap}
         onClick={()=>setExpandedMap(value=>!value)}>
         {expandedMap?copy.collapseMap:copy.expandMap}
       </button>
       <span className="scope-status">{copy.mobileGestureHint}</span>
-    </div>
-    <div className="loc-trace-resize-tools">
+    </div>:null}
+    {!publicTrace?<div className="loc-trace-resize-tools">
       <span className="scope-status loc-trace-resize-hint">{copy.resizeHint}</span>
       <button type="button" className="loc-trace-resize-grip"
         aria-label={copy.resizeHint} title={copy.resizeHint}
@@ -348,11 +361,11 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         onKeyDown={keyboardMapResize}>
         <span aria-hidden="true">◢</span>
       </button>
-    </div>
-    <p className="scope-status loc-trace-map-status" role="status" aria-live="polite">
+    </div>:null}
+    {!publicTrace?<p className="scope-status loc-trace-map-status" role="status" aria-live="polite">
       {status==='ready'&&!selectingLocation?'地圖已就緒，可直接搜尋空間定錨點。':copy.status[status]||copy.status.loading}
-    </p>
-    <p className="scope-status loc-trace-map-note">{selectingLocation?copy.note:
-      '空間定錨點取自已儲存的真實座標；痕跡圖顯示站點順序與相鄰站點連線，不代表實際行駛或步行路線。'}</p>
+    </p>:null}
+    {!publicTrace?<p className="scope-status loc-trace-map-note">{selectingLocation?copy.note:
+      '空間定錨點取自已儲存的真實座標；痕跡圖顯示站點順序與相鄰站點連線，不代表實際行駛或步行路線。'}</p>:null}
   </section>;
 }
