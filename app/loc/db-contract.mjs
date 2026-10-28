@@ -173,7 +173,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let count=0;
     let changedCount=0;
     let completedBatches=0;
-    let nextPauseAt=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
+    let nextPauseAt=MAX_ROWS;
     const estimateBatches=()=>completedBatches+
       Math.ceil(Math.max(0,rows.length-count)/batchSize);
     async function coolDown(retrying){
@@ -209,7 +209,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         completedBatches,estimatedBatches:estimateBatches(),batchSize,
         lastBatchSize:batch.length});
       if(offset<rows.length&&count>=nextPauseAt){
-        nextPauseAt+=KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL;
+        nextPauseAt+=MAX_ROWS;
         await coolDown(false);
       }
     }
