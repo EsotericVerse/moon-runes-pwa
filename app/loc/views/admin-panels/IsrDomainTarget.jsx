@@ -1,27 +1,55 @@
 'use client';
 
+import {useEffect,useState} from 'react';
 import {CACHE_POLICY} from '../../cache-policy.config.mjs';
-import {CACHE_MODE_OPTIONS} from '../../cache-mode-client.mjs';
+import {CACHE_MODE_OPTIONS,browserCacheChoice,setBrowserCacheChoice,resetBrowserCacheChoice} from '../../cache-mode-client.mjs';
 
-// Read-only view. Cache mode and ISR domains live in app/loc/cache-policy.config.mjs;
-// change them there and redeploy. This panel never writes to a database.
 export default function IsrDomainTarget(){
-  const {mode,provider,domains}=CACHE_POLICY;
-  const modeLabel=CACHE_MODE_OPTIONS.find(item=>item.value===mode)?.label||mode;
-  const selected=domains.find(item=>item.id===provider);
-  const isrActive=mode==='isr'&&Boolean(selected?.origin)&&Boolean(CACHE_POLICY.origin);
+  const [choice,setChoice]=useState({mode:CACHE_POLICY.mode,provider:CACHE_POLICY.provider});
+  const [notice,setNotice]=useState('');
+  useEffect(()=>{setChoice(browserCacheChoice());},[]);
+  const selected=CACHE_POLICY.domains.find(item=>item.id===choice.provider);
+  const serverEnabled=CACHE_POLICY.mode==='isr'&&Boolean(CACHE_POLICY.origin);
+  const update=next=>{
+    try{
+      setBrowserCacheChoice(next);
+      setChoice(next);
+      setNotice('已套用這台瀏覽器的快取設定。');
+    }catch(error){setNotice(String(error?.message||error));}
+  };
+  const restore=()=>{
+    try{
+      resetBrowserCacheChoice();
+      setChoice({mode:CACHE_POLICY.mode,provider:CACHE_POLICY.provider});
+      setNotice('已恢復全站預設。');
+    }catch(error){setNotice(String(error?.message||error));}
+  };
   return <section className="loc-card admin-workspace">
     <h2>快取</h2>
-    <p className="scope-status">設定位於 app/loc/cache-policy.config.mjs。修改後需重新部署才會生效。</p>
-    <dl className="scope-management-fields">
-      <dt>快取模式</dt>
-      <dd>{modeLabel}（{mode}）</dd>
-      <dt>ISR 狀態</dt>
-      <dd>{isrActive?`開啟，使用 ${selected.label}（${selected.origin}）`:'未開啟（origin 未設定）'}</dd>
-    </dl>
-    <h3>ISR 網域（{domains.length}）</h3>
-    <ul className="scope-status">
-      {domains.map(item=><li key={item.id}>{item.label}：{item.origin}</li>)}
-    </ul>
+    <p className="scope-status">這裡可即時切換目前瀏覽器的快取模式，不寫入資料庫。全站預設仍由 JS 設定檔控制，需部署才會改變其他裝置。</p>
+    <div className="scope-management-fields">
+      <label>快取模式
+        <select className="scope-select" aria-label="快取模式" value={choice.mode}
+          onChange={event=>update({...choice,mode:event.target.value})}>
+          {CACHE_MODE_OPTIONS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+        </select>
+      </label>
+      <label>ISR 網域
+        <select className="scope-select" aria-label="ISR 網域" value={choice.provider}
+          onChange={event=>update({...choice,provider:event.target.value})}>
+          {CACHE_POLICY.domains.map(item=><option key={item.id} value={item.id}>{item.label} · {item.origin}</option>)}
+        </select>
+      </label>
+      <p className="scope-status" role="status">
+        本機：{CACHE_MODE_OPTIONS.find(item=>item.value===choice.mode)?.label||choice.mode}
+        {choice.mode==='isr'?' · '+(selected?.origin||'未設定'):''}
+      </p>
+      <p className="scope-status">
+        全站 ISR：{serverEnabled?'已啟用':'尚未啟用'}。
+        {choice.mode==='isr'&&!serverEnabled?'選擇 ISR 只會讓這台瀏覽器嘗試，服務端未啟用時會回退原資料來源。':''}
+      </p>
+      <button type="button" className="loc-button" onClick={restore}>恢復全站預設</button>
+      {notice?<p className="scope-status" role="status">{notice}</p>:null}
+    </div>
   </section>;
 }
