@@ -9,7 +9,7 @@ function extractBatchMethod(stubs){
   const start=contract.indexOf('  async function applyKeywordClassification(');
   const end=contract.indexOf('\n  // Manually-triggered full wipe',start);
   assert.ok(start>=0&&end>start,'Keyword classification method must exist');
-  const deps={KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL:MAX_ROWS,...stubs,keywordClassificationWrite:stubs.keywordClassificationWriteUnchecked};
+  const deps={MAX_ROWS,KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL:MAX_ROWS,...stubs,keywordClassificationWrite:stubs.keywordClassificationWriteUnchecked};
   return new Function(...Object.keys(deps),
     contract.slice(start,end)+'\nreturn applyKeywordClassification;')(...Object.values(deps));
 }
@@ -165,8 +165,8 @@ test('no full UID sweep or 144k-UID sync payload in cloud and local',()=>{
   assert.ok(start>=0&&end>start);
   assert.doesNotMatch(runner,/columns:'uid',\s*filters:\[\{column:'statistics_able'/);
   assert.match(runner,/eligibleDocumentCount/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_BATCH_SIZE=MAX_ROWS/);
-  assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE=MAX_ROWS/);
+  assert.match(contract,/MAX_ROWS as KEYWORD_CLASSIFICATION_BATCH_SIZE/);
+  assert.match(contract,/MAX_ROWS as KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE/);
   assert.match(contract,/KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS=1000/);
   assert.match(local,/p_rows\?\.scopeBased===true/);
   assert.match(migration,/g\.statistics_able is distinct from true/);
