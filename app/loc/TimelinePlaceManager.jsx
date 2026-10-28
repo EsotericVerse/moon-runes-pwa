@@ -7,7 +7,7 @@ import {useAsyncResource,useResourceCache} from './use-async-resource';
 import {revalidateServerMetadata} from './scope-data';
 import {TIMELINE_IO} from './query-batch-size.mjs';
 import {saveTimelineReviewSession,loadTimelineReviewSession,clearTimelineReviewSession} from './timeline-review-session.mjs';
-import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces} from './timeline-place-matcher.mjs';
+import {timelineVisitWindows,matchTimelineWindows,accumulateTimelineArticles,groupTimelineMissingPlaces,selectedTimelineArticleUpdates} from './timeline-place-matcher.mjs';
 
 const {windowBatch:WINDOW_BATCH,previewPage:RESULT_PAGE,writeBatch:WRITE_BATCH}=TIMELINE_IO;
 const friendlyError=e=>String(e?.message||e||'未知錯誤');
@@ -143,15 +143,9 @@ export default function TimelinePlaceManager({scopeId}){
   }
   const ready=analysis?.ready||[];
   const reviewGroups=useMemo(()=>groupTimelineMissingPlaces(analysis),[analysis]);
-  // Every article starts checked; the group and per-article selectors decide its place.
-  const selectedUpdates=useMemo(()=>reviewGroups.flatMap(group=>group.rows.flatMap(row=>{
-    if(excluded[row.uid])return [];
-    const placeId=itemChoices[row.uid]||(groupChoices[group.key]??group.defaultPlaceId);
-    if(!placeId||!row.candidates.some(candidate=>candidate.uid===placeId))return [];
-    // A pre-existing place_id is authoritative. Never overwrite a different ID.
-    if(row.existingPlaceId&&row.existingPlaceId!==placeId)return [];
-    return [{uid:row.uid,place_id:placeId,expected_place_id:row.existingPlaceId||null,manual:true}];
-  })),[reviewGroups,groupChoices,itemChoices,excluded]);
+  const selectedUpdates=useMemo(
+    ()=>selectedTimelineArticleUpdates(reviewGroups,groupChoices,itemChoices,excluded),
+    [reviewGroups,groupChoices,itemChoices,excluded]);
   const canWrite=selectedUpdates.length>0;
   const pendingCount=ready.length+(analysis?.disputes?.length||0);
   const unreadyCount=Math.max(0,pendingCount-selectedUpdates.length);
@@ -254,7 +248,7 @@ export default function TimelinePlaceManager({scopeId}){
       </div>
       {reviewGroups.length>0?<details className="loc-timeline-review-groups">
         <summary>檢查或修改地點 · {reviewGroups.length.toLocaleString()} 組（點此展開）</summary>
-        <p className="scope-status">有樓層或候選地點歧義時，先在該組選定地點；不必逐篇設定同一個地點。</p>
+        <p className="scope-status">逐組選地點即可自動套用到該組所有可寫入文章；其他組的選擇不會改變。只有需要分開樓層時才逐篇選擇。</p>
         {reviewGroups.slice(reviewPage*10,(reviewPage+1)*10).map(group=>{
           const chosen=groupChoices[group.key]??group.defaultPlaceId;
           const groupPage=groupPages[group.key]||0;
@@ -263,13 +257,20 @@ export default function TimelinePlaceManager({scopeId}){
             <summary>{group.candidates.find(candidate=>candidate.uid===chosen)?.title||'待選地點'} · {group.rows.length.toLocaleString()} 篇 · 已勾 {checkedCount.toLocaleString()} 篇 · {group.key.startsWith('point:')?'同座標':'需逐篇確認'}</summary>
             <div className="scope-stat-controls">
               <button type="button" className="loc-button" disabled={writing||!chosen}
-                onClick={()=>selectGroup(group,true,chosen)}>選定地點並勾選可寫入文章</button>
+                onClick={()=>selectGroup(group,true,chosen)}>全選這組可寫入文章</button>
               <button type="button" className="loc-button" disabled={writing}
                 onClick={()=>selectGroup(group,false,chosen)}>取消這組全選</button>
             </div>
             <label>這組文章預設的定錨點（可逐篇覆蓋）
               <select className="scope-select" disabled={writing} value={chosen}
-                onChange={e=>setGroupChoices(current=>({...current,[group.key]:e.target.value}))}>
+                onChange={e=>{
+                  setGroupChoices(current=>({...current,[group.key]:e.target.value}));
+                  setItemChoices(current=>{
+                    const next={...current};
+                    for(const row of group.rows)delete next[row.uid];
+                    return next;
+                  });
+                }}>
                 <option value="">尚未選擇 · 全部暫不寫入</option>
                 {group.candidates.map(c=><option key={c.uid} value={c.uid}>{c.title} · 約 {c.meters} 公尺（{c.uid}）</option>)}
               </select>
