@@ -21,7 +21,7 @@ import {comparableImportText,dedupeIncomingImport,findExistingImportDuplicates} 
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,writeImportBatches} from './import-batch.mjs';
-import {MAX_ROWS} from './query-batch-size.mjs';
+import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
@@ -157,6 +157,26 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
   </details>;
 }
 
+// A GET .in() filter has a URL budget, unlike POST imports.
+// Count and page each query until all matched rows are returned.
+async function readExistingByIds(table,columns,column,values,message){
+  const records=[],orderColumn=table.endsWith('_media')?'media_id':'uid';
+  for(const batch of urlSafeInBatches(values,column)){
+    let offset=0;
+    for(;;){
+      const {data,error,count}=await dbAuthRelation(table)
+        .select(columns,{count:'exact'}).in(column,batch)
+        .order(orderColumn,{ascending:true}).range(offset,offset+MAX_ROWS-1);
+      if(error)throw new Error(error.message||message);
+      const rows=data||[];
+      records.push(...rows);
+      offset+=rows.length;
+      if(!rows.length||(count!=null&&offset>=Number(count)))break;
+    }
+  }
+  return records;
+}
+
 // Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
 async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,t}={}){
@@ -169,26 +189,12 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }).concat(mediaOnly);
       const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
       const existingMedia=[];
-      for(let offset=0;offset<owners.length;offset+=MAX_ROWS){
-        const batch=owners.slice(offset,offset+MAX_ROWS);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('galaxy_link',batch);
-        if(error)throw new Error(error.message||t('uiExtra.importUI.existingMediaFailed'));
-        existingMedia.push(...(data||[]));
-      }
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','galaxy_link',owners,t('uiExtra.importUI.existingMediaFailed')));
       const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
-      for(let offset=0;offset<explicitIds.length;offset+=MAX_ROWS){
-        const batch=explicitIds.slice(offset,offset+MAX_ROWS);
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('media_id',batch);
-        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaIdCompareFailed'));
-        existingMedia.push(...(data||[]));
-      }
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','media_id',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
       // No full-table scan; unlinked media is matched only by explicit imported URLs.
       const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
-      for(let offset=0;offset<unlinkedUrls.length;offset+=MAX_ROWS){
-        const {data,error}=await dbAuthRelation(galaxyMedia).select('media_id,galaxy_link,url,media_type').in('url',unlinkedUrls.slice(offset,offset+MAX_ROWS));
-        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaUrlCompareFailed'));
-        existingMedia.push(...(data||[]));
-      }
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','url',unlinkedUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
       const mediaKey=row=>{
         const url=String(row.url||'').trim();
         return url?JSON.stringify([String(row.galaxy_link||'').trim(),url,String(row.media_type||'').trim()])
@@ -232,15 +238,11 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }
       let connected=0;
       const linkedUids=[...related.keys()];
-      for(let offset=0;offset<linkedUids.length;offset+=MAX_ROWS){
-        const {data,error}=await dbAuthRelation(galaxy).select('uid,media_link').in('uid',linkedUids.slice(offset,offset+MAX_ROWS));
-        if(error)throw new Error(error.message||t('uiExtra.importUI.mediaLinkReadFailed'));
-        for(const row of data||[]){
+      for(const row of await readExistingByIds(galaxy,'uid,media_link','uid',linkedUids,t('uiExtra.importUI.mediaLinkReadFailed'))){
           const uid=String(row.uid||'').trim();
           const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
           const after=[...new Set([...prior,...(related.get(uid)||[])])];
           if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
-        }
       }
 
   return {created:createMedia.length,connected,resolvedIds};
@@ -416,12 +418,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingUid=new Set();
-      for(let offset=0;offset<unique.length;offset+=MAX_ROWS){
-        const ids=unique.slice(offset,offset+MAX_ROWS).map(record=>record.uid);
-        const {data,error}=await dbAuthRelation(galaxy).select('uid').in('uid',ids);
-        if(error)throw new Error(error.message||t('uiExtra.importUI.existingUidFailed'));
-        for(const row of data||[])existingUid.add(String(row.uid||'').trim());
-      }
+      for(const row of await readExistingByIds(galaxy,'uid','uid',unique.map(record=>record.uid),t('uiExtra.importUI.existingUidFailed')))
+        existingUid.add(String(row.uid||'').trim());
       // Exact-UID matches need no second database search at all.
       const toCompare=unique.filter(record=>!existingUid.has(record.uid));
       const existingBySameSecond=await findExistingImportDuplicates(toCompare,{
