@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {archiveAttachmentReferences,archiveMediaUuid,createArchiveEvidenceCollector,prepareArchiveMedia} from '../app/loc/archive-media-evidence.mjs';
+import {archiveAttachmentReferences,archiveMediaUid,createArchiveEvidenceCollector,prepareArchiveMedia} from '../app/loc/archive-media-evidence.mjs';
 
 test('Facebook, Threads, Instagram nested attachment URLs are preserved',()=>{
   const samples=[
@@ -40,7 +40,7 @@ test('EXIF-only local ZIP photograph is kept without inventing a public URL or p
   assert.equal(plan.media.length,0);
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.exif[0].media_id,null);
+  assert.equal(plan.exif[0].media_uid,null);
   assert.equal(plan.exif[0].latitude,25.03);
 });
 test('Only an unambiguous full relative path can associate an article with ZIP media',()=>{
@@ -66,7 +66,7 @@ test('An EXIF image with no public URL is GPS-only, not a fake Galaxy Media row'
   assert.equal(plan.media.length,0);
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.exif[0].media_id,null);
+  assert.equal(plan.exif[0].media_uid,null);
   assert.equal(plan.exif[0].latitude,25.033);
 });
 test('ZIP images with neither URL nor EXIF are not imported as media',()=>{
@@ -78,11 +78,11 @@ test('ZIP images with neither URL nor EXIF are not imported as media',()=>{
   assert.equal(plan.media.length,0);
   assert.equal(plan.exif.length,0);
 });
-test('Archive media UUID is stable for idempotent re-import',()=>{
-  const a=archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/a.jpg');
-  assert.match(a,/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i);
-  assert.equal(a,archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/a.jpg'));
-  assert.notEqual(a,archiveMediaUuid('lo3rwang','fb.zip:100','facebook/img/b.jpg'));
+test('Archive media UID is stable for idempotent re-import',()=>{
+  const a=archiveMediaUid('lo3rwang','fb.zip:100','facebook/img/a.jpg');
+  assert.match(a,/^[A-Z0-9]{8}$/);
+  assert.equal(a,archiveMediaUid('lo3rwang','fb.zip:100','facebook/img/a.jpg'));
+  assert.notEqual(a,archiveMediaUid('lo3rwang','fb.zip:100','facebook/img/b.jpg'));
 });
 
 test('One ZIP image shared by two articles makes one media row and two links',()=>{
@@ -97,6 +97,6 @@ test('One ZIP image shared by two articles makes one media row and two links',()
   assert.equal(plan.media.length,1);
   assert.equal(plan.mediaLinks.length,2);
   assert.equal(new Set(plan.mediaLinks.map(v=>v.uid)).size,2);
-  assert.equal(new Set(plan.mediaLinks.map(v=>v.media_id)).size,1);
+  assert.equal(new Set(plan.mediaLinks.map(v=>v.media_uid)).size,1);
   assert.equal(plan.exif.length,1);
 });

@@ -45,9 +45,9 @@ const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{l
 const TraceBlocks=dynamic(()=>import('./TraceBlocks'),{loading:()=>null});
 
 
-const MEDIA_EDITOR_COLUMNS='media_id,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
-const MEDIA_ATTR_ORDER=['media_id','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
-const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='media_id',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
+const MEDIA_EDITOR_COLUMNS='uid,galaxy_link,source_place,media_type,title,url,meta_tags,createtime,rune_references';
+const MEDIA_ATTR_ORDER=['uid','galaxy_link','source_place','media_type','url','meta_tags','createtime','rune_references'];
+const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
 
@@ -113,8 +113,10 @@ function highlightSearchText(text='',query=''){
 function rowText(row){return Object.values(row||{}).filter(value=>typeof value==='string').join(' ')}
 function toResult(row,source,scopeId,copy=UI_COPY){
   const text=rowText(row);
-  const isGalaxy=Boolean(row.uid);
-  const isMedia=Boolean(row.media_id);
+  const isMedia=Boolean(row.uid&&(row.record_type==='galaxy_media'||
+    String(row.__table||'').endsWith('_media')||
+    (row.media_type&&Object.prototype.hasOwnProperty.call(row,'galaxy_link'))));
+  const isGalaxy=Boolean(row.uid)&&!isMedia;
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
@@ -129,13 +131,13 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   const body=row.style_keyword_tag?'':isMedia
     ?(mediaMetadata||(bodyField?workDisplayText(row[bodyField]):text))
     :(isGalaxy?Array.from(String(workDisplayText(row.summary||row.excerpt||title)||'').replace(/\s+/g,' ').trim()).slice(0,96).join(''):(bodyField?workDisplayText(row[bodyField]):text));
-  const identity=row.media_id||row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
+  const identity=row.uid||row.song_id||row.rune_id||row.record_id||row.resource_id||row.id;
   const scope=String(row.scope_id||scopeId||'').trim();
-  const resourceType=(row.uid)?'galaxy':row.media_id?'galaxy_media':'';
-  const resourceId=row.uid||row.media_id||'';
+  const resourceType=isGalaxy?'galaxy':isMedia?'galaxy_media':'';
+  const resourceId=row.uid||'';
   const editableTable=resourceType?String(row.__table||''):'';
   const editableIdColumn=resourceType
-    ?(resourceType==='galaxy'?'uid':'media_id')
+    ?(resourceType==='galaxy'?'uid':'uid')
     :'';
   const editResourceId=resourceId;
   const editableField=resourceType==='galaxy'?'content':resourceType==='galaxy_media'?'meta_tags':'';
@@ -625,7 +627,7 @@ export default function Search({managementMode=false}){
       if(!managementMode||!mediaScopeId||!canManageSearchScope(account,mediaScopeId))throw new Error(t('uiExtra.searchUI.mediaManageDenied'));
       const scopeData=account.scopeDataFor(mediaScopeId)||defaultScopeData(mediaScopeId);
       if(!scopeData?.galaxyMedia)throw new Error(UI_COPY.search.notFound);
-      const row=await selectPublicEditableRow(scopeData.galaxyMedia,'media_id',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
+      const row=await selectPublicEditableRow(scopeData.galaxyMedia,'uid',mediaId,MEDIA_EDITOR_COLUMNS,{authenticated:true});
       if(id!==searchId.current)return;
       if(!row)throw new Error(UI_COPY.search.notFound);
       const item=toResult({...row,scope_id:mediaScopeId,__table:scopeData.galaxyMedia},'Galaxy Media',mediaScopeId);
@@ -1188,7 +1190,7 @@ export default function Search({managementMode=false}){
         const editTarget={
           ...row,
           editableTable,
-          editableIdColumn:row.editableIdColumn||(row.resourceType==='galaxy'?'uid':row.resourceType==='galaxy_media'?'media_id':''),
+          editableIdColumn:row.editableIdColumn||(row.resourceType==='galaxy'?'uid':row.resourceType==='galaxy_media'?'uid':''),
           editResourceId:row.editResourceId||row.resourceId,
           editableField:row.editableField||(row.resourceType==='galaxy'?'content':row.resourceType==='galaxy_media'?'meta_tags':'')
         };

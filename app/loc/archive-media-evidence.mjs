@@ -145,7 +145,7 @@ export function createArchiveEvidenceCollector(){
   };
 }
 // A stable UUID prevents re-importing the same archive path into duplicate media.
-export function archiveMediaUuid(scopeId,archiveId,entryPath){
+export function archiveMediaUid(scopeId,archiveId,entryPath){
   const input=String(scopeId)+'\u0000'+String(archiveId)+'\u0000'+String(entryPath);
   const seeds=[2166136261,338855925,2654435761,2246822519];
   const hex=seeds.map((seed,i)=>{
@@ -153,28 +153,29 @@ export function archiveMediaUuid(scopeId,archiveId,entryPath){
     for(const ch of input){value=Math.imul(value^ch.codePointAt(0),i%2?2246822519:16777619);}
     return (value>>>0).toString(16).padStart(8,'0');
   }).join('');
-  return hex.slice(0,8)+'-'+hex.slice(8,12)+'-5'+hex.slice(13,16)+
+  const uuid=hex.slice(0,8)+'-'+hex.slice(8,12)+'-5'+hex.slice(13,16)+
     '-a'+hex.slice(17,20)+'-'+hex.slice(20,32);
+  return (BigInt('0x'+uuid.replaceAll('-',''))%(36n**8n)).toString(36).toUpperCase().padStart(8,'0');
 }
 export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
   const media=[],exif=[],mediaLinks=[];
   for(const entry of evidence){
-    const id=archiveMediaUuid(entry.scope_id,entry.archive_id,entry.entry_path);
+    const id=archiveMediaUid(entry.scope_id,entry.archive_id,entry.entry_path);
     const owners=(entry.galaxy_uids||[]).filter(uid=>knownUids.has(uid));
     const type=entry.media_type||archiveMediaType(entry.entry_path);
     const row={
-      media_id:id,media_type:type,url:publicUrl(entry.url),
+      uid:id,media_type:type,url:publicUrl(entry.url),
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
       meta_tags:null,createtime:null,source_place:null
     };
     const hasUrl=Boolean(row.url);
     if(hasUrl){
       media.push({...row,galaxy_link:owners[0]||null});
-      for(const uid of owners)mediaLinks.push({uid,media_id:id});
+      for(const uid of owners)mediaLinks.push({uid,media_uid:id});
     }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_id:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_uid:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });

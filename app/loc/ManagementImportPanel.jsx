@@ -79,7 +79,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     }
     const seenMediaKeys=new Set();
     mediaRecords=mediaRecords.filter(record=>{
-      const key=record.media_id?'id:'+record.media_id:(record.url?JSON.stringify([record.url,record.media_type,record.galaxy_link]):null);
+      const key=record.uid?'id:'+record.uid:(record.url?JSON.stringify([record.url,record.media_type,record.galaxy_link]):null);
       if(!key)return true;
       if(seenMediaKeys.has(key))return false;
       seenMediaKeys.add(key);return true;
@@ -90,10 +90,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     const type=String(value('media_type')||'').trim();
     const url=String(value('url')||'').trim();
     if(type){
-      const rawId=String(row.media_id||'').trim();
-      if(rawId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
+      const rawId=String(row.uid||'').trim().toUpperCase();
+      if(rawId&&!/^[A-Z0-9]{8}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
       return {record:null,error:'',mediaOnlyRecord:{
-        ...(rawId?{media_id:rawId}:{}),
+        ...(rawId?{uid:rawId}:{}),
         galaxy_link:String(value('galaxy_link')||'').trim()||null,
         source_place:sourcePlace||null,
         media_type:type,title:rawTitle||null,url:url||null,
@@ -159,7 +159,7 @@ function ImportFormatSettings({format,onChange,disabled=false,source='',onSource
 // A GET .in() filter has a URL budget, unlike POST imports.
 // Count and page each query until all matched rows are returned.
 async function readExistingByIds(table,columns,column,values,message){
-  const records=[],orderColumn=table.endsWith('_media')?'media_id':'uid';
+  const records=[],orderColumn=table.endsWith('_media')?'uid':'uid';
   for(const batch of urlSafeInBatches(values,column)){
     let offset=0;
     for(;;){
@@ -188,19 +188,19 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }).concat(mediaOnly);
       const owners=[...new Set(plans.map(record=>String(record.galaxy_link||'').trim()).filter(Boolean))];
       const existingMedia=[];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','galaxy_link',owners,t('uiExtra.importUI.existingMediaFailed')));
-      const explicitIds=[...new Set([...plans.map(record=>record.media_id).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','media_id',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','galaxy_link',owners,t('uiExtra.importUI.existingMediaFailed')));
+      const explicitIds=[...new Set([...plans.map(record=>record.uid).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
       // No full-table scan; unlinked media is matched only by explicit imported URLs.
       const unlinkedUrls=[...new Set(plans.filter(row=>!row.galaxy_link&&row.url).map(row=>row.url))];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'media_id,galaxy_link,url,media_type','url',unlinkedUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,galaxy_link,url,media_type','url',unlinkedUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
       const mediaKey=row=>{
         const url=String(row.url||'').trim();
         return url?JSON.stringify([String(row.galaxy_link||'').trim(),url,String(row.media_type||'').trim()])
-          :(row.media_id?'id:'+row.media_id:null);
+          :(row.uid?'id:'+row.uid:null);
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
-      const byId=new Map(existingMedia.map(row=>[String(row.media_id),row]));
+      const byId=new Map(existingMedia.map(row=>[String(row.uid),row]));
       const createMedia=[],related=new Map(),seenMedia=new Set(),resolvedIds=new Map();
       function attach(uid,id){
         if(!uid||!id)return;
@@ -216,13 +216,13 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }
       for(const raw of plans){
         const record={...raw},key=mediaKey(record),owner=String(record.galaxy_link||'').trim();
-        const known=(record.media_id?byId.get(String(record.media_id)):null)||(key?byKey.get(key):null);
-        if(known){if(record.media_id)resolvedIds.set(String(record.media_id),String(known.media_id));attach(owner,known.media_id);continue;}
+        const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
+        if(known){if(record.uid)resolvedIds.set(String(record.uid),String(known.uid));attach(owner,known.uid);continue;}
         if(key&&seenMedia.has(key))continue;
         if(key)seenMedia.add(key);
-        const mediaId=record.media_id||globalThis.crypto?.randomUUID?.();
+        const mediaId=record.uid||createUid8();
         if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
-        record.media_id=mediaId;
+        record.uid=mediaId;
         createMedia.push(record);if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
       }
@@ -232,7 +232,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       });
       for(const link of extraLinks){
         const uid=knownArticleIds.get(String(link.uid||'').trim());
-        const mediaId=resolvedIds.get(String(link.media_id||''))||String(link.media_id||'');
+        const mediaId=resolvedIds.get(String(link.media_uid||''))||String(link.media_uid||'');
         if(uid&&byId.has(mediaId))attach(uid,mediaId);
       }
       let connected=0;
@@ -485,7 +485,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       let exifSaved=0;
       for(let offset=0;offset<archivePlan.exif.length;offset+=MAX_ROWS){
         const chunk=archivePlan.exif.slice(offset,offset+MAX_ROWS).map(row=>({
-          ...row,media_id:mediaSummary.resolvedIds.get(row.media_id)||row.media_id
+          ...row,media_uid:mediaSummary.resolvedIds.get(row.media_uid)||row.media_uid
         }));
         const {data,error}=await dbAuthClient.schema('silver').rpc('save_archive_media_exif',{
           p_scope_id:scopeId,p_rows:chunk

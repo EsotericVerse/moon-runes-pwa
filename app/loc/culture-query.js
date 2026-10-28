@@ -617,9 +617,9 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
       count:hasCursorCounts?null:'exact'
     }):Promise.resolve({rows:[],count:0}),
     includeMedia?selectRows(scope.galaxyMedia,{
-      columns:'media_id,createtime',
+      columns:'uid,createtime',
       filters:mediaFilters,
-      orders:[{column:'createtime',ascending},{column:'media_id',ascending}],
+      orders:[{column:'createtime',ascending},{column:'uid',ascending}],
       limit:pageSize,
       offset:mediaOffset,
       maxLimit:pageSize,
@@ -631,7 +631,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     !includeGalaxy?0:hasCursorCounts?cursor.galaxyCount:
       (galaxyResult.count??selectCount(scope.galaxy,{idColumn:'uid',filters:galaxyFilters})),
     !includeMedia?0:hasCursorCounts?cursor.mediaCount:
-      (mediaResult.count??selectCount(scope.galaxyMedia,{idColumn:'media_id',filters:mediaFilters}))
+      (mediaResult.count??selectCount(scope.galaxyMedia,{idColumn:'uid',filters:mediaFilters}))
   ]);
 
   const galaxyRows=(galaxyResult.rows||[]).map(row=>({
@@ -642,10 +642,10 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     createtime:row.createtime
   })).filter(row=>row.entry_id);
   const mediaRows=(mediaResult.rows||[]).map(row=>({
-    key:'media:'+row.media_id,
+    key:'media:'+row.uid,
     entry_type:'media_metadata',
-    entry_id:String(row.media_id||''),
-    media_id:String(row.media_id||''),
+    entry_id:String(row.uid||''),
+    uid:String(row.uid||''),
     createtime:row.createtime
   })).filter(row=>row.entry_id);
 
@@ -687,7 +687,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   const source=Array.isArray(items)?items:[];
   if(!source.length)return {rows:[],hasMore:false};
   const galaxyIds=[...new Set(source.filter(row=>row?.entry_type==='work').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
-  const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata').map(row=>String(row?.media_id||row?.entry_id||'').trim()).filter(Boolean))];
+  const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
 
   const [galaxyResult,mediaResult]=await Promise.all([
     galaxyIds.length?selectRows(scope.galaxy,{
@@ -696,8 +696,8 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectRows(scope.galaxyMedia,{
-      columns:'media_id,galaxy_link,media_type,title,url,meta_tags,createtime',
-      filters:[{column:'media_id',operator:'in',value:mediaIds}],
+      columns:'uid,galaxy_link,media_type,title,url,meta_tags,createtime',
+      filters:[{column:'uid',operator:'in',value:mediaIds}],
       limit:mediaIds.length
     }):Promise.resolve({rows:[]})
   ]);
@@ -723,12 +723,12 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   }]));
   const mediaById=new Map((mediaResult.rows||[]).map(row=>{
     const metadataDescription=mediaMetadataDescription(row);
-    return [String(row.media_id),{
+    return [String(row.uid),{
     ...row,
-    key:'media:'+row.media_id,
+    key:'media:'+row.uid,
     record_type:'galaxy_media',
     source_name:String(row.media_type||''),
-    entry_id:row.media_id,
+    entry_id:row.uid,
     entry_type:'media_metadata',
     start_date:row.createtime,
     date:row.createtime,
@@ -739,7 +739,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     group_label:String(row.media_type||''),
     scope_id:scopeId,
     links:row.url&&/^https?:\/\//i.test(String(row.url))
-      ?[{id:'media:'+String(row.media_id),href:row.url,label:'媒體連結'}]
+      ?[{id:'media:'+String(row.uid),href:row.url,label:'媒體連結'}]
       :[]
   }];
   }));
@@ -747,7 +747,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   return {
     rows:source.map(row=>row.entry_type==='work'
       ?galaxyById.get(String(row.uid||row.entry_id))
-      :mediaById.get(String(row.media_id||row.entry_id))
+      :mediaById.get(String(row.uid||row.entry_id))
     ).filter(Boolean)
   };
 }

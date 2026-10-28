@@ -86,7 +86,7 @@ export function mediaCrossTagCatalog(rows=[]){
   const media=new Map();
   const catalog=new Map();
   for(const row of Array.isArray(rows)?rows:[]){
-    const id=String(row?.media_id||'').trim();
+    const id=String(row?.uid||'').trim();
     if(!id)continue;
     const tags=mediaStyleTags(row.meta_tags);
     if(!tags.length)continue;

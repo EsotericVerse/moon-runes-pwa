@@ -192,7 +192,7 @@ test('Media-only archive remains importable and its EXIF is retained',async()=>{
   assert.equal(plan.media.length,0);
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.exif[0].media_id,null);
+  assert.equal(plan.exif[0].media_uid,null);
 });
 
 test('Threads ZIP with Facebook Messenger backup only imports public posts',async()=>{

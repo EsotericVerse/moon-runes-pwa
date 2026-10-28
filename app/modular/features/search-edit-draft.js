@@ -56,7 +56,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
     body,
     bodyHtml:body,
     bodyBlocks:plainTextToBlocks(body),
-    editorKey:String(row.uid||row.media_id||''),
+    editorKey:String(row.uid||''),
     hidden:row.searchable===false,
     attrs,
     originalAttrs:{...attrs}
@@ -65,7 +65,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
 
 function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
-    media_id:String(row.media_id||''), title:String(row.title||''),
+    uid:String(row.uid||''), title:String(row.title||''),
     galaxy_link:String(row.galaxy_link||'').trim(),
     source_place:String(row.source_place||''),media_type:String(row.media_type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
@@ -73,7 +73,7 @@ function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
     rune_references:row.rune_references==null?'':JSON.stringify(row.rune_references,null,2)
   };
   return {title:String(row.title??fallbackTitle??''),originalTitle:String(row.title??fallbackTitle??''),
-    body:'',bodyHtml:'',bodyBlocks:plainTextToBlocks(''),editorKey:String(row.media_id||''),
+    body:'',bodyHtml:'',bodyBlocks:plainTextToBlocks(''),editorKey:String(row.uid||''),
     attrs,originalAttrs:{...attrs}};
 }
 function changedMediaAttributes(draft,t){
