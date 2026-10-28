@@ -1452,3 +1452,23 @@
   .loc-timeline-review-row__status{grid-column:1/-1}
   .loc-timeline-review-row__uid{display:none}
 }
+
+.loc-timeline-review-action{
+  position:sticky;top:.5rem;z-index:5;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:.6rem;padding:.8rem;margin:.75rem 0;border:1px solid var(--loc-accent-border);
+  border-radius:var(--loc-ui-radius-md);background:var(--loc-panel);color:var(--loc-text);
+  box-shadow:0 6px 20px rgb(0 0 0 / .1);
+}
+.loc-timeline-review-action__summary{display:grid;gap:.25rem;flex:1 1 17rem;min-width:0}
+.loc-timeline-review-action__summary span{font-size:.85rem;color:var(--loc-muted)}
+.loc-timeline-review-action__summary progress{width:100%;max-width:25rem;height:.5rem}
+.loc-timeline-review-action>.loc-button{min-height:44px;flex:0 0 auto}
+.loc-timeline-review-groups{margin:.6rem 0}
+.loc-timeline-review-groups>summary{
+  cursor:pointer;padding:.65rem .8rem;border:1px solid var(--loc-line);
+  border-radius:var(--loc-ui-radius-sm);font-weight:650;
+}
+.loc-timeline-review-groups>summary:focus-visible{outline:2px solid var(--loc-accent)}
+.loc-timeline-review-groups>.scope-card{margin:.6rem 0}
+@media(max-width:520px){.loc-timeline-review-action>.loc-button{width:100%}}
