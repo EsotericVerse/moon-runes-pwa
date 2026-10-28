@@ -278,3 +278,31 @@ test('Public Threads posts are imported from mixed Meta ZIP without reading priv
   assert.ok(localRecords.some(r=>r.platform==='messenger'));
 });
 
+
+
+test('full Facebook ZIP JSON inventory is independent of 160-file schema sampling',async()=>{
+  const entries={};
+  for(let n=0;n<180;n++)entries['your_facebook_activity/posts/batch_'+n+'.json']=j([{
+    id:'post-'+n,timestamp:1720000000+n,data:[{post:'公開貼文 '+n}]
+  }]);
+  entries['your_facebook_activity/messages/inbox/contact/message_1.json']=j({
+    participants:[{name:'A'}],messages:[{sender_name:'A',content:'PRIVATE'}]
+  });
+  entries['other/unknown.json']=j({settings:{theme:'dark'}});
+  entries['your_facebook_activity/posts/photo.jpg']=strToU8('not an actual image');
+  const file=asFile('facebook-inventory.zip',zipSync(entries));
+  const found=await detectZipArchiveSource(file,{skipPrivateEntries:true});
+  assert.equal(found.fileInventory.jsonFiles,182);
+  assert.equal(found.fileInventory.privateJsonFiles,1);
+  assert.equal(found.fileInventory.allFiles,183);
+  assert.ok(found.inspectedFiles<180);
+  const records=[];
+  const summary=await inspectPrivateArchive(file,{skipPrivateEntries:true,onRecord:r=>records.push(r)});
+  assert.equal(summary.jsonFilesSeen,182);
+  assert.equal(summary.jsonFilesPrivate,1);
+  assert.equal(summary.jsonFilesParsed,180);
+  assert.equal(summary.jsonFilesUnrecognized,1);
+  assert.equal(summary.jsonFilesOversize,0);
+  assert.equal(summary.jsonFilesUnsupported,0);
+  assert.equal(records.length,180);
+});
