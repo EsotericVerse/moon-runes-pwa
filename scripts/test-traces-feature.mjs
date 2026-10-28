@@ -128,7 +128,8 @@ test('Public Trace presents on-demand selected-place articles / Culture / Statis
   const results=read('app/modular/features/trace/TracePlaceResults.jsx');
   assert.match(feature,/readTraceMapIndex\(scopeId\)/);
   assert.match(feature,/目前顯示（痕跡圖聯集）/);
-  assert.ok(feature.indexOf('const periodScopeId=')<feature.indexOf('},[periodScopeId]);'),
+  assert.ok(feature.indexOf('const periodScopeId=')>=0&&
+    feature.indexOf('const periodScopeId=')<feature.indexOf('useEffect(()=>{setDemoStopIds([]);},[periodScopeId'),
     'derived Scope must be initialized before any effect dependency accesses it');
   assert.match(feature,/readCurrentTraceAnchors\(periodScopeId,members,/);
   assert.match(feature,/nativeOnly:periodScopeId==='loc'/);
