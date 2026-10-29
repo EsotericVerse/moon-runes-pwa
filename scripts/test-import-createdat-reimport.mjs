@@ -9,23 +9,23 @@ test('Threads source timestamps are extracted from root and nested media',()=>{
   assert.equal(extractImportCreatedAt({text:'missing date'}),null);
 });
 test('createdAt matches an existing record even with different UID and revised text',async()=>{
-  const rows=[{uid:'NEWuid01',source_name:'Threads',createtime:'2024-08-01T00:00:00Z',content:'updated'}];
+  const rows=[{uid:'NEWuid01',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'updated'}];
   const matched=await matchExistingImportByCreatedAt(rows,{readSeconds:async()=>[
-    {uid:'OLDuid01',source_name:'Threads',createtime:'2024-08-01T00:00:00Z',content:'original'}]});
+    {uid:'OLDuid01',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'original'}]});
   assert.equal(matched.get('NEWuid01').uid,'OLDuid01');
 });
 test('missing original timestamps do not perform date lookups or collapse records',async()=>{
-  const rows=[{uid:'Aa000001',source_name:'Threads',createtime:null,content:'a'},
-    {uid:'Aa000002',source_name:'Threads',createtime:null,content:'b'}];
+  const rows=[{uid:'Aa000001',site:'Threads',createtime:null,content:'a'},
+    {uid:'Aa000002',site:'Threads',createtime:null,content:'b'}];
   assert.equal(dedupeIncomingImport(rows).unique.length,2);
   const matches=await matchExistingImportByCreatedAt(rows,{readSeconds:()=>{throw Error('must not query');}});
   assert.equal(matches.size,0);
 });
 test('ambiguous same-time candidates are resolved only by matching content',async()=>{
-  const input=[{uid:'NEWuid01',source_name:'Threads',createtime:'2024-08-01T00:00:00Z',content:'changed'}];
+  const input=[{uid:'NEWuid01',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'changed'}];
   const old=[
-    {uid:'OLDuid01',source_name:'Threads',createtime:'2024-08-01T00:00:00Z',content:'first'},
-    {uid:'OLDuid02',source_name:'Threads',createtime:'2024-08-01T00:00:00Z',content:'second'}
+    {uid:'OLDuid01',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'first'},
+    {uid:'OLDuid02',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'second'}
   ];
   assert.equal((await matchExistingImportByCreatedAt(input,{readSeconds:async()=>old})).size,0);
   const matched=await matchExistingImportByCreatedAt([{...input[0],content:'second'}],{readSeconds:async()=>old});

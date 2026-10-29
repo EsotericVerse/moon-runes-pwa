@@ -26,15 +26,15 @@ export function traceArticleFilters(places,{startDate='',endDate='',sourceName='
   const names=Array.isArray(places)?places.map(x=>String(x||'').trim()).filter(Boolean):[];
   if(!names.length)return [];
   return [
-    {column:'source_place',operator:names.length===1?'eq':'in',
+    {column:'location',operator:names.length===1?'eq':'in',
       value:names.length===1?names[0]:names},
     {column:'searchable',operator:'eq',value:true},
-    ...(sourceName.trim()?[{column:'source_name',operator:'ilike',value:sourceName.trim()}]:[]),
+    ...(sourceName.trim()?[{column:'site',operator:'ilike',value:sourceName.trim()}]:[]),
     ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
     ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
   ];
 }
-export function groupedTraceDays(rows=[],{key='source_place'}={}){
+export function groupedTraceDays(rows=[],{key='location'}={}){
   const group=new Map();
   for(const row of rows){
     const day=String(row.createtime||'').slice(0,10);
@@ -55,7 +55,7 @@ export function traceMediaMatches(articles=[],media=[]){
   return articles.filter(row=>Array.isArray(row.media_link)&&row.media_link.some(id=>matchingIds.has(String(id))));
 }
 
-/** Four-character article identity; original source_place remains display-only. */
+/** Four-character article identity; original location remains display-only. */
 export function traceArticleIdFilters(placeIds,{startDate='',endDate='',sourceName=''}={}){
   const ids=[...new Set((Array.isArray(placeIds)?placeIds:[])
     .map(id=>String(id||'').trim().toUpperCase())
@@ -64,7 +64,7 @@ export function traceArticleIdFilters(placeIds,{startDate='',endDate='',sourceNa
   return [
     {column:'place_id',operator:ids.length===1?'eq':'in',value:ids.length===1?ids[0]:ids},
     {column:'searchable',operator:'eq',value:true},
-    ...(sourceName.trim()?[{column:'source_name',operator:'ilike',value:sourceName.trim()}]:[]),
+    ...(sourceName.trim()?[{column:'site',operator:'ilike',value:sourceName.trim()}]:[]),
     ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
     ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
   ];

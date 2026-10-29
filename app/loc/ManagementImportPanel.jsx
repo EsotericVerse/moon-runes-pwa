@@ -43,8 +43,8 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const isFacebook=String(source||'').trim().toLowerCase()==='facebook';
   const isThreads=String(source||'').trim().toLowerCase()==='threads';
   // The generic "place" alias can hold a Meta object. Only actual text
-  // belongs in Galaxy.source_place; never stringify [object Object].
-  const mappedPlace=value('source_place');
+  // belongs in Galaxy.location; never stringify [object Object].
+  const mappedPlace=value('location');
   const placeText=typeof mappedPlace==='string'?mappedPlace:
     (isFacebook?facebookBackupPlace(row):'');
   const place=repairMojibakeText(placeText).trim();
@@ -67,7 +67,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   let mediaRecords=[],mediaRefs=[];
   try{
     for(const item of mediaCandidates){
-      const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,source_place:sourcePlace,article_uid:uid});
+      const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,location:sourcePlace,article_uid:uid});
       mediaRecords.push(...media.records);
       mediaRefs.push(...media.references);
     }
@@ -89,7 +89,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
       return {record:null,error:'',mediaOnlyRecord:{
         ...(rawId?{uid:rawId}:{}),
         __article_uid:String(value('galaxy_link')||'').trim()||null,
-        source_place:sourcePlace||null,
+        location:sourcePlace||null,
         media_type:type,title:rawTitle||null,url:url||null,
         meta_tags:String(value('meta_tags')||'').trim()||null,
         createtime:createdAt,
@@ -108,7 +108,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     title:(isThreads||!rawTitle)?Array.from(content).slice(0,10).join(''):resolveGalaxyTitle(rawTitle,content),
     content,
     createtime:createdAt,
-    source_place:sourcePlace||null,
+    location:sourcePlace||null,
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
@@ -116,13 +116,13 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     ref_id:String(value('ref_id')||'').trim()||null,
     url:String(value('url')||'').trim()||null,
     ...(mediaRefs.length?{media_link:mediaRefs}:{}),
-    source_name:String(source||'').trim()
+    site:String(source||'').trim()
   };
   return {record,mediaRecords,mediaRefs,error:''};
 }
 
 const IMPORT_FORMAT_FIELDS=Object.freeze([
-  'uid','content','title','createtime','source_place',
+  'uid','content','title','createtime','location',
   'url','source_id','target_id','ref_id','searchable','statistics_able',
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
@@ -277,7 +277,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const analyzed=useMemo(()=>{
     const selected=deferredSource.trim();
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,
-      canonicalImportSourceName(archiveDetection&&selected==='Mixed'?(entry?.raw?.source_name||selected):selected,
+      canonicalImportSourceName(archiveDetection&&selected==='Mixed'?(entry?.raw?.site||selected):selected,
         sourceCategories.data?.system||[],sourceCategories.data?.personal||[]),format.fields,t));
     return {
       valid:normalized.filter(item=>item.record).map(item=>item.record),
@@ -355,7 +355,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           return;
         }
         setRows(imported);
-        const sourceNames=[...new Set(imported.map(item=>item.raw.source_name))];
+        const sourceNames=[...new Set(imported.map(item=>item.raw.site))];
         setSource(sourceNames.length===1?canonicalSource(sourceNames[0]):'Mixed');
         setStatus('已解析 '+imported.length.toLocaleString()+' 篇公開貼文，媒體 '+mediaEvidence.length.toLocaleString()+' 筆；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+' 筆'+
@@ -407,7 +407,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     try{
       if(archiveDetection){
         // The public-row guard, not the archive filename, controls publishing.
-        if(!nativeLocal&&rows.some(item=>!['facebook','threads','instagram','x'].includes(String(item.raw?.source_name||'').toLowerCase())))
+        if(!nativeLocal&&rows.some(item=>!['facebook','threads','instagram','x'].includes(String(item.raw?.site||'').toLowerCase())))
           throw new Error('公開網站的 ZIP 不允許匯入私人對話或無法辨識的紀錄。');
       }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
     }
@@ -433,8 +433,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           const collected=[];
           for(let start=0;;){
             const relation=dbAuthRelation(galaxy)
-              .select('uid,source_name,createtime,content,title,source_place,place_id',{count:'exact'})
-              .ilike('source_name',source);
+              .select('uid,site,createtime,content,title,location,place_id',{count:'exact'})
+              .ilike('site',source);
             // PostgREST executes one bounded OR query for 24 exact seconds.
             // Local adapters without .or use one bounded second at a time.
             if(typeof relation.or!=='function'){
@@ -443,7 +443,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
                   const from=new Date(second*1000).toISOString();
                   const to=new Date((second+1)*1000).toISOString();
                   const {data,error,count}=await dbAuthRelation(galaxy)
-                    .select('uid,source_name,createtime,content,title,source_place,place_id',{count:'exact'}).ilike('source_name',source)
+                    .select('uid,site,createtime,content,title,location,place_id',{count:'exact'}).ilike('site',source)
                     .gte('createtime',from).lt('createtime',to).range(offset,offset+MAX_ROWS-1);
                   if(error)throw new Error('重複文章比對失敗：'+error.message);
                   collected.push(...(data||[]));
@@ -471,8 +471,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        if(!String(existing.source_place||'').trim()&&String(record.source_place||'').trim())
-          changes.source_place=record.source_place;
+        if(!String(existing.location||'').trim()&&String(record.location||'').trim())
+          changes.location=record.location;
         // Do not replace a manually selected location or existing place_id.
         if(Object.keys(changes).length){
           await updateRows(galaxy,changes,{filters:[{column:'uid',operator:'eq',value:existing.uid}]});

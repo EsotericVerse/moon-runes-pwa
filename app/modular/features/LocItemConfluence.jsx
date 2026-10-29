@@ -62,7 +62,7 @@ function LanePicker({label,lane,scopes,onChange}){
         </select>
       </label>
       {lane.source.endsWith(':exact')?<label><span>{l.exactType}</span>
-        <input className="scope-input" value={lane.exact} maxLength={100} placeholder={lane.source.startsWith('media:')?'media_type':'source_name'}
+        <input className="scope-input" value={lane.exact} maxLength={100} placeholder={lane.source.startsWith('media:')?'media_type':'site'}
           onChange={event=>onChange({...lane,exact:event.target.value})}/>
       </label>:null}
     </div>

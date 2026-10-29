@@ -35,9 +35,9 @@ export async function readPlaceSummary(scopeId,{startDate='',endDate=''}={}){
   ];
   // Stream page by page and keep only the per-day counters; no uid or row list.
   const summary=new Map();
-  await forEachAllRowsPage(scope.galaxy,{columns:'source_place,createtime',filters},rows=>{
+  await forEachAllRowsPage(scope.galaxy,{columns:'location,createtime',filters},rows=>{
     for(const row of rows){
-      const place=String(row.source_place||'').trim();
+      const place=String(row.location||'').trim();
       if(!place||!row.createtime)continue;
       const day=new Intl.DateTimeFormat('sv-SE',{
         timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'

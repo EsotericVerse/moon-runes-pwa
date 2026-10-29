@@ -59,7 +59,7 @@ test('UTF-16 with BOM is decoded before legacy fallback',async()=>{
 test('Galaxy Markdown v1 preserves headings and content while mapping metadata',async()=>{
   const text=[
     '---','loc_format: galaxy-md/v1','title: "時空靈魂震盪論"',
-    'created_at: 2026-10-24','source_name: ChatGPT','source_place: 台灣',
+    'created_at: 2026-10-24','site: ChatGPT','location: 台灣',
     'searchable: true','statistics_able: false','---','',
     '# 原始標題','','**內文** 與 [連結](https://example.com)。','','- A','- B'
   ].join('\n');
@@ -68,8 +68,8 @@ test('Galaxy Markdown v1 preserves headings and content while mapping metadata',
   const row=rows[0];
   assert.equal(row.title,'時空靈魂震盪論');
   assert.equal(row.createtime,'2026-10-24');
-  assert.equal(row.source_name,'ChatGPT');
-  assert.equal(row.source_place,'台灣');
+  assert.equal(row.site,'ChatGPT');
+  assert.equal(row.location,'台灣');
   assert.equal(row.searchable,true);
   assert.equal(row.statistics_able,false);
   assert.match(row.content,/# 原始標題\n\n\*\*內文\*\*/);

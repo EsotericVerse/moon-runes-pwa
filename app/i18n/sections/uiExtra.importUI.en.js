@@ -86,7 +86,7 @@ export default {
     "content": "Body",
     "title": "Title",
     "createtime": "Date and time",
-    "source_place": "Location",
+    "location": "Location",
     "url": "External URL",
     "source_id": "Source relation",
     "target_id": "Target relation",

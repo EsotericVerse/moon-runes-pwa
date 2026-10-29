@@ -110,7 +110,7 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
       await cache.invalidate({queryKey:['loc-place-summary',scopeId]});
       if(token===revision.current){
         setPreview(null);
-        setNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 source_place；原本已有地點的文章沒有修改。');
+        setNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 location；原本已有地點的文章沒有修改。');
         await suggestions.mutate();
       }
     }catch(error){

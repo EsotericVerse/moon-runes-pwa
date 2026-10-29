@@ -15,7 +15,7 @@ import {useAccount} from './use-account';
 import {hasIrrecoverableEncoding,repairMojibakeText} from './content-policy';
 
 const blankMedia=()=>({
-  galaxy_link:'',source_place:'',media_type:'',title:'',
+  galaxy_link:'',location:'',media_type:'',title:'',
   url:'',meta_tags:'',createtime:''
 });
 
@@ -66,7 +66,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
       if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
       const metaTags=repairMojibakeText(draft.meta_tags).trim();
       const mediaTitle=repairMojibakeText(draft.title).trim();
-      const sourcePlace=repairMojibakeText(draft.source_place).trim();
+      const sourcePlace=repairMojibakeText(draft.location).trim();
       if([mediaType,metaTags,mediaTitle,sourcePlace].some(hasIrrecoverableEncoding))throw new Error(t('uiExtra.importUI.mediaEncoding'));
       if(!metaTags)throw new Error(t('uiExtra.importUI.tagsRequired'));
       const scope=account.scopeDataFor(scopeId);
@@ -78,7 +78,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
       const mediaUid=createUid8();
       const record={
         uid:mediaUid,
-        source_place:sourcePlace||null,
+        location:sourcePlace||null,
         media_type:mediaType,
         title:mediaTitle||null,
         url:String(draft.url||'').trim()||null,
@@ -119,7 +119,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
         <label><span><UiText id="uiExtra.importUI.mediaCreatedAtLabel"/></span><input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
       <div className="scope-stat-controls">
-        <label><span><UiText id="uiExtra.importUI.mediaLocationLabel"/></span><input value={draft.source_place} onChange={e=>change('source_place',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaLocationLabel"/></span><input value={draft.location} onChange={e=>change('location',e.target.value)} placeholder={t('uiExtra.importUI.placeHint')}/></label>
       </div>
       <label><span><UiText id="uiExtra.importUI.mediaTitle"/></span><input value={draft.title} onChange={e=>change('title',e.target.value)}/></label>
       <label><span><UiText id="uiExtra.importUI.mediaExternalUrlLabel"/></span><input value={draft.url} onChange={e=>change('url',e.target.value)} placeholder={t('uiExtra.importUI.externalUrlHint')}/></label>

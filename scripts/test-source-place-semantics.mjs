@@ -10,23 +10,23 @@ const {mediaPlatform,mediaFacetDaily}=await import(
 );
 
 test('A check-in place and media type are never platform evidence',()=>{
-  assert.equal(mediaPlatform({source_place:'suno',media_type:'音樂'}),'其他／無法辨識');
-  assert.equal(mediaPlatform({source_place:'Instagram',media_type:'suno'}),'其他／無法辨識');
-  assert.equal(mediaPlatform({source_place:'ChatGPT / Suno Style',url:'invalid url'}),'其他／無法辨識');
+  assert.equal(mediaPlatform({location:'suno',media_type:'音樂'}),'其他／無法辨識');
+  assert.equal(mediaPlatform({location:'Instagram',media_type:'suno'}),'其他／無法辨識');
+  assert.equal(mediaPlatform({location:'ChatGPT / Suno Style',url:'invalid url'}),'其他／無法辨識');
 });
 
 test('A valid media URL determines platform independently of check-in place',()=>{
-  assert.equal(mediaPlatform({source_place:'板橋車站',url:'https://suno.com/song/example'}),'Suno');
-  assert.equal(mediaPlatform({source_place:'suno',url:'https://www.instagram.com/reel/example'}),'IG Reels');
-  assert.equal(mediaPlatform({source_place:'Facebook',url:'https://www.youtube.com/shorts/example'}),'YouTube Shorts');
-  assert.equal(mediaPlatform({source_place:'suno',url:'https://example.com/suno'}),'example.com');
-  assert.equal(mediaPlatform({source_place:'suno',url:'https://evil.suno.com.example.net/song/example'}),'evil.suno.com.example.net');
+  assert.equal(mediaPlatform({location:'板橋車站',url:'https://suno.com/song/example'}),'Suno');
+  assert.equal(mediaPlatform({location:'suno',url:'https://www.instagram.com/reel/example'}),'IG Reels');
+  assert.equal(mediaPlatform({location:'Facebook',url:'https://www.youtube.com/shorts/example'}),'YouTube Shorts');
+  assert.equal(mediaPlatform({location:'suno',url:'https://example.com/suno'}),'example.com');
+  assert.equal(mediaPlatform({location:'suno',url:'https://evil.suno.com.example.net/song/example'}),'evil.suno.com.example.net');
 });
 
 test('Media platform statistics never count a place string as a platform',()=>{
   const rows=[
-    {createtime:'2026-10-25',source_place:'suno',media_type:'音樂'},
-    {createtime:'2026-10-25',source_place:'烘爐地南山福德宮',media_type:'音樂',url:'https://suno.com/song/example'}
+    {createtime:'2026-10-25',location:'suno',media_type:'音樂'},
+    {createtime:'2026-10-25',location:'烘爐地南山福德宮',media_type:'音樂',url:'https://suno.com/song/example'}
   ];
   const counts=mediaFacetDaily(rows,'media_platform');
   assert.deepEqual(counts.map(row=>[row.category,row.item_count]).sort((a,b)=>a[0].localeCompare(b[0])),

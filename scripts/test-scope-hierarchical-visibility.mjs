@@ -33,7 +33,7 @@ test('database policies enforce ancestor inheritance rather than only UI filteri
 });
 test('trace article lists do not expose hidden location metadata',()=>{
  const trace=read('app/modular/features/trace/TracePlaceResults.jsx');
- assert.doesNotMatch(trace,/checkInPlace=|source_name,source_place/);
+ assert.doesNotMatch(trace,/checkInPlace=|site,location/);
 });
 
 test('spatial trace may be made from routes only; saved trace still draws linked stops',()=>{

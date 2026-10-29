@@ -30,7 +30,7 @@ LOC iPhone 版的「設定 → 文件匯入 → 要將檔案內容匯入 SQLite 
 loc_format: galaxy-md/v1
 title: "時空靈魂震盪論：討論摘要"
 created_at: 2026-10-24
-source_name: ChatGPT
+site: ChatGPT
 searchable: true
 statistics_able: true
 ---
@@ -54,8 +54,8 @@ statistics_able: true
 | `loc_format` | 若填入，必須是 `galaxy-md/v1` |
 | `title` | 文章標題；省略時取第一個 `# 標題` 或檔名 |
 | `created_at` | 原文日期，例如 `2026-10-24` 或完整 ISO 8601；也接受 `createtime` |
-| `source_name` | 匯入來源，預設填入來源選擇欄，可在匯入前修改 |
-| `source_place` | 選填地點 |
+| `site` | 匯入來源，預設填入來源選擇欄，可在匯入前修改 |
+| `location` | 選填地點 |
 | `searchable` | `true` 或 `false`，預設 `true` |
 | `statistics_able` | `true` 或 `false`，仍遵守 LOC 原有的可搜尋與純網址判斷 |
 | `uid` | 選填，若指定必須是 8 個英數字；通常由 LOC 自動產生 |

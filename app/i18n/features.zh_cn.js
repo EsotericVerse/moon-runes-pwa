@@ -138,7 +138,7 @@ export default {
     "galaxyThreads": "文字 · Threads",
     "galaxyInstagram": "文字 · Instagram／Reels",
     "galaxyAll": "文字 · 全部来源",
-    "galaxyExact": "文字 · 指定 source_name",
+    "galaxyExact": "文字 · 指定 site",
     "mediaAll": "媒体 · 全部类型",
     "mediaExact": "媒体 · 指定 media_type",
     "dailyRune": "每日符文（仅符韵）",

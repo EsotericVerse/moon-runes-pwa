@@ -53,14 +53,14 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
   title TEXT,
   content TEXT,
   createtime TEXT,
-  source_place TEXT,
+  location TEXT,
   searchable INTEGER NOT NULL DEFAULT 1,
   "UpdateTime" TEXT NOT NULL,
   url TEXT,
   source_id TEXT,
   target_id TEXT,
   ref_id TEXT,
-  source_name TEXT,
+  site TEXT,
   media_link TEXT,
   statistics_able INTEGER NOT NULL DEFAULT 1,
   class_id INTEGER,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS local_galaxy_media (
   url TEXT,
   meta_tags TEXT,
   createtime TEXT,
-  source_place TEXT,
+  location TEXT,
   rune_references TEXT
 );
 CREATE TABLE IF NOT EXISTS local_archive_media_exif (
@@ -220,7 +220,7 @@ async function upgradeNativeLocalArchiveExif(conn){
 
 
 const LOCAL_MEDIA_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_galaxy_media \([\s\S]*?\);/)[0];
-const LOCAL_MEDIA_COLUMNS=['uid','media_type','title','url','meta_tags','createtime','source_place','rune_references'];
+const LOCAL_MEDIA_COLUMNS=['uid','media_type','title','url','meta_tags','createtime','location','rune_references'];
 function legacyMediaUid(value){
   const raw=String(value||'').trim();
   if(/^[A-Za-z0-9]{8}$/.test(raw))return raw;
@@ -408,12 +408,34 @@ async function writeWebBytes(bytes){
     tx.onerror=()=>reject(tx.error);
   });}finally{store.close();}
 }
+// Upgrade previously saved local/IPA databases in place without discarding
+// any rows. New installations use the canonical location/site schema.
+const LOCAL_GALAXY_RENAME=[
+  ['local_galaxy','location','source_'+'place'],
+  ['local_galaxy','site','source_'+'name'],
+  ['local_galaxy_media','location','source_'+'place']
+];
+function upgradeWebLocalGalaxyNames(db){
+  for(const [table,current,previous] of LOCAL_GALAXY_RENAME){
+    const columns=rowsOf(db,'PRAGMA table_info('+table+')');
+    if(columns.some(row=>row.name===previous)&&!columns.some(row=>row.name===current))
+      db.run('ALTER TABLE '+table+' RENAME COLUMN "'+previous+'" TO "'+current+'"');
+  }
+}
+async function upgradeNativeLocalGalaxyNames(conn){
+  for(const [table,current,previous] of LOCAL_GALAXY_RENAME){
+    const columns=(await conn.query('PRAGMA table_info('+table+')')).values||[];
+    if(columns.some(row=>row.name===previous)&&!columns.some(row=>row.name===current))
+      await conn.execute('ALTER TABLE '+table+' RENAME COLUMN "'+previous+'" TO "'+current+'";');
+  }
+}
 async function webDatabase(){
   if(!webDBPromise)webDBPromise=(async()=>{
     const SQL=await sqliteJS();
     const bytes=await readWebBytes();
     const db=bytes?new SQL.Database(new Uint8Array(bytes)):createFreshSQL(SQL);
     db.run(SCHEMA);
+    upgradeWebLocalGalaxyNames(db);
     upgradeWebLocalTime(db);
     upgradeWebLocalArchiveExif(db);
     upgradeWebLocalMedia(db);
@@ -434,6 +456,7 @@ async function nativeDatabase(){
       :await plugin.createConnection(DATABASE_NAME,false,'no-encryption',1,false);
     await conn.open();
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
+    await upgradeNativeLocalGalaxyNames(conn);
     await upgradeNativeLocalTime(conn);
     await upgradeNativeLocalArchiveExif(conn);
     await upgradeNativeLocalMedia(conn);
@@ -718,7 +741,7 @@ async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
   const mediaWhere=where.length?' WHERE '+where.join(' AND '):'';
   const [text,media]=await Promise.all([
     selectLocal(`SELECT date(createtime, '+8 hours') AS day,
-      'source' AS kind, coalesce(source_name,'') AS category, count(*) AS item_count
+      'source' AS kind, coalesce(site,'') AS category, count(*) AS item_count
       FROM local_galaxy WHERE ${articleWhere} GROUP BY day,category ORDER BY day`,params),
     selectLocal(`SELECT date(createtime, '+8 hours') AS day,
       'media' AS kind, coalesce(media_type,'') AS category, count(*) AS item_count
@@ -748,7 +771,7 @@ async function readScopeCategoryTotalsLocal({p_start,p_end}={}){
   const range=clauses.length?' AND '+clauses.join(' AND '):'';
   const mediaRange=clauses.length?' WHERE '+clauses.join(' AND '):'';
   const [articles,media]=await Promise.all([
-    selectLocal(`SELECT 'source' AS kind, trim(coalesce(source_name,'')) AS category,
+    selectLocal(`SELECT 'source' AS kind, trim(coalesce(site,'')) AS category,
       count(*) AS item_count FROM local_galaxy
       WHERE statistics_able=1 AND content<>''${range} GROUP BY category`,params),
     selectLocal(`SELECT 'media' AS kind, trim(coalesce(media_type,'')) AS category,

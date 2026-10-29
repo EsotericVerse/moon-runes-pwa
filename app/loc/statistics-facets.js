@@ -20,7 +20,7 @@ export function mediaDay(value){
 }
 function isHost(host,domain){return host===domain||host.endsWith('.'+domain);}
 // A check-in place is not a publishing platform. Classify media only from
-// its URL host/path; neither media_type nor source_place can prove a platform.
+// its URL host/path; neither media_type nor location can prove a platform.
 const UNKNOWN_MEDIA_PLATFORM='其他／無法辨識';
 export function mediaPlatform(row={}){
   const raw=plainText(row.url);
