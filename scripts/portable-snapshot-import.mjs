@@ -89,3 +89,64 @@ export async function importPortableSnapshot(db,manifest,loadRows,{tableName=ent
     return report;
   });
 }
+
+// Incremental, append-only Kysely transfer between independently owned SQL
+// engines. No destructive reset, dialect-specific UPSERT or vendor Auth token.
+// Resume by the source's exact primary-key value, without case conversion.
+export async function syncPortableMissingRows(source,target,{
+  schema='silver',table,columns,primaryKey='uid',
+  batchSize=200,maxBatches=10,cursor=null,transformRow=row=>row,onProgress=()=>{}
+}={}){
+  validName(table);
+  if(schema!==''&&schema!==null)validName(schema);
+  validName(primaryKey);
+  if(!Array.isArray(columns)||!columns.length||!columns.includes(primaryKey)||
+      new Set(columns).size!==columns.length)throw new Error('Explicit transfer columns must include the primary key');
+  columns.forEach(validName);
+  if(!Number.isSafeInteger(batchSize)||batchSize<1||batchSize>500)throw new Error('Invalid incremental batchSize');
+  if(!Number.isSafeInteger(maxBatches)||maxBatches<1||maxBatches>1000)throw new Error('Invalid maxBatches');
+  if(cursor!==null&&(typeof cursor!=='string'||!cursor.length||cursor.length>256))throw new Error('Invalid resume cursor');
+  if(typeof transformRow!=='function'||typeof onProgress!=='function')throw new TypeError('Invalid transfer callbacks');
+  const relation=(db)=>schema?db.withSchema(schema):db;
+  let scanned=0,inserted=0,existing=0,batches=0,complete=false,last=cursor;
+  for(;batches<maxBatches;batches++){
+    let query=relation(source).selectFrom(table).select(columns).orderBy(primaryKey,'asc').limit(batchSize);
+    if(last!==null)query=query.where(primaryKey,'>',last);
+    const input=await query.execute();
+    if(!Array.isArray(input))throw new Error('Source rows must be an array');
+    if(!input.length){complete=true;break;}
+    const keys=input.map(row=>row?.[primaryKey]);
+    if(keys.some(key=>typeof key!=='string'||!key||key.length>256)||new Set(keys).size!==keys.length)
+      throw new Error('Invalid or repeated source primary key');
+    const exact=new Set(keys);
+    const present=await relation(target).selectFrom(table).select(primaryKey)
+      .where(primaryKey,'in',keys).execute();
+    if(!Array.isArray(present))throw new Error('Destination key query failed');
+    // A case-insensitive collation can report a different UID as a match:
+    // this is not a safe substitute for the Base62 primary key.
+    for(const row of present)if(!exact.has(row[primaryKey]))
+      throw new Error('Target primary-key collation is not case-sensitive');
+    const already=new Set(present.map(row=>row[primaryKey]));
+    const missing=input.filter(row=>!already.has(row[primaryKey])).map(row=>{
+      const mapped=transformRow({...row});
+      if(!mapped||typeof mapped!=='object'||Array.isArray(mapped)||
+          mapped[primaryKey]!==row[primaryKey])throw new Error('A transfer must preserve the original primary key');
+      const allowed=new Set(columns);
+      for(const key of Object.keys(mapped))if(!allowed.has(key))throw new Error('Unexpected transfer column '+key);
+      return mapped;
+    });
+    if(missing.length){
+      await target.transaction().execute(async trx=>{
+        await relation(trx).insertInto(table).values(missing).execute();
+      });
+    }
+    scanned+=input.length;
+    existing+=input.length-missing.length;
+    inserted+=missing.length;
+    last=keys.at(-1);
+    onProgress({table,scanned,inserted,existing,batches:batches+1,cursor:last});
+    if(input.length<batchSize){complete=true;break;}
+  }
+  return {table,scanned,inserted,existing,batches,cursor:last,complete};
+}
+
