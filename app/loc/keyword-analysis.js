@@ -5,6 +5,7 @@ import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
+import {keywordTreeCatalog} from './keyword-tree-report.mjs';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
@@ -97,28 +98,18 @@ async function keywordFingerprint(scope){
 export async function selectActiveKeywordClassName(scopeId=''){
   const scope=defaultScopeData(scopeId);
   if(!scope)return '';
-  let configRows;
-  try{
-    ({rows:configRows}=await selectRows(scope.config,{
-      columns:'current_keyword_class_uid',
-      filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
-    }));
-  }catch(error){
-    // Keyword classification is optional per Scope; some config tables
-    // (e.g. silver.lrunes) intentionally have no active-Class column.
-    if(['42703','PGRST204'].includes(String(error?.code||''))&&
-      String(error?.message||'').includes('current_keyword_class_uid'))return '';
-    throw error;
-  }
-  const currentId=String(configRows?.[0]?.current_keyword_class_uid||'').trim();
-  if(!currentId)return '';
-  const {rows:keywordRows}=await selectRows(scope.keywords,{
-    columns:'class_name',
-    filters:[{column:'class_uid',operator:'eq',value:currentId}],limit:1
+  const {rows:config}=await selectRows(scope.config,{
+    columns:'current_keyword_class_uid',
+    filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
   });
-  return String(keywordRows?.[0]?.class_name||'').trim();
+  const uid=String(config?.[0]?.current_keyword_class_uid||'');
+  if(!uid)return '';
+  const {rows}=await selectRows(scope.keywords,{
+    columns:'uid,type,name',
+    filters:[{column:'uid',operator:'eq',value:uid},{column:'type',operator:'eq',value:'class'}],limit:1
+  });
+  return String(rows?.[0]?.name||'');
 }
-
 async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const id=normalizeScopeId(scopeId);
   // Public statistics only read the stored summary/config and public Galaxy attrs.
@@ -136,97 +127,64 @@ async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
 // Portable full reanalysis: all Galaxy content is read, but only Keyword Item
 // uidlist columns are written. No old classification state is consulted.
 export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}){
-  const id=normalizeScopeId(scopeId);
-  const {scope,config}=await scopeAndConfig(id);
+  const id=normalizeScopeId(scopeId),{scope,config}=await scopeAndConfig(id);
   const classUid=String(config.current_keyword_class_uid||'');
-  if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定有效的 Keywords Class UID');
-  const {rows:catalogRows}=await selectAllRows(scope.keywords,{
-    columns:'keyword_id,class_uid,class_name,class_group,item_name,class_enable,keywords,order_no,principle',
-    filters:[{column:'class_uid',operator:'eq',value:classUid}],
-    orders:[{column:'order_no',ascending:true},{column:'keyword_id',ascending:true}]
+  if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定 Keywords Class');
+  const {rows:treeRows}=await selectAllRows(scope.keywords,{
+    columns:'uid,type,name,desc,lists,uid_lists',
+    orders:[{column:'uid',ascending:true}]
   });
-  if(!catalogRows.length)throw new Error('Keywords Class 沒有可分析的 Item');
-  const {rows:classRows}=await selectRows(id==='local'?'local.local_keyword_classes':'silver.keyword_classes',{
-    columns:'default_keyword_id',
-    filters:[{column:'class_uid',operator:'eq',value:classUid}],limit:1
-  });
-  const defaultKeywordId=String(classRows?.[0]?.default_keyword_id??'');
+  const catalog=keywordTreeCatalog(treeRows,classUid);
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
-  const groupMap=buildClassMap(catalogRows,defaultKeywordId);
   const fingerprint=await keywordFingerprint(scope);
-  const now=()=>new Date().toISOString();
   const {data:staled,error:staleError}=await dbAuthRelation(scope.config)
-    .update({staticstime:null}).eq('id',id)
-    .eq('current_keyword_class_uid',classUid).select('id');
-  if(staleError||staled?.length!==1)
-    throw new Error('無法鎖定目前的 Keywords Class：'+String(staleError?.message||'Class changed'));
+    .update({staticstime:null}).eq('id',id).eq('current_keyword_class_uid',classUid).select('id');
+  if(staleError||staled?.length!==1)throw new Error(staleError?.message||'Class 已切換');
   clearKeywordAnalysisCache();
   const progress=event=>{
-    const phase=event.phase;
-    const completed=Number(event.completed)||0;
-    const total=Number(event.total)||0;
-    const percent=phase==='reading'?Math.min(60,3+Math.floor(completed/Math.max(1,Number(fingerprint.count)||completed)*57))
-      :phase==='writing'?60+Math.floor(39*completed/Math.max(1,total)):100;
-    const label=phase==='reading'?'已重新判斷 '+completed.toLocaleString()+' 篇文章'
-      :phase==='writing'?'已更新 '+completed+' / '+total+' 個關鍵詞項目'
-      :'分類已重新計算並儲存至 Keywords';
-    reportBatchProgress(onProgress,phase,completed,total,percent,label);
+    const done=Number(event.completed)||0,total=Number(event.total)||0;
+    const percent=event.phase==='reading'
+      ?Math.min(60,3+Math.floor(57*done/Math.max(1,Number(fingerprint.count)||done)))
+      :event.phase==='writing'?60+Math.floor(39*done/Math.max(1,total)):100;
+    reportBatchProgress(onProgress,event.phase,done,total,percent,
+      event.phase==='reading'?'已重新判斷 '+done+' 篇文章':
+      event.phase==='writing'?'已更新 '+done+' / '+total+' 筆 Keywords':'分析已完成');
   };
   const result=await reanalyzeKeywordClass({
-    classUid,catalogRows,defaultKeywordId,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
+    classUid,treeRows,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
     readPage:async ({offset,limit})=>{
       const {rows}=await selectRows(scope.galaxy,{
         columns:'uid,content,searchable',
         filters:[{column:'statistics_able',operator:'eq',value:true}],
-        orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],
-        limit,offset
+        orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],limit,offset
       });
       return rows;
     },
-    writeItem:async ({keywordId,uidlist})=>{
-      const {data,error}=await dbAuthRelation(scope.keywords).update({uidlist})
-        .eq('class_uid',classUid).eq('keyword_id',keywordId).select('keyword_id');
-      if(error||data?.length!==1)
-        throw new Error('Keywords.uidlist 寫入失敗：'+keywordId+' '+String(error?.message||''));
+    writeNode:async ({uid,uid_lists})=>{
+      const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists})
+        .eq('uid',uid).select('uid');
+      if(error||data?.length!==1)throw new Error('Keywords.uid_lists 儲存失敗：'+uid+' '+(error?.message||''));
     },
     finalize:async counts=>{
-      const meta={
-        class_uid:classUid,
-        class_name:String(catalogRows[0]?.class_name||''),
-        classes:Object.fromEntries(groupMap.ordered.map(group=>[String(group.class_id),group.group])),
-        items:Object.fromEntries(catalogRows.map(row=>[String(row.keyword_id),String(row.item_name||'')])),
-        analyzedDocuments:counts.analyzedDocuments,
-        matchedDocuments:counts.matchedDocuments,
-        itemMatches:counts.itemMatches,
-        occurrences:counts.occurrences,
-        fingerprint
-      };
+      const classes=Object.fromEntries(catalog.groups.map(group=>[group.uid,group.name]));
+      const items=Object.fromEntries(catalog.groups.flatMap(group=>group.items.map(item=>[item.uid,item.name])));
+      const meta={class_uid:classUid,class_name:catalog.name,classes,items,
+        analyzedDocuments:counts.analyzedDocuments,matchedDocuments:counts.matchedDocuments,
+        itemMatches:counts.itemMatches,occurrences:counts.occurrences,fingerprint};
+      const now=new Date().toISOString();
       const {data,error}=await dbAuthRelation(scope.config)
-        .update({keyword_meta:meta,staticstime:now(),updated_at:now()})
-        .eq('id',id).eq('current_keyword_class_uid',classUid)
-        .select('id,staticstime');
-      if(error||data?.length!==1)
-        throw new Error('Keywords 定錨失敗：'+String(error?.message||'Class changed'));
-    },
-    onProgress:progress
+        .update({keyword_meta:meta,staticstime:now,updated_at:now})
+        .eq('id',id).eq('current_keyword_class_uid',classUid).select('id');
+      if(error||data?.length!==1)throw new Error(error?.message||'Keywords 結果保存失敗');
+    },onProgress:progress
   });
   clearKeywordAnalysisCache();
-  const {data:verified,error:verifyError}=await dbAuthRelation(scope.config)
-    .select('staticstime,keyword_meta').eq('id',id).limit(1);
-  if(verifyError||!verified?.[0]?.staticstime
-    ||verified[0].keyword_meta?.class_uid!==classUid
-    ||Number(verified[0].keyword_meta?.matchedDocuments)!==result.matchedDocuments)
-    throw new Error('Keywords 更新後核對失敗');
-  return {
-    ...result,documentCount:result.analyzedDocuments,
-    keywordDocumentCount:result.matchedDocuments,
-    keywordMinChars:minChars,keywordMinDocuments:minDocuments,
-    statisticsEnabled:result.matchedDocuments>minDocuments,
-    dynamicTieCount:0,staticstime:verified[0].staticstime,skipped:false
-  };
+  return {...result,documentCount:result.analyzedDocuments,
+    keywordDocumentCount:result.matchedDocuments,keywordMinChars:minChars,
+    keywordMinDocuments:minDocuments,statisticsEnabled:result.matchedDocuments>minDocuments,
+    skipped:false};
 }
-
 function emptyStored(config,extra={}){
   const minDocuments=normalizeKeywordMinDocuments(config?.keyword_min_documents);
   const globalCount=Math.max(0,Number(extra?.keywordDocumentCount)||0);
@@ -253,78 +211,47 @@ function emptyStored(config,extra={}){
 // when the database-side RPC (silver.read_rune66_summary) is not available.
 // Exact UID-list results are summarized by PostgreSQL.
 function aggregateSummaryRpcRows(rows){
-  const agg={eligible:0,classDays:[],itemCounts:new Map(),itemDocuments:new Map()};
+  const result={eligible:0,groupDays:[],items:new Map()};
   for(const row of rows||[]){
-    if(row.kind==='eligible')agg.eligible=Number(row.hit_count)||0;
-    else if(row.kind==='class_day')agg.classDays.push({class_id:Number(row.class_id),day:String(row.day||'').slice(0,10),count:Number(row.hit_count)||0});
-    else if(row.kind==='item'){
-      agg.itemCounts.set(String(row.item_key),Number(row.hit_count)||0);
-      agg.itemDocuments.set(String(row.item_key),Number(row.document_count)||0);
-    }
+    if(row.kind==='eligible')result.eligible=Number(row.document_count)||0;
+    if(row.kind==='class_day')result.groupDays.push({
+      group_uid:String(row.group_uid||''),day:String(row.day||'').slice(0,10),
+      count:Number(row.document_count)||0
+    });
+    if(row.kind==='item')result.items.set(String(row.item_key||''),row);
   }
-  return agg;
+  return result;
 }
 function storedSummary(agg,config,globalCount=agg.eligible){
-  const meta=config?.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
-  const classes=meta.classes&&typeof meta.classes==='object'?meta.classes:{};
-  const items=meta.items&&typeof meta.items==='object'?meta.items:{};
-  const classCounts=new Map();
-  const itemCounts=agg.itemCounts;
-  const itemDocuments=agg.itemDocuments;
-  const classifications=[];
-
-  for(const entry of agg.classDays){
-    const className=Number.isInteger(entry.class_id)?String(classes[String(entry.class_id)]||'').trim():'';
-    if(!className||entry.count<=0)continue;
-    classCounts.set(entry.class_id,(classCounts.get(entry.class_id)||0)+entry.count);
+  const meta=config?.keyword_meta||{};
+  const classes=meta.classes||{},items=meta.items||{};
+  const totals=new Map(),classifications=[];
+  for(const item of agg.groupDays){
+    if(!classes[item.group_uid]||!item.count)continue;
+    totals.set(item.group_uid,(totals.get(item.group_uid)||0)+item.count);
     classifications.push({
-      key:'class-day:'+entry.class_id+':'+entry.day,
-      uid:'',
-      kind:'galaxy',
-      title:'',
-      date:entry.day,
-      status:'classified',
-      classification_group:className,
-      class_id:entry.class_id,
-      count:entry.count,
-      tied_groups:[],
-      group_lists:{}
+      key:'group-day:'+item.group_uid+':'+item.day,uid:'',date:item.day,
+      classification_group:String(classes[item.group_uid]),
+      group_uid:item.group_uid,count:item.count,status:'classified'
     });
   }
-
-  const groupTotals=Object.entries(classes)
-    .map(([id,label])=>({
-      class_id:Number(id),
-      group:String(label||''),
-      order:Number(id),
-      hit_count:0,
-      document_count:classCounts.get(Number(id))||0
-    }))
-    .sort((a,b)=>a.class_id-b.class_id);
-  const runeTotals=Object.entries(items)
-    .map(([id,label])=>({
-      rune_id:Number(id),
-      label:String(label||''),
-      group:'',
-      order:Number(id),
-      count:itemCounts.get(id)||0,
-      document_count:itemDocuments.get(id)||0
-    }))
-    .sort((a,b)=>a.rune_id-b.rune_id);
-  const classifiedCount=classifications.reduce((sum,row)=>sum+row.count,0);
+  const groupTotals=Object.entries(classes).map(([uid,name],index)=>({
+    group_uid:uid,group:name,order:index,document_count:totals.get(uid)||0
+  }));
+  const runeTotals=Object.entries(items).map(([uid,label],index)=>({
+    uid,label,order:index,count:Number(agg.items.get(uid)?.hit_count)||0,
+    document_count:Number(agg.items.get(uid)?.document_count)||0
+  }));
+  const classifiedCount=classifications.reduce((n,row)=>n+row.count,0);
   const base=emptyStored(config,{keywordDocumentCount:globalCount});
-  return {
-    ...base,
-    documentCount:agg.eligible,
-    classifiedCount,
+  return {...base,documentCount:agg.eligible,classifiedCount,
     unclassifiedCount:Math.max(0,agg.eligible-classifiedCount),
     classifications:base.statisticsEnabled?classifications:[],
     runeTotals:base.statisticsEnabled?runeTotals:[],
-    runeRanking:base.statisticsEnabled?[...runeTotals].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id):[],
+    runeRanking:base.statisticsEnabled?[...runeTotals].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.order-b.order):[],
     groupTotals:base.statisticsEnabled?groupTotals:[]
   };
 }
-
 export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate='',
   sourceCategory='',sourceCategories=[],sourceAliases=[],sourceNames=null}={}){
   const id=normalizeScopeId(scopeId);
@@ -337,8 +264,8 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate
     if(!config.staticstime)return emptyStored(config);
     if(category&&!source)
       throw new Error('關鍵詞來源分類需要指定原始來源名稱');
-    const {readKeywordUidlistSummary}=await import('./db-client.mjs');
-    const rows=await readKeywordUidlistSummary(id,{startDate,endDate,source});
+    const {readKeywordTreeSummary}=await import('./db-client.mjs');
+    const rows=await readKeywordTreeSummary(id,{startDate,endDate,source});
     const agg=aggregateSummaryRpcRows(rows.filter(row=>row.kind!=='item_day'));
     const globalCount=Number(config.keyword_meta?.matchedDocuments)||0;
     return storedSummary(agg,config,globalCount);
