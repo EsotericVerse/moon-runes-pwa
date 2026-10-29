@@ -74,14 +74,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setLoading(true);setError('');
     try{
       const [found,settings]=await Promise.all([
-        selectAllRows(table,{columns:'uid,type,name,desc,lists,uid_lists',
+        selectAllRows(table,{columns:'uid,type,name,desc,lists',
           orders:[{column:'uid',ascending:true}]}),
         dbAuthRelation(configTable).select(
           'current_keyword_class_uid,keyword_min_chars,keyword_min_documents,keyword_class_share_enabled,keyword_meta,staticstime'
         ).eq('id',scopeId).limit(1)
       ]);
       if(settings.error)throw settings.error;
-      const records=found.rows||[],index=indexKeywordTree(records);
+      const records=(found.rows||[]).map(row=>({...row,uid_lists:[]})),index=indexKeywordTree(records);
       const first=index.roots[0];
       const firstClass=first&&childrenOf(index,first.uid)[0];
       const current=index.index.get(preferredUid);
@@ -297,7 +297,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <span>lists · 判斷詞（一行一個）</span>
           <textarea rows={9} value={keywordText} onChange={e=>setKeywordText(e.target.value)}/>
         </label>:<p className="scope-status">lists 由下層 UID 自動維護，不用手填。</p>}
-        <p className="scope-status">uid_lists：{draft.uid_lists.length.toLocaleString()} 筆分析結果（由重新分析產生）</p>
+        <p className="scope-status">uid_lists 由重新分析更新，不會在編輯分類時載入大量文章 UID。</p>
         <div className="scope-preview-links">
           <button type="button" className="loc-button primary" disabled={busy||!draft.name.trim()} onClick={saveNode}>{busy?'儲存中…':'儲存'}</button>
           {tree.index.has(draft.uid)?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeNode(draft)}>刪除</button>:null}
