@@ -9,6 +9,7 @@ DECLARE
   v_config regclass;
   v_keywords regclass;
   v_class_uid text;
+  v_public boolean:=false;
 BEGIN
   IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' THEN RETURN; END IF;
   IF NOT EXISTS(SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope') THEN RETURN; END IF;
@@ -18,6 +19,11 @@ BEGIN
   EXECUTE format('SELECT current_keyword_class_uid FROM %s WHERE id=$1',v_config)
     INTO v_class_uid USING v_scope;
   IF v_class_uid IS NULL THEN RETURN; END IF;
+  IF NOT silver.can_manage_scope(v_scope) THEN
+    EXECUTE format('SELECT coalesce(keyword_class_share_enabled,false) FROM %s WHERE id=$1',v_config)
+      INTO v_public USING v_scope;
+    IF NOT v_public THEN RETURN; END IF;
+  END IF;
   RETURN QUERY EXECUTE format('SELECT keyword_id,class_group,item_name,order_no,class_enable FROM %s WHERE class_uid=$1 ORDER BY order_no,keyword_id',v_keywords)
     USING v_class_uid;
 END;
