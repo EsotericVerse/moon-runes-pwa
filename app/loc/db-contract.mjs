@@ -261,11 +261,22 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function readKeywordClass(scopeId,classUid){
     const scope=normalizeScopeId(scopeId),uid=String(classUid||'');
     if(!/^[0-9A-Za-z]{4}$/.test(uid))return null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_class_by_uid',{
-      p_scope_id:scope,p_class_uid:uid
-    });
+    const params={p_scope_id:scope,p_class_uid:uid};
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_class_by_uid',params);
     if(error)throw new Error(error.message||'Keywords Class read failed');
-    return data;
+    if(data!==null)return data;
+    // Public reads use an anonymous token; a private Class needs a current
+    // provider-verified owner identity. Never trust a persisted user object.
+    const current=await auth.getSession();
+    if(current.error)throw new Error(current.error.message||'Keywords session check failed');
+    const session=current.data?.session;
+    if(!session?.access_token||!session.user?.id)return null;
+    const verified=await auth.getUser(session.access_token);
+    if(verified.error||String(verified.data?.user?.id||'')!==String(session.user.id))
+      return null;
+    const privateResult=await authClient.schema('silver').rpc('read_keyword_class_by_uid',params);
+    if(privateResult.error)throw new Error(privateResult.error.message||'Private Keywords Class read failed');
+    return privateResult.data;
   }
 
   async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
