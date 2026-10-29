@@ -346,14 +346,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // A loose photo in the ZIP can belong to a private chat even if its
         // path does not contain "messages".
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size})
-          .filter(item=>nativeLocal||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
+          .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
         const mediaPlan=prepareArchiveMedia(mediaEvidence,new Set(uidOwners.keys()));
         setArchiveEvidence(mediaEvidence);
         setArchiveSummary({...summary,exifSamples,
           mediaEvidenceCount:mediaEvidence.length,
           mediaImportable:mediaPlan.media.length,
           mediaWithUrl:mediaPlan.media.filter(item=>Boolean(item.url)).length,
-          mediaLinked:mediaEvidence.filter(item=>item.galaxy_uids?.length).length});
+          mediaLinked:mediaEvidence.filter(item=>item.galaxy_uids?.length).length,
+          mediaUnlinked:mediaPlan.media.filter(item=>!item.__article_uid).length});
         if(!imported.length&&!mediaEvidence.length){
           setSource(result.sources.length===1?canonicalSource(result.sources[0]):'');
           setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
@@ -691,7 +692,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {archiveSummary.jsonFilesSeen!==archiveSummary.jsonFilesParsed+archiveSummary.jsonFilesPrivate+archiveSummary.jsonFilesUnrecognized+archiveSummary.jsonFilesOversize+archiveSummary.jsonFilesUnsupported?' JSON 數量尚未完全對帳，請勿視為完整匯入。':''}
       原始紀錄 {archiveSummary.totalRows.toLocaleString()} 筆，解析接受 {archiveSummary.acceptedRows.toLocaleString()} 筆，解析拒絕 {archiveSummary.rejectedRows.toLocaleString()} 筆；解析接受不等於最終寫入成功。
     </p>:null}
-    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入 Galaxy Media {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
+    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入 Galaxy Media {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
