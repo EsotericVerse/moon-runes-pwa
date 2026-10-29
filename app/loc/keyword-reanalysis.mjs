@@ -5,7 +5,7 @@ import {buildKeywordUidlistRows} from './keyword-uidlist.mjs';
 // It reads article bodies only and replaces every Item's uidlist, including
 // Items whose keywords now match nothing. No Galaxy write is ever performed.
 export async function reanalyzeKeywordClass({
-  classUid,catalogRows=[],minChars=0,pageSize=1000,
+  classUid,catalogRows=[],defaultKeywordId='',minChars=0,pageSize=1000,
   readPage,writeItem,finalize,onProgress=()=>{}
 }={}){
   if(typeof readPage!=='function'||typeof writeItem!=='function'||typeof finalize!=='function')
@@ -39,6 +39,13 @@ export async function reanalyzeKeywordClass({
     offset+=page.length;
     onProgress({phase:'reading',completed:articles,eligible});
     if(page.length<pageSize)break;
+  }
+  const fallback=String(defaultKeywordId||'');
+  if(fallback){
+    if(!ordered.some(item=>String(item.keyword_id)===fallback&&item.class_enable!==false))
+      throw new Error('Default Keyword Item is not in the enabled Class');
+    for(const result of hits)if(!result.hits.length)
+      result.hits=[{keyword_id:fallback,times:0}];
   }
   const rows=buildKeywordUidlistRows({classUid,catalogRows:ordered,classifications:hits});
   const matched=new Set();
