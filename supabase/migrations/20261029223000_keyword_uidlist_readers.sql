@@ -31,11 +31,16 @@ BEGIN
       SELECT keyword_id::text AS id, class_group AS grp,order_no,uidlist
       FROM %1$s
       WHERE class_uid=$1 AND class_enable IS DISTINCT FROM false
+    ), default_group AS (
+      SELECT k.class_group AS grp FROM %1$s k
+      JOIN silver.keyword_classes c ON c.default_keyword_id=k.keyword_id
+      WHERE c.class_uid=$1 LIMIT 1
     ), group_ranks AS (
-      SELECT grp, row_number() OVER(ORDER BY min_order,grp)::int AS cid
-      FROM (
-        SELECT grp,min(order_no) AS min_order FROM catalog GROUP BY grp
-      ) g
+      SELECT grp, row_number() OVER(
+        ORDER BY CASE WHEN grp=(SELECT grp FROM default_group) THEN 1 ELSE 0 END,
+          min_order,grp
+      )::int AS cid
+      FROM (SELECT grp,min(order_no) AS min_order FROM catalog GROUP BY grp) g
     ), hits AS (
       SELECT k.id,k.grp,j.value->>'uid' AS uid,(j.value->>'times')::bigint AS times
       FROM catalog k CROSS JOIN LATERAL jsonb_array_elements(k.uidlist) j(value)
