@@ -1,4 +1,2 @@
-import LocApp from '../../../loc/LocApp';
-
-export const metadata={title:'Scope Keyword Settings｜LOC',robots:{index:false,follow:false}};
-export default function Page(){return <LocApp forcedView="keywords"/>;}
+import LegacyManagementRedirect from '../../../loc/LegacyManagementRedirect';
+export default function Page(){return <LegacyManagementRedirect target="/scope-shell/statics/manage/"/>;}

@@ -13,6 +13,7 @@ import {useRouter} from 'next/navigation';
 import {Capacitor} from '@capacitor/core';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
+import ManagementAccess from './ManagementAccess';
 import {useAppBootstrap} from './app-bootstrap';
 import {FeaturePage} from '../modular/ui';
 const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
@@ -148,6 +149,17 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
     </section></section></main>;
   }
 
+  const managementRoute=['manage','searchManage','sourceManage','keywordManage','keywords'].includes(forcedView)||
+    (forcedView==='culture'&&runtime.pathname.includes('/culture/manage'));
+  const managementLevel=forcedView==='searchManage'&&scopeId==='loc'?'global'
+    :scopeMeta?.aggregateChildren?'group':'scope';
+  const managementFeature=forcedView==='sourceManage'||forcedView==='culture'?'culture'
+    :forcedView==='keywordManage'||forcedView==='keywords'?'statics'
+    :forcedView==='searchManage'?'search'
+    :forcedView==='manage'&&(forcedSection==='traceMap'||scopeId==='loc')?'trace':'manage';
+  const managementPage=<ActiveView section={forcedSection} scopeId={scopeId}
+    scopeGroup={scopeMeta?.featureScope||scopeMeta?.registry?.parent_scope_id||
+      (scopeMeta?.aggregateChildren?scopeId:null)}/>;
   return <div className="loc-next-main" data-loc-scope={scopeId} data-loc-view={forcedView}>
     <Suspense fallback={<div className="loc-loading"><UiText id="uiExtra.feature.pageLoading"/></div>}>
       <FeatureGate scopeId={scopeId} scopeMeta={scopeMeta} view={forcedView}>
@@ -158,9 +170,7 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
             title={scopeMeta.label+' · '+t({statics:'features.statics.title',culture:'features.culture.title'}[forcedView])}
             description={t('uiExtra.feature.groupGuide')}
           />
-        </FeaturePage>:<ActiveView section={forcedSection} scopeId={scopeId}
-          scopeGroup={scopeMeta?.featureScope||scopeMeta?.registry?.parent_scope_id||
-            (scopeMeta?.aggregateChildren?scopeId:null)}/>}
+        </FeaturePage>:managementRoute?<ManagementAccess scopeId={scopeId} level={managementLevel} featureId={managementFeature}>{managementPage}</ManagementAccess>:managementPage}
       </FeatureGate>
     </Suspense>
   </div>;

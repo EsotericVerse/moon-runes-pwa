@@ -1,3 +1,2 @@
-import LocApp from '../../../loc/LocApp';
-export const metadata={title:'搜尋管理｜政德',robots:{index:false,follow:false}};
-export default function Page(){return <LocApp forcedView="searchManage" forcedScope="lo3rwang"/>;}
+import LegacyManagementRedirect from '../../../loc/LegacyManagementRedirect';
+export default function Page(){return <LegacyManagementRedirect target="/lo3rwang/search/manage/"/>;}

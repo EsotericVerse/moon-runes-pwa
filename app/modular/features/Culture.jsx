@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {useSearchParams} from 'next/navigation';
+import {usePathname,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
 import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
@@ -229,7 +229,9 @@ export default function Culture(){
   const searchParams=useSearchParams();
   const editDock=useEditDock();
   const canUseScopeEditor=Boolean(editDock?.active&&editDock.scopeId===scopeId);
-  const isTimeEditingView=canUseScopeEditor&&searchParams?.get('edit')==='1';
+  const pathname=usePathname()||'';
+  const isTimeEditingView=canUseScopeEditor&&(pathname.endsWith('/culture/manage')||
+    pathname.endsWith('/culture/manage/')||searchParams?.get('edit')==='1');
   // Public Culture does not load management grants; editing must verify them.
   const account=useAccount({enabled:isTimeEditingView||canUseScopeEditor});
   const [lrunesView,setLrunesView]=useState('daily');

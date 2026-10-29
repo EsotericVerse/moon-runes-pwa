@@ -467,21 +467,24 @@ function AppShellInner({children}){
   const featureEditReturn=editSegments.includes('culture')?'culture'
     :editSegments.includes('statics')&&(editSegments.includes('keywords')||editSegments.includes('manage'))?'statics'
     :editSegments.includes('search')&&(editSegments.includes('manage')||editSegments.includes('admin'))?'search'
+    :editSegments.includes('trace')&&editSegments.includes('manage')?'trace'
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
   const editTabs=[
     {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'暫存'):translateUiField(activeLocale,'儲存'),action:'save'},
     ...(locAdminEdit?[{id:'system',widget:'system'}]:[]),
     {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'人員作品管理'):translateUiField(activeLocale,'時間定錨'),
-      href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture','edit','1'):''},
+      href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture/manage','edit','1'):''},
     {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞'),
-      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='local'?editTabHref('statics/keywords','edit','1'):''},
-    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,locAdminEdit?'痕跡製作':'空間定錨'),
-      href:navScopeId==='local'?navigationHref('local','manage',native):locAdminEdit
-        ?editTabHref('trace/manage','section','traceMap')+'&edit=1'
-        :editScopeAvailable?editTabHref('manage','section','placeManage')+'&edit=1':''},
+      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='local'?editTabHref('statics/manage','edit','1'):''},
+    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,locAdminEdit?'管理':'空間定錨'),
+      href:navScopeId==='local'?navigationHref('local','manage',native)
+        :editTabHref('manage','section','placeManage')+'&edit=1'},
+    {id:'traceMap',icon:'trace',label:translateUiField(activeLocale,locAdminEdit?'痕跡製作':'痕跡圖'),
+      href:navScopeId==='local'?'':editTabHref('trace/manage','section','traceMap')+'&edit=1'},
     {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'文章控管'),
-      href:navScopeId==='local'?navigationHref('local','search',native):locAdminEdit?editTabHref('admin/search','section','search')+'&edit=1':editScopeAvailable?editTabHref('manage/search','section','search')+'&edit=1':''},
+      href:navScopeId==='local'?navigationHref('local','search',native)
+        :editTabHref('search/manage','section','search')+'&edit=1'},
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[

@@ -23,7 +23,7 @@ const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'settings',label:'主題',shortLabel:'主題',description:''}
 ]);
 
-export default function ScopeManagement({scopeId:routeScopeId='loc'}){
+export default function ScopeManagement({scopeId:routeScopeId='loc',section:entrySection=''}){
   const account=useAccount();
   const editDock=useEditDock();
   const searchParams=useSearchParams();
@@ -77,7 +77,9 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
       setRenewing(false);
     }
   }
-  const options=isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS;
+  const traceOnly=entrySection==='traceMap';
+  const options=traceOnly?MANAGEMENT_OPTIONS.filter(item=>item.value==='traceMap')
+    :isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS.filter(item=>item.value!=='traceMap');
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
   const requestedSection=searchParams?.get('section');
@@ -91,7 +93,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
     else return;
     window.location.replace(url.href);
   },[isLoc,requestedSection]);
-  const [section,setSection]=useManagementSection(options,isLoc?'traceMap':'',{traceAnchor:isLoc?'traceMap':'placeManage'});
+  const [section,setSection]=useManagementSection(options,traceOnly?'traceMap':isLoc?'traceMap':'',{traceAnchor:isLoc?'traceMap':'placeManage'});
   const selectedOption=options.find(option=>option.value===section)||options[0];
   if(account.loading||account.permissionLoading)return <FeaturePage featureId="manage">
     <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
@@ -105,7 +107,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc'}){
       onClick={renewEditorSession}>{renewing?'正在重新驗證…':'重新驗證並進入管理'}</button>:null}
     {renewalError?<p className="scope-status scope-error" role="alert">{renewalError}</p>:null}
   </section></FeaturePage>;
-  return <FeaturePage featureId={isLoc?'trace':'manage'}>
+  return <FeaturePage featureId={isLoc||traceOnly?'trace':'manage'}>
 
     <div className={section==='placeManage'?'scope-management-layout scope-management-layout--anchor':'scope-management-layout'}>
     <div className="management-workspace">
