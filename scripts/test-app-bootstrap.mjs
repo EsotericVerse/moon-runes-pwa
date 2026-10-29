@@ -243,7 +243,7 @@ test('Keywords reset clears the current Class rather than writing Galaxy',()=>{
   const end=contract.indexOf('  async function readKeywordClass(',start);
   assert.ok(start>=0&&end>start);
   const body=contract.slice(start,end);
-  assert.match(body,/update\(\{uidlist:\[\]\}\)/);
+  assert.match(body,/update\\(\\{uid_lists:\\[\\]\\}\\)/);
   assert.match(body,/\.eq\('class_uid',classUid\)/);
   assert.doesNotMatch(body,/galaxy|group_lists|apply_keyword_classification/);
 });
@@ -413,7 +413,7 @@ test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
     'opening a Rune group alone must not scan every Galaxy article');
   assert.match(culture,/enabled:styleFilter==='rune66'&&Boolean\(keywordDrillGroup\)/,
     'fetch Rune catalog only after a group is expanded');
-  assert.match(culture,/readKeywordItemCatalog\(scopeId\)/);
+  assert.match(culture,/readKeywordTreeCatalog\\(scopeId\\)/);
   assert.match(culture,/\.filter\(item=>item\.class_group===groupName/,'Group catalog is filtered to the selected Group');
   assert.match(culture,/revalidateOnFocus:false/);
   assert.match(culture,/keywordCounts\.set\(key,\(keywordCounts\.get\(key\)\|\|0\)\+\(Number\(item\.item_count\)\|\|0\)\)/,
