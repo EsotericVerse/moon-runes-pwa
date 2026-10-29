@@ -21,7 +21,9 @@ export function createBackupPublicAdapter({
   async function anonymousToken(){
     if(cached&&Date.now()<expires)return cached;
     if(!pending)pending=(async()=>{
-      const response=await fetchImpl(auth+'/token/anonymous',{headers:{accept:'application/json'}});
+      const response=await fetchImpl(auth+'/token/anonymous',{
+        headers:{accept:'application/json'},signal:AbortSignal.timeout(8000)
+      });
       if(!response.ok)throw new Error('Neon anonymous authentication unavailable (HTTP '+response.status+')');
       const result=await response.json();
       const token=result?.token||result?.data?.token||result?.access_token;
@@ -39,7 +41,9 @@ export function createBackupPublicAdapter({
       const jwt=await anonymousToken();
       const headers=new Headers(init.headers);
       headers.set('authorization','Bearer '+jwt);
-      const response=await fetchImpl(input,{...init,headers});
+      const timeout=AbortSignal.timeout(8000);
+      const signal=init.signal?AbortSignal.any([init.signal,timeout]):timeout;
+      const response=await fetchImpl(input,{...init,headers,signal});
       if(response.status===401){cached=null;expires=0;}
       return response;
     }

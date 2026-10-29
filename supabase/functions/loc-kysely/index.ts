@@ -6,7 +6,7 @@ import {normalizeDatabaseLocation} from "../../../app/loc/providers/database-lin
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
-import {resolveSqlExecutionPort} from "../../../app/loc/providers/sql-engine-ports.mjs";
+import {resolveSqlExecutionPort,assertCrossEnginePublicRead} from "../../../app/loc/providers/sql-engine-ports.mjs";
 import {resolveDatabaseRouting} from "../../../app/loc/providers/routing-config.mjs";
 import {scopedDatabaseListRelation} from "../../../app/loc/providers/database-list-relation.mjs";
 
@@ -30,13 +30,7 @@ function configuredPublishableKeys() {
 const publishableKeys = configuredPublishableKeys();
 // The deployed function and browser use the same source-controlled routing contract.
 const routing = resolveDatabaseRouting();
-const neonLocReadTables = new Set([
-  "game", "keyword_classes", "lo3rwang", "lo3rwang_blocks", "lo3rwang_galaxy",
-  "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
-  "loc_search_keywords", "loc_theme", "lrunes", "lrunes_blocks", "lrunes_daily",
-  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "runes",
-  "runes_etc", "runes_group",
-]);
+// Cross-engine publicly readable tables are centrally enforced by sql-engine-ports.mjs.
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
 
@@ -128,8 +122,7 @@ async function executeRequest(trx: any, target: Record<string,any>, role: string
   if(executionPort.session!=="postgres-rls"){
     // No PostgreSQL RLS or set-local-role on other engines. Until the target's
     // authorization adapter exists, permit only the public LOC read surface.
-    if(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table))
-      throw Object.assign(new Error("Cross-engine target only permits public LOC reads"),{httpStatus:403});
+    assertCrossEnginePublicRead(body);
     return await executeKyselyQuery(trx,body,{dialect:executionPort.engine});
   }
   if (role === "authenticated") await sql`set local role authenticated`.execute(trx);

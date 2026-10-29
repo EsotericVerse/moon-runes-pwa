@@ -150,3 +150,26 @@ test('Neon login network error does not broadcast a false SIGNED_OUT event',asyn
   assert.equal(events.includes('SIGNED_OUT'),false);
   reg.data.subscription.unsubscribe();
 });
+
+test('concurrent Neon authenticated reads share one token exchange per session',async()=>{
+  const requests=[];
+  const fetchImpl=async(input,init={})=>{
+    const url=String(input);
+    requests.push({url,signal:init.signal});
+    let body;
+    if(url===auth+'/get-session')body={user:{id:'signed-user',email:'owner@example.com',emailVerified:true},session:{id:'active-s'}};
+    else if(url===auth+'/token')body={token:jwt};
+    else if(url.startsWith(api))body=[{uid:'aB12cD34'}];
+    else throw Error('Unexpected request '+url);
+    return new Response(JSON.stringify(body),{status:200,headers:{'content-type':'application/json'}});
+  };
+  const adapter=createNeonPrimaryAdapter({url:api,authUrl:auth,fetchImpl});
+  const [a,b]=await Promise.all([
+    adapter.authClient.schema('silver').from('lo3rwang_galaxy').select('uid'),
+    adapter.authClient.schema('silver').from('lrunes_galaxy').select('uid')
+  ]);
+  assert.ifError(a.error);assert.ifError(b.error);
+  assert.equal(requests.filter(x=>x.url===auth+'/token').length,1);
+  assert.equal(requests.filter(x=>x.url.startsWith(api)).length,2);
+  assert.ok(requests.every(x=>x.signal instanceof AbortSignal));
+});

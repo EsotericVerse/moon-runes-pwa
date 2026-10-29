@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createBackupPublicAdapter} from '../app/loc/providers/neon-public.mjs';
@@ -44,4 +45,10 @@ test('Neon backup fails closed without an anonymous JWT',async()=>{
     fetchImpl:async()=>new Response('{}',{status:200,headers:{'content-type':'application/json'}})});
   const result=await adapter.publicClient.schema('silver').from('lo3rwang_galaxy').select('uid');
   assert.match(result.error?.message||'',/no JWT/);
+});
+
+test('Neon anonymous requests have an explicit timeout',()=>{
+  const code=readFileSync(new URL('../app/loc/providers/neon-public.mjs',import.meta.url),'utf8');
+  assert.match(code,/AbortSignal\.timeout\(8000\)/);
+  assert.match(code,/AbortSignal\.any\(\[init\.signal,timeout\]\)/);
 });
