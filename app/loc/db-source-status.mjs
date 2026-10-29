@@ -1,6 +1,6 @@
 const DEFAULT_STATE=Object.freeze({
   primaryLabel:'Supabase',
-  backupLabel:'Neon',
+  backupLabel:'',
   activeSource:'primary',
   degraded:false,
   unavailable:false,
@@ -23,8 +23,9 @@ function snapshot(){
   const failingResources=[...failures.keys()].sort();
   const unavailableResources=failingResources.filter(key=>backupFailures.has(key));
   const first=[...failures.values()][0]||null;
-  const degraded=Boolean(manualReadLabel||failingResources.length);
-  const unavailable=Boolean(unavailableResources.length);
+  const hasBackup=Boolean(labels.backupLabel);
+  const degraded=Boolean(manualReadLabel||(hasBackup&&failingResources.length));
+  const unavailable=Boolean(unavailableResources.length||(!hasBackup&&failingResources.length));
   return Object.freeze({
     ...labels,
     backupLabel:manualReadLabel||labels.backupLabel,
@@ -43,10 +44,10 @@ function emit(){
   for(const listener of listeners)listener();
 }
 
-export function configureDbSourceLabels(primaryLabel='Supabase',backupLabel='Neon'){
+export function configureDbSourceLabels(primaryLabel='Supabase',backupLabel=''){
   labels={
     primaryLabel:String(primaryLabel||'Supabase'),
-    backupLabel:String(backupLabel||'Neon')
+    backupLabel:String(backupLabel??'')
   };
   emit();
 }

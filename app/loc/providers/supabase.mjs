@@ -9,7 +9,7 @@ const DEFAULT_SUPABASE_PUBLISHABLE_KEY='sb_publishable_qPn0vAzozVyXKllRuEKf2Q_fv
 // per browser read. Supabase's managed Data API gives us the same PostgREST
 // query shape and RLS without exhausting the database's direct connection slots.
 // Custom database target management still uses trusted Kysely Edge RPC.
-const EDGE_ONLY_ADMIN_RPCS=new Set(['save_database_target','set_database_target','set_database_routing']);
+const EDGE_ONLY_ADMIN_RPCS=new Set(['save_database_target','set_database_target','set_database_routing','check_backup_readiness']);
 
 // Diagnostic: the browser has shown the SAME request (same table, same
 // limit) sometimes carry `apikey` and sometimes not, with no code change in

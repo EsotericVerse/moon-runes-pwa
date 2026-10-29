@@ -8,7 +8,7 @@ import {useUiSection} from '../../../i18n/ui-locale';
 import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
-import {dbAuthRelation} from '../../db-client.mjs';
+import {dbAuthRelation,dbAuthClient} from '../../db-client.mjs';
 import {resolveDatabaseRouting} from '../../providers/routing-config.mjs';
 import {scopedDatabaseListRelation} from '../../providers/database-list-relation.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -23,12 +23,13 @@ export default function DatabaseTarget({scopeGroup}){
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
   const [saving,setSaving]=useState(false);
+  const [backupHealth,setBackupHealth]=useState({state:'idle'});
   const original=useRef({rows:[]});
   useEffect(()=>{
     let active=true;
     (async()=>{
       const {data,error}=await dbAuthRelation(listRelation)
-        .select('target_id,provider,engine,connection_alias,connection_mode,label,project_id,project_url,region,selected,updated_at')
+        .select('target_id,provider,engine,connection_alias,connection_mode,label,project_id,project_url,region,selected,backup_selected,updated_at')
         .order('provider').order('target_id');
       if(!active)return;
       if(error){setStatus(error.message||'資料庫目標讀取失敗。');return;}
@@ -37,14 +38,25 @@ export default function DatabaseTarget({scopeGroup}){
       setRows(next);
       setSelectedId(current=>next.some(item=>item.target_id===current)?current:
         (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
+      const backup=next.find(item=>item.backup_selected);
+      if(!backup)setBackupHealth({state:'absent'});
+      else {
+        setBackupHealth({state:'checking'});
+        try{
+          const {data:health,error:healthError}=await dbAuthClient.schema('silver').rpc('check_backup_readiness');
+          if(active)setBackupHealth(healthError?{state:'offline'}:health?.online
+            ?{state:health.schema?'online':'schema-error'}:{state:'offline'});
+        }catch{if(active)setBackupHealth({state:'offline'});}
+      }
     })();
     return()=>{active=false};
   },[revision,listRelation]);
+  const configuredBackup=rows.find(item=>item.backup_selected===true)||null;
   const index=rows.findIndex(item=>item.target_id===selectedId);
   const row=index<0?null:rows[index];
   const isManaged=row?.target_id==='supabase-current'||row?.target_id==='neon-current';
   const protectedTarget=Boolean(row&&(row.target_id===STATIC_ROUTING.primaryId||
-    row.target_id===STATIC_ROUTING.backupId||row.selected));
+    row.selected||row.backup_selected));
   const patch=(key,value)=>setRows(current=>current.map(item=>item.target_id===selectedId?{...item,[key]:value}:item));
   const savedRow=item=>original.current.rows.find(saved=>saved.target_id===item.target_id);
   const rowDirty=item=>Boolean(item&&JSON.stringify(item)!==JSON.stringify(savedRow(item)));
@@ -137,7 +149,19 @@ export default function DatabaseTarget({scopeGroup}){
   });
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
-    <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援：{STATIC_ROUTING.backupId||'停用'}</p>
+    <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援資料庫：{configuredBackup?.label||'未設定（選配）'}</p>
+    <p className="scope-status" role="status">
+      {backupHealth.state==='absent'?'備援：未設定（選配，不需檢查）':
+        backupHealth.state==='idle'||backupHealth.state==='checking'
+          ?'備援連線與必要資料表：檢查中…'
+          :<><span aria-label={backupHealth.state==='online'?'正常':'異常'} style={{
+            color:backupHealth.state==='online'?'#198754':'#c53030',marginRight:6
+          }}>●</span>{backupHealth.state==='online'?'備援連線與必要資料表正常':
+            backupHealth.state==='schema-error'?'備援已連線，但必要資料表不完整':
+            '備援連線或驗證失敗（不影響主要資料庫）'}</>}
+      {backupHealth.state!=='absent'?<button type="button" className="loc-button"
+        disabled={saving} onClick={()=>setRevision(value=>value+1)}>重新檢查</button>:null}
+    </p>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <div>
@@ -179,7 +203,7 @@ export default function DatabaseTarget({scopeGroup}){
           title={protectedTarget?'主要或備援資料庫使用中，不可刪除':undefined}><UiText id="uiExtra.adminView.delete"/></button>
       </div>
     </div>:null}
-    <p className="scope-status">這裡管理資料庫連線清單。新增、編輯後請按功能列「儲存」；正式主／備援路由由部署設定決定，不會因為新增清單項目就自動切換。</p>
+    <p className="scope-status">只需要一個主要資料庫即可完整使用；備援資料庫不是安裝條件，平常不會連線或同步。這裡管理資料庫連線清單；正式主／備援路由由部署設定決定，新增清單項目不會自動切換。未配置備援時可將 NEXT_PUBLIC_LOC_BACKUP_ID 設為空值，重新部署後生效。</p>
     {status?<p className="scope-status" role="status">{status}</p>:null}
   </section>;
 }

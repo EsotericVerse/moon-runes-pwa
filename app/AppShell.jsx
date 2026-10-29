@@ -64,12 +64,12 @@ function DataSourceStatus({local=false}){
       <summary>{section.detailsTitle}</summary>
       <div className="scope-data-source-values">
         <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
-        <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
+        <span><FieldText text="備用資料來源："/>{status.backupLabel||'未設定（選配）'}</span>
         <span><FieldText text="目前使用："/>{current}</span>
       </div>
     </details>
     {status.unavailable
-      ?<span role="status"><FieldText text="主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。"/></span>
+      ?<span role="status"><FieldText text={status.backupLabel?"主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。":"主要資料來源暫時無法讀取，且未設定備援資料庫。部分內容可能暫時無法顯示。"}/></span>
       :status.degraded?<span role="status"><FieldText text="備援資料可能有同步時間差。"/></span>:null}
   </div>;
 }

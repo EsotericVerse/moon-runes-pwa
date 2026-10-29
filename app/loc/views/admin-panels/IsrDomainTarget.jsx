@@ -3,11 +3,23 @@
 import {useEffect,useRef,useState} from 'react';
 import {CACHE_POLICY} from '../../cache-policy.config.mjs';
 import {applyGlobalCacheConfig} from '../../cache-mode-client.mjs';
-import {MAX_ISR_DOMAINS,normalizeIsrDomains} from '../../providers/isr-domains.mjs';
+import {MAX_ISR_DOMAINS,normalizeIsrDomains,normalizeIsrDomain} from '../../providers/isr-domains.mjs';
 import {readLocRuntimeConfig,saveLocRuntimeConfig} from '../../runtime-config.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 
 const indexFromChoice=choice=>choice.startsWith('isr:')?Number(choice.slice(4)):-1;
+async function checkIsrCapability(origin){
+  try{
+    const valid=normalizeIsrDomain({label:'ISR',origin});
+    const response=await fetch(new URL('/api/loc/isr-capabilities',valid.origin),{
+      mode:'cors',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(3500)
+    });
+    if(!response.ok)return false;
+    const body=await response.json();
+    return body?.id==='loc-isr-capabilities'&&body?.version===1&&
+      body?.capabilities?.numericHttpCache===true;
+  }catch{return false;}
+}
 function draftOf(row){
   const source=Array.isArray(row?.isr_domains)?row.isr_domains:CACHE_POLICY.domains;
   const domains=source.map(item=>({label:item.label||'',origin:item.origin||''}));
@@ -24,7 +36,16 @@ export default function IsrDomainTarget(){
   const [editing,setEditing]=useState(false);
   const [notice,setNotice]=useState('');
   const [busy,setBusy]=useState(false);
+  const [domainHealth,setDomainHealth]=useState({});
   const initial=useRef('');
+  async function checkDomains(domains,isActive=()=>true){
+    const list=domains.filter(item=>item.origin);
+    if(!list.length){if(isActive())setDomainHealth({});return;}
+    if(isActive())setDomainHealth(Object.fromEntries(list.map(item=>[item.origin,'checking'])));
+    const result=await Promise.all(list.map(async item=>[item.origin,
+      (await checkIsrCapability(item.origin))?'online':'offline']));
+    if(isActive())setDomainHealth(Object.fromEntries(result));
+  }
   useEffect(()=>{
     let active=true;
     readLocRuntimeConfig().then(row=>{
@@ -32,6 +53,7 @@ export default function IsrDomainTarget(){
       const next=draftOf(row);
       initial.current=JSON.stringify(next);
       setDraft(next);
+      void checkDomains(next.domains,()=>active);
     }).catch(error=>{if(active)setNotice(String(error?.message||error));});
     return()=>{active=false;};
   },[]);
@@ -58,6 +80,10 @@ export default function IsrDomainTarget(){
       const index=indexFromChoice(draft.choice);
       const selected=index>=0?domains[index]:null;
       if(index>=0&&!selected?.origin)throw Error('請先填寫所選 ISR 的完整 Domain。');
+      if(selected&&!(await checkIsrCapability(selected.origin))){
+        setDomainHealth(previous=>({...previous,[selected.origin]:'offline'}));
+        throw Error('選定的 ISR 站台未回傳支援資訊，無法啟用。請檢查部署後再試。');
+      }
       const result=await saveLocRuntimeConfig({
         cache_mode:index>=0?'isr':draft.choice==='off'?'off':'cache',
         cache_provider:selected?.origin||'',
@@ -68,6 +94,7 @@ export default function IsrDomainTarget(){
       initial.current=JSON.stringify(next);
       setDraft(next);
       setEditing(false);
+      void checkDomains(next.domains);
       setNotice('已儲存。');
       return true;
     }catch(error){setNotice(String(error?.message||error));return false;}
@@ -76,6 +103,15 @@ export default function IsrDomainTarget(){
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||draft===null});
   return <section className="loc-card admin-workspace loc-isr-settings">
     <h2>快取設定</h2>
+    <p className="scope-status">ISR 完全選配，可不設定任何 ISR 網域；Service Worker 與 No Cache 都不需要 ISR。選擇使用方式並儲存後立即套用，無須重新部署；只有修改 Service Worker 程式或 ISR 服務部署設定時才需要重新部署。</p>
+    {draft&&<p className="scope-status" role="status">{draft.choice.startsWith('isr:')
+      ?(()=>{const origin=draft.domains[indexFromChoice(draft.choice)]?.origin;
+          const state=origin?domainHealth[origin]:'';
+          return state==='checking'?'正在檢查選定的 ISR…':state==='online'
+            ?<><span style={{color:'#198754'}}>●</span> 已確認 HTTP 數值快取能力</>
+            :<><span style={{color:'#c53030'}}>●</span> 選定 ISR 尚未確認可用</>;
+        })()
+      :'ISR 未啟用（選配，不需要部署）'}</p>}
     {draft?<div className="loc-isr-bar">
       <label htmlFor="loc-isr-choice">使用方式
         <select id="loc-isr-choice" className="scope-select" value={draft.choice}
@@ -106,9 +142,17 @@ export default function IsrDomainTarget(){
         <button type="button" className="loc-button loc-isr-remove"
           aria-label={'移除 '+(item.label||'ISR '+(index+1))}
           title="移除" disabled={busy} onClick={()=>removeDomain(index)}>−</button>
+        <span role="status" style={{fontSize:12,gridColumn:'1 / -1'}}>{!item.origin?'未設定（選配）':
+          domainHealth[item.origin]==='checking'?'檢查中…':
+          domainHealth[item.origin]==='online'
+            ?<><span style={{color:'#198754'}}>●</span> 支援 HTTP 數值快取</>
+            :<><span style={{color:'#c53030'}}>●</span> 未確認支援</>}</span>
       </div>)}
       <button type="button" className="loc-button loc-isr-add" onClick={addDomain}
         disabled={busy||draft.domains.length>=MAX_ISR_DOMAINS}>＋ 新增</button>
+      <button type="button" className="loc-button" disabled={busy}
+        onClick={()=>void checkDomains(draft.domains)}>檢查 ISR 支援</button>
+      <p className="scope-status">綠燈代表對方回傳 LOC HTTP 數值快取能力；不代表完整 ISR 增量重建已啟用。</p>
     </div>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
     {!draft&&!notice?<p className="scope-status" role="status">正在讀取設定…</p>:null}
