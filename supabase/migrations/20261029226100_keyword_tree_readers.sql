@@ -12,6 +12,7 @@ DECLARE
  v_galaxy regclass;
  v_class text;
  v_done timestamptz;
+ v_public boolean:=false;
 BEGIN
  IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' OR NOT EXISTS(
    SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope' AND active)
@@ -23,6 +24,11 @@ BEGIN
  EXECUTE format('SELECT current_keyword_class_uid,staticstime FROM %s WHERE id=$1',v_config)
  INTO v_class,v_done USING v_scope;
  IF v_class IS NULL OR v_done IS NULL THEN RETURN; END IF;
+ IF NOT silver.can_manage_scope(v_scope) THEN
+   EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
+    INTO v_public USING v_scope;
+   IF v_public IS NOT TRUE THEN RETURN; END IF;
+ END IF;
  RETURN QUERY EXECUTE format($query$
    WITH clazz AS (SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1),
    groups AS MATERIALIZED (
@@ -85,6 +91,7 @@ DECLARE
  v_config regclass;
  v_keywords regclass;
  v_result jsonb;
+ v_public boolean:=false;
 BEGIN
  IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' OR NOT EXISTS(
     SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope' AND active)
@@ -95,6 +102,11 @@ BEGIN
  EXECUTE format('SELECT current_keyword_class_uid FROM %s WHERE id=$1',v_config)
   INTO v_class USING v_scope;
  IF v_class IS NULL THEN RETURN '{}'::jsonb; END IF;
+ IF NOT silver.can_manage_scope(v_scope) THEN
+   EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
+    INTO v_public USING v_scope;
+   IF v_public IS NOT TRUE THEN RETURN '{}'::jsonb; END IF;
+ END IF;
  EXECUTE format($query$
  WITH cl AS (SELECT uid,type,name,"desc",lists FROM %s WHERE uid=$1 AND type='class'),
  group_nodes AS (
