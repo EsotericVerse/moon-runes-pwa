@@ -131,6 +131,7 @@ export function createArchiveEvidenceCollector(){
       }
       return [...records.values()]
         .filter(item=>Boolean(publicUrl(item.url))||
+          (item.found_in_zip&&item.galaxy_uids.size>0)||
           (Number.isFinite(item.latitude)&&Number.isFinite(item.longitude))||
           Boolean(item.camera_local_time))
         .map(item=>({
@@ -169,13 +170,14 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
       meta_tags:null,createtime:null,location:null
     };
     const hasUrl=Boolean(row.url);
-    if(hasUrl){
+    const isLinkedArchiveFile=Boolean(entry.found_in_zip&&owners.length);
+    if(hasUrl||isLinkedArchiveFile){
       media.push({...row,__article_uid:owners[0]||null});
       for(const uid of owners)mediaLinks.push({uid,media_uid:id});
     }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_uid:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_uid:hasUrl||isLinkedArchiveFile?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
