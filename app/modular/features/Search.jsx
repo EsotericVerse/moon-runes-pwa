@@ -861,7 +861,7 @@ export default function Search({managementMode=false}){
     const href=searchHref(scopeId,term,filters);
     if(!managementMode)return href;
     const normal=new URL(href);
-    const manager=new URL(scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'));
+    const manager=new URL(scopeHref(scopeId,'search/manage'));
     for(const [key,value] of normal.searchParams){
       if(key!=='scopeid')manager.searchParams.set(key,value);
     }
@@ -875,6 +875,13 @@ export default function Search({managementMode=false}){
       contentType,sourceFilter,startDate,endDate,selectedPeriod,
       scopeFilter:managementMode?scopeFilter:'',placeOnly,...overrides
     };
+    if(managementMode){
+      setQuery(term);
+      void executeSearch(term,null,{overrideOptions:{
+        ...filters,mediaOnly:false,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     const url=workspaceSearchHref(term,filters);
     const current=workspaceSearchHref(String(searchParams?.get('place')||searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
@@ -999,6 +1006,13 @@ export default function Search({managementMode=false}){
       contentType,sourceFilter,startDate,endDate,selectedPeriod,
       scopeFilter:managementMode?scopeFilter:'',placeOnly,...patch
     };
+    if(managementMode){
+      setQuery(text);
+      void executeSearch(text,null,{overrideOptions:{
+        ...next,mediaOnly:false,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     const href=workspaceSearchHref(text,next);
     router.push(href,{scroll:false});
   }
@@ -1097,9 +1111,12 @@ export default function Search({managementMode=false}){
       {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{
-          const target=new URL(scopeHref('loc','admin/search'));
-          target.searchParams.set('fill_place',query.trim());
-          router.push(target.href);
+          setPlaceOnly(true);
+          setBulkPlace(query.trim());
+          void executeSearch(query,null,{overrideOptions:{
+            contentType:'',sourceFilter:'',startDate,endDate,scopeFilter,
+            placeOnly:true,mediaOnly:false,browse:false,sortDirection:articleSort
+          }});
         }}>下一步：從文章列表批次補寫地點（需管理權限）</button>
       </div>:null}
       {scopeId==='loc'&&managementMode?<div className="scope-search-scope-filter">
