@@ -69,7 +69,7 @@ function DataSourceStatus({local=false}){
       </div>
     </details>
     {status.unavailable
-      ?<span role="status"><FieldText text="主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。"/></span>
+      ?<span role="status"><FieldText text={status.backupLabel?"主要與備援資料來源目前皆無法讀取，部分內容可能暫時無法顯示。":"主要資料來源暫時無法讀取，且未設定備援資料庫。部分內容可能暫時無法顯示。"}/></span>
       :status.degraded?<span role="status"><FieldText text="備援資料可能有同步時間差。"/></span>:null}
   </div>;
 }
