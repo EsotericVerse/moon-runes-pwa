@@ -175,7 +175,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       });
       await markStale(node.uid);
       const descendants=descendantsOfKeyword(rows,node.uid).reverse();
+      const activeRemoved=descendants.some(child=>child.uid===config.current_keyword_class_uid);
       for(const child of descendants)await writeKeywordLibraryItem(scopeId,'delete',child);
+      if(activeRemoved){
+        const surviving=[...tree.index.values()].find(record=>
+          record.type==='class'&&!descendants.some(deleted=>deleted.uid===record.uid));
+        const {error:settingsError}=await dbAuthRelation(configTable)
+          .update({current_keyword_class_uid:surviving?.uid||null,staticstime:null,keyword_meta:{}})
+          .eq('id',scopeId);
+        if(settingsError)throw settingsError;
+      }
       await load(parent?.uid||'');await invalidate();
       setNotice('已刪除分類節點；不會刪除文章。');
     }catch(e){setError(String(e.message||e));}
