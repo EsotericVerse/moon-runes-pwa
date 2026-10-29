@@ -268,6 +268,20 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data;
   }
 
+  async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
+    const scope=normalizeScopeId(scopeId);
+    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_uidlist_summary',{
+      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
+      p_source:String(source||'').trim()||null
+    });
+    if(error){
+      const failure=new Error(error.message||'Keyword uidlist summary read failed');
+      failure.code=error.code;
+      throw failure;
+    }
+    return Array.isArray(data)?data:[];
+  }
   // Rune66 stored classification: exact counts per class/day and per rune item,
   // computed by the database (silver.read_rune66_summary).
   async function readRune66Summary(scopeId,{startDate='',endDate=''}={}){
