@@ -45,7 +45,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [progress,setProgress]=useState(null);
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
   const [error,setError]=useState(''),[notice,setNotice]=useState('');
-  const [articles,setArticles]=useState(null);
   const tree=useMemo(()=>{
     if(!rows.length)return emptyTree;
     return indexKeywordTree(rows);
@@ -85,7 +84,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const first=index.roots[0];
       const firstClass=first&&childrenOf(index,first.uid)[0];
       const current=index.index.get(preferredUid);
-      const target=current||index.index.get(chosen.item)||index.index.get(chosen.group)
+      const target=current||index.index.get(settings.data?.[0]?.current_keyword_class_uid)
+        ||index.index.get(chosen.item)||index.index.get(chosen.group)
         ||index.index.get(chosen.class)||index.index.get(chosen.category)||firstClass||first;
       const lineage={},nodeType=target?.type;
       let node=target;
@@ -189,7 +189,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         keyword_min_chars:Number(config.keyword_min_chars)||0,
         keyword_min_documents:Number(config.keyword_min_documents)||0,
         keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
-        staticstime:null,keyword_meta:{}
+        staticstime:(config.current_keyword_class_uid!==config.original_class_uid?null:config.staticstime)||null,
+        keyword_meta:config.keyword_meta||{}
       };
       const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
         .eq('id',scopeId).select('id');
