@@ -22,11 +22,12 @@ function scopeOf(scope){
   return scope;
 }
 function timeFilters(column,startDate,endDate){
-  const filters=[];
-  if(startDate)filters.push({column,operator:'gte',value:String(startDate).slice(0,10)+'T00:00:00+08:00'});
-  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
+  const filters=[],isDate=column==='date';
+  if(startDate)filters.push({column,operator:'gte',value:String(startDate).slice(0,10)+(isDate?'':'T00:00:00+08:00')});
+  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+(isDate?'':'T23:59:59.999+08:00')});
   return filters;
 }
+const dayColumn=table=>/^silver\.(lo3rwang|lrunes)_galaxy$/.test(String(table||''))?'date':'createtime';
 async function selectRowById(table,{idColumn,id,columns,authenticated=false}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1,authenticated});
   return page.rows[0]||null;
@@ -53,7 +54,7 @@ function termCountRows(counts,{limit=Infinity,includeEmpty=false}={}){
 }
 function dailyKeyOf(row,column,{includeEmpty=false,includeUndated=false}={}){
   const category=String(row?.[column]||'').trim();
-  const day=String(row?.createtime||'').slice(0,10);
+  const day=String(row?.date||row?.createtime||'').slice(0,10);
   if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
   return day+'\u0000'+category;
 }
@@ -167,7 +168,7 @@ export async function selectSourceTaxonomy(){
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
   const filters=publicContentFilters([
-    ...timeFilters('createtime',startDate,endDate),
+    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
     {column:'statistics_able',operator:'eq',value:true}
   ]);
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
@@ -196,10 +197,10 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
     }));
   }
   const filters=publicContentFilters([
-    ...timeFilters('createtime',startDate,endDate),
+    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
     {column:'statistics_able',operator:'eq',value:true}
   ]);
-  const counts=await countStreamed(current.galaxy,{columns:'source_name,createtime',filters},
+  const counts=await countStreamed(current.galaxy,{columns:'source_name,'+dayColumn(current.galaxy),filters},
     row=>dailyKeyOf(row,'source_name',{includeEmpty:true}));
   return dailyRowsFromCounts(counts).map(row=>({
     scope_id:current.id,
@@ -212,10 +213,10 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
   const resolved=[
     ...filters,
-    ...timeFilters('createtime',startDate,endDate),
+    ...timeFilters(dayColumn(table),startDate,endDate),
     ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
   ];
-  const counts=await countStreamed(table,{columns:`${categoryColumn},createtime`,filters:resolved},
+  const counts=await countStreamed(table,{columns:`${categoryColumn},${dayColumn(table)}`,filters:resolved},
     row=>dailyKeyOf(row,categoryColumn,{includeEmpty,includeUndated}));
   return dailyRowsFromCounts(counts);
 }
@@ -223,7 +224,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
 async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
   const resolved=[
     ...filters,
-    ...timeFilters('createtime',startDate,endDate),
+    ...timeFilters(dayColumn(table),startDate,endDate),
     {column:categoryColumn,operator:'neq',value:''}
   ];
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
