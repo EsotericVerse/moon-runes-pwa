@@ -25,7 +25,7 @@
 - [ ] **權限與快取**：RLS／公開讀取界線、Service Worker／ISR 命中和失效；Cron 須先查清與現有統計聚合的分工，避免重複 SQL。
 - [ ] **手機 APP／SQLite**：本地／雲端切換、文化／統計／搜尋／管理、本地匯入匯出和手機版介面；保留免費基本版與進階版分級。
 - [ ] **匯入正確性**：JSON／ZIP／Markdown、編碼、媒體 URL／位置、去重與中斷重試；私人聊天備份僅進手機本地 SQLite，不進公開網站。
-- [ ] **欄位名稱一致性**：新語意統一 `site`／`location`；已連接的 Supabase 仍顯示 `source_name`／`source_place`。核對正式 schema、匯入與查詢的版本差異，勿憑名稱直接更動資料。
+- [x] **欄位名稱一致性**：Galaxy 的發文來源統一 `site`，地點統一 `location`；2026-10-30 遷移並同步 Code，資料保留。
 - [ ] **管理選單及全站驗證**：依 admin／group／scope 分層配置統一 `manage`，不擴權；確認文章正文的完整 timestamp。驗證功能、權限、空資料、手機、Supabase／Cloudflare 成本，不以 CI 取代行為測試。
 
 ## 設計延伸（非目前發布門檻）

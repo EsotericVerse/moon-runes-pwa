@@ -30,7 +30,7 @@ test('facebook data-array place is retained while text alone is not guessed',()=
 
 test('plain Facebook source timestamps are Unix seconds, not 1970 milliseconds',()=>{
   const sample={timestamp:1720000000,place:{name:'某車站'}};
-  assert.equal(typeof mappedImportValue(sample,'source_place'),'object');
+  assert.equal(typeof mappedImportValue(sample,'location'),'object');
   assert.equal(facebookBackupPlace(sample),'某車站');
   assert.equal(parseImportCreatedTime(mappedImportValue(sample,'createtime')),
     '2024-07-03T09:46:40.000Z');
@@ -153,7 +153,7 @@ test('Galaxy ZIP check-ins decode Meta mojibake without changing source visit id
     createdAt:'2024-07-03T09:46:40.000Z'
   };
   const converted=facebookArchiveGalaxyRow(record);
-  assert.equal(converted.source_place,'板橋車站');
+  assert.equal(converted.location,'板橋車站');
   assert.equal(converted.content,'今天來到板橋車站');
   assert.equal(converted.title,'今天來到板橋車站');
   assert.equal(converted.createtime,record.createdAt);
@@ -162,6 +162,6 @@ test('Galaxy ZIP check-ins decode Meta mojibake without changing source visit id
   const valid=facebookArchiveGalaxyRow({
     ...record,key:'facebook:visit:native',sourcePlace:'臺北車站',text:'正確繁體中文'
   });
-  assert.equal(valid.source_place,'臺北車站');
+  assert.equal(valid.location,'臺北車站');
   assert.equal(valid.content,'正確繁體中文');
 });

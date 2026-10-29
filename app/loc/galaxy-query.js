@@ -107,7 +107,7 @@ async function scopeDailyCounts(current,range){
   const counted=await scopeStatisticsRows(current,range);
   if(counted){
     return [
-      counted.filter(row=>row.kind==='source').map(row=>({scope_id:current.id,source_name:row.category,day:row.day,item_count:row.item_count})),
+      counted.filter(row=>row.kind==='source').map(row=>({scope_id:current.id,site:row.category,day:row.day,item_count:row.item_count})),
       counted.filter(row=>row.kind==='media'&&row.category).map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
     ];
   }
@@ -133,7 +133,7 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
   // aggregate RPC is unavailable; that can turn one chart into 1000s of rows.
   if(requireAggregate)throw new Error('Culture requires silver.read_scope_statistics; full Galaxy fallback is disabled');
   const [text,media]=await Promise.all([
-    selectDailyCategoryCounts(current.galaxy,'source_name',{
+    selectDailyCategoryCounts(current.galaxy,'site',{
       startDate,endDate,filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
       includeEmpty:true,includeUndated
     }),
@@ -173,13 +173,13 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
   ]);
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
   const rows=(await selectAllRows(current.galaxy,{
-    columns:'source_name',
+    columns:'site',
     filters
   })).rows;
-  const counts=await countStreamed(current.galaxy,{columns:'source_name',filters},row=>String(row?.source_name||'').trim());
+  const counts=await countStreamed(current.galaxy,{columns:'site',filters},row=>String(row?.site||'').trim());
   const normalized=termCountRows(counts,{limit:safeLimit,includeEmpty:true}).map(row=>({
     scope_id:current.id,
-    source_name:row.term,
+    site:row.term,
     item_count:row.item_count
   }));
   return {rows:normalized,totalCount:normalized.length};
@@ -191,7 +191,7 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
   if(counted){
     return counted.filter(row=>row.kind==='source').map(row=>({
       scope_id:current.id,
-      source_name:row.category,
+      site:row.category,
       day:row.day,
       item_count:row.item_count
     }));
@@ -200,11 +200,11 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
     ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
     {column:'statistics_able',operator:'eq',value:true}
   ]);
-  const counts=await countStreamed(current.galaxy,{columns:'source_name,'+dayColumn(current.galaxy),filters},
-    row=>dailyKeyOf(row,'source_name',{includeEmpty:true}));
+  const counts=await countStreamed(current.galaxy,{columns:'site,'+dayColumn(current.galaxy),filters},
+    row=>dailyKeyOf(row,'site',{includeEmpty:true}));
   return dailyRowsFromCounts(counts).map(row=>({
     scope_id:current.id,
-    source_name:row.category,
+    site:row.category,
     day:row.day,
     item_count:row.item_count
   }));
@@ -283,7 +283,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,source_name,createtime,url,source_id,target_id,ref_id,media_link,searchable',
+    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable',
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
@@ -399,13 +399,13 @@ function sourceNameClause(selection){
   if(selection.kind==='all')return '';
   // JSON string quoting keeps PostgREST's OR grammar intact for unusual
   // administrator-configured source names (commas, quotes and parentheses).
-  const item=name=>'source_name.ilike.'+
+  const item=name=>'site.ilike.'+
     JSON.stringify(String(name).replace(/[\\%_*]/g,match=>'\\'+match));
   if(selection.kind==='names')return selection.names.map(item).join(',');
   if(selection.kind==='others'){
     if(!selection.names.length)return '';
-    return 'source_name.is.null,and('+selection.names.map(name=>
-      item(name).replace('source_name.ilike.','source_name.not.ilike.')
+    return 'site.is.null,and('+selection.names.map(name=>
+      item(name).replace('site.ilike.','site.not.ilike.')
     ).join(',')+')';
   }
   return '';
@@ -416,13 +416,13 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // truncated page of client-side search results.
   const sourceSelection=resolveSourceSelection(sourceFilter,sourceTaxonomy||{});
   if(sourceSelection.kind==='none')return [];
-  // The admin taxonomy classifies Galaxy source_name, not Galaxy Media
+  // The admin taxonomy classifies Galaxy site, not Galaxy Media
   // media_type or external URL; do not mislabel media as article sources.
   if(sourceFilter&&(mediaOnly||contentType==='multimedia'||contentType==='timeline'))return [];
   const sourceClause=sourceNameClause(sourceSelection);
   const textKindFilters=[
-    ...(contentType==='lyrics_work'?[{column:'source_name',operator:'ilike',value:'suno'}]:[]),
-    ...(contentType==='text_work'?[{column:'source_name',operator:'neq',value:'suno'}]:[])
+    ...(contentType==='lyrics_work'?[{column:'site',operator:'ilike',value:'suno'}]:[]),
+    ...(contentType==='text_work'?[{column:'site',operator:'neq',value:'suno'}]:[])
   ];
 
   const current=scopeOf(scope);
@@ -437,7 +437,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // No article body is fetched by this search stage.
   if(placeOnly)return [makeProvider({
     id:current.id+':source-place',table:current.galaxy,source:current.id+' 打卡地點',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['source_place'],dateColumn:'createtime',
+    columns:textColumns,searchFields:['location'],dateColumn:'createtime',
     sortTitle:false,filters:textFilters,authenticated:includeHiddenText
   })];
   const titleExact=makeProvider({
@@ -456,7 +456,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content','source_name'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['content','site'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
@@ -561,7 +561,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
-      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link',
+      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,site,media_link',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
       authenticated:privateScopes.has(scope.id),
@@ -699,7 +699,7 @@ async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
   const combined=new Map();
   for(const row of textDaily){
     const day=dateOnly(row.day); if(!day)continue;
-    const bucket=sourceBucket(row.source_name),key=day+'|'+bucket;
+    const bucket=sourceBucket(row.site),key=day+'|'+bucket;
     combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
   }
   for(const row of mediaDaily){
@@ -831,7 +831,7 @@ export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate
   if(counted)return counted;
   const [texts,media]=await Promise.all([
     selectAllRows(current.galaxy,{
-      columns:'source_name,createtime',
+      columns:'site,createtime',
       filters:publicContentFilters([
         ...timeFilters('createtime',startDate,endDate),
         {column:'statistics_able',operator:'eq',value:true}

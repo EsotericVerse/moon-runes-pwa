@@ -138,7 +138,7 @@ export default {
     "galaxyThreads": "テキスト · Threads",
     "galaxyInstagram": "テキスト · Instagram／Reels",
     "galaxyAll": "テキスト · 全ソース",
-    "galaxyExact": "テキスト · source_nameを指定",
+    "galaxyExact": "テキスト · siteを指定",
     "mediaAll": "メディア · 全種類",
     "mediaExact": "メディア · media_typeを指定",
     "dailyRune": "日替わりルーン（LunaRunesのみ）",

@@ -29,7 +29,7 @@ export function aggregateOwnScopeStatistics(textRows=[],mediaRows=[]){
   for(const row of Array.isArray(textRows)?textRows:[]){
     const day=String(row?.createtime||'').slice(0,10);
     if(!DAY_RE.test(day))continue;
-    add(day,'source',String(row?.source_name||'').trim());
+    add(day,'source',String(row?.site||'').trim());
     add(day,'total','文字作品');
   }
   for(const row of Array.isArray(mediaRows)?mediaRows:[]){

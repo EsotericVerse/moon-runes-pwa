@@ -46,15 +46,15 @@ test('selected anchor or Frame Queue resolves Galaxy place_id from anchor uid on
   assert.deepEqual(traceArticleIdFilters(['0001','0002'])[0],
     {column:'place_id',operator:'in',value:['0001','0002']});
   assert.deepEqual(groupedTraceDays([
-    {createtime:'2026-01-01T09:00:00+08:00',place_id:'0001',source_place:'舊名稱'},
-    {createtime:'2026-01-01T10:00:00+08:00',place_id:'0001',source_place:'新名稱'}
+    {createtime:'2026-01-01T09:00:00+08:00',place_id:'0001',location:'舊名稱'},
+    {createtime:'2026-01-01T10:00:00+08:00',place_id:'0001',location:'新名稱'}
   ],{key:'place_id'}),[{day:'2026-01-01',category:'0001',item_count:2}]);
 });
 test('Trace report queries indexed place_id in all views, not a place-text OR',()=>{
   const s=read('app/modular/features/trace/TracePlaceResults.jsx');
   assert.ok(s.includes('traceArticleIdFilters(placeIds'));
   assert.ok(s.includes('read_trace_place_density'));
-  assert.ok(s.includes("columns:'uid,title,createtime,source_name,source_place,place_id,url'"));
+  assert.ok(s.includes("columns:'uid,title,createtime,site,location,place_id,url'"));
   assert.ok(!s.includes('traceArticlePlaces('));
   assert.ok(!s.includes('traceArticleFilters(sourcePlaces'));
 });
@@ -67,7 +67,7 @@ test('per-Scope persistent name aliases and archive protect merged identities',(
  assert.ok(sql.includes('trace_place_merge_archive'));
  assert.ok(sql.includes('WITH ORDINALITY'));
  assert.ok(sql.includes('search_scope_trace_place_names'));
- assert.doesNotMatch(sql,/SET\s+source_place\s*=/i);
+ assert.doesNotMatch(sql,/SET\s+location\s*=/i);
  const ui=read('app/loc/TraceOrganizer.jsx');
  assert.ok(ui.includes('儲存已勾選（同一 Trace UID）'));
  assert.ok(ui.includes('runAutomatic'));

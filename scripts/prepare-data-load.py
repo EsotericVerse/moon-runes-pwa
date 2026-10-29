@@ -27,7 +27,7 @@ def repair_mojibake(value):
     return repaired if repaired != value and mojibake_score(repaired) < mojibake_score(value) else value
 
 def normalize_text_integrity(row, table):
-    for field in ('title','content','source_place','meta_tags'):
+    for field in ('title','content','location','meta_tags'):
         if isinstance(row.get(field), str):
             row[field] = repair_mojibake(row[field])
             if '�' in row[field]:

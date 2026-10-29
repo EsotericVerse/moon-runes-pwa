@@ -166,7 +166,7 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
     const row={
       uid:id,media_type:type,url:publicUrl(entry.url),
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
-      meta_tags:null,createtime:null,source_place:null
+      meta_tags:null,createtime:null,location:null
     };
     const hasUrl=Boolean(row.url);
     if(hasUrl){

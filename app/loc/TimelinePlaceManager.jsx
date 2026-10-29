@@ -242,7 +242,7 @@ export default function TimelinePlaceManager({scopeId}){
     if(!analysis||!canWrite||writing||analyzing)return;
     const updates=selectedUpdates;
     if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章缺少的 place_id？\\n\\n'
-      +'已有 place_id 的文章不會再次寫入；source_place 不更動。\\n'
+      +'已有 place_id 的文章不會再次寫入；location 不更動。\\n'
       +'Timeline 原始資料不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;
     try{
@@ -285,7 +285,7 @@ export default function TimelinePlaceManager({scopeId}){
   if(!enabled)return <p className="scope-status">請先選擇個別 Scope，LOC 不執行跨 Scope 的行蹤比對。</p>;
   return <section className="loc-card scope-feature-card" aria-label="Google Timeline 地點整理">
     <h3>地點整理 · Google Timeline</h3>
-    <p className="scope-status">Timeline JSON 只在瀏覽器本機背景解析。以文章時間比對 500 公尺內既有定錨點，只列出 place_id 尚未填寫的文章；按定錨點集中審查。只補寫 place_id，不改 source_place，不儲存私人行蹤。</p>
+    <p className="scope-status">Timeline JSON 只在瀏覽器本機背景解析。以文章時間比對 500 公尺內既有定錨點，只列出 place_id 尚未填寫的文章；按定錨點集中審查。只補寫 place_id，不改 location，不儲存私人行蹤。</p>
     <div className="scope-management-fields">
       <label>選擇 Google Timeline JSON
         <input ref={fileRef} type="file" accept=".json,application/json" disabled={analyzing||writing}
@@ -317,7 +317,7 @@ export default function TimelinePlaceManager({scopeId}){
       <p className="scope-status">待補 place_id 文章：{(ready.length+analysis.disputes.length).toLocaleString()} 篇；
         按定錨點審查群組：{reviewGroups.length.toLocaleString()} 組；
         其中有歧義文章 {analysis.disputes.length.toLocaleString()} 篇。
-        已有 place_id 的文章不列入；source_place 不修改。</p>
+        已有 place_id 的文章不列入；location 不修改。</p>
       <label className="loc-timeline-review-cache">
         <input type="checkbox" checked={sessionEnabled} disabled={!sessionReady||!sessionOwner||writing}
           onChange={e=>onToggleSessionCache(e.target.checked)}/>

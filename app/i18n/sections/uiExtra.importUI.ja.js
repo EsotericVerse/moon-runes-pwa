@@ -86,7 +86,7 @@ export default {
     "content": "本文",
     "title": "タイトル",
     "createtime": "日時",
-    "source_place": "場所",
+    "location": "場所",
     "url": "外部 URL",
     "source_id": "参照元",
     "target_id": "参照先",

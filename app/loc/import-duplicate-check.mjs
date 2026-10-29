@@ -12,7 +12,7 @@ export function importSecond(value){
   return Number.isFinite(epoch)?Math.floor(epoch/1000):null;
 }
 export function importDuplicateKey(record){
-  const source=String(record?.source_name||'').trim().toLocaleLowerCase('und');
+  const source=String(record?.site||'').trim().toLocaleLowerCase('und');
   const second=importSecond(record?.createtime);
   const text=comparableImportText(record?.content);
   if(!source||second===null||!text)return null;
@@ -46,7 +46,7 @@ export async function findExistingImportDuplicates(records,{readSeconds,batchSec
     const key=importDuplicateKey(record);
     if(!key)continue;
     targets.set(key,record.uid);
-    const source=String(record.source_name).trim().toLocaleLowerCase('und');
+    const source=String(record.site).trim().toLocaleLowerCase('und');
     const second=importSecond(record.createtime);
     if(!groups.has(source))groups.set(source,new Set());
     groups.get(source).add(second);
@@ -73,7 +73,7 @@ export async function matchExistingImportByCreatedAt(records,{readSeconds,batchS
   const bySource=new Map();
   for(const record of records){
     const second=importSecond(record?.createtime);
-    const source=String(record?.source_name||'').trim().toLowerCase();
+    const source=String(record?.site||'').trim().toLowerCase();
     if(second===null||!source)continue;
     if(!bySource.has(source))bySource.set(source,new Map());
     const group=bySource.get(source);
@@ -89,7 +89,7 @@ export async function matchExistingImportByCreatedAt(records,{readSeconds,batchS
       if(!Array.isArray(rows))throw Error('原始時間查詢沒有回傳有效文章');
       for(const second of current){
         const candidates=rows.filter(row=>importSecond(row.createtime)===second&&
-          String(row.source_name||'').trim().toLowerCase()===source)
+          String(row.site||'').trim().toLowerCase()===source)
           .sort((a,b)=>String(a.uid).localeCompare(String(b.uid),'en'));
         for(const record of seconds.get(second)){
           const available=candidates.filter(row=>!claimed.has(String(row.uid)));

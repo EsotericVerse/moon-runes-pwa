@@ -33,7 +33,7 @@ test('Threads ZIP flows past detection into actual Galaxy-ready articles with or
   });
   assert.ok(a.detected.sources.includes('threads'));
   assert.equal(a.results.length,1);
-  assert.equal(a.results[0].source_name,'Threads');
+  assert.equal(a.results[0].site,'Threads');
   assert.equal(a.results[0].content,'台南散步');
   assert.equal(a.results[0].url,'https://www.threads.net/@writer/post/abc123');
 });
@@ -46,8 +46,8 @@ test('Facebook ZIP keeps place, time and original permalink',async()=>{
     }])
   });
   assert.equal(a.results.length,1);
-  assert.equal(a.results[0].source_name,'Facebook');
-  assert.equal(a.results[0].source_place,'高雄車站');
+  assert.equal(a.results[0].site,'Facebook');
+  assert.equal(a.results[0].location,'高雄車站');
   assert.equal(a.results[0].url,'https://www.facebook.com/post/123');
 });
 test('ChatGPT conversations.json becomes searchable dialogue instead of an inert ZIP scan',async()=>{
@@ -62,7 +62,7 @@ test('ChatGPT conversations.json becomes searchable dialogue instead of an inert
     }])
   });
   assert.equal(a.results.length,1);
-  assert.equal(a.results[0].source_name,'ChatGPT');
+  assert.equal(a.results[0].site,'ChatGPT');
   assert.equal(a.results[0].title,'空間定錨');
   assert.match(a.results[0].content,/\[user\].*板橋車站/s);
   assert.match(a.results[0].content,/\[assistant\].*依照原文紀錄/s);
@@ -73,7 +73,7 @@ test('Unrecognized archive still attempts generic text records and does not sile
   });
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].content,'一篇通用文章');
-  assert.equal(a.results[0].source_name,'Archive');
+  assert.equal(a.results[0].site,'Archive');
 });
 function gpsJpeg(){
   // Minimal valid JPEG EXIF containing GPS latitude 25°02'N longitude 121°31'E.
@@ -112,7 +112,7 @@ test('EXIF GPS is inspected locally from ZIP without importing image bytes',asyn
   assert.equal(a.exif.length,1);
   assert.equal(a.summary.exifWithGps,1);
   assert.equal(a.results[0].content,'這是文章');
-  assert.equal(a.results[0].source_place,undefined);
+  assert.equal(a.results[0].location,undefined);
 });
 
 test('Threads ZIP post with time nested under media[] gets createtime from creation_timestamp',async()=>{
@@ -219,7 +219,7 @@ test('Threads ZIP with Facebook Messenger backup only imports public posts',asyn
     if(article)publicRows.push(article);
   }});
   assert.equal(publicRows.length,1);
-  assert.equal(publicRows[0].source_name,'Threads');
+  assert.equal(publicRows[0].site,'Threads');
   assert.equal(publicRows[0].content.includes('公開'),true);
   assert.equal(publicRows[0].content.includes('私訊'),false);
   assert.ok(rejected>=1);
@@ -238,7 +238,7 @@ test('Standalone Threads public JSON uses archive scanner without publishing pri
     if(article)accepted.push(article);
   }});
   assert.equal(accepted.length,1);
-  assert.equal(accepted[0].source_name,'Threads');
+  assert.equal(accepted[0].site,'Threads');
   assert.equal(accepted[0].content,'僅公開貼文');
   assert.ok(skipped>=1);
 });

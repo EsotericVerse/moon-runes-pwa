@@ -138,7 +138,7 @@ export default {
     "galaxyThreads": "Text · Threads",
     "galaxyInstagram": "Text · Instagram/Reels",
     "galaxyAll": "Text · All sources",
-    "galaxyExact": "Text · Specific source_name",
+    "galaxyExact": "Text · Specific site",
     "mediaAll": "Media · All types",
     "mediaExact": "Media · Specific media_type",
     "dailyRune": "Daily runes (LunaRunes only)",

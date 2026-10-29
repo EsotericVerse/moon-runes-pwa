@@ -86,7 +86,7 @@ export default {
     "content": "正文",
     "title": "标题",
     "createtime": "日期时间",
-    "source_place": "地点",
+    "location": "地点",
     "url": "外部 URL",
     "source_id": "来源关联",
     "target_id": "目标关联",

@@ -16,7 +16,7 @@ const PLACE_OPTIONS=Object.freeze([
   {value:'anchor',label:'空間定錨點',description:'新增或編輯地點、座標、隱藏權限'},
   {value:'names',label:'名稱整理',description:'同位置名稱校正、別名、熱門地點'},
   {value:'timeline',label:'Timeline 地點整理',description:'匯入路線 JSON、審查糾紛點'},
-  {value:'quickFill',label:'快速補打卡',description:'原有 source_place 日期批次補寫'}
+  {value:'quickFill',label:'快速補打卡',description:'原有 location 日期批次補寫'}
 ]);
 
 export default function PlaceManagement({scopeId}){

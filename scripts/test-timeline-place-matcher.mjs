@@ -38,9 +38,9 @@ test('outside 500m stays empty; two inside 500m become disputed',()=>{
  assert.equal(match.windows[0].disputed,true);
  assert.equal(matchTimelineWindows(windows,[anchors[2]]).withoutAnchor,1);
 });
-test('place_id controls review completion regardless of existing source_place',()=>{
+test('place_id controls review completion regardless of existing location',()=>{
  const window={candidates:[{uid:'A001',title:'甲',meters:20}],disputed:false};
- const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,source_place:'已打卡',window},
+ const rows=[{uid:'11111111',title:'文章',createtime:'2026-01-01T00:10:00Z',place_id:null,location:'已打卡',window},
   {uid:'22222222',title:'已存在',createtime:'2026-01-01T00:10:00Z',place_id:'B002',window},
   {uid:'33333333',title:'相同',createtime:'2026-01-01T00:10:00Z',place_id:'A001',window}];
  const result=accumulateTimelineArticles(rows);
@@ -90,10 +90,10 @@ test('one article matched at different coordinates cannot be swept into a bulk g
  assert.ok(groups.some(g=>g.key==='article:11111111'&&g.defaultPlaceId===''));
  assert.equal(groups.reduce((n,g)=>n+g.rows.filter(row=>row.uid==='11111111').length,0),1);
 });
-test('UI is owner-only, grouped with default checkboxes, and source_place is protected',()=>{
+test('UI is owner-only, grouped with default checkboxes, and location is protected',()=>{
  const ui=read('app/loc/TimelinePlaceManager.jsx');
  const page=read('app/loc/PlaceManagement.jsx');
- const migration=read('supabase/migrations/20261028140000_timeline_missing_source_place_review.sql');
+ const migration=read('supabase/migrations/20261028140000_timeline_missing_location_review.sql');
  assert.match(page,/Timeline 地點整理/);
  assert.match(ui,/readAllTraceAnchors\(scopeId,\{includeHidden:true\}\)/);
  assert.match(ui,/if\(!window\.confirm\(/);
