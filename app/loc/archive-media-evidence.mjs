@@ -31,7 +31,9 @@ export function archiveAttachmentReferences(record){
   if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||
        /^(image|photo|video|audio)/i.test(String(record.media_type||''))||
        [record.url,record.media_url,record.mediaUrl,record.image_url,record.video_url,record.download_url]
-         .some(isArchiveMediaUrl))roots.push(record);
+         .some(isArchiveMediaUrl)||
+       [record.media_url,record.mediaUrl,record.image_url,record.video_url]
+         .some(value=>typeof value==='string'&&Boolean(publicUrl(value))))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
   let examined=0;
@@ -41,7 +43,7 @@ export function archiveAttachmentReferences(record){
     if(visited.has(value))continue;
     visited.add(value);
     if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth});continue;}
-    const hint=String(value.media_type||value.type||value.mime_type||'');
+    const hint=String(value.media_type||value.type||value.mime_type||(value.image_url?'image':value.video_url?'video':''));
     const paths=URI_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
       .map(pathValue).filter(validRef);
     const allUrls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string').map(rawPath);
