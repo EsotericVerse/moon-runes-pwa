@@ -28,7 +28,6 @@ import {EditDockProvider,useEditDock} from './modular/edit-dock';
 // Only individual Scope homepages download the opt-in management entry.
 const ScopeHomeEditEntry=dynamic(()=>import('./loc/ScopeHomeEditEntry'),{loading:()=>null});
 const HomeEditModeRestore=dynamic(()=>import('./loc/HomeEditModeRestore'),{loading:()=>null});
-const AdminEditSystemButton=dynamic(()=>import('./loc/AdminEditSystemButton'),{loading:()=>null});
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
 import ScopeLink from './modular/ScopeLink';
 
@@ -488,21 +487,33 @@ function AppShellInner({children}){
     :editSegments.includes('trace')&&editSegments.includes('manage')?'trace'
     :null;
   const isFeatureEditMode=Boolean(editingDockVisible&&featureEditReturn);
-  const editTabs=[
-    {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'暫存'):translateUiField(activeLocale,'儲存'),action:'save'},
-    ...(locAdminEdit?[{id:'system',widget:'system'}]:[]),
-    {id:'time',icon:'culture',label:locAdminEdit?translateUiField(activeLocale,'人員作品管理'):translateUiField(activeLocale,'時間定錨'),
-      href:locAdminEdit?editTabHref('culture/manage','edit','1'):editScopeAvailable?editTabHref('culture/manage','edit','1'):''},
-    {id:'keywords',icon:'keywords',label:locAdminEdit?translateUiField(activeLocale,'關鍵詞管理'):translateUiField(activeLocale,'關鍵詞'),
-      href:locAdminEdit?editTabHref('statics/manage','edit','1'):editScopeAvailable&&navScopeId!=='local'?editTabHref('statics/manage','edit','1'):''},
-    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,locAdminEdit?'管理':'空間定錨'),
+  // Each editing level has exactly four destinations + Save + Discard.
+  // Global System Management (/admin) is a distinct admin workspace, not a
+  // fifth Group destination in the six-button feature dock.
+  const editDestinations=locAdminEdit?[
+    {id:'time',icon:'culture',label:translateUiField(activeLocale,'人員作品管理'),
+      href:editTabHref('culture/manage','edit','1')},
+    {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞'),
+      href:editTabHref('statics/manage','edit','1')},
+    {id:'traceMap',icon:'trace',label:translateUiField(activeLocale,'痕跡圖管理'),
+      href:editTabHref('trace/manage','section','traceMap')+'&edit=1'},
+    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'文章管理'),
+      href:editTabHref('search/manage','section','search')+'&edit=1'}
+  ]:[
+    {id:'time',icon:'culture',label:translateUiField(activeLocale,'時間定錨'),
+      href:editScopeAvailable?editTabHref('culture/manage','edit','1'):''},
+    {id:'keywords',icon:'keywords',label:translateUiField(activeLocale,'關鍵詞'),
+      href:editScopeAvailable&&navScopeId!=='local'?editTabHref('statics/manage','edit','1'):''},
+    {id:'manage',icon:'trace',label:navScopeId==='local'?'管理':translateUiField(activeLocale,'空間定錨'),
       href:navScopeId==='local'?navigationHref('local','manage',native)
         :editTabHref('manage','section','placeManage')+'&edit=1'},
-    {id:'traceMap',icon:'trace',label:translateUiField(activeLocale,locAdminEdit?'痕跡製作':'痕跡圖'),
-      href:navScopeId==='local'?'':editTabHref('trace/manage','section','traceMap')+'&edit=1'},
-    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'文章控管'),
+    {id:'suggestions',icon:'search',label:translateUiField(activeLocale,'進階搜尋'),
       href:navScopeId==='local'?navigationHref('local','search',native)
-        :editTabHref('search/manage','section','search')+'&edit=1'},
+        :editTabHref('search/manage','section','search')+'&edit=1'}
+  ];
+  const editTabs=[
+    {id:'save',icon:'save',label:isFeatureEditMode?translateUiField(activeLocale,'暫存'):translateUiField(activeLocale,'儲存'),action:'save'},
+    ...editDestinations,
     {id:'cancel',icon:'cancel',label:isFeatureEditMode?'取消回普通頁面':translateUiField(activeLocale,'放棄'),action:'cancel'}
   ];
   const featureTabs=[
@@ -567,9 +578,7 @@ function AppShellInner({children}){
     {children}
     {restoreHomeEdit?<HomeEditModeRestore scopeId={scopeId}/>:null}
     <nav className="scope-feature-dock" aria-label={translateUiField(activeLocale,'固定功能選單')} data-scope={localWorkspace?'local':scopeId}>
-      {editingDockVisible?editTabs.map(tab=>tab.widget==='system'
-        ?<AdminEditSystemButton key="system" href={editTabHref('admin','edit','1')}/>
-        :tab.action
+      {editingDockVisible?editTabs.map(tab=>tab.action
         ?<button type="button" key={tab.id}
           disabled={editDock.busy&&tab.action!=='cancel'}
           onClick={()=>tab.action==='save'
