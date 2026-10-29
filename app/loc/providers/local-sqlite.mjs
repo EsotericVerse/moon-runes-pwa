@@ -23,6 +23,7 @@
 import {Capacitor} from '@capacitor/core';
 import {sourceTaxonomyFromArrays} from '../source-classification.mjs';
 import {convertLegacyTimeRows} from '../time-schema-migration.mjs';
+import {generateKeywordClassUid} from '../keyword-uidlist.mjs';
 
 const DATABASE_NAME='loc_local_scope';
 const MARKER='loc.local.scope.sqlite.v1';
@@ -40,7 +41,7 @@ CREATE TABLE IF NOT EXISTS local (
   keyword_min_chars INTEGER NOT NULL DEFAULT 32,
   keyword_min_documents INTEGER NOT NULL DEFAULT 100,
   staticstime TEXT,
-  current_keyword_class_id TEXT,
+  current_keyword_class_uid TEXT,
   keyword_class_share_enabled INTEGER NOT NULL DEFAULT 0,
   keyword_meta TEXT NOT NULL DEFAULT '{}',
   display_name TEXT NOT NULL DEFAULT 'local',
@@ -62,9 +63,7 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
   ref_id TEXT,
   source_name TEXT,
   media_link TEXT,
-  statistics_able INTEGER NOT NULL DEFAULT 1,
-  class_id INTEGER,
-  group_lists TEXT NOT NULL DEFAULT 'false'
+  statistics_able INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS local_galaxy_media (
   uid TEXT PRIMARY KEY NOT NULL,
@@ -101,7 +100,6 @@ CREATE TABLE IF NOT EXISTS local_time (
 CREATE TABLE IF NOT EXISTS local_keywords (
   keyword_id INTEGER PRIMARY KEY AUTOINCREMENT,
   group_name TEXT NOT NULL,
-  item_no INTEGER NOT NULL,
   item_name TEXT NOT NULL,
   principle TEXT NOT NULL DEFAULT '',
   keywords TEXT NOT NULL DEFAULT '[]',
@@ -109,7 +107,13 @@ CREATE TABLE IF NOT EXISTS local_keywords (
   class_name TEXT NOT NULL,
   class_group TEXT NOT NULL,
   class_enable INTEGER NOT NULL DEFAULT 1,
-  class_id TEXT NOT NULL
+  class_uid TEXT NOT NULL,
+  uidlist TEXT NOT NULL DEFAULT '[]'
+);
+CREATE TABLE IF NOT EXISTS local_keyword_classes (
+  class_uid TEXT PRIMARY KEY NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'local',
+  default_keyword_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS local_daily (
   record_id TEXT PRIMARY KEY NOT NULL,
@@ -375,6 +379,75 @@ function rowsOf(db,sql,params=[]){
     return result;
   }finally{stmt.free();}
 }
+function legacyKeywordPlan(items=[]){
+  const classes=new Map(),used=new Set();
+  for(const item of items){
+    const old=String(item.class_id||item.class_name||'');
+    if(!old)throw new Error('Legacy local Keywords class has no identity');
+    if(!classes.has(old)){
+      const uid=generateKeywordClassUid([...used]);
+      used.add(uid);
+      classes.set(old,uid);
+    }
+  }
+  return classes;
+}
+function portableKeywordStatements(items,classes){
+  const statements=[{sql:"CREATE TABLE local_keywords_portable (keyword_id INTEGER PRIMARY KEY AUTOINCREMENT,group_name TEXT NOT NULL,item_name TEXT NOT NULL,principle TEXT NOT NULL DEFAULT '',keywords TEXT NOT NULL DEFAULT '[]',order_no INTEGER NOT NULL DEFAULT 0,class_name TEXT NOT NULL,class_group TEXT NOT NULL,class_enable INTEGER NOT NULL DEFAULT 1,class_uid TEXT NOT NULL,uidlist TEXT NOT NULL DEFAULT '[]')",values:[]}];
+  for(const row of items)statements.push({
+    sql:"INSERT INTO local_keywords_portable(keyword_id,group_name,item_name,principle,keywords,order_no,class_name,class_group,class_enable,class_uid,uidlist) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    values:[row.keyword_id,row.group_name,row.item_name,row.principle||'',row.keywords||'[]',
+      row.order_no||0,row.class_name,row.class_group,row.class_enable,classes.get(String(row.class_id||row.class_name)),'[]']
+  });
+  statements.push({sql:"DROP TABLE local_keywords",values:[]});
+  statements.push({sql:"ALTER TABLE local_keywords_portable RENAME TO local_keywords",values:[]});
+  for(const [old,uid] of classes){
+    const row=items.find(item=>String(item.class_id||item.class_name)===old);
+    const defaultItem=items.find(item=>String(item.class_id||item.class_name)===old&&
+      Number(item.item_no)===Number(row?.default_group_item_no??0));
+    statements.push({sql:'INSERT OR IGNORE INTO local_keyword_classes(class_uid,scope_id,default_keyword_id) VALUES(?,?,?)',
+      values:[uid,'local',defaultItem?.keyword_id||null]});
+  }
+  return statements;
+}
+function upgradeWebKeywordSchema(db){
+  if(!rowsOf(db,"PRAGMA table_info(local)").some(row=>row.name==='current_keyword_class_uid'))
+    db.run('ALTER TABLE local ADD COLUMN current_keyword_class_uid TEXT');
+  if(rowsOf(db,"PRAGMA table_info(local_keywords)").some(row=>row.name==='class_uid'))return;
+  db.run('CREATE TABLE IF NOT EXISTS local_keyword_classes(class_uid TEXT PRIMARY KEY,scope_id TEXT NOT NULL,default_keyword_id INTEGER)');
+  const items=rowsOf(db,'SELECT * FROM local_keywords');
+  const classes=legacyKeywordPlan(items);
+  const oldCurrent=rowsOf(db,'SELECT current_keyword_class_id FROM local WHERE id=?',['local'])[0]?.current_keyword_class_id;
+  db.run('BEGIN TRANSACTION');
+  try{
+    for(const item of portableKeywordStatements(items,classes))db.run(item.sql,item.values);
+    db.run("UPDATE local SET current_keyword_class_uid=?,staticstime=NULL,keyword_meta='{}' WHERE id=?",
+      [classes.get(String(oldCurrent))||null,'local']);
+    db.run('COMMIT');
+  }catch(error){db.run('ROLLBACK');throw error;}
+}
+async function upgradeNativeKeywordSchema(conn){
+  let columns=(await conn.query('PRAGMA table_info(local)')).values||[];
+  if(!columns.some(row=>row.name==='current_keyword_class_uid'))
+    await conn.execute('ALTER TABLE local ADD COLUMN current_keyword_class_uid TEXT');
+  columns=(await conn.query('PRAGMA table_info(local_keywords)')).values||[];
+  if(columns.some(row=>row.name==='class_uid'))return;
+  await conn.execute('CREATE TABLE IF NOT EXISTS local_keyword_classes(class_uid TEXT PRIMARY KEY,scope_id TEXT NOT NULL,default_keyword_id INTEGER)');
+  const items=(await conn.query('SELECT * FROM local_keywords')).values||[];
+  const classes=legacyKeywordPlan(items);
+  const current=(await conn.query("SELECT current_keyword_class_id FROM local WHERE id='local'")).values?.[0]?.current_keyword_class_id;
+  await conn.execute('BEGIN TRANSACTION');
+  try{
+    for(const item of portableKeywordStatements(items,classes)){
+      if(item.values.length)await conn.run(item.sql,item.values,false);
+      else await conn.execute(item.sql);
+    }
+    await conn.run("UPDATE local SET current_keyword_class_uid=?,staticstime=NULL,keyword_meta='{}' WHERE id='local'",
+      [classes.get(String(current))||null],false);
+    await conn.execute('COMMIT');
+  }catch(error){await conn.execute('ROLLBACK');throw error;}
+}
+
 function createFreshSQL(SQL){
   const db=new SQL.Database();
   db.run(SCHEMA);
@@ -416,6 +489,7 @@ async function webDatabase(){
     upgradeWebLocalTime(db);
     upgradeWebLocalArchiveExif(db);
     upgradeWebLocalMedia(db);
+    upgradeWebKeywordSchema(db);
     if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
       db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
@@ -436,6 +510,7 @@ async function nativeDatabase(){
     await upgradeNativeLocalTime(conn);
     await upgradeNativeLocalArchiveExif(conn);
     await upgradeNativeLocalMedia(conn);
+    await upgradeNativeKeywordSchema(conn);
     const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
     if(!columns.some(row=>row.name==='txt_class'))
       await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
@@ -654,7 +729,7 @@ function queryBuilder(table){
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
 const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
-  'target_id','media_link','anchor_ids','keywords','runeslist','rune_references']);
+  'target_id','media_link','anchor_ids','keywords','uidlist','runeslist','rune_references']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
 function decodeRow(row){
