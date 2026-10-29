@@ -4,7 +4,6 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSWRConfig} from 'swr';
 import {useEditDock} from '../modular/edit-dock';
-import {selectAllRows,selectCount} from './db-query.mjs';
 import {dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem,copyKeywordLibraryClass} from './db-client.mjs';
 import {indexKeywordTree,descendantsOfKeyword} from './keyword-tree.mjs';
 import {keywordClassState,invalidateKeywordClass} from './keyword-class-state.mjs';
@@ -75,8 +74,18 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setLoading(true);setError('');
     try{
       const [found,settings]=await Promise.all([
-        selectAllRows(table,{columns:'uid,type,name,desc,lists',
-          orders:[{column:'uid',ascending:true}]}),
+        (async()=>{
+          const owned=[],size=500;
+          for(let offset=0;;offset+=size){
+            const {data,error}=await dbAuthRelation(table)
+              .select('uid,type,name,desc,lists')
+              .order('uid',{ascending:true}).range(offset,offset+size-1);
+            if(error)throw new Error(error.message||'Keywords 讀取失敗');
+            owned.push(...(data||[]));
+            if((data||[]).length<size)break;
+          }
+          return {rows:owned};
+        })(),
         dbAuthRelation(configTable).select(
           'current_keyword_class_uid,keyword_min_chars,keyword_min_documents,keyword_class_share_enabled,keyword_meta,staticstime'
         ).eq('id',scopeId).limit(1)
