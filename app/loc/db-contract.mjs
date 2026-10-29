@@ -211,7 +211,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function readKeywordTreeSummary(scopeId,{startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
-    const day=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
     const data=await keywordRead('read_keyword_tree_summary',{
       p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
       p_source:String(source||'').trim()||null
