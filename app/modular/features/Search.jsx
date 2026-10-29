@@ -822,7 +822,9 @@ export default function Search({managementMode=false}){
     setQuery('');setPlaceOnly(false);setBulkPlace('');setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
-    router.replace(managementMode?scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'):featureNavigationHref(scopeId,'search'));
+    // Management queries stay in the authorized workspace. Only a public
+    // search reset changes the public URL.
+    if(!managementMode)router.replace(featureNavigationHref(scopeId,'search'));
   }
   const filterTypes=[
     ['',t('uiExtra.searchUI.allTypes')],
@@ -889,6 +891,15 @@ export default function Search({managementMode=false}){
   }
   function runSearch(event){
     event.preventDefault();
+    if(managementMode){
+      // No router.push: navigation re-enters the permission gate, remounts
+      // SearchManagement, and loses the user's query before results arrive.
+      void executeSearch(query,null,{overrideOptions:{
+        contentType:'',sourceFilter:'',startDate,endDate,scopeFilter,
+        mediaOnly:false,placeOnly,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     searchFromSuggestion(query);
   }
 
