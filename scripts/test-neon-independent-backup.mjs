@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createBackupPublicAdapter} from '../app/loc/providers/neon-public.mjs';
