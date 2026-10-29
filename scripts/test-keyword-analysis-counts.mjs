@@ -6,7 +6,8 @@ const runner=code.slice(code.indexOf('export async function runKeywordAnalysisBa
 const summary=code.slice(code.indexOf('export async function selectKeywordAnalysisSummary('),
  code.indexOf('\nexport function clearKeywordAnalysisCache('));
 test('analysis reads Galaxy articles but never updates Galaxy classification columns',()=>{
- assert.match(runner,/columns:'uid,content,searchable'/);
+ assert.match(runner,/\.select\('uid,content,searchable'\)/);
+ assert.match(runner,/dbAuthRelation\(scope\.galaxy\)/);
  assert.match(runner,/reanalyzeKeywordClass/);
  assert.match(runner,/update\(\{uid_lists\}\)/);
  assert.doesNotMatch(runner,/\.update\(\{class_id|group_lists|applyKeywordClassification/);
