@@ -222,9 +222,9 @@ function timelineItems(rows,{includeScope=false}={}){
       a.segment_index-b.segment_index);
 }
 function dateFilters(startDate,endDate,column='createtime'){
-  const filters=[];
-  if(startDate)filters.push({column,operator:'gte',value:`${String(startDate).slice(0,10)}T00:00:00+08:00`});
-  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+'T23:59:59.999+08:00'});
+  const filters=[],isDate=column==='date';
+  if(startDate)filters.push({column,operator:'gte',value:String(startDate).slice(0,10)+(isDate?'':'T00:00:00+08:00')});
+  if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+(isDate?'':'T23:59:59.999+08:00')});
   return filters;
 }
 function cultureParts(scopeContext,runtimeId){
@@ -611,7 +611,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
 
   const galaxyFilters=publicContentFilters([
     {column:'statistics_able',operator:'eq',value:true},
-    ...dateFilters(startDate,endDate),
+    ...dateFilters(startDate,endDate,['lo3rwang','lrunes'].includes(scope.id)?'date':'createtime'),
     ...(rawSources.length?[{column:'source_name',operator:'in',value:rawSources}]:[])
   ]);
   const mediaFilters=[
