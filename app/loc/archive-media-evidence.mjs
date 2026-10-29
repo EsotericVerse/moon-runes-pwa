@@ -73,7 +73,7 @@ export function createArchiveEvidenceCollector(){
     if(!records.has(path))records.set(path,{
       entry_path:path,platform:platformFromPath(path),media_type:archiveMediaType(path),
       galaxy_uids:new Set(),source_files:new Set(),url:publicUrl(path),
-      latitude:null,longitude:null,camera_local_time:null,found_in_zip:false
+      latitude:null,longitude:null,camera_local_time:null,found_in_zip:false,referenced_by_post:false
     });
     return records.get(path);
   }
@@ -82,6 +82,7 @@ export function createArchiveEvidenceCollector(){
       for(const attachment of record?.attachments||[]){
         const item=locate(attachment.uri);
         if(!item)continue;
+        item.referenced_by_post=true;
         item.platform=String(record.platform||item.platform||'').slice(0,32);
         item.media_type=attachment.mediaType||item.media_type;
         item.url=publicUrl(attachment.url)||item.url;
@@ -131,6 +132,7 @@ export function createArchiveEvidenceCollector(){
       }
       return [...records.values()]
         .filter(item=>Boolean(publicUrl(item.url))||
+          (item.found_in_zip&&item.referenced_by_post)||
           (Number.isFinite(item.latitude)&&Number.isFinite(item.longitude))||
           Boolean(item.camera_local_time))
         .map(item=>({
@@ -138,7 +140,8 @@ export function createArchiveEvidenceCollector(){
         platform:item.platform||null,media_type:item.media_type,
         galaxy_uids:[...item.galaxy_uids],source_files:[...item.source_files],
         url:item.url,latitude:item.latitude,longitude:item.longitude,
-        camera_local_time:item.camera_local_time,found_in_zip:item.found_in_zip
+        camera_local_time:item.camera_local_time,found_in_zip:item.found_in_zip,
+        referenced_by_post:item.referenced_by_post
       }));
     },
     count(){return records.size;}
@@ -165,17 +168,18 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
     const type=entry.media_type||archiveMediaType(entry.entry_path);
     const row={
       uid:id,media_type:type,url:publicUrl(entry.url),
-      title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件'),
+      title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件')+' · '+String(entry.entry_path||'').split('/').pop().slice(0,120),
       meta_tags:null,createtime:null,location:null
     };
     const hasUrl=Boolean(row.url);
-    if(hasUrl){
+    const isLinkedArchiveFile=Boolean(entry.found_in_zip&&entry.referenced_by_post);
+    if(hasUrl||isLinkedArchiveFile){
       media.push({...row,__article_uid:owners[0]||null});
       for(const uid of owners)mediaLinks.push({uid,media_uid:id});
     }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_uid:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_uid:hasUrl||isLinkedArchiveFile?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
