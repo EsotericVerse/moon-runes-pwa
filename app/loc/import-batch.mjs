@@ -54,7 +54,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
     const source=typeof item==='string'?{url:item}:item;
     if(!source||typeof source!=='object')continue;
     const explicitId=String(source.uid||'').trim();
-    const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
+    const rawUrl=String(source.media_url||source.mediaUrl||source.image_url||source.video_url||source.download_url||source.downloadUrl||source.url||source.uri||source.href||source.link||'').trim();
     if(explicitId&&!IMPORT_MEDIA_UID.test(explicitId))throw new Error('媒體 uid 必須為 8 碼英數字。');
     if((typeof item==='string'&&IMPORT_MEDIA_UID.test(item))||(explicitId&&!rawUrl&&!source.media_type&&!source.type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)){
       references.push(typeof item==='string'?item:explicitId);
@@ -62,7 +62,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
     }
     const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
     if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)continue;
-    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type);
+    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type||(source.image_url?'image':source.video_url?'video':''));
     const record={
       ...(explicitId?{uid:explicitId}:{}),
       __article_uid:article_uid||null,
