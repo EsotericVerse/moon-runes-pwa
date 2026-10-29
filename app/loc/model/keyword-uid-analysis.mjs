@@ -8,7 +8,7 @@ export function classifyKeywordDocumentsByUid(documents=[],treeRows=[],classUid=
   const slot=new Map(catalog.map((item,i)=>[i+1,item.uid]));
   const temp=catalog.map((item,i)=>({
     item_no:i+1,item_name:item.item_name,class_group:item.class_group,
-    keywords:item.keywords,order_no:item.order_no,class_enable:true
+    keywords:item.keywords,order_no:item.order_no,class_enable:true,match_item_name:false
   }));
   const outcome=classifyKeywordDocuments(documents,temp);
   return {...outcome,classifications:(outcome.classifications||[]).map(row=>({
