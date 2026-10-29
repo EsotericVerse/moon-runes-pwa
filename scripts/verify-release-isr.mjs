@@ -23,13 +23,22 @@ for(const route of [
 const numericSource=read(numeric),invalidateSource=read(invalidation);
 // ISR routes are prepared but refuse requests unless Admin enables mode=isr.
 // Deployment continues to be a separate manual user action.
-if(!numericSource.includes("db.from('loc_runtime_config')")||
-   !numericSource.includes("cache_mode!=='isr'")||
-   !numericSource.includes('configuredOrigin!==url.origin')||
+const guards=read('app/api/loc/_numeric-failover.mjs');
+const publicServer=read('app/api/loc/_server.js');
+if(!numericSource.includes('readIsrSummary(')||
+   !numericSource.includes('tryPublicSources(publicNumericSources()')||
+   !guards.includes("db.from('loc_runtime_config')")||
+   !guards.includes("cache_mode!=='isr'")||
+   !guards.includes('origin')||
    !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
+
   throw Error('ISR must remain admin-gated; revalidation writes remain disabled');
-if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource))
+if(/service_role|SUPABASE_SERVICE_ROLE_KEY|unstable_cache|revalidateTag/.test(numericSource+guards+publicServer))
   throw Error('Optional numeric endpoint must use public RPC and standard HTTP caching');
+if(!publicServer.includes('createBackupPublicAdapter')||
+   !publicServer.includes('AbortSignal.timeout(6500)')||
+   !guards.includes('isAvailabilityFailure('))
+  throw Error('ISR must retain independent bounded Neon fallback');
 const openNext=read('open-next.config.ts'),wrangler=readJson('wrangler.jsonc');
 if(!openNext.includes('static-assets-incremental-cache')||
   /r2-incremental-cache|do-queue|do-sharded-tag-cache/.test(openNext))
