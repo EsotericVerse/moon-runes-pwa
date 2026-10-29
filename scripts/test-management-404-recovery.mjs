@@ -101,3 +101,14 @@ test('expired unified entry verifies identity and fresh scope grant before clear
   assert.match(ttl,/value\.locked/);
   assert.match(auth,/auth\.getUser\(session\.access_token\)/);
 });
+
+test('cancel exits management to the real public document after clearing editor state',()=>{
+  const dock=read('app/modular/edit-dock.jsx');
+  const start=dock.indexOf('const discard=useCallback(');
+  const stop=dock.indexOf('const switchTo=useCallback(',start);
+  assert.ok(start>=0&&stop>start);
+  const cancel=dock.slice(start,stop);
+  assert.match(cancel,/const destination=new URL\(String\(target\),window\.location\.href\)/);
+  assert.match(cancel,/end\(\);\s*window\.location\.assign\(destination\.href\)/);
+  assert.doesNotMatch(cancel,/navigate\(target\)/);
+});

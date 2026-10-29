@@ -208,14 +208,18 @@ export function EditDockProvider({children}){
     typeof editor.isDirty==='function'&&editor.isDirty()
   ),[]);
   const discard=useCallback((target,{confirmOnlyWhenDirty=false}={})=>{
+    if(!target)return;
     // An explicit Cancel must always escape a stalled Save lock.
     if(!busy&&(!confirmOnlyWhenDirty||dirtyEditors().length)&&
       !window.confirm(confirmOnlyWhenDirty
         ?'確定放棄尚未儲存的變更並返回普通頁面？'
         :'確定放棄尚未儲存的編輯並返回首頁？'))return;
+    const destination=new URL(String(target),window.location.href);
     end();
-    navigate(target);
-  },[busy,dirtyEditors,end,navigate]);
+    // Leaving a static management entrypoint needs a real document navigation.
+    // App Router replace may update the dock but leave the management page mounted.
+    window.location.assign(destination.href);
+  },[busy,dirtyEditors,end]);
   // Every mounted form reports its own unsaved state; a focused form is not
   // necessarily the only edited one on a management page.
   const switchTo=useCallback((target,{history='replace',scroll=true}={})=>{
