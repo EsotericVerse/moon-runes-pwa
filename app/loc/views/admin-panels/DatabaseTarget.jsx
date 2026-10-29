@@ -8,7 +8,7 @@ import {useUiSection} from '../../../i18n/ui-locale';
 import adminViewZh from '../../../i18n/sections/uiExtra.adminView.zh_tw.js';
 import {SQL_ENGINE_OPTIONS} from '../../providers/sql-engine-ports.mjs';
 import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers/database-link.mjs';
-import {dbAuthRelation} from '../../db-client.mjs';
+import {dbAuthRelation,dbAuthClient} from '../../db-client.mjs';
 import {resolveDatabaseRouting} from '../../providers/routing-config.mjs';
 import {scopedDatabaseListRelation} from '../../providers/database-list-relation.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
@@ -23,6 +23,7 @@ export default function DatabaseTarget({scopeGroup}){
   const [status,setStatus]=useState('');
   const [revision,setRevision]=useState(0);
   const [saving,setSaving]=useState(false);
+  const [backupHealth,setBackupHealth]=useState({state:'idle'});
   const original=useRef({rows:[]});
   useEffect(()=>{
     let active=true;
@@ -35,6 +36,17 @@ export default function DatabaseTarget({scopeGroup}){
       const next=data||[];
       original.current={rows:next};
       setRows(next);
+      const backup=next.find(item=>item.backup_selected);
+      if(!backup)setBackupHealth({state:'absent'});
+      else {
+        setBackupHealth({state:'checking'});
+        try{
+          const {data:health,error:healthError}=await dbAuthClient.schema('silver').rpc('check_backup_readiness');
+          if(active)setBackupHealth(healthError?{state:'offline'}:health?.online
+            ?{state:health.schema?'online':'schema-error'}:{state:'offline'});
+        }catch{if(active)setBackupHealth({state:'offline'});}
+      }
+      if(!active)return;
       setSelectedId(current=>next.some(item=>item.target_id===current)?current:
         (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
     })();
@@ -139,6 +151,18 @@ export default function DatabaseTarget({scopeGroup}){
   return <section className="loc-card admin-workspace">
     <h2><UiText id="uiExtra.adminView.databaseRouting"/></h2>
     <p className="scope-status">主要：{STATIC_ROUTING.primaryId}｜備援資料庫：{configuredBackup?.label||'未設定（選配）'}</p>
+    <p className="scope-status" role="status">
+      {backupHealth.state==='absent'?'備援：未設定（選配，不需檢查）':
+        backupHealth.state==='idle'||backupHealth.state==='checking'
+          ?'備援連線與必要資料表：檢查中…'
+          :<><span aria-label={backupHealth.state==='online'?'正常':'異常'} style={{
+            color:backupHealth.state==='online'?'#198754':'#c53030',marginRight:6
+          }}>●</span>{backupHealth.state==='online'?'備援連線與必要資料表正常':
+            backupHealth.state==='schema-error'?'備援已連線，但必要資料表不完整':
+            '備援連線或驗證失敗（不影響主要資料庫）'}</>}
+      {backupHealth.state!=='absent'?<button type="button" className="loc-button"
+        disabled={saving} onClick={()=>setRevision(value=>value+1)}>重新檢查</button>:null}
+    </p>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <div>

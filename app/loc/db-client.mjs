@@ -7,7 +7,7 @@ import {createLocalSqliteAdapter} from './providers/local-sqlite.mjs';
 
 // Provider construction is the only runtime composition point.
 const adapter=createConfiguredAdapter();
-configureDbSourceLabels(adapter.primarySourceLabel||'Primary',adapter.backupSourceLabel||'Backup');
+configureDbSourceLabels(adapter.primarySourceLabel||'Primary',adapter.backupSourceLabel??'');
 
 // The device-local SQLite backend for the hidden `local` Scope (see
 // providers/local-sqlite.mjs) is spliced in at this single composition
@@ -64,5 +64,5 @@ export const dbConfiguredPublicClient=adapter.configuredPublicClient||null;
 // Passive Auth events use the configured SDK, not the routed query client.
 export const dbAuthEvents=adapter.auth;
 export const dbPrimarySourceLabel=adapter.primarySourceLabel||'Primary';
-export const dbBackupSourceLabel=adapter.backupSourceLabel||'Backup';
+export const dbBackupSourceLabel=adapter.backupSourceLabel??'';
 export const {publicClient:dbPublicClient,authClient:dbAuthClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount}=client;
