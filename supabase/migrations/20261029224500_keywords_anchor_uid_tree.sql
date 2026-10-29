@@ -35,7 +35,7 @@ DECLARE
   scope_name text;
   class_row record;group_row record;item_row record;
   category text;cat_uid varchar(4);group_uid varchar(4);item_uid varchar(4);
-  default_group text;class_exists boolean;old_count bigint;new_count bigint;missing_count bigint;
+  class_exists boolean;old_count bigint;new_count bigint;missing_count bigint;
 BEGIN
   FOR scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
     EXECUTE format($ddl$
@@ -77,14 +77,11 @@ BEGIN
       EXECUTE format(
         'UPDATE silver.%I_keywords_v2 SET lists=lists||jsonb_build_array($1) WHERE uid=$2',
         scope_name) USING class_row.class_uid,cat_uid;
-      EXECUTE format(
-        'SELECT class_group FROM silver.%I_keywords WHERE class_uid=$1 AND item_no=default_group_item_no LIMIT 1',
-        scope_name) INTO default_group USING class_row.class_uid;
       FOR group_row IN EXECUTE format($query$
         SELECT class_group,min(order_no) first_order
         FROM silver.%I_keywords WHERE class_uid=$1 GROUP BY class_group
-        ORDER BY CASE WHEN class_group=$2 THEN 1 ELSE 0 END,min(order_no),class_group
-      $query$,scope_name) USING class_row.class_uid,default_group
+        ORDER BY min(order_no),class_group
+      $query$,scope_name) USING class_row.class_uid
       LOOP
         group_uid:=silver.new_keyword_tree_uid(scope_name);
         EXECUTE format(
