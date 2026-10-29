@@ -31,9 +31,10 @@ test('Changed Item lists clear old Group and Item analysis without migration',as
  assert.deepEqual(result.saved.find(r=>r.type==='group').uid_lists,[]);
  assert.equal(result.stats.matchedDocuments,0);
 });
-test('Item name is not an implicit keyword in new portable parser',async()=>{
+test('Original classification implicitly matches Item name as well as lists',async()=>{
  const result=await analyze(source,'只有靈這個字');
- assert.equal(result.stats.matchedDocuments,0);
+ assert.equal(result.stats.matchedDocuments,1);
+ assert.deepEqual(result.saved.find(row=>row.type==='item').uid_lists,[{uid:'Ab12Cd34',times:1}]);
 });
 test('Failed Keyword write never publishes the success marker',async()=>{
  let published=false;
