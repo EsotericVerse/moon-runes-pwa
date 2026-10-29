@@ -20,7 +20,7 @@ const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:()=
 // Article Control sections share one Scope ownership and authorization boundary. Moving a panel
 // never changes its Scope ownership, database tables or authorizer.
 export const ARTICLE_CONTROL_SECTIONS=Object.freeze([
-  {value:'search',label:'文章管理搜尋',shortLabel:'搜尋'},
+  {value:'search',label:'管理搜尋',shortLabel:'管理搜尋'},
   {value:'publish',label:'發表文章與多媒體',shortLabel:'發表'},
   {value:'blocks',label:'修改建議與治理原則',shortLabel:'區塊修改'},
   {value:'import',label:'匯入',shortLabel:'匯入'},
@@ -30,7 +30,7 @@ export const ARTICLE_CONTROL_SECTIONS=Object.freeze([
 // LOC's global management has its own permissions and existing destinations.
 // It must not gain an arbitrary Scope's article or classification editor.
 const LOC_OPTIONS=Object.freeze([
-  {value:'search',label:'文章管理搜尋',shortLabel:'搜尋'},
+  {value:'search',label:'管理搜尋',shortLabel:'管理搜尋'},
   {value:'media',label:'發表多媒體',shortLabel:'媒體'},
   {value:'trace',label:'治理原則',shortLabel:'治理原則'}
 ]);
