@@ -240,7 +240,7 @@ export default function Search({managementMode=false}){
   // workspace may narrow the query to a specific Scope.
   const locPublicSearch=scopeId==='loc'&&!managementMode;
   const managementAuthorized=Boolean(managementMode&&account.user&&!account.loading&&!account.permissionLoading&&
-    (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
+    (scopeId==='loc'?(account.canManageGroupSync('loc')||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
   const router=useRouter();
   const resourceCache=useResourceCache();
@@ -491,7 +491,7 @@ export default function Search({managementMode=false}){
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
         contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:managementMode&&Boolean(options.placeOnly),
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
-        sortDirection:options.sortDirection,signal
+        managementOnly:managementMode,sortDirection:options.sortDirection,signal
       });
       // Style tags enhance results, but their optional request must never
       // discard valid text/media hits when its own service fails.
@@ -822,7 +822,9 @@ export default function Search({managementMode=false}){
     setQuery('');setPlaceOnly(false);setBulkPlace('');setContentType('');setSourceFilter('');setScopeFilter('');
     setStartDate('');setEndDate('');setSelectedPeriod('');setAdvancedOpen(false);
     resetSearchState();
-    router.replace(managementMode?scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'):featureNavigationHref(scopeId,'search'));
+    // Management queries stay in the authorized workspace. Only a public
+    // search reset changes the public URL.
+    if(!managementMode)router.replace(featureNavigationHref(scopeId,'search'));
   }
   const filterTypes=[
     ['',t('uiExtra.searchUI.allTypes')],
@@ -859,7 +861,7 @@ export default function Search({managementMode=false}){
     const href=searchHref(scopeId,term,filters);
     if(!managementMode)return href;
     const normal=new URL(href);
-    const manager=new URL(scopeHref(scopeId,scopeId==='loc'?'admin/search':'manage/search'));
+    const manager=new URL(scopeHref(scopeId,'search/manage'));
     for(const [key,value] of normal.searchParams){
       if(key!=='scopeid')manager.searchParams.set(key,value);
     }
@@ -873,6 +875,13 @@ export default function Search({managementMode=false}){
       contentType,sourceFilter,startDate,endDate,selectedPeriod,
       scopeFilter:managementMode?scopeFilter:'',placeOnly,...overrides
     };
+    if(managementMode){
+      setQuery(term);
+      void executeSearch(term,null,{overrideOptions:{
+        ...filters,mediaOnly:false,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     const url=workspaceSearchHref(term,filters);
     const current=workspaceSearchHref(String(searchParams?.get('place')||searchParams?.get('q')||'').trim(),{
       contentType:searchParams?.get('type'),sourceFilter:searchParams?.get('source'),
@@ -889,6 +898,15 @@ export default function Search({managementMode=false}){
   }
   function runSearch(event){
     event.preventDefault();
+    if(managementMode){
+      // No router.push: navigation re-enters the permission gate, remounts
+      // SearchManagement, and loses the user's query before results arrive.
+      void executeSearch(query,null,{overrideOptions:{
+        contentType:'',sourceFilter:'',startDate,endDate,scopeFilter,
+        mediaOnly:false,placeOnly,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     searchFromSuggestion(query);
   }
 
@@ -959,8 +977,8 @@ export default function Search({managementMode=false}){
       {account.loading||account.permissionLoading
         ?<p role="status">正在確認管理權限…</p>
         :!account.user
-          ?<p>請先至設定首頁登入，才能使用搜尋管理。</p>
-          :<p>目前帳號沒有這個 Scope 的搜尋管理權限。</p>}
+          ?<p>請先至設定首頁登入，才能使用管理搜尋。</p>
+          :<p>目前帳號沒有這個 Scope 的管理搜尋權限。</p>}
     </section>
   </FeaturePage>;
   if(aggregateScopes)return <FeaturePage featureId="search">
@@ -988,12 +1006,61 @@ export default function Search({managementMode=false}){
       contentType,sourceFilter,startDate,endDate,selectedPeriod,
       scopeFilter:managementMode?scopeFilter:'',placeOnly,...patch
     };
+    if(managementMode){
+      setQuery(text);
+      void executeSearch(text,null,{overrideOptions:{
+        ...next,mediaOnly:false,browse:false,sortDirection:articleSort
+      }});
+      return;
+    }
     const href=workspaceSearchHref(text,next);
     router.push(href,{scroll:false});
   }
 
   const pageContent=<>
-    <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
+    {managementMode?<section className="scope-search-workspace" aria-label="管理搜尋">
+      <h2>管理搜尋</h2>
+      <p className="scope-status">直接查詢具有管理權限的 Galaxy 文章，包括不可公開搜尋的文章；不套用公開搜尋的 searchable 旗標。</p>
+      <form className="scope-search-form" onSubmit={runSearch}>
+        <label htmlFor="scope-management-search-query">文章 UID、標題、正文或來源</label>
+        <input id="scope-management-search-query" value={query}
+          onChange={event=>setQuery(event.target.value)}
+          placeholder="輸入 UID 或文章內容關鍵字"/>
+        <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>查詢文章</button>
+        <button type="button" className="loc-button"
+          disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
+          onClick={()=>executeSearch('',null,{browse:true,overrideOptions:{
+            contentType:'',sourceFilter:'',startDate,endDate,
+            scopeFilter,placeOnly:false,mediaOnly:false,browse:true,sortDirection:articleSort
+          }})}>瀏覽文章</button>
+        <button type="button" className="loc-button" onClick={clearSearchFilters}>清除</button>
+      </form>
+      {scopeId==='loc'?<div className="scope-search-scope-filter">
+        <label htmlFor="scope-management-search-scope">管理範圍</label>
+        <select id="scope-management-search-scope" value={scopeFilter}
+          disabled={!scopesQuery.isSuccess}
+          onChange={event=>updateSearchFilter(setScopeFilter,event.target.value)}>
+          <option value="">全部已授權 Scope</option>
+          {availableScopes.map(item=><option key={item.id} value={item.id}>{scopeLabel(item.id)}</option>)}
+        </select>
+        {scopesQuery.isError?<span role="alert" className="scope-status scope-error">{t('uiExtra.searchUI.scopeUnavailable')}</span>:null}
+      </div>:null}
+      <div className="scope-search-place-mode" role="group" aria-label="文章管理查詢方式">
+        <button type="button" className="loc-button" aria-pressed={!placeOnly}
+          onClick={()=>updateSearchFilter(setPlaceOnly,false)}>查文章</button>
+        <button type="button" className="loc-button" aria-pressed={placeOnly}
+          onClick={()=>updateSearchFilter(setPlaceOnly,true)}>查打卡地點</button>
+      </div>
+      <div className="scope-search-filter-body scope-search-date-fields">
+        <label htmlFor="scope-management-search-start">起始日期
+          <input id="scope-management-search-start" type="date" value={startDate}
+            onChange={event=>updateSearchFilter(setStartDate,event.target.value)}/></label>
+        <label htmlFor="scope-management-search-end">結束日期
+          <input id="scope-management-search-end" type="date" min={startDate||undefined} value={endDate}
+            onChange={event=>updateSearchFilter(setEndDate,event.target.value)}/></label>
+      </div>
+    </section>:null}
+    {!managementMode?<section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
         <input id="scope-search-query" list={!searchPopularOpen&&suggestedTitles.length?'scope-search-loaded-titles':undefined}
@@ -1044,9 +1111,12 @@ export default function Search({managementMode=false}){
       {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{
-          const target=new URL(scopeHref('loc','admin/search'));
-          target.searchParams.set('fill_place',query.trim());
-          router.push(target.href);
+          setPlaceOnly(true);
+          setBulkPlace(query.trim());
+          void executeSearch(query,null,{overrideOptions:{
+            contentType:'',sourceFilter:'',startDate,endDate,scopeFilter,
+            placeOnly:true,mediaOnly:false,browse:false,sortDirection:articleSort
+          }});
         }}>下一步：從文章列表批次補寫地點（需管理權限）</button>
       </div>:null}
       {scopeId==='loc'&&managementMode?<div className="scope-search-scope-filter">
@@ -1139,7 +1209,7 @@ export default function Search({managementMode=false}){
         onSuggestionClick={term=>searchFromSuggestion(term)}
       />:null}
     </details>:null}
-    </section>
+    </section>:null}
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
     {!managementMode&&results.length>0&&!browseResults&&matchedQueryRef.current?<section className="scope-search-next-step"

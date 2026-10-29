@@ -9,6 +9,7 @@ registerDefaultSection('management',managementZh);
 registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
+import ScopeSourceCorrection from './ScopeSourceCorrection';
 import {insertRows,dbAuthRelation,dbAuthClient,updateRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
@@ -725,6 +726,7 @@ export default function ManagementImportPanel({scopeId}){
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',fields:{}});
   return <div className="scope-management-imports">
+    <ScopeSourceCorrection scopeId={scopeId}/>
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
       <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat}/>

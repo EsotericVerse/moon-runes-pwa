@@ -325,7 +325,7 @@ function recordFor(row,source,providerId,scope,table){
   return {row:{...row,scope_id:row?.scope_id||scope.id,__table:table,__galaxy_media_table:scope.galaxyMedia},source,providerId};
 }
 
-function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',sortTitle=false,batchSize=DEFAULT_LIST_BATCH_SIZE,sourceClause='',authenticated=false}){
+function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filters=[],dateColumn='',exactColumn='',sortTitle=false,batchSize=DEFAULT_LIST_BATCH_SIZE,sourceClause='',authenticated=false,uidFastPath=false}){
   const outputColumns=Object.freeze(unique(columns));
   const frozenFields=Object.freeze(unique(searchFields));
   const frozenFilters=Object.freeze(filters.map(item=>Object.freeze({...item})));
@@ -339,6 +339,16 @@ function makeProvider({id,table,source,scope,idColumn,columns,searchFields,filte
       // Exact-match stages only apply to a plain keyword or a single "quoted phrase".
       if(!browse&&exactColumn&&!parsed.exact)return {rows:[],hasMore:false,nextCursor:null,totalCount:null,dataSource:source||'auto'};
       const activeFilters=[...frozenFilters,...dateSearchFilters(dateColumn,startDate,endDate)];
+      if(uidFastPath&&!browse&&/^[A-Z0-9]{8}$/.test(String(query||'').trim())){
+        // Authenticated UID primary-key lookup, independent of public search flags.
+        const {rows=[],dataSource}=await selectRows(table,{
+          columns:outputColumns.join(','),
+          filters:[{column:idColumn,operator:'eq',value:String(query).trim()}],
+          limit:1,authenticated,signal
+        });
+        return {rows:rows.map(row=>recordFor(row,source,id,scope,table)),
+          hasMore:false,nextCursor:null,totalCount:null,dataSource};
+      }
       const ascending=sortDirection!=='desc';
       const orders=[
         ...(dateColumn?[{column:dateColumn,ascending}]:[]),
@@ -409,6 +419,26 @@ function sourceNameClause(selection){
     ).join(',')+')';
   }
   return '';
+}
+
+// Management is a separate article query, not the public Search provider
+// cascade. It uses only the authorized Scope's Galaxy table, including rows
+// with searchable=false, and does not scan unrelated Media/Time tables.
+function managementArticleProviders(scope,{contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false}={}){
+  const selection=resolveSourceSelection(sourceFilter,sourceTaxonomy||{});
+  if(selection.kind==='none')return [];
+  const current=scopeOf(scope);
+  const filters=[
+    ...(contentType==='lyrics_work'?[{column:'site',operator:'ilike',value:'suno'}]:[]),
+    ...(contentType==='text_work'?[{column:'site',operator:'neq',value:'suno'}]:[])
+  ];
+  return [makeProvider({
+    id:current.id+':management-articles',
+    table:current.galaxy,source:current.id+' 文章',scope:current,idColumn:'uid',
+    columns:['uid'],searchFields:placeOnly?['location']:['uid','title','content','site'],
+    dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
+    authenticated:true,uidFastPath:!placeOnly
+  })];
 }
 
 function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false}={}){
@@ -487,16 +517,18 @@ function normalizeSearch(value){
 export async function selectStyleKeywordMatches(){return [];}
 
 export async function searchGalaxyRows(scopes,query,{
-  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false,browse=false,signal=null,sortDirection='asc'
+  limit=DEFAULT_LIST_BATCH_SIZE,cursor=null,startDate='',endDate='',and=[],nor=[],mediaOnly=false,hiddenScopeIds=[],contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false,browse=false,signal=null,sortDirection='asc',managementOnly=false
 }={}){
   const q=String(query||'').trim();
   if(!q&&!browse)return {rows:[],failures:[],hasMore:false,nextCursor:null};
   const safeLimit=Math.max(1,Math.min(DEFAULT_LIST_BATCH_SIZE,Math.floor(Number(limit)||DEFAULT_LIST_BATCH_SIZE)));
   const scopeList=(Array.isArray(scopes)?scopes:[]).filter(scope=>scope?.id);
   const hiddenScopes=new Set((Array.isArray(hiddenScopeIds)?hiddenScopeIds:[]).map(value=>String(value||'').trim()).filter(Boolean));
-  const scopeProviders=scopeList.map(scope=>genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy,placeOnly}));
+  const scopeProviders=scopeList.map(scope=>managementOnly
+    ?managementArticleProviders(scope,{contentType,sourceFilter,sourceTaxonomy,placeOnly})
+    :genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy,placeOnly}));
   // Every Scope's title hits are paged before any body matches.
-  const providers=browse
+  const providers=managementOnly?scopeProviders.flat():browse
     ?scopeProviders.flatMap(group=>
       mediaOnly||contentType==='multimedia'||contentType==='timeline'
         ?group
