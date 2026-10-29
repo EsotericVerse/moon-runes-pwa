@@ -6,9 +6,10 @@ RETURNS varchar(4) LANGUAGE plpgsql VOLATILE SET search_path TO ''
 AS $fn$
 DECLARE
   alphabet constant text:='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  candidate varchar(4);found boolean;relation text;
+  candidate varchar(4);found boolean;legacy_class boolean;relation text;staging boolean;
 BEGIN
-  relation:=CASE WHEN to_regclass(format('silver.%I_keywords_v2',p_scope)) IS NOT NULL
+  staging:=to_regclass(format('silver.%I_keywords_v2',p_scope)) IS NOT NULL;
+  relation:=CASE WHEN staging
     THEN format('silver.%I_keywords_v2',p_scope)
     ELSE format('silver.%I_keywords',p_scope) END;
   IF p_scope !~ '^[a-z][a-z0-9]{0,14}$' THEN RAISE EXCEPTION 'Invalid Scope'; END IF;
@@ -17,8 +18,12 @@ BEGIN
       INTO candidate FROM generate_series(1,4) n(position);
     EXECUTE format('SELECT EXISTS(SELECT 1 FROM %s WHERE uid=$1)',relation)
       INTO found USING candidate;
-    IF NOT found AND NOT EXISTS(SELECT 1 FROM silver.keyword_classes WHERE class_uid=candidate)
-      THEN RETURN candidate; END IF;
+    legacy_class:=false;
+    IF staging THEN
+      EXECUTE format('SELECT EXISTS(SELECT 1 FROM silver.%I_keywords WHERE class_uid=$1)',p_scope)
+        INTO legacy_class USING candidate;
+    END IF;
+    IF NOT found AND NOT legacy_class THEN RETURN candidate; END IF;
   END LOOP;
   RAISE EXCEPTION 'Cannot allocate a unique Keyword UID';
 END
