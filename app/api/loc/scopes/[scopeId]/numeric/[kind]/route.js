@@ -38,7 +38,9 @@ export async function GET(request,{params}){
   // Normal request: Supabase only. If Supabase is unavailable, a configured
   // Neon Data API provides the same PostgreSQL RPC and mirrored ISR settings.
   // No admin cookies, API keys or service secrets enter this public path.
-  const outcome=await tryPublicSources(publicNumericSources(),async db=>{
+  let outcome;
+  try{
+    outcome=await tryPublicSources(publicNumericSources(),async db=>{
     const setting=await db.from('loc_runtime_config')
       .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
     if(setting.error)return {retryable:isAvailabilityFailure(setting),error:'Public ISR settings unavailable'};
@@ -50,7 +52,10 @@ export async function GET(request,{params}){
     const result=await db.rpc(name,args);
     if(result.error)return {retryable:isAvailabilityFailure(result),error:'Public summary unavailable'};
     return {data:result.data};
-  });
+    });
+  }catch{
+    return reply(request,{error:'Public summary unavailable'},503);
+  }
   if(outcome.error)return reply(request,{error:outcome.error},503);
   const data=outcome.data;
   const sourceHeaders={...CACHE_HEADERS,'X-LOC-Data-Source':outcome.source};
