@@ -11,8 +11,8 @@ const extract=(start,end,name,deps)=>{
 };
 test('incremental classification counts zero, one and multiple batches',async()=>{
   const classify=extract('async function classifyDocumentsIncrementally(',
-    '// Canonical, eternal class_group order','classifyDocumentsIncrementally',{
-      classifyRune66Documents:docs=>({classifications:docs.map(row=>({uid:row.uid})),
+    '// Group ordering comes from each Keywords Class','classifyDocumentsIncrementally',{
+      classifyKeywordDocuments:docs=>({classifications:docs.map(row=>({uid:row.uid})),
         classifiedCount:docs.length,unclassifiedCount:0,tieCount:0,
         runeTotals:[],groupTotals:[],unsupportedRules:[]}),
       reportBatchProgress:()=>{},setTimeout,KEYWORD_CLASSIFICATION_BATCH_SIZE:MAX_ROWS

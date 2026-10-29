@@ -4,7 +4,7 @@ import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
-import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
+import {classifyKeywordDocuments} from './model/keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 import {assignedSource} from './member-intersection-model.mjs';
 
@@ -46,7 +46,7 @@ function isEligibleRow(row,minChars){
 }
 function documentOf(row){
   // title is deliberately left out: keyword/rune matching only looks at
-  // the article body (see textOf in model/rune66-keyword-engine.mjs),
+  // the article body (see textOf in model/keyword-engine.mjs),
   // unlike site search, which legitimately does match on title.
   return {
     key:'galaxy:'+row.uid,
@@ -79,7 +79,7 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   let unclassifiedCount=0;
   let tieCount=0;
   for(let offset=0;offset<documents.length;offset+=batchSize){
-    const chunk=classifyRune66Documents(documents.slice(offset,offset+batchSize),catalogRows);
+    const chunk=classifyKeywordDocuments(documents.slice(offset,offset+batchSize),catalogRows);
     parts.push(...chunk.classifications);
     classifiedCount+=chunk.classifiedCount;
     unclassifiedCount+=chunk.unclassifiedCount;
@@ -124,34 +124,34 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   };
 }
 
-// Canonical, eternal class_group order per https://lrunes.lo3rwang.cc/trace/
-// (靈魂1-8, 連結9-16, 生命17-24, 自然25-32, 礦物33-40, 元素41-48, 秩序49-56,
-// 無序57-64, 特殊0/65/66). item_no/order_no are fixed data and must never be
-// edited to "fix" class_id -- class_id is derived purely from this list, not
-// from any per-item order_no (特殊's item_no=0 has order_no=0, which used to
-// sort it to class_id=1 under the old min-order_no logic; it must land on 9).
-const CANONICAL_CLASS_GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+// Group ordering comes from each Keywords Class's own catalog.
+// Its configured default Item's Group comes last, regardless of item number.
 function buildClassMap(catalogRows=[]){
-  const groups=new Set();
-  for(const row of catalogRows){
+  const groups=new Map();
+  for(const [index,row] of catalogRows.entries()){
     if(row?.class_enable===false)continue;
     const group=String(row?.class_group||'').trim();
-    if(group)groups.add(group);
+    if(!group)continue;
+    const n=Number(row?.order_no);
+    const order=row?.order_no==null||!Number.isFinite(n)?Number.MAX_SAFE_INTEGER:n;
+    const prior=groups.get(group);
+    if(!prior)groups.set(group,{group,order,firstSeen:index});
+    else if(order<prior.order)prior.order=order;
   }
-  const canonicalIndex=new Map(CANONICAL_CLASS_GROUP_ORDER.map((group,index)=>[group,index]));
-  const ordered=[...groups]
+  const defaultNo=Number(catalogRows[0]?.default_group_item_no);
+  const defaultEntry=catalogRows[0]?.default_group_item_no!=null&&Number.isInteger(defaultNo)
+    ?catalogRows.find(row=>row?.class_enable!==false&&Number(row?.item_no)===defaultNo)
+    :null;
+  const defaultGroup=String(defaultEntry?.class_group||'').trim();
+  const ordered=[...groups.values()]
     .sort((a,b)=>{
-      const orderA=canonicalIndex.has(a)?canonicalIndex.get(a):CANONICAL_CLASS_GROUP_ORDER.length;
-      const orderB=canonicalIndex.has(b)?canonicalIndex.get(b):CANONICAL_CLASS_GROUP_ORDER.length;
-      return orderA-orderB||a.localeCompare(b);
+      const aDefault=Boolean(defaultGroup&&a.group===defaultGroup);
+      const bDefault=Boolean(defaultGroup&&b.group===defaultGroup);
+      if(aDefault!==bDefault)return aDefault?1:-1;
+      return a.order-b.order||a.firstSeen-b.firstSeen||a.group.localeCompare(b.group);
     })
-    .map((group,index)=>({group,order:canonicalIndex.has(group)?canonicalIndex.get(group):9999,class_id:index+1}));
-  // 9 is a ceiling (8 canonical groups + 1 default/special), not a fixed
-  // count every Class must hit exactly -- silver.lo3rwang_galaxy.class_id's
-  // own CHECK constraint is already "class_id BETWEEN 1 AND 9", i.e. a max,
-  // not an exact count, and a Class with fewer enabled groups than 9 is
-  // valid (confirmed live data: 政德文化 has 6, Hip-Hop 5, Rock/Vocal 3).
-  if(ordered.length<1||ordered.length>9)throw new Error('目前文章 class_id 契約最多允許 9 個啟用 Class（至少 1 個）；目前為 '+ordered.length+' 個。');
+    .map((row,index)=>({group:row.group,order:index,class_id:index+1}));
+  if(!ordered.length)throw new Error('目前 Keywords Class 沒有啟用的 Group');
   return {
     ordered,
     groupToClassId:new Map(ordered.map(item=>[item.group,item.class_id])),
