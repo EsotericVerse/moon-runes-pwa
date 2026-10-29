@@ -2,7 +2,7 @@
 // Never uploads contents. zip.js-like mature primitives: fflate for ZIP; @streamparser/json for JSON.
 // Unsupported formats are explicitly accounted for; no speculative field coercion.
 import {Unzip,UnzipInflate,UnzipPassThrough} from 'fflate';
-import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,extractImportCreatedAt} from './import-batch.mjs';
 export {ARCHIVE_MAX_BYTES};
 import {JSONParser} from '@streamparser/json';
 import {archiveEntrySignatures,summarizeArchiveSources,archiveFilenameSource} from './archive-source-signatures.mjs';
@@ -159,8 +159,8 @@ function normalize(row,{platform,kind,path,index,conversation}){
     (platform==='facebook'&&actualKind==='post'?facebookBackupTimestamp(item):null)??
     // Generic fallback for Meta-style nesting (media[], string_map_data, label_values, attachments).
     findArchiveTimestamp(item);
-  const createdAt=iso(timestamp);
-  const originalTimestamp=timestamp===undefined?'':String(timestamp);
+  const createdAt=iso(timestamp)||extractImportCreatedAt(item);
+  const originalTimestamp=timestamp==null?(createdAt||''):String(timestamp);
   const relative=cleanPath(path).replace(/^.*?(?=messages\/)/i,'');
   const conv=conversation||relative.replace(/\/message(?:s)?_\d+\.json$/i,'');
   const group=actualKind==='message'?conv:(sender||platform);
