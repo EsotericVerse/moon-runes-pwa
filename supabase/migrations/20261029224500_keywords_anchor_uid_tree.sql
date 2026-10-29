@@ -67,7 +67,8 @@ BEGIN
         cat_uid:=silver.new_keyword_tree_uid(scope_name);
         EXECUTE format(
           'INSERT INTO silver.%I_keywords_v2(uid,type,name,"desc") VALUES($1,$2,$3,$4)',
-          scope_name) USING cat_uid,'category',category,category||'分類';
+          scope_name) USING cat_uid,'category',category,
+          CASE WHEN category='符文' THEN '符文各種' ELSE category||'分類' END;
       END IF;
       EXECUTE format(
         'INSERT INTO silver.%I_keywords_v2(uid,type,name,"desc") VALUES($1,$2,$3,$4)',
