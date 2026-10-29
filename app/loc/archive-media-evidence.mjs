@@ -11,6 +11,7 @@ const validRef=value=>Boolean(value&&value.length<=2048&&
   !/[\u0000-\u001f]/u.test(value)&&
   (HTTP.test(value)||(!value.startsWith('/')&&!value.split('/').includes('..'))));
 const publicUrl=value=>HTTP.test(value)&&validRef(value)?value:null;
+export const isArchiveMediaUrl=value=>typeof value==='string'&&Boolean(publicUrl(value.trim()))&&MEDIA_EXT.test(value);
 export function archiveMediaType(uri,hint=''){
   const text=String(hint||'').toLowerCase();
   if(/image|photo/.test(text))return 'image';
@@ -28,7 +29,9 @@ export function archiveAttachmentReferences(record){
     ...(Array.isArray(record.data)?record.data.flatMap(item=>
       [item?.attachments,item?.media,item?.photos,item?.videos].filter(Boolean)):[])];
   if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||
-      /^(image|photo|video|audio)/i.test(String(record.media_type||'')))roots.push(record);
+       /^(image|photo|video|audio)/i.test(String(record.media_type||''))||
+       [record.url,record.media_url,record.mediaUrl,record.image_url,record.video_url,record.download_url]
+         .some(isArchiveMediaUrl))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
   let examined=0;
