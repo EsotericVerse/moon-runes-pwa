@@ -26,8 +26,8 @@ test('a configured backup remains lazy and optional',()=>{
   assert.match(source,/backupPublicClient\?\?=createBackupPublicAdapter\(\)\.publicClient/);
   assert.match(read('app/loc/providers/routing-config.mjs'),/NEXT_PUBLIC_LOC_BACKUP_ID/);
   const neon=read('app/loc/providers/neon-public.mjs');
-  assert.doesNotMatch(neon,/createKyselyEdgeClient|supabase\\.co|functions\\/v1\\/loc-kysely/);
-  assert.match(neon,/token\\/anonymous/);
+  assert.doesNotMatch(neon,/createKyselyEdgeClient|supabase\.co|functions\/v1\/loc-kysely/);
+  assert.match(neon,/token\/anonymous/);
   assert.match(neon,/new PostgrestClient/);
 });
 
