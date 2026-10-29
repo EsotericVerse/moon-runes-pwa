@@ -209,19 +209,21 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data?.class_uid===uid?data:null;
   }
 
-  async function readKeywordTreeSummary(scopeId,{startDate='',endDate='',source=''}={}){
+  async function readKeywordTreeSummary(scopeId,{classUid='',startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
     const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
     const data=await keywordRead('read_keyword_tree_summary',{
-      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
+      p_scope_id:scope,p_class_uid:classUid||null,p_start:day(startDate),p_end:day(endDate),
       p_source:String(source||'').trim()||null
     },{isEmpty:value=>!Array.isArray(value)||value.length===0});
     return Array.isArray(data)?data:[];
   }
 
-  async function readKeywordTreeCatalog(scopeId){
+  async function readKeywordTreeCatalog(scopeId,{classUid=''}={}){
     const scope=normalizeScopeId(scopeId);
-    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope},{
+    const data=await keywordRead('read_keyword_tree_catalog',{
+      p_scope_id:scope,p_class_uid:classUid||null
+    },{
       isEmpty:value=>!value?.class_uid||!Array.isArray(value.rows)||value.rows.length===0
     });
     return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
