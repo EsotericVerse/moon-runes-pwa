@@ -837,9 +837,9 @@ async function readScopeOverviewLocal({p_start,p_end}){
 // Local equivalent of api.read_keyword_class: no scope_id, no share-permission
 // gate (there is only one local reader), just the class's rows in order.
 // Public metadata is returned without the article UID lists or private Item rules.
-async function readKeywordTreeCatalogLocal(){
+async function readKeywordTreeCatalogLocal({p_class_uid=null}={}){
   const config=await selectLocal("SELECT current_keyword_class_uid FROM local WHERE id='local'");
-  const uid=String(config[0]?.current_keyword_class_uid||'');
+  const uid=String(p_class_uid||config[0]?.current_keyword_class_uid||'');
   if(!uid)return {data:{class_uid:'',rows:[]},error:null};
   const rows=(await selectLocal('SELECT uid,type,name,"desc",lists,uid_lists FROM local_keywords')).map(decodeRow);
   const {descendantsOfKeyword}=await import('../keyword-tree.mjs');
@@ -850,14 +850,19 @@ async function readKeywordTreeCatalogLocal(){
   }))},error:null};
 }
 async function readKeywordClassLocal({p_class_uid}={}){
-  const result=await readKeywordTreeCatalogLocal();
+  const result=await readKeywordTreeCatalogLocal({p_class_uid});
   return {data:result.data?.class_uid===p_class_uid?result.data:null,error:null};
 }
-async function readKeywordTreeSummaryLocal({p_start=null,p_end=null,p_source=null}={}){
+async function readKeywordTreeSummaryLocal({p_class_uid=null,p_start=null,p_end=null,p_source=null}={}){
   const config=await selectLocal(
-    "SELECT current_keyword_class_uid,staticstime FROM local WHERE id='local'");
-  const row=config[0]||{},uid=String(row.current_keyword_class_uid||'');
-  if(!uid||!row.staticstime)return {data:[],error:null};
+    "SELECT current_keyword_class_uid,keyword_meta,staticstime FROM local WHERE id='local'");
+  const row=config[0]||{},uid=String(p_class_uid||row.current_keyword_class_uid||'');
+  let meta={};
+  try{meta=typeof row.keyword_meta==='string'?JSON.parse(row.keyword_meta||'{}'):row.keyword_meta||{};}
+  catch{meta={};}
+  const {keywordClassState}=await import('../keyword-class-state.mjs');
+  if(!uid||!keywordClassState({...row,keyword_meta:meta},uid))
+    return {data:[],error:null};
   const sql=`
     WITH
     settings AS (SELECT ? AS class_uid,? AS start_day,? AS end_day,? AS source),
