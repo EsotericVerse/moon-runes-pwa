@@ -63,7 +63,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   const insertRows=withWriteNotice(insertRowsUnchecked);
   const updateRows=withWriteNotice(updateRowsUnchecked);
   const deleteRows=withWriteNotice(deleteRowsUnchecked);
-  const keywordClassificationWrite=withWriteNotice(keywordClassificationWriteUnchecked);
   const copyRune66KeywordClass=withWriteNotice(copyRune66KeywordClassUnchecked);
   const moveScopeBlock=withWriteNotice(moveScopeBlockUnchecked);
   const deleteScope=withWriteNotice(deleteScopeUnchecked);
@@ -141,104 +140,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return scope;
   }
 
-  async function keywordClassificationWriteUnchecked(scopeId,payload){
-    const scope=normalizeScopeId(scopeId);
-    preflightWrite('silver.'+scope+'_keywords');
-    const {data,error}=await authClient.schema('silver').rpc('apply_keyword_classification',{
-      p_scope_id:scope,
-      p_rows:payload
-    });
-    if(error)throw new Error(error.message||'Keyword classification write failed');
-    return Number(data||0);
-  }
-
-  async function applyKeywordClassification(scopeId,payload={}, {onProgress}={}){
-    const scope=normalizeScopeId(scopeId);
-    const rows=Array.isArray(payload?.rows)?payload.rows:[];
-    const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
-    const eligibleDocumentCount=Number.isInteger(payload?.eligibleDocumentCount)
-      ?Math.max(0,payload.eligibleDocumentCount)
-      :Array.isArray(payload?.eligibleUids)?payload.eligibleUids.length:rows.length;
-    await keywordClassificationWrite(scope,{mode:'begin'});
-    onProgress?.({phase:'prepare',completed:0,total:rows.length});
-
-    // Sequential writes pause one second per MaxRows committed; timeout retries
-    // back off for one second after shrinking the attempted chunk.
-    let batchSize=MAX_ROWS;
-    // `affected` now means "rows actually changed" (mode='chunk' writes are
-    // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
-    // The SQL function itself validates every uid in the batch exists and
-    // throws on a mismatch, so there is nothing left for JS to check here;
-    // `count` tracks rows processed (for progress), `changedCount` tracks
-    // rows actually written, purely for reporting.
-    let count=0;
-    let changedCount=0;
-    let completedBatches=0;
-    let nextPauseAt=MAX_ROWS;
-    const estimateBatches=()=>completedBatches+
-      Math.ceil(Math.max(0,rows.length-count)/batchSize);
-    async function coolDown(retrying){
-      const secondsTotal=Math.ceil(KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000);
-      for(let seconds=secondsTotal;seconds>0;seconds--){
-        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
-          seconds,retrying,batchSize,completedBatches,estimatedBatches:estimateBatches()});
-        await new Promise(resolve=>setTimeout(resolve,1000));
-      }
-    }
-    for(let offset=0;offset<rows.length;){
-      const batch=rows.slice(offset,offset+batchSize);
-      let affected;
-      try{
-        // Await the RPC and transaction commit before starting another write.
-        affected=await keywordClassificationWriteUnchecked(scope,{mode:'chunk',rows:batch});
-      }catch(error){
-        const timedOut=/canceling statement due to statement timeout/i
-          .test(String(error?.message||error));
-        if(!timedOut||batchSize<=1){
-          flashMessage(WRITE_FAILED_NOTICE);
-          throw error;
-        }
-        batchSize=Math.max(1,Math.floor(batchSize/2));
-        await coolDown(true);
-        continue; // The canceled statement committed no rows; retry this offset.
-      }
-      changedCount+=affected;
-      count+=batch.length;
-      offset+=batch.length;
-      completedBatches++;
-      onProgress?.({phase:'write',completed:count,total:rows.length,
-        completedBatches,estimatedBatches:estimateBatches(),batchSize,
-        lastBatchSize:batch.length});
-      if(offset<rows.length&&count>=nextPauseAt){
-        nextPauseAt+=MAX_ROWS;
-        await coolDown(false);
-      }
-    }
-
-    // DB-side sync uses the same statistics_able predicate as the UID
-    // universe. Never serialize 144k UIDs into one JSON parameter, and never
-    // compare only this run's narrowed candidate UIDs (would wipe others).
-    onProgress?.({phase:'sync',completed:count,total:rows.length});
-    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',scopeBased:true});
-
-    onProgress?.({phase:'finalizing',completed:count,total:rows.length});
-    const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
-    // documentCount (DB's count(*) where group_lists<>'false') is NOT the
-    // same population as eligibleDocumentCount: eligibleUids is every row
-    // with statistics_able=true, but a row only gets a non-'false'
-    // group_lists if it ALSO passes isEligibleRow's minChars/searchable
-    // gate upstream. Those two counts were never meant to be equal --
-    // comparing them for strict equality was the bug. Sanity-bound instead.
-    if(documentCount<0||documentCount>eligibleDocumentCount){
-      throw new Error(`Keyword classification finalize out of range: counted ${documentCount}, eligible universe ${eligibleDocumentCount}`);
-    }
-    return {count,changedCount,orphansCleared,documentCount};
-  }
-
-  // Manually-triggered full wipe (the galaxy table's class_id/group_lists
-  // only -- keyword library rows are untouched). Use when the keyword
-  // library changed enough that a clean slate is wanted; an ordinary
-  // runKeywordAnalysisBatch no longer wipes anything on its own.
   async function resetKeywordClassification(scopeId,{onProgress}={}){
     const scope=normalizeScopeId(scopeId);
     preflightWrite('silver.'+scope+'_keywords');
@@ -570,7 +471,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
