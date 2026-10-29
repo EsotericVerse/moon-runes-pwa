@@ -140,7 +140,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   // downloads every article's UID list or runs a fresh word classification.
   const keywordGroups=useAsyncResource({
     queryKey:['trace-keyword-groups',targetScope,placesKey,startDate,endDate,sourceFilter],
-    enabled:needsSummary&&!selectedMediaType&&Boolean(scope?.keywords),
+    enabled:needsSummary&&tab==='statistics'&&!selectedMediaType&&Boolean(scope?.keywords),
     queryFn:async()=>{
       const results=[];
       for(let i=0;i<placeIds.length;i+=80){
