@@ -515,15 +515,9 @@ export default function Culture(){
     queryFn:async()=>{
       const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
       if(!groupName)return [];
-      const {rows}=await selectAllRows(scopeData.keywords,{
-        columns:'keyword_id,item_name,order_no,class_group',
-        filters:[
-          {column:'class_uid',operator:'eq',value:String(styleQuery.data.keywordMeta.class_uid)},
-          {column:'class_group',operator:'eq',value:groupName}
-        ],
-        orders:[{column:'order_no',ascending:true},{column:'keyword_id',ascending:true}]
-      });
-      return rows;
+      const {readKeywordItemCatalog}=await import('../../loc/db-client.mjs');
+      return (await readKeywordItemCatalog(scopeId))
+        .filter(item=>item.class_group===groupName&&item.class_enable!==false);
     },
     revalidateOnFocus:false,
     revalidateOnReconnect:false,
