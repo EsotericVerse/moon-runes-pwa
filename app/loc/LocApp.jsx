@@ -151,8 +151,9 @@ export default function LocApp({forcedView='home',forcedSection=null,forcedScope
 
   const managementRoute=['manage','searchManage','sourceManage','keywordManage','keywords'].includes(forcedView)||
     (forcedView==='culture'&&runtime.pathname.includes('/culture/manage'));
-  const managementLevel=forcedView==='searchManage'&&scopeId==='loc'?'global'
-    :scopeMeta?.aggregateChildren?'group':'scope';
+  // This is the Group's Article Management, not System Admin. A user's
+  // admin role grants access but must not change the destination/level.
+  const managementLevel=scopeMeta?.aggregateChildren?'group':'scope';
   const managementFeature=forcedView==='sourceManage'||forcedView==='culture'?'culture'
     :forcedView==='keywordManage'||forcedView==='keywords'?'statics'
     :forcedView==='searchManage'?'search'
