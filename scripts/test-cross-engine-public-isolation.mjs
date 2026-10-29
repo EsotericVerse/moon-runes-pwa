@@ -26,3 +26,12 @@ test('production Kysely Edge always enforces the external permission boundary',(
   assert.match(source,/assertCrossEnginePublicRead\(body\)/);
   assert.doesNotMatch(source,/neonLocReadTables/);
 });
+
+test('Kysely Edge no longer references a deleted Neon table-name allowlist',()=>{
+  const source=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
+  assert.doesNotMatch(source,/neonLocReadTables/);
+  const checks=[...source.matchAll(/assertCrossEnginePublicRead\(body\)/g)];
+  assert.ok(checks.length>=2,'cross-engine permissions must be checked before connection and at execution');
+  assert.match(source,/if\(target\.provider==="neon"&&\(body\.schema!=="silver"/);
+  assert.match(source,/if\(target\.engine!=="postgres"\)assertCrossEnginePublicRead\(body\)/);
+});
