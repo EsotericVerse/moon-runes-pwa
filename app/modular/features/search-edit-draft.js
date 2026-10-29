@@ -1,7 +1,7 @@
 // Edit-session helpers for Search results. Loaded only when an author opens
 // an article or media entry for editing (dynamic import in Search.jsx), so the
 // plain search page never ships this code.
-import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
+import {parseGroupListsAttr} from '../../loc/group-lists.mjs';
 import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 
 function nullableText(value){
@@ -46,8 +46,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
     source_name:String(row.source_name||''),
     media_link:listText(row.media_link),
     statistics_able:row.statistics_able!==false,
-    class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
-    group_lists:formatGroupLists(row.group_lists)
+
   };
   const body=String(row.content??'');
   return {
@@ -106,12 +105,6 @@ function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
   if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;
   if(differs('target_id'))changed.target_id=parseListText(current.target_id);
   if(differs('media_link'))changed.media_link=parseListText(current.media_link);
-  if(differs('class_id')){
-    const value=String(current.class_id??'').trim();
-    changed.class_id=value===''?null:Number(value);
-    if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
-  }
-  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t,parseGroupListsAttr);
   return changed;
 }
 
