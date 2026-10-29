@@ -132,12 +132,16 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
   const result=await reanalyzeKeywordClass({
     classUid,treeRows,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
     readPage:async ({offset,limit})=>{
-      const {rows}=await selectRows(scope.galaxy,{
-        columns:'uid,content,searchable',
-        filters:[{column:'statistics_able',operator:'eq',value:true}],
-        orders:[{column:'createtime',ascending:true},{column:'uid',ascending:true}],limit,offset
-      });
-      return rows;
+      // An owner-triggered full reanalysis must see the owner's eligible
+      // articles, including private ones. Anonymous public reads omit them.
+      const {data,error}=await dbAuthRelation(scope.galaxy)
+        .select('uid,content,searchable')
+        .eq('statistics_able',true)
+        .order('createtime',{ascending:true})
+        .order('uid',{ascending:true})
+        .range(offset,offset+limit-1);
+      if(error)throw new Error(error.message||'Galaxy 分頁讀取失敗');
+      return data||[];
     },
     writeNode:async ({uid,uid_lists})=>{
       const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists})
