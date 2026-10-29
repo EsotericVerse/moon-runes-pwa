@@ -1,73 +1,63 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import {isKeywordClassUid,generateKeywordClassUid,buildKeywordUidlistClass,patchKeywordUidlistClass,summarizeKeywordUidlist}
-  from '../app/loc/keyword-uidlist.mjs';
+import test from 'node:test';
+import {buildKeywordUidlistRows,patchKeywordUidlistRows,summarizeKeywordUidlist,isKeywordClassUid,generateKeywordClassUid} from '../app/loc/keyword-uidlist.mjs';
 const catalog=[
-  {class_name:'符文66',class_group:'靈魂',item_no:1,item_name:'靈'},
-  {class_name:'符文66',class_group:'靈魂',item_no:2,item_name:'魂'},
-  {class_name:'符文66',class_group:'連結',item_no:9,item_name:'向'}
+ {keyword_id:1,class_uid:'aB3d',class_group:'靈魂',item_name:'靈'},
+ {keyword_id:2,class_uid:'aB3d',class_group:'靈魂',item_name:'魂'},
+ {keyword_id:9,class_uid:'aB3d',class_group:'連結',item_name:'向'}
 ];
-const data={classUid:'aB3d',classGroup:'符文66',catalogRows:catalog,classifications:[
-  {uid:'Ab12Cd34',group_lists:'1:3,2:1'},
-  {uid:'ab12Cd34',group_lists:'1:2,9:4'}
-]};
-test('group/item cardinality derives from catalog rather than Rune66',()=>{
-  const result=buildKeywordUidlistClass(data);
-  assert.deepEqual(Object.keys(result),['class_uid','class_group','group']);
-  assert.deepEqual(Object.keys(result.group),['靈魂','連結']);
-  assert.deepEqual(Object.keys(result.group['靈魂'].item),['靈','魂']);
-  assert.deepEqual(result.group['靈魂'].item['靈'],[{uid:'Ab12Cd34',times:3},{uid:'ab12Cd34',times:2}]);
-  assert.deepEqual(summarizeKeywordUidlist(result.group['靈魂'].item['靈']),{article_count:2,hit_count:5});
+const classifications=[
+ {uid:'Ab12Cd34',hits:[{keyword_id:1,times:3},{keyword_id:2,times:1}]},
+ {uid:'ab12Cd34',hits:[{keyword_id:1,times:2},{keyword_id:9,times:4}]}
+];
+const build=()=>buildKeywordUidlistRows({classUid:'aB3d',catalogRows:catalog,classifications});
+test('one keyword_id owns an array of UID / times, no item_no or class_id',()=>{
+ const rows=build();
+ assert.deepEqual(Object.keys(rows[0]),['keyword_id','class_uid','class_group','item_name','uidlist']);
+ assert.deepEqual(rows[0].uidlist,[{uid:'Ab12Cd34',times:3},{uid:'ab12Cd34',times:2}]);
+ assert.deepEqual(summarizeKeywordUidlist(rows[0].uidlist),{article_count:2,hit_count:5});
 });
-test('incremental writes preserve unscanned UIDs and replace only changed hits',()=>{
-  const old=buildKeywordUidlistClass(data);
-  const updated=patchKeywordUidlistClass(old,[{uid:'Ab12Cd34',group_lists:'9:7'}],catalog);
-  assert.deepEqual(updated.group['靈魂'].item['靈'],[{uid:'ab12Cd34',times:2}]);
-  assert.deepEqual(updated.group['靈魂'].item['魂'],[]);
-  assert.deepEqual(updated.group['連結'].item['向'],[{uid:'Ab12Cd34',times:7},{uid:'ab12Cd34',times:4}]);
-  assert.equal(old.group['靈魂'].item['靈'].length,2);
+test('incremental rescan preserves untouched UIDs and removes stale hits',()=>{
+ const saved=build();
+ const updated=patchKeywordUidlistRows({classUid:'aB3d',catalogRows:catalog,storedRows:saved,
+  classifications:[{uid:'Ab12Cd34',hits:[{keyword_id:9,times:7}]}]});
+ assert.deepEqual(updated[0].uidlist,[{uid:'ab12Cd34',times:2}]);
+ assert.deepEqual(updated[1].uidlist,[]);
+ assert.deepEqual(updated[2].uidlist,[{uid:'Ab12Cd34',times:7},{uid:'ab12Cd34',times:4}]);
+ assert.equal(saved[0].uidlist.length,2);
 });
-test('zero matches remove previous article hits',()=>{
-  const changed=patchKeywordUidlistClass(buildKeywordUidlistClass(data),[
-    {uid:'Ab12Cd34',group_lists:'false'}
-  ],catalog);
-  assert.equal(changed.group['靈魂'].item['魂'].length,0);
+test('zero matches clear only rescanned UID',()=>{
+ const updated=patchKeywordUidlistRows({classUid:'aB3d',catalogRows:catalog,storedRows:build(),
+  classifications:[{uid:'Ab12Cd34',hits:[]}]});
+ assert.equal(updated[1].uidlist.length,0);
+ assert.equal(updated[0].uidlist.length,1);
 });
-test('new classifications can use group/item keys without old numeric IDs',()=>{
-  const result=buildKeywordUidlistClass({...data,classifications:[
-    {uid:'Ab12Cd34',item_counts:{'靈魂':{'靈':3,'魂':1},'連結':{'向':2}}}
-  ]});
-  assert.deepEqual(result.group['連結'].item['向'],[{uid:'Ab12Cd34',times:2}]);
+test('arbitrary Group cardinalities and Item count',()=>{
+ const large=Array.from({length:130},(_,i)=>({
+   keyword_id:i+1000,class_uid:'Zz8Q',class_group:'Group '+i%16,item_name:'item '+i}));
+ const rows=buildKeywordUidlistRows({classUid:'Zz8Q',catalogRows:large,
+ classifications:[{uid:'Ab12Cd34',hits:[{keyword_id:1129,times:6}]}]});
+ assert.equal(rows.length,130);
+ assert.equal(new Set(rows.map(row=>row.class_group)).size,16);
+ assert.deepEqual(rows.at(-1).uidlist,[{uid:'Ab12Cd34',times:6}]);
 });
-test('same Item name in different Groups remains distinct',()=>{
-  const two=[{class_name:'Pop',class_group:'風格A',item_name:'共同詞'},
-    {class_name:'Pop',class_group:'風格B',item_name:'共同詞'}];
-  const result=buildKeywordUidlistClass({classUid:'b9A2',classGroup:'Pop',catalogRows:two,classifications:[
-    {uid:'Ab12Cd34',item_counts:{'風格A':{'共同詞':1},'風格B':{'共同詞':3}}}
-  ]});
-  assert.equal(result.group['風格A'].item['共同詞'][0].times,1);
-  assert.equal(result.group['風格B'].item['共同詞'][0].times,3);
+test('keyword_id bigint string is not silently rounded',()=>{
+ const rows=buildKeywordUidlistRows({classUid:'aB3d',catalogRows:[{
+   keyword_id:'9007199254740993',class_uid:'aB3d',class_group:'A',item_name:'B'}],
+ classifications:[{uid:'Ab12Cd34',hits:[{keyword_id:'9007199254740993',times:2}]}]});
+ assert.equal(rows[0].keyword_id,'9007199254740993');
+ assert.equal(rows[0].uidlist[0].times,2);
 });
-test('supports 16 uneven Groups, 130 Items and arbitrary numeric Item numbers',()=>{
-  const catalogRows=Array.from({length:130},(_,n)=>({
-    class_name:'Pop',class_group:'Group '+(n%16),item_no:n*3,item_name:'Item '+n
-  }));
-  const actual=buildKeywordUidlistClass({classUid:'B3aY',classGroup:'Pop',catalogRows,
-    classifications:[{uid:'Ab12Cd34',group_lists:'387:7'}]});
-  assert.equal(Object.keys(actual.group).length,16);
-  assert.equal(Object.values(actual.group).reduce((n,g)=>n+Object.keys(g.item).length,0),130);
-  assert.deepEqual(actual.group['Group 1'].item['Item 129'],[{uid:'Ab12Cd34',times:7}]);
+test('Class UIDs are independent four-character Base62 identifiers',()=>{
+ assert.equal(isKeywordClassUid('aB3d'),true);
+ assert.equal(isKeywordClassUid('abcdef'),false);
+ let n=0;
+ const random=b=>{b.set([0,1,2,n++,4,5,6,7,8,9,10,11,12,13,14,15]);return b;};
+ assert.equal(generateKeywordClassUid(['0120'],random),'0121');
 });
-test('short Class UIDs preserve Base62 case without using SHA or UUID',()=>{
-  assert.equal(isKeywordClassUid('aB3d'),true);
-  assert.equal(isKeywordClassUid('tooLong'),false);
-  let k=0;const random=buf=>{buf.set([0,1,2,k++,4,5,6,7,8,9,10,11,12,13,14,15]);return buf;};
-  assert.equal(generateKeywordClassUid(['0120'],random),'0121');
-});
-test('invalid data is rejected rather than losing classification hits',()=>{
-  assert.throws(()=>buildKeywordUidlistClass({...data,classUid:'bad'}));
-  assert.throws(()=>buildKeywordUidlistClass({...data,classifications:[{uid:'short',group_lists:'1:1'}]}));
-  assert.throws(()=>buildKeywordUidlistClass({...data,classifications:[{uid:'Ab12Cd34',group_lists:'99:1'}]}));
-  assert.throws(()=>buildKeywordUidlistClass({...data,catalogRows:[...catalog,catalog[0]]}));
-  assert.throws(()=>patchKeywordUidlistClass({...buildKeywordUidlistClass(data),class_uid:'wrong'},[],catalog));
+test('rejects malformed or cross-Class article/item identities',()=>{
+ assert.throws(()=>buildKeywordUidlistRows({classUid:'bad',catalogRows:catalog}));
+ assert.throws(()=>buildKeywordUidlistRows({classUid:'aB3d',catalogRows:catalog,classifications:[{uid:'bad',hits:[]}]}));
+ assert.throws(()=>buildKeywordUidlistRows({classUid:'aB3d',catalogRows:catalog,classifications:[{uid:'Ab12Cd34',hits:[{keyword_id:99,times:2}]}]}));
+ assert.throws(()=>patchKeywordUidlistRows({classUid:'ZZZZ',catalogRows:catalog,storedRows:build()}));
 });

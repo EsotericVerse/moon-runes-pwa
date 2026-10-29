@@ -1,140 +1,99 @@
-// Generic Keywords Class -> Group -> Item -> [{uid,times}] inverted result.
-// Rune66's eight groups of eight are content, never an engine-wide restriction.
-const ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const CLASS_UID=/^[A-Za-z0-9]{4}$/;
-const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
-export const isKeywordClassUid=uid=>typeof uid==='string'&&CLASS_UID.test(uid);
-export function generateKeywordClassUid(existing=[],random=buf=>globalThis.crypto.getRandomValues(buf)){
+// Portable Keywords inverted classification: each existing keyword_id owns its
+// article uidlist. A Class has a separate four-character Base62 class_uid.
+// Neither Class nor Item identity depends on Rune66 numbering or fixed groups.
+const DIGITS='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const CLASS=/^[A-Za-z0-9]{4}$/;
+const ARTICLE=/^[A-Za-z0-9]{8}$/;
+const ITEM=/^[1-9][0-9]*$/;
+export function isKeywordClassUid(uid){return typeof uid==='string'&&CLASS.test(uid);}
+export function generateKeywordClassUid(existing=[],random=buffer=>globalThis.crypto.getRandomValues(buffer)){
   const used=new Set(existing);
   for(let attempt=0;attempt<128;attempt++){
-    let uid='';
     const bytes=random(new Uint8Array(16));
     if(!(bytes instanceof Uint8Array))throw new TypeError('Invalid random source');
-    for(const byte of bytes){
-      if(byte>=248)continue;
-      uid+=ALPHABET[byte%62];
-      if(uid.length===4)break;
+    let id='';
+    for(const n of bytes){
+      if(n>=248)continue;
+      id+=DIGITS[n%62];
+      if(id.length===4)break;
     }
-    if(isKeywordClassUid(uid)&&!used.has(uid))return uid;
+    if(id.length===4&&!used.has(id))return id;
   }
-  throw new Error('No available Keywords Class UID');
+  throw new Error('Cannot allocate a unique Keywords Class UID');
 }
-function validUid(uid){
-  if(typeof uid!=='string'||!ARTICLE_UID.test(uid))throw new Error('Invalid case-sensitive Galaxy UID');
-  return uid;
+function keywordId(value){
+  const id=String(value??'');
+  if(!ITEM.test(id)||BigInt(id)>9223372036854775807n)throw new Error('Invalid keyword_id');
+  return id;
 }
-function validTimes(times){
-  if(!Number.isSafeInteger(times)||times<=0)throw new Error('Invalid keyword times');
-  return times;
+function articleUid(value){
+  if(typeof value!=='string'||!ARTICLE.test(value))throw new Error('Invalid case-sensitive Galaxy UID');
+  return value;
 }
-function catalogIndex(rows,classGroup){
-  const groups=new Map(),legacyIds=new Map();
-  for(const row of rows){
-    if(row.class_name&&row.class_name!==classGroup)throw new Error('Mixed Keywords Classes');
-    const group=String(row.class_group??'').trim();
-    const item=String(row.item_name??'').trim();
-    if(!group||!item)throw new Error('Group and Item names are required');
-    if(!groups.has(group))groups.set(group,new Map());
-    const items=groups.get(group);
-    if(items.has(item))throw new Error('Duplicate Item within one Group');
-    items.set(item,new Map());
-    // Input adapter only: item_no is never part of the saved result.
-    if(row.item_no!=null){
-      const id=Number(row.item_no);
-      if(!Number.isSafeInteger(id)||id<0||legacyIds.has(id))throw new Error('Invalid legacy Item number');
-      legacyIds.set(id,{group,item});
-    }
+function times(value){
+  if(!Number.isSafeInteger(value)||value<=0)throw new Error('times must be positive');
+  return value;
+}
+function indexes(catalogRows,classUid){
+  if(!isKeywordClassUid(classUid))throw new Error('Class UID must have four Base62 characters');
+  const rows=new Map();
+  for(const item of catalogRows){
+    if(item.class_uid&&item.class_uid!==classUid)throw new Error('Mixed Keyword Classes');
+    const id=keywordId(item.keyword_id);
+    if(rows.has(id))throw new Error('Duplicate keyword_id');
+    const class_group=String(item.class_group??'').trim();
+    const item_name=String(item.item_name??'').trim();
+    if(!class_group||!item_name)throw new Error('Group and Item name are required');
+    rows.set(id,{keyword_id:id,class_uid:classUid,class_group,item_name,uidlist:new Map()});
   }
-  return {groups,legacyIds};
+  return rows;
 }
-function countEntries(record,index){
-  const raw=record?.group_lists;
-  if(record?.item_counts&&typeof record.item_counts==='object'&&!Array.isArray(record.item_counts)){
-    return Object.entries(record.item_counts).flatMap(([group,items])=>{
-      if(!items||typeof items!=='object'||Array.isArray(items))throw new Error('Invalid item_counts');
-      return Object.entries(items).map(([item,times])=>({group,item,times:Number(times)}));
-    });
-  }
-  let values=[];
-  if(Array.isArray(record?.rune_counts)){
-    values=record.rune_counts.map(v=>[Number(v.rune_id),Number(v.count)]);
-  }else if(raw==null||raw===false||raw==='false'||raw===''){
-    values=[];
-  }else if(typeof raw==='string'){
-    values=raw.split(',').map(part=>{
-      const match=/^([0-9]+):([0-9]+)$/.exec(part.trim());
-      if(!match)throw new Error('Invalid legacy group_lists');
-      return [Number(match[1]),Number(match[2])];
-    });
-  }else if(typeof raw==='object'&&!Array.isArray(raw)){
-    values=Object.entries(raw).map(([id,times])=>[Number(id),Number(times)]);
-  }else{
-    throw new Error('Invalid classification result');
-  }
-  return values.map(([id,times])=>{
-    const path=index.legacyIds.get(id);
-    if(!path)throw new Error('Unknown legacy Keyword Item: '+id);
-    return {...path,times};
-  });
-}
-function apply(index,classifications){
-  for(const record of classifications){
-    const uid=validUid(record.uid); // Preserve Base62 case; never normalize.
-    // Reclassification removes stale hits for this UID only.
-    for(const items of index.groups.values())
-      for(const hits of items.values())hits.delete(uid);
+function update(rows,classified){
+  for(const record of classified){
+    const uid=articleUid(record?.uid);
+    // A reanalyzed article must lose stale hits in this Class, never others.
+    for(const item of rows.values())item.uidlist.delete(uid);
+    const hits=record.hits||[];
+    if(!Array.isArray(hits))throw new Error('hits must be an array');
     const seen=new Set();
-    for(const {group,item,times} of countEntries(record,index)){
-      const hitMap=index.groups.get(group)?.get(item);
-      if(!hitMap)throw new Error('Unknown Keywords Group/Item: '+group+'/'+item);
-      const key=JSON.stringify([group,item]);
-      if(seen.has(key))throw new Error('Duplicate Item classification');
-      seen.add(key);
-      hitMap.set(uid,validTimes(times));
+    for(const hit of hits){
+      const id=keywordId(hit.keyword_id);
+      if(!rows.has(id)||seen.has(id))throw new Error('Unknown or duplicate keyword_id');
+      seen.add(id);
+      rows.get(id).uidlist.set(uid,times(hit.times));
     }
   }
 }
-function serialized(classUid,classGroup,index){
-  const group=Object.fromEntries([...index.groups].map(([name,items])=>[
-    name,{item:Object.fromEntries([...items].map(([item,hits])=>[
-      item,[...hits].sort(([a],[b])=>a<b?-1:a>b?1:0)
-        .map(([uid,times])=>({uid,times}))
-    ]))}
-  ]));
-  return {class_uid:classUid,class_group:classGroup,group};
+function serialize(rows){
+  return [...rows.values()].map(item=>({
+    keyword_id:item.keyword_id,class_uid:item.class_uid,class_group:item.class_group,item_name:item.item_name,
+    uidlist:[...item.uidlist.entries()].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([uid,times])=>({uid,times}))
+  }));
 }
-export function buildKeywordUidlistClass({classUid,classGroup,catalogRows=[],classifications=[]}={}){
-  if(!isKeywordClassUid(classUid))throw new Error('Class UID must be four Base62 characters');
-  if(typeof classGroup!=='string'||!classGroup.trim())throw new Error('Class name is required');
-  const index=catalogIndex(catalogRows,classGroup);
-  apply(index,classifications);
-  return serialized(classUid,classGroup,index);
+export function buildKeywordUidlistRows({classUid,catalogRows=[],classifications=[]}={}){
+  const rows=indexes(catalogRows,classUid);
+  update(rows,classifications);
+  return serialize(rows);
 }
-export function patchKeywordUidlistClass(existing,classifications=[],catalogRows=[]){
-  if(!isKeywordClassUid(existing?.class_uid))throw new Error('Invalid stored Class UID');
-  const classGroup=existing.class_group;
-  const index=catalogIndex(catalogRows,classGroup);
-  for(const [name,group] of Object.entries(existing.group||{})){
-    const items=index.groups.get(name);
-    if(!items)throw new Error('Previous Group missing from catalog: '+name);
-    if(!group||typeof group!=='object'||!group.item||typeof group.item!=='object')
-      throw new Error('Invalid stored Group');
-    for(const [itemName,hits] of Object.entries(group.item)){
-      const map=items.get(itemName);
-      if(!map||!Array.isArray(hits))throw new Error('Previous Item missing or malformed: '+itemName);
-      for(const hit of hits){
-        const uid=validUid(hit?.uid),times=validTimes(hit?.times);
-        if(map.has(uid))throw new Error('Duplicate Galaxy UID in Item');
-        map.set(uid,times);
-      }
+export function patchKeywordUidlistRows({classUid,catalogRows=[],storedRows=[],classifications=[]}={}){
+  const rows=indexes(catalogRows,classUid);
+  for(const row of storedRows){
+    const id=keywordId(row.keyword_id);
+    const current=rows.get(id);
+    if(!current||row.class_uid!==classUid)throw new Error('Stored Item belongs to another Class');
+    if(!Array.isArray(row.uidlist))throw new Error('Invalid uidlist');
+    for(const hit of row.uidlist){
+      const uid=articleUid(hit.uid);
+      if(current.uidlist.has(uid))throw new Error('Duplicate UID within Item');
+      current.uidlist.set(uid,times(hit.times));
     }
   }
-  apply(index,classifications);
-  return serialized(existing.class_uid,classGroup,index);
+  update(rows,classifications);
+  return serialize(rows);
 }
-export function summarizeKeywordUidlist(hits=[]){
-  if(!Array.isArray(hits))throw new Error('uidlist must be an array');
+export function summarizeKeywordUidlist(uidlist=[]){
+  if(!Array.isArray(uidlist))throw new Error('Invalid uidlist');
   let count=0;
-  for(const {uid,times} of hits){validUid(uid);count+=validTimes(times);}
-  return {article_count:hits.length,hit_count:count};
+  for(const hit of uidlist){articleUid(hit.uid);count+=times(hit.times);}
+  return {article_count:uidlist.length,hit_count:count};
 }
