@@ -33,7 +33,7 @@ function buildGraph(items=[],className='',classId='',expandedGroup='',expandedIt
     const groupId='group:'+group;
     nodes.push({
       id:itemId,
-      label:String(row.item_no||rowIndex+1)+' · '+String(row.item_name||'未命名'),
+      label:String(row.item_name||'未命名'),
       level:2,
       kind:'item',
       shape:'box',
