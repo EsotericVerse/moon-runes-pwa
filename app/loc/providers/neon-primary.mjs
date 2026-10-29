@@ -15,17 +15,22 @@ export function createNeonPrimaryAdapter({
   const base=String(authUrl).replace(/\/+$/,'');
   if(!base.endsWith('/auth')||!api.endsWith('/rest/v1'))throw new Error('Neon Auth/Data API URL invalid');
   let token='',expires=0,tokenSessionId='';
+  let tokenPending=null,pendingSessionId='';
   const listeners=new Set();
   let reportedUserId='';
   const emit=(event,session)=>{for(const cb of listeners)cb(event,session)};
   async function authRequest(path,{method='GET',payload=null}={}){
     const response=await fetchImpl(base+path,{
-      method,credentials:'include',
+      method,credentials:'include',signal:AbortSignal.timeout(8000),
       headers:{accept:'application/json',...(payload?{'content-type':'application/json'}:{})},
       ...(payload?{body:JSON.stringify(payload)}:{})
     });
     if(!response.ok)throw new Error('Neon Auth '+path+' HTTP '+response.status);
-    return response.json();
+    if(response.status===204)return null;
+    const body=await response.text();
+    if(!body)return null;
+    try{return JSON.parse(body)}
+    catch{throw new Error('Neon Auth returned an invalid JSON response')}
   }
   async function accessToken(sessionId=''){
     // A cached token is valid ONLY for the current cookie-backed Neon session.
@@ -38,12 +43,23 @@ export function createNeonPrimaryAdapter({
     }
     if(tokenSessionId!==sessionId){token='';expires=0;tokenSessionId=sessionId;}
     if(token&&Date.now()<expires)return token;
-    const result=await authRequest('/token');
-    const value=result?.token||result?.data?.token;
-    if(typeof value!=='string'||value.split('.').length!==3)
-      throw new Error('Neon Auth did not return an authenticated JWT');
-    token=value;expires=Date.now()+3*60*1000;
-    return value;
+    if(tokenPending&&pendingSessionId===sessionId)return tokenPending;
+    pendingSessionId=sessionId;
+    const request=authRequest('/token').then(result=>{
+      const value=result?.token||result?.data?.token;
+      if(typeof value!=='string'||value.split('.').length!==3)
+        throw new Error('Neon Auth did not return an authenticated JWT');
+      // A delayed response for a previous OAuth identity must never replace
+      // the active session's token.
+      if(tokenSessionId!==sessionId)throw new Error('Neon Auth session changed during token refresh');
+      token=value;expires=Date.now()+3*60*1000;
+      return value;
+    });
+    tokenPending=request;
+    try{return await request}
+    finally{
+      if(tokenPending===request){tokenPending=null;pendingSessionId=''}
+    }
   }
   async function session(){
     const response=await authRequest('/get-session');
@@ -123,7 +139,9 @@ export function createNeonPrimaryAdapter({
       const jwt=await accessToken();
       const headers=new Headers(init.headers);
       headers.set('authorization','Bearer '+jwt);
-      return fetchImpl(input,{...init,headers});
+      const timeout=AbortSignal.timeout(8000);
+      const signal=init.signal?AbortSignal.any([init.signal,timeout]):timeout;
+      return fetchImpl(input,{...init,headers,signal});
     }
   });
   const authClient={
