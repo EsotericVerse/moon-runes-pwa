@@ -491,7 +491,7 @@ export default function Search({managementMode=false}){
         mediaOnly:options.mediaOnly,hiddenScopeIds:managementMode?searchScopes.map(item=>item.id):[],
         contentType:options.contentType,sourceFilter:options.sourceFilter,sourceTaxonomy,placeOnly:managementMode&&Boolean(options.placeOnly),
         startDate:options.startDate,endDate:options.endDate,browse:options.browse,
-        sortDirection:options.sortDirection,signal
+        managementOnly:managementMode,sortDirection:options.sortDirection,signal
       });
       // Style tags enhance results, but their optional request must never
       // discard valid text/media hits when its own service fails.
@@ -993,7 +993,49 @@ export default function Search({managementMode=false}){
   }
 
   const pageContent=<>
-    <section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
+    {managementMode?<section className="scope-search-workspace" aria-label="管理搜尋">
+      <h2>管理搜尋</h2>
+      <p className="scope-status">直接查詢具有管理權限的 Galaxy 文章，包括不可公開搜尋的文章；不套用公開搜尋的 searchable 旗標。</p>
+      <form className="scope-search-form" onSubmit={runSearch}>
+        <label htmlFor="scope-management-search-query">文章 UID、標題、正文或來源</label>
+        <input id="scope-management-search-query" value={query}
+          onChange={event=>setQuery(event.target.value)}
+          placeholder="輸入 UID 或文章內容關鍵字"/>
+        <button type="submit" disabled={scopeId==='loc'&&!scopesQuery.isSuccess}>查詢文章</button>
+        <button type="button" className="loc-button"
+          disabled={scopeId==='loc'&&!scopesQuery.isSuccess}
+          onClick={()=>executeSearch('',null,{browse:true,overrideOptions:{
+            contentType:'',sourceFilter:'',startDate,endDate,
+            scopeFilter,placeOnly:false,mediaOnly:false,browse:true,sortDirection:articleSort
+          }})}>瀏覽文章</button>
+        <button type="button" className="loc-button" onClick={clearSearchFilters}>清除</button>
+      </form>
+      {scopeId==='loc'?<div className="scope-search-scope-filter">
+        <label htmlFor="scope-management-search-scope">管理範圍</label>
+        <select id="scope-management-search-scope" value={scopeFilter}
+          disabled={!scopesQuery.isSuccess}
+          onChange={event=>updateSearchFilter(setScopeFilter,event.target.value)}>
+          <option value="">全部已授權 Scope</option>
+          {availableScopes.map(item=><option key={item.id} value={item.id}>{scopeLabel(item.id)}</option>)}
+        </select>
+        {scopesQuery.isError?<span role="alert" className="scope-status scope-error">{t('uiExtra.searchUI.scopeUnavailable')}</span>:null}
+      </div>:null}
+      <div className="scope-search-place-mode" role="group" aria-label="文章管理查詢方式">
+        <button type="button" className="loc-button" aria-pressed={!placeOnly}
+          onClick={()=>updateSearchFilter(setPlaceOnly,false)}>查文章</button>
+        <button type="button" className="loc-button" aria-pressed={placeOnly}
+          onClick={()=>updateSearchFilter(setPlaceOnly,true)}>查打卡地點</button>
+      </div>
+      <div className="scope-search-filter-body scope-search-date-fields">
+        <label htmlFor="scope-management-search-start">起始日期
+          <input id="scope-management-search-start" type="date" value={startDate}
+            onChange={event=>updateSearchFilter(setStartDate,event.target.value)}/></label>
+        <label htmlFor="scope-management-search-end">結束日期
+          <input id="scope-management-search-end" type="date" min={startDate||undefined} value={endDate}
+            onChange={event=>updateSearchFilter(setEndDate,event.target.value)}/></label>
+      </div>
+    </section>:null}
+    {!managementMode?<section className="scope-search-workspace" aria-label={t('uiExtra.searchUI.searchWorkspace')}>
       <form className="scope-search-form" onSubmit={runSearch}>
         {!managementMode?<label htmlFor="scope-search-query">{UI_COPY.search.textPromptLabel}</label>:null}
         <input id="scope-search-query" list={!searchPopularOpen&&suggestedTitles.length?'scope-search-loaded-titles':undefined}
@@ -1139,7 +1181,7 @@ export default function Search({managementMode=false}){
         onSuggestionClick={term=>searchFromSuggestion(term)}
       />:null}
     </details>:null}
-    </section>
+    </section>:null}
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
     {!managementMode&&results.length>0&&!browseResults&&matchedQueryRef.current?<section className="scope-search-next-step"
