@@ -76,7 +76,22 @@ END
 $fn$;
 -- Restrict executable schema function to the same roles that read aggregate stats.
 REVOKE ALL ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anon,authenticated;
+-- Supabase uses "anon"; Neon Data API uses "anonymous". Generic PostgreSQL
+-- installations may have neither until their auth layer is configured.
+-- Never create elevated roles just to make a migration succeed.
+DO $grant$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='anon') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anon;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='anonymous') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anonymous;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='authenticated') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO authenticated;
+  END IF;
+END
+$grant$;
 
 -- The legacy summary name remains operational during the reader cutover, but
 -- its data source is now Keywords.uidlist, not Galaxy classification columns.
