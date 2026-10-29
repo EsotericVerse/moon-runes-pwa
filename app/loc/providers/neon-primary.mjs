@@ -16,6 +16,7 @@ export function createNeonPrimaryAdapter({
   if(!base.endsWith('/auth')||!api.endsWith('/rest/v1'))throw new Error('Neon Auth/Data API URL invalid');
   let token='',expires=0,tokenSessionId='';
   const listeners=new Set();
+  let reportedUserId='';
   const emit=(event,session)=>{for(const cb of listeners)cb(event,session)};
   async function authRequest(path,{method='GET',payload=null}={}){
     const response=await fetchImpl(base+path,{
@@ -56,8 +57,18 @@ export function createNeonPrimaryAdapter({
   }
   const auth={
     async getSession(){
-      try{return {data:{session:await session()},error:null}}
-      catch(error){return {data:{session:null},error}}
+      try{
+        const current=await session();
+        const userId=String(current?.user?.id||'');
+        if(userId!==reportedUserId){
+          reportedUserId=userId;
+          emit(current?'SIGNED_IN':'SIGNED_OUT',current);
+        }
+        return {data:{session:current},error:null};
+      }catch(error){
+        // A transient network failure must not be misreported as logout.
+        return {data:{session:null},error};
+      }
     },
     async getUser(jwt){
       try{
@@ -91,11 +102,18 @@ export function createNeonPrimaryAdapter({
       }catch(error){return {data:null,error}}
     },
     async signOut(){
-      try{await authRequest('/sign-out',{method:'POST'});token='';expires=0;tokenSessionId='';emit('SIGNED_OUT',null);return {error:null}}
+      try{await authRequest('/sign-out',{method:'POST'});token='';expires=0;tokenSessionId='';reportedUserId='';emit('SIGNED_OUT',null);return {error:null}}
       catch(error){return {error}}
     },
     onAuthStateChange(callback){
       listeners.add(callback);
+      // Supabase-compatible initial event: restore the navigation identity
+      // after a refresh, including a refresh after the Neon OAuth callback.
+      Promise.resolve().then(async()=>{
+        const result=await auth.getSession();
+        if(listeners.has(callback)&&!result.error)
+          callback('INITIAL_SESSION',result.data.session);
+      });
       return {data:{subscription:{unsubscribe:()=>listeners.delete(callback)}}};
     }
   };
