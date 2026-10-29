@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {preferredDatabasePrimary,setEmergencyDatabasePrimary} from '../app/loc/providers/emergency-primary.mjs';
@@ -80,4 +81,13 @@ test('Neon lacks a session: no verified user may be granted',async()=>{
   const {fetchImpl}=simulatedNetwork({loggedIn:false});
   const db=createDatabaseClient(createNeonPrimaryAdapter({url:api,authUrl:auth,fetchImpl}));
   assert.equal(await db.getAccountSession(),null);
+});
+
+test('configured provider selects Neon before constructing any Supabase client',()=>{
+  const source=readFileSync(new URL('../app/loc/providers/configured.mjs',import.meta.url),'utf8');
+  assert.match(source,/if\(routing.provider==='neon'\)return createNeonPrimaryAdapter\(\)/);
+  assert.ok(source.indexOf("if(routing.provider==='neon')")<source.indexOf("const primary=createSupabaseAdapter()"));
+  const emergency=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
+  assert.match(emergency,/setEmergencyDatabasePrimary\(target\)/);
+  assert.match(emergency,/window\.location\.reload\(\)/);
 });
