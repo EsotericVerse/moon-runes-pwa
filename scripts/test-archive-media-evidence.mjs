@@ -54,7 +54,7 @@ test('Only an unambiguous full relative path can associate an article with ZIP m
   assert.equal(rows.filter(v=>v.found_in_zip).length,2);
   assert.equal(rows.filter(v=>v.found_in_zip).every(v=>v.galaxy_uids.length===0),true);
 });
-test('An EXIF image with no public URL is GPS-only, not a fake Galaxy Media row',()=>{
+test('Article-linked archive image without a public URL retains media metadata and EXIF',()=>{
   const collector=createArchiveEvidenceCollector();
   collector.onMediaEntry({path:'facebook/photos/private.jpg'});
   collector.onRecord({platform:'facebook',attachments:[{uri:'facebook/photos/private.jpg'}]},'AAAA0001');
@@ -63,10 +63,12 @@ test('An EXIF image with no public URL is GPS-only, not a fake Galaxy Media row'
   }});
   const entries=collector.rows({scopeId:'lo3rwang',archiveName:'fb.zip',archiveSize:1024});
   const plan=prepareArchiveMedia(entries,new Set(['AAAA0001']));
-  assert.equal(plan.media.length,0);
-  assert.equal(plan.mediaLinks.length,0);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.mediaLinks.length,1);
+  assert.equal(plan.mediaLinks[0].uid,'AAAA0001');
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.exif[0].media_uid,null);
+  assert.equal(plan.exif[0].media_uid,plan.media[0].uid);
   assert.equal(plan.exif[0].latitude,25.033);
 });
 test('ZIP images with neither URL nor EXIF are not imported as media',()=>{
@@ -99,4 +101,17 @@ test('One ZIP image shared by two articles makes one media row and two links',()
   assert.equal(new Set(plan.mediaLinks.map(v=>v.uid)).size,2);
   assert.equal(new Set(plan.mediaLinks.map(v=>v.media_uid)).size,1);
   assert.equal(plan.exif.length,1);
+});
+
+test('Threads ZIP photo linked to an authored post is retained without EXIF or public URL',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onRecord({platform:'threads',attachments:[{uri:'threads/media/real.jpg'}]},'AAAA0001');
+  collector.onMediaEntry({path:'threads/media/real.jpg'});
+  const entries=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:526});
+  const plan=prepareArchiveMedia(entries,new Set(['AAAA0001']));
+  assert.equal(entries.length,1);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.mediaLinks.length,1);
+  assert.equal(plan.exif.length,0);
 });
