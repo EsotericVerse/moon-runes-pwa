@@ -20,6 +20,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
+import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches} from './import-batch.mjs';
@@ -493,6 +494,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const missingSiteMatches=matchMissingSiteImports(unmatchedWithTime,unknownSiteRows,existingByCreatedAt);
         for(const [newUid,existing] of missingSiteMatches)existingByCreatedAt.set(newUid,existing);
       }
+      // Importing an original check-in also restores its spatial anchor.
+      // The Timeline importer remains supplemental and does not run here.
+      const placeRecords=unique.filter(record=>!existingByCreatedAt.get(record.uid)?.place_id)
+        .map(record=>({location:String(existingByCreatedAt.get(record.uid)?.location||'').trim()
+          ||record.location}));
+      const placeAnchors=await prepareImportPlaceAnchors(placeRecords,{
+        scopeId,relation:dbAuthRelation,allowMissing:true
+      });
       const knownArticleIds=new Map();
       let updated=0;
       for(const record of unique){
@@ -506,6 +515,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           changes.location=record.location;
         if(!String(existing.site||'').trim()&&String(record.site||'').trim())
           changes.site=record.site;
+        const placeUid=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName});
+        if(placeUid)changes.place_id=placeUid;
         // Do not replace a manually selected location or existing place_id.
         if(Object.keys(changes).length){
           await updateRows(galaxy,changes,{filters:[{column:'uid',operator:'eq',value:existing.uid}]});
@@ -516,7 +527,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const canonical=incoming.aliases.get(record.uid)||record.uid;
         knownArticleIds.set(record.uid,knownArticleIds.get(canonical)||canonical);
       }
-      const payload=unique.filter(record=>!existingByCreatedAt.has(record.uid));
+      const payload=unique.filter(record=>!existingByCreatedAt.has(record.uid)).map(record=>{
+        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        return placeUid?{...record,place_id:placeUid}:record;
+      });
       const result=await insertImportBatches(payload,{
         batchSize:MAX_ROWS,
         writeBatch:batch=>insertRows(galaxy,batch),
@@ -550,7 +564,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const skipped=analyzed.invalid.length+duplicateCount;
       setProgress({completed:result.inserted+updated+mediaSummary.created,total:result.inserted+updated+mediaSummary.created,percent:100});
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，沿用定錨點 '+placeAnchors.reused.toLocaleString()+' 筆。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
