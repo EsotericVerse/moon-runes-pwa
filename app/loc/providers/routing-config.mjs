@@ -6,7 +6,7 @@
 export const DATABASE_ROUTING_CONFIG=Object.freeze({
   targets:Object.freeze({
     'supabase-current':Object.freeze({provider:'supabase',primaryControl:true}),
-    'neon-current':Object.freeze({provider:'neon',primaryControl:false})
+    'neon-current':Object.freeze({provider:'neon',primaryControl:true})
   }),
   // Optional fallback. An empty build setting disables it without code edits.
   blacklist:Object.freeze([]),
@@ -21,13 +21,12 @@ export function resolveDatabaseRouting(config=DATABASE_ROUTING_CONFIG){
   const blocked=new Set(config.blacklist||[]);
   const primary=config.targets?.[config.primaryId];
   if(!primary||blocked.has(config.primaryId))throw new Error('Primary database route is missing or blacklisted');
-  // The current browser transports use Supabase primary; Neon is optional read-only backup.
-  // Reject unsupported routes rather than silently reading the wrong database.
-  if(primary.provider!=='supabase'||primary.primaryControl!==true)
-    throw new Error('Browser database routing requires Supabase as primary');
-  const backupId=config.backupId&&!blocked.has(config.backupId)?config.backupId:null;
+  if(!['supabase','neon'].includes(primary.provider))
+    throw new Error('Unsupported PostgreSQL primary');
+  if(primary.primaryControl!==true)throw new Error('Primary route has no full provider adapter');
+  const backupId=config.backupId&&config.backupId!==config.primaryId&&!blocked.has(config.backupId)?config.backupId:null;
   const backup=backupId?config.targets?.[backupId]:null;
-  if(backupId&&(!backup||backupId===config.primaryId||backup.provider!=='neon'))
+  if(backupId&&(!backup||!['supabase','neon'].includes(backup.provider)))
     throw new Error('Database backup route is not supported');
   return Object.freeze({
     provider:primary.provider,
@@ -35,7 +34,7 @@ export function resolveDatabaseRouting(config=DATABASE_ROUTING_CONFIG){
     backupId:backupId||null,
     backupProvider:backup?.provider||null,
     mode:config.mode==='db-managed'?'db-managed':'single',
-    primaryControl:true,
+    primaryControl:primary.primaryControl===true,
     verified:true
   });
 }
