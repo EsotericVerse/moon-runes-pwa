@@ -113,3 +113,40 @@ test('Neon does not reuse a JWT from a previous OAuth session',async()=>{
   const previous=await adapter.auth.getUser(first.data.session.access_token);
   assert.match(previous.error.message,/token mismatch/);
 });
+
+test('Neon restores initial OAuth session to the passive account UI',async()=>{
+  const {fetchImpl}=simulatedNetwork();
+  const adapter=createNeonPrimaryAdapter({url:api,authUrl:auth,fetchImpl});
+  const events=[];
+  let notify;
+  const initial=new Promise(resolve=>{notify=resolve});
+  const registration=adapter.auth.onAuthStateChange((event,session)=>{
+    events.push({event,userId:session?.user?.id||''});
+    if(event==='INITIAL_SESSION')notify();
+  });
+  await initial;
+  assert.deepEqual(events.map(e=>e.event),['SIGNED_IN','INITIAL_SESSION']);
+  assert.equal(events.at(-1).userId,'verified-neon-user');
+  const second=await adapter.auth.getSession();
+  assert.equal(second.data.session.user.id,'verified-neon-user');
+  assert.equal(events.filter(x=>x.event==='SIGNED_IN').length,1);
+  registration.data.subscription.unsubscribe();
+  const {error}=await adapter.auth.signOut();
+  assert.ifError(error);
+  assert.equal(events.filter(x=>x.event==='SIGNED_OUT').length,0);
+});
+
+test('Neon login network error does not broadcast a false SIGNED_OUT event',async()=>{
+  let fail=false;
+  const {fetchImpl}=simulatedNetwork();
+  const adapter=createNeonPrimaryAdapter({url:api,authUrl:auth,
+    fetchImpl:(url,options)=>fail?Promise.reject(new TypeError('fetch failed')):fetchImpl(url,options)});
+  const events=[];
+  const reg=adapter.auth.onAuthStateChange((e)=>events.push(e));
+  await adapter.auth.getSession();
+  fail=true;
+  const state=await adapter.auth.getSession();
+  assert.match(state.error.message,/fetch failed/);
+  assert.equal(events.includes('SIGNED_OUT'),false);
+  reg.data.subscription.unsubscribe();
+});
