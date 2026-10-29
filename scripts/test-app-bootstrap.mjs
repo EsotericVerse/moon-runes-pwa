@@ -175,7 +175,7 @@ test('keyword combined ranking follows actual Class membership and keeps paginat
     'return {pages,visibleCombined,visibleGroupRows,combinedDistribution};');
   const meta={classes:{'7':'秩序','2':'連結'}};
   const groupCatalog={data:Array.from({length:12},(_,i)=>({
-    item_no:i+1,class_group:i<8?'秩序':'連結',class_enable:true
+    keyword_id:i+1,class_group:i<8?'秩序':'連結',class_enable:true
   }))};
   const classRows=[
     {class_id:7,group:'秩序',document_count:20},
@@ -215,13 +215,13 @@ test('advanced statistics uses dimension tabs and two dependent comparison selec
   assert.ok(ui.includes("+' 類別'"));
   assert.ok(ui.includes("+' 項目'"));
   assert.ok(source.includes('scope-advanced-keyword-catalog'));
-  assert.ok(source.includes("columns:'class_group,item_no,item_name,class_enable'"));
+  assert.ok(source.includes('readKeywordItemCatalog(scope.id)'));
   assert.ok(source.includes('item.group===group.group'));
   assert.ok(source.includes("dimensionForKind(item.kind)===shownKinds[index]"));
   assert.ok(source.includes("shownKinds[index]==='all'"));
   assert.ok(source.includes('keywordTabAvailable'));
-  assert.ok(source.includes('const hitGroups=new Set()'));
-  assert.ok(source.includes('for(const group of hitGroups)add('));
+  assert.ok(source.includes("row.kind==='group_items_day'"));
+  assert.ok(source.includes("row.kind==='keyword_all_day'"));
   assert.ok(source.includes('maximumLanes=Math.min(8,'));
   assert.ok(source.includes("kind:'source_rollup'"));
   assert.ok(source.includes("name:'作品分類'"));
@@ -237,64 +237,15 @@ test('advanced statistics uses dimension tabs and two dependent comparison selec
   assert.equal(family('instagram'),'', 'An unspecific platform must not be guessed as image/video');
 });
 
-// Manual reset uses the authoritative MaxRows batch bound; it must not
-// fetch or mutate another Scope's records. Exercise the real database client with the existing RPC seam.
-test('keyword reset uses paged authorized writes before clearing summary',async()=>{
-  const {createDatabaseClient}=await import('../app/loc/db-contract.mjs');
-  const rows=Array.from({length:1510},(_,i)=>({
-    uid:String(i+1).padStart(8,'0'),class_id:1,group_lists:'1'
-  }));
-  const calls=[];
-  const relation=name=>({
-    select(columns,options={}){
-      assert.notEqual(name,'loc','author reset must not read silver.loc');
-      assert.notEqual(name,'loc_galaxy','author reset must not touch silver.loc_galaxy');
-      if(name==='manage'){
-        assert.equal(columns,'galaxy_table');
-        return {eq(column,value){
-          assert.equal(column,'id');assert.equal(value,'lo3rwang');return this;
-        },async limit(){return {data:[{galaxy_table:'galaxy'}],error:null};}};
-      }
-      assert.equal(name,'lo3rwang_galaxy');
-      if(options.head)return Promise.resolve({count:rows.length,error:null});
-      let cursor='';
-      return {
-        order(){return this;},
-        gt(column,value){assert.equal(column,'uid');cursor=value;return this;},
-        async limit(size){return {data:rows.filter(row=>row.uid>cursor).slice(0,size),error:null};}
-      };
-    }
-  });
-  const rpc=async(name,payload)=>{
-    if(name==='management_write'){
-      assert.equal(payload.p_table,'silver.lo3rwang');
-      assert.deepEqual(payload.p_values.keyword_meta,{});
-      calls.push('stale');
-      return {data:{count:1},error:null};
-    }
-    assert.equal(name,'apply_keyword_classification');
-    const {mode,rows:chunk}=payload.p_rows;
-    calls.push(mode);
-    if(mode==='chunk'){
-      assert.ok(chunk.length>0&&chunk.length<=MAX_ROWS);
-      for(const item of chunk){
-        const row=rows.find(row=>row.uid===item.uid);
-        row.class_id=null;row.group_lists='false';
-      }
-      return {data:chunk.length,error:null};
-    }
-    if(mode==='reset')assert.ok(rows.every(row=>row.class_id==null&&row.group_lists==='false'));
-    return {data:0,error:null};
-  };
-  const client={schema(){return {from:relation,rpc};}};
-  const auth={getSession(){},getUser(){},signInWithOAuth(){},signOut(){}};
-  const db=createDatabaseClient({publicClient:client,authClient:client,auth});
-  const progress=[];
-  const changed=await db.resetKeywordClassification('lo3rwang',{onProgress:p=>progress.push(p)});
-  assert.equal(changed,1510);
-  assert.deepEqual(calls,['begin','stale','chunk','reset']);
-  assert.equal(progress.at(-1).phase,'completed');
-  assert.equal(progress.at(-1).completed,1510);
+test('Keywords reset clears the current Class rather than writing Galaxy',()=>{
+  const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+  const start=contract.indexOf('  async function resetKeywordClassification(');
+  const end=contract.indexOf('  async function readKeywordClass(',start);
+  assert.ok(start>=0&&end>start);
+  const body=contract.slice(start,end);
+  assert.match(body,/update\(\{uidlist:\[\]\}\)/);
+  assert.match(body,/\.eq\('class_uid',classUid\)/);
+  assert.doesNotMatch(body,/galaxy|group_lists|apply_keyword_classification/);
 });
 
 test('keyword counts read only the current Scope through on-demand HEAD requests',()=>{
@@ -305,7 +256,7 @@ test('keyword counts read only the current Scope through on-demand HEAD requests
   assert.match(contract,/from\(scope\+'_'\+suffix\)/);
   assert.match(panel,/if\(workspace!=='run'\|\|!canEdit\|\|!scopeData\?\.galaxy\)return/);
   assert.match(panel,/selectCount\(scopeData\.galaxy,\{idColumn:'uid'\}\)/);
-  assert.match(panel,/selectCount\(scopeData\.galaxy,\{\s*idColumn:'uid',filters:/);
+  assert.match(panel,/keyword_meta\?\.matchedDocuments/);
   assert.match(panel,/setGalaxyTotalCount\(Math\.max\(0,Number\(total\)\|\|0\)\)/);
   assert.match(panel,/window\.confirm\(l\.confirmReset\+'\\n'\+scopeData\.galaxy\)/);
   assert.doesNotMatch(panel,/setInterval\(/);
@@ -471,8 +422,8 @@ test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
     'opening a Rune group alone must not scan every Galaxy article');
   assert.match(culture,/enabled:styleFilter==='rune66'&&Boolean\(keywordDrillGroup\)/,
     'fetch Rune catalog only after a group is expanded');
-  assert.match(culture,/columns:'item_no,item_name,order_no,class_group'/);
-  assert.match(culture,/limit:16/,'Rune group query must be bounded');
+  assert.match(culture,/readKeywordItemCatalog\(scopeId\)/);
+  assert.match(culture,/\.filter\(item=>item\.class_group===groupName/,'Group catalog is filtered to the selected Group');
   assert.match(culture,/revalidateOnFocus:false/);
   assert.match(culture,/keywordCounts\.set\(key,\(keywordCounts\.get\(key\)\|\|0\)\+\(Number\(item\.item_count\)\|\|0\)\)/,
     'use real daily category counts to show clickable group labels');
