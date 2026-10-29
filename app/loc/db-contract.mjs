@@ -139,6 +139,19 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return scope;
   }
 
+  async function readOwnedKeywordNodes(table){
+    const rows=[],size=500;
+    for(let offset=0;;offset+=size){
+      const {data,error}=await dbAuthRelation(table)
+        .select('uid,type,name,desc,lists')
+        .order('uid',{ascending:true}).range(offset,offset+size-1);
+      if(error)throw new Error(error.message||'Cannot read Keywords tree');
+      rows.push(...(data||[]));
+      if((data||[]).length<size)break;
+    }
+    return rows;
+  }
+
   async function resetKeywordClassification(scopeId,{onProgress}={}){
     const scope=normalizeScopeId(scopeId);
     const table='silver.'+scope+'_keywords';
@@ -148,11 +161,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     });
     const classUid=String(config?.current_keyword_class_uid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
-    const {data:all,error:readError}=await dbAuthRelation(table)
-      .select('uid,type,name,desc,lists');
-    if(readError)throw new Error(readError.message);
+    const all=await readOwnedKeywordNodes(table);
     const {descendantsOfKeyword}=await import('./keyword-tree.mjs');
-    const children=descendantsOfKeyword(all||[],classUid)
+    const children=descendantsOfKeyword(all,classUid)
       .filter(node=>node.type==='group'||node.type==='item');
     const {data:staled,error:staleError}=await dbAuthRelation('silver.'+scope)
       .update({staticstime:null,keyword_meta:{}})
@@ -325,11 +336,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(!source||!target||source===target)throw new Error('Keywords Class 名稱不正確');
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
-    const {data,error}=await dbAuthRelation(table).select('uid,type,name,desc,lists');
-    if(error)throw new Error(error.message);
+    const data=await readOwnedKeywordNodes(table);
     const {indexKeywordTree,descendantsOfKeyword}=await import('./keyword-tree.mjs');
     const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
-    const tree=indexKeywordTree(data||[]);
+    const tree=indexKeywordTree(data);
     const original=[...tree.index.values()].find(row=>row.type==='class'&&row.name===source);
     if(!original)throw new Error('找不到來源 Class');
     if([...tree.index.values()].some(row=>row.type==='class'&&row.name===target))
