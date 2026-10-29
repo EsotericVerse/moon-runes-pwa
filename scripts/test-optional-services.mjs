@@ -38,6 +38,25 @@ test('zero remote ISR services is supported on a fresh installation',()=>{
   assert.match(migration,/values \('loc','cache','','\[\]'::jsonb/);
 });
 
+test('backup readiness check is only invoked in Admin settings',()=>{
+  const server=read('supabase/functions/loc-kysely/index.ts');
+  const panel=read('app/loc/views/admin-panels/DatabaseTarget.jsx');
+  assert.match(server,/check_backup_readiness/);
+  assert.match(server,/\.where\("backup_selected","=",true\)/);
+  assert.match(server,/backup\.introspection\.getTables\(\)/);
+  assert.match(panel,/check_backup_readiness/);
+  assert.match(panel,/backupHealth\.state==='absent'/);
+});
+
+test('configured ISR requires a capability handshake rather than a domain alone',()=>{
+  const endpoint=read('app/api/loc/isr-capabilities/route.js');
+  const panel=read('app/loc/views/admin-panels/IsrDomainTarget.jsx');
+  assert.match(endpoint,/numericHttpCache:true/);
+  assert.match(panel,/checkIsrCapability\(selected\.origin\)/);
+  assert.match(panel,/checkDomains\(next\.domains/);
+  assert.match(panel,/未確認支援/);
+});
+
 test('primary failure with no backup cannot be reported as an active backup',()=>{
   const status=read('app/loc/db-source-status.mjs');
   assert.match(status,/!hasBackup&&failingResources/);
