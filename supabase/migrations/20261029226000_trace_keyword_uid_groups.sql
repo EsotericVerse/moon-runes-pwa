@@ -3,7 +3,7 @@
 -- raw article UID lists, reclassify text or write to Galaxy.
 CREATE OR REPLACE FUNCTION silver.read_trace_keyword_group_totals(
   p_scope_id text,p_place_ids text[],p_start date DEFAULT NULL,
-  p_end date DEFAULT NULL,p_source text DEFAULT NULL
+  p_end date DEFAULT NULL,p_source text DEFAULT NULL,p_class_uid text DEFAULT NULL
 ) RETURNS TABLE(group_uid text,group_name text,document_count bigint)
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
 AS $fn$
@@ -13,6 +13,9 @@ DECLARE
   v_galaxy regclass;
   v_keywords regclass;
   v_class_uid text;
+  v_current text;
+  v_meta jsonb;
+  v_old_ready timestamptz;
   v_ready timestamptz;
   v_public boolean:=false;
 BEGIN
@@ -28,10 +31,18 @@ BEGIN
   v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
   IF v_config IS NULL OR v_galaxy IS NULL OR v_keywords IS NULL
     THEN RAISE EXCEPTION 'Missing Scope data'; END IF;
-  EXECUTE format('SELECT current_keyword_class_uid,staticstime FROM %s WHERE id=$1',v_config)
-    INTO v_class_uid,v_ready USING v_scope;
-  IF v_class_uid IS NULL OR v_ready IS NULL THEN RETURN; END IF;
+  EXECUTE format('SELECT current_keyword_class_uid,keyword_meta,staticstime FROM %s WHERE id=$1',v_config)
+    INTO v_current,v_meta,v_old_ready USING v_scope;
+  v_class_uid:=coalesce(nullif(p_class_uid,''),v_current);
+  IF v_class_uid IS NULL OR v_class_uid !~ '^[A-Za-z0-9]{4}$' THEN RETURN; END IF;
+  IF v_meta->'by_class'->v_class_uid->>'completedAt' IS NOT NULL THEN
+    v_ready:=(v_meta->'by_class'->v_class_uid->>'completedAt')::timestamptz;
+  ELSIF v_class_uid=v_current AND v_meta->>'class_uid'=v_class_uid THEN
+    v_ready:=v_old_ready;
+  END IF;
+  IF v_ready IS NULL THEN RETURN; END IF;
   IF NOT silver.can_manage_scope(v_scope) THEN
+    IF v_class_uid IS DISTINCT FROM v_current THEN RETURN; END IF;
     EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
       INTO v_public USING v_scope;
     IF v_public IS NOT TRUE THEN RETURN; END IF;
@@ -62,5 +73,5 @@ BEGIN
   USING v_class_uid,p_place_ids,p_start,p_end,nullif(p_source,'');
 END
 $fn$;
-REVOKE ALL ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text) TO anon,authenticated;
+REVOKE ALL ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO anon,authenticated;
