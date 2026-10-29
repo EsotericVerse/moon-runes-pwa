@@ -2,6 +2,7 @@ import {flashMessage} from './flash-message.js';
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE,MAX_ROWS} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
+import {generateKeywordClassUid} from './keyword-uidlist.mjs';
 import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from './authorization-runtime.mjs';
 import {assertEditorSession} from './edit-session-ttl.mjs';
 
@@ -439,7 +440,13 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       .eq('class_name',source).order('order_no',{ascending:true});
     if(readError||!sourceItems?.length)throw new Error(readError?.message||'找不到來源 Class');
     const registry=dbAuthRelation(scope==='local'?'local.local_keyword_classes':'silver.keyword_classes');
-    const {data:created,error:registryError}=await registry.insert({scope_id:scope}).select('class_uid');
+    let registryValues={scope_id:scope};
+    if(scope==='local'){
+      const {data:existing,error:oldError}=await registry.select('class_uid');
+      if(oldError)throw new Error(oldError.message);
+      registryValues={...registryValues,class_uid:generateKeywordClassUid((existing||[]).map(row=>row.class_uid))};
+    }
+    const {data:created,error:registryError}=await registry.insert(registryValues).select('class_uid');
     if(registryError||created?.length!==1)throw new Error(registryError?.message||'無法建立 Class UID');
     const classUid=created[0].class_uid;
     const copies=sourceItems.map(item=>({
@@ -468,6 +475,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     if(!scope)throw new Error('Scope ID 格式不正確。');
     preflightWrite('silver.'+scope+'_keywords');
+    if(scope==='local'){
+      return copyKeywordLibraryClass(scope,'符文66','符文66副本-'+generateKeywordClassUid());
+    }
     const {data,error}=await authClient.schema('silver').rpc('copy_rune66_keyword_class',{p_scope_id:scope});
     if(error)throw new Error(error.message||'符文66複製失敗。');
     return data||{};
