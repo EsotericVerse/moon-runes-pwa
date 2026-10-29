@@ -11,6 +11,8 @@ import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
+import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
+import {importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
 import {archiveRecordStreamPath,archiveRootContainers} from './archive-array-layout.mjs';
 import {isPrivateArchiveEntry} from './archive-import-safety.mjs';
@@ -103,8 +105,11 @@ const category=path=>{
   return 'meta';
 };
 const txt=value=>typeof value==='string'?value:null;
-const pickUrl=item=>[item.url,item.permalink,item.link,item.post_url,item.string_map_data?.Permalink?.value,
-  item.string_map_data?.Link?.value].find(v=>typeof v==='string'&&/^https?:\/\//i.test(v.trim()))||'';
+const pickUrl=item=>[
+  item.post_url,item.permalink,item.string_map_data?.Permalink?.value,
+  item.url,item.link,item.string_map_data?.Link?.value
+].find(v=>typeof v==='string'&&/^https?:\/\//i.test(v.trim())&&
+  !isArchiveMediaUrl(v)&&!importMapUrlCoordinates(v))||'';
 function chatgptConversation(row){
   if(!row||typeof row!=='object'||!row.mapping)return null;
   const messages=Object.values(row.mapping).map(node=>node?.message).filter(Boolean)

@@ -1,7 +1,7 @@
 // Preserve ZIP media references and private EXIF evidence without keeping image bytes.
 const MAX_MEDIA_PER_RECORD=200;
 const URI_KEYS=['uri','src','media_uri','mediaUri','path','relative_path','relativePath'];
-const URL_KEYS=['url','media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','display_url'];
+const URL_KEYS=['media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','url','display_url'];
 const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','array','image_versions2','image','video','photo'];
 const HTTP=/^https?:\/\/[^/\s]+/i;
 const MEDIA_EXT=/\.(?:jpe?g|png|gif|webp|heic|avif|tiff?|mp4|mov|mkv|webm|mp3|m4a|wav|ogg|flac)(?:[?#]|$)/i;
@@ -11,6 +11,7 @@ const validRef=value=>Boolean(value&&value.length<=2048&&
   !/[\u0000-\u001f]/u.test(value)&&
   (HTTP.test(value)||(!value.startsWith('/')&&!value.split('/').includes('..'))));
 const publicUrl=value=>HTTP.test(value)&&validRef(value)?value:null;
+export const isArchiveMediaUrl=value=>typeof value==='string'&&Boolean(publicUrl(value.trim()))&&MEDIA_EXT.test(value);
 export function archiveMediaType(uri,hint=''){
   const text=String(hint||'').toLowerCase();
   if(/image|photo/.test(text))return 'image';
@@ -28,7 +29,11 @@ export function archiveAttachmentReferences(record){
     ...(Array.isArray(record.data)?record.data.flatMap(item=>
       [item?.attachments,item?.media,item?.photos,item?.videos].filter(Boolean)):[])];
   if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||
-      /^(image|photo|video|audio)/i.test(String(record.media_type||'')))roots.push(record);
+       /^(image|photo|video|audio)/i.test(String(record.media_type||''))||
+       [record.url,record.media_url,record.mediaUrl,record.image_url,record.video_url,record.download_url]
+         .some(isArchiveMediaUrl)||
+       [record.media_url,record.mediaUrl,record.image_url,record.video_url]
+         .some(value=>typeof value==='string'&&Boolean(publicUrl(value))))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
   let examined=0;
@@ -38,14 +43,20 @@ export function archiveAttachmentReferences(record){
     if(visited.has(value))continue;
     visited.add(value);
     if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth});continue;}
-    const hint=String(value.media_type||value.type||value.mime_type||'');
+    const hint=String(value.media_type||value.type||value.mime_type||(value.image_url?'image':value.video_url?'video':''));
     const paths=URI_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
       .map(pathValue).filter(validRef);
     const allUrls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string').map(rawPath);
     for(const maybePath of allUrls)if(!HTTP.test(maybePath)&&MEDIA_EXT.test(maybePath)&&
         validRef(maybePath))paths.push(maybePath);
     const urls=allUrls.filter(v=>publicUrl(v));
-    const directUrl=urls[0]||paths.find(v=>HTTP.test(v))||null;
+    // Explicit media URL fields win over generic links on the same media item.
+    // Generic URLs are accepted only when they look like media or are labelled as media.
+    const mediaUrl=URL_KEYS.slice(0,6).map(key=>value[key]).find(v=>publicUrl(v));
+    const genericUrl=urls.find(v=>isArchiveMediaUrl(v))||
+      (/^(image|photo|video|audio)/i.test(hint)?
+        urls.find(v=>!/(?:instagram\.com\/(?:p|reel|stories)\/|threads\.net\/.*\/post\/|facebook\.com\/(?:posts|permalink\.php))/i.test(v)):null);
+    const directUrl=publicUrl(mediaUrl)||genericUrl||paths.find(v=>HTTP.test(v))||null;
     const relative=paths.filter(v=>!HTTP.test(v));
     for(const uri of relative.length?relative:directUrl?[directUrl]:[]){
       const mediaType=archiveMediaType(uri,hint);
