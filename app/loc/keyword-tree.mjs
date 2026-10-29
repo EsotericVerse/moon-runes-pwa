@@ -126,7 +126,7 @@ export function rebuildKeywordUidLists(rows,classUid,classifications=[]){
   ).map(row=>{
     const uid_lists=row.type==='class' ? [] :
       row.type==='group' ? [...perGroup.get(row.uid)].sort() :
-      [...perItem.get(row.uid)].sort(([a],[b])=>a.localeCompare(b)).map(([uid,times])=>({uid,times}));
+      [...perItem.get(row.uid)].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([uid,times])=>({uid,times}));
     return {...row,uid_lists};
   });
 }
