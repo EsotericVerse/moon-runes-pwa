@@ -109,7 +109,7 @@ export default {
   "parseFileFailed": "{index} 件目の JSON／形式の解析に失敗：{error}",
   "selectSource": "先にソースを指定してください。",
   "noValidItems": "インポート可能な有効データがありません。",
-  "checkingUids": "既存 UID を確認中…",
+  "checkingCreatedAt": "元の投稿日時と既存記事を照合中…",
   "existingUidFailed": "既存 UID の確認に失敗しました。",
   "existingNativeFailed": "元のプラットフォーム ID の確認に失敗しました。",
   "skippedClause": "、{count} 件をスキップ（無効／重複／既存）",

@@ -138,3 +138,31 @@ export async function insertImportBatches(records,{writeBatch,batchSize=200,onPr
   }
   return {completed,inserted,conflicts};
 }
+
+// A historic Galaxy row may lack its publishing site. Backfill it only when
+// BOTH the source timestamp (second) and normalized body identify exactly one
+// such row. A timestamp alone cannot assign a platform to an unrelated post.
+export function matchMissingSiteImports(records,missingSiteRows,alreadyMatched=new Map()){
+  const assigned=new Set([...alreadyMatched.values()].map(row=>String(row.uid)));
+  const bySecond=new Map();
+  for(const row of missingSiteRows||[]){
+    if(String(row.site||'').trim()||!String(row.uid||'').trim())continue;
+    const second=importSecond(row.createtime);
+    if(second===null)continue;
+    if(!bySecond.has(second))bySecond.set(second,[]);
+    bySecond.get(second).push(row);
+  }
+  const matched=new Map();
+  for(const record of records||[]){
+    if(alreadyMatched.has(record.uid)||!String(record.site||'').trim())continue;
+    const second=importSecond(record.createtime);
+    const comparable=comparableImportText(record.content);
+    if(second===null||!comparable)continue;
+    const candidates=(bySecond.get(second)||[]).filter(row=>
+      !assigned.has(String(row.uid))&&comparableImportText(row.content)===comparable);
+    if(candidates.length!==1)continue;
+    matched.set(record.uid,candidates[0]);
+    assigned.add(String(candidates[0].uid));
+  }
+  return matched;
+}
