@@ -1,5 +1,6 @@
 // One format contract for JSON Import and Source Refresh. No database authority lives here.
 import {MAX_ROWS,MAX_ARCHIVE_BYTES,MAX_JSON_BYTES} from './query-batch-size.mjs';
+import {unwrapArchiveArrayRows} from './archive-array-layout.mjs';
 // Lightweight file-selection contracts remain separate from parser implementations.
 export const UNIVERSAL_IMPORT_ACCEPT='.zip,.json,.csv,.tsv,.xlsx,.ods,.docx,.pptx,.pdf,.odt,.odp,.odg,.rtf,.md,.html,.htm,.epub,.tex';
 export {MAX_ARCHIVE_BYTES as ARCHIVE_MAX_BYTES,MAX_JSON_BYTES as ARCHIVE_JSON_MAX_BYTES};
@@ -80,7 +81,12 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
 }
 
 function pathValue(row,path){
-  const segments=String(path||'').trim().split('.').filter(Boolean);
+  // Accept dotted and Meta bracket paths without evaluating expressions.
+  const normalized=String(path||'').trim()
+    .replace(/\[\s*["']([a-zA-Z_][\w-]*)["']\s*\]/g,'.$1')
+    .replace(/\[\s*(\d+)\s*\]/g,'.$1');
+  if(/[\[\]]/.test(normalized))return undefined;
+  const segments=normalized.split('.').filter(Boolean);
   if(!segments.length)return undefined;
   return segments.reduce((value,segment)=>{
     if(value===null||value===undefined||typeof value!=='object')return undefined;
@@ -102,19 +108,25 @@ export function importRowsFromJson(payload,recordPath=''){
   const selected=String(recordPath||'').trim();
   const container=selected?pathValue(payload,selected):payload;
   if(selected&&container===undefined)throw new Error('找不到資料陣列路徑：'+selected);
-  if(Array.isArray(container))return container;
+  if(Array.isArray(container))return unwrapArchiveArrayRows(container);
   if(container&&typeof container==='object'){
-    for(const key of ['items','posts','data','records','status_updates','your_posts',
-      'text_post_app_text_posts','threads_posts','thread_posts','threads_and_replies']){
-      if(Array.isArray(container[key]))return container[key];
+    // A Meta export can wrap the actual records in array.array, including
+    // arrays of one-property array envelopes. Preserve normal record arrays
+    // inside each post (media, data and attachments).
+    const keys=['items','posts','data','records','status_updates','your_posts',
+      'text_post_app_text_posts','threads_posts','thread_posts','threads_and_replies','array'];
+    for(const key of keys){
+      if(Array.isArray(container[key]))return unwrapArchiveArrayRows(container[key]);
+      if(key==='array'&&container[key]&&typeof container[key]==='object'){
+        const nested=importRowsFromJson(container[key]);
+        if(nested.length)return nested;
+      }
     }
-    if(selected)return [container];
-    const hasContent=['content','body','text','message','description','title','uid'].some(key=>Object.prototype.hasOwnProperty.call(container,key));
-    if(hasContent)return [container];
+    if(selected||['content','body','text','message','description','title','uid']
+      .some(key=>Object.prototype.hasOwnProperty.call(container,key)))return [container];
   }
   throw new Error('找不到可匯入的資料陣列；請在格式設定指定資料路徑。');
 }
-
 
 // Preserve the original timestamp when available. Unix seconds and milliseconds
 // must not be confused; a missing/unreadable source timestamp gets import time.
@@ -132,7 +144,7 @@ export function parseImportCreatedTime(value){
 // An absent original timestamp is null, never the import clock.
 const IMPORT_TIME_KEYS=['createtime','createdAt','createAt','created_at','creation_timestamp','create_time',
   'created_time','timestamp_ms','timestamp','taken_at','published_at','publishedAt','date'];
-const IMPORT_TIME_WRAPPERS=['media','data','attachments','string_map_data','label_values','core','post','metadata'];
+const IMPORT_TIME_WRAPPERS=['media','data','array','attachments','string_map_data','label_values','core','post','metadata'];
 export function extractImportCreatedAt(value,depth=0){
   if(!value||typeof value!=='object'||depth>5)return null;
   if(Array.isArray(value)){
