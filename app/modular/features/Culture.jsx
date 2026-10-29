@@ -96,7 +96,7 @@ function classLabel(value){
 // No article is read for its old group_lists or class_id.
 function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
   const classes=meta.classes||{},className=String(meta.class_name||'').trim();
-  const known=new Map(groupItems.map(item=>[String(item.keyword_id),item]));
+  const known=new Map(groupItems.map(item=>[String(item.uid),item]));
   const buckets=new Map(),maximum=new Map();
   for(const row of rows||[]){
     const day=String(row.day||row.date||'').slice(0,10);
@@ -107,16 +107,16 @@ function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
       const item=known.get(String(row.item_key));
       if(!item)continue;
       key=String(row.item_key);
-      label=String(item.item_name||key);
+      label=String(item.name||key);
       count=Number(row.hit_count)||0;
       order=Number(item.order_no)||0;
     }else if(row.kind==='class_day'||(row.kind==='galaxy'&&row.classification_group)){
-      key=String(row.class_id??'');
+      key=String(row.group_uid??'');
       const groupName=String(classes[key]||row.classification_group||'').trim();
       if(!groupName)continue;
       label=[className,groupName,'群組'].filter(Boolean).join(' ');
       count=Number(row.hit_count??row.count)||0;
-      order=Number(key)||0;
+      order=Object.keys(classes).indexOf(key)+1;
     }else continue;
     if(!key||!count)continue;
     const id=key+'\\u0000'+day;
@@ -479,8 +479,8 @@ export default function Culture(){
     enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
     queryFn:async()=>{
-      const {readKeywordUidlistSummary}=await import('../../loc/db-client.mjs');
-      return readKeywordUidlistSummary(scopeId,{
+      const {readKeywordTreeSummary}=await import('../../loc/db-client.mjs');
+      return readKeywordTreeSummary(scopeId,{
         startDate:keywordWindowStart,endDate:keywordWindowEnd,
         source:keywordDrillSource
       });
@@ -504,7 +504,7 @@ export default function Culture(){
     .filter(group=>group.items.length>0),[keywordSourceOptions,locale]);
   const keywordGroupOptions=useMemo(()=>Object.entries(styleQuery.data?.keywordMeta?.classes||{})
     .map(([id,name])=>({id,label:String(name||'').trim()}))
-    .filter(item=>item.label).sort((a,b)=>Number(a.id)-Number(b.id)),
+    .filter(item=>item.label),
   [styleQuery.data?.keywordMeta?.classes]);
   // Fetch Group names/membership only after the user opens a specific Class.
   // The initial Class-density river never downloads the Group catalog.
@@ -513,11 +513,13 @@ export default function Culture(){
     enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
       &&Boolean(styleQuery.data?.keywordMeta?.class_uid)&&Boolean(scopeData?.keywords),
     queryFn:async()=>{
-      const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
-      if(!groupName)return [];
-      const {readKeywordItemCatalog}=await import('../../loc/db-client.mjs');
-      return (await readKeywordItemCatalog(scopeId))
-        .filter(item=>item.class_group===groupName&&item.class_enable!==false);
+      const {readKeywordTreeCatalog}=await import('../../loc/db-client.mjs');
+      const {keywordTreeCatalog}=await import('../../loc/keyword-tree-report.mjs');
+      const result=await readKeywordTreeCatalog(scopeId);
+      if(!result.class_uid)return [];
+      const catalog=keywordTreeCatalog(result.rows,result.class_uid);
+      return (catalog.groups.find(group=>group.uid===keywordDrillGroup)?.items||[])
+        .map((item,index)=>({...item,order_no:index}));
     },
     revalidateOnFocus:false,
     revalidateOnReconnect:false,
@@ -1582,9 +1584,9 @@ export default function Culture(){
                     {keywordGroupCatalogQuery.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
                     {keywordGroupCatalogQuery.data?.length?<ul>
                       {keywordGroupCatalogQuery.data.map(rune=>{
-                        const matched=(styleQuery.data?.runeTotals||[]).find(item=>String(item.rune_id)===String(rune.keyword_id));
-                        return <li key={rune.keyword_id}>
-                          <strong>{rune.order_no} · {rune.item_name}</strong>
+                        const matched=(styleQuery.data?.runeTotals||[]).find(item=>String(item.uid)===String(rune.uid));
+                        return <li key={rune.uid}>
+                          <strong>{rune.name}</strong>
                           <span>{Number(matched?.count||0).toLocaleString(locale)} 次命中</span>
                         </li>;
                       })}
