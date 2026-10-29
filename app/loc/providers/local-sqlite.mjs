@@ -877,22 +877,37 @@ async function readKeywordUidlistSummaryLocal({p_start=null,p_end=null,p_source=
       AND (? IS NULL OR g.source_name=?)
   `,[uid,p_start,p_start,p_end,p_end,p_source,p_source]);
   const byItem=new Map(),byItemDay=new Map(),byGroupDay=new Map(),
-    byAllDay=new Map(),byGroupItemDay=new Map(),seenArticles=new Set();
+    byAllDay=new Map(),byGroupItemDay=new Map(),seenArticles=new Set(),
+    articleGroupStrength=new Map();
   const add=(map,key,uid,amount)=>{
     const entry=map.get(key)||{hit_count:0,uids:new Set()};
     entry.hit_count+=amount;entry.uids.add(uid);map.set(key,entry);
   };
   for(const row of raw){
     const hit=JSON.parse(row.hit||'{}'),times=Number(hit.times)||0;
-    if(times<=0)continue;
+    if(times<0)continue;
     const day=String(row.day||''),article=String(row.uid||'');
     const item=String(row.keyword_id),group=String(row.class_group||'');
     seenArticles.add(article);
-    add(byItem,item,article,times);
-    add(byItemDay,item+'\\0'+day,article,times);
-    add(byGroupDay,group+'\\0'+day,article,times);
-    add(byAllDay,day,article,1);
-    add(byGroupItemDay,group+'\\0'+day,article,1);
+    const key=article+'\\0'+day;
+    if(!articleGroupStrength.has(key))articleGroupStrength.set(key,new Map());
+    const strengths=articleGroupStrength.get(key);
+    strengths.set(group,(strengths.get(group)||0)+times);
+    if(times>0){
+      add(byItem,item,article,times);
+      add(byItemDay,item+'\\0'+day,article,times);
+      add(byAllDay,day,article,1);
+      add(byGroupItemDay,group+'\\0'+day,article,1);
+    }
+  }
+  // A document contributes to exactly one classification Group per day.
+  // Tied Groups use the configured fallback; otherwise the configured order.
+  for(const [key,strengths] of articleGroupStrength){
+    const [article,day]=key.split('\\0');
+    const sorted=[...strengths].sort(([a,av],[b,bv])=>
+      bv-av||Number(b===defaultItem?.class_group)-Number(a===defaultItem?.class_group)
+        ||(numbers.get(a)||999999)-(numbers.get(b)||999999));
+    if(sorted.length)add(byGroupDay,sorted[0][0]+'\\0'+day,article,1);
   }
   const out=[{kind:'eligible',item_key:null,class_id:null,day:'',
     hit_count:seenArticles.size,document_count:seenArticles.size}];
