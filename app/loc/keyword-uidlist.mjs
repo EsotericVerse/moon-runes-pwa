@@ -31,7 +31,7 @@ function articleUid(value){
   return value;
 }
 function times(value){
-  if(!Number.isSafeInteger(value)||value<=0)throw new Error('times must be positive');
+  if(!Number.isSafeInteger(value)||value<0)throw new Error('times must be non-negative');
   return value;
 }
 function indexes(catalogRows,classUid){
