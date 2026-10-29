@@ -56,7 +56,7 @@ function objectPoint(value){
 }
 const PLACES=['place','placeLocation','place_location','location','checkin','check_in',
   'venue','geo','geometry','position','coordinate','coordinates','location_data','locationData','address'];
-const URLS=['map_url','maps_url','google_maps_url','place_url','url','href','link','permalink','location_url'];
+const URLS=['map_url','maps_url','google_maps_url','place_url','location_url','mapUrl','mapsUrl','url','href','link','permalink','value'];
 const CONTAINERS=['data','attachments','array','media','photos','videos','label_values','dict','metadata'];
 export function extractImportCoordinates(source){
   if(!source||typeof source!=='object')return null;
