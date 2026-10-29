@@ -247,7 +247,6 @@ export default function Search({managementMode=false}){
   const [publicView,setPublicView]=useState('search');
   const [query,setQuery]=useState('');
   const [searchPopularOpen,setSearchPopularOpen]=useState(false);
-  const [suggestionsOpen,setSuggestionsOpen]=useState(false);
   const [placeOnly,setPlaceOnly]=useState(false);
   const [selectedPlaceArticles,setSelectedPlaceArticles]=useState([]);
   const [bulkPlace,setBulkPlace]=useState('');
@@ -420,7 +419,8 @@ export default function Search({managementMode=false}){
 
     const id=++searchId.current;
     const controller=beginRequest();
-    const {signal}=controller;
+    const timeout=AbortSignal.timeout(25000);
+    const signal=AbortSignal.any([controller.signal,timeout]);
     // A fresh search supersedes any in-flight style-keyword fetch for the same key.
     setError('');
     if(append){
@@ -546,11 +546,19 @@ export default function Search({managementMode=false}){
       setNextCursor(search.nextCursor??null);
       const partial=(search.failures?.length||styleResult.failed)?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append){
-        setStatus(options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
+        setStatus(!pageResults.length&&!search.hasMore
+          ?search.failures?.length?UI_COPY.search.failed:UI_COPY.search.noResults
+          :options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
         scrollToResults();
       }
     }catch(exception){
-      if(id!==searchId.current||isAbortError(exception))return;
+      if(id!==searchId.current||controller.signal.aborted)return;
+      if(timeout.aborted){
+        if(append)setLoadMoreError(UI_COPY.search.timeout);
+        else{setError(UI_COPY.search.timeout);setStatus('');scrollToResults();}
+        return;
+      }
+      if(isAbortError(exception))return;
       if(append){
         setLoadMoreError(featureDataErrorMessage(exception,UI_COPY));
       }else{
@@ -1190,10 +1198,9 @@ export default function Search({managementMode=false}){
           </div>:null}
         </div>:null}
       </div>
-    {!managementMode?<details className="scope-search-reference-editor"
-      onToggle={event=>setSuggestionsOpen(event.currentTarget.open)}>
-      <summary>搜尋建議</summary>
-      {suggestionsOpen?<ScopeEditableBlocks
+    {!managementMode?<section className="scope-search-reference-editor" aria-label="搜尋建議">
+      <h2>搜尋建議</h2>
+      <ScopeEditableBlocks
         scopeId={scopeId}
         page="search"
         orders={[1]}
@@ -1206,8 +1213,8 @@ export default function Search({managementMode=false}){
         allowInlineChildAdd
         explicitEditButton
         onSuggestionClick={term=>searchFromSuggestion(term)}
-      />:null}
-    </details>:null}
+      />
+    </section>:null}
     </section>:null}
     <div ref={resultsRef} className="scope-search-results">
     {status&&(!managementMode||status!==UI_COPY.search.start)?<p className="scope-status">{status}</p>:null}
