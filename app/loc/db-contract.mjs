@@ -207,7 +207,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function readKeywordClass(scopeId,classUid){
     const scope=normalizeScopeId(scopeId),uid=String(classUid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
-    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope},{
+    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope,p_class_uid:uid},{
       isEmpty:result=>!result?.class_uid||!Array.isArray(result.rows)||result.rows.length===0
     });
     return data?.class_uid===uid?data:null;
