@@ -98,22 +98,12 @@ CREATE TABLE IF NOT EXISTS local_time (
   status TEXT
 );
 CREATE TABLE IF NOT EXISTS local_keywords (
-  keyword_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  group_name TEXT NOT NULL,
-  item_name TEXT NOT NULL,
-  principle TEXT NOT NULL DEFAULT '',
-  keywords TEXT NOT NULL DEFAULT '[]',
-  order_no INTEGER NOT NULL DEFAULT 0,
-  class_name TEXT NOT NULL,
-  class_group TEXT NOT NULL,
-  class_enable INTEGER NOT NULL DEFAULT 1,
-  class_uid TEXT NOT NULL,
-  uidlist TEXT NOT NULL DEFAULT '[]'
-);
-CREATE TABLE IF NOT EXISTS local_keyword_classes (
-  class_uid TEXT PRIMARY KEY NOT NULL,
-  scope_id TEXT NOT NULL DEFAULT 'local',
-  default_keyword_id INTEGER
+  uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
+  type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),
+  name TEXT NOT NULL,
+  "desc" TEXT NOT NULL DEFAULT '',
+  lists TEXT NOT NULL DEFAULT '[]',
+  uid_lists TEXT NOT NULL DEFAULT '[]'
 );
 CREATE TABLE IF NOT EXISTS local_daily (
   record_id TEXT PRIMARY KEY NOT NULL,
@@ -379,71 +369,96 @@ function rowsOf(db,sql,params=[]){
     return result;
   }finally{stmt.free();}
 }
-function legacyKeywordPlan(items=[]){
-  const classes=new Map(),used=new Set();
-  for(const item of items){
-    const old=String(item.class_id||item.class_name||'');
-    if(!old)throw new Error('Legacy local Keywords class has no identity');
-    if(!classes.has(old)){
-      const uid=generateKeywordClassUid([...used]);
-      used.add(uid);
-      classes.set(old,uid);
+const KEYWORD_TREE_SCHEMA="CREATE TABLE local_keywords_portable (uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),name TEXT NOT NULL,\\\"desc\\\" TEXT NOT NULL DEFAULT '',lists TEXT NOT NULL DEFAULT '[]',uid_lists TEXT NOT NULL DEFAULT '[]')";
+// This local-file migration preserves the author's Keywords rules. Historical
+// classification hits are deliberately recomputed from Galaxy, not migrated.
+function legacyKeywordTree(items=[]){
+  const occupied=new Set(items.map(row=>String(row.class_uid||'')).filter(uid=>/^[A-Za-z0-9]{4}$/.test(uid)));
+  const uid=()=>{const next=generateKeywordClassUid([...occupied]);occupied.add(next);return next;};
+  const parsed=value=>{
+    if(Array.isArray(value))return value;
+    try{const decoded=JSON.parse(String(value||'[]'));return Array.isArray(decoded)?decoded:[];}
+    catch{return [];}
+  };
+  const categories=new Map(),classes=new Map(),groups=new Map(),nodes=[];
+  const kind=name=>String(name||'').includes('符文')?'符文':
+    ['Pop','Hip-Hop','Electronic','Rock','Vocal'].includes(String(name))?'音樂':'其他';
+  for(const row of [...items].sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0))){
+    const className=String(row.class_name||row.group_name||'').trim();
+    if(!className)continue;
+    const categoryName=kind(className);
+    if(!categories.has(categoryName)){
+      const node={uid:uid(),type:'category',name:categoryName,desc:'',lists:[],uid_lists:[]};
+      categories.set(categoryName,node);nodes.push(node);
     }
+    if(!classes.has(className)){
+      const classUid=String(row.class_uid||'');
+      const node={uid:/^[A-Za-z0-9]{4}$/.test(classUid)?classUid:uid(),
+        type:'class',name:className,desc:'',lists:[],uid_lists:[]};
+      occupied.add(node.uid);classes.set(className,node);nodes.push(node);
+      categories.get(categoryName).lists.push(node.uid);
+    }
+    const groupName=String(row.class_group||'').trim()||'未分類';
+    const groupKey=className+'\\u0000'+groupName;
+    if(!groups.has(groupKey)){
+      const node={uid:uid(),type:'group',name:groupName,desc:groupName+'組',lists:[],uid_lists:[]};
+      groups.set(groupKey,node);nodes.push(node);classes.get(className).lists.push(node.uid);
+    }
+    const node={uid:uid(),type:'item',name:String(row.item_name||'').trim()||'未命名',
+      desc:String(row.principle||''),lists:parsed(row.keywords),uid_lists:[]};
+    nodes.push(node);groups.get(groupKey).lists.push(node.uid);
   }
-  return classes;
+  return {nodes,classes};
 }
-function portableKeywordStatements(items,classes){
-  const statements=[{sql:"CREATE TABLE local_keywords_portable (keyword_id INTEGER PRIMARY KEY AUTOINCREMENT,group_name TEXT NOT NULL,item_name TEXT NOT NULL,principle TEXT NOT NULL DEFAULT '',keywords TEXT NOT NULL DEFAULT '[]',order_no INTEGER NOT NULL DEFAULT 0,class_name TEXT NOT NULL,class_group TEXT NOT NULL,class_enable INTEGER NOT NULL DEFAULT 1,class_uid TEXT NOT NULL,uidlist TEXT NOT NULL DEFAULT '[]')",values:[]}];
-  for(const row of items)statements.push({
-    sql:"INSERT INTO local_keywords_portable(keyword_id,group_name,item_name,principle,keywords,order_no,class_name,class_group,class_enable,class_uid,uidlist) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-    values:[row.keyword_id,row.group_name,row.item_name,row.principle||'',row.keywords||'[]',
-      row.order_no||0,row.class_name,row.class_group,row.class_enable,classes.get(String(row.class_id||row.class_name)),'[]']
+function keywordMigrationStatements(items=[]){
+  const {nodes,classes}=legacyKeywordTree(items);
+  const statements=[{sql:KEYWORD_TREE_SCHEMA,values:[]}];
+  for(const node of nodes)statements.push({
+    sql:'INSERT INTO local_keywords_portable(uid,type,name,"desc",lists,uid_lists) VALUES(?,?,?,?,?,?)',
+    values:[node.uid,node.type,node.name,node.desc,JSON.stringify(node.lists),JSON.stringify(node.uid_lists)]
   });
-  statements.push({sql:"DROP TABLE local_keywords",values:[]});
-  statements.push({sql:"ALTER TABLE local_keywords_portable RENAME TO local_keywords",values:[]});
-  for(const [old,uid] of classes){
-    const row=items.find(item=>String(item.class_id||item.class_name)===old);
-    const defaultItem=items.find(item=>String(item.class_id||item.class_name)===old&&
-      Number(item.item_no)===Number(row?.default_group_item_no??0));
-    statements.push({sql:'INSERT OR IGNORE INTO local_keyword_classes(class_uid,scope_id,default_keyword_id) VALUES(?,?,?)',
-      values:[uid,'local',defaultItem?.keyword_id||null]});
-  }
-  return statements;
+  statements.push({sql:'DROP TABLE local_keywords',values:[]});
+  statements.push({sql:'ALTER TABLE local_keywords_portable RENAME TO local_keywords',values:[]});
+  statements.push({sql:'DROP TABLE IF EXISTS local_keyword_classes',values:[]});
+  return {statements,classes};
 }
 function upgradeWebKeywordSchema(db){
-  if(!rowsOf(db,"PRAGMA table_info(local)").some(row=>row.name==='current_keyword_class_uid'))
+  if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='current_keyword_class_uid'))
     db.run('ALTER TABLE local ADD COLUMN current_keyword_class_uid TEXT');
-  if(rowsOf(db,"PRAGMA table_info(local_keywords)").some(row=>row.name==='class_uid'))return;
-  db.run('CREATE TABLE IF NOT EXISTS local_keyword_classes(class_uid TEXT PRIMARY KEY,scope_id TEXT NOT NULL,default_keyword_id INTEGER)');
+  const columns=rowsOf(db,'PRAGMA table_info(local_keywords)');
+  if(columns.some(row=>row.name==='type'))return;
   const items=rowsOf(db,'SELECT * FROM local_keywords');
-  const classes=legacyKeywordPlan(items);
-  const oldCurrent=rowsOf(db,'SELECT current_keyword_class_id FROM local WHERE id=?',['local'])[0]?.current_keyword_class_id;
+  const old=rowsOf(db,"SELECT * FROM local WHERE id='local'")[0]||{};
+  const {statements,classes}=keywordMigrationStatements(items);
+  const preferred=items.find(item=>String(item.class_uid||'')===String(old.current_keyword_class_uid||'')||
+    String(item.class_id||'')===String(old.current_keyword_class_id||''))?.class_name;
   db.run('BEGIN TRANSACTION');
   try{
-    for(const item of portableKeywordStatements(items,classes))db.run(item.sql,item.values);
-    db.run("UPDATE local SET current_keyword_class_uid=?,staticstime=NULL,keyword_meta='{}' WHERE id=?",
-      [classes.get(String(oldCurrent))||null,'local']);
+    for(const item of statements)db.run(item.sql,item.values);
+    db.run("UPDATE local SET current_keyword_class_uid=?,staticstime=NULL,keyword_meta='{}' WHERE id='local'",
+      [classes.get(preferred)?.uid||[...classes.values()][0]?.uid||null]);
     db.run('COMMIT');
   }catch(error){db.run('ROLLBACK');throw error;}
 }
 async function upgradeNativeKeywordSchema(conn){
-  let columns=(await conn.query('PRAGMA table_info(local)')).values||[];
-  if(!columns.some(row=>row.name==='current_keyword_class_uid'))
+  const configColumns=(await conn.query('PRAGMA table_info(local)')).values||[];
+  if(!configColumns.some(row=>row.name==='current_keyword_class_uid'))
     await conn.execute('ALTER TABLE local ADD COLUMN current_keyword_class_uid TEXT');
-  columns=(await conn.query('PRAGMA table_info(local_keywords)')).values||[];
-  if(columns.some(row=>row.name==='class_uid'))return;
-  await conn.execute('CREATE TABLE IF NOT EXISTS local_keyword_classes(class_uid TEXT PRIMARY KEY,scope_id TEXT NOT NULL,default_keyword_id INTEGER)');
+  const columns=(await conn.query('PRAGMA table_info(local_keywords)')).values||[];
+  if(columns.some(row=>row.name==='type'))return;
   const items=(await conn.query('SELECT * FROM local_keywords')).values||[];
-  const classes=legacyKeywordPlan(items);
-  const current=(await conn.query("SELECT current_keyword_class_id FROM local WHERE id='local'")).values?.[0]?.current_keyword_class_id;
+  const old=(await conn.query("SELECT * FROM local WHERE id='local'")).values?.[0]||{};
+  const {statements,classes}=keywordMigrationStatements(items);
+  const preferred=items.find(item=>String(item.class_uid||'')===String(old.current_keyword_class_uid||'')||
+    String(item.class_id||'')===String(old.current_keyword_class_id||''))?.class_name;
   await conn.execute('BEGIN TRANSACTION');
   try{
-    for(const item of portableKeywordStatements(items,classes)){
+    for(const item of statements){
       if(item.values.length)await conn.run(item.sql,item.values,false);
       else await conn.execute(item.sql);
     }
     await conn.run("UPDATE local SET current_keyword_class_uid=?,staticstime=NULL,keyword_meta='{}' WHERE id='local'",
-      [classes.get(String(current))||null],false);
+      [classes.get(preferred)?.uid||[...classes.values()][0]?.uid||null],false);
     await conn.execute('COMMIT');
   }catch(error){await conn.execute('ROLLBACK');throw error;}
 }
