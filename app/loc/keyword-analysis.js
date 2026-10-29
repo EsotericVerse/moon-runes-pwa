@@ -174,7 +174,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     reportBatchProgress(onProgress,phase,completed,total,percent,label);
   };
   const result=await reanalyzeKeywordClass({
-    classUid,catalogRows,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
+    classUid,catalogRows,defaultKeywordId,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
     readPage:async ({offset,limit})=>{
       const {rows}=await selectRows(scope.galaxy,{
         columns:'uid,content,searchable',
