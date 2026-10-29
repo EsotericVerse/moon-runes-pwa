@@ -114,7 +114,9 @@ BEGIN
   FROM cl CROSS JOIN LATERAL jsonb_array_elements_text(cl.lists) child(uid)
   JOIN %s g ON g.uid=child.uid AND g.type='group'
  ), item_nodes AS (
-  SELECT i.uid,i.type,i.name,i."desc"
+  -- Item descriptions can contain unpublished rules and private meanings.
+  -- Public catalog needs only the UID and label for Culture/Statistics.
+  SELECT i.uid,i.type,i.name,''::text AS "desc"
   FROM group_nodes g CROSS JOIN LATERAL jsonb_array_elements_text(g.lists) child(uid)
   JOIN %s i ON i.uid=child.uid AND i.type='item'
  ), members AS (
