@@ -1,6 +1,6 @@
-// Import-only duplicate detection. Never edit or delete existing Galaxy rows.
-// Match source + UTC second + article text without punctuation/formatting.
-// A record without a reliable timestamp is compared by UID only.
+// Import identity belongs to the original post, never the generated UID.
+// Keep platform boundaries: synchronized Threads/Instagram/Facebook posts are
+// distinct even with identical original text and timestamps.
 export function comparableImportText(value){
   return String(value??'').normalize('NFKC')
     .replace(/[\p{P}\p{S}\p{Z}\s\u200B-\u200D\uFEFF\u2060]/gu,'')
@@ -11,30 +11,92 @@ export function importSecond(value){
   const epoch=Date.parse(String(value));
   return Number.isFinite(epoch)?Math.floor(epoch/1000):null;
 }
+// All source article fields except generated UID and database update clock.
+// The date column is derived from createtime, so a time-less row has no
+// independent date information to keep when an otherwise equal dated row exists.
+const IMPORT_IDENTITY_FIELDS=['title','content','location','place_id','url','source_id',
+  'target_id','ref_id','media_link','searchable','statistics_able'];
+const fieldValues=record=>IMPORT_IDENTITY_FIELDS.map(field=>
+  record?.[field]===undefined?null:record[field]);
+const importUntimedKey=record=>{
+  const site=String(record?.site||'').trim().toLocaleLowerCase('und');
+  if(!site||!String(record?.content??'').trim())return null;
+  return JSON.stringify([site,...fieldValues(record)]);
+};
 export function importDuplicateKey(record){
-  const source=String(record?.site||'').trim().toLocaleLowerCase('und');
   const second=importSecond(record?.createtime);
-  const text=comparableImportText(record?.content);
-  if(!source||second===null||!text)return null;
-  return JSON.stringify([source,second,text]);
+  const untimed=importUntimedKey(record);
+  if(second===null||!untimed)return null;
+  return JSON.stringify([second,untimed,record?.date??null]);
 }
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byTextTime=new Map();
+  const unique=[],aliases=new Map(),byIdentity=new Map(),byUntimed=new Map();
+  const datedByContent=new Map();
   let duplicates=0;
+  // Reconcile missing-time copies against the complete incoming archive,
+  // irrespective of input order, while retaining every distinct dated post.
+  for(const row of records){
+    if(importSecond(row?.createtime)===null)continue;
+    const key=importUntimedKey(row);
+    if(key&&!datedByContent.has(key))datedByContent.set(key,String(row.uid||'').trim());
+  }
   for(const row of records){
     const uid=String(row?.uid||'').trim();
     const key=importDuplicateKey(row);
-    const match=key&&byTextTime.get(key);
-    if(match){
+    const untimedKey=key===null?importUntimedKey(row):null;
+    const existing=key?byIdentity.get(key)
+      :((untimedKey&&datedByContent.get(untimedKey))||
+         (untimedKey&&byUntimed.get(untimedKey)));
+    if(existing){
       duplicates++;
-      aliases.set(uid,match.uid);
+      aliases.set(uid,existing);
       continue;
     }
     unique.push(row);
-    if(key)byTextTime.set(key,row);
+    if(key)byIdentity.set(key,uid);
+    if(untimedKey)byUntimed.set(untimedKey,uid);
     aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
+}
+
+// Reimporting an archive with no source timestamp must not recreate the
+// incomplete copies already represented by equal saved posts. Fetch only the
+// exact content strings for the current source, never another platform.
+export async function matchExistingWithoutCreatedAt(records,{readContents,alreadyMatched=new Map()}={}){
+  if(typeof readContents!=='function')throw new Error('缺少無時間文章比對查詢');
+  const bySite=new Map();
+  for(const record of records||[]){
+    if(importSecond(record?.createtime)!==null||alreadyMatched.has(record.uid))continue;
+    const site=String(record?.site||'').trim().toLocaleLowerCase('und');
+    const content=String(record?.content??'');
+    if(!site||!content.trim())continue;
+    if(!bySite.has(site))bySite.set(site,new Map());
+    const rows=bySite.get(site);
+    if(!rows.has(content))rows.set(content,[]);
+    rows.get(content).push(record);
+  }
+  const matched=new Map();
+  for(const [site,byContent] of bySite){
+    const saved=await readContents(site,[...byContent.keys()]);
+    if(!Array.isArray(saved))throw new Error('無時間文章比對資料不完整');
+    const byIdentity=new Map();
+    for(const article of saved){
+      if(String(article?.site||'').trim().toLocaleLowerCase('und')!==site)continue;
+      const key=importUntimedKey(article);
+      if(!key)continue;
+      // A complete dated copy is preferred; the presence of several dated
+      // timestamps does not authorize deleting any of those real posts.
+      const prior=byIdentity.get(key);
+      if(!prior||(importSecond(prior.createtime)===null&&importSecond(article.createtime)!==null))
+        byIdentity.set(key,article);
+    }
+    for(const entries of byContent.values())for(const incoming of entries){
+      const article=byIdentity.get(importUntimedKey(incoming));
+      if(article)matched.set(incoming.uid,article);
+    }
+  }
+  return matched;
 }
 
 // Query only a batch of exact seconds for one source, never the whole Galaxy.
