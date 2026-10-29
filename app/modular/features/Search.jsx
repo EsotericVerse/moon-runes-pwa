@@ -49,20 +49,19 @@ const MEDIA_EDITOR_COLUMNS='uid,source_place,media_type,title,url,meta_tags,crea
 const MEDIA_ATTR_ORDER=['uid','source_place','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able,class_id,group_lists';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
   'uid','title','content','createtime','source_place','place_id',
   'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
-  'media_link','statistics_able','class_id','group_lists'
+  'media_link','statistics_able'
 ]);
 const GALAXY_ATTR_FIELDS=Object.freeze(GALAXY_ATTR_ORDER.map(key=>({
   key,
   readOnly:['uid','title','content','UpdateTime'].includes(key),
   kind:['searchable','statistics_able'].includes(key)?'boolean':
     ['target_id','media_link'].includes(key)?'array':
-    key==='group_lists'?'multiline':
-    key==='createtime'?'date':key==='class_id'?'number':'text'
+    key==='createtime'?'date':'text'
 })));
 
 function normalizeScopeAlias(value=''){
