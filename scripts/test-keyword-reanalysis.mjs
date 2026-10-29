@@ -76,3 +76,35 @@ test('stateful ties use least-loaded Group across page boundaries; unmatched fal
  assert.equal(stats.matchedDocuments,5);
  assert.equal(stats.itemMatches,8);
 });
+
+test('two Classes can analyze the same Galaxy article without overwriting each other',async()=>{
+ const records=[
+  {uid:'CAT1',type:'category',name:'文字',lists:['CLA1','CLB1']},
+  {uid:'CLA1',type:'class',name:'符文66',lists:['GRA1']},
+  {uid:'CLB1',type:'class',name:'政德文化',lists:['GRB1']},
+  {uid:'GRA1',type:'group',name:'靈魂',lists:['ITA1']},
+  {uid:'GRB1',type:'group',name:'文化',lists:['ITB1']},
+  {uid:'ITA1',type:'item',name:'靈',lists:['心']},
+  {uid:'ITB1',type:'item',name:'文化',lists:['月']}
+ ];
+ const stored=new Map();
+ let text='心月';
+ const analyze=async classUid=>reanalyzeKeywordClass({
+  classUid,treeRows:records,
+  readPage:async({offset})=>offset?[]:[{uid:'Ab12Cd34',content:text}],
+  writeNode:async ({uid,uid_lists})=>stored.set(uid,uid_lists),
+  finalize:async()=>{}
+ });
+ await analyze('CLA1');
+ await analyze('CLB1');
+ assert.deepEqual(stored.get('GRA1'),['Ab12Cd34']);
+ assert.deepEqual(stored.get('GRB1'),['Ab12Cd34']);
+ assert.deepEqual(stored.get('ITA1'),[{uid:'Ab12Cd34',times:1}]);
+ assert.deepEqual(stored.get('ITB1'),[{uid:'Ab12Cd34',times:1}]);
+ text='月';
+ await analyze('CLA1');
+ assert.deepEqual(stored.get('GRA1'),[]);
+ assert.deepEqual(stored.get('ITA1'),[]);
+ assert.deepEqual(stored.get('GRB1'),['Ab12Cd34']);
+ assert.deepEqual(stored.get('ITB1'),[{uid:'Ab12Cd34',times:1}]);
+});
