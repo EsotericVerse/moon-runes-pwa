@@ -92,63 +92,49 @@ function classLabel(value){
 }
 // Render Class density first. After selecting a Class, show the distribution
 // of its Group items from saved group_lists, never the underlying keywords.
-function keywordDrillRiverItems(rows,{source='',groupId='',meta={},groupItems=[]}={}){
-  const classes=meta?.classes||{};
-  const className=String(meta?.class_name||'').trim();
-  const knownGroups=new Map(groupItems.map(item=>[String(Number(item.item_no)),item]));
+// Keyword Class and Item density is generated from the saved uidlists.
+// No article is read for its old group_lists or class_id.
+function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
+  const classes=meta.classes||{},className=String(meta.class_name||'').trim();
+  const known=new Map(groupItems.map(item=>[String(item.keyword_id),item]));
   const buckets=new Map(),maximum=new Map();
-  const add=(key,label,day,count,order=0)=>{
-    if(!key||!label||!count)return;
-    const id=key+'\u0000'+day;
-    buckets.set(id,{key,label,day,count:(buckets.get(id)?.count||0)+count,order});
-    maximum.set(key,Math.max(maximum.get(key)||0,buckets.get(id).count));
-  };
   for(const row of rows||[]){
-    // Unfiltered class density is already aggregated by read_rune66_summary.
-    // Do not download Galaxy attributes just to reproduce these exact counts.
-    if(!source&&!groupId&&row?.kind==='galaxy'&&row?.classification_group){
-      const day=String(row.date||'').slice(0,10);
-      const rowGroup=String(row.class_id??'').trim();
-      const groupLabel=String(classes[rowGroup]||row.classification_group||'').trim();
-      const count=Number(row.count)||0;
-      if(/^\d{4}-\d{2}-\d{2}$/.test(day)&&groupLabel&&count>0)
-        add(rowGroup,[className,groupLabel,'群組'].filter(Boolean).join(' '),day,count,Number(rowGroup)||0);
-      continue;
-    }
-    // Match PostgreSQL's Asia/Taipei calendar day rather than UTC prefixes.
-    const day=mediaDay(row.createtime);
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
-    const hits=parseGroupLists(row.group_lists);
-    if(hits===false)continue;
-    const rowSource=String(row.source_name||'').trim()||'未分類';
-    if(source&&rowSource!==source)continue;
-    const rowGroup=String(row.class_id||'').trim();
+    const day=String(row.day||row.date||'').slice(0,10);
+    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(day))continue;
+    let key='',label='',count=0,order=0;
     if(groupId){
-      if(rowGroup!==String(groupId))continue;
-      for(const [id,rawCount] of Object.entries(hits)){
-        const group=knownGroups.get(id);
-        const count=Number(rawCount)||0;
-        if(group&&count>0)add(id,String(group.item_name||id),day,count,Number(group.order_no)||Number(id));
-      }
-    }else{
-      const label=String(classes[rowGroup]||'').trim();
-      if(label)add(rowGroup,[className,label,'群組'].filter(Boolean).join(' '),day,1,Number(rowGroup)||0);
-    }
+      if(row.kind!=='item_day')continue;
+      const item=known.get(String(row.item_key));
+      if(!item)continue;
+      key=String(row.item_key);
+      label=String(item.item_name||key);
+      count=Number(row.hit_count)||0;
+      order=Number(item.order_no)||0;
+    }else if(row.kind==='class_day'||(row.kind==='galaxy'&&row.classification_group)){
+      key=String(row.class_id??'');
+      const groupName=String(classes[key]||row.classification_group||'').trim();
+      if(!groupName)continue;
+      label=[className,groupName,'群組'].filter(Boolean).join(' ');
+      count=Number(row.hit_count??row.count)||0;
+      order=Number(key)||0;
+    }else continue;
+    if(!key||!count)continue;
+    const id=key+'\\u0000'+day;
+    const previous=buckets.get(id);
+    const accumulated=(previous?.count||0)+count;
+    buckets.set(id,{key,label,day,count:accumulated,order});
+    maximum.set(key,Math.max(maximum.get(key)||0,accumulated));
   }
   return [...buckets.values()].map(({key,label,day,count,order})=>({
     id:'keyword-density:'+(groupId?'item':'class')+':'+key+':'+day,
     entry_id:'keyword-density:'+(groupId?'item':'class')+':'+key+':'+day,
-    entry_type:'keyword_density',
-    drill_key:key,
-    group_label:label,
-    category:label,
-    display_label:'',
+    entry_type:'keyword_density',drill_key:key,
+    group_label:label,category:label,display_label:'',
     title:day+' · '+label+' · '+count.toLocaleString()+(groupId?' 次':' 篇'),
     start_date:day,end_date:nextRiverDay(day),
-    item_count:count,group_order:order,
-    density_ratio:count/Math.max(1,maximum.get(key)||1)
+    item_count:count,group_order:order,density_ratio:count/Math.max(1,maximum.get(key)||1)
   })).sort((a,b)=>a.start_date.localeCompare(b.start_date)
-    ||Number(a.group_order)-Number(b.group_order)||a.group_label.localeCompare(b.group_label));
+    ||a.group_order-b.group_order||a.group_label.localeCompare(b.group_label));
 }
 function formatCultureUi(template,values={}){
   return String(template||'').replace(/\{([a-zA-Z][\w]*)\}/gu,(match,key)=>
@@ -493,18 +479,11 @@ export default function Culture(){
     enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
     queryFn:async()=>{
-      const {rows}=await selectAllRows(scopeData.galaxy,{
-        columns:'createtime,source_name,class_id,group_lists',
-        filters:publicContentFilters([
-          {column:'statistics_able',operator:'eq',value:true},
-          {column:'createtime',operator:'gte',value:keywordWindowStart+'T00:00:00+08:00'},
-          {column:'createtime',operator:'lte',value:keywordWindowEnd+'T23:59:59.999+08:00'},
-          ...(keywordDrillSource?[{column:'source_name',operator:'eq',value:keywordDrillSource}]:[]),
-          ...(keywordDrillGroup?[{column:'class_id',operator:'eq',value:Number(keywordDrillGroup)}]:[])
-        ]),
-        orders:[{column:'createtime',ascending:true}]
+      const {readKeywordUidlistSummary}=await import('../../loc/db-client.mjs');
+      return readKeywordUidlistSummary(scopeId,{
+        startDate:keywordWindowStart,endDate:keywordWindowEnd,
+        source:keywordDrillSource
       });
-      return rows;
     },
   });
   const keywordRiverPending=keywordDetailRequested?keywordDensityQuery.isPending:styleQuery.isPending;
@@ -530,20 +509,19 @@ export default function Culture(){
   // Fetch Group names/membership only after the user opens a specific Class.
   // The initial Class-density river never downloads the Group catalog.
   const keywordGroupCatalogQuery=useAsyncResource({
-    queryKey:['culture-keyword-group-catalog',scopeId,styleQuery.data?.keywordMeta?.class_id||'',keywordDrillGroup],
+    queryKey:['culture-keyword-group-catalog',scopeId,styleQuery.data?.keywordMeta?.class_uid||'',keywordDrillGroup],
     enabled:styleFilter==='rune66'&&Boolean(keywordDrillGroup)
-      &&Boolean(styleQuery.data?.keywordMeta?.class_id)&&Boolean(scopeData?.keywords),
+      &&Boolean(styleQuery.data?.keywordMeta?.class_uid)&&Boolean(scopeData?.keywords),
     queryFn:async()=>{
       const groupName=String(styleQuery.data?.keywordMeta?.classes?.[keywordDrillGroup]||'').trim();
       if(!groupName)return [];
-      const {rows}=await selectRows(scopeData.keywords,{
-        columns:'item_no,item_name,order_no,class_group',
+      const {rows}=await selectAllRows(scopeData.keywords,{
+        columns:'keyword_id,item_name,order_no,class_group',
         filters:[
-          {column:'class_id',operator:'eq',value:String(styleQuery.data.keywordMeta.class_id)},
+          {column:'class_uid',operator:'eq',value:String(styleQuery.data.keywordMeta.class_uid)},
           {column:'class_group',operator:'eq',value:groupName}
         ],
-        orders:[{column:'order_no',ascending:true},{column:'item_no',ascending:true}],
-        limit:16
+        orders:[{column:'order_no',ascending:true},{column:'keyword_id',ascending:true}]
       });
       return rows;
     },
@@ -1610,9 +1588,9 @@ export default function Culture(){
                     {keywordGroupCatalogQuery.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(keywordGroupCatalogQuery.error,UI_COPY)}</p>:null}
                     {keywordGroupCatalogQuery.data?.length?<ul>
                       {keywordGroupCatalogQuery.data.map(rune=>{
-                        const matched=(styleQuery.data?.runeTotals||[]).find(item=>Number(item.rune_id)===Number(rune.item_no));
-                        return <li key={rune.item_no}>
-                          <strong>{rune.item_no} · {rune.item_name}</strong>
+                        const matched=(styleQuery.data?.runeTotals||[]).find(item=>String(item.rune_id)===String(rune.keyword_id));
+                        return <li key={rune.keyword_id}>
+                          <strong>{rune.order_no} · {rune.item_name}</strong>
                           <span>{Number(matched?.count||0).toLocaleString(locale)} 次命中</span>
                         </li>;
                       })}
