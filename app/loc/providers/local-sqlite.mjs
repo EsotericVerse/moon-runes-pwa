@@ -369,7 +369,7 @@ function rowsOf(db,sql,params=[]){
     return result;
   }finally{stmt.free();}
 }
-const KEYWORD_TREE_SCHEMA="CREATE TABLE local_keywords_portable (uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),name TEXT NOT NULL,\\\"desc\\\" TEXT NOT NULL DEFAULT '',lists TEXT NOT NULL DEFAULT '[]',uid_lists TEXT NOT NULL DEFAULT '[]')";
+const KEYWORD_TREE_SCHEMA=`CREATE TABLE local_keywords_portable (uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),name TEXT NOT NULL,\"desc\" TEXT NOT NULL DEFAULT '',lists TEXT NOT NULL DEFAULT '[]',uid_lists TEXT NOT NULL DEFAULT '[]')`;
 // This local-file migration preserves the author's Keywords rules. Historical
 // classification hits are deliberately recomputed from Galaxy, not migrated.
 function legacyKeywordTree(items=[]){
