@@ -115,3 +115,17 @@ test('Threads ZIP photo linked to an authored post is retained without EXIF or p
   assert.equal(plan.mediaLinks.length,1);
   assert.equal(plan.exif.length,0);
 });
+
+test('Media-only Threads post keeps verified ZIP image even without a Galaxy article',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onRecord({platform:'threads',attachments:[{uri:'threads/media/textless.jpg'}]},null);
+  collector.onMediaEntry({path:'threads/media/textless.jpg'});
+  const entries=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:998});
+  const plan=prepareArchiveMedia(entries,new Set());
+  assert.equal(entries.length,1);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.media[0].__article_uid,null);
+  assert.equal(plan.mediaLinks.length,0);
+  assert.equal(plan.exif.length,0);
+});
