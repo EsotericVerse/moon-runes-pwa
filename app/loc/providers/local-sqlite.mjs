@@ -216,8 +216,9 @@ async function upgradeNativeLocalArchiveExif(conn){
 const LOCAL_MEDIA_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_galaxy_media \([\s\S]*?\);/)[0];
 const LOCAL_MEDIA_COLUMNS=['uid','media_type','title','url','meta_tags','createtime','source_place','rune_references'];
 function legacyMediaUid(value){
-  const text=String(value||'').trim().toUpperCase();
-  if(/^[A-Z0-9]{8}$/.test(text))return text;
+  const raw=String(value||'').trim();
+  if(/^[A-Za-z0-9]{8}$/.test(raw))return raw;
+  const text=raw.toUpperCase();
   if(!/^[0-9A-F]{8}-(?:[0-9A-F]{4}-){3}[0-9A-F]{12}$/.test(text))
     throw new Error('Unrecognized local media identifier');
   return (BigInt('0x'+text.replaceAll('-',''))%(36n**8n)).toString(36).toUpperCase().padStart(8,'0');
@@ -817,6 +818,24 @@ async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
   }
   return {data:rows,error:null};
 }
+// Collapse a Culture lane without downloading a full per-day histogram.
+// Match silver.read_scope_category_totals: article eligibility + nonempty content,
+// time window for articles and media, and the same {kind,category,item_count} rows.
+async function readScopeCategoryTotalsLocal({p_start,p_end}={}){
+  const clauses=[],params=[];
+  if(p_start){clauses.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
+  if(p_end){clauses.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
+  const range=clauses.length?' AND '+clauses.join(' AND '):'';
+  const mediaRange=clauses.length?' WHERE '+clauses.join(' AND '):'';
+  const [articles,media]=await Promise.all([
+    selectLocal(`SELECT 'source' AS kind, trim(coalesce(source_name,'')) AS category,
+      count(*) AS item_count FROM local_galaxy
+      WHERE statistics_able=1 AND content<>''${range} GROUP BY category`,params),
+    selectLocal(`SELECT 'media' AS kind, trim(coalesce(media_type,'')) AS category,
+      count(*) AS item_count FROM local_galaxy_media${mediaRange} GROUP BY category`,params)
+  ]);
+  return {data:[...articles,...media].map(row=>({...row,item_count:Number(row.item_count)||0})),error:null};
+}
 async function readScopeEarliestLocal(){
   const rows=await selectLocal("SELECT min(date(createtime, '+8 hours')) AS earliest FROM local_galaxy WHERE createtime IS NOT NULL");
   return {data:rows[0]?.earliest||null,error:null};
@@ -946,7 +965,7 @@ async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
       const lat=item.latitude??null,lng=item.longitude??null;
       const valid=(lat===null&&lng===null)||
         (Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180);
-      if((id&&!/^[A-Z0-9]{8}$/.test(id))||!archive||!path||archive.length>400||
+      if((id&&!/^[A-Za-z0-9]{8}$/.test(id))||!archive||!path||archive.length>400||
           path.length>2048||!valid)throw new Error('Invalid local archive EXIF metadata');
       if(lat===null&&!item.camera_local_time)continue;
       if(id){
@@ -975,6 +994,7 @@ export async function rpcLocal(name,args={}){
     case 'save_archive_media_exif':return saveArchiveMediaExifLocal(args);
     case 'read_scope_statistics':return readScopeStatisticsLocal(args);
     case 'read_scope_overview':return readScopeOverviewLocal(args);
+    case 'read_scope_category_totals':return readScopeCategoryTotalsLocal(args);
     case 'read_scope_earliest':return readScopeEarliestLocal(args);
     case 'read_keyword_class_by_uid':return readKeywordClassLocal(args);
     case 'read_keyword_tree_catalog':return readKeywordTreeCatalogLocal(args);
