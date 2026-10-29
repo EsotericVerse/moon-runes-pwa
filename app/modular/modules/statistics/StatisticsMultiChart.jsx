@@ -227,21 +227,19 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   const standalonePageSize=RUNE_RANKING_PAGE_SIZE;
   const combinedPageSize=10;
   const groupCatalog=useAsyncResource({
-    queryKey:['statistics-keyword-item-class-map',scopeId,String(meta.class_id||'')],
-    enabled:shown==='both'&&Boolean(scopeId&&meta.class_id&&data.staticstime),
+    queryKey:['statistics-keyword-item-class-map',scopeId,String(meta.class_uid||'')],
+    enabled:shown==='both'&&Boolean(scopeId&&meta.class_uid&&data.staticstime),
     queryFn:async()=>{
-      const [{defaultScopeData},{selectRows}]=await Promise.all([
-        import('../../../loc/scope-data'),
-        import('../../../loc/db-query.mjs')
+      const [{defaultScopeData},{selectAllRows}]=await Promise.all([
+        import('../../../loc/scope-data'),import('../../../loc/db-query.mjs')
       ]);
       const scope=defaultScopeData(scopeId);
-      if(!scope?.keywords)throw new Error('關鍵詞組 Scope 不存在');
-      const response=await selectRows(scope.keywords,{
-        columns:'item_no,class_group,class_enable',
-        filters:[{column:'class_id',operator:'eq',value:String(meta.class_id)}],
-        limit:500
+      if(!scope?.keywords)throw new Error('Keywords Scope 不存在');
+      const result=await selectAllRows(scope.keywords,{
+        columns:'keyword_id,class_group,class_enable',
+        filters:[{column:'class_uid',operator:'eq',value:String(meta.class_uid)}]
       });
-      return response.rows||[];
+      return result.rows||[];
     }
   });
   // Link each stored item to its OWN Class by the live keyword catalog's
@@ -250,15 +248,15 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     .map(([id,label])=>[String(label||'').trim(),Number(id)]));
   const classByItem=new Map((groupCatalog.data||[])
     .filter(row=>row.class_enable!==false)
-    .map(row=>[Number(row.item_no),classByGroup.get(String(row.class_group||'').trim())])
-    .filter(([id,groupId])=>Number.isInteger(id)&&Number.isInteger(groupId)));
+    .map(row=>[String(row.keyword_id),classByGroup.get(String(row.class_group||'').trim())])
+    .filter(([id,groupId])=>Boolean(id)&&Number.isInteger(groupId)));
   const groupsWithItems=classRows.map(row=>({
-    row,items:groupRows.filter(item=>classByItem.get(Number(item.rune_id))===Number(row.class_id))
+    row,items:groupRows.filter(item=>classByItem.get(String(item.rune_id))===Number(row.class_id))
       .sort((a,b)=>Number(b.count||0)-Number(a.count||0)
         ||Number(b.document_count||0)-Number(a.document_count||0)
         ||Number(a.rune_id)-Number(b.rune_id))
   }));
-  const ungrouped=groupRows.filter(item=>!classByItem.has(Number(item.rune_id)));
+  const ungrouped=groupRows.filter(item=>!classByItem.has(String(item.rune_id)));
   const orderedItems=groupsWithItems.flatMap(group=>group.items.map(item=>({
     ...item,classification:group.row
   })));
@@ -376,7 +374,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
       <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking">
-          {(shown==='both'?visibleCombined:visibleGroupRows).map(row=><div key={row.rune_id}><strong>{row.classification?'Class '+row.classification.class_id+'｜':''}{String(row.rune_id).padStart(2,'0')} · {groupLabel(row.label,t)}</strong>
+          {(shown==='both'?visibleCombined:visibleGroupRows).map(row=><div key={row.rune_id}><strong>{row.classification?'Class '+row.classification.class_id+'｜':''}{groupLabel(row.label,t)}</strong>
             <span>{t('uiExtra.statisticsView.runeHits',{count:Number(row.count||0).toLocaleString(),ratio:(groupHitTotal>0?100*Number(row.count||0)/groupHitTotal:0).toFixed(1)})}</span>
           </div>)}
         </div>
