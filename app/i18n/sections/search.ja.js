@@ -18,6 +18,7 @@ export default {
   "parentText": "関連する文章",
   "searching": "検索中…",
   "failed": "検索に失敗しました。",
+  "timeout": "検索がタイムアウトしました。条件を絞って再試行してください。",
   "readFailed": "データの読み込みに失敗しました",
   "updateFailed": "データの更新に失敗しました",
   "loadingRelation": "関連テキストを読み込み中…",

@@ -18,6 +18,7 @@ export default {
   "parentText": "所屬文字",
   "searching": "搜尋中…",
   "failed": "搜尋失敗。",
+  "timeout": "搜尋逾時，請縮小搜尋範圍後再試。",
   "readFailed": "資料讀取失敗",
   "updateFailed": "資料更新失敗",
   "loadingRelation": "載入關聯文字…",

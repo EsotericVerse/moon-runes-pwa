@@ -18,6 +18,7 @@ export default {
   "parentText": "Parent text",
   "searching": "Searching…",
   "failed": "Search failed.",
+  "timeout": "Search timed out. Narrow your search and try again.",
   "readFailed": "Failed to load data",
   "updateFailed": "Failed to update data",
   "loadingRelation": "Loading related text…",
