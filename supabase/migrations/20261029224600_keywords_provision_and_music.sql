@@ -178,22 +178,4 @@ begin
     'keyword_rows',v_keyword_count,'keyword_class_uid',v_new_class
   );
 end;
-$function$
-
-CREATE OR REPLACE FUNCTION silver.read_music_style_tree()
-RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
-AS $fn$
- SELECT coalesce(jsonb_agg(jsonb_build_object(
-   'class_name',c.name,'class_group',g.name,
-   'item_name',i.name,'keywords',i.lists
- ) ORDER BY c.name,g_order.ord,i_order.ord),'[]'::jsonb)
- FROM silver.lo3rwang_keywords c
- CROSS JOIN LATERAL jsonb_array_elements_text(c.lists) WITH ORDINALITY g_order(uid,ord)
- JOIN silver.lo3rwang_keywords g ON g.uid=g_order.uid AND g.type='group'
- CROSS JOIN LATERAL jsonb_array_elements_text(g.lists) WITH ORDINALITY i_order(uid,ord)
- JOIN silver.lo3rwang_keywords i ON i.uid=i_order.uid AND i.type='item'
- WHERE c.type='class' AND c.name IN ('Pop','Hip-Hop','Electronic','Rock','Vocal',
- 'Jazz','Soul','Blues','Folk','Classical','Ambient','Dance','Metal','Reggae','Latin',
- 'Country','Funk','Disco','Orchestral','Experimental','World','Punk','House','Techno',
- 'Trance','Garage');
-$fn$;
+$function$;
