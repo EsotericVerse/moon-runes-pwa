@@ -33,7 +33,6 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
 import {selectAllRows,selectRows} from '../../loc/db-query.mjs';
-import {parseGroupLists} from '../../loc/group-lists.mjs';
 import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {sourceTaxonomyFromArrays} from '../../loc/source-classification.mjs';
 import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
@@ -90,10 +89,7 @@ function classLabel(value){
   const text=String(value||'').trim();
   return !text?'':text.endsWith('群組')?text:text+' 群組';
 }
-// Render Class density first. After selecting a Class, show the distribution
-// of its Group items from saved group_lists, never the underlying keywords.
-// Keyword Class and Item density is generated from the saved uidlists.
-// No article is read for its old group_lists or class_id.
+// Display classified Groups and Item hits from the unified UID tree.
 function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
   const classes=meta.classes||{},className=String(meta.class_name||'').trim();
   const known=new Map(groupItems.map(item=>[String(item.uid),item]));
