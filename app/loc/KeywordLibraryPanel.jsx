@@ -189,8 +189,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         keyword_min_chars:Number(config.keyword_min_chars)||0,
         keyword_min_documents:Number(config.keyword_min_documents)||0,
         keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
-        staticstime:(config.current_keyword_class_uid!==config.original_class_uid?null:config.staticstime)||null,
-        keyword_meta:config.keyword_meta||{}
+        staticstime:null,keyword_meta:{}
       };
       const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
         .eq('id',scopeId).select('id');
