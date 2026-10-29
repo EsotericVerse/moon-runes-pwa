@@ -170,6 +170,26 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data;
   }
 
+  async function readKeywordTreeSummary(scopeId,{startDate='',endDate='',source=''}={}){
+    const scope=normalizeScopeId(scopeId);
+    const day=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_tree_summary',{
+      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
+      p_source:String(source||'').trim()||null
+    });
+    if(error)throw new Error(error.message||'Keyword tree statistics unavailable');
+    return Array.isArray(data)?data:[];
+  }
+
+  async function readKeywordTreeCatalog(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_tree_catalog',{
+      p_scope_id:scope
+    });
+    if(error)throw new Error(error.message||'Keyword tree catalog unavailable');
+    return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
+  }
+
   async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
     const date=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
@@ -471,7 +491,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordTreeSummary,readKeywordTreeCatalog,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
