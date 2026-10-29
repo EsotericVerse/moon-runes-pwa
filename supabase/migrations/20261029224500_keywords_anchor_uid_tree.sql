@@ -145,6 +145,12 @@ AS SELECT uid,type,name,"desc",lists,uid_lists
 FROM silver.lo3rwang_keywords WHERE silver.can_manage_scope('lo3rwang');
 GRANT SELECT ON api.lo3rwang_keywords_manage TO authenticated;
 
+-- Legacy SELECT policies reference the old config UUID column.
+-- They must be removed before dropping that column; legacy tables are already
+-- private and will be removed after the new readers are installed.
+DROP POLICY IF EXISTS lo3rwang_keywords_authenticated_read ON silver.lo3rwang_keywords_legacy;
+DROP POLICY IF EXISTS lo3rwang_keywords_shared_current_read ON silver.lo3rwang_keywords_legacy;
+DROP POLICY IF EXISTS lrunes_keywords_shared_current_read ON silver.lrunes_keywords_legacy;
 -- Keep the active Class's 4-char UID only. Old UUID class_id is not used.
 ALTER TABLE silver.lo3rwang DROP COLUMN IF EXISTS current_keyword_class_id;
 ALTER TABLE silver.lrunes DROP COLUMN IF EXISTS current_keyword_class_id;
