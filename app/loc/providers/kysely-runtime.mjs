@@ -8,15 +8,11 @@ const operators={eq:'=',neq:'!=',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'like',ili
 // Existing application RPCs only. Keep SQL identifiers fixed and bind all values.
 export const RPC_ALLOWLIST={
   'silver.management_write':['p_table','p_operation','p_rows','p_values','p_filters'],
-  'silver.apply_keyword_classification':['p_scope_id','p_rows'],
-  'silver.read_keyword_class_by_uid':['p_scope_id','p_class_uid'],
-  'silver.read_keyword_uidlist_summary':['p_scope_id','p_start','p_end','p_source'],
-  'silver.read_keyword_item_catalog':['p_scope_id'],
+  'silver.read_music_style_tree':[],
   'silver.read_keyword_tree_catalog':['p_scope_id','p_class_uid'],
   'silver.read_keyword_tree_summary':['p_scope_id','p_start','p_end','p_source','p_class_uid'],
   'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids','p_start','p_end','p_source','p_class_uid'],
   'silver.is_current_email_blocklisted':[],
-  'silver.copy_rune66_keyword_class':['p_scope_id'],
   'silver.move_scope_block':['p_scope_id','p_page_name','p_uid','p_direction'],
   'silver.delete_scope':['p_scope_id'],
   'silver.provision_scope':['p_scope_id','p_display_name','p_email','p_birthday','p_domain','p_directory','p_parent_scope_id','p_theme','p_copy_keywords'],
@@ -26,14 +22,9 @@ export const RPC_ALLOWLIST={
 };
 const RPC_REQUIRED_ARGUMENTS={
   'silver.management_write':['p_table','p_operation'],
-  'silver.apply_keyword_classification':['p_scope_id','p_rows'],
-  'silver.read_keyword_class_by_uid':['p_scope_id','p_class_uid'],
-  'silver.read_keyword_uidlist_summary':['p_scope_id','p_start','p_end','p_source'],
-  'silver.read_keyword_item_catalog':['p_scope_id'],
   'silver.read_keyword_tree_catalog':['p_scope_id'],
   'silver.read_keyword_tree_summary':['p_scope_id'],
   'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids'],
-  'silver.copy_rune66_keyword_class':['p_scope_id'],
   'silver.move_scope_block':['p_scope_id','p_page_name','p_uid','p_direction'],
   'silver.delete_scope':['p_scope_id'],
   'silver.provision_scope':['p_scope_id','p_display_name','p_email'],

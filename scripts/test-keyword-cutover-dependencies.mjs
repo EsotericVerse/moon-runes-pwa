@@ -12,3 +12,16 @@ test('six-column migration preserves Scope delete and music tree readers',()=>{
   assert.doesNotMatch(sql,/DELETE FROM silver\.keyword_classes/);
   assert.doesNotMatch(sql,/\bCASCADE\b\s*;/i);
 });
+
+test('portable Postgres/Kysely RPC allowlist follows the six-column cutover',()=>{
+  const code=readFileSync(new URL('../app/loc/providers/kysely-runtime.mjs',import.meta.url),'utf8');
+  assert.match(code,/'silver\.read_keyword_tree_catalog':\[/);
+  assert.match(code,/'silver\.read_keyword_tree_summary':\[/);
+  assert.match(code,/'silver\.read_trace_keyword_group_totals':\[/);
+  assert.match(code,/'silver\.read_music_style_tree':\[\]/);
+  for(const name of [
+    'apply_keyword_classification','read_keyword_class_by_uid',
+    'read_keyword_uidlist_summary','read_keyword_item_catalog',
+    'copy_rune66_keyword_class'
+  ])assert.doesNotMatch(code,new RegExp("'silver\\."+name+"'"));
+});
