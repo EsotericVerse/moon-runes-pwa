@@ -8,7 +8,8 @@ const databaseClient='app/loc/db-client.mjs';
 
 function functionsIn(source){
   return parse(source,{sourceType:'module'}).program.body
-    .filter(node=>node.type==='FunctionDeclaration');
+    .map(node=>node.type==='ExportNamedDeclaration'?node.declaration:node)
+    .filter(node=>node?.type==='FunctionDeclaration');
 }
 export function checkDbContract(contractSource,clientSource){
   const creator=functionsIn(contractSource).find(node=>node.id?.name==='createDatabaseClient');
