@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
-import {isAvailabilityFailure,tryPublicSources} from '../app/api/loc/_numeric-failover.mjs';
+import {isAvailabilityFailure,tryPublicSources,readIsrSummary} from '../app/api/loc/_numeric-failover.mjs';
 
 test('ISR goes to independent Neon after a Supabase 503 (settings or RPC)',async()=>{
   const used=[];
@@ -34,4 +34,42 @@ test('Public ISR route has independent PostgREST path and bounded primary wait',
   assert.match(server,/createBackupPublicAdapter/);
   assert.match(server,/AbortSignal\.timeout\(6500\)/);
   assert.doesNotMatch(server,/loc-kysely/);
+});
+
+test('real ISR summary pipeline uses mirrored config and RPC without Supabase',async()=>{
+  const called=[],origin='https://loc-isr.example';
+  const sources=['supabase','neon'].map(id=>({id,schema:()=>({
+    from(table){
+      assert.equal(table,'loc_runtime_config');
+      return {select:()=>({eq:()=>({single:async()=>{
+        called.push(id+':config');
+        if(id==='supabase')return {error:{message:'fetch failed'},status:0};
+        return {data:{cache_mode:'isr',cache_provider:origin,isr_domains:[{origin}]}};
+      }})})};
+    },
+    rpc:async(name,args)=>{
+      called.push(id+':rpc');
+      assert.equal(name,'read_scope_statistics');
+      assert.equal(args.p_scope_id,'lo3rwang');
+      return {data:[{date:'2026-10-29',total:12}],error:null};
+    }
+  })}));
+  const result=await tryPublicSources(sources,db=>readIsrSummary(db,{
+    origin,name:'read_scope_statistics',args:{p_scope_id:'lo3rwang'}
+  }));
+  assert.equal(result.source,'neon');
+  assert.deepEqual(called,['supabase:config','neon:config','neon:rpc']);
+  assert.equal(result.data[0].total,12);
+});
+test('healthy primary with ISR disabled cannot be bypassed through Neon',async()=>{
+  const called=[];
+  const source={id:'supabase',schema:()=>({from:()=>({select:()=>({eq:()=>({single:async()=>({
+    data:{cache_mode:'off',cache_provider:'',isr_domains:[]}
+  })})})})})};
+  const backup={id:'neon',schema:()=>{called.push('neon');throw Error('Must not use backup')}};
+  const result=await tryPublicSources([source,backup],db=>readIsrSummary(db,{
+    origin:'https://loc-isr.example',name:'read_scope_statistics',args:{}
+  }));
+  assert.equal(result.disabled,true);
+  assert.deepEqual(called,[]);
 });

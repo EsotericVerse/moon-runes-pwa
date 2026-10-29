@@ -23,3 +23,17 @@ export async function tryPublicSources(sources,run){
   }
   throw new Error('No public summary source configured');
 }
+
+export async function readIsrSummary(db,{origin,name,args}){
+  const setting=await db.from('loc_runtime_config')
+    .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
+  if(setting.error)return {retryable:isAvailabilityFailure(setting),error:'Public ISR settings unavailable'};
+  const runtime=setting.data;
+  const chosen=Array.isArray(runtime?.isr_domains)
+    ?runtime.isr_domains.find(item=>item.origin===runtime.cache_provider||item.id===runtime.cache_provider):null;
+  if(runtime?.cache_mode!=='isr'||String(chosen?.origin||'').trim()!==origin)
+    return {disabled:true,error:'ISR not enabled for this domain'};
+  const result=await db.rpc(name,args);
+  if(result.error)return {retryable:isAvailabilityFailure(result),error:'Public summary unavailable'};
+  return {data:result.data};
+}

@@ -1,6 +1,6 @@
 import {withLocCors,locCorsPreflight} from '../../../../_cors';
 import {publicNumericSources,validScopeId} from '../../../../_server';
-import {isAvailabilityFailure,tryPublicSources} from '../../../../_numeric-failover.mjs';
+import {tryPublicSources,readIsrSummary} from '../../../../_numeric-failover.mjs';
 
 // Provider-neutral HTTP cache contract. A CDN/Worker may honor s-maxage=3600.
 // ISR is an optional separate origin; GitHub Pages never executes this route.
@@ -40,25 +40,18 @@ export async function GET(request,{params}){
   // No admin cookies, API keys or service secrets enter this public path.
   let outcome;
   try{
-    outcome=await tryPublicSources(publicNumericSources(),async db=>{
-    const setting=await db.from('loc_runtime_config')
-      .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
-    if(setting.error)return {retryable:isAvailabilityFailure(setting),error:'Public ISR settings unavailable'};
-    const runtime=setting.data;
-    const chosen=Array.isArray(runtime?.isr_domains)
-      ?runtime.isr_domains.find(item=>item.origin===runtime.cache_provider||item.id===runtime.cache_provider):null;
-    if(runtime?.cache_mode!=='isr'||String(chosen?.origin||'').trim()!==url.origin)
-      return {disabled:true,error:'ISR not enabled for this domain'};
-    const result=await db.rpc(name,args);
-    if(result.error)return {retryable:isAvailabilityFailure(result),error:'Public summary unavailable'};
-    return {data:result.data};
-    });
+    outcome=await tryPublicSources(publicNumericSources(),db=>
+      readIsrSummary(db,{origin:url.origin,name,args}));
   }catch{
     return reply(request,{error:'Public summary unavailable'},503);
   }
   if(outcome.error)return reply(request,{error:outcome.error},503);
   const data=outcome.data;
-  const sourceHeaders={...CACHE_HEADERS,'X-LOC-Data-Source':outcome.source};
+  // Do not give a potentially lagging replica the primary's hour-long CDN TTL.
+  const sourceHeaders={...(outcome.source==='neon'
+    ?{'Cache-Control':'public, s-maxage=120, stale-while-revalidate=180',
+      'Cloudflare-CDN-Cache-Control':'public, s-maxage=120'}
+    :CACHE_HEADERS),'X-LOC-Data-Source':outcome.source};
   if(kind==='culture')return reply(request,Array.isArray(data)?data:[],200,sourceHeaders);
   if(kind==='earliest')return reply(request,typeof data==='string'?data:'',200,sourceHeaders);
   if(kind==='statistics')return reply(request,{
