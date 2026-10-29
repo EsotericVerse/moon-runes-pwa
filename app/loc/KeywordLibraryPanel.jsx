@@ -7,6 +7,7 @@ import {useEditDock} from '../modular/edit-dock';
 import {selectAllRows,selectCount} from './db-query.mjs';
 import {dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem,copyKeywordLibraryClass} from './db-client.mjs';
 import {indexKeywordTree,descendantsOfKeyword} from './keyword-tree.mjs';
+import {keywordClassState,invalidateKeywordClass} from './keyword-class-state.mjs';
 import {generateKeywordClassUid} from './keyword-uidlist.mjs';
 
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
@@ -123,9 +124,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   };
   const markStale=async(uid)=>{
     const cl=classOf(tree,uid);
-    if(!cl||cl.uid!==config.current_keyword_class_uid)return;
+    if(!cl)return;
+    const keyword_meta=invalidateKeywordClass(config.keyword_meta,cl.uid);
+    const current=String(config.current_keyword_class_uid||'')===cl.uid;
     const {error:staleError}=await dbAuthRelation(configTable)
-      .update({staticstime:null,keyword_meta:{}}).eq('id',scopeId);
+      .update({keyword_meta,...(current?{staticstime:null}:{})}).eq('id',scopeId);
     if(staleError)throw staleError;
   };
   const saveNode=async()=>{
@@ -175,13 +178,21 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       });
       await markStale(node.uid);
       const descendants=descendantsOfKeyword(rows,node.uid).reverse();
-      const activeRemoved=descendants.some(child=>child.uid===config.current_keyword_class_uid);
+      const removedIds=new Set(descendants.map(row=>row.uid));
+      const activeRemoved=removedIds.has(config.current_keyword_class_uid);
       for(const child of descendants)await writeKeywordLibraryItem(scopeId,'delete',child);
-      if(activeRemoved){
+      const removedClasses=descendants.filter(child=>child.type==='class');
+      if(removedClasses.length){
+        let keyword_meta=config.keyword_meta||{};
+        for(const deleted of removedClasses)
+          keyword_meta=invalidateKeywordClass(keyword_meta,deleted.uid);
         const surviving=[...tree.index.values()].find(record=>
-          record.type==='class'&&!descendants.some(deleted=>deleted.uid===record.uid));
+          record.type==='class'&&!removedIds.has(record.uid));
+        const nextUid=activeRemoved?surviving?.uid||null:config.current_keyword_class_uid;
+        const remainingState=keywordClassState({...config,keyword_meta},nextUid);
         const {error:settingsError}=await dbAuthRelation(configTable)
-          .update({current_keyword_class_uid:surviving?.uid||null,staticstime:null,keyword_meta:{}})
+          .update({current_keyword_class_uid:nextUid,
+            staticstime:remainingState?.completedAt||null,keyword_meta})
           .eq('id',scopeId);
         if(settingsError)throw settingsError;
       }
@@ -194,14 +205,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(busy)return false;
     setBusy(true);setError('');
     try{
-      const recalc=String(config.current_keyword_class_uid||'')!==String(savedConfig.current_keyword_class_uid||'')
-        ||Number(config.keyword_min_chars||0)!==Number(savedConfig.keyword_min_chars||0);
+      const rulesChanged=Number(config.keyword_min_chars||0)!==Number(savedConfig.keyword_min_chars||0);
+      const targetUid=String(config.current_keyword_class_uid||'');
+      const targetState=keywordClassState(config,targetUid);
       const payload={
-        current_keyword_class_uid:config.current_keyword_class_uid||null,
+        current_keyword_class_uid:targetUid||null,
         keyword_min_chars:Number(config.keyword_min_chars)||0,
         keyword_min_documents:Number(config.keyword_min_documents)||0,
         keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
-        ...(recalc?{staticstime:null,keyword_meta:{}}:{})
+        ...(rulesChanged
+          ?{staticstime:null,keyword_meta:{by_class:{}}}
+          :{staticstime:targetState?.completedAt||null})
       };
       const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
         .eq('id',scopeId).select('id');
@@ -211,13 +225,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     finally{setBusy(false);}
   };
   const run=async(reset=false)=>{
-    if(busy||!config.current_keyword_class_uid)return;
+    const runClassUid=activeClass?.uid||config.current_keyword_class_uid;
+    if(busy||!runClassUid)return;
     setBusy(true);setProgress({phase:'reading',percent:0});setError('');
     try{
-      if(reset)await resetKeywordClassification(scopeId,{onProgress:setProgress});
+      if(reset)await resetKeywordClassification(scopeId,{classUid:runClassUid,onProgress:setProgress});
       else{
         const {runKeywordAnalysisBatch}=await import('./keyword-analysis');
-        await runKeywordAnalysisBatch(scopeId,{onProgress:setProgress});
+        await runKeywordAnalysisBatch(scopeId,{classUid:runClassUid,onProgress:setProgress});
       }
       await load();await invalidate();setNotice(reset?'已清空分類結果。':'關鍵詞重新分析完成。');
     }catch(e){setError(String(e.message||e));}
@@ -341,12 +356,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     {!loading&&workspace==='run'?<section className="loc-card scope-feature-card">
       <h2>重新分析</h2>
       <p className="scope-status">只讀取 Galaxy 文章，重建 Group／Item 的 uid_lists，不修改 Galaxy。</p>
-      <p className="scope-status">上次完成：{config.staticstime?new Date(config.staticstime).toLocaleString('zh-TW'):'尚未分析'}</p>
-      <p className="scope-status">有效分類文章：{Number(config.keyword_meta?.matchedDocuments||0).toLocaleString()} 篇</p>
+      <p className="scope-status">Class：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
+      <p className="scope-status">有效分類文章：{Number(keywordClassState(config,activeClass?.uid)?.matchedDocuments||0).toLocaleString()} 篇</p>
       <div className="scope-preview-links">
-        <button type="button" className="loc-button primary" disabled={busy||!config.current_keyword_class_uid}
+        <button type="button" className="loc-button primary" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
           onClick={()=>run(false)}>重新分析</button>
-        <button type="button" className="loc-button" disabled={busy||!config.current_keyword_class_uid}
+        <button type="button" className="loc-button" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
           onClick={()=>run(true)}>清空本 Class 的分類結果</button>
       </div>
       {progress?<p role="status" className="scope-status">{progress.label||progress.phase}
