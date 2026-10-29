@@ -14,12 +14,28 @@ registerDefaultSection('uiExtra.publisher',publisherZh);
 registerDefaultSection('uiExtra.sharing',sharingZh);
 import {useEffect,useRef,useState} from 'react';
 import {useEditDock} from '../modular/edit-dock';
-import {insertRows} from './db-client.mjs';
+import {insertRows,updateRows} from './db-client.mjs';
+import {selectRows} from './db-query.mjs';
 import {useAccount} from './use-account';
 import {createUid8} from './uid';
 import {normalizeRelationIds,requireGalaxyContent,resolveGalaxyTitle} from './content-policy';
 import {ObjectEditor} from './BlockNoteEditor';
 import {blocksToPlainText,plainTextToBlocks} from './blocknote-content.mjs';
+
+const datetimeLocal=value=>{
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
+};
+
+const recordDraft=row=>({
+  title:String(row.title||''),bodyBlocks:plainTextToBlocks(''),bodyHtml:String(row.content||''),
+  editorKey:createUid8(),source:String(row.site||''),url:String(row.url||''),
+  source_id:String(row.source_id||''),
+  target_id:Array.isArray(row.target_id)?row.target_id.join(', '):String(row.target_id||''),
+  ref_id:String(row.ref_id||''),createtime:datetimeLocal(row.createtime),hidden:row.searchable===false
+});
 
 const blank=()=>({
   title:'',bodyBlocks:plainTextToBlocks(''),bodyHtml:'',editorKey:createUid8(),source:'',url:'',source_id:'',target_id:'',ref_id:'',createtime:'',
@@ -37,6 +53,10 @@ export default function ManagementArticlePublisher({scopeId}){
   const activateDock=useRef(()=>{});
   const inDock=Boolean(editDock?.active&&editDock.scopeId===scopeId);
   const [draft,setDraft]=useState(blank());
+  const [lookupUid,setLookupUid]=useState('');
+  const [editingUid,setEditingUid]=useState('');
+  const [loadingUid,setLoadingUid]=useState(false);
+  const loadedBaseline=useRef(null);
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   useEffect(()=>{
@@ -53,21 +73,57 @@ export default function ManagementArticlePublisher({scopeId}){
 
   if(!scopeId||!account.canManageScopeSync(scopeId))return null;
   const change=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  const isDirty=()=>{
+    if(editingUid&&loadedBaseline.current){
+      const original=loadedBaseline.current;
+      return ['title','bodyHtml','source','url','source_id','target_id','ref_id','createtime','hidden']
+        .some(key=>draft[key]!==original[key]);
+    }
+    return Boolean(draft.title.trim()||draft.source.trim()||draft.url.trim()||
+      draft.source_id.trim()||draft.target_id.trim()||draft.ref_id.trim()||
+      draft.createtime||draft.hidden||blocksToPlainText(draft.bodyHtml||draft.bodyBlocks).trim());
+  };
+  const resetDraft=()=>{
+    setDraft(blank());setEditingUid('');setLookupUid('');
+    loadedBaseline.current=null;setStatus('');
+  };
+  async function loadByUid(){
+    if(busy||loadingUid)return;
+    const uid=lookupUid.trim();
+    if(!/^[A-Za-z0-9]{8}$/.test(uid)){
+      setStatus(t('uiExtra.publisher.invalidUid'));return;
+    }
+    if(isDirty()&&!window.confirm(t('uiExtra.publisher.replaceDraftConfirm')))return;
+    setLoadingUid(true);setStatus('');
+    try{
+      const galaxy=account.scopeDataFor(scopeId)?.galaxy;
+      if(!galaxy)throw new Error(t('uiExtra.publisher.scopeUnavailable'));
+      // Exact, authenticated UID lookup: no public-search index or searchable filter.
+      const {rows}=await selectRows(galaxy,{
+        columns:'uid,title,content,site,createtime,searchable,url,source_id,target_id,ref_id',
+        filters:[{column:'uid',operator:'eq',value:uid}],limit:1,authenticated:true
+      });
+      if(!rows?.length)throw new Error(t('uiExtra.publisher.uidNotFound'));
+      const loaded=recordDraft(rows[0]);
+      loadedBaseline.current=loaded;
+      setDraft(loaded);setEditingUid(rows[0].uid);setLookupUid(rows[0].uid);
+      setStatus(t('uiExtra.publisher.articleLoaded'));
+    }catch(error){setStatus(String(error?.message||error));}
+    finally{setLoadingUid(false);}
+  }
 
   async function save(event){
     event?.preventDefault?.();
-    if(busy)return false;
+    if(busy||loadingUid)return false;
     setBusy(true);setStatus('');
     try{
       const content=await requireGalaxyContent(draft.bodyHtml||blocksToPlainText(draft.bodyBlocks));
-      if(!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
+      if(!editingUid&&!draft.source.trim())throw new Error(UI_COPY.management.sourceRequired);
       const now=new Date().toISOString();
-      const uid=createUid8();
       const galaxy=account.scopeDataFor(scopeId)?.galaxy;
       if(!galaxy)throw new Error(t('uiExtra.publisher.scopeUnavailable'));
 
-      await insertRows(galaxy,[{
-        uid,
+      const values={
         title:resolveGalaxyTitle(draft.title,content),
         content,
         source_id:draft.source_id.trim()||null,
@@ -77,10 +133,19 @@ export default function ManagementArticlePublisher({scopeId}){
         searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
         site:draft.source.trim()
-      }]);
-
-      setDraft(blank());
-      setStatus(UI_COPY.management.articlePublished);
+      };
+      if(editingUid){
+        // Preserve the existing primary key and every unrelated Galaxy field.
+        await updateRows(galaxy,{...values,UpdateTime:now},{
+          filters:[{column:'uid',operator:'eq',value:editingUid}]
+        });
+        loadedBaseline.current={...draft};
+        setStatus(t('uiExtra.publisher.articleUpdated'));
+      }else{
+        await insertRows(galaxy,[{uid:createUid8(),...values}]);
+        resetDraft();
+        setStatus(UI_COPY.management.articlePublished);
+      }
       return true;
     }catch(error){
       const message=error?.message||UI_COPY.management.articlePublishFailed;
@@ -93,13 +158,9 @@ export default function ManagementArticlePublisher({scopeId}){
   }
   dockActions.current={
     save:()=>save(),
-    discard:()=>{setDraft(blank());setStatus('')},
-    isDirty:()=>Boolean(
-      draft.title.trim()||draft.source.trim()||draft.url.trim()||
-      draft.source_id.trim()||draft.target_id.trim()||draft.ref_id.trim()||
-      draft.createtime||draft.hidden||blocksToPlainText(draft.bodyHtml||draft.bodyBlocks).trim()
-    ),
-    isBusy:()=>busy
+    discard:resetDraft,
+    isDirty,
+    isBusy:()=>busy||loadingUid
   };
 
   return <section className="loc-card scope-feature-card"
@@ -128,6 +189,21 @@ export default function ManagementArticlePublisher({scopeId}){
         <section className="scope-publisher-panel">
           <h3><UiText id="uiExtra.publisher.publish"/></h3>
           <label>
+            <span><UiText id="uiExtra.publisher.articleUid"/></span>
+            <input value={lookupUid} maxLength={8} spellCheck={false}
+              onChange={event=>setLookupUid(event.target.value.trim())}
+              onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();void loadByUid();}}}
+              placeholder={t('uiExtra.publisher.uidPlaceholder')}
+              aria-label={t('uiExtra.publisher.articleUid')}/>
+          </label>
+          <div className="scope-preview-links">
+            <button type="button" className="loc-button" disabled={busy||loadingUid}
+              onClick={loadByUid}>{loadingUid?t('uiExtra.publisher.loadingUid'):t('uiExtra.publisher.findUid')}</button>
+            {editingUid?<button type="button" className="loc-button" disabled={busy||loadingUid}
+              onClick={resetDraft}><UiText id="uiExtra.publisher.newArticle"/></button>:null}
+          </div>
+          {editingUid?<p className="scope-status">{t('uiExtra.publisher.editingUid')}: {editingUid}</p>:null}
+          <label>
             <span>{UI_COPY.management.articleTime}</span>
             <input type="datetime-local" value={draft.createtime} onChange={event=>change('createtime',event.target.value)}/>
           </label>
@@ -142,7 +218,7 @@ export default function ManagementArticlePublisher({scopeId}){
           <h3><UiText id="uiExtra.publisher.source"/></h3>
           <label>
             <span>{UI_COPY.management.articleSource}</span>
-            <input value={draft.source} onChange={event=>change('source',event.target.value)} placeholder={t('uiExtra.publisher.sourceHint')} required/>
+            <input value={draft.source} onChange={event=>change('source',event.target.value)} placeholder={t('uiExtra.publisher.sourceHint')} required={!editingUid}/>
           </label>
           <label>
             <span>{UI_COPY.management.articleUrl}</span>
@@ -159,6 +235,6 @@ export default function ManagementArticlePublisher({scopeId}){
       </aside>
     </form>
 
-    {status?<p className={'scope-status'+(status===UI_COPY.management.articlePublished?'':' scope-error')} role="status">{status}</p>:null}
+    {status?<p className={'scope-status'+([UI_COPY.management.articlePublished,t('uiExtra.publisher.articleUpdated'),t('uiExtra.publisher.articleLoaded')].includes(status)?'':' scope-error')} role="status">{status}</p>:null}
   </section>;
 }
