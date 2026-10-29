@@ -30,18 +30,45 @@ class KyselyQuery {
 
 function parseContentRange(value){const match=String(value||'').match(/\/(\d+)$/);return match?Number(match[1]):null}
 
-export function createKyselyEdgeClient({url,publishableKey,auth,role='authenticated',target='configured',fetch:fetchImpl=globalThis.fetch}={}){
-  if(!url||!publishableKey||typeof fetchImpl!=='function')throw new Error('Kysely Edge requires a project URL, publishable key and fetch');
-  const endpoint=String(url).replace(/\/+$/,'')+'/functions/v1/loc-kysely';
+// A Kysely transport may be deployed on an independent trusted SQL Gateway.
+// Browser callers supply an OAuth JWT, never raw PostgreSQL credentials.
+export function createKyselyEdgeClient({url,publishableKey,auth,role='authenticated',
+  target='configured',gatewayUrl='',getAccessToken=null,fetch:fetchImpl=globalThis.fetch}={}){
+  if(typeof fetchImpl!=='function')throw new Error('Kysely transport requires fetch');
+  const external=String(gatewayUrl||'').trim();
+  if(!external&&(!url||!publishableKey))
+    throw new Error('Supabase Kysely Edge requires a project URL and publishable key');
+  if(external){
+    const parsed=new URL(external);
+    if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.search||parsed.hash)
+      throw new Error('SQL Gateway endpoint must be an HTTPS URL without credentials or parameters');
+  }
+  const endpoint=external?external.replace(/\/+$/,''):
+    String(url).replace(/\/+$/,'')+'/functions/v1/loc-kysely';
   async function execute(body){
     let token='';
-    if(auth){const result=await auth.getSession();token=result?.data?.session?.access_token||'';if(result?.error)throw result.error;if(!token)throw new Error('Authenticated database request requires an active session')}
-    const headers={'content-type':'application/json',apikey:publishableKey};
+    if(typeof getAccessToken==='function'){
+      token=String(await getAccessToken()||'');
+      if(role==='authenticated'&&!token)
+        throw new Error('Authenticated SQL Gateway request requires an active session');
+    }else if(auth){
+      const result=await auth.getSession();
+      token=result?.data?.session?.access_token||'';
+      if(result?.error)throw result.error;
+      if(!token)throw new Error('Authenticated database request requires an active session');
+    }
+    if(role==='authenticated'&&!token)
+      throw new Error('Authenticated database request requires a verified session');
+    const headers={'content-type':'application/json'};
+    if(!external)headers.apikey=publishableKey;
     if(token)headers.authorization='Bearer '+token;
-    const request={method:'POST',headers,body:JSON.stringify({...body,target})};
+    const request={method:'POST',headers,credentials:'omit',
+      body:JSON.stringify({...body,target})};
     let response;
     for(let attempt=0;attempt<2;attempt++){
-      response=await fetchImpl(endpoint,request);
+      // Each attempt has a hard deadline, even when the original Supabase
+      // function or an independent PostgreSQL Gateway never replies.
+      response=await fetchImpl(endpoint,{...request,signal:AbortSignal.timeout(9000)});
       if(response.ok||body.kind!=='query'||body.operation!=='select'||response.status!==503||attempt===1)break;
       await new Promise(resolve=>setTimeout(resolve,120));
     }
