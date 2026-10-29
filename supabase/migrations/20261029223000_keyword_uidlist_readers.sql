@@ -56,7 +56,12 @@ BEGIN
       GROUP BY b.uid,b.d,gr.cid
     ), ranked AS (
       SELECT uid,d,cid,
-        row_number() OVER(PARTITION BY uid,d ORDER BY strength DESC,cid) AS rn
+        row_number() OVER(
+          PARTITION BY uid,d ORDER BY strength DESC,
+          CASE WHEN cid=(SELECT gr.cid FROM group_ranks gr
+                         JOIN default_group df ON df.grp=gr.grp LIMIT 1)
+               THEN 0 ELSE 1 END,cid
+        ) AS rn
       FROM group_winners
     )
     SELECT 'eligible'::text,NULL::text,NULL::integer,''::text,
@@ -66,7 +71,7 @@ BEGIN
       FROM ranked WHERE rn=1 GROUP BY cid,d
     UNION ALL
     SELECT 'item',id,NULL,''::text,sum(times)::bigint,count(DISTINCT uid)::bigint
-      FROM base GROUP BY id
+      FROM base WHERE times>0 GROUP BY id
     UNION ALL
     SELECT 'item_day',id,NULL,d,sum(times)::bigint,count(DISTINCT uid)::bigint
       FROM base WHERE times>0 GROUP BY id,d
