@@ -13,7 +13,7 @@ test('analysis reads Galaxy articles but never updates Galaxy classification col
 });
 test('analysis identifies Class and Items exclusively through four-character UID',()=>{
  assert.match(runner,/current_keyword_class_uid/);
- assert.match(runner,/columns:'uid,type,name,desc,lists,uid_lists'/);
+ assert.match(runner,/\.select\('uid,type,name,desc,lists'\)/);
  assert.match(runner,/keywordTreeCatalog/);
  assert.doesNotMatch(runner,/keyword_id|item_no|class_id/);
 });
