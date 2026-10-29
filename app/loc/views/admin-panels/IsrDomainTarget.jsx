@@ -75,7 +75,7 @@ export default function IsrDomainTarget(){
   };
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||draft===null});
   return <section className="loc-card admin-workspace loc-isr-settings">
-    <h2>快取</h2>
+    <h2>快取設定</h2>
     {draft?<div className="loc-isr-bar">
       <label htmlFor="loc-isr-choice">使用方式
         <select id="loc-isr-choice" className="scope-select" value={draft.choice}
