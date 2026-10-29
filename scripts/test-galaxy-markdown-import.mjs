@@ -98,7 +98,7 @@ test('Markdown respects a supplied stable UID even when content changes',async()
 });
 
 test('explicit Base62 UID retains mixed case across repeated Markdown imports',async()=>{
-  const input=body=>file('mixed.md','---\\nuid: aB12cD34\\n---\\n'+body);
+  const input=body=>file('mixed.md','---\nuid: aB12cD34\n---\n'+body);
   const [one]=await parseUniversalImportFile(input('# Original'));
   const [two]=await parseUniversalImportFile(input('# Edited'));
   assert.equal(one.uid,'aB12cD34');
