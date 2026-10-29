@@ -26,12 +26,12 @@ BEGIN
  RETURN QUERY EXECUTE format($query$
    WITH clazz AS (SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1),
    groups AS MATERIALIZED (
-     SELECT g.uid,g.name,g.lists,g.uid_lists,c.order_no
+     SELECT g.uid::text AS uid,g.name,g.lists,g.uid_lists,c.order_no
      FROM clazz
      CROSS JOIN LATERAL jsonb_array_elements_text(clazz.lists) WITH ORDINALITY c(uid,order_no)
      JOIN %1$s g ON g.uid=c.uid AND g.type='group'
    ), items AS MATERIALIZED (
-     SELECT i.uid,g.uid group_uid,i.uid_lists
+     SELECT i.uid::text AS uid,g.uid::text AS group_uid,i.uid_lists
      FROM groups g
      CROSS JOIN LATERAL jsonb_array_elements_text(g.lists) iid(uid)
      JOIN %1$s i ON i.uid=iid.uid AND i.type='item'
