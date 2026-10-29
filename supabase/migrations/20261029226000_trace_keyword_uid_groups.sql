@@ -1,0 +1,60 @@
+-- Group membership is stored once: Group.uid_lists = [Galaxy UID].
+-- Read only aggregate counts for the selected spatial anchors; do not expose
+-- raw article UID lists, reclassify text or write to Galaxy.
+CREATE OR REPLACE FUNCTION silver.read_trace_keyword_group_totals(
+  p_scope_id text,p_place_ids text[],p_start date DEFAULT NULL,
+  p_end date DEFAULT NULL,p_source text DEFAULT NULL
+) RETURNS TABLE(group_uid text,group_name text,document_count bigint)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE
+  v_scope text:=lower(btrim(coalesce(p_scope_id,'')));
+  v_config regclass;
+  v_galaxy regclass;
+  v_keywords regclass;
+  v_class_uid text;
+  v_ready timestamptz;
+BEGIN
+  IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' OR
+     NOT EXISTS(SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope' AND active)
+     THEN RAISE EXCEPTION 'Invalid Scope'; END IF;
+  IF p_place_ids IS NULL OR cardinality(p_place_ids)<1 OR cardinality(p_place_ids)>80
+    THEN RAISE EXCEPTION 'Place UID list must have 1-80 items'; END IF;
+  IF EXISTS(SELECT 1 FROM unnest(p_place_ids) x WHERE x !~ '^[0-9A-Za-z]{4}$')
+    THEN RAISE EXCEPTION 'Invalid Place UID'; END IF;
+  v_config:=to_regclass(format('silver.%I',v_scope));
+  v_galaxy:=to_regclass(format('silver.%I_galaxy',v_scope));
+  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
+  IF v_config IS NULL OR v_galaxy IS NULL OR v_keywords IS NULL
+    THEN RAISE EXCEPTION 'Missing Scope data'; END IF;
+  EXECUTE format('SELECT current_keyword_class_uid,staticstime FROM %s WHERE id=$1',v_config)
+    INTO v_class_uid,v_ready USING v_scope;
+  IF v_class_uid IS NULL OR v_ready IS NULL THEN RETURN; END IF;
+  RETURN QUERY EXECUTE format($query$
+    WITH cl AS (
+      SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1
+    ), groups AS (
+      SELECT g.uid,g.name,g.uid_lists
+      FROM cl c
+      CROSS JOIN LATERAL jsonb_array_elements_text(c.lists) cid(value)
+      JOIN %1$s g ON g.uid=cid.value AND g.type='group'
+    ), articles AS MATERIALIZED (
+      SELECT g.uid::text uid
+      FROM %2$s g
+      WHERE g.place_id=ANY($2) AND g.searchable IS TRUE
+        AND g.statistics_able IS TRUE
+        AND ($3 IS NULL OR g.date >= $3)
+        AND ($4 IS NULL OR g.date <= $4)
+        AND ($5 IS NULL OR g.source_name=$5)
+    )
+    SELECT k.uid::text,k.name,count(DISTINCT a.uid)::bigint
+    FROM groups k
+    LEFT JOIN articles a ON k.uid_lists ? a.uid
+    GROUP BY k.uid,k.name
+    ORDER BY k.name,k.uid
+  $query$,v_keywords,v_galaxy)
+  USING v_class_uid,p_place_ids,p_start,p_end,nullif(p_source,'');
+END
+$fn$;
+REVOKE ALL ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text) TO anon,authenticated;
