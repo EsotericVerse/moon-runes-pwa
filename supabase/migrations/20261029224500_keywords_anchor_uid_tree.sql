@@ -143,4 +143,10 @@ GRANT SELECT ON api.lo3rwang_keywords_manage TO authenticated;
 ALTER TABLE silver.lo3rwang DROP COLUMN IF EXISTS current_keyword_class_id;
 ALTER TABLE silver.lrunes DROP COLUMN IF EXISTS current_keyword_class_id;
 ALTER TABLE silver.loc DROP COLUMN IF EXISTS current_keyword_class_id;
+-- Classification hits are NOT migrated. New analysis must rebuild both
+-- Group and Item uid_lists from today's keyword rules and Galaxy content.
+UPDATE silver.lo3rwang SET staticstime=NULL,keyword_meta='{}'::jsonb;
+UPDATE silver.lrunes SET staticstime=NULL,keyword_meta='{}'::jsonb;
+UPDATE silver.loc SET staticstime=NULL,keyword_meta='{}'::jsonb
+WHERE true;
 NOTIFY pgrst,'reload schema';
