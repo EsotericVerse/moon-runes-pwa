@@ -15,8 +15,15 @@
   backdrop-filter:blur(16px);
   pointer-events:none;
 }
-.scope-feature-dock:has(.scope-edit-system-button){
+/* Scope edit mode has seven actions; Global Admin adds an eighth.
+   Count only action buttons so the optional status notice never shifts tracks. */
+.scope-feature-dock:has(> button:nth-child(7)){
+  width:min(840px,calc(100vw - 1rem));
   grid-template-columns:repeat(7,minmax(0,1fr));
+}
+.scope-feature-dock:has(> button:nth-child(8)){
+  width:min(960px,calc(100vw - 1rem));
+  grid-template-columns:repeat(8,minmax(0,1fr));
 }
 .scope-feature-dock a,.scope-feature-dock button{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -80,6 +87,14 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 .scope-settings-note{color:var(--loc-muted);font-size:.85rem;}
 @media(max-width:560px){
   .scope-feature-dock{gap:4px;padding:.32rem;border-radius:18px;}
+  /* Keep every edit action on one row on narrow screens. */
+  .scope-feature-dock:has(> button:nth-child(7)){
+    grid-template-columns:repeat(7,minmax(70px,1fr));
+    overflow-x:auto;overscroll-behavior-x:contain;
+  }
+  .scope-feature-dock:has(> button:nth-child(8)){
+    grid-template-columns:repeat(8,minmax(70px,1fr));
+  }
   .scope-feature-dock a,.scope-feature-dock button{min-height:56px;font-size:.75rem;border-radius:12px;padding:.36rem .03rem;}
   .scope-feature-dock:has(.scope-edit-system-button) a,
   .scope-feature-dock:has(.scope-edit-system-button) button{font-size:.7rem;}
