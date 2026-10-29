@@ -1,4 +1,5 @@
 import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
 import {parse} from '@babel/parser';
 
 const read=relative=>readFileSync(new URL('../'+relative,import.meta.url),'utf8');
@@ -52,7 +53,7 @@ export function checkDbContract(contractSource,clientSource){
   return {exported:exported.length,consumed:destructured.length};
 }
 
-if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]){
+if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
   const result=checkDbContract(read(databaseContract),read(databaseClient));
   console.log('DB contract OK: '+result.exported+' exports, '+result.consumed+' consumers.');
 }
