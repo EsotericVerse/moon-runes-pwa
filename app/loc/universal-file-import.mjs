@@ -188,7 +188,7 @@ export async function parseGalaxyMarkdownFile(file,{importLocale='zh-Hant'}={}){
     throw new Error('Markdown 檔頭的 uid 必須是 8 位英數字。');
   const heading=/^#\s+(.+)\s*$/m.exec(content)?.[1]?.trim();
   const title=String(fields.title||heading||file.name.replace(/\.md$/i,'')).trim();
-  const uid=explicitUid.toUpperCase()||await stableMarkdownUid(
+  const uid=explicitUid||await stableMarkdownUid(
     String(original).replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n'));
   return [{
     uid,title,content,createtime:date,

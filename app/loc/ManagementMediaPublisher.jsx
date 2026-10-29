@@ -60,7 +60,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
     if(busy)return false;
     setBusy(true);setStatus('');
     try{
-      const galaxyLink=String(draft.galaxy_link||'').trim().toUpperCase();
+      const galaxyLink=String(draft.galaxy_link||'').trim();
       if(galaxyLink&&galaxyLink.length!==8)throw new Error(t('uiExtra.importUI.linkUidInvalid'));
       const mediaType=repairMojibakeText(draft.media_type).trim();
       if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
