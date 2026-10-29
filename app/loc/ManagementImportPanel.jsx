@@ -19,7 +19,7 @@ import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
@@ -463,6 +463,40 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           return collected;
         }
       });
+      // Incomplete Threads/Meta backups can omit createdAt. Reimport must
+      // look for already stored posts with the same site and complete article
+      // metadata, not blindly INSERT another null-time copy.
+      const missingTime=unique.filter(record=>!existingByCreatedAt.has(record.uid)&&
+        (record.createtime==null||record.createtime==='')&&
+        String(record.site||'').trim()&&String(record.content||'').trim());
+      if(missingTime.length){
+        const matched=await matchExistingWithoutCreatedAt(missingTime,{
+          readContents:async(source,contents)=>{
+            const collected=[];
+            // Bound GET URLs. An exceptionally long text is still importable,
+            // even when its exact-content lookup exceeds REST URL limits.
+            const safeContents=contents.filter(value=>{
+              try{return encodeURIComponent(value).length<=5000;}
+              catch{return false;}
+            });
+            for(const batch of urlSafeInBatches(safeContents,'content')){
+              for(let offset=0;;){
+                const {data,error,count}=await dbAuthRelation(galaxy)
+                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date',{count:'exact'})
+                  .ilike('site',source).in('content',batch)
+                  .order('uid',{ascending:true}).range(offset,offset+MAX_ROWS-1);
+                if(error)throw new Error('無時間文章比對失敗：'+error.message);
+                const rows=data||[];
+                collected.push(...rows);
+                offset+=rows.length;
+                if(!rows.length||(count!=null&&offset>=Number(count))||rows.length<MAX_ROWS)break;
+              }
+            }
+            return collected;
+          }
+        });
+        for(const [newUid,existing] of matched)existingByCreatedAt.set(newUid,existing);
+      }
       // Older imports sometimes have no site. Timestamp alone is not enough
       // to infer an author/platform: require identical normalized content and
       // an unambiguous matching row before repairing that missing site.
