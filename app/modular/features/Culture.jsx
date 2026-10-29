@@ -96,7 +96,7 @@ function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
   const buckets=new Map(),maximum=new Map();
   for(const row of rows||[]){
     const day=String(row.day||row.date||'').slice(0,10);
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(day))continue;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
     let key='',label='',count=0,order=0;
     if(groupId){
       if(row.kind!=='item_day')continue;
@@ -115,7 +115,7 @@ function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
       order=Object.keys(classes).indexOf(key)+1;
     }else continue;
     if(!key||!count)continue;
-    const id=key+'\\u0000'+day;
+    const id=key+'\u0000'+day;
     const previous=buckets.get(id);
     const accumulated=(previous?.count||0)+count;
     buckets.set(id,{key,label,day,count:accumulated,order});
