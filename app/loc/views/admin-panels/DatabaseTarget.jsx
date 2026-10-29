@@ -36,6 +36,8 @@ export default function DatabaseTarget({scopeGroup}){
       const next=data||[];
       original.current={rows:next};
       setRows(next);
+      setSelectedId(current=>next.some(item=>item.target_id===current)?current:
+        (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
       const backup=next.find(item=>item.backup_selected);
       if(!backup)setBackupHealth({state:'absent'});
       else {
@@ -46,9 +48,6 @@ export default function DatabaseTarget({scopeGroup}){
             ?{state:health.schema?'online':'schema-error'}:{state:'offline'});
         }catch{if(active)setBackupHealth({state:'offline'});}
       }
-      if(!active)return;
-      setSelectedId(current=>next.some(item=>item.target_id===current)?current:
-        (next.find(item=>item.target_id===STATIC_ROUTING.primaryId)?.target_id||next[0]?.target_id||''));
     })();
     return()=>{active=false};
   },[revision,listRelation]);
