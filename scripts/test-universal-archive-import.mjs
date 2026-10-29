@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {zipSync,strToU8} from 'fflate';
+import {importRowsFromJson} from '../app/loc/import-batch.mjs';
+import {archiveRecordStreamPath,archiveRootContainers} from '../app/loc/archive-array-layout.mjs';
 import {detectZipArchiveSource,inspectPrivateArchive} from '../app/loc/private-archive-universal.mjs';
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
 import {readImageExif} from '../app/loc/archive-exif.mjs';
@@ -305,4 +307,101 @@ test('full Facebook ZIP JSON inventory is independent of 160-file schema samplin
   assert.equal(summary.jsonFilesOversize,0);
   assert.equal(summary.jsonFilesUnsupported,0);
   assert.equal(records.length,180);
+});
+
+test('Facebook repeated array envelopes preserve body, place, media and linked private EXIF',async()=>{
+  const image='your_facebook_activity/posts/media/nested-photo.jpg';
+  const post={id:'fb-array-01',timestamp:1720000000,
+    title:'系統顯示：更新了近況',
+    data:{array:[{post:'第一行\n第二行',
+      attachments:{array:[{data:{array:[{media:{
+        uri:image,url:'https://media.example.test/nested-photo.jpg',type:'image'
+      }}]}}]}}]},
+    attachments:{array:[{data:{array:[{place:{name:'某車站'}}]}}]}
+  };
+  const src=zipSync({
+    'your_facebook_activity/posts/your_posts_1.json':j({array:{array:[post]}}),
+    [image]:gpsJpeg()
+  });
+  const input=asFile('fb-deep-archive.zip',src);
+  const collector=createArchiveEvidenceCollector();
+  const articles=[];
+  const result=await inspectPrivateArchive(input,{
+    onRecord:record=>{
+      const row=archiveGalaxyRow(record);
+      if(row){articles.push(row);collector.onRecord(record,row.uid);}
+    },
+    onMediaEntry:item=>collector.onMediaEntry(item),
+    onMediaMetadata:item=>collector.onExif(item)
+  });
+  assert.equal(result.acceptedRows,1);
+  assert.equal(articles.length,1);
+  assert.equal(articles[0].site,'Facebook');
+  assert.equal(articles[0].content,'第一行\n第二行');
+  assert.equal(articles[0].location,'某車站');
+  assert.equal(articles[0].createtime,'2024-07-03T09:46:40.000Z');
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:input.name,archiveSize:input.size});
+  const plan=prepareArchiveMedia(evidence,new Set(articles.map(row=>row.uid)));
+  assert.equal(result.exifWithGps,1);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.exif.length,1);
+  assert.equal(plan.media[0].url,'https://media.example.test/nested-photo.jpg');
+  assert.equal(plan.media[0].__article_uid,articles[0].uid);
+  assert.ok(Math.abs(plan.exif[0].latitude-25.0333)<0.01);
+  assert.equal(articles[0].place_id,undefined,'EXIF must not invent check-in anchor');
+});
+
+test('Facebook arrays nested inside array items and raw array-of-arrays are read exactly once',async()=>{
+  const post={id:'fb-array-02',timestamp:1720000100,data:[{post:'深層貼文'}]};
+  for(const [name,structure] of [
+    ['object-array',{array:[{array:[post]}]}],
+    ['root-array',[[post]]]
+  ]){
+    const a=await parsed('fb-'+name+'.zip',{
+      'your_facebook_activity/posts/your_posts_2.json':j(structure)
+    });
+    assert.equal(a.summary.acceptedRows,1,name);
+    assert.equal(a.results.length,1,name);
+    assert.equal(a.results[0].content,'深層貼文',name);
+  }
+});
+
+test('Facebook multi-file archive counts all 358 JSON entries instead of stopping early',async()=>{
+  const entries={};
+  for(let i=0;i<358;i++){
+    entries['your_facebook_activity/posts/your_posts_'+(i+1)+'.json']=j([{
+      id:'fb-'+i,timestamp:1720000000+i,data:[{post:'匯入文字 '+i}]
+    }]);
+  }
+  const a=await parsed('fb-358-parts.zip',entries);
+  assert.equal(a.summary.jsonFilesParsed,358);
+  assert.equal(a.summary.acceptedRows,358);
+  assert.equal(a.results.length,358);
+});
+
+test('standalone Facebook JSON unwraps repeated array structures without flattening post media',()=>{
+  const post={timestamp:1720000000,title:'系統標題',data:[{post:'真實內文'}],
+    attachments:[{data:[{media:{uri:'photos/x.jpg'}}]}]};
+  for(const payload of [
+    {array:{array:[post]}},
+    {array:[{array:[post]}]},
+    [[post]]
+  ]){
+    const rows=importRowsFromJson(payload);
+    assert.equal(rows.length,1);
+    assert.deepEqual(rows[0],post);
+  }
+});
+
+test('Facebook array["array"] path is supported and nested post data[] is not mistaken for root',()=>{
+  const payload={array:{array:[{id:'fb-root-1',
+    data:[{post:'實際正文',attachments:[{media:{uri:'photo.jpg'}}]}]}]}};
+  assert.equal(archiveRecordStreamPath(JSON.stringify(payload),'array'),'$.array.array.*');
+  assert.deepEqual(archiveRootContainers(JSON.stringify(payload)).map(v=>v.key),['array']);
+  for(const path of ['array.array','array["array"]',"array['array']"]){
+    const rows=importRowsFromJson(payload,path);
+    assert.equal(rows.length,1,path);
+    assert.equal(rows[0].data[0].post,'實際正文',path);
+    assert.equal(rows[0].data[0].attachments.length,1,path);
+  }
 });

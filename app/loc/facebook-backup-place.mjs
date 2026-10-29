@@ -57,6 +57,22 @@ function explicitTaggedPlaces(row){
   }
   return found;
 }
+// Meta sometimes places post metadata inside array.array envelopes within
+// data/attachments. Traverse only known record containers with a strict cap.
+function nestedFacebookMetadata(row){
+  const found=[],stack=[row?.data,row?.attachments,row?.array],seen=new WeakSet();
+  while(stack.length&&found.length<1024){
+    const value=stack.pop();
+    if(!value||typeof value!=='object'||seen.has(value))continue;
+    seen.add(value);
+    if(Array.isArray(value)){for(let i=value.length-1;i>=0;i--)stack.push(value[i]);continue;}
+    found.push(value);
+    for(const key of ['array','data','attachments']){
+      if(value[key]&&typeof value[key]==='object')stack.push(value[key]);
+    }
+  }
+  return found;
+}
 function placeCandidates(row){
   const direct=PLACE_KEYS.map(field=>namedPlace(row?.[field])).filter(Boolean);
   if(direct.length)return direct; // Explicit post location outranks attachment metadata.
@@ -84,6 +100,14 @@ function placeCandidates(row){
       }
     }
   }
+  // Repeatable 'array' wrappers are not post boundaries. Their explicit
+  // check-in fields are equivalent to standard data[]/attachments[] entries.
+  for(const nested of nestedFacebookMetadata(row)){
+    for(const field of PLACE_KEYS){
+      const name=namedPlace(nested[field]);
+      if(name)found.push(name);
+    }
+  }
   return found;
 }
 export function facebookBackupPlace(row){
@@ -96,8 +120,10 @@ export function facebookBackupPlace(row){
 // rather than under Galaxy's generic content/body aliases.
 export function facebookBackupPostText(row){
   if(!row||typeof row!=='object'||Array.isArray(row))return '';
-  for(const candidate of [row.content,row.text,row.caption,row.title,row.description,
-    ...(Array.isArray(row.data)?row.data.flatMap(item=>[item?.post,item?.text]):[])]){
+  // Original authored text outranks Meta's generated status title.
+  for(const candidate of [row.content,row.text,row.post,row.caption,row.description,
+    ...(Array.isArray(row.data)?row.data.flatMap(item=>[item?.post,item?.text]):[]),
+    ...nestedFacebookMetadata(row).flatMap(item=>[item.post,item.text]),row.title]){
     if(typeof candidate==='string'&&candidate.trim())return candidate.trim();
   }
   return '';

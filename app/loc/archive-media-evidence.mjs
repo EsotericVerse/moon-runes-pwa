@@ -2,7 +2,7 @@
 const MAX_MEDIA_PER_RECORD=200;
 const URI_KEYS=['uri','src','media_uri','mediaUri','path','relative_path','relativePath'];
 const URL_KEYS=['url','media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','display_url'];
-const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','image_versions2','image','video','photo'];
+const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','array','image_versions2','image','video','photo'];
 const HTTP=/^https?:\/\/[^/\s]+/i;
 const MEDIA_EXT=/\.(?:jpe?g|png|gif|webp|heic|avif|tiff?|mp4|mov|mkv|webm|mp3|m4a|wav|ogg|flac)(?:[?#]|$)/i;
 const rawPath=value=>String(value||'').trim().replace(/\\/g,'/');
@@ -24,7 +24,7 @@ export function archiveMediaType(uri,hint=''){
 // Return only actual media references. Do not confuse post permalinks with image URLs.
 export function archiveAttachmentReferences(record){
   if(!record||typeof record!=='object')return [];
-  const roots=[record.photos,record.videos,record.audio_files,record.attachments,record.media,
+  const roots=[record.photos,record.videos,record.audio_files,record.attachments,record.media,record.data,record.array,
     ...(Array.isArray(record.data)?record.data.flatMap(item=>
       [item?.attachments,item?.media,item?.photos,item?.videos].filter(Boolean)):[])];
   if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||

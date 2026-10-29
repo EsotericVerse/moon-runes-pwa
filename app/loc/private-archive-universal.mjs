@@ -9,9 +9,10 @@ import {archiveEntrySignatures,summarizeArchiveSources,archiveFilenameSource} fr
 import {inspectArchiveEntryStructure,summarizeArchiveStructures} from './archive-structure-inspector.mjs';
 import {createArchiveCompletenessAudit} from './archive-completeness-audit.mjs';
 import {canonicalArchiveText} from './archive-record-identity.mjs';
-import {facebookBackupPlace,facebookBackupTimestamp} from './facebook-backup-place.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
+import {archiveRecordStreamPath,archiveRootContainers} from './archive-array-layout.mjs';
 import {isPrivateArchiveEntry} from './archive-import-safety.mjs';
 
 export const ARCHIVE_CHUNK_BYTES=128*1024;
@@ -138,7 +139,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const chatText=platform==='chatgpt'?chatgptConversation(item):null;
   const text=chatText||(platform==='x'?(txt(item.full_text)||txt(item.core?.text)||txt(item.text)):
     actualKind==='message'?(txt(item.content)||txt(item.text)||null):
-    actualKind==='post'?(extractCaption(item)||txt(data['Title']?.value)||null):
+    actualKind==='post'?((platform==='facebook'?facebookBackupPostText(item):null)||extractCaption(item)||txt(data['Title']?.value)||null):
     extractCaption(item));
   const sourcePlace=actualKind==='post'?facebookBackupPlace(item):'';
   const attachments=archiveAttachmentReferences(item);
@@ -238,15 +239,13 @@ function determine(path,prefix){
   return null;
 }
 function rootArray(prefix,keys){
-  for(const key of keys){
-    if(new RegExp('"' + key + '"\\s*:\\s*\\[').test(prefix))return key;
-  }
-  return null;
+  return archiveRootContainers(prefix).find(field=>
+    field.type==='['&&keys.includes(field.key))?.key||null;
 }
 function rootArrayAny(head){
-  // Generic first top-level array for newer Meta export versions. No eval.
-  const found=head.match(/^\s*\{\s*"([a-zA-Z][\w-]*)"\s*:\s*\[/);
-  return found?.[1]||null;
+  const roots=archiveRootContainers(head);
+  return roots.find(field=>field.type==='[')?.key||
+    roots.find(field=>field.key==='array'&&field.type==='{')?.key||null;
 }
 const fileSummary=()=>({
   matchedFiles:0,otherFiles:0,totalRows:0,acceptedRows:0,rejectedRows:0,
@@ -294,11 +293,11 @@ function createSink(path,summary,onRecord,signal,sourceHint=null){
       if(summary.unrecognizedFiles.length<60)summary.unrecognizedFiles.push(cleanPath(path));
       return;
     }
-    const paths=config.array==='$'?['$.*']:['$.'+config.array+'.*'];
+    const text=config.prefix==='ytd'?header.replace(YTD,''):header;
+    const paths=[archiveRecordStreamPath(text,config.array)];
     parser=new JSONParser({paths,keepStack:false,stringBufferSize:64*1024});
     parser.onValue=pushRows;
     summary.matchedFiles++;summary.sourceFiles.push(cleanPath(path));ready=true;
-    const text=config.prefix==='ytd'?header.replace(YTD,''):header;
     header='';
     parser.write(text);
   }
