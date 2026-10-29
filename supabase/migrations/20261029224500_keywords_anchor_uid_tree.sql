@@ -6,7 +6,7 @@ RETURNS varchar(4) LANGUAGE plpgsql VOLATILE SET search_path TO ''
 AS $fn$
 DECLARE
   alphabet constant text:='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  candidate varchar(4);found boolean;legacy_class boolean;relation text;staging boolean;
+  candidate varchar(4);found boolean;legacy_class boolean;relation text;staging boolean;tries integer;
 BEGIN
   staging:=to_regclass(format('silver.%I_keywords_v2',p_scope)) IS NOT NULL;
   relation:=CASE WHEN staging
