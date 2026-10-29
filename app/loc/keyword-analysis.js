@@ -41,41 +41,6 @@ function reportBatchProgress(onProgress,phase,completed,total,percent,label,deta
   });
 }
 
-// Preserve the canonical per-document Rune engine while yielding after small batches.
-// This keeps the UI responsive and counts real completed documents, not elapsed time.
-// Group ordering comes from each Keywords Class's own catalog.
-// Its configured default Item's Group comes last, regardless of item number.
-function buildClassMap(catalogRows=[],defaultKeywordId=''){
-  const groups=new Map();
-  for(const [index,row] of catalogRows.entries()){
-    if(row?.class_enable===false)continue;
-    const group=String(row?.class_group||'').trim();
-    if(!group)continue;
-    const n=Number(row?.order_no);
-    const order=row?.order_no==null||!Number.isFinite(n)?Number.MAX_SAFE_INTEGER:n;
-    const prior=groups.get(group);
-    if(!prior)groups.set(group,{group,order,firstSeen:index});
-    else if(order<prior.order)prior.order=order;
-  }
-  const defaultEntry=(catalogRows||[]).find(row=>
-    String(row?.keyword_id)===String(defaultKeywordId)&&row?.class_enable!==false
-  );
-  const defaultGroup=String(defaultEntry?.class_group||'').trim();
-  const ordered=[...groups.values()]
-    .sort((a,b)=>{
-      const aDefault=Boolean(defaultGroup&&a.group===defaultGroup);
-      const bDefault=Boolean(defaultGroup&&b.group===defaultGroup);
-      if(aDefault!==bDefault)return aDefault?1:-1;
-      return a.order-b.order||a.firstSeen-b.firstSeen||a.group.localeCompare(b.group);
-    })
-    .map((row,index)=>({group:row.group,order:index,class_id:index+1}));
-  if(!ordered.length)throw new Error('目前 Keywords Class 沒有啟用的 Group');
-  return {
-    ordered,
-    groupToClassId:new Map(ordered.map(item=>[item.group,item.class_id])),
-    classIdToGroup:new Map(ordered.map(item=>[item.class_id,item.group]))
-  };
-}
 async function keywordFingerprint(scope){
   const [count,latest]=await Promise.all([
     selectCount(scope.galaxy,{idColumn:'uid',filters:[{column:'statistics_able',operator:'eq',value:true}]}),
