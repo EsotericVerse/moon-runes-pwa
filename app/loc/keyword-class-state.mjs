@@ -9,7 +9,9 @@ export function keywordClassState(config={},classUid=''){
   if(record&&typeof record==='object'){
     return record.completedAt?record:null;
   }
-  if(meta.class_uid===classUid&&config.staticstime)
+  // Once by_class exists, a missing Class entry is genuinely stale.
+  // Never mistake another Class's scope-level staticstime for completion.
+  if(!Object.hasOwn(meta,'by_class')&&meta.class_uid===classUid&&config.staticstime)
     return {...meta,completedAt:config.staticstime};
   return null;
 }
