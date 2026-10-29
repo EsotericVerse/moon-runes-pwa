@@ -536,7 +536,9 @@ export async function searchGalaxyRows(scopes,query,{
     :genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy,placeOnly}));
   // Every Scope's title hits are paged before any body matches.
   const providers=managementOnly
-    ?Array.from({length:2},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat()
+    ?browse
+      ?scopeProviders.map(group=>group[0]).filter(Boolean)
+      :Array.from({length:2},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat()
     :browse
       ?scopeProviders.flatMap(group=>
         mediaOnly||contentType==='multimedia'||contentType==='timeline'
