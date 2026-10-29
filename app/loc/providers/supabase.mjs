@@ -52,8 +52,11 @@ export function createSupabaseAdapter({
     global:{fetch:fetchImpl},
     auth:{autoRefreshToken:false,persistSession:false,detectSessionInUrl:false,storageKey:'loc-primary-public'}
   });
-  const edgeAdmin=createKyselyEdgeClient({url,publishableKey,auth:authenticatedSdk.auth,target,fetch:fetchImpl});
-  const edgePublic=createKyselyEdgeClient({url,publishableKey,role:'anon',target,fetch:fetchImpl});
+  // Default: existing Supabase function. A deployed standalone SQL Gateway
+  // can replace only the Kysely transport, without moving the browser Auth UI.
+  const gatewayUrl=process.env.NEXT_PUBLIC_LOC_KYSELY_GATEWAY_URL||'';
+  const edgeAdmin=createKyselyEdgeClient({url,publishableKey,auth:authenticatedSdk.auth,target,gatewayUrl,fetch:fetchImpl});
+  const edgePublic=createKyselyEdgeClient({url,publishableKey,role:'anon',target,gatewayUrl,fetch:fetchImpl});
   const publicRouting=edgePublic;
   // Explicit non-primary targets retain the portable Kysely transport.
   if(target!=='configured'&&target!=='supabase'){
