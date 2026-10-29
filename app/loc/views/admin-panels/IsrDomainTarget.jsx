@@ -76,6 +76,7 @@ export default function IsrDomainTarget(){
   useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||draft===null});
   return <section className="loc-card admin-workspace loc-isr-settings">
     <h2>快取設定</h2>
+    <p className="scope-status">ISR 完全選配，可不設定任何 ISR 網域；Service Worker 與 No Cache 都不需要 ISR。選擇使用方式並儲存後立即套用，無須重新部署；只有修改 Service Worker 程式或 ISR 服務部署設定時才需要重新部署。</p>
     {draft?<div className="loc-isr-bar">
       <label htmlFor="loc-isr-choice">使用方式
         <select id="loc-isr-choice" className="scope-select" value={draft.choice}

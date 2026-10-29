@@ -64,7 +64,7 @@ function DataSourceStatus({local=false}){
       <summary>{section.detailsTitle}</summary>
       <div className="scope-data-source-values">
         <span><FieldText text="主要資料來源："/>{status.primaryLabel}</span>
-        <span><FieldText text="備用資料來源："/>{status.backupLabel}</span>
+        <span><FieldText text="備用資料來源："/>{status.backupLabel||'未設定（選配）'}</span>
         <span><FieldText text="目前使用："/>{current}</span>
       </div>
     </details>
