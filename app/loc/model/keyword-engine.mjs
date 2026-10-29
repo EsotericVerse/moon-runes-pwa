@@ -69,7 +69,7 @@ function compileCatalog(catalogRows=[]){
       order,
       classEnable,
       principle:String(row?.principle||'').trim(),
-      keywords:[...new Set([...(row?.match_item_name===false?[]:[label]),...keywords].filter(Boolean))],
+      keywords:[...new Set([label,...keywords].filter(Boolean))],
       rules:rules.filter((rule,index,all)=>all.findIndex(other=>
         other.operator===rule.operator&&other.source===rule.source&&other.target===rule.target
       )===index),
