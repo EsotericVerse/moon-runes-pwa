@@ -2,8 +2,6 @@
 
 import {parseRuneKeywordRuleSentence} from './rune-keyword-rules.mjs';
 
-export const RUNE66_GROUP_ORDER=Object.freeze(['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊']);
-
 function normalizeText(value){
   return String(value??'').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
 }
