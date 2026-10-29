@@ -87,8 +87,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [currentClassUid,setCurrentClassUid]=useState('');
   const [shareEnabled,setShareEnabled]=useState(false);
   // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_keyword_id).
-  // Stored per class_id (same value on every row of that class), so it rides
-  // along in the main keyword SELECT below rather than a separate query.
+  // Stored in the Class registry as a keyword_id, not in Galaxy.
   const [defaultKeywordId,setDefaultKeywordId]=useState('');
   const [keywordDocumentCount,setKeywordDocumentCount]=useState(null);
   const [galaxyTotalCount,setGalaxyTotalCount]=useState(null);
@@ -365,7 +364,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       if(!classes.some(item=>item.class_uid===currentClassUid)){
         setMessage(l.activeClassRequired);return false;
       }
-      if(!currentClassItems.some(item=>String(item.keyword_id)===defaultItemId)){
+      if(defaultItemId&&!currentClassItems.some(item=>String(item.keyword_id)===defaultItemId)){
         setMessage(l.defaultGroupInvalid);return false;
       }
     }
@@ -379,7 +378,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       // without accidentally creating a second new keyword row.
       if(saveSettings){
         if(defaultGroupChanged){
-          await updateRows('silver.keyword_classes',{default_keyword_id:defaultItemId},{filters:[{column:'class_uid',operator:'eq',value:currentClassUid}]});
+          await updateRows('silver.keyword_classes',{default_keyword_id:defaultItemId||null},{filters:[{column:'class_uid',operator:'eq',value:currentClassUid}]});
         }
         await updateRows(CONFIG_TABLE,{
           keyword_min_chars:chars,
@@ -455,7 +454,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }
   }
 
-  // Manual full wipe (class_id/group_lists only -- keyword library rows are
+  // Clear the selected Class uidlists only -- keyword library rows are
   // untouched) for when the keyword library changed enough that a clean
   // slate is wanted instead of the incremental narrowed reanalysis above.
   // Does not re-run analysis by itself; press 重新分析 afterward.
@@ -642,11 +641,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassUid} onChange={event=>{
           const nextClassUid=event.target.value;
           setCurrentClassUid(nextClassUid);
-          // default_keyword_id is per-class_id -- resync to the newly
+          // default_keyword_id is per-Class UID -- resync to the newly
           // chosen class's own stored value instead of carrying over the
           // previous class's setting.
           const nextDefault=classRegistry.find(row=>String(row.class_uid)===nextClassUid)?.default_keyword_id;
-          setDefaultKeywordId(String(nextDefault??0));
+          setDefaultKeywordId(String(nextDefault??''));
         }}>
           {classes.map(item=><option key={item.class_uid} value={item.class_uid}>{'關鍵詞組：'+item.class_name}</option>)}
         </select></label>
@@ -656,7 +655,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <option value="closed">{l.closed}</option>
           <option value="open">{l.open}</option>
         </select></label>
-        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultKeywordId} onChange={event=>setDefaultKeywordId(event.target.value)}>
+        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultKeywordId} onChange={event=>setDefaultKeywordId(event.target.value)}><option value="">不指定預設項目</option>
           {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.keyword_id)}>{item.item_name}</option>)}
         </select></label>
       </div>
