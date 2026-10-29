@@ -20,6 +20,8 @@ export default {
   "editingUid": "Editing article UID",
   "newArticle": "Write a new article",
   "replaceDraftConfirm": "You have unsaved edits. Load another UID and discard them?",
+  "saveChanges": "Save article changes",
+  "noChanges": "No changes to the article.",
   "articleBody": "Article text",
   "parentArticleId": "Parent article ID",
   "targetArticleId": "Target article ID",
