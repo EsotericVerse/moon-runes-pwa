@@ -184,6 +184,19 @@ function normalize(row,{platform,kind,path,index,conversation}){
     raw:row
   };
 }
+// Social activity exported under Threads is not necessarily an authored post.
+function threadsActivityKind(path){
+  const p=cleanPath(path).toLowerCase();
+  if(!/(?:^|\/)(?:threads|threads_and_replies)(?:\/|$)|text_post_app_/i.test(p))return null;
+  const basename=p.slice(p.lastIndexOf('/')+1).replace(/\.json$/,'');
+  if(/(?:^|[_\-.])(?:followers?|following|followed|unfollowed|follow_requests?|pending_follow|connections?|subscriptions?|requested)(?:$|[_\-.])/i.test(basename)
+    ||/(?:^|\/)(?:followers?|following|follow_requests?|connections?)(?:\/|$)/i.test(p))
+    return 'relation';
+  if(/(?:^|[_\-.])(?:liked?|reactions?|interactions?|saved|bookmarks?|muted|blocked|hidden|notifications?)(?:$|[_\-.])/i.test(basename)
+    ||/(?:^|\/)(?:likes?|liked|reactions?|interactions?|saved|bookmarks?)(?:\/|$)/i.test(p))
+    return 'reaction';
+  return null;
+}
 function determine(path,prefix){
   const p=cleanPath(path).toLowerCase();
   const head=prefix.replace(/^\ufeff/,'').trimStart();
@@ -193,6 +206,11 @@ function determine(path,prefix){
      /^\{\s*"participants"\s*:/.test(head)&&/"messages"\s*:/.test(head.slice(0,16000))){
     if(/"messages"\s*:/.test(head.slice(0,16000))||/\/(?:message|messages)_\d+\.json$/.test(p))
       return {platform:category(path)==='instagram'?'instagram':'messenger',kind:'message',array:'messages'};
+  }
+  const threadsActivity=threadsActivityKind(p);
+  if(threadsActivity){
+    return {platform:'threads',kind:threadsActivity,
+      array:head.startsWith('[')?'$':rootArray(head,['followers','following','likes','liked_threads','reactions','data','items'])||rootArrayAny(head)};
   }
   if(/(?:threads|text_post_app_text_posts)/.test(p)||/"media_product_type"\s*:\s*"THREADS"/.test(head)){
     return {platform:'threads',kind:'post',array:head.startsWith('[')?'$':rootArray(head,['threads','posts','data','thread_posts','threads_posts','text_post_app_text_posts'])||rootArrayAny(head)};
