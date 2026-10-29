@@ -152,22 +152,26 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return rows;
   }
 
-  async function resetKeywordClassification(scopeId,{onProgress}={}){
+  async function resetKeywordClassification(scopeId,{classUid:requestedClassUid='',onProgress}={}){
     const scope=normalizeScopeId(scopeId);
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
     const config=await selectAuthRow('silver.'+scope,{
-      idColumn:'id',id:scope,columns:'current_keyword_class_uid'
+      idColumn:'id',id:scope,
+      columns:'current_keyword_class_uid,keyword_meta,staticstime'
     });
-    const classUid=String(config?.current_keyword_class_uid||'');
+    const classUid=String(requestedClassUid||config?.current_keyword_class_uid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
     const all=await readOwnedKeywordNodes(table);
     const {descendantsOfKeyword}=await import('./keyword-tree.mjs');
     const children=descendantsOfKeyword(all,classUid)
       .filter(node=>node.type==='group'||node.type==='item');
+    const {invalidateKeywordClass}=await import('./keyword-class-state.mjs');
+    const isCurrent=classUid===String(config?.current_keyword_class_uid||'');
     const {data:staled,error:staleError}=await dbAuthRelation('silver.'+scope)
-      .update({staticstime:null,keyword_meta:{}})
-      .eq('id',scope).eq('current_keyword_class_uid',classUid).select('id');
+      .update({keyword_meta:invalidateKeywordClass(config?.keyword_meta,classUid),
+        ...(isCurrent?{staticstime:null}:{})})
+      .eq('id',scope).select('id');
     if(staleError||staled?.length!==1)throw new Error(staleError?.message||'無法作廢舊分析');
     let completed=0;
     for(const row of children){
