@@ -4,14 +4,14 @@ import {test} from 'node:test';
 
 const source=readFileSync(new URL('../app/loc/keyword-analysis.js',import.meta.url),'utf8');
 const first=source.indexOf('function buildClassMap(');
-const last=source.indexOf('\nfunction groupListsOf(',first);
+const last=source.indexOf('\nasync function keywordFingerprint(',first);
 assert.ok(first>=0&&last>first);
 const buildClassMap=new Function(source.slice(first,last)+'\nreturn buildClassMap;')();
 
 test('Pop Class has sixteen groups ordered by its own order_no',()=>{
   const rows=Array.from({length:16},(_,i)=>({
     class_name:'Pop',class_group:'Group '+(i+1),
-    order_no:i+1,keyword_id:i+1,default_group_keyword_id:0
+    order_no:i+1,keyword_id:i+1,default_keyword_id:0
   })).reverse();
   const map=buildClassMap(rows);
   assert.deepEqual(map.ordered.map(row=>row.group),
@@ -20,10 +20,10 @@ test('Pop Class has sixteen groups ordered by its own order_no',()=>{
 test('Rune66 retains original eight groups and final special Group from data',()=>{
   const names=['靈魂','連結','生命','自然','礦物','元素','秩序','無序'];
   const rows=[
-    {class_name:'符文66',class_group:'特殊',keyword_id:0,order_no:0,default_group_keyword_id:0},
+    {class_name:'符文66',class_group:'特殊',keyword_id:0,order_no:0,default_keyword_id:0},
     ...names.map((class_group,i)=>({
       class_name:'符文66',class_group,keyword_id:1+i*8,order_no:1+i*8,
-      default_group_keyword_id:0
+      default_keyword_id:0
     }))
   ];
   const map=buildClassMap(rows,'0');
@@ -39,10 +39,10 @@ test('Groups with Rune66-like labels do not inherit Rune66 order',()=>{
 });
 test('Any configured default Group is last without hardcoded names',()=>{
   const rows=[
-    {class_name:'Any',class_group:'Fallback',keyword_id:200,order_no:1,default_group_keyword_id:200},
-    {class_name:'Any',class_group:'First',keyword_id:201,order_no:2,default_group_keyword_id:200}
+    {class_name:'Any',class_group:'Fallback',keyword_id:200,order_no:1,default_keyword_id:200},
+    {class_name:'Any',class_group:'First',keyword_id:201,order_no:2,default_keyword_id:200}
   ];
-  assert.deepEqual(buildClassMap(rows).ordered.map(row=>row.group),['First','Fallback']);
+  assert.deepEqual(buildClassMap(rows,'200').ordered.map(row=>row.group),['First','Fallback']);
 });
 test('No fixed Group or Item count is enforced',()=>{
   const rows=Array.from({length:130},(_,i)=>({
