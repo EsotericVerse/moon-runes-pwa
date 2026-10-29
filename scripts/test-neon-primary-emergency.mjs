@@ -91,3 +91,25 @@ test('configured provider selects Neon before constructing any Supabase client',
   assert.match(emergency,/setEmergencyDatabasePrimary\(target\)/);
   assert.match(emergency,/window\.location\.reload\(\)/);
 });
+
+test('Neon does not reuse a JWT from a previous OAuth session',async()=>{
+  let sessionId='session-one',jwt='a1.b1.c1';
+  const fetchImpl=async(input,init={})=>{
+    const url=String(input);
+    let payload;
+    if(url===auth+'/get-session')payload={user:{id:'verified-user',email:'owner@example.com',emailVerified:true},session:{id:sessionId}};
+    else if(url===auth+'/token')payload={token:jwt};
+    else if(url===auth+'/list-accounts')payload=[{providerId:'google',accountId:'google-id'}];
+    else if(url.startsWith(api))payload=[];
+    else throw Error('Unexpected request '+url);
+    return new Response(JSON.stringify(payload),{status:200,headers:{'content-type':'application/json'}});
+  };
+  const adapter=createNeonPrimaryAdapter({url:api,authUrl:auth,fetchImpl});
+  const first=await adapter.auth.getSession();
+  assert.equal(first.data.session.access_token,'a1.b1.c1');
+  sessionId='session-two';jwt='a2.b2.c2';
+  const second=await adapter.auth.getSession();
+  assert.equal(second.data.session.access_token,'a2.b2.c2');
+  const previous=await adapter.auth.getUser(first.data.session.access_token);
+  assert.match(previous.error.message,/token mismatch/);
+});
