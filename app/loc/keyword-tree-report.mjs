@@ -46,7 +46,7 @@ export function keywordTreeMetrics(rows,classUid,{articleUids=null}={}){
     document_count:byArticle.size,groups,items,byArticle};
 }
 export function keywordTreeGroupForArticle(rows,classUid,articleUid){
-  return keywordTreeMetrics(rows,classUid,{articleUids:[articleUid]}).groups.find(
-    group=>keywordTreeMetrics(rows,classUid,{articleUids:[articleUid]}).byArticle.get(articleUid)===group.uid
-  )||null;
+  const report=keywordTreeMetrics(rows,classUid,{articleUids:[articleUid]});
+  const groupUid=report.byArticle.get(articleUid);
+  return report.groups.find(group=>group.uid===groupUid)||null;
 }
