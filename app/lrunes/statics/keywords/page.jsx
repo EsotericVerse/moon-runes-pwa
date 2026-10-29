@@ -1,2 +1,2 @@
 import LegacyManagementRedirect from '../../../loc/LegacyManagementRedirect';
-export default function Page(){return <LegacyManagementRedirect target="/lrunes/statics/manage/"/>;}
+export default function Page(){return <LegacyManagementRedirect target="/lrunes/statics/manage/" view="keywords" scope="lrunes"/>;}
