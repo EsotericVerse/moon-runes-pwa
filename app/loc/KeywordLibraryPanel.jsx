@@ -36,6 +36,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const {mutate}=useSWRConfig();
   const [rows,setRows]=useState([]);
   const [config,setConfig]=useState({});
+  const [savedConfig,setSavedConfig]=useState({});
   const [editor,setEditor]=useState(null);
   const [pendingParent,setPendingParent]=useState('');
   const [keywordText,setKeywordText]=useState('');
@@ -90,7 +91,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const lineage={},nodeType=target?.type;
       let node=target;
       while(node){lineage[node.type]=node.uid;node=parentOf(index,node.uid);}
-      setRows(records);setConfig(settings.data?.[0]||{});
+      setRows(records);setConfig(settings.data?.[0]||{});setSavedConfig(settings.data?.[0]||{});
       setChosen({category:lineage.category||first?.uid||'',
         class:lineage.class||(target?.type==='category'?childrenOf(index,target.uid)[0]?.uid:'')||firstClass?.uid||'',
         group:lineage.group||'',item:lineage.item||''});
@@ -184,12 +185,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(busy)return false;
     setBusy(true);setError('');
     try{
+      const recalc=String(config.current_keyword_class_uid||'')!==String(savedConfig.current_keyword_class_uid||'')
+        ||Number(config.keyword_min_chars||0)!==Number(savedConfig.keyword_min_chars||0);
       const payload={
         current_keyword_class_uid:config.current_keyword_class_uid||null,
         keyword_min_chars:Number(config.keyword_min_chars)||0,
         keyword_min_documents:Number(config.keyword_min_documents)||0,
         keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
-        staticstime:null,keyword_meta:{}
+        ...(recalc?{staticstime:null,keyword_meta:{}}:{})
       };
       const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
         .eq('id',scopeId).select('id');
@@ -224,7 +227,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   };
   dockActions.current={
     save:()=>workspace==='analysis'?saveConfig():saveNode(),
-    isDirty:()=>workspace==='analysis'?true:dirty,
+    isDirty:()=>workspace==='analysis'
+      ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents','keyword_class_share_enabled']
+        .some(key=>String(config[key]??'')!==String(savedConfig[key]??''))
+      :dirty,
     isBusy:()=>busy||loading
   };
   useEffect(()=>{
