@@ -69,7 +69,13 @@ BEGIN
       FROM base GROUP BY id
     UNION ALL
     SELECT 'item_day',id,NULL,d,sum(times)::bigint,count(DISTINCT uid)::bigint
-      FROM base GROUP BY id,d
+      FROM base WHERE times>0 GROUP BY id,d
+    UNION ALL
+    SELECT 'keyword_all_day',NULL,NULL,d,count(DISTINCT uid)::bigint,count(DISTINCT uid)::bigint
+      FROM base WHERE times>0 GROUP BY d
+    UNION ALL
+    SELECT 'group_items_day',grp,NULL,d,count(DISTINCT uid)::bigint,count(DISTINCT uid)::bigint
+      FROM base WHERE times>0 GROUP BY grp,d
   $query$,v_keywords,v_galaxy)
   USING v_class_uid,p_start,p_end,nullif(p_source,'');
 END
