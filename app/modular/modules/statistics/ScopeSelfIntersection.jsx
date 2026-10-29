@@ -151,12 +151,8 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     queryKey:['scope-advanced-keyword-catalog',scope?.id,keywords.data?.keywordMeta?.class_uid],
     enabled:valid&&keywordModeActive&&Boolean(scope?.keywords&&keywords.data?.keywordMeta?.class_uid),
     queryFn:async()=>{
-      const {selectAllRows}=await import('../../../loc/db-query.mjs');
-      return (await selectAllRows(scope.keywords,{
-        columns:'class_group,keyword_id,item_name,class_enable',
-        filters:[{column:'class_uid',operator:'eq',value:keywords.data.keywordMeta.class_uid}],
-        orders:[{column:'order_no',ascending:true}]
-      })).rows;
+      const {readKeywordItemCatalog}=await import('../../../loc/db-client.mjs');
+      return readKeywordItemCatalog(scope.id);
     }
   });
   const keywordItemGroup=useMemo(()=>new Map((keywordCatalog.data||[])
