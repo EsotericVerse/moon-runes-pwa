@@ -4,7 +4,7 @@ import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
-import {classifyRune66Documents,RUNE66_GROUP_ORDER} from './model/rune66-keyword-engine.mjs';
+import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 import {assignedSource} from './member-intersection-model.mjs';
 
@@ -124,30 +124,33 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   };
 }
 
-// Canonical, eternal class_group order applies only to the Rune66 Class.
-// Generic Keywords Classes derive their Groups from catalog data, with no
-// arbitrary group count and no Rune66-specific ordering rules.
+// Group ordering comes from each Keywords Class's own catalog.
+// Its configured default Item's Group comes last, regardless of item number.
 function buildClassMap(catalogRows=[]){
-  const groups=new Set();
-  for(const row of catalogRows){
+  const groups=new Map();
+  for(const [index,row] of catalogRows.entries()){
     if(row?.class_enable===false)continue;
     const group=String(row?.class_group||'').trim();
-    if(group)groups.add(group);
+    if(!group)continue;
+    const n=Number(row?.order_no);
+    const order=row?.order_no==null||!Number.isFinite(n)?Number.MAX_SAFE_INTEGER:n;
+    const prior=groups.get(group);
+    if(!prior)groups.set(group,{group,order,firstSeen:index});
+    else if(order<prior.order)prior.order=order;
   }
-  const isRune66=String(catalogRows.find(row=>row?.class_name)?.class_name||'')==='符文66';
-  const specialOrder=isRune66
-    ?new Map(RUNE66_GROUP_ORDER.map((group,index)=>[group,index]))
+  const defaultNo=Number(catalogRows[0]?.default_group_item_no);
+  const defaultEntry=catalogRows[0]?.default_group_item_no!=null&&Number.isInteger(defaultNo)
+    ?catalogRows.find(row=>row?.class_enable!==false&&Number(row?.item_no)===defaultNo)
     :null;
-  const ordered=[...groups]
+  const defaultGroup=String(defaultEntry?.class_group||'').trim();
+  const ordered=[...groups.values()]
     .sort((a,b)=>{
-      if(specialOrder){
-        const orderA=specialOrder.get(a)??Number.MAX_SAFE_INTEGER;
-        const orderB=specialOrder.get(b)??Number.MAX_SAFE_INTEGER;
-        if(orderA!==orderB)return orderA-orderB;
-      }
-      return a.localeCompare(b);
+      const aDefault=Boolean(defaultGroup&&a.group===defaultGroup);
+      const bDefault=Boolean(defaultGroup&&b.group===defaultGroup);
+      if(aDefault!==bDefault)return aDefault?1:-1;
+      return a.order-b.order||a.firstSeen-b.firstSeen||a.group.localeCompare(b.group);
     })
-    .map((group,index)=>({group,order:index,class_id:index+1}));
+    .map((row,index)=>({group:row.group,order:index,class_id:index+1}));
   if(!ordered.length)throw new Error('目前 Keywords Class 沒有啟用的 Group');
   return {
     ordered,
