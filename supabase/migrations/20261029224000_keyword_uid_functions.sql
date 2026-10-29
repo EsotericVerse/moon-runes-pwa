@@ -62,6 +62,12 @@ END;
 $fn$;
 REVOKE ALL ON FUNCTION api.read_keyword_class_by_uid(text,varchar) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION api.read_keyword_class_by_uid(text,varchar) TO anon,authenticated;
+CREATE OR REPLACE FUNCTION silver.read_keyword_class_by_uid(p_scope_id text,p_class_uid varchar(4))
+RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
+AS $fn$ SELECT api.read_keyword_class_by_uid(p_scope_id,p_class_uid); $fn$;
+REVOKE ALL ON FUNCTION silver.read_keyword_class_by_uid(text,varchar) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION silver.read_keyword_class_by_uid(text,varchar) TO anon,authenticated;
+
 CREATE OR REPLACE FUNCTION silver.read_music_style_tree()
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
 AS $fn$
