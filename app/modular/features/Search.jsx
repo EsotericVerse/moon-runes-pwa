@@ -45,15 +45,15 @@ const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{l
 const TraceBlocks=dynamic(()=>import('./TraceBlocks'),{loading:()=>null});
 
 
-const MEDIA_EDITOR_COLUMNS='uid,source_place,media_type,title,url,meta_tags,createtime,rune_references';
-const MEDIA_ATTR_ORDER=['uid','source_place','media_type','url','meta_tags','createtime','rune_references'];
+const MEDIA_EDITOR_COLUMNS='uid,location,media_type,title,url,meta_tags,createtime,rune_references';
+const MEDIA_ATTR_ORDER=['uid','location','media_type','url','meta_tags','createtime','rune_references'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
 
-const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,source_place,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,source_name,media_link,statistics_able';
+const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,site,media_link,statistics_able';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
-  'uid','title','content','createtime','source_place','place_id',
-  'searchable','UpdateTime','url','source_id','target_id','ref_id','source_name',
+  'uid','title','content','createtime','location','place_id',
+  'searchable','UpdateTime','url','source_id','target_id','ref_id','site',
   'media_link','statistics_able'
 ]);
 const GALAXY_ATTR_FIELDS=Object.freeze(GALAXY_ATTR_ORDER.map(key=>({
@@ -122,7 +122,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     ?workDisplayHeading(row,{media:isMedia,fallback:fallbackTitle,limit:80})
     :(explicitTitle||fallbackTitle);
   const bodyField=['summary','display_text','excerpt','content','meta_tags','description','interpretation','ai_summary','retrieval_text','text'].find(field=>typeof row[field]==='string'&&row[field].trim())||'';
-  const displaySource=isGalaxy&&row.source_name?String(row.source_name):source;
+  const displaySource=isGalaxy&&row.site?String(row.site):source;
   const mediaMetadata=[
     row.meta_tags,
     row.media_type?(copy.search.typePrefix+row.media_type):''
@@ -159,7 +159,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
       ?'article-copy:'+JSON.stringify([scope,
         String(row.title||'').normalize('NFKC').trim(),
         String(row.content||'').replace(/[\r\n]/g,'').trim(),
-        String(row.source_name||'').normalize('NFKC').trim(),
+        String(row.site||'').normalize('NFKC').trim(),
         String(row.createtime||''),String(row.url||'').trim()])
       :'',
     groupKey:row.style_keyword_tag
@@ -442,7 +442,7 @@ export default function Search({managementMode=false}){
     }
     try{
       // The category is a semantic database filter, not a literal
-      // source_name. Fetch the same cached taxonomy before searching.
+      // site. Fetch the same cached taxonomy before searching.
       const sourceTaxonomy=String(options.sourceFilter||'').startsWith('category:')
         ?await resourceCache.getOrLoad({
           queryKey:['statistics-source-taxonomy'],
@@ -599,7 +599,7 @@ export default function Search({managementMode=false}){
       }
       if(id!==searchId.current)return;
       if(!detail)throw new Error(UI_COPY.search.notFound);
-      const result=toResult({...detail,resolved_links:detail.links||[]},detail.source_name||UI_COPY.search.displaySource,detailScope);
+      const result=toResult({...detail,resolved_links:detail.links||[]},detail.site||UI_COPY.search.displaySource,detailScope);
       setResults([result]);
       setFullTextKey(result.key);
       const fullRow=await loadGalaxyDetail(result);
@@ -928,12 +928,12 @@ export default function Search({managementMode=false}){
   async function saveSelectedPlaces(apply=false){
     if(!managementMode||bulkBusy||!selectedPlaceArticles.length||!validBulkPlace)return;
     if(apply&&(!selectedPreview||Number(selectedPreview.eligible)<1))return;
-    if(apply&&!window.confirm('確認將 '+selectedPreview.eligible+' 篇文章的空白 source_place 補寫為「'+bulkPlace.trim()+'」？原有打卡紀錄不會覆蓋。'))return;
+    if(apply&&!window.confirm('確認將 '+selectedPreview.eligible+' 篇文章的空白 location 補寫為「'+bulkPlace.trim()+'」？原有打卡紀錄不會覆蓋。'))return;
     const snapshot=selectedSignature;
     const target=selectedPlaceArticles.slice();
     setBulkBusy(true);setBulkNotice('');
     try{
-      const {data,error}=await dbAuthClient.schema('silver').rpc('batch_fill_galaxy_source_place',{
+      const {data,error}=await dbAuthClient.schema('silver').rpc('batch_fill_galaxy_location',{
         p_scope_id:target[0].scopeId,p_uids:target.map(row=>row.uid),p_place:bulkPlace.trim(),
         p_apply:apply,p_expected_count:apply?Number(selectedPreview.eligible):null
       });
@@ -945,7 +945,7 @@ export default function Search({managementMode=false}){
         setResults(current=>current.map(row=>filled.has(row.scopeId+':'+row.resourceId)&&!row.checkInPlace
           ?{...row,checkInPlace:bulkPlace.trim()}:row));
         setSelectedPlaceArticles([]);setBulkPreview(null);
-        setBulkNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 source_place，原有非空白地點未覆蓋。');
+        setBulkNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 location，原有非空白地點未覆蓋。');
       }else{
         setBulkPreview({signature:snapshot,data});
         setBulkNotice('目前選取 '+Number(data?.selected||0)+' 篇，其中空白可補寫 '+Number(data?.eligible||0)+' 篇。');
@@ -1040,7 +1040,7 @@ export default function Search({managementMode=false}){
         <button type="button" className="loc-button" aria-pressed={placeOnly}
           onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
       </div>:null}
-      {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 source_place；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
+      {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 location；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
       {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{
@@ -1154,7 +1154,7 @@ export default function Search({managementMode=false}){
     </section>:null}
     {managementMode&&(results.length>0||selectedPlaceArticles.length>0||bulkPlace.trim())?<section className="loc-search-bulk-panel" aria-label="批次補寫文章打卡地點">
       <h3>從搜尋文章列表批次補寫地點</h3>
-      <p className="scope-status">在下方文章旁勾選「補寫打卡地點」，一次最多 200 篇且限同一個 Scope；原本有 source_place 的文章無法勾選。不會改動文章內容。</p>
+      <p className="scope-status">在下方文章旁勾選「補寫打卡地點」，一次最多 200 篇且限同一個 Scope；原本有 location 的文章無法勾選。不會改動文章內容。</p>
       <div className="loc-search-bulk-controls">
         <label>地點標籤<input type="text" maxLength={200} value={bulkPlace}
           onChange={event=>{setBulkPlace(event.target.value);setBulkPreview(null);setBulkNotice('');}}

@@ -8,7 +8,7 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   content:['content','body','text','message','description'],
   title:['title','name','subject'],
   createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','createAt','published_at','publishedAt','date'],
-  source_place:['source_place','place'],
+  location:['location','place'],
   url:['url','link','permalink'],
   media_link:['media_link'],
   media:['galaxy_media','attachments','media','media_items'],
@@ -47,7 +47,7 @@ function parseMediaArray(value){
 }
 // Preserve references to existing media IDs; prepare new media records without inventing
 // accessible URLs for archive-local attachment paths.
-export function normalizeImportMedia(value,{title='',createtime=null,source_place='',article_uid=''}={}){
+export function normalizeImportMedia(value,{title='',createtime=null,location='',article_uid=''}={}){
   const references=[],records=[],seen=new Set();
   for(const [index,item] of parseMediaArray(value).entries()){
     const source=typeof item==='string'?{url:item}:item;
@@ -65,7 +65,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
     const record={
       ...(explicitId?{uid:explicitId}:{}),
       __article_uid:article_uid||null,
-      source_place:String(source.source_place||'').trim()||null,
+      location:String(source.location||'').trim()||null,
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
       url:external,

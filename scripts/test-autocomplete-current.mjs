@@ -59,7 +59,7 @@ test('cached statistics are gated by RLS, exact place identity, and manual refre
   assert.match(sql,/a\.name_matches=1/);
   assert.equal((sql.match(/LIMIT 10\) popular/g)||[]).length,3);
   assert.match(sql,/g\.place_id/);
-  assert.match(sql,/g\.source_place/);
+  assert.match(sql,/g\.location/);
   assert.match(sql,/g\.createtime/);
   assert.doesNotMatch(sql,/UPDATE %s g SET|DELETE FROM silver\..*_galaxy/);
 });

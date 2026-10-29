@@ -31,7 +31,7 @@ test('No work categories or personal categories preserves raw sources',()=>{
   ];
   const roots=summarizeCultureRiverRoots(rows,{categories,aliases});
   assert.deepEqual(roots.rootBuckets,[{category:'custom',start_date:'2026-10-25',item_count:3}]);
-  assert.equal(roots.groups[0].source_name,'unknown-source');
+  assert.equal(roots.groups[0].site,'unknown-source');
   assert.equal(selectCultureRiverChildren(rows,{categories,aliases},['custom']).length,1);
   const stats=administrativeSourceTrend(rows,{categories,aliases},{
     startDate:'2026-10-25',endDate:'2026-10-25',unit:'day'

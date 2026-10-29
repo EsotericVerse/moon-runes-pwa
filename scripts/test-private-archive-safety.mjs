@@ -63,7 +63,7 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
     fileName:'conversations.json',source:'Other',rows:[],nativeLocal:false
   }),/私人對話/);
   assert.throws(()=>assertStandaloneImportDestination({
-    fileName:'generic.json',rows:[{source_name:'Messenger',content:'fixture'}],nativeLocal:false
+    fileName:'generic.json',rows:[{site:'Messenger',content:'fixture'}],nativeLocal:false
   }),/私人對話/);
   assert.throws(()=>assertStandaloneImportDestination({
     fileName:'posts.json',rows:[{kind:'message',platform:'facebook'}],nativeLocal:false
@@ -75,7 +75,7 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
     fileName:'renamed.json',rows:[{participants:['A','B'],messages:[{text:'fixture'}]}],nativeLocal:false
   }),/私人對話/);
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
-    fileName:'posts.json',rows:[{source_name:'Facebook'}],nativeLocal:false
+    fileName:'posts.json',rows:[{site:'Facebook'}],nativeLocal:false
   }));
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'conversations.json',nativeLocal:true
@@ -113,7 +113,7 @@ test('Threads post JSON is allowed without misclassifying it as private chat',()
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'your_threads__your_posts.json',
     nativeLocal:false,
-    rows:[{source_name:'Threads',content:'公開貼文範例',kind:'post'}]
+    rows:[{site:'Threads',content:'公開貼文範例',kind:'post'}]
   }));
   assert.doesNotThrow(()=>assertArchiveRecordDestination({
     platform:'threads',kind:'post',sourcePath:'threads/your_posts_1.json'
@@ -127,7 +127,7 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
     fileName:'conversations.json',source:'Other',rows:[],nativeLocal:false
   }),/私人對話/);
   assert.throws(()=>assertStandaloneImportDestination({
-    fileName:'generic.json',rows:[{source_name:'Messenger',content:'fixture'}],nativeLocal:false
+    fileName:'generic.json',rows:[{site:'Messenger',content:'fixture'}],nativeLocal:false
   }),/私人對話/);
   assert.throws(()=>assertStandaloneImportDestination({
     fileName:'posts.json',rows:[{kind:'message',platform:'facebook'}],nativeLocal:false
@@ -139,7 +139,7 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
     fileName:'renamed.json',rows:[{participants:['A','B'],messages:[{text:'fixture'}]}],nativeLocal:false
   }),/私人對話/);
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
-    fileName:'posts.json',rows:[{source_name:'Facebook'}],nativeLocal:false
+    fileName:'posts.json',rows:[{site:'Facebook'}],nativeLocal:false
   }));
   assert.doesNotThrow(()=>assertStandaloneImportDestination({
     fileName:'conversations.json',nativeLocal:true
@@ -148,9 +148,9 @@ test('Direct imported chats cannot bypass private-only rule with renamed source'
 
 test('Mixed Threads posts and private messages in plain JSON keep only public rows',()=>{
   const rows=[
-    {source_name:'Threads',kind:'post',content:'公開文章',createtime:'2026-10-28T00:00:00Z'},
-    {source_name:'Messenger',kind:'message',content:'private'},
-    {source_name:'Threads',kind:'post',content:'第二篇公開文章'},
+    {site:'Threads',kind:'post',content:'公開文章',createtime:'2026-10-28T00:00:00Z'},
+    {site:'Messenger',kind:'message',content:'private'},
+    {site:'Threads',kind:'post',content:'第二篇公開文章'},
     {platform:'chatgpt',mapping:{a:{message:{author:{role:'user'}}}}}
   ];
   const filtered=filterStandalonePublicRows(rows);

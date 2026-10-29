@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {comparableImportText,importSecond,dedupeIncomingImport,findExistingImportDuplicates} from '../app/loc/import-duplicate-check.mjs';
 
-const base={uid:'ABCDEFGH',source_name:'Threads',createtime:'2026-10-27T15:48:32.000+08:00',content:'天氣真好！\n\n再見。'};
+const base={uid:'ABCDEFGH',site:'Threads',createtime:'2026-10-27T15:48:32.000+08:00',content:'天氣真好！\n\n再見。'};
 test('Multiple newlines, punctuation, spaces, symbols and fullwidth variants do not create duplicate posts',()=>{
   const result=dedupeIncomingImport([base,
     {...base,uid:'12345678',content:'天氣真好    再見'},
@@ -15,7 +15,7 @@ test('Multiple newlines, punctuation, spaces, symbols and fullwidth variants do 
 test('Same second is required, including timezone normalization; different second/source/text stays separate',()=>{
   const records=[base,
     {...base,uid:'SECOND01',createtime:'2026-10-27T07:48:33Z',content:'天氣真好！ 再見。'},
-    {...base,uid:'FACEBOOK',source_name:'Facebook',content:'天氣真好 再見'},
+    {...base,uid:'FACEBOOK',site:'Facebook',content:'天氣真好 再見'},
     {...base,uid:'DIFFTEXT',content:'天氣真的好 再見'}];
   assert.equal(dedupeIncomingImport(records).unique.length,4);
   assert.equal(importSecond(base.createtime),importSecond('2026-10-27T07:48:32.999Z'));
@@ -29,7 +29,7 @@ test('Existing duplicates are looked up by exact UTC second within source only',
   const queried=[];
   const matches=await findExistingImportDuplicates([
     base,{...base,uid:'OTHER001',createtime:'2026-10-27T15:48:33+08:00'},
-    {...base,uid:'FACEBOOK',source_name:'Facebook'}
+    {...base,uid:'FACEBOOK',site:'Facebook'}
   ],{readSeconds:async(source,seconds)=>{
     queried.push([source,seconds]);
     return source==='threads'?[{...base,uid:'SAVED001',createtime:'2026-10-27T07:48:32.700Z'}]:[];

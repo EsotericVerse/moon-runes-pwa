@@ -60,7 +60,7 @@ BEGIN
      JOIN %2$s article ON article.uid::text=a.uid
      WHERE article.searchable IS TRUE AND article.statistics_able IS TRUE
       AND ($2 IS NULL OR article.date >= $2) AND ($3 IS NULL OR article.date <= $3)
-      AND ($4 IS NULL OR article.source_name=$4)
+      AND ($4 IS NULL OR article.site=$4)
    ), item_hits AS MATERIALIZED (
      SELECT i.uid AS item_uid,i.group_uid,article.uid::text AS article_uid,
        article.date::text AS d,(h.entry->>'times')::bigint AS times
@@ -69,7 +69,7 @@ BEGIN
      JOIN %2$s article ON article.uid::text=h.entry->>'uid'
      WHERE article.searchable IS TRUE AND article.statistics_able IS TRUE
       AND ($2 IS NULL OR article.date >= $2) AND ($3 IS NULL OR article.date <= $3)
-      AND ($4 IS NULL OR article.source_name=$4)
+      AND ($4 IS NULL OR article.site=$4)
    )
    SELECT 'eligible',NULL,NULL,'',count(DISTINCT article_uid),count(DISTINCT article_uid) FROM group_hits
    UNION ALL

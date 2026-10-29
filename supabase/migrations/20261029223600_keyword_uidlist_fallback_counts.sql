@@ -49,7 +49,7 @@ BEGIN
       FROM hits h JOIN %2$s g ON g.uid::text=h.uid
       WHERE g.searchable IS TRUE AND g.statistics_able IS TRUE
         AND ($2 IS NULL OR g.date >= $2) AND ($3 IS NULL OR g.date <= $3)
-        AND ($4 IS NULL OR g.source_name=$4)
+        AND ($4 IS NULL OR g.site=$4)
     ), group_winners AS (
       SELECT b.uid,b.d,gr.cid,sum(b.times) AS strength
       FROM base b JOIN group_ranks gr ON gr.grp=b.grp

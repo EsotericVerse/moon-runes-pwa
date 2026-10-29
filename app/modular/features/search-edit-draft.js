@@ -31,7 +31,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
-    source_place:String(row.source_place||''),
+    location:String(row.location||''),
     place_id:String(row.place_id||'').trim(),
     searchable:row.searchable!==false,
     UpdateTime:String(row.UpdateTime||''),
@@ -39,7 +39,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
     source_id:String(row.source_id||'').trim(),
     target_id:listText(row.target_id),
     ref_id:String(row.ref_id||'').trim(),
-    source_name:String(row.source_name||''),
+    site:String(row.site||''),
     media_link:listText(row.media_link),
     statistics_able:row.statistics_able!==false,
   };
@@ -60,7 +60,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
 function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||''), title:String(row.title||''),
-    source_place:String(row.source_place||''),media_type:String(row.media_type||''),
+    location:String(row.location||''),media_type:String(row.media_type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
     createtime:datetimeLocalValue(row.createtime),
     rune_references:row.rune_references==null?'':JSON.stringify(row.rune_references,null,2)
@@ -71,7 +71,7 @@ function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
 }
 function changedMediaAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
-  for(const key of ['source_place','media_type','url','meta_tags']){
+  for(const key of ['location','media_type','url','meta_tags']){
     if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
   }
   if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
@@ -94,7 +94,7 @@ function changedGalaxyAttributes(draft,t){
     if(next&&!/^[A-Za-z0-9]{4}$/.test(next))throw new Error('定錨點 ID 必須為四碼');
     changed.place_id=next||null;
   }
-  for(const key of ['source_place','url','source_id','ref_id','source_name']){
+  for(const key of ['location','url','source_id','ref_id','site']){
     if(differs(key))changed[key]=nullableText(current[key]);
   }
   if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;

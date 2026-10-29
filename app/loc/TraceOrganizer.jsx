@@ -248,7 +248,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
       </ol>:null}
       <details onToggle={event=>{if(event.currentTarget.open)void loadAllCounts();}}>
         <summary>按需查看所有原始打卡地點的出現次數</summary>
-        <p className="scope-status">這裡按 source_place 原始名稱計數；不將同名地點自動合併成同一 UID。只有展開時才讀取完整統計，並不儲存在前 10 名快照內。</p>
+        <p className="scope-status">這裡按 location 原始名稱計數；不將同名地點自動合併成同一 UID。只有展開時才讀取完整統計，並不儲存在前 10 名快照內。</p>
         {allCountsBusy?<p className="scope-status">正在讀取出現次數…</p>:null}
         {allCountsError?<p className="scope-status scope-error" role="alert">{allCountsError}</p>:null}
         {allPlaceCounts!==null?<ol className="loc-trace-selection-order">

@@ -162,7 +162,7 @@ function buildLocSourceRiver(rows=[]){
   const sourceGroups=LOC_SOURCE_ORDER.map(category=>({
     category_key:'source:'+category,
     category_type:'source',
-    source_name:category,
+    site:category,
     display_label:category,
     item_count:Number(totals.get(category))||0
   })).filter(row=>row.item_count>0);
@@ -435,7 +435,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   const text=summarize(counted.text,true);
   const media=summarize(counted.media,false);
 
-  // A Scope owns its real source_name distribution. LOC's four summary
+  // A Scope owns its real site distribution. LOC's four summary
   // categories belong exclusively to buildLocSourceRiver, never this view.
   const groupMap=new Map();
   const groupFor=(label,kind)=>{
@@ -444,10 +444,10 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
       groupMap.set(category,{
         category_key:'source:'+category,
         category_type:kind,
-        source_name:category,
+        site:category,
         display_label:category,
         item_count:0,
-        source_names:[],
+        sites:[],
         media_types:[]
       });
     }
@@ -456,7 +456,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
   for(const row of text.catalog){
     const group=groupFor(row.term,'source');
     group.item_count+=Number(row.item_count)||0;
-    group.source_names.push(String(row.term||'').trim());
+    group.sites.push(String(row.term||'').trim());
   }
   for(const row of media.catalog){
     const group=groupFor(row.term,'media');
@@ -491,12 +491,12 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
 
   const groups=[...groupMap.values()].map(group=>({
     ...group,
-    first_date:firstDates.get(group.source_name)||null,
-    last_date:lastDates.get(group.source_name)||null,
-    source_names:[...new Set(group.source_names)],
+    first_date:firstDates.get(group.site)||null,
+    last_date:lastDates.get(group.site)||null,
+    sites:[...new Set(group.sites)],
     media_types:[...new Set(group.media_types)]
   })).filter(group=>group.item_count>0&&group.first_date&&group.last_date)
-    .sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name));
+    .sort((a,b)=>b.item_count-a.item_count||a.site.localeCompare(b.site));
 
   const buckets=[...combined.entries()].map(([key,count])=>{
     const split=key.lastIndexOf('\u0000');
@@ -509,7 +509,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
     const lastDate=lastDates.get(source);
     if(!group||!firstDate||!lastDate)return null;
     return {
-      id:'source_name:'+source+':'+day,
+      id:'site:'+source+':'+day,
       category:source,
       group_label:source+' · '+group.item_count.toLocaleString()+' 項 · '+firstDate+' → '+lastDate,
       start_date:day,
@@ -612,7 +612,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
   const galaxyFilters=publicContentFilters([
     {column:'statistics_able',operator:'eq',value:true},
     ...dateFilters(startDate,endDate,['lo3rwang','lrunes'].includes(scope.id)?'date':'createtime'),
-    ...(rawSources.length?[{column:'source_name',operator:'in',value:rawSources}]:[])
+    ...(rawSources.length?[{column:'site',operator:'in',value:rawSources}]:[])
   ]);
   const mediaFilters=[
     ...dateFilters(startDate,endDate),
@@ -709,7 +709,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
 
   const [galaxyResult,mediaResult]=await Promise.all([
     galaxyIds.length?selectRows(scope.galaxy,{
-      columns:'uid,source_name,createtime,title,url,source_id,target_id,media_link',
+      columns:'uid,site,createtime,title,url,source_id,target_id,media_link',
       filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
@@ -724,7 +724,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   const galaxyById=new Map(resolvedGalaxy.map(row=>[String(row.uid),{
     key:'galaxy:'+row.uid,
     uid:row.uid,
-    source_name:String(row.source_name||''),
+    site:String(row.site||''),
     source_id:row.source_id||null,
     target_id:row.target_id||null,
     title:workDisplayText(row.title||'').trim(),
@@ -735,7 +735,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
     entry_id:row.uid,
     entry_type:'work',
-    group_label:String(row.source_name||''),
+    group_label:String(row.site||''),
     scope_id:scopeId,
     links:Array.isArray(row.resolved_links)?row.resolved_links:[]
   }]));
@@ -745,7 +745,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     ...row,
     key:'media:'+row.uid,
     record_type:'galaxy_media',
-    source_name:String(row.media_type||''),
+    site:String(row.media_type||''),
     entry_id:row.uid,
     entry_type:'media_metadata',
     start_date:row.createtime,

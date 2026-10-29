@@ -32,7 +32,7 @@ function TraceWork({row,scope}){
   });
   return <Article uid={row.uid} title={row.title||'未命名文章'}
     date={String(row.createtime||'').slice(0,10)}
-    source={row.source_name||''}
+    source={row.site||''}
     scopeId={scope?.id} editOnCardClick={false}>
     <WorkFullText open={opened} loading={opened&&body.isPending}
       error={body.error?String(body.error.message||body.error):''}
@@ -74,7 +74,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,url',
+        columns:'uid,title,createtime,site,place_id,url',
         filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
@@ -93,7 +93,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,source_name,place_id,statistics_able,media_link',
+        columns:'uid,title,createtime,site,place_id,statistics_able,media_link',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];

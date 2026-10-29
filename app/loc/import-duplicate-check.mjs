@@ -12,7 +12,7 @@ export function importSecond(value){
   return Number.isFinite(epoch)?Math.floor(epoch/1000):null;
 }
 export function importDuplicateKey(record){
-  const source=String(record?.source_name||'').trim().toLocaleLowerCase('und');
+  const source=String(record?.site||'').trim().toLocaleLowerCase('und');
   const second=importSecond(record?.createtime);
   const text=comparableImportText(record?.content);
   if(!source||second===null||!text)return null;
@@ -46,7 +46,7 @@ export async function findExistingImportDuplicates(records,{readSeconds,batchSec
     const key=importDuplicateKey(record);
     if(!key)continue;
     targets.set(key,record.uid);
-    const source=String(record.source_name).trim().toLocaleLowerCase('und');
+    const source=String(record.site).trim().toLocaleLowerCase('und');
     const second=importSecond(record.createtime);
     if(!groups.has(source))groups.set(source,new Set());
     groups.get(source).add(second);
@@ -73,7 +73,7 @@ export async function matchExistingImportByCreatedAt(records,{readSeconds,batchS
   const bySource=new Map();
   for(const record of records){
     const second=importSecond(record?.createtime);
-    const source=String(record?.source_name||'').trim().toLowerCase();
+    const source=String(record?.site||'').trim().toLowerCase();
     if(second===null||!source)continue;
     if(!bySource.has(source))bySource.set(source,new Map());
     const group=bySource.get(source);
@@ -89,7 +89,7 @@ export async function matchExistingImportByCreatedAt(records,{readSeconds,batchS
       if(!Array.isArray(rows))throw Error('原始時間查詢沒有回傳有效文章');
       for(const second of current){
         const candidates=rows.filter(row=>importSecond(row.createtime)===second&&
-          String(row.source_name||'').trim().toLowerCase()===source)
+          String(row.site||'').trim().toLowerCase()===source)
           .sort((a,b)=>String(a.uid).localeCompare(String(b.uid),'en'));
         for(const record of seconds.get(second)){
           const available=candidates.filter(row=>!claimed.has(String(row.uid)));
@@ -137,4 +137,32 @@ export async function insertImportBatches(records,{writeBatch,batchSize=200,onPr
     onProgress?.({completed,total:records.length,inserted,conflicts});
   }
   return {completed,inserted,conflicts};
+}
+
+// A historic Galaxy row may lack its publishing site. Backfill it only when
+// BOTH the source timestamp (second) and normalized body identify exactly one
+// such row. A timestamp alone cannot assign a platform to an unrelated post.
+export function matchMissingSiteImports(records,missingSiteRows,alreadyMatched=new Map()){
+  const assigned=new Set([...alreadyMatched.values()].map(row=>String(row.uid)));
+  const bySecond=new Map();
+  for(const row of missingSiteRows||[]){
+    if(String(row.site||'').trim()||!String(row.uid||'').trim())continue;
+    const second=importSecond(row.createtime);
+    if(second===null)continue;
+    if(!bySecond.has(second))bySecond.set(second,[]);
+    bySecond.get(second).push(row);
+  }
+  const matched=new Map();
+  for(const record of records||[]){
+    if(alreadyMatched.has(record.uid)||!String(record.site||'').trim())continue;
+    const second=importSecond(record.createtime);
+    const comparable=comparableImportText(record.content);
+    if(second===null||!comparable)continue;
+    const candidates=(bySecond.get(second)||[]).filter(row=>
+      !assigned.has(String(row.uid))&&comparableImportText(row.content)===comparable);
+    if(candidates.length!==1)continue;
+    matched.set(record.uid,candidates[0]);
+    assigned.add(String(candidates[0].uid));
+  }
+  return matched;
 }

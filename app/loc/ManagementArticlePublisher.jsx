@@ -76,7 +76,7 @@ export default function ManagementArticlePublisher({scopeId}){
         url:draft.url.trim()||null,
         searchable:!draft.hidden,
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
-        source_name:draft.source.trim()
+        site:draft.source.trim()
       }]);
 
       setDraft(blank());

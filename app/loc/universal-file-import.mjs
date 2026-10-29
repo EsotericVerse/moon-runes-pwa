@@ -110,8 +110,8 @@ export function officeTableRows(ast){
 // through the generic document extractor (which discards formatting).
 const GALAXY_MARKDOWN_FORMAT='galaxy-md/v1';
 const MARKDOWN_HEADER_KEYS=new Set([
-  'loc_format','uid','title','created_at','createtime','source_name',
-  'source_place','searchable','statistics_able'
+  'loc_format','uid','title','created_at','createtime','site',
+  'location','searchable','statistics_able'
 ]);
 function scalarFrontmatter(value){
   const raw=String(value||'').trim();
@@ -192,8 +192,8 @@ export async function parseGalaxyMarkdownFile(file,{importLocale='zh-Hant'}={}){
     String(original).replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n'));
   return [{
     uid,title,content,createtime:date,
-    ...(fields.source_name?{source_name:String(fields.source_name)}:{}),
-    ...(fields.source_place?{source_place:String(fields.source_place)}:{}),
+    ...(fields.site?{site:String(fields.site)}:{}),
+    ...(fields.location?{location:String(fields.location)}:{}),
     ...(fields.searchable!==undefined?{searchable:optionalMarkdownBoolean(fields.searchable,'searchable')}:{}),
     ...(fields.statistics_able!==undefined?{statistics_able:optionalMarkdownBoolean(fields.statistics_able,'statistics_able')}:{}),
   }];

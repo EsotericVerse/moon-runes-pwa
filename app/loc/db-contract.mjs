@@ -318,7 +318,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const data=await rpcJson('find_galaxy_duplicates',{p_scope_id:scope},'Duplicate scan');
     const groups=(Array.isArray(data)?data:[]).map(row=>({
-      sourceName:String(row?.source_name||''),
+      sourceName:String(row?.site||''),
       createtime:String(row?.createtime||''),
       uids:(Array.isArray(row?.uids)?row.uids:[]).map(String),
       titles:(Array.isArray(row?.titles)?row.titles:[]).map(String),

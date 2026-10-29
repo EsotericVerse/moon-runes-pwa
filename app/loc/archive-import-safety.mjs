@@ -57,7 +57,7 @@ export function assertArchiveRecordDestination(record,nativeLocal=false){
 }
 export function isPrivateStandaloneRow(input){
   const row=input?.raw||input||{};
-  return isPrivateArchiveSource(row.source_name)||isPrivateArchiveSource(row.platform)||
+  return isPrivateArchiveSource(row.site)||isPrivateArchiveSource(row.platform)||
     ['message','conversation'].includes(String(row.kind||'').toLowerCase())||
     isPrivateArchiveEntry(row.sourcePath||row.source_path||'')||
     (row.mapping&&typeof row.mapping==='object')||
@@ -82,7 +82,7 @@ export function assertStandaloneImportDestination({nativeLocal=false,fileName=''
   if(privateFilename.test(name)){
     const clearlyPublic=rows.length>0&&rows.every(input=>{
       const row=input?.raw||input||{};
-      const platform=String(row.platform||row.source_name||'').trim().toLowerCase();
+      const platform=String(row.platform||row.site||'').trim().toLowerCase();
       const kind=String(row.kind||'post').trim().toLowerCase();
       return publishablePlatforms.has(platform)&&publishableKinds.has(kind);
     });

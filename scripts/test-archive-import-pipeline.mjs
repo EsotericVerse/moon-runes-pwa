@@ -27,7 +27,7 @@ test('165-file ZIP continues writing past 30k and completes trailing window',asy
       sizes.push(rows.length);
       assert.equal(index,sizes.length);
       for(const entry of rows){
-        assert.equal(entry.raw.source_name,'Facebook');
+        assert.equal(entry.raw.site,'Facebook');
         assert.ok(!seen.has(entry.raw.uid));
         seen.add(entry.raw.uid);
       }

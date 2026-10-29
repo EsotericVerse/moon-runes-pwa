@@ -14,8 +14,8 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
     const root=isMedia?'media':assignedSource(category,taxonomy.aliases||[],taxonomy.categories||[])==='unclassified'?'custom':'system';
     const key=(isMedia?'media:':'source:')+category;
     const group=groups.get(key)||{
-      category_key:'source:'+raw,category_type:isMedia?'media':'source',source_name:raw,
-      display_label:raw,item_count:0,source_names:isMedia?[]:[category],media_types:isMedia?[category]:[]
+      category_key:'source:'+raw,category_type:isMedia?'media':'source',site:raw,
+      display_label:raw,item_count:0,sites:isMedia?[]:[category],media_types:isMedia?[category]:[]
     };
     group.item_count+=count;groups.set(key,group);
     const bucketKey=root+'\u0000'+day;
@@ -25,7 +25,7 @@ export function summarizeCultureRiverRoots(rows=[],taxonomy={}){
     rootBuckets:[...daily].map(([key,item_count])=>{
       const [category,start_date]=key.split('\u0000');return {category,start_date,item_count};
     }).sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.category.localeCompare(b.category)),
-    groups:[...groups.values()].sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name))
+    groups:[...groups.values()].sort((a,b)=>b.item_count-a.item_count||a.site.localeCompare(b.site))
   };
 }
 
@@ -39,29 +39,29 @@ export function buildCultureRiverRootTotals({text=[],media=[]}={},taxonomy={}){
     category=String(category||'').trim();
     if(count<=0)return;
     // An empty media_type has nothing to label a lane with and must not
-    // create a clickable-but-empty child; an empty source_name is real
+    // create a clickable-but-empty child; an empty site is real
     // (unclassified text), same as summarizeCultureRiverRoots above.
     if(isMedia&&!category)return;
     if(isMedia){
       const raw='媒體 · '+category;
       const key='media:'+category;
       const group=groups.get(key)||{
-        category_key:'source:'+raw,category_type:'media',source_name:raw,
-        display_label:raw,item_count:0,source_names:[],media_types:[category]
+        category_key:'source:'+raw,category_type:'media',site:raw,
+        display_label:raw,item_count:0,sites:[],media_types:[category]
       };
       group.item_count+=count;groups.set(key,group);
       return;
     }
     const key='source:'+category;
     const group=groups.get(key)||{
-      category_key:'source:'+category,category_type:'source',source_name:category,
-      display_label:category,item_count:0,source_names:[category],media_types:[]
+      category_key:'source:'+category,category_type:'source',site:category,
+      display_label:category,item_count:0,sites:[category],media_types:[]
     };
     group.item_count+=count;groups.set(key,group);
   };
   for(const row of text)add(row?.category,Number(row?.item_count)||0,false);
   for(const row of media)add(row?.category,Number(row?.item_count)||0,true);
-  return {groups:[...groups.values()].sort((a,b)=>b.item_count-a.item_count||a.source_name.localeCompare(b.source_name))};
+  return {groups:[...groups.values()].sort((a,b)=>b.item_count-a.item_count||a.site.localeCompare(b.site))};
 }
 
 export function selectCultureRiverChildren(rows=[],taxonomy={},roots=[]){

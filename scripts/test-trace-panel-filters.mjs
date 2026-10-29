@@ -19,8 +19,8 @@ test('Threads is an exact case-insensitive source filter, not a media subtype',(
   const filters=traceArticleFilters(['板橋車站'],{
     startDate:'2026-07-26',endDate:'2026-10-26',sourceName:'Threads'
   });
-  assert.ok(filters.some(f=>f.column==='source_place'&&f.operator==='eq'&&f.value==='板橋車站'));
-  assert.ok(filters.some(f=>f.column==='source_name'&&f.operator==='ilike'&&f.value==='Threads'));
+  assert.ok(filters.some(f=>f.column==='location'&&f.operator==='eq'&&f.value==='板橋車站'));
+  assert.ok(filters.some(f=>f.column==='site'&&f.operator==='ilike'&&f.value==='Threads'));
   assert.ok(filters.some(f=>f.column==='createtime'&&f.operator==='gte'));
   assert.ok(filters.some(f=>f.column==='createtime'&&f.operator==='lte'));
   assert.ok(!filters.some(f=>f.column==='media_type'));
@@ -36,10 +36,10 @@ test('media choices follow article media_link without reverse dependencies',()=>
 
 test('count groups only from selected metadata; never invent dates',()=>{
   const rows=[
-    {source_place:'板橋車站',createtime:'2026-10-01T12:00:00+08:00'},
-    {source_place:'板橋車站',createtime:'2026-10-01T16:00:00+08:00'},
-    {source_place:'',createtime:'2026-10-01T16:00:00+08:00'},
-    {source_place:'板橋車站',createtime:null}
+    {location:'板橋車站',createtime:'2026-10-01T12:00:00+08:00'},
+    {location:'板橋車站',createtime:'2026-10-01T16:00:00+08:00'},
+    {location:'',createtime:'2026-10-01T16:00:00+08:00'},
+    {location:'板橋車站',createtime:null}
   ];
   assert.deepEqual(groupedTraceDays(rows),[
     {day:'2026-10-01',category:'板橋車站',item_count:2}

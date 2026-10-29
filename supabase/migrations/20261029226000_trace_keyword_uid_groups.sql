@@ -62,7 +62,7 @@ BEGIN
         AND g.statistics_able IS TRUE
         AND ($3 IS NULL OR g.date >= $3)
         AND ($4 IS NULL OR g.date <= $4)
-        AND ($5 IS NULL OR g.source_name=$5)
+        AND ($5 IS NULL OR g.site=$5)
     )
     SELECT k.uid::text,k.name,count(DISTINCT a.uid)::bigint
     FROM groups k

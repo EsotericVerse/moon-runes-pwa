@@ -12,9 +12,9 @@ const PER_PAGE=1000;
 // pages contain timestamps only; reject excessive windows rather than truncate.
 const MAX_LANE_ROWS=30000;
 const PLATFORM_FILTERS=Object.freeze({
-  'galaxy:facebook':'source_name.ilike.*facebook*,source_name.ilike.fb',
-  'galaxy:threads':'source_name.ilike.*threads*',
-  'galaxy:instagram':'source_name.ilike.*instagram*,source_name.ilike.ig,source_name.ilike.*reels*'
+  'galaxy:facebook':'site.ilike.*facebook*,site.ilike.fb',
+  'galaxy:threads':'site.ilike.*threads*',
+  'galaxy:instagram':'site.ilike.*instagram*,site.ilike.ig,site.ilike.*reels*'
 });
 
 function taipeiDay(timestamp){
@@ -52,7 +52,7 @@ export async function selectLocItemDailySeries({scope,lane,startDate,endDate,kno
         {column:'searchable',operator:'eq',value:true},
         {column:'content',operator:'neq',value:''}
       ]),
-      ...(spec.source==='galaxy:exact'?[{column:'source_name',operator:'eq',value:spec.exact}]:[]),
+      ...(spec.source==='galaxy:exact'?[{column:'site',operator:'eq',value:spec.exact}]:[]),
       ...(spec.source==='media:exact'?[{column:'media_type',operator:'eq',value:spec.exact}]:[])
     ];
     const orFilter=PLATFORM_FILTERS[spec.source]||'';

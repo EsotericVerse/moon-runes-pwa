@@ -541,7 +541,7 @@ export default function Culture(){
     const mapped=new Map(catalog.groupAliases.map(row=>[String(row.source_key||'').trim().toLowerCase(),String(row.group_code||'')]));
     const index=new Map();
     for(const source of categoryGroups){
-      const raw=String(source.source_name||'');
+      const raw=String(source.site||'');
       let root='media',code=raw,label=raw.replace(/^媒體 · /u,'');
       const type=label.toLowerCase();
       if(type==='music'||type==='audio')label=l.mediaMusic;
@@ -554,13 +554,13 @@ export default function Culture(){
         label=root==='system'?system.get(code)||code:custom.get(code)||l.other;
       }
       const key=root+':'+code;
-      if(!index.has(key))index.set(key,{key,root,label,source_name:label,source_names:[],media_types:[],item_count:0});
+      if(!index.has(key))index.set(key,{key,root,label,site:label,sites:[],media_types:[],item_count:0});
       const group=index.get(key);
       group.item_count+=Number(source.item_count)||0;
-      group.source_names.push(...(source.source_names||[]));
+      group.sites.push(...(source.sites||[]));
       group.media_types.push(...(source.media_types||[]));
     }
-    return [...index.values()].map(group=>({...group,source_names:[...new Set(group.source_names)],media_types:[...new Set(group.media_types)]}));
+    return [...index.values()].map(group=>({...group,sites:[...new Set(group.sites)],media_types:[...new Set(group.media_types)]}));
   },[categoryGroups,sourceTaxonomy,scopeId,l.other,l.mediaMusic,l.mediaImage,l.mediaVideo]);
   const selectedGroup=groupedSources.find(item=>item.key===selectedRiverGroup)
     ||categoryGroups.find(item=>item.category_key===(keywordDrillSource?'source:'+keywordDrillSource:selectedCategory))
@@ -577,8 +577,8 @@ export default function Culture(){
         startDate:classificationWindowStart,
         endDate:classificationWindowEnd,
         periodRanges:classificationPeriodRanges,
-        sourceName:selectedGroup?.source_name||'',
-        sourceNames:selectedGroup?.source_names||[],
+        sourceName:selectedGroup?.site||'',
+        sourceNames:selectedGroup?.sites||[],
         mediaTypes:selectedGroup?.media_types||[],
         limit:DEFAULT_LIST_BATCH_SIZE,
         sortDirection:articleSort,
@@ -677,7 +677,7 @@ export default function Culture(){
     for(const group of locSourceGroups){
       const count=Number(group?.item_count)||0;
       const ratio=locCombinedSourceTotal>0?(count/locCombinedSourceTotal)*100:0;
-      labels.set(String(group?.source_name||group?.display_label||''),String(group?.display_label||group?.source_name||'')+' '+formatCultureUi(l.sourceGroupCount,{count:count.toLocaleString(locale),ratio:ratio.toFixed(1)}));
+      labels.set(String(group?.site||group?.display_label||''),String(group?.display_label||group?.site||'')+' '+formatCultureUi(l.sourceGroupCount,{count:count.toLocaleString(locale),ratio:ratio.toFixed(1)}));
     }
     return labels;
   },[locSourceGroups,locCombinedSourceTotal,l,locale]);
@@ -896,7 +896,7 @@ export default function Culture(){
     ];
     const bySource=new Map();
     for(const group of groupedSources){
-      for(const name of group.source_names)bySource.set(name,group);
+      for(const name of group.sites)bySource.set(name,group);
       for(const name of group.media_types)bySource.set('媒體 · '+name,group);
     }
     // Children (expanded lanes) still draw the real per-day river, built
@@ -1617,7 +1617,7 @@ export default function Culture(){
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                       uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
-                      source={work.source_name||work.group_label||''}
+                      source={work.site||work.group_label||''}
                       scopeId={work.scope_id||classificationScope}
                       date={work.display_date||CultureTimelineModel.formatCultureDateTime(work.createtime||work.created_at)}
                       body={editingWorkKey===workKey&&editDraft?'':work.description||work.media_metadata_text||''}

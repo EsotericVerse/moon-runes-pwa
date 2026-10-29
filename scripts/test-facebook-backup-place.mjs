@@ -46,7 +46,7 @@ test('textless check-ins retain place, stable article UID and time',()=>{
    uid:facebookArchiveUid('facebook:post:source:unique'),
    title:'Facebook 打卡：板橋車站',
    content:'Facebook 打卡地點：板橋車站',
-   createtime:'2026-01-01T08:00:00Z',source_place:'板橋車站'
+   createtime:'2026-01-01T08:00:00Z',location:'板橋車站'
  });
  assert.match(row.uid,/^[A-Z0-9]{8}$/);
  assert.equal(facebookArchiveUid('facebook:post:source:unique'),row.uid);
@@ -80,10 +80,10 @@ test('ZIP Takeout streams Facebook text, ignores Messenger and image content',as
  await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
  const posts=records.map(facebookArchiveGalaxyRow).filter(Boolean);
  assert.equal(posts.length,3);
- assert.equal(posts[0].source_place,'2樓咖啡廳');
+ assert.equal(posts[0].location,'2樓咖啡廳');
  assert.equal(posts[0].content,'到咖啡廳');
- assert.equal(posts[1].source_place,'B1 商店');
- assert.equal(posts[2].source_place,undefined);
+ assert.equal(posts[1].location,'B1 商店');
+ assert.equal(posts[2].location,undefined);
  assert.ok(posts.every(row=>!row.content.includes('私訊內容')));
  assert.ok(posts.every(row=>!row.content.includes('fake image')));
 });
@@ -123,7 +123,7 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
  const imported=records.map(facebookArchiveGalaxyRow).filter(Boolean);
  assert.equal(imported.length,1);
- assert.equal(imported[0].source_place,'某車站');
+ assert.equal(imported[0].location,'某車站');
  assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
 });
 
@@ -136,7 +136,7 @@ test('Meta ZIP decoded place and author text survive Galaxy import without mojib
     sourcePlace:encoded('板橋車站'),text:encoded('今天來到板橋車站'),
     createdAt:'2024-07-03T09:46:40.000Z'
   });
-  assert.equal(row.source_place,'板橋車站');
+  assert.equal(row.location,'板橋車站');
   assert.equal(row.content,'今天來到板橋車站');
   assert.equal(row.title,'今天來到板橋車站');
   assert.equal(row.createtime,'2024-07-03T09:46:40.000Z');
@@ -144,7 +144,7 @@ test('Meta ZIP decoded place and author text survive Galaxy import without mojib
     platform:'facebook',kind:'post',key:'facebook:raw:visit:2',
     sourcePlace:'臺北車站',text:'正常繁體中文'
   });
-  assert.equal(alreadyCorrect.source_place,'臺北車站');
+  assert.equal(alreadyCorrect.location,'臺北車站');
   assert.equal(alreadyCorrect.content,'正常繁體中文');
 });
 
@@ -160,7 +160,7 @@ test('ZIP parser accepts Facebook JSON exceeding former 10 MB entry cap',async()
   });
   assert.equal(result.acceptedRows,entries.length);
   assert.equal(rows.length,entries.length);
-  assert.equal(rows[0].source_place,'板橋車站');
+  assert.equal(rows[0].location,'板橋車站');
 });
 
 test('large Facebook ZIP size cap is 1 GiB and checked before reading any bytes',async()=>{
