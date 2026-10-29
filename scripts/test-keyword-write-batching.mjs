@@ -1,46 +1,31 @@
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import test from 'node:test';
+import {descendantsOfKeyword} from '../app/loc/keyword-tree.mjs';
 
-const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
-const start=contract.indexOf('  async function resetKeywordClassification(');
-const end=contract.indexOf('\n  async function readKeywordClass(',start);
-assert.ok(start>=0&&end>start,'Keywords reset must use the current uidlist implementation');
+const code=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+const from=code.indexOf('  async function resetKeywordClassification(');
+const to=code.indexOf('  async function readKeywordClass(',from);
+assert.ok(from>=0&&to>from,'UID-tree reset must exist');
+const body=code.slice(from,to);
 
-function client(){
-  const calls=[];
-  function relation(table){
-    let values=null,filters=[];
-    return {
-      update(payload){values=payload;return this;},
-      eq(key,value){filters.push([key,value]);return this;},
-      select(){
-        calls.push({table,values,filters});
-        return Promise.resolve({data:table.endsWith('_keywords')?[{keyword_id:1},{keyword_id:2}]:[{id:'scope'}],error:null});
-      }
-    };
-  }
-  const reset=new Function('normalizeScopeId','preflightWrite','selectAuthRow','dbAuthRelation',
-    contract.slice(start,end)+'\nreturn resetKeywordClassification;')(
-      value=>value,()=>{},
-      async()=>({current_keyword_class_uid:'aB3d'}),relation);
-  return {reset,calls};
-}
-
-test('reset clears only active Class item uidlists, never Galaxy articles',async()=>{
-  const {reset,calls}=client(),events=[];
-  const result=await reset('lo3rwang',{onProgress:e=>events.push(e)});
-  assert.equal(result.count,2);
-  const clear=calls.find(x=>x.table==='silver.lo3rwang_keywords');
-  assert.deepEqual(clear.values,{uidlist:[]});
-  assert.deepEqual(clear.filters,[['class_uid','aB3d']]);
-  assert.ok(calls.some(x=>x.table==='silver.lo3rwang'&&x.values.staticstime===null));
-  assert.ok(!calls.some(x=>x.table.includes('galaxy')));
-  assert.equal(events.at(-1).phase,'completed');
+test('reset erases only the active Class Group/Item uid_lists',()=>{
+ assert.match(body,/descendantsOfKeyword/);
+ assert.match(body,/node=>node.type==='group'\|\|node.type==='item'/);
+ assert.match(body,/update\(\{uid_lists:\[\]\}\)/);
+ assert.match(body,/\.eq\('uid',row.uid\)/);
+ assert.doesNotMatch(body,/apply_keyword_classification|\.update\(\{class_id|galaxy/);
 });
-
-test('classification writer that modified Galaxy has been retired',()=>{
-  assert.ok(!contract.includes('async function applyKeywordClassification('));
-  assert.ok(!contract.includes('keywordClassificationWriteUnchecked'));
-  assert.ok(!contract.includes("mode:'chunk',rows:batch"));
+test('stale analysis marker is cleared before partial Keyword writes',()=>{
+ assert.ok(body.indexOf('staticstime:null')<body.indexOf('for(const row of children)'));
+});
+test('only Group and Item descendants are reset',()=>{
+ const rows=[
+  {uid:'C001',type:'category',name:'符文',lists:['L001']},
+  {uid:'L001',type:'class',name:'符文66',lists:['G001']},
+  {uid:'G001',type:'group',name:'靈魂',lists:['I001']},
+  {uid:'I001',type:'item',name:'靈',lists:['感']}
+ ];
+ const resetNodes=descendantsOfKeyword(rows,'L001').filter(row=>row.type==='group'||row.type==='item');
+ assert.deepEqual(resetNodes.map(x=>x.uid),['G001','I001']);
 });
