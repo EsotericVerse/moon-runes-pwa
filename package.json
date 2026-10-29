@@ -15,7 +15,7 @@
     "audit:security": "npm audit --audit-level=moderate",
     "sync:public": "node scripts/generate-public-blocks.mjs",
     "check:syntax": "node scripts/check-js-syntax.mjs",
-    "test:neon-failover": "node --test scripts/test-neon-independent-backup.mjs scripts/test-neon-primary-emergency.mjs"
+    "test:neon-failover": "node --test scripts/test-neon-independent-backup.mjs scripts/test-neon-primary-emergency.mjs scripts/test-keyword-base62-read-provider.mjs"
   },
   "dependencies": {
     "@blocknote/core": "0.55.0",
