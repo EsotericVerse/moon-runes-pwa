@@ -268,6 +268,24 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data;
   }
 
+  async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
+    const scope=normalizeScopeId(scopeId);
+    const date=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_uidlist_summary',{
+      p_scope_id:scope,p_start:date(startDate),p_end:date(endDate),
+      p_source:String(source||'').trim()||null
+    });
+    if(error){const exception=new Error(error.message||'UID-list summary failed');exception.code=error.code;throw exception;}
+    return Array.isArray(data)?data:[];
+  }
+
+  async function readKeywordItemCatalog(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_item_catalog',{p_scope_id:scope});
+    if(error)throw new Error(error.message||'Keyword Item catalog read failed');
+    return Array.isArray(data)?data:[];
+  }
+
   // Rune66 stored classification: exact counts per class/day and per rune item,
   // computed by the database (silver.read_rune66_summary).
   async function readRune66Summary(scopeId,{startDate='',endDate=''}={}){
@@ -542,7 +560,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
