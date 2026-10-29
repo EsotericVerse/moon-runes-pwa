@@ -831,6 +831,16 @@ async function readScopeOverviewLocal({p_start,p_end}){
 
 // Local equivalent of api.read_keyword_class: no scope_id, no share-permission
 // gate (there is only one local reader), just the class's rows in order.
+async function readKeywordItemCatalogLocal(){
+  const cfg=await selectLocal("SELECT current_keyword_class_uid FROM local WHERE id='local'");
+  const uid=String(cfg[0]?.current_keyword_class_uid||'');
+  if(!uid)return {data:[],error:null};
+  const rows=await selectLocal(
+    'SELECT keyword_id,class_group,item_name,order_no,class_enable FROM local_keywords WHERE class_uid=? ORDER BY order_no,keyword_id',[uid]
+  );
+  return {data:rows.map(decodeRow),error:null};
+}
+
 async function readKeywordClassLocal({p_class_uid}={}){
   const uid=String(p_class_uid||'');
   if(!/^[0-9A-Za-z]{4}$/.test(uid))return {data:null,error:null};
@@ -983,6 +993,7 @@ export async function rpcLocal(name,args={}){
     case 'read_scope_overview':return readScopeOverviewLocal(args);
     case 'read_scope_earliest':return readScopeEarliestLocal(args);
     case 'read_keyword_class_by_uid':return readKeywordClassLocal(args);
+    case 'read_keyword_item_catalog':return readKeywordItemCatalogLocal(args);
     case 'read_keyword_uidlist_summary':return readKeywordUidlistSummaryLocal(args);
     case 'read_rune66_summary':{
       const result=await readKeywordUidlistSummaryLocal(args);
