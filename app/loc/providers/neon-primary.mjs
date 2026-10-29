@@ -70,7 +70,7 @@ export function createNeonPrimaryAdapter({
         const callbackURL=String(options.redirectTo||'');
         if(!callbackURL||new URL(callbackURL).origin!==window.location.origin)
           throw new Error('OAuth callback must be on the current site');
-        const response=await authRequest('/sign-in/social',{method:'POST',payload:{provider:'google',callbackURL}});
+        const response=await authRequest('/sign-in/social',{method:'POST',payload:{provider:'google',callbackURL,disableRedirect:true}});
         const destination=response?.url||response?.data?.url;
         if(!destination||new URL(destination).protocol!=='https:')
           throw new Error('Neon OAuth returned no valid redirect');
