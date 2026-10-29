@@ -149,7 +149,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const classUid=String(config?.current_keyword_class_uid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
     const {data:all,error:readError}=await dbAuthRelation(table)
-      .select('uid,type,name,desc,lists,uid_lists');
+      .select('uid,type,name,desc,lists');
     if(readError)throw new Error(readError.message);
     const {descendantsOfKeyword}=await import('./keyword-tree.mjs');
     const children=descendantsOfKeyword(all||[],classUid)
@@ -311,7 +311,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(op==='insert')query=relation.insert(normalized).select('uid');
     else if(op==='update')query=relation.update({
       type:normalized.type,name:normalized.name,desc:normalized.desc,
-      lists:normalized.lists,uid_lists:normalized.uid_lists
+      lists:normalized.lists
     }).eq('uid',normalized.uid).select('uid');
     else query=relation.delete().eq('uid',normalized.uid).select('uid');
     const {data,error}=await query;
@@ -325,7 +325,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(!source||!target||source===target)throw new Error('Keywords Class 名稱不正確');
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
-    const {data,error}=await dbAuthRelation(table).select('uid,type,name,desc,lists,uid_lists');
+    const {data,error}=await dbAuthRelation(table).select('uid,type,name,desc,lists');
     if(error)throw new Error(error.message);
     const {indexKeywordTree,descendantsOfKeyword}=await import('./keyword-tree.mjs');
     const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
