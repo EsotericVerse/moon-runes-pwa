@@ -4,7 +4,7 @@ import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
-import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
+import {classifyRune66Documents,RUNE66_GROUP_ORDER} from './model/rune66-keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 import {assignedSource} from './member-intersection-model.mjs';
 
@@ -124,13 +124,9 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   };
 }
 
-// Canonical, eternal class_group order per https://lrunes.lo3rwang.cc/trace/
-// (靈魂1-8, 連結9-16, 生命17-24, 自然25-32, 礦物33-40, 元素41-48, 秩序49-56,
-// 無序57-64, 特殊0/65/66). item_no/order_no are fixed data and must never be
-// edited to "fix" class_id -- class_id is derived purely from this list, not
-// from any per-item order_no (特殊's item_no=0 has order_no=0, which used to
-// sort it to class_id=1 under the old min-order_no logic; it must land on 9).
-const CANONICAL_CLASS_GROUP_ORDER=['靈魂','連結','生命','自然','礦物','元素','秩序','無序','特殊'];
+// Canonical, eternal class_group order applies only to the Rune66 Class.
+// Generic Keywords Classes derive their Groups from catalog data, with no
+// arbitrary group count and no Rune66-specific ordering rules.
 function buildClassMap(catalogRows=[]){
   const groups=new Set();
   for(const row of catalogRows){
@@ -138,20 +134,21 @@ function buildClassMap(catalogRows=[]){
     const group=String(row?.class_group||'').trim();
     if(group)groups.add(group);
   }
-  const canonicalIndex=new Map(CANONICAL_CLASS_GROUP_ORDER.map((group,index)=>[group,index]));
+  const isRune66=String(catalogRows.find(row=>row?.class_name)?.class_name||'')==='符文66';
+  const specialOrder=isRune66
+    ?new Map(RUNE66_GROUP_ORDER.map((group,index)=>[group,index]))
+    :null;
   const ordered=[...groups]
     .sort((a,b)=>{
-      const orderA=canonicalIndex.has(a)?canonicalIndex.get(a):CANONICAL_CLASS_GROUP_ORDER.length;
-      const orderB=canonicalIndex.has(b)?canonicalIndex.get(b):CANONICAL_CLASS_GROUP_ORDER.length;
-      return orderA-orderB||a.localeCompare(b);
+      if(specialOrder){
+        const orderA=specialOrder.get(a)??Number.MAX_SAFE_INTEGER;
+        const orderB=specialOrder.get(b)??Number.MAX_SAFE_INTEGER;
+        if(orderA!==orderB)return orderA-orderB;
+      }
+      return a.localeCompare(b);
     })
-    .map((group,index)=>({group,order:canonicalIndex.has(group)?canonicalIndex.get(group):9999,class_id:index+1}));
-  // 9 is a ceiling (8 canonical groups + 1 default/special), not a fixed
-  // count every Class must hit exactly -- silver.lo3rwang_galaxy.class_id's
-  // own CHECK constraint is already "class_id BETWEEN 1 AND 9", i.e. a max,
-  // not an exact count, and a Class with fewer enabled groups than 9 is
-  // valid (confirmed live data: 政德文化 has 6, Hip-Hop 5, Rock/Vocal 3).
-  if(ordered.length<1||ordered.length>9)throw new Error('目前文章 class_id 契約最多允許 9 個啟用 Class（至少 1 個）；目前為 '+ordered.length+' 個。');
+    .map((group,index)=>({group,order:index,class_id:index+1}));
+  if(!ordered.length)throw new Error('目前 Keywords Class 沒有啟用的 Group');
   return {
     ordered,
     groupToClassId:new Map(ordered.map(item=>[item.group,item.class_id])),
