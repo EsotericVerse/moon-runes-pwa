@@ -3,7 +3,8 @@
 // review generated files, commit and deploy normally (no build-time SQL).
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {createPublicSupabaseClient} from '../app/api/loc/_server.js';
+import {publicNumericSources} from '../app/api/loc/_server.js';
+import {readPublishedBootstrap} from '../app/api/loc/_numeric-failover.mjs';
 import {THEME_TOKEN_KEYS} from '../app/modular/theme-registry.js';
 import {classNames} from '../app/loc/source-classification.mjs';
 import {publishPublicFiles} from './publish-public-files.mjs';
@@ -12,9 +13,9 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const validScope=/^[a-z][a-z0-9]{0,14}$/;
 const validPage=/^[a-z0-9_-]+$/;
 const encode=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
-const db=createPublicSupabaseClient();
-const {data:site,error:siteError}=await db.rpc('read_app_bootstrap',{p_scope_id:'loc',p_page_name:'index'});
-if(siteError||!site||!Array.isArray(site.registry))throw Error('Cannot publish public Bootstrap');
+const publication=await readPublishedBootstrap(publicNumericSources());
+const db=publication.client,site=publication.data;
+console.log('[public] Source: '+publication.source);
 const routes=site.registry.filter(x=>x.active!==false&&x.scope_kind!=='system');
 if(!routes.length||routes.some(x=>!validScope.test(x.scope_id)))throw Error('Invalid public Scope list');
 // Public source classifications are flat text[] in each Scope's config;
