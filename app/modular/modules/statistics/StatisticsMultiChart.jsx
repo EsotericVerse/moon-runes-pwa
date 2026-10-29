@@ -230,16 +230,8 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     queryKey:['statistics-keyword-item-class-map',scopeId,String(meta.class_uid||'')],
     enabled:shown==='both'&&Boolean(scopeId&&meta.class_uid&&data.staticstime),
     queryFn:async()=>{
-      const [{defaultScopeData},{selectAllRows}]=await Promise.all([
-        import('../../../loc/scope-data'),import('../../../loc/db-query.mjs')
-      ]);
-      const scope=defaultScopeData(scopeId);
-      if(!scope?.keywords)throw new Error('Keywords Scope 不存在');
-      const result=await selectAllRows(scope.keywords,{
-        columns:'keyword_id,class_group,class_enable',
-        filters:[{column:'class_uid',operator:'eq',value:String(meta.class_uid)}]
-      });
-      return result.rows||[];
+      const {readKeywordItemCatalog}=await import('../../../loc/db-client.mjs');
+      return readKeywordItemCatalog(scopeId);
     }
   });
   // Link each stored item to its OWN Class by the live keyword catalog's
