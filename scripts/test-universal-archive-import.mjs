@@ -405,3 +405,37 @@ test('Facebook array["array"] path is supported and nested post data[] is not mi
     assert.equal(rows[0].data[0].attachments.length,1,path);
   }
 });
+
+test('Threads followers and likes are not authored posts, even if usernames look like text',async()=>{
+  const zip={
+    'activity/threads/followers.json':j({followers:[
+      {title:'sharon_n825',timestamp:1720000000},
+      {title:'raneemgodah0',timestamp:1720000100}
+    ]}),
+    'activity/threads/liked_threads.json':j([
+      {title:'dude_darkside',timestamp:1720000200}
+    ]),
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[
+      {id:'genuine-thread',text:'這是真正的 Threads 文章',timestamp:1720000300}
+    ]})
+  };
+  const a=await parsed('full-threads-activity.zip',zip);
+  assert.deepEqual(a.results.map(row=>row.content),['這是真正的 Threads 文章']);
+  const file=asFile('full-threads-activity.zip',zipSync(zip));
+  const encountered=[];
+  await inspectPrivateArchive(file,{onRecord:record=>encountered.push(record)});
+  assert.equal(encountered.filter(r=>r.kind==='post').length,1);
+  assert.equal(encountered.filter(r=>r.kind==='relation').length,2);
+  assert.equal(encountered.filter(r=>r.kind==='reaction').length,1);
+  assert.equal(encountered.filter(r=>!isPublicArchiveRecord(r)).length,3);
+});
+test('Threads follower lists are never promoted to Galaxy even from an unfiltered record callback',()=>{
+  assert.equal(archiveGalaxyRow({
+    platform:'threads',kind:'relation',key:'threads:relation:test',
+    text:'sharon_n825',createdAt:'2026-01-26T01:16:19Z'
+  }),null);
+  assert.equal(archiveGalaxyRow({
+    platform:'threads',kind:'reaction',key:'threads:reaction:test',
+    text:'liked_username',createdAt:'2026-01-26T01:16:19Z'
+  }),null);
+});

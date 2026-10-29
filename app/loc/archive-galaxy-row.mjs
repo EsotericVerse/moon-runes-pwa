@@ -18,6 +18,10 @@ export function archiveGalaxyRow(record){
   if(!record||record.kind==='unmapped'||!record.key)return null;
   const platform=String(record.platform||'meta').toLowerCase();
   const source=label[platform]||platform.slice(0,64)||'Archive';
+  // Followers, likes, and other social graph exports are not authored
+  // Threads articles, even when their payload contains a username/title.
+  if(platform==='threads'&&!['post','media','story'].includes(String(record.kind||'')))
+    return null;
   if(platform==='facebook'){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
