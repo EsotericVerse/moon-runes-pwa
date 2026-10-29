@@ -1,2 +1,2 @@
-import LocApp from '../../loc/LocApp';
-export default function Page(){return <LocApp forcedView="keywords"/>;}
+import LegacyManagementRedirect from '../../loc/LegacyManagementRedirect';
+export default function Page(){return <LegacyManagementRedirect target="/statics/manage/" view="keywords"/>;}

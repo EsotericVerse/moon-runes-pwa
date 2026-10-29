@@ -29,8 +29,8 @@ test('Navigation places Trace before Search and gives it an independent icon',()
   assert.match(registry,/id:'trace'.*path:'trace'/);
   assert.match(shell,/\['culture','statics','trace','search'\]/);
   assert.match(icons,/if\(name==='trace'\)/);
-  assert.match(shell,/editTabHref\('manage\/search'/);
-  assert.match(shell,/editTabHref\('admin\/search'/);
+  assert.match(shell,/editTabHref\('search\/manage'/);
+  assert.match(shell,/editTabHref\('statics\/manage'/);
   for(const [file,label] of [
     ['zh_tw.js','痕跡'],['zh_cn.js','痕迹'],['en.js','Traces'],['ja.js','軌跡']
   ]){
@@ -72,8 +72,8 @@ test('Only canonical public Trace and management routes exist',()=>{
     'app/scope-shell/manage/page.jsx'
   ])assert.match(read(path),/forcedView="manage"/,path);
   for(const path of [
-    'app/lrunes/manage/search/page.jsx','app/lo3rwang/manage/search/page.jsx',
-    'app/scope-shell/manage/search/page.jsx','app/admin/search/page.jsx'
+    'app/lrunes/search/manage/page.jsx','app/lo3rwang/search/manage/page.jsx',
+    'app/scope-shell/search/manage/page.jsx','app/search/manage/page.jsx'
   ])assert.match(read(path),/forcedView="searchManage"/,path);
   assert.match(read('app/admin/page.jsx'),/forcedScope="admin"/);
   for(const prefix of [

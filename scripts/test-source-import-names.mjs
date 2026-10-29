@@ -14,11 +14,11 @@ test('system brand source spellings and custom Scope labels',()=>{
 test('URL edit parameter cannot bootstrap a public editor',()=>{
   const culture=read('app/modular/features/Culture.jsx');
   const search=read('app/modular/features/Search.jsx');
-  const management=read('app/loc/SearchManagement.jsx');
-  assert.match(culture,/canUseScopeEditor&&searchParams\?\.get\('edit'\)==='1'/);
+  const entry=read('app/loc/ManagementAccess.jsx');
+  assert.match(culture,/canUseScopeEditor&&\(pathname\.endsWith\('\/culture\/manage'\)/);
   assert.doesNotMatch(culture,/if\(isTimeEditingView.*editDock\?\.begin/);
   assert.match(search,/if\(!managementMode&&\(!publicScopeEditing\|\|result.scopeId!==scopeId\)\)return/);
-  assert.match(management,/account\.user&&editDock\?\.active&&editDock\.scopeId===scopeId/);
+  assert.match(entry,/granted\(account\.authorizer,scopeId,level\)/);
 });
 
 test('home editor re-entry requires the verified entry marker and expires',()=>{

@@ -185,6 +185,7 @@ export function managementHeroSlot(pathname='',scopeId='',editing=false,featureI
     else if(parts[0]==='culture'&&parts.includes('manage'))key='members';
     else if(parts[0]==='statics'&&parts.includes('manage'))key='locKeywords';
     else if(parts[0]==='trace'&&parts.includes('manage'))key='trace';
+    else if(parts[0]==='search'&&parts.includes('manage'))key='articles';
     else if(editing)key=parts.includes('culture')?'members':parts.includes('statics')?'locKeywords':parts.includes('search')?'articles':'trace';
   }else{
     // Prefer the actual feature instead of the generic /manage pathname:

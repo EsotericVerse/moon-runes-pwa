@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../modular/ui';
 import {useScopeRuntime} from '../modular/use-scope-runtime';
-import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 
@@ -42,28 +41,13 @@ const OLD_SCOPE_SECTION_ALIASES=Object.freeze({
 });
 
 export default function SearchManagement(){
-  const {scopeId,scope}=useScopeRuntime();
-  const account=useAccount();
+  const {scopeId}=useScopeRuntime();
   const editDock=useEditDock();
-  const ready=!account.loading&&!account.permissionLoading;
   const isLocAdmin=scopeId==='loc';
-  const isContentScope=Boolean(scopeId&&scopeId!=='loc'&&scopeId!=='admin'&&!scope?.aggregateChildren);
-  const permitted=ready&&Boolean(account.user&&editDock?.active&&editDock.scopeId===scopeId)&&
-    (isLocAdmin?account.canManageGlobalSync():isContentScope&&account.canManageScopeSync(scopeId));
   const options=isLocAdmin?LOC_OPTIONS:ARTICLE_CONTROL_SECTIONS;
   const [activeSection,setSection]=useManagementSection(options,'search',
     isLocAdmin?{}:OLD_SCOPE_SECTION_ALIASES);
   const currentSection=options.find(option=>option.value===activeSection)||options[0];
-
-  if(!ready)return <FeaturePage featureId="search">
-    <section className="loc-card scope-feature-card" role="status">正在確認管理權限…</section>
-  </FeaturePage>;
-  if(!account.user)return <FeaturePage featureId="search">
-    <section className="loc-card scope-feature-card"><p>請先登入，才能使用文章控管。</p></section>
-  </FeaturePage>;
-  if(!permitted)return <FeaturePage featureId="search">
-    <section className="loc-card scope-feature-card" role="alert">沒有此 Scope 的管理權限。</section>
-  </FeaturePage>;
 
   return <FeaturePage featureId="search">
     <div className="management-workspace">

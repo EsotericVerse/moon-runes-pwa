@@ -57,15 +57,15 @@ test('both management lazy entries use the same recovery',()=>{
   assert.match(read('app/AppShell.jsx'),/window\.addEventListener\('unhandledrejection',recover\)/);
 });
 
-test('LunaRunes has the same owner-authorized keyword editor as other Scopes',()=>{
+test('LunaRunes keyword editor uses the canonical scoped management route',()=>{
   const shell=read('app/AppShell.jsx');
   const page=read('app/modular/features/KeywordSettings.jsx');
-  const route=read('app/lrunes/statics/keywords/page.jsx');
-  assert.doesNotMatch(shell,/navScopeId!==['\"]lrunes['\"]/);
-  assert.doesNotMatch(page,/scopeId!==['\"]lrunes['\"]/);
-  assert.match(shell,/editTabHref\('statics\/keywords','edit','1'\)/);
+  const route=read('app/lrunes/statics/manage/page.jsx');
+  const entry=read('app/loc/ManagementAccess.jsx');
+  assert.match(shell,/editTabHref\('statics\/manage','edit','1'\)/);
+  assert.match(route,/forcedView="keywords" forcedScope="lrunes"/);
   assert.match(page,/account\.canManageScopeSync\(scopeId\)/);
-  assert.match(route,/forcedView=\"keywords\" forcedScope=\"lrunes\"/);
+  assert.match(entry,/canManageScopeSync\(id\)/);
 });
 
 test('same-origin edit navigation stays client-side and keeps the editor session',()=>{
@@ -75,43 +75,29 @@ test('same-origin edit navigation stays client-side and keeps the editor session
   assert.doesNotMatch(dock,/\/\(\?:manage\|culture\|trace\)/);
 });
 
-test('authorized Scope Place Management enters even without a homepage edit marker',()=>{
+test('all management pages restore editor access through one verified entry',()=>{
+  const app=read('app/loc/LocApp.jsx');
+  const entry=read('app/loc/ManagementAccess.jsx');
   const manager=read('app/loc/ScopeManagement.jsx');
-  const ttl=read('app/loc/edit-session-ttl.mjs');
-  assert.match(manager,/const hasManagementGrant=Boolean\(account\.user&&/);
-  assert.match(manager,/account\.canManageScopeSync\(routeScopeId\)/);
-  assert.match(manager,/account\.canManageGroupSync\('loc'\)/);
-  assert.match(manager,/const editorReady=Boolean\(editDock\?\.active&&editDock\.scopeId===routeScopeId\)/);
-  assert.match(manager,/if\(account\.loading\|\|account\.permissionLoading\|\|!hasManagementGrant\|\|editorReady\)return/);
-  assert.match(manager,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
-  assert.match(manager,/editDock\?\.begin\(routeScopeId\)/);
-  assert.doesNotMatch(manager,/readHomeEditorAccess/);
-  assert.doesNotMatch(manager,/請先從此 Scope 首頁進入編輯模式/);
-  assert.match(manager,/if\(!hasManagementGrant\)/);
-  assert.match(manager,/if\(!editorReady\)/);
-  assert.match(manager,/編輯 Session 已鎖定，請重新驗證後進入管理/);
-  assert.match(manager,/重新驗證並進入管理/);
-  assert.match(ttl,/EDIT_IDLE_TTL_MS=30\*60\*1000/);
-  assert.match(ttl,/EDIT_SESSION_TTL_MS=2\*60\*60\*1000/);
+  assert.match(app,/managementRoute\?<ManagementAccess/);
+  assert.match(entry,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
+  assert.match(entry,/dock\?\.begin\(scopeId\)/);
+  assert.match(entry,/granted\(account\.authorizer,scopeId,level\)/);
+  assert.doesNotMatch(manager,/renewEditorSession|sessionExpired|get_my_scope_management/);
 });
-
-test('expired management entry verifies Google identity and fresh Scope permissions before resetting the idle lock',()=>{
-  const manager=read('app/loc/ScopeManagement.jsx');
+test('expired unified entry verifies identity and fresh scope grant before clearing the lock',()=>{
+  const entry=read('app/loc/ManagementAccess.jsx');
   const ttl=read('app/loc/edit-session-ttl.mjs');
   const auth=read('app/loc/db-contract.mjs');
-  assert.match(manager,/async function renewEditorSession\(\)/);
-  assert.match(manager,/const verified=await getAccountSession\(\)/);
-  assert.match(manager,/String\(verified\.user\.id\)!==String\(account\.user\.id\)/);
-  assert.match(manager,/get_my_scope_management/);
-  assert.match(manager,/setAuthorization\(verified\.user,Array\.isArray\(data\)\?data:\[\]\)/);
-  assert.match(manager,/createScopeAuthorizer\(verified\.user\)/);
-  assert.match(manager,/grants\?\.canManageGroupSync\('loc'\)/);
-  assert.match(manager,/grants\?\.canManageScopeSync\(routeScopeId\)/);
-  assert.match(manager,/if\(!authorized\)throw/);
-  assert.ok(manager.indexOf('if(!authorized)throw')<manager.indexOf('clearEditorSession(window.sessionStorage)'));
-  assert.ok(manager.indexOf('clearEditorSession(window.sessionStorage)')<manager.indexOf('touchEditorSession(window.sessionStorage)'));
-  assert.match(manager,/editDock\?\.begin\(routeScopeId\)/);
-  assert.match(manager,/onClick=\{renewEditorSession\}/);
-  assert.match(auth,/auth\.getUser\(session\.access_token\)/);
+  assert.match(entry,/async function renew\(\)/);
+  assert.match(entry,/const verified=await getAccountSession\(\)/);
+  assert.match(entry,/get_my_scope_management/);
+  assert.match(entry,/setAuthorization\(verified.user,Array.isArray\(data\)\?data:\[\]\)/);
+  assert.match(entry,/granted\(createScopeAuthorizer\(verified.user\),scopeId,level\)/);
+  assert.ok(entry.indexOf('if(!granted(createScopeAuthorizer')<entry.indexOf('clearEditorSession(window.sessionStorage)'));
+  assert.match(entry,/touchEditorSession\(window.sessionStorage\)/);
+  assert.match(ttl,/EDIT_IDLE_TTL_MS=30\*60\*1000/);
+  assert.match(ttl,/EDIT_SESSION_TTL_MS=2\*60\*60\*1000/);
   assert.match(ttl,/value\.locked/);
+  assert.match(auth,/auth\.getUser\(session\.access_token\)/);
 });
