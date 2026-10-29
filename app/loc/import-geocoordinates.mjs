@@ -19,7 +19,7 @@ export function importMapUrlCoordinates(value){
   let url;
   try{url=new URL(value.trim());}catch{return null;}
   if(!['http:','https:'].includes(url.protocol)||
-    !/(^|\.)google\.[a-z.]+$/.test(url.hostname))return null;
+    !/(^|\.)google\.(?:com(?:\.[a-z]{2})?|co\.[a-z]{2}|[a-z]{2,3})$/i.test(url.hostname))return null;
   if(!/(^|\/)maps(\/|$)/i.test(url.pathname)&&!url.hostname.startsWith('maps.'))return null;
   // !3d / !4d identifies the selected place; @lat,lng is a map viewport fallback.
   let raw;
