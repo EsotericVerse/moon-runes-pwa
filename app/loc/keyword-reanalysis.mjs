@@ -1,4 +1,4 @@
-import {classifyKeywordDocumentsByUid} from './model/keyword-uid-analysis.mjs';
+import {classifyKeywordDocumentsByUid,createKeywordUidGroupResolver} from './model/keyword-uid-analysis.mjs';
 import {keywordClassCatalog,indexKeywordTree} from './keyword-tree.mjs';
 
 const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
@@ -19,12 +19,7 @@ export async function reanalyzeKeywordClass({
   const {catalog}=keywordClassCatalog(treeRows,classUid);
   const itemResults=new Map(catalog.map(item=>[item.uid,new Map()]));
   const groupResults=new Map(root.lists.map(uid=>[uid,new Set()]));
-  const byGroupName=new Map();
-  for(const uid of root.lists){
-    const group=tree.index.get(uid);
-    if(byGroupName.has(group.name))throw new Error('Duplicate Group name in one Class');
-    byGroupName.set(group.name,uid);
-  }
+  const resolver=createKeywordUidGroupResolver(treeRows,classUid);
   const seen=new Set();
   let offset=0,read=0,eligible=0,occurrences=0,itemMatches=0;
   for(;;){
@@ -54,12 +49,10 @@ export async function reanalyzeKeywordClass({
         itemMatches++;
         if(!Number.isSafeInteger(occurrences))throw new Error('Keyword hit total overflow');
       }
-      const chosen=String(result.classification_group||'');
-      if(chosen){
-        const groupUid=byGroupName.get(chosen);
-        if(!groupUid)throw new Error('Classifier returned unknown Group');
-        groupResults.get(groupUid).add(result.uid);
-      }
+      // Stateful resolution must run in article/page order, not afterwards:
+      // equal-scoring articles are distributed to the least populated Group.
+      const groupUid=resolver.resolve(result);
+      if(groupUid)groupResults.get(groupUid).add(result.uid);
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
