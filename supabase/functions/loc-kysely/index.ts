@@ -218,9 +218,16 @@ Deno.serve(async (request) => {
         const backup=await databaseForTarget(target,{profileLookup:profileForTarget});
         await sql`select 1 as ready`.execute(backup);
         const tables=await backup.introspection.getTables();
-        const required=["manage","loc","loc_blocks"];
-        const valid=required.every(name=>tables.some(table=>table.name===name&&
-          (table.schema==="silver"||(!table.schema&&target.engine!=="postgres"))));
+        const required:Record<string,string[]>={
+          manage:["id","manage_role","parent_scope_id"],
+          loc:["id","theme","statistics_able","culture_able"],
+          loc_blocks:["uid","page_name","block_order","block_text"]
+        };
+        const valid=Object.entries(required).every(([name,columns])=>{
+          const table=tables.find(table=>table.name===name&&
+            (table.schema==="silver"||(!table.schema&&target.engine!=="postgres")));
+          return Boolean(table&&columns.every(column=>table.columns.some(field=>field.name===column)));
+        });
         return json({data:{configured:true,online:true,schema:valid}});
       }catch(error){
         console.warn("[loc-kysely] Admin-only backup readiness check failed",error);
