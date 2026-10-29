@@ -10,7 +10,6 @@ import {useMemo,useState} from 'react';
 import {useAsyncResource} from '../../../loc/use-async-resource';
 import {selectScopeSourceBreakdownRows} from '../../../loc/galaxy-query';
 import {assignedSource} from '../../../loc/member-intersection-model.mjs';
-import {parseGroupLists} from '../../../loc/group-lists.mjs';
 import {availableStatisticChartTypes,chartTypeGroups} from './statistics-time-zoom.mjs';
 import StatisticsMultiChart from './StatisticsMultiChart';
 import StatisticsChartFrame from './StatisticsChartFrame';
