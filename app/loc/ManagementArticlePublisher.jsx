@@ -135,12 +135,29 @@ export default function ManagementArticlePublisher({scopeId}){
         site:draft.source.trim()
       };
       if(editingUid){
-        // Preserve the existing primary key and every unrelated Galaxy field.
-        await updateRows(galaxy,{...values,UpdateTime:now},{
-          filters:[{column:'uid',operator:'eq',value:editingUid}]
-        });
+        // Update only edited fields: don't rewrite unrelated metadata, null
+        // searchable flags, or timestamps on older Galaxy articles.
+        const original=loadedBaseline.current;
+        if(!original)throw new Error(t('uiExtra.publisher.uidNotFound'));
+        const changed={};
+        if(draft.title!==original.title)changed.title=values.title;
+        if(draft.bodyHtml!==original.bodyHtml)changed.content=values.content;
+        if(draft.source!==original.source)changed.site=values.site;
+        if(draft.url!==original.url)changed.url=values.url;
+        if(draft.source_id!==original.source_id)changed.source_id=values.source_id;
+        if(draft.target_id!==original.target_id)changed.target_id=values.target_id;
+        if(draft.ref_id!==original.ref_id)changed.ref_id=values.ref_id;
+        if(draft.createtime!==original.createtime)changed.createtime=values.createtime;
+        if(draft.hidden!==original.hidden)changed.searchable=values.searchable;
+        if(Object.keys(changed).length){
+          await updateRows(galaxy,{...changed,UpdateTime:now},{
+            filters:[{column:'uid',operator:'eq',value:editingUid}]
+          });
+        }
         loadedBaseline.current={...draft};
-        setStatus(t('uiExtra.publisher.articleUpdated'));
+        setStatus(Object.keys(changed).length
+          ?t('uiExtra.publisher.articleUpdated')
+          :t('uiExtra.publisher.noChanges'));
       }else{
         await insertRows(galaxy,[{uid:createUid8(),...values}]);
         resetDraft();
@@ -179,7 +196,7 @@ export default function ManagementArticlePublisher({scopeId}){
             aria-label={t('uiExtra.publisher.articleTitle')}/>,label:<UiText id="uiExtra.publisher.articleTitle"/>},
           {key:'body',kind:'rich',label:<UiText id="uiExtra.publisher.articleBody"/>,
             editorKey:'publisher:'+scopeId+':'+draft.editorKey,
-            content:draft.bodyBlocks,
+            content:draft.bodyHtml||draft.bodyBlocks,
             onBlocksChange:blocks=>change('bodyBlocks',blocks),
             onHtmlChange:html=>change('bodyHtml',html)}
         ]}/>
@@ -200,7 +217,7 @@ export default function ManagementArticlePublisher({scopeId}){
             <button type="button" className="loc-button" disabled={busy||loadingUid}
               onClick={loadByUid}>{loadingUid?t('uiExtra.publisher.loadingUid'):t('uiExtra.publisher.findUid')}</button>
             {editingUid?<button type="button" className="loc-button" disabled={busy||loadingUid}
-              onClick={resetDraft}><UiText id="uiExtra.publisher.newArticle"/></button>:null}
+              onClick={()=>{if(isDirty()&&!window.confirm(t('uiExtra.publisher.replaceDraftConfirm')))return;resetDraft();}}><UiText id="uiExtra.publisher.newArticle"/></button>:null}
           </div>
           {editingUid?<p className="scope-status">{t('uiExtra.publisher.editingUid')}: {editingUid}</p>:null}
           <label>
@@ -211,7 +228,7 @@ export default function ManagementArticlePublisher({scopeId}){
             <input type="checkbox" checked={draft.hidden===true} onChange={event=>change('hidden',event.target.checked)}/>
             <UiText id="uiExtra.publisher.excludeSearch"/>
           </label>
-          {!inDock?<button className="loc-button primary" type="submit" disabled={busy}><UiText id={busy?'uiExtra.publisher.publishing':'uiExtra.publisher.publishArticle'}/></button>:null}
+          {!inDock?<button className="loc-button primary" type="submit" disabled={busy||loadingUid}><UiText id={busy?'uiExtra.publisher.publishing':editingUid?'uiExtra.publisher.saveChanges':'uiExtra.publisher.publishArticle'}/></button>:null}
         </section>
 
         <section className="scope-publisher-panel">
@@ -235,6 +252,6 @@ export default function ManagementArticlePublisher({scopeId}){
       </aside>
     </form>
 
-    {status?<p className={'scope-status'+([UI_COPY.management.articlePublished,t('uiExtra.publisher.articleUpdated'),t('uiExtra.publisher.articleLoaded')].includes(status)?'':' scope-error')} role="status">{status}</p>:null}
+    {status?<p className={'scope-status'+([UI_COPY.management.articlePublished,t('uiExtra.publisher.articleUpdated'),t('uiExtra.publisher.noChanges'),t('uiExtra.publisher.articleLoaded')].includes(status)?'':' scope-error')} role="status">{status}</p>:null}
   </section>;
 }
