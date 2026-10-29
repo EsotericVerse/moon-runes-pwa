@@ -1,14 +1,14 @@
 import {classifyKeywordDocumentsById} from './model/keyword-id-analysis.mjs';
-import {buildKeywordUidlistRows} from './keyword-uidlist.mjs';
+import {buildKeywordUidlistRows,buildKeywordClassUidlist} from './keyword-uidlist.mjs';
 
 // A complete reanalysis deliberately ignores every old Galaxy classification.
 // It reads article bodies only and replaces every Item's uidlist, including
 // Items whose keywords now match nothing. No Galaxy write is ever performed.
 export async function reanalyzeKeywordClass({
   classUid,catalogRows=[],defaultKeywordId='',minChars=0,pageSize=1000,
-  readPage,writeItem,finalize,onProgress=()=>{}
+  readPage,writeItem,writeClass,finalize,onProgress=()=>{}
 }={}){
-  if(typeof readPage!=='function'||typeof writeItem!=='function'||typeof finalize!=='function')
+  if(typeof readPage!=='function'||typeof writeItem!=='function'||typeof writeClass!=='function'||typeof finalize!=='function')
     throw new TypeError('Reading, writing and finalization callbacks are required');
   const ordered=[...catalogRows].sort((a,b)=>
     Number(a.order_no??0)-Number(b.order_no??0)
@@ -48,6 +48,7 @@ export async function reanalyzeKeywordClass({
       result.hits=[{keyword_id:fallback,times:0}];
   }
   const rows=buildKeywordUidlistRows({classUid,catalogRows:ordered,classifications:hits});
+  const classUidlist=buildKeywordClassUidlist(rows);
   const matched=new Set();
   let occurrences=0;
   for(const row of rows)for(const hit of row.uidlist){
@@ -65,9 +66,14 @@ export async function reanalyzeKeywordClass({
     });
     onProgress({phase:'writing',completed:index+1,total:rows.length});
   }
+  // The Class record is one unique Item with the same uidlist schema.
+  // Its Group labels remain solely on child Keyword Item rows.
+  await writeClass({classUid,uidlist:classUidlist});
   await finalize({classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
+    classDocumentCount:classUidlist.length,
     itemMatches:rows.reduce((n,item)=>n+item.uidlist.length,0),occurrences});
   onProgress({phase:'completed',completed:eligible,total:eligible});
   return {classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
+    classDocumentCount:classUidlist.length,
     itemMatches:rows.reduce((n,item)=>n+item.uidlist.length,0),occurrences};
 }
