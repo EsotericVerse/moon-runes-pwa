@@ -240,7 +240,7 @@ export default function Search({managementMode=false}){
   // workspace may narrow the query to a specific Scope.
   const locPublicSearch=scopeId==='loc'&&!managementMode;
   const managementAuthorized=Boolean(managementMode&&account.user&&!account.loading&&!account.permissionLoading&&
-    (scopeId==='loc'?(account.canManageGlobalSync()||account.scopes.length>0):canManageSearchScope(account,scopeId)));
+    (scopeId==='loc'?(account.canManageGroupSync('loc')||account.scopes.length>0):canManageSearchScope(account,scopeId)));
   const searchParams=useSearchParams();
   const router=useRouter();
   const resourceCache=useResourceCache();
