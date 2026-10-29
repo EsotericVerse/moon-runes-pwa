@@ -4,7 +4,7 @@ import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
-import {classifyRune66Documents} from './model/rune66-keyword-engine.mjs';
+import {classifyKeywordDocuments} from './model/keyword-engine.mjs';
 import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
 import {assignedSource} from './member-intersection-model.mjs';
 
@@ -46,7 +46,7 @@ function isEligibleRow(row,minChars){
 }
 function documentOf(row){
   // title is deliberately left out: keyword/rune matching only looks at
-  // the article body (see textOf in model/rune66-keyword-engine.mjs),
+  // the article body (see textOf in model/keyword-engine.mjs),
   // unlike site search, which legitimately does match on title.
   return {
     key:'galaxy:'+row.uid,
@@ -79,7 +79,7 @@ async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
   let unclassifiedCount=0;
   let tieCount=0;
   for(let offset=0;offset<documents.length;offset+=batchSize){
-    const chunk=classifyRune66Documents(documents.slice(offset,offset+batchSize),catalogRows);
+    const chunk=classifyKeywordDocuments(documents.slice(offset,offset+batchSize),catalogRows);
     parts.push(...chunk.classifications);
     classifiedCount+=chunk.classifiedCount;
     unclassifiedCount+=chunk.unclassifiedCount;
