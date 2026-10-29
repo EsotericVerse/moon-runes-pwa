@@ -479,3 +479,29 @@ test('Threads ZIP file with no EXIF and no media URL retains confirmed post medi
   assert.equal(plan.mediaLinks.length,1);
   assert.equal(plan.exif.length,0);
 });
+
+test('Textless Threads media-only post is recorded as valid media without inventing a text article',async()=>{
+  const input=asFile('threads-media-only.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[{
+      id:'post-image-only',media:[{uri:'threads/media/picture.jpg',creation_timestamp:1720000000}]
+    }]}),
+    'threads/media/picture.jpg':strToU8('image without EXIF')
+  }));
+  const collector=createArchiveEvidenceCollector(),articles=[];
+  await inspectPrivateArchive(input,{
+    onRecord:record=>{
+      if(!isPublicArchiveRecord(record))return;
+      const article=archiveGalaxyRow(record);
+      if(article)articles.push(article);
+      collector.onRecord(record,article?.uid||null);
+    },
+    onMediaEntry:item=>collector.onMediaEntry(item),
+    onMediaMetadata:item=>collector.onExif(item)
+  });
+  const rows=collector.rows({scopeId:'lo3rwang',archiveName:input.name,archiveSize:input.size});
+  const plan=prepareArchiveMedia(rows,new Set(articles.map(item=>item.uid)));
+  assert.equal(articles.length,0);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.mediaLinks.length,0);
+});
