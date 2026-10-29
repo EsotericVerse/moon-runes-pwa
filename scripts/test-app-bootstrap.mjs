@@ -244,13 +244,14 @@ test('Keywords reset clears the current Class rather than writing Galaxy',()=>{
   assert.ok(start>=0&&end>start);
   const body=contract.slice(start,end);
   assert.match(body,/update\\(\\{uid_lists:\\[\\]\\}\\)/);
-  assert.match(body,/\.eq\('class_uid',classUid\)/);
+  assert.match(body,/\.eq\('uid',row\.uid\)/);
   assert.doesNotMatch(body,/galaxy|group_lists|apply_keyword_classification/);
 });
 
 test('keyword panel reads one Scope tree and writes no Galaxy classification',()=>{
   const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/selectAllRows\(table,\{columns:'uid,type,name,desc,lists,uid_lists'/);
+  assert.match(panel,/dbAuthRelation\(table\)/);
+  assert.match(panel,/\.select\('uid,type,name,desc,lists'\)/);
   assert.match(panel,/reanalysis|重新分析/);
   assert.match(panel,/Group／Item/);
   assert.doesNotMatch(panel,/\.update\(\{class_id|group_lists/);
@@ -413,8 +414,8 @@ test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
     'opening a Rune group alone must not scan every Galaxy article');
   assert.match(culture,/enabled:styleFilter==='rune66'&&Boolean\(keywordDrillGroup\)/,
     'fetch Rune catalog only after a group is expanded');
-  assert.match(culture,/readKeywordTreeCatalog\\(scopeId\\)/);
-  assert.match(culture,/\.filter\(item=>item\.class_group===groupName/,'Group catalog is filtered to the selected Group');
+  assert.match(culture,/readKeywordTreeCatalog\(scopeId\)/);
+  assert.match(culture,/catalog\.groups\.find\(group=>group\.uid===keywordDrillGroup/,'Group catalog is filtered by UID');
   assert.match(culture,/revalidateOnFocus:false/);
   assert.match(culture,/keywordCounts\.set\(key,\(keywordCounts\.get\(key\)\|\|0\)\+\(Number\(item\.item_count\)\|\|0\)\)/,
     'use real daily category counts to show clickable group labels');
