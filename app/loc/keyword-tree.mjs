@@ -1,0 +1,132 @@
+// Same six-column, UID-linked hierarchy as the Scope's anchor records.
+// category -> class -> group -> item -> literal keyword strings.
+// Parent lists contain child UIDs, not names. No class_id, group_id, item_no.
+const UID=/^[0-9A-Za-z]{4}$/;
+const ARTICLE_UID=/^[0-9A-Za-z]{8}$/;
+const NEXT={category:'class',class:'group',group:'item'};
+const TYPES=new Set(['category','class','group','item']);
+const array=value=>{
+  if(Array.isArray(value))return value;
+  if(typeof value==='string'){try{const v=JSON.parse(value);if(Array.isArray(v))return v;}catch{}}
+  throw new Error('Keywords lists and uid_lists must be arrays');
+};
+const cleanUid=value=>{
+  if(typeof value!=='string'||!UID.test(value))throw new Error('Keywords UID must be four case-sensitive Base62 characters');
+  return value;
+};
+export function normalizeKeywordTreeRow(row){
+  const uid=cleanUid(row?.uid),type=String(row?.type||'');
+  if(!TYPES.has(type))throw new Error('Invalid Keywords type');
+  const name=String(row?.name||'').trim(),desc=String(row?.desc??'');
+  if(!name)throw new Error('Keywords name is required');
+  const lists=array(row?.lists??[]),uid_lists=array(row?.uid_lists??[]);
+  if(type==='item'){
+    if(lists.some(word=>typeof word!=='string'||!word.trim()))throw new Error('Item lists must contain keyword strings');
+    const seen=new Set();
+    for(const hit of uid_lists){
+      if(!hit||typeof hit!=='object'||!ARTICLE_UID.test(hit.uid)
+        ||!Number.isSafeInteger(hit.times)||hit.times<0||seen.has(hit.uid))
+        throw new Error('Item uid_lists require unique {uid,times} hits');
+      seen.add(hit.uid);
+    }
+  }else{
+    if(lists.some(x=>typeof x!=='string'||!UID.test(x)))throw new Error('Parent lists must contain child UIDs');
+    if(new Set(lists).size!==lists.length)throw new Error('Duplicate child UID');
+    if(type==='group'){
+      if(uid_lists.some(x=>typeof x!=='string'||!ARTICLE_UID.test(x))
+        ||new Set(uid_lists).size!==uid_lists.length)
+        throw new Error('Group uid_lists require unique article UID strings');
+    }else if(uid_lists.length)throw new Error('Category and Class do not store uid_lists');
+  }
+  return {uid,type,name,desc,lists:[...lists],uid_lists:[...uid_lists]};
+}
+export function indexKeywordTree(rows=[]){
+  const index=new Map(),parent=new Map();
+  for(const raw of rows){
+    const row=normalizeKeywordTreeRow(raw);
+    if(index.has(row.uid))throw new Error('Duplicate Keywords UID');
+    index.set(row.uid,row);
+  }
+  for(const row of index.values()){
+    const childType=NEXT[row.type];
+    if(!childType)continue;
+    for(const uid of row.lists){
+      const child=index.get(uid);
+      if(!child)throw new Error('Missing referenced Keywords UID: '+uid);
+      if(child.type!==childType)throw new Error('Invalid Keywords hierarchy: '+row.type+' -> '+child.type);
+      if(parent.has(uid))throw new Error('Keywords node has multiple parents: '+uid);
+      parent.set(uid,row.uid);
+    }
+  }
+  // No implied relation from a name or a numeric ordinal.
+  return {index,parent,roots:[...index.values()].filter(row=>row.type==='category')};
+}
+export function descendantsOfKeyword(rows,uid,{type}={}){
+  const tree=indexKeywordTree(rows),start=tree.index.get(cleanUid(uid));
+  if(!start)throw new Error('Unknown Keywords UID');
+  const result=[],walk=node=>{
+    if(!type||node.type===type)result.push(node);
+    for(const childUid of NEXT[node.type]?node.lists:[])walk(tree.index.get(childUid));
+  };
+  walk(start);
+  return result;
+}
+export function keywordClassCatalog(rows,classUid){
+  const nodes=descendantsOfKeyword(rows,classUid),root=nodes[0];
+  if(root.type!=='class')throw new Error('Keywords Class UID required');
+  const map=new Map(nodes.map(node=>[node.uid,node])),catalog=[];
+  for(const groupUid of root.lists){
+    const group=map.get(groupUid);
+    if(group.type!=='group')throw new Error('Unknown Group');
+    for(const itemUid of group.lists){
+      const item=map.get(itemUid);
+      catalog.push({
+        uid:item.uid,item_name:item.name,class_group:group.name,keywords:[...item.lists],
+        order_no:catalog.length+1,group_uid:group.uid,class_uid:root.uid
+      });
+    }
+  }
+  return {classNode:root,catalog};
+}
+export function rebuildKeywordUidLists(rows,classUid,classifications=[]){
+  const tree=indexKeywordTree(rows),root=tree.index.get(cleanUid(classUid));
+  if(!root||root.type!=='class')throw new Error('Class UID is required');
+  const {catalog}=keywordClassCatalog(rows,classUid);
+  const itemByUid=new Map(catalog.map(item=>[item.uid,item]));
+  const groupByName=new Map();
+  for(const gid of root.lists){
+    const group=tree.index.get(gid);
+    if(groupByName.has(group.name))throw new Error('Group names must be unique within a Class for classification');
+    groupByName.set(group.name,group);
+  }
+  const perItem=new Map(catalog.map(item=>[item.uid,new Map()]));
+  const perGroup=new Map(root.lists.map(uid=>[uid,new Set()]));
+  const seen=new Set();
+  for(const result of classifications){
+    const uid=result?.uid;
+    if(typeof uid!=='string'||!ARTICLE_UID.test(uid)||seen.has(uid))throw new Error('Invalid or duplicate Galaxy UID');
+    seen.add(uid);
+    const used=new Set();
+    for(const hit of result.hits||[]){
+      const itemUid=cleanUid(hit.uid);
+      if(!itemByUid.has(itemUid)||used.has(itemUid)
+        ||!Number.isSafeInteger(hit.times)||hit.times<0)throw new Error('Invalid Item UID hit');
+      used.add(itemUid);
+      perItem.get(itemUid).set(uid,hit.times);
+    }
+    const chosen=String(result.classification_group||'');
+    if(chosen){
+      const group=groupByName.get(chosen);
+      if(!group)throw new Error('Analysis returned an unknown Group');
+      perGroup.get(group.uid).add(uid);
+    }
+  }
+  return [...tree.index.values()].filter(row=>
+    row.uid===classUid||perItem.has(row.uid)||perGroup.has(row.uid)
+  ).map(row=>{
+    const uid_lists=row.type==='class' ? [] :
+      row.type==='group' ? [...perGroup.get(row.uid)].sort() :
+      [...perItem.get(row.uid)].sort(([a],[b])=>a.localeCompare(b)).map(([uid,times])=>({uid,times}));
+    return {...row,uid_lists};
+  });
+}
