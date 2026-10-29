@@ -72,6 +72,6 @@ $function$;
 -- Never CASCADE: fail safely if any further database dependency exists.
 DROP TABLE IF EXISTS silver.lo3rwang_keywords_legacy;
 DROP TABLE IF EXISTS silver.lrunes_keywords_legacy;
-DROP FUNCTION IF EXISTS silver.new_keyword_class_uid();
 DROP TABLE IF EXISTS silver.keyword_classes;
+DROP FUNCTION IF EXISTS silver.new_keyword_class_uid();
 NOTIFY pgrst,'reload schema';
