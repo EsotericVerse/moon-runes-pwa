@@ -45,3 +45,34 @@ test('Failed Keyword write never publishes the success marker',async()=>{
  }),/write failed/);
  assert.equal(published,false);
 });
+
+test('stateful ties use least-loaded Group across page boundaries; unmatched falls back to 德',async()=>{
+ const catalog=[
+  {uid:'CAT1',type:'category',name:'符文',lists:['CL01']},
+  {uid:'CL01',type:'class',name:'符文66',lists:['GR01','GR02','GR03']},
+  {uid:'GR01',type:'group',name:'靈魂',lists:['IT01']},
+  {uid:'GR02',type:'group',name:'秩序',lists:['IT02']},
+  {uid:'GR03',type:'group',name:'特殊',lists:['IT03']},
+  {uid:'IT01',type:'item',name:'靈',lists:['心']},
+  {uid:'IT02',type:'item',name:'向',lists:['方']},
+  {uid:'IT03',type:'item',name:'德',lists:['台北']}
+ ];
+ const docs=[
+  {uid:'aB000001',content:'靈向'},
+  {uid:'aB000002',content:'靈向'},
+  {uid:'aB000003',content:'靈向'},
+  {uid:'aB000004',content:'靈向'},
+  {uid:'aB000005',content:'未命中任何一個判斷詞'}
+ ];
+ const writes=[];
+ const stats=await reanalyzeKeywordClass({
+  classUid:'CL01',treeRows:catalog,pageSize:1,
+  readPage:async({offset,limit})=>docs.slice(offset,offset+limit),
+  writeNode:async row=>writes.push(row),finalize:async()=>{}
+ });
+ assert.deepEqual(writes.find(x=>x.uid==='GR01').uid_lists,['aB000001','aB000003']);
+ assert.deepEqual(writes.find(x=>x.uid==='GR02').uid_lists,['aB000002','aB000004']);
+ assert.deepEqual(writes.find(x=>x.uid==='GR03').uid_lists,['aB000005']);
+ assert.equal(stats.matchedDocuments,5);
+ assert.equal(stats.itemMatches,8);
+});
