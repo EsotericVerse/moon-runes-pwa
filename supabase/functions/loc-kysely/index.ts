@@ -259,7 +259,7 @@ Deno.serve(async (request) => {
     if(requestedTarget==="backup"){
       if(!routing.backupId)return json({error:{message:"Backup is disabled by repository routing"}},503);
       if(body.kind!=="query"||body.operation!=="select"||
-         body.schema!=="silver"||!neonLocReadTables.has(String(body.table||"")))
+         body.schema!=="silver"||typeof body.table!=="string")
         return json({error:{message:"Backup is read-only"}},403);
       resolvingTarget=true;
       // Only an explicitly requested, enabled backup needs its saved connection profile.
@@ -278,11 +278,16 @@ Deno.serve(async (request) => {
     // No per-request database_targets lookup, even for RPCs and authenticated writes.
     if(target.provider==="neon"&&(body.kind!=="query"||body.operation!=="select"))
       return json({error:{message:"Neon LOC mirror is read-only"}},403);
-    if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
+    // PostgreSQL mirrors enforce per-row access through RLS, not table-name
+    // lists. This older Supabase-hosted Edge transport remains optional; the
+    // independent Neon primary/backup never requires it.
+    if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"))
       return json({error:{message:"Neon LOC mirror table is not enabled"}},403);
     if(target.provider==="neon"&&role==="anon"){role="anonymous";claims.role=role;}
-    if(target.engine!=="postgres"&&(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
-      return json({error:{message:"Cross-engine target is not authorized for this operation"}},403);
+    // Non-PostgreSQL engines have no equivalent to PostgreSQL RLS yet.
+    // Enforce the same small public reference whitelist BEFORE opening a
+    // database connection; executeRequest repeats the gate defensively.
+    if(target.engine!=="postgres")assertCrossEnginePublicRead(body);
     const db=isSupabaseControlTarget(target)
       ?await databaseForTarget(controlTarget)
       :await databaseForTarget(target,{profileLookup:profileForTarget});
