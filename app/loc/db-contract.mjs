@@ -420,7 +420,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       .select('keyword_id,class_group,class_enable,item_name,principle,keywords,order_no')
       .eq('class_name',source).order('order_no',{ascending:true});
     if(readError||!sourceItems?.length)throw new Error(readError?.message||'找不到來源 Class');
-    const registry=dbAuthRelation('silver.keyword_classes');
+    const registry=dbAuthRelation(scope==='local'?'local.local_keyword_classes':'silver.keyword_classes');
     const {data:created,error:registryError}=await registry.insert({scope_id:scope}).select('class_uid');
     if(registryError||created?.length!==1)throw new Error(registryError?.message||'無法建立 Class UID');
     const classUid=created[0].class_uid;
