@@ -48,7 +48,7 @@ test('primary-key conflicts do not abort subsequent imported posts',async()=>{
 
 test('missing site is backfilled only for a unique matching timestamp and body',()=>{
   const incoming=[
-    {uid:'NEWA0001',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'第一行\\n第二行'},
+    {uid:'NEWA0001',site:'Threads',createtime:'2024-08-01T00:00:00Z',content:'第一行\n第二行'},
     {uid:'NEWA0002',site:'Facebook',createtime:'2024-08-01T00:00:01Z',content:'不同的內容'}
   ];
   const original=[
