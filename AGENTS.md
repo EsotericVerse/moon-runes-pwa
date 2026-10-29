@@ -108,7 +108,7 @@
 - **付費資源設定一律使用者決定**（ISR、DNS、R2、Durable Objects、Cloudflare 專案的 Git 連接、組建監看路徑、哪個專案是正式入口）。Agent 不主動查現況、不主動建議調整，被明確要求才操作、操作完回報。
 - **組建監看排除路徑目前**：包括 `*`，排除 `AGENTS.md`、`.md`、`.githooks/**`、`node_modules/**`、`.git/`。Cloudflare 用 `*` 當萬用字元且 `*` 會跨過 `/`，沒帶 `*` 的是字面比對——所以 `.md` 對不到 `README.md`、`docs/*.md` 這些。名單由使用者維護，變了由使用者講。
 - **三種情況無視排除名單一律建置**：push 含 20 個以上 commit、3000 個以上檔案變動、或零檔案變動。**這是晚 merge 的第二個成本。**
-- **不要為了省部署資源把文件改動攢著、延後 merge 或繞路改別的檔案。** 同一 commit 夾帶程式碼當然還是會建置，照正常語法檢查流程走。
+- **控制不必要的佈署。** 同一需求的微調先在本機完成，集中 Push；驗證通過的完整功能正常 Merge，不為了省部署延誤必要修復。
 - **不要把 workflow 從 `workflow_dispatch` 改回自動觸發**，用到 macOS runner 的尤其貴，之前就因此堆高過用量。
 - **部署量要維持在可控，因為那決定使用者敢不敢開 ISR。** ISR 關著時，分支暴增只燒儲存與建置；ISR 一開，同樣的行為會變成每次部署都在寫快取。部署量壓不回來，ISR 就只能一直關著——那不是技術決策，是被迫的。
 - **資料安全不變。** 不因自動部署刪除 Supabase／Neon／Galaxy 資料；DB 修改核對正式 schema，遵守授權與資料保護檢查。
@@ -121,12 +121,11 @@
 
 - **先授權才動手。** 純討論／研究不算授權；一旦授權就把任務做完。使用者撤回授權就停，只做必要善後。
 - **動手前看 baseline。** 確認 `main` 現況與 `git status`，不要假設 checkout 是乾淨的。
-- **分支有條件開，不是每次都開。** 大／多檔／有風險的開一條 `task/<purpose>` 或 `fix/<purpose>`，從頭用到驗證完；單純低風險的文件／設定修正直接進 clean `main`。**「有風險」的下限錨在真風險上：碰到 schema、auth／權限、付費資源，或任何會改變資料公開性的操作，一律算有風險。**
-- **分支做完就收，合完就刪**（remote 與本地都刪）。兩三條線各掛一條分支是正常的，**不正常的是分支只進不出一路累積**——那不代表做了很多事，那是沒收尾。**而且分支不是免費的**：預覽部署預設對所有非生產分支生效，每推一條分支、每個 commit 都跑一次完整建置並留下一份產物。**一條分支的生命週期結束在 merge，不是結束在你不想管它了。**
-- **先驗證、再 PR、盡早 merge。** 功能在 branch 完成後，以本機測試／模擬器驗證實際行為及語法；通過才送 PR 並合入 `main`，避免多線並行造成版本差。衝突自行修復重驗，不把使用者驗收當合併關卡。
+- **一般修改先沿用相關、未結案且可安全續作的 Branch；沒有才新建。** 直接寫 `main` 僅限緊急修復（優先處理 404／功能中斷、權限、安全事件），快速驗證後即部署；實質重大隱患依危害程度即時升級。
+- **分支完成並合併後清理本地與遠端分支。** 不重複開相同功能的 Branch；每次遠端 Push 也可能觸發付費預覽部署。
+- **先完成、再集中提交。** 同一需求在本機完成修改及實際行為／語法驗證，減少遠端 Push；確認完成後 PR → Merge `main`，衝突自行修復與重驗，不等待使用者驗收，也不長期積壓已完成工作。
 - **merge 失敗、部署失效是預期會發生的事，不是意外。** 差距越大越難修；趁小的時候合，失敗了還修得動。失敗就自己 rebase、自己解衝突、自己診斷——那是工程問題，不是回頭問使用者怎麼辦，更不是另開一條分支繞過去（那正是分支暴增的主因）。
 - **PR 不是等使用者核准的關卡。** 它只是管理分支的手段。檢查做完就自己合。**開著 PR 等人看就是在瞎等**——使用者可能在忙、根本沒看到，PR 不會自己變成被核准。
-- **扣著 PR 不只拖自己這條線。** 其他線等不到新基準、部署排隊、建置計費往上堆、通知信灌爆信箱。**不要假設「反正使用者會來 merge」——merge 不是他的工作。**
 - **需求完成與部署分開回報。** Branch 驗證通過、PR 成功合入 `main` 並收整分支，即回報「需求完成、PR 編號與 Merge 結果、等待部署」；不必等使用者驗收。部署未經確認，不宣稱線上已生效。
 - **任務中斷＝凍結，不是放著。** 標記 `FROZEN / NOT FOR MERGE`；不新開分支重做同一件事，不 `git reset --hard` 刪別人的東西。
 
@@ -155,48 +154,9 @@
 
 ---
 
-## Skill 路由表
+## Skill 路由
 
-| Skill | Use it for |
-|---|---|
-| `brainstorming` | Brainstorm unresolved product choices; if goal/authorization already clear, skip ceremony. |
-| `domain-modeling` | LOC terminology, Scope/Registry boundaries, glossary, ADRs. |
-| `vercel-react-best-practices` | React/Next.js implementation and performance. |
-| `vercel-composition-patterns` | Component API design, compound components. |
-| `supabase-postgres-best-practices` | Any Postgres/Supabase schema, RLS, migration, performance work. |
-| `sql-optimization-patterns` | N+1, slow SQL, aggregation, EXPLAIN. |
-| `supabase` | Supabase Auth, Edge Functions, Realtime, Storage, CLI/MCP. |
-| `ui-skills-root` | Selecting a small set of relevant UI skills. |
-| `frontend-design` | Deliberate visual direction for new/reshaped UI. |
-| `ui-ux-pro-max` | Layout, color, typography, UX review（附 `scripts/search.py`，路徑依 global 安裝位置）. |
-| `design-taste-frontend` | Explicit public-page/app-screen redesign; use `references/app-screens.md` for admin screens. |
-| `baseline-ui` | Quick spacing/hierarchy/typography polish. |
-| `fixing-accessibility` | Keyboard access, ARIA, contrast, WCAG. |
-| `fixing-metadata` | Page metadata, social previews, structured data. |
-| `fixing-motion-performance` | Animation jank, layout thrashing. |
-| `improve-ui` | Read-only UI audit + implementation plan. |
-| `web-design-guidelines` | Read-only Web Interface Guidelines review. |
-| `create-design-md` | Create/update `DESIGN.md` from evidence. |
-| `component-canvas` | Interactive canvas of existing component variants. |
-| `create-canvas` | Freeform canvas for exploring ideas. |
-| `agent-browser` | General browser automation and testing. |
-| `browser-use` | Direct CDP / logged-in-session browser control. |
-| `seo-audit` | SEO audit/diagnosis. |
-| `code-review-expert` | Security checklist reference; full review only when explicitly asked. |
-| `find-skills` | Discover/install a skill for a real capability gap. |
-| `skill-creator` | Create/edit/evaluate a skill. |
-| `grill-with-docs` | Stress-test a plan via interview; also records ADRs. |
-| `improve-codebase-architecture` | User-invoked architecture review only (`disable-model-invocation`). |
-| `tdd` | Test-first development. |
-| `triage` | Issue/PR triage. |
-| `prototype` | Throwaway prototype for a design question. |
-| `systematic-debugging` | Reproduce → trace root cause → fix minimally. |
-| `webapp-testing` | Playwright verification before claiming a UI change works. |
-| `verification-before-completion` | Fresh evidence before reporting done. |
-| `mcp-builder` | Build/review an MCP server. |
-| `handoff` | Compact a conversation into a handoff doc. |
-
-上表是 global 裝了什麼的對照，沒裝的只能當參考讀，不要當成已安裝。**用不到的 skill 就不要裝**——每個 skill 的描述每次冷啟動都要讀，裝著不用就是每個 session 都在付那個錢。
+依任務查找並只讀相關 Global Skills；跨領域可組合，缺能力再用 `find-skills`。技能清單由安裝環境提供，不在 AGENTS.md 重複維護。
 
 ---
 
