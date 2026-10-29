@@ -181,31 +181,49 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {count:completed};
   }
 
+  async function verifiedKeywordOwner(){
+    const current=await auth.getSession();
+    if(current.error)throw new Error(current.error.message||'Keyword session unavailable');
+    const session=current.data?.session;
+    if(!session?.access_token||!session.user?.id)return false;
+    const verified=await auth.getUser(session.access_token);
+    return !verified.error&&String(verified.data?.user?.id||'')===String(session.user.id);
+  }
+
+  async function keywordRead(name,args,{isEmpty=data=>!data}={}){
+    const publicResult=await publicClient.schema('silver').rpc(name,args);
+    if(publicResult.error)throw new Error(publicResult.error.message||('Keyword RPC '+name+' failed'));
+    if(!isEmpty(publicResult.data))return publicResult.data;
+    if(!await verifiedKeywordOwner())return publicResult.data;
+    const privateResult=await authClient.schema('silver').rpc(name,args);
+    if(privateResult.error)throw new Error(privateResult.error.message||('Private Keyword RPC '+name+' failed'));
+    return privateResult.data;
+  }
+
   async function readKeywordClass(scopeId,classUid){
     const scope=normalizeScopeId(scopeId),uid=String(classUid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_tree_catalog',{p_scope_id:scope});
-    if(error)throw new Error(error.message);
+    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope},{
+      isEmpty:result=>!result?.class_uid||!Array.isArray(result.rows)||result.rows.length===0
+    });
     return data?.class_uid===uid?data:null;
   }
 
   async function readKeywordTreeSummary(scopeId,{startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
     const day=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_tree_summary',{
+    const data=await keywordRead('read_keyword_tree_summary',{
       p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
       p_source:String(source||'').trim()||null
-    });
-    if(error)throw new Error(error.message||'Keyword tree statistics unavailable');
+    },{isEmpty:value=>!Array.isArray(value)||value.length===0});
     return Array.isArray(data)?data:[];
   }
 
   async function readKeywordTreeCatalog(scopeId){
     const scope=normalizeScopeId(scopeId);
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_tree_catalog',{
-      p_scope_id:scope
+    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope},{
+      isEmpty:value=>!value?.class_uid||!Array.isArray(value.rows)||value.rows.length===0
     });
-    if(error)throw new Error(error.message||'Keyword tree catalog unavailable');
     return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
   }
 
