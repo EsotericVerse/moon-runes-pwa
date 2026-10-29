@@ -10,10 +10,10 @@ DO $migration$
 DECLARE
   scope_name text;
   missing_functions text[];
-  old_function text;
 BEGIN
   SELECT array_agg(fn) INTO missing_functions
   FROM unnest(ARRAY[
+    'api.apply_keyword_classification(jsonb)',
     'api.apply_keyword_classification(text,jsonb)',
     'silver.apply_keyword_classification(text,jsonb)',
     'silver.read_rune66_summary(text,date,date)'
@@ -22,6 +22,11 @@ BEGIN
   IF cardinality(missing_functions)>0 THEN
     RAISE EXCEPTION 'Old Galaxy keyword RPCs must be retired before dropping columns: %',
       missing_functions;
+  END IF;
+
+  IF to_regprocedure('silver.read_keyword_tree_summary(text,date,date,text,text)') IS NULL
+     OR to_regprocedure('silver.read_keyword_tree_catalog(text,text)') IS NULL THEN
+    RAISE EXCEPTION 'UID-tree Class-aware readers must exist before dropping Galaxy columns';
   END IF;
 
   FOR scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
