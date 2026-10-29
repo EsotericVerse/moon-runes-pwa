@@ -109,7 +109,7 @@ export default {
   "parseFileFailed": "第 {index} 个文件的 JSON／格式解析失败：{error}",
   "selectSource": "请先指定来源。",
   "noValidItems": "没有可导入的有效数据。",
-  "checkingUids": "正在核对现有 UID…",
+  "checkingCreatedAt": "核对来源发文时间与已有文章…",
   "existingUidFailed": "现有 UID 检查失败。",
   "existingNativeFailed": "平台原生 ID 检查失败。",
   "skippedClause": "；跳过 {count} 条（无效／重复／已存在）",

@@ -19,7 +19,7 @@ import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches} from './import-batch.mjs';
@@ -412,7 +412,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
     }
     catch(error){setStatus(String(error?.message||error));return;}
-    setBusy(true);setStatus(t('uiExtra.importUI.checkingUids'));
+    setBusy(true);setStatus(t('uiExtra.importUI.checkingCreatedAt'));
     setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
     try{
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
@@ -462,6 +462,37 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           return collected;
         }
       });
+      // Older imports sometimes have no site. Timestamp alone is not enough
+      // to infer an author/platform: require identical normalized content and
+      // an unambiguous matching row before repairing that missing site.
+      const unmatchedWithTime=unique.filter(record=>!existingByCreatedAt.has(record.uid)&&
+        String(record.site||'').trim()&&record.createtime&&Number.isFinite(Date.parse(record.createtime)));
+      if(unmatchedWithTime.length){
+        let earliest=Infinity,latest=-Infinity;
+        for(const record of unmatchedWithTime){
+          const ms=Date.parse(record.createtime);
+          earliest=Math.min(earliest,ms);latest=Math.max(latest,ms);
+        }
+        const from=new Date(Math.floor(earliest/1000)*1000).toISOString();
+        const through=new Date((Math.floor(latest/1000)+1)*1000).toISOString();
+        const unknownSiteRows=[];
+        for(const [method,term] of [['is',null],['eq','']]){
+          for(let offset=0;;){
+            const {data,error,count}=await dbAuthRelation(galaxy)
+              .select('uid,site,createtime,content,title,location,place_id',{count:'exact'})
+              .gte('createtime',from).lt('createtime',through)
+              [method]('site',term).order('uid',{ascending:true})
+              .range(offset,offset+MAX_ROWS-1);
+            if(error)throw new Error('補寫空白 site 的比對失敗：'+error.message);
+            const page=data||[];
+            unknownSiteRows.push(...page);
+            offset+=page.length;
+            if(!page.length||(count!=null&&offset>=Number(count))||page.length<MAX_ROWS)break;
+          }
+        }
+        const missingSiteMatches=matchMissingSiteImports(unmatchedWithTime,unknownSiteRows,existingByCreatedAt);
+        for(const [newUid,existing] of missingSiteMatches)existingByCreatedAt.set(newUid,existing);
+      }
       const knownArticleIds=new Map();
       let updated=0;
       for(const record of unique){
@@ -473,6 +504,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
         if(!String(existing.location||'').trim()&&String(record.location||'').trim())
           changes.location=record.location;
+        if(!String(existing.site||'').trim()&&String(record.site||'').trim())
+          changes.site=record.site;
         // Do not replace a manually selected location or existing place_id.
         if(Object.keys(changes).length){
           await updateRows(galaxy,changes,{filters:[{column:'uid',operator:'eq',value:existing.uid}]});

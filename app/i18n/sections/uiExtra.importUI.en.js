@@ -109,7 +109,7 @@ export default {
   "parseFileFailed": "Cannot parse JSON/format in file {index}: {error}",
   "selectSource": "Choose a source first.",
   "noValidItems": "No valid records to import.",
-  "checkingUids": "Checking existing UIDs…",
+  "checkingCreatedAt": "Matching source timestamps with existing posts…",
   "existingUidFailed": "Failed to check existing UIDs.",
   "existingNativeFailed": "Failed to check existing native platform IDs.",
   "skippedClause": "; skipped {count} (invalid/duplicate/existing)",
