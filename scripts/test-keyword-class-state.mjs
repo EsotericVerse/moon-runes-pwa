@@ -22,3 +22,12 @@ test('Class selection is a view, not deletion of stored results',()=>{
  assert.deepEqual(activeKeywordMeta({keyword_meta:meta},'ClA1').classes,{Ga01:'靈魂'});
  assert.deepEqual(activeKeywordMeta({keyword_meta:meta},'ClB1').by_class,meta.by_class);
 });
+
+test('switching active Class never revives invalidated Class from global completion time',()=>{
+ const first=completeKeywordClass({},'ClA1',{matchedDocuments:3},'2026-10-30T00:00:00Z');
+ const second=completeKeywordClass(first,'ClB1',{matchedDocuments:5},'2026-10-30T00:02:00Z');
+ const stale=invalidateKeywordClass(second,'ClA1');
+ const config={keyword_meta:{...stale,class_uid:'ClA1'},staticstime:'2026-10-30T00:02:00Z'};
+ assert.equal(keywordClassState(config,'ClA1'),null);
+ assert.equal(keywordClassState(config,'ClB1').matchedDocuments,5);
+});
