@@ -1,19 +1,15 @@
 'use client';
 
-import {applyKeywordClassification,dbAuthRelation,readRune66Summary} from './db-client.mjs';
+import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {KEYWORD_CLASSIFICATION_BATCH_SIZE,KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE} from './db-contract.mjs';
+import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
-import {classifyKeywordDocuments} from './model/keyword-engine.mjs';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
-import {parseGroupLists,formatGroupLists} from './group-lists.mjs';
-import {assignedSource} from './member-intersection-model.mjs';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
 const analysisPromises=new Map();
-let keywordSummaryRpcInstalled=true;
 
 function normalizeScopeId(value){
   const scope=String(value||'lo3rwang').trim().toLowerCase();
@@ -32,30 +28,6 @@ function normalizeKeywordMinDocuments(value){
 export function analysisCharacterCount(value){
   return Array.from(String(value??'').replace(/\s/gu,'')).length;
 }
-function normalizedGroupLists(value){
-  return parseGroupLists(value);
-}
-function isEligibleRow(row,minChars){
-  // statistics_able is now filtered in the query itself (see
-  // runKeywordAnalysisBatch's selectAllRows call) -- every row reaching
-  // here already satisfies it, so it's not re-checked.
-  return Boolean(
-    String(row?.uid||'').trim()
-    &&row?.searchable!==false
-    &&analysisCharacterCount(row?.content)>minChars
-  );
-}
-function documentOf(row){
-  // title is deliberately left out: keyword/rune matching only looks at
-  // the article body (see textOf in model/keyword-engine.mjs),
-  // unlike site search, which legitimately does match on title.
-  return {
-    key:'galaxy:'+row.uid,
-    uid:String(row.uid||'').trim(),
-    kind:'galaxy',
-    content:String(row.content||'')
-  };
-}
 function reportBatchProgress(onProgress,phase,completed,total,percent,label,details={}){
   if(typeof onProgress!=='function')return;
   onProgress({
@@ -70,61 +42,6 @@ function reportBatchProgress(onProgress,phase,completed,total,percent,label,deta
 
 // Preserve the canonical per-document Rune engine while yielding after small batches.
 // This keeps the UI responsive and counts real completed documents, not elapsed time.
-async function classifyDocumentsIncrementally(documents,catalogRows,onProgress){
-  const batchSize=KEYWORD_CLASSIFICATION_BATCH_SIZE;
-  const parts=[];
-  const runeTotals=new Map();
-  const groupTotals=new Map();
-  const unsupportedRules=new Map();
-  let classifiedCount=0;
-  let unclassifiedCount=0;
-  let tieCount=0;
-  for(let offset=0;offset<documents.length;offset+=batchSize){
-    const chunk=classifyKeywordDocuments(documents.slice(offset,offset+batchSize),catalogRows);
-    parts.push(...chunk.classifications);
-    classifiedCount+=chunk.classifiedCount;
-    unclassifiedCount+=chunk.unclassifiedCount;
-    tieCount+=chunk.tieCount;
-    for(const row of chunk.runeTotals){
-      const existing=runeTotals.get(row.rune_id);
-      if(existing){
-        existing.count+=row.count;
-        existing.document_count+=row.document_count;
-      }else runeTotals.set(row.rune_id,{...row});
-    }
-    for(const row of chunk.groupTotals){
-      const existing=groupTotals.get(row.group);
-      if(existing){
-        existing.hit_count+=row.hit_count;
-        existing.document_count+=row.document_count;
-      }else groupTotals.set(row.group,{...row});
-    }
-    for(const rule of chunk.unsupportedRules){
-      unsupportedRules.set(JSON.stringify(rule),rule);
-    }
-    const completed=Math.min(documents.length,offset+batchSize);
-    reportBatchProgress(onProgress,'analysis',completed,documents.length,20+40*completed/documents.length,
-      '分析分類 '+completed.toLocaleString()+' / '+documents.length.toLocaleString()+' 篇');
-    // Permit React to paint the percent and allow user interaction between batches.
-    await new Promise(resolve=>setTimeout(resolve,0));
-  }
-  if(!documents.length){
-    reportBatchProgress(onProgress,'analysis',0,0,60,'沒有符合條件的文章');
-  }
-  const totals=[...runeTotals.values()];
-  return {
-    documentCount:documents.length,
-    classifiedCount,
-    unclassifiedCount,
-    tieCount,
-    classifications:parts,
-    runeTotals:totals.sort((a,b)=>a.rune_id-b.rune_id),
-    runeRanking:[...totals].sort((a,b)=>b.count-a.count||b.document_count-a.document_count||a.rune_id-b.rune_id),
-    groupTotals:[...groupTotals.values()].sort((a,b)=>a.order-b.order||a.group.localeCompare(b.group)),
-    unsupportedRules:[...unsupportedRules.values()]
-  };
-}
-
 // Group ordering comes from each Keywords Class's own catalog.
 // Its configured default Item's Group comes last, regardless of item number.
 function buildClassMap(catalogRows=[],defaultKeywordId=''){
@@ -158,83 +75,6 @@ function buildClassMap(catalogRows=[],defaultKeywordId=''){
     classIdToGroup:new Map(ordered.map(item=>[item.class_id,item.group]))
   };
 }
-function groupListsOf(classification){
-  const output={};
-  for(const item of classification?.rune_counts||[]){
-    const runeId=Number(item?.rune_id);
-    const count=Number(item?.count)||0;
-    if(!Number.isInteger(runeId)||runeId<0||count<=0)continue;
-    output[String(runeId)]=count;
-  }
-  return formatGroupLists(output);
-}
-// Per-item keyword content hash (silver.{scope}_keywords.keyword_sha, a
-// generated column over each item's own `keywords` jsonb). catalogRows is
-// already ordered by order_no,item_no (see loadCurrentCatalog), so this
-// array -- one sha per enabled item, in that fixed order -- is itself the
-// combined identity of the whole keywords multi-class: this scope's current
-// Class as a unit, not any single item. It's what gets stored into this
-// scope's own config row (silver.{scope}.keyword_meta.shas), and compared
-// elementwise (same order, same values) to decide whether a re-run can be
-// skipped (checkSkippable).
-function enabledCatalogRows(catalogRows){
-  return (catalogRows||[]).filter(row=>row?.class_enable!==false&&Number.isInteger(Number(row?.item_no)));
-}
-// Per item: class_group+keyword_sha, not keyword_sha alone. class_group is a
-// plain editable text field (see KeywordLibraryPanel's Group input) that is
-// NOT part of keyword_sha (keyword_sha only hashes `keywords`), but it DOES
-// change which rune group an item's hits count toward -- so a class_group-only
-// edit (no keywords change) must still register as "this item changed" here,
-// the same way a keywords edit does. item_name/class_name/principle are pure
-// display text with no effect on classification output, so they're correctly
-// left out.
-function currentShasOf(catalogRows){
-  return enabledCatalogRows(catalogRows).map(row=>
-    String(row?.class_group||'').trim()+'|'+String(row?.keyword_sha||'')
-  );
-}
-function shasEqual(a,b){
-  const listA=Array.isArray(a)?a:[];
-  const listB=Array.isArray(b)?b:[];
-  if(listA.length!==listB.length)return false;
-  return listA.every((sha,index)=>String(sha)===String(listB[index]));
-}
-// Which item_no's keyword_sha differs from last run's stored shas, by array
-// position (same position = same item, since catalogRows' order_no/item_no
-// ordering is stable between runs unless an item was enabled/disabled/added
-// -- in which case the lengths differ and this returns null: "can't tell
-// which changed", so the caller treats everything as changed instead of
-// narrowing anything. This is what lets a real (non-skipped) run only
-// re-score the articles that a changed item could actually affect --
-// group_lists is a flat "rune_id:count,..." string (see group-lists.mjs),
-// so an article whose group_lists has no hit for any changed item_no cannot
-// have a different result this run (every item it WAS scored against is
-// unchanged), and is left alone untouched.
-function changedItemNosOf(catalogRows,storedShas){
-  const rows=enabledCatalogRows(catalogRows);
-  const currentShas=currentShasOf(catalogRows);
-  if(!Array.isArray(storedShas)||storedShas.length!==currentShas.length)return null;
-  const changed=[];
-  for(let index=0;index<currentShas.length;index+=1){
-    if(currentShas[index]!==String(storedShas[index]))changed.push(Number(rows[index].item_no));
-  }
-  return changed;
-}
-// class_id.is.null always included: an article never classified before
-// (newly eligible, or never written since becoming eligible) has no prior
-// group_lists to have been "unaffected" by -- it always needs a first pass.
-function candidateOrFilter(changedItemNos){
-  const parts=['class_id.is.null'];
-  for(const itemNo of changedItemNos||[]){
-    parts.push('group_lists.ilike.%'+itemNo+':%');
-  }
-  return parts.join(',');
-}
-// Cheap substitute for re-reading every article's content: a count + the
-// latest createtime among this scope's statistics-eligible rows. Computed
-// with two small aggregate queries (never the big `content` column), both at
-// the start of a run (to decide whether to skip) and stored into keyword_meta
-// on a real run (so the next run's start has something to compare against).
 async function keywordFingerprint(scope){
   const [count,latest]=await Promise.all([
     selectCount(scope.galaxy,{idColumn:'uid',filters:[{column:'statistics_able',operator:'eq',value:true}]}),
@@ -254,137 +94,6 @@ async function keywordFingerprint(scope){
 // content that doesn't also bump its createtime -- that still needs a manual
 // 重新分析 click (or any keyword edit, which always changes a sha and forces
 // a real run).
-function checkSkippable(config,catalogRows,fingerprint){
-  if(!config.staticstime)return null;
-  const meta=config.keyword_meta&&typeof config.keyword_meta==='object'?config.keyword_meta:{};
-  const storedShas=Array.isArray(meta.shas)?meta.shas:null;
-  const storedFingerprint=meta.fingerprint&&typeof meta.fingerprint==='object'?meta.fingerprint:null;
-  if(!storedShas||!storedFingerprint)return null;
-  if(!shasEqual(currentShasOf(catalogRows),storedShas))return null;
-  if(Number(fingerprint.count)!==Number(storedFingerprint.count))return null;
-  if(String(fingerprint.latest)!==String(storedFingerprint.latest))return null;
-  return true;
-}
-function metaOf(catalogRows,classMap,currentClassId,fingerprint){
-  const className=String(catalogRows?.[0]?.class_name||'').trim();
-  return {
-    class_id:String(currentClassId||''),
-    class_name:className,
-    classes:Object.fromEntries(classMap.ordered.map(item=>[String(item.class_id),item.group])),
-    items:Object.fromEntries(
-      [...catalogRows]
-        .filter(row=>Number.isInteger(Number(row?.item_no))&&String(row?.item_name||'').trim())
-        .sort((a,b)=>Number(a.item_no)-Number(b.item_no))
-        .map(row=>[String(Number(row.item_no)),String(row.item_name).trim()])
-    ),
-    shas:currentShasOf(catalogRows),
-    fingerprint
-  };
-}
-// Stateful version of resolveDynamicClassifications: the running class counts are
-// order-dependent, so they persist across pages in the same ascending order.
-function createDynamicResolver(catalogRows){
-  const classMap=buildClassMap(catalogRows);
-  const defaultGroup=defaultGroupOf(catalogRows);
-  const counts=new Map(classMap.ordered.map(item=>[item.group,0]));
-  return {
-    classMap,
-    async resolvePage(documents,onProgress){
-      const engine=await classifyDocumentsIncrementally(documents,catalogRows,onProgress);
-      const out=[];
-      for(const row of engine.classifications||[]){
-        const candidates=(row?.tied_groups||[]).filter(group=>classMap.groupToClassId.has(group));
-        let group='';
-        if(candidates.length>1){
-          const minimum=Math.min(...candidates.map(candidate=>counts.get(candidate)||0));
-          const minimumCandidates=candidates.filter(candidate=>(counts.get(candidate)||0)===minimum);
-          group=[...minimumCandidates].sort((a,b)=>
-            (classMap.groupToClassId.get(a)||99)-(classMap.groupToClassId.get(b)||99)
-          )[0]||'';
-        }else if(candidates.length===1){
-          group=candidates[0];
-        }else{
-          const resolvedGroup=String(row?.classification_group||'').trim();
-          if(classMap.groupToClassId.has(resolvedGroup))group=resolvedGroup;
-          else if(defaultGroup&&classMap.groupToClassId.has(defaultGroup))group=defaultGroup;
-        }
-        if(group)counts.set(group,(counts.get(group)||0)+1);
-        out.push({
-          uid:String(row?.uid||'').trim(),
-          class_id:group?(classMap.groupToClassId.get(group)||null):null,
-          group_lists:groupListsOf(row)
-        });
-      }
-      return out;
-    }
-  };
-}
-
-async function resolveDynamicClassifications(documents,catalogRows,onProgress){
-  const classMap=buildClassMap(catalogRows);
-  const defaultGroup=defaultGroupOf(catalogRows);
-  const engine=await classifyDocumentsIncrementally(documents,catalogRows,onProgress);
-  const counts=new Map(classMap.ordered.map(item=>[item.group,0]));
-  const byUid=new Map();
-  let dynamicTieCount=0;
-  let finalOrderTieCount=0;
-
-  for(const row of engine.classifications||[]){
-    const candidates=(row?.tied_groups||[]).filter(group=>classMap.groupToClassId.has(group));
-    let group='';
-    if(candidates.length>1){
-      dynamicTieCount+=1;
-      const minimum=Math.min(...candidates.map(candidate=>counts.get(candidate)||0));
-      const minimumCandidates=candidates.filter(candidate=>(counts.get(candidate)||0)===minimum);
-      if(minimumCandidates.length>1)finalOrderTieCount+=1;
-      group=[...minimumCandidates].sort((a,b)=>
-        (classMap.groupToClassId.get(a)||99)-(classMap.groupToClassId.get(b)||99)
-      )[0]||'';
-    }else if(candidates.length===1){
-      group=candidates[0];
-    }else{
-      const resolved=String(row?.classification_group||'').trim();
-      if(classMap.groupToClassId.has(resolved))group=resolved;
-      // Zero keyword hits at all: fall back to this class's configured
-      // default/exception item (silver.{scope}_keywords.default_group_item_no,
-      // an item_no -- resolved by defaultGroupOf() to that item's class_group)
-      // instead of leaving the document permanently unclassified.
-      else if(defaultGroup&&classMap.groupToClassId.has(defaultGroup))group=defaultGroup;
-    }
-    if(group)counts.set(group,(counts.get(group)||0)+1);
-    byUid.set(String(row?.uid||'').trim(),{
-      ...row,
-      status:group?'classified':'unclassified',
-      classification_group:group,
-      class_id:group?(classMap.groupToClassId.get(group)||null):null,
-      group_lists:groupListsOf(row)
-    });
-  }
-
-  const classifiedCount=[...byUid.values()].filter(row=>row.class_id).length;
-  const unclassifiedCount=Math.max(0,documents.length-classifiedCount);
-  const groupTotals=classMap.ordered.map(item=>({
-    group:item.group,
-    order:item.order,
-    class_id:item.class_id,
-    document_count:counts.get(item.group)||0,
-    hit_count:0
-  }));
-  return {
-    ...engine,
-    classMap,
-    byUid,
-    classifications:[...byUid.values()],
-    classifiedCount,
-    unclassifiedCount,
-    tieCount:0,
-    dynamicTieCount,
-    finalOrderTieCount,
-    groupTotals
-  };
-}
-// Read the *selected* keyword set's name from this Scope's existing catalog.
-// This is a UI-only read: no class/group IDs, classifications or DB state change.
 export async function selectActiveKeywordClassName(scopeId=''){
   const scope=defaultScopeData(scopeId);
   if(!scope)return '';
@@ -424,36 +133,6 @@ async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   if(!config)throw new Error('找不到 '+id+' 關鍵詞設定');
   return {scope,config,scopeId:id};
 }
-async function loadCurrentCatalog(scopeId,currentClassId){
-  const scope=normalizeScopeId(scopeId);
-  const id=String(currentClassId||'').trim();
-  if(!id)throw new Error('尚未指定目前使用的關鍵詞 Class');
-  // default_group_item_no lives on this same table (silver.{scope}_keywords,
-  // the group layer), not on silver.keyword_classes (demo/registry
-  // plumbing) or the scope config table -- same value repeated on every row
-  // of this class_id, so any row (e.g. [0]) carries the current setting.
-  const {data,error}=await dbAuthRelation(`silver.${scope}_keywords`)
-    .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no,keyword_sha')
-    .eq('class_id',id)
-    .order('order_no',{ascending:true})
-    .order('item_no',{ascending:true});
-  if(error)throw new Error(error.message||'關鍵詞 Class 讀取失敗');
-  if(!data?.length)throw new Error('目前使用的關鍵詞 Class 沒有內容');
-  return data;
-}
-// Resolves the configured default-group item_no to the class_group string
-// that resolveDynamicClassifications' candidate/group machinery works in.
-// Falls back to no default (empty string) if the item is missing or has
-// been disabled since it was configured as the default.
-function defaultGroupOf(catalogRows){
-  const defaultGroupItemNo=Number(catalogRows?.[0]?.default_group_item_no);
-  if(!Number.isInteger(defaultGroupItemNo))return '';
-  const row=(catalogRows||[]).find(item=>
-    Number(item?.item_no)===defaultGroupItemNo&&item?.class_enable!==false
-  );
-  return row?String(row.class_group||'').trim():'';
-}
-
 // Portable full reanalysis: all Galaxy content is read, but only Keyword Item
 // uidlist columns are written. No old classification state is consulted.
 export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}){
@@ -572,32 +251,7 @@ function emptyStored(config,extra={}){
 }
 // Exact counts for the stored classification, reduced from row-level data. Used only
 // when the database-side RPC (silver.read_rune66_summary) is not available.
-function aggregateStoredRows(rows){
-  const agg={eligible:0,classDays:new Map(),itemCounts:new Map(),itemDocuments:new Map()};
-  for(const row of rows||[]){
-    const lists=normalizedGroupLists(row?.group_lists);
-    if(lists===false)continue;
-    agg.eligible+=1;
-    const classId=Number(row?.class_id);
-    if(Number.isInteger(classId)){
-      const key=classId+'|'+String(row.createtime||'').slice(0,10);
-      agg.classDays.set(key,(agg.classDays.get(key)||0)+1);
-    }
-    for(const [itemId,value] of Object.entries(lists)){
-      const count=Number(value)||0;
-      if(count<=0)continue;
-      agg.itemCounts.set(itemId,(agg.itemCounts.get(itemId)||0)+count);
-      agg.itemDocuments.set(itemId,(agg.itemDocuments.get(itemId)||0)+1);
-    }
-  }
-  return {
-    eligible:agg.eligible,
-    classDays:[...agg.classDays].map(([key,count])=>{const split=key.indexOf('|');return {class_id:Number(key.slice(0,split)),day:key.slice(split+1),count};}),
-    itemCounts:agg.itemCounts,
-    itemDocuments:agg.itemDocuments
-  };
-}
-// Same shape, taken straight from the database's exact counts.
+// Exact UID-list results are summarized by PostgreSQL.
 function aggregateSummaryRpcRows(rows){
   const agg={eligible:0,classDays:[],itemCounts:new Map(),itemDocuments:new Map()};
   for(const row of rows||[]){
