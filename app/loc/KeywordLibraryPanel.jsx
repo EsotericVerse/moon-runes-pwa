@@ -234,7 +234,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         const {runKeywordAnalysisBatch}=await import('./keyword-analysis');
         await runKeywordAnalysisBatch(scopeId,{classUid:runClassUid,onProgress:setProgress});
       }
-      await load();await invalidate();setNotice(reset?'已清空分類結果。':'關鍵詞重新分析完成。');
+      await load(runClassUid);await invalidate();
+      setNotice(reset?'已清空這套 Class 的分類結果。':'這套 Class 的關鍵詞重新分析完成。');
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
