@@ -84,12 +84,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [copyName,setCopyName]=useState('');
   const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
   const [minDocuments,setMinDocuments]=useState(DEFAULT_KEYWORD_MIN_DOCUMENTS);
-  const [currentClassUid,setCurrentClassId]=useState('');
+  const [currentClassUid,setCurrentClassUid]=useState('');
   const [shareEnabled,setShareEnabled]=useState(false);
   // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_keyword_id).
   // Stored per class_id (same value on every row of that class), so it rides
   // along in the main keyword SELECT below rather than a separate query.
-  const [defaultKeywordId,setDefaultGroupItemNo]=useState('0');
+  const [defaultKeywordId,setDefaultKeywordId]=useState('');
   const [keywordDocumentCount,setKeywordDocumentCount]=useState(null);
   const [galaxyTotalCount,setGalaxyTotalCount]=useState(null);
   const [countReadError,setCountReadError]=useState('');
@@ -175,10 +175,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
 
       setMinChars(nextMinChars);
       setMinDocuments(nextMinDocuments);
-      setCurrentClassId(nextCurrentClassUid);
+      setCurrentClassUid(nextCurrentClassUid);
       setShareEnabled(nextShareEnabled);
       setStaticstime(nextStaticstime);
-      setDefaultGroupItemNo(nextDefaultKeywordId);
+      setDefaultKeywordId(nextDefaultKeywordId);
       setConfigSnapshot({
         minChars:nextMinChars,
         minDocuments:nextMinDocuments,
@@ -245,7 +245,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const name=String(row.class_name||'').trim();
       if(id&&name&&!map.has(id))map.set(id,name);
     }
-    return [...map.entries()].map(([class_id,class_name])=>({class_id,class_name}));
+    return [...map.entries()].map(([class_uid,class_name])=>({class_uid,class_name}));
   },[rows]);
   const items=useMemo(()=>rows
     .filter(row=>String(row.class_name)===selectedClass)
@@ -641,12 +641,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <div className="scope-management-fields">
         <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassUid} onChange={event=>{
           const nextClassUid=event.target.value;
-          setCurrentClassId(nextClassUid);
+          setCurrentClassUid(nextClassUid);
           // default_keyword_id is per-class_id -- resync to the newly
           // chosen class's own stored value instead of carrying over the
           // previous class's setting.
           const nextDefault=classRegistry.find(row=>String(row.class_uid)===nextClassUid)?.default_keyword_id;
-          setDefaultGroupItemNo(String(nextDefault??0));
+          setDefaultKeywordId(String(nextDefault??0));
         }}>
           {classes.map(item=><option key={item.class_uid} value={item.class_uid}>{'關鍵詞組：'+item.class_name}</option>)}
         </select></label>
@@ -656,7 +656,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <option value="closed">{l.closed}</option>
           <option value="open">{l.open}</option>
         </select></label>
-        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultKeywordId} onChange={event=>setDefaultGroupItemNo(event.target.value)}>
+        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultKeywordId} onChange={event=>setDefaultKeywordId(event.target.value)}>
           {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.keyword_id)}>{item.item_name}</option>)}
         </select></label>
       </div>
@@ -705,7 +705,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <label><span>關鍵詞組 UUID</span><input value={selectedClassUid} readOnly aria-readonly="true"/></label>
       </div>
       {selectedClassUid?<div className="scope-preview-links">
-        <button type="button" className="loc-button" onClick={copyClassUid}>{l.copyUuid}</button>
+        <button type="button" className="loc-button" onClick={copyClassUid}>{'複製 Class UID'}</button>
         <span className="scope-status">scope_id: {scopeId}</span>
       </div>:null}
       <div className="scope-stat-controls">
