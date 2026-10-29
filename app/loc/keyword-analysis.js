@@ -5,6 +5,7 @@ import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
+import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
@@ -91,9 +92,9 @@ async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
 }
 // Portable full reanalysis: all Galaxy content is read, but only Keyword Item
 // uidlist columns are written. No old classification state is consulted.
-export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}){
+export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:requestedClassUid='',onProgress}={}){
   const id=normalizeScopeId(scopeId),{scope,config}=await scopeAndConfig(id);
-  const classUid=String(config.current_keyword_class_uid||'');
+  const classUid=String(requestedClassUid||config.current_keyword_class_uid||'');
   if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定 Keywords Class');
   // Keywords rules are private unless explicitly shared. Reanalysis always
   // reads with the authenticated Scope-owner client, never anonymous RLS.
@@ -110,9 +111,14 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
   const fingerprint=await keywordFingerprint(scope);
+  // Mark only this Class stale; other Classes keep their completed results.
+  const staleMeta=invalidateKeywordClass(config.keyword_meta,classUid);
+  const isCurrent=classUid===String(config.current_keyword_class_uid||'');
   const {data:staled,error:staleError}=await dbAuthRelation(scope.config)
-    .update({staticstime:null}).eq('id',id).eq('current_keyword_class_uid',classUid).select('id');
-  if(staleError||staled?.length!==1)throw new Error(staleError?.message||'Class 已切換');
+    .update({keyword_meta:staleMeta,...(isCurrent?{staticstime:null}:{})})
+    .eq('id',id).select('id');
+  if(staleError||staled?.length!==1)
+    throw new Error(staleError?.message||'無法標記 Class 重新分析狀態');
   clearKeywordAnalysisCache();
   const progress=event=>{
     const done=Number(event.completed)||0,total=Number(event.total)||0;
@@ -145,9 +151,18 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
         analyzedDocuments:counts.analyzedDocuments,matchedDocuments:counts.matchedDocuments,
         itemMatches:counts.itemMatches,occurrences:counts.occurrences,fingerprint};
       const now=new Date().toISOString();
+      const {data:latest,error:readError}=await dbAuthRelation(scope.config)
+        .select('keyword_meta,current_keyword_class_uid').eq('id',id).limit(1);
+      if(readError||latest?.length!==1)
+        throw new Error(readError?.message||'無法讀取最新 Class 狀態');
+      const isActiveNow=String(latest[0].current_keyword_class_uid||'')===classUid;
+      const saved=completeKeywordClass(latest[0].keyword_meta,classUid,meta,now);
       const {data,error}=await dbAuthRelation(scope.config)
-        .update({keyword_meta:meta,staticstime:now,updated_at:now})
-        .eq('id',id).eq('current_keyword_class_uid',classUid).select('id');
+        .update({
+          keyword_meta:isActiveNow?{...saved,...meta}:saved,
+          ...(isActiveNow?{staticstime:now}:{}),updated_at:now
+        })
+        .eq('id',id).select('id');
       if(error||data?.length!==1)throw new Error(error?.message||'Keywords 結果保存失敗');
     },onProgress:progress
   });
@@ -224,23 +239,26 @@ function storedSummary(agg,config,globalCount=agg.eligible){
     groupTotals:base.statisticsEnabled?groupTotals:[]
   };
 }
-export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',startDate='',endDate='',
+export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',classUid='',startDate='',endDate='',
   sourceCategory='',sourceCategories=[],sourceAliases=[],sourceNames=null}={}){
   const id=normalizeScopeId(scopeId);
   const category=String(sourceCategory||'').trim().toLowerCase();
   const source=Array.isArray(sourceNames)&&sourceNames.length===1?String(sourceNames[0]):'';
-  const cacheKey=[id,startDate,endDate,category,source].join('|');
+  const cacheKey=[id,classUid,startDate,endDate,category,source].join('|');
   if(!category&&!source&&analysisPromises.has(cacheKey))return analysisPromises.get(cacheKey);
   const job=(async()=>{
     const {config}=await scopeAndConfig(id,{publicRead:true});
-    if(!config.staticstime)return emptyStored(config);
+    const selectedClass=String(classUid||config.current_keyword_class_uid||'');
+    const state=keywordClassState(config,selectedClass);
+    const scopedConfig={...config,staticstime:state?.completedAt||null,keyword_meta:state||{}};
+    if(!state)return emptyStored(scopedConfig);
     if(category&&!source)
       throw new Error('關鍵詞來源分類需要指定原始來源名稱');
     const {readKeywordTreeSummary}=await import('./db-client.mjs');
-    const rows=await readKeywordTreeSummary(id,{startDate,endDate,source});
+    const rows=await readKeywordTreeSummary(id,{classUid:selectedClass,startDate,endDate,source});
     const agg=aggregateSummaryRpcRows(rows.filter(row=>row.kind!=='item_day'));
-    const globalCount=Number(config.keyword_meta?.matchedDocuments)||0;
-    return storedSummary(agg,config,globalCount);
+    const globalCount=Number(state.matchedDocuments)||0;
+    return storedSummary(agg,scopedConfig,globalCount);
   })().catch(error=>{
     analysisPromises.delete(cacheKey);
     throw error;
