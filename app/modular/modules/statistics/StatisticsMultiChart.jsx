@@ -176,11 +176,11 @@ export default function StatisticsMultiChart({
 // Saved keyword classifications are sufficient to build group trends.
 // Item totals have no dated breakdown in this response; never fabricate one.
 function keywordGroupTrend(classifications=[],groups=[],bucket='month'){
-  const known=new Set(groups.map(row=>String(row.class_id)));
+  const known=new Set(groups.map(row=>String(row.group_uid)));
   const dates=new Map();
   for(const row of classifications){
     const day=String(row?.date||'').slice(0,10);
-    const id=String(row?.class_id??'');
+    const id=String(row?.group_uid??'');
     const count=Number(row?.count)||0;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!known.has(id)||count<=0)continue;
     const key=bucket==='day'?day:bucket==='week'
@@ -217,7 +217,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   const minDocuments=Math.max(0,Number(data.keywordMinDocuments||0));
   const classRows=[...(data.groupTotals||[])]
     .sort((a,b)=>Number(b.document_count||0)-Number(a.document_count||0)
-      ||Number(a.class_id)-Number(b.class_id));
+      ||String(a.group_uid).localeCompare(String(b.group_uid)));
   const groupRows=[...(data.runeRanking||[])]
     .filter(row=>Number(row.count||0)>0);
   const classifiedTotal=Math.max(0,Number(data.classifiedCount||0));
@@ -230,25 +230,31 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     queryKey:['statistics-keyword-item-class-map',scopeId,String(meta.class_uid||'')],
     enabled:shown==='both'&&Boolean(scopeId&&meta.class_uid&&data.staticstime),
     queryFn:async()=>{
-      const {readKeywordItemCatalog}=await import('../../../loc/db-client.mjs');
-      return readKeywordItemCatalog(scopeId);
+      const {readKeywordTreeCatalog}=await import('../../../loc/db-client.mjs');
+      const {keywordTreeCatalog}=await import('../../../loc/keyword-tree-report.mjs');
+      const result=await readKeywordTreeCatalog(scopeId);
+      if(!result.class_uid)return [];
+      const tree=keywordTreeCatalog(result.rows,result.class_uid);
+      return tree.groups.flatMap(group=>group.items.map(item=>({
+        uid:item.uid,group_uid:group.uid,class_group:group.name
+      })));
     }
   });
   // Link each stored item to its OWN Class by the live keyword catalog's
   // class_group, matching the Class names snapshotted at classification.
   const classByGroup=new Map(Object.entries(meta.classes||{})
-    .map(([id,label])=>[String(label||'').trim(),Number(id)]));
+    .map(([uid,label])=>[String(label||'').trim(),uid]));
   const classByItem=new Map((groupCatalog.data||[])
     .filter(row=>row.class_enable!==false)
-    .map(row=>[String(row.keyword_id),classByGroup.get(String(row.class_group||'').trim())])
-    .filter(([id,groupId])=>Boolean(id)&&Number.isInteger(groupId)));
+    .map(row=>[String(row.uid),classByGroup.get(String(row.class_group||'').trim())])
+    .filter(([id,groupUid])=>Boolean(id&&groupUid)));
   const groupsWithItems=classRows.map(row=>({
-    row,items:groupRows.filter(item=>classByItem.get(String(item.rune_id))===Number(row.class_id))
+    row,items:groupRows.filter(item=>classByItem.get(String(item.uid))===String(row.group_uid))
       .sort((a,b)=>Number(b.count||0)-Number(a.count||0)
         ||Number(b.document_count||0)-Number(a.document_count||0)
-        ||Number(a.rune_id)-Number(b.rune_id))
+        ||Number(a.order||0)-Number(b.order||0))
   }));
-  const ungrouped=groupRows.filter(item=>!classByItem.has(String(item.rune_id)));
+  const ungrouped=groupRows.filter(item=>!classByItem.has(String(item.uid)));
   const orderedItems=groupsWithItems.flatMap(group=>group.items.map(item=>({
     ...item,classification:group.row
   })));
@@ -263,35 +269,35 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
   const visibleGroupRows=groupRows.slice(offset,offset+pageSize);
   const visibleCombined=allRanked.slice(offset,offset+combinedPageSize);
   const groupDistribution=classRows.filter(row=>Number(row.document_count||0)>0).map(row=>({
-    key:String(row.class_id),name:classLabel(row.group,t),value:Number(row.document_count)||0
+    key:String(row.group_uid),name:classLabel(row.group,t),value:Number(row.document_count)||0
   }));
   const itemDistribution=visibleGroupRows.map(row=>({
-    key:String(row.rune_id),name:groupLabel(row.label,t),value:Number(row.count)||0
+    key:String(row.uid),name:groupLabel(row.label,t),value:Number(row.count)||0
   }));
   const combinedDistribution=[];
   let lastGroupId=null;
   for(const item of visibleCombined){
     const group=item.classification;
-    const groupId=group?String(group.class_id):'unassigned';
+    const groupId=group?String(group.group_uid):'unassigned';
     if(lastGroupId!==groupId){
       combinedDistribution.push({
         key:'class:'+groupId,
-        name:group?'Class '+group.class_id+'｜'+classLabel(group.group,t):'未歸類',
+        name:group?classLabel(group.group,t):'未歸類',
         value:group?Number(group.document_count||0):0,
         fill:color(combinedDistribution.length)
       });
       lastGroupId=groupId;
     }
     combinedDistribution.push({
-      key:'item:'+item.rune_id,
+      key:'item:'+item.uid,
       name:(group&&Number(group.document_count||0)<=0?
-        'Class '+group.class_id+'｜':'　↳ ')+groupLabel(item.label,t),
+        classLabel(group.group,t)+'｜':'　↳ ')+groupLabel(item.label,t),
       value:Number(item.document_count)||0,
       fill:color(combinedDistribution.length)
     });
   }
   const trend=keywordGroupTrend(data.classifications,classRows,range?.bucket||'month');
-  const trendSeries=classRows.map(row=>({key:'class_'+row.class_id,label:classLabel(row.group,t)}));
+  const trendSeries=classRows.map(row=>({key:'class_'+row.group_uid,label:classLabel(row.group,t)}));
   const renderGroup=shown==='group'||shown==='both';
   const renderItems=shown==='item'||shown==='both';
   const distribution=shown==='both'?combinedDistribution:shown==='group'?groupDistribution:itemDistribution;
@@ -355,9 +361,9 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
       {visibleCombined.map((item,index)=>{
         const group=item.classification;
         const previous=visibleCombined[index-1]?.classification;
-        const isStart=index===0||String(group?.class_id||'')!==String(previous?.class_id||'');
-        return <div key={'keyword-detail:'+item.rune_id}>
-          {isStart?<strong>{group?'Class '+group.class_id+'｜'+classLabel(group.group,t):'未歸類'}</strong>:null}
+        const isStart=index===0||String(group?.group_uid||'')!==String(previous?.group_uid||'');
+        return <div key={'keyword-detail:'+item.uid}>
+          {isStart?<strong>{group?classLabel(group.group,t):'未歸類'}</strong>:null}
           <span>　↳ {groupLabel(item.label,t)} · {Number(item.count||0).toLocaleString()} 次</span>
         </div>;
       })}
@@ -366,7 +372,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
       <h4><UiText id="uiExtra.statisticsView.runeRankTitle"/></h4>
       <StatisticsDetails>{()=><>
         <div className="scope-ranking">
-          {(shown==='both'?visibleCombined:visibleGroupRows).map(row=><div key={row.rune_id}><strong>{row.classification?'Class '+row.classification.class_id+'｜':''}{groupLabel(row.label,t)}</strong>
+          {(shown==='both'?visibleCombined:visibleGroupRows).map(row=><div key={row.uid}><strong>{row.classification?classLabel(row.classification.group,t)+'｜':''}{groupLabel(row.label,t)}</strong>
             <span>{t('uiExtra.statisticsView.runeHits',{count:Number(row.count||0).toLocaleString(),ratio:(groupHitTotal>0?100*Number(row.count||0)/groupHitTotal:0).toFixed(1)})}</span>
           </div>)}
         </div>
