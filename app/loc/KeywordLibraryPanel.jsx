@@ -145,7 +145,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         dbAuthRelation(CONFIG_TABLE)
           .select('keyword_min_chars,keyword_min_documents,current_keyword_class_uid,keyword_class_share_enabled,staticstime,keyword_meta')
           .eq('id',scopeId).limit(1),
-        dbAuthRelation('silver.keyword_classes')
+        dbAuthRelation(scopeId==='local'?'local.local_keyword_classes':'silver.keyword_classes')
           .select('class_uid,default_keyword_id').eq('scope_id',scopeId)
       ]);
       if(registryResult.error)throw new Error(registryResult.error.message||'Keyword Class registry failed');
@@ -378,7 +378,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       // without accidentally creating a second new keyword row.
       if(saveSettings){
         if(defaultGroupChanged){
-          await updateRows('silver.keyword_classes',{default_keyword_id:defaultItemId||null},{filters:[{column:'class_uid',operator:'eq',value:currentClassUid}]});
+          await updateRows(scopeId==='local'?'local.local_keyword_classes':'silver.keyword_classes',{default_keyword_id:defaultItemId||null},{filters:[{column:'class_uid',operator:'eq',value:currentClassUid}]});
         }
         await updateRows(CONFIG_TABLE,{
           keyword_min_chars:chars,
