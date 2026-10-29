@@ -467,7 +467,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
     orders:[{column:'order_no',ascending:true},{column:'keyword_id',ascending:true}]
   });
   if(!catalogRows.length)throw new Error('Keywords Class 沒有可分析的 Item');
-  const {rows:classRows}=await selectRows('silver.keyword_classes',{
+  const {rows:classRows}=await selectRows(id==='local'?'local.local_keyword_classes':'silver.keyword_classes',{
     columns:'default_keyword_id',
     filters:[{column:'class_uid',operator:'eq',value:classUid}],limit:1
   });
