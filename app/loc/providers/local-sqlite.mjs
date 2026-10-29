@@ -831,152 +831,115 @@ async function readScopeOverviewLocal({p_start,p_end}){
 
 // Local equivalent of api.read_keyword_class: no scope_id, no share-permission
 // gate (there is only one local reader), just the class's rows in order.
-async function readKeywordClassLocal({p_class_id}){
-  const classId=String(p_class_id||'');
-  if(!classId)return {data:null,error:null};
-  const rows=await selectLocal('SELECT * FROM local_keywords WHERE class_id=? ORDER BY order_no,item_no',[classId]);
+async function readKeywordClassLocal({p_class_uid}={}){
+  const uid=String(p_class_uid||'');
+  if(!/^[0-9A-Za-z]{4}$/.test(uid))return {data:null,error:null};
+  const rows=await selectLocal('SELECT keyword_id,class_uid,group_name,item_name,principle,keywords,order_no,class_name,class_group,class_enable FROM local_keywords WHERE class_uid=? ORDER BY order_no,keyword_id',[uid]);
   return {data:rows.map(decodeRow),error:null};
 }
-// Local equivalent of silver.apply_keyword_classification. A failed or
-// interrupted incremental run must retain the last successful classification.
-// begin checks availability without deleting existing classifications;
-// reset is an explicit opt-in wipe; sync removes only records outside the
-// freshly analyzed eligible UID set; finalize validates Class identity.
-async function applyKeywordClassificationLocal({p_rows}={}){
-  const mode=String(p_rows?.mode||'').toLowerCase();
-  try{
-    if(mode==='begin'){
-      // Same as production SQL: never erase the previous successful result
-      // just because a new analysis has started.
-      const config=await selectLocal("SELECT id FROM local WHERE id='local'");
-      if(!config.length)throw new Error('Local Scope config row not found');
-      return {data:0,error:null};
-    }
-    if(mode==='reset'){
-      // Explicit reset only, and both tables change in one local transaction.
-      const changed=await runBatchLocal([
-        {sql:"UPDATE local_galaxy SET class_id=NULL,group_lists='false' WHERE class_id IS NOT NULL OR group_lists IS NOT 'false'",values:[]},
-        {sql:"UPDATE local SET staticstime=NULL,keyword_meta='{}',updated_at=? WHERE id='local'",values:[new Date().toISOString()]}
-      ]);
-      return {data:changed,error:null};
-    }
-    if(mode==='chunk'){
-      const rows=Array.isArray(p_rows?.rows)?p_rows.rows:[];
-      // Filter and map together over the same row object -- splitting into a
-      // uid-only .map() then a separate .filter(Boolean) before re-indexing
-      // back into `rows` loses alignment the moment any row has a blank uid
-      // (the filtered array's index no longer matches the original array's).
-      const statements=rows
-        .map(row=>({uid:String(row?.uid||'').trim(),row}))
-        .filter(entry=>entry.uid)
-        .map(({uid,row})=>({sql:'UPDATE local_galaxy SET class_id=?,group_lists=? WHERE uid=?',
-          values:[row.class_id??null,String(row.group_lists||''),uid]}));
-      const affected=await runBatchLocal(statements);
-      if(affected!==statements.length)throw new Error(`keyword classification chunk incomplete: expected ${statements.length}, affected ${affected}`);
-      return {data:affected,error:null};
-    }
-    if(mode==='sync'){
-      if(p_rows?.scopeBased===true){
-        // Same eligibility predicate as the server, entirely on-device.
-        const updated=await runLocal(
-          `UPDATE local_galaxy SET class_id=NULL,group_lists='false'
-           WHERE (class_id IS NOT NULL OR group_lists IS NOT 'false')
-             AND (statistics_able IS NULL OR statistics_able<>1)`,[]);
-        return {data:updated,error:null};
-      }
-      if(!Array.isArray(p_rows?.uids))throw new Error('uids must be an array');
-      // JSON1 binds the entire eligible set as one parameter, avoiding SQL
-      // variable limits and keeping unrelated rows unchanged.
-      const updated=await runLocal(
-        `UPDATE local_galaxy SET class_id=NULL,group_lists='false'
-         WHERE (class_id IS NOT NULL OR group_lists IS NOT 'false')
-           AND NOT EXISTS (
-             SELECT 1 FROM json_each(?) eligible
-             WHERE upper(trim(eligible.value))=local_galaxy.uid
-           )`,
-        [JSON.stringify(p_rows.uids)]
-      );
-      return {data:updated,error:null};
-    }
-    if(mode==='finalize'){
-      const meta=p_rows?.meta||{};
-      const expectedClass=String(meta.class_id||'');
-      if(!expectedClass)throw new Error('classification metadata class_id is required');
-      const config=await selectLocal("SELECT current_keyword_class_id FROM local WHERE id='local'");
-      if(config.length!==1||String(config[0].current_keyword_class_id||'')!==expectedClass)
-        throw new Error('current keyword Class changed before finalize');
-      const countRows=await selectLocal(`SELECT count(*) AS n FROM local_galaxy WHERE group_lists<>'false'`);
-      const documentCount=Number(countRows[0]?.n||0);
-      const now=new Date().toISOString();
-      const updated=await runLocal(
-        `UPDATE local SET staticstime=?,keyword_meta=?,updated_at=? WHERE id='local'`,
-        [now,JSON.stringify(meta),now]);
-      if(updated!==1)throw new Error('Local Scope config row not found');
-      return {data:documentCount,error:null};
-    }
-    throw new Error('unsupported keyword classification mode');
-  }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
-}
-// Local equivalent of silver.read_rune66_summary. The Postgres version does
-// the group_lists "item:count,item:count" parse and the eligible/class_day/
-// item aggregation inside one SQL statement (via unnest/string_to_array);
-// SQLite has neither, so the same three aggregates are computed in JS over
-// the same source rows and filters (searchable, statistics_able, group_lists
-// not 'false', createtime within range) -- identical output shape
-// ({kind,item_key,class_id,day,hit_count,document_count}).
-async function readRune66SummaryLocal({p_start,p_end}){
-  const where=["searchable=1","statistics_able=1","group_lists IS NOT NULL","group_lists<>'false'"];
-  const params=[];
-  if(p_start){where.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
-  if(p_end){where.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
-  const rows=await selectLocal("SELECT class_id, date(createtime, '+8 hours') AS d, group_lists FROM local_galaxy WHERE "+where.join(' AND '),params);
-  const out=[{kind:'eligible',item_key:null,class_id:null,day:'',hit_count:rows.length,document_count:rows.length}];
-  const classDay=new Map();
-  const items=new Map();
-  // Canonical group_lists allows item 0; match silver.read_rune66_summary.
-  const pairList=/^\s*(0|[1-9]\d*):[1-9]\d*(\s*,\s*(0|[1-9]\d*):[1-9]\d*)*\s*$/;
-  for(const row of rows){
-    if(row.class_id!==null&&row.class_id!==undefined){
-      const key=row.class_id+'|'+(row.d||'');
-      classDay.set(key,(classDay.get(key)||0)+1);
-    }
-    const gl=String(row.group_lists||'');
-    if(pairList.test(gl)){
-      for(const pair of gl.split(',')){
-        const [item,n]=pair.split(':').map(s=>s.trim());
-        const num=Number(n);
-        if(num>0){
-          const prev=items.get(item)||{hit:0,doc:0};
-          prev.hit+=num;prev.doc+=1;
-          items.set(item,prev);
-        }
-      }
-    }
+// On-device equivalent of silver.read_keyword_uidlist_summary.
+// The device owns its entire SQLite dataset, so no external DB is needed.
+async function readKeywordUidlistSummaryLocal({p_start=null,p_end=null,p_source=null}={}){
+  const config=await selectLocal("SELECT current_keyword_class_uid FROM local WHERE id='local'");
+  const uid=String(config[0]?.current_keyword_class_uid||'');
+  if(!uid)return {data:[],error:null};
+  const catalog=await selectLocal('SELECT keyword_id,class_group,order_no,class_enable FROM local_keywords WHERE class_uid=? ORDER BY order_no,keyword_id',[uid]);
+  const registry=await selectLocal('SELECT default_keyword_id FROM local_keyword_classes WHERE class_uid=?',[uid]);
+  const defaultItem=catalog.find(row=>String(row.keyword_id)===String(registry[0]?.default_keyword_id||''));
+  const groups=new Map();
+  for(const row of catalog.filter(item=>Number(item.class_enable)!==0)){
+    const name=String(row.class_group||'');
+    if(!groups.has(name))groups.set(name,Number(row.order_no)||0);
+    else groups.set(name,Math.min(groups.get(name),Number(row.order_no)||0));
   }
-  for(const [key,count] of classDay){
-    const [classId,day]=key.split('|');
-    out.push({kind:'class_day',item_key:null,class_id:Number(classId),day,hit_count:count,document_count:count});
+  const ordered=[...groups].sort(([a,ao],[b,bo])=>
+    Number(a===defaultItem?.class_group)-Number(b===defaultItem?.class_group)||ao-bo||a.localeCompare(b));
+  const numbers=new Map(ordered.map(([name],i)=>[name,i+1]));
+  const raw=await selectLocal(`
+    SELECT k.keyword_id,k.class_group,j.value AS hit,
+      g.uid,date(g.createtime,'+8 hours') AS day
+    FROM local_keywords k JOIN json_each(k.uidlist) j
+    JOIN local_galaxy g ON g.uid=json_extract(j.value,'$.uid')
+    WHERE k.class_uid=? AND k.class_enable=1
+      AND g.searchable=1 AND g.statistics_able=1
+      AND (? IS NULL OR date(g.createtime,'+8 hours')>=?)
+      AND (? IS NULL OR date(g.createtime,'+8 hours')<=?)
+      AND (? IS NULL OR g.source_name=?)
+  `,[uid,p_start,p_start,p_end,p_end,p_source,p_source]);
+  const byItem=new Map(),byItemDay=new Map(),byGroupDay=new Map(),
+    byAllDay=new Map(),byGroupItemDay=new Map(),seenArticles=new Set();
+  const add=(map,key,uid,amount)=>{
+    const entry=map.get(key)||{hit_count:0,uids:new Set()};
+    entry.hit_count+=amount;entry.uids.add(uid);map.set(key,entry);
+  };
+  for(const row of raw){
+    const hit=JSON.parse(row.hit||'{}'),times=Number(hit.times)||0;
+    if(times<=0)continue;
+    const day=String(row.day||''),article=String(row.uid||'');
+    const item=String(row.keyword_id),group=String(row.class_group||'');
+    seenArticles.add(article);
+    add(byItem,item,article,times);
+    add(byItemDay,item+'\\0'+day,article,times);
+    add(byGroupDay,group+'\\0'+day,article,times);
+    add(byAllDay,day,article,1);
+    add(byGroupItemDay,group+'\\0'+day,article,1);
   }
-  for(const [item,{hit,doc}] of items)
-    out.push({kind:'item',item_key:item,class_id:null,day:'',hit_count:hit,document_count:doc});
+  const out=[{kind:'eligible',item_key:null,class_id:null,day:'',
+    hit_count:seenArticles.size,document_count:seenArticles.size}];
+  for(const [item,v] of byItem)out.push({kind:'item',item_key:item,class_id:null,day:'',
+    hit_count:v.hit_count,document_count:v.uids.size});
+  for(const [key,v] of byItemDay){
+    const [item,day]=key.split('\\0');
+    out.push({kind:'item_day',item_key:item,class_id:null,day,
+      hit_count:v.hit_count,document_count:v.uids.size});
+  }
+  for(const [key,v] of byGroupDay){
+    const [group,day]=key.split('\\0');
+    out.push({kind:'class_day',item_key:null,class_id:numbers.get(group)||null,day,
+      hit_count:v.uids.size,document_count:v.uids.size});
+  }
+  for(const [day,v] of byAllDay)out.push({kind:'keyword_all_day',item_key:null,class_id:null,day,
+    hit_count:v.uids.size,document_count:v.uids.size});
+  for(const [key,v] of byGroupItemDay){
+    const [group,day]=key.split('\\0');
+    out.push({kind:'group_items_day',item_key:group,class_id:null,day,
+      hit_count:v.uids.size,document_count:v.uids.size});
+  }
   return {data:out,error:null};
 }
+
 // One-time (or on-demand "restore to default") copy: seeds/overwrites
 // local_keywords from a default keyword-library row set the caller supplies
 // (e.g. fetched once from the cloud lo3rwang_keywords reference library).
 // The source itself is never written back to -- only read -- so it always
 // stays a clean reference the device copy can be reset against later.
 export async function restoreKeywordLibraryFromDefault(defaultRows=[]){
-  const statements=[{sql:'DELETE FROM local_keywords',values:[]},
-    ...defaultRows.map(row=>({
-      sql:`INSERT INTO local_keywords(group_name,item_no,item_name,principle,keywords,order_no,class_name,class_group,class_enable,class_id)
-           VALUES(?,?,?,?,?,?,?,?,?,?)`,
-      values:[row.group_name,row.item_no,row.item_name,row.principle||'',JSON.stringify(row.keywords||[]),
-        row.order_no||0,row.class_name,row.class_group,row.class_enable!==false?1:0,row.class_id]
-    }))];
+  const classes=new Map();
+  for(const row of defaultRows){
+    const uid=String(row.class_uid||'');
+    if(!/^[A-Za-z0-9]{4}$/.test(uid))throw new Error('Default Keywords need Class UID');
+    if(!classes.has(uid))classes.set(uid,[]);
+    classes.get(uid).push(row);
+  }
+  const statements=[
+    {sql:'DELETE FROM local_keywords',values:[]},
+    {sql:'DELETE FROM local_keyword_classes',values:[]}
+  ];
+  for(const [uid,items] of classes){
+    const defaultRow=items.find(row=>String(row.keyword_id)===String(row.default_keyword_id||''))||null;
+    statements.push({sql:'INSERT INTO local_keyword_classes(class_uid,scope_id,default_keyword_id) VALUES(?,?,?)',
+      values:[uid,'local',defaultRow?.keyword_id||null]});
+    for(const row of items)statements.push({
+      sql:'INSERT INTO local_keywords(keyword_id,group_name,item_name,principle,keywords,order_no,class_name,class_group,class_enable,class_uid,uidlist) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+      values:[row.keyword_id??null,row.group_name||row.class_name,row.item_name,row.principle||'',
+        JSON.stringify(row.keywords||[]),row.order_no||0,row.class_name,row.class_group,
+        row.class_enable!==false?1:0,uid,'[]']
+    });
+  }
+  const first=[...classes.keys()][0]||null;
+  statements.push({sql:"UPDATE local SET current_keyword_class_uid=?,keyword_meta='{}',staticstime=NULL WHERE id='local'",values:[first]});
   return runBatchLocal(statements);
 }
-
 
 async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
   try{
@@ -1019,9 +982,12 @@ export async function rpcLocal(name,args={}){
     case 'read_scope_statistics':return readScopeStatisticsLocal(args);
     case 'read_scope_overview':return readScopeOverviewLocal(args);
     case 'read_scope_earliest':return readScopeEarliestLocal(args);
-    case 'read_keyword_class':return readKeywordClassLocal(args);
-    case 'apply_keyword_classification':return applyKeywordClassificationLocal(args);
-    case 'read_rune66_summary':return readRune66SummaryLocal(args);
+    case 'read_keyword_class_by_uid':return readKeywordClassLocal(args);
+    case 'read_keyword_uidlist_summary':return readKeywordUidlistSummaryLocal(args);
+    case 'read_rune66_summary':{
+      const result=await readKeywordUidlistSummaryLocal(args);
+      return {...result,data:(result.data||[]).filter(row=>!['item_day','group_items_day','keyword_all_day'].includes(row.kind))};
+    }
     // Nothing reads these yet anywhere in the app (verified: no consumer of
     // silver.loc_search_keywords exists); kept as a safe no-op so Search.jsx's
     // fire-and-forget call never throws.
