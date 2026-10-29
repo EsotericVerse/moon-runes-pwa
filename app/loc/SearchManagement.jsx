@@ -16,16 +16,14 @@ const ManagementMediaWorkspace=dynamic(()=>import('./ManagementMediaWorkspace'),
 const ManagementContentTarget=dynamic(()=>import('./ManagementContentTarget'),{loading:()=>null});
 const ManagementImportPanel=dynamic(()=>import('./ManagementImportPanel'),{loading:()=>null});
 const ScopeOthersSources=dynamic(()=>import('./ScopeOthersSources'),{loading:()=>null});
-const ScopeSourceCorrection=dynamic(()=>import('./ScopeSourceCorrection'),{loading:()=>null});
 
-// These five selections are in one Article Control workspace. Moving a panel
+// Article Control sections share one Scope ownership and authorization boundary. Moving a panel
 // never changes its Scope ownership, database tables or authorizer.
 export const ARTICLE_CONTROL_SECTIONS=Object.freeze([
   {value:'search',label:'文章管理搜尋',shortLabel:'搜尋'},
   {value:'publish',label:'發表文章與多媒體',shortLabel:'發表'},
   {value:'blocks',label:'修改建議與治理原則',shortLabel:'區塊修改'},
   {value:'import',label:'匯入',shortLabel:'匯入'},
-  {value:'source',label:'來源更正',shortLabel:'來源更正'},
   {value:'others',label:'個人分類',shortLabel:'個人分類'}
 ]);
 
@@ -37,7 +35,7 @@ const LOC_OPTIONS=Object.freeze([
   {value:'trace',label:'治理原則',shortLabel:'治理原則'}
 ]);
 const OLD_SCOPE_SECTION_ALIASES=Object.freeze({
-  media:'publish',suggestions:'blocks',trace:'blocks'
+  media:'publish',suggestions:'blocks',trace:'blocks',source:'import'
 });
 
 export default function SearchManagement(){
@@ -96,8 +94,6 @@ export default function SearchManagement(){
           ?<ManagementImportPanel key={scopeId+'-import'} scopeId={scopeId}/>:null}
         {!isLocAdmin&&activeSection==='others'
           ?<ScopeOthersSources key={scopeId+'-others'} scopeId={scopeId}/>:null}
-        {!isLocAdmin&&activeSection==='source'
-          ?<ScopeSourceCorrection key={scopeId+'-source'} scopeId={scopeId}/>:null}
 
         {isLocAdmin&&activeSection==='media'
           ?<ManagementContentTarget scopeId={scopeId} mode="media" globalAdmin/>:null}
