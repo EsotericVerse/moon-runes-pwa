@@ -432,13 +432,20 @@ function managementArticleProviders(scope,{contentType='',sourceFilter='',source
     ...(contentType==='lyrics_work'?[{column:'site',operator:'ilike',value:'suno'}]:[]),
     ...(contentType==='text_work'?[{column:'site',operator:'neq',value:'suno'}]:[])
   ];
-  return [makeProvider({
-    id:current.id+':management-articles',
+  const base={
     table:current.galaxy,source:current.id+' 文章',scope:current,idColumn:'uid',
-    columns:['uid'],searchFields:placeOnly?['location']:['uid','title','content','site'],
-    dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
-    authenticated:true,uidFastPath:!placeOnly
+    columns:['uid'],dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
+    authenticated:true
+  };
+  if(placeOnly)return [makeProvider({
+    ...base,id:current.id+':management-place',searchFields:['location']
   })];
+  // Only management can look up a UID. Return title matches before searching
+  // the article body; neither site nor public visibility is a search term.
+  return [
+    makeProvider({...base,id:current.id+':management-title',searchFields:['title'],uidFastPath:true}),
+    makeProvider({...base,id:current.id+':management-content',searchFields:['content']})
+  ];
 }
 
 function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,contentType='',sourceFilter='',sourceTaxonomy=null,placeOnly=false}={}){
@@ -486,7 +493,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content','site'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['content'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
@@ -500,10 +507,10 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     searchFields:['title','description','status'],dateColumn:'address',
     filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}]
   });
-  // A single ordinary search includes multimedia: no duplicate search mode.
+  // The basic public/guest search is intentionally limited to title/content.
+  // Advanced media and timeline searches keep their explicit providers.
   if(contentType==='timeline')return [timeline];
-  if(sourceFilter||contentType==='lyrics_work'||contentType==='text_work')return [titleExact,title,contentExact,content];
-  return [titleExact,title,contentExact,content,media,timeline];
+  return [titleExact,title,contentExact,content];
 }
 
 function normalizeSearch(value){
@@ -528,14 +535,16 @@ export async function searchGalaxyRows(scopes,query,{
     ?managementArticleProviders(scope,{contentType,sourceFilter,sourceTaxonomy,placeOnly})
     :genericScopeProviders(scope,{mediaOnly,includeHiddenText:hiddenScopes.has(scope.id),contentType,sourceFilter,sourceTaxonomy,placeOnly}));
   // Every Scope's title hits are paged before any body matches.
-  const providers=managementOnly?scopeProviders.flat():browse
-    ?scopeProviders.flatMap(group=>
-      mediaOnly||contentType==='multimedia'||contentType==='timeline'
-        ?group
-        :[group[1],group[4],group[5]].filter(Boolean))
-    :mediaOnly||contentType==='multimedia'||contentType==='timeline'
-      ?scopeProviders.flat()
-      :Array.from({length:6},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat();
+  const providers=managementOnly
+    ?Array.from({length:2},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat()
+    :browse
+      ?scopeProviders.flatMap(group=>
+        mediaOnly||contentType==='multimedia'||contentType==='timeline'
+          ?group
+          :[group[1]].filter(Boolean))
+      :mediaOnly||contentType==='multimedia'||contentType==='timeline'
+        ?scopeProviders.flat()
+        :Array.from({length:4},(_,index)=>scopeProviders.map(group=>group[index]).filter(Boolean)).flat();
   const failures=[];
 
   let stage=Number.isInteger(cursor?.stage)?cursor.stage:1;

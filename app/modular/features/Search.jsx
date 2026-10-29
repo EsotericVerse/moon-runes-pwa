@@ -64,19 +64,6 @@ const GALAXY_ATTR_FIELDS=Object.freeze(GALAXY_ATTR_ORDER.map(key=>({
     key==='createtime'?'date':'text'
 })));
 
-function normalizeScopeAlias(value=''){
-  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('zh-Hant');
-}
-function matchesScopeAlias(scope,query){
-  const token=normalizeScopeAlias(query);
-  if(!token)return false;
-  const aliases=[
-    scope?.id,scope?.label,scope?.searchTitle,
-    ...(Array.isArray(scope?.searchAliases)?scope.searchAliases:[])
-  ].filter(Boolean);
-  return aliases.some(alias=>normalizeScopeAlias(alias)===token);
-}
-
 function canManageSearchScope(account,scopeId){
   const id=String(scopeId||'').trim();
   const normalized=id.toLowerCase();
@@ -421,6 +408,22 @@ export default function Search({managementMode=false}){
     const controller=beginRequest();
     const timeout=AbortSignal.timeout(25000);
     const signal=AbortSignal.any([controller.signal,timeout]);
+    // A hung routing or hydration Promise may never settle on abort. Release
+    // the visible loading state when the timeout actually fires.
+    const onTimeout=()=>{
+      if(id!==searchId.current||controller.signal.aborted)return;
+      if(append){
+        setLoadMoreError(UI_COPY.search.timeout);
+        setLoadingMore(false);
+        loadMoreInFlight.current=false;
+      }else{
+        setError(UI_COPY.search.timeout);
+        setStatus('');
+        scrollToResults();
+      }
+      controller.abort();
+    };
+    timeout.addEventListener('abort',onTimeout,{once:true});
     // A fresh search supersedes any in-flight style-keyword fetch for the same key.
     setError('');
     if(append){
@@ -450,36 +453,6 @@ export default function Search({managementMode=false}){
         })
         :null;
       if(id!==searchId.current)return;
-      if(!append){
-        if(!options.browse&&!options.sourceFilter&&!options.contentType&&!options.startDate&&!options.endDate&&scopeId!=='loc'&&matchesScopeAlias(scope,q)){
-          matchedQueryRef.current=q;
-          setResults([{
-            key:'scope:'+scopeId,
-            source:t('uiExtra.searchUI.memberSource'),
-            title:scope.searchTitle||scope.label||scopeId,
-            date:'',
-            snippet:scope.searchIntro||'',
-            scopeId,
-            resourceType:'',
-            resourceId:'',
-            editableTable:'',
-            editableIdColumn:'',
-            editResourceId:'',
-            editableField:'',
-            isScopeCard:true,
-            href:scopeHref(scopeId),
-            relationLinks:[],
-            groupKey:'scope:'+scopeId,
-            links:[{id:'scope-home',href:scopeHref(scopeId),label:t('uiExtra.searchUI.memberHomeLink')}],
-            destinations:[]
-          }]);
-          setHasMore(false);
-          setNextCursor(null);
-          setStatus('');
-          scrollToResults();
-          return;
-        }
-      }
       const wantsStyleTags=!options.placeOnly&&!managementMode&&!append&&!options.browse&&!options.mediaOnly&&!options.contentType&&!options.sourceFilter&&!options.startDate&&!options.endDate;
       // Start the primary search first so it takes the first connection slot, then
       // run the cross-Scope style-tag lookup alongside it instead of in front of it.
@@ -558,7 +531,12 @@ export default function Search({managementMode=false}){
         else{setError(UI_COPY.search.timeout);setStatus('');scrollToResults();}
         return;
       }
-      if(isAbortError(exception))return;
+      // A database's own read timeout must also clear the loading state.
+      if(isAbortError(exception)){
+        if(append)setLoadMoreError(UI_COPY.search.timeout);
+        else{setError(UI_COPY.search.timeout);setStatus('');scrollToResults();}
+        return;
+      }
       if(append){
         setLoadMoreError(featureDataErrorMessage(exception,UI_COPY));
       }else{
@@ -567,6 +545,7 @@ export default function Search({managementMode=false}){
         scrollToResults();
       }
     }finally{
+      timeout.removeEventListener('abort',onTimeout);
       if(append&&id===searchId.current)setLoadingMore(false);
     }
   }
