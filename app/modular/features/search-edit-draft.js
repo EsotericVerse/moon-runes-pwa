@@ -1,7 +1,6 @@
 // Edit-session helpers for Search results. Loaded only when an author opens
 // an article or media entry for editing (dynamic import in Search.jsx), so the
 // plain search page never ships this code.
-import {formatGroupLists,parseGroupListsAttr} from '../../loc/group-lists.mjs';
 import {plainTextToBlocks} from '../../loc/blocknote-content.mjs';
 
 function nullableText(value){
@@ -28,10 +27,7 @@ function isoOrNull(value,t){
   if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
   return date.toISOString();
 }
-function parseGroupListsText(value,t,parseGroupListsAttr){
-  try{return parseGroupListsAttr(value)}catch{throw new Error(t('uiExtra.searchUI.groupListInvalid'))}
-}
-function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGroupLists){
+function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
@@ -46,8 +42,6 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,formatGrou
     site:String(row.site||''),
     media_link:listText(row.media_link),
     statistics_able:row.statistics_able!==false,
-    class_id:row.class_id===null||row.class_id===undefined?'':String(row.class_id),
-    group_lists:formatGroupLists(row.group_lists)
   };
   const body=String(row.content??'');
   return {
@@ -89,7 +83,7 @@ function changedMediaAttributes(draft,t){
   }
   return changed;
 }
-function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
+function changedGalaxyAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{};
   const changed={};
   const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
@@ -106,12 +100,6 @@ function changedGalaxyAttributes(draft,t,parseGroupListsAttr){
   if(differs('statistics_able'))changed.statistics_able=current.statistics_able!==false;
   if(differs('target_id'))changed.target_id=parseListText(current.target_id);
   if(differs('media_link'))changed.media_link=parseListText(current.media_link);
-  if(differs('class_id')){
-    const value=String(current.class_id??'').trim();
-    changed.class_id=value===''?null:Number(value);
-    if(value!==''&&!Number.isFinite(changed.class_id))throw new Error(t('uiExtra.searchUI.classIdInvalid'));
-  }
-  if(differs('group_lists'))changed.group_lists=parseGroupListsText(current.group_lists,t,parseGroupListsAttr);
   return changed;
 }
 
@@ -120,13 +108,13 @@ export class SearchEditDraft{
   // Builds the editable draft for a Galaxy (article) or Galaxy Media row.
   static fromRow(resourceType,row,fallbackTitle=''){
     return resourceType==='galaxy'
-      ?galaxyDraftFromRow(row,fallbackTitle,plainTextToBlocks,formatGroupLists)
+      ?galaxyDraftFromRow(row,fallbackTitle,plainTextToBlocks)
       :mediaDraftFromRow(row,fallbackTitle,plainTextToBlocks);
   }
   // Only the attributes the author actually changed; throws a localized error on invalid input.
   static changedAttributes(resourceType,draft,t){
     return resourceType==='galaxy'
-      ?changedGalaxyAttributes(draft,t,parseGroupListsAttr)
+      ?changedGalaxyAttributes(draft,t )
       :changedMediaAttributes(draft,t);
   }
 }

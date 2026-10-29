@@ -62,7 +62,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   const insertRows=withWriteNotice(insertRowsUnchecked);
   const updateRows=withWriteNotice(updateRowsUnchecked);
   const deleteRows=withWriteNotice(deleteRowsUnchecked);
-  const keywordClassificationWrite=withWriteNotice(keywordClassificationWriteUnchecked);
   const copyRune66KeywordClass=withWriteNotice(copyRune66KeywordClassUnchecked);
   const moveScopeBlock=withWriteNotice(moveScopeBlockUnchecked);
   const deleteScope=withWriteNotice(deleteScopeUnchecked);
@@ -140,170 +139,100 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return scope;
   }
 
-  async function keywordClassificationWriteUnchecked(scopeId,payload){
+  async function readOwnedKeywordNodes(table){
+    const rows=[],size=500;
+    for(let offset=0;;offset+=size){
+      const {data,error}=await dbAuthRelation(table)
+        .select('uid,type,name,desc,lists')
+        .order('uid',{ascending:true}).range(offset,offset+size-1);
+      if(error)throw new Error(error.message||'Cannot read Keywords tree');
+      rows.push(...(data||[]));
+      if((data||[]).length<size)break;
+    }
+    return rows;
+  }
+
+  async function resetKeywordClassification(scopeId,{classUid:requestedClassUid='',onProgress}={}){
     const scope=normalizeScopeId(scopeId);
-    preflightWrite('silver.'+scope+'_keywords');
-    const {data,error}=await authClient.schema('silver').rpc('apply_keyword_classification',{
-      p_scope_id:scope,
-      p_rows:payload
+    const table='silver.'+scope+'_keywords';
+    preflightWrite(table);
+    const config=await selectAuthRow('silver.'+scope,{
+      idColumn:'id',id:scope,
+      columns:'current_keyword_class_uid,keyword_meta,staticstime'
     });
-    if(error)throw new Error(error.message||'Keyword classification write failed');
-    return Number(data||0);
+    const classUid=String(requestedClassUid||config?.current_keyword_class_uid||'');
+    if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
+    const all=await readOwnedKeywordNodes(table);
+    const {descendantsOfKeyword}=await import('./keyword-tree.mjs');
+    const children=descendantsOfKeyword(all,classUid)
+      .filter(node=>node.type==='group'||node.type==='item');
+    const {invalidateKeywordClass}=await import('./keyword-class-state.mjs');
+    const isCurrent=classUid===String(config?.current_keyword_class_uid||'');
+    const {data:staled,error:staleError}=await dbAuthRelation('silver.'+scope)
+      .update({keyword_meta:invalidateKeywordClass(config?.keyword_meta,classUid),
+        ...(isCurrent?{staticstime:null}:{})})
+      .eq('id',scope).select('id');
+    if(staleError||staled?.length!==1)throw new Error(staleError?.message||'無法作廢舊分析');
+    let completed=0;
+    for(const row of children){
+      const {data,error}=await dbAuthRelation(table)
+        .update({uid_lists:[]}).eq('uid',row.uid).select('uid');
+      if(error||data?.length!==1)throw new Error(error?.message||'清空 '+row.uid+' 失敗');
+      completed++;
+      onProgress?.({phase:'resetting',completed,total:children.length});
+    }
+    onProgress?.({phase:'completed',completed,total:children.length});
+    return {count:completed};
   }
 
-  async function applyKeywordClassification(scopeId,payload={}, {onProgress}={}){
-    const scope=normalizeScopeId(scopeId);
-    const rows=Array.isArray(payload?.rows)?payload.rows:[];
-    const meta=payload?.meta&&typeof payload.meta==='object'?payload.meta:{};
-    const eligibleDocumentCount=Number.isInteger(payload?.eligibleDocumentCount)
-      ?Math.max(0,payload.eligibleDocumentCount)
-      :Array.isArray(payload?.eligibleUids)?payload.eligibleUids.length:rows.length;
-    await keywordClassificationWrite(scope,{mode:'begin'});
-    onProgress?.({phase:'prepare',completed:0,total:rows.length});
-
-    // Sequential writes pause one second per MaxRows committed; timeout retries
-    // back off for one second after shrinking the attempted chunk.
-    let batchSize=MAX_ROWS;
-    // `affected` now means "rows actually changed" (mode='chunk' writes are
-    // diff-only, IS DISTINCT FROM -- see the migration), not "rows matched".
-    // The SQL function itself validates every uid in the batch exists and
-    // throws on a mismatch, so there is nothing left for JS to check here;
-    // `count` tracks rows processed (for progress), `changedCount` tracks
-    // rows actually written, purely for reporting.
-    let count=0;
-    let changedCount=0;
-    let completedBatches=0;
-    let nextPauseAt=MAX_ROWS;
-    const estimateBatches=()=>completedBatches+
-      Math.ceil(Math.max(0,rows.length-count)/batchSize);
-    async function coolDown(retrying){
-      const secondsTotal=Math.ceil(KEYWORD_CLASSIFICATION_WRITE_COOLDOWN_MS/1000);
-      for(let seconds=secondsTotal;seconds>0;seconds--){
-        onProgress?.({phase:'cooldown',completed:count,total:rows.length,
-          seconds,retrying,batchSize,completedBatches,estimatedBatches:estimateBatches()});
-        await new Promise(resolve=>setTimeout(resolve,1000));
-      }
-    }
-    for(let offset=0;offset<rows.length;){
-      const batch=rows.slice(offset,offset+batchSize);
-      let affected;
-      try{
-        // Await the RPC and transaction commit before starting another write.
-        affected=await keywordClassificationWriteUnchecked(scope,{mode:'chunk',rows:batch});
-      }catch(error){
-        const timedOut=/canceling statement due to statement timeout/i
-          .test(String(error?.message||error));
-        if(!timedOut||batchSize<=1){
-          flashMessage(WRITE_FAILED_NOTICE);
-          throw error;
-        }
-        batchSize=Math.max(1,Math.floor(batchSize/2));
-        await coolDown(true);
-        continue; // The canceled statement committed no rows; retry this offset.
-      }
-      changedCount+=affected;
-      count+=batch.length;
-      offset+=batch.length;
-      completedBatches++;
-      onProgress?.({phase:'write',completed:count,total:rows.length,
-        completedBatches,estimatedBatches:estimateBatches(),batchSize,
-        lastBatchSize:batch.length});
-      if(offset<rows.length&&count>=nextPauseAt){
-        nextPauseAt+=MAX_ROWS;
-        await coolDown(false);
-      }
-    }
-
-    // DB-side sync uses the same statistics_able predicate as the UID
-    // universe. Never serialize 144k UIDs into one JSON parameter, and never
-    // compare only this run's narrowed candidate UIDs (would wipe others).
-    onProgress?.({phase:'sync',completed:count,total:rows.length});
-    const orphansCleared=await keywordClassificationWrite(scope,{mode:'sync',scopeBased:true});
-
-    onProgress?.({phase:'finalizing',completed:count,total:rows.length});
-    const documentCount=await keywordClassificationWrite(scope,{mode:'finalize',meta});
-    // documentCount (DB's count(*) where group_lists<>'false') is NOT the
-    // same population as eligibleDocumentCount: eligibleUids is every row
-    // with statistics_able=true, but a row only gets a non-'false'
-    // group_lists if it ALSO passes isEligibleRow's minChars/searchable
-    // gate upstream. Those two counts were never meant to be equal --
-    // comparing them for strict equality was the bug. Sanity-bound instead.
-    if(documentCount<0||documentCount>eligibleDocumentCount){
-      throw new Error(`Keyword classification finalize out of range: counted ${documentCount}, eligible universe ${eligibleDocumentCount}`);
-    }
-    return {count,changedCount,orphansCleared,documentCount};
+  async function verifiedKeywordOwner(){
+    const current=await auth.getSession();
+    if(current.error)throw new Error(current.error.message||'Keyword session unavailable');
+    const session=current.data?.session;
+    if(!session?.access_token||!session.user?.id)return false;
+    const verified=await auth.getUser(session.access_token);
+    return !verified.error&&String(verified.data?.user?.id||'')===String(session.user.id);
   }
 
-  // Manually-triggered full wipe (the galaxy table's class_id/group_lists
-  // only -- keyword library rows are untouched). Use when the keyword
-  // library changed enough that a clean slate is wanted; an ordinary
-  // runKeywordAnalysisBatch no longer wipes anything on its own.
-  async function resetKeywordClassification(scopeId,{onProgress}={}){
-    const scope=normalizeScopeId(scopeId);
-    preflightWrite('silver.'+scope+'_keywords');
-    onProgress?.({phase:'reading',completed:0,total:0});
-    const config=await selectAuthRow('silver.'+scope,{idColumn:'id',id:scope,
-      columns:'current_keyword_class_uid'});
-    const classUid=String(config?.current_keyword_class_uid||'');
-    if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('目前沒有選定有效的 Keywords Class');
-    onProgress?.({phase:'resetting',completed:0,total:1});
-    const {data,error}=await dbAuthRelation('silver.'+scope+'_keywords')
-      .update({uidlist:[]}).eq('class_uid',classUid).select('keyword_id');
-    if(error)throw new Error(error.message||'清空 Keywords.uidlist 失敗');
-    const {data:updated,error:configError}=await dbAuthRelation('silver.'+scope)
-      .update({staticstime:null,keyword_meta:{},updated_at:new Date().toISOString()})
-      .eq('id',scope).eq('current_keyword_class_uid',classUid).select('id');
-    if(configError||updated?.length!==1)throw new Error(configError?.message||'清空設定更新失敗');
-    onProgress?.({phase:'completed',completed:data?.length||0,total:data?.length||0});
-    return {count:data?.length||0};
+  async function keywordRead(name,args,{isEmpty=data=>!data}={}){
+    const publicResult=await publicClient.schema('silver').rpc(name,args);
+    if(publicResult.error)throw new Error(publicResult.error.message||('Keyword RPC '+name+' failed'));
+    if(!isEmpty(publicResult.data))return publicResult.data;
+    if(!await verifiedKeywordOwner())return publicResult.data;
+    const privateResult=await authClient.schema('silver').rpc(name,args);
+    if(privateResult.error)throw new Error(privateResult.error.message||('Private Keyword RPC '+name+' failed'));
+    return privateResult.data;
   }
 
   async function readKeywordClass(scopeId,classUid){
     const scope=normalizeScopeId(scopeId),uid=String(classUid||'');
-    if(!/^[0-9A-Za-z]{4}$/.test(uid))return null;
-    const params={p_scope_id:scope,p_class_uid:uid};
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_class_by_uid',params);
-    if(error)throw new Error(error.message||'Keywords Class read failed');
-    if(data!==null)return data;
-    // Public reads use an anonymous token; a private Class needs a current
-    // provider-verified owner identity. Never trust a persisted user object.
-    const current=await auth.getSession();
-    if(current.error)throw new Error(current.error.message||'Keywords session check failed');
-    const session=current.data?.session;
-    if(!session?.access_token||!session.user?.id)return null;
-    const verified=await auth.getUser(session.access_token);
-    if(verified.error||String(verified.data?.user?.id||'')!==String(session.user.id))
-      return null;
-    const privateResult=await authClient.schema('silver').rpc('read_keyword_class_by_uid',params);
-    if(privateResult.error)throw new Error(privateResult.error.message||'Private Keywords Class read failed');
-    return privateResult.data;
+    if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
+    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope,p_class_uid:uid},{
+      isEmpty:result=>!result?.class_uid||!Array.isArray(result.rows)||result.rows.length===0
+    });
+    return data?.class_uid===uid?data:null;
   }
 
-  async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
+  async function readKeywordTreeSummary(scopeId,{classUid='',startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
     const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_uidlist_summary',{
-      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate),
+    const data=await keywordRead('read_keyword_tree_summary',{
+      p_scope_id:scope,p_class_uid:classUid||null,p_start:day(startDate),p_end:day(endDate),
       p_source:String(source||'').trim()||null
-    });
-    if(error){
-      const failure=new Error(error.message||'Keyword uidlist summary read failed');
-      failure.code=error.code;
-      throw failure;
-    }
+    },{isEmpty:value=>!Array.isArray(value)||value.length===0});
     return Array.isArray(data)?data:[];
   }
-  // Rune66 stored classification: exact counts per class/day and per rune item,
-  // computed by the database (silver.read_rune66_summary).
-  async function readRune66Summary(scopeId,{startDate='',endDate=''}={}){
+
+  async function readKeywordTreeCatalog(scopeId,{classUid=''}={}){
     const scope=normalizeScopeId(scopeId);
-    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_rune66_summary',{
-      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate)
+    const data=await keywordRead('read_keyword_tree_catalog',{
+      p_scope_id:scope,p_class_uid:classUid||null
+    },{
+      isEmpty:value=>!value?.class_uid||!Array.isArray(value.rows)||value.rows.length===0
     });
-    if(error){const failure=new Error(error.message||'Rune66 summary read failed');failure.code=error.code;throw failure;}
-    return Array.isArray(data)?data:[];
+    return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
   }
+
   // Database-side statistics: the database counts, the browser receives the exact
   // totals ({day,kind,category,item_count}) instead of every Galaxy/Media row.
   async function readScopeStatistics(scopeId,{startDate='',endDate='',includeUndated=false}={}){
@@ -404,65 +333,68 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return groups.map(group=>({...group,hasNewline:group.uids.map(uid=>withBreaks.has(uid))}));
   }
 
-  async function writeKeywordLibraryItem(scopeId,operation,item={}){
-    const scope=normalizeScopeId(scopeId),op=String(operation||'').trim().toLowerCase();
-    if(!['insert','update','delete'].includes(op))throw new Error('Unsupported keyword operation');
-    preflightWrite('silver.'+scope+'_keywords');
-    const relation=dbAuthRelation('silver.'+scope+'_keywords');
-    const classUid=String(item.class_uid||'');
-    if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('Keywords Class UID 必須為四字元');
-    const id=String(item.keyword_id??'');
-    if(op!=='insert'&&!/^[1-9][0-9]*$/.test(id))throw new Error('Keyword ID 無效');
-    const values={
-      class_uid:classUid,
-      group_name:String(item.class_name||'').trim(),
-      class_name:String(item.class_name||'').trim(),
-      class_group:String(item.class_group||'').trim(),
-      class_enable:item.class_enable!==false,
-      item_name:String(item.item_name||'').trim(),
-      principle:String(item.principle||''),
-      keywords:Array.isArray(item.keywords)?item.keywords:[],
-      order_no:Number(item.order_no)||0
-    };
+  async function writeKeywordLibraryItem(scopeId,operation,node={}){
+    const scope=normalizeScopeId(scopeId);
+    const table='silver.'+scope+'_keywords';
+    preflightWrite(table);
+    const op=String(operation||'').toLowerCase();
+    if(!['insert','update','delete'].includes(op))throw new Error('Unsupported Keywords operation');
+    const {normalizeKeywordTreeRow}=await import('./keyword-tree.mjs');
+    const normalized=normalizeKeywordTreeRow(node);
+    const relation=dbAuthRelation(table);
     let query;
-    if(op==='insert')query=relation.insert(values).select('keyword_id');
-    else if(op==='update')query=relation.update(values).eq('keyword_id',id).eq('class_uid',classUid).select('keyword_id');
-    else query=relation.delete().eq('keyword_id',id).eq('class_uid',classUid).select('keyword_id');
+    if(op==='insert')query=relation.insert(normalized).select('uid');
+    else if(op==='update')query=relation.update({
+      type:normalized.type,name:normalized.name,desc:normalized.desc,
+      lists:normalized.lists
+    }).eq('uid',normalized.uid).select('uid');
+    else query=relation.delete().eq('uid',normalized.uid).select('uid');
     const {data,error}=await query;
-    if(error||data?.length!==1)throw new Error(error?.message||'Keyword write affected no rows');
-    return {count:1,keyword_id:data[0].keyword_id};
+    if(error||data?.length!==1)throw new Error(error?.message||'Keywords write affected no rows');
+    return {uid:normalized.uid,count:1};
   }
 
   async function copyKeywordLibraryClass(scopeId,sourceClassName,targetClassName){
-    const scope=normalizeScopeId(scopeId);
-    const source=String(sourceClassName||'').trim(),target=String(targetClassName||'').trim();
-    if(!source||!target||source===target)throw new Error('Keywords Class 名稱無效或重複');
-    preflightWrite('silver.'+scope+'_keywords');
-    const relation=dbAuthRelation('silver.'+scope+'_keywords');
-    const {data:found,error:existsError}=await relation.select('keyword_id').eq('class_name',target).limit(1);
-    if(existsError||found?.length)throw new Error(existsError?.message||'Class 已存在');
-    const {data:sourceItems,error:readError}=await relation
-      .select('keyword_id,class_group,class_enable,item_name,principle,keywords,order_no')
-      .eq('class_name',source).order('order_no',{ascending:true});
-    if(readError||!sourceItems?.length)throw new Error(readError?.message||'找不到來源 Class');
-    const registry=dbAuthRelation('silver.keyword_classes');
-    const {data:created,error:registryError}=await registry.insert({scope_id:scope}).select('class_uid');
-    if(registryError||created?.length!==1)throw new Error(registryError?.message||'無法建立 Class UID');
-    const classUid=created[0].class_uid;
-    const copies=sourceItems.map(item=>({
-      class_uid:classUid,group_name:target,class_name:target,
-      class_group:String(item.class_group||''),class_enable:item.class_enable!==false,
-      item_name:String(item.item_name||''),principle:String(item.principle||''),
-      keywords:Array.isArray(item.keywords)?item.keywords:[],
-      order_no:Number(item.order_no)||0,uidlist:[]
-    }));
-    const {data, error}=await relation.insert(copies).select('keyword_id');
-    if(error||data?.length!==copies.length){
-      await relation.delete().eq('class_uid',classUid);
-      await registry.delete().eq('class_uid',classUid);
-      throw new Error(error?.message||'Class 複製未完成');
+    const scope=normalizeScopeId(scopeId),source=String(sourceClassName||'').trim(),
+      target=String(targetClassName||'').trim();
+    if(!source||!target||source===target)throw new Error('Keywords Class 名稱不正確');
+    const table='silver.'+scope+'_keywords';
+    preflightWrite(table);
+    const data=await readOwnedKeywordNodes(table);
+    const {indexKeywordTree,descendantsOfKeyword}=await import('./keyword-tree.mjs');
+    const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
+    const tree=indexKeywordTree(data);
+    const original=[...tree.index.values()].find(row=>row.type==='class'&&row.name===source);
+    if(!original)throw new Error('找不到來源 Class');
+    if([...tree.index.values()].some(row=>row.type==='class'&&row.name===target))
+      throw new Error('Class 名稱已存在');
+    const categoryUid=tree.parent.get(original.uid);
+    if(!categoryUid)throw new Error('Class 缺少 Category');
+    const category=tree.index.get(categoryUid),descendants=descendantsOfKeyword(data,original.uid);
+    const occupied=[...tree.index.keys()],mapping=new Map();
+    for(const node of descendants){
+      const uid=generateKeywordClassUid(occupied);
+      occupied.push(uid);mapping.set(node.uid,uid);
     }
-    return {count:data.length,class_uid:classUid};
+    const saved=[];
+    try{
+      // Child nodes first so a published Class cannot reference missing nodes.
+      for(const node of [...descendants].reverse()){
+        const copy={...node,uid:mapping.get(node.uid),
+          name:node.uid===original.uid?target:node.name,
+          lists:node.type==='item'?[...node.lists]:node.lists.map(uid=>mapping.get(uid)),
+          uid_lists:[]};
+        await writeKeywordLibraryItem(scope,'insert',copy);
+        saved.push(copy);
+      }
+      await writeKeywordLibraryItem(scope,'update',{
+        ...category,lists:[...category.lists,mapping.get(original.uid)]});
+    }catch(error){
+      for(const node of saved.reverse())
+        await writeKeywordLibraryItem(scope,'delete',node).catch(()=>{});
+      throw error;
+    }
+    return {count:saved.length,class_uid:mapping.get(original.uid),uid:mapping.get(original.uid)};
   }
 
   async function isCurrentEmailBlocklisted(){
@@ -472,12 +404,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function copyRune66KeywordClassUnchecked(scopeId){
-    const scope=normalizeScopeId(scopeId);
-    if(!scope)throw new Error('Scope ID 格式不正確。');
-    preflightWrite('silver.'+scope+'_keywords');
-    const {data,error}=await authClient.schema('silver').rpc('copy_rune66_keyword_class',{p_scope_id:scope});
-    if(error)throw new Error(error.message||'符文66複製失敗。');
-    return data||{};
+    const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
+    const uid=generateKeywordClassUid();
+    return copyKeywordLibraryClass(scopeId,'符文66','符文66副本-'+uid);
   }
 
   async function moveScopeBlockUnchecked(scopeId,pageName,uid,direction){
@@ -567,7 +496,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,applyKeywordClassification,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

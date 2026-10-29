@@ -135,6 +135,35 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
+  // Keyword parsing shares Group.uid_lists with Culture and Statistics.
+  // Only an opened place report queries the selected place_ids; it never
+  // downloads every article's UID list or runs a fresh word classification.
+  const keywordGroups=useAsyncResource({
+    queryKey:['trace-keyword-groups',targetScope,placesKey,startDate,endDate,sourceFilter],
+    enabled:needsSummary&&tab==='statistics'&&!selectedMediaType&&Boolean(scope?.keywords),
+    queryFn:async()=>{
+      const results=[];
+      for(let i=0;i<placeIds.length;i+=80){
+        const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_keyword_group_totals',{
+          p_scope_id:targetScope,p_place_ids:placeIds.slice(i,i+80),
+          p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
+        });
+        if(error)throw error;
+        if(!Array.isArray(data))throw new Error('Invalid Keywords Group summary');
+        results.push(...data);
+      }
+      const combined=new Map();
+      for(const group of results){
+        const uid=String(group.group_uid||'');
+        const current=combined.get(uid)||{uid,name:String(group.group_name||''),count:0};
+        current.count+=Number(group.document_count)||0;
+        combined.set(uid,current);
+      }
+      return [...combined.values()].filter(group=>group.count>0)
+        .sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
   const mediaSummary=useMemo(()=>mediaFiltered.data
     ?{rows:groupedTraceDays(mediaFiltered.data.filter(row=>row.statistics_able===true),{key:'place_id'})}
     :undefined,[mediaFiltered.data]);
@@ -280,6 +309,18 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       />:<p className="scope-status">目前沒有可顯示的時間資料。</p>}
       <p className="scope-status">造訪點只採用每個空間錨點 times[] 中的原始時間；文章密度是獨立河道，不推定造訪或停留。</p>
     </div>:null}
+    {tab==='statistics'&&!selectedMediaType&&keywordGroups.isPending?
+      <p className="scope-status">正在讀取這些地點的關鍵詞分組統計…</p>:null}
+    {tab==='statistics'&&!selectedMediaType&&keywordGroups.error?
+      <p role="alert" className="scope-status scope-error">關鍵詞分組載入失敗：{String(keywordGroups.error?.message||keywordGroups.error)}</p>:null}
+    {tab==='statistics'&&!selectedMediaType&&keywordGroups.data?.length?
+      <section className="scope-card" aria-label="關鍵詞群組分佈">
+        <h3>關鍵詞群組 · 文章歸屬</h3>
+        <p className="scope-status">依目前 Class 的 Group UID 歸屬計算；同篇文章僅歸屬一個 Group。</p>
+        <ul>{keywordGroups.data.map(group=><li key={group.uid}>
+          {group.name}：{group.count.toLocaleString()} 篇
+        </li>)}</ul>
+      </section>:null}
     {tab==='statistics'&&summary.data?<div className="loc-trace-works-stat" aria-label="地點與文章統計圖">
       {verified.total?<><label>圖表
         <select className="scope-select" value={chartType}

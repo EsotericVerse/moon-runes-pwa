@@ -1,56 +1,27 @@
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {test} from 'node:test';
-import {MAX_ROWS} from '../app/loc/query-batch-size.mjs';
-const source=readFileSync(new URL('../app/loc/keyword-analysis.js',import.meta.url),'utf8');
-const extract=(start,end,name,deps)=>{
-  const from=source.indexOf(start),to=source.indexOf(end,from);
-  assert.ok(from>=0&&to>from,'Function source markers must exist');
-  return new Function(...Object.keys(deps),
-    source.slice(from,to).replace(/^export /,'')+'\nreturn '+name+';')(...Object.values(deps));
-};
-test('incremental classification counts zero, one and multiple batches',async()=>{
-  const classify=extract('async function classifyDocumentsIncrementally(',
-    '// Group ordering comes from each Keywords Class','classifyDocumentsIncrementally',{
-      classifyKeywordDocuments:docs=>({classifications:docs.map(row=>({uid:row.uid})),
-        classifiedCount:docs.length,unclassifiedCount:0,tieCount:0,
-        runeTotals:[],groupTotals:[],unsupportedRules:[]}),
-      reportBatchProgress:()=>{},setTimeout,KEYWORD_CLASSIFICATION_BATCH_SIZE:MAX_ROWS
-    });
-  for(const count of [0,1,121]){
-    const docs=Array.from({length:count},(_,i)=>({uid:'D'+i,content:'article'}));
-    const result=await classify(docs,[],()=>{});
-    assert.equal(result.documentCount,count);
-    assert.equal(result.classifications.length,count);
-  }
+const code=readFileSync(new URL('../app/loc/keyword-analysis.js',import.meta.url),'utf8');
+const runner=code.slice(code.indexOf('export async function runKeywordAnalysisBatch('),code.indexOf('\nfunction emptyStored('));
+const summary=code.slice(code.indexOf('export async function selectKeywordAnalysisSummary('),
+ code.indexOf('\nexport function clearKeywordAnalysisCache('));
+test('analysis reads Galaxy articles but never updates Galaxy classification columns',()=>{
+ assert.match(runner,/\.select\('uid,content,searchable'\)/);
+ assert.match(runner,/dbAuthRelation\(scope\.galaxy\)/);
+ assert.match(runner,/reanalyzeKeywordClass/);
+ assert.match(runner,/update\(\{uid_lists\}\)/);
+ assert.doesNotMatch(runner,/\.update\(\{class_id|group_lists|applyKeywordClassification/);
 });
-test('full analysis reports processed eligible documents after completion',async()=>{
-  const rows=[{uid:'A',content:'eligible'},{uid:'B',content:''},{uid:'C',content:'also eligible'}];
-  const progress=[];
-  const run=extract('export async function runKeywordAnalysisBatch(','\nfunction emptyStored(',
-    'runKeywordAnalysisBatch',{
-      normalizeScopeId:value=>value,
-      reportBatchProgress:(_callback,phase,completed,total,percent)=>progress.push({phase,percent}),
-      scopeAndConfig:async()=>({scope:{galaxy:'galaxy',config:'config'},
-        config:{current_keyword_class_id:'test',keyword_min_chars:0,keyword_min_documents:0,keyword_meta:{}}}),
-      normalizeKeywordMinChars:value=>value,normalizeKeywordMinDocuments:value=>value,
-      loadCurrentCatalog:async()=>[{class_group:'靈魂',item_no:1}],
-      keywordFingerprint:async()=>({count:3}),checkSkippable:()=>false,
-      changedItemNosOf:()=>null,candidateOrFilter:()=>'',selectAllRows:async()=>({rows:rows.map(({uid})=>({uid}))}),
-      selectRows:async()=>({rows}),KEYWORD_CLASSIFICATION_BATCH_SIZE:5,
-      createDynamicResolver:()=>({classMap:{ordered:[]},
-        resolvePage:async docs=>docs.map(({uid})=>({uid,class_id:1,group_lists:'1:1'}))}),
-      isEligibleRow:row=>Boolean(row.content),documentOf:row=>({uid:row.uid,content:row.content}),
-      metaOf:()=>({}),applyKeywordClassification:async(_scope,{rows:payload})=>({
-        count:payload.length,documentCount:payload.length}),
-      clearKeywordAnalysisCache:()=>{},
-      dbAuthRelation:()=>({select:()=>({eq:()=>({limit:async()=>({
-        data:[{staticstime:'2026-10-27T00:00:00Z'}],error:null})})})}),
-      selectCount:async()=>2
-    });
-  const result=await run('lo3rwang',{});
-  assert.equal(result.documentCount,2);
-  assert.equal(result.keywordDocumentCount,2);
-  assert.equal(result.skipped,false);
-  assert.ok(progress.some(item=>item.phase==='completed'&&item.percent===100));
+test('analysis identifies Class and Items exclusively through four-character UID',()=>{
+ assert.match(runner,/current_keyword_class_uid/);
+ assert.match(runner,/\.select\('uid,type,name,desc,lists'\)/);
+ assert.match(runner,/keywordTreeCatalog/);
+ assert.doesNotMatch(runner,/keyword_id|item_no|class_id/);
+});
+test('public Culture and Statistics summary invokes UID-tree RPC',()=>{
+ assert.match(summary,/readKeywordTreeSummary/);
+ assert.doesNotMatch(summary,/readRune66Summary|group_lists/);
+});
+test('stale marker precedes every Group and Item write',()=>{
+ assert.ok(runner.indexOf('staticstime:null')<runner.indexOf('writeNode:async'));
 });

@@ -31,7 +31,7 @@ function articleUid(value){
   return value;
 }
 function times(value){
-  if(!Number.isSafeInteger(value)||value<=0)throw new Error('times must be positive');
+  if(!Number.isSafeInteger(value)||value<0)throw new Error('times must be non-negative');
   return value;
 }
 function indexes(catalogRows,classUid){
@@ -96,4 +96,26 @@ export function summarizeKeywordUidlist(uidlist=[]){
   let count=0;
   for(const hit of uidlist){articleUid(hit.uid);count+=times(hit.times);}
   return {article_count:uidlist.length,hit_count:count};
+}
+
+
+/**
+ * A Class is one unique classification Item. It uses the same uidlist field
+ * and the same {uid,times} entries as ordinary Keyword Items.
+ * Group membership is already available on child Items: do not persist it
+ * again inside the Class uidlist.
+ */
+export function buildKeywordClassUidlist(itemRows=[]){
+  const byArticle=new Map();
+  for(const item of itemRows){
+    for(const hit of item.uidlist||[]){
+      const uid=articleUid(hit.uid),count=times(hit.times);
+      byArticle.set(uid,(byArticle.get(uid)||0)+count);
+      if(!Number.isSafeInteger(byArticle.get(uid)))
+        throw new Error('Class hit count exceeds safe integer range');
+    }
+  }
+  return [...byArticle.entries()]
+    .sort(([a],[b])=>a<b?-1:a>b?1:0)
+    .map(([uid,times])=>({uid,times}));
 }

@@ -1,0 +1,37 @@
+// One Scope may analyze many Keyword Classes. The active Class chooses the
+// default view only; completed results are independently keyed by Class UID.
+const UID=/^[0-9A-Za-z]{4}$/;
+export function keywordClassState(config={},classUid=''){
+  if(!UID.test(classUid))return null;
+  const meta=config.keyword_meta&&typeof config.keyword_meta==='object'
+    ?config.keyword_meta:{};
+  const record=meta.by_class?.[classUid];
+  if(record&&typeof record==='object'){
+    return record.completedAt?record:null;
+  }
+  // Once by_class exists, a missing Class entry is genuinely stale.
+  // Never mistake another Class's scope-level staticstime for completion.
+  if(!Object.hasOwn(meta,'by_class')&&meta.class_uid===classUid&&config.staticstime)
+    return {...meta,completedAt:config.staticstime};
+  return null;
+}
+export function invalidateKeywordClass(meta={},classUid=''){
+  if(!UID.test(classUid))throw new Error('Invalid Keywords Class UID');
+  const source=meta&&typeof meta==='object'?meta:{};
+  const by_class={...(source.by_class||{})};
+  delete by_class[classUid];
+  return {...source,by_class};
+}
+export function completeKeywordClass(meta={},classUid='',result={},completedAt=''){
+  if(!UID.test(classUid)||!completedAt)throw new Error('Invalid analysis completion');
+  const source=meta&&typeof meta==='object'?meta:{};
+  const by_class={...(source.by_class||{}),[classUid]:{
+    ...result,class_uid:classUid,completedAt
+  }};
+  return {...source,by_class};
+}
+export function activeKeywordMeta(config={},classUid=''){
+  const record=keywordClassState(config,classUid);
+  return record?{...record,by_class:config.keyword_meta?.by_class||{}}:
+    {by_class:config.keyword_meta?.by_class||{}};
+}

@@ -1,66 +1,87 @@
-import {classifyKeywordDocumentsById} from './model/keyword-id-analysis.mjs';
-import {buildKeywordUidlistRows} from './keyword-uidlist.mjs';
+import {classifyKeywordDocumentsByUid,createKeywordUidGroupResolver} from './model/keyword-uid-analysis.mjs';
+import {keywordClassCatalog,indexKeywordTree} from './keyword-tree.mjs';
 
-// A complete reanalysis deliberately ignores every old Galaxy classification.
-// It reads article bodies only and replaces every Item's uidlist, including
-// Items whose keywords now match nothing. No Galaxy write is ever performed.
+const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
+
+// Aggregate one page at a time. Memory scales with the actual stored Keyword
+// hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
-  classUid,catalogRows=[],minChars=0,pageSize=1000,
-  readPage,writeItem,finalize,onProgress=()=>{}
+  classUid,treeRows=[],minChars=0,pageSize=1000,readPage,writeNode,finalize,
+  onProgress=()=>{}
 }={}){
-  if(typeof readPage!=='function'||typeof writeItem!=='function'||typeof finalize!=='function')
-    throw new TypeError('Reading, writing and finalization callbacks are required');
-  const ordered=[...catalogRows].sort((a,b)=>
-    Number(a.order_no??0)-Number(b.order_no??0)
-    ||String(a.keyword_id).localeCompare(String(b.keyword_id)));
-  if(!ordered.length)throw new Error('Cannot classify without Keywords Items');
-  if(!ordered.every(item=>item.class_enable!==false)){
-    // Disabled entries are persisted with empty uidlist but do not match.
-  }
-  const catalog=ordered.filter(row=>row.class_enable!==false);
-  const hits=[],seen=new Set();
-  let offset=0,articles=0,eligible=0;
+  if(typeof readPage!=='function'||typeof writeNode!=='function'||typeof finalize!=='function')
+    throw new TypeError('Article reader, Keywords writer and finalizer are required');
+  if(!Number.isSafeInteger(pageSize)||pageSize<1)
+    throw new TypeError('pageSize must be a positive integer');
+  const tree=indexKeywordTree(treeRows);
+  const root=tree.index.get(classUid);
+  if(!root||root.type!=='class')throw new Error('Unknown Class UID');
+  const {catalog}=keywordClassCatalog(treeRows,classUid);
+  const itemResults=new Map(catalog.map(item=>[item.uid,new Map()]));
+  const groupResults=new Map(root.lists.map(uid=>[uid,new Set()]));
+  const resolver=createKeywordUidGroupResolver(treeRows,classUid);
+  const seen=new Set();
+  let offset=0,read=0,eligible=0,occurrences=0,itemMatches=0;
   for(;;){
     const page=await readPage({offset,limit:pageSize});
-    if(!Array.isArray(page))throw new TypeError('Article page must be an array');
+    if(!Array.isArray(page))throw new Error('Galaxy page must be an array');
+    if(page.length>pageSize)throw new Error('Galaxy page exceeded requested limit');
     if(!page.length)break;
-    const documents=page.filter(row=>{
-      if(!row?.uid||row.searchable===false)return false;
-      return Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars;
-    });
-    for(const row of documents){
-      if(seen.has(row.uid))throw new Error('Duplicate Galaxy article UID during reanalysis');
-      seen.add(row.uid);
+    const docs=page.filter(row=>row?.uid&&row.searchable!==false&&
+      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
+    for(const doc of docs){
+      if(!ARTICLE_UID.test(doc.uid)||seen.has(doc.uid))
+        throw new Error('Invalid or duplicate Galaxy UID');
+      seen.add(doc.uid);
     }
-    const output=classifyKeywordDocumentsById(documents,catalog);
-    hits.push(...output.classifications);
-    articles+=page.length;
-    eligible+=documents.length;
-    offset+=page.length;
-    onProgress({phase:'reading',completed:articles,eligible});
+    const data=classifyKeywordDocumentsByUid(docs,treeRows,classUid);
+    for(const result of data.classifications||[]){
+      if(!ARTICLE_UID.test(result.uid)||!seen.has(result.uid))
+        throw new Error('Classifier returned an unknown Galaxy UID');
+      const itemSeen=new Set();
+      for(const hit of result.hits||[]){
+        const output=itemResults.get(hit.uid);
+        if(!output||itemSeen.has(hit.uid)||!Number.isSafeInteger(hit.times)||hit.times<0)
+          throw new Error('Invalid Keyword Item hit');
+        output.set(result.uid,hit.times);
+        itemSeen.add(hit.uid);
+        occurrences+=hit.times;
+        itemMatches++;
+        if(!Number.isSafeInteger(occurrences))throw new Error('Keyword hit total overflow');
+      }
+      // Stateful resolution must run in article/page order, not afterwards:
+      // equal-scoring articles are distributed to the least populated Group.
+      const groupUid=resolver.resolve(result);
+      if(groupUid)groupResults.get(groupUid).add(result.uid);
+    }
+    offset+=page.length;read+=page.length;eligible+=docs.length;
+    onProgress({phase:'reading',completed:read,eligible});
     if(page.length<pageSize)break;
   }
-  const rows=buildKeywordUidlistRows({classUid,catalogRows:ordered,classifications:hits});
+  const changes=[
+    ...root.lists.map(uid=>({
+      uid,type:'group',uid_lists:[...groupResults.get(uid)].sort()
+    })),
+    ...catalog.map(item=>({
+      uid:item.uid,type:'item',
+      uid_lists:[...itemResults.get(item.uid)].sort(([a],[b])=>a.localeCompare(b))
+        .map(([uid,times])=>({uid,times}))
+    }))
+  ];
   const matched=new Set();
-  let occurrences=0;
-  for(const row of rows)for(const hit of row.uidlist){
-    matched.add(hit.uid);
-    occurrences+=hit.times;
+  for(const group of changes.filter(row=>row.type==='group'))
+    for(const uid of group.uid_lists){
+      if(matched.has(uid))throw new Error('Multiple winning Groups for one article');
+      matched.add(uid);
+    }
+  for(let i=0;i<changes.length;i++){
+    const node=changes[i];
+    await writeNode(node);
+    onProgress({phase:'writing',completed:i+1,total:changes.length});
   }
-  // A write error leaves the prior analysis anchor invalid. The caller must
-  // mark the analysis stale BEFORE entering this function.
-  for(let index=0;index<rows.length;index++){
-    const item=rows[index];
-    await writeItem({
-      classUid:item.class_uid,
-      keywordId:item.keyword_id,
-      uidlist:item.uidlist
-    });
-    onProgress({phase:'writing',completed:index+1,total:rows.length});
-  }
-  await finalize({classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
-    itemMatches:rows.reduce((n,item)=>n+item.uidlist.length,0),occurrences});
+  const stats={classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
+    itemMatches,occurrences,groupCount:root.lists.length,itemCount:catalog.length};
+  await finalize(stats);
   onProgress({phase:'completed',completed:eligible,total:eligible});
-  return {classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
-    itemMatches:rows.reduce((n,item)=>n+item.uidlist.length,0),occurrences};
+  return stats;
 }

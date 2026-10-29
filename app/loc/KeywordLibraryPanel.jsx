@@ -1,821 +1,397 @@
 'use client';
 
-import {useEffect,useMemo,useRef,useState} from 'react';
-import {useEditDock} from '../modular/edit-dock';
-import {useFeatureCopy,useUiLocale} from '../i18n/ui-locale';
-import featureZh from '../i18n/features.zh_tw.js';
-import ManagementSectionNav from '../modular/ManagementSectionNav';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSWRConfig} from 'swr';
-import {selectCount} from './db-query.mjs';
-import {classGroupIndex} from './model/class-group-items.mjs';
-import {copyKeywordLibraryClass,copyRune66KeywordClass,dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem} from './db-client.mjs';
-const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
+import {useEditDock} from '../modular/edit-dock';
+import {dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem,copyKeywordLibraryClass} from './db-client.mjs';
+import {indexKeywordTree,descendantsOfKeyword} from './keyword-tree.mjs';
+import {keywordClassState,invalidateKeywordClass} from './keyword-class-state.mjs';
+import {generateKeywordClassUid} from './keyword-uidlist.mjs';
 
-// The vis-network bundle is downloaded/mounted only when its view is chosen.
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
-
-const compactKeywordTitle=label=>String(label||'').replace(/^關鍵詞/,'');
-const KEYWORD_TAB_LABELS=Object.freeze({
-  'zh-Hant':{analysis:'基本',run:'分析',manual:'群組',library:'分類',network:'關聯圖'},
-  'zh-Hans':{analysis:'基础',run:'分析',manual:'分组',library:'分类',network:'关联图'},
-  en:{analysis:'Basic',run:'Analyze',manual:'Groups',library:'Library',network:'Network'},
-  ja:{analysis:'基本',run:'分析',manual:'グループ',library:'分類',network:'関連図'}
-});
-const DEFAULT_KEYWORD_MIN_CHARS=32;
-const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
-const KEYWORD_WORKSPACE_OPTIONS=Object.freeze([
-  {value:'analysis',key:'basicSettings'},
-  {value:'run',key:'keywordAnalysis'},
-  {value:'manual',key:'manual'},
-  {value:'library',key:'title'},
-  {value:'network',key:'network'}
-]);
-
-function normalizeKeywordLines(value){
-  const lines=String(value||'').split(/\r?\n/).map(item=>item.trim()).filter(Boolean);
-  return [...new Set(lines)];
+const TYPES=['category','class','group','item'];
+const LABEL={category:'Category',class:'Class',group:'Group',item:'Item'};
+const onlyWords=value=>[...new Set(String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
+const emptyTree={index:new Map(),parent:new Map(),roots:[]};
+const uidFor=rows=>generateKeywordClassUid(rows.map(row=>row.uid));
+function freshNode(type,rows){
+  return {uid:uidFor(rows),type,name:'',desc:'',lists:[],uid_lists:[]};
 }
-function keywordText(value){
-  return Array.isArray(value)?value.map(item=>String(item||'').trim()).filter(Boolean).join('\n'):'';
+function childrenOf(tree,uid){
+  const parent=tree.index.get(uid);
+  return (parent?.lists||[]).map(id=>tree.index.get(id)).filter(Boolean);
 }
-// Preserve keyword input in the draft even without explicitly applying it.
-function keywordDraftWithInput(keywords,selectedKeyword,input){
-  const value=String(input||'').trim();
-  if(!value)return keywords;
-  const index=keywords.indexOf(selectedKeyword);
-  const next=keywords.filter(word=>word!==selectedKeyword&&word!==value);
-  if(selectedKeyword&&index>=0)next.splice(Math.min(index,next.length),0,value);
-  else next.push(value);
-  return next;
-}
-function blankDraft(className='',classId='',itemNo=1){
-  return {
-    keyword_id:null,
-    class_id:classId,
-    class_name:className,
-    class_group:'',
-    class_enable:true,
-    item_no:itemNo,
-    item_name:'',
-    principle:'',
-    keywords_text:'',
-    order_no:itemNo
-  };
-}
-function formatStaticTime(value,l,locale){
-  if(!value)return l.notAnchored;
-  const date=new Date(value);
-  return Number.isNaN(date.getTime())?String(value):date.toLocaleString(locale,{hour12:false});
+function parentOf(tree,uid){return tree.index.get(tree.parent.get(uid));}
+function classOf(tree,uid){
+  let node=tree.index.get(uid);
+  while(node&&node.type!=='class')node=parentOf(tree,node.uid);
+  return node;
 }
 export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
-  const l=useFeatureCopy('keywordPanel',featureZh.keywordPanel);
-  const {locale}=useUiLocale();
-  const workspaceOptions=KEYWORD_WORKSPACE_OPTIONS.map(option=>{
-    const label=l[option.key]||featureZh.keywordPanel[option.key];
-    return {value:option.value,label,shortLabel:KEYWORD_TAB_LABELS[locale]?.[option.value]||compactKeywordTitle(label)};
-  });
-  const editDock=useEditDock();
-  const dockActions=useRef({save:null});
+  const scope=account.scopeDataFor(scopeId),table=scope?.keywords||'';
+  const configTable=scope?.config||'';
+  const canEdit=account.canManageScopeSync(scopeId)&&Boolean(table&&configTable);
+  const dock=useEditDock(),dockActions=useRef(null);
   const {mutate}=useSWRConfig();
-  const scopeData=account.scopeDataFor(scopeId);
-  const TABLE=scopeData?.keywords||'';
-  const CONFIG_TABLE=scopeData?.config||'';
   const [rows,setRows]=useState([]);
-  const [selectedClass,setSelectedClass]=useState('');
-  const [selectedId,setSelectedId]=useState('');
-  const [selectedGroup,setSelectedGroup]=useState('');
-  const [selectedKeyword,setSelectedKeyword]=useState('');
-  const [keywordEdit,setKeywordEdit]=useState('');
-  const [draft,setDraft]=useState(null);
+  const [config,setConfig]=useState({});
+  const [savedConfig,setSavedConfig]=useState({});
+  const [editor,setEditor]=useState(null);
+  const [pendingParent,setPendingParent]=useState('');
+  const [keywordText,setKeywordText]=useState('');
+  const [workspace,setWorkspace]=useState('manual');
+  const [chosen,setChosen]=useState({category:'',class:'',group:'',item:''});
   const [copyName,setCopyName]=useState('');
-  const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
-  const [minDocuments,setMinDocuments]=useState(DEFAULT_KEYWORD_MIN_DOCUMENTS);
-  const [currentClassId,setCurrentClassId]=useState('');
-  const [shareEnabled,setShareEnabled]=useState(false);
-  // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_group_item_no).
-  // Stored per class_id (same value on every row of that class), so it rides
-  // along in the main keyword SELECT below rather than a separate query.
-  const [defaultGroupItemNo,setDefaultGroupItemNo]=useState('0');
-  const [keywordDocumentCount,setKeywordDocumentCount]=useState(null);
-  const [galaxyTotalCount,setGalaxyTotalCount]=useState(null);
-  const [countReadError,setCountReadError]=useState('');
-  const [countVersion,setCountVersion]=useState(0);
-  const countReadId=useRef(0);
-  const [staticstime,setStaticstime]=useState('');
-  const [configSnapshot,setConfigSnapshot]=useState(null);
-  const [loading,setLoading]=useState(true);
-  const [busy,setBusy]=useState(false);
-  const [savingStage,setSavingStage]=useState('');
-  const [batchProgress,setBatchProgress]=useState(null);
-  const [resetProgress,setResetProgress]=useState(null);
-  const [message,setMessage]=useState('');
-  const [workspace,setWorkspace]=useState('analysis');
+  const [progress,setProgress]=useState(null);
+  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
+  const [error,setError]=useState(''),[notice,setNotice]=useState('');
+  const tree=useMemo(()=>{
+    if(!rows.length)return emptyTree;
+    return indexKeywordTree(rows);
+  },[rows]);
+  const category=tree.index.get(chosen.category);
+  const classes=childrenOf(tree,category?.uid);
+  const activeClass=tree.index.get(chosen.class);
+  const groups=childrenOf(tree,activeClass?.uid);
+  const activeGroup=tree.index.get(chosen.group);
+  const items=childrenOf(tree,activeGroup?.uid);
+  const selected=tree.index.get(chosen.item)||activeGroup||activeClass||category||null;
+  const draft=editor?.node||null;
+  const dirty=Boolean(draft&&(
+    !tree.index.has(draft.uid)||
+    JSON.stringify(draft)!==JSON.stringify(tree.index.get(draft.uid))
+  ))||Boolean(draft?.type==='item'&&keywordText!==((draft.lists||[]).join('\n')));
 
-  const canEdit=account.canManageScopeSync(scopeId)&&Boolean(TABLE&&CONFIG_TABLE);
-
-  async function invalidateClassification(){
+  const invalidate=useCallback(async()=>{
     const {clearKeywordAnalysisCache}=await import('./keyword-analysis');
     clearKeywordAnalysisCache();
-    await Promise.all([
-      mutate(key=>Array.isArray(key)&&['statistics-style-filter','culture-style-filter','own-scope-keyword-summary','own-scope-keyword-item-days','statistics-keyword-item-class-map'].includes(key[0]))
-    ]);
-  }
+    await mutate(key=>Array.isArray(key)&&/keyword|culture-style-filter|statistics-style-filter/.test(String(key[0]||'')),undefined,{revalidate:true});
+  },[mutate]);
 
-  async function markCurrentClassificationStale(classId){
-    if(!classId||String(classId)!==String(currentClassId))return;
-    // staticstime:null alone already forces the next run to be non-skippable
-    // (checkSkippable's first check in keyword-analysis.js is `if(!config.
-    // staticstime)return null`) -- keyword_meta must NOT be wiped here.
-    // keyword_meta.shas is the narrowing baseline (changedItemNosOf); this
-    // function runs after every single keyword edit/remove/copy, so wiping
-    // it here meant the very next 重新分析 could never see a matching-length
-    // stored baseline and narrowing could never fire, ever, for the normal
-    // edit-then-reanalyze workflow. Keep keyword_meta intact; only the
-    // finalize RPC (reset mode, or a successful run) should ever replace it.
-    await updateRows(CONFIG_TABLE,{
-      staticstime:null,
-      updated_at:new Date().toISOString()
-    },{filters:[{column:'id',operator:'eq',value:scopeId}]});
-    await invalidateClassification();
-  }
-
-  async function load(preferredId='',preferredClass='',options={}){
+  const load=useCallback(async(preferredUid='')=>{
     if(!canEdit)return;
-    setLoading(true);setMessage('');
+    setLoading(true);setError('');
     try{
-      const [keywordResult,configResult]=await Promise.all([
-        dbAuthRelation(TABLE)
-          .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
-          .order('class_name',{ascending:true})
-          .order('order_no',{ascending:true})
-          .order('item_no',{ascending:true}),
-        dbAuthRelation(CONFIG_TABLE)
-          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,staticstime')
-          .eq('id',scopeId)
-          .limit(1)
+      const [found,settings]=await Promise.all([
+        (async()=>{
+          const owned=[],size=500;
+          for(let offset=0;;offset+=size){
+            const {data,error}=await dbAuthRelation(table)
+              .select('uid,type,name,desc,lists')
+              .order('uid',{ascending:true}).range(offset,offset+size-1);
+            if(error)throw new Error(error.message||'Keywords 讀取失敗');
+            owned.push(...(data||[]));
+            if((data||[]).length<size)break;
+          }
+          return {rows:owned};
+        })(),
+        dbAuthRelation(configTable).select(
+          'current_keyword_class_uid,keyword_min_chars,keyword_min_documents,keyword_class_share_enabled,keyword_meta,staticstime'
+        ).eq('id',scopeId).limit(1)
       ]);
-      if(keywordResult.error)throw new Error(keywordResult.error.message||l.libraryReadError);
-      if(configResult.error)throw new Error(configResult.error.message||l.settingsReadError);
+      if(settings.error)throw settings.error;
+      const records=(found.rows||[]).map(row=>({...row,uid_lists:[]})),index=indexKeywordTree(records);
+      const first=index.roots[0];
+      const firstClass=first&&childrenOf(index,first.uid)[0];
+      const current=index.index.get(preferredUid);
+      const target=current||index.index.get(settings.data?.[0]?.current_keyword_class_uid)
+        ||index.index.get(chosen.item)||index.index.get(chosen.group)
+        ||index.index.get(chosen.class)||index.index.get(chosen.category)||firstClass||first;
+      const lineage={},nodeType=target?.type;
+      let node=target;
+      while(node){lineage[node.type]=node.uid;node=parentOf(index,node.uid);}
+      setRows(records);setConfig(settings.data?.[0]||{});setSavedConfig(settings.data?.[0]||{});
+      setChosen({category:lineage.category||first?.uid||'',
+        class:lineage.class||(target?.type==='category'?childrenOf(index,target.uid)[0]?.uid:'')||firstClass?.uid||'',
+        group:lineage.group||'',item:lineage.item||''});
+      setEditor(null);setPendingParent('');setKeywordText('');
+      setNotice('');
+    }catch(e){setError(String(e.message||e));}
+    finally{setLoading(false);}
+  },[canEdit,table,configTable,scopeId]);
 
-      const config=configResult.data?.[0]||{};
-      const configuredChars=Number(config.keyword_min_chars);
-      const configuredDocuments=Number(config.keyword_min_documents);
-      const nextMinChars=Number.isInteger(configuredChars)&&configuredChars>=0?configuredChars:DEFAULT_KEYWORD_MIN_CHARS;
-      const nextMinDocuments=Number.isInteger(configuredDocuments)&&configuredDocuments>=0?configuredDocuments:DEFAULT_KEYWORD_MIN_DOCUMENTS;
-      const nextCurrentClassId=String(config.current_keyword_class_id||'');
-      const nextShareEnabled=Boolean(config.keyword_class_share_enabled);
-      const nextStaticstime=String(config.staticstime||'');
-
-      const next=keywordResult.data||[];
-      setRows(next);
-      const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
-      const currentClassName=next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.class_name||'';
-      const requested=String(preferredClass||selectedClass||currentClassName||'').trim();
-      const nextClass=classNames.includes(requested)?requested:(classNames.includes('符文66')?'符文66':(classNames[0]||''));
-      setSelectedClass(nextClass);
-      // Same value is repeated on every row of nextCurrentClassId -- any one row works.
-      const nextDefaultGroupItemNo=String(next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.default_group_item_no??0);
-
-      setMinChars(nextMinChars);
-      setMinDocuments(nextMinDocuments);
-      setCurrentClassId(nextCurrentClassId);
-      setShareEnabled(nextShareEnabled);
-      setStaticstime(nextStaticstime);
-      setDefaultGroupItemNo(nextDefaultGroupItemNo);
-      setConfigSnapshot({
-        minChars:nextMinChars,
-        minDocuments:nextMinDocuments,
-        currentClassId:nextCurrentClassId,
-        shareEnabled:nextShareEnabled,
-        defaultGroupItemNo:nextDefaultGroupItemNo
-      });
-      const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
-        ||next.find(row=>String(row.class_name)===nextClass)
-        ||null;
-      if(candidate){
-        setSelectedId(String(candidate.keyword_id));
-        setSelectedGroup(String(candidate.class_group||''));
-        setSelectedKeyword('');setKeywordEdit('');
-        setDraft({...candidate,keywords_text:keywordText(candidate.keywords)});
-      }else{
-        setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');
-        setDraft(null);
-      }
-      return true;
-    }catch(error){
-      if(!options.preserveOnError){
-        setRows([]);setSelectedId('');setSelectedGroup('');setSelectedKeyword('');setKeywordEdit('');setDraft(null);
-      }
-      setMessage(l.reloadError+String(error?.message||error));
-      return false;
-    }finally{
-      setLoading(false);
-    }
-  }
-
-  useEffect(()=>{if(canEdit)load();},[canEdit,account.email,scopeId,TABLE,CONFIG_TABLE]);
-
-  // Counts are HEAD-only and read on demand when the analysis tab opens.
-  // Never fetch article bodies or poll the database for this display.
-  useEffect(()=>{
-    if(workspace!=='run'||!canEdit||!scopeData?.galaxy)return;
-    const request=++countReadId.current;
-    let cancelled=false;
-    setKeywordDocumentCount(null);
-    setGalaxyTotalCount(null);
-    setCountReadError('');
-    Promise.all([
-      selectCount(scopeData.galaxy,{idColumn:'uid'}),
-      selectCount(scopeData.galaxy,{
-        idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
-      })
-    ]).then(([total,classified])=>{
-      if(cancelled||request!==countReadId.current)return;
-      setGalaxyTotalCount(Math.max(0,Number(total)||0));
-      setKeywordDocumentCount(Math.max(0,Number(classified)||0));
-    }).catch(error=>{
-      if(cancelled||request!==countReadId.current)return;
-      setCountReadError(String(error?.message||error||'Count failed'));
-    });
-    return ()=>{cancelled=true;};
-  },[workspace,canEdit,scopeId,scopeData?.galaxy,countVersion]);
-
-  const classes=useMemo(()=>{
-    const map=new Map();
-    for(const row of rows){
-      const id=String(row.class_id||'').trim();
-      const name=String(row.class_name||'').trim();
-      if(id&&name&&!map.has(id))map.set(id,name);
-    }
-    return [...map.entries()].map(([class_id,class_name])=>({class_id,class_name}));
-  },[rows]);
-  const items=useMemo(()=>rows
-    .filter(row=>String(row.class_name)===selectedClass)
-    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
-  // For the "預設群組" dropdown in 分析設定: the active analysis class's items
-  // (currentClassId, not selectedClass -- the panel can be browsing a different
-  // class in the manual editor while 分析設定 still targets currentClassId).
-  const currentClassItems=useMemo(()=>rows
-    .filter(row=>String(row.class_id)===String(currentClassId))
-    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,currentClassId]);
-  const selectedClassId=String(items[0]?.class_id||'');
-  // Share the pure Class -> Group -> Item projection with Trace routes.
-  // Keyword item identity and editing semantics remain unchanged.
-  const classGroups=useMemo(()=>classGroupIndex(items,{
-    classOf:item=>item.class_name,groupOf:item=>item.class_group
-  }),[items]);
-  const groups=useMemo(()=>[...(classGroups.get(selectedClass)||new Map()).keys()].filter(Boolean),
-    [classGroups,selectedClass]);
-  const groupItems=useMemo(()=>(classGroups.get(selectedClass)?.get(selectedGroup)||[]),
-    [classGroups,selectedClass,selectedGroup]);
-  const draftKeywords=useMemo(()=>normalizeKeywordLines(draft?.keywords_text||''),[draft?.keywords_text]);
-  const configDirty=Boolean(configSnapshot)&&(
-    Number(minChars)!==Number(configSnapshot.minChars)
-    ||Number(minDocuments)!==Number(configSnapshot.minDocuments)
-    ||String(currentClassId)!==String(configSnapshot.currentClassId)
-    ||Boolean(shareEnabled)!==Boolean(configSnapshot.shareEnabled)
-    ||String(defaultGroupItemNo)!==String(configSnapshot.defaultGroupItemNo)
-  );
-
-  function selectItem(row){
-    setSelectedId(String(row.keyword_id));
-    setSelectedGroup(String(row.class_group||''));
-    setSelectedKeyword('');setKeywordEdit('');
-    setDraft({...row,keywords_text:keywordText(row.keywords)});
-    setMessage('');
-  }
-  function newItem(group=''){
-    const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
-    setSelectedId('');setSelectedKeyword('');setKeywordEdit('');
-    setSelectedGroup(String(group||selectedGroup||''));
-    setDraft({...blankDraft(selectedClass,selectedClassId,next),class_group:String(group||selectedGroup||'')});
-    setMessage('');
-  }
-
-  function chooseGroup(group){
-    setSelectedGroup(group);setSelectedId('');setDraft(null);
-    setSelectedKeyword('');setKeywordEdit('');setMessage('');
-  }
-  function applyDraftKeyword(){
-    if(!draft)return;
-    const value=keywordEdit.trim();
-    if(!value){setMessage(l.keywordRequired);return;}
-    const next=keywordDraftWithInput(draftKeywords,selectedKeyword,value);
-    setDraft(current=>({...current,keywords_text:next.join('\n')}));
-    setSelectedKeyword(value);setKeywordEdit(value);
-    setMessage(l.addedToDraft);
-  }
-  function removeDraftKeyword(){
-    if(!draft||!selectedKeyword)return;
-    setDraft(current=>({...current,keywords_text:draftKeywords.filter(word=>word!==selectedKeyword).join('\n')}));
-    setSelectedKeyword('');setKeywordEdit('');
-    setMessage(l.removedFromDraft);
-  }
-
-  // One save action owns both drafts. Validate both before writing either,
-  // and reload only after all requested writes have completed.
-  async function saveAll(){
-    if(busy||loading)return false;
-    const saveSettings=configDirty;
-    const saveDraft=draftDirty;
-    if(!saveSettings&&!saveDraft)return true;
-
-    let payload=null;
-    let classId='';
-    let className='';
-    if(saveDraft){
-      if(!draft){setMessage('請先選擇要編輯的關鍵詞。');return false;}
-      classId=String(draft.class_id||'').trim();
-      className=String(draft.class_name||'').trim();
-      const classGroup=String(draft.class_group||'').trim();
-      const itemName=String(draft.item_name||'').trim();
-      const itemNo=Number(draft.item_no);
-      if(!classId){setMessage(l.uuidRequired);return false;}
-      if(!className){setMessage(l.classRequired);return false;}
-      if(!classGroup){setMessage(l.groupRequired);return false;}
-      if(!itemName){setMessage(l.itemNameRequired);return false;}
-      if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return false;}
-      payload={
-        keyword_id:draft.keyword_id,
-        class_id:classId,
-        class_name:className,
-        class_group:classGroup,
-        class_enable:draft.class_enable!==false,
-        item_no:itemNo,
-        item_name:itemName,
-        principle:String(draft.principle||'').trim(),
-        keywords:workspace==='manual'&&keywordEdit.trim()&&(!selectedKeyword||draftKeywords.includes(selectedKeyword))
-          ?keywordDraftWithInput(draftKeywords,selectedKeyword,keywordEdit)
-          :draftKeywords,
-        order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
-      };
-    }
-
-    const chars=Number(minChars);
-    const documents=Number(minDocuments);
-    const defaultItemNo=Number(defaultGroupItemNo);
-    const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
-    const classificationChanged=saveSettings&&(
-      chars!==Number(configSnapshot?.minChars)||
-      currentClassId!==String(configSnapshot?.currentClassId||'')||
-      defaultGroupChanged
-    );
-    if(saveSettings){
-      if(!Number.isInteger(chars)||chars<0||chars>10000){
-        setMessage(l.minimumCharsInvalid);return false;
-      }
-      if(!Number.isInteger(documents)||documents<0||documents>1000000){
-        setMessage(l.minimumDocumentsInvalid);return false;
-      }
-      if(!classes.some(item=>item.class_id===currentClassId)){
-        setMessage(l.activeClassRequired);return false;
-      }
-      if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
-        setMessage(l.defaultGroupInvalid);return false;
-      }
-    }
-
-    setBusy(true);setMessage('');
-    setSavingStage(l.writing);
-    let settingsWritten=false;
-    let draftWritten=false;
+  useEffect(()=>{load();},[load]);
+  const choose=(type,uid)=>{
+    const next={...chosen,[type]:uid};
+    if(type==='category'){next.class='';next.group='';next.item='';}
+    if(type==='class'){next.group='';next.item='';}
+    if(type==='group')next.item='';
+    setChosen(next);setEditor(null);setKeywordText('');
+    setError('');setNotice('');
+  };
+  const edit=(node=selected)=>{
+    if(!node)return;
+    setPendingParent('');setEditor({node:{...node,lists:[...node.lists],uid_lists:[...node.uid_lists]}});
+    setKeywordText(node.type==='item'?node.lists.join('\n'):'');
+    setNotice('');
+  };
+  const create=(type,parentUid='')=>{
+    const node=freshNode(type,rows);
+    setEditor({node});setPendingParent(parentUid);
+    setKeywordText('');setNotice('');
+  };
+  const markStale=async(uid)=>{
+    const cl=classOf(tree,uid);
+    if(!cl)return;
+    const keyword_meta=invalidateKeywordClass(config.keyword_meta,cl.uid);
+    const current=String(config.current_keyword_class_uid||'')===cl.uid;
+    const {error:staleError}=await dbAuthRelation(configTable)
+      .update({keyword_meta,...(current?{staticstime:null}:{})}).eq('id',scopeId);
+    if(staleError)throw staleError;
+  };
+  const saveNode=async()=>{
+    if(!draft||busy)return false;
+    setBusy(true);setError('');
     try{
-      // Write settings first: a failed keyword INSERT can then be retried
-      // without accidentally creating a second new keyword row.
-      if(saveSettings){
-        if(defaultGroupChanged){
-          await updateRows(TABLE,{default_group_item_no:defaultItemNo},{filters:[{column:'class_id',operator:'eq',value:currentClassId}]});
+      const node={...draft,
+        name:String(draft.name||'').trim(),
+        lists:draft.type==='item'?onlyWords(keywordText):[...draft.lists]};
+      if(!node.name)throw new Error('請填寫名稱');
+      if(!TYPES.includes(node.type))throw new Error('Keywords Type 無效');
+      const isNew=!tree.index.has(node.uid);
+      if(isNew&&node.type!=='category'){
+        const parent=tree.index.get(pendingParent);
+        const expected=TYPES[TYPES.indexOf(node.type)-1];
+        if(!parent||parent.type!==expected)throw new Error('缺少上層 UID');
+        if(childrenOf(tree,parent.uid).some(sibling=>sibling.name===node.name))
+          throw new Error('同一上層不能有重複名稱');
+        await writeKeywordLibraryItem(scopeId,'insert',node);
+        try{await writeKeywordLibraryItem(scopeId,'update',{
+          ...parent,lists:[...parent.lists,node.uid]
+        });}catch(error){
+          await writeKeywordLibraryItem(scopeId,'delete',node).catch(()=>{});
+          throw error;
         }
-        await updateRows(CONFIG_TABLE,{
-          keyword_min_chars:chars,
-          keyword_min_documents:documents,
-          current_keyword_class_id:currentClassId,
-          keyword_class_share_enabled:Boolean(shareEnabled),
-          ...(classificationChanged?{staticstime:null}:{}),
-          updated_at:new Date().toISOString()
-        },{filters:[{column:'id',operator:'eq',value:scopeId}]});
-        settingsWritten=true;
+        await markStale(parent.uid);
+      }else{
+        const parent=parentOf(tree,node.uid);
+        if(parent&&childrenOf(tree,parent.uid).some(sibling=>sibling.uid!==node.uid&&sibling.name===node.name))
+          throw new Error('同一上層不能有重複名稱');
+        await writeKeywordLibraryItem(scopeId,isNew?'insert':'update',node);
+        await markStale(node.uid);
       }
-
-      const result=saveDraft
-        ?await writeKeywordLibraryItem(scopeId,draft.keyword_id?'update':'insert',payload)
-        :null;
-      draftWritten=saveDraft;
-      setSavingStage(l.updatingAnalysis);
-      let classificationWarning='';
-      try{
-        if(classificationChanged)await invalidateClassification();
-        else if(saveDraft)await markCurrentClassificationStale(classId);
-      }catch(error){
-        classificationWarning=l.analysisUpdateWarning+String(error?.message||error);
+      await load(node.uid);await invalidate();setNotice('Keywords 已儲存；相關分類須重新分析。');
+      return true;
+    }catch(e){setError(String(e.message||e));return false;}
+    finally{setBusy(false);}
+  };
+  const removeNode=async(node=draft||selected)=>{
+    if(!node||busy)return;
+    if(!window.confirm('刪除「'+node.name+'」及其下層分類？原始 Galaxy 文章不受影響。'))return;
+    setBusy(true);setError('');
+    try{
+      const parent=parentOf(tree,node.uid);
+      if(parent)await writeKeywordLibraryItem(scopeId,'update',{
+        ...parent,lists:parent.lists.filter(uid=>uid!==node.uid)
+      });
+      await markStale(node.uid);
+      const descendants=descendantsOfKeyword(rows,node.uid).reverse();
+      const removedIds=new Set(descendants.map(row=>row.uid));
+      const activeRemoved=removedIds.has(config.current_keyword_class_uid);
+      for(const child of descendants)await writeKeywordLibraryItem(scopeId,'delete',child);
+      const removedClasses=descendants.filter(child=>child.type==='class');
+      if(removedClasses.length){
+        let keyword_meta=config.keyword_meta||{};
+        for(const deleted of removedClasses)
+          keyword_meta=invalidateKeywordClass(keyword_meta,deleted.uid);
+        const surviving=[...tree.index.values()].find(record=>
+          record.type==='class'&&!removedIds.has(record.uid));
+        const nextUid=activeRemoved?surviving?.uid||null:config.current_keyword_class_uid;
+        const remainingState=keywordClassState({...config,keyword_meta},nextUid);
+        const {error:settingsError}=await dbAuthRelation(configTable)
+          .update({current_keyword_class_uid:nextUid,
+            staticstime:remainingState?.completedAt||null,keyword_meta})
+          .eq('id',scopeId);
+        if(settingsError)throw settingsError;
       }
-
-      setSavingStage(l.reloading);
-      if(saveDraft)setSelectedClass(className);
-      const reloaded=await load(result?.keyword_id||draft?.keyword_id||'',saveDraft?className:selectedClass,{preserveOnError:true});
-      const savedMessage=saveSettings&&saveDraft?'分析設定與關鍵詞草稿已儲存。'
-        :saveSettings?(classificationChanged?l.settingsChanged:l.settingsSaved)
-        :(classId===currentClassId?l.savedClassChanged:l.saved);
-      setMessage((reloaded?savedMessage:l.savedReloadFailed)+classificationWarning);
-      return true;
-    }catch(error){
-      const partial=settingsWritten&&saveDraft&&!draftWritten
-        ?'分析設定已儲存，但關鍵詞草稿尚未儲存；草稿仍保留。'
-        :'';
-      const detail=partial+(saveDraft?l.writeError:'')+String(error?.message||error||l.settingsSaveError);
-      setMessage(detail);
-      if(editDock?.active)editDock.setNotice(detail);
-      return false;
-    }finally{
-      setSavingStage('');
-      setBusy(false);
-    }
-  }
-
-  async function runBatch(){
-    if(configDirty||draftDirty){setMessage('請先儲存分析設定與關鍵詞草稿，再重新分析。');return;}
-    setBusy(true);setMessage('');
-    setBatchProgress({phase:'reading',completed:0,total:0,percent:0,label:l.preparing});
+      await load(parent?.uid||'');await invalidate();
+      setNotice('已刪除分類節點；不會刪除文章。');
+    }catch(e){setError(String(e.message||e));}
+    finally{setBusy(false);}
+  };
+  const saveConfig=async()=>{
+    if(busy)return false;
+    setBusy(true);setError('');
     try{
-      const {runKeywordAnalysisBatch}=await import('./keyword-analysis');
-      const result=await runKeywordAnalysisBatch(scopeId,{onProgress:setBatchProgress});
-      await invalidateClassification();
-      // Refreshes `staticstime` from the row the run just finalized; the
-      // cooldown effect above picks up the new value and greys the button
-      // out for the remainder of the 5-minute window on its own.
-      await load('',selectedClass);
-      setCountVersion(version=>version+1);
-      setMessage(
-        result.skipped?
-          l.skippedNoChange+Number(result.documentCount||0).toLocaleString()+l.skippedNoChangeSuffix:
-          l.completedPrefix+Number(result.documentCount||0).toLocaleString()+
-          l.analyzedMiddle+Number(result.dynamicTieCount||0).toLocaleString()+
-          l.tiesSuffix
-      );
-    }catch(error){
-      setBatchProgress(current=>current?{...current,phase:'failed',label:l.analysisInterrupted}:null);
-      setMessage(String(error?.message||error||l.batchError));
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  // Manual full wipe (class_id/group_lists only -- keyword library rows are
-  // untouched) for when the keyword library changed enough that a clean
-  // slate is wanted instead of the incremental narrowed reanalysis above.
-  // Does not re-run analysis by itself; press 重新分析 afterward.
-  async function resetBatch(){
-    if(busy||loading||configDirty||draftDirty)return;
-    if(!window.confirm(l.confirmReset+'\n'+scopeData.galaxy))return;
-    setBusy(true);setMessage('');setBatchProgress(null);
-    setResetProgress({phase:'reading',completed:0,total:0});
+      const rulesChanged=Number(config.keyword_min_chars||0)!==Number(savedConfig.keyword_min_chars||0);
+      const targetUid=String(config.current_keyword_class_uid||'');
+      const targetState=keywordClassState(config,targetUid);
+      const payload={
+        current_keyword_class_uid:targetUid||null,
+        keyword_min_chars:Number(config.keyword_min_chars)||0,
+        keyword_min_documents:Number(config.keyword_min_documents)||0,
+        keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
+        ...(rulesChanged
+          ?{staticstime:null,keyword_meta:{by_class:{}}}
+          :{staticstime:targetState?.completedAt||null})
+      };
+      const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
+        .eq('id',scopeId).select('id');
+      if(writeError||data?.length!==1)throw new Error(writeError?.message||'儲存設定失敗');
+      await load();await invalidate();setNotice('設定已儲存。');return true;
+    }catch(e){setError(String(e.message||e));return false;}
+    finally{setBusy(false);}
+  };
+  const run=async(reset=false)=>{
+    const runClassUid=activeClass?.uid||config.current_keyword_class_uid;
+    if(busy||!runClassUid)return;
+    setBusy(true);setProgress({phase:'reading',percent:0});setError('');
     try{
-      await resetKeywordClassification(scopeId,{onProgress:setResetProgress});
-      await invalidateClassification();
-      await load('',selectedClass);
-      setCountVersion(version=>version+1);
-      setMessage(l.resetDone);
-    }catch(error){
-      await invalidateClassification().catch(()=>{});
-      setCountVersion(version=>version+1);
-      setMessage(l.resetError+' '+String(error?.message||error));
-    }finally{
-      setResetProgress(null);
-      setBusy(false);
-    }
-  }
-
-  async function remove(){
-    if(!draft?.keyword_id)return;
-    if(!window.confirm(l.confirmDelete))return;
-    const classId=String(draft.class_id||'');
-    setBusy(true);setMessage('');
+      if(reset)await resetKeywordClassification(scopeId,{classUid:runClassUid,onProgress:setProgress});
+      else{
+        const {runKeywordAnalysisBatch}=await import('./keyword-analysis');
+        await runKeywordAnalysisBatch(scopeId,{classUid:runClassUid,onProgress:setProgress});
+      }
+      await load(runClassUid);await invalidate();
+      setNotice(reset?'已清空這套 Class 的分類結果。':'這套 Class 的關鍵詞重新分析完成。');
+    }catch(e){setError(String(e.message||e));}
+    finally{setBusy(false);}
+  };
+  const copyClass=async()=>{
+    const from=activeClass?.name,to=copyName.trim();
+    if(!from||!to)return;
+    setBusy(true);setError('');
     try{
-      await writeKeywordLibraryItem(scopeId,'delete',draft);
-      await markCurrentClassificationStale(classId);
-      setSelectedId('');setDraft(null);
-      await load('',selectedClass);
-      setMessage(classId===currentClassId?l.deletedClassChanged:l.deleted);
-    }catch(error){
-      setMessage(String(error?.message||error||l.deleteError));
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  async function removeItemRow(row){
-    if(!row?.keyword_id)return false;
-    if(!window.confirm(l.deletePrefix+String(row.item_name||l.thisItem)+l.deleteSuffix))return false;
-    const classId=String(row.class_id||'');
-    setBusy(true);setMessage('');
-    try{
-      await writeKeywordLibraryItem(scopeId,'delete',row);
-      await markCurrentClassificationStale(classId);
-      if(String(selectedId)===String(row.keyword_id)){setSelectedId('');setDraft(null);}
-      await load('',selectedClass);
-      setMessage(l.needsReanalysis);
-      return true;
-    }catch(error){
-      setMessage(String(error?.message||error||l.deleteError));
-      return false;
-    }finally{setBusy(false);}
-  }
-
-  async function removeKeyword(row,keyword){
-    if(!row?.keyword_id||!keyword)return false;
-    const next=(Array.isArray(row.keywords)?row.keywords:[]).filter(item=>String(item)!==String(keyword));
-    setBusy(true);setMessage('');
-    try{
-      await writeKeywordLibraryItem(scopeId,'update',{...row,keywords:next});
-      await markCurrentClassificationStale(String(row.class_id||''));
-      await load(row.keyword_id,selectedClass);
-      setMessage(l.keywordDeletePrefix+keyword+l.keywordDeleteSuffix);
-      return true;
-    }catch(error){
-      setMessage(String(error?.message||error||l.keywordDeleteError));
-      return false;
-    }finally{setBusy(false);}
-  }
-
-  async function removeGroup(group){
-    const targets=items.filter(row=>String(row.class_group||'')===String(group||''));
-    if(!targets.length)return false;
-    if(!window.confirm(l.groupConfirmPrefix+group+l.groupConfirmMiddle+targets.length+l.groupConfirmSuffix))return false;
-    setBusy(true);setMessage('');
-    try{
-      for(const row of targets)await writeKeywordLibraryItem(scopeId,'delete',row);
-      await markCurrentClassificationStale(selectedClassId);
-      setSelectedId('');setDraft(null);
-      await load('',selectedClass);
-      setMessage(l.groupDeletedPrefix+group+l.groupDeletedSuffix);
-      return true;
-    }catch(error){
-      setMessage(String(error?.message||error||l.groupDeleteError));
-      return false;
-    }finally{setBusy(false);}
-  }
-
-  async function copyRune66(){
-    if(busy)return;
-    setBusy(true);setMessage('');
-    try{
-      const result=await copyRune66KeywordClass(scopeId);
-      const createdName=String(result.class_name||'').trim();
-      const reloaded=await load('',createdName,{preserveOnError:true});
-      setMessage(reloaded
-        ?l.copyRunePrefix+createdName+l.copyRuneJoin+result.count+l.runeCountUnit+result.class_id+l.copyRuneSuffix
-        :l.copyRuneReloadPrefix+result.class_id+l.copyRuneReloadSuffix);
-    }catch(error){
-      setMessage(l.copyRuneError+String(error?.message||error));
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  async function copyClass(){
-    const target=String(copyName||'').trim();
-    if(!selectedClass){setMessage(l.classCopyRequired);return;}
-    if(!target){setMessage(l.newClassRequired);return;}
-    setBusy(true);setMessage('');
-    try{
-      const result=await copyKeywordLibraryClass(scopeId,selectedClass,target);
-      setCopyName('');
-      await load('',target);
-      setMessage(l.copiedPrefix+result.count+l.copiedMiddle+target+l.copiedSuffix+result.class_id);
-    }catch(error){
-      setMessage(String(error?.message||error||l.classCopyError));
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  async function copyClassUuid(){
-    if(!selectedClassId)return;
-    try{
-      await navigator.clipboard.writeText(selectedClassId);
-      setMessage(l.uuidCopied+scopeId+l.uuidCopiedSuffix);
-    }catch{
-      setMessage(l.uuidCopyFailed);
-    }
-  }
-
-  const originalItem=rows.find(row=>String(row.keyword_id)===String(draft?.keyword_id||''));
-  const draftDirty=Boolean(draft&&(
-    !draft.keyword_id||
-    (originalItem&&(
-      ['class_id','class_name','class_group','class_enable','item_no','item_name','principle','order_no']
-        .some(key=>String(draft[key]??'')!==String(originalItem[key]??''))||
-      String(draft.keywords_text||'')!==keywordText(originalItem.keywords)
-    ))||
-    (workspace==='manual'&&keywordEdit.trim()&&keywordEdit!==selectedKeyword)
-  ));
+      const result=await copyKeywordLibraryClass(scopeId,from,to);
+      await load(result.uid);await invalidate();setCopyName('');
+      setNotice('已複製 Class「'+to+'」及其下層 Group／Item。');
+    }catch(e){setError(String(e.message||e));}
+    finally{setBusy(false);}
+  };
   dockActions.current={
-    save:async({switching=false}={})=>{
-      if(busy||loading)return false;
-      if(!configDirty&&!draftDirty&&workspace==='library'){
-        setMessage(l.libraryImmediateSave);
-        return false;
-      }
-      return saveAll();
-    },
-    isDirty:()=>configDirty||draftDirty,
+    save:()=>workspace==='analysis'?saveConfig():saveNode(),
+    isDirty:()=>workspace==='analysis'
+      ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents','keyword_class_share_enabled']
+        .some(key=>String(config[key]??'')!==String(savedConfig[key]??''))
+      :dirty,
     isBusy:()=>busy||loading
   };
   useEffect(()=>{
-    if(!editDock?.active||editDock.scopeId!==scopeId||!canEdit)return undefined;
-    return editDock.register({
-      save:options=>dockActions.current.save(options),
+    if(!dock?.active||dock.scopeId!==scopeId||!canEdit)return;
+    return dock.register({
+      save:()=>dockActions.current.save(),
       isDirty:()=>dockActions.current.isDirty(),
       isBusy:()=>dockActions.current.isBusy()
     });
-  },[editDock?.active,editDock?.scopeId,editDock?.register,scopeId,canEdit]);
-
+  },[dock?.active,dock?.scopeId,dock?.register,scopeId,canEdit]);
   if(!canEdit)return null;
-
+  const selectedClass=activeClass;
+  const allClassNodes=[...tree.index.values()].filter(x=>x.type==='class');
+  const graphItems=selectedClass?descendantsOfKeyword(rows,selectedClass.uid,{type:'item'}).map(node=>{
+    const group=parentOf(tree,node.uid);
+    return {keyword_id:node.uid,item_name:node.name,keywords:node.lists,
+      class_group:group?.name||'',class_name:selectedClass.name};
+  }):[];
   return <div className="scope-keyword-management">
-    <div className="management-workspace">
-      <ManagementSectionNav id="keyword-workspace-sections" title={l.workspace}
-        panelId="keyword-workspace-panel"
-        items={workspaceOptions} value={workspace}
-        onChange={next=>{setWorkspace(next);if(next==='manual'||next==='network')chooseGroup('');}}/>
-      <div className="management-workspace-panel" id="keyword-workspace-panel"
-        role="region" aria-labelledby={'keyword-workspace-sections-option-'+workspace}>
-
-    {workspace==='analysis'?<section className="loc-card scope-feature-card">
-       <h2>{compactKeywordTitle(l.basicSettings)}</h2>
-      <div className="scope-management-fields">
-        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>{
-          const nextClassId=event.target.value;
-          setCurrentClassId(nextClassId);
-          // default_group_item_no is per-class_id -- resync to the newly
-          // chosen class's own stored value instead of carrying over the
-          // previous class's setting.
-          const nextDefault=rows.find(row=>String(row.class_id)===nextClassId)?.default_group_item_no;
-          setDefaultGroupItemNo(String(nextDefault??0));
-        }}>
-          {classes.map(item=><option key={item.class_id} value={item.class_id}>{'關鍵詞組：'+item.class_name}</option>)}
-        </select></label>
-        <label><span>{l.minChars}</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
-        <label><span>{l.minDocuments}</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
-        <label><span>{l.sharePermission}</span><select className="scope-select" value={shareEnabled?'open':'closed'} onChange={event=>setShareEnabled(event.target.value==='open')}>
-          <option value="closed">{l.closed}</option>
-          <option value="open">{l.open}</option>
-        </select></label>
-        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultGroupItemNo} onChange={event=>setDefaultGroupItemNo(event.target.value)}>
-          {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.item_no)}>{item.item_no}　{item.item_name}</option>)}
-        </select></label>
-      </div>
-      <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
-      {!editDock?.active?<div className="scope-preview-links">
-        <button type="button" className="loc-button" disabled={busy||(!configDirty&&!draftDirty)} onClick={saveAll}>{l.saveSettings}</button>
-      </div>:null}
-    </section>:null}
-
-    {workspace==='run'?<section className="loc-card scope-feature-card">
-      <h2>{compactKeywordTitle(l.keywordAnalysis)}</h2>
-      <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_id===currentClassId)?.class_name||l.activeClassRequired}</p>
-      {configDirty||draftDirty?<p className="scope-status">{l.settingsUnsaved}</p>:null}
-      <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.totalArticles}{galaxyTotalCount===null?'—':galaxyTotalCount.toLocaleString()}{l.articleUnit}{l.validArticles}{keywordDocumentCount===null?'—':keywordDocumentCount.toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
-      {countReadError?<p className="scope-status scope-error" role="status">{countReadError}</p>:null}
-      <div className="scope-preview-links">
-        <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
-        <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassId} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
-      </div>
-      {resetProgress?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true">
-        <span className="scope-keyword-saving-spinner" aria-hidden="true"/>
-        {l.resetInProgress}{resetProgress.total>0?' '+Math.min(resetProgress.completed,resetProgress.total).toLocaleString()+' / '+resetProgress.total.toLocaleString()+l.articleUnit:''}
-      </p>:null}
-      {batchProgress?<div className="scope-keyword-batch-progress" role="status" aria-live="polite">
-        <div className="scope-keyword-batch-progress-head"><strong>{batchProgress.phase==='failed'?l.incomplete:batchProgress.phase==='completed'?l.complete:l.attrProgress}</strong><span>{batchProgress.percent}%</span></div>
-        <div className="scope-keyword-batch-progress-bar" role="progressbar"
-          aria-valuenow={batchProgress.percent} aria-valuemin={0} aria-valuemax={100} aria-label={l.attrProgress}>
-          <div className="scope-keyword-batch-progress-fill" style={{transform:'scaleX('+(batchProgress.percent/100)+')'}}/>
-        </div>
-        <p>{batchProgress.label}</p>
-        {batchProgress.total>0?<p>{l.stage}{Number(batchProgress.completed||0).toLocaleString()} / {Number(batchProgress.total).toLocaleString()}{l.articleUnit}</p>:null}
-      </div>:null}
-    </section>:null}
-
-    {workspace==='library'?<section className="loc-card scope-feature-card">
-      <h2>{compactKeywordTitle(l.title)}</h2>
-      <p>{l.description}</p>
-      <div className="scope-stat-controls">
-        <button type="button" className="loc-button" disabled={busy||loading} onClick={copyRune66}>{busy?l.processing:l.copyRuneButton}</button>
-      </div>
-      <p className="scope-status">{l.copyHint}</p>
-      <div className="scope-management-fields">
-        <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{setSelectedClass(event.target.value);chooseGroup('');}}>
-          {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
-        </select></label>
-        <label><span>關鍵詞組 UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
-      </div>
-      {selectedClassId?<div className="scope-preview-links">
-        <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
-        <span className="scope-status">scope_id: {scopeId}</span>
-      </div>:null}
-      <div className="scope-stat-controls">
-        <label><span>{l.copyCurrentClass}</span><input value={copyName} placeholder={l.newClassName} onChange={event=>setCopyName(event.target.value)}/></label>
-        <button type="button" className="loc-button" disabled={busy||!selectedClass} onClick={copyClass}>{l.copyFullClass}</button>
-      </div>
-    </section>:null}
-
-    {(workspace==='manual'||workspace==='network')?<section className="loc-card scope-feature-card scope-keyword-editor-section">
-    <h2>{compactKeywordTitle(workspace==='manual'?l.manual:l.network)}</h2>
     <div className="scope-stat-controls">
-      <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{const name=event.target.value;setSelectedClass(name);const first=rows.find(row=>String(row.class_name)===name);if(workspace==='manual'||workspace==='network')chooseGroup('');else if(first)selectItem(first);else chooseGroup('');}}>
-        {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
-      </select></label>
+      {[['manual','分類'],['analysis','基本'],['run','重新分析'],['network','關聯圖']].map(([key,label])=>
+        <button key={key} type="button" className="loc-button"
+          aria-pressed={workspace===key} onClick={()=>{setWorkspace(key);setEditor(null);}}>
+          {label}
+        </button>)}
     </div>
-    {loading?<p className="scope-status" role="status">{l.loadingKeywords}</p>:null}
-    {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
-    {!loading?<div className={workspace==='network'&&items.length?'scope-keyword-network-layout':'scope-keyword-manual-layout'}>
-      {workspace==='network'&&items.length?<KeywordNetworkEditor
-        key={selectedClassId||selectedClass}
-        items={items}
-        className={selectedClass}
-        classId={selectedClassId}
-        selectedId={selectedId}
-        onSelectItem={selectItem}
-        onNewItem={newItem}
-        onDeleteItem={removeItemRow}
-        onDeleteKeyword={removeKeyword}
-        onDeleteGroup={removeGroup}
-        onMessage={setMessage}
-       />:null}
-       <aside className="scope-management-editor scope-keyword-network-inspector">
-      <p className="scope-status">{workspace==='manual'?l.manualHint:l.networkHint}</p>
-      {workspace==='manual'?<>
-        <div className="scope-stat-controls scope-keyword-manual-path">
-          <label><span>{l.runeGroup}</span><select className="scope-select" aria-label={l.selectRuneGroup} value={selectedGroup} onChange={event=>chooseGroup(event.target.value)}>
-            <option value="">{l.chooseRuneGroup}</option>
-            {groups.map(group=><option key={group} value={group}>{[selectedClass,group,'群組'].filter(Boolean).join(' ')}</option>)}
-          </select></label>
-          <label><span>{l.runeItem}</span><select className="scope-select" aria-label={l.selectRune} value={groupItems.some(row=>String(row.keyword_id)===selectedId)?selectedId:''} disabled={!selectedGroup} onChange={event=>{
-            const chosen=groupItems.find(row=>String(row.keyword_id)===event.target.value);
-            if(chosen)selectItem(chosen);
-            else {setSelectedId('');setDraft(null);setSelectedKeyword('');setKeywordEdit('');}
-          }}>
-            <option value="">{l.chooseRune}</option>
-            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||(item.item_no??'')}</option>)}
-          </select></label>
-          <label><span>{l.keyword}</span><select className="scope-select" aria-label={l.selectKeyword} value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
-            const word=event.target.value;setSelectedKeyword(word);setKeywordEdit(word);
-          }}>
-            <option value="">{l.addKeyword}</option>
-            {draftKeywords.map(word=><option key={word} value={word}>{word}</option>)}
-          </select></label>
-        </div>
-        <div className="scope-stat-controls">
-          <button type="button" className="loc-button" disabled={!selectedGroup} onClick={()=>newItem(selectedGroup)}>{l.addRuneItem}</button>
-          {draft?<><label><span>{l.keywordContent}</span><input aria-label={l.keywordContent} value={keywordEdit} onChange={event=>setKeywordEdit(event.target.value)} placeholder={l.keywordPlaceholder}/></label>
-            <button type="button" className="loc-button" onClick={applyDraftKeyword} disabled={busy||!keywordEdit.trim()}>{l.applyDraft}</button>
-            {selectedKeyword?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={removeDraftKeyword}>{l.removeDraft}</button>:null}
-          </>:null}
-        </div>
-      </>:items.length?<div className="scope-stat-controls">
-        <label><span>{l.selectItem}</span><select className="scope-select" value={selectedId} onChange={event=>{
-          const chosen=items.find(row=>String(row.keyword_id)===event.target.value);
-          if(chosen)selectItem(chosen);
-        }}>
-          <option value="">{l.newOrNone}</option>
-          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{[item.class_name,item.class_group,'群組'].filter(Boolean).join(' ')} · {item.item_name||(item.item_no??'')}</option>)}
-        </select></label>
-        <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>{l.addItem}</button>
+    {loading?<p className="scope-status" role="status">讀取 Keywords 中…</p>:null}
+    {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
+    {notice?<p className="scope-status" role="status">{notice}</p>:null}
+    {!loading&&workspace==='manual'?<section className="loc-card scope-feature-card">
+      <h2>Keywords · UID 分類樹</h2>
+      <p className="scope-status">Category → Class → Group → Item；上層 lists 只存下層 UID，Item lists 是判斷詞。</p>
+      <div className="scope-management-fields">
+        {TYPES.map((type,index)=>{
+          const parent=index?tree.index.get(chosen[TYPES[index-1]]):null;
+          const options=index?childrenOf(tree,parent?.uid):tree.roots;
+          return <label key={type}><span>{LABEL[type]}</span>
+            <select className="scope-select" value={chosen[type]} onChange={e=>choose(type,e.target.value)}
+              disabled={index>0&&!parent}>
+              <option value="">選擇 {LABEL[type]}</option>
+              {options.map(row=><option key={row.uid} value={row.uid}>{row.name}</option>)}
+            </select>
+            <button type="button" className="loc-button" disabled={busy||(index>0&&!parent)}
+              onClick={()=>create(type,parent?.uid||'')}>新增</button>
+          </label>;
+        })}
+      </div>
+      {selected?<div className="scope-preview-links">
+        <button className="loc-button" type="button" disabled={busy} onClick={()=>edit(selected)}>編輯「{selected.name}」</button>
+        <span className="scope-status">{selected.type} · UID {selected.uid}</span>
+        <span className="scope-status">子節點 {selected.type==='item'?selected.lists.length:selected.lists.length}
+          {selected.type==='item'?' 個判斷詞':''}</span>
       </div>:null}
-        {!draft?<p className="scope-status">{workspace==='manual'?l.manualEmpty:l.networkEmpty}</p>:<>
-          <div className="scope-management-fields">
-            <label><span>關鍵詞組</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
-            <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
-            <label><span>{l.classEnabled}</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">{l.yes}</option><option value="false">{l.no}</option></select></label>
-            <label><span>{l.itemNo}</span><input type="number" min="0" value={draft.item_no??''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
-            <label><span>{l.itemName}</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
-            <label><span>{l.sort}</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
-          </div>
-          <div className="scope-management-wide-field"><span>{l.principle}</span>
-            <BlockNoteEditor editorKey={'keyword-principle:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
-              content={draft.principle||''} canInsertImage={false}
-              onPlainTextChange={value=>setDraft(current=>({...current,principle:value}))}/>
-          </div>
-          <div className="scope-management-wide-field"><span>{l.keywordsPerLine}</span>
-            <BlockNoteEditor editorKey={'keyword-lines:'+scopeId+':'+String(draft.keyword_id||'new:'+selectedGroup)}
-              content={draft.keywords_text||''} canInsertImage={false}
-              onPlainTextChange={value=>setDraft(current=>({...current,keywords_text:value}))}/>
-          </div>
-          <div className="scope-preview-links">
-            {!editDock?.active?<button type="button" className="loc-button primary" disabled={busy} onClick={saveAll}>{busy?l.saving:l.save}</button>:null}
-            {draft.keyword_id?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={remove}>{l.deleteItem}</button>:null}
-          </div>
-        </>}
-       </aside>
-     </div>:null}
-    {!loading&&!items.length?<div className="scope-keyword-empty">
-      <p className="scope-status">{l.noClassItems}</p>
-      <button type="button" className="loc-button" onClick={()=>newItem('')}>{l.createFirst}</button>
-    </div>:null}
+      {!tree.roots.length?<p className="scope-status">尚無分類，請從 Category 開始建立。</p>:null}
+      {draft?<div className="scope-management-editor">
+        <h3>{tree.index.has(draft.uid)?'編輯':'新增'} {LABEL[draft.type]}</h3>
+        <div className="scope-management-fields">
+          <label><span>UID</span><input value={draft.uid} readOnly/></label>
+          <label><span>type</span><input value={draft.type} readOnly/></label>
+          <label><span>name</span><input value={draft.name} onChange={e=>setEditor({node:{...draft,name:e.target.value}})}/></label>
+          <label><span>desc</span><textarea rows={2} value={draft.desc} onChange={e=>setEditor({node:{...draft,desc:e.target.value}})}/></label>
+        </div>
+        {draft.type==='item'?<label className="scope-management-wide-field">
+          <span>lists · 判斷詞（一行一個）</span>
+          <textarea rows={9} value={keywordText} onChange={e=>setKeywordText(e.target.value)}/>
+        </label>:<p className="scope-status">lists 由下層 UID 自動維護，不用手填。</p>}
+        <p className="scope-status">uid_lists 由重新分析更新，不會在編輯分類時載入大量文章 UID。</p>
+        <div className="scope-preview-links">
+          <button type="button" className="loc-button primary" disabled={busy||!draft.name.trim()} onClick={saveNode}>{busy?'儲存中…':'儲存'}</button>
+          {tree.index.has(draft.uid)?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeNode(draft)}>刪除</button>:null}
+          <button type="button" className="loc-button" onClick={()=>setEditor(null)} disabled={busy}>取消</button>
+        </div>
+      </div>:null}
     </section>:null}
-       {message?<p role="status" aria-live="polite" className={message.includes(l.errorWord)||message.includes('failed')||message.includes(l.notAllowedWord)||message.includes('0 rows')||message.includes('timeout')||message.includes(l.alreadyExistsWord)?'scope-status scope-error':'scope-status'}>{message}</p>:null}
-       </div>
-     </div>
-   </div>;
+    {!loading&&workspace==='analysis'?<section className="loc-card scope-feature-card">
+      <h2>關鍵詞分析設定</h2>
+      <div className="scope-management-fields">
+        <label><span>目前 Class</span><select className="scope-select" value={config.current_keyword_class_uid||''}
+          onChange={e=>setConfig(v=>({...v,current_keyword_class_uid:e.target.value}))}>
+          <option value="">未選擇</option>
+          {allClassNodes.map(row=><option value={row.uid} key={row.uid}>{row.name}</option>)}
+        </select></label>
+        <label><span>文章最少字元</span><input type="number" min="0" value={config.keyword_min_chars??32}
+          onChange={e=>setConfig(v=>({...v,keyword_min_chars:e.target.value}))}/></label>
+        <label><span>統計最低文章數</span><input type="number" min="0" value={config.keyword_min_documents??100}
+          onChange={e=>setConfig(v=>({...v,keyword_min_documents:e.target.value}))}/></label>
+        <label><span>公開分類</span><select className="scope-select" value={config.keyword_class_share_enabled?'yes':'no'}
+          onChange={e=>setConfig(v=>({...v,keyword_class_share_enabled:e.target.value==='yes'}))}>
+          <option value="no">不公開</option><option value="yes">公開</option>
+        </select></label>
+      </div>
+      <button type="button" className="loc-button primary" disabled={busy} onClick={saveConfig}>儲存設定</button>
+      <div className="scope-stat-controls">
+        <label><span>複製選定 Class</span><input value={copyName} placeholder="新 Class 名稱"
+          onChange={e=>setCopyName(e.target.value)}/></label>
+        <button type="button" className="loc-button" disabled={!selectedClass||!copyName.trim()||busy} onClick={copyClass}>複製整套 Class</button>
+      </div>
+    </section>:null}
+    {!loading&&workspace==='run'?<section className="loc-card scope-feature-card">
+      <h2>重新分析</h2>
+      <p className="scope-status">只讀取 Galaxy 文章，重建 Group／Item 的 uid_lists，不修改 Galaxy。</p>
+      <p className="scope-status">Class：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
+      <p className="scope-status">有效分類文章：{Number(keywordClassState(config,activeClass?.uid)?.matchedDocuments||0).toLocaleString()} 篇</p>
+      <div className="scope-preview-links">
+        <button type="button" className="loc-button primary" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
+          onClick={()=>run(false)}>重新分析</button>
+        <button type="button" className="loc-button" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
+          onClick={()=>run(true)}>清空本 Class 的分類結果</button>
+      </div>
+      {progress?<p role="status" className="scope-status">{progress.label||progress.phase}
+        {progress.total?' · '+progress.completed+' / '+progress.total:''}</p>:null}
+    </section>:null}
+    {!loading&&workspace==='network'?<section className="loc-card scope-feature-card">
+      <h2>關聯圖</h2>
+      {graphItems.length?<KeywordNetworkEditor items={graphItems} className={selectedClass?.name||''}
+        classUid={selectedClass?.uid||''} selectedId={chosen.item}
+        onSelectItem={item=>{choose('item',String(item.keyword_id));edit(tree.index.get(String(item.keyword_id)));setWorkspace('manual');}}
+        onNewItem={groupName=>{const group=groups.find(row=>row.name===groupName);if(group){create('item',group.uid);setWorkspace('manual');}}}
+        onDeleteItem={item=>removeNode(tree.index.get(String(item.keyword_id)))}
+        onDeleteKeyword={async(item,word)=>{
+          const original=tree.index.get(String(item.keyword_id));
+          await writeKeywordLibraryItem(scopeId,'update',{...original,lists:original.lists.filter(x=>x!==word)});
+          await markStale(original.uid);await load(original.uid);await invalidate();
+        }}
+        onDeleteGroup={name=>{const group=groups.find(row=>row.name===name);if(group)removeNode(group);}}
+        onMessage={setNotice}
+      />:<p className="scope-status">請先在分類頁建立 Class、Group 與 Item。</p>}
+    </section>:null}
+  </div>;
 }

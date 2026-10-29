@@ -173,26 +173,26 @@ test('keyword combined ranking follows actual Class membership and keeps paginat
     'standalonePageSize','combinedPageSize','groupLabel','t','color','classLabel',
     source.slice(start,end)+
     'return {pages,visibleCombined,visibleGroupRows,combinedDistribution};');
-  const meta={classes:{'7':'秩序','2':'連結'}};
+  const meta={classes:{GR07:'秩序',GR02:'連結'}};
   const groupCatalog={data:Array.from({length:12},(_,i)=>({
-    item_no:i+1,class_group:i<8?'秩序':'連結',class_enable:true
+    uid:'IT'+String(i).padStart(2,'0'),class_group:i<8?'秩序':'連結'
   }))};
   const classRows=[
-    {class_id:7,group:'秩序',document_count:20},
-    {class_id:2,group:'連結',document_count:10}
+    {group_uid:'GR07',group:'秩序',document_count:20},
+    {group_uid:'GR02',group:'連結',document_count:10}
   ];
   const groupRows=Array.from({length:12},(_,i)=>({
-    rune_id:i+1,label:'符文'+(i+1),count:100-i,document_count:50-i
+    uid:'IT'+String(i).padStart(2,'0'),label:'符文'+(i+1),count:100-i,document_count:50-i
   }));
   const select=(shown,page)=>model(meta,groupCatalog,classRows,groupRows,shown,page,8,10,
     label=>label,value=>value,index=>'color'+index,label=>label);
   const first=select('both',1),second=select('both',2);
   assert.equal(first.visibleCombined.length,10);
   assert.equal(second.visibleCombined.length,2);
-  assert.equal(first.visibleCombined[0].classification.class_id,7);
-  assert.equal(first.visibleCombined[8].classification.class_id,2);
-  assert.match(first.combinedDistribution[0].name,/Class 7/);
-  assert.match(second.combinedDistribution[0].name,/Class 2/);
+  assert.equal(first.visibleCombined[0].classification.group_uid,'GR07');
+  assert.equal(first.visibleCombined[8].classification.group_uid,'GR02');
+  assert.match(first.combinedDistribution[0].name,/秩序/);
+  assert.match(second.combinedDistribution[0].name,/連結/);
   assert.equal([...first.visibleCombined,...second.visibleCombined].length,12);
   assert.equal(select('item',1).visibleGroupRows.length,8);
   assert.equal(select('item',2).visibleGroupRows.length,4);
@@ -215,13 +215,13 @@ test('advanced statistics uses dimension tabs and two dependent comparison selec
   assert.ok(ui.includes("+' 類別'"));
   assert.ok(ui.includes("+' 項目'"));
   assert.ok(source.includes('scope-advanced-keyword-catalog'));
-  assert.ok(source.includes("columns:'class_group,item_no,item_name,class_enable'"));
+  assert.ok(source.includes('readKeywordTreeCatalog(scope.id)'));
   assert.ok(source.includes('item.group===group.group'));
   assert.ok(source.includes("dimensionForKind(item.kind)===shownKinds[index]"));
   assert.ok(source.includes("shownKinds[index]==='all'"));
   assert.ok(source.includes('keywordTabAvailable'));
-  assert.ok(source.includes('const hitGroups=new Set()'));
-  assert.ok(source.includes('for(const group of hitGroups)add('));
+  assert.ok(source.includes("row.kind==='group_items_day'"));
+  assert.ok(source.includes("row.kind==='keyword_all_day'"));
   assert.ok(source.includes('maximumLanes=Math.min(8,'));
   assert.ok(source.includes("kind:'source_rollup'"));
   assert.ok(source.includes("name:'作品分類'"));
@@ -237,94 +237,37 @@ test('advanced statistics uses dimension tabs and two dependent comparison selec
   assert.equal(family('instagram'),'', 'An unspecific platform must not be guessed as image/video');
 });
 
-// Manual reset uses the authoritative MaxRows batch bound; it must not
-// fetch or mutate another Scope's records. Exercise the real database client with the existing RPC seam.
-test('keyword reset uses paged authorized writes before clearing summary',async()=>{
-  const {createDatabaseClient}=await import('../app/loc/db-contract.mjs');
-  const rows=Array.from({length:1510},(_,i)=>({
-    uid:String(i+1).padStart(8,'0'),class_id:1,group_lists:'1'
-  }));
-  const calls=[];
-  const relation=name=>({
-    select(columns,options={}){
-      assert.notEqual(name,'loc','author reset must not read silver.loc');
-      assert.notEqual(name,'loc_galaxy','author reset must not touch silver.loc_galaxy');
-      if(name==='manage'){
-        assert.equal(columns,'galaxy_table');
-        return {eq(column,value){
-          assert.equal(column,'id');assert.equal(value,'lo3rwang');return this;
-        },async limit(){return {data:[{galaxy_table:'galaxy'}],error:null};}};
-      }
-      assert.equal(name,'lo3rwang_galaxy');
-      if(options.head)return Promise.resolve({count:rows.length,error:null});
-      let cursor='';
-      return {
-        order(){return this;},
-        gt(column,value){assert.equal(column,'uid');cursor=value;return this;},
-        async limit(size){return {data:rows.filter(row=>row.uid>cursor).slice(0,size),error:null};}
-      };
-    }
-  });
-  const rpc=async(name,payload)=>{
-    if(name==='management_write'){
-      assert.equal(payload.p_table,'silver.lo3rwang');
-      assert.deepEqual(payload.p_values.keyword_meta,{});
-      calls.push('stale');
-      return {data:{count:1},error:null};
-    }
-    assert.equal(name,'apply_keyword_classification');
-    const {mode,rows:chunk}=payload.p_rows;
-    calls.push(mode);
-    if(mode==='chunk'){
-      assert.ok(chunk.length>0&&chunk.length<=MAX_ROWS);
-      for(const item of chunk){
-        const row=rows.find(row=>row.uid===item.uid);
-        row.class_id=null;row.group_lists='false';
-      }
-      return {data:chunk.length,error:null};
-    }
-    if(mode==='reset')assert.ok(rows.every(row=>row.class_id==null&&row.group_lists==='false'));
-    return {data:0,error:null};
-  };
-  const client={schema(){return {from:relation,rpc};}};
-  const auth={getSession(){},getUser(){},signInWithOAuth(){},signOut(){}};
-  const db=createDatabaseClient({publicClient:client,authClient:client,auth});
-  const progress=[];
-  const changed=await db.resetKeywordClassification('lo3rwang',{onProgress:p=>progress.push(p)});
-  assert.equal(changed,1510);
-  assert.deepEqual(calls,['begin','stale','chunk','reset']);
-  assert.equal(progress.at(-1).phase,'completed');
-  assert.equal(progress.at(-1).completed,1510);
-});
-
-test('keyword counts read only the current Scope through on-demand HEAD requests',()=>{
-  const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
+test('Keywords reset clears the current Class rather than writing Galaxy',()=>{
   const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
-  assert.match(contract,/authClient\.schema\('silver'\)\.from\('manage'\)[\s\S]*?\.select\('galaxy_table'\)/);
-  assert.doesNotMatch(contract,/authClient\.schema\('silver'\)\.from\('loc'\)/);
-  assert.match(contract,/from\(scope\+'_'\+suffix\)/);
-  assert.match(panel,/if\(workspace!=='run'\|\|!canEdit\|\|!scopeData\?\.galaxy\)return/);
-  assert.match(panel,/selectCount\(scopeData\.galaxy,\{idColumn:'uid'\}\)/);
-  assert.match(panel,/selectCount\(scopeData\.galaxy,\{\s*idColumn:'uid',filters:/);
-  assert.match(panel,/setGalaxyTotalCount\(Math\.max\(0,Number\(total\)\|\|0\)\)/);
-  assert.match(panel,/window\.confirm\(l\.confirmReset\+'\\n'\+scopeData\.galaxy\)/);
-  assert.doesNotMatch(panel,/setInterval\(/);
+  const start=contract.indexOf('  async function resetKeywordClassification(');
+  const end=contract.indexOf('  async function readKeywordClass(',start);
+  assert.ok(start>=0&&end>start);
+  const body=contract.slice(start,end);
+  assert.match(body,/update\\(\\{uid_lists:\\[\\]\\}\\)/);
+  assert.match(body,/\.eq\('uid',row\.uid\)/);
+  assert.doesNotMatch(body,/galaxy|group_lists|apply_keyword_classification/);
 });
 
-test('keyword reset reports progress and editing notice remains inside the dock',()=>{
+test('keyword panel reads one Scope tree and writes no Galaxy classification',()=>{
+  const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/dbAuthRelation\(table\)/);
+  assert.match(panel,/\.select\('uid,type,name,desc,lists'\)/);
+  assert.match(panel,/reanalysis|重新分析/);
+  assert.match(panel,/Group／Item/);
+  assert.doesNotMatch(panel,/\.update\(\{class_id|group_lists/);
+});
+
+test('keyword reset reports progress and edit dock remains in AppShell',()=>{
   const panel=readFileSync(new URL('../app/loc/KeywordLibraryPanel.jsx',import.meta.url),'utf8');
   const shell=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
   const css=readFileSync(new URL('../app/styles/bottom-navigation.css',import.meta.url),'utf8');
-  assert.ok(panel.includes("setResetProgress({phase:'reading',completed:0,total:0})"));
-  assert.ok(panel.includes("resetProgress?l.resetInProgress:l.resetClassification"));
-  assert.ok(panel.includes('aria-busy="true"'));
+  assert.match(panel,/onProgress:setProgress/);
+  assert.match(panel,/dock\.register/);
   const notice=shell.indexOf('className="scope-edit-dock-notice"');
   assert.ok(notice>0);
   assert.ok(shell.indexOf('</nav>',notice)>notice);
   assert.ok(css.includes('.scope-feature-dock .scope-edit-dock-notice{'));
-  assert.ok(css.includes('overflow-wrap:anywhere'));
 });
-
 
 test('Web Settings cannot navigate into the iOS-only local Scope',()=>{
   const settings=readFileSync(new URL('../app/loc/GlobalSettings.jsx',import.meta.url),'utf8');
@@ -471,8 +414,8 @@ test('Culture Rune groups expand with bounded on-demand catalog requests',()=>{
     'opening a Rune group alone must not scan every Galaxy article');
   assert.match(culture,/enabled:styleFilter==='rune66'&&Boolean\(keywordDrillGroup\)/,
     'fetch Rune catalog only after a group is expanded');
-  assert.match(culture,/columns:'item_no,item_name,order_no,class_group'/);
-  assert.match(culture,/limit:16/,'Rune group query must be bounded');
+  assert.match(culture,/readKeywordTreeCatalog\(scopeId\)/);
+  assert.match(culture,/catalog\.groups\.find\(group=>group\.uid===keywordDrillGroup/,'Group catalog is filtered by UID');
   assert.match(culture,/revalidateOnFocus:false/);
   assert.match(culture,/keywordCounts\.set\(key,\(keywordCounts\.get\(key\)\|\|0\)\+\(Number\(item\.item_count\)\|\|0\)\)/,
     'use real daily category counts to show clickable group labels');
