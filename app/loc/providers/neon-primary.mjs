@@ -14,7 +14,7 @@ export function createNeonPrimaryAdapter({
   const api=String(url).replace(/\/+$/,'');
   const base=String(authUrl).replace(/\/+$/,'');
   if(!base.endsWith('/auth')||!api.endsWith('/rest/v1'))throw new Error('Neon Auth/Data API URL invalid');
-  let token='',expires=0;
+  let token='',expires=0,tokenSessionId='';
   const listeners=new Set();
   const emit=(event,session)=>{for(const cb of listeners)cb(event,session)};
   async function authRequest(path,{method='GET',payload=null}={}){
@@ -26,7 +26,16 @@ export function createNeonPrimaryAdapter({
     if(!response.ok)throw new Error('Neon Auth '+path+' HTTP '+response.status);
     return response.json();
   }
-  async function accessToken(){
+  async function accessToken(sessionId=''){
+    // A cached token is valid ONLY for the current cookie-backed Neon session.
+    // Never let an old account's token survive an OAuth account switch.
+    if(!sessionId){
+      const response=await authRequest('/get-session');
+      const current=response?.data||response;
+      if(!current?.user?.id||!current?.session?.id)throw new Error('Neon login is required');
+      sessionId=String(current.session.id);
+    }
+    if(tokenSessionId!==sessionId){token='';expires=0;tokenSessionId=sessionId;}
     if(token&&Date.now()<expires)return token;
     const result=await authRequest('/token');
     const value=result?.token||result?.data?.token;
@@ -38,8 +47,11 @@ export function createNeonPrimaryAdapter({
   async function session(){
     const response=await authRequest('/get-session');
     const result=response?.data||response;
-    if(!result?.user?.id||!result?.session)return null;
-    const jwt=await accessToken();
+    if(!result?.user?.id||!result?.session?.id){
+      token='';expires=0;tokenSessionId='';
+      return null;
+    }
+    const jwt=await accessToken(String(result.session.id));
     return {...result.session,user:result.user,access_token:jwt};
   }
   const auth={
@@ -79,7 +91,7 @@ export function createNeonPrimaryAdapter({
       }catch(error){return {data:null,error}}
     },
     async signOut(){
-      try{await authRequest('/sign-out',{method:'POST'});token='';expires=0;emit('SIGNED_OUT',null);return {error:null}}
+      try{await authRequest('/sign-out',{method:'POST'});token='';expires=0;tokenSessionId='';emit('SIGNED_OUT',null);return {error:null}}
       catch(error){return {error}}
     },
     onAuthStateChange(callback){
