@@ -451,3 +451,31 @@ test('Threads archived title is always the first ten Unicode content characters'
   assert.equal(article.title,Array.from(article.content).slice(0,10).join(''));
   assert.notEqual(article.title,'原始檔標題不應當作 Threads 標題');
 });
+
+test('Threads ZIP file with no EXIF and no media URL retains confirmed post media',async()=>{
+  const input=asFile('threads-no-exif.zip',zipSync({
+    'activity/threads/threads_posts.json':j({text_post_app_text_posts:[{
+      id:'th-no-exif',media:[{uri:'threads/media/real.jpg',title:'公開貼文的圖片',creation_timestamp:1720000000}]
+    }]}),
+    'threads/media/real.jpg':strToU8('image without EXIF metadata')
+  }));
+  const collector=createArchiveEvidenceCollector(),uids=new Set();
+  const summary=await inspectPrivateArchive(input,{
+    onRecord:record=>{
+      if(!isPublicArchiveRecord(record))return;
+      const article=archiveGalaxyRow(record);
+      if(article){uids.add(article.uid);collector.onRecord(record,article.uid);}
+    },
+    onMediaEntry:item=>collector.onMediaEntry(item),
+    onMediaMetadata:item=>collector.onExif(item)
+  });
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:input.name,archiveSize:input.size})
+    .filter(entry=>entry.galaxy_uids.some(uid=>uids.has(uid)));
+  const plan=prepareArchiveMedia(evidence,uids);
+  assert.equal(summary.exifWithGps,0);
+  assert.equal(summary.exifWithTime,0);
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,null);
+  assert.equal(plan.mediaLinks.length,1);
+  assert.equal(plan.exif.length,0);
+});
