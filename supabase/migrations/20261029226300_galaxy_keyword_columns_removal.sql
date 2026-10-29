@@ -8,7 +8,7 @@
 -- This migration is intentionally gated: no silent CASCADE.
 DO $migration$
 DECLARE
-  scope_name text;
+  v_scope_name text;
   missing_functions text[];
 BEGIN
   SELECT array_agg(fn) INTO missing_functions
@@ -29,20 +29,20 @@ BEGIN
     RAISE EXCEPTION 'UID-tree Class-aware readers must exist before dropping Galaxy columns';
   END IF;
 
-  FOR scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
-    IF to_regclass(format('silver.%I_keywords',scope_name)) IS NULL THEN
-      RAISE EXCEPTION 'Missing UID-tree Keywords table for %',scope_name;
+  FOR v_scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
+    IF to_regclass(format('silver.%I_keywords',v_scope_name)) IS NULL THEN
+      RAISE EXCEPTION 'Missing UID-tree Keywords table for %',v_scope_name;
     END IF;
     IF NOT EXISTS(
       SELECT 1 FROM information_schema.columns
-      WHERE table_schema='silver' AND table_name=scope_name||'_keywords'
+      WHERE table_schema='silver' AND table_name=v_scope_name||'_keywords'
         AND column_name='uid_lists'
     ) THEN
-      RAISE EXCEPTION 'Keywords uid_lists is not installed for %',scope_name;
+      RAISE EXCEPTION 'Keywords uid_lists is not installed for %',v_scope_name;
     END IF;
     EXECUTE format(
       'ALTER TABLE silver.%I_galaxy DROP COLUMN IF EXISTS class_id, DROP COLUMN IF EXISTS group_lists',
-      scope_name
+      v_scope_name
     );
   END LOOP;
 END
