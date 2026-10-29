@@ -633,12 +633,49 @@ function compileFilter(column,op,value){
 //    actually used by db-contract.mjs / Culture.jsx / Statistics / Search.jsx --
 function queryBuilder(table){
   const name=tableName(table);
-  const state={select:'*',filters:[],order:null,limitN:null,rangeFrom:null,rangeTo:null,single:false,maybeSingle:false,countRequested:null};
+  const state={select:'*',filters:[],order:null,limitN:null,rangeFrom:null,rangeTo:null,single:false,maybeSingle:false,countRequested:null,write:null};
   async function execute(){
     try{
       const where=state.filters.map(f=>compileFilter(f.column,f.op,f.value));
       const whereSql=where.length?' WHERE '+where.map(w=>w.sql).join(' AND '):'';
       const params=where.flatMap(w=>w.params);
+      if(state.write){
+        const {kind,rows,values,onConflict}=state.write;
+        if(kind==='insert'||kind==='upsert'){
+          const list=Array.isArray(rows)?rows:[rows];
+          if(!list.length)return {data:[],error:null,count:0};
+          const statements=list.map(row=>{
+            const cols=Object.keys(row);
+            const params=cols.map(key=>toSqlValue(row[key]));
+            const conflict=kind==='upsert'&&onConflict
+              ?' ON CONFLICT('+quoteIdent(onConflict)+') DO UPDATE SET '+
+                cols.filter(key=>key!==onConflict).map(key=>quoteIdent(key)+'=excluded.'+quoteIdent(key)).join(',')
+              :'';
+            return {sql:'INSERT INTO '+quoteIdent(name)+' ('+cols.map(quoteIdent).join(',')+') VALUES ('+
+              cols.map(()=>'?').join(',')+')'+conflict,values:params};
+          });
+          const count=await runBatchLocal(statements);
+          return {data:list,error:null,count};
+        }
+        if(!where.length)throw new Error('SQLite write requires filters');
+        const before=state.select!=='*'
+          ?await selectLocal('SELECT '+state.select+' FROM '+quoteIdent(name)+whereSql,params)
+          :[];
+        if(kind==='update'){
+          const cols=Object.keys(values||{});
+          if(!cols.length)throw new Error('Empty update');
+          const count=await runLocal('UPDATE '+quoteIdent(name)+' SET '+
+            cols.map(col=>quoteIdent(col)+'=?').join(',')+whereSql,
+            [...cols.map(col=>toSqlValue(values[col])),...params]);
+          return {data:state.select==='*'?Array.from({length:count},()=>values):before.map(row=>({...row,...values})),
+            error:null,count};
+        }
+        if(kind==='delete'){
+          const count=await runLocal('DELETE FROM '+quoteIdent(name)+whereSql,params);
+          return {data:state.select==='*'?Array.from({length:count},()=>({})):before,
+            error:null,count};
+        }
+      }
       let sql='SELECT '+state.select+' FROM '+quoteIdent(name)+whereSql;
       if(state.order)sql+=' ORDER BY '+quoteIdent(state.order.column)+(state.order.ascending===false?' DESC':' ASC');
       const rangeApplied=state.rangeFrom!==null||state.limitN!==null;
@@ -683,57 +720,10 @@ function queryBuilder(table){
     range(from,to){state.rangeFrom=Number(from);state.rangeTo=Number(to);return chain;},
     single(){state.single=true;return chain;},
     maybeSingle(){state.maybeSingle=true;return chain;},
-    // Writes mirror management_write's own semantics 1:1 (see the verified
-    // silver.management_write / api.management_write SQL): insert takes an
-    // array of row objects; update/delete require at least one eq filter.
-    async insert(rows){
-      const list=Array.isArray(rows)?rows:[rows];
-      if(!list.length)return {data:[],error:null};
-      try{
-        const statements=list.map(row=>{
-          const columns=Object.keys(row);
-          const sql='INSERT INTO '+quoteIdent(name)+' ('+columns.map(quoteIdent).join(',')+') VALUES ('+columns.map(()=>'?').join(',')+')';
-          return {sql,values:columns.map(c=>toSqlValue(row[c]))};
-        });
-        const changes=await runBatchLocal(statements);
-        return {data:list,error:null,count:changes};
-      }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
-    },
-    async upsert(rows,{onConflict}={}){
-      const list=Array.isArray(rows)?rows:[rows];
-      if(!list.length)return {data:[],error:null};
-      try{
-        const statements=list.map(row=>{
-          const columns=Object.keys(row);
-          const sql='INSERT INTO '+quoteIdent(name)+' ('+columns.map(quoteIdent).join(',')+') VALUES ('+columns.map(()=>'?').join(',')+')'+
-            (onConflict?' ON CONFLICT('+quoteIdent(onConflict)+') DO UPDATE SET '+columns.filter(c=>c!==onConflict).map(c=>quoteIdent(c)+'=excluded.'+quoteIdent(c)).join(',') :'');
-          return {sql,values:columns.map(c=>toSqlValue(row[c]))};
-        });
-        const changes=await runBatchLocal(statements);
-        return {data:list,error:null,count:changes};
-      }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
-    },
-    async update(values){
-      if(!state.filters.length)return {data:null,error:{message:'filters are required'}};
-      try{
-        const where=state.filters.map(f=>compileFilter(f.column,f.op,f.value));
-        const columns=Object.keys(values);
-        const sql='UPDATE '+quoteIdent(name)+' SET '+columns.map(c=>quoteIdent(c)+'=?').join(',')+
-          ' WHERE '+where.map(w=>w.sql).join(' AND ');
-        const params=[...columns.map(c=>toSqlValue(values[c])),...where.flatMap(w=>w.params)];
-        const changes=await runLocal(sql,params);
-        return {data:changes?[values]:[],error:null,count:changes};
-      }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
-    },
-    async delete(){
-      if(!state.filters.length)return {data:null,error:{message:'filters are required'}};
-      try{
-        const where=state.filters.map(f=>compileFilter(f.column,f.op,f.value));
-        const sql='DELETE FROM '+quoteIdent(name)+' WHERE '+where.map(w=>w.sql).join(' AND ');
-        const changes=await runLocal(sql,where.flatMap(w=>w.params));
-        return {data:[],error:null,count:changes};
-      }catch(error){return {data:null,error:{message:String(error?.message||error)}};}
-    },
+    insert(rows){state.write={kind:'insert',rows};return chain;},
+    upsert(rows,{onConflict}={}){state.write={kind:'upsert',rows,onConflict};return chain;},
+    update(values){state.write={kind:'update',values};return chain;},
+    delete(){state.write={kind:'delete'};return chain;},
     then(resolve,reject){return execute().then(resolve,reject);},
     catch(reject){return execute().catch(reject);},
     finally(done){return execute().finally(done);}
@@ -744,7 +734,7 @@ function queryBuilder(table){
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
 const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
-  'target_id','media_link','anchor_ids','keywords','uidlist','runeslist','rune_references']);
+  'target_id','media_link','anchor_ids','lists','uid_lists','runeslist','rune_references']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
 function decodeRow(row){
