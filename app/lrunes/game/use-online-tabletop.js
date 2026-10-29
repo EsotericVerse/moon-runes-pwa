@@ -51,6 +51,7 @@ export function useOnlineTabletop({data,count,code,host}){
   useEffect(()=>{
     let active=true;
     const sdk=dbRealtimeClient;
+    if(!sdk){setError('目前資料庫沒有即時對戰服務，請使用單機遊戲或切回支援 Realtime 的主庫。');return;}
     const channel=sdk.channel(topic(code),{
       config:{broadcast:{ack:true,self:false},presence:{key:memberId.current}}
     });

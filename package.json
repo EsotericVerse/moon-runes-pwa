@@ -14,7 +14,8 @@
     "sync:scope-routes": "node scripts/sync-scope-route-index.mjs",
     "audit:security": "npm audit --audit-level=moderate",
     "sync:public": "node scripts/generate-public-blocks.mjs",
-    "check:syntax": "node scripts/check-js-syntax.mjs"
+    "check:syntax": "node scripts/check-js-syntax.mjs",
+    "test:neon-failover": "node --test scripts/test-neon-independent-backup.mjs scripts/test-neon-primary-emergency.mjs"
   },
   "dependencies": {
     "@blocknote/core": "0.55.0",
