@@ -53,9 +53,7 @@ export default {
     "search": {
       "title": "Search",
       "subtitle": "Find text, works, media, and runes by keyword.",
-      "description": "Results preserve source and relationships so you can return to the full context.",
-    "noResults": "No matching results found.",
-    "timeout": "Search timed out. Narrow your search and try again."
+      "description": "Results preserve source and relationships so you can return to the full context."
     },
     "admin": {
       "title": "System administration",
