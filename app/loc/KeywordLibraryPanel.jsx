@@ -49,18 +49,10 @@ function keywordDraftWithInput(keywords,selectedKeyword,input){
   else next.push(value);
   return next;
 }
-function blankDraft(className='',classId='',itemNo=1){
+function blankDraft(className='',classUid='',orderNo=1){
   return {
-    keyword_id:null,
-    class_id:classId,
-    class_name:className,
-    class_group:'',
-    class_enable:true,
-    item_no:itemNo,
-    item_name:'',
-    principle:'',
-    keywords_text:'',
-    order_no:itemNo
+    keyword_id:null,class_uid:classUid,class_name:className,class_group:'',
+    class_enable:true,item_name:'',principle:'',keywords_text:'',order_no:orderNo
   };
 }
 function formatStaticTime(value,l,locale){
@@ -82,6 +74,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const TABLE=scopeData?.keywords||'';
   const CONFIG_TABLE=scopeData?.config||'';
   const [rows,setRows]=useState([]);
+  const [classRegistry,setClassRegistry]=useState([]);
   const [selectedClass,setSelectedClass]=useState('');
   const [selectedId,setSelectedId]=useState('');
   const [selectedGroup,setSelectedGroup]=useState('');
@@ -91,12 +84,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [copyName,setCopyName]=useState('');
   const [minChars,setMinChars]=useState(DEFAULT_KEYWORD_MIN_CHARS);
   const [minDocuments,setMinDocuments]=useState(DEFAULT_KEYWORD_MIN_DOCUMENTS);
-  const [currentClassId,setCurrentClassId]=useState('');
+  const [currentClassUid,setCurrentClassId]=useState('');
   const [shareEnabled,setShareEnabled]=useState(false);
-  // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_group_item_no).
+  // Zero-keyword-hit fallback item (silver.{scope}_keywords.default_keyword_id).
   // Stored per class_id (same value on every row of that class), so it rides
   // along in the main keyword SELECT below rather than a separate query.
-  const [defaultGroupItemNo,setDefaultGroupItemNo]=useState('0');
+  const [defaultKeywordId,setDefaultGroupItemNo]=useState('0');
   const [keywordDocumentCount,setKeywordDocumentCount]=useState(null);
   const [galaxyTotalCount,setGalaxyTotalCount]=useState(null);
   const [countReadError,setCountReadError]=useState('');
@@ -122,8 +115,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     ]);
   }
 
-  async function markCurrentClassificationStale(classId){
-    if(!classId||String(classId)!==String(currentClassId))return;
+  async function markCurrentClassificationStale(classUid){
+    if(!classUid||String(classUid)!==String(currentClassUid))return;
     // staticstime:null alone already forces the next run to be non-skippable
     // (checkSkippable's first check in keyword-analysis.js is `if(!config.
     // staticstime)return null`) -- keyword_meta must NOT be wiped here.
@@ -144,17 +137,19 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(!canEdit)return;
     setLoading(true);setMessage('');
     try{
-      const [keywordResult,configResult]=await Promise.all([
+      const [keywordResult,configResult,registryResult]=await Promise.all([
         dbAuthRelation(TABLE)
-          .select('keyword_id,class_id,class_name,class_group,class_enable,item_no,item_name,principle,keywords,order_no,default_group_item_no')
+          .select('keyword_id,class_uid,class_name,class_group,class_enable,item_name,principle,keywords,order_no')
           .order('class_name',{ascending:true})
           .order('order_no',{ascending:true})
-          .order('item_no',{ascending:true}),
+          .order('keyword_id',{ascending:true}),
         dbAuthRelation(CONFIG_TABLE)
-          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_id,keyword_class_share_enabled,staticstime')
-          .eq('id',scopeId)
-          .limit(1)
+          .select('keyword_min_chars,keyword_min_documents,current_keyword_class_uid,keyword_class_share_enabled,staticstime,keyword_meta')
+          .eq('id',scopeId).limit(1),
+        dbAuthRelation('silver.keyword_classes')
+          .select('class_uid,default_keyword_id').eq('scope_id',scopeId)
       ]);
+      if(registryResult.error)throw new Error(registryResult.error.message||'Keyword Class registry failed');
       if(keywordResult.error)throw new Error(keywordResult.error.message||l.libraryReadError);
       if(configResult.error)throw new Error(configResult.error.message||l.settingsReadError);
 
@@ -163,32 +158,33 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const configuredDocuments=Number(config.keyword_min_documents);
       const nextMinChars=Number.isInteger(configuredChars)&&configuredChars>=0?configuredChars:DEFAULT_KEYWORD_MIN_CHARS;
       const nextMinDocuments=Number.isInteger(configuredDocuments)&&configuredDocuments>=0?configuredDocuments:DEFAULT_KEYWORD_MIN_DOCUMENTS;
-      const nextCurrentClassId=String(config.current_keyword_class_id||'');
+      const nextCurrentClassUid=String(config.current_keyword_class_uid||'');
       const nextShareEnabled=Boolean(config.keyword_class_share_enabled);
       const nextStaticstime=String(config.staticstime||'');
 
       const next=keywordResult.data||[];
       setRows(next);
+      setClassRegistry(registryResult.data||[]);
       const classNames=[...new Set(next.map(row=>String(row.class_name||'').trim()).filter(Boolean))];
-      const currentClassName=next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.class_name||'';
+      const currentClassName=next.find(row=>String(row.class_uid||'')===nextCurrentClassUid)?.class_name||'';
       const requested=String(preferredClass||selectedClass||currentClassName||'').trim();
-      const nextClass=classNames.includes(requested)?requested:(classNames.includes('符文66')?'符文66':(classNames[0]||''));
+      const nextClass=classNames.includes(requested)?requested:(classNames[0]||'');
       setSelectedClass(nextClass);
-      // Same value is repeated on every row of nextCurrentClassId -- any one row works.
-      const nextDefaultGroupItemNo=String(next.find(row=>String(row.class_id||'')===nextCurrentClassId)?.default_group_item_no??0);
+      // Same value is repeated on every row of nextCurrentClassUid -- any one row works.
+      const nextDefaultKeywordId=String((registryResult.data||[]).find(row=>String(row.class_uid||'')===nextCurrentClassUid)?.default_keyword_id??'');
 
       setMinChars(nextMinChars);
       setMinDocuments(nextMinDocuments);
-      setCurrentClassId(nextCurrentClassId);
+      setCurrentClassId(nextCurrentClassUid);
       setShareEnabled(nextShareEnabled);
       setStaticstime(nextStaticstime);
-      setDefaultGroupItemNo(nextDefaultGroupItemNo);
+      setDefaultGroupItemNo(nextDefaultKeywordId);
       setConfigSnapshot({
         minChars:nextMinChars,
         minDocuments:nextMinDocuments,
-        currentClassId:nextCurrentClassId,
+        currentClassUid:nextCurrentClassUid,
         shareEnabled:nextShareEnabled,
-        defaultGroupItemNo:nextDefaultGroupItemNo
+        defaultKeywordId:nextDefaultKeywordId
       });
       const candidate=next.find(row=>String(row.keyword_id)===String(preferredId))
         ||next.find(row=>String(row.class_name)===nextClass)
@@ -227,10 +223,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setCountReadError('');
     Promise.all([
       selectCount(scopeData.galaxy,{idColumn:'uid'}),
-      selectCount(scopeData.galaxy,{
-        idColumn:'uid',filters:[{column:'group_lists',operator:'neq',value:'false'}]
-      })
-    ]).then(([total,classified])=>{
+      dbAuthRelation(CONFIG_TABLE).select('keyword_meta').eq('id',scopeId).limit(1)
+    ]).then(([totalResult,configResult])=>{
+      if(configResult.error)throw new Error(configResult.error.message);
+      const total=Number(totalResult)||0;
+      const classified=Number(configResult.data?.[0]?.keyword_meta?.matchedDocuments)||0;
       if(cancelled||request!==countReadId.current)return;
       setGalaxyTotalCount(Math.max(0,Number(total)||0));
       setKeywordDocumentCount(Math.max(0,Number(classified)||0));
@@ -244,7 +241,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const classes=useMemo(()=>{
     const map=new Map();
     for(const row of rows){
-      const id=String(row.class_id||'').trim();
+      const id=String(row.class_uid||'').trim();
       const name=String(row.class_name||'').trim();
       if(id&&name&&!map.has(id))map.set(id,name);
     }
@@ -252,14 +249,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   },[rows]);
   const items=useMemo(()=>rows
     .filter(row=>String(row.class_name)===selectedClass)
-    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,selectedClass]);
+    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||String(a.keyword_id||'').localeCompare(String(b.keyword_id||''))),[rows,selectedClass]);
   // For the "預設群組" dropdown in 分析設定: the active analysis class's items
-  // (currentClassId, not selectedClass -- the panel can be browsing a different
-  // class in the manual editor while 分析設定 still targets currentClassId).
+  // (currentClassUid, not selectedClass -- the panel can be browsing a different
+  // class in the manual editor while 分析設定 still targets currentClassUid).
   const currentClassItems=useMemo(()=>rows
-    .filter(row=>String(row.class_id)===String(currentClassId))
-    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||Number(a.item_no||0)-Number(b.item_no||0)),[rows,currentClassId]);
-  const selectedClassId=String(items[0]?.class_id||'');
+    .filter(row=>String(row.class_uid)===String(currentClassUid))
+    .sort((a,b)=>Number(a.order_no||0)-Number(b.order_no||0)||String(a.keyword_id||'').localeCompare(String(b.keyword_id||''))),[rows,currentClassUid]);
+  const selectedClassUid=String(items[0]?.class_uid||'');
   // Share the pure Class -> Group -> Item projection with Trace routes.
   // Keyword item identity and editing semantics remain unchanged.
   const classGroups=useMemo(()=>classGroupIndex(items,{
@@ -273,9 +270,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const configDirty=Boolean(configSnapshot)&&(
     Number(minChars)!==Number(configSnapshot.minChars)
     ||Number(minDocuments)!==Number(configSnapshot.minDocuments)
-    ||String(currentClassId)!==String(configSnapshot.currentClassId)
+    ||String(currentClassUid)!==String(configSnapshot.currentClassUid)
     ||Boolean(shareEnabled)!==Boolean(configSnapshot.shareEnabled)
-    ||String(defaultGroupItemNo)!==String(configSnapshot.defaultGroupItemNo)
+    ||String(defaultKeywordId)!==String(configSnapshot.defaultKeywordId)
   );
 
   function selectItem(row){
@@ -286,10 +283,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setMessage('');
   }
   function newItem(group=''){
-    const next=Math.max(0,...items.map(row=>Number(row.item_no)||0))+1;
+    const next=Math.max(0,...items.map(row=>Number(row.order_no)||0))+1;
     setSelectedId('');setSelectedKeyword('');setKeywordEdit('');
     setSelectedGroup(String(group||selectedGroup||''));
-    setDraft({...blankDraft(selectedClass,selectedClassId,next),class_group:String(group||selectedGroup||'')});
+    setDraft({...blankDraft(selectedClass,selectedClassUid,next),class_group:String(group||selectedGroup||'')});
     setMessage('');
   }
 
@@ -322,43 +319,40 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(!saveSettings&&!saveDraft)return true;
 
     let payload=null;
-    let classId='';
+    let classUid='';
     let className='';
     if(saveDraft){
       if(!draft){setMessage('請先選擇要編輯的關鍵詞。');return false;}
-      classId=String(draft.class_id||'').trim();
+      classUid=String(draft.class_uid||'').trim();
       className=String(draft.class_name||'').trim();
       const classGroup=String(draft.class_group||'').trim();
       const itemName=String(draft.item_name||'').trim();
-      const itemNo=Number(draft.item_no);
-      if(!classId){setMessage(l.uuidRequired);return false;}
+      if(!classUid){setMessage(l.uuidRequired);return false;}
       if(!className){setMessage(l.classRequired);return false;}
       if(!classGroup){setMessage(l.groupRequired);return false;}
       if(!itemName){setMessage(l.itemNameRequired);return false;}
-      if(!Number.isInteger(itemNo)||itemNo<0){setMessage(l.itemNumberInvalid);return false;}
       payload={
         keyword_id:draft.keyword_id,
-        class_id:classId,
+        class_uid:classUid,
         class_name:className,
         class_group:classGroup,
         class_enable:draft.class_enable!==false,
-        item_no:itemNo,
         item_name:itemName,
         principle:String(draft.principle||'').trim(),
         keywords:workspace==='manual'&&keywordEdit.trim()&&(!selectedKeyword||draftKeywords.includes(selectedKeyword))
           ?keywordDraftWithInput(draftKeywords,selectedKeyword,keywordEdit)
           :draftKeywords,
-        order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):itemNo
+        order_no:Number.isFinite(Number(draft.order_no))?Number(draft.order_no):0
       };
     }
 
     const chars=Number(minChars);
     const documents=Number(minDocuments);
-    const defaultItemNo=Number(defaultGroupItemNo);
-    const defaultGroupChanged=String(defaultItemNo)!==String(configSnapshot?.defaultGroupItemNo||'0');
+    const defaultItemId=String(defaultKeywordId);
+    const defaultGroupChanged=defaultItemId!==String(configSnapshot?.defaultKeywordId||'');
     const classificationChanged=saveSettings&&(
       chars!==Number(configSnapshot?.minChars)||
-      currentClassId!==String(configSnapshot?.currentClassId||'')||
+      currentClassUid!==String(configSnapshot?.currentClassUid||'')||
       defaultGroupChanged
     );
     if(saveSettings){
@@ -368,10 +362,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       if(!Number.isInteger(documents)||documents<0||documents>1000000){
         setMessage(l.minimumDocumentsInvalid);return false;
       }
-      if(!classes.some(item=>item.class_id===currentClassId)){
+      if(!classes.some(item=>item.class_uid===currentClassUid)){
         setMessage(l.activeClassRequired);return false;
       }
-      if(!Number.isInteger(defaultItemNo)||!currentClassItems.some(item=>Number(item.item_no)===defaultItemNo)){
+      if(!currentClassItems.some(item=>String(item.keyword_id)===defaultItemId)){
         setMessage(l.defaultGroupInvalid);return false;
       }
     }
@@ -385,12 +379,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       // without accidentally creating a second new keyword row.
       if(saveSettings){
         if(defaultGroupChanged){
-          await updateRows(TABLE,{default_group_item_no:defaultItemNo},{filters:[{column:'class_id',operator:'eq',value:currentClassId}]});
+          await updateRows('silver.keyword_classes',{default_keyword_id:defaultItemId},{filters:[{column:'class_uid',operator:'eq',value:currentClassUid}]});
         }
         await updateRows(CONFIG_TABLE,{
           keyword_min_chars:chars,
           keyword_min_documents:documents,
-          current_keyword_class_id:currentClassId,
+          current_keyword_class_uid:currentClassUid,
           keyword_class_share_enabled:Boolean(shareEnabled),
           ...(classificationChanged?{staticstime:null}:{}),
           updated_at:new Date().toISOString()
@@ -406,7 +400,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       let classificationWarning='';
       try{
         if(classificationChanged)await invalidateClassification();
-        else if(saveDraft)await markCurrentClassificationStale(classId);
+        else if(saveDraft)await markCurrentClassificationStale(classUid);
       }catch(error){
         classificationWarning=l.analysisUpdateWarning+String(error?.message||error);
       }
@@ -416,7 +410,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const reloaded=await load(result?.keyword_id||draft?.keyword_id||'',saveDraft?className:selectedClass,{preserveOnError:true});
       const savedMessage=saveSettings&&saveDraft?'分析設定與關鍵詞草稿已儲存。'
         :saveSettings?(classificationChanged?l.settingsChanged:l.settingsSaved)
-        :(classId===currentClassId?l.savedClassChanged:l.saved);
+        :(classUid===currentClassUid?l.savedClassChanged:l.saved);
       setMessage((reloaded?savedMessage:l.savedReloadFailed)+classificationWarning);
       return true;
     }catch(error){
@@ -489,14 +483,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   async function remove(){
     if(!draft?.keyword_id)return;
     if(!window.confirm(l.confirmDelete))return;
-    const classId=String(draft.class_id||'');
+    const classUid=String(draft.class_uid||'');
     setBusy(true);setMessage('');
     try{
       await writeKeywordLibraryItem(scopeId,'delete',draft);
-      await markCurrentClassificationStale(classId);
+      await markCurrentClassificationStale(classUid);
       setSelectedId('');setDraft(null);
       await load('',selectedClass);
-      setMessage(classId===currentClassId?l.deletedClassChanged:l.deleted);
+      setMessage(classUid===currentClassUid?l.deletedClassChanged:l.deleted);
     }catch(error){
       setMessage(String(error?.message||error||l.deleteError));
     }finally{
@@ -507,11 +501,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   async function removeItemRow(row){
     if(!row?.keyword_id)return false;
     if(!window.confirm(l.deletePrefix+String(row.item_name||l.thisItem)+l.deleteSuffix))return false;
-    const classId=String(row.class_id||'');
+    const classUid=String(row.class_uid||'');
     setBusy(true);setMessage('');
     try{
       await writeKeywordLibraryItem(scopeId,'delete',row);
-      await markCurrentClassificationStale(classId);
+      await markCurrentClassificationStale(classUid);
       if(String(selectedId)===String(row.keyword_id)){setSelectedId('');setDraft(null);}
       await load('',selectedClass);
       setMessage(l.needsReanalysis);
@@ -528,7 +522,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setBusy(true);setMessage('');
     try{
       await writeKeywordLibraryItem(scopeId,'update',{...row,keywords:next});
-      await markCurrentClassificationStale(String(row.class_id||''));
+      await markCurrentClassificationStale(String(row.class_uid||''));
       await load(row.keyword_id,selectedClass);
       setMessage(l.keywordDeletePrefix+keyword+l.keywordDeleteSuffix);
       return true;
@@ -545,7 +539,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setBusy(true);setMessage('');
     try{
       for(const row of targets)await writeKeywordLibraryItem(scopeId,'delete',row);
-      await markCurrentClassificationStale(selectedClassId);
+      await markCurrentClassificationStale(selectedClassUid);
       setSelectedId('');setDraft(null);
       await load('',selectedClass);
       setMessage(l.groupDeletedPrefix+group+l.groupDeletedSuffix);
@@ -564,8 +558,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const createdName=String(result.class_name||'').trim();
       const reloaded=await load('',createdName,{preserveOnError:true});
       setMessage(reloaded
-        ?l.copyRunePrefix+createdName+l.copyRuneJoin+result.count+l.runeCountUnit+result.class_id+l.copyRuneSuffix
-        :l.copyRuneReloadPrefix+result.class_id+l.copyRuneReloadSuffix);
+        ?l.copyRunePrefix+createdName+l.copyRuneJoin+result.count+l.runeCountUnit+result.class_uid+l.copyRuneSuffix
+        :l.copyRuneReloadPrefix+result.class_uid+l.copyRuneReloadSuffix);
     }catch(error){
       setMessage(l.copyRuneError+String(error?.message||error));
     }finally{
@@ -582,7 +576,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       const result=await copyKeywordLibraryClass(scopeId,selectedClass,target);
       setCopyName('');
       await load('',target);
-      setMessage(l.copiedPrefix+result.count+l.copiedMiddle+target+l.copiedSuffix+result.class_id);
+      setMessage(l.copiedPrefix+result.count+l.copiedMiddle+target+l.copiedSuffix+result.class_uid);
     }catch(error){
       setMessage(String(error?.message||error||l.classCopyError));
     }finally{
@@ -590,10 +584,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }
   }
 
-  async function copyClassUuid(){
-    if(!selectedClassId)return;
+  async function copyClassUid(){
+    if(!selectedClassUid)return;
     try{
-      await navigator.clipboard.writeText(selectedClassId);
+      await navigator.clipboard.writeText(selectedClassUid);
       setMessage(l.uuidCopied+scopeId+l.uuidCopiedSuffix);
     }catch{
       setMessage(l.uuidCopyFailed);
@@ -604,7 +598,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const draftDirty=Boolean(draft&&(
     !draft.keyword_id||
     (originalItem&&(
-      ['class_id','class_name','class_group','class_enable','item_no','item_name','principle','order_no']
+      ['class_uid','class_name','class_group','class_enable','item_name','principle','order_no']
         .some(key=>String(draft[key]??'')!==String(originalItem[key]??''))||
       String(draft.keywords_text||'')!==keywordText(originalItem.keywords)
     ))||
@@ -645,16 +639,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     {workspace==='analysis'?<section className="loc-card scope-feature-card">
        <h2>{compactKeywordTitle(l.basicSettings)}</h2>
       <div className="scope-management-fields">
-        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassId} onChange={event=>{
-          const nextClassId=event.target.value;
-          setCurrentClassId(nextClassId);
-          // default_group_item_no is per-class_id -- resync to the newly
+        <label><span>{l.activeClass}</span><select className="scope-select" value={currentClassUid} onChange={event=>{
+          const nextClassUid=event.target.value;
+          setCurrentClassId(nextClassUid);
+          // default_keyword_id is per-class_id -- resync to the newly
           // chosen class's own stored value instead of carrying over the
           // previous class's setting.
-          const nextDefault=rows.find(row=>String(row.class_id)===nextClassId)?.default_group_item_no;
+          const nextDefault=classRegistry.find(row=>String(row.class_uid)===nextClassUid)?.default_keyword_id;
           setDefaultGroupItemNo(String(nextDefault??0));
         }}>
-          {classes.map(item=><option key={item.class_id} value={item.class_id}>{'關鍵詞組：'+item.class_name}</option>)}
+          {classes.map(item=><option key={item.class_uid} value={item.class_uid}>{'關鍵詞組：'+item.class_name}</option>)}
         </select></label>
         <label><span>{l.minChars}</span><input type="number" min="0" max="10000" step="1" value={minChars} onChange={event=>setMinChars(event.target.value)}/></label>
         <label><span>{l.minDocuments}</span><input type="number" min="0" max="1000000" step="1" value={minDocuments} onChange={event=>setMinDocuments(event.target.value)}/></label>
@@ -662,8 +656,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <option value="closed">{l.closed}</option>
           <option value="open">{l.open}</option>
         </select></label>
-        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultGroupItemNo} onChange={event=>setDefaultGroupItemNo(event.target.value)}>
-          {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.item_no)}>{item.item_no}　{item.item_name}</option>)}
+        <label><span>{l.defaultGroup}</span><select className="scope-select" value={defaultKeywordId} onChange={event=>setDefaultGroupItemNo(event.target.value)}>
+          {currentClassItems.map(item=><option key={item.keyword_id} value={String(item.keyword_id)}>{item.item_name}</option>)}
         </select></label>
       </div>
       <p className="scope-status">{l.minCharsPrefix}{minChars}{l.minCharsMiddle}{minDocuments}{l.minCharsSuffix}</p>
@@ -674,13 +668,13 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
 
     {workspace==='run'?<section className="loc-card scope-feature-card">
       <h2>{compactKeywordTitle(l.keywordAnalysis)}</h2>
-      <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_id===currentClassId)?.class_name||l.activeClassRequired}</p>
+      <p className="scope-status">{l.activeClass}：{classes.find(item=>item.class_uid===currentClassUid)?.class_name||l.activeClassRequired}</p>
       {configDirty||draftDirty?<p className="scope-status">{l.settingsUnsaved}</p>:null}
       <p className="scope-status">{l.anchored}{formatStaticTime(staticstime,l,locale)}{l.totalArticles}{galaxyTotalCount===null?'—':galaxyTotalCount.toLocaleString()}{l.articleUnit}{l.validArticles}{keywordDocumentCount===null?'—':keywordDocumentCount.toLocaleString()}{l.articleUnit}{staticstime?'':l.reanalyzeNeeded}</p>
       {countReadError?<p className="scope-status scope-error" role="status">{countReadError}</p>:null}
       <div className="scope-preview-links">
-        <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassId} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
-        <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassId} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
+        <button type="button" className="loc-button primary" disabled={busy||configDirty||draftDirty||!currentClassUid} onClick={runBatch}>{busy?l.processing:l.reanalyse}</button>
+        <button type="button" className="loc-button" disabled={busy||loading||configDirty||draftDirty||!currentClassUid} onClick={resetBatch}>{resetProgress?l.resetInProgress:l.resetClassification}</button>
       </div>
       {resetProgress?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true">
         <span className="scope-keyword-saving-spinner" aria-hidden="true"/>
@@ -708,10 +702,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <label><span>關鍵詞組</span><select className="scope-select" value={selectedClass} onChange={event=>{setSelectedClass(event.target.value);chooseGroup('');}}>
           {[...new Set(classes.map(item=>item.class_name))].map(name=><option key={name} value={name}>{'關鍵詞組：'+name}</option>)}
         </select></label>
-        <label><span>關鍵詞組 UUID</span><input value={selectedClassId} readOnly aria-readonly="true"/></label>
+        <label><span>關鍵詞組 UUID</span><input value={selectedClassUid} readOnly aria-readonly="true"/></label>
       </div>
-      {selectedClassId?<div className="scope-preview-links">
-        <button type="button" className="loc-button" onClick={copyClassUuid}>{l.copyUuid}</button>
+      {selectedClassUid?<div className="scope-preview-links">
+        <button type="button" className="loc-button" onClick={copyClassUid}>{l.copyUuid}</button>
         <span className="scope-status">scope_id: {scopeId}</span>
       </div>:null}
       <div className="scope-stat-controls">
@@ -731,10 +725,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     {savingStage?<p className="scope-status scope-keyword-saving-progress" role="status" aria-live="polite" aria-busy="true"><span className="scope-keyword-saving-spinner" aria-hidden="true"/>{savingStage}</p>:null}
     {!loading?<div className={workspace==='network'&&items.length?'scope-keyword-network-layout':'scope-keyword-manual-layout'}>
       {workspace==='network'&&items.length?<KeywordNetworkEditor
-        key={selectedClassId||selectedClass}
+        key={selectedClassUid||selectedClass}
         items={items}
         className={selectedClass}
-        classId={selectedClassId}
+        classUid={selectedClassUid}
         selectedId={selectedId}
         onSelectItem={selectItem}
         onNewItem={newItem}
@@ -757,7 +751,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
             else {setSelectedId('');setDraft(null);setSelectedKeyword('');setKeywordEdit('');}
           }}>
             <option value="">{l.chooseRune}</option>
-            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||(item.item_no??'')}</option>)}
+            {groupItems.map(item=><option key={item.keyword_id} value={item.keyword_id}>{item.item_name||(item.keyword_id??'')}</option>)}
           </select></label>
           <label><span>{l.keyword}</span><select className="scope-select" aria-label={l.selectKeyword} value={draftKeywords.includes(selectedKeyword)?selectedKeyword:''} disabled={!draft} onChange={event=>{
             const word=event.target.value;setSelectedKeyword(word);setKeywordEdit(word);
@@ -779,7 +773,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           if(chosen)selectItem(chosen);
         }}>
           <option value="">{l.newOrNone}</option>
-          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{[item.class_name,item.class_group,'群組'].filter(Boolean).join(' ')} · {item.item_name||(item.item_no??'')}</option>)}
+          {items.map(item=><option key={item.keyword_id} value={item.keyword_id}>{[item.class_name,item.class_group,'群組'].filter(Boolean).join(' ')} · {item.item_name||(item.keyword_id??'')}</option>)}
         </select></label>
         <button type="button" className="loc-button" onClick={()=>newItem(items[0]?.class_group||'')}>{l.addItem}</button>
       </div>:null}
@@ -788,7 +782,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
             <label><span>關鍵詞組</span><input value={draft.class_name||''} readOnly aria-readonly="true"/></label>
             <label><span>Group</span><input value={draft.class_group||''} onChange={event=>setDraft(current=>({...current,class_group:event.target.value}))}/></label>
             <label><span>{l.classEnabled}</span><select className="scope-select" value={draft.class_enable===false?'false':'true'} onChange={event=>setDraft(current=>({...current,class_enable:event.target.value==='true'}))}><option value="true">{l.yes}</option><option value="false">{l.no}</option></select></label>
-            <label><span>{l.itemNo}</span><input type="number" min="0" value={draft.item_no??''} onChange={event=>setDraft(current=>({...current,item_no:event.target.value}))}/></label>
+            
             <label><span>{l.itemName}</span><input value={draft.item_name||''} onChange={event=>setDraft(current=>({...current,item_name:event.target.value}))}/></label>
             <label><span>{l.sort}</span><input type="number" value={draft.order_no??''} onChange={event=>setDraft(current=>({...current,order_no:event.target.value}))}/></label>
           </div>
