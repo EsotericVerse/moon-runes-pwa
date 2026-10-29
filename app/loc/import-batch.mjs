@@ -7,7 +7,7 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   uid:['uid'],
   content:['content','body','text','message','description'],
   title:['title','name','subject'],
-  createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','published_at','publishedAt','date'],
+  createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','createAt','published_at','publishedAt','date'],
   source_place:['source_place','place'],
   url:['url','link','permalink'],
   media_link:['media_link'],
@@ -128,6 +128,37 @@ export function parseImportCreatedTime(value){
     Math.abs(numeric)<1e11?numeric*1000:numeric;
   const parsed=new Date(timestamp);
   return Number.isNaN(parsed.getTime())?null:parsed.toISOString();
+}
+// An absent original timestamp is null, never the import clock.
+const IMPORT_TIME_KEYS=['createtime','createdAt','createAt','created_at','creation_timestamp','create_time',
+  'created_time','timestamp_ms','timestamp','taken_at','published_at','publishedAt','date'];
+const IMPORT_TIME_WRAPPERS=['media','data','attachments','string_map_data','label_values','core','post','metadata'];
+export function extractImportCreatedAt(value,depth=0){
+  if(!value||typeof value!=='object'||depth>5)return null;
+  if(Array.isArray(value)){
+    for(const part of value.slice(0,128)){
+      const t=extractImportCreatedAt(part,depth+1);
+      if(t)return t;
+    }
+    return null;
+  }
+  for(const key of IMPORT_TIME_KEYS){
+    const part=value[key];
+    if(part==null)continue;
+    const t=parseImportCreatedTime(part);
+    if(t)return t;
+    if(typeof part==='object'){
+      const nested=extractImportCreatedAt(part,depth+1);
+      if(nested)return nested;
+    }
+  }
+  for(const key of IMPORT_TIME_WRAPPERS){
+    if(value[key]&&typeof value[key]==='object'){
+      const nested=extractImportCreatedAt(value[key],depth+1);
+      if(nested)return nested;
+    }
+  }
+  return null;
 }
 export function withImportCreatedTime(record,importedAt=new Date().toISOString()){
   return {...record,createtime:parseImportCreatedTime(record?.createtime)||importedAt};
