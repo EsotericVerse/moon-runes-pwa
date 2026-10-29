@@ -22,3 +22,13 @@ test('consumer typo is detected instead of silently becoming undefined',()=>{
   assert.notEqual(broken,client);
   assert.throws(()=>checkDbContract(contract,broken),/missing contract exports: readKeywordUidlissSummary/);
 });
+
+test('new Postgres keyword RPC grants only to roles present in the installation',()=>{
+  const sql=read('supabase/migrations/20261029223000_keyword_uidlist_readers.sql');
+  assert.match(sql,/REVOKE ALL ON FUNCTION silver\.read_keyword_uidlist_summary\(text,date,date,text\) FROM PUBLIC/);
+  assert.match(sql,/rolname='anon'/);
+  assert.match(sql,/rolname='anonymous'/);
+  assert.match(sql,/rolname='authenticated'/);
+  assert.doesNotMatch(sql,/TO anon,authenticated;/);
+  assert.doesNotMatch(sql,/CREATE ROLE|CREATE USER/i);
+});
