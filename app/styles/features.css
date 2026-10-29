@@ -786,8 +786,8 @@
 .scope-search-date-fields label{display:grid;gap:.45rem}
 .scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
 .scope-search-reference-editor{min-width:0;display:block}
-.scope-search-reference-editor>summary{cursor:pointer;padding:.5rem 0;font-weight:600}
-.scope-search-reference-editor[open]>.scope-search-reference-grid{margin-top:.85rem}
+.scope-search-reference-editor>h2{padding:.5rem 0;font-weight:600}
+.scope-search-reference-editor>.scope-search-reference-grid{margin-top:.85rem}
 .scope-search-reference-grid>.scope-edit-mode-toggle{order:2;margin-bottom:0}
 .scope-search-results{scroll-margin-top:5rem}
 .scope-editable-block-grid.scope-search-reference-grid{
