@@ -35,7 +35,7 @@ DECLARE
   scope_name text;
   class_row record;group_row record;item_row record;
   category text;cat_uid varchar(4);group_uid varchar(4);item_uid varchar(4);
-  default_group text;class_exists boolean;
+  default_group text;class_exists boolean;old_count bigint;new_count bigint;missing_count bigint;
 BEGIN
   FOR scope_name IN SELECT unnest(ARRAY['lo3rwang','lrunes']) LOOP
     EXECUTE format($ddl$
@@ -108,7 +108,34 @@ BEGIN
         END LOOP;
       END LOOP;
     END LOOP;
-    EXECUTE format('ALTER TABLE silver.%I_keywords_v2 ENABLE ROW LEVEL SECURITY',scope_name);
+    -- Validate EVERY original Item definition before replacing any table.
+    -- A failed count or rule comparison aborts the whole DDL transaction.
+    EXECUTE format('SELECT count(*) FROM silver.%I_keywords',scope_name)
+      INTO old_count;
+    EXECUTE format('SELECT count(*) FROM silver.%I_keywords_v2 WHERE type=$1',scope_name)
+      INTO new_count USING 'item';
+    IF new_count<>old_count THEN
+      RAISE EXCEPTION 'Keywords migration Item count mismatch in %: % vs %',
+        scope_name,old_count,new_count;
+    END IF;
+    EXECUTE format($audit$
+      SELECT count(*) FROM silver.%1$I_keywords old
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM silver.%1$I_keywords_v2 c
+        CROSS JOIN LATERAL jsonb_array_elements_text(c.lists) cl(gid)
+        JOIN silver.%1$I_keywords_v2 g ON g.uid=cl.gid AND g.type='group'
+        CROSS JOIN LATERAL jsonb_array_elements_text(g.lists) gl(iid)
+        JOIN silver.%1$I_keywords_v2 i ON i.uid=gl.iid AND i.type='item'
+        WHERE c.type='class' AND c.name=old.class_name
+          AND g.name=old.class_group AND i.name=old.item_name
+          AND i."desc"=old.principle AND i.lists=old.keywords
+      )
+    $audit$,scope_name) INTO missing_count;
+    IF missing_count<>0 THEN
+      RAISE EXCEPTION 'Keywords migration lost % original definitions in %',missing_count,scope_name;
+    END IF;
+        EXECUTE format('ALTER TABLE silver.%I_keywords_v2 ENABLE ROW LEVEL SECURITY',scope_name);
     EXECUTE format($ddl$
       CREATE POLICY keywords_tree_owner_read ON silver.%I_keywords_v2
       FOR SELECT TO authenticated USING (silver.can_manage_scope(%L))
