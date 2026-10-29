@@ -22,6 +22,7 @@ import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
+import {extractImportCoordinates,importGeoKey} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches} from './import-batch.mjs';
@@ -57,6 +58,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
+  const importedCoordinates=place?extractImportCoordinates(row.__importCoordinates||row):null;
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
@@ -111,6 +113,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     content,
     createtime:createdAt,
     location:sourcePlace||null,
+    ...(importedCoordinates?{__importCoordinates:importedCoordinates}:{}),
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
@@ -430,7 +433,27 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // Reimport identity: source creation time, not freshly minted Galaxy uid.
       // Unknown source time is null and never causes an import-time lookup.
       const incoming=dedupeIncomingImport(analyzed.valid);
-      const unique=incoming.unique;
+      // ZIP EXIF may contain a point even when the post itself does not.
+      // Only article-linked, non-conflicting photo coordinates can be used.
+      const evidenceCoordinates=new Map(),conflictedCoordinates=new Set();
+      for(const item of archiveEvidence){
+        if(!Number.isFinite(item.latitude)||!Number.isFinite(item.longitude))continue;
+        const point={latitude:item.latitude,longitude:item.longitude};
+        const key=importGeoKey(point);
+        if(!key)continue;
+        for(const uid of item.galaxy_uids||[]){
+          if(conflictedCoordinates.has(uid))continue;
+          const earlier=evidenceCoordinates.get(uid);
+          if(earlier&&importGeoKey(earlier)!==key){
+            conflictedCoordinates.add(uid);evidenceCoordinates.delete(uid);
+          }else if(!earlier)evidenceCoordinates.set(uid,point);
+        }
+      }
+      const unique=incoming.unique.map(record=>{
+        const point=record.__importCoordinates||
+          (!conflictedCoordinates.has(record.uid)?evidenceCoordinates.get(record.uid):null);
+        return point&&record.location?{...record,__importCoordinates:point}:record;
+      });
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
         readSeconds:async(source,seconds)=>{
@@ -538,10 +561,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
-      const placeRecords=unique.filter(record=>!existingByCreatedAt.get(record.uid)?.place_id)
-        .map(record=>({location:String(existingByCreatedAt.get(record.uid)?.location||'').trim()
-          ||record.location}));
-      const placeAnchors=await prepareImportPlaceAnchors(placeRecords,{
+      const placeAnchors=await prepareImportPlaceAnchors(unique,{
         scopeId,relation:dbAuthRelation,allowMissing:true
       });
       const knownArticleIds=new Map();
@@ -553,11 +573,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        if(!String(existing.location||'').trim()&&String(record.location||'').trim())
+        if(record.__importCoordinates&&!String(existing.location||'').trim()&&String(record.location||'').trim())
           changes.location=record.location;
         if(!String(existing.site||'').trim()&&String(record.site||'').trim())
           changes.site=record.site;
-        const placeUid=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName});
+        const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate});
         if(placeUid)changes.place_id=placeUid;
         // Do not replace a manually selected location or existing place_id.
         if(Object.keys(changes).length){
@@ -570,8 +590,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         knownArticleIds.set(record.uid,knownArticleIds.get(canonical)||canonical);
       }
       const payload=unique.filter(record=>!existingByCreatedAt.has(record.uid)).map(record=>{
-        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName});
-        return placeUid?{...record,place_id:placeUid}:record;
+        const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate});
+        const {__importCoordinates:unusedCoordinates,...article}=record;
+        return placeUid?{...article,place_id:placeUid}:article;
       });
       const result=await insertImportBatches(payload,{
         batchSize:MAX_ROWS,
