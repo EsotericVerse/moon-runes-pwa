@@ -1,5 +1,5 @@
 import {classifyKeywordDocuments} from './keyword-engine.mjs';
-import {keywordClassCatalog} from '../keyword-tree.mjs';
+import {keywordClassCatalog,indexKeywordTree} from '../keyword-tree.mjs';
 
 // Keep scoring rules unchanged; ephemeral ordinals only index one analysis call.
 // All externally visible references are four-character Item UIDs.
@@ -13,6 +13,47 @@ export function classifyKeywordDocumentsByUid(documents=[],treeRows=[],classUid=
   const outcome=classifyKeywordDocuments(documents,temp);
   return {...outcome,classifications:(outcome.classifications||[]).map(row=>({
     uid:row.uid,status:row.status,classification_group:row.classification_group,
+    tied_groups:[...(row.tied_groups||[])],
     hits:(row.rune_counts||[]).map(hit=>({uid:slot.get(hit.rune_id),times:hit.count}))
   }))};
+}
+
+
+// Mirror the pre-UID stateful tie resolver: previous Group allocations matter,
+// and the configured default Group is ordered after the ordinary Groups.
+// A Group containing the legacy zero rune 德 retains the no-hit fallback,
+// without storing a numeric item_no or an extra Class/Group ID.
+export function createKeywordUidGroupResolver(treeRows=[],classUid=''){
+  const {index}=indexKeywordTree(treeRows);
+  const root=index.get(classUid);
+  if(!root||root.type!=='class')throw new Error('Unknown Keywords Class');
+  const groups=root.lists.map((uid,order)=>{
+    const node=index.get(uid);
+    if(!node||node.type!=='group')throw new Error('Broken Group link');
+    return {uid,name:node.name,order,items:node.lists};
+  });
+  const byName=new Map(groups.map(group=>[group.name,group]));
+  if(byName.size!==groups.length)throw new Error('Duplicate Group name');
+  const winners=new Map(groups.map(group=>[group.uid,0]));
+  const defaultGroups=groups.filter(group=>group.items.some(uid=>index.get(uid)?.name==='德'));
+  const defaultGroup=defaultGroups.length===1?defaultGroups[0]:null;
+  return {
+    resolve(result){
+      const candidates=[...new Set(result?.tied_groups||[])]
+        .map(name=>byName.get(name)).filter(Boolean);
+      let chosen=null;
+      if(candidates.length>1){
+        chosen=[...candidates].sort((a,b)=>
+          winners.get(a.uid)-winners.get(b.uid)||a.order-b.order
+        )[0];
+      }else if(candidates.length===1){
+        chosen=candidates[0];
+      }else{
+        chosen=byName.get(String(result?.classification_group||''))||defaultGroup;
+      }
+      if(chosen)winners.set(chosen.uid,winners.get(chosen.uid)+1);
+      return chosen?.uid||'';
+    },
+    counts:()=>new Map(winners)
+  };
 }
