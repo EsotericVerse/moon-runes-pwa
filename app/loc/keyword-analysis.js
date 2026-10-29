@@ -95,10 +95,17 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   const id=normalizeScopeId(scopeId),{scope,config}=await scopeAndConfig(id);
   const classUid=String(config.current_keyword_class_uid||'');
   if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定 Keywords Class');
-  const {rows:treeRows}=await selectAllRows(scope.keywords,{
-    columns:'uid,type,name,desc,lists',
-    orders:[{column:'uid',ascending:true}]
-  });
+  // Keywords rules are private unless explicitly shared. Reanalysis always
+  // reads with the authenticated Scope-owner client, never anonymous RLS.
+  const treeRows=[];
+  for(let offset=0;;offset+=500){
+    const {data,error}=await dbAuthRelation(scope.keywords)
+      .select('uid,type,name,desc,lists')
+      .order('uid',{ascending:true}).range(offset,offset+499);
+    if(error)throw new Error(error.message||'Keywords 規則讀取失敗');
+    treeRows.push(...(data||[]));
+    if((data||[]).length<500)break;
+  }
   const catalog=keywordTreeCatalog(treeRows,classUid);
   const minChars=normalizeKeywordMinChars(config.keyword_min_chars);
   const minDocuments=normalizeKeywordMinDocuments(config.keyword_min_documents);
