@@ -3,14 +3,15 @@
 import {useEffect,useRef,useState} from 'react';
 import {CACHE_POLICY} from '../../cache-policy.config.mjs';
 import {applyGlobalCacheConfig} from '../../cache-mode-client.mjs';
-import {MAX_ISR_DOMAINS,normalizeIsrDomains} from '../../providers/isr-domains.mjs';
+import {MAX_ISR_DOMAINS,normalizeIsrDomains,normalizeIsrDomain} from '../../providers/isr-domains.mjs';
 import {readLocRuntimeConfig,saveLocRuntimeConfig} from '../../runtime-config.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 
 const indexFromChoice=choice=>choice.startsWith('isr:')?Number(choice.slice(4)):-1;
 async function checkIsrCapability(origin){
   try{
-    const response=await fetch(new URL('/api/loc/isr-capabilities',origin),{
+    const valid=normalizeIsrDomain({label:'ISR',origin});
+    const response=await fetch(new URL('/api/loc/isr-capabilities',valid.origin),{
       mode:'cors',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(3500)
     });
     if(!response.ok)return false;
@@ -103,6 +104,14 @@ export default function IsrDomainTarget(){
   return <section className="loc-card admin-workspace loc-isr-settings">
     <h2>快取設定</h2>
     <p className="scope-status">ISR 完全選配，可不設定任何 ISR 網域；Service Worker 與 No Cache 都不需要 ISR。選擇使用方式並儲存後立即套用，無須重新部署；只有修改 Service Worker 程式或 ISR 服務部署設定時才需要重新部署。</p>
+    {draft&&<p className="scope-status" role="status">{draft.choice.startsWith('isr:')
+      ?(()=>{const origin=draft.domains[indexFromChoice(draft.choice)]?.origin;
+          const state=origin?domainHealth[origin]:'';
+          return state==='checking'?'正在檢查選定的 ISR…':state==='online'
+            ?<><span style={{color:'#198754'}}>●</span> 已確認 HTTP 數值快取能力</>
+            :<><span style={{color:'#c53030'}}>●</span> 選定 ISR 尚未確認可用</>;
+        })()
+      :'ISR 未啟用（選配，不需要部署）'}</p>}
     {draft?<div className="loc-isr-bar">
       <label htmlFor="loc-isr-choice">使用方式
         <select id="loc-isr-choice" className="scope-select" value={draft.choice}
@@ -133,7 +142,7 @@ export default function IsrDomainTarget(){
         <button type="button" className="loc-button loc-isr-remove"
           aria-label={'移除 '+(item.label||'ISR '+(index+1))}
           title="移除" disabled={busy} onClick={()=>removeDomain(index)}>−</button>
-        <span role="status" style={{fontSize:12}}>{!item.origin?'未設定（選配）':
+        <span role="status" style={{fontSize:12,gridColumn:'1 / -1'}}>{!item.origin?'未設定（選配）':
           domainHealth[item.origin]==='checking'?'檢查中…':
           domainHealth[item.origin]==='online'
             ?<><span style={{color:'#198754'}}>●</span> 支援 HTTP 數值快取</>
