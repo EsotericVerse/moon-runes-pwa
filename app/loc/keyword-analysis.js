@@ -96,7 +96,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{onProgress}={}
   const classUid=String(config.current_keyword_class_uid||'');
   if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定 Keywords Class');
   const {rows:treeRows}=await selectAllRows(scope.keywords,{
-    columns:'uid,type,name,desc,lists,uid_lists',
+    columns:'uid,type,name,desc,lists',
     orders:[{column:'uid',ascending:true}]
   });
   const catalog=keywordTreeCatalog(treeRows,classUid);
