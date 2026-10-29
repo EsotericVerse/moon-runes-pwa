@@ -102,6 +102,7 @@
 
 - **絕不拿 Cloudflare 部署當語法檢查器。** `main` 一有 push 就自動觸發計費建置。順序永遠是：本機 `npm run check:syntax`（零成本、幾秒）→ 乾淨了才 commit／push。它抓不到全部問題，行為是否正確仍是 Agent 自己要再核對的責任。repo 內附 `.githooks/pre-push`，本機 `git config core.hooksPath .githooks` 設定一次就會自動擋——**機制保險，不是靠記得做。**
 - **正式網站由 Cloudflare 連 `main` 自動建置部署。** 不手動觸發 GitHub Pages，不啟用 Vercel 備援，不額外重複觸發建置。
+- 目前Branch不會引發cloudflare佈署。
 - **付費資源設定一律使用者決定**（ISR、DNS、R2、Durable Objects、Cloudflare 專案的 Git 連接、組建監看路徑、哪個專案是正式入口）。Agent 不主動查現況、不主動建議調整，被明確要求才操作、操作完回報。
 - **Cloudflare 佈署排除路徑（使用者確認）：** `AGENTS.md`、`*.md`、`**/*.md`、`.githooks/**`、`node_modules/**`、`.git/`。僅修改這些文件通常不觸發建置；仍須注意下述強制建置條件。設定由使用者管理，不自行更改。
 - **三種情況無視排除名單一律建置**：push 含 20 個以上 commit、3000 個以上檔案變動、或零檔案變動。**這是晚 merge 的第二個成本。**
