@@ -22,9 +22,9 @@ import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
-import {extractImportCoordinates,importGeoKey} from './import-geocoordinates.mjs';
+import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
-import {createArchiveEvidenceCollector,prepareArchiveMedia} from './archive-media-evidence.mjs';
+import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -67,7 +67,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const stableThreadsKey=isThreads&&(nativeThreadsId||createdAt&&comparableImportText(content))
     ?'threads:json:'+JSON.stringify([nativeThreadsId||null,createdAt,comparableImportText(content)]):'';
   const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim();
-  const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
+  const rawUrl=String(value('url')||'').trim();
+  const mediaCandidates=[value('media'),value('media_link'),
+    ...(isArchiveMediaUrl(rawUrl)?[rawUrl]:[])]
+    .filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
     for(const item of mediaCandidates){
@@ -119,7 +122,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     source_id:String(value('source_id')||'').trim()||null,
     target_id:normalizeRelationIds(value('target_id')),
     ref_id:String(value('ref_id')||'').trim()||null,
-    url:String(value('url')||'').trim()||null,
+    url:!isArchiveMediaUrl(rawUrl)&&!importMapUrlCoordinates(rawUrl)?rawUrl||null:null,
     ...(mediaRefs.length?{media_link:mediaRefs}:{}),
     site:String(source||'').trim()
   };
@@ -433,27 +436,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // Reimport identity: source creation time, not freshly minted Galaxy uid.
       // Unknown source time is null and never causes an import-time lookup.
       const incoming=dedupeIncomingImport(analyzed.valid);
-      // ZIP EXIF may contain a point even when the post itself does not.
-      // Only article-linked, non-conflicting photo coordinates can be used.
-      const evidenceCoordinates=new Map(),conflictedCoordinates=new Set();
-      for(const item of archiveEvidence){
-        if(!Number.isFinite(item.latitude)||!Number.isFinite(item.longitude))continue;
-        const point={latitude:item.latitude,longitude:item.longitude};
-        const key=importGeoKey(point);
-        if(!key)continue;
-        for(const uid of item.galaxy_uids||[]){
-          if(conflictedCoordinates.has(uid))continue;
-          const earlier=evidenceCoordinates.get(uid);
-          if(earlier&&importGeoKey(earlier)!==key){
-            conflictedCoordinates.add(uid);evidenceCoordinates.delete(uid);
-          }else if(!earlier)evidenceCoordinates.set(uid,point);
-        }
-      }
-      const unique=incoming.unique.map(record=>{
-        const point=record.__importCoordinates||
-          (!conflictedCoordinates.has(record.uid)?evidenceCoordinates.get(record.uid):null);
-        return point&&record.location?{...record,__importCoordinates:point}:record;
-      });
+      // Photo EXIF remains separate media evidence, never a post check-in location.
+      const unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
         readSeconds:async(source,seconds)=>{
