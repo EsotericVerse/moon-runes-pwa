@@ -84,16 +84,3 @@ $fn$;
 REVOKE ALL ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anon,authenticated;
 
--- The legacy summary name remains operational during the reader cutover, but
--- its data source is now Keywords.uidlist, not Galaxy classification columns.
-CREATE OR REPLACE FUNCTION silver.read_rune66_summary(
-  p_scope_id text,p_start date,p_end date
-) RETURNS TABLE(kind text,item_key text,class_id integer,day text,hit_count integer,document_count integer)
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path TO ''
-AS $fn$
-  SELECT kind,item_key,class_id,day,
-    hit_count::integer,document_count::integer
-  FROM silver.read_keyword_uidlist_summary(p_scope_id,p_start,p_end,NULL)
-  WHERE kind<>'item_day';
-$fn$;
