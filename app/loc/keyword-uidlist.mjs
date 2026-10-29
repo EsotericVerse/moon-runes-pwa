@@ -1,6 +1,5 @@
-// Keywords results: one row per Item, uidlist = [{uid,times}].
-// The result's class_group identifies the root Class, e.g. 符文66.
-// Legacy catalog.class_group still identifies the subgroup, e.g. 靈魂.
+// A Keywords Class has one short UID and one map: item["name"] = [{uid,times}].
+// The legacy catalog may still have item_no, but this result never persists it.
 const ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const CLASS_UID=/^[A-Za-z0-9]{4}$/;
 const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
@@ -28,79 +27,98 @@ function validTimes(times){
   if(!Number.isSafeInteger(times)||times<=0)throw new Error('Invalid keyword times');
   return times;
 }
-function countsOf(row){
-  const raw=row?.group_lists;
-  const pairs=Array.isArray(row?.rune_counts)
-    ?row.rune_counts.map(x=>[Number(x.rune_id),Number(x.count)])
-    :raw==null||raw===false||raw==='false'||raw===''?[]
-    :typeof raw==='string'?raw.split(',').map(part=>{
-      const m=/^([0-9]+):([0-9]+)$/.exec(part.trim());
-      if(!m)throw new Error('Invalid group_lists');
-      return [Number(m[1]),Number(m[2])];
-    }):Object.entries(raw).map(([n,t])=>[Number(n),Number(t)]);
-  const hits=new Map();
-  for(const [no,times] of pairs){
-    if(!Number.isSafeInteger(no)||no<0||hits.has(no))throw new Error('Invalid or duplicate keyword item');
-    hits.set(no,validTimes(times));
-  }
-  return hits;
-}
-function initialize({classUid,classGroup,catalogRows}){
-  if(!isKeywordClassUid(classUid))throw new Error('Class UID must have four Base62 characters');
-  if(typeof classGroup!=='string'||!classGroup.trim())throw new Error('Class name is required');
-  const items=new Map();
+function catalogIndex(catalogRows,classGroup){
+  const itemNames=new Set(),oldNumbers=new Map();
   for(const row of catalogRows){
     if(row.class_name&&row.class_name!==classGroup)throw new Error('Mixed Keywords Classes');
-    const itemNo=Number(row.item_no);
-    if(!Number.isSafeInteger(itemNo)||itemNo<0||items.has(itemNo))throw new Error('Invalid item_no');
-    items.set(itemNo,{class_uid:classUid,class_group:classGroup,item_no:itemNo,item_name:String(row.item_name??''),hits:new Map()});
+    const name=String(row.item_name??'').trim();
+    if(!name||itemNames.has(name))throw new Error('Missing or duplicate Item name');
+    itemNames.add(name);
+    // Read-only adapter for existing classification engine: no item count ceiling.
+    if(row.item_no!=null){
+      const no=Number(row.item_no);
+      if(!Number.isSafeInteger(no)||no<0||oldNumbers.has(no))throw new Error('Invalid legacy Item number');
+      oldNumbers.set(no,name);
+    }
   }
-  return items;
+  return {itemNames,oldNumbers};
 }
-function apply(items,classified){
-  for(const record of classified){
-    const uid=validUid(record.uid); // UID is case-sensitive, never normalize it.
-    for(const item of items.values())item.hits.delete(uid);
-    for(const [itemNo,times] of countsOf(record)){
-      if(!items.has(itemNo))throw new Error('Unknown keyword item: '+itemNo);
-      items.get(itemNo).hits.set(uid,times);
+function countsOf(record,index){
+  const raw=record?.group_lists;
+  let entries=[];
+  if(record?.item_counts&&typeof record.item_counts==='object'&&!Array.isArray(record.item_counts)){
+    entries=Object.entries(record.item_counts);
+  }else if(Array.isArray(record?.rune_counts)){
+    entries=record.rune_counts.map(x=>[index.oldNumbers.get(Number(x.rune_id)),Number(x.count)]);
+  }else if(raw==null||raw===false||raw==='false'||raw===''){
+    entries=[];
+  }else if(typeof raw==='string'){
+    entries=raw.split(',').map(part=>{
+      const m=/^([0-9]+):([0-9]+)$/.exec(part.trim());
+      if(!m)throw new Error('Invalid legacy group_lists');
+      return [index.oldNumbers.get(Number(m[1])),Number(m[2])];
+    });
+  }else if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
+    entries=Object.entries(raw).map(([id,times])=>[index.oldNumbers.get(Number(id)),Number(times)]);
+  }else{
+    throw new Error('Invalid keyword hit format');
+  }
+  const counts=new Map();
+  for(const [name,value] of entries){
+    if(!name||!index.itemNames.has(name)||counts.has(name))throw new Error('Unknown or duplicate Keyword Item');
+    counts.set(name,validTimes(Number(value)));
+  }
+  return counts;
+}
+function itemMap(index){
+  return new Map([...index.itemNames].map(name=>[name,new Map()]));
+}
+function loadExisting(items,record){
+  if(!record?.item||typeof record.item!=='object'||Array.isArray(record.item))throw new Error('Invalid stored Keyword Items');
+  for(const [name,list] of Object.entries(record.item)){
+    const current=items.get(name);
+    if(!current)throw new Error('Stored Item is not in current catalog');
+    if(!Array.isArray(list))throw new Error('uidlist must be an array');
+    for(const hit of list){
+      const uid=validUid(hit?.uid),times=validTimes(hit?.times);
+      if(current.has(uid))throw new Error('Duplicate Galaxy UID in Item');
+      current.set(uid,times);
     }
   }
 }
-function rowsOf(items){
-  return [...items.values()].sort((a,b)=>a.item_no-b.item_no).map(item=>({
-    class_uid:item.class_uid,class_group:item.class_group,item_no:item.item_no,item_name:item.item_name,
-    uidlist:[...item.hits].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([uid,times])=>({uid,times}))
-  }));
-}
-export function buildKeywordUidlistRows({classUid,classGroup,catalogRows=[],classifications=[]}={}){
-  const items=initialize({classUid,classGroup,catalogRows});
-  apply(items,classifications);
-  return rowsOf(items);
-}
-export function patchKeywordUidlistRows(existingRows=[],changed=[]){
-  if(!existingRows.length){
-    if(changed.length)throw new Error('Cannot patch absent Keywords Items');
-    return [];
+function applyChanged(items,index,classifications){
+  for(const record of classifications){
+    const uid=validUid(record.uid); // Identifiers are case-sensitive, unmodified.
+    for(const current of items.values())current.delete(uid);
+    for(const [name,times] of countsOf(record,index))items.get(name).set(uid,times);
   }
-  const first=existingRows[0];
-  const items=initialize({classUid:first.class_uid,classGroup:first.class_group,catalogRows:existingRows.map(x=>({
-    class_name:first.class_group,item_no:x.item_no,item_name:x.item_name
-  }))});
-  for(const row of existingRows){
-    if(row.class_uid!==first.class_uid||row.class_group!==first.class_group)throw new Error('Mixed Keywords Classes');
-    const hits=items.get(Number(row.item_no)).hits;
-    for(const entry of row.uidlist||[]){
-      const uid=validUid(entry.uid),times=validTimes(entry.times);
-      if(hits.has(uid))throw new Error('Duplicate Galaxy UID in Item');
-      hits.set(uid,times);
-    }
-  }
-  apply(items,changed);
-  return rowsOf(items);
 }
-export function summarizeKeywordUidlist(row){
-  let total=0;
-  for(const entry of row?.uidlist||[]){validUid(entry.uid);total+=validTimes(entry.times);}
-  return {article_count:row?.uidlist?.length||0,hit_count:total};
+function serialize(classUid,classGroup,items){
+  const item=Object.fromEntries([...items].map(([name,hits])=>[
+    name,[...hits].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([uid,times])=>({uid,times}))
+  ]));
+  return {class_uid:classUid,class_group:classGroup,item};
+}
+// Full analysis of one Class, regardless of Item count.
+export function buildKeywordUidlistClass({classUid,classGroup,catalogRows=[],classifications=[]}={}){
+  if(!isKeywordClassUid(classUid))throw new Error('Class UID must have four Base62 characters');
+  if(typeof classGroup!=='string'||!classGroup.trim())throw new Error('Class name is required');
+  const index=catalogIndex(catalogRows,classGroup),items=itemMap(index);
+  applyChanged(items,index,classifications);
+  return serialize(classUid,classGroup,items);
+}
+// Incremental analysis must not erase UIDs from untouched articles.
+export function patchKeywordUidlistClass(existing,classifications=[],catalogRows=[]){
+  if(!isKeywordClassUid(existing?.class_uid))throw new Error('Invalid stored Class UID');
+  const classGroup=existing.class_group;
+  const index=catalogIndex(catalogRows,classGroup),items=itemMap(index);
+  loadExisting(items,existing);
+  applyChanged(items,index,classifications);
+  return serialize(existing.class_uid,classGroup,items);
+}
+export function summarizeKeywordUidlist(itemHits=[]){
+  if(!Array.isArray(itemHits))throw new Error('Item hits must be an array');
+  let times=0;
+  for(const hit of itemHits){validUid(hit.uid);times+=validTimes(hit.times);}
+  return {article_count:itemHits.length,hit_count:times};
 }
