@@ -449,7 +449,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           const collected=[];
           for(let start=0;;){
             const relation=dbAuthRelation(galaxy)
-              .select('uid,site,createtime,content,title,location,place_id',{count:'exact'})
+              .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'})
               .ilike('site',source);
             // PostgREST executes one bounded OR query for 24 exact seconds.
             // Local adapters without .or use one bounded second at a time.
@@ -459,7 +459,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
                   const from=new Date(second*1000).toISOString();
                   const to=new Date((second+1)*1000).toISOString();
                   const {data,error,count}=await dbAuthRelation(galaxy)
-                    .select('uid,site,createtime,content,title,location,place_id',{count:'exact'}).ilike('site',source)
+                    .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'}).ilike('site',source)
                     .gte('createtime',from).lt('createtime',to).range(offset,offset+MAX_ROWS-1);
                   if(error)throw new Error('重複文章比對失敗：'+error.message);
                   collected.push(...(data||[]));
@@ -529,7 +529,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         for(const [method,term] of [['is',null],['eq','']]){
           for(let offset=0;;){
             const {data,error,count}=await dbAuthRelation(galaxy)
-              .select('uid,site,createtime,content,title,location,place_id',{count:'exact'})
+              .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'})
               .gte('createtime',from).lt('createtime',through)
               [method]('site',term).order('uid',{ascending:true})
               .range(offset,offset+MAX_ROWS-1);
@@ -561,6 +561,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           changes.location=record.location;
         if(!String(existing.site||'').trim()&&String(record.site||'').trim())
           changes.site=record.site;
+        // Repair only missing or demonstrably misclassified article URLs.
+        if(String(record.url||'').trim()&&!String(existing.url||'').trim())
+          changes.url=record.url;
+        else if(isArchiveMediaUrl(existing.url)||importMapUrlCoordinates(existing.url)){
+          if(String(existing.url||'')!==String(record.url||''))changes.url=record.url||null;
+        }
         const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate});
         if(placeUid)changes.place_id=placeUid;
         // Do not replace a manually selected location or existing place_id.
