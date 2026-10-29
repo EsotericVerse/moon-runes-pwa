@@ -42,5 +42,6 @@ test('Neon fallback refuses missing or insecure endpoints',()=>{
 test('Neon backup fails closed without an anonymous JWT',async()=>{
   const adapter=createBackupPublicAdapter({url:base,authUrl:auth,
     fetchImpl:async()=>new Response('{}',{status:200,headers:{'content-type':'application/json'}})});
-  await assert.rejects(adapter.publicClient.schema('silver').from('lo3rwang_galaxy').select('uid'),/no JWT/);
+  const result=await adapter.publicClient.schema('silver').from('lo3rwang_galaxy').select('uid');
+  assert.match(result.error?.message||'',/no JWT/);
 });
