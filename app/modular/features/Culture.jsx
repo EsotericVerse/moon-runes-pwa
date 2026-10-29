@@ -106,7 +106,7 @@ function keywordDrillRiverItems(rows,{groupId='',meta={},groupItems=[]}={}){
       label=String(item.name||key);
       count=Number(row.hit_count)||0;
       order=Number(item.order_no)||0;
-    }else if(row.kind==='class_day'||(row.kind==='galaxy'&&row.classification_group)){
+    }else if(row.kind==='class_day'||(row.classification_group&&row.group_uid)){
       key=String(row.group_uid??'');
       const groupName=String(classes[key]||row.classification_group||'').trim();
       if(!groupName)continue;
