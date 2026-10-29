@@ -6,7 +6,7 @@ import {normalizeDatabaseLocation} from "../../../app/loc/providers/database-lin
 import { executeAllowlistedRpc, executeKyselyQuery, isKyselyClientError } from "../../../app/loc/providers/kysely-runtime.mjs";
 import { adaptNeonThemeRequest, normalizeNeonThemeRows } from "../../../app/loc/providers/neon-theme-compat.mjs";
 import { selectedDatabaseTarget } from "../../../app/loc/providers/selected-database-target.mjs";
-import {resolveSqlExecutionPort} from "../../../app/loc/providers/sql-engine-ports.mjs";
+import {resolveSqlExecutionPort,assertCrossEnginePublicRead} from "../../../app/loc/providers/sql-engine-ports.mjs";
 import {resolveDatabaseRouting} from "../../../app/loc/providers/routing-config.mjs";
 import {scopedDatabaseListRelation} from "../../../app/loc/providers/database-list-relation.mjs";
 
@@ -30,13 +30,7 @@ function configuredPublishableKeys() {
 const publishableKeys = configuredPublishableKeys();
 // The deployed function and browser use the same source-controlled routing contract.
 const routing = resolveDatabaseRouting();
-const neonLocReadTables = new Set([
-  "game", "keyword_classes", "lo3rwang", "lo3rwang_blocks", "lo3rwang_galaxy",
-  "lo3rwang_galaxy_media", "lo3rwang_keywords", "lo3rwang_time", "loc_blocks",
-  "loc_search_keywords", "loc_theme", "lrunes", "lrunes_blocks", "lrunes_daily",
-  "lrunes_galaxy", "lrunes_galaxy_media", "lrunes_time", "runes",
-  "runes_etc", "runes_group",
-]);
+// Cross-engine publicly readable tables are centrally enforced by sql-engine-ports.mjs.
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
 
@@ -128,8 +122,7 @@ async function executeRequest(trx: any, target: Record<string,any>, role: string
   if(executionPort.session!=="postgres-rls"){
     // No PostgreSQL RLS or set-local-role on other engines. Until the target's
     // authorization adapter exists, permit only the public LOC read surface.
-    if(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table))
-      throw Object.assign(new Error("Cross-engine target only permits public LOC reads"),{httpStatus:403});
+    assertCrossEnginePublicRead(body);
     return await executeKyselyQuery(trx,body,{dialect:executionPort.engine});
   }
   if (role === "authenticated") await sql`set local role authenticated`.execute(trx);
@@ -266,7 +259,7 @@ Deno.serve(async (request) => {
     if(requestedTarget==="backup"){
       if(!routing.backupId)return json({error:{message:"Backup is disabled by repository routing"}},503);
       if(body.kind!=="query"||body.operation!=="select"||
-         body.schema!=="silver"||!neonLocReadTables.has(String(body.table||"")))
+         body.schema!=="silver"||typeof body.table!=="string")
         return json({error:{message:"Backup is read-only"}},403);
       resolvingTarget=true;
       // Only an explicitly requested, enabled backup needs its saved connection profile.
@@ -285,11 +278,16 @@ Deno.serve(async (request) => {
     // No per-request database_targets lookup, even for RPCs and authenticated writes.
     if(target.provider==="neon"&&(body.kind!=="query"||body.operation!=="select"))
       return json({error:{message:"Neon LOC mirror is read-only"}},403);
-    if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
+    // PostgreSQL mirrors enforce per-row access through RLS, not table-name
+    // lists. This older Supabase-hosted Edge transport remains optional; the
+    // independent Neon primary/backup never requires it.
+    if(target.provider==="neon"&&(body.schema!=="silver"||typeof body.table!=="string"))
       return json({error:{message:"Neon LOC mirror table is not enabled"}},403);
     if(target.provider==="neon"&&role==="anon"){role="anonymous";claims.role=role;}
-    if(target.engine!=="postgres"&&(body.kind!=="query"||body.operation!=="select"||body.schema!=="silver"||typeof body.table!=="string"||!neonLocReadTables.has(body.table)))
-      return json({error:{message:"Cross-engine target is not authorized for this operation"}},403);
+    // Non-PostgreSQL engines have no equivalent to PostgreSQL RLS yet.
+    // Enforce the same small public reference whitelist BEFORE opening a
+    // database connection; executeRequest repeats the gate defensively.
+    if(target.engine!=="postgres")assertCrossEnginePublicRead(body);
     const db=isSupabaseControlTarget(target)
       ?await databaseForTarget(controlTarget)
       :await databaseForTarget(target,{profileLookup:profileForTarget});

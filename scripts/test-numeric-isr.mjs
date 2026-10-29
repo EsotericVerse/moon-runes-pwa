@@ -37,7 +37,14 @@ test('optional ISR is used only in explicit ISR mode and always bounded',async()
 
 test('ISR server route checks global mode, validates scope and is safe for disabled mode',()=>{
   const source=read('app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js');
-  assert.match(source,/runtime\?\.cache_mode!=='isr'/);
+  const guard=read('app/api/loc/_numeric-failover.mjs');
+  const publicServer=read('app/api/loc/_server.js');
+  assert.match(guard,/cache_mode!=='isr'/);
+  assert.match(guard,/db\.from\('loc_runtime_config'\)/);
+  assert.match(guard,/isAvailabilityFailure/);
+  assert.match(source,/readIsrSummary\(db,\{origin:url\.origin,name,args\}\)/);
+  assert.match(source,/tryPublicSources\(publicNumericSources\(\)/);
+  assert.match(publicServer,/createBackupPublicAdapter/);
   assert.match(source,/status===200\?CACHE_HEADERS:NO_CACHE/);
   assert.match(source,/read_scope_statistics/);
   assert.match(source,/read_scope_overview/);

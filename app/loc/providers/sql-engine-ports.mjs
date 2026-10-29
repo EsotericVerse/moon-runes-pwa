@@ -34,3 +34,22 @@ export function resolveSqlExecutionPort(target){
   const port=getSqlEnginePort(target.engine);
   return Object.freeze({engine:port.id,session:port.session,namespace:port.namespace,runtime:port.runtime});
 }
+
+// An external Kysely dialect does not inherit PostgreSQL RLS. Whitelisting
+// table names is NOT sufficient for user content: Galaxy and Scope tables
+// have per-row visibility policies. Until an equivalent engine-side
+// authorization implementation exists, expose only fixed public reference tables.
+export const CROSS_ENGINE_PUBLIC_READ_TABLES=Object.freeze([
+  'loc_theme','runes','runes_etc','runes_group'
+]);
+const externalPublicReads=new Set(CROSS_ENGINE_PUBLIC_READ_TABLES);
+export function assertCrossEnginePublicRead(request){
+  if(request?.kind!=='query'||request.operation!=='select'||
+      request.schema!=='silver'||typeof request.table!=='string'||
+      !externalPublicReads.has(request.table)){
+    const error=new Error('Cross-engine private data requires an authorization adapter');
+    error.httpStatus=403;
+    throw error;
+  }
+  return request;
+}

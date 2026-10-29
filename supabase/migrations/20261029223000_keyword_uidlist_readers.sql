@@ -56,12 +56,7 @@ BEGIN
       GROUP BY b.uid,b.d,gr.cid
     ), ranked AS (
       SELECT uid,d,cid,
-        row_number() OVER(
-          PARTITION BY uid,d ORDER BY strength DESC,
-          CASE WHEN cid=(SELECT gr.cid FROM group_ranks gr
-                         JOIN default_group df ON df.grp=gr.grp LIMIT 1)
-               THEN 0 ELSE 1 END,cid
-        ) AS rn
+        row_number() OVER(PARTITION BY uid,d ORDER BY strength DESC,cid) AS rn
       FROM group_winners
     )
     SELECT 'eligible'::text,NULL::text,NULL::integer,''::text,
@@ -71,21 +66,43 @@ BEGIN
       FROM ranked WHERE rn=1 GROUP BY cid,d
     UNION ALL
     SELECT 'item',id,NULL,''::text,sum(times)::bigint,count(DISTINCT uid)::bigint
-      FROM base WHERE times>0 GROUP BY id
+      FROM base GROUP BY id
     UNION ALL
     SELECT 'item_day',id,NULL,d,sum(times)::bigint,count(DISTINCT uid)::bigint
-      FROM base WHERE times>0 GROUP BY id,d
-    UNION ALL
-    SELECT 'keyword_all_day',NULL,NULL,d,count(DISTINCT uid)::bigint,count(DISTINCT uid)::bigint
-      FROM base WHERE times>0 GROUP BY d
-    UNION ALL
-    SELECT 'group_items_day',grp,NULL,d,count(DISTINCT uid)::bigint,count(DISTINCT uid)::bigint
-      FROM base WHERE times>0 GROUP BY grp,d
+      FROM base GROUP BY id,d
   $query$,v_keywords,v_galaxy)
   USING v_class_uid,p_start,p_end,nullif(p_source,'');
 END
 $fn$;
 -- Restrict executable schema function to the same roles that read aggregate stats.
 REVOKE ALL ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anon,authenticated;
+-- Supabase uses "anon"; Neon Data API uses "anonymous". Generic PostgreSQL
+-- installations may have neither until their auth layer is configured.
+-- Never create elevated roles just to make a migration succeed.
+DO $grant$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='anon') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anon;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='anonymous') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO anonymous;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='authenticated') THEN
+    GRANT EXECUTE ON FUNCTION silver.read_keyword_uidlist_summary(text,date,date,text) TO authenticated;
+  END IF;
+END
+$grant$;
 
+-- The legacy summary name remains operational during the reader cutover, but
+-- its data source is now Keywords.uidlist, not Galaxy classification columns.
+CREATE OR REPLACE FUNCTION silver.read_rune66_summary(
+  p_scope_id text,p_start date,p_end date
+) RETURNS TABLE(kind text,item_key text,class_id integer,day text,hit_count integer,document_count integer)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO ''
+AS $fn$
+  SELECT kind,item_key,class_id,day,
+    hit_count::integer,document_count::integer
+  FROM silver.read_keyword_uidlist_summary(p_scope_id,p_start,p_end,NULL)
+  WHERE kind<>'item_day';
+$fn$;

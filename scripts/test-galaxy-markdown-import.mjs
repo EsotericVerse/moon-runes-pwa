@@ -97,6 +97,14 @@ test('Markdown respects a supplied stable UID even when content changes',async()
   assert.equal(revised.uid,'AB12CD34');
 });
 
+test('explicit Base62 UID retains mixed case across repeated Markdown imports',async()=>{
+  const input=body=>file('mixed.md','---\nuid: aB12cD34\n---\n'+body);
+  const [one]=await parseUniversalImportFile(input('# Original'));
+  const [two]=await parseUniversalImportFile(input('# Edited'));
+  assert.equal(one.uid,'aB12cD34');
+  assert.equal(two.uid,'aB12cD34');
+});
+
 test('CRLF and UTF-8 BOM are handled without losing Markdown',async()=>{
   const doc='\uFEFF---\r\ntitle: "摘要"\r\ncreated_at: "2026-10-24T09:00:00+08:00"\r\n---\r\n\r\n# 內容\r\n\r\n一段話';
   const [row]=await parseUniversalImportFile(file('a.md',doc));
