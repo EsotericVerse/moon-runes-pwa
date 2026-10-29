@@ -20,6 +20,8 @@ export default {
   "editingUid": "編輯中的文章 UID",
   "newArticle": "改為發表新文章",
   "replaceDraftConfirm": "目前有未儲存的編輯，確定改為載入其他 UID？",
+  "saveChanges": "儲存文章修改",
+  "noChanges": "文章內容沒有變更。",
   "articleBody": "文章正文",
   "parentArticleId": "上層文章 ID",
   "targetArticleId": "目標文章 ID",
