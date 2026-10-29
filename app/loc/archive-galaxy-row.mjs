@@ -34,7 +34,8 @@ export function archiveGalaxyRow(record){
   const url=urlOf(record.url);
   return {
     uid:facebookArchiveUid('archive:'+record.key),
-    title:repairMojibakeText(String(record.title||'').trim()).slice(0,300)||titleFor(content,source),
+    title:platform==='threads'?Array.from(content).slice(0,10).join('')
+      :repairMojibakeText(String(record.title||'').trim()).slice(0,300)||titleFor(content,source),
     content,createtime:record.createdAt||null,
     site:source,
     ...(location?{location:location}:{}),

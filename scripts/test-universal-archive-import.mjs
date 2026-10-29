@@ -439,3 +439,15 @@ test('Threads follower lists are never promoted to Galaxy even from an unfiltere
     text:'liked_username',createdAt:'2026-01-26T01:16:19Z'
   }),null);
 });
+
+test('Threads archived title is always the first ten Unicode content characters',()=>{
+  const article=archiveGalaxyRow({
+    platform:'threads',kind:'post',key:'threads:post:title',
+    title:'原始檔標題不應當作 Threads 標題',
+    text:'前五個字😀接下來也要被截斷abcdefghi',
+    createdAt:'2026-10-30T00:00:00Z'
+  });
+  assert.equal(article.site,'Threads');
+  assert.equal(article.title,Array.from(article.content).slice(0,10).join(''));
+  assert.notEqual(article.title,'原始檔標題不應當作 Threads 標題');
+});

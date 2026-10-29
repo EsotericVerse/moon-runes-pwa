@@ -17,7 +17,9 @@ export function importSecond(value){
 const IMPORT_IDENTITY_FIELDS=['title','content','location','place_id','url','source_id',
   'target_id','ref_id','media_link','searchable','statistics_able'];
 const fieldValues=record=>IMPORT_IDENTITY_FIELDS.map(field=>
-  record?.[field]===undefined?null:record[field]);
+  // Threads titles are generated from content and cannot establish identity.
+  field==='title'&&String(record?.site||'').trim().toLowerCase()==='threads'
+    ?null:record?.[field]===undefined?null:record[field]);
 const importUntimedKey=record=>{
   const site=String(record?.site||'').trim().toLocaleLowerCase('und');
   if(!site||!String(record?.content??'').trim())return null;

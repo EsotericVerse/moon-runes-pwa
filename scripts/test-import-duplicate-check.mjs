@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {comparableImportText,importSecond,dedupeIncomingImport,findExistingImportDuplicates,matchExistingWithoutCreatedAt} from '../app/loc/import-duplicate-check.mjs';
 
 const base={uid:'ABCDEFGH',site:'Threads',createtime:'2026-10-27T15:48:32.000+08:00',content:'天氣真好！\n\n再見。'};
-test('Only equal second, site, and all article fields count as duplicate',()=>{
+test('Threads generated titles do not change duplicate identity',()=>{
   const result=dedupeIncomingImport([base,
     {...base,uid:'SAME0001',createtime:'2026-10-27T07:48:32.999Z'},
     {...base,uid:'TEXT0001',content:'天氣真好    再見'},
@@ -13,10 +13,11 @@ test('Only equal second, site, and all article fields count as duplicate',()=>{
     {...base,uid:'MEDIA001',media_link:['A1234567']},
     {...base,uid:'STATE001',searchable:false}
   ]);
-  assert.equal(result.unique.length,7);
-  assert.equal(result.duplicates,1);
+  assert.equal(result.unique.length,6);
+  assert.equal(result.duplicates,2);
+  assert.equal(result.aliases.get('TITLE001'),'ABCDEFGH');
   assert.equal(result.aliases.get('SAME0001'),'ABCDEFGH');
-  for(const uid of ['TEXT0001','PUNC0001','TITLE001','PLACE001','MEDIA001','STATE001'])
+  for(const uid of ['TEXT0001','PUNC0001','PLACE001','MEDIA001','STATE001'])
     assert.equal(result.aliases.get(uid),uid);
 });
 test('Same second is required, including timezone normalization; different second/source/text stays separate',()=>{
@@ -95,4 +96,23 @@ test('the import panel reads bounded exact-content matches for missing timestamp
   assert.match(panel,/matchExistingWithoutCreatedAt\(missingTime,/);
   assert.match(panel,/\.ilike\('site',source\)\.in\('content',batch\)/);
   assert.match(panel,/encodeURIComponent\(value\)\.length<=5000/);
+});
+
+test('Threads title variations do not split same-second duplicates',()=>{
+  const dated={...base,date:'2026-10-27',title:'截取舊版'};
+  const other={...base,uid:'ALT00001',date:'2026-10-27',title:'不同標題',createtime:'2026-10-27T07:48:32.900Z'};
+  const result=dedupeIncomingImport([dated,other]);
+  assert.equal(result.unique.length,1);
+  assert.equal(result.duplicates,1);
+});
+test('Facebook retains independent title in its duplicate check',()=>{
+  const a={...base,uid:'FB100001',site:'Facebook',title:'獨立標題'};
+  const b={...a,uid:'FB100002',title:'真正不同的標題'};
+  assert.equal(dedupeIncomingImport([a,b]).unique.length,2);
+});
+test('Untimed Threads matches a dated saved row regardless of generated title',async()=>{
+  const n={...base,uid:'NT000001',title:'舊標題',createtime:null};
+  const d={...base,uid:'DATED001',title:'新標題'};
+  const matches=await matchExistingWithoutCreatedAt([n],{readContents:async()=>[d]});
+  assert.equal(matches.get('NT000001')?.uid,'DATED001');
 });
