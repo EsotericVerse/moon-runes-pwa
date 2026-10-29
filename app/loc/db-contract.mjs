@@ -198,35 +198,6 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
   }
 
-  async function readKeywordUidlistSummary(scopeId,{startDate='',endDate='',source=''}={}){
-    const scope=normalizeScopeId(scopeId);
-    const date=value=>/^\\d{4}-\\d{2}-\\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_uidlist_summary',{
-      p_scope_id:scope,p_start:date(startDate),p_end:date(endDate),
-      p_source:String(source||'').trim()||null
-    });
-    if(error){const exception=new Error(error.message||'UID-list summary failed');exception.code=error.code;throw exception;}
-    return Array.isArray(data)?data:[];
-  }
-
-  async function readKeywordItemCatalog(scopeId){
-    const scope=normalizeScopeId(scopeId);
-    const {data,error}=await publicClient.schema('silver').rpc('read_keyword_item_catalog',{p_scope_id:scope});
-    if(error)throw new Error(error.message||'Keyword Item catalog read failed');
-    return Array.isArray(data)?data:[];
-  }
-
-  // Rune66 stored classification: exact counts per class/day and per rune item,
-  // computed by the database (silver.read_rune66_summary).
-  async function readRune66Summary(scopeId,{startDate='',endDate=''}={}){
-    const scope=normalizeScopeId(scopeId);
-    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_rune66_summary',{
-      p_scope_id:scope,p_start:day(startDate),p_end:day(endDate)
-    });
-    if(error){const failure=new Error(error.message||'Rune66 summary read failed');failure.code=error.code;throw failure;}
-    return Array.isArray(data)?data:[];
-  }
   // Database-side statistics: the database counts, the browser receives the exact
   // totals ({day,kind,category,item_count}) instead of every Galaxy/Media row.
   async function readScopeStatistics(scopeId,{startDate='',endDate='',includeUndated=false}={}){
@@ -491,7 +462,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readRune66Summary,readKeywordUidlistSummary,readKeywordTreeSummary,readKeywordTreeCatalog,readKeywordItemCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
