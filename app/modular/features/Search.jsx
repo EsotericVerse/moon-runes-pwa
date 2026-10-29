@@ -547,7 +547,7 @@ export default function Search({managementMode=false}){
       const partial=(search.failures?.length||styleResult.failed)?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append){
         setStatus(!pageResults.length&&!search.hasMore
-          ?search.failures?.length?UI_COPY.search.failed:UI_COPY.search.noResults
+          ?search.failures?.length?UI_COPY.search.failed:UI_COPY.search.empty
           :options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
         scrollToResults();
       }
