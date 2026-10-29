@@ -1020,7 +1020,6 @@ export default function Search({managementMode=false}){
   const pageContent=<>
     {managementMode?<section className="scope-search-workspace" aria-label="管理搜尋">
       <h2>管理搜尋</h2>
-      <p className="scope-status">直接查詢具有管理權限的 Galaxy 文章，包括不可公開搜尋的文章；不套用公開搜尋的 searchable 旗標。</p>
       <form className="scope-search-form" onSubmit={runSearch}>
         <label htmlFor="scope-management-search-query">文章 UID、標題、正文或來源</label>
         <input id="scope-management-search-query" value={query}
