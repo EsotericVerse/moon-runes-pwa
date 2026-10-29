@@ -5,9 +5,9 @@ const source=[
  {uid:'CAT1',type:'category',name:'符文',lists:['CL01']},
  {uid:'CL01',type:'class',name:'符文66',lists:['GR01']},
  {uid:'GR01',type:'group',name:'靈魂',lists:['IT01']},
- {uid:'IT01',type:'item',name:'靈',lists:['心靈']}
+ {uid:'IT01',type:'item',name:'靈',lists:['心情']}
 ];
-async function analyze(catalog,content='心靈'){
+async function analyze(catalog,content='心情'){
  const saved=[],progress=[];
  const stats=await reanalyzeKeywordClass({
   classUid:'CL01',treeRows:catalog,pageSize:1,
@@ -40,7 +40,7 @@ test('Failed Keyword write never publishes the success marker',async()=>{
  let published=false;
  await assert.rejects(reanalyzeKeywordClass({
   classUid:'CL01',treeRows:source,
-  readPage:async({offset})=>offset?[]:[{uid:'Ab12Cd34',content:'心靈'}],
+  readPage:async({offset})=>offset?[]:[{uid:'Ab12Cd34',content:'心情'}],
   writeNode:async()=>{throw Error('write failed')},finalize:async()=>{published=true}
  }),/write failed/);
  assert.equal(published,false);
