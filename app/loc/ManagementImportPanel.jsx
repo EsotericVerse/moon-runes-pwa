@@ -62,7 +62,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const nativeThreadsId=isThreads?String(row.id||row.post_id||row.thread_id||'').trim():'';
   const stableThreadsKey=isThreads&&(nativeThreadsId||createdAt&&comparableImportText(content))
     ?'threads:json:'+JSON.stringify([nativeThreadsId||null,createdAt,comparableImportText(content)]):'';
-  const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim().toUpperCase();
+  const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim();
   const mediaCandidates=[value('media'),value('media_link')].filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
   try{
@@ -84,7 +84,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     const type=String(value('media_type')||'').trim();
     const url=String(value('url')||'').trim();
     if(type){
-      const rawId=String(row.uid||'').trim().toUpperCase();
+      const rawId=String(row.uid||'').trim();
       if(rawId&&!/^[A-Z0-9]{8}$/i.test(rawId))return {record:null,error:t('uiExtra.importUI.invalidMediaId')};
       return {record:null,error:'',mediaOnlyRecord:{
         ...(rawId?{uid:rawId}:{}),

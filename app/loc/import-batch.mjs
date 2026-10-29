@@ -52,7 +52,7 @@ export function normalizeImportMedia(value,{title='',createtime=null,source_plac
   for(const [index,item] of parseMediaArray(value).entries()){
     const source=typeof item==='string'?{url:item}:item;
     if(!source||typeof source!=='object')continue;
-    const explicitId=String(source.uid||'').trim().toUpperCase();
+    const explicitId=String(source.uid||'').trim();
     const rawUrl=String(source.url||source.uri||source.href||source.link||'').trim();
     if(explicitId&&!IMPORT_MEDIA_UID.test(explicitId))throw new Error('媒體 uid 必須為 8 碼英數字。');
     if((typeof item==='string'&&IMPORT_MEDIA_UID.test(item))||(explicitId&&!rawUrl&&!source.media_type&&!source.type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)){
