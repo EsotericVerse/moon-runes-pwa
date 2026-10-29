@@ -2,6 +2,7 @@
 // Source adapters are hints; every row still needs real text and a stable identity.
 import {facebookArchiveGalaxyRow,facebookArchiveUid} from './facebook-backup-place.mjs';
 import {repairMojibakeText} from './content-policy.js';
+import {extractImportCoordinates} from './import-geocoordinates.mjs';
 
 const label={facebook:'Facebook',threads:'Threads',instagram:'Instagram',chatgpt:'ChatGPT',claude:'Claude',
   messenger:'Messenger',x:'X',document:'Document',meta:'Archive'};
@@ -22,11 +23,12 @@ export function archiveGalaxyRow(record){
   // Threads articles, even when their payload contains a username/title.
   if(platform==='threads'&&!['post','media','story'].includes(String(record.kind||'')))
     return null;
+  const coordinates=record.sourcePlace?extractImportCoordinates(record.raw):null;
   if(platform==='facebook'){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
     const url=urlOf(record.url);
-    return {...row,site:'Facebook',...(url?{url}:{})};
+    return {...row,site:'Facebook',...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates}:{})};
   }
   const content=repairMojibakeText(String(record.text||'').trim());
   if(!content)return null;
@@ -39,6 +41,7 @@ export function archiveGalaxyRow(record){
     content,createtime:record.createdAt||null,
     site:source,
     ...(location?{location:location}:{}),
+    ...(coordinates?{__importCoordinates:coordinates}:{}),
     ...(url?{url}:{})
   };
 }
