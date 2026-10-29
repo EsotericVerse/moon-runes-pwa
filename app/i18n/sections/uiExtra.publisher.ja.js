@@ -20,6 +20,8 @@ export default {
   "editingUid": "編集中の記事 UID",
   "newArticle": "新しい記事を作成",
   "replaceDraftConfirm": "未保存の変更があります。破棄して別の UID を読み込みますか？",
+  "saveChanges": "記事の変更を保存",
+  "noChanges": "記事に変更はありません。",
   "articleBody": "記事本文",
   "parentArticleId": "親記事 ID",
   "targetArticleId": "対象記事 ID",
