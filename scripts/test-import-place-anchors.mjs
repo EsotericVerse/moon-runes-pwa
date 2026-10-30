@@ -27,6 +27,45 @@ function fakeTrace(initial=[]){
   return {relation,rows,get reads(){return reads;},get writes(){return writes;}};
 }
 
+test('opt-in restoration creates one anchor per exact source coordinate, never from LOC location',async()=>{
+ const rows=[];let inserts=0;
+ const relation=table=>{
+   assert.equal(table,'silver.lo3rwang_trace');
+   return {
+     select:()=>({eq:()=>({order:()=>({range:async(start,end)=>({
+       data:rows.slice(start,end+1),error:null
+     })})})}),
+     insert:batch=>({select:async()=>{
+       inserts+=batch.length;
+       const saved=batch.map((row,i)=>({...row,uid:'AB'+String(i+12)}));
+       rows.push(...saved);
+       return {data:saved.map(row=>({uid:row.uid,address:row.address})),error:null};
+     }})
+   };
+ };
+ const first={location:'LOC 自訂名稱',__importPlaceName:'Facebook 原始地點',
+   __importPlaceAddress:'原始地址',__importCoordinates:{latitude:25.05338,longitude:121.49086}};
+ const duplicate={...first,__importPlaceName:'另一個名稱'};
+ const unnamed={location:'LOC 使用者自行填寫',__importCoordinates:{latitude:25.05339,longitude:121.49086}};
+ const created=await prepareImportPlaceAnchors([first,duplicate,unnamed],{
+   scopeId:'lo3rwang',relation,createMissing:true
+ });
+ assert.equal(created.created,1);
+ assert.equal(created.unmatchedCoordinates,1);
+ assert.equal(inserts,1);
+ assert.equal(rows[0].title,'Facebook 原始地點');
+ assert.deepEqual(rows[0].address,[121.49086,25.05338]);
+ assert.equal(rows[0].description.address,'原始地址');
+ assert.equal(importedPlaceId({incoming:first,byCoordinate:created.byCoordinate}),'AB12');
+ assert.equal(importedPlaceId({incoming:unnamed,byCoordinate:created.byCoordinate}),null);
+ const repeated=await prepareImportPlaceAnchors([first],{
+   scopeId:'lo3rwang',relation,createMissing:true
+ });
+ assert.equal(repeated.created,0);
+ assert.equal(repeated.reused,1);
+ assert.equal(inserts,1);
+});
+
 test('same exact coordinates reuse an existing Trace anchor without a location name',async()=>{
   const db=fakeTrace([{uid:'AB12',title:'人工整理地點',address:[121.49086,25.05338]}]);
   const named=loc('其他名稱',25.05338,121.49086);
