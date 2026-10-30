@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
   target_id TEXT,
   ref_id TEXT,
   site TEXT,
+  site_id TEXT,
   media_link TEXT,
   statistics_able INTEGER NOT NULL DEFAULT 1
 );
@@ -516,6 +517,15 @@ async function upgradeNativeLocalGalaxyNames(conn){
       await conn.execute('ALTER TABLE '+table+' RENAME COLUMN "'+previous+'" TO "'+current+'";');
   }
 }
+function upgradeWebLocalGalaxySiteId(db){
+  if(!rowsOf(db,'PRAGMA table_info(local_galaxy)').some(row=>row.name==='site_id'))
+    db.run('ALTER TABLE local_galaxy ADD COLUMN site_id TEXT');
+}
+async function upgradeNativeLocalGalaxySiteId(conn){
+  const columns=(await conn.query('PRAGMA table_info(local_galaxy)')).values||[];
+  if(!columns.some(row=>row.name==='site_id'))
+    await conn.execute('ALTER TABLE local_galaxy ADD COLUMN site_id TEXT');
+}
 async function webDatabase(){
   if(!webDBPromise)webDBPromise=(async()=>{
     const SQL=await sqliteJS();
@@ -523,6 +533,7 @@ async function webDatabase(){
     const db=bytes?new SQL.Database(new Uint8Array(bytes)):createFreshSQL(SQL);
     db.run(SCHEMA);
     upgradeWebLocalGalaxyNames(db);
+    upgradeWebLocalGalaxySiteId(db);
     upgradeWebLocalTime(db);
     upgradeWebLocalArchiveExif(db);
     upgradeWebLocalMedia(db);
@@ -545,6 +556,7 @@ async function nativeDatabase(){
     await conn.open();
     for(const statement of SCHEMA.split(';').map(s=>s.trim()).filter(Boolean))await conn.execute(statement+';');
     await upgradeNativeLocalGalaxyNames(conn);
+    await upgradeNativeLocalGalaxySiteId(conn);
     await upgradeNativeLocalTime(conn);
     await upgradeNativeLocalArchiveExif(conn);
     await upgradeNativeLocalMedia(conn);
