@@ -23,12 +23,12 @@ test('different IDs do not collapse even with identical timestamps and content',
 });
 test('same platform and ID with different content aborts instead of dropping a post',()=>{
   assert.throws(()=>dedupeIncomingImport([original,{...original,uid:'NEW00001',content:'different'}]),
-    /site_id 對應不同文章/);
+    /文章識別對應不同內容/);
 });
-test('missing source IDs never deduplicate by time, content or generated UID',()=>{
+test('ID-less source collisions cannot silently collapse different UIDs',()=>{
   const rows=[{...original,site_id:null},
     {...original,site_id:null,uid:'NEW00001'}];
-  assert.equal(dedupeIncomingImport(rows).unique.length,2);
+  assert.throws(()=>dedupeIncomingImport(rows),/無法安全辨識/);
 });
 test('site_id matching preserves leading zeros and case',async()=>{
   const input=[{...original,uid:'NEW00001',site_id:'001Ab'}];
@@ -53,9 +53,10 @@ test('matcher refuses duplicate incoming identities without dedupe',async()=>{
 test('streamed site_id lookup and media mapping remain intact',()=>{
   const helper=readFileSync(new URL('../app/loc/import-duplicate-check.mjs',import.meta.url),'utf8');
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.doesNotMatch(helper,/Date\.parse|importEpochMs|findExistingImportDuplicates|matchExistingWithoutCreatedAt/);
-  assert.match(panel,/urlSafeInBatches\(siteIds,'site_id'\)/);
-  assert.match(panel,/\.in\('site_id',batch\)/);
+  assert.match(helper,/Date\.parse/);
+  assert.doesNotMatch(helper,/importEpochMs|findExistingImportDuplicates|matchExistingWithoutCreatedAt/);
+  assert.match(panel,/urlSafeInBatches\(values,column\)/);
+  assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/consumePage\(page\)/);
   assert.doesNotMatch(panel,/collected\.push\(\.\.\.page\)/);
   assert.match(panel,/for\(const uid of result\.insertedUids\)knownArticleIds\.set\(uid,uid\)/);
