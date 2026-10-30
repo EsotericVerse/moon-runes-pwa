@@ -679,8 +679,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
-      const needsAnchor=unique.filter(record=>
-        !String(existingBySiteId.get(record.uid)?.place_id||'').trim());
+      // Only new articles get a place_id; existing articles are never touched
+      // here, so their coordinates must not read or create anchors either.
+      const needsAnchor=unique.filter(record=>!existingBySiteId.has(record.uid));
       const geoAnchorRecords=timeWindow?[]:geoPlaceCandidates.map(place=>({
         ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
       }));

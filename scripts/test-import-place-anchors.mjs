@@ -157,3 +157,13 @@ test('anchor import reports a read-only scan without inserting rows',async()=>{
   ]);
   assert.equal(db.writes,0);
 });
+test('anchors are prepared for new articles only and identity is the exact coordinate pair',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/const needsAnchor=unique\.filter\(record=>!existingBySiteId\.has\(record\.uid\)\)/);
+  const {importGeoKey}=await import('../app/loc/import-geocoordinates.mjs');
+  assert.equal(importGeoKey({latitude:25.05338,longitude:121.49086}),
+    importGeoKey({latitude:'25.05338',longitude:'121.490860'}));
+  assert.notEqual(importGeoKey({latitude:25.05338,longitude:121.49086}),
+    importGeoKey({latitude:25.05339,longitude:121.49086}));
+});
