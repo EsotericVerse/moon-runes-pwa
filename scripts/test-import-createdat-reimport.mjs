@@ -148,7 +148,7 @@ test('completed identical timestamp match exits without any write phase',async()
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,');
   assert.ok(guard>panel.indexOf('const existingByCreatedAt=await matchExistingImportByCreatedAt'));
-  assert.ok(guard<panel.indexOf('await prepareImportPlaceAnchors(needsAnchor'));
+  assert.ok(guard<panel.indexOf('await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
   assert.match(panel,/setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\)/);
   assert.match(panel,/setProgress\(null\);\s*setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\);/);
