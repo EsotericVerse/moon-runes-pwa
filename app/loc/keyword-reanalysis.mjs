@@ -27,13 +27,15 @@ export async function reanalyzeKeywordClass({
     if(!Array.isArray(page))throw new Error('Galaxy page must be an array');
     if(page.length>pageSize)throw new Error('Galaxy page exceeded requested limit');
     if(!page.length)break;
-    const docs=page.filter(row=>row?.uid&&row.searchable!==false&&
-      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
-    for(const doc of docs){
-      if(!ARTICLE_UID.test(doc.uid)||seen.has(doc.uid))
+    // Validate every article, including short/unsearchable ones, to prevent
+    // dropped or repeated records from escaping the final COUNT check.
+    for(const row of page){
+      if(!ARTICLE_UID.test(row?.uid)||seen.has(row.uid))
         throw new Error('Invalid or duplicate Galaxy UID');
-      seen.add(doc.uid);
+      seen.add(row.uid);
     }
+    const docs=page.filter(row=>row.searchable!==false&&
+      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
     const data=classifyKeywordDocumentsByUid(docs,treeRows,classUid);
     for(const result of data.classifications||[]){
       if(!ARTICLE_UID.test(result.uid)||!seen.has(result.uid))
