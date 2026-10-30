@@ -110,6 +110,59 @@ begin
    end loop;
    return jsonb_build_object('count',v_count);
 
+ elsif p_operation='update_batch' then
+   if not exists (
+     select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+     where c.oid=v_rel and n.nspname='silver'
+       and c.relname ~ '^[a-z][a-z0-9_]*_galaxy$'
+   ) then raise exception 'article batch update is not allowed'; end if;
+   if jsonb_typeof(p_rows)<>'array' then raise exception 'rows must be an array'; end if;
+   if jsonb_array_length(p_rows)>10000 then raise exception 'batch size exceeded'; end if;
+   if jsonb_array_length(p_rows)=0 then return jsonb_build_object('count',0); end if;
+   if exists (
+     select 1 from jsonb_array_elements(p_rows) as e(row)
+     where jsonb_typeof(e.row)<>'object'
+       or coalesce(e.row->>'uid','') !~ '^[A-Za-z0-9]{8}$'
+       or not exists (
+         select 1 from jsonb_object_keys(e.row) as k(key)
+         where k.key in ('title','content','place_id','url','media_link')
+       )
+       or exists (
+         select 1 from jsonb_object_keys(e.row) as k(key)
+         where k.key not in ('uid','title','content','place_id','url','media_link')
+       )
+   ) then raise exception 'invalid article update batch'; end if;
+   if (select count(*) from jsonb_array_elements(p_rows)) <>
+      (select count(distinct e.row->>'uid') from jsonb_array_elements(p_rows) as e(row))
+   then raise exception 'duplicate article update UID'; end if;
+
+   execute format($bulk$
+     update %s as g
+     set title=case when e.row ? 'title' then e.row->>'title' else g.title end,
+         content=case when e.row ? 'content' then e.row->>'content' else g.content end,
+         place_id=case when coalesce(btrim(g.place_id),'')=''
+                    then coalesce(nullif(btrim(e.row->>'place_id'),''),g.place_id)
+                    else g.place_id end,
+         url=case when e.row ? 'url' then e.row->>'url' else g.url end,
+         media_link=case when e.row ? 'media_link'
+           then (jsonb_populate_record(NULL::%s,e.row)).media_link
+           else g.media_link end,
+         "UpdateTime"=now()
+     from jsonb_array_elements($1) as e(row)
+     where g.uid=(e.row->>'uid')::char(8)
+       and (
+         (e.row ? 'title' and g.title is distinct from e.row->>'title')
+         or (e.row ? 'content' and g.content is distinct from e.row->>'content')
+         or (e.row ? 'place_id' and coalesce(btrim(g.place_id),'')=''
+              and nullif(btrim(e.row->>'place_id'),'') is not null)
+         or (e.row ? 'url' and g.url is distinct from e.row->>'url')
+         or (e.row ? 'media_link' and g.media_link is distinct from
+           (jsonb_populate_record(NULL::%s,e.row)).media_link)
+       )
+   $bulk$,v_rel::text,v_rel::text,v_rel::text) using p_rows;
+   get diagnostics v_affected = row_count;
+   return jsonb_build_object('count',v_affected);
+
  elsif p_operation='update' then
    if jsonb_typeof(p_values) <> 'object' then raise exception 'values must be an object'; end if;
    if jsonb_typeof(p_filters) <> 'array' or jsonb_array_length(p_filters)=0 then raise exception 'filters are required'; end if;

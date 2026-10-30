@@ -176,6 +176,30 @@ export function withImportCreatedTime(record,importedAt=new Date().toISOString()
   return {...record,createtime:parseImportCreatedTime(record?.createtime)||importedAt};
 }
 
+// Adjust import write size by observed throughput while keeping requests bounded.
+export function createImportBatchSizer({
+  initial=256,minimum=128,maximum=1200
+}={}){
+  const ceiling=Math.min(MAX_ROWS,maximum);
+  const floor=Math.min(ceiling,minimum);
+  let size=Math.min(ceiling,Math.max(floor,initial));
+  let previousRate=0;
+  return {
+    get size(){return size;},
+    observe(rows,elapsedMs){
+      if(!rows||!Number.isFinite(elapsedMs)||elapsedMs<0)return size;
+      const rate=rows/Math.max(1,elapsedMs);
+      if(!previousRate||rate>previousRate*1.08){
+        size=Math.min(ceiling,size*2);
+      }else if(rate<previousRate*0.8){
+        size=Math.max(floor,Math.floor(size/2));
+      }
+      previousRate=rate;
+      return size;
+    }
+  };
+}
+
 export function validImportBatchSize(){return MAX_ROWS;}
 
 export async function writeImportBatches(records,{writeBatch,onProgress}={}){

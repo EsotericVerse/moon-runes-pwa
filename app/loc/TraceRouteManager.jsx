@@ -208,7 +208,7 @@ export default function TraceRouteManager({scopeId}){
     finally{setBusy(false);}
   };
   const remove=async row=>{
-    if(!own||busy||!window.confirm('刪除「'+row.title+'」？地點與 Galaxy 文章不會刪除。'))return;
+    if(!own||busy||!window.confirm('刪除「'+row.title+'」？地點與相關作品不會刪除。'))return;
     setBusy(true);setError(false);
     try{
       await deleteTraceMap({scopeId:owner,uid:row.uid,type:row.trace_type});
