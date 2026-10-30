@@ -60,3 +60,23 @@ test('reimport backfills missing media URL but refuses conflicting UID URLs',()=
   assert.match(panel,/await updateRows\(galaxyMedia,\{url:record\.url\}/);
   assert.match(panel,/媒體 UID 已存在，但網址不同/);
 });
+
+
+test('media timestamp retains own source time, otherwise inherits post time',()=>{
+  const linked='2020-09-01T02:00:00.000Z';
+  const own=normalizeImportMedia([{url:'https://example.test/own.jpg',
+    creation_timestamp:1577836800}],{createtime:linked,article_uid:'ART00001'});
+  assert.equal(own.records[0].createtime,'2020-01-01T00:00:00.000Z');
+  const inherited=normalizeImportMedia([{url:'https://example.test/inherited.jpg'}],
+    {createtime:linked,article_uid:'ART00001'});
+  assert.equal(inherited.records[0].createtime,linked);
+  const unknown=normalizeImportMedia([{url:'https://example.test/unlinked.jpg'}]);
+  assert.equal(unknown.records[0].createtime,null);
+});
+
+test('full importer passes article dates to ZIP and linked media-only records',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/const articleTimes=new Map\(analyzed\.valid\.map\(row=>\[String\(row\.uid\),row\.createtime\]\)\)/);
+  assert.match(panel,/archiveEvidence,new Set\(knownArticleIds\.keys\(\)\),articleTimes/);
+  assert.match(panel,/createtime:record\.createtime\|\|articleTimes\.get\(owner\)\|\|null/);
+});
