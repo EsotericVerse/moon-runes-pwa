@@ -11,8 +11,6 @@ import {keywordTreeCatalog} from './keyword-tree-report.mjs';
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
 
-const analysisPromises=new Map();
-
 function normalizeScopeId(value){
   const scope=String(value||'lo3rwang').trim().toLowerCase();
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scope))throw new Error('Scope ID 格式無效');
@@ -251,9 +249,7 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',classUid=
   const id=normalizeScopeId(scopeId);
   const category=String(sourceCategory||'').trim().toLowerCase();
   const source=Array.isArray(sourceNames)&&sourceNames.length===1?String(sourceNames[0]):'';
-  const cacheKey=[id,classUid,startDate,endDate,category,source].join('|');
-  if(!category&&!source&&analysisPromises.has(cacheKey))return analysisPromises.get(cacheKey);
-  const job=(async()=>{
+  return (async()=>{
     const {config}=await scopeAndConfig(id,{publicRead:true});
     const selectedClass=String(classUid||config.current_keyword_class_uid||'');
     const state=keywordClassState(config,selectedClass);
@@ -266,14 +262,8 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',classUid=
     const agg=aggregateSummaryRpcRows(rows.filter(row=>row.kind!=='item_day'));
     const globalCount=Number(state.matchedDocuments)||0;
     return storedSummary(agg,scopedConfig,globalCount);
-  })().catch(error=>{
-    analysisPromises.delete(cacheKey);
-    throw error;
-  });
-  if(!category&&!source)analysisPromises.set(cacheKey,job);
-  return job;
+  })();
 }
 
-export function clearKeywordAnalysisCache(){
-  analysisPromises.clear();
-}
+// Stateless: Keyword / Galaxy data is never retained in a module-level cache.
+export function clearKeywordAnalysisCache(){}
