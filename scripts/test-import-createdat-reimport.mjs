@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 const post=(uid,site='Threads',site_id='post-100',content='original')=>({
   uid,site,site_id,createtime:'2024-08-01T00:00:00Z',title:'Title',content,url:null
 });
-test('timestamps are retained only as article metadata',()=>{
+test('timestamps are preserved as article metadata and available for fallback',()=>{
   assert.equal(extractImportCreatedAt({createAt:'2024-08-01T00:00:00Z'}),'2024-08-01T00:00:00.000Z');
   assert.equal(extractImportCreatedAt({media:[{creation_timestamp:1722470400}]}),'2024-08-01T00:00:00.000Z');
   assert.equal(extractImportCreatedAt({text:'missing date'}),null);
@@ -36,8 +36,8 @@ test('Facebook and Threads cannot match even when their source IDs are identical
   });
   assert.equal(matches.size,0);
 });
-test('missing site_id is insert-only and never invokes source ID query',async()=>{
-  const rows=[post('NOID0001','Facebook',null),post('NOID0002','Facebook',null)];
+test('missing site_id does not invoke native ID query',async()=>{
+  const rows=[post('NOID0001','Facebook',null),post('NOID0002','Facebook',null,'different')];
   assert.equal(dedupeIncomingImport(rows).unique.length,2);
   const matches=await matchExistingImportBySiteId(rows,{
     readSiteIds:async()=>{throw Error('No source ID: query must not run');}
@@ -70,21 +70,25 @@ test('source ID lookup reports progress without timestamps',async()=>{
   });
   assert.deepEqual(progress,[[0,2],[2,2]]);
 });
-test('database lookup and update queue use site_id only, preserving curated site and location',()=>{
+test('database lookup limits site and time before matching, preserving curated site and location',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/matchExistingImportBySiteId\(unique,/);
-  assert.match(panel,/urlSafeInBatches\(siteIds,'site_id'\)/);
-  assert.match(panel,/\.in\('site_id',batch\)/);
+  assert.match(panel,/urlSafeInBatches\(values,column\)/);
+  assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
+  assert.match(panel,/\.gte\('createtime',timeWindow\.start\)/);
+  assert.match(panel,/\.lte\('createtime',timeWindow\.end\)/);
+  assert.match(panel,/matchExistingImportByCreatedAt\(unique,/);
   assert.match(panel,/consumePage\(page\)/);
   assert.match(panel,/if\(!page\.length\)break/);
   assert.match(panel,/await updateImportRows\(galaxy,updateQueue\)/);
-  assert.doesNotMatch(panel,/matchExistingImportByCreatedAt|importTaipeiDate|existingByUid|readTimestamps/);
+  assert.doesNotMatch(panel,/importTaipeiDate|existingByUid/);
   assert.doesNotMatch(panel,/changes\.location=|changes\.site=|changes\.site_id=/);
 });
-test('import progress displays source identity rather than publishing time',()=>{
+test('import progress displays source ID and fallback time matching',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/showProgress\('準備匯入文章'\)/);
-  assert.match(panel,/onProgress:p=>showProgress\('精確比對平台與 site_id'/);
+  assert.match(panel,/onProgress:p=>showProgress\('精確比對網站與 site_id'/);
+  assert.match(panel,/onProgress:p=>showProgress\('比對網站、發文時間與內容'/);
   assert.match(panel,/showProgress\('準備空間定錨'\)/);
   assert.match(panel,/showProgress\('更新既有文章'/);
   assert.match(panel,/showProgress\('新增文章'/);
@@ -115,7 +119,7 @@ test('unchanged site_id match exits before anchor and article writes',async()=>{
   assert.ok(guard<panel.indexOf('const placeAnchors=await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
 });
-test('no-op guard cannot hide edits, coordinates, missing IDs or media',()=>{
+test('no-op guard cannot hide edits, coordinates, source ID changes or media',()=>{
   const record=post('IN000001','Facebook','fb-1');
   const saved={...record,uid:'OLD00001',place_id:null};
   const matches=new Map([[record.uid,saved]]);
@@ -123,11 +127,67 @@ test('no-op guard cannot hide edits, coordinates, missing IDs or media',()=>{
   assert.equal(isUnchangedImportBeforeWrite([{...record,content:'changed'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:'fb-2'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,site:'Threads'}],matches),false);
-  assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:null}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:null}],matches),true);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:null,createtime:'2024-08-02T00:00:00Z'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,
     __importCoordinates:{latitude:25.05338,longitude:121.49086}}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([record],matches,{hasMedia:true}),false);
   assert.equal(isUnchangedImportBeforeWrite([record,{...record,uid:'NEW00002'}],matches),false);
+});
+test('ID-less Facebook backup matches only same site, timestamp and full body',async()=>{
+  const incoming=post('NEW00001','Facebook',null,'我的原始貼文');
+  const saved=post('OLD00001','Facebook',null,'我的原始貼文');
+  const calls=[];
+  const matches=await matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:async (times,consumePage,site)=>{
+      calls.push([site,times]);
+      consumePage([post('OTHER001','Threads',null,'我的原始貼文'),
+        post('OTHER002','Facebook',null,'其他內容'),saved]);
+    }
+  });
+  assert.deepEqual(calls,[['Facebook',['2024-08-01T00:00:00.000Z']]]);
+  assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(isUnchangedImportBeforeWrite([incoming],matches),true);
+});
+test('timestamp-only collisions with different bodies never match',async()=>{
+  const incoming=post('NEW00001','Facebook',null,'different content');
+  const matches=await matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:async()=>[post('OLD00001','Facebook',null,'original')]
+  });
+  assert.equal(matches.size,0);
+});
+test('native ID records never fall back to a timestamp match',async()=>{
+  const incoming=post('NEW00001','Facebook','fb-123','original');
+  const matches=await matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:async()=>{throw Error('native ID must not use fallback');}
+  });
+  assert.equal(matches.size,0);
+});
+test('ambiguous persisted timestamp and body stop rather than overwriting',async()=>{
+  const incoming=post('NEW00001','Facebook',null,'same text');
+  await assert.rejects(()=>matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:async()=>[post('OLD00001','Facebook',null,'same text'),
+      post('OLD00002','Facebook',null,'same text')]
+  }),/多筆/);
+});
+test('ID-less records without a valid timestamp cannot be matched',async()=>{
+  const incoming={...post('NEW00001','Facebook',null),createtime:null};
+  const matches=await matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:async()=>{throw Error('missing timestamp must not query');}
+  });
+  assert.equal(matches.size,0);
+});
+test('native site_id lookups are grouped by platform before database reads',async()=>{
+  const rows=[post('NEW00001','Facebook','same-id'),post('NEW00002','Threads','same-id')];
+  const sites=[];
+  await matchExistingImportBySiteId(rows,{readSiteIds:async(ids,consumePage,site)=>{
+    sites.push([site,ids]);return [];
+  }});
+  assert.deepEqual(sites,[['Facebook',['same-id']],['Threads',['same-id']]]);
+});
+test('duplicate ID-less records with indistinguishable content and time are blocked',()=>{
+  assert.throws(()=>dedupeIncomingImport([post('A0000001','Facebook',null),
+    post('B0000002','Facebook',null)]),/無法安全辨識/);
 });
 test('primary-key conflicts do not become site_id matches',async()=>{
   const inserted=[];
