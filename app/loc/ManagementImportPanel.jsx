@@ -345,6 +345,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       invalid:normalized.filter(item=>item.error)
     };
   },[rows,deferredSource,format.fields,locale,archiveDetection,sourceCategories.data]);
+  const importEstimate=useMemo(()=>{
+    const attachedMedia=analyzed.normalized.reduce((count,item)=>count+(item.mediaRecords?.length||0),0);
+    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,archiveSummary?.mediaImportable||0);
+    return estimateImportMinutes({articles:analyzed.valid.length,media});
+  },[analyzed,archiveSummary?.mediaImportable]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
