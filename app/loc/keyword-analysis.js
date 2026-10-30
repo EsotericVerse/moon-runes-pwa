@@ -2,7 +2,7 @@
 
 import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
-import {KEYWORD_CLASSIFICATION_BATCH_SIZE} from './db-contract.mjs';
+const KEYWORD_ANALYSIS_READ_PAGE_SIZE=200;
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
@@ -41,9 +41,13 @@ function reportBatchProgress(onProgress,phase,completed,total,percent,label,deta
 }
 
 async function keywordEligibleCount(scope){
-  return selectCount(scope.galaxy,{
-    idColumn:'uid',filters:[{column:'statistics_able',operator:'eq',value:true}]
-  });
+  // COUNT and scan must use the same authenticated visibility: public reads
+  // omit owner-visible hidden articles and would report a misleading total.
+  const {count,error}=await dbAuthRelation(scope.galaxy)
+    .select('uid',{count:'exact',head:true}).eq('statistics_able',true);
+  if(error||count===null||!Number.isSafeInteger(Number(count)))
+    throw new Error(error?.message||'無法取得完整 Galaxy 統計總筆數');
+  return Number(count);
 }
 export async function selectActiveKeywordClassName(scopeId=''){
   const scope=defaultScopeData(scopeId);
@@ -130,7 +134,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
   };
   let lastArticleUid='';
   const result=await reanalyzeKeywordClass({
-    classUid,treeRows,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
+    classUid,treeRows,minChars,pageSize:KEYWORD_ANALYSIS_READ_PAGE_SIZE,expectedCount:eligibleCount,
     readPage:async ({limit})=>{
       // Read each UID exactly once via its existing primary-key index.
       // Offset pagination over a repeatedly sorted Galaxy is too expensive.
