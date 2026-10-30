@@ -177,6 +177,19 @@ test('ID-less records without a valid timestamp cannot be matched',async()=>{
   });
   assert.equal(matches.size,0);
 });
+test('import retry uses non-notifying insert but keeps database permission gate',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+  const client=readFileSync(new URL('../app/loc/db-client.mjs',import.meta.url),'utf8');
+  assert.match(panel,/writeBatch:batch=>insertImportRows\(galaxy,/);
+  assert.doesNotMatch(panel,/writeBatch:batch=>insertRows\(galaxy,/);
+  assert.match(contract,/const insertImportRows=insertRowsUnchecked;/);
+  assert.match(contract,/const insertRows=withWriteNotice\(insertRowsUnchecked\);/);
+  assert.match(contract,/const result=await managementWriteUnchecked\(\{\s*p_table:table,\s*p_operation:'insert',/);
+  assert.match(contract,/function insertRowsUnchecked\(table,rows\)\{/);
+  assert.match(contract,/preflightWrite\(payload\?\.p_table\)/);
+  assert.match(client,/insertRows,insertImportRows,updateRows/);
+});
 test('an empty site bypasses timestamp matching before any candidate reads',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const siteProbe=panel.indexOf('const distinctSites=[...new Set(unique.map(');
