@@ -47,6 +47,7 @@ BEGIN
  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
  v_galaxy:=to_regclass(format('silver.%I_galaxy',v_scope));
  IF v_config IS NULL OR v_keywords IS NULL OR v_galaxy IS NULL THEN RETURN; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN RETURN; END IF;
  EXECUTE format('SELECT current_keyword_class_uid,keyword_meta,staticstime FROM %s WHERE id=$1',v_config)
  INTO v_current,v_meta,v_old_done USING v_scope;
  v_class:=coalesce(nullif(p_class_uid,''),v_current);
@@ -139,6 +140,7 @@ BEGIN
  v_config:=to_regclass(format('silver.%I',v_scope));
  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
  IF v_config IS NULL OR v_keywords IS NULL THEN RETURN '{}'::jsonb; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN RETURN '{}'::jsonb; END IF;
  EXECUTE format('SELECT current_keyword_class_uid FROM %s WHERE id=$1',v_config)
   INTO v_current USING v_scope;
  v_class:=coalesce(nullif(p_class_uid,''),v_current);
@@ -192,6 +194,7 @@ DECLARE
  v_keywords regclass;
  v_result jsonb;
  v_owner boolean;
+ v_class_source text;
 BEGIN
  IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' OR NOT EXISTS(
    SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope' AND active)
@@ -199,6 +202,13 @@ BEGIN
  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
  IF v_keywords IS NULL THEN RETURN '[]'::jsonb; END IF;
  v_owner:=silver.can_manage_scope(v_scope);
+ IF EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN
+   v_class_source:=format('(SELECT uid::text AS uid,name FROM %s WHERE type=''class'')',v_keywords);
+ ELSIF EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='class_uid' AND attnum>0 AND NOT attisdropped) THEN
+   -- Legacy Neon: Class UID exists, but the UID-linked Group/Item tree does not.
+   v_class_source:=format('(SELECT DISTINCT ON (class_uid) class_uid::text AS uid,class_name AS name
+     FROM %s WHERE class_uid IS NOT NULL ORDER BY class_uid,class_name)',v_keywords);
+ ELSE RETURN '[]'::jsonb; END IF;
  EXECUTE format($query$
    SELECT coalesce(jsonb_agg(jsonb_build_object(
      'scopeId',$1,
@@ -207,9 +217,8 @@ BEGIN
      'category',CASE WHEN $2 THEN c.uid::text
        ELSE encode(sha256(convert_to($1||':'||c.uid::text,'UTF8')),'hex') END
    ) ORDER BY c.uid),'[]'::jsonb)
-   FROM %s c WHERE c.type='class'
-     AND ($2 OR silver.keyword_class_is_shared($1,c.uid::text))
- $query$,v_keywords) INTO v_result USING v_scope,v_owner;
+   FROM %s c WHERE ($2 OR silver.keyword_class_is_shared($1,c.uid::text))
+ $query$,v_class_source) INTO v_result USING v_scope,v_owner;
  RETURN coalesce(v_result,'[]'::jsonb);
 END
 $fn$;
