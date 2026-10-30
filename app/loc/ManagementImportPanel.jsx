@@ -10,18 +10,20 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
+import {insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
+import {remapArchiveArticleUids} from './import-random-uids.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
-import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportBySiteAndTime,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+
+import {dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
@@ -73,10 +75,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const originalSiteId=value('site_id')||((isFacebook||isThreads||isInstagram)?
     (row.post_id||row.id_str||row.id||(isThreads?row.thread_id:null)||
       (isInstagram?row.fbid:null)):null);
-  const nativeThreadsId=isThreads?String(row.id||row.post_id||row.thread_id||'').trim():'';
-  const stableThreadsKey=isThreads&&(nativeThreadsId||createdAt&&comparableImportText(content))
-    ?'threads:json:'+JSON.stringify([nativeThreadsId||null,createdAt,comparableImportText(content)]):'';
-  const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim();
+  // On social imports the source ID is optional metadata; Galaxy UID is
+  // generated locally by the importer and never derived from source content.
+  const uid=String(((isFacebook||isThreads||isInstagram)&&entry?.import_uid)||
+    value('uid')||entry?.import_uid||createUid8()).trim();
   const rawUrl=String(value('url')||'').trim();
   const mediaCandidates=[value('media'),value('media_link'),
     ...(isArchiveMediaUrl(rawUrl)?[rawUrl]:[])]
@@ -327,6 +329,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
+  const [timeRange,setTimeRange]=useState('year');
+  const timeWindow=useMemo(()=>importTimeRangeWindow(timeRange),[timeRange,fileName]);
   const sourceCategories=useAsyncResource({
     queryKey:['import-source-categories',scopeId],
     enabled:!nativeLocal&&Boolean(account.user)&&account.canManageScopeSync(scopeId),
@@ -348,7 +352,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const suggested=useMemo(()=>inferImportSourceFromFilename(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
-  const analyzed=useMemo(()=>{
+  const rawAnalysis=useMemo(()=>{
     const selected=deferredSource.trim();
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,
       canonicalImportSourceName(archiveDetection&&selected==='Mixed'?(entry?.raw?.site||selected):selected,
@@ -360,14 +364,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       invalid:normalized.filter(item=>item.error)
     };
   },[rows,deferredSource,format.fields,locale,archiveDetection,sourceCategories.data]);
+  const analyzed=useMemo(()=>filterImportAnalysisByTime(rawAnalysis,timeWindow),[rawAnalysis,timeWindow]);
+  const eligibleArchiveEvidence=useMemo(()=>{
+    if(!timeWindow)return archiveEvidence;
+    const eligibleUids=new Set(analyzed.valid.map(row=>String(row.uid)));
+    return archiveEvidence.filter(item=>item.galaxy_uids?.some(uid=>eligibleUids.has(String(uid))));
+  },[archiveEvidence,analyzed.valid,timeWindow]);
   const missingSiteIdCount=useMemo(()=>analyzed.valid.filter(row=>
     ['facebook','threads','instagram'].includes(String(row.site||'').trim().toLowerCase())&&
     !String(row.site_id||'').trim()).length,[analyzed.valid]);
   const importEstimate=useMemo(()=>{
     const attachedMedia=analyzed.normalized.reduce((count,item)=>count+(item.mediaRecords?.length||0),0);
-    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,archiveSummary?.mediaImportable||0);
+    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,
+      timeWindow?eligibleArchiveEvidence.length:(archiveSummary?.mediaImportable||0));
     return estimateImportMinutes({articles:analyzed.valid.length,media});
-  },[analyzed,archiveSummary?.mediaImportable]);
+  },[analyzed,archiveSummary?.mediaImportable,timeWindow,eligibleArchiveEvidence]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
@@ -399,7 +410,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],uidOwners=new Map(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
+        const imported=[],issuedArticleUids=new Set(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
         const collector=createArchiveEvidenceCollector();
         let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
@@ -425,14 +436,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(!linked.length){
             collector.onRecord(record,null);ignored++;return;
           }
+          // Assign fresh random primary keys per source record. The transient
+          // source hashes never become Galaxy UIDs or media relation targets.
+          const randomized=remapArchiveArticleUids(
+            linked.map(entry=>entry.row),createUid8,issuedArticleUids);
           for(const [index,entry] of linked.entries()){
-            const article=entry.row;
+            const article=randomized[index];
             collector.onRecord({...record,attachments:entry.attachments},article.uid);
-            const key=record.key+':'+index;
-            const previous=uidOwners.get(article.uid);
-            if(previous&&previous!==key)
-              throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
-            uidOwners.set(article.uid,key);
             if(imported.length>=100000)
               throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
             imported.push({raw:article,import_uid:article.uid});
@@ -449,8 +459,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // A loose photo in the ZIP can belong to a private chat even if its
         // path does not contain "messages".
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size})
-          .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
-        const mediaPlan=prepareArchiveMedia(mediaEvidence,new Set(uidOwners.keys()));
+          .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>issuedArticleUids.has(uid))));
+        const mediaPlan=prepareArchiveMedia(mediaEvidence,issuedArticleUids);
         setArchiveEvidence(mediaEvidence);
         setGeoPlaceCandidates(geoPlaces);
         setArchiveSummary({...summary,exifSamples,
@@ -513,11 +523,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   const canRestoreAnchors=scopeId!=='local'&&scopeId!=='loc'&&(
-    geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location))||
+    (!timeWindow&&geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location)))||
     analyzed.valid.some(record=>Boolean(importGeoKey(record.__importCoordinates)&&record.__importPlaceName))
   );
   async function saveGeoPlaces(){
-    if(busy||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
+    if(busy||timeWindow||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
     const candidates=geoPlaceCandidates.map(place=>({
       ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
     }));
@@ -537,10 +547,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     finally{setBusy(false);setProgress(null);}
   }
   async function run(){
-    if(busy||(!rows.length&&!archiveEvidence.length))return;
+    if(busy||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length))return;
     const selected=canonicalSource(source);
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
     try{
       if(archiveDetection){
         // The public-row guard, not the archive filename, controls publishing.
@@ -550,7 +560,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     catch(error){setStatus(String(error?.message||error));return;}
     if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
-    setBusy(true);setStatus('正在依平台比對 site_id 與發文時間');
+    setBusy(true);setStatus('');
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
         percent:total>0?Math.round(100*completed/total):null});
@@ -560,65 +570,75 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      // Always scope the lookup to site first. Prefer native site_id; when absent,
-      // use same-site createtime plus exact content, never timestamp alone.
-      const incoming=dedupeIncomingImport(analyzed.valid);
+      // First narrow all database comparisons to the source site, then timestamp.
+      // Check each site's existing data ONCE before creating a comparison pool.
+      // If site is empty, the complete file stays in INSERT mode regardless
+      // of how many previous batches have already been written.
+      const siteAvailability=new Map();
+      const siteHasArticles=async site=>{
+        if(!siteAvailability.has(site)){
+          const {data,error}=await dbAuthRelation(galaxy).select('uid').ilike('site',site).limit(1);
+          if(error)throw Error('網站範圍查詢失敗：'+error.message);
+          siteAvailability.set(site,Boolean(data?.length));
+        }
+        return siteAvailability.get(site);
+      };
+      const distinctSites=[...new Set(analyzed.valid.map(row=>String(row.site||'').trim()))];
+      for(let index=0;index<distinctSites.length;index++){
+        await siteHasArticles(distinctSites[index]);
+        showProgress('確認網站既有文章',index+1,distinctSites.length);
+      }
+      const oldRows=analyzed.valid.filter(row=>siteAvailability.get(String(row.site||'').trim()));
+      const deduped=oldRows.length?dedupeIncomingImport(oldRows):
+        {unique:[],aliases:new Map(),duplicates:0};
+      const existingIdentity=new Set(deduped.unique.map(row=>String(row.uid)));
+      const incoming={
+        unique:analyzed.valid.filter(row=>!siteAvailability.get(String(row.site||'').trim())||
+          existingIdentity.has(String(row.uid))),
+        aliases:new Map([...analyzed.valid.map(row=>[String(row.uid),String(row.uid)]),
+          ...deduped.aliases]),
+        duplicates:deduped.duplicates
+      };
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
-      const existingBySiteId=await matchExistingImportBySiteId(unique,{
-        onProgress:p=>showProgress('精確比對平台與 site_id',p.completed,p.total),
-        readSiteIds:async (site,siteIds,consumePage)=>{
-          const pageSize=Math.min(MAX_ROWS,500);
-          let done=0;
-          for(const batch of urlSafeInBatches(siteIds,'site_id')){
-            for(let offset=0;;){
-              const {data,error}=await dbAuthRelation(galaxy)
-                .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-                .eq('site',site).in('site_id',batch).order('uid',{ascending:true})
-                .range(offset,offset+pageSize-1);
-              if(error)throw new Error('site_id 比對失敗：'+error.message);
-              const page=data||[];
-              if(!page.length)break;
-              consumePage(page);
-              offset+=page.length;
-            }
-            done+=batch.length;
-            showProgress('精確比對平台與 site_id',done,siteIds.length);
+      const readCandidates=async(column,values,consumePage,site)=>{
+        if(!await siteHasArticles(site))return;
+        const pageSize=Math.min(MAX_ROWS,500);
+        for(const batch of urlSafeInBatches(values,column)){
+          for(let offset=0;;){
+            let query=dbAuthRelation(galaxy)
+              .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+              .ilike('site',site).in(column,batch);
+            if(timeWindow)query=query.gte('createtime',timeWindow.start)
+              .lte('createtime',timeWindow.end);
+            const {data,error}=await query.order('uid',{ascending:true})
+              .range(offset,offset+pageSize-1);
+            if(error)throw Error(column+' 比對失敗：'+error.message);
+            const page=data||[];
+            if(!page.length)break;
+            consumePage(page);
+            offset+=page.length;
           }
         }
-      });
+      };
+      // Only sites populated BEFORE this run are eligible for comparisons.
+      const existingCandidates=deduped.unique;
+      const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
+        onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
+        readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
+      }):new Map();
+      const existingBySiteId=existingByTime;
 
-      const existingBySiteTime=await matchExistingImportBySiteAndTime(unique,{
-        onProgress:p=>showProgress('同平台時間與內容比對',p.completed,p.total),
-        readSiteTimes:async (site,times,consumePage)=>{
-          const pageSize=Math.min(MAX_ROWS,500);
-          for(const batch of urlSafeInBatches(times,'createtime')){
-            for(let offset=0;;){
-              const {data,error}=await dbAuthRelation(galaxy)
-                .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-                .eq('site',site).in('createtime',batch).order('uid',{ascending:true})
-                .range(offset,offset+pageSize-1);
-              if(error)throw new Error('同平台時間比對失敗：'+error.message);
-              const page=data||[];
-              if(!page.length)break;
-              consumePage(page);
-              offset+=page.length;
-            }
-          }
-        }
-      });
-      const existingMatches=new Map([...existingBySiteId,...existingBySiteTime]);
-
-      const finalUid=id=>String(existingMatches.get(String(id))?.uid||id);
+      const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
       unique=unique.map(record=>({
         ...record,
         source_id:record.source_id?finalUid(record.source_id):null,
         target_id:(record.target_id||[]).map(finalUid)
       }));
       // No-op reimports must stop before anchor creation, article writes, or media writes.
-      if(isUnchangedImportBeforeWrite(unique,existingMatches,{
-        hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
-          (createMissingAnchors&&geoPlaceCandidates.length)||
+      if(isUnchangedImportBeforeWrite(unique,existingBySiteId,{
+        hasMedia:Boolean(analyzed.mediaOnly.length||eligibleArchiveEvidence.length||
+          (createMissingAnchors&&!timeWindow&&geoPlaceCandidates.length)||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
       })){
@@ -632,8 +652,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
       const needsAnchor=unique.filter(record=>
-        !String(existingMatches.get(record.uid)?.place_id||'').trim());
-      const geoAnchorRecords=geoPlaceCandidates.map(place=>({
+        !String(existingBySiteId.get(record.uid)?.place_id||'').trim());
+      const geoAnchorRecords=timeWindow?[]:geoPlaceCandidates.map(place=>({
         ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
       }));
       const placeAnchors=await prepareImportPlaceAnchors([...needsAnchor,...geoAnchorRecords],{
@@ -645,7 +665,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       let updated=0,checkedExisting=0;
       const updateSizer=createImportBatchSizer();
       let updateQueue=[];
-      const existingCount=existingMatches.size;
+      const existingCount=existingBySiteId.size;
       if(existingCount)showProgress('更新既有文章',0,existingCount);
       const flushUpdates=async()=>{
         if(!updateQueue.length)return;
@@ -656,12 +676,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         updateSizer.observe(count,Date.now()-started);
       };
       for(const record of unique){
-        const existing=existingMatches.get(record.uid);
+        const existing=existingBySiteId.get(record.uid);
         if(!existing)continue;
         knownArticleIds.set(record.uid,String(existing.uid));
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
+        // site_id is saved on INSERT; existing blank values are backfilled
+        // separately because update_batch only accepts article text/media fields.
+        if(record.site_id&&!existing.site_id)
+          await updateRows(galaxy,{site_id:record.site_id},{filters:[{column:'uid',value:existing.uid}]});
         if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
         if(record.target_id?.length){
           const prior=normalizeRelationIds(existing.target_id)||[];
@@ -685,7 +709,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           showProgress('更新既有文章',checkedExisting,existingCount);
       }
       await flushUpdates();
-      const newArticleTotal=unique.length-existingMatches.size;
+      const newArticleTotal=unique.length-existingBySiteId.size;
       if(newArticleTotal)showProgress('新增文章',0,newArticleTotal);
       const result={inserted:0,conflicts:0,insertedUids:new Set(),conflictedUids:new Set()};
       const insertSizer=createImportBatchSizer();
@@ -695,7 +719,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const count=payload.length,started=Date.now();
         const outcome=await insertImportBatches(payload,{
           batchSize:insertSizer.size,
-          writeBatch:batch=>insertRows(galaxy,batch.map(record=>({
+          writeBatch:batch=>insertImportRows(galaxy,batch.map(record=>({
             ...record,place_id:record.place_id??null,media_link:record.media_link??null
           })))
         });
@@ -709,7 +733,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         showProgress('新增文章',newArticleProcessed,newArticleTotal);
       };
       for(const record of unique){
-        if(existingMatches.has(record.uid))continue;
+        if(existingBySiteId.has(record.uid))continue;
         const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
@@ -728,7 +752,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('整理媒體資料');
       const articleTimes=new Map(analyzed.valid.map(row=>[String(row.uid),row.createtime]));
       const archivePlan=prepareArchiveMedia(
-        archiveEvidence,new Set(knownArticleIds.keys()),articleTimes);
+        eligibleArchiveEvidence,new Set(knownArticleIds.keys()),articleTimes);
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
         ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||null
       }));
@@ -761,11 +785,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         exifSaved+=chunk.length;
         showProgress('保存媒體 EXIF',exifSaved,archivePlan.exif.length);
       }
-      const skipped=analyzed.invalid.length+duplicateCount;
+      const skipped=analyzed.invalid.length+analyzed.skippedByRange+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
@@ -808,6 +832,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         {sourceOptions.map(name=><option key={name} value={name}/>)}
       </datalist>
     </label>
+    <label className="scope-import-source-choice">匯入時間範圍
+      <select value={timeRange} disabled={busy} onChange={event=>setTimeRange(event.target.value)}>
+        <option value="all">全部的時間</option>
+        <option value="year">近一年（預設）</option>
+        <option value="halfYear">近半年</option>
+        <option value="month">近一月</option>
+      </select>
+    </label>
+    <p className="scope-status">第一次匯入完整舊資料可選「全部的時間」；後續定期更新建議使用預設「近一年」，或更短區間，縮小比對池與寫入量。比對先限定同一網站，再使用發文時間；site_id 有值就保存，沒有也能匯入。超出範圍的文章不會寫入，限時匯入也不寫入無日期的文章與未關聯媒體。</p>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
@@ -874,9 +907,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         {busy?'正在核對 Trace 地點…':'只匯入獨立打卡地點至 Trace（不新增文章）'}
       </button>:null}
     </section>:null}
-    {missingSiteIdCount>0?<p className="scope-status" role="alert">
-       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；可以新增，但無法以 site_id 比對重匯。系統不會使用發文時間或 Galaxy UID 猜測對應文章。清空舊資料前請先確認備份完整。
+    {missingSiteIdCount>0?<p className="scope-status" role="status">
+       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
+     {timeWindow?<p className="scope-status" role="status">已設定時間範圍：{timeWindow.start.slice(0,10)} 至 {timeWindow.end.slice(0,10)}（UTC）。來源文章／媒體排除 {analyzed.skippedByRange.toLocaleString()} 筆，其中 {analyzed.undatedByRange.toLocaleString()} 筆沒有可辨識的發文時間；排除項目不會寫入。只比對同網站、區間內的既有文章。</p>:null}
      {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
@@ -888,19 +922,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
-    {rows.length||archiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+    {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
         {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length)} onClick={run}>
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
-    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
     {progress?<div role="status" aria-live="polite" className="scope-import-progress">
       {busy?<p className="scope-status"><strong>{t('uiExtra.importUI.importProcessingWait')}</strong></p>:null}
       <p><strong>{progress.stage}</strong></p>
@@ -910,7 +944,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
-    {status?<p className="scope-status" role="status">{status}</p>:null}
+    {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 

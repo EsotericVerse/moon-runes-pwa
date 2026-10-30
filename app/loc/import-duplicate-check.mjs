@@ -1,8 +1,7 @@
 import {importGeoKey} from './import-geocoordinates.mjs';
-import {parseImportCreatedTime} from './import-batch.mjs';
 
-// Prefer platform + native site_id. For archives without an ID, only an
-// unambiguous same-platform timestamp AND exact content can identify a reimport.
+// Import identity is source site + normalized creation timestamp.
+// Native site_id is optional source metadata, not a matching requirement.
 export function comparableImportText(value){
   return String(value??'').normalize('NFKC')
     .replace(/[\p{P}\p{S}\p{Z}\s\u200B-\u200D\uFEFF\u2060]/gu,'')
@@ -13,59 +12,56 @@ const importSourceKey=record=>{
   const id=String(record?.site_id??'').trim();
   return site&&id?JSON.stringify([site,id]):null;
 };
-
-const importSite=record=>String(record?.site??'').trim().toLocaleLowerCase('und');
-const siteQueryName=record=>{
-  const site=importSite(record);
-  return {facebook:'Facebook',threads:'Threads',instagram:'Instagram'}[site]||
-    String(record?.site??'').trim();
-};
 const importTimeKey=record=>{
-  const site=importSite(record);
-  const time=parseImportCreatedTime(record?.createtime);
-  return site&&time?JSON.stringify([site,time]):null;
+  const site=String(record?.site??'').trim().toLocaleLowerCase('und');
+  const date=Date.parse(String(record?.createtime??''));
+  return site&&Number.isFinite(date)?
+    JSON.stringify([site,new Date(date).toISOString()]):null;
 };
-const importContentKey=record=>String(record?.content??'').normalize('NFC').trim();
-
+// Keep separate source rows even when they share a timestamp; an exact UID
+// repeated in the same file is the only safe input-level duplicate.
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byIdentity=new Map();
+  const unique=[],aliases=new Map(),byUid=new Map();
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
-    const key=importSourceKey(row);
-    const prior=key?byIdentity.get(key):null;
+    if(!uid)throw Error('匯入文章缺少 UID');
+    const prior=byUid.get(uid);
     if(prior){
-      if(String(prior.row.content??'')!==String(row.content??'')||
-          String(prior.row.title??'')!==String(row.title??'')||
-          String(prior.row.source_id??'')!==String(row.source_id??''))
-        throw Error('同一平台的 site_id 對應不同文章，停止匯入：'+String(row.site)+' / '+String(row.site_id));
+      if(String(prior.site||'').trim().toLocaleLowerCase('und')!==
+          String(row.site||'').trim().toLocaleLowerCase('und')||
+          importTimeKey(prior)!==importTimeKey(row)||
+          String(prior.content??'')!==String(row.content??'')||
+          String(prior.title??'')!==String(row.title??'')||
+          String(prior.site_id??'')!==String(row.site_id??''))
+        throw Error('相同 UID 對應不同來源文章，停止匯入：'+uid);
       duplicates++;
-      aliases.set(uid,prior.uid);
+      aliases.set(uid,uid);
       continue;
     }
+    byUid.set(uid,row);
     unique.push(row);
-    if(key)byIdentity.set(key,{uid,row});
     aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
 }
 
-// The reader may page by site_id only; the matcher enforces the platform too.
-// Both lookup strategies query one source site at a time, never the entire Galaxy.
 export async function matchExistingImportBySiteId(records,{readSiteIds,onProgress}={}){
   if(typeof readSiteIds!=='function')throw Error('缺少 site_id 查詢');
-  const requested=new Map(),bySite=new Map(),candidates=new Map(),matches=new Map();
+  const requested=new Map(),groups=new Map();
   for(const record of records||[]){
     const key=importSourceKey(record);
     if(!key)continue;
     if(requested.has(key))throw Error('同一批匯入存在重複的來源 site_id：'+String(record.site_id));
     requested.set(key,record);
-    const site=importSite(record);
-    if(!bySite.has(site))bySite.set(site,{name:siteQueryName(record),ids:new Set()});
-    bySite.get(site).ids.add(String(record.site_id).trim());
+    const site=String(record.site).trim();
+    if(!groups.has(site))groups.set(site,new Set());
+    groups.get(site).add(String(record.site_id).trim());
   }
-  const total=[...bySite.values()].reduce((n,group)=>n+group.ids.size,0);
+  const total=[...groups.values()].reduce((sum,ids)=>sum+ids.size,0);
+  const matches=new Map(),candidates=new Map();
   onProgress?.({completed:0,total,matched:0});
+  if(!total)return matches;
   const consumePage=page=>{
     if(!Array.isArray(page))throw Error('site_id 查詢結果無效');
     for(const row of page){
@@ -77,15 +73,12 @@ export async function matchExistingImportBySiteId(records,{readSiteIds,onProgres
       candidates.set(key,state);
     }
   };
-  let completed=0;
-  for(const {name,ids} of bySite.values()){
-    const values=[...ids];
-    const returned=await readSiteIds(name,values,consumePage);
+  for(const [site,ids] of groups){
+    // The third argument allows database readers to add .eq('site', site).
+    const returned=await readSiteIds([...ids],consumePage,site);
     if(Array.isArray(returned))consumePage(returned);
     else if(returned!==undefined&&returned!==null)
       throw Error('site_id 查詢沒有回傳有效文章');
-    completed+=values.length;
-    if(completed<total)onProgress?.({completed,total,matched:0});
   }
   for(const [key,record] of requested){
     const candidate=candidates.get(key);
@@ -97,53 +90,49 @@ export async function matchExistingImportBySiteId(records,{readSiteIds,onProgres
   return matches;
 }
 
-// Missing native IDs: use the source timestamp only to fetch candidates.
-// A match requires the same site, exact normalized time and exact article text.
-// Ambiguous candidates are left unmatched, never assigned an arbitrary UID.
-export async function matchExistingImportBySiteAndTime(records,{readSiteTimes,onProgress}={}){
-  if(typeof readSiteTimes!=='function')throw Error('缺少同平台時間查詢');
-  const requested=new Map(),bySite=new Map(),candidates=new Map(),matches=new Map();
+// Scope to the exact source site before querying timestamps. Neither content
+// nor optional site_id participates in duplicate detection.
+export async function matchExistingImportByCreatedAt(records,{readTimestamps,onProgress}={}){
+  if(typeof readTimestamps!=='function')throw Error('缺少 createtime 查詢');
+  const requested=new Map(),groups=new Map();
   for(const record of records||[]){
-    if(importSourceKey(record))continue;
-    const timeKey=importTimeKey(record),content=importContentKey(record);
-    if(!timeKey||!content)continue;
-    const key=JSON.stringify([timeKey,content]);
-    if(!requested.has(key))requested.set(key,[]);
-    requested.get(key).push(record);
-    const site=importSite(record);
-    if(!bySite.has(site))bySite.set(site,{name:siteQueryName(record),times:new Set()});
-    bySite.get(site).times.add(parseImportCreatedTime(record.createtime));
+    const key=importTimeKey(record);
+    if(!key)continue;
+    const prior=requested.get(key);
+    if(prior)prior.count++;
+    else requested.set(key,{count:1,only:record});
+    const site=String(record.site).trim();
+    if(!groups.has(site))groups.set(site,new Set());
+    groups.get(site).add(new Date(Date.parse(record.createtime)).toISOString());
   }
-  const total=[...bySite.values()].reduce((n,group)=>n+group.times.size,0);
+  const total=[...groups.values()].reduce((sum,times)=>sum+times.size,0);
+  const matches=new Map(),candidates=new Map();
   onProgress?.({completed:0,total,matched:0});
+  if(!total)return matches;
   const consumePage=page=>{
-    if(!Array.isArray(page))throw Error('同平台時間查詢結果無效');
+    if(!Array.isArray(page))throw Error('createtime 查詢結果無效');
     for(const row of page){
-      if(importSourceKey(row))continue; // Never replace a post with a native ID via time.
-      const timeKey=importTimeKey(row),content=importContentKey(row);
-      if(!timeKey||!content)continue;
-      const key=JSON.stringify([timeKey,content]);
-      if(!requested.has(key))continue;
+      const key=importTimeKey(row);
+      if(!key||!requested.has(key))continue;
       const state=candidates.get(key)||{count:0,only:null};
       state.count++;
       state.only=state.count===1?row:null;
       candidates.set(key,state);
     }
   };
-  let completed=0;
-  for(const {name,times} of bySite.values()){
-    const values=[...times];
-    const returned=await readSiteTimes(name,values,consumePage);
+  for(const [site,times] of groups){
+    const returned=await readTimestamps([...times],consumePage,site);
     if(Array.isArray(returned))consumePage(returned);
     else if(returned!==undefined&&returned!==null)
-      throw Error('同平台時間查詢沒有回傳有效文章');
-    completed+=values.length;
-    if(completed<total)onProgress?.({completed,total,matched:0});
+      throw Error('createtime 查詢沒有回傳有效文章');
   }
-  for(const [key,incoming] of requested){
+  for(const [key,state] of requested){
     const candidate=candidates.get(key);
-    if(incoming.length===1&&candidate?.count===1)
-      matches.set(String(incoming[0].uid),candidate.only);
+    if(!candidate)continue;
+    if(state.count>1||candidate.count>1)
+      throw Error('同一網站、同一發文時間有多篇文章，無法唯一比對：'+
+        String(state.only.site)+' / '+String(state.only.createtime));
+    matches.set(String(state.only.uid),candidate.only);
   }
   onProgress?.({completed:total,total,matched:matches.size});
   return matches;
@@ -154,12 +143,8 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
   return records.every(record=>{
     const saved=matches.get(record.uid);
     if(!saved)return false;
-    const native=importSourceKey(record);
-    const sameNative=native&&native===importSourceKey(saved);
-    const time=importTimeKey(record);
-    const sameFallback=!native&&!importSourceKey(saved)&&time&&time===importTimeKey(saved)&&
-      importContentKey(record)===importContentKey(saved);
-    if(!sameNative&&!sameFallback)return false;
+    if(!importTimeKey(record)||importTimeKey(record)!==importTimeKey(saved))return false;
+    if(record.site_id&&!saved.site_id)return false;
     if(record.source_id&&!saved.source_id)return false;
     if(record.target_id?.some(id=>!(saved.target_id||[]).includes(id)))return false;
     if(String(saved.title||'')!==String(record.title||'')||
