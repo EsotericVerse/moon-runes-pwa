@@ -1,10 +1,20 @@
-// Extract Facebook's source place objects without interpreting authored prose.
+// Read explicit Facebook place objects; never infer coordinates from post text or EXIF.
 import {repairMojibakeText} from './content-policy.js';
 import {importGeoPoint,importGeoKey} from './import-geocoordinates.mjs';
 
 const CONTAINERS=['attachments','data','array','media','photos','videos','items','label_values','dict'];
 const text=value=>repairMojibakeText(String(value??'').trim());
+const placeUrl=value=>{
+  if(typeof value!=='string')return null;
+  try{
+    const url=new URL(value.trim());
+    return ['http:','https:'].includes(url.protocol)?url.href:null;
+  }catch{return null;}
+};
 
+// A single Facebook record can contain separate attachments for media and
+// place. Traverse the record, but deduplicate only identical numeric pairs.
+// Names and URLs are optional source metadata, not coordinate match keys.
 export function extractFacebookGeoObjects(raw){
   if(!raw||typeof raw!=='object')return [];
   const found=new Map(),visited=new WeakSet();let examined=0;
@@ -18,12 +28,17 @@ export function extractFacebookGeoObjects(raw){
     const place=node.place&&typeof node.place==='object'?node.place:
       node.name&&node.coordinate&&typeof node.coordinate==='object'?node:null;
     if(place){
-      const title=text(place.name||place.place_name||place.title);
       const coordinate=place.coordinate||place.coordinates;
       const point=importGeoPoint(coordinate?.latitude,coordinate?.longitude);
       const key=importGeoKey(point);
-      if(key&&title&&title.length<=120&&!/[\u0000-\u001f]/u.test(title)&&!found.has(key))
-        found.set(key,{location:title,__importCoordinates:point});
+      if(key&&!found.has(key)){
+        const name=text(place.name||place.place_name||place.title).slice(0,200);
+        const address=text(place.address||place.full_address).slice(0,500);
+        found.set(key,{
+          location:name||null,__importCoordinates:point,
+          address:address||null,placeUrl:placeUrl(place.url)
+        });
+      }
     }
     for(const field of CONTAINERS)visit(node[field],depth+1);
   }
