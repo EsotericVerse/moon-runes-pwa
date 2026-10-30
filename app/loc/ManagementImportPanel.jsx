@@ -21,7 +21,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportBySiteAndTime,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
@@ -550,7 +550,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     catch(error){setStatus(String(error?.message||error));return;}
     if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
-    setBusy(true);setStatus('正在比對平台與原始 site_id');
+    setBusy(true);setStatus('正在依平台比對 site_id 與發文時間');
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
         percent:total>0?Math.round(100*completed/total):null});
@@ -560,21 +560,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      // Reimport identity is platform + source-native site_id, never createdAt.
-      // Records without site_id are insert-only, not matched by UID.
+      // Always scope the lookup to site first. Prefer native site_id; when absent,
+      // use same-site createtime plus exact content, never timestamp alone.
       const incoming=dedupeIncomingImport(analyzed.valid);
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingBySiteId=await matchExistingImportBySiteId(unique,{
         onProgress:p=>showProgress('精確比對平台與 site_id',p.completed,p.total),
-        readSiteIds:async (siteIds,consumePage)=>{
+        readSiteIds:async (site,siteIds,consumePage)=>{
           const pageSize=Math.min(MAX_ROWS,500);
           let done=0;
           for(const batch of urlSafeInBatches(siteIds,'site_id')){
             for(let offset=0;;){
               const {data,error}=await dbAuthRelation(galaxy)
                 .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-                .in('site_id',batch).order('uid',{ascending:true})
+                .eq('site',site).in('site_id',batch).order('uid',{ascending:true})
                 .range(offset,offset+pageSize-1);
               if(error)throw new Error('site_id 比對失敗：'+error.message);
               const page=data||[];
@@ -588,14 +588,35 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         }
       });
 
-      const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
+      const existingBySiteTime=await matchExistingImportBySiteAndTime(unique,{
+        onProgress:p=>showProgress('同平台時間與內容比對',p.completed,p.total),
+        readSiteTimes:async (site,times,consumePage)=>{
+          const pageSize=Math.min(MAX_ROWS,500);
+          for(const batch of urlSafeInBatches(times,'createtime')){
+            for(let offset=0;;){
+              const {data,error}=await dbAuthRelation(galaxy)
+                .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+                .eq('site',site).in('createtime',batch).order('uid',{ascending:true})
+                .range(offset,offset+pageSize-1);
+              if(error)throw new Error('同平台時間比對失敗：'+error.message);
+              const page=data||[];
+              if(!page.length)break;
+              consumePage(page);
+              offset+=page.length;
+            }
+          }
+        }
+      });
+      const existingMatches=new Map([...existingBySiteId,...existingBySiteTime]);
+
+      const finalUid=id=>String(existingMatches.get(String(id))?.uid||id);
       unique=unique.map(record=>({
         ...record,
         source_id:record.source_id?finalUid(record.source_id):null,
         target_id:(record.target_id||[]).map(finalUid)
       }));
       // No-op reimports must stop before anchor creation, article writes, or media writes.
-      if(isUnchangedImportBeforeWrite(unique,existingBySiteId,{
+      if(isUnchangedImportBeforeWrite(unique,existingMatches,{
         hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
           (createMissingAnchors&&geoPlaceCandidates.length)||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
@@ -611,7 +632,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
       const needsAnchor=unique.filter(record=>
-        !String(existingBySiteId.get(record.uid)?.place_id||'').trim());
+        !String(existingMatches.get(record.uid)?.place_id||'').trim());
       const geoAnchorRecords=geoPlaceCandidates.map(place=>({
         ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
       }));
@@ -624,7 +645,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       let updated=0,checkedExisting=0;
       const updateSizer=createImportBatchSizer();
       let updateQueue=[];
-      const existingCount=existingBySiteId.size;
+      const existingCount=existingMatches.size;
       if(existingCount)showProgress('更新既有文章',0,existingCount);
       const flushUpdates=async()=>{
         if(!updateQueue.length)return;
@@ -635,7 +656,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         updateSizer.observe(count,Date.now()-started);
       };
       for(const record of unique){
-        const existing=existingBySiteId.get(record.uid);
+        const existing=existingMatches.get(record.uid);
         if(!existing)continue;
         knownArticleIds.set(record.uid,String(existing.uid));
         const changes={};
@@ -664,7 +685,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           showProgress('更新既有文章',checkedExisting,existingCount);
       }
       await flushUpdates();
-      const newArticleTotal=unique.length-existingBySiteId.size;
+      const newArticleTotal=unique.length-existingMatches.size;
       if(newArticleTotal)showProgress('新增文章',0,newArticleTotal);
       const result={inserted:0,conflicts:0,insertedUids:new Set(),conflictedUids:new Set()};
       const insertSizer=createImportBatchSizer();
@@ -688,7 +709,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         showProgress('新增文章',newArticleProcessed,newArticleTotal);
       };
       for(const record of unique){
-        if(existingBySiteId.has(record.uid))continue;
+        if(existingMatches.has(record.uid))continue;
         const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,

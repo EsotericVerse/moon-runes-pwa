@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportBySiteAndTime,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 const original={uid:'OLD00001',site:'Threads',site_id:'threads-1',
   createtime:'2026-10-27T07:48:32.000Z',title:'A',content:'original'};
@@ -56,6 +56,8 @@ test('streamed site_id lookup and media mapping remain intact',()=>{
   assert.doesNotMatch(helper,/Date\.parse|importEpochMs|findExistingImportDuplicates|matchExistingWithoutCreatedAt/);
   assert.match(panel,/urlSafeInBatches\(siteIds,'site_id'\)/);
   assert.match(panel,/\.in\('site_id',batch\)/);
+  assert.match(panel,/\.eq\('site',site\)\.in\('site_id',batch\)/);
+  assert.match(panel,/\.eq\('site',site\)\.in\('createtime',batch\)/);
   assert.match(panel,/consumePage\(page\)/);
   assert.doesNotMatch(panel,/collected\.push\(\.\.\.page\)/);
   assert.match(panel,/for\(const uid of result\.insertedUids\)knownArticleIds\.set\(uid,uid\)/);
@@ -74,4 +76,18 @@ test('insert result includes only successfully written article UIDs',async()=>{
   assert.deepEqual([...inserted.insertedUids],['AA000001','AA000003']);
   assert.deepEqual([...inserted.conflictedUids],['AA000002']);
   assert.equal(inserted.inserted,2);
+});
+
+test('missing native ID uses site and timestamp without collapsing different content',async()=>{
+  const input=[{...original,uid:'NEW00001',site:'Facebook',site_id:null,content:'one'},
+    {...original,uid:'NEW00002',site:'Facebook',site_id:null,content:'two'}];
+  const matches=await matchExistingImportBySiteAndTime(input,{
+    readSiteTimes:async(site,times)=>{
+      assert.equal(site,'Facebook');
+      assert.equal(times.length,1);
+      return [{...input[0],uid:'OLD00001'},{...input[1],uid:'OLD00002'}];
+    }
+  });
+  assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(matches.get('NEW00002')?.uid,'OLD00002');
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportBySiteAndTime,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 const post=(uid,site='Threads',site_id='post-100',content='original')=>({
   uid,site,site_id,createtime:'2024-08-01T00:00:00Z',title:'Title',content,url:null
@@ -16,7 +16,8 @@ test('site_id matches despite changed Galaxy UID, timestamp and content',async()
   const incoming=post('NEW00001','Threads','post-100','revised');
   incoming.createtime='2026-01-01T00:00:00Z';
   const saved=post('OLD00001','Threads','post-100','original');
-  const matches=await matchExistingImportBySiteId([incoming],{readSiteIds:async ids=>{
+  const matches=await matchExistingImportBySiteId([incoming],{readSiteIds:async (site,ids)=>{
+    assert.equal(site,'Threads');
     assert.deepEqual(ids,['post-100']);
     return [saved];
   }});
@@ -36,11 +37,82 @@ test('Facebook and Threads cannot match even when their source IDs are identical
   });
   assert.equal(matches.size,0);
 });
-test('missing site_id is insert-only and never invokes source ID query',async()=>{
-  const rows=[post('NOID0001','Facebook',null),post('NOID0002','Facebook',null)];
-  assert.equal(dedupeIncomingImport(rows).unique.length,2);
+test('missing site_id uses same-site timestamp plus exact content',async()=>{
+  const incoming=post('NOID0001','Facebook',null,'Facebook archive post');
+  const saved=post('OLD00001','Facebook',null,'Facebook archive post');
+  assert.equal(dedupeIncomingImport([incoming]).unique.length,1);
+  const idMatches=await matchExistingImportBySiteId([incoming],{
+    readSiteIds:async()=>{throw Error('Missing ID must not query site_id');}
+  });
+  assert.equal(idMatches.size,0);
+  const matches=await matchExistingImportBySiteAndTime([incoming],{
+    readSiteTimes:async(site,times)=>{
+      assert.equal(site,'Facebook');
+      assert.deepEqual(times,['2024-08-01T00:00:00.000Z']);
+      return [saved];
+    }
+  });
+  assert.equal(matches.get(incoming.uid)?.uid,'OLD00001');
+  assert.equal(isUnchangedImportBeforeWrite([incoming],matches),true);
+});
+test('site_id lookup groups queries by source site before fetching',async()=>{
+  const rows=[post('A0000001','Facebook','same-id'),post('B0000001','Threads','same-id')];
+  const calls=[];
   const matches=await matchExistingImportBySiteId(rows,{
-    readSiteIds:async()=>{throw Error('No source ID: query must not run');}
+    readSiteIds:async(site,ids)=>{
+      calls.push([site,ids]);
+      return [post(site==='Facebook'?'OLD00001':'OLD00002',site,'same-id')];
+    }
+  });
+  assert.deepEqual(calls,[['Facebook',['same-id']],['Threads',['same-id']]]);
+  assert.equal(matches.size,2);
+});
+test('timestamp fallback never crosses platforms or matches changed content',async()=>{
+  const incoming=post('NEW00001','Facebook',null,'original');
+  const matches=await matchExistingImportBySiteAndTime([incoming],{
+    readSiteTimes:async()=>[
+      post('THREAD01','Threads',null,'original'),
+      post('CHANGED1','Facebook',null,'edited'),
+      post('WITHID01','Facebook','fb-native','original')
+    ]
+  });
+  assert.equal(matches.size,0);
+});
+test('timestamp fallback resolves different posts within the same second by content',async()=>{
+  const first=post('NEW00001','Facebook',null,'first');
+  const second=post('NEW00002','Facebook',null,'second');
+  const matches=await matchExistingImportBySiteAndTime([first,second],{
+    readSiteTimes:async(site,times)=>{
+      assert.equal(site,'Facebook');
+      assert.equal(times.length,1);
+      return [post('OLD00001','Facebook',null,'first'),
+        post('OLD00002','Facebook',null,'second')];
+    }
+  });
+  assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(matches.get('NEW00002')?.uid,'OLD00002');
+});
+test('ambiguous same-time same-content posts are never merged arbitrarily',async()=>{
+  const incoming=post('NEW00001','Facebook',null,'identical');
+  const matches=await matchExistingImportBySiteAndTime([incoming],{
+    readSiteTimes:async()=>[
+      post('OLD00001','Facebook',null,'identical'),
+      post('OLD00002','Facebook',null,'identical')
+    ]
+  });
+  assert.equal(matches.size,0);
+});
+test('native site_id always outranks timestamp fallback',async()=>{
+  const withId=post('NEW00001','Facebook','fb-100','original');
+  const matches=await matchExistingImportBySiteAndTime([withId],{
+    readSiteTimes:async()=>{throw Error('Native ID must not query timestamp');}
+  });
+  assert.equal(matches.size,0);
+});
+test('missing site_id and timestamp cannot match',async()=>{
+  const withoutTime={...post('NEW00001','Facebook',null,'original'),createtime:null};
+  const matches=await matchExistingImportBySiteAndTime([withoutTime],{
+    readSiteTimes:async()=>{throw Error('Missing timestamp must not query');}
   });
   assert.equal(matches.size,0);
 });
@@ -54,7 +126,8 @@ test('duplicate persisted platform and site_id fails before writing',async()=>{
 test('paged lookup ignores all unrelated source platforms without accumulating pages',async()=>{
   const incoming=post('NEW00001','Facebook','fb-100');
   const matches=await matchExistingImportBySiteId([incoming],{
-    readSiteIds:async(ids,consumePage)=>{
+    readSiteIds:async(site,ids,consumePage)=>{
+      assert.equal(site,'Facebook');
       assert.deepEqual(ids,['fb-100']);
       for(let i=0;i<50;i++)consumePage([post('OTH'+i,'Threads','fb-100')]);
       consumePage([post('OLD00001','Facebook','fb-100')]);
@@ -70,9 +143,12 @@ test('source ID lookup reports progress without timestamps',async()=>{
   });
   assert.deepEqual(progress,[[0,2],[2,2]]);
 });
-test('database lookup and update queue use site_id only, preserving curated site and location',()=>{
+test('database lookup scopes both site_id and timestamp to site, preserving curated fields',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/matchExistingImportBySiteId\(unique,/);
+  assert.match(panel,/matchExistingImportBySiteAndTime\(unique,/);
+  assert.match(panel,/\.eq\('site',site\)\.in\('site_id',batch\)/);
+  assert.match(panel,/\.eq\('site',site\)\.in\('createtime',batch\)/);
   assert.match(panel,/urlSafeInBatches\(siteIds,'site_id'\)/);
   assert.match(panel,/\.in\('site_id',batch\)/);
   assert.match(panel,/consumePage\(page\)/);
@@ -85,6 +161,7 @@ test('import progress displays source identity rather than publishing time',()=>
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/showProgress\('準備匯入文章'\)/);
   assert.match(panel,/onProgress:p=>showProgress\('精確比對平台與 site_id'/);
+  assert.match(panel,/onProgress:p=>showProgress\('同平台時間與內容比對'/);
   assert.match(panel,/showProgress\('準備空間定錨'\)/);
   assert.match(panel,/showProgress\('更新既有文章'/);
   assert.match(panel,/showProgress\('新增文章'/);
@@ -110,8 +187,8 @@ test('unchanged site_id match exits before anchor and article writes',async()=>{
   const matches=await matchExistingImportBySiteId([record],{readSiteIds:async()=>[saved]});
   assert.equal(isUnchangedImportBeforeWrite([record],matches),true);
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingBySiteId,');
-  assert.ok(guard>panel.indexOf('const existingBySiteId=await matchExistingImportBySiteId'));
+  const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingMatches,');
+  assert.ok(guard>panel.indexOf('const existingMatches=new Map('));
   assert.ok(guard<panel.indexOf('const placeAnchors=await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
 });
