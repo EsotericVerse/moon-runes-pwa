@@ -21,7 +21,8 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
@@ -327,6 +328,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
+  const [timeRange,setTimeRange]=useState('all');
+  const timeWindow=useMemo(()=>importTimeRangeWindow(timeRange),[timeRange,fileName]);
   const sourceCategories=useAsyncResource({
     queryKey:['import-source-categories',scopeId],
     enabled:!nativeLocal&&Boolean(account.user)&&account.canManageScopeSync(scopeId),
@@ -348,7 +351,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const suggested=useMemo(()=>inferImportSourceFromFilename(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
-  const analyzed=useMemo(()=>{
+  const rawAnalysis=useMemo(()=>{
     const selected=deferredSource.trim();
     const normalized=rows.map(entry=>normalizeJsonImportEntry(entry,
       canonicalImportSourceName(archiveDetection&&selected==='Mixed'?(entry?.raw?.site||selected):selected,
@@ -360,14 +363,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       invalid:normalized.filter(item=>item.error)
     };
   },[rows,deferredSource,format.fields,locale,archiveDetection,sourceCategories.data]);
+  const analyzed=useMemo(()=>filterImportAnalysisByTime(rawAnalysis,timeWindow),[rawAnalysis,timeWindow]);
+  const eligibleArchiveEvidence=useMemo(()=>{
+    if(!timeWindow)return archiveEvidence;
+    const eligibleUids=new Set(analyzed.valid.map(row=>String(row.uid)));
+    return archiveEvidence.filter(item=>item.galaxy_uids?.some(uid=>eligibleUids.has(String(uid))));
+  },[archiveEvidence,analyzed.valid,timeWindow]);
   const missingSiteIdCount=useMemo(()=>analyzed.valid.filter(row=>
     ['facebook','threads','instagram'].includes(String(row.site||'').trim().toLowerCase())&&
     !String(row.site_id||'').trim()).length,[analyzed.valid]);
   const importEstimate=useMemo(()=>{
     const attachedMedia=analyzed.normalized.reduce((count,item)=>count+(item.mediaRecords?.length||0),0);
-    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,archiveSummary?.mediaImportable||0);
+    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,
+      timeWindow?eligibleArchiveEvidence.length:(archiveSummary?.mediaImportable||0));
     return estimateImportMinutes({articles:analyzed.valid.length,media});
-  },[analyzed,archiveSummary?.mediaImportable]);
+  },[analyzed,archiveSummary?.mediaImportable,timeWindow,eligibleArchiveEvidence]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
@@ -513,11 +523,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   const canRestoreAnchors=scopeId!=='local'&&scopeId!=='loc'&&(
-    geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location))||
+    (!timeWindow&&geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location)))||
     analyzed.valid.some(record=>Boolean(importGeoKey(record.__importCoordinates)&&record.__importPlaceName))
   );
   async function saveGeoPlaces(){
-    if(busy||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
+    if(busy||timeWindow||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
     const candidates=geoPlaceCandidates.map(place=>({
       ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
     }));
@@ -537,10 +547,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     finally{setBusy(false);setProgress(null);}
   }
   async function run(){
-    if(busy||(!rows.length&&!archiveEvidence.length))return;
+    if(busy||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length))return;
     const selected=canonicalSource(source);
     if(!selected){setStatus(t('uiExtra.importUI.selectSource'));return;}
-    if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
+    if(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length){setStatus(t('uiExtra.importUI.noValidItems'));return;}
     try{
       if(archiveDetection){
         // The public-row guard, not the archive filename, controls publishing.
@@ -550,7 +560,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     catch(error){setStatus(String(error?.message||error));return;}
     if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
-    setBusy(true);setStatus('正在比對平台與原始 site_id');
+    setBusy(true);setStatus('正在按網站與時間範圍比對文章');
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
         percent:total>0?Math.round(100*completed/total):null});
