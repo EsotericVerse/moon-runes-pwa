@@ -20,7 +20,7 @@ import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
@@ -458,7 +458,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         readTimestamps:async timestamps=>{
           const collected=[];
           // TIMESTAMPTZ equality, not a time range or a site query.
-          for(const batch of urlSafeInBatches(timestamps.map(ms=>new Date(ms).toISOString()),'createtime')){
+          for(const batch of urlSafeInBatches(timestamps,'createtime')){
             for(let offset=0;;){
               const {data,error}=await dbAuthRelation(galaxy)
                 .select('uid,site,createtime,content,title,location,place_id,url')
@@ -474,45 +474,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           return collected;
         }
       });
-      // Incomplete Threads/Meta backups can omit createdAt. Reimport must
-      // look for already stored posts with the same site and complete article
-      // metadata, not blindly INSERT another null-time copy.
-      const missingTime=unique.filter(record=>!existingByCreatedAt.has(record.uid)&&
-        (record.createtime==null||record.createtime==='')&&
-        String(record.content||'').trim());
-      if(missingTime.length){
-        showProgress('核對缺少時間的文章');
-        const matched=await matchExistingWithoutCreatedAt(missingTime,{
-          readContents:async contents=>{
-            const collected=[];
-            let checked=0;
-            // Bound GET URLs. An exceptionally long text is still importable,
-            // even when its exact-content lookup exceeds REST URL limits.
-            const safeContents=contents.filter(value=>{
-              try{return encodeURIComponent(value).length<=5000;}
-              catch{return false;}
-            });
-            showProgress('核對缺少時間的文章',0,safeContents.length);
-            for(const batch of urlSafeInBatches(safeContents,'content')){
-              for(let offset=0;;){
-                const {data,error,count}=await dbAuthRelation(galaxy)
-                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date',{count:'exact'})
-                  .in('content',batch)
-                  .order('uid',{ascending:true}).range(offset,offset+MAX_ROWS-1);
-                if(error)throw new Error('無時間文章比對失敗：'+error.message);
-                const rows=data||[];
-                collected.push(...rows);
-                offset+=rows.length;
-                if(!rows.length||(count!=null&&offset>=Number(count))||rows.length<MAX_ROWS)break;
-              }
-              checked+=batch.length;
-              showProgress('核對缺少時間的文章',checked,safeContents.length);
-            }
-            return collected;
-          }
-        });
-        for(const [newUid,existing] of matched)existingByCreatedAt.set(newUid,existing);
-      }
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');

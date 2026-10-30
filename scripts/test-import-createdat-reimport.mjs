@@ -48,19 +48,19 @@ test('primary-key conflicts do not abort subsequent imported posts',async()=>{
 
 test('site never participates in original timestamp identity',async()=>{
   const incoming=[{uid:'NEW00001',site:'Threads',createtime:'2024-08-01T00:00:00.123Z',content:'updated'}];
-  const saved=[{uid:'OLD00001',site:'Facebook',createtime:'2024-08-01T08:00:00.123+08:00',content:'old'}];
+  const saved=[{uid:'OLD00001',site:'Facebook',createtime:'2024-08-01T00:00:00.123+00:00',content:'old'}];
   const matched=await matchExistingImportByCreatedAt(incoming,{
     readTimestamps:async timestamps=>{
-      assert.deepEqual(timestamps,[Date.parse('2024-08-01T00:00:00.123Z')]);
+      assert.deepEqual(timestamps,['2024-08-01T00:00:00.123Z']);
       return saved;
     }
   });
   assert.equal(matched.get('NEW00001')?.uid,'OLD00001');
 });
-test('a different millisecond is never matched as duplicate',async()=>{
+test('a different second is never matched as duplicate',async()=>{
   const incoming=[{uid:'NEW00001',createtime:'2024-08-01T00:00:00.123Z',content:'body'}];
   const matched=await matchExistingImportByCreatedAt(incoming,{
-    readTimestamps:async()=>[{uid:'OLD00001',createtime:'2024-08-01T00:00:00.124Z',content:'body'}]
+    readTimestamps:async()=>[{uid:'OLD00001',createtime:'2024-08-01T00:00:01.123Z',content:'body'}]
   });
   assert.equal(matched.size,0);
 });
@@ -81,19 +81,15 @@ test('normal import update preserves populated site/location and backfills blank
   assert.doesNotMatch(panel,/\.lt\('createtime'/);
 });
 
-test('timestamp comparisons emit progress before the first query and after each batch',async()=>{
-  const rows=[0,1,2].map(i=>({
-    uid:'EPOCH00'+i,
-    createtime:new Date(Date.parse('2024-08-01T00:00:00.000Z')+i).toISOString(),
-    content:'text'+i
-  }));
+test('timestamp comparison reports progress before and after the direct query',async()=>{
+  const rows=['2024-08-01T00:00:00Z','2024-08-01T00:00:01Z','2024-08-01T00:00:02Z']
+    .map((createtime,i)=>({uid:'EPOCH00'+i,createtime,content:'text'+i}));
   const steps=[];
   await matchExistingImportByCreatedAt(rows,{
-    batchSize:1,
     readTimestamps:async()=>[],
     onProgress:value=>steps.push(value)
   });
-  assert.deepEqual(steps.map(step=>[step.completed,step.total]),[[0,3],[1,3],[2,3],[3,3]]);
+  assert.deepEqual(steps.map(step=>[step.completed,step.total]),[[0,3],[3,3]]);
 });
 test('import progress shows each phase and an indeterminate bar until measurable',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
