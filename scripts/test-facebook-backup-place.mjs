@@ -280,6 +280,22 @@ test('independent Facebook tagged visit with explicit coordinates stays out of G
  assert.equal(places[0].timestamp,1720000000);
 });
 
+test('independent visit keeps label_values place name when coordinate object has no name',async()=>{
+ const visit={place:{coordinate:{latitude:25.05338,longitude:121.49086}},label_values:[
+   {label:'造訪時間',timestamp_value:1720000000},
+   {title:'地標',dict:[{dict:[{label:'名稱',value:'來源地標名稱'}]}]}
+ ]};
+ const records=[],places=[];
+ await inspectPrivateArchive(asFile('places_you_have_been_tagged_in.json',
+   strToU8(JSON.stringify([visit]))),{
+   onRecord:row=>records.push(row),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(records.length,0);
+ assert.equal(places.length,1);
+ assert.equal(places[0].location,'來源地標名稱');
+ assert.deepEqual(places[0].__importCoordinates,{latitude:25.05338,longitude:121.49086});
+});
+
 test('standalone Facebook tagged-visit JSON stays outside Galaxy posts',async()=>{
  const visit={label_values:[
    {label:'造訪時間',timestamp_value:1720000000},
