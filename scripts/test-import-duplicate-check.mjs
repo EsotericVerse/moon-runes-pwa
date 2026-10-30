@@ -24,7 +24,7 @@ test('epoch milliseconds are numbers, timezone-independent, and distinct at the 
   assert.equal(comparableImportText('AA。\n\nBB!'),comparableImportText('aa bb'));
 });
 
-test('without createdAt, exact metadata still resolves duplicate content without a site requirement',()=>{
+test('without createdAt, exact metadata still resolves duplicate content without a site requirement',async()=>{
   const missing={...base,uid:'NODATE01',createtime:null};
   const saved={...base,uid:'SAVED001',site:'Facebook'};
   const matched=await matchExistingWithoutCreatedAt([missing],{
