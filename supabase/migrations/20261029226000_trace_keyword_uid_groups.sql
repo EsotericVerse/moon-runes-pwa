@@ -31,6 +31,9 @@ BEGIN
   v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
   IF v_config IS NULL OR v_galaxy IS NULL OR v_keywords IS NULL
     THEN RAISE EXCEPTION 'Missing Scope data'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_attribute
+    WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped)
+    THEN RETURN; END IF;
   EXECUTE format('SELECT current_keyword_class_uid,keyword_meta,staticstime FROM %s WHERE id=$1',v_config)
     INTO v_current,v_meta,v_old_ready USING v_scope;
   v_class_uid:=coalesce(nullif(p_class_uid,''),v_current);
