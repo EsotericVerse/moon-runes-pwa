@@ -56,7 +56,7 @@ test('import UI exposes range choices and filters both lookup and writes',()=>{
   for(const value of ['all','year','halfYear','month'])
     assert.match(panel,new RegExp('<option value="'+value+'">'));
   assert.match(panel,/filterImportAnalysisByTime\(rawAnalysis,timeWindow\)/);
-  assert.match(panel,/dedupeIncomingImport\(analyzed.valid\)/);
+  assert.match(panel,/oldRows.length\?dedupeIncomingImport\(oldRows\)/);
   assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/\.gte\('createtime',timeWindow.start\)/);
   assert.match(panel,/\.lte\('createtime',timeWindow.end\)/);
