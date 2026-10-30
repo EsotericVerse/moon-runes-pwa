@@ -818,6 +818,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         {sourceOptions.map(name=><option key={name} value={name}/>)}
       </datalist>
     </label>
+    <label className="scope-import-source-choice">匯入時間範圍
+      <select value={timeRange} disabled={busy} onChange={event=>setTimeRange(event.target.value)}>
+        <option value="all">全部的時間</option>
+        <option value="year">近一年</option>
+        <option value="halfYear">近半年</option>
+        <option value="month">近一月</option>
+      </select>
+    </label>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
@@ -885,8 +893,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </button>:null}
     </section>:null}
     {missingSiteIdCount>0?<p className="scope-status" role="alert">
-       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；可以新增，但無法以 site_id 比對重匯。系統不會使用發文時間或 Galaxy UID 猜測對應文章。清空舊資料前請先確認備份完整。
+       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；改以同網站、相同發文時間及相同內容比對，不會把 timestamp 偽裝成原生 ID。
      </p>:null}
+     {timeWindow?<p className="scope-status" role="status">已設定時間範圍：{timeWindow.start.slice(0,10)} 至 {timeWindow.end.slice(0,10)}（UTC）。來源文章／媒體排除 {analyzed.skippedByRange.toLocaleString()} 筆，其中 {analyzed.undatedByRange.toLocaleString()} 筆沒有可辨識的發文時間；排除項目不會寫入。只比對同網站、區間內的既有文章。</p>:null}
      {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
@@ -898,19 +907,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
-    {rows.length||archiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+    {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
         {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
       <button type="button" className="loc-button scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length)} onClick={run}>
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
-    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
     {progress?<div role="status" aria-live="polite" className="scope-import-progress">
       {busy?<p className="scope-status"><strong>{t('uiExtra.importUI.importProcessingWait')}</strong></p>:null}
       <p><strong>{progress.stage}</strong></p>
