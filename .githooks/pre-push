@@ -9,3 +9,6 @@
 set -e
 echo "pre-push: running npm run check:syntax (local, free, no CI/deploy involved)..."
 node scripts/check-js-syntax.mjs
+
+echo "pre-push: running check:bulk-delete (refuses mass delete/rename without confirmation)..."
+node scripts/check-bulk-delete.mjs
