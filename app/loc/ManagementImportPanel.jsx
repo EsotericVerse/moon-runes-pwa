@@ -21,7 +21,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,faceb
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
@@ -570,7 +570,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      // Always narrow candidates by site before source ID or timestamp.
+      // First narrow all database comparisons to the source site, then timestamp.
       const incoming=dedupeIncomingImport(analyzed.valid);
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
@@ -603,21 +603,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         }
       };
-      const existingBySiteId=await matchExistingImportBySiteId(unique,{
-        onProgress:p=>showProgress('精確比對網站與 site_id',p.completed,p.total),
-        readSiteIds:(ids,consumePage,site)=>readCandidates('site_id',ids,consumePage,site)
-      });
       const existingByTime=await matchExistingImportByCreatedAt(unique,{
-        onProgress:p=>showProgress('比對網站、發文時間與內容',p.completed,p.total),
+        onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
       });
-      const matchedUids=new Set([...existingBySiteId.values()].map(row=>String(row.uid)));
-      for(const [uid,record] of existingByTime){
-        if(matchedUids.has(String(record.uid)))
-          throw Error('同一篇既有文章對應多筆匯入來源，已停止以避免覆寫：'+record.uid);
-        matchedUids.add(String(record.uid));
-        existingBySiteId.set(uid,record);
-      }
+      const existingBySiteId=existingByTime;
 
       const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
       unique=unique.map(record=>({
@@ -672,6 +662,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
+        if(record.site_id&&!existing.site_id)changes.site_id=record.site_id;
         if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
         if(record.target_id?.length){
           const prior=normalizeRelationIds(existing.target_id)||[];
@@ -826,7 +817,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <option value="month">近一月</option>
       </select>
     </label>
-    <p className="scope-status">第一次匯入完整舊資料可選「全部的時間」；後續定期更新建議使用預設「近一年」，或更短區間，縮小比對池與寫入量。比對先限定同一網站，再使用原生 site_id；沒有原生 ID 時，以發文時間及內容確認。超出範圍的文章不會寫入，限時匯入也不寫入無日期的文章與未關聯媒體。</p>
+    <p className="scope-status">第一次匯入完整舊資料可選「全部的時間」；後續定期更新建議使用預設「近一年」，或更短區間，縮小比對池與寫入量。比對先限定同一網站，再使用發文時間；site_id 有值就保存，沒有也能匯入。超出範圍的文章不會寫入，限時匯入也不寫入無日期的文章與未關聯媒體。</p>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
@@ -893,8 +884,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         {busy?'正在核對 Trace 地點…':'只匯入獨立打卡地點至 Trace（不新增文章）'}
       </button>:null}
     </section>:null}
-    {missingSiteIdCount>0?<p className="scope-status" role="alert">
-       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；改以同網站、相同發文時間及相同內容比對，不會把 timestamp 偽裝成原生 ID。
+    {missingSiteIdCount>0?<p className="scope-status" role="status">
+       Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
      {timeWindow?<p className="scope-status" role="status">已設定時間範圍：{timeWindow.start.slice(0,10)} 至 {timeWindow.end.slice(0,10)}（UTC）。來源文章／媒體排除 {analyzed.skippedByRange.toLocaleString()} 筆，其中 {analyzed.undatedByRange.toLocaleString()} 筆沒有可辨識的發文時間；排除項目不會寫入。只比對同網站、區間內的既有文章。</p>:null}
      {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
