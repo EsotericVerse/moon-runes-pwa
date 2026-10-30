@@ -41,7 +41,10 @@ export function useAsyncInfiniteResource({queryKey,queryFn,enabled=true,initialP
   const resource=useSWRInfinite(getPageKey,key=>queryFn({pageParam:key.at(-1).param}),{
     persistSize:false,
     revalidateFirstPage:false,
-    revalidateAll:false
+    revalidateAll:false,
+    // Keep rendered pages stable while users scroll; explicit refetch remains available.
+    revalidateOnFocus:false,
+    revalidateOnReconnect:false
   });
   const pages=resource.data||[];
   const lastPage=pages.at(-1);

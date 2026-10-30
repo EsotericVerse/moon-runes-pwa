@@ -111,7 +111,7 @@ test('small article pages reuse first COUNT and OFFSET for later pages',()=>{
   const ui=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const query=readFileSync(new URL('../app/loc/culture-query.js',import.meta.url),'utf8');
   const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
-  assert.ok(contract.includes('DEFAULT_LIST_BATCH_SIZE=10'));
+  assert.ok(contract.includes('DEFAULT_LIST_BATCH_SIZE=20'));
   assert.ok(query.includes("count:hasCursorCounts?null:'exact'"));
   assert.ok(query.includes('offset:galaxyOffset'));
   assert.ok(query.includes('offset:mediaOffset'));
