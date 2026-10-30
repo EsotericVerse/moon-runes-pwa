@@ -148,7 +148,7 @@ test('completed identical timestamp match exits without any write phase',async()
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,');
   assert.ok(guard>panel.indexOf('const existingByCreatedAt=await matchExistingImportByCreatedAt'));
-  assert.ok(guard<panel.indexOf('await prepareImportPlaceAnchors(needsAnchor'));
+  assert.ok(guard<panel.indexOf('const placeAnchors=await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
   assert.match(panel,/setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\)/);
   assert.match(panel,/setProgress\(null\);\s*setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\);/);
@@ -162,7 +162,11 @@ test('zero-write fast exit must not hide real imports, media or place additions'
   assert.equal(isUnchangedImportBeforeWrite([{...record,content:'Changed'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,title:'Changed'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,url:'https://example.com/post'}],matches),false);
-  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],matches),true,
+    'a name alone must not trigger a coordinate lookup');
+  assert.equal(isUnchangedImportBeforeWrite([{...record,
+    __importCoordinates:{latitude:25.05338,longitude:121.49086}}],matches),false,
+    'reimport must find a Trace anchor manually created since the previous import');
   assert.equal(isUnchangedImportBeforeWrite([record],matches,{hasMedia:true}),false);
   assert.equal(isUnchangedImportBeforeWrite([record,{...record,uid:'NEW00002'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([],matches),false);

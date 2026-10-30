@@ -8,6 +8,11 @@ import {facebookBackupPlace,facebookBackupPostText,
   from '../app/loc/facebook-backup-place.mjs';
 import {detectZipArchiveSource,inspectPrivateArchive}
   from '../app/loc/private-archive-universal.mjs';
+import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
+import {archiveGalaxyRows} from '../app/loc/archive-caption-rows.mjs';
+import {dedupeIncomingImport,isUnchangedImportBeforeWrite} from '../app/loc/import-duplicate-check.mjs';
+import {prepareImportPlaceAnchors,importedPlaceId} from '../app/loc/import-place-anchors.mjs';
+import {extractFacebookGeoObjects,facebookPostCoordinate} from '../app/loc/archive-geo-objects.mjs';
 import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from '../app/loc/import-batch.mjs';
 import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
 const src=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
@@ -35,6 +40,134 @@ test('Facebook nested check-in location is extracted without looking at photos o
  assert.equal(facebookBackupPlace({location:{name:'中山站'}}),'中山站');
  assert.equal(facebookBackupPlace({place:{name:'A'},attachments:[{data:[{place:{name:'B'}}]}]}),'A');
  assert.equal(facebookBackupPlace({attachments:[{data:[{place:{name:'A'}},{place:{name:'B'}}]}]}),'');
+});
+
+test('real Facebook post object keeps media, source text, exact coordinates and place URL separate',async()=>{
+ const enc=value=>[...new TextEncoder().encode(value)]
+   .map(code=>String.fromCharCode(code)).join('');
+ const mediaPath='your_facebook_activity/posts/media/test-photo.jpg';
+ const placeUrl='https://www.facebook.com/pages/test-place/176138829094369';
+ const post={
+   timestamp:1656652590,
+   attachments:[
+     {data:[{media:{uri:mediaPath,creation_timestamp:1656652577,
+       media_metadata:{photo_metadata:{exif_data:[{
+         camera_make:'Apple',camera_model:'iPhone 11',taken_timestamp:1656652565
+       }]}},title:enc('行動上傳'),description:enc('又漲了，唉')}}]},
+     {data:[{place:{name:enc('測試地點'),coordinate:{
+       latitude:25.05338,longitude:121.49086
+     },address:enc('測試地址'),url:placeUrl}}]}
+   ],
+   data:[{post:enc('又漲了，唉')},{}],
+   title:enc('新增了 1 張相片。')
+ };
+ const zipped=zipSync({
+   'your_facebook_activity/posts/your_posts_1.json':strToU8(JSON.stringify([post])),
+   [mediaPath]:strToU8('image')
+ });
+ const records=[],places=[];
+ const summary=await inspectPrivateArchive(asFile('facebook-post.zip',zipped),{
+   onRecord:record=>records.push(record),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(summary.acceptedRows,1);
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(records.length,1);
+ assert.equal(records[0].attachments.length,1);
+ assert.equal(records[0].attachments[0].uri,mediaPath);
+ const article=archiveGalaxyRow(records[0]);
+ assert.equal(article.content,'又漲了，唉');
+ assert.equal(article.location,'測試地點');
+ assert.deepEqual(article.__importCoordinates,{latitude:25.05338,longitude:121.49086});
+ assert.equal(article.__importPlaceName,'測試地點');
+ assert.equal(article.__importPlaceAddress,'測試地址');
+ assert.equal(article.createtime,new Date(1656652590*1000).toISOString());
+ assert.equal(article.url,undefined,'place URL is not a post permalink');
+ assert.deepEqual(extractFacebookGeoObjects(post),[{
+   location:'測試地點',__importCoordinates:{latitude:25.05338,longitude:121.49086},
+   address:'測試地址',placeUrl
+ }]);
+ assert.equal(places[0].placeUrl,placeUrl);
+ assert.equal(places[0].sourcePath,'your_facebook_activity/posts/your_posts_1.json');
+});
+
+test('Facebook posts never choose the first of two distinct place coordinates',()=>{
+ const raw={timestamp:1720000000,data:[{post:'今天的旅程'}],attachments:[
+   {data:[{place:{name:'A',coordinate:{latitude:25.05338,longitude:121.49086}}}]},
+   {data:[{place:{name:'B',coordinate:{latitude:25.05,longitude:121.5}}}]}
+ ]};
+ assert.equal(extractFacebookGeoObjects(raw).length,2);
+ assert.equal(facebookPostCoordinate(raw),null);
+ const mapped=archiveGalaxyRow({platform:'facebook',kind:'post',key:'fb:ambiguous',
+   text:'今天的旅程',raw,createdAt:'2024-07-03T09:46:40.000Z'});
+ assert.equal(mapped.__importCoordinates,undefined);
+});
+
+test('photo EXIF GPS alone cannot become a Facebook check-in point',()=>{
+ const raw={timestamp:1720000000,data:[{post:'相片'}],attachments:[
+   {data:[{media:{media_metadata:{photo_metadata:{exif_data:[{
+     latitude:25.05338,longitude:121.49086
+   }]}}}}]}
+ ]};
+ assert.deepEqual(extractFacebookGeoObjects(raw),[]);
+ assert.equal(facebookPostCoordinate(raw),null);
+ const mapped=archiveGalaxyRow({platform:'facebook',kind:'post',key:'fb:exif-only',
+   text:'相片',raw,createdAt:'2024-07-03T09:46:40.000Z'});
+ assert.equal(mapped.__importCoordinates,undefined);
+});
+
+test('real Facebook ZIP to Galaxy to exact Trace anchor is repeatable without duplicate writes',async()=>{
+ const point={latitude:25.05338,longitude:121.49086};
+ const rows=[
+   {timestamp:1720000000,data:[{post:'第一篇'}],attachments:[{data:[{
+     place:{name:'原始地點 A',coordinate:point}
+   }]}]},
+   {timestamp:1720000060,data:[{post:'第二篇'}],attachments:[{data:[{
+     place:{name:'原始地點 B',coordinate:point}
+   }]}]},
+   {timestamp:1720000120,data:[{post:'第三篇'}],attachments:[{data:[{
+     place:{name:'不同座標',coordinate:{latitude:25.05339,longitude:121.49086}}
+   }]}]}
+ ];
+ const zipped=zipSync({'your_facebook_activity/posts/your_posts_1.json':strToU8(JSON.stringify(rows))});
+ const articles=[];
+ await inspectPrivateArchive(asFile('fb-reimport.zip',zipped),{
+   onRecord:record=>articles.push(...archiveGalaxyRows(record).map(item=>item.row))
+ });
+ assert.equal(articles.length,3);
+ assert.equal(dedupeIncomingImport(articles).unique.length,3);
+ let inserted=0;
+ const relation=table=>{
+   assert.equal(table,'silver.lo3rwang_trace');
+   return {
+     select:()=>({eq:()=>({order:()=>({range:async()=>({
+       data:[{uid:'AB12',title:'人工整理的名稱',address:[121.49086,25.05338]}],error:null
+     })})})}),
+     insert:()=>{inserted++;throw Error('不得自動新增 Trace 地點');}
+   };
+ };
+ const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation});
+ assert.equal(resolved.reused,1);
+ assert.equal(resolved.unmatchedCoordinates,1);
+ assert.equal(inserted,0);
+ assert.equal(importedPlaceId({incoming:articles[0],byCoordinate:resolved.byCoordinate}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[1],byCoordinate:resolved.byCoordinate}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[2],byCoordinate:resolved.byCoordinate}),null);
+ const saved=new Map(articles.slice(0,2).map(row=>[row.uid,{...row,place_id:'AB12'}]));
+ assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),true);
+});
+
+test('Facebook post coordinates survive without a LOC location string',async()=>{
+ const post={timestamp:1656652590,data:[{post:'沒有地名的貼文'}],
+   attachments:[{data:[{place:{coordinate:{latitude:25.05338,longitude:121.49086}}}]}]};
+ const records=[],places=[];
+ const file=asFile('your_facebook_activity/posts/your_posts_1.json',
+   strToU8(JSON.stringify([post])));
+ await inspectPrivateArchive(file,{onRecord:r=>records.push(r),onGeoPlace:p=>places.push(p)});
+ assert.equal(records.length,1);
+ assert.equal(places.length,1);
+ const article=archiveGalaxyRow(records[0]);
+ assert.equal(article.location,undefined);
+ assert.deepEqual(article.__importCoordinates,{latitude:25.05338,longitude:121.49086});
 });
 
 test('textless check-ins retain place, stable article UID and time',()=>{
@@ -93,7 +226,7 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  const parser=src('app/loc/private-archive-universal.mjs');
  assert.match(ui,/facebookBackupPlace\(row\)/);
  assert.match(ui,/facebookBackupPostText\(row\)/);
- assert.match(ui,/archiveGalaxyRow\(record\)/);
+ assert.match(ui,/archiveGalaxyRows\(record\)/);
  // The shared ZIP adapter delegates Facebook posts to the same
  // place/time/UID conversion; the UI no longer calls it directly.
  const adapter=src('app/loc/archive-galaxy-row.mjs');
@@ -119,12 +252,66 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  const file=asFile('fb-places.zip',zipped);
  const detection=await detectZipArchiveSource(file);
  assert.ok(detection.sources.includes('facebook'));
- const records=[];
- await inspectPrivateArchive(file,{onRecord:row=>records.push(row)});
- const imported=records.map(facebookArchiveGalaxyRow).filter(Boolean);
- assert.equal(imported.length,1);
- assert.equal(imported[0].location,'某車站');
- assert.equal(imported[0].createtime,'2024-07-03T09:46:40.000Z');
+ const records=[],places=[];
+ const summary=await inspectPrivateArchive(file,{
+   onRecord:row=>records.push(row),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(records.length,0,'independent visit must not become a Galaxy post');
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(places.length,1);
+ assert.equal(places[0].location,'某車站');
+ assert.equal(places[0].__importCoordinates,null,'no coordinates were supplied');
+ assert.equal(places[0].timestamp,1720000000);
+});
+
+test('independent Facebook tagged visit with explicit coordinates stays out of Galaxy',async()=>{
+ const visit={fbid:'visit-with-geo',place:{name:'獨立打卡地點',coordinate:{
+   latitude:25.05338,longitude:121.49086
+ }},label_values:[{label:'造訪時間',timestamp_value:1720000000}]};
+ const file=asFile('places_you_have_been_tagged_in.json',strToU8(JSON.stringify([visit])));
+ const records=[],places=[];
+ const summary=await inspectPrivateArchive(file,{
+   onRecord:row=>records.push(row),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(records.length,0);
+ assert.deepEqual(places[0].__importCoordinates,{latitude:25.05338,longitude:121.49086});
+ assert.equal(places[0].location,'獨立打卡地點');
+ assert.equal(places[0].timestamp,1720000000);
+});
+
+test('independent visit keeps label_values place name when coordinate object has no name',async()=>{
+ const visit={place:{coordinate:{latitude:25.05338,longitude:121.49086}},label_values:[
+   {label:'造訪時間',timestamp_value:1720000000},
+   {title:'地標',dict:[{dict:[{label:'名稱',value:'來源地標名稱'}]}]}
+ ]};
+ const records=[],places=[];
+ await inspectPrivateArchive(asFile('places_you_have_been_tagged_in.json',
+   strToU8(JSON.stringify([visit]))),{
+   onRecord:row=>records.push(row),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(records.length,0);
+ assert.equal(places.length,1);
+ assert.equal(places[0].location,'來源地標名稱');
+ assert.deepEqual(places[0].__importCoordinates,{latitude:25.05338,longitude:121.49086});
+});
+
+test('standalone Facebook tagged-visit JSON stays outside Galaxy posts',async()=>{
+ const visit={label_values:[
+   {label:'造訪時間',timestamp_value:1720000000},
+   {title:'地標',dict:[{dict:[{label:'名稱',value:'測試車站'}]}]}
+ ]};
+ const records=[],places=[];
+ const file=asFile('places_you_have_been_tagged_in.json',strToU8(JSON.stringify([visit])));
+ const summary=await inspectPrivateArchive(file,{
+   onRecord:record=>records.push(record),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(records.length,0);
+ assert.equal(places[0].location,'測試車站');
+ assert.equal(places[0].timestamp,1720000000);
+ const ui=src('app/loc/ManagementImportPanel.jsx');
+ assert.match(ui,/isFacebookGeoJson/);
 });
 
 test('Meta ZIP decoded place and author text survive Galaxy import without mojibake',()=>{

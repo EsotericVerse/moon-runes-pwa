@@ -45,7 +45,7 @@ export function archiveGalaxyRows(record){
   const caption=record.platform==='instagram'?captionOf(record.raw):'';
   if(caption&&caption===original.content&&attachments.length){
     const parent={
-      ...original,title:'Instagram 媒體貼文',content:'Instagram 媒體貼文',
+      ...original,site_id:null,title:'Instagram 媒體貼文',content:'Instagram 媒體貼文',
       searchable:false,statistics_able:false
     };
     const child={

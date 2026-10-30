@@ -5,15 +5,17 @@ import {dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches}
 
 const original={uid:'OLD00001',site:'Threads',createtime:'2026-10-27T07:48:32.000Z',content:'original'};
 
-test('same-second identical posts collapse, but distinct posts are preserved',()=>{
+test('same-platform duplicates collapse without merging separate Facebook and Threads posts',()=>{
   const rows=[original,
-    {...original,uid:'DUP00001',site:'Facebook',createtime:'2026-10-27T07:48:32.999Z'},
+    {...original,uid:'DUP00001',site:'Threads',createtime:'2026-10-27T07:48:32.999Z'},
+    {...original,uid:'FACEBOOK',site:'Facebook',createtime:'2026-10-27T07:48:32.999Z'},
     {...original,uid:'DISTINCT',createtime:'2026-10-27T07:48:32.123Z',content:'different post'},
     {...original,uid:'NEXT0001',createtime:'2026-10-27T07:48:33.000Z'}
   ];
   const result=dedupeIncomingImport(rows);
-  assert.deepEqual(result.unique.map(row=>row.uid),['OLD00001','DISTINCT','NEXT0001']);
+  assert.deepEqual(result.unique.map(row=>row.uid),['OLD00001','FACEBOOK','DISTINCT','NEXT0001']);
   assert.equal(result.aliases.get('DUP00001'),'OLD00001');
+  assert.equal(result.aliases.get('FACEBOOK'),'FACEBOOK');
   assert.equal(result.duplicates,1);
 });
 

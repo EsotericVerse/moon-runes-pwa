@@ -14,6 +14,7 @@ import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
 import {importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
+import {extractFacebookGeoObjects} from './archive-geo-objects.mjs';
 import {repairMojibakeText} from './content-policy.js';
 import {archiveRecordStreamPath,archiveRootContainers} from './archive-array-layout.mjs';
 import {isPrivateArchiveEntry} from './archive-import-safety.mjs';
@@ -223,6 +224,8 @@ function determine(path,prefix){
   // collection in one object. Keep that parent, rather than streaming photos alone.
   if(/(?:^|\/)posts\/album\/[^/]+\.json$/.test(p))
     return {platform:'facebook',kind:'media',array:'@root-object'};
+  if(/(?:^|\/)places_you_have_been_tagged_in\.json$/.test(p))
+    return {platform:'facebook',kind:'geo',array:head.startsWith('[')?'$':rootArrayAny(head)||'@root-object'};
   const threadsActivity=threadsActivityKind(p);
   if(threadsActivity){
     return {platform:'threads',kind:threadsActivity,
@@ -286,19 +289,38 @@ const fileSummary=()=>({
   filesSeen:0,jsonFilesSeen:0,jsonFilesParsed:0,jsonFilesPrivate:0,
   jsonFilesOversize:0,jsonFilesUnsupported:0,jsonFilesUnrecognized:0,
   suspiciousRows:0,duplicateRows:0,bytesRead:0,sourceFiles:[],sample:[],
-  exifImages:0,exifWithGps:0,exifWithTime:0,exifSkipped:0,
+  exifImages:0,exifWithGps:0,exifWithTime:0,exifSkipped:0,geoPlaceObjects:0,
   problems:[],byPlatform:{},unrecognizedFiles:[],mediaFiles:0,unmappedRows:0
 });
 function report(summary,message){
   if(summary.problems.length<30)summary.problems.push(message);
 }
-function createSink(path,summary,onRecord,signal,sourceHint=null){
+function createSink(path,summary,onRecord,onGeoPlace,signal,sourceHint=null){
   const decoder=new TextDecoder('utf-8',{fatal:true});
   const snippetLimit=32768;
   let header='',ready=false,parser=null,config=null,trail='',finished=false,unknown=false;
   const pushRows=({value})=>{
     aborted(signal);
     summary.totalRows++;
+    if(config.platform==='facebook'&&typeof onGeoPlace==='function'){
+      const places=extractFacebookGeoObjects(value);
+      // Tagged visits are a separate source file, not authored Galaxy posts.
+      // Labelled visits may have a name and timestamp but no coordinate.
+      if(config.kind==='geo'){
+        const location=repairMojibakeText(facebookBackupPlace(value));
+        if(!places.length&&location)
+          places.push({location,__importCoordinates:null,address:null,placeUrl:null});
+        else if(location)for(const place of places){
+          if(!place.location)place.location=location;
+        }
+      }
+      for(const place of places){
+        onGeoPlace({...place,sourcePath:cleanPath(path),
+          timestamp:facebookBackupTimestamp(value)});
+        summary.geoPlaceObjects++;
+      }
+    }
+    if(config.kind==='geo')return;
     const result=normalize(value,{...config,path,index:summary.totalRows});
     if(result.error||result.kind==='unmapped'){
       if(result.kind==='unmapped')result.error='非可匯入文字紀錄';
@@ -493,7 +515,7 @@ export async function detectZipArchiveSource(file,{signal,onProgress,skipPrivate
     structure:summarizeArchiveStructures(profiles),audit:audit.report()};
 }
 
-export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMediaEntry,onProgress,flush,signal,skipPrivateEntries=false}={}){
+export async function inspectPrivateArchive(file,{onRecord,onGeoPlace,onMediaMetadata,onMediaEntry,onProgress,flush,signal,skipPrivateEntries=false}={}){
   if(!file||typeof file.slice!=='function'||!Number.isSafeInteger(file.size)||file.size<=0)
     throw new Error('請選擇有效的本機備份檔。');
   if(file.size>ARCHIVE_MAX_BYTES)throw new Error('檔案超過 1024 MiB 安全限制；未讀取檔案內容。');
@@ -580,7 +602,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       const chunks=[];
       let textSize=0;
       const isStructured=/\.(?:json|js)$/i.test(path);
-      const sink=isStructured?createSink(path,summary,onRecord,signal,sourceHint):null;
+      const sink=isStructured?createSink(path,summary,onRecord,onGeoPlace,signal,sourceHint):null;
       const session={path,ended:false};sessions.push(session);
       entry.ondata=(error,data,final)=>{
         if(error)throw error;
@@ -630,7 +652,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
       summary.bytesRead=file.size;
     }else{
       if(file.size>MAX_STRUCTURED_DOCUMENT)throw new Error('結構化檔案超過 50 MiB 上限，未嘗試解析。');
-      const sink=createSink(path,summary,onRecord,signal,sourceHint);
+      const sink=createSink(path,summary,onRecord,onGeoPlace,signal,sourceHint);
       for(let offset=0;offset<file.size;offset+=ARCHIVE_CHUNK_BYTES){
         const chunk=await read(offset);
         sink.push(chunk,offset+chunk.length>=file.size);
@@ -640,7 +662,7 @@ export async function inspectPrivateArchive(file,{onRecord,onMediaMetadata,onMed
     }
   }
   await flush?.(true);
-  if(!summary.acceptedRows&&!(summary.mediaFiles>0&&typeof onMediaEntry==='function'))
+  if(!summary.acceptedRows&&!summary.geoPlaceObjects&&!(summary.mediaFiles>0&&typeof onMediaEntry==='function'))
     throw new Error('沒有辨識到可匯入的紀錄。請查看備份格式，不會寫入正式資料。');
   return summary;
 }

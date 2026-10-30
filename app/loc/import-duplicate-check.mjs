@@ -1,3 +1,5 @@
+import {importGeoKey} from './import-geocoordinates.mjs';
+
 // Import identity belongs to the original post, never the generated UID.
 // Keep platform boundaries: synchronized Threads/Instagram/Facebook posts are
 // distinct even with identical original text and timestamps.
@@ -60,8 +62,9 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
        String(saved.content||'')!==String(record.content||''))return false;
     const incomingUrl=String(record.url||'').trim();
     if(incomingUrl&&incomingUrl!==String(saved.url||'').trim())return false;
-    // A missing place_id may still be completed from an imported location.
-    if(!String(saved.place_id||'').trim()&&String(record.location||'').trim())return false;
+    // A manually curated Trace anchor may have been added since the last import.
+    // Recheck an existing article when the source supplies exact coordinates.
+    if(!String(saved.place_id||'').trim()&&importGeoKey(record.__importCoordinates))return false;
     return true;
   });
 }
