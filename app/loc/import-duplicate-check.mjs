@@ -12,11 +12,14 @@ const importSourceKey=record=>{
   const id=String(record?.site_id??'').trim();
   return site&&id?JSON.stringify([site,id]):null;
 };
+// An album compares with albums only, an article with articles only.
+export const importRowRole=record=>
+  String(record?.site_id??'').startsWith('album:')?'album':'article';
 const importTimeKey=record=>{
   const site=String(record?.site??'').trim().toLocaleLowerCase('und');
   const date=Date.parse(String(record?.createtime??''));
   return site&&Number.isFinite(date)?
-    JSON.stringify([site,new Date(date).toISOString()]):null;
+    JSON.stringify([site,new Date(date).toISOString(),importRowRole(record)]):null;
 };
 // Keep separate source rows even when they share a timestamp; an exact UID
 // repeated in the same file is the only safe input-level duplicate.

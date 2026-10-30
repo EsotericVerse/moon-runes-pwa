@@ -43,7 +43,8 @@ export function archiveGalaxyRows(record){
     });
     const parent={
       uid:parentUid,title:name,content:description||name,createtime:albumTime,
-      site:'Facebook',site_id:null,
+      // The 'album:' prefix marks an album so imports compare it with albums only.
+      site:'Facebook',site_id:albumTime?'album:'+albumTime:null,
       searchable:Boolean(description),statistics_able:Boolean(description),
       ...(captions.length?{target_id:captions.map(entry=>entry.row.uid)}:{})
     };

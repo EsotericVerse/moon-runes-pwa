@@ -585,7 +585,7 @@ test('Facebook ZIP album parent, photo captions and original media are mapped to
   assert.equal(mapped.length,3);
   const [parent,first,second]=mapped;
   assert.equal(parent.content,'記錄旅途');
-  assert.equal(parent.site_id,null);
+  assert.equal(parent.site_id,'album:'+first.createtime,'albums are marked so they compare with albums only');
   assert.equal(parent.createtime,first.createtime,'album time is its earliest photo');
   assert.deepEqual(parent.target_id,[first.uid,second.uid]);
   assert.equal(first.source_id,parent.uid);
