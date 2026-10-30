@@ -9,38 +9,15 @@ export function comparableImportText(value){
 // Import normalization already provides UTC ISO timestamps.
 // Compare the original timestamp at second precision, without epoch conversion.
 const importSecondKey=value=>typeof value==='string'&&value.length>=19?value.slice(0,19):null;
-// All source article fields except generated UID and database update clock.
-// The date column is derived from createtime, so a time-less row has no
-// independent date information to keep when an otherwise equal dated row exists.
-const IMPORT_IDENTITY_FIELDS=['title','content','location','place_id','url','source_id',
-  'target_id','ref_id','media_link','searchable','statistics_able'];
-const fieldValues=record=>IMPORT_IDENTITY_FIELDS.map(field=>
-  // Threads titles are generated from content and cannot establish identity.
-  field==='title'&&String(record?.site||'').trim().toLowerCase()==='threads'
-    ?null:record?.[field]===undefined?null:record[field]);
-const importUntimedKey=record=>{
-  if(!String(record?.content??'').trim())return null;
-  return JSON.stringify(fieldValues(record));
-};
+// Only original publishing time can identify a repeated import.
 const importDuplicateKey=record=>importSecondKey(record?.createtime);
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byIdentity=new Map(),byUntimed=new Map();
-  const datedByContent=new Map();
+  const unique=[],aliases=new Map(),byIdentity=new Map();
   let duplicates=0;
-  // Reconcile missing-time copies against the complete incoming archive,
-  // irrespective of input order, while retaining every distinct dated post.
-  for(const row of records){
-    if(importSecondKey(row?.createtime)===null)continue;
-    const key=importUntimedKey(row);
-    if(key&&!datedByContent.has(key))datedByContent.set(key,String(row.uid||'').trim());
-  }
   for(const row of records){
     const uid=String(row?.uid||'').trim();
     const key=importDuplicateKey(row);
-    const untimedKey=key===null?importUntimedKey(row):null;
-    const existing=key?byIdentity.get(key)
-      :((untimedKey&&datedByContent.get(untimedKey))||
-         (untimedKey&&byUntimed.get(untimedKey)));
+    const existing=key?byIdentity.get(key):null;
     if(existing){
       duplicates++;
       aliases.set(uid,existing);
@@ -48,42 +25,9 @@ export function dedupeIncomingImport(records=[]){
     }
     unique.push(row);
     if(key)byIdentity.set(key,uid);
-    if(untimedKey)byUntimed.set(untimedKey,uid);
     aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
-}
-
-// Reimporting an archive with no source timestamp must not recreate the
-// incomplete copies already represented by equal saved posts. Fetch only the
-// exact content strings for the current source, never another platform.
-export async function matchExistingWithoutCreatedAt(records,{readContents,alreadyMatched=new Map()}={}){
-  if(typeof readContents!=='function')throw new Error('缺少無時間文章比對查詢');
-  const byContent=new Map();
-  for(const record of records||[]){
-    if(importSecondKey(record?.createtime)!==null||alreadyMatched.has(record.uid))continue;
-    const content=String(record?.content??'');
-    if(!content.trim())continue;
-    if(!byContent.has(content))byContent.set(content,[]);
-    byContent.get(content).push(record);
-  }
-  const matched=new Map();
-  if(!byContent.size)return matched;
-  const saved=await readContents([...byContent.keys()]);
-  if(!Array.isArray(saved))throw new Error('無時間文章比對資料不完整');
-  const byIdentity=new Map();
-  for(const article of saved){
-    const key=importUntimedKey(article);
-    if(!key)continue;
-    const prior=byIdentity.get(key);
-    if(!prior||(importSecondKey(prior.createtime)===null&&importSecondKey(article.createtime)!==null))
-      byIdentity.set(key,article);
-  }
-  for(const entries of byContent.values())for(const incoming of entries){
-    const article=byIdentity.get(importUntimedKey(incoming));
-    if(article)matched.set(incoming.uid,article);
-  }
-  return matched;
 }
 
 // PostgreSQL performs native TIMESTAMPTZ equality; returned UTC timestamps
