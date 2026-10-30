@@ -207,8 +207,8 @@ test('import retry uses non-notifying insert but keeps database permission gate'
 });
 test('an empty site bypasses timestamp matching before any candidate reads',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  const siteProbe=panel.indexOf('const distinctSites=[...new Set(unique.map(');
-  const pool=panel.indexOf('const existingCandidates=unique.filter(');
+  const siteProbe=panel.indexOf('const distinctSites=[...new Set(analyzed.valid.map(');
+  const pool=panel.indexOf('const existingCandidates=deduped.unique;');
   const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
   assert.ok(siteProbe>0&&siteProbe<pool&&pool<match);
   assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt\(existingCandidates,/);
