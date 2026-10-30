@@ -89,7 +89,7 @@ test('database lookup limits site and time before matching, preserving curated s
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.doesNotMatch(panel,/matchExistingImportBySiteId\(unique,/);
   assert.match(panel,/urlSafeInBatches\(values,column\)/);
-  assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
+  assert.match(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/\.gte\('createtime',timeWindow\.start\)/);
   assert.match(panel,/\.lte\('createtime',timeWindow\.end\)/);
   assert.match(panel,/matchExistingImportByCreatedAt\(existingCandidates,/);
@@ -213,7 +213,7 @@ test('an empty site bypasses timestamp matching before any candidate reads',()=>
   assert.ok(siteProbe>0&&siteProbe<pool&&pool<match);
   assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt\(existingCandidates,/);
   assert.match(panel,/:new Map\(\)/);
-  assert.match(panel,/\.select\('uid'\)\.eq\('site',site\)\.limit\(1\)/);
+  assert.match(panel,/\.select\('uid'\)\.ilike\('site',site\)\.limit\(1\)/);
   assert.doesNotMatch(panel,/changes\.site_id=record\.site_id/);
   assert.match(panel,/await updateRows\(galaxy,\{site_id:record\.site_id\}/);
 });
