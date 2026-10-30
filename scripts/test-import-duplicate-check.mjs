@@ -81,3 +81,10 @@ test('insert result includes only successfully written article UIDs',async()=>{
   assert.deepEqual([...inserted.conflictedUids],['AA000002']);
   assert.equal(inserted.inserted,2);
 });
+test('every db helper the import panel calls is imported from db-client',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const imported=panel.match(/import \{([^}]*)\} from '\.\/db-client\.mjs'/)[1].split(',').map(name=>name.trim());
+  for(const name of ['insertRows','insertImportRows','updateRows','updateImportRows'])
+    if(new RegExp('\\b'+name+'\\(').test(panel))
+      assert.ok(imported.includes(name),name+' is called but not imported');
+});

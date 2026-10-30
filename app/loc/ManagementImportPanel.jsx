@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
+import {insertRows,insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
@@ -694,24 +694,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        // site_id is saved on INSERT; existing blank values are backfilled
-        // separately because update_batch only accepts article text/media fields.
-        if(record.site_id&&!existing.site_id)
-          await updateRows(galaxy,{site_id:record.site_id},{filters:[{column:'uid',value:existing.uid}]});
-        if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
-        if(record.target_id?.length){
-          const prior=normalizeRelationIds(existing.target_id)||[];
-          const missing=record.target_id.filter(uid=>!prior.includes(uid));
-          if(missing.length)changes.target_id=[...prior,...missing];
-        }
-        const newUrl=String(record.url||'').trim();
-        const oldUrl=String(existing.url||'').trim();
-        if(newUrl&&newUrl!==oldUrl&&
-            (!oldUrl||isArchiveMediaUrl(oldUrl)||importMapUrlCoordinates(oldUrl)))
-          changes.url=newUrl;
-        const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
-        if(placeUid)changes.place_id=placeUid;
-        // Do not replace a manually selected location or existing place_id.
+        // Existing articles only ever get their title and content updated.
+        // site_id, relations, URL and place are written on INSERT and left alone here.
         if(Object.keys(changes).length){
           updateQueue.push({uid:String(existing.uid),...changes});
           if(updateQueue.length>=updateSizer.size)await flushUpdates();
@@ -923,24 +907,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
        Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
      {timeWindow?<p className="scope-status" role="status">已設定時間範圍：{timeWindow.start.slice(0,10)} 至 {timeWindow.end.slice(0,10)}（UTC）。來源文章／媒體排除 {analyzed.skippedByRange.toLocaleString()} 筆，其中 {analyzed.undatedByRange.toLocaleString()} 筆沒有可辨識的發文時間；排除項目不會寫入。只比對同網站、區間內的既有文章。</p>:null}
-     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
-      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
-      <div className="scope-management-records">
-        {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
-          <strong>{record.title||record.uid}</strong>
-          <span>{record.uid} · {String(record.createtime||'').slice(0,10)||t('uiExtra.importUI.noDate')}</span>
-          <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
-        </article>)}
-      </div>
-      {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
-    </section>:null}
-    {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+     {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
         {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
-      <button type="button" className="loc-button scope-import-save-button"
+      <button type="button" className="loc-button primary scope-import-save-button"
         disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
@@ -955,6 +928,17 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
         <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
     </div>:null}
+    {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
+      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
+      <div className="scope-management-records">
+        {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
+          <strong>{record.title||record.uid}</strong>
+          <span>{record.uid} · {String(record.createtime||'').slice(0,10)||t('uiExtra.importUI.noDate')}</span>
+          <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
+        </article>)}
+      </div>
+      {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
+    </section>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
   </div>;

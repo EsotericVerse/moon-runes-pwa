@@ -134,7 +134,7 @@ test('unchanged site_id match exits before anchor and article writes',async()=>{
   assert.ok(guard<panel.indexOf('const placeAnchors=await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
 });
-test('no-op guard cannot hide edits, coordinates, source ID changes or media',()=>{
+test('no-op guard only looks at site, time, title and content, and never hides media',()=>{
   const record=post('IN000001','Facebook','fb-1');
   const saved={...record,uid:'OLD00001',place_id:null};
   const matches=new Map([[record.uid,saved]]);
@@ -145,7 +145,7 @@ test('no-op guard cannot hide edits, coordinates, source ID changes or media',()
   assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:null}],matches),true);
   assert.equal(isUnchangedImportBeforeWrite([{...record,site_id:null,createtime:'2024-08-02T00:00:00Z'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,
-    __importCoordinates:{latitude:25.05338,longitude:121.49086}}],matches),false);
+    __importCoordinates:{latitude:25.05338,longitude:121.49086}}],matches),true);
   assert.equal(isUnchangedImportBeforeWrite([record],matches,{hasMedia:true}),false);
   assert.equal(isUnchangedImportBeforeWrite([record,{...record,uid:'NEW00002'}],matches),false);
 });
@@ -215,7 +215,8 @@ test('an empty site bypasses timestamp matching before any candidate reads',()=>
   assert.match(panel,/:new Map\(\)/);
   assert.match(panel,/\.select\('uid'\)\.ilike\('site',site\)\.limit\(1\)/);
   assert.doesNotMatch(panel,/changes\.site_id=record\.site_id/);
-  assert.match(panel,/await updateRows\(galaxy,\{site_id:record\.site_id\}/);
+  assert.doesNotMatch(panel,/updateRows\(galaxy,\{site_id/);
+  assert.doesNotMatch(panel,/changes\.(source_id|target_id|url|place_id)=/);
 });
 test('native site_id lookups are grouped by platform before database reads',async()=>{
   const rows=[post('NEW00001','Facebook','same-id'),post('NEW00002','Threads','same-id')];
