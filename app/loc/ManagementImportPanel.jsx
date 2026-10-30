@@ -19,6 +19,7 @@ import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
+import {facebookPostCoordinate} from './archive-geo-objects.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches,importTaipeiDate} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
@@ -58,7 +59,9 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
-  const importedCoordinates=extractImportCoordinates(row.__importCoordinates||row);
+  const importedCoordinates=row.__importCoordinates
+    ?extractImportCoordinates(row.__importCoordinates)
+    :isFacebook?facebookPostCoordinate(row):extractImportCoordinates(row);
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
