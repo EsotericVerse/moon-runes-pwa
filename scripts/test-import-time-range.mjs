@@ -26,13 +26,14 @@ test('time window excludes older, future and undated records, including media-on
     row('NODATE01',null)];
   const normalized=valid.map(record=>({record,mediaRecords:[]}));
   const mediaOnly=[row('MEDIA001','2026-10-15T00:00:00Z'),
-    row('MEDIA002','2026-09-15T00:00:00Z')];
+    row('MEDIA002','2026-09-15T00:00:00Z'),
+    {...row('MEDIA003','2026-10-15T00:00:00Z'),__article_uid:'OLD00001'}];
   const analysis={valid,normalized,mediaOnly,invalid:[{error:'invalid content'}]};
   const filtered=filterImportAnalysisByTime(analysis,window);
   assert.deepEqual(filtered.valid.map(item=>item.uid),['IN000001']);
   assert.deepEqual(filtered.mediaOnly.map(item=>item.uid),['MEDIA001']);
   assert.equal(filtered.normalized.length,1);
-  assert.equal(filtered.skippedByRange,4);
+  assert.equal(filtered.skippedByRange,5);
   assert.equal(filtered.undatedByRange,1);
   assert.equal(filtered.invalid.length,1);
   assert.equal(importWithinTimeRange(row('EDGE0001',window.start),window),true);
