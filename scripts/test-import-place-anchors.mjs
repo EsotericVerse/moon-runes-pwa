@@ -56,6 +56,7 @@ test('opt-in restoration creates one anchor per exact source coordinate, never f
  assert.equal(rows[0].title,'Facebook 原始地點');
  assert.deepEqual(rows[0].address,[121.49086,25.05338]);
  assert.equal(rows[0].description.address,'原始地址');
+ assert.equal(rows[0].hidden_depth,0,'new Facebook anchors stay hidden until reviewed');
  assert.equal(importedPlaceId({incoming:first,byCoordinate:created.byCoordinate}),'AB12');
  assert.equal(importedPlaceId({incoming:unnamed,byCoordinate:created.byCoordinate}),null);
  const repeated=await prepareImportPlaceAnchors([first],{
