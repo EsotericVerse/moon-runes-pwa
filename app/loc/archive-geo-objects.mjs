@@ -48,7 +48,10 @@ export function extractFacebookGeoObjects(raw){
 
 // A post may contain several distinct place objects. Never pick an arbitrary
 // first coordinate for Galaxy.place_id when the source is ambiguous.
-export function facebookPostCoordinate(raw){
+export function facebookPostPlace(raw){
   const places=extractFacebookGeoObjects(raw);
-  return places.length===1?places[0].__importCoordinates:null;
+  return places.length===1?places[0]:null;
+}
+export function facebookPostCoordinate(raw){
+  return facebookPostPlace(raw)?.__importCoordinates||null;
 }
