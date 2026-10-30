@@ -694,24 +694,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        // site_id is saved on INSERT; existing blank values are backfilled
-        // separately because update_batch only accepts article text/media fields.
-        if(record.site_id&&!existing.site_id)
-          await updateRows(galaxy,{site_id:record.site_id},{filters:[{column:'uid',value:existing.uid}]});
-        if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
-        if(record.target_id?.length){
-          const prior=normalizeRelationIds(existing.target_id)||[];
-          const missing=record.target_id.filter(uid=>!prior.includes(uid));
-          if(missing.length)changes.target_id=[...prior,...missing];
-        }
-        const newUrl=String(record.url||'').trim();
-        const oldUrl=String(existing.url||'').trim();
-        if(newUrl&&newUrl!==oldUrl&&
-            (!oldUrl||isArchiveMediaUrl(oldUrl)||importMapUrlCoordinates(oldUrl)))
-          changes.url=newUrl;
-        const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
-        if(placeUid)changes.place_id=placeUid;
-        // Do not replace a manually selected location or existing place_id.
+        // Existing articles only ever get their title and content updated.
+        // site_id, relations, URL and place are written on INSERT and left alone here.
         if(Object.keys(changes).length){
           updateQueue.push({uid:String(existing.uid),...changes});
           if(updateQueue.length>=updateSizer.size)await flushUpdates();

@@ -173,14 +173,8 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
     const saved=matches.get(record.uid);
     if(!saved)return false;
     if(!importTimeKey(record)||importTimeKey(record)!==importTimeKey(saved))return false;
-    if(record.site_id&&!saved.site_id)return false;
-    if(record.source_id&&!saved.source_id)return false;
-    if(record.target_id?.some(id=>!(saved.target_id||[]).includes(id)))return false;
     if(String(saved.title||'')!==String(record.title||'')||
        String(saved.content||'')!==String(record.content||''))return false;
-    const incomingUrl=String(record.url||'').trim();
-    if(incomingUrl&&incomingUrl!==String(saved.url||'').trim())return false;
-    if(!String(saved.place_id||'').trim()&&importGeoKey(record.__importCoordinates))return false;
     return true;
   });
 }
