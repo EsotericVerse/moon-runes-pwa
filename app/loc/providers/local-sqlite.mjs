@@ -791,6 +791,29 @@ async function managementWriteLocal(payload){
       });
       return {data:{count:await runBatchLocal(statements)},error:null};
     }
+    if(op==='update_batch'){
+      const list=Array.isArray(rows)?rows:[];
+      const stamped=new Date().toISOString();
+      const statements=list.map(row=>{
+        const keys=Object.keys(row).filter(key=>key!=='uid');
+        if(!/^[A-Za-z0-9]{8}$/.test(String(row.uid||''))||
+          !keys.length||keys.some(key=>!['title','content','place_id','url','media_link'].includes(key)))
+          throw Error('Invalid import update');
+        const conditional=key=>key==='location'||key==='place_id';
+        const sets=keys.map(key=>conditional(key)?
+          quoteIdent(key)+'=CASE WHEN ('+quoteIdent(key)+" IS NULL OR trim("+quoteIdent(key)+")='') THEN ? ELSE "+quoteIdent(key)+' END':
+          quoteIdent(key)+'=?');
+        const checks=keys.map(key=>conditional(key)?
+          '(('+quoteIdent(key)+" IS NULL OR trim("+quoteIdent(key)+")='') AND ? IS NOT NULL)":
+          quoteIdent(key)+' IS NOT ?');
+        return {
+          sql:'UPDATE '+quoteIdent(name)+' SET '+sets.join(',')+',"UpdateTime"=? WHERE "uid"=? AND ('+checks.join(' OR ')+')',
+          values:[...keys.map(key=>toSqlValue(row[key])),stamped,row.uid,
+            ...keys.map(key=>toSqlValue(row[key]))]
+        };
+      });
+      return {data:{count:statements.length?await runBatchLocal(statements):0},error:null};
+    }
     if(op==='update'){
       if(!filters.length)throw new Error('filters are required');
       const columns=Object.keys(values||{});

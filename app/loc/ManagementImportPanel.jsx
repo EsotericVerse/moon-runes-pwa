@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertRows,dbAuthRelation,dbAuthClient,updateRows} from './db-client.mjs';
+import {insertRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
@@ -20,12 +20,12 @@ import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches,importTaipeiDate} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -158,19 +158,20 @@ function ImportFormatSettings({format,onChange,disabled=false}){
 
 // A GET .in() filter has a URL budget, unlike POST imports.
 // Count and page each query until all matched rows are returned.
-async function readExistingByIds(table,columns,column,values,message){
-  const records=[],orderColumn=table.endsWith('_media')?'uid':'uid';
+async function readExistingByIds(table,columns,column,values,message,onPage){
+  const records=[],orderColumn='uid';
+  const pageSize=Math.min(MAX_ROWS,500);
   for(const batch of urlSafeInBatches(values,column)){
-    let offset=0;
-    for(;;){
-      const {data,error,count}=await dbAuthRelation(table)
-        .select(columns,{count:'exact'}).in(column,batch)
-        .order(orderColumn,{ascending:true}).range(offset,offset+MAX_ROWS-1);
+    for(let offset=0;;){
+      const {data,error}=await dbAuthRelation(table).select(columns)
+        .in(column,batch).order(orderColumn,{ascending:true})
+        .range(offset,offset+pageSize-1);
       if(error)throw new Error(error.message||message);
       const rows=data||[];
-      records.push(...rows);
+      if(!rows.length)break;
+      if(onPage)await onPage(rows);
+      else records.push(...rows);
       offset+=rows.length;
-      if(!rows.length||(count!=null&&offset>=Number(count)))break;
     }
   }
   return records;
@@ -200,7 +201,23 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
       const byId=new Map(existingMedia.map(row=>[String(row.uid),row]));
-      const createMedia=[],related=new Map(),seenMedia=new Set(),resolvedIds=new Map();
+      const createMedia=[],pendingMediaUids=new Set(),related=new Map(),seenMedia=new Set(),resolvedIds=new Map();
+      const mediaSizer=createImportBatchSizer();
+      let created=0;
+      const flushNewMedia=async()=>{
+        if(!createMedia.length)return;
+        const count=createMedia.length,started=Date.now();
+        await writeImportBatches(createMedia,{
+          writeBatch:batch=>insertRows(galaxyMedia,batch.map(record=>({
+            ...record,rune_references:record.rune_references??null
+          }))),
+          onProgress:p=>onProgress?.({stage:'新增媒體紀錄',completed:created+p.completed,total:created+count})
+        });
+        created+=count;
+        createMedia.length=0;
+        pendingMediaUids.clear();
+        mediaSizer.observe(count,Date.now()-started);
+      };
       function attach(uid,id){
         if(!uid||!id)return;
         if(!related.has(uid))related.set(uid,new Set());
@@ -218,43 +235,67 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         const record={...raw};delete record.__article_uid;
         const key=mediaKey(record);
         const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
-        if(known){if(record.uid)resolvedIds.set(String(record.uid),String(known.uid));attach(owner,known.uid);continue;}
+        if(known){
+          if(record.uid&&String(known.media_type||'')!==String(record.media_type||''))
+            throw new Error('媒體 UID 已存在，但媒體類型不同：'+record.uid);
+          if(record.uid&&known.url&&record.url&&String(known.url)!==String(record.url))
+            throw new Error('媒體 UID 已存在，但網址不同：'+record.uid);
+          if(record.url&&!known.url){
+            if(!pendingMediaUids.has(String(known.uid)))
+              await updateRows(galaxyMedia,{url:record.url},{filters:[{column:'uid',operator:'eq',value:known.uid}]});
+            known.url=record.url;
+            byKey.set(mediaKey(known),known);
+          }
+          if(record.uid)resolvedIds.set(String(record.uid),String(known.uid));
+          attach(owner,known.uid);continue;
+        }
         if(key&&seenMedia.has(key))continue;
         if(key)seenMedia.add(key);
         const mediaId=record.uid||createUid8();
         if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
         record.uid=mediaId;
-        createMedia.push(record);if(key)byKey.set(key,record);byId.set(mediaId,record);
+        createMedia.push(record);pendingMediaUids.add(String(mediaId));
+        if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
+        if(createMedia.length>=mediaSizer.size)await flushNewMedia();
       }
-      if(createMedia.length)onProgress?.({stage:'新增媒體紀錄',completed:0,total:createMedia.length});
-      await writeImportBatches(createMedia,{
-        batchSize:MAX_ROWS,
-        writeBatch:batch=>insertRows(galaxyMedia,batch),
-        onProgress:p=>onProgress?.({stage:'新增媒體紀錄',completed:p.completed,total:p.total})
-      });
+      await flushNewMedia();
       for(const link of extraLinks){
         const uid=knownArticleIds.get(String(link.uid||'').trim());
         const mediaId=resolvedIds.get(String(link.media_uid||''))||String(link.media_uid||'');
         if(uid&&byId.has(mediaId))attach(uid,mediaId);
       }
-      let connected=0;
+      let connected=0,checkedLinks=0;
       const linkedUids=[...related.keys()];
-      onProgress?.({stage:'讀取文章媒體連結',completed:0,total:0});
-      const articleLinks=await readExistingByIds(galaxy,'uid,media_link','uid',linkedUids,t('uiExtra.importUI.mediaLinkReadFailed'));
-      if(articleLinks.length)onProgress?.({stage:'更新文章媒體連結',completed:0,total:articleLinks.length});
-      let checkedLinks=0;
-      for(const row of articleLinks){
-          const uid=String(row.uid||'').trim();
-          const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
-          const after=[...new Set([...prior,...(related.get(uid)||[])])];
-          if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
-          checkedLinks++;
-          if(checkedLinks%25===0||checkedLinks===articleLinks.length)
-            onProgress?.({stage:'更新文章媒體連結',completed:checkedLinks,total:articleLinks.length});
-      }
+      const linkSizer=createImportBatchSizer();
+      let linkQueue=[];
+      const flushMediaLinks=async()=>{
+        if(!linkQueue.length)return;
+        const count=linkQueue.length,started=Date.now();
+        const result=await updateImportRows(galaxy,linkQueue);
+        connected+=result.count;
+        linkQueue=[];
+        linkSizer.observe(count,Date.now()-started);
+      };
+      onProgress?.({stage:'讀取文章媒體連結',completed:0,total:linkedUids.length});
+      await readExistingByIds(galaxy,'uid,media_link','uid',linkedUids,
+        t('uiExtra.importUI.mediaLinkReadFailed'),async page=>{
+          for(const row of page){
+            const uid=String(row.uid||'').trim();
+            const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
+            const linked=new Set(prior);
+            const additions=[...(related.get(uid)||[])].filter(id=>!linked.has(String(id)));
+            if(additions.length){
+              linkQueue.push({uid,media_link:[...prior,...additions]});
+              if(linkQueue.length>=linkSizer.size)await flushMediaLinks();
+            }
+            checkedLinks++;
+          }
+          onProgress?.({stage:'更新文章媒體連結',completed:checkedLinks,total:linkedUids.length});
+        });
+      await flushMediaLinks();
 
-  return {created:createMedia.length,connected,resolvedIds};
+  return {created,connected,resolvedIds};
 }
 
 function UniversalImport({scopeId,format,onFormatChange}) {
@@ -385,7 +426,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           ' 個、可匯入媒體 '+mediaPlan.media.length.toLocaleString()+' 筆（有網址 '+mediaPlan.media.filter(item=>item.url).length.toLocaleString()+' 筆）；略過 '+
           (ignored+summary.rejectedRows).toLocaleString()+' 筆'+
           (privateSkipped?'（含 '+privateSkipped.toLocaleString()+' 筆非公開／不支援紀錄）':'')+
-          '。請核對預覽後，在「儲存至 Galaxy」按開始匯入。');
+          '。請核對預覽後，在「作品儲存資料庫」按開始匯入。');
         return;
       }
       const {parseUniversalImportFile}=await import('./universal-file-import.mjs');
@@ -455,88 +496,128 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
         onProgress:p=>showProgress('精確比對發文時間',p.completed,p.total),
-        readTimestamps:async timestamps=>{
-          const collected=[];
-          // TIMESTAMPTZ equality, not a time range or a site query.
-          for(const batch of urlSafeInBatches(timestamps,'createtime')){
+        readTimestamps:async (timestamps,consumePage)=>{
+          const lookup=nativeLocal?timestamps:
+            [...new Set(timestamps.map(importTaipeiDate).filter(Boolean))];
+          const column=nativeLocal?'createtime':'date';
+          const pageSize=Math.min(MAX_ROWS,500);
+          let done=0;
+          for(const batch of urlSafeInBatches(lookup,column)){
             for(let offset=0;;){
               const {data,error}=await dbAuthRelation(galaxy)
-                .select('uid,site,createtime,content,title,location,place_id,url')
-                .in('createtime',batch).order('uid',{ascending:true})
-                .range(offset,offset+MAX_ROWS-1);
+                .select('uid,createtime,content,title,place_id,url')
+                .in(column,batch).order('uid',{ascending:true})
+                .range(offset,offset+pageSize-1);
               if(error)throw new Error('重複文章比對失敗：'+error.message);
               const page=data||[];
-              collected.push(...page);
+              if(!page.length)break;
+              consumePage(page);
               offset+=page.length;
-              if(page.length<MAX_ROWS)break;
             }
+            done+=batch.length;
+            showProgress('精確比對發文時間',done,lookup.length);
           }
-          return collected;
         }
       });
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
-      const placeAnchors=await prepareImportPlaceAnchors(unique,{
+      const needsAnchor=unique.filter(record=>
+        !String(existingByCreatedAt.get(record.uid)?.place_id||'').trim());
+      const placeAnchors=await prepareImportPlaceAnchors(needsAnchor,{
         scopeId,relation:dbAuthRelation,allowMissing:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
       let updated=0,checkedExisting=0;
-      const existingCount=unique.filter(record=>existingByCreatedAt.has(record.uid)).length;
+      const updateSizer=createImportBatchSizer();
+      let updateQueue=[];
+      const existingCount=existingByCreatedAt.size;
       if(existingCount)showProgress('更新既有文章',0,existingCount);
+      const flushUpdates=async()=>{
+        if(!updateQueue.length)return;
+        const count=updateQueue.length,started=Date.now();
+        const result=await updateImportRows(galaxy,updateQueue);
+        updated+=result.count;
+        updateQueue=[];
+        updateSizer.observe(count,Date.now()-started);
+      };
       for(const record of unique){
         const existing=existingByCreatedAt.get(record.uid);
-        if(!existing){knownArticleIds.set(record.uid,record.uid);continue;}
+        if(!existing)continue;
         knownArticleIds.set(record.uid,String(existing.uid));
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        if(record.__importCoordinates&&!String(existing.location||'').trim()&&String(record.location||'').trim())
-          changes.location=record.location;
-        if(!String(existing.site||'').trim()&&String(record.site||'').trim())
-          changes.site=record.site;
-        // Repair only missing or demonstrably misclassified article URLs.
-        if(String(record.url||'').trim()&&!String(existing.url||'').trim())
-          changes.url=record.url;
-        else if(isArchiveMediaUrl(existing.url)||importMapUrlCoordinates(existing.url)){
-          if(String(existing.url||'')!==String(record.url||''))changes.url=record.url||null;
-        }
-        const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate});
+        const newUrl=String(record.url||'').trim();
+        const oldUrl=String(existing.url||'').trim();
+        if(newUrl&&newUrl!==oldUrl&&
+            (!oldUrl||isArchiveMediaUrl(oldUrl)||importMapUrlCoordinates(oldUrl)))
+          changes.url=newUrl;
+        const placeUid=importedPlaceId({incoming:record,existing,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
         if(placeUid)changes.place_id=placeUid;
         // Do not replace a manually selected location or existing place_id.
         if(Object.keys(changes).length){
-          await updateRows(galaxy,changes,{filters:[{column:'uid',operator:'eq',value:existing.uid}]});
-          updated++;
+          updateQueue.push({uid:String(existing.uid),...changes});
+          if(updateQueue.length>=updateSizer.size)await flushUpdates();
         }
         checkedExisting++;
         if(checkedExisting%25===0||checkedExisting===existingCount)
           showProgress('更新既有文章',checkedExisting,existingCount);
       }
+      await flushUpdates();
+      const newArticleTotal=unique.length-existingByCreatedAt.size;
+      if(newArticleTotal)showProgress('新增文章',0,newArticleTotal);
+      const result={inserted:0,conflicts:0,insertedUids:new Set(),conflictedUids:new Set()};
+      const insertSizer=createImportBatchSizer();
+      let payload=[],newArticleProcessed=0;
+      const flushNewArticles=async()=>{
+        if(!payload.length)return;
+        const count=payload.length,started=Date.now();
+        const outcome=await insertImportBatches(payload,{
+          batchSize:insertSizer.size,
+          writeBatch:batch=>insertRows(galaxy,batch.map(record=>({
+            ...record,place_id:record.place_id??null,media_link:record.media_link??null
+          })))
+        });
+        result.inserted+=outcome.inserted;
+        result.conflicts+=outcome.conflicts;
+        for(const uid of outcome.insertedUids)result.insertedUids.add(uid);
+        for(const uid of outcome.conflictedUids)result.conflictedUids.add(uid);
+        newArticleProcessed+=payload.length;
+        payload=[];
+        insertSizer.observe(count,Date.now()-started);
+        showProgress('新增文章',newArticleProcessed,newArticleTotal);
+      };
+      for(const record of unique){
+        if(existingByCreatedAt.has(record.uid))continue;
+        const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
+        const {__importCoordinates:unusedCoordinates,...article}=record;
+        payload.push(placeUid?{...article,place_id:placeUid}:article);
+        if(payload.length>=insertSizer.size)await flushNewArticles();
+      }
+      await flushNewArticles();
+      duplicateCount+=result.conflicts;
+      for(const uid of result.insertedUids)knownArticleIds.set(uid,uid);
       for(const record of analyzed.valid){
         const canonical=incoming.aliases.get(record.uid)||record.uid;
-        knownArticleIds.set(record.uid,knownArticleIds.get(canonical)||canonical);
+        const savedUid=knownArticleIds.get(canonical);
+        if(savedUid)knownArticleIds.set(record.uid,savedUid);
       }
-      const payload=unique.filter(record=>!existingByCreatedAt.has(record.uid)).map(record=>{
-        const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate});
-        const {__importCoordinates:unusedCoordinates,...article}=record;
-        return placeUid?{...article,place_id:placeUid}:article;
-      });
-      if(payload.length)showProgress('新增文章',0,payload.length);
-      const result=await insertImportBatches(payload,{
-        batchSize:MAX_ROWS,
-        writeBatch:batch=>insertRows(galaxy,batch),
-        onProgress:p=>showProgress('新增文章',p.completed,p.total)
-      });
-      duplicateCount+=result.conflicts;
       showProgress('整理媒體資料');
       const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
-        ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||record.__article_uid
+        ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||null
       }));
+      const importedUids=new Set(analyzed.valid.map(row=>String(row.uid)));
+      const safeMediaOnly=analyzed.mediaOnly.map(record=>{
+        const owner=String(record.__article_uid||'');
+        return importedUids.has(owner)?
+          {...record,__article_uid:knownArticleIds.get(owner)||null}:record;
+      });
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
-        mediaOnly:[...analyzed.mediaOnly,...canonicalArchiveMedia],
+        mediaOnly:[...safeMediaOnly,...canonicalArchiveMedia],
         extraLinks:archivePlan.mediaLinks,
         knownArticleIds,galaxy,galaxyMedia,t,
         onProgress:p=>showProgress(p.stage,p.completed,p.total||0)
@@ -559,6 +640,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const skipped=analyzed.invalid.length+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
+        (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
         '；已更新既有文章 '+updated.toLocaleString()+' 筆，新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，沿用定錨點 '+placeAnchors.reused.toLocaleString()+' 筆。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
@@ -648,7 +730,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {archiveSummary.jsonFilesSeen!==archiveSummary.jsonFilesParsed+archiveSummary.jsonFilesPrivate+archiveSummary.jsonFilesUnrecognized+archiveSummary.jsonFilesOversize+archiveSummary.jsonFilesUnsupported?' JSON 數量尚未完全對帳，請勿視為完整匯入。':''}
       原始紀錄 {archiveSummary.totalRows.toLocaleString()} 筆，解析接受 {archiveSummary.acceptedRows.toLocaleString()} 筆，解析拒絕 {archiveSummary.rejectedRows.toLocaleString()} 筆；解析接受不等於最終寫入成功。
     </p>:null}
-    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入 Galaxy Media {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
+    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">

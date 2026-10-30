@@ -171,7 +171,7 @@ export default function TimelinePlaceManager({scopeId}){
           const result=await dbAuthClient.schema('silver').rpc('preview_timeline_place_page_json',{
             p_scope_id:scopeId,p_windows:batch,p_limit:RESULT_PAGE,p_offset:offset
           });
-          const rows=checked(result,'查詢 Galaxy 文章時間');
+          const rows=checked(result,'查詢作品發表時間');
           for(const row of rows||[])articleMatches.push({
             uid:row.article_uid,title:row.article_title,createtime:row.article_time,
             place_id:row.existing_place_id,window:byIndex.get(row.window_index)
@@ -182,7 +182,7 @@ export default function TimelinePlaceManager({scopeId}){
           if(offset>100000)throw Error('單批造訪對照超過查詢上限，請按年度拆分 JSON');
         }
         setProgress({done:Math.floor(i/WINDOW_BATCH)+1,total,
-          message:'比對 Galaxy 文章時間與定錨點…'});
+          message:'比對作品發表時間與定錨點…'});
       }
       if(run!==runRef.current)return;
       const classified=accumulateTimelineArticles(articleMatches);
@@ -241,7 +241,7 @@ export default function TimelinePlaceManager({scopeId}){
   async function apply(){
     if(!analysis||!canWrite||writing||analyzing)return;
     const updates=selectedUpdates;
-    if(!window.confirm('確認補寫 '+updates.length+' 篇 Galaxy 文章缺少的 place_id？\\n\\n'
+    if(!window.confirm('確認補寫 '+updates.length+' 篇作品缺少的地點關聯？\\n\\n'
       +'已有 place_id 的文章不會再次寫入；location 不更動。\\n'
       +'Timeline 原始資料不會儲存。'))return;
     setWriting(true);setNotice('');setWriteProgress({done:0,total:updates.length});let completed=0;

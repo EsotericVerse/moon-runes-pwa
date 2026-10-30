@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {extractImportCreatedAt} from '../app/loc/import-batch.mjs';
+import {extractImportCreatedAt,createImportBatchSizer} from '../app/loc/import-batch.mjs';
 import {dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 test('Threads source timestamps are extracted from root and nested media',()=>{
@@ -70,15 +70,16 @@ test('multiple candidates with identical time do not overwrite unrelated article
     {uid:'OLD00002',createtime:'2024-08-01T00:00:00.123Z',content:'old 2'}];
   assert.equal((await matchExistingImportByCreatedAt(incoming,{readTimestamps:async()=>old})).size,0);
 });
-test('normal import update preserves populated site/location and backfills blank fields',()=>{
+test('indexed date candidate paging and update queue do not rewrite location or site',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/if\(record\.__importCoordinates&&!String\(existing\.location\|\|''\)\.trim\(\)&&String\(record\.location\|\|''\)\.trim\(\)\)/);
-  assert.match(panel,/if\(!String\(existing\.site\|\|''\)\.trim\(\)&&String\(record\.site\|\|''\)\.trim\(\)\)/);
-  assert.match(panel,/\.in\('createtime',batch\)/);
-  assert.doesNotMatch(panel,/\.ilike\('site',source\)/);
-  assert.doesNotMatch(panel,/\.or\(or\)/);
-  assert.doesNotMatch(panel,/\.gte\('createtime'/);
-  assert.doesNotMatch(panel,/\.lt\('createtime'/);
+  assert.match(panel,/timestamps\.map\(importTaipeiDate\)/);
+  assert.match(panel,/\.in\(column,batch\)/);
+  assert.match(panel,/consumePage\(page\)/);
+  assert.match(panel,/if\(!page\.length\)break/);
+  assert.match(panel,/const updateSizer=createImportBatchSizer\(\)/);
+  assert.match(panel,/await updateImportRows\(galaxy,updateQueue\)/);
+  assert.doesNotMatch(panel,/changes\.location=|changes\.site=/);
+  assert.doesNotMatch(panel,/collected\.push\(\.\.\.page\)/);
 });
 
 test('timestamp comparison reports progress before and after the direct query',async()=>{
@@ -101,4 +102,27 @@ test('import progress shows each phase and an indeterminate bar until measurable
   assert.match(panel,/showProgress\('整理媒體資料'\)/);
   assert.match(panel,/progress\.percent===null\?<progress max="100"/);
   assert.doesNotMatch(panel,/每 MaxRows/);
+});
+
+test('candidate matcher consumes query pages without requiring an accumulated result array',async()=>{
+  const input=[{uid:'IN000001',createtime:'2026-10-30T06:00:00.000Z',content:'target'}];
+  const results=await matchExistingImportByCreatedAt(input,{
+    readTimestamps:async(_times,consumePage)=>{
+      for(let i=0;i<50;i++)consumePage([{
+        uid:'OTHER'+String(i).padStart(3,'0'),
+        createtime:'2026-10-30T06:00:01.000Z',content:'unrelated'
+      }]);
+      consumePage([{uid:'OUT00001',createtime:input[0].createtime,content:'target'}]);
+    }
+  });
+  assert.equal(results.size,1);
+  assert.equal(results.get('IN000001')?.uid,'OUT00001');
+});
+test('batch controller expands on throughput gains and contracts on deterioration',()=>{
+  const s=createImportBatchSizer();
+  assert.equal(s.size,256);
+  assert.equal(s.observe(256,5000),512);
+  assert.equal(s.observe(512,5000),1024);
+  assert.equal(s.observe(1024,20000),512);
+  assert.equal(s.observe(512,20000),256);
 });

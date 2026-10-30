@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from '../app/loc/archive-media-evidence.mjs';
 import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
@@ -50,4 +51,12 @@ test('dedicated media URL wins when a media object also contains a post permalin
     article_uid:'TEST0001'
   });
   assert.equal(normalized.records[0].url,imageUrl);
+});
+
+
+test('reimport backfills missing media URL but refuses conflicting UID URLs',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/if\(record\.url&&!known\.url\)/);
+  assert.match(panel,/await updateRows\(galaxyMedia,\{url:record\.url\}/);
+  assert.match(panel,/媒體 UID 已存在，但網址不同/);
 });

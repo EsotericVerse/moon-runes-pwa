@@ -62,6 +62,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   const insertRows=withWriteNotice(insertRowsUnchecked);
   const updateRows=withWriteNotice(updateRowsUnchecked);
   const deleteRows=withWriteNotice(deleteRowsUnchecked);
+  const updateImportRows=withWriteNotice(updateImportRowsUnchecked);
   const copyRune66KeywordClass=withWriteNotice(copyRune66KeywordClassUnchecked);
   const moveScopeBlock=withWriteNotice(moveScopeBlockUnchecked);
   const deleteScope=withWriteNotice(deleteScopeUnchecked);
@@ -118,6 +119,27 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const affected=Number(result?.count||0);
     if(affected<1)throw new Error(`DB UPDATE ${table} affected 0 rows; record may not exist or filter did not match`);
     return {...result,count:affected};
+  }
+
+  async function updateImportRowsUnchecked(table,rows){
+    const list=Array.isArray(rows)?rows:[];
+    for(const row of list){
+      const keys=Object.keys(row||{});
+      if(!/^[A-Za-z0-9]{8}$/.test(String(row?.uid||''))||
+         keys.some(key=>!['uid','title','content','place_id','url','media_link'].includes(key))||
+         !keys.some(key=>key!=='uid'))throw Error('無效文章更新資料');
+      validateGalaxyWrite(table,row);
+    }
+    let count=0;
+    for(let start=0;start<list.length;start+=MAX_ROWS){
+      const batch=list.slice(start,start+MAX_ROWS);
+      const result=await managementWrite({
+        p_table:table,p_operation:'update_batch',
+        p_rows:batch,p_values:null,p_filters:[]
+      });
+      count+=Number(result?.count||0);
+    }
+    return {count};
   }
 
   async function deleteRowsUnchecked(table,{filters=[]}={}){
@@ -502,7 +524,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,readSharedKeywordClasses,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,updateImportRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,readSharedKeywordClasses,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

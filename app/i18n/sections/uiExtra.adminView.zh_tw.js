@@ -60,7 +60,7 @@ export default {
   "databaseName": "資料庫名稱",
   "databaseUser": "資料庫使用者",
   "databasePassword": "資料庫密碼",
-  "galaxyTable": "Galaxy 資料表",
+  "galaxyTable": "作品儲存資料庫",
   "timeTable": "Time 資料表",
   "birthdayMapping": "生日",
   "themeAppearance": "色彩設定",
