@@ -622,7 +622,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         if(savedUid)knownArticleIds.set(record.uid,savedUid);
       }
       showProgress('整理媒體資料');
-      const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
+      const articleTimes=new Map(analyzed.valid.map(row=>[String(row.uid),row.createtime]));
+      const archivePlan=prepareArchiveMedia(
+        archiveEvidence,new Set(knownArticleIds.keys()),articleTimes);
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
         ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||null
       }));
@@ -630,7 +632,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const safeMediaOnly=analyzed.mediaOnly.map(record=>{
         const owner=String(record.__article_uid||'');
         return importedUids.has(owner)?
-          {...record,__article_uid:knownArticleIds.get(owner)||null}:record;
+          {...record,__article_uid:knownArticleIds.get(owner)||null,
+            createtime:record.createtime||articleTimes.get(owner)||null}:record;
       });
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
