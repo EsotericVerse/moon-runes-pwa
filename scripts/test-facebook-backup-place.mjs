@@ -193,6 +193,24 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  assert.equal(places[0].timestamp,1720000000);
 });
 
+test('standalone Facebook tagged-visit JSON stays outside Galaxy posts',async()=>{
+ const visit={label_values:[
+   {label:'造訪時間',timestamp_value:1720000000},
+   {title:'地標',dict:[{dict:[{label:'名稱',value:'測試車站'}]}]}
+ ]};
+ const records=[],places=[];
+ const file=asFile('places_you_have_been_tagged_in.json',strToU8(JSON.stringify([visit])));
+ const summary=await inspectPrivateArchive(file,{
+   onRecord:record=>records.push(record),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(records.length,0);
+ assert.equal(places[0].location,'測試車站');
+ assert.equal(places[0].timestamp,1720000000);
+ const ui=src('app/loc/ManagementImportPanel.jsx');
+ assert.match(ui,/isFacebookGeoJson/);
+});
+
 test('Meta ZIP decoded place and author text survive Galaxy import without mojibake',()=>{
   // Some Meta exports encode UTF-8 bytes as Latin-1 JS characters.
   const encoded=value=>[...new TextEncoder().encode(value)]
