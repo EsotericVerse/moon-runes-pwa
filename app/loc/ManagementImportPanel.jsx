@@ -577,7 +577,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const siteAvailability=new Map();
       const siteHasArticles=async site=>{
         if(!siteAvailability.has(site)){
-          const {data,error}=await dbAuthRelation(galaxy).select('uid').eq('site',site).limit(1);
+          const {data,error}=await dbAuthRelation(galaxy).select('uid').ilike('site',site).limit(1);
           if(error)throw Error('網站範圍查詢失敗：'+error.message);
           siteAvailability.set(site,Boolean(data?.length));
         }
@@ -608,7 +608,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           for(let offset=0;;){
             let query=dbAuthRelation(galaxy)
               .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-              .eq('site',site).in(column,batch);
+              .ilike('site',site).in(column,batch);
             if(timeWindow)query=query.gte('createtime',timeWindow.start)
               .lte('createtime',timeWindow.end);
             const {data,error}=await query.order('uid',{ascending:true})
