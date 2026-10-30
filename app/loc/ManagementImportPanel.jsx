@@ -163,14 +163,14 @@ async function readExistingByIds(table,columns,column,values,message){
   for(const batch of urlSafeInBatches(values,column)){
     let offset=0;
     for(;;){
-      const {data,error,count}=await dbAuthRelation(table)
-        .select(columns,{count:'exact'}).in(column,batch)
+      const {data,error}=await dbAuthRelation(table)
+        .select(columns).in(column,batch)
         .order(orderColumn,{ascending:true}).range(offset,offset+MAX_ROWS-1);
       if(error)throw new Error(error.message||message);
       const rows=data||[];
       records.push(...rows);
       offset+=rows.length;
-      if(!rows.length||(count!=null&&offset>=Number(count)))break;
+      if(rows.length<MAX_ROWS)break;
     }
   }
   return records;
@@ -178,7 +178,7 @@ async function readExistingByIds(table,columns,column,values,message){
 
 // Shared idempotent media attachment write for standard file imports.
 // All records are bound by original article UID; no full-table scan or recursive discovery.
-async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,t}={}){
+async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,t,onProgress}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Attach only to article UIDs established by the import plan.
       const plans=normalized.flatMap(item=>{
@@ -186,6 +186,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         const owner=knownArticleIds.get(sourceUid);
         return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,__article_uid:owner}));
       }).concat(mediaOnly);
+      onProgress?.({stage:'核對既有媒體',completed:0,total:0});
       const existingMedia=[];
       const explicitIds=[...new Set([...plans.map(record=>record.uid).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
       existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,media_type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
@@ -226,9 +227,11 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         createMedia.push(record);if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
       }
+      if(createMedia.length)onProgress?.({stage:'新增媒體紀錄',completed:0,total:createMedia.length});
       await writeImportBatches(createMedia,{
         batchSize:MAX_ROWS,
-        writeBatch:batch=>insertRows(galaxyMedia,batch)
+        writeBatch:batch=>insertRows(galaxyMedia,batch),
+        onProgress:p=>onProgress?.({stage:'新增媒體紀錄',completed:p.completed,total:p.total})
       });
       for(const link of extraLinks){
         const uid=knownArticleIds.get(String(link.uid||'').trim());
@@ -237,11 +240,18 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       }
       let connected=0;
       const linkedUids=[...related.keys()];
-      for(const row of await readExistingByIds(galaxy,'uid,media_link','uid',linkedUids,t('uiExtra.importUI.mediaLinkReadFailed'))){
+      onProgress?.({stage:'讀取文章媒體連結',completed:0,total:0});
+      const articleLinks=await readExistingByIds(galaxy,'uid,media_link','uid',linkedUids,t('uiExtra.importUI.mediaLinkReadFailed'));
+      if(articleLinks.length)onProgress?.({stage:'更新文章媒體連結',completed:0,total:articleLinks.length});
+      let checkedLinks=0;
+      for(const row of articleLinks){
           const uid=String(row.uid||'').trim();
           const prior=Array.isArray(row.media_link)?row.media_link.map(String):[];
           const after=[...new Set([...prior,...(related.get(uid)||[])])];
           if(after.length!==prior.length){await updateRows(galaxy,{media_link:after},{filters:[{column:'uid',operator:'eq',value:uid}]});connected++;}
+          checkedLinks++;
+          if(checkedLinks%25===0||checkedLinks===articleLinks.length)
+            onProgress?.({stage:'更新文章媒體連結',completed:checkedLinks,total:articleLinks.length});
       }
 
   return {created:createMedia.length,connected,resolvedIds};
