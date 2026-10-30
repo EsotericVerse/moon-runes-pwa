@@ -1,17 +1,6 @@
 name: LOC import regression (PR)
 # Lightweight, read-only parser tests. No Next build, deploy, or database access.
 on:
-  push:
-    branches: ['fix/facebook-trace-geo-object-import']
-  pull_request:
-    paths:
-      - 'app/loc/**'
-      - 'scripts/test-facebook-backup-place.mjs'
-      - 'scripts/test-import-place-anchors.mjs'
-      - 'scripts/test-import-createdat-reimport.mjs'
-      - 'scripts/test-import-duplicate-check.mjs'
-      - 'scripts/test-universal-archive-import.mjs'
-      - '.github/workflows/loc-import-pr-tests.yml'
   workflow_dispatch:
 
 permissions:
