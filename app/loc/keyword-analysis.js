@@ -1,12 +1,13 @@
 'use client';
 
 import {dbAuthRelation} from './db-client.mjs';
-import {selectAllRows,selectCount,selectRows} from './db-query.mjs';
-const KEYWORD_ANALYSIS_READ_PAGE_SIZE=200;
+import {selectAllRows,selectRows} from './db-query.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
+
+const KEYWORD_ANALYSIS_READ_PAGE_SIZE=200;
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
