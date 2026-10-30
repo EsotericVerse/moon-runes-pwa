@@ -40,22 +40,30 @@ test('legacy Neon shares are discovered by Class UID without a staging table',()
   assert.match(sql,/coalesce\(keyword_meta->'class_shares','\{\}'::jsonb\)/);
 });
 
-test('shared Class directory uses caller authorization even when a public Class exists',async()=>{
+test('shared Class directory uses authorized reader for owner and public reader for guest',async()=>{
   const contract=source('app/loc/db-contract.mjs');
   const definition=contract.match(/  async function readSharedKeywordClasses\(scopeId\)\{[\s\S]*?\n  \}/)?.[0];
   assert.ok(definition);
-  let called=0;
+  let authCalls=0,publicCalls=0;
   const classes=[{classUid:'eeCc'},{classUid:'IeG0'}];
-  const client={schema:()=>({rpc:async(name,args)=>{
-    called++;
+  const authorized={schema:()=>({rpc:async(name,args)=>{
+    authCalls++;
     assert.equal(name,'read_shared_keyword_classes');
     assert.equal(args.p_scope_id,'lo3rwang');
     return {data:classes,error:null};
   }})};
-  const create=new Function('authClient','normalizeScopeId',definition+';return readSharedKeywordClasses;');
-  const read=create(client,id=>id);
-  assert.deepEqual(await read('lo3rwang'),classes);
-  assert.equal(called,1);
-  const failing=create({schema:()=>({rpc:async()=>({data:null,error:{message:'denied'}})})},id=>id);
+  const guest={schema:()=>({rpc:async()=>{publicCalls++;return {data:classes.slice(0,1),error:null};}})};
+  const make=new Function('authClient','publicClient','verifiedKeywordOwner','normalizeScopeId',
+    definition+';return readSharedKeywordClasses;');
+  const owner=make(authorized,guest,async()=>true,id=>id);
+  assert.deepEqual(await owner('lo3rwang'),classes);
+  assert.equal(authCalls,1);
+  assert.equal(publicCalls,0);
+  const anonymous=make(authorized,guest,async()=>false,id=>id);
+  assert.deepEqual(await anonymous('lo3rwang'),classes.slice(0,1));
+  assert.equal(authCalls,1);
+  assert.equal(publicCalls,1);
+  const failing=make({schema:()=>({rpc:async()=>({data:null,error:{message:'denied'}})})},
+    guest,async()=>true,id=>id);
   await assert.rejects(failing('lo3rwang'),/denied/);
 });
