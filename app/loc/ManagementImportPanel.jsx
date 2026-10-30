@@ -632,7 +632,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const safeMediaOnly=analyzed.mediaOnly.map(record=>{
         const owner=String(record.__article_uid||'');
         return importedUids.has(owner)?
-          {...record,__article_uid:knownArticleIds.get(owner)||null}:record;
+          {...record,__article_uid:knownArticleIds.get(owner)||null,
+            createtime:record.createtime||articleTimes.get(owner)||null}:record;
       });
       const mediaSummary=await syncImportedMedia({
         normalized:analyzed.normalized,
