@@ -890,6 +890,13 @@ async function readKeywordTreeCatalogLocal({p_class_uid=null}={}){
     lists:node.type==='item'?[]:node.lists,uid_lists:[]
   }))},error:null};
 }
+async function readSharedKeywordClassesLocal(){
+  // Local SQLite owns its own Scope: category identity is the Class UID.
+  const nodes=await selectLocal("SELECT uid,name FROM local_keywords WHERE type='class' ORDER BY uid");
+  return {data:nodes.map(node=>({
+    scopeId:'local',classUid:String(node.uid),name:String(node.name),category:String(node.uid)
+  })),error:null};
+}
 async function readKeywordClassLocal({p_class_uid}={}){
   const result=await readKeywordTreeCatalogLocal({p_class_uid});
   return {data:result.data?.class_uid===p_class_uid?result.data:null,error:null};
@@ -1020,6 +1027,7 @@ export async function rpcLocal(name,args={}){
     case 'read_scope_earliest':return readScopeEarliestLocal(args);
     case 'read_keyword_class_by_uid':return readKeywordClassLocal(args);
     case 'read_keyword_tree_catalog':return readKeywordTreeCatalogLocal(args);
+    case 'read_shared_keyword_classes':return readSharedKeywordClassesLocal(args);
     case 'read_keyword_tree_summary':return readKeywordTreeSummaryLocal(args);
     case 'log_search_keyword':return {data:null,error:null};
     default:return {data:null,error:{message:'RPC not implemented for local scope: '+name}};

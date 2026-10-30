@@ -233,6 +233,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data&&Array.isArray(data.rows)?data:{class_uid:'',rows:[]};
   }
 
+  async function readSharedKeywordClasses(scopeId){
+    const scope=normalizeScopeId(scopeId);
+    const result=await keywordRead('read_shared_keyword_classes',{p_scope_id:scope},{
+      isEmpty:value=>!Array.isArray(value)||value.length===0
+    });
+    return Array.isArray(result)?result:[];
+  }
+
   // Database-side statistics: the database counts, the browser receives the exact
   // totals ({day,kind,category,item_count}) instead of every Galaxy/Media row.
   async function readScopeStatistics(scopeId,{startDate='',endDate='',includeUndated=false}={}){
@@ -494,7 +502,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,readSharedKeywordClasses,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.

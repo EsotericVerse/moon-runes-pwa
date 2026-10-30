@@ -43,6 +43,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [workspace,setWorkspace]=useState('manual');
   const [chosen,setChosen]=useState({category:'',class:'',group:'',item:''});
   const [copyName,setCopyName]=useState('');
+  const [sharingBusy,setSharingBusy]=useState(false);
   const [progress,setProgress]=useState(null);
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
   const [error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -58,6 +59,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const items=childrenOf(tree,activeGroup?.uid);
   const selected=tree.index.get(chosen.item)||activeGroup||activeClass||category||null;
   const draft=editor?.node||null;
+  const classShareEnabled=uid=>{
+    if(!uid)return false;
+    return config.keyword_meta?.class_shares?.[uid]===true;
+  };
   const dirty=Boolean(draft&&(
     !tree.index.has(draft.uid)||
     JSON.stringify(draft)!==JSON.stringify(tree.index.get(draft.uid))
@@ -206,20 +211,39 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
+  const saveClassShare=async(classUid,enabled)=>{
+    if(busy||sharingBusy||!classUid)return;
+    setSharingBusy(true);setError('');
+    try{
+      const {data,error:readError}=await dbAuthRelation(configTable)
+        .select('keyword_meta').eq('id',scopeId).limit(1);
+      if(readError||data?.length!==1)throw new Error(readError?.message||'讀取共享設定失敗');
+      const currentMeta=data[0].keyword_meta||{};
+      const keyword_meta={...currentMeta,
+        class_shares:{...(currentMeta.class_shares||{}),[classUid]:Boolean(enabled)}};
+      const {data:saved,error:saveError}=await dbAuthRelation(configTable)
+        .update({keyword_meta}).eq('id',scopeId).select('id');
+      if(saveError||saved?.length!==1)throw new Error(saveError?.message||'共享設定儲存失敗');
+      setConfig(current=>({...current,keyword_meta}));
+      setSavedConfig(current=>({...current,keyword_meta}));
+      await invalidate();
+      setNotice(enabled?'已開放此關鍵字群組。':'此關鍵字群組已設為不公開。');
+    }catch(e){setError(String(e.message||e));}
+    finally{setSharingBusy(false);}
+  };
   const saveConfig=async()=>{
     if(busy)return false;
     setBusy(true);setError('');
     try{
-      const rulesChanged=Number(config.keyword_min_chars||0)!==Number(savedConfig.keyword_min_chars||0);
+      const rulesChanged=['keyword_min_chars','keyword_min_documents'].some(key=>Number(config[key])!==Number(savedConfig[key]));
       const targetUid=String(config.current_keyword_class_uid||'');
       const targetState=keywordClassState(config,targetUid);
       const payload={
         current_keyword_class_uid:targetUid||null,
         keyword_min_chars:Number(config.keyword_min_chars)||0,
         keyword_min_documents:Number(config.keyword_min_documents)||0,
-        keyword_class_share_enabled:Boolean(config.keyword_class_share_enabled),
         ...(rulesChanged
-          ?{staticstime:null,keyword_meta:{by_class:{}}}
+          ?{staticstime:null,keyword_meta:{...(config.keyword_meta||{}),by_class:{}}}
           :{staticstime:targetState?.completedAt||null})
       };
       const {data,error:writeError}=await dbAuthRelation(configTable).update(payload)
@@ -258,10 +282,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   dockActions.current={
     save:()=>workspace==='analysis'?saveConfig():saveNode(),
     isDirty:()=>workspace==='analysis'
-      ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents','keyword_class_share_enabled']
+      ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents']
         .some(key=>String(config[key]??'')!==String(savedConfig[key]??''))
       :dirty,
-    isBusy:()=>busy||loading
+    isBusy:()=>busy||loading||sharingBusy
   };
   useEffect(()=>{
     if(!dock?.active||dock.scopeId!==scopeId||!canEdit)return;
@@ -328,6 +352,15 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <button type="button" className="loc-button" onClick={()=>setEditor(null)} disabled={busy}>取消</button>
         </div>
       </div>:null}
+      {activeClass?<div className="scope-stat-controls">
+        <label><span>「{activeClass.name}」共享</span>
+          <select className="scope-select" value={classShareEnabled(activeClass.uid)?'yes':'no'}
+            disabled={busy||sharingBusy}
+            onChange={e=>saveClassShare(activeClass.uid,e.target.value==='yes')}>
+            <option value="no">不公開</option><option value="yes">公開</option>
+          </select>
+        </label>
+      </div>:null}
       <div className="scope-stat-controls">
         <label><span>複製選定的關鍵字群組</span><input value={copyName} placeholder="新群組名稱"
           onChange={e=>setCopyName(e.target.value)}/></label>
@@ -346,10 +379,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           onChange={e=>setConfig(v=>({...v,keyword_min_chars:e.target.value}))}/></label>
         <label><span>統計最低文章數</span><input type="number" min="0" value={config.keyword_min_documents??100}
           onChange={e=>setConfig(v=>({...v,keyword_min_documents:e.target.value}))}/></label>
-        <label><span>開放目前群組的分析結果</span><select className="scope-select" value={config.keyword_class_share_enabled?'yes':'no'}
-          onChange={e=>setConfig(v=>({...v,keyword_class_share_enabled:e.target.value==='yes'}))}>
-          <option value="no">不公開</option><option value="yes">公開</option>
-        </select></label>
       </div>
       <button type="button" className="loc-button primary" disabled={busy} onClick={saveConfig}>儲存設定</button>
     </section>:null}

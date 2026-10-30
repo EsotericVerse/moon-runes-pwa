@@ -31,6 +31,9 @@ BEGIN
   v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
   IF v_config IS NULL OR v_galaxy IS NULL OR v_keywords IS NULL
     THEN RAISE EXCEPTION 'Missing Scope data'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_attribute
+    WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped)
+    THEN RETURN; END IF;
   EXECUTE format('SELECT current_keyword_class_uid,keyword_meta,staticstime FROM %s WHERE id=$1',v_config)
     INTO v_current,v_meta,v_old_ready USING v_scope;
   v_class_uid:=coalesce(nullif(p_class_uid,''),v_current);
@@ -41,12 +44,8 @@ BEGIN
     v_ready:=v_old_ready;
   END IF;
   IF v_ready IS NULL THEN RETURN; END IF;
-  IF NOT silver.can_manage_scope(v_scope) THEN
-    IF v_class_uid IS DISTINCT FROM v_current THEN RETURN; END IF;
-    EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
-      INTO v_public USING v_scope;
-    IF v_public IS NOT TRUE THEN RETURN; END IF;
-  END IF;
+  IF NOT silver.can_manage_scope(v_scope) AND
+    NOT silver.keyword_class_is_shared(v_scope,v_class_uid) THEN RETURN; END IF;
   RETURN QUERY EXECUTE format($query$
     WITH cl AS (
       SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1
@@ -74,4 +73,13 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;

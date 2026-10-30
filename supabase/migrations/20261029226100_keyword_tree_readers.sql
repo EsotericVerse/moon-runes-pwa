@@ -1,3 +1,25 @@
+-- Class sharing is persisted only in the existing Scope configuration JSONB.
+-- Shared category identity is derived from Scope ID + Class UID (SHA-256).
+-- No lookup, staging, snapshot or cache tables are created.
+CREATE OR REPLACE FUNCTION silver.keyword_class_is_shared(p_scope_id text,p_class_uid text)
+RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE
+ v_scope text:=lower(btrim(coalesce(p_scope_id,'')));
+ v_config regclass;
+ v_meta jsonb;
+BEGIN
+ IF v_scope !~ '^[a-z][a-z0-9]{0,14}$'
+    OR p_class_uid !~ '^[A-Za-z0-9]{4}$' THEN RETURN false; END IF;
+ v_config:=to_regclass(format('silver.%I',v_scope));
+ IF v_config IS NULL THEN RETURN false; END IF;
+ EXECUTE format('SELECT keyword_meta FROM %s WHERE id=$1',v_config)
+   INTO v_meta USING v_scope;
+ RETURN coalesce((v_meta->'class_shares'->>p_class_uid)::boolean,false);
+END
+$fn$;
+REVOKE ALL ON FUNCTION silver.keyword_class_is_shared(text,text) FROM PUBLIC;
+
 -- All three consumers read the same six-column UID tree.
 -- Public responses contain only aggregates or metadata, never raw uid_lists.
 CREATE OR REPLACE FUNCTION silver.read_keyword_tree_summary(
@@ -25,6 +47,7 @@ BEGIN
  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
  v_galaxy:=to_regclass(format('silver.%I_galaxy',v_scope));
  IF v_config IS NULL OR v_keywords IS NULL OR v_galaxy IS NULL THEN RETURN; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN RETURN; END IF;
  EXECUTE format('SELECT current_keyword_class_uid,keyword_meta,staticstime FROM %s WHERE id=$1',v_config)
  INTO v_current,v_meta,v_old_done USING v_scope;
  v_class:=coalesce(nullif(p_class_uid,''),v_current);
@@ -35,12 +58,8 @@ BEGIN
    v_done:=v_old_done;
  END IF;
  IF v_done IS NULL THEN RETURN; END IF;
- IF NOT silver.can_manage_scope(v_scope) THEN
-   IF v_class IS DISTINCT FROM v_current THEN RETURN; END IF;
-   EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
-    INTO v_public USING v_scope;
-   IF v_public IS NOT TRUE THEN RETURN; END IF;
- END IF;
+ IF NOT silver.can_manage_scope(v_scope) AND
+   NOT silver.keyword_class_is_shared(v_scope,v_class) THEN RETURN; END IF;
  RETURN QUERY EXECUTE format($query$
    WITH clazz AS (SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1),
    groups AS MATERIALIZED (
@@ -92,7 +111,16 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
 
 CREATE OR REPLACE FUNCTION silver.read_keyword_tree_catalog(p_scope_id text,p_class_uid text DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
@@ -112,16 +140,13 @@ BEGIN
  v_config:=to_regclass(format('silver.%I',v_scope));
  v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
  IF v_config IS NULL OR v_keywords IS NULL THEN RETURN '{}'::jsonb; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN RETURN '{}'::jsonb; END IF;
  EXECUTE format('SELECT current_keyword_class_uid FROM %s WHERE id=$1',v_config)
   INTO v_current USING v_scope;
  v_class:=coalesce(nullif(p_class_uid,''),v_current);
  IF v_class IS NULL OR v_class !~ '^[A-Za-z0-9]{4}$' THEN RETURN '{}'::jsonb; END IF;
- IF NOT silver.can_manage_scope(v_scope) THEN
-   IF v_class IS DISTINCT FROM v_current THEN RETURN '{}'::jsonb; END IF;
-   EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
-    INTO v_public USING v_scope;
-   IF v_public IS NOT TRUE THEN RETURN '{}'::jsonb; END IF;
- END IF;
+ IF NOT silver.can_manage_scope(v_scope) AND
+   NOT silver.keyword_class_is_shared(v_scope,v_class) THEN RETURN '{}'::jsonb; END IF;
  EXECUTE format($query$
  WITH cl AS (SELECT uid,type,name,"desc",lists FROM %s WHERE uid=$1 AND type='class'),
  group_nodes AS (
@@ -148,4 +173,89 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_keyword_tree_catalog(text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
+
+-- Read-only shared keyword directory: owner sees native Class UID; external
+-- consumers see a deterministic SHA-256 category identifier. No new rows.
+CREATE OR REPLACE FUNCTION silver.read_shared_keyword_classes(p_scope_id text)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE
+ v_scope text:=lower(btrim(coalesce(p_scope_id,'')));
+ v_keywords regclass;
+ v_result jsonb;
+ v_owner boolean;
+ v_class_source text;
+BEGIN
+ IF v_scope !~ '^[a-z][a-z0-9]{0,14}$' OR NOT EXISTS(
+   SELECT 1 FROM silver.manage WHERE id=v_scope AND manage_role='scope' AND active)
+   THEN RETURN '[]'::jsonb; END IF;
+ v_keywords:=to_regclass(format('silver.%I_keywords',v_scope));
+ IF v_keywords IS NULL THEN RETURN '[]'::jsonb; END IF;
+ v_owner:=silver.can_manage_scope(v_scope);
+ IF EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='uid' AND attnum>0 AND NOT attisdropped) THEN
+   v_class_source:=format('(SELECT uid::text AS uid,name FROM %s WHERE type=''class'')',v_keywords);
+ ELSIF EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=v_keywords AND attname='class_uid' AND attnum>0 AND NOT attisdropped) THEN
+   -- Legacy Neon: Class UID exists, but the UID-linked Group/Item tree does not.
+   v_class_source:=format('(SELECT DISTINCT ON (class_uid) class_uid::text AS uid,class_name AS name
+     FROM %s WHERE class_uid IS NOT NULL ORDER BY class_uid,class_name)',v_keywords);
+ ELSE RETURN '[]'::jsonb; END IF;
+ EXECUTE format($query$
+   SELECT coalesce(jsonb_agg(jsonb_build_object(
+     'scopeId',$1,
+     'classUid',c.uid,
+     'name',c.name,
+     'category',CASE WHEN $2 THEN c.uid::text
+       ELSE encode(sha256(convert_to($1||':'||c.uid::text,'UTF8')),'hex') END
+   ) ORDER BY c.uid),'[]'::jsonb)
+   FROM %s c WHERE ($2 OR silver.keyword_class_is_shared($1,c.uid::text))
+ $query$,v_class_source) INTO v_result USING v_scope,v_owner;
+ RETURN coalesce(v_result,'[]'::jsonb);
+END
+$fn$;
+REVOKE ALL ON FUNCTION silver.read_shared_keyword_classes(text) FROM PUBLIC;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
+
+-- Promote the old Scope-wide share flag once, onto the previously active Class.
+-- Only the existing Scope configuration is updated; no Keywords or Galaxy rows.
+DO $migration$
+DECLARE
+ rec record;
+ config_relation regclass;
+BEGIN
+ FOR rec IN SELECT id FROM silver.manage WHERE manage_role='scope' AND active LOOP
+   config_relation:=to_regclass(format('silver.%I',rec.id));
+   IF config_relation IS NULL THEN CONTINUE; END IF;
+   IF NOT EXISTS(SELECT 1 FROM information_schema.columns
+     WHERE table_schema='silver' AND table_name=rec.id AND column_name='keyword_meta')
+     THEN CONTINUE; END IF;
+   EXECUTE format($query$
+     UPDATE %s SET keyword_meta=coalesce(keyword_meta,'{}'::jsonb) ||
+       jsonb_build_object('class_shares',
+         coalesce(keyword_meta->'class_shares','{}'::jsonb) ||
+         jsonb_build_object(current_keyword_class_uid::text,true))
+     WHERE id=$1 AND keyword_class_share_enabled IS TRUE
+       AND current_keyword_class_uid IS NOT NULL
+       AND NOT (coalesce(keyword_meta->'class_shares','{}'::jsonb) ? current_keyword_class_uid)
+   $query$,config_relation) USING rec.id;
+ END LOOP;
+END
+$migration$;
