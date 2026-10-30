@@ -560,3 +560,43 @@ test('Undated Instagram caption retains null creation time and stable Galaxy ide
   assert.equal(batches[0].length,2);
   assert.ok(batches[0].every(row=>row.createtime===null));
 });
+
+test('Facebook ZIP album parent, photo captions and original media are mapped together',async()=>{
+  const zip=asFile('facebook-album.zip',zipSync({
+    'your_facebook_activity/posts/album/3.json':j({
+      name:'旅行相簿',description:'記錄旅途',
+      last_modified_timestamp:1760000000,
+      photos:[
+        {uri:'media/albums/one.jpg',title:'山景',creation_timestamp:1368248935},
+        {uri:'media/albums/two.jpg',title:'日落'}
+      ]
+    }),
+    'media/albums/one.jpg':new Uint8Array([1,2]),
+    'media/albums/two.jpg':new Uint8Array([3,4])
+  }));
+  const mapped=[],collector=createArchiveEvidenceCollector();
+  await inspectPrivateArchive(zip,{onRecord:record=>{
+    for(const entry of archiveGalaxyRows(record)){
+      mapped.push(entry.row);
+      collector.onRecord({...record,attachments:entry.attachments},entry.row.uid);
+    }
+  },onMediaEntry:entry=>collector.onMediaEntry(entry)});
+  assert.equal(mapped.length,3);
+  const [parent,first,second]=mapped;
+  assert.equal(parent.content,'記錄旅途');
+  assert.equal(parent.site_id,null);
+  assert.equal(parent.createtime,null);
+  assert.deepEqual(parent.target_id,[first.uid,second.uid]);
+  assert.equal(first.source_id,parent.uid);
+  assert.equal(second.source_id,parent.uid);
+  assert.equal(first.content,'山景');
+  assert.equal(second.content,'日落');
+  assert.ok(first.createtime?.startsWith('2013-05-'));
+  assert.equal(second.createtime,null);
+  const mediaPlan=prepareArchiveMedia(collector.rows({
+    scopeId:'test',archiveName:'facebook-album.zip',archiveSize:zip.size
+  }),new Set(mapped.map(row=>row.uid)));
+  assert.equal(mediaPlan.media.length,2);
+  assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===first.uid));
+  assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===second.uid));
+});
