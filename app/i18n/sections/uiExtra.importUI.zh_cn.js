@@ -15,6 +15,7 @@ export default {
   "importTitle": "数据导入",
   "importProcessingWait": "导入进行／解析中，请稍候…",
   "importEstimatedMinutes": "预计导入时间：约 {min}–{max} 分钟（根据已解析数据量粗估；实际时间受网络和数据库速度影响）。",
+  "importNoChanges": "比对完成：没有需要导入的数据（0 条），已直接结束，未进行写入。",
   "zipInspecting": "正在识别 ZIP 内容…",
   "zipInspected": "ZIP 检查完成，共 {count} 个项目；尚未导入任何数据。",
   "zipDetected": "ZIP 备份来源",
