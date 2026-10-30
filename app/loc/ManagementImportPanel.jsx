@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
+import {insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
@@ -707,7 +707,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const count=payload.length,started=Date.now();
         const outcome=await insertImportBatches(payload,{
           batchSize:insertSizer.size,
-          writeBatch:batch=>insertRows(galaxy,batch.map(record=>({
+          writeBatch:batch=>insertImportRows(galaxy,batch.map(record=>({
             ...record,place_id:record.place_id??null,media_link:record.media_link??null
           })))
         });
