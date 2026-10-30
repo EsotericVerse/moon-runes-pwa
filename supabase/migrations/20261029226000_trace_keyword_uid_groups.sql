@@ -70,4 +70,13 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_trace_keyword_group_totals(text,text[],date,date,text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
