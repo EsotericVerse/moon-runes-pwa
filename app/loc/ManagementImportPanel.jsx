@@ -58,7 +58,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
-  const importedCoordinates=place?extractImportCoordinates(row.__importCoordinates||row):null;
+  const importedCoordinates=extractImportCoordinates(row.__importCoordinates||row);
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
@@ -309,6 +309,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [archiveDetection,setArchiveDetection]=useState(null);
   const [archiveSummary,setArchiveSummary]=useState(null);
   const [archiveEvidence,setArchiveEvidence]=useState([]);
+  const [geoPlaceCandidates,setGeoPlaceCandidates]=useState([]);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -354,7 +355,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveEvidence([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
@@ -379,10 +380,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],uidOwners=new Map(),exifSamples=[];
+        const imported=[],uidOwners=new Map(),exifSamples=[],geoPlaces=[];
         const collector=createArchiveEvidenceCollector();
         let ignored=0,privateSkipped=0;
-        const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+        const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
+          // Separate Facebook visit records remain review candidates, not Galaxy articles.
+          if(geoPlaces.length<5000)geoPlaces.push(place);
+        },onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
           }
@@ -417,6 +421,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
         const mediaPlan=prepareArchiveMedia(mediaEvidence,new Set(uidOwners.keys()));
         setArchiveEvidence(mediaEvidence);
+        setGeoPlaceCandidates(geoPlaces);
         setArchiveSummary({...summary,exifSamples,
           mediaEvidenceCount:mediaEvidence.length,
           mediaImportable:mediaPlan.media.length,
@@ -425,7 +430,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           mediaUnlinked:mediaPlan.media.filter(item=>!item.__article_uid).length});
         if(!imported.length&&!mediaEvidence.length){
           setSource(result.sources.length===1?canonicalSource(result.sources[0]):'');
-          setStatus('ZIP 已讀取，但沒有可匯入的文字文章。已解析 '+summary.totalRows+
+          setStatus((summary.geoPlaceObjects?'ZIP 已讀取，辨識出 '+summary.geoPlaceObjects.toLocaleString()+' 筆 Facebook 地點物件，僅供人工整理 Trace；沒有自動建立地點或文章。':'ZIP 已讀取，但沒有可匯入的文字文章。')+' 已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
             (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
           return;
@@ -687,7 +692,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，沿用定錨點 '+placeAnchors.reused.toLocaleString()+' 筆。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，待人工新增／整理座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組（未自動建立）。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
@@ -777,6 +782,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       原始紀錄 {archiveSummary.totalRows.toLocaleString()} 筆，解析接受 {archiveSummary.acceptedRows.toLocaleString()} 筆，解析拒絕 {archiveSummary.rejectedRows.toLocaleString()} 筆；解析接受不等於最終寫入成功。
     </p>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
+    {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
+      <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。經緯度僅用於精確比對；地名及尚未存在的 Trace 地點須人工整理。獨立打卡不會轉成 Galaxy 文章。</p>
+      {geoPlaceCandidates.length?<ul>{geoPlaceCandidates.slice(0,12).map((place,index)=>
+        <li key={index}>{place.location||'未提供地名'} · {place.__importCoordinates?
+          place.__importCoordinates.latitude+', '+place.__importCoordinates.longitude:'未提供經緯度'}
+          {place.placeUrl?' · '+place.placeUrl:''}</li>)}</ul>:null}
+      {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">候選資料超過預覽上限，僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
+    </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
