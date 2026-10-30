@@ -6,7 +6,7 @@ const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
 // Aggregate one page at a time. Memory scales with the actual stored Keyword
 // hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
-  classUid,treeRows=[],minChars=0,pageSize=1000,readPage,writeNode,finalize,
+  classUid,treeRows=[],minChars=0,pageSize=200,expectedCount=null,readPage,writeNode,finalize,
   onProgress=()=>{}
 }={}){
   if(typeof readPage!=='function'||typeof writeNode!=='function'||typeof finalize!=='function')
@@ -56,7 +56,17 @@ export async function reanalyzeKeywordClass({
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
-    if(page.length<pageSize)break;
+    // A backend may cap returned rows below the requested LIMIT (for example,
+    // PostgREST max_rows). A short page is NOT end-of-data: stop only after an
+    // empty page, with the Galaxy reader advancing its UID cursor each time.
+  }
+  // COUNT was read before the scan. If concurrent Galaxy changes or a
+  // backend row cap make the number diverge, fail BEFORE writing UID lists.
+  if(expectedCount!==null){
+    if(!Number.isSafeInteger(expectedCount)||expectedCount<0)
+      throw new TypeError('Expected Galaxy count must be a nonnegative integer');
+    if(read!==expectedCount)
+      throw new Error('Galaxy 分頁筆數不一致（預期 '+expectedCount+'，實際 '+read+'）；未寫入分析結果，請在資料穩定後重試');
   }
   const changes=[
     ...root.lists.map(uid=>({
