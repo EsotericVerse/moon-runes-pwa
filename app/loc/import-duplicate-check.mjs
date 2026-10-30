@@ -1,7 +1,7 @@
 import {importGeoKey} from './import-geocoordinates.mjs';
 
-// Native platform IDs take precedence. ID-less posts match only by site,
-// UTC creation time AND exact body; a timestamp alone is never an identity.
+// Import identity is source site + normalized creation timestamp.
+// Native site_id is optional source metadata, not a matching requirement.
 export function comparableImportText(value){
   return String(value??'').normalize('NFKC')
     .replace(/[\p{P}\p{S}\p{Z}\s\u200B-\u200D\uFEFF\u2060]/gu,'')
@@ -12,34 +12,35 @@ const importSourceKey=record=>{
   const id=String(record?.site_id??'').trim();
   return site&&id?JSON.stringify([site,id]):null;
 };
-const importTimeContentKey=record=>{
+const importTimeKey=record=>{
   const site=String(record?.site??'').trim().toLocaleLowerCase('und');
   const date=Date.parse(String(record?.createtime??''));
-  const body=String(record?.content??'').normalize('NFC').replace(/\r\n?/g,'\n').trim();
-  return site&&Number.isFinite(date)&&body?
-    JSON.stringify([site,new Date(date).toISOString(),body]):null;
+  return site&&Number.isFinite(date)?
+    JSON.stringify([site,new Date(date).toISOString()]):null;
 };
+// Keep separate source rows even when they share a timestamp; an exact UID
+// repeated in the same file is the only safe input-level duplicate.
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byIdentity=new Map();
+  const unique=[],aliases=new Map(),byUid=new Map();
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
-    const nativeKey=importSourceKey(row);
-    const key=nativeKey||importTimeContentKey(row);
-    const prior=key?byIdentity.get(key):null;
+    if(!uid)throw Error('匯入文章缺少 UID');
+    const prior=byUid.get(uid);
     if(prior){
-      if(!nativeKey&&prior.uid!==uid)
-        throw Error('同平台、同時間、相同內容卻有不同 UID，無法安全辨識為同一篇：'+String(row.site)+' / '+String(row.createtime));
-      if(String(prior.row.content??'')!==String(row.content??'')||
-          String(prior.row.title??'')!==String(row.title??'')||
-          String(prior.row.source_id??'')!==String(row.source_id??''))
-        throw Error('同一平台的文章識別對應不同內容，停止匯入：'+String(row.site)+' / '+String(row.site_id||row.createtime));
+      if(String(prior.site||'').trim().toLocaleLowerCase('und')!==
+          String(row.site||'').trim().toLocaleLowerCase('und')||
+          importTimeKey(prior)!==importTimeKey(row)||
+          String(prior.content??'')!==String(row.content??'')||
+          String(prior.title??'')!==String(row.title??'')||
+          String(prior.site_id??'')!==String(row.site_id??''))
+        throw Error('相同 UID 對應不同來源文章，停止匯入：'+uid);
       duplicates++;
-      aliases.set(uid,prior.uid);
+      aliases.set(uid,uid);
       continue;
     }
+    byUid.set(uid,row);
     unique.push(row);
-    if(key)byIdentity.set(key,{uid,row});
     aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
@@ -89,16 +90,17 @@ export async function matchExistingImportBySiteId(records,{readSiteIds,onProgres
   return matches;
 }
 
+// Scope to the exact source site before querying timestamps. Neither content
+// nor optional site_id participates in duplicate detection.
 export async function matchExistingImportByCreatedAt(records,{readTimestamps,onProgress}={}){
   if(typeof readTimestamps!=='function')throw Error('缺少 createtime 查詢');
   const requested=new Map(),groups=new Map();
   for(const record of records||[]){
-    if(importSourceKey(record))continue;
-    const key=importTimeContentKey(record);
+    const key=importTimeKey(record);
     if(!key)continue;
-    if(requested.has(key))
-      throw Error('同平台、同時間、相同內容有多筆來源文章，無法安全比對：'+String(record.site)+' / '+String(record.createtime));
-    requested.set(key,record);
+    const prior=requested.get(key);
+    if(prior)prior.count++;
+    else requested.set(key,{count:1,only:record});
     const site=String(record.site).trim();
     if(!groups.has(site))groups.set(site,new Set());
     groups.get(site).add(new Date(Date.parse(record.createtime)).toISOString());
@@ -110,7 +112,7 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
   const consumePage=page=>{
     if(!Array.isArray(page))throw Error('createtime 查詢結果無效');
     for(const row of page){
-      const key=importTimeContentKey(row);
+      const key=importTimeKey(row);
       if(!key||!requested.has(key))continue;
       const state=candidates.get(key)||{count:0,only:null};
       state.count++;
@@ -124,11 +126,13 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     else if(returned!==undefined&&returned!==null)
       throw Error('createtime 查詢沒有回傳有效文章');
   }
-  for(const [key,record] of requested){
+  for(const [key,state] of requested){
     const candidate=candidates.get(key);
-    if(candidate?.count>1)
-      throw Error('同平台、同時間、相同內容在資料庫有多筆，停止匯入避免誤覆寫：'+String(record.site)+' / '+String(record.createtime));
-    if(candidate?.only)matches.set(String(record.uid),candidate.only);
+    if(!candidate)continue;
+    if(state.count>1||candidate.count>1)
+      throw Error('同一網站、同一發文時間有多篇文章，無法唯一比對：'+
+        String(state.only.site)+' / '+String(state.only.createtime));
+    matches.set(String(state.only.uid),candidate.only);
   }
   onProgress?.({completed:total,total,matched:matches.size});
   return matches;
@@ -139,10 +143,8 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
   return records.every(record=>{
     const saved=matches.get(record.uid);
     if(!saved)return false;
-    const nativeKey=importSourceKey(record);
-    const sameIdentity=nativeKey?nativeKey===importSourceKey(saved):
-      Boolean(importTimeContentKey(record)&&importTimeContentKey(record)===importTimeContentKey(saved));
-    if(!sameIdentity)return false;
+    if(!importTimeKey(record)||importTimeKey(record)!==importTimeKey(saved))return false;
+    if(record.site_id&&!saved.site_id)return false;
     if(record.source_id&&!saved.source_id)return false;
     if(record.target_id?.some(id=>!(saved.target_id||[]).includes(id)))return false;
     if(String(saved.title||'')!==String(record.title||'')||
