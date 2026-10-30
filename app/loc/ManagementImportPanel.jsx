@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertRows,insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
+import {insertRows,insertImportRows,dbAuthRelation,dbAuthClient,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
@@ -271,12 +271,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
             throw new Error('媒體 UID 已存在，但媒體類型不同：'+record.uid);
           if(record.uid&&known.url&&record.url&&String(known.url)!==String(record.url))
             throw new Error('媒體 UID 已存在，但網址不同：'+record.uid);
-          if(record.url&&!known.url){
-            if(!pendingMediaUids.has(String(known.uid)))
-              await updateRows(galaxyMedia,{url:record.url},{filters:[{column:'uid',operator:'eq',value:known.uid}]});
-            known.url=record.url;
-            byKey.set(mediaKey(known),known);
-          }
+          // Existing media keep their saved url; the url is only written on insert.
           if(record.uid)resolvedIds.set(String(record.uid),String(known.uid));
           attach(owner,known.uid);continue;
         }
