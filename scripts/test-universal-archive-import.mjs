@@ -37,6 +37,7 @@ test('Threads ZIP flows past detection into actual Galaxy-ready articles with or
   assert.ok(a.detected.sources.includes('threads'));
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].site,'Threads');
+  assert.equal(a.results[0].site_id,'threads-001');
   assert.equal(a.results[0].content,'台南散步');
   assert.equal(a.results[0].url,'https://www.threads.net/@writer/post/abc123');
 });
@@ -50,6 +51,7 @@ test('Facebook ZIP keeps place, time and original permalink',async()=>{
   });
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].site,'Facebook');
+  assert.equal(a.results[0].site_id,'fb100');
   assert.equal(a.results[0].location,'高雄車站');
   assert.equal(a.results[0].url,'https://www.facebook.com/post/123');
 });
