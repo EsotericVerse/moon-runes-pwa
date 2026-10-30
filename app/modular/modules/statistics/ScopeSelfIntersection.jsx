@@ -159,8 +159,8 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     }
   });
   const keywordItemGroup=useMemo(()=>new Map((keywordCatalog.data||[])
-    .filter(item=>item.class_enable!==false&&String(item.class_group||'').trim())
-    .map(item=>[String(item.uid),String(item.class_group).trim()])),
+    .filter(item=>item.class_enable!==false&&String(item.group_uid||''))
+    .map(item=>[String(item.uid),String(item.group_uid)])),
   [keywordCatalog.data]);
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
@@ -183,12 +183,12 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     const keywordItems=(analysis?.runeTotals||[])
       .filter(row=>Number(row.document_count||0)>0)
       .map(row=>({id:metricId('keyword_item',row.uid),kind:'keyword_item',
-        group:keywordItemGroup.get(String(row.uid))||'',
+        group_uid:keywordItemGroup.get(String(row.uid))||'',
         name:String(row.label||row.uid),total:Number(row.document_count)||0}));
     const keywordGroupsItems=keywordGroups.filter(group=>
-      keywordItems.some(item=>item.group===group.group))
+      keywordItems.some(item=>item.group_uid===group.uid))
       .map(group=>({id:metricId('keyword_group_items',group.uid),
-        kind:'keyword_group_items',group:group.group,name:'群組內關鍵詞',total:0}));
+        kind:'keyword_group_items',group_uid:group.uid,name:'群組內關鍵詞',total:0}));
     const keywordAll=keywordTabAvailable?[{
       id:metricId('keyword_all','all'),kind:'keyword_all',
       name:'全部關鍵詞',total:0
@@ -385,7 +385,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             const groupTabs=categoryList.filter(item=>item.kind==='keyword_group')
               .map(group=>({name:group.name,item:group,
                 items:categoryList.filter(item=>
-                  (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group===group.group)}));
+                  (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group_uid===group.uid)}));
             const allKeywords=categoryList.find(item=>item.kind==='keyword_all');
             const groups=comparisonMetricGroups(kind,{
               source:sourceGroups,
