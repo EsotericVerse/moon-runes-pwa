@@ -6,7 +6,7 @@ const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
 // Aggregate one page at a time. Memory scales with the actual stored Keyword
 // hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
-  classUid,treeRows=[],minChars=0,pageSize=200,expectedCount=null,readPage,writeNode,finalize,
+  classUid,treeRows=[],minChars=0,pageSize=1000,expectedCount=null,readPage,writeNode,finalize,
   onProgress=()=>{}
 }={}){
   if(typeof readPage!=='function'||typeof writeNode!=='function'||typeof finalize!=='function')
@@ -27,13 +27,15 @@ export async function reanalyzeKeywordClass({
     if(!Array.isArray(page))throw new Error('Galaxy page must be an array');
     if(page.length>pageSize)throw new Error('Galaxy page exceeded requested limit');
     if(!page.length)break;
-    const docs=page.filter(row=>row?.uid&&row.searchable!==false&&
-      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
-    for(const doc of docs){
-      if(!ARTICLE_UID.test(doc.uid)||seen.has(doc.uid))
+    // Validate every article, including short/unsearchable ones, to prevent
+    // dropped or repeated records from escaping the final COUNT check.
+    for(const row of page){
+      if(!ARTICLE_UID.test(row?.uid)||seen.has(row.uid))
         throw new Error('Invalid or duplicate Galaxy UID');
-      seen.add(doc.uid);
+      seen.add(row.uid);
     }
+    const docs=page.filter(row=>row.searchable!==false&&
+      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
     const data=classifyKeywordDocumentsByUid(docs,treeRows,classUid);
     for(const result of data.classifications||[]){
       if(!ARTICLE_UID.test(result.uid)||!seen.has(result.uid))
@@ -56,9 +58,9 @@ export async function reanalyzeKeywordClass({
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
-    // A backend may cap returned rows below the requested LIMIT (for example,
-    // PostgREST max_rows). A short page is NOT end-of-data: stop only after an
-    // empty page, with the Galaxy reader advancing its UID cursor each time.
+    // A backend may cap returned rows below LIMIT. The reader advances only
+    // after collecting every article at a timestamp, including any page ties.
+    // A short page is not proof that the full analysis scan has finished.
   }
   // COUNT was read before the scan. If concurrent Galaxy changes or a
   // backend row cap make the number diverge, fail BEFORE writing UID lists.

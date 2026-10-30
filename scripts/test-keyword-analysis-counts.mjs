@@ -6,7 +6,7 @@ const runner=code.slice(code.indexOf('export async function runKeywordAnalysisBa
 const summary=code.slice(code.indexOf('export async function selectKeywordAnalysisSummary('),
  code.indexOf('\nexport function clearKeywordAnalysisCache('));
 test('analysis reads Galaxy articles but never updates Galaxy classification columns',()=>{
- assert.match(runner,/\.select\('uid,content,searchable'\)/);
+ assert.match(runner,/articleColumns='uid,createtime,content,searchable'/);
  assert.match(runner,/dbAuthRelation\(scope\.galaxy\)/);
  assert.match(runner,/reanalyzeKeywordClass/);
  assert.match(runner,/update\(\{uid_lists\}\)/);
@@ -26,14 +26,17 @@ test('stale marker precedes every Group and Item write',()=>{
  assert.ok(runner.indexOf('staticstime:null')<runner.indexOf('writeNode:async'));
 });
 
-test('COUNT uses owner visibility and 200-row cursor batches before writes',()=>{
+test('COUNT uses owner visibility and chronological 1000-row batches before writes',()=>{
  const start=code.indexOf('async function keywordEligibleCount(');
  const end=code.indexOf('export async function selectActiveKeywordClassName(',start);
  const countFunction=code.slice(start,end);
  assert.ok(countFunction.includes('dbAuthRelation(scope.galaxy)'));
  assert.ok(countFunction.includes("count:'exact',head:true"));
  assert.doesNotMatch(countFunction,/selectCount\(/);
- assert.ok(code.includes('KEYWORD_ANALYSIS_READ_PAGE_SIZE=200'));
+ assert.ok(code.includes('KEYWORD_ANALYSIS_READ_PAGE_SIZE=1000'));
  assert.ok(runner.includes('expectedCount:eligibleCount'));
- assert.ok(runner.includes(".gt('uid',lastArticleUid)"));
+ assert.ok(runner.includes('createChronologicalKeywordReader'));
+ assert.ok(runner.includes(".order('createtime',{ascending:true})"));
+ const articleReader=runner.slice(runner.indexOf('const articleColumns='),runner.indexOf('writeNode:async'));
+ assert.doesNotMatch(articleReader,/\.order\('uid'/);
 });

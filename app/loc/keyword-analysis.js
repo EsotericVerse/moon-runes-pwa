@@ -4,10 +4,11 @@ import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectRows} from './db-query.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
+import {createChronologicalKeywordReader} from './keyword-article-reader.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
 
-const KEYWORD_ANALYSIS_READ_PAGE_SIZE=200;
+const KEYWORD_ANALYSIS_READ_PAGE_SIZE=1000;
 
 const DEFAULT_KEYWORD_MIN_CHARS=32;
 const DEFAULT_KEYWORD_MIN_DOCUMENTS=100;
@@ -133,23 +134,38 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       event.phase==='reading'?'已重新判斷 '+done+' 篇文章':
       event.phase==='writing'?'已更新 '+done+' / '+total+' 筆 Keywords':'分析已完成');
   };
-  let lastArticleUid='';
+  // Date-time order determines tie distribution. Complete each timestamp
+  // group before advancing, without relying on random UID SQL ordering.
+  const articleColumns='uid,createtime,content,searchable';
+  const readArticles=createChronologicalKeywordReader({
+    readTimePage:async ({after,limit})=>{
+      let query=dbAuthRelation(scope.galaxy)
+        .select(articleColumns).eq('statistics_able',true)
+        .not('createtime','is',null)
+        .order('createtime',{ascending:true}).limit(limit);
+      if(after!==null)query=query.gt('createtime',after);
+      const {data,error}=await query;
+      if(error)throw new Error(error.message||'Galaxy 時間分頁讀取失敗');
+      return data||[];
+    },
+    readTimePeers:async ({createtime,maximumRows})=>{
+      const {data,error}=await dbAuthRelation(scope.galaxy)
+        .select(articleColumns).eq('statistics_able',true)
+        .eq('createtime',createtime).limit(maximumRows);
+      if(error)throw new Error(error.message||'Galaxy 同時間文章讀取失敗');
+      return data||[];
+    },
+    readUndated:async ({maximumRows})=>{
+      const {data,error}=await dbAuthRelation(scope.galaxy)
+        .select(articleColumns).eq('statistics_able',true)
+        .is('createtime',null).limit(maximumRows);
+      if(error)throw new Error(error.message||'Galaxy 無發表時間文章讀取失敗');
+      return data||[];
+    }
+  });
   const result=await reanalyzeKeywordClass({
     classUid,treeRows,minChars,pageSize:KEYWORD_ANALYSIS_READ_PAGE_SIZE,expectedCount:eligibleCount,
-    readPage:async ({limit})=>{
-      // Read each UID exactly once via its existing primary-key index.
-      // Offset pagination over a repeatedly sorted Galaxy is too expensive.
-      let query=dbAuthRelation(scope.galaxy)
-        .select('uid,content,searchable')
-        .eq('statistics_able',true)
-        .order('uid',{ascending:true}).limit(limit);
-      if(lastArticleUid)query=query.gt('uid',lastArticleUid);
-      const {data,error}=await query;
-      if(error)throw new Error(error.message||'Galaxy 分頁讀取失敗');
-      const page=data||[];
-      if(page.length)lastArticleUid=page[page.length-1].uid;
-      return page;
-    },
+    readPage:readArticles,
     writeNode:async ({uid,uid_lists})=>{
       const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists})
         .eq('uid',uid).select('uid');
