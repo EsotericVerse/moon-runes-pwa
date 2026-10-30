@@ -284,10 +284,12 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
   const [styleFilter,setStyleFilter]=useState('none');
   const [keywordSource,setKeywordSource]=useState('');
+  const [selectedKeywordClassUid,setSelectedKeywordClassUid]=useState('');
   const [sourceGroup,setSourceGroup]=useState('');
     useEffect(()=>{
     setStyleFilter('none');
     setKeywordSource('');
+    setSelectedKeywordClassUid('');
     setSourceGroup('');
   },[scopeId]);
   // Period is the primary Statistics navigation. Default to the latest
@@ -483,12 +485,17 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     // The keyword class is optional; the ordinary Statistics view never queries it.
     enabled:!isLrunesDaily&&styleFilter==='rune66',
     queryFn:async()=>{
-      const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
-      return selectActiveKeywordClassName(scopeId);
+      const {selectAvailableKeywordClasses}=await import('../../loc/keyword-analysis');
+      return selectAvailableKeywordClasses(scopeId);
     },
   });
-  const keywordClassLabel=keywordClassQuery.data
-    ?'關鍵詞組：'+keywordClassQuery.data
+  const availableKeywordClasses=keywordClassQuery.data?.classes||[];
+  const selectedKeywordClass=availableKeywordClasses.find(item=>item.classUid===selectedKeywordClassUid)
+    ||availableKeywordClasses.find(item=>item.classUid===keywordClassQuery.data?.currentClassUid)
+    ||availableKeywordClasses[0];
+  const resolvedKeywordClassUid=String(selectedKeywordClass?.classUid||'');
+  const keywordClassLabel=selectedKeywordClass
+    ?'關鍵詞組：'+selectedKeywordClass.name
     :styleFilter!=='rune66'?'關鍵詞組'
       :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
   const keywordSourcesQuery=sourceCatalog;
@@ -502,17 +509,17 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     }
   },[keywordSource,keywordSourcesQuery.data,configuredSources]);
   const runeQuery=useAsyncResource({
-    queryKey:['statistics-style-filter','rune66',scopeId,styleRange.startDate,styleRange.endDate,
+    queryKey:['statistics-style-filter','rune66',scopeId,resolvedKeywordClassUid,styleRange.startDate,styleRange.endDate,
       keywordSource,othersConfig.dataUpdatedAt,keywordSource?keywordSourcesQuery.dataUpdatedAt:0],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
       return selectKeywordAnalysisSummary({
-        scopeId,...styleRange,sourceCategory:keywordSource,
+        scopeId,classUid:resolvedKeywordClassUid,...styleRange,sourceCategory:keywordSource,
         sourceCategories:keywordSourcesQuery.data?.categories||[],
         sourceAliases:keywordSourcesQuery.data?.aliases||[],sourceNames:selectedRawNames
       });
     },
-    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&Boolean(styleRange.startDate&&styleRange.endDate)
+    enabled:!isLrunesDaily&&styleFilter==='rune66'&&Boolean(resolvedKeywordClassUid)&&Boolean(styleRange.startDate&&styleRange.endDate)
       &&(!keywordSource||keywordSourcesQuery.isSuccess),
   });
 
@@ -526,6 +533,13 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
           {STYLE_FILTERS.map(item=><option key={item.value} value={item.value}>
             {item.value==='rune66'?keywordClassLabel:t(item.textKey)}
           </option>)}
+        </select>
+      </label>:null}
+      {styleFilter==='rune66'&&availableKeywordClasses.length>1?<label>
+        <span>關鍵字群組</span>
+        <select className="scope-select" aria-label="關鍵字群組" value={resolvedKeywordClassUid}
+          onChange={event=>setSelectedKeywordClassUid(event.target.value)}>
+          {availableKeywordClasses.map(item=><option key={item.classUid} value={item.classUid}>{item.name}</option>)}
         </select>
       </label>:null}
       {keywordClassQuery.error&&!isLrunesDaily?<p className="scope-status scope-error" role="status">
@@ -645,7 +659,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {rankingType!=='place'&&styleFilter==='rune66'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {keywordClassQuery.isPending?<p className="scope-status">正在讀取關鍵詞組設定…</p>:null}
-      {!keywordClassQuery.isPending&&!keywordClassQuery.error&&!keywordClassQuery.data?<p className="scope-status">此 Scope 尚未設定關鍵詞組。</p>:null}
+      {!keywordClassQuery.isPending&&!keywordClassQuery.error&&!availableKeywordClasses.length?<p className="scope-status">此 Scope 尚無可查看的關鍵詞組。</p>:null}
       {runeQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingKeywordAttrs"/></p>:null}
       {runeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(runeQuery.error)}</p>:null}
       {!runeQuery.isPending&&!runeQuery.error&&runeQuery.data?<Rune66Summary analysis={runeQuery.data} range={queryRange} scopeId={scopeId}/>:null}
@@ -656,6 +670,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         key={scopeId}
         scope={targetScopes[0]}
         range={queryRange}
+        classUid={resolvedKeywordClassUid}
         zoomLevel={zoomLevel}
         onZoomLevelChange={setZoomLevel}
         sharedCatalog={mediaDimension?null:sourceCatalog}
