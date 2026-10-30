@@ -153,8 +153,8 @@ test('real Facebook ZIP to Galaxy to exact Trace anchor is repeatable without du
  assert.equal(importedPlaceId({incoming:articles[1],byCoordinate:resolved.byCoordinate}),'AB12');
  assert.equal(importedPlaceId({incoming:articles[2],byCoordinate:resolved.byCoordinate}),null);
  const saved=new Map(articles.slice(0,2).map(row=>[row.uid,{...row,place_id:'AB12'}]));
- assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),false,
-    'Facebook posts without native site_id cannot be treated as unchanged');
+ assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),true,
+    'identical site, time and text are unchanged even without a native site_id');
   const identified=articles.slice(0,2).map((row,i)=>({...row,site_id:'fb-'+i}));
   const savedBySiteId=new Map(identified.map(row=>[row.uid,{...row,place_id:'AB12'}]));
   assert.equal(isUnchangedImportBeforeWrite(identified,savedBySiteId),true);

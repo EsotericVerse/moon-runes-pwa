@@ -138,6 +138,35 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
   return matches;
 }
 
+const importIsoTime=value=>{
+  const date=Date.parse(String(value??''));
+  return Number.isFinite(date)?new Date(date).toISOString():null;
+};
+// The comparison pool is one site's saved rows inside the incoming time span.
+// Requested timestamps are sorted and cut into disjoint windows, so a saved row
+// is scanned at most once. A window reads only uid + createtime; full rows are
+// read by UID for the timestamps that really matched.
+export async function readImportCandidatesByTimeWindows(times,
+    {readWindow,readRowsByUid,consumePage,windowSize=5000}={}){
+  if(typeof readWindow!=='function'||typeof readRowsByUid!=='function'||
+      typeof consumePage!=='function')throw Error('缺少時間區間查詢');
+  if(!Number.isSafeInteger(windowSize)||windowSize<1)throw Error('無效的比對區間大小');
+  const sorted=[...new Set((times||[]).map(importIsoTime).filter(Boolean))].sort();
+  for(let index=0;index<sorted.length;index+=windowSize){
+    const part=sorted.slice(index,index+windowSize);
+    const wanted=new Set(part);
+    const saved=await readWindow(part[0],part[part.length-1]);
+    if(!Array.isArray(saved))throw Error('時間區間查詢結果無效');
+    const uids=[];
+    for(const row of saved)
+      if(wanted.has(importIsoTime(row?.createtime)))uids.push(String(row.uid));
+    if(!uids.length)continue;
+    const full=await readRowsByUid(uids);
+    if(!Array.isArray(full))throw Error('UID 查詢結果無效');
+    consumePage(full);
+  }
+}
+
 export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}){
   if(hasMedia||!Array.isArray(records)||!records.length||!(matches instanceof Map))return false;
   return records.every(record=>{

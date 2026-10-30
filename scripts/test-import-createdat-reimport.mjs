@@ -17,7 +17,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 const post=(uid,site='Threads',site_id='post-100',content='original')=>({
   uid,site,site_id,createtime:'2024-08-01T00:00:00Z',title:'Title',content,url:null
@@ -88,12 +88,12 @@ test('source ID lookup reports progress without timestamps',async()=>{
 test('database lookup limits site and time before matching, preserving curated site and location',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.doesNotMatch(panel,/matchExistingImportBySiteId\(unique,/);
-  assert.match(panel,/urlSafeInBatches\(values,column\)/);
-  assert.match(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
-  assert.match(panel,/\.gte\('createtime',timeWindow\.start\)/);
-  assert.match(panel,/\.lte\('createtime',timeWindow\.end\)/);
+  assert.match(panel,/\.select\('uid,createtime'\)\s*\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
+  assert.match(panel,/\.order\('createtime',\{ascending:true\}\)\.order\('uid',\{ascending:true\}\)/);
+  assert.match(panel,/urlSafeInBatches\(uids,'uid'\)/);
+  assert.doesNotMatch(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/matchExistingImportByCreatedAt\(existingCandidates,/);
-  assert.match(panel,/consumePage\(page\)/);
+  assert.match(panel,/readImportCandidatesByTimeWindows\(times,\{/);
   assert.match(panel,/if\(!page\.length\)break/);
   assert.match(panel,/await updateImportRows\(galaxy,updateQueue\)/);
   assert.doesNotMatch(panel,/importTaipeiDate|existingByUid/);
@@ -243,4 +243,85 @@ test('primary-key conflicts do not become site_id matches',async()=>{
   });
   assert.deepEqual(inserted.map(row=>row.uid),['AAA00001','AAA00003']);
   assert.equal(result.conflicts,1);
+});
+
+const at=n=>new Date(Date.UTC(2024,0,1,0,0,n)).toISOString();
+test('comparison pool is cut into sorted, disjoint time windows and every saved row is read once',async()=>{
+  const windows=[],full=[];
+  await readImportCandidatesByTimeWindows([at(5),at(1),at(3),at(2),at(4)],{
+    windowSize:2,
+    readWindow:async(start,end)=>{
+      windows.push([start,end]);
+      return [1,2,3,4,5].map(n=>({uid:'U'+n,createtime:at(n)}))
+        .filter(row=>row.createtime>=start&&row.createtime<=end);
+    },
+    readRowsByUid:async uids=>{full.push(uids);return uids.map(uid=>({uid}));},
+    consumePage:()=>{}
+  });
+  assert.deepEqual(windows,[[at(1),at(2)],[at(3),at(4)],[at(5),at(5)]]);
+  assert.deepEqual(full.flat(),['U1','U2','U3','U4','U5']);
+});
+test('saved rows between requested timestamps are never re-read in full',async()=>{
+  const full=[];
+  await readImportCandidatesByTimeWindows([at(1),at(10)],{
+    readWindow:async()=>[1,2,3,10].map(n=>({uid:'U'+n,createtime:at(n)})),
+    readRowsByUid:async uids=>{full.push(...uids);return [];},
+    consumePage:()=>{}
+  });
+  assert.deepEqual(full,['U1','U10']);
+});
+test('no requested timestamp means no database read at all',async()=>{
+  await readImportCandidatesByTimeWindows([],{
+    readWindow:async()=>{throw Error('must not query');},
+    readRowsByUid:async()=>{throw Error('must not query');},
+    consumePage:()=>{}
+  });
+});
+test('a 25,000-post archive needs one span query per window and fetches each matched UID once',async()=>{
+  const total=25000;
+  const incoming=Array.from({length:total},(_,i)=>post('N'+i,'Facebook',null,'x'+i));
+  incoming.forEach((row,i)=>{row.createtime=at(i);});
+  const saved=incoming.map((row,i)=>({...row,uid:'S'+i}));
+  let spans=0;const fetched=[];
+  const matches=await matchExistingImportByCreatedAt(incoming,{
+    readTimestamps:(times,consumePage)=>readImportCandidatesByTimeWindows(times,{
+      windowSize:10000,consumePage,
+      readWindow:async(start,end)=>{
+        spans++;
+        return saved.filter(row=>row.createtime>=start&&row.createtime<=end)
+          .map(({uid,createtime})=>({uid,createtime}));
+      },
+      readRowsByUid:async uids=>{
+        fetched.push(...uids);
+        const wanted=new Set(uids);
+        return saved.filter(row=>wanted.has(row.uid));
+      }
+    })
+  });
+  assert.equal(spans,3);
+  assert.equal(fetched.length,total);
+  assert.equal(new Set(fetched).size,total);
+  assert.equal(matches.size,total);
+  assert.equal(matches.get('N24999')?.uid,'S24999');
+});
+test('two saved rows at one requested second still stop the import instead of overwriting',async()=>{
+  const incoming=post('NEW00001','Facebook',null);
+  const savedRows=[post('OLD00001','Facebook',null),post('OLD00002','Facebook',null)];
+  await assert.rejects(()=>matchExistingImportByCreatedAt([incoming],{
+    readTimestamps:(times,consumePage)=>readImportCandidatesByTimeWindows(times,{
+      consumePage,
+      readWindow:async()=>savedRows.map(({uid,createtime})=>({uid,createtime})),
+      readRowsByUid:async()=>savedRows
+    })
+  }),/無法唯一比對/);
+});
+test('the comparison pool is fixed before the first write, so later write batches never compare again',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const pool=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  assert.ok(pool>0);
+  assert.equal(panel.split('await matchExistingImportByCreatedAt(').length-1,1);
+  assert.ok(pool<panel.indexOf('const updateSizer=createImportBatchSizer()'));
+  assert.ok(pool<panel.indexOf('const insertSizer=createImportBatchSizer()'));
+  assert.equal(panel.split('readSiteSpan(').length-1,1);
+  assert.equal(panel.split('readRowsByUid(').length-1,0);
 });

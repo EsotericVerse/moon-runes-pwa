@@ -22,7 +22,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 
-import {dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
@@ -601,31 +601,43 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       };
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
-      const readCandidates=async(column,values,consumePage,site)=>{
-        if(!await siteHasArticles(site))return;
-        const pageSize=Math.min(MAX_ROWS,500);
-        for(const batch of urlSafeInBatches(values,column)){
-          for(let offset=0;;){
-            let query=dbAuthRelation(galaxy)
-              .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-              .ilike('site',site).in(column,batch);
-            if(timeWindow)query=query.gte('createtime',timeWindow.start)
-              .lte('createtime',timeWindow.end);
-            const {data,error}=await query.order('uid',{ascending:true})
-              .range(offset,offset+pageSize-1);
-            if(error)throw Error(column+' 比對失敗：'+error.message);
-            const page=data||[];
-            if(!page.length)break;
-            consumePage(page);
-            offset+=page.length;
-          }
+      // The pool is this site's saved rows inside the incoming time span, which
+      // already sits inside the selected import range. Only uid + createtime are
+      // read for the span; full rows are read by UID for real timestamp matches.
+      const readSiteSpan=async(site,start,end)=>{
+        const pageSize=MAX_ROWS,rows=[];
+        for(let offset=0;;){
+          const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime')
+            .ilike('site',site).gte('createtime',start).lte('createtime',end)
+            .order('createtime',{ascending:true}).order('uid',{ascending:true})
+            .range(offset,offset+pageSize-1);
+          if(error)throw Error('createtime 比對失敗：'+error.message);
+          const page=data||[];
+          if(!page.length)break;
+          for(const row of page)rows.push(row);
+          offset+=page.length;
         }
+        return rows;
+      };
+      const readRowsByUid=async uids=>{
+        const rows=[];
+        for(const batch of urlSafeInBatches(uids,'uid')){
+          const {data,error}=await dbAuthRelation(galaxy)
+            .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+            .in('uid',batch);
+          if(error)throw Error('uid 比對失敗：'+error.message);
+          for(const row of data||[])rows.push(row);
+        }
+        return rows;
       };
       // Only sites populated BEFORE this run are eligible for comparisons.
       const existingCandidates=deduped.unique;
       const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
-        readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
+        readTimestamps:(times,consumePage,site)=>readImportCandidatesByTimeWindows(times,{
+          readWindow:(start,end)=>readSiteSpan(site,start,end),
+          readRowsByUid,consumePage,windowSize:MAX_ROWS
+        })
       }):new Map();
       const existingBySiteId=existingByTime;
 

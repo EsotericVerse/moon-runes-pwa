@@ -60,9 +60,9 @@ test('streamed site_id lookup and media mapping remain intact',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(helper,/Date\.parse/);
   assert.doesNotMatch(helper,/importEpochMs|findExistingImportDuplicates|matchExistingWithoutCreatedAt/);
-  assert.match(panel,/urlSafeInBatches\(values,column\)/);
-  assert.match(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
-  assert.match(panel,/consumePage\(page\)/);
+  assert.match(panel,/readImportCandidatesByTimeWindows\(times,\{/);
+  assert.match(panel,/urlSafeInBatches\(uids,'uid'\)/);
+  assert.doesNotMatch(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
   assert.doesNotMatch(panel,/collected\.push\(\.\.\.page\)/);
   assert.match(panel,/for\(const uid of result\.insertedUids\)knownArticleIds\.set\(uid,uid\)/);
   assert.match(panel,/const savedUid=knownArticleIds\.get\(canonical\)/);
