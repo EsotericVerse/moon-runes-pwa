@@ -3,7 +3,7 @@
 import {facebookArchiveGalaxyRow,facebookArchiveUid} from './facebook-backup-place.mjs';
 import {repairMojibakeText} from './content-policy.js';
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
-import {facebookPostCoordinate} from './archive-geo-objects.mjs';
+import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
 
 const label={facebook:'Facebook',threads:'Threads',instagram:'Instagram',chatgpt:'ChatGPT',claude:'Claude',
@@ -26,12 +26,15 @@ export function archiveGalaxyRow(record){
   if(platform==='threads'&&!['post','media','story'].includes(String(record.kind||'')))
     return null;
   // Coordinates belong to the source JSON, not to LOC's optional location text.
-  const coordinates=platform==='facebook'?facebookPostCoordinate(record.raw):extractImportCoordinates(record.raw);
+  const facebookPlace=platform==='facebook'?facebookPostPlace(record.raw):null;
+  const coordinates=platform==='facebook'?facebookPlace?.__importCoordinates:extractImportCoordinates(record.raw);
   if(platform==='facebook'){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
     const url=urlOf(record.url);
-    return {...row,site:'Facebook',...(record.siteId?{site_id:record.siteId}:{}),...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates}:{})};
+    return {...row,site:'Facebook',...(record.siteId?{site_id:record.siteId}:{}),...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates,
+      ...(facebookPlace?.location?{__importPlaceName:facebookPlace.location}:{}),
+      ...(facebookPlace?.address?{__importPlaceAddress:facebookPlace.address}:{})}:{} )};
   }
   const content=repairMojibakeText(String(record.text||'').trim());
   if(!content)return null;
