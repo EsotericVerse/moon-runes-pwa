@@ -49,6 +49,9 @@ test('all-time imports preserve valid and undated rows without filtering',()=>{
 });
 test('import UI exposes range choices and filters both lookup and writes',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/\[timeRange,setTimeRange\]=useState\('year'\)/);
+  assert.match(panel,/第一次匯入完整舊資料可選/);
+  assert.match(panel,/後續定期更新建議使用預設/);
   for(const value of ['all','year','halfYear','month'])
     assert.match(panel,new RegExp('<option value="'+value+'">'));
   assert.match(panel,/filterImportAnalysisByTime\(rawAnalysis,timeWindow\)/);
