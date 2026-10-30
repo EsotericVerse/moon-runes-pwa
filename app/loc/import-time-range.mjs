@@ -2,7 +2,7 @@
 // A limited window excludes undated records rather than silently importing them.
 const RANGE_MONTHS=Object.freeze({month:1,halfYear:6,year:12});
 
-export function importTimeRangeWindow(range='all',now=new Date()){
+export function importTimeRangeWindow(range='year',now=new Date()){
   if(range==='all')return null;
   const months=RANGE_MONTHS[range];
   if(!months)throw Error('不支援的匯入時間區間：'+range);
