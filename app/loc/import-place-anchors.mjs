@@ -13,7 +13,7 @@ function incomingLocations(records){
   return {places,missing};
 }
 export async function prepareImportPlaceAnchors(records,{
-  scopeId,relation,pageSize=750,allowMissing=false
+  scopeId,relation,pageSize=750,allowMissing=false,onProgress
 }={}){
   const {places,missing}=incomingLocations(records);
   const byCoordinate=new Map();
@@ -22,6 +22,7 @@ export async function prepareImportPlaceAnchors(records,{
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('空間定錨 Scope 無效');
   if(typeof relation!=='function')throw Error('空間定錨資料庫不存在');
   const table='silver.'+scopeId+'_trace',existing=new Map();
+  onProgress?.({phase:'讀取現有空間定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
     const {data,error}=await relation(table)
       .select('uid,title,address').eq('trace_type','space_anchor')
@@ -36,6 +37,7 @@ export async function prepareImportPlaceAnchors(records,{
       if(key&&VALID_UID.test(String(anchor?.uid||''))&&!existing.has(key))
         existing.set(key,String(anchor.uid));
     }
+    onProgress?.({phase:'讀取現有空間定錨',completed:offset+(data||[]).length,total:0});
     if((data||[]).length<pageSize)break;
   }
   let created=0,reused=0;
@@ -44,6 +46,7 @@ export async function prepareImportPlaceAnchors(records,{
     if(existing.has(key)){byCoordinate.set(key,existing.get(key));reused++;}
     else pending.push([key,place]);
   }
+  if(pending.length)onProgress?.({phase:'新增空間定錨',completed:0,total:pending.length});
   for(let offset=0;offset<pending.length;offset+=80){
     const slice=pending.slice(offset,offset+80);
     const rows=slice.map(([,place])=>({
@@ -66,6 +69,7 @@ export async function prepareImportPlaceAnchors(records,{
       if(!uid)throw Error('新增定錨點沒有回傳對應座標與 UID');
       byCoordinate.set(key,uid);created++;
     }
+    onProgress?.({phase:'新增空間定錨',completed:created,total:pending.length});
   }
   return {byCoordinate,created,reused,skipped:missing};
 }
