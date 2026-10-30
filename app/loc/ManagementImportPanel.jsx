@@ -751,6 +751,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
+        {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
       <button type="button" className="loc-button scope-import-save-button"
         disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length)} onClick={run}>
