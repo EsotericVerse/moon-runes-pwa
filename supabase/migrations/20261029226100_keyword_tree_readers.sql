@@ -110,7 +110,16 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_summary(text,date,date,text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
 
 CREATE OR REPLACE FUNCTION silver.read_keyword_tree_catalog(p_scope_id text,p_class_uid text DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO ''
@@ -162,7 +171,16 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_keyword_tree_catalog(text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_keyword_tree_catalog(text,text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
 
 -- Read-only shared keyword directory: owner sees native Class UID; external
 -- consumers see a deterministic SHA-256 category identifier. No new rows.
@@ -196,7 +214,16 @@ BEGIN
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_shared_keyword_classes(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO anon,authenticated;
+DO $portable_grants$
+BEGIN
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO anon;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+   GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO authenticated;
+ END IF;
+END
+$portable_grants$;
 
 -- Promote the old Scope-wide share flag once, onto the previously active Class.
 -- Only the existing Scope configuration is updated; no Keywords or Galaxy rows.
