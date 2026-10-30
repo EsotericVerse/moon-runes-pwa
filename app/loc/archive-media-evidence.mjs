@@ -186,7 +186,7 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set(),articleTimes
     const row={
       uid:id,media_type:type,url:publicUrl(entry.url),
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件')+' · '+String(entry.entry_path||'').split('/').pop().slice(0,120),
-      meta_tags:null,createtime:null,location:null
+      meta_tags:null,createtime:articleTime,location:null
     };
     const hasUrl=Boolean(row.url);
     const isLinkedArchiveFile=Boolean(entry.found_in_zip&&entry.referenced_by_post);
