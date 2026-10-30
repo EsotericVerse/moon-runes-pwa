@@ -29,7 +29,7 @@ export function archiveGalaxyRow(record){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
     const url=urlOf(record.url);
-    return {...row,site:'Facebook',...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates}:{})};
+    return {...row,site:'Facebook',...(record.siteId?{site_id:record.siteId}:{}),...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates}:{})};
   }
   const content=repairMojibakeText(String(record.text||'').trim());
   if(!content)return null;
@@ -41,6 +41,7 @@ export function archiveGalaxyRow(record){
       :repairMojibakeText(String(record.title||'').trim()).slice(0,300)||titleFor(content,source),
     content,createtime:record.createdAt||null,
     site:source,
+    ...(record.siteId?{site_id:record.siteId}:{}),
     ...(location?{location:location}:{}),
     ...(coordinates?{__importCoordinates:coordinates}:{}),
     ...(url?{url}:{})

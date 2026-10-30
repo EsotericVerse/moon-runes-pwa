@@ -14,6 +14,7 @@ import {IMAGE_EXIF_PREFIX_LIMIT,readImageExif} from './archive-exif.mjs';
 import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
 import {importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
+import {repairMojibakeText} from './content-policy.js';
 import {archiveRecordStreamPath,archiveRootContainers} from './archive-array-layout.mjs';
 import {isPrivateArchiveEntry} from './archive-import-safety.mjs';
 
@@ -131,6 +132,10 @@ function extractCaption(item){
     const parts=item.data.map(v=>txt(v?.post)||txt(v?.text)||'').filter(Boolean);
     if(parts.length)return parts.join('\n');
   }
+  if(Array.isArray(item?.label_values)){
+    const caption=item.label_values.find(value=>repairMojibakeText(String(value?.label||''))==='說明文字');
+    if(typeof caption?.value==='string'&&caption.value.trim())return caption.value;
+  }
   if(Array.isArray(item?.media))return item.media.map(v=>txt(v?.title)).filter(Boolean).join('\n')||null;
   return null;
 }
@@ -175,10 +180,12 @@ function normalize(row,{platform,kind,path,index,conversation}){
   // Distinct textless check-ins at the same timestamp must not share an ID.
   const identityParts=[group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments];
   if(sourcePlace)identityParts.push(sourcePlace);
-  const stable=native||hash(JSON.stringify(identityParts));
+  const siteId=item.id_str||item.id||item.post_id||
+    (platform==='instagram'?item.fbid:null);
+  const stable=native||((platform==='instagram'&&item.fbid)?String(item.fbid):hash(JSON.stringify(identityParts)));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
-    platform,kind:finalKind,nativeId:stable,text:visibleText,sourcePlace,
+    platform,kind:finalKind,nativeId:stable,siteId:siteId==null?null:String(siteId),text:visibleText,sourcePlace,
     title:txt(item.title)||'',url:pickUrl(item),
     sender,conversationId:actualKind==='message'?conv:null,attachments,
     createdAt,originalTimestamp,
@@ -212,6 +219,10 @@ function determine(path,prefix){
     if(/"messages"\s*:/.test(head.slice(0,16000))||/\/(?:message|messages)_\d+\.json$/.test(p))
       return {platform:category(path)==='instagram'?'instagram':'messenger',kind:'message',array:'messages'};
   }
+  // Facebook albums contain the authored album metadata and the photo/caption
+  // collection in one object. Keep that parent, rather than streaming photos alone.
+  if(/(?:^|\/)posts\/album\/[^/]+\.json$/.test(p))
+    return {platform:'facebook',kind:'media',array:'@root-object'};
   const threadsActivity=threadsActivityKind(p);
   if(threadsActivity){
     return {platform:'threads',kind:threadsActivity,
@@ -317,7 +328,7 @@ function createSink(path,summary,onRecord,signal,sourceHint=null){
       return;
     }
     const text=config.prefix==='ytd'?header.replace(YTD,''):header;
-    const paths=[archiveRecordStreamPath(text,config.array)];
+    const paths=[config.array==='@root-object'?'$':archiveRecordStreamPath(text,config.array)];
     parser=new JSONParser({paths,keepStack:false,stringBufferSize:64*1024});
     parser.onValue=pushRows;
     summary.matchedFiles++;summary.sourceFiles.push(cleanPath(path));ready=true;

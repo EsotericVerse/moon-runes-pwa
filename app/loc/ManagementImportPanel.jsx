@@ -18,7 +18,7 @@ import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
-import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
+import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches,importTaipeiDate} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
@@ -121,6 +121,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
     target_id:normalizeRelationIds(value('target_id')),
+    site_id:String(value('site_id')||'').trim()||null,
     ref_id:String(value('ref_id')||'').trim()||null,
     url:!isArchiveMediaUrl(rawUrl)&&!importMapUrlCoordinates(rawUrl)?rawUrl||null:null,
     ...(mediaRefs.length?{media_link:mediaRefs}:{}),
@@ -130,7 +131,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
 }
 
 const IMPORT_FORMAT_FIELDS=Object.freeze([
-  'uid','content','title','createtime','location',
+  'uid','site_id','content','title','createtime','location',
   'url','source_id','target_id','ref_id','searchable','statistics_able',
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
@@ -385,17 +386,22 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
           }
-          const article=archiveGalaxyRow(record);
-          // Media-only posts still carry URLs even when no Galaxy text exists.
-          collector.onRecord(record,article?.uid||null);
-          if(!article){ignored++;return;}
-          const previous=uidOwners.get(article.uid);
-          if(previous&&previous!==record.key)
-            throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
-          uidOwners.set(article.uid,record.key);
-          if(imported.length>=100000)
-            throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
-          imported.push({raw:article,import_uid:article.uid});
+          const linked=archiveGalaxyRows(record);
+          if(!linked.length){
+            collector.onRecord(record,null);ignored++;return;
+          }
+          for(const [index,entry] of linked.entries()){
+            const article=entry.row;
+            collector.onRecord({...record,attachments:entry.attachments},article.uid);
+            const key=record.key+':'+index;
+            const previous=uidOwners.get(article.uid);
+            if(previous&&previous!==key)
+              throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
+            uidOwners.set(article.uid,key);
+            if(imported.length>=100000)
+              throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
+            imported.push({raw:article,import_uid:article.uid});
+          }
         },onMediaMetadata:item=>{
           if(!nativeLocal&&isPrivateArchiveEntry(item.path))return;
           collector.onExif(item);
@@ -497,7 +503,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // Unknown source time is null and never causes an import-time lookup.
       const incoming=dedupeIncomingImport(analyzed.valid);
       // Photo EXIF remains separate media evidence, never a post check-in location.
-      const unique=incoming.unique;
+      let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
         onProgress:p=>showProgress('精確比對發文時間',p.completed,p.total),
@@ -510,7 +516,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           for(const batch of urlSafeInBatches(lookup,column)){
             for(let offset=0;;){
               const {data,error}=await dbAuthRelation(galaxy)
-                .select('uid,createtime,content,title,place_id,url')
+                .select('uid,createtime,content,title,place_id,url,site_id,source_id,target_id')
                 .in(column,batch).order('uid',{ascending:true})
                 .range(offset,offset+pageSize-1);
               if(error)throw new Error('重複文章比對失敗：'+error.message);
@@ -524,6 +530,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         }
       });
+      // Resolve stable source identities even when the original creation time is absent.
+      const missingTimeOrLinked=unique.filter(record=>
+        !record.createtime||record.source_id||(record.target_id||[]).length);
+      const existingByUid=await readExistingByIds(galaxy,
+        'uid,createtime,content,title,place_id,url,source_id,target_id,site_id',
+        'uid',missingTimeOrLinked.map(record=>record.uid),'既有文章 UID 比對失敗');
+      for(const row of existingByUid)existingByCreatedAt.set(String(row.uid),row);
+      const finalUid=id=>String(existingByCreatedAt.get(String(id))?.uid||id);
+      unique=unique.map(record=>({
+        ...record,
+        source_id:record.source_id?finalUid(record.source_id):null,
+        target_id:(record.target_id||[]).map(finalUid)
+      }));
       // No-op reimports must stop before anchor creation, article writes, or media writes.
       if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,{
         hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
@@ -566,6 +585,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
+        if(record.site_id&&!existing.site_id)changes.site_id=record.site_id;
+        if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
+        if(record.target_id?.length){
+          const prior=normalizeRelationIds(existing.target_id)||[];
+          const missing=record.target_id.filter(uid=>!prior.includes(uid));
+          if(missing.length)changes.target_id=[...prior,...missing];
+        }
         const newUrl=String(record.url||'').trim();
         const oldUrl=String(existing.url||'').trim();
         if(newUrl&&newUrl!==oldUrl&&
