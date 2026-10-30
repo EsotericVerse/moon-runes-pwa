@@ -1,7 +1,7 @@
 // Preserve ZIP media references and private EXIF evidence without keeping image bytes.
 const MAX_MEDIA_PER_RECORD=200;
 const URI_KEYS=['uri','src','media_uri','mediaUri','path','relative_path','relativePath'];
-const URL_KEYS=['media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','url','display_url'];
+const URL_KEYS=['media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','media_url_https','url','display_url'];
 const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','array','label_values','image_versions2','image','video','photo'];
 const HTTP=/^https?:\/\/[^/\s]+/i;
 const MEDIA_EXT=/\.(?:jpe?g|png|gif|webp|heic|avif|tiff?|mp4|mov|mkv|webm|mp3|m4a|wav|ogg|flac)(?:[?#]|$)/i;
@@ -30,9 +30,9 @@ export function archiveAttachmentReferences(record){
       [item?.attachments,item?.media,item?.photos,item?.videos].filter(Boolean)):[])];
   if((typeof record.uri==='string'&&MEDIA_EXT.test(record.uri))||
        /^(image|photo|video|audio)/i.test(String(record.media_type||''))||
-       [record.url,record.media_url,record.mediaUrl,record.image_url,record.video_url,record.download_url]
+       [record.url,record.media_url,record.mediaUrl,record.image_url,record.video_url,record.download_url,record.media_url_https]
          .some(isArchiveMediaUrl)||
-       [record.media_url,record.mediaUrl,record.image_url,record.video_url]
+       [record.media_url,record.mediaUrl,record.image_url,record.video_url,record.media_url_https]
          .some(value=>typeof value==='string'&&Boolean(publicUrl(value))))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
@@ -52,7 +52,7 @@ export function archiveAttachmentReferences(record){
     const urls=allUrls.filter(v=>publicUrl(v));
     // Explicit media URL fields win over generic links on the same media item.
     // Generic URLs are accepted only when they look like media or are labelled as media.
-    const mediaUrl=URL_KEYS.slice(0,6).map(key=>value[key]).find(v=>publicUrl(v));
+    const mediaUrl=URL_KEYS.slice(0,7).map(key=>value[key]).find(v=>publicUrl(v));
     const genericUrl=urls.find(v=>isArchiveMediaUrl(v))||
       (/^(image|photo|video|audio)/i.test(hint)?
         urls.find(v=>!/(?:instagram\.com\/(?:p|reel|stories)\/|threads\.net\/.*\/post\/|facebook\.com\/(?:posts|permalink\.php))/i.test(v)):null);

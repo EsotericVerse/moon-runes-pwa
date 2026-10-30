@@ -669,3 +669,59 @@ test('a Facebook generic auto-title alone, without a description, creates no pic
   await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
   assert.equal(rows.length,0);
 });
+
+test('nested caption media is found at any depth, not just label_values[].media[]',async()=>{
+  const zip=asFile('deep-nested.zip',zipSync({
+    'your_facebook_activity/posts/your_uncategorized_photos.json':j([{
+      media:[],fbid:'555',
+      attachments:[{data:[{media:[{
+        uri:'your_facebook_activity/posts/media/your_posts/474008376020988.jpg',
+        creation_timestamp:1372008872,
+        description:'深層巢狀的說明文字'
+      }]}]}]
+    }]),
+    'your_facebook_activity/posts/media/your_posts/474008376020988.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].row.content,'深層巢狀的說明文字');
+  assert.equal(rows[0].attachments.length,1);
+});
+test('a media leaf with only an EXIF upload_ip and no title/description creates no pic_text',async()=>{
+  const zip=asFile('exif-only.zip',zipSync({
+    'your_facebook_activity/posts/your_uncategorized_photos.json':j([{
+      media:[],fbid:'556',
+      label_values:[{label:'x',media:[{
+        uri:'your_facebook_activity/posts/media/your_posts/555.jpg',
+        creation_timestamp:1372008872,
+        media_metadata:{photo_metadata:{exif_data:[{upload_ip:'111.250.216.14'}]}}
+      }]}]
+    }]),
+    'your_facebook_activity/posts/media/your_posts/555.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,0,'no authored text anywhere, so nothing to write as a Galaxy article');
+});
+test('nested caption discovery is platform-agnostic: an X/Twitter post with no top text but a photo caption buried in extended_entities also becomes a pic_text, with site label X',async()=>{
+  // Twitter/X exports are .js files wrapping JSON (window.YTD.tweet.part0 = [...]);
+  // that wrapper is already stripped before this record exists, so record.raw here
+  // is the same shape as any other parsed JSON — this is purely the intra-JSON
+  // nested-text search, unrelated to how the source file was unwrapped.
+  const record={
+    platform:'x',kind:'post',key:'x:tweet:1',sourcePath:'data/tweets.js',createdAt:null,siteId:null,
+    raw:{
+      tweet:{id_str:'1',full_text:'',
+        extended_entities:{media:[{
+          media_url_https:'https://pbs.twimg.com/media/example.jpg',
+          type:'photo',description:'推文裡藏的照片說明文字'
+        }]}}
+    }
+  };
+  const rows=[];
+  for(const entry of archiveGalaxyRows(record))rows.push(entry);
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].row.content,'推文裡藏的照片說明文字');
+  assert.equal(rows[0].row.site,'X');
+});

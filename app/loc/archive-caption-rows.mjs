@@ -1,7 +1,8 @@
 // Facebook album photos with their own text become pic_text rows (one picture each);
 // media are Galaxy Media records and never hold text.
 // Structural parents represent actual platform media posts but are not user prose.
-import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
+import {JSONPath} from 'jsonpath-plus';
+import {archiveGalaxyRow,platformLabel} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {repairMojibakeText} from './content-policy.js';
 import {archiveAttachmentReferences} from './archive-media-evidence.mjs';
@@ -15,20 +16,38 @@ const authoredText=value=>{
   return GENERIC_FACEBOOK_TITLES.has(text)?'':text;
 };
 
-// Some Facebook exports have no post text at all; the only text is nested
-// one level inside label_values[].media[] (Facebook's own description per
-// photo). media never holds text, so each such photo becomes its own pic_text.
+// Some exports (any platform) have no post text at all; the only text is
+// nested somewhere inside the record — label_values[].media[], attachments
+// [].data[].media[], extended_entities.media[], or anything else a given
+// export shape happens to use. media never holds text, so each such photo
+// becomes its own pic_text. Rather than guess container key names and a
+// fixed depth, this asks for every object anywhere in the record (any
+// depth, any key) that itself looks like a media leaf.
+const MEDIA_FIELD_KEYS=['uri','src','media_uri','mediaUri','url','media_url','mediaUrl',
+  'media_url_https','image_url','video_url','download_url','downloadUrl'];
+const MEDIA_LEAF_QUERY='$..[?(@ && ('+MEDIA_FIELD_KEYS.map(key=>'@.'+key).join(' || ')+'))]';
+const MAX_NESTED_MEDIA=200;
 function nestedMediaItems(raw){
-  const groups=Array.isArray(raw?.label_values)?raw.label_values:[];
-  const items=[];
-  for(const group of groups)
-    for(const item of Array.isArray(group?.media)?group.media:[])
-      if(item&&typeof item==='object')items.push(item);
-  return items;
+  if(!raw||typeof raw!=='object')return [];
+  let matches;
+  try{matches=JSONPath({path:MEDIA_LEAF_QUERY,json:raw,resultType:'value',wrap:true});}
+  catch{return [];}
+  const found=[],seenKeys=new Set();
+  for(const item of matches||[]){
+    if(!item||typeof item!=='object'||Array.isArray(item))continue;
+    const dedupeKey=MEDIA_FIELD_KEYS.map(key=>item[key]).find(value=>typeof value==='string'&&value.trim());
+    if(!dedupeKey||seenKeys.has(dedupeKey))continue;
+    seenKeys.add(dedupeKey);
+    found.push(item);
+    if(found.length>=MAX_NESTED_MEDIA)break;
+  }
+  return found;
 }
 export function archiveGalaxyRows(record){
-  if(record?.platform==='facebook'&&record?.kind==='post'&&!archiveGalaxyRow(record)){
+  if(record?.kind==='post'&&!archiveGalaxyRow(record)){
     const nested=nestedMediaItems(record.raw);
+    const platform=String(record?.platform||'meta').toLowerCase();
+    const source=platformLabel[platform]||platform.slice(0,64)||'Archive';
     const postFbid=record.siteId||(record.raw?.fbid!=null?String(record.raw.fbid):null);
     if(nested.length){
       const looseAttachments=[];
@@ -43,7 +62,7 @@ export function archiveGalaxyRows(record){
         return [{
           row:{uid,title:Array.from(description||title).slice(0,120).join(''),
             content:text,createtime:parseImportCreatedTime(item.creation_timestamp)||record.createdAt||null,
-            site:'Facebook',site_id:postFbid?postFbid+':'+index:null},
+            site:source,site_id:postFbid?postFbid+':'+index:null},
           attachments
         }];
       });
