@@ -1,3 +1,5 @@
+import {importGeoKey} from './import-geocoordinates.mjs';
+
 // Import identity belongs to the original post, never the generated UID.
 // Keep platform boundaries: synchronized Threads/Instagram/Facebook posts are
 // distinct even with identical original text and timestamps.
@@ -62,7 +64,7 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
     if(incomingUrl&&incomingUrl!==String(saved.url||'').trim())return false;
     // A manually curated Trace anchor may have been added since the last import.
     // Recheck an existing article when the source supplies exact coordinates.
-    if(!String(saved.place_id||'').trim()&&record.__importCoordinates)return false;
+    if(!String(saved.place_id||'').trim()&&importGeoKey(record.__importCoordinates))return false;
     return true;
   });
 }
