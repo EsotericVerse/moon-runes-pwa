@@ -19,7 +19,7 @@ import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
-import {facebookPostCoordinate} from './archive-geo-objects.mjs';
+import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
 import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches,importTaipeiDate} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
@@ -59,9 +59,12 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     (isFacebook&&place?'Facebook 打卡地點：'+place:''));
   const rawTitle=repairMojibakeText(value('title')).trim();
   const sourcePlace=place;
+  const facebookPlace=isFacebook?facebookPostPlace(row):null;
   const importedCoordinates=row.__importCoordinates
     ?extractImportCoordinates(row.__importCoordinates)
-    :isFacebook?facebookPostCoordinate(row):extractImportCoordinates(row);
+    :isFacebook?facebookPlace?.__importCoordinates:extractImportCoordinates(row);
+  const importPlaceName=String(row.__importPlaceName||facebookPlace?.location||'').trim();
+  const importPlaceAddress=String(row.__importPlaceAddress||facebookPlace?.address||'').trim();
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
@@ -119,7 +122,9 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     content,
     createtime:createdAt,
     location:sourcePlace||null,
-    ...(importedCoordinates?{__importCoordinates:importedCoordinates}:{}),
+    ...(importedCoordinates?{__importCoordinates:importedCoordinates,
+      ...(importPlaceName?{__importPlaceName:importPlaceName}:{}),
+      ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{})}:{}),
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
