@@ -61,7 +61,7 @@ test('streamed site_id lookup and media mapping remain intact',()=>{
   assert.match(helper,/Date\.parse/);
   assert.doesNotMatch(helper,/importEpochMs|findExistingImportDuplicates|matchExistingWithoutCreatedAt/);
   assert.match(panel,/urlSafeInBatches\(values,column\)/);
-  assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
+  assert.match(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/consumePage\(page\)/);
   assert.doesNotMatch(panel,/collected\.push\(\.\.\.page\)/);
   assert.match(panel,/for\(const uid of result\.insertedUids\)knownArticleIds\.set\(uid,uid\)/);
