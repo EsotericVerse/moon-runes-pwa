@@ -115,7 +115,7 @@ test('photo EXIF GPS alone cannot become a Facebook check-in point',()=>{
  assert.equal(mapped.__importCoordinates,undefined);
 });
 
-test('real Facebook ZIP to Galaxy to exact Trace anchor is repeatable without duplicate writes',async()=>{
+test('real Facebook ZIP to Galaxy to Trace anchor by place name is repeatable without duplicate writes',async()=>{
  const point={latitude:25.05338,longitude:121.49086};
  const rows=[
    {timestamp:1720000000,data:[{post:'第一篇'}],attachments:[{data:[{
@@ -140,18 +140,19 @@ test('real Facebook ZIP to Galaxy to exact Trace anchor is repeatable without du
    assert.equal(table,'silver.lo3rwang_trace');
    return {
      select:()=>({eq:()=>({order:()=>({range:async()=>({
-       data:[{uid:'AB12',title:'人工整理的名稱',address:[121.49086,25.05338]}],error:null
+       data:[{uid:'AB12',title:'原始地點 A',address:[121.49086,25.05338],times:[]}],error:null
      })})})}),
      insert:()=>{inserted++;throw Error('不得自動新增 Trace 地點');}
    };
  };
  const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation});
  assert.equal(resolved.reused,1);
- assert.equal(resolved.unmatchedCoordinates,1);
+ assert.equal(resolved.unmatchedCoordinates,2);
  assert.equal(inserted,0);
- assert.equal(importedPlaceId({incoming:articles[0],byCoordinate:resolved.byCoordinate}),'AB12');
- assert.equal(importedPlaceId({incoming:articles[1],byCoordinate:resolved.byCoordinate}),'AB12');
- assert.equal(importedPlaceId({incoming:articles[2],byCoordinate:resolved.byCoordinate}),null);
+ assert.equal(importedPlaceId({incoming:articles[0],byName:resolved.byName}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[1],byName:resolved.byName}),null,
+   'same coordinates but a different name is a different place');
+ assert.equal(importedPlaceId({incoming:articles[2],byName:resolved.byName}),null);
  const saved=new Map(articles.slice(0,2).map(row=>[row.uid,{...row,place_id:'AB12'}]));
  assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),true,
     'identical site, time and text are unchanged even without a native site_id');

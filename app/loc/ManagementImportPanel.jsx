@@ -24,7 +24,7 @@ import {facebookPostPlace} from './archive-geo-objects.mjs';
 
 import {dedupeIncomingImport,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
-import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
+import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
@@ -727,6 +727,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const result={inserted:0,conflicts:0,insertedUids:new Set(),conflictedUids:new Set()};
       const insertSizer=createImportBatchSizer();
       let payload=[],newArticleProcessed=0;
+      const placeVisits=[];
       const flushNewArticles=async()=>{
         if(!payload.length)return;
         const count=payload.length,started=Date.now();
@@ -747,14 +748,22 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       };
       for(const record of unique){
         if(existingBySiteId.has(record.uid))continue;
-        const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
+        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
           ...article}=record;
+        if(placeUid)placeVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
         payload.push(placeUid?{...article,place_id:placeUid}:article);
         if(payload.length>=insertSizer.size)await flushNewArticles();
       }
       await flushNewArticles();
+      const savedVisits=placeVisits.filter(visit=>result.insertedUids.has(visit.articleUid));
+      if(savedVisits.length){
+        showProgress('記錄定錨打卡時間');
+        await recordImportPlaceVisits(savedVisits,{
+          relation:dbAuthRelation,table:placeAnchors.table,timesByUid:placeAnchors.timesByUid
+        });
+      }
       duplicateCount+=result.conflicts;
       for(const uid of result.insertedUids)knownArticleIds.set(uid,uid);
       for(const record of analyzed.valid){
