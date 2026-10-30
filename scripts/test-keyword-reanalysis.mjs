@@ -108,3 +108,23 @@ test('two Classes can analyze the same Galaxy article without overwriting each o
  assert.deepEqual(stored.get('GRB1'),['Ab12Cd34']);
  assert.deepEqual(stored.get('ITB1'),[{uid:'Ab12Cd34',times:1}]);
 });
+
+test('duplicate Group labels resolve to distinct UID hit lists during reanalysis',async()=>{
+ const catalog=[
+  {uid:'CAT1',type:'category',name:'總稱',lists:['CL01']},
+  {uid:'CL01',type:'class',name:'符文66',lists:['GR01','GR02']},
+  {uid:'GR01',type:'group',name:'靈魂組',lists:['IT01']},
+  {uid:'GR02',type:'group',name:'靈魂組',lists:['IT02']},
+  {uid:'IT01',type:'item',name:'靈',lists:['潛意識']},
+  {uid:'IT02',type:'item',name:'靈',lists:['情緒']}
+ ];
+ const saved=[];
+ const stats=await reanalyzeKeywordClass({
+  classUid:'CL01',treeRows:catalog,pageSize:1,
+  readPage:async({offset})=>offset?[]:[{uid:'Ab12Cd34',content:'情緒'}],
+  writeNode:async row=>saved.push(row),finalize:async()=>{}
+ });
+ assert.deepEqual(saved.find(row=>row.uid==='GR01').uid_lists,[]);
+ assert.deepEqual(saved.find(row=>row.uid==='GR02').uid_lists,['Ab12Cd34']);
+ assert.equal(stats.matchedDocuments,1);
+});
