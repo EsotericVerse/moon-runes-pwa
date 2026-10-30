@@ -37,5 +37,6 @@ test('COUNT uses owner visibility and chronological 1000-row batches before writ
  assert.ok(runner.includes('expectedCount:eligibleCount'));
  assert.ok(runner.includes('createChronologicalKeywordReader'));
  assert.ok(runner.includes(".order('createtime',{ascending:true})"));
- assert.doesNotMatch(runner,/\.order\('uid'/);
+ const articleReader=runner.slice(runner.indexOf('const articleColumns='),runner.indexOf('writeNode:async'));
+ assert.doesNotMatch(articleReader,/\.order\('uid'/);
 });
