@@ -70,7 +70,7 @@ function canonicalBucket(day,unit){
   }
   return {key:day,from:day,to:day};
 }
-export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
+export default function ScopeSelfIntersection({scope,range,classUid='',zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
   useUiSection('uiExtra.selfIntersection');
   useUiSection('uiExtra.statisticsView');
   const {locale,copy}=useUiLocale();
@@ -119,11 +119,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   };
   // Read the already-stored keyword summary only when this panel is expanded.
   const keywords=useAsyncResource({
-    queryKey:['own-scope-keyword-summary',scope?.id,start,end],
+    queryKey:['own-scope-keyword-summary',scope?.id,classUid,start,end],
     enabled:valid,
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({scopeId:scope.id,startDate:start,endDate:end});
+      return selectKeywordAnalysisSummary({scopeId:scope.id,classUid,startDate:start,endDate:end});
     }
   });
   const keywordTabAvailable=Boolean(keywords.data?.statisticsEnabled&&
@@ -251,11 +251,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   // Item-by-day data are not in the summary RPC. Load saved attributes only
   // when an item is actually selected, without reading or analyzing article bodies.
   const keywordItems=useAsyncResource({
-    queryKey:['own-scope-keyword-item-days',scope?.id,start,end],
+    queryKey:['own-scope-keyword-item-days',scope?.id,classUid,start,end],
     enabled:valid&&keywordModeActive&&selectedKeywordItems,
     queryFn:async()=>{
       const {readKeywordTreeSummary}=await import('../../../loc/db-client.mjs');
-      return readKeywordTreeSummary(scope.id,{startDate:start,endDate:end});
+      return readKeywordTreeSummary(scope.id,{classUid:keywords.data?.keywordMeta?.class_uid||classUid,startDate:start,endDate:end});
     }
   });
   const unit=['month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
