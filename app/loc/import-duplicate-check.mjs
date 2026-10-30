@@ -117,7 +117,7 @@ export async function findExistingImportDuplicates(records,{readTimestamps,batch
 
 // Match epoch milliseconds as numbers. Multiple saved articles with the same
 // exact timestamp need content disambiguation, never arbitrary replacement.
-export async function matchExistingImportByCreatedAt(records,{readTimestamps,batchSize=128}={}){
+export async function matchExistingImportByCreatedAt(records,{readTimestamps,batchSize=128,onProgress}={}){
   if(typeof readTimestamps!=='function')throw Error('缺少精確發文時間查詢');
   const grouped=new Map();
   for(const record of records||[]){
@@ -127,6 +127,7 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,bat
     grouped.get(ms).push(record);
   }
   const matched=new Map(),claimed=new Set(),times=[...grouped.keys()];
+  onProgress?.({completed:0,total:times.length,matched:0});
   for(let i=0;i<times.length;i+=batchSize){
     const current=times.slice(i,i+batchSize);
     const rows=await readTimestamps(current);
@@ -149,6 +150,7 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,bat
         if(chosen){matched.set(record.uid,chosen);claimed.add(String(chosen.uid));}
       }
     }
+    onProgress?.({completed:Math.min(i+current.length,times.length),total:times.length,matched:matched.size});
   }
   return matched;
 }
