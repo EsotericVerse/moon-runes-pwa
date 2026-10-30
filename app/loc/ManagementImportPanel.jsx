@@ -17,11 +17,12 @@ import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-
 import {Capacitor} from '@capacitor/core';
 import {defaultScopeData} from './scope-data';
 import {createUid8} from './uid';
-import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
+import {remapArchiveArticleUids} from './import-random-uids.mjs';
+import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from './facebook-backup-place.mjs';
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
-import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+
+import {dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
@@ -74,10 +75,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const originalSiteId=value('site_id')||((isFacebook||isThreads||isInstagram)?
     (row.post_id||row.id_str||row.id||(isThreads?row.thread_id:null)||
       (isInstagram?row.fbid:null)):null);
-  const nativeThreadsId=isThreads?String(row.id||row.post_id||row.thread_id||'').trim():'';
-  const stableThreadsKey=isThreads&&(nativeThreadsId||createdAt&&comparableImportText(content))
-    ?'threads:json:'+JSON.stringify([nativeThreadsId||null,createdAt,comparableImportText(content)]):'';
-  const uid=String(value('uid')||(isFacebook?facebookBackupImportUid(row):stableThreadsKey?facebookArchiveUid(stableThreadsKey):entry?.import_uid||createUid8())).trim();
+  // On social imports the source ID is optional metadata; Galaxy UID is
+  // generated locally by the importer and never derived from source content.
+  const uid=String(((isFacebook||isThreads||isInstagram)&&entry?.import_uid)||
+    value('uid')||entry?.import_uid||createUid8()).trim();
   const rawUrl=String(value('url')||'').trim();
   const mediaCandidates=[value('media'),value('media_link'),
     ...(isArchiveMediaUrl(rawUrl)?[rawUrl]:[])]
@@ -409,7 +410,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],uidOwners=new Map(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
+        const imported=[],issuedArticleUids=new Set(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
         const collector=createArchiveEvidenceCollector();
         let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
@@ -435,14 +436,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(!linked.length){
             collector.onRecord(record,null);ignored++;return;
           }
+          // Assign fresh random primary keys per source record. The transient
+          // source hashes never become Galaxy UIDs or media relation targets.
+          const randomized=remapArchiveArticleUids(
+            linked.map(entry=>entry.row),createUid8,issuedArticleUids);
           for(const [index,entry] of linked.entries()){
-            const article=entry.row;
+            const article=randomized[index];
             collector.onRecord({...record,attachments:entry.attachments},article.uid);
-            const key=record.key+':'+index;
-            const previous=uidOwners.get(article.uid);
-            if(previous&&previous!==key)
-              throw Error('來源紀錄 UID 雜湊衝突；沒有寫入資料庫。');
-            uidOwners.set(article.uid,key);
             if(imported.length>=100000)
               throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
             imported.push({raw:article,import_uid:article.uid});
@@ -459,8 +459,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // A loose photo in the ZIP can belong to a private chat even if its
         // path does not contain "messages".
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size})
-          .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>uidOwners.has(uid))));
-        const mediaPlan=prepareArchiveMedia(mediaEvidence,new Set(uidOwners.keys()));
+          .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>issuedArticleUids.has(uid))));
+        const mediaPlan=prepareArchiveMedia(mediaEvidence,issuedArticleUids);
         setArchiveEvidence(mediaEvidence);
         setGeoPlaceCandidates(geoPlaces);
         setArchiveSummary({...summary,exifSamples,
@@ -571,9 +571,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
       // First narrow all database comparisons to the source site, then timestamp.
-      const incoming=dedupeIncomingImport(analyzed.valid);
-      let unique=incoming.unique;
-      let duplicateCount=incoming.duplicates;
+      // Check each site's existing data ONCE before creating a comparison pool.
+      // If site is empty, the complete file stays in INSERT mode regardless
+      // of how many previous batches have already been written.
       const siteAvailability=new Map();
       const siteHasArticles=async site=>{
         if(!siteAvailability.has(site)){
@@ -583,6 +583,24 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         }
         return siteAvailability.get(site);
       };
+      const distinctSites=[...new Set(analyzed.valid.map(row=>String(row.site||'').trim()))];
+      for(let index=0;index<distinctSites.length;index++){
+        await siteHasArticles(distinctSites[index]);
+        showProgress('確認網站既有文章',index+1,distinctSites.length);
+      }
+      const oldRows=analyzed.valid.filter(row=>siteAvailability.get(String(row.site||'').trim()));
+      const deduped=oldRows.length?dedupeIncomingImport(oldRows):
+        {unique:[],aliases:new Map(),duplicates:0};
+      const existingIdentity=new Set(deduped.unique.map(row=>String(row.uid)));
+      const incoming={
+        unique:analyzed.valid.filter(row=>!siteAvailability.get(String(row.site||'').trim())||
+          existingIdentity.has(String(row.uid))),
+        aliases:new Map([...analyzed.valid.map(row=>[String(row.uid),String(row.uid)]),
+          ...deduped.aliases]),
+        duplicates:deduped.duplicates
+      };
+      let unique=incoming.unique;
+      let duplicateCount=incoming.duplicates;
       const readCandidates=async(column,values,consumePage,site)=>{
         if(!await siteHasArticles(site))return;
         const pageSize=Math.min(MAX_ROWS,500);
@@ -603,14 +621,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         }
       };
-      // A truly empty source has nothing to compare: just INSERT its posts.
-      // Probe once per site before constructing any timestamp comparison pool.
-      const distinctSites=[...new Set(unique.map(row=>String(row.site||'').trim()))];
-      for(let index=0;index<distinctSites.length;index++){
-        await siteHasArticles(distinctSites[index]);
-        showProgress('確認網站既有文章',index+1,distinctSites.length);
-      }
-      const existingCandidates=unique.filter(row=>siteAvailability.get(String(row.site||'').trim()));
+      // Only sites populated BEFORE this run are eligible for comparisons.
+      const existingCandidates=deduped.unique;
       const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
