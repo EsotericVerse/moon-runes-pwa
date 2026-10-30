@@ -33,6 +33,8 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Parse application JavaScript and JSX
+        run: npm run check:syntax
       - name: Run real LOC archive and reimport regression tests
         run: |
           node --test \
