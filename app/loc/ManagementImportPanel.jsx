@@ -603,10 +603,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         }
       };
-      const existingByTime=await matchExistingImportByCreatedAt(unique,{
+      // A truly empty source has nothing to compare: just INSERT its posts.
+      // Probe once per site before constructing any timestamp comparison pool.
+      const distinctSites=[...new Set(unique.map(row=>String(row.site||'').trim()))];
+      for(let index=0;index<distinctSites.length;index++){
+        await siteHasArticles(distinctSites[index]);
+        showProgress('確認網站既有文章',index+1,distinctSites.length);
+      }
+      const existingCandidates=unique.filter(row=>siteAvailability.get(String(row.site||'').trim()));
+      const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
-      });
+      }):new Map();
       const existingBySiteId=existingByTime;
 
       const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
@@ -662,7 +670,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        if(record.site_id&&!existing.site_id)changes.site_id=record.site_id;
+        // site_id is saved on INSERT; existing blank values are backfilled
+        // separately because update_batch only accepts article text/media fields.
+        if(record.site_id&&!existing.site_id)
+          await updateRows(galaxy,{site_id:record.site_id},{filters:[{column:'uid',value:existing.uid}]});
         if(record.source_id&&!existing.source_id)changes.source_id=record.source_id;
         if(record.target_id?.length){
           const prior=normalizeRelationIds(existing.target_id)||[];
