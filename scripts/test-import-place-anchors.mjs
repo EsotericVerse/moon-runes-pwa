@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareImportPlaceAnchors,importedPlaceId} from '../app/loc/import-place-anchors.mjs';
+import {importGeoKey} from '../app/loc/import-geocoordinates.mjs';
 
 const loc=(name,lat,lng)=>({
   location:name,
   __importCoordinates:lat==null?null:{latitude:lat,longitude:lng}
 });
 function fakeTrace(initial=[]){
-  const rows=[...initial];let seq=1,reads=0,writes=0;
+  const rows=[...initial];let reads=0,writes=0;
   const relation=name=>{
     assert.equal(name,'silver.lo3rwang_trace');
     return {
@@ -17,117 +18,102 @@ function fakeTrace(initial=[]){
           reads++;return {data:rows.slice(start,end+1),error:null};
         }};}};}};
       },
-      insert(batch){
-        writes++;assert.ok(batch.length<=80);
-        assert.ok(batch.every(row=>row.trace_type==='space_anchor'&&row.address?.length===2&&row.hidden_depth===-1));
-        const created=batch.map(row=>({uid:String(seq++).padStart(4,'0'),...row}));
-        rows.push(...created);
-        return {async select(cols){
-          assert.equal(cols,'uid,address');
-          return {data:created.map(({uid,address})=>({uid,address})),error:null};
-        }};
+      insert(){
+        writes++;
+        throw Error('Import must never create Trace anchors without manual curation');
       }
     };
   };
   return {relation,rows,get reads(){return reads;},get writes(){return writes;}};
 }
 
-test('same coordinates reuse existing anchor UID regardless of imported location name',async()=>{
-  const db=fakeTrace([{uid:'AB12',title:'臺北車站',address:[121.517081,25.047924]}]);
-  const record=loc('我家',25.047924,121.517081);
-  const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
+test('same exact coordinates reuse an existing Trace anchor without a location name',async()=>{
+  const db=fakeTrace([{uid:'AB12',title:'人工整理地點',address:[121.49086,25.05338]}]);
+  const named=loc('其他名稱',25.05338,121.49086);
+  const unnamed=loc(null,25.05338,121.49086);
+  const result=await prepareImportPlaceAnchors([named,unnamed],{
+    scopeId:'lo3rwang',relation:db.relation
+  });
   assert.equal(result.reused,1);
   assert.equal(result.created,0);
+  assert.equal(result.unmatchedCoordinates,0);
   assert.equal(db.writes,0);
-  assert.equal(importedPlaceId({incoming:record,byCoordinate:result.byCoordinate}),'AB12');
+  assert.equal(importedPlaceId({incoming:named,byCoordinate:result.byCoordinate}),'AB12');
+  assert.equal(importedPlaceId({incoming:unnamed,byCoordinate:result.byCoordinate}),'AB12');
+  assert.equal(importGeoKey(named.__importCoordinates),'[121.49086,25.05338]');
 });
 
-test('same location name with different coordinates creates another anchor',async()=>{
+test('a different coordinate pair never matches the same name or creates an anchor',async()=>{
   const db=fakeTrace([{uid:'AB12',title:'商店',address:[121.5,25.04]}]);
   const record=loc('商店',25.05,121.6);
   const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
-  assert.equal(result.created,1);
-  assert.deepEqual(db.rows[1].address,[121.6,25.05]);
-  assert.equal(db.rows[1].title,'商店');
-  assert.equal(importedPlaceId({incoming:record,existing:{place_id:'AB12'},byCoordinate:result.byCoordinate}),null);
+  assert.equal(result.created,0);
+  assert.equal(result.reused,0);
+  assert.equal(result.unmatchedCoordinates,1);
+  assert.equal(result.skipped,1);
+  assert.equal(db.writes,0);
+  assert.equal(importedPlaceId({incoming:record,byCoordinate:result.byCoordinate}),null);
 });
 
-test('two different names at identical coordinates share exactly one anchor',async()=>{
+test('duplicate new coordinate pairs are counted once for manual curation',async()=>{
   const db=fakeTrace();
-  const a=loc('商店甲',25.05,121.6),b=loc('商店乙',25.05,121.6);
+  const a=loc(null,25.05,121.6),b=loc('另一個地名',25.05,121.6);
   const result=await prepareImportPlaceAnchors([a,b],{scopeId:'lo3rwang',relation:db.relation});
-  assert.equal(result.created,1);
-  assert.equal(db.rows.length,1);
-  assert.equal(importedPlaceId({incoming:a,byCoordinate:result.byCoordinate}),
-    importedPlaceId({incoming:b,byCoordinate:result.byCoordinate}));
-});
-
-test('location without coordinates reuses unique existing anchor but never creates one',async()=>{
-  const db=fakeTrace([{uid:'AB12',title:'商店',address:[121.5,25.04]}]);
-  const record=loc('商店');
-  const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
+  assert.equal(result.unmatchedCoordinates,1);
   assert.equal(result.created,0);
   assert.equal(db.writes,0);
-  assert.equal(importedPlaceId({incoming:record,byCoordinate:result.byCoordinate,byName:result.byName}),'AB12');
 });
 
-test('ambiguous location names without coordinates do not guess a place_id',async()=>{
-  const db=fakeTrace([{uid:'AB12',title:'商店',address:[121.5,25.04]},
-    {uid:'AB13',title:'商店',address:[121.6,25.05]}]);
+test('a matching name without source coordinates never guesses a place ID',async()=>{
+  const db=fakeTrace([{uid:'AB12',title:'商店',address:[121.5,25.04]}]);
   const record=loc('商店');
-  const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
-  assert.equal(result.created,0);
-  assert.equal(importedPlaceId({incoming:record,byCoordinate:result.byCoordinate,byName:result.byName}),null);
-});
-
-test('location without matching anchor does not create one',async()=>{
-  const db=fakeTrace();
-  const record=loc('不存在的商店');
   const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
   assert.equal(result.created,0);
   assert.equal(result.skipped,1);
-  assert.equal(db.writes,0);
+  assert.equal(importedPlaceId({incoming:record,byCoordinate:result.byCoordinate,byName:result.byName}),null);
 });
 
-test('already correct article place_id is not updated',async()=>{
+test('invalid coordinates do not create or match an anchor',async()=>{
   const db=fakeTrace([{uid:'AB12',title:'商店',address:[121.5,25.04]}]);
-  const record=loc('商店',25.04,121.5);
+  const record=loc('商店',95,121.5);
   const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
-  assert.equal(importedPlaceId({incoming:record,existing:{place_id:'AB12'},byCoordinate:result.byCoordinate}),null);
+  assert.equal(result.skipped,1);
+  assert.equal(result.reused,0);
+  assert.equal(db.reads,0);
 });
 
-test('local import and absent Trace table leave article import unblocked',async()=>{
+test('an existing article place_id is never overwritten by imported coordinates',async()=>{
+  const db=fakeTrace([{uid:'AB12',title:'existing',address:[121.5,25.04]}]);
+  const record=loc(null,25.04,121.5);
+  const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
+  assert.equal(importedPlaceId({incoming:record,existing:{place_id:'AB13'},byCoordinate:result.byCoordinate}),null);
+  assert.equal(importedPlaceId({incoming:record,existing:{place_id:null},byCoordinate:result.byCoordinate}),'AB12');
+});
+
+test('local import and missing Trace table do not block article import',async()=>{
   const fail=()=>{throw Error('No database call expected');};
-  const local=await prepareImportPlaceAnchors([loc('我家',25,121)],{scopeId:'local',relation:fail});
+  const local=await prepareImportPlaceAnchors([loc(null,25,121)],{scopeId:'local',relation:fail});
   assert.equal(local.created,0);
+  assert.equal(local.unmatchedCoordinates,1);
   const relation=()=>({select:()=>({eq:()=>({order:()=>({range:async()=>({
     data:null,error:{code:'42P01',message:'missing'}
   })})})})});
-  const missing=await prepareImportPlaceAnchors([loc('我家',25,121)],{
+  const missing=await prepareImportPlaceAnchors([loc(null,25,121)],{
     scopeId:'lo3rwang',relation,allowMissing:true
   });
   assert.equal(missing.skipped,1);
+  assert.equal(missing.unmatchedCoordinates,1);
 });
 
-test('anchor import reports real scan and insertion progress',async()=>{
+test('anchor import reports a read-only scan without inserting rows',async()=>{
   const db=fakeTrace();
   const states=[];
-  await prepareImportPlaceAnchors([loc('商店甲',25.05,121.6)],{
+  await prepareImportPlaceAnchors([loc(null,25.05,121.6)],{
     scopeId:'lo3rwang',relation:db.relation,onProgress:state=>states.push(state)
   });
   assert.deepEqual(states.map(p=>[p.phase,p.completed,p.total]),[
     ['讀取現有空間定錨',0,0],
-    ['讀取現有空間定錨',0,0],
-    ['新增空間定錨',0,1],
-    ['新增空間定錨',1,1]
+    ['讀取現有空間定錨',0,0]
   ]);
-});
-
-test('an already assigned place_id is never overwritten even when imported coordinates differ',async()=>{
-  const db=fakeTrace([{uid:'AB12',title:'original',address:[121.5,25.04]}]);
-  const record=loc('new place',25.05,121.6);
-  const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
-  assert.equal(result.created,1);
-  assert.equal(importedPlaceId({incoming:record,existing:{place_id:'AB12'},byCoordinate:result.byCoordinate}),null);
-  assert.equal(importedPlaceId({incoming:record,existing:{place_id:null},byCoordinate:result.byCoordinate}),'0001');
+  assert.equal(db.writes,0);
 });
