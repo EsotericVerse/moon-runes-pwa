@@ -212,8 +212,10 @@ BEGIN
      WHERE table_schema='silver' AND table_name=rec.id AND column_name='keyword_meta')
      THEN CONTINUE; END IF;
    EXECUTE format($query$
-     UPDATE %s SET keyword_meta=jsonb_set(coalesce(keyword_meta,'{}'::jsonb),
-       ARRAY['class_shares',current_keyword_class_uid::text],'true'::jsonb,true)
+     UPDATE %s SET keyword_meta=coalesce(keyword_meta,'{}'::jsonb) ||
+       jsonb_build_object('class_shares',
+         coalesce(keyword_meta->'class_shares','{}'::jsonb) ||
+         jsonb_build_object(current_keyword_class_uid::text,true))
      WHERE id=$1 AND keyword_class_share_enabled IS TRUE
        AND current_keyword_class_uid IS NOT NULL
        AND NOT (coalesce(keyword_meta,'{}'::jsonb)->'class_shares' ? current_keyword_class_uid)
