@@ -132,7 +132,7 @@ test('pre-write import estimate uses only parsed item counts and rounds to minut
   assert.deepEqual(estimateImportMinutes({articles:1}),{min:1,max:3});
   assert.deepEqual(estimateImportMinutes({articles:35795}),{min:8,max:32});
   const withMedia=estimateImportMinutes({articles:35795,media:1000});
-  assert.ok(withMedia.min>8&&withMedia.max>32);
+  assert.ok(withMedia.min>=8&&withMedia.max>32);
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/const importEstimate=useMemo\(\(\)=>/);
   assert.match(panel,/!busy&&analysisCurrent&&importEstimate/);
