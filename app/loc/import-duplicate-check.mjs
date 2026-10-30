@@ -85,7 +85,7 @@ export async function matchExistingImportBySiteId(records,{readSiteIds,onProgres
     else if(returned!==undefined&&returned!==null)
       throw Error('site_id 查詢沒有回傳有效文章');
     completed+=values.length;
-    onProgress?.({completed,total,matched:0});
+    if(completed<total)onProgress?.({completed,total,matched:0});
   }
   for(const [key,record] of requested){
     const candidate=candidates.get(key);
@@ -138,7 +138,7 @@ export async function matchExistingImportBySiteAndTime(records,{readSiteTimes,on
     else if(returned!==undefined&&returned!==null)
       throw Error('同平台時間查詢沒有回傳有效文章');
     completed+=values.length;
-    onProgress?.({completed,total,matched:0});
+    if(completed<total)onProgress?.({completed,total,matched:0});
   }
   for(const [key,incoming] of requested){
     const candidate=candidates.get(key);

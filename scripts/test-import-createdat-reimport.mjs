@@ -7,7 +7,7 @@ import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportBySi
 const post=(uid,site='Threads',site_id='post-100',content='original')=>({
   uid,site,site_id,createtime:'2024-08-01T00:00:00Z',title:'Title',content,url:null
 });
-test('timestamps are retained only as article metadata',()=>{
+test('timestamps remain article metadata and are available for fallback matching',()=>{
   assert.equal(extractImportCreatedAt({createAt:'2024-08-01T00:00:00Z'}),'2024-08-01T00:00:00.000Z');
   assert.equal(extractImportCreatedAt({media:[{creation_timestamp:1722470400}]}),'2024-08-01T00:00:00.000Z');
   assert.equal(extractImportCreatedAt({text:'missing date'}),null);
@@ -141,7 +141,7 @@ test('source ID lookup reports progress without timestamps',async()=>{
   await matchExistingImportBySiteId(rows,{
     readSiteIds:async()=>[],onProgress:p=>progress.push([p.completed,p.total])
   });
-  assert.deepEqual(progress,[[0,2],[2,2]]);
+  assert.deepEqual(progress,[[0,2],[1,2],[2,2]]);
 });
 test('database lookup scopes both site_id and timestamp to site, preserving curated fields',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
