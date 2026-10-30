@@ -56,7 +56,9 @@ export async function reanalyzeKeywordClass({
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
-    if(page.length<pageSize)break;
+    // A backend may cap returned rows below the requested LIMIT (for example,
+    // PostgREST max_rows). A short page is NOT end-of-data: stop only after an
+    // empty page, with the Galaxy reader advancing its UID cursor each time.
   }
   const changes=[
     ...root.lists.map(uid=>({
