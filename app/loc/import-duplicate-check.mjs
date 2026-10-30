@@ -1,135 +1,95 @@
 import {importGeoKey} from './import-geocoordinates.mjs';
 
-// Import identity belongs to the original post, never the generated UID.
-// Keep platform boundaries: synchronized Threads/Instagram/Facebook posts are
-// distinct even with identical original text and timestamps.
+// Identity is strictly platform + source-native site_id, never createdAt,
+// article text, or a generated Galaxy UID.
 export function comparableImportText(value){
   return String(value??'').normalize('NFKC')
     .replace(/[\p{P}\p{S}\p{Z}\s\u200B-\u200D\uFEFF\u2060]/gu,'')
     .toLocaleLowerCase('und');
 }
-// Import normalization already provides UTC ISO timestamps.
-// Compare the original timestamp at second precision, without epoch conversion.
-const importSecondKey=value=>typeof value==='string'&&value.length>=19?value.slice(0,19):null;
-// The indexed date is derived from createtime in Asia/Taipei (UTC+8).
-// This keeps original timestamps intact and performs no millisecond conversion.
-export function importTaipeiDate(value){
-  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value))
-    return null;
-  const day=value.slice(0,10),hour=Number(value.slice(11,13));
-  if(hour<16)return day;
-  let [year,month,date]=day.split('-').map(Number);
-  const days=[31,year%4===0&&(year%100!==0||year%400===0)?29:28,31,30,31,30,31,31,30,31,30,31];
-  date++;
-  if(date>days[month-1]){date=1;month++;if(month>12){month=1;year++;}}
-  return String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(date).padStart(2,'0');
-}
-// Only original publishing time can identify a repeated import.
-const importDuplicateKey=record=>importSecondKey(record?.createtime);
+const importSourceKey=record=>{
+  const site=String(record?.site??'').trim().toLocaleLowerCase('und');
+  const id=String(record?.site_id??'').trim();
+  return site&&id?JSON.stringify([site,id]):null;
+};
 export function dedupeIncomingImport(records=[]){
   const unique=[],aliases=new Map(),byIdentity=new Map();
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
-    const second=importDuplicateKey(row);
-    // Same second is a candidate, not proof that two different posts are identical.
-    const key=second?JSON.stringify([second,String(row.site||''),String(row.site_id||''),
-      String(row.source_id||''),row.source_id?uid:'',String(row.title||''),String(row.content||'')]):null;
-    const existing=key?byIdentity.get(key):null;
-    if(existing){
+    const key=importSourceKey(row);
+    const prior=key?byIdentity.get(key):null;
+    if(prior){
+      if(String(prior.row.content??'')!==String(row.content??'')||
+          String(prior.row.title??'')!==String(row.title??'')||
+          String(prior.row.source_id??'')!==String(row.source_id??''))
+        throw Error('同一平台的 site_id 對應不同文章，停止匯入：'+String(row.site)+' / '+String(row.site_id));
       duplicates++;
-      aliases.set(uid,existing);
+      aliases.set(uid,prior.uid);
       continue;
     }
     unique.push(row);
-    if(key)byIdentity.set(key,uid);
+    if(key)byIdentity.set(key,{uid,row});
     aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
 }
 
-// After timestamp matching, exit before writes when every imported article is
-// already identical and no location/media follow-up can be required.
+// The reader may page by site_id only; the matcher enforces the platform too.
+export async function matchExistingImportBySiteId(records,{readSiteIds,onProgress}={}){
+  if(typeof readSiteIds!=='function')throw Error('缺少 site_id 查詢');
+  const requested=new Map(),ids=new Set();
+  for(const record of records||[]){
+    const key=importSourceKey(record);
+    if(!key)continue;
+    if(requested.has(key))throw Error('同一批匯入存在重複的來源 site_id：'+String(record.site_id));
+    requested.set(key,record);
+    ids.add(String(record.site_id).trim());
+  }
+  const siteIds=[...ids],matches=new Map(),candidates=new Map();
+  onProgress?.({completed:0,total:siteIds.length,matched:0});
+  if(!siteIds.length)return matches;
+  const consumePage=page=>{
+    if(!Array.isArray(page))throw Error('site_id 查詢結果無效');
+    for(const row of page){
+      const key=importSourceKey(row);
+      if(!key||!requested.has(key))continue;
+      const state=candidates.get(key)||{count:0,only:null};
+      state.count++;
+      state.only=state.count===1?row:null;
+      candidates.set(key,state);
+    }
+  };
+  const returned=await readSiteIds(siteIds,consumePage);
+  if(Array.isArray(returned))consumePage(returned);
+  else if(returned!==undefined&&returned!==null)
+    throw Error('site_id 查詢沒有回傳有效文章');
+  for(const [key,record] of requested){
+    const candidate=candidates.get(key);
+    if(candidate?.count>1)
+      throw Error('資料庫有多筆相同平台與 site_id，停止匯入以避免覆寫：'+String(record.site)+' / '+String(record.site_id));
+    if(candidate?.only)matches.set(String(record.uid),candidate.only);
+  }
+  onProgress?.({completed:siteIds.length,total:siteIds.length,matched:matches.size});
+  return matches;
+}
+
 export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}){
   if(hasMedia||!Array.isArray(records)||!records.length||!(matches instanceof Map))return false;
   return records.every(record=>{
     const saved=matches.get(record.uid);
-    if(!saved)return false;
-    if(record.site_id&&!saved.site_id)return false;
+    if(!saved||!importSourceKey(record)||importSourceKey(record)!==importSourceKey(saved))return false;
     if(record.source_id&&!saved.source_id)return false;
     if(record.target_id?.some(id=>!(saved.target_id||[]).includes(id)))return false;
     if(String(saved.title||'')!==String(record.title||'')||
        String(saved.content||'')!==String(record.content||''))return false;
     const incomingUrl=String(record.url||'').trim();
     if(incomingUrl&&incomingUrl!==String(saved.url||'').trim())return false;
-    // A manually curated Trace anchor may have been added since the last import.
-    // Recheck an existing article when the source supplies exact coordinates.
     if(!String(saved.place_id||'').trim()&&importGeoKey(record.__importCoordinates))return false;
     return true;
   });
 }
 
-// PostgreSQL performs native TIMESTAMPTZ equality; returned UTC timestamps
-// are associated by their existing second component without JS date parsing.
-export async function matchExistingImportByCreatedAt(records,{readTimestamps,onProgress}={}){
-  if(typeof readTimestamps!=='function')throw Error('缺少精確發文時間查詢');
-  const byTime=new Map();
-  for(const record of records||[]){
-    const key=importSecondKey(record?.createtime);
-    if(!key)continue;
-    if(!byTime.has(key))byTime.set(key,[]);
-    byTime.get(key).push(record);
-  }
-  const times=[...new Set((records||[]).map(record=>record?.createtime)
-    .filter(value=>importSecondKey(value)))];
-  const matches=new Map(),claimed=new Set();
-  onProgress?.({completed:0,total:times.length,matched:0});
-  if(!times.length)return matches;
-
-  // Keep at most one candidate for each requested content/second combination.
-  // Unrelated database rows are processed and discarded page by page.
-  const state=new Map();
-  for(const [key,entries] of byTime){
-    state.set(key,{total:0,only:null,exact:new Map(
-      entries.map(row=>[String(row.content||''),{count:0,only:null}]))});
-  }
-  const consumePage=page=>{
-    if(!Array.isArray(page))throw Error('發文時間查詢結果無效');
-    for(const row of page){
-      const entry=state.get(importSecondKey(row.createtime));
-      if(!entry)continue;
-      entry.total++;
-      entry.only=entry.total===1?row:null;
-      const exact=entry.exact.get(String(row.content||''));
-      if(exact){
-        exact.count++;
-        exact.only=exact.count===1?row:null;
-      }
-    }
-  };
-  const returned=await readTimestamps(times,consumePage);
-  if(Array.isArray(returned))consumePage(returned);
-  else if(returned!==undefined&&returned!==null)
-    throw Error('原始時間查詢沒有回傳有效文章');
-  for(const [key,entries] of byTime){
-    const group=state.get(key);
-    for(const record of entries){
-      const exact=group.exact.get(String(record.content||''));
-      const candidate=exact?.count===1?exact.only:null;
-      if(candidate&&!claimed.has(String(candidate.uid))){
-        matches.set(record.uid,candidate);
-        claimed.add(String(candidate.uid));
-      }
-    }
-    if(entries.length===1&&group.total===1&&!matches.has(entries[0].uid)
-        &&!claimed.has(String(group.only.uid))){
-      matches.set(entries[0].uid,group.only);
-      claimed.add(String(group.only.uid));
-    }
-  }
-  onProgress?.({completed:times.length,total:times.length,matched:matches.size});
-  return matches;
-}
 function isUidPrimaryKeyConflict(error){
   const message=String(error?.message||error||'');
   return /(?:23505|duplicate key|unique constraint|UNIQUE constraint failed)/i.test(message)

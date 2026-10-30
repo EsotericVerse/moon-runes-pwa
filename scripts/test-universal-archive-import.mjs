@@ -37,6 +37,7 @@ test('Threads ZIP flows past detection into actual Galaxy-ready articles with or
   assert.ok(a.detected.sources.includes('threads'));
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].site,'Threads');
+  assert.equal(a.results[0].site_id,'threads-001');
   assert.equal(a.results[0].content,'台南散步');
   assert.equal(a.results[0].url,'https://www.threads.net/@writer/post/abc123');
 });
@@ -50,6 +51,7 @@ test('Facebook ZIP keeps place, time and original permalink',async()=>{
   });
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].site,'Facebook');
+  assert.equal(a.results[0].site_id,'fb100');
   assert.equal(a.results[0].location,'高雄車站');
   assert.equal(a.results[0].url,'https://www.facebook.com/post/123');
 });
@@ -527,10 +529,10 @@ test('Instagram nested label_values creates a private parent, caption article, a
   },onMediaEntry:entry=>collector.onMediaEntry(entry)});
   assert.equal(articles.length,2);
   const [parent,caption]=articles;
-  assert.equal(parent.site_id,null);
+  assert.equal(parent.site_id,'179000112233');
   assert.equal(parent.searchable,false);
   assert.deepEqual(parent.target_id,[caption.uid]);
-  assert.equal(caption.site_id,null);
+  assert.equal(caption.site_id,'179000112233:caption');
   assert.equal(caption.source_id,parent.uid);
   assert.equal(caption.content,'這是自己的照片說明');
   const plan=prepareArchiveMedia(collector.rows({scopeId:'test',archiveName:'test',archiveSize:file.size}),
@@ -558,7 +560,8 @@ test('Undated Instagram caption retains null creation time and stable Galaxy ide
   }
   assert.deepEqual(batches[0].map(row=>row.uid),batches[1].map(row=>row.uid));
   assert.equal(batches[0].length,2);
-  assert.equal(batches[0][0].site_id,null);
+  assert.equal(batches[0][0].site_id,'179000887766');
+  assert.equal(batches[0][1].site_id,'179000887766:caption');
   assert.ok(batches[0].every(row=>row.createtime===null));
 });
 

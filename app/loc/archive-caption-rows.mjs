@@ -45,12 +45,14 @@ export function archiveGalaxyRows(record){
   const caption=record.platform==='instagram'?captionOf(record.raw):'';
   if(caption&&caption===original.content&&attachments.length){
     const parent={
-      ...original,site_id:null,title:'Instagram 媒體貼文',content:'Instagram 媒體貼文',
+      ...original,title:'Instagram 媒體貼文',content:'Instagram 媒體貼文',
       searchable:false,statistics_able:false
     };
     const child={
       ...original,uid:facebookArchiveUid('archive:caption:'+record.key),
-      site_id:null,source_id:parent.uid,
+      // Caption is a separate derived Galaxy row; qualify its source ID.
+      site_id:original.site_id?String(original.site_id)+':caption':null,
+      source_id:parent.uid,
       title:Array.from(caption).slice(0,120).join(''),content:caption
     };
     parent.target_id=[child.uid];
