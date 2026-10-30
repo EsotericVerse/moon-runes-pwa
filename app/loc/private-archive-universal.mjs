@@ -180,8 +180,8 @@ function normalize(row,{platform,kind,path,index,conversation}){
   // Distinct textless check-ins at the same timestamp must not share an ID.
   const identityParts=[group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments];
   if(sourcePlace)identityParts.push(sourcePlace);
-  const siteId=item.id_str||item.id||item.post_id||
-    (platform==='instagram'?item.fbid:null);
+  const siteId=item.post_id||item.id_str||
+    (actualKind==='post'&&platform!=='instagram'?item.id:null);
   const stable=native||((platform==='instagram'&&item.fbid)?String(item.fbid):hash(JSON.stringify(identityParts)));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
