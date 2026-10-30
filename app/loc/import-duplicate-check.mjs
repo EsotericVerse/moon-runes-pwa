@@ -12,6 +12,12 @@ const importSourceKey=record=>{
   const id=String(record?.site_id??'').trim();
   return site&&id?JSON.stringify([site,id]):null;
 };
+const importTimeKey=record=>{
+  const site=String(record?.site??'').trim().toLocaleLowerCase('und');
+  const date=Date.parse(String(record?.createtime??''));
+  return site&&Number.isFinite(date)?
+    JSON.stringify([site,new Date(date).toISOString()]):null;
+};
 const importTimeContentKey=record=>{
   const site=String(record?.site??'').trim().toLocaleLowerCase('und');
   const date=Date.parse(String(record?.createtime??''));
@@ -89,16 +95,18 @@ export async function matchExistingImportBySiteId(records,{readSiteIds,onProgres
   return matches;
 }
 
+// Match the unique site+timestamp first, regardless of edits to title/content.
+// When several posts share that instant, only an exact unique body can
+// disambiguate them; never arbitrarily overwrite a different post.
 export async function matchExistingImportByCreatedAt(records,{readTimestamps,onProgress}={}){
   if(typeof readTimestamps!=='function')throw Error('缺少 createtime 查詢');
   const requested=new Map(),groups=new Map();
   for(const record of records||[]){
     if(importSourceKey(record))continue;
-    const key=importTimeContentKey(record);
+    const key=importTimeKey(record);
     if(!key)continue;
-    if(requested.has(key))
-      throw Error('同平台、同時間、相同內容有多筆來源文章，無法安全比對：'+String(record.site)+' / '+String(record.createtime));
-    requested.set(key,record);
+    if(!requested.has(key))requested.set(key,[]);
+    requested.get(key).push(record);
     const site=String(record.site).trim();
     if(!groups.has(site))groups.set(site,new Set());
     groups.get(site).add(new Date(Date.parse(record.createtime)).toISOString());
@@ -110,12 +118,10 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
   const consumePage=page=>{
     if(!Array.isArray(page))throw Error('createtime 查詢結果無效');
     for(const row of page){
-      const key=importTimeContentKey(row);
+      const key=importTimeKey(row);
       if(!key||!requested.has(key))continue;
-      const state=candidates.get(key)||{count:0,only:null};
-      state.count++;
-      state.only=state.count===1?row:null;
-      candidates.set(key,state);
+      if(!candidates.has(key))candidates.set(key,[]);
+      candidates.get(key).push(row);
     }
   };
   for(const [site,times] of groups){
@@ -124,11 +130,32 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     else if(returned!==undefined&&returned!==null)
       throw Error('createtime 查詢沒有回傳有效文章');
   }
-  for(const [key,record] of requested){
-    const candidate=candidates.get(key);
-    if(candidate?.count>1)
-      throw Error('同平台、同時間、相同內容在資料庫有多筆，停止匯入避免誤覆寫：'+String(record.site)+' / '+String(record.createtime));
-    if(candidate?.only)matches.set(String(record.uid),candidate.only);
+  for(const [key,incoming] of requested){
+    const saved=candidates.get(key)||[];
+    if(!saved.length)continue;
+    if(incoming.length===1&&saved.length===1){
+      matches.set(String(incoming[0].uid),saved[0]);
+      continue;
+    }
+    const assigned=new Set();
+    const unresolved=[];
+    for(const row of incoming){
+      const exact=importTimeContentKey(row);
+      const options=exact?saved.filter(candidate=>
+        !assigned.has(String(candidate.uid))&&importTimeContentKey(candidate)===exact):[];
+      if(options.length>1)
+        throw Error('同平台、同時間、相同內容在資料庫有多筆，停止匯入避免誤覆寫：'+String(row.site)+' / '+String(row.createtime));
+      if(options.length===1){
+        matches.set(String(row.uid),options[0]);
+        assigned.add(String(options[0].uid));
+      }else unresolved.push(row);
+    }
+    // An unpaired existing post might be an edited version of any unmatched
+    // incoming post. Stop instead of treating it as a new post or overwriting.
+    if(unresolved.length&&assigned.size<saved.length){
+      const row=unresolved[0];
+      throw Error('同平台、同時間有多篇文章，無法唯一確認更新對象：'+String(row.site)+' / '+String(row.createtime));
+    }
   }
   onProgress?.({completed:total,total,matched:matches.size});
   return matches;
