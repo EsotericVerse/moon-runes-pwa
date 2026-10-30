@@ -32,3 +32,10 @@ test('no module-level Keyword or Galaxy analysis result caching',()=>{
   assert.doesNotMatch(analysis,/analysisPromises\s*=\s*new Map/);
   assert.doesNotMatch(analysis,/analysisPromises\.set/);
 });
+
+test('legacy Neon shares are discovered by Class UID without a staging table',()=>{
+  assert.match(sql,/DISTINCT ON \(class_uid\) class_uid::text AS uid,class_name AS name/);
+  assert.match(sql,/attname='uid'/);
+  assert.match(trace,/attname='uid'/);
+  assert.match(sql,/coalesce\(keyword_meta->'class_shares','\{\}'::jsonb\)/);
+});
