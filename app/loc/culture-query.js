@@ -262,6 +262,32 @@ function cultureParts(scopeContext,runtimeId){
   return {normalizedContext,periods,eras,events,trajectories,styleComments};
 }
 
+// Only the explicitly opened LOC second river reads per-day article/media counts.
+export async function selectLocCultureDensity({scopes=[],intersectionWindows=[],intersectionStart='',intersectionEnd=''}={}){
+  if(!scopes.length||!intersectionWindows.length||!intersectionStart||!intersectionEnd)
+    return {scopeRanges:[],sourceRiverItems:[],sourceGroups:[]};
+  const validDate=row=>{
+    const day=String(row.day||'').slice(0,10);
+    return intersectionWindows.some(shared=>day>=shared.startDate&&day<=shared.endDate);
+  };
+  const aggregateRows=(await Promise.all(scopes.map(async scope=>{
+    const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(scope,{
+      startDate:intersectionStart,endDate:intersectionEnd,
+      includeEmptyMedia:true,requireAggregate:true
+    });
+    return [
+      ...textDaily.filter(validDate).map(row=>({...row,scope_id:scope.id})),
+      ...mediaDaily.filter(validDate).map(row=>({...row,scope_id:scope.id}))
+    ];
+  }))).flat();
+  const built=buildLocSourceRiver(aggregateRows);
+  return {
+    scopeRanges:buildLocScopeDistribution(aggregateRows),
+    sourceRiverItems:built.sourceRiverItems,
+    sourceGroups:built.sourceGroups
+  };
+}
+
 export async function selectScopeCultureData(scopeId){
   const id=scopeIdOf(scopeId);
   if(!id)throw new Error('資料設定無效');
@@ -340,26 +366,8 @@ export async function selectScopeCultureData(scopeId){
       };
     }
 
-    // One bounded aggregate per Scope. Sparse gaps between intersections
-    // are removed locally, without multiplying the database requests.
-    const aggregateRows=(await Promise.all(withWindows.map(async ({bundle})=>{
-      const {text:textDaily,media:mediaDaily}=await selectScopeDailyCounts(bundle.scope,{
-        startDate:intersectionStart,
-        endDate:intersectionEnd,
-        includeEmptyMedia:true,
-        requireAggregate:true
-      });
-      const validDate=row=>{
-        const day=String(row.day||'').slice(0,10);
-        return intersectionWindows.some(shared=>day>=shared.startDate&&day<=shared.endDate);
-      };
-      return [
-        ...textDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId})),
-        ...mediaDaily.filter(validDate).map(row=>({...row,scope_id:bundle.runtimeId}))
-      ];
-    }))).flat();
-
-    const built=buildLocSourceRiver(aggregateRows);
+    // Shared time intervals are the first river. Their daily densities are
+    // read only if the visitor expands the second river.
     return {
       scopeId:id,
       scope:null,
@@ -368,10 +376,10 @@ export async function selectScopeCultureData(scopeId){
       periods:[],
       openRanges,
       scopeTimeRanges,
-      scopeRanges:buildLocScopeDistribution(aggregateRows),
+      scopeRanges:[],
       timelineItems:[],
-      sourceRiverItems:built.sourceRiverItems,
-      sourceGroups:built.sourceGroups,
+      sourceRiverItems:[],
+      sourceGroups:[],
       events:[],
       trajectories:[],
       works:[],

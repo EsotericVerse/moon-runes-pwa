@@ -218,6 +218,7 @@ export default function Culture(){
   const account=useAccount({enabled:isTimeEditingView||canUseScopeEditor});
   const [lrunesView,setLrunesView]=useState('daily');
   const [locCultureView,setLocCultureView]=useState('period');
+  const [locDensityOpen,setLocDensityOpen]=useState(false);
   const isLrunesDaily=!isTimeEditingView&&scopeId==='lrunes'&&lrunesView==='daily';
   const isLocItemView=scopeId==='loc'&&locCultureView==='item';
   const resourceCache=useResourceCache();
@@ -278,6 +279,7 @@ export default function Culture(){
 
   useEffect(()=>{
     setStyleFilter('none');
+    setLocDensityOpen(false);
     setKeywordOptionsScope('');
     setKeywordPeriodKey('latest');
     setKeywordCustomStart('');
@@ -289,6 +291,23 @@ export default function Culture(){
   },[scopeId]);
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
+  // LOC's first Time River never queries per-day article/media density.
+  // On-demand second-river data stays in the regular SWR request cache.
+  const locDensityQuery=useAsyncResource({
+    queryKey:['loc-culture-density',scopeId,query.data?.intersectionStart,query.data?.intersectionEnd,
+      JSON.stringify(query.data?.intersectionWindows||[])],
+    enabled:isAggregateScope&&scopeId==='loc'&&!isLocItemView&&locDensityOpen
+      &&Boolean(query.data?.intersectionWindows?.length),
+    queryFn:async()=>{
+      const {selectLocCultureDensity}=await import('../../loc/culture-query');
+      return selectLocCultureDensity({
+        scopes:query.data?.scopes||[],
+        intersectionWindows:query.data?.intersectionWindows||[],
+        intersectionStart:query.data?.intersectionStart||'',
+        intersectionEnd:query.data?.intersectionEnd||''
+      });
+    },
+  });
   // Time structure is authoritative without any remote ISR Period request.
   const allPeriods=useMemo(()=>sortPeriods(query.data?.eras?.eras||[]),[query.data]);
   const classificationScope=scopeId;
@@ -679,8 +698,8 @@ export default function Culture(){
     .filter(item=>item.entry_type==='anchor'&&item.uid)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.display_label||'').localeCompare(String(b.display_label||''))),[timelineItems]);
   const locScopeIntervalItems=useMemo(()=>query.data?.scopeTimeRanges||[],[query.data]);
-  const locSourceRiverItems=useMemo(()=>query.data?.sourceRiverItems||[],[query.data]);
-  const locSourceGroups=useMemo(()=>query.data?.sourceGroups||[],[query.data]);
+  const locSourceRiverItems=useMemo(()=>locDensityOpen?locDensityQuery.data?.sourceRiverItems||[]:[],[locDensityQuery.data,locDensityOpen]);
+  const locSourceGroups=useMemo(()=>locDensityOpen?locDensityQuery.data?.sourceGroups||[]:[],[locDensityQuery.data,locDensityOpen]);
   const locCombinedSourceTotal=useMemo(()=>locSourceGroups.reduce((sum,item)=>sum+Number(item?.item_count||0),0),[locSourceGroups]);
   const locSourceGroupLabel=useMemo(()=>{
     const labels=new Map();
@@ -696,7 +715,7 @@ export default function Culture(){
     end_date:nextRiverDay(item?.start_date),
     group_label:locSourceGroupLabel.get(String(item?.category||item?.group_label||''))||String(item?.group_label||'')
   })),[locSourceRiverItems,locSourceGroupLabel]);
-  const locScopeDistributionItems=useMemo(()=>query.data?.scopeRanges||[],[query.data]);
+  const locScopeDistributionItems=useMemo(()=>locDensityOpen?locDensityQuery.data?.scopeRanges||[]:[],[locDensityQuery.data,locDensityOpen]);
   const locIntersectionScopeIds=useMemo(()=>query.data?.intersectionScopeIds||[],[query.data]);
   const locIntersectionStart=String(query.data?.intersectionStart||'');
   const locIntersectionEnd=String(query.data?.intersectionEnd||'');
@@ -871,7 +890,7 @@ export default function Culture(){
   const styleRiverAnalysis=useRiverDensityAnalysis(keywordDrillItems,existingAnchorDates,
     anchorSuggestOpen&&styleFilter==='rune66'&&Boolean(keywordDrillItems.length));
   const locRiverAnalysis=useRiverDensityAnalysis(locCombinedSourceRiverItems,EMPTY_CULTURE_GROUPS,
-    isAggregateScope&&Boolean(locCombinedSourceRiverItems.length));
+    isAggregateScope&&locDensityOpen&&Boolean(locCombinedSourceRiverItems.length));
   const virtualAnchorItems=useMemo(()=>{
     const total=Math.max(1,Number(riverAnalysis.totalCount)||0);
     return riverAnalysis.suggestions.map(item=>{
@@ -1319,6 +1338,15 @@ export default function Culture(){
                 />:null}
                 {!locIntersectionScopeIds.length&&query.data?.scopes?.length
                   ?<p className='scope-status' role='status'>目前各 Scope 的時代／時期沒有共同時間區間（單一定錨點亦計入）。</p>:null}
+                <div className='scope-result-links'>
+                  {[...new Set(locScopeIntervalItems.map(item=>item.scope_id))].map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
+                </div>
+                {locIntersectionScopeIds.length?<details className='scope-stat-details scope-culture-density-details'
+                  onToggle={event=>setLocDensityOpen(event.currentTarget.open)}>
+                  <summary>{UI_COPY.culture.intersectionRiver} · {UI_COPY.culture.combinedRiver}</summary>
+                  {locDensityOpen?<>
+                    {locDensityQuery.isPending?<p className='scope-status' role='status'>{UI_COPY.common.loading}</p>:null}
+                    {locDensityQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(locDensityQuery.error,UI_COPY)}</p>:null}
                 {locScopeRiverItems.length?<section className='scope-culture-interval-density'>
                   <h4>{UI_COPY.culture.intersectionRiver}</h4>
                   <CultureTimeline
@@ -1333,9 +1361,6 @@ export default function Culture(){
                     hiddenDates={locRiverAnalysis.hiddenDates}
                   />
                 </section>:null}
-                <div className='scope-result-links'>
-                  {[...new Set(locScopeIntervalItems.map(item=>item.scope_id))].map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
-                </div>
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>
                   <h4>{UI_COPY.culture.combinedRiver}</h4>
@@ -1351,6 +1376,8 @@ export default function Culture(){
                     hiddenDates={locRiverAnalysis.hiddenDates}
                   />
                 </section>:null}
+                  </>:null}
+                </details>:null}
 
               </section>
 
