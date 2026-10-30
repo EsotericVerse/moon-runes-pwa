@@ -53,5 +53,15 @@ test('Self-intersection maps Group membership by UID, not visible label',()=>{
 test('All consumers request the Class UID that produced the summary',()=>{
   assert.match(chart,/readKeywordTreeCatalog\(scopeId,\{classUid:meta\.class_uid\}\)/);
   assert.match(intersection,/readKeywordTreeCatalog\(scope\.id,\{classUid:keywords\.data\.keywordMeta\.class_uid\}\)/);
-  assert.match(culture,/readKeywordTreeCatalog\(scopeId,\{classUid:styleQuery\.data\.keywordMeta\.class_uid\}\)/);
+  assert.match(culture,/readKeywordTreeCatalog\(scopeId,\{classUid:resolvedKeywordClassUid\}\)/);
+});
+
+test('Culture and Statistics offer only authorized Class choices and bind queries to UID',()=>{
+  for(const code of [culture,read('app/modular/features/Statistics.jsx')]){
+    assert.match(code,/selectAvailableKeywordClasses/);
+    assert.match(code,/resolvedKeywordClassUid/);
+    assert.match(code,/availableKeywordClasses\.map\(item=>/);
+  }
+  assert.match(read('app/loc/keyword-analysis.js'),/selectAvailableKeywordClasses/);
+  assert.match(intersection,/classUid:keywords\.data\?\.keywordMeta\?\.class_uid\|\|classUid/);
 });
