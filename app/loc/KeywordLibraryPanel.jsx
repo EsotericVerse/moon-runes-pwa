@@ -11,7 +11,7 @@ import {generateKeywordClassUid} from './keyword-uidlist.mjs';
 
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
 const TYPES=['category','class','group','item'];
-const LABEL={category:'Category',class:'Class',group:'Group',item:'Item'};
+const LABEL={category:'關鍵字目錄',class:'關鍵字群組',group:'關鍵字分類',item:'關鍵字'};
 const onlyWords=value=>[...new Set(String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
 const emptyTree={index:new Map(),parent:new Map(),roots:[]};
 const uidFor=rows=>generateKeywordClassUid(rows.map(row=>row.uid));
@@ -171,7 +171,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         await writeKeywordLibraryItem(scopeId,isNew?'insert':'update',node);
         await markStale(node.uid);
       }
-      await load(node.uid);await invalidate();setNotice('Keywords 已儲存；相關分類須重新分析。');
+      await load(node.uid);await invalidate();setNotice('已儲存；相關關鍵字群組需重新分析。');
       return true;
     }catch(e){setError(String(e.message||e));return false;}
     finally{setBusy(false);}
@@ -206,7 +206,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         if(settingsError)throw settingsError;
       }
       await load(parent?.uid||'');await invalidate();
-      setNotice('已刪除分類節點；不會刪除文章。');
+      setNotice('已刪除；不會刪除文章。');
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
@@ -244,7 +244,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         await runKeywordAnalysisBatch(scopeId,{classUid:runClassUid,onProgress:setProgress});
       }
       await load(runClassUid);await invalidate();
-      setNotice(reset?'已清空這套 Class 的分類結果。':'這套 Class 的關鍵詞重新分析完成。');
+      setNotice(reset?'已清空此關鍵字群組的分析結果。':'此關鍵字群組已重新分析完成。');
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
@@ -255,7 +255,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     try{
       const result=await copyKeywordLibraryClass(scopeId,from,to);
       await load(result.uid);await invalidate();setCopyName('');
-      setNotice('已複製 Class「'+to+'」及其下層 Group／Item。');
+      setNotice('已複製關鍵字群組「'+to+'」。');
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
@@ -285,18 +285,17 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   }):[];
   return <div className="scope-keyword-management">
     <div className="scope-stat-controls">
-      {[['manual','分類'],['analysis','基本'],['run','重新分析'],['network','關聯圖']].map(([key,label])=>
+      {[['manual','群組對應調整'],['analysis','基本設定'],['run','重新分析'],['network','關聯圖']].map(([key,label])=>
         <button key={key} type="button" className="loc-button"
           aria-pressed={workspace===key} onClick={()=>{setWorkspace(key);setEditor(null);}}>
           {label}
         </button>)}
     </div>
-    {loading?<p className="scope-status" role="status">讀取 Keywords 中…</p>:null}
+    {loading?<p className="scope-status" role="status">讀取關鍵字資料中…</p>:null}
     {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
     {!loading&&workspace==='manual'?<section className="loc-card scope-feature-card">
-      <h2>Keywords · UID 分類樹</h2>
-      <p className="scope-status">Category → Class → Group → Item；上層 lists 只存下層 UID，Item lists 是判斷詞。</p>
+      <h2>關鍵詞分析 群組對應調整</h2>
       <div className="scope-management-fields">
         {TYPES.map((type,index)=>{
           const parent=index?tree.index.get(chosen[TYPES[index-1]]):null;
@@ -314,35 +313,35 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       </div>
       {selected?<div className="scope-preview-links">
         <button className="loc-button" type="button" disabled={busy} onClick={()=>edit(selected)}>編輯「{selected.name}」</button>
-        <span className="scope-status">{selected.type} · UID {selected.uid}</span>
-        <span className="scope-status">子節點 {selected.type==='item'?selected.lists.length:selected.lists.length}
-          {selected.type==='item'?' 個判斷詞':''}</span>
+        <span className="scope-status">{LABEL[selected.type]}：{selected.lists.length}{selected.type==='item'?' 個判斷詞':' 筆'}</span>
       </div>:null}
-      {!tree.roots.length?<p className="scope-status">尚無分類，請從 Category 開始建立。</p>:null}
+      {!tree.roots.length?<p className="scope-status">尚無資料，請先新增關鍵字目錄。</p>:null}
       {draft?<div className="scope-management-editor">
         <h3>{tree.index.has(draft.uid)?'編輯':'新增'} {LABEL[draft.type]}</h3>
         <div className="scope-management-fields">
-          <label><span>UID</span><input value={draft.uid} readOnly/></label>
-          <label><span>type</span><input value={draft.type} readOnly/></label>
-          <label><span>name</span><input value={draft.name} onChange={e=>setEditor({node:{...draft,name:e.target.value}})}/></label>
-          <label><span>desc</span><textarea rows={2} value={draft.desc} onChange={e=>setEditor({node:{...draft,desc:e.target.value}})}/></label>
+          <label><span>名稱</span><input value={draft.name} onChange={e=>setEditor({node:{...draft,name:e.target.value}})}/></label>
+          <label><span>說明</span><textarea rows={2} value={draft.desc} onChange={e=>setEditor({node:{...draft,desc:e.target.value}})}/></label>
         </div>
         {draft.type==='item'?<label className="scope-management-wide-field">
-          <span>lists · 判斷詞（一行一個）</span>
+          <span>判斷詞（一行一個）</span>
           <textarea rows={9} value={keywordText} onChange={e=>setKeywordText(e.target.value)}/>
-        </label>:<p className="scope-status">lists 由下層 UID 自動維護，不用手填。</p>}
-        <p className="scope-status">uid_lists 由重新分析更新，不會在編輯分類時載入大量文章 UID。</p>
+        </label>:null}
         <div className="scope-preview-links">
           <button type="button" className="loc-button primary" disabled={busy||!draft.name.trim()} onClick={saveNode}>{busy?'儲存中…':'儲存'}</button>
           {tree.index.has(draft.uid)?<button type="button" className="loc-button scope-danger-button" disabled={busy} onClick={()=>removeNode(draft)}>刪除</button>:null}
           <button type="button" className="loc-button" onClick={()=>setEditor(null)} disabled={busy}>取消</button>
         </div>
       </div>:null}
+      <div className="scope-stat-controls">
+        <label><span>複製選定的關鍵字群組</span><input value={copyName} placeholder="新群組名稱"
+          onChange={e=>setCopyName(e.target.value)}/></label>
+        <button type="button" className="loc-button" disabled={!selectedClass||!copyName.trim()||busy} onClick={copyClass}>複製整套群組</button>
+      </div>
     </section>:null}
     {!loading&&workspace==='analysis'?<section className="loc-card scope-feature-card">
-      <h2>關鍵詞分析設定</h2>
+      <h2>基本設定（此 Scope 共用）</h2>
       <div className="scope-management-fields">
-        <label><span>目前 Class</span><select className="scope-select" value={config.current_keyword_class_uid||''}
+        <label><span>目前使用的關鍵字群組</span><select className="scope-select" value={config.current_keyword_class_uid||''}
           onChange={e=>setConfig(v=>({...v,current_keyword_class_uid:e.target.value}))}>
           <option value="">未選擇</option>
           {allClassNodes.map(row=><option value={row.uid} key={row.uid}>{row.name}</option>)}
@@ -351,28 +350,22 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           onChange={e=>setConfig(v=>({...v,keyword_min_chars:e.target.value}))}/></label>
         <label><span>統計最低文章數</span><input type="number" min="0" value={config.keyword_min_documents??100}
           onChange={e=>setConfig(v=>({...v,keyword_min_documents:e.target.value}))}/></label>
-        <label><span>公開分類</span><select className="scope-select" value={config.keyword_class_share_enabled?'yes':'no'}
+        <label><span>開放目前群組的分析結果</span><select className="scope-select" value={config.keyword_class_share_enabled?'yes':'no'}
           onChange={e=>setConfig(v=>({...v,keyword_class_share_enabled:e.target.value==='yes'}))}>
           <option value="no">不公開</option><option value="yes">公開</option>
         </select></label>
       </div>
       <button type="button" className="loc-button primary" disabled={busy} onClick={saveConfig}>儲存設定</button>
-      <div className="scope-stat-controls">
-        <label><span>複製選定 Class</span><input value={copyName} placeholder="新 Class 名稱"
-          onChange={e=>setCopyName(e.target.value)}/></label>
-        <button type="button" className="loc-button" disabled={!selectedClass||!copyName.trim()||busy} onClick={copyClass}>複製整套 Class</button>
-      </div>
     </section>:null}
     {!loading&&workspace==='run'?<section className="loc-card scope-feature-card">
       <h2>重新分析</h2>
-      <p className="scope-status">只讀取 Galaxy 文章，重建 Group／Item 的 uid_lists，不修改 Galaxy。</p>
-      <p className="scope-status">Class：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
+      <p className="scope-status">關鍵字群組：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
       <p className="scope-status">有效分類文章：{Number(keywordClassState(config,activeClass?.uid)?.matchedDocuments||0).toLocaleString()} 篇</p>
       <div className="scope-preview-links">
         <button type="button" className="loc-button primary" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
           onClick={()=>run(false)}>重新分析</button>
         <button type="button" className="loc-button" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
-          onClick={()=>run(true)}>清空本 Class 的分類結果</button>
+          onClick={()=>run(true)}>清空本群組的分析結果</button>
       </div>
       {progress?<p role="status" className="scope-status">{progress.label||progress.phase}
         {progress.total?' · '+progress.completed+' / '+progress.total:''}</p>:null}
@@ -391,7 +384,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         }}
         onDeleteGroup={name=>{const group=groups.find(row=>row.name===name);if(group)removeNode(group);}}
         onMessage={setNotice}
-      />:<p className="scope-status">請先在分類頁建立 Class、Group 與 Item。</p>}
+      />:<p className="scope-status">請先建立關鍵字群組、關鍵字分類與關鍵字。</p>}
     </section>:null}
   </div>;
 }
