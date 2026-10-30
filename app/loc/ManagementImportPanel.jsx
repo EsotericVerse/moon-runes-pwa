@@ -392,15 +392,23 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],uidOwners=new Map(),exifSamples=[],geoPlaces=[],geoKeys=new Set();
+        const imported=[],uidOwners=new Map(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
         const collector=createArchiveEvidenceCollector();
         let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
           // Separate Facebook visit records remain review candidates, not Galaxy articles.
           const key=importGeoKey(place.__importCoordinates);
-          if(key){if(geoKeys.has(key))return;geoKeys.add(key);}
+          if(key&&geoKeys.has(key)){
+            const index=geoKeys.get(key),previous=geoPlaces[index];
+            geoPlaces[index]={...previous,
+              location:previous.location||place.location,
+              address:previous.address||place.address,
+              placeUrl:previous.placeUrl||place.placeUrl};
+            return;
+          }
           if(geoPlaces.length>=100000)
             throw Error('Facebook 不同地點候選超過 100,000 組，未開始匯入；請分批處理。');
+          if(key)geoKeys.set(key,geoPlaces.length);
           geoPlaces.push(place);
         },onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
