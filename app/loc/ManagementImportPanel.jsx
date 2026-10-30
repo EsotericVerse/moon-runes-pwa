@@ -505,7 +505,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
     }));
     if(!candidates.length)return;
-    if(!window.confirm('只依 Facebook 原始地名與完全相同的經緯度建立缺少的 Trace 定錨點；不新增 Galaxy 文章。確定執行？'))return;
+    if(!window.confirm('只依 Facebook 原始地名與完全相同的經緯度建立缺少的 Trace 定錨點（預設隱藏）；不新增 Galaxy 文章。確定執行？'))return;
     setBusy(true);setStatus('');setProgress({stage:'核對原始打卡地點',completed:0,total:0,percent:null});
     try{
       const result=await prepareImportPlaceAnchors(candidates,{
@@ -532,7 +532,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
     }
     catch(error){setStatus(String(error?.message||error));return;}
-    if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點。確定繼續重匯？'))return;
+    if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
     setBusy(true);setStatus(t('uiExtra.importUI.checkingCreatedAt'));
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
@@ -839,7 +839,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     {canRestoreAnchors?<section className="scope-import-preview" aria-label="Facebook 原始座標地點重建">
       <label><input type="checkbox" checked={createMissingAnchors} disabled={busy}
         onChange={event=>setCreateMissingAnchors(event.target.checked)}/>
-        依 Facebook 原始 place.name 和精確經緯度，建立尚不存在的 Trace 定錨點（需要明確確認；不以 LOC location 名稱推測）
+        依 Facebook 原始 place.name 和精確經緯度，建立尚不存在的 Trace 定錨點（預設隱藏；需要明確確認；不以 LOC location 名稱推測）
       </label>
       <p className="scope-status">不勾選只沿用既有座標相同的定錨點；沒有原始地名或經緯度的紀錄不會自動建立。</p>
       {!rows.length&&!archiveEvidence.length?<button type="button" className="loc-button primary"
