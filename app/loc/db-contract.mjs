@@ -539,5 +539,5 @@ export function queryBatchSize(){
 }
 
 // List UI loading knobs (merged from the former list-loading-contract.mjs).
-export const DEFAULT_LIST_BATCH_SIZE=10;
+export const DEFAULT_LIST_BATCH_SIZE=20;
 export const LIST_LOAD_COOLDOWN_MS=1500;
