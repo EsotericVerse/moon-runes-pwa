@@ -182,7 +182,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   const identityParts=[group,originalTimestamp,sender,canonicalArchiveText(visibleText),attachments];
   if(sourcePlace)identityParts.push(sourcePlace);
   const siteId=item.post_id||item.id_str||
-    (actualKind==='post'&&platform!=='instagram'?item.id:null);
+    (actualKind==='post'?(item.id||(platform==='instagram'?item.fbid:null)):null);
   const stable=native||((platform==='instagram'&&item.fbid)?String(item.fbid):hash(JSON.stringify(identityParts)));
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
