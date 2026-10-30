@@ -106,3 +106,30 @@ test('Culture period loading uses declared render focus and imported period inte
     &&node.imported.name==='timePeriodContainsDate'),
   'LOC culture must import the actual period-range predicate it calls');
 });
+
+test('small article pages reuse first COUNT and OFFSET for later pages',()=>{
+  const ui=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const query=readFileSync(new URL('../app/loc/culture-query.js',import.meta.url),'utf8');
+  const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+  assert.ok(contract.includes('DEFAULT_LIST_BATCH_SIZE=10'));
+  assert.ok(query.includes("count:hasCursorCounts?null:'exact'"));
+  assert.ok(query.includes('offset:galaxyOffset'));
+  assert.ok(query.includes('offset:mediaOffset'));
+  assert.ok(ui.includes('totalCount:periodWorksPages[0]?.totalCount'));
+});
+
+test('later article pages only append and do not replace earlier visible items',()=>{
+  const code=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const start=code.indexOf('  const visibleWorkRows=useMemo(()=>{');
+  const end=code.indexOf('  const periodWorksPage=',start);
+  assert.ok(start>=0&&end>start);
+  const original={key:'galaxy:AAA00001',title:'original'};
+  const next={key:'galaxy:BBB00002',title:'new'};
+  const pages=[
+    {rows:[original],totalCount:2},
+    {rows:[{...original,title:'overwritten'},next],totalCount:20}
+  ];
+  const result=new Function('useMemo','periodWorksPages',
+    code.slice(start,end)+';return visibleWorkRows;')(fn=>fn(),pages);
+  assert.deepEqual(result,[original,next]);
+});
