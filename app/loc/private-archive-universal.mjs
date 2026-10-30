@@ -306,9 +306,13 @@ function createSink(path,summary,onRecord,onGeoPlace,signal,sourceHint=null){
       const places=extractFacebookGeoObjects(value);
       // Tagged visits are a separate source file, not authored Galaxy posts.
       // Labelled visits may have a name and timestamp but no coordinate.
-      if(config.kind==='geo'&&!places.length){
+      if(config.kind==='geo'){
         const location=repairMojibakeText(facebookBackupPlace(value));
-        if(location)places.push({location,__importCoordinates:null,address:null,placeUrl:null});
+        if(!places.length&&location)
+          places.push({location,__importCoordinates:null,address:null,placeUrl:null});
+        else if(location)for(const place of places){
+          if(!place.location)place.location=location;
+        }
       }
       for(const place of places){
         onGeoPlace({...place,sourcePath:cleanPath(path),
