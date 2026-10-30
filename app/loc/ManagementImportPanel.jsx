@@ -565,6 +565,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // No-op reimports must stop before anchor creation, article writes, or media writes.
       if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,{
         hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
+          (createMissingAnchors&&geoPlaceCandidates.length)||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
       })){
@@ -579,8 +580,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('準備空間定錨');
       const needsAnchor=unique.filter(record=>
         !String(existingByCreatedAt.get(record.uid)?.place_id||'').trim());
-      const placeAnchors=await prepareImportPlaceAnchors(needsAnchor,{
-        scopeId,relation:dbAuthRelation,allowMissing:true,
+      const geoAnchorRecords=geoPlaceCandidates.map(place=>({
+        ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
+      }));
+      const placeAnchors=await prepareImportPlaceAnchors([...needsAnchor,...geoAnchorRecords],{
+        scopeId,relation:dbAuthRelation,allowMissing:!createMissingAnchors,
+        createMissing:createMissingAnchors,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
@@ -654,7 +659,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       for(const record of unique){
         if(existingByCreatedAt.has(record.uid))continue;
         const placeUid=importedPlaceId({incoming:record,byCoordinate:placeAnchors.byCoordinate,byName:placeAnchors.byName});
-        const {__importCoordinates:unusedCoordinates,...article}=record;
+        const {__importCoordinates:unusedCoordinates,
+          __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
+          ...article}=record;
         payload.push(placeUid?{...article,place_id:placeUid}:article);
         if(payload.length>=insertSizer.size)await flushNewArticles();
       }
@@ -706,8 +713,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，待人工新增／整理座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組（未自動建立）。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
-      setRows([]);setArchiveEvidence([]);
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+      setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
       setProgress(null);
