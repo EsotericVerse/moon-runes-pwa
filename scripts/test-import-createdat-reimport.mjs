@@ -77,7 +77,7 @@ test('database lookup limits site and time before matching, preserving curated s
   assert.match(panel,/\.eq\('site',site\)\.in\(column,batch\)/);
   assert.match(panel,/\.gte\('createtime',timeWindow\.start\)/);
   assert.match(panel,/\.lte\('createtime',timeWindow\.end\)/);
-  assert.match(panel,/matchExistingImportByCreatedAt\(unique,/);
+  assert.match(panel,/matchExistingImportByCreatedAt\(existingCandidates,/);
   assert.match(panel,/consumePage\(page\)/);
   assert.match(panel,/if\(!page\.length\)break/);
   assert.match(panel,/await updateImportRows\(galaxy,updateQueue\)/);
