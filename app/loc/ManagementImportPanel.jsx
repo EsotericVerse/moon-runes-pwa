@@ -163,14 +163,14 @@ async function readExistingByIds(table,columns,column,values,message){
   for(const batch of urlSafeInBatches(values,column)){
     let offset=0;
     for(;;){
-      const {data,error}=await dbAuthRelation(table)
-        .select(columns).in(column,batch)
+      const {data,error,count}=await dbAuthRelation(table)
+        .select(columns,{count:'exact'}).in(column,batch)
         .order(orderColumn,{ascending:true}).range(offset,offset+MAX_ROWS-1);
       if(error)throw new Error(error.message||message);
       const rows=data||[];
       records.push(...rows);
       offset+=rows.length;
-      if(rows.length<MAX_ROWS)break;
+      if(!rows.length||(count!=null&&offset>=Number(count)))break;
     }
   }
   return records;
@@ -495,15 +495,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             showProgress('核對缺少時間的文章',0,safeContents.length);
             for(const batch of urlSafeInBatches(safeContents,'content')){
               for(let offset=0;;){
-                const {data,error}=await dbAuthRelation(galaxy)
-                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date')
+                const {data,error,count}=await dbAuthRelation(galaxy)
+                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date',{count:'exact'})
                   .in('content',batch)
                   .order('uid',{ascending:true}).range(offset,offset+MAX_ROWS-1);
                 if(error)throw new Error('無時間文章比對失敗：'+error.message);
                 const rows=data||[];
                 collected.push(...rows);
                 offset+=rows.length;
-                if(rows.length<MAX_ROWS)break;
+                if(!rows.length||(count!=null&&offset>=Number(count))||rows.length<MAX_ROWS)break;
               }
               checked+=batch.length;
               showProgress('核對缺少時間的文章',checked,safeContents.length);
