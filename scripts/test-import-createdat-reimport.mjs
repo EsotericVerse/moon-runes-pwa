@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {extractImportCreatedAt,createImportBatchSizer} from '../app/loc/import-batch.mjs';
+import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
 import {dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 test('Threads source timestamps are extracted from root and nested media',()=>{
@@ -125,4 +125,17 @@ test('batch controller expands on throughput gains and contracts on deterioratio
   assert.equal(s.observe(512,5000),1024);
   assert.equal(s.observe(1024,20000),512);
   assert.equal(s.observe(512,20000),256);
+});
+
+test('pre-write import estimate uses only parsed item counts and rounds to minutes',()=>{
+  assert.equal(estimateImportMinutes({articles:0,media:0}),null);
+  assert.deepEqual(estimateImportMinutes({articles:1}),{min:1,max:3});
+  assert.deepEqual(estimateImportMinutes({articles:35795}),{min:8,max:32});
+  const withMedia=estimateImportMinutes({articles:35795,media:1000});
+  assert.ok(withMedia.min>=8&&withMedia.max>32);
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/const importEstimate=useMemo\(\(\)=>/);
+  assert.match(panel,/!busy&&analysisCurrent&&importEstimate/);
+  assert.match(panel,/importEstimatedMinutes/);
+  assert.ok(panel.indexOf('importEstimatedMinutes')>panel.indexOf('saveHint'));
 });

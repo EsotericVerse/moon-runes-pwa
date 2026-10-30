@@ -25,7 +25,7 @@ import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 const ZIP_LAYOUT_KEYS=Object.freeze({
@@ -345,6 +345,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       invalid:normalized.filter(item=>item.error)
     };
   },[rows,deferredSource,format.fields,locale,archiveDetection,sourceCategories.data]);
+  const importEstimate=useMemo(()=>{
+    const attachedMedia=analyzed.normalized.reduce((count,item)=>count+(item.mediaRecords?.length||0),0);
+    const media=Math.max(analyzed.mediaOnly.length+attachedMedia,archiveSummary?.mediaImportable||0);
+    return estimateImportMinutes({articles:analyzed.valid.length,media});
+  },[analyzed,archiveSummary?.mediaImportable]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
@@ -746,6 +751,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
         <p>{t('uiExtra.importUI.saveHint')}</p>
+        {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
       <button type="button" className="loc-button scope-import-save-button"
         disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length)} onClick={run}>

@@ -200,6 +200,18 @@ export function createImportBatchSizer({
   };
 }
 
+// Read-only preview estimate from parsed item counts; not an ETA or a database probe.
+// Conservative throughput bands account for date comparison and media linking,
+// but actual backend/network latency and existing-record density vary.
+export function estimateImportMinutes({articles=0,media=0}={}){
+  const articleCount=Math.max(0,Math.floor(Number(articles)||0));
+  const mediaCount=Math.max(0,Math.floor(Number(media)||0));
+  if(!articleCount&&!mediaCount)return null;
+  const min=Math.max(1,Math.ceil(0.5+articleCount/5500+mediaCount/5000));
+  const max=Math.max(min+1,Math.ceil(2+articleCount/1200+mediaCount/1200));
+  return {min,max};
+}
+
 export function validImportBatchSize(){return MAX_ROWS;}
 
 export async function writeImportBatches(records,{writeBatch,onProgress}={}){

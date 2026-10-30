@@ -14,6 +14,7 @@ export default {
   "refreshMediaSuffix": "；メディアを{media}件追加、関連付けを{linked}件更新しました。",
   "importTitle": "データ取り込み",
   "importProcessingWait": "取り込み・解析中です。しばらくお待ちください…",
+  "importEstimatedMinutes": "取り込み時間の目安：約 {min}～{max} 分（解析済みデータ量による概算。通信やデータベースの状況で変動します）。",
   "zipInspecting": "ZIP の内容から提供元を判別中…",
   "zipInspected": "ZIP の検査が完了しました（{count} 項目）。データは取り込んでいません。",
   "zipDetected": "ZIP バックアップの提供元",
