@@ -90,3 +90,17 @@ test('local import and absent Trace table leave article import unblocked',async(
   });
   assert.equal(missing.skipped,1);
 });
+
+test('anchor import reports real scan and insertion progress',async()=>{
+  const db=fakeTrace();
+  const states=[];
+  await prepareImportPlaceAnchors([loc('商店甲',25.05,121.6)],{
+    scopeId:'lo3rwang',relation:db.relation,onProgress:state=>states.push(state)
+  });
+  assert.deepEqual(states.map(p=>[p.phase,p.completed,p.total]),[
+    ['讀取現有空間定錨',0,0],
+    ['讀取現有空間定錨',0,0],
+    ['新增空間定錨',0,1],
+    ['新增空間定錨',1,1]
+  ]);
+});
