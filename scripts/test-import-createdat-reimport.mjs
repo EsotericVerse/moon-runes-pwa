@@ -80,3 +80,29 @@ test('normal import update preserves populated site/location and backfills blank
   assert.doesNotMatch(panel,/\.gte\('createtime'/);
   assert.doesNotMatch(panel,/\.lt\('createtime'/);
 });
+
+test('timestamp comparisons emit progress before the first query and after each batch',async()=>{
+  const rows=[0,1,2].map(i=>({
+    uid:'EPOCH00'+i,
+    createtime:new Date(Date.parse('2024-08-01T00:00:00.000Z')+i).toISOString(),
+    content:'text'+i
+  }));
+  const steps=[];
+  await matchExistingImportByCreatedAt(rows,{
+    batchSize:1,
+    readTimestamps:async()=>[],
+    onProgress:value=>steps.push(value)
+  });
+  assert.deepEqual(steps.map(step=>[step.completed,step.total]),[[0,3],[1,3],[2,3],[3,3]]);
+});
+test('import progress shows each phase and an indeterminate bar until measurable',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/showProgress\('準備匯入文章'\)/);
+  assert.match(panel,/onProgress:p=>showProgress\('精確比對發文時間'/);
+  assert.match(panel,/showProgress\('準備空間定錨'\)/);
+  assert.match(panel,/showProgress\('更新既有文章'/);
+  assert.match(panel,/showProgress\('新增文章'/);
+  assert.match(panel,/showProgress\('整理媒體資料'\)/);
+  assert.match(panel,/progress\.percent===null\?<progress max="100"/);
+  assert.doesNotMatch(panel,/每 MaxRows/);
+});
