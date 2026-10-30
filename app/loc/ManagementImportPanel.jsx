@@ -328,7 +328,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
   const [source,setSource]=useState('');
-  const [timeRange,setTimeRange]=useState('all');
+  const [timeRange,setTimeRange]=useState('year');
   const timeWindow=useMemo(()=>importTimeRangeWindow(timeRange),[timeRange,fileName]);
   const sourceCategories=useAsyncResource({
     queryKey:['import-source-categories',scopeId],
@@ -628,7 +628,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // No-op reimports must stop before anchor creation, article writes, or media writes.
       if(isUnchangedImportBeforeWrite(unique,existingBySiteId,{
         hasMedia:Boolean(analyzed.mediaOnly.length||eligibleArchiveEvidence.length||
-          (createMissingAnchors&&geoPlaceCandidates.length)||
+          (createMissingAnchors&&!timeWindow&&geoPlaceCandidates.length)||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
       })){
@@ -821,11 +821,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     <label className="scope-import-source-choice">匯入時間範圍
       <select value={timeRange} disabled={busy} onChange={event=>setTimeRange(event.target.value)}>
         <option value="all">全部的時間</option>
-        <option value="year">近一年</option>
+        <option value="year">近一年（預設）</option>
         <option value="halfYear">近半年</option>
         <option value="month">近一月</option>
       </select>
     </label>
+    <p className="scope-status">第一次匯入完整舊資料可選「全部的時間」；後續定期更新建議使用預設「近一年」，讓比對池與寫入量更小、系統反應更快。比對先限定同一網站，再使用原生 site_id；沒有原生 ID 時，以發文時間及內容確認。超出範圍的文章不會寫入，限時匯入也不寫入無日期的文章與未關聯媒體。</p>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
