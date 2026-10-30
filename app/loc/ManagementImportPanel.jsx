@@ -560,7 +560,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     catch(error){setStatus(String(error?.message||error));return;}
     if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
-    setBusy(true);setStatus('正在按網站與時間範圍比對文章');
+    setBusy(true);setStatus('');
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
         percent:total>0?Math.round(100*completed/total):null});
@@ -932,7 +932,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
-    {status?<p className="scope-status" role="status">{status}</p>:null}
+    {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 
