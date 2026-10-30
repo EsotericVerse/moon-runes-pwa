@@ -54,10 +54,9 @@ test('dedicated media URL wins when a media object also contains a post permalin
 });
 
 
-test('reimport backfills missing media URL but refuses conflicting UID URLs',()=>{
+test('reimport never updates a saved media URL and still refuses conflicting UID URLs',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/if\(record\.url&&!known\.url\)/);
-  assert.match(panel,/await updateRows\(galaxyMedia,\{url:record\.url\}/);
+  assert.doesNotMatch(panel,/updateRows\(galaxyMedia/);
   assert.match(panel,/媒體 UID 已存在，但網址不同/);
 });
 
