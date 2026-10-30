@@ -58,9 +58,9 @@ export async function reanalyzeKeywordClass({
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
-    // A backend may cap returned rows below the requested LIMIT (for example,
-    // PostgREST max_rows). A short page is NOT end-of-data: stop only after an
-    // empty page, with the Galaxy reader advancing its UID cursor each time.
+    // A backend may cap returned rows below LIMIT. The reader advances only
+    // after collecting every article at a timestamp, including any page ties.
+    // A short page is not proof that the full analysis scan has finished.
   }
   // COUNT was read before the scan. If concurrent Galaxy changes or a
   // backend row cap make the number diverge, fail BEFORE writing UID lists.
