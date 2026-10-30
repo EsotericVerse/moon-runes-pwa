@@ -120,8 +120,11 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
       candidates.set(key,state);
     }
   };
+  let base=0;
   for(const [site,times] of groups){
-    const returned=await readTimestamps([...times],consumePage,site);
+    const report=done=>onProgress?.({completed:Math.min(total,base+done),total,matched:candidates.size});
+    const returned=await readTimestamps([...times],consumePage,site,report);
+    base+=times.size;
     if(Array.isArray(returned))consumePage(returned);
     else if(returned!==undefined&&returned!==null)
       throw Error('createtime 查詢沒有回傳有效文章');
@@ -147,7 +150,7 @@ const importIsoTime=value=>{
 // is scanned at most once. A window reads only uid + createtime; full rows are
 // read by UID for the timestamps that really matched.
 export async function readImportCandidatesByTimeWindows(times,
-    {readWindow,readRowsByUid,consumePage,windowSize=5000}={}){
+    {readWindow,readRowsByUid,consumePage,windowSize=5000,onWindowDone}={}){
   if(typeof readWindow!=='function'||typeof readRowsByUid!=='function'||
       typeof consumePage!=='function')throw Error('缺少時間區間查詢');
   if(!Number.isSafeInteger(windowSize)||windowSize<1)throw Error('無效的比對區間大小');
@@ -160,10 +163,12 @@ export async function readImportCandidatesByTimeWindows(times,
     const uids=[];
     for(const row of saved)
       if(wanted.has(importIsoTime(row?.createtime)))uids.push(String(row.uid));
-    if(!uids.length)continue;
-    const full=await readRowsByUid(uids);
-    if(!Array.isArray(full))throw Error('UID 查詢結果無效');
-    consumePage(full);
+    if(uids.length){
+      const full=await readRowsByUid(uids);
+      if(!Array.isArray(full))throw Error('UID 查詢結果無效');
+      consumePage(full);
+    }
+    onWindowDone?.(index+part.length);
   }
 }
 
