@@ -509,7 +509,7 @@ test('Textless Threads media-only post is recorded as valid media without invent
   assert.equal(plan.mediaLinks.length,0);
 });
 
-test('Instagram nested label_values creates a private parent, caption article, and media reference',async()=>{
+test('Instagram nested label_values keeps the caption on the post and hangs the media on it',async()=>{
   const file=asFile('instagram-nested.zip',zipSync({
     'your_instagram_activity/media/posts.json':j([{
       timestamp:1720000000,fbid:'179000112233',media:[],
@@ -527,18 +527,16 @@ test('Instagram nested label_values creates a private parent, caption article, a
       collector.onRecord({...record,attachments:mapped.attachments},mapped.row.uid);
     }
   },onMediaEntry:entry=>collector.onMediaEntry(entry)});
-  assert.equal(articles.length,2);
-  const [parent,caption]=articles;
-  assert.equal(parent.site_id,'179000112233');
-  assert.equal(parent.searchable,false);
-  assert.deepEqual(parent.target_id,[caption.uid]);
-  assert.equal(caption.site_id,'179000112233:caption');
-  assert.equal(caption.source_id,parent.uid);
-  assert.equal(caption.content,'這是自己的照片說明');
+  assert.equal(articles.length,1);
+  const [post]=articles;
+  assert.equal(post.site_id,'179000112233');
+  assert.equal(post.content,'這是自己的照片說明');
+  assert.equal(post.target_id,undefined);
+  assert.equal(post.source_id,undefined);
   const plan=prepareArchiveMedia(collector.rows({scopeId:'test',archiveName:'test',archiveSize:file.size}),
     new Set(articles.map(row=>row.uid)));
   assert.equal(plan.mediaLinks.length,1);
-  assert.equal(plan.mediaLinks[0].uid,caption.uid);
+  assert.equal(plan.mediaLinks[0].uid,post.uid);
 });
 test('Undated Instagram caption retains null creation time and stable Galaxy identities',async()=>{
   const file=asFile('undated.zip',zipSync({
@@ -559,9 +557,8 @@ test('Undated Instagram caption retains null creation time and stable Galaxy ide
     batches.push(records);
   }
   assert.deepEqual(batches[0].map(row=>row.uid),batches[1].map(row=>row.uid));
-  assert.equal(batches[0].length,2);
+  assert.equal(batches[0].length,1);
   assert.equal(batches[0][0].site_id,'179000887766');
-  assert.equal(batches[0][1].site_id,'179000887766:caption');
   assert.ok(batches[0].every(row=>row.createtime===null));
 });
 
