@@ -370,7 +370,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       <h2>關聯圖</h2>
       {graphItems.length?<KeywordNetworkEditor items={graphItems} className={selectedClass?.name||''}
         classId={selectedClass?.uid||''} selectedId={chosen.item}
-        onSelectItem={item=>{choose('item',String(item.keyword_id));edit(tree.index.get(String(item.keyword_id)));setWorkspace('manual');}}
+        onSelectItem={item=>{setChosen(prev=>({...prev,category:chosen.category,class:selectedClass?.uid||'',group:item.group_uid,item:String(item.keyword_id)}));edit(tree.index.get(String(item.keyword_id)));setWorkspace('manual');}}
         onNewItem={groupUid=>{const group=groups.find(row=>row.uid===groupUid);if(group){create('item',group.uid);setWorkspace('manual');}}}
         onDeleteItem={item=>removeNode(tree.index.get(String(item.keyword_id)))}
         onDeleteKeyword={async(item,word)=>{
