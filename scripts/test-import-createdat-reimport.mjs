@@ -162,7 +162,11 @@ test('zero-write fast exit must not hide real imports, media or place additions'
   assert.equal(isUnchangedImportBeforeWrite([{...record,content:'Changed'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,title:'Changed'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([{...record,url:'https://example.com/post'}],matches),false);
-  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],matches),true,
+    'a name alone must not trigger a coordinate lookup');
+  assert.equal(isUnchangedImportBeforeWrite([{...record,
+    __importCoordinates:{latitude:25.05338,longitude:121.49086}}],matches),false,
+    'reimport must find a Trace anchor manually created since the previous import');
   assert.equal(isUnchangedImportBeforeWrite([record],matches,{hasMedia:true}),false);
   assert.equal(isUnchangedImportBeforeWrite([record,{...record,uid:'NEW00002'}],matches),false);
   assert.equal(isUnchangedImportBeforeWrite([],matches),false);
