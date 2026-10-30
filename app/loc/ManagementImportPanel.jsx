@@ -150,6 +150,22 @@ const IMPORT_FORMAT_FIELDS=Object.freeze([
   'media_link','media','media_type','galaxy_link','meta_tags','rune_references'
 ]);
 
+// Preview text shows each web address as a short link instead of the raw URL.
+// Plain text is cut at `limit` characters; a link never counts toward the limit.
+const IMPORT_URL_PATTERN=/(https?:\/\/[^\s<>"'\u3000-\u303F\uFF00-\uFFEF]+)/g;
+function LinkedImportText({text,limit=Infinity}){
+  const parts=String(text??'').split(IMPORT_URL_PATTERN);
+  let left=limit,cut=false;
+  const out=[];
+  parts.forEach((part,index)=>{
+    if(index%2){out.push(<a key={index} href={part} target="_blank" rel="noopener noreferrer">連結</a>);return;}
+    if(!part||cut)return;
+    if(part.length>left){out.push(part.slice(0,left)+'…');cut=true;left=0;return;}
+    out.push(part);left-=part.length;
+  });
+  return <>{out}</>;
+}
+
 function ImportFormatSettings({format,onChange,disabled=false}){
   const t=useUiText();
   const update=(key,value)=>onChange({...format,[key]:value});
@@ -839,6 +855,25 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </label>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
+    {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
+      <button type="button" className="loc-button primary scope-import-save-button"
+        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
+        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
+      </button>
+      <div>
+        {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
+      </div>
+    </section>:null}
+    {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
+    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
+    {progress?<div role="status" aria-live="polite" className="scope-import-progress">
+      {busy?<p className="scope-status"><strong>{t('uiExtra.importUI.importProcessingWait')}</strong></p>:null}
+      <p><strong>{progress.stage}</strong></p>
+      {progress.percent===null?<progress max="100" aria-label={progress.stage+'，處理中'}/>:
+        <progress value={progress.percent} max="100" aria-label={progress.stage+'，已完成 '+progress.percent+'%'}/>}
+      {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
+        <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
+    </div>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
         <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
@@ -906,34 +941,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     {missingSiteIdCount>0?<p className="scope-status" role="status">
        Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
-     {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
-      <div>
-        <h3>{t('uiExtra.importUI.saveSection')}</h3>
-        <p>{t('uiExtra.importUI.saveHint')}</p>
-        {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
-      </div>
-      <button type="button" className="loc-button primary scope-import-save-button"
-        disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
-        {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
-      </button>
-    </section>:null}
-    {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
-    {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
-    {progress?<div role="status" aria-live="polite" className="scope-import-progress">
-      {busy?<p className="scope-status"><strong>{t('uiExtra.importUI.importProcessingWait')}</strong></p>:null}
-      <p><strong>{progress.stage}</strong></p>
-      {progress.percent===null?<progress max="100" aria-label={progress.stage+'，處理中'}/>:
-        <progress value={progress.percent} max="100" aria-label={progress.stage+'，已完成 '+progress.percent+'%'}/>}
-      {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
-        <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
-    </div>:null}
-    {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
+     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
       <div className="scope-management-records">
         {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
-          <strong>{record.title||record.uid}</strong>
+          <strong><LinkedImportText text={record.title||record.uid}/></strong>
           <span>{record.uid} · {String(record.createtime||'').slice(0,10)||t('uiExtra.importUI.noDate')}</span>
-          <p>{String(record.content||'').slice(0,180)}{String(record.content||'').length>180?'…':''}</p>
+          <p><LinkedImportText text={record.content} limit={180}/></p>
         </article>)}
       </div>
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}

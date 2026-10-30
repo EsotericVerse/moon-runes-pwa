@@ -88,3 +88,9 @@ test('every db helper the import panel calls is imported from db-client',()=>{
     if(new RegExp('\\b'+name+'\\(').test(panel))
       assert.ok(imported.includes(name),name+' is called but not imported');
 });
+test('import preview shows web addresses as links, not raw URL text',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/<LinkedImportText text=\{record\.title\|\|record\.uid\}\/>/);
+  assert.match(panel,/<LinkedImportText text=\{record\.content\} limit=\{180\}\/>/);
+  assert.match(panel,/rel="noopener noreferrer">連結<\/a>/);
+});
