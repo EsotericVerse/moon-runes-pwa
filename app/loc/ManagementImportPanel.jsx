@@ -495,6 +495,30 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     setQueueIndex(next);
     await loadQueuedFile(queue[next],next,queue.length);
   }
+  const canRestoreAnchors=scopeId!=='local'&&scopeId!=='loc'&&(
+    geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location))||
+    analyzed.valid.some(record=>Boolean(importGeoKey(record.__importCoordinates)&&record.__importPlaceName))
+  );
+  async function saveGeoPlaces(){
+    if(busy||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
+    const candidates=geoPlaceCandidates.map(place=>({
+      ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
+    }));
+    if(!candidates.length)return;
+    if(!window.confirm('只依 Facebook 原始地名與完全相同的經緯度建立缺少的 Trace 定錨點；不新增 Galaxy 文章。確定執行？'))return;
+    setBusy(true);setStatus('');setProgress({stage:'核對原始打卡地點',completed:0,total:0,percent:null});
+    try{
+      const result=await prepareImportPlaceAnchors(candidates,{
+        scopeId,relation:dbAuthRelation,createMissing:true,
+        onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
+          percent:p.total?Math.round(100*p.completed/p.total):null})
+      });
+      setStatus('獨立 Facebook 地點已核對：沿用既有定錨點 '+result.reused.toLocaleString()+
+        ' 筆、新增 '+result.created.toLocaleString()+' 筆、未匹配 '+result.unmatchedCoordinates.toLocaleString()+
+        ' 組。沒有新增 Galaxy 文章；沒有座標的造訪紀錄未推測地點。');
+    }catch(error){setStatus('Trace 地點儲存失敗：'+String(error?.message||error));}
+    finally{setBusy(false);setProgress(null);}
+  }
   async function run(){
     if(busy||(!rows.length&&!archiveEvidence.length))return;
     const selected=canonicalSource(source);
@@ -508,6 +532,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
     }
     catch(error){setStatus(String(error?.message||error));return;}
+    if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點。確定繼續重匯？'))return;
     setBusy(true);setStatus(t('uiExtra.importUI.checkingCreatedAt'));
     const showProgress=(stage,completed=0,total=0)=>{
       setProgress({stage,completed,total,
