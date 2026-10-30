@@ -167,3 +167,25 @@ test('anchors are prepared for new articles only and identity is the exact coord
   assert.notEqual(importGeoKey({latitude:25.05338,longitude:121.49086}),
     importGeoKey({latitude:25.05339,longitude:121.49086}));
 });
+const named=(name,lat,lng)=>({__importPlaceName:name,__importCoordinates:{latitude:lat,longitude:lng}});
+test('same place name reuses an existing anchor and one new anchor serves every same-name coordinate',async()=>{
+  const rows=[{uid:'AAAA',title:'台北車站',address:[121.5170,25.0478]}];
+  let inserted=[];
+  const relation=()=>({
+    select:()=>({eq:()=>({order:()=>({range:async(s,e)=>({data:rows.slice(s,e+1),error:null})})})}),
+    insert:batch=>({select:async()=>{
+      inserted=batch;
+      return {data:batch.map((row,i)=>({uid:'NEW'+i+'X'.repeat(0),address:row.address})),error:null};
+    }})
+  });
+  const result=await prepareImportPlaceAnchors([
+    named('台北車站',25.0500,121.5200),
+    named(' 咖啡 店',25.1,121.6),
+    named('咖啡 店',25.2,121.7)
+  ],{scopeId:'lo3rwang',relation,createMissing:true});
+  assert.equal(result.byCoordinate.get(importGeoKey({latitude:25.05,longitude:121.52})),'AAAA');
+  assert.equal(inserted.length,1);
+  const first=result.byCoordinate.get(importGeoKey({latitude:25.1,longitude:121.6}));
+  assert.ok(first);
+  assert.equal(result.byCoordinate.get(importGeoKey({latitude:25.2,longitude:121.7})),first);
+});
