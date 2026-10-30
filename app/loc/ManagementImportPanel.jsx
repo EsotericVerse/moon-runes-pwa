@@ -570,33 +570,54 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
       if(!galaxy||!galaxyMedia)throw new Error(t('uiExtra.importUI.scopeUnresolved'));
-      // Reimport identity is platform + source-native site_id, never createdAt.
-      // Records without site_id are insert-only, not matched by UID.
+      // Always narrow candidates by site before source ID or timestamp.
       const incoming=dedupeIncomingImport(analyzed.valid);
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
-      const existingBySiteId=await matchExistingImportBySiteId(unique,{
-        onProgress:p=>showProgress('精確比對平台與 site_id',p.completed,p.total),
-        readSiteIds:async (siteIds,consumePage)=>{
-          const pageSize=Math.min(MAX_ROWS,500);
-          let done=0;
-          for(const batch of urlSafeInBatches(siteIds,'site_id')){
-            for(let offset=0;;){
-              const {data,error}=await dbAuthRelation(galaxy)
-                .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
-                .in('site_id',batch).order('uid',{ascending:true})
-                .range(offset,offset+pageSize-1);
-              if(error)throw new Error('site_id 比對失敗：'+error.message);
-              const page=data||[];
-              if(!page.length)break;
-              consumePage(page);
-              offset+=page.length;
-            }
-            done+=batch.length;
-            showProgress('精確比對平台與 site_id',done,siteIds.length);
+      const siteAvailability=new Map();
+      const siteHasArticles=async site=>{
+        if(!siteAvailability.has(site)){
+          const {data,error}=await dbAuthRelation(galaxy).select('uid').eq('site',site).limit(1);
+          if(error)throw Error('網站範圍查詢失敗：'+error.message);
+          siteAvailability.set(site,Boolean(data?.length));
+        }
+        return siteAvailability.get(site);
+      };
+      const readCandidates=async(column,values,consumePage,site)=>{
+        if(!await siteHasArticles(site))return;
+        const pageSize=Math.min(MAX_ROWS,500);
+        for(const batch of urlSafeInBatches(values,column)){
+          for(let offset=0;;){
+            let query=dbAuthRelation(galaxy)
+              .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+              .eq('site',site).in(column,batch);
+            if(timeWindow)query=query.gte('createtime',timeWindow.start)
+              .lte('createtime',timeWindow.end);
+            const {data,error}=await query.order('uid',{ascending:true})
+              .range(offset,offset+pageSize-1);
+            if(error)throw Error(column+' 比對失敗：'+error.message);
+            const page=data||[];
+            if(!page.length)break;
+            consumePage(page);
+            offset+=page.length;
           }
         }
+      };
+      const existingBySiteId=await matchExistingImportBySiteId(unique,{
+        onProgress:p=>showProgress('精確比對網站與 site_id',p.completed,p.total),
+        readSiteIds:(ids,consumePage,site)=>readCandidates('site_id',ids,consumePage,site)
       });
+      const existingByTime=await matchExistingImportByCreatedAt(unique,{
+        onProgress:p=>showProgress('比對網站、發文時間與內容',p.completed,p.total),
+        readTimestamps:(times,consumePage,site)=>readCandidates('createtime',times,consumePage,site)
+      });
+      const matchedUids=new Set([...existingBySiteId.values()].map(row=>String(row.uid)));
+      for(const [uid,record] of existingByTime){
+        if(matchedUids.has(String(record.uid)))
+          throw Error('同一篇既有文章對應多筆匯入來源，已停止以避免覆寫：'+record.uid);
+        matchedUids.add(String(record.uid));
+        existingBySiteId.set(uid,record);
+      }
 
       const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
       unique=unique.map(record=>({
@@ -606,7 +627,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }));
       // No-op reimports must stop before anchor creation, article writes, or media writes.
       if(isUnchangedImportBeforeWrite(unique,existingBySiteId,{
-        hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
+        hasMedia:Boolean(analyzed.mediaOnly.length||eligibleArchiveEvidence.length||
           (createMissingAnchors&&geoPlaceCandidates.length)||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
@@ -622,7 +643,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('準備空間定錨');
       const needsAnchor=unique.filter(record=>
         !String(existingBySiteId.get(record.uid)?.place_id||'').trim());
-      const geoAnchorRecords=geoPlaceCandidates.map(place=>({
+      const geoAnchorRecords=timeWindow?[]:geoPlaceCandidates.map(place=>({
         ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
       }));
       const placeAnchors=await prepareImportPlaceAnchors([...needsAnchor,...geoAnchorRecords],{
@@ -717,7 +738,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('整理媒體資料');
       const articleTimes=new Map(analyzed.valid.map(row=>[String(row.uid),row.createtime]));
       const archivePlan=prepareArchiveMedia(
-        archiveEvidence,new Set(knownArticleIds.keys()),articleTimes);
+        eligibleArchiveEvidence,new Set(knownArticleIds.keys()),articleTimes);
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
         ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||null
       }));
@@ -750,11 +771,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         exifSaved+=chunk.length;
         showProgress('保存媒體 EXIF',exifSaved,archivePlan.exif.length);
       }
-      const skipped=analyzed.invalid.length+duplicateCount;
+      const skipped=analyzed.invalid.length+analyzed.skippedByRange+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
