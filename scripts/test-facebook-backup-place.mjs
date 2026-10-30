@@ -155,7 +155,7 @@ test('management import maps Facebook JSON place into Galaxy and ZIP can actuall
  const parser=src('app/loc/private-archive-universal.mjs');
  assert.match(ui,/facebookBackupPlace\(row\)/);
  assert.match(ui,/facebookBackupPostText\(row\)/);
- assert.match(ui,/archiveGalaxyRow\(record\)/);
+ assert.match(ui,/archiveGalaxyRows\(record\)/);
  // The shared ZIP adapter delegates Facebook posts to the same
  // place/time/UID conversion; the UI no longer calls it directly.
  const adapter=src('app/loc/archive-galaxy-row.mjs');
