@@ -24,7 +24,8 @@ export function archiveGalaxyRow(record){
   // Threads articles, even when their payload contains a username/title.
   if(platform==='threads'&&!['post','media','story'].includes(String(record.kind||'')))
     return null;
-  const coordinates=record.sourcePlace?extractImportCoordinates(record.raw):null;
+  // Coordinates belong to the source JSON, not to LOC's optional location text.
+  const coordinates=extractImportCoordinates(record.raw);
   if(platform==='facebook'){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
