@@ -157,7 +157,10 @@
 }
 
 .scope-import-preview{display:grid;gap:.7rem;margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
-.scope-import-preview .scope-management-records{max-height:24rem}
+.scope-import-preview .scope-management-records{max-height:none;overflow:visible;padding-right:0}
+.scope-import-preview .loc-bubble{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.scope-import-preview .loc-bubble>strong,.scope-import-preview .loc-bubble>span,.scope-import-preview .loc-bubble>p{display:block;min-width:0;overflow-wrap:anywhere}
+.scope-import-facts dd{min-width:0;overflow-wrap:anywhere}
 .scope-setting-toggle{display:flex!important;align-items:center;gap:.55rem;min-height:2.6rem;padding:.55rem .65rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md)}
 .scope-setting-toggle input{width:1.05rem;height:1.05rem;margin:0}
 .scope-publisher{display:grid;grid-template-columns:minmax(0,1fr) minmax(16rem,21rem);gap:1rem;align-items:start}
@@ -906,18 +909,16 @@
 }
 .scope-import-primary-row input[type=file]{padding:.45rem .6rem}
 .scope-import-primary-row input[type=file]::file-selector-button{padding:.35rem .65rem}
-.scope-import-save{
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
-  padding:1rem 0;border-top:2px solid var(--loc-accent-border)
-}
-.scope-import-save>div{flex:1 1 18rem;min-width:0}
-.scope-import-save h3{margin:0;font-size:1.05rem}
-.scope-import-save p{margin:.35rem 0 0;color:var(--loc-muted);font-size:.88rem}
+.scope-import-save{display:grid;gap:.5rem;padding:.2rem 0 .4rem;min-width:0}
+.scope-import-save>div{min-width:0}
+.scope-import-save p{margin:0;color:var(--loc-muted);font-size:.85rem;overflow-wrap:anywhere}
 .scope-import-save-button{
-  min-height:50px;min-width:11rem;padding:.75rem 1.4rem;
-  font-weight:750;border:2px solid var(--loc-accent-border);
-  box-shadow:0 2px 8px rgba(0,0,0,.08)
+  width:100%;min-height:56px;padding:.8rem 1.4rem;font-size:1.1rem;font-weight:800;letter-spacing:.04em;
+  color:var(--loc-text);border:2px solid var(--loc-accent);
+  background:color-mix(in srgb,var(--loc-accent) 38%,var(--loc-panel));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--loc-accent) 22%,transparent),0 6px 18px rgba(0,0,0,.25)
 }
+.scope-import-save-button:disabled{box-shadow:none;border-color:var(--loc-ui-hairline)}
 @media(max-width:700px){.scope-import-save-button{width:100%}}
 .scope-import-range-hint{font-weight:400;color:var(--loc-muted);font-size:.82rem}
 .scope-import-format{min-width:0;max-width:100%}
