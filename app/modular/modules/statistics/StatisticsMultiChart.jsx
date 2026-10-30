@@ -232,7 +232,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     queryFn:async()=>{
       const {readKeywordTreeCatalog}=await import('../../../loc/db-client.mjs');
       const {keywordTreeCatalog}=await import('../../../loc/keyword-tree-report.mjs');
-      const result=await readKeywordTreeCatalog(scopeId);
+      const result=await readKeywordTreeCatalog(scopeId,{classUid:meta.class_uid});
       if(!result.class_uid)return [];
       const tree=keywordTreeCatalog(result.rows,result.class_uid);
       return tree.groups.flatMap(group=>group.items.map(item=>({
@@ -240,13 +240,10 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
       })));
     }
   });
-  // Link each stored item to its OWN Class by the live keyword catalog's
-  // class_group, matching the Class names snapshotted at classification.
-  const classByGroup=new Map(Object.entries(meta.classes||{})
-    .map(([uid,label])=>[String(label||'').trim(),uid]));
+  // UID is the identity: two Groups can have the same visible name.
   const classByItem=new Map((groupCatalog.data||[])
     .filter(row=>row.class_enable!==false)
-    .map(row=>[String(row.uid),classByGroup.get(String(row.class_group||'').trim())])
+    .map(row=>[String(row.uid),String(row.group_uid||'')])
     .filter(([id,groupUid])=>Boolean(id&&groupUid)));
   const groupsWithItems=classRows.map(row=>({
     row,items:groupRows.filter(item=>classByItem.get(String(item.uid))===String(row.group_uid))

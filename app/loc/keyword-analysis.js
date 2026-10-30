@@ -74,6 +74,21 @@ export async function selectActiveKeywordClassName(scopeId=''){
   });
   return String(rows?.[0]?.name||'');
 }
+// Only Classes that this caller can read are selectable. The existing
+// active Class is the default when it appears in that authorized directory.
+export async function selectAvailableKeywordClasses(scopeId='lo3rwang'){
+  const id=normalizeScopeId(scopeId),scope=defaultScopeData(id);
+  if(!scope)return {classes:[],currentClassUid:''};
+  const [{readSharedKeywordClasses},{rows}]=await Promise.all([
+    import('./db-client.mjs'),
+    selectRows(scope.config,{
+      columns:'current_keyword_class_uid',
+      filters:[{column:'id',operator:'eq',value:id}],limit:1
+    })
+  ]);
+  const classes=await readSharedKeywordClasses(id);
+  return {classes,currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
+}
 async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const id=normalizeScopeId(scopeId);
   // Public statistics only read the stored summary/config and public Galaxy attrs.

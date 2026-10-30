@@ -241,6 +241,7 @@ export default function Culture(){
   // Keyword Class is optional; ordinary Time River views must not scan the whole article corpus.
   const [styleFilter,setStyleFilter]=useState('none');
   const [keywordOptionsScope,setKeywordOptionsScope]=useState('');
+  const [selectedKeywordClassUid,setSelectedKeywordClassUid]=useState('');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
   const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
@@ -445,21 +446,26 @@ export default function Culture(){
     queryKey:['scope-active-keyword-class-name',scopeId],
     // Opening/focusing the style selector is the first reason to look up
     // the active Class. Ordinary Time River viewing performs no keyword SQL.
-    enabled:keywordOptionsScope===scopeId&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
+    enabled:(keywordOptionsScope===scopeId||styleFilter==='rune66')&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
     queryFn:async()=>{
-      const {selectActiveKeywordClassName}=await import('../../loc/keyword-analysis');
-      return selectActiveKeywordClassName(scopeId);
+      const {selectAvailableKeywordClasses}=await import('../../loc/keyword-analysis');
+      return selectAvailableKeywordClasses(scopeId);
     },
   });
-  const keywordClassLabel=keywordClassQuery.data?'關鍵詞組：'+keywordClassQuery.data
+  const availableKeywordClasses=keywordClassQuery.data?.classes||[];
+  const selectedKeywordClass=availableKeywordClasses.find(item=>item.classUid===selectedKeywordClassUid)
+    ||availableKeywordClasses.find(item=>item.classUid===keywordClassQuery.data?.currentClassUid)
+    ||availableKeywordClasses[0];
+  const resolvedKeywordClassUid=String(selectedKeywordClass?.classUid||'');
+  const keywordClassLabel=selectedKeywordClass?'關鍵詞組：'+selectedKeywordClass.name
     :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未設定）';
   const styleQuery=useAsyncResource({
-    queryKey:['culture-style-filter','rune66',classificationScope,keywordWindowStart,keywordWindowEnd],
+    queryKey:['culture-style-filter','rune66',classificationScope,resolvedKeywordClassUid,keywordWindowStart,keywordWindowEnd],
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({scopeId,startDate:keywordWindowStart,endDate:keywordWindowEnd});
+      return selectKeywordAnalysisSummary({scopeId,classUid:resolvedKeywordClassUid,startDate:keywordWindowStart,endDate:keywordWindowEnd});
     },
-    enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(keywordClassQuery.data)&&keywordWindowValid,
+    enabled:!isAggregateScope&&!isLrunesDaily&&styleFilter==='rune66'&&Boolean(resolvedKeywordClassUid)&&keywordWindowValid,
   });
   // The original source-classification river must not wait for (or disappear
   // when) a separate keyword-density query runs.
@@ -471,13 +477,13 @@ export default function Culture(){
   // Expanding a Rune group reads only its catalog, not all Galaxy attributes.
   const keywordDetailRequested=Boolean(keywordDrillSource);
   const keywordDensityQuery=useAsyncResource({
-    queryKey:['culture-keyword-attributes',scopeId,keywordWindowStart,keywordWindowEnd,keywordDrillSource,keywordDrillGroup],
+    queryKey:['culture-keyword-attributes',scopeId,resolvedKeywordClassUid,keywordWindowStart,keywordWindowEnd,keywordDrillSource,keywordDrillGroup],
     enabled:styleFilter==='rune66'&&keywordDetailRequested&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView
       &&Boolean(scopeData)&&keywordWindowValid&&Boolean(styleQuery.data?.statisticsEnabled),
     queryFn:async()=>{
       const {readKeywordTreeSummary}=await import('../../loc/db-client.mjs');
       return readKeywordTreeSummary(scopeId,{
-        startDate:keywordWindowStart,endDate:keywordWindowEnd,
+        classUid:resolvedKeywordClassUid,startDate:keywordWindowStart,endDate:keywordWindowEnd,
         source:keywordDrillSource
       });
     },
@@ -511,7 +517,7 @@ export default function Culture(){
     queryFn:async()=>{
       const {readKeywordTreeCatalog}=await import('../../loc/db-client.mjs');
       const {keywordTreeCatalog}=await import('../../loc/keyword-tree-report.mjs');
-      const result=await readKeywordTreeCatalog(scopeId);
+      const result=await readKeywordTreeCatalog(scopeId,{classUid:resolvedKeywordClassUid});
       if(!result.class_uid)return [];
       const catalog=keywordTreeCatalog(result.rows,result.class_uid);
       return (catalog.groups.find(group=>group.uid===keywordDrillGroup)?.items||[])
@@ -1410,7 +1416,7 @@ export default function Culture(){
                         <option value='none'>{l.noStyle}</option>
                         <option value='trace'>痕跡（地點）</option>
                         <option value='rune66'>
-                          {keywordClassQuery.data?keywordClassQuery.data:l.keywordStyle}
+                          {selectedKeywordClass?.name||l.keywordStyle}
                         </option>
                       </select>
                     </label>
@@ -1427,7 +1433,18 @@ export default function Culture(){
                   {riverAnalysis.error?<span className='scope-status scope-error' role='status'>{riverAnalysis.error}</span>:null}
                 </div>
                 {styleFilter==='rune66'?<section className='scope-culture-style-filter'>
-                  <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||keywordClassQuery.data||'尚未設定')}</p>
+                  <p className='loc-eyebrow'>下半河道｜關鍵詞：{String(styleQuery.data?.keywordMeta?.class_name||selectedKeywordClass?.name||'尚未設定')}</p>
+                  {availableKeywordClasses.length>1?<label className='scope-culture-keyword-class-picker'>
+                    <span>關鍵字群組</span>
+                    <select className='scope-select' aria-label='關鍵字群組'
+                      value={resolvedKeywordClassUid} onChange={event=>{
+                        setSelectedKeywordClassUid(event.target.value);
+                        setKeywordDrillSource('');
+                        setKeywordDrillGroup('');
+                      }}>
+                      {availableKeywordClasses.map(item=><option key={item.classUid} value={item.classUid}>{item.name}</option>)}
+                    </select>
+                  </label>:null}
                   <div className='scope-stat-controls'>
                     {keywordDrillGroup?<button type='button' className='loc-button' onClick={()=>setKeywordDrillGroup('')}>← 返回群組總覽</button>
                       :keywordDrillSource?<button type='button' className='loc-button' onClick={()=>setKeywordDrillSource('')}>← 返回全部來源</button>:null}

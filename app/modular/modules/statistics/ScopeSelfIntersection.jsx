@@ -70,7 +70,7 @@ function canonicalBucket(day,unit){
   }
   return {key:day,from:day,to:day};
 }
-export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
+export default function ScopeSelfIntersection({scope,range,classUid='',zoomLevel=0,onZoomLevelChange,sharedCatalog=null}){
   useUiSection('uiExtra.selfIntersection');
   useUiSection('uiExtra.statisticsView');
   const {locale,copy}=useUiLocale();
@@ -119,11 +119,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   };
   // Read the already-stored keyword summary only when this panel is expanded.
   const keywords=useAsyncResource({
-    queryKey:['own-scope-keyword-summary',scope?.id,start,end],
+    queryKey:['own-scope-keyword-summary',scope?.id,classUid,start,end],
     enabled:valid,
     queryFn:async()=>{
       const {selectKeywordAnalysisSummary}=await import('../../../loc/keyword-analysis');
-      return selectKeywordAnalysisSummary({scopeId:scope.id,startDate:start,endDate:end});
+      return selectKeywordAnalysisSummary({scopeId:scope.id,classUid,startDate:start,endDate:end});
     }
   });
   const keywordTabAvailable=Boolean(keywords.data?.statisticsEnabled&&
@@ -152,15 +152,15 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     queryFn:async()=>{
       const {readKeywordTreeCatalog}=await import('../../../loc/db-client.mjs');
       const {keywordTreeCatalog}=await import('../../../loc/keyword-tree-report.mjs');
-      const result=await readKeywordTreeCatalog(scope.id);
+      const result=await readKeywordTreeCatalog(scope.id,{classUid:keywords.data.keywordMeta.class_uid});
       if(!result.class_uid)return [];
       return keywordTreeCatalog(result.rows,result.class_uid).groups.flatMap(group=>
         group.items.map(item=>({uid:item.uid,group_uid:group.uid,class_group:group.name})));
     }
   });
   const keywordItemGroup=useMemo(()=>new Map((keywordCatalog.data||[])
-    .filter(item=>item.class_enable!==false&&String(item.class_group||'').trim())
-    .map(item=>[String(item.uid),String(item.class_group).trim()])),
+    .filter(item=>item.class_enable!==false&&String(item.group_uid||''))
+    .map(item=>[String(item.uid),String(item.group_uid)])),
   [keywordCatalog.data]);
   const categoryList=useMemo(()=>{
     const known=catalog.data?.categories||[],aliases=catalog.data?.aliases||[];
@@ -183,12 +183,12 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
     const keywordItems=(analysis?.runeTotals||[])
       .filter(row=>Number(row.document_count||0)>0)
       .map(row=>({id:metricId('keyword_item',row.uid),kind:'keyword_item',
-        group:keywordItemGroup.get(String(row.uid))||'',
+        group_uid:keywordItemGroup.get(String(row.uid))||'',
         name:String(row.label||row.uid),total:Number(row.document_count)||0}));
     const keywordGroupsItems=keywordGroups.filter(group=>
-      keywordItems.some(item=>item.group===group.group))
+      keywordItems.some(item=>item.group_uid===group.uid))
       .map(group=>({id:metricId('keyword_group_items',group.uid),
-        kind:'keyword_group_items',group:group.group,name:'群組內關鍵詞',total:0}));
+        kind:'keyword_group_items',group_uid:group.uid,name:'群組內關鍵詞',total:0}));
     const keywordAll=keywordTabAvailable?[{
       id:metricId('keyword_all','all'),kind:'keyword_all',
       name:'全部關鍵詞',total:0
@@ -251,11 +251,11 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
   // Item-by-day data are not in the summary RPC. Load saved attributes only
   // when an item is actually selected, without reading or analyzing article bodies.
   const keywordItems=useAsyncResource({
-    queryKey:['own-scope-keyword-item-days',scope?.id,start,end],
+    queryKey:['own-scope-keyword-item-days',scope?.id,classUid,start,end],
     enabled:valid&&keywordModeActive&&selectedKeywordItems,
     queryFn:async()=>{
       const {readKeywordTreeSummary}=await import('../../../loc/db-client.mjs');
-      return readKeywordTreeSummary(scope.id,{startDate:start,endDate:end});
+      return readKeywordTreeSummary(scope.id,{classUid:keywords.data?.keywordMeta?.class_uid||classUid,startDate:start,endDate:end});
     }
   });
   const unit=['month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
@@ -385,7 +385,7 @@ export default function ScopeSelfIntersection({scope,range,zoomLevel=0,onZoomLev
             const groupTabs=categoryList.filter(item=>item.kind==='keyword_group')
               .map(group=>({name:group.name,item:group,
                 items:categoryList.filter(item=>
-                  (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group===group.group)}));
+                  (item.kind==='keyword_group_items'||item.kind==='keyword_item')&&item.group_uid===group.uid)}));
             const allKeywords=categoryList.find(item=>item.kind==='keyword_all');
             const groups=comparisonMetricGroups(kind,{
               source:sourceGroups,
