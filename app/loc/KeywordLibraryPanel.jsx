@@ -154,8 +154,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         const parent=tree.index.get(pendingParent);
         const expected=TYPES[TYPES.indexOf(node.type)-1];
         if(!parent||parent.type!==expected)throw new Error('缺少上層 UID');
-        if(childrenOf(tree,parent.uid).some(sibling=>sibling.name===node.name))
-          throw new Error('同一上層不能有重複名稱');
         await writeKeywordLibraryItem(scopeId,'insert',node);
         try{await writeKeywordLibraryItem(scopeId,'update',{
           ...parent,lists:[...parent.lists,node.uid]
@@ -166,8 +164,6 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         await markStale(parent.uid);
       }else{
         const parent=parentOf(tree,node.uid);
-        if(parent&&childrenOf(tree,parent.uid).some(sibling=>sibling.uid!==node.uid&&sibling.name===node.name))
-          throw new Error('同一上層不能有重複名稱');
         await writeKeywordLibraryItem(scopeId,isNew?'insert':'update',node);
         await markStale(node.uid);
       }
@@ -249,7 +245,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     finally{setBusy(false);}
   };
   const copyClass=async()=>{
-    const from=activeClass?.name,to=copyName.trim();
+    const from=activeClass?.uid,to=copyName.trim();
     if(!from||!to)return;
     setBusy(true);setError('');
     try{
@@ -281,7 +277,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const graphItems=selectedClass?descendantsOfKeyword(rows,selectedClass.uid,{type:'item'}).map(node=>{
     const group=parentOf(tree,node.uid);
     return {keyword_id:node.uid,item_name:node.name,keywords:node.lists,
-      class_group:group?.name||'',class_name:selectedClass.name};
+      group_uid:group?.uid||'',class_group:group?.name||'',class_name:selectedClass.name};
   }):[];
   return <div className="scope-keyword-management">
     <div className="scope-stat-controls">
@@ -373,16 +369,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     {!loading&&workspace==='network'?<section className="loc-card scope-feature-card">
       <h2>關聯圖</h2>
       {graphItems.length?<KeywordNetworkEditor items={graphItems} className={selectedClass?.name||''}
-        classUid={selectedClass?.uid||''} selectedId={chosen.item}
-        onSelectItem={item=>{choose('item',String(item.keyword_id));edit(tree.index.get(String(item.keyword_id)));setWorkspace('manual');}}
-        onNewItem={groupName=>{const group=groups.find(row=>row.name===groupName);if(group){create('item',group.uid);setWorkspace('manual');}}}
+        classId={selectedClass?.uid||''} selectedId={chosen.item}
+        onSelectItem={item=>{setChosen(prev=>({...prev,category:chosen.category,class:selectedClass?.uid||'',group:item.group_uid,item:String(item.keyword_id)}));edit(tree.index.get(String(item.keyword_id)));setWorkspace('manual');}}
+        onNewItem={groupUid=>{const group=groups.find(row=>row.uid===groupUid);if(group){create('item',group.uid);setWorkspace('manual');}}}
         onDeleteItem={item=>removeNode(tree.index.get(String(item.keyword_id)))}
         onDeleteKeyword={async(item,word)=>{
           const original=tree.index.get(String(item.keyword_id));
           await writeKeywordLibraryItem(scopeId,'update',{...original,lists:original.lists.filter(x=>x!==word)});
           await markStale(original.uid);await load(original.uid);await invalidate();
         }}
-        onDeleteGroup={name=>{const group=groups.find(row=>row.name===name);if(group)removeNode(group);}}
+        onDeleteGroup={uid=>{const group=groups.find(row=>row.uid===uid);if(group)removeNode(group);}}
         onMessage={setNotice}
       />:<p className="scope-status">請先建立關鍵字群組、關鍵字分類與關鍵字。</p>}
     </section>:null}

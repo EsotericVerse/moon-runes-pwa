@@ -93,12 +93,7 @@ export function rebuildKeywordUidLists(rows,classUid,classifications=[]){
   if(!root||root.type!=='class')throw new Error('Class UID is required');
   const {catalog}=keywordClassCatalog(rows,classUid);
   const itemByUid=new Map(catalog.map(item=>[item.uid,item]));
-  const groupByName=new Map();
-  for(const gid of root.lists){
-    const group=tree.index.get(gid);
-    if(groupByName.has(group.name))throw new Error('Group names must be unique within a Class for classification');
-    groupByName.set(group.name,group);
-  }
+  const groupByUid=new Map(root.lists.map(uid=>[uid,tree.index.get(uid)]));
   const perItem=new Map(catalog.map(item=>[item.uid,new Map()]));
   const perGroup=new Map(root.lists.map(uid=>[uid,new Set()]));
   const seen=new Set();
@@ -114,10 +109,10 @@ export function rebuildKeywordUidLists(rows,classUid,classifications=[]){
       used.add(itemUid);
       perItem.get(itemUid).set(uid,hit.times);
     }
-    const chosen=String(result.classification_group||'');
+    const chosen=String(result.group_uid||result.classification_group||'');
     if(chosen){
-      const group=groupByName.get(chosen);
-      if(!group)throw new Error('Analysis returned an unknown Group');
+      const group=groupByUid.get(chosen);
+      if(!group)throw new Error('Analysis returned an unknown Group UID');
       perGroup.get(group.uid).add(uid);
     }
   }

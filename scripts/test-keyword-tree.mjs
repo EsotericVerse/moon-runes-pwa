@@ -20,8 +20,8 @@ test('Anchor-like UID recursion resolves all four types, no IDs or fixed cardina
 });
 test('Class UID lists stays empty; Group and Item use same field differently',()=>{
  const updated=rebuildKeywordUidLists(rows,'C0a1',[
-  {uid:'Ab12Cd34',classification_group:'靈魂',hits:[{uid:'I001',times:3}]},
-  {uid:'aB12Cd34',classification_group:'靈魂',hits:[{uid:'I001',times:2},{uid:'I002',times:1}]}
+  {uid:'Ab12Cd34',classification_group:'G001',hits:[{uid:'I001',times:3}]},
+  {uid:'aB12Cd34',classification_group:'G001',hits:[{uid:'I001',times:2},{uid:'I002',times:1}]}
  ]);
  const group=updated.find(row=>row.uid==='G001'),cl=updated.find(row=>row.uid==='C0a1'),item=updated.find(row=>row.uid==='I001');
  assert.deepEqual(group.uid_lists,['Ab12Cd34','aB12Cd34']);
@@ -33,4 +33,30 @@ test('Rejects broken UID links, duplicate parents and misleading name references
  assert.throws(()=>indexKeywordTree([...rows.slice(0,1),{...rows[1],lists:['I001']},...rows.slice(2)]),/hierarchy/);
  assert.throws(()=>indexKeywordTree([...rows,{uid:'S0p2',type:'category',name:'Other',lists:['C0a1']}]),/multiple parents/);
  assert.throws(()=>indexKeywordTree([...rows,{uid:'G002',type:'group',name:'Alt',lists:['靈']}]),/UID/);
+});
+
+test('same display name is allowed across Classes and Groups, all membership follows UID',()=>{
+ const shared=[
+  {uid:'CAT2',type:'category',name:'總稱',lists:['CL11','CL22']},
+  {uid:'CL11',type:'class',name:'符文66',lists:['GR11','GR12']},
+  {uid:'CL22',type:'class',name:'符文24',lists:['GR22']},
+  {uid:'GR11',type:'group',name:'靈魂組',lists:['IT11']},
+  {uid:'GR12',type:'group',name:'靈魂組',lists:['IT12']},
+  {uid:'GR22',type:'group',name:'靈魂組',lists:['IT22']},
+  {uid:'IT11',type:'item',name:'靈之符文',lists:['潛意識']},
+  {uid:'IT12',type:'item',name:'靈之符文',lists:['情緒']},
+  {uid:'IT22',type:'item',name:'靈之符文',lists:['信念']}
+ ];
+ const tree=indexKeywordTree(shared);
+ assert.equal(tree.index.size,9);
+ assert.deepEqual(keywordClassCatalog(shared,'CL11').catalog.map(row=>row.group_uid),['GR11','GR12']);
+ assert.deepEqual(keywordClassCatalog(shared,'CL22').catalog.map(row=>row.group_uid),['GR22']);
+ const updated=rebuildKeywordUidLists(shared,'CL11',[
+  {uid:'Ab12Cd34',classification_group:'GR12',hits:[{uid:'IT12',times:1}]}
+ ]);
+ assert.deepEqual(updated.find(row=>row.uid==='GR11').uid_lists,[]);
+ assert.deepEqual(updated.find(row=>row.uid==='GR12').uid_lists,['Ab12Cd34']);
+ assert.throws(()=>rebuildKeywordUidLists(shared,'CL11',[
+  {uid:'Ab12Cd34',classification_group:'靈魂組',hits:[]}
+ ]),/Group UID/);
 });

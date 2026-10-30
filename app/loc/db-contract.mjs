@@ -354,20 +354,18 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return {uid:normalized.uid,count:1};
   }
 
-  async function copyKeywordLibraryClass(scopeId,sourceClassName,targetClassName){
-    const scope=normalizeScopeId(scopeId),source=String(sourceClassName||'').trim(),
+  async function copyKeywordLibraryClass(scopeId,sourceClassUid,targetClassName){
+    const scope=normalizeScopeId(scopeId),source=String(sourceClassUid||''),
       target=String(targetClassName||'').trim();
-    if(!source||!target||source===target)throw new Error('Keywords Class 名稱不正確');
+    if(!/^[0-9A-Za-z]{4}$/.test(source)||!target)throw new Error('Keywords Class 識別或名稱不正確');
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
     const data=await readOwnedKeywordNodes(table);
     const {indexKeywordTree,descendantsOfKeyword}=await import('./keyword-tree.mjs');
     const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
     const tree=indexKeywordTree(data);
-    const original=[...tree.index.values()].find(row=>row.type==='class'&&row.name===source);
-    if(!original)throw new Error('找不到來源 Class');
-    if([...tree.index.values()].some(row=>row.type==='class'&&row.name===target))
-      throw new Error('Class 名稱已存在');
+    const original=tree.index.get(source);
+    if(!original||original.type!=='class')throw new Error('找不到來源 Class');
     const categoryUid=tree.parent.get(original.uid);
     if(!categoryUid)throw new Error('Class 缺少 Category');
     const category=tree.index.get(categoryUid),descendants=descendantsOfKeyword(data,original.uid);
@@ -403,10 +401,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data===true;
   }
 
-  async function copyRune66KeywordClassUnchecked(scopeId){
+  async function copyRune66KeywordClassUnchecked(scopeId,sourceClassUid){
     const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
     const uid=generateKeywordClassUid();
-    return copyKeywordLibraryClass(scopeId,'符文66','符文66副本-'+uid);
+    return copyKeywordLibraryClass(scopeId,sourceClassUid,'符文66副本-'+uid);
   }
 
   async function moveScopeBlockUnchecked(scopeId,pageName,uid,direction){

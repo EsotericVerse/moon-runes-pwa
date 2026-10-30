@@ -129,19 +129,22 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       event.phase==='reading'?'已重新判斷 '+done+' 篇文章':
       event.phase==='writing'?'已更新 '+done+' / '+total+' 筆 Keywords':'分析已完成');
   };
+  let lastArticleUid='';
   const result=await reanalyzeKeywordClass({
     classUid,treeRows,minChars,pageSize:KEYWORD_CLASSIFICATION_BATCH_SIZE,
-    readPage:async ({offset,limit})=>{
-      // An owner-triggered full reanalysis must see the owner's eligible
-      // articles, including private ones. Anonymous public reads omit them.
-      const {data,error}=await dbAuthRelation(scope.galaxy)
+    readPage:async ({limit})=>{
+      // Read each UID exactly once via its existing primary-key index.
+      // Offset pagination over a repeatedly sorted Galaxy is too expensive.
+      let query=dbAuthRelation(scope.galaxy)
         .select('uid,content,searchable')
         .eq('statistics_able',true)
-        .order('createtime',{ascending:true})
-        .order('uid',{ascending:true})
-        .range(offset,offset+limit-1);
+        .order('uid',{ascending:true}).limit(limit);
+      if(lastArticleUid)query=query.gt('uid',lastArticleUid);
+      const {data,error}=await query;
       if(error)throw new Error(error.message||'Galaxy 分頁讀取失敗');
-      return data||[];
+      const page=data||[];
+      if(page.length)lastArticleUid=page[page.length-1].uid;
+      return page;
     },
     writeNode:async ({uid,uid_lists})=>{
       const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists})

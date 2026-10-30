@@ -3,9 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 
 function graphOriginGroup(items=[]){
-  const groups=[...new Set(items.map(row=>String(row.class_group||'').trim()).filter(Boolean))];
-  // Use the existing Keyword Class groups, not a LunaRunes-specific schema.
-  return groups.includes('特殊')?'特殊':(groups[0]||'');
+  return String(items.find(row=>row.group_uid)?.group_uid||'');
 }
 
 function buildGraph(items=[],className='',classId='',expandedGroup='',expandedItemId=''){
@@ -17,20 +15,19 @@ function buildGraph(items=[],className='',classId='',expandedGroup='',expandedIt
   nodes.push({id:rootId,label:className?'關鍵詞組：'+className:'關鍵詞組',level:0,kind:'class',shape:'ellipse'});
   meta.set(rootId,{kind:'class',className,classId});
 
-  const groups=[...new Set(rows.map(row=>String(row.class_group||'').trim()).filter(Boolean))];
-  groups.forEach((group,index)=>{
-    const id='group:'+group;
-    nodes.push({id,label:[className,group,'群組'].filter(Boolean).join(' '),level:1,kind:'group',shape:'box'});
+  const groups=new Map(rows.filter(row=>row.group_uid).map(row=>[String(row.group_uid),String(row.class_group||'')]));
+  for(const [groupUid,groupName] of groups){
+    const id='group:'+groupUid;
+    nodes.push({id,label:groupName||'未命名分類',level:1,kind:'group',shape:'box'});
     edges.push({id:rootId+'>'+id,from:rootId,to:id});
-    meta.set(id,{kind:'group',group});
-  });
+    meta.set(id,{kind:'group',groupUid});
+  }
 
   // Expand only one Group and one Item at a time; drawing all Keywords at once
   // produces a very large horizontal graph and an unusable canvas.
-  rows.filter(row=>String(row.class_group||'').trim()===expandedGroup).forEach((row,rowIndex)=>{
+  rows.filter(row=>String(row.group_uid||'')===expandedGroup).forEach((row,rowIndex)=>{
     const itemId='item:'+String(row.keyword_id||rowIndex);
-    const group=String(row.class_group||'').trim();
-    const groupId='group:'+group;
+    const groupId='group:'+String(row.group_uid||'');
     nodes.push({
       id:itemId,
       label:String(row.item_name||'未命名'),
@@ -77,7 +74,7 @@ export default function KeywordNetworkEditor({
   useEffect(()=>{
     const row=items.find(item=>String(item.keyword_id)===String(selectedId));
     if(row){
-      setExpandedGroup(String(row.class_group||''));
+      setExpandedGroup(String(row.group_uid||''));
       setExpandedItemId(String(row.keyword_id||''));
     }
   },[selectedId,items]);
@@ -134,16 +131,16 @@ export default function KeywordNetworkEditor({
           editEdge:false,
           addNode:(nodeData,callback)=>{
             const selected=metaOf(selectedNodeRef.current);
-            const group=selected?.kind==='group'
-              ?selected.group
-              :(selected?.kind==='item'||selected?.kind==='keyword')?String(selected.row?.class_group||''):'';
-            handlersRef.current.onNewItem?.(group);
+            const groupUid=selected?.kind==='group'
+              ?selected.groupUid
+              :(selected?.kind==='item'||selected?.kind==='keyword')?String(selected.row?.group_uid||''):'';
+            handlersRef.current.onNewItem?.(groupUid);
             callback(null);
           },
           editNode:(nodeData,callback)=>{
             const meta=metaOf(nodeData?.id);
             selectMeta(meta);
-            if(meta?.kind==='class'||meta?.kind==='group')handlersRef.current.onMessage?.('Class／Group 由圖上的分類項目構成；選取項目後編輯其資料。');
+            if(meta?.kind==='class'||meta?.kind==='group')handlersRef.current.onMessage?.('請在群組對應調整頁編輯名稱與內容。');
             callback(null);
           },
           deleteNode:(selection,callback)=>{
@@ -152,8 +149,8 @@ export default function KeywordNetworkEditor({
             Promise.all(metas.map(meta=>{
               if(meta.kind==='keyword')return handlersRef.current.onDeleteKeyword?.(meta.row,meta.keyword);
               if(meta.kind==='item')return handlersRef.current.onDeleteItem?.(meta.row);
-              if(meta.kind==='group')return handlersRef.current.onDeleteGroup?.(meta.group);
-              handlersRef.current.onMessage?.('Class 本身以 UUID 管理，不從圖上直接刪除。');
+              if(meta.kind==='group')return handlersRef.current.onDeleteGroup?.(meta.groupUid);
+              handlersRef.current.onMessage?.('請在群組對應調整頁管理關鍵字群組。');
               return false;
             })).then(results=>{
               if(results.every(Boolean))callback(selection);
@@ -181,10 +178,10 @@ export default function KeywordNetworkEditor({
         selectedNodeRef.current=id;
         const meta=metaOf(id);
         if(meta?.kind==='group'){
-          setExpandedGroup(meta.group);
+          setExpandedGroup(meta.groupUid);
           setExpandedItemId('');
         }else if(meta?.kind==='item'){
-          setExpandedGroup(String(meta.row?.class_group||''));
+          setExpandedGroup(String(meta.row?.group_uid||''));
           setExpandedItemId(String(meta.row?.keyword_id||''));
         }
         selectMeta(meta);
@@ -224,8 +221,8 @@ export default function KeywordNetworkEditor({
 
   return <section className="scope-keyword-network" aria-label="關鍵詞階層圖">
     <div className="scope-keyword-network-help">
-      <strong>Class → Group → Item → Keyword</strong>
-      <span>以「特殊」群組為預設起點；先選 Group 展開符文 Item，再點 Item 展開關鍵詞。可自由拖曳、縮放與編輯。</span>
+      <strong>關鍵字群組 → 關鍵字分類 → 關鍵字 → 判斷詞</strong>
+      <span>選擇分類展開關鍵字，再點選關鍵字查看判斷詞。可拖曳、縮放與編輯。</span>
     </div>
     <div className="scope-stat-controls" role="group" aria-label="關鍵詞圖譜觸控操作">
       <button type="button" className="loc-button" onClick={()=>{

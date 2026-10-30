@@ -7,7 +7,7 @@ export function classifyKeywordDocumentsByUid(documents=[],treeRows=[],classUid=
   const {catalog}=keywordClassCatalog(treeRows,classUid);
   const slot=new Map(catalog.map((item,i)=>[i+1,item.uid]));
   const temp=catalog.map((item,i)=>({
-    item_no:i+1,item_name:item.item_name,class_group:item.class_group,
+    item_no:i+1,item_name:item.item_name,class_group:item.group_uid,
     keywords:item.keywords,order_no:item.order_no,class_enable:true
   }));
   const outcome=classifyKeywordDocuments(documents,temp);
@@ -30,17 +30,16 @@ export function createKeywordUidGroupResolver(treeRows=[],classUid=''){
   const groups=root.lists.map((uid,order)=>{
     const node=index.get(uid);
     if(!node||node.type!=='group')throw new Error('Broken Group link');
-    return {uid,name:node.name,order,items:node.lists};
+    return {uid,order,items:node.lists};
   });
-  const byName=new Map(groups.map(group=>[group.name,group]));
-  if(byName.size!==groups.length)throw new Error('Duplicate Group name');
+  const byUid=new Map(groups.map(group=>[group.uid,group]));
   const winners=new Map(groups.map(group=>[group.uid,0]));
   const defaultGroups=groups.filter(group=>group.items.some(uid=>index.get(uid)?.name==='德'));
   const defaultGroup=defaultGroups.length===1?defaultGroups[0]:null;
   return {
     resolve(result){
       const candidates=[...new Set(result?.tied_groups||[])]
-        .map(name=>byName.get(name)).filter(Boolean);
+        .map(uid=>byUid.get(uid)).filter(Boolean);
       let chosen=null;
       if(candidates.length>1){
         chosen=[...candidates].sort((a,b)=>
@@ -49,7 +48,7 @@ export function createKeywordUidGroupResolver(treeRows=[],classUid=''){
       }else if(candidates.length===1){
         chosen=candidates[0];
       }else{
-        chosen=byName.get(String(result?.classification_group||''))||defaultGroup;
+        chosen=byUid.get(String(result?.classification_group||''))||defaultGroup;
       }
       if(chosen)winners.set(chosen.uid,winners.get(chosen.uid)+1);
       return chosen?.uid||'';
