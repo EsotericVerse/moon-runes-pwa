@@ -13,6 +13,7 @@ export default {
   "importLinkedComplete": "記事を{articles}件、メディアを{media}件追加し、関連付けを{linked}件更新、{skipped}件をスキップしました。",
   "refreshMediaSuffix": "；メディアを{media}件追加、関連付けを{linked}件更新しました。",
   "importTitle": "データ取り込み",
+  "importProcessingWait": "取り込み・解析中です。しばらくお待ちください…",
   "zipInspecting": "ZIP の内容から提供元を判別中…",
   "zipInspected": "ZIP の検査が完了しました（{count} 項目）。データは取り込んでいません。",
   "zipDetected": "ZIP バックアップの提供元",
