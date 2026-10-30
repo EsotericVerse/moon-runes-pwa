@@ -31,7 +31,8 @@ export function dedupeIncomingImport(records=[]){
     const uid=String(row?.uid||'').trim();
     const second=importDuplicateKey(row);
     // Same second is a candidate, not proof that two different posts are identical.
-    const key=second?JSON.stringify([second,String(row.title||''),String(row.content||'')]):null;
+    const key=second?JSON.stringify([second,String(row.site||''),String(row.site_id||''),
+      String(row.source_id||''),row.source_id?uid:'',String(row.title||''),String(row.content||'')]):null;
     const existing=key?byIdentity.get(key):null;
     if(existing){
       duplicates++;
@@ -52,6 +53,9 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
   return records.every(record=>{
     const saved=matches.get(record.uid);
     if(!saved)return false;
+    if(record.site_id&&!saved.site_id)return false;
+    if(record.source_id&&!saved.source_id)return false;
+    if(record.target_id?.some(id=>!(saved.target_id||[]).includes(id)))return false;
     if(String(saved.title||'')!==String(record.title||'')||
        String(saved.content||'')!==String(record.content||''))return false;
     const incomingUrl=String(record.url||'').trim();
