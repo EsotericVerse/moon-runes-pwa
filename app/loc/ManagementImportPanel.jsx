@@ -829,12 +829,23 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </p>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
     {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
-      <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。經緯度僅用於精確比對；地名及尚未存在的 Trace 地點須人工整理。獨立打卡不會轉成 Galaxy 文章。</p>
+      <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。經緯度僅以完全相同的數值判別；可明確選擇是否用 Facebook 原始地名建立缺少的 Trace 定錨點，日後再整理名稱。獨立打卡不會轉成 Galaxy 文章。</p>
       {geoPlaceCandidates.length?<ul>{geoPlaceCandidates.slice(0,12).map((place,index)=>
         <li key={index}>{place.location||'未提供地名'} · {place.__importCoordinates?
           place.__importCoordinates.latitude+', '+place.__importCoordinates.longitude:'未提供經緯度'}
           {place.placeUrl?' · '+place.placeUrl:''}</li>)}</ul>:null}
       {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">候選資料超過預覽上限，僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
+    </section>:null}
+    {canRestoreAnchors?<section className="scope-import-preview" aria-label="Facebook 原始座標地點重建">
+      <label><input type="checkbox" checked={createMissingAnchors} disabled={busy}
+        onChange={event=>setCreateMissingAnchors(event.target.checked)}/>
+        依 Facebook 原始 place.name 和精確經緯度，建立尚不存在的 Trace 定錨點（需要明確確認；不以 LOC location 名稱推測）
+      </label>
+      <p className="scope-status">不勾選只沿用既有座標相同的定錨點；沒有原始地名或經緯度的紀錄不會自動建立。</p>
+      {!rows.length&&!archiveEvidence.length?<button type="button" className="loc-button primary"
+        disabled={busy||!createMissingAnchors} onClick={saveGeoPlaces}>
+        {busy?'正在核對 Trace 地點…':'只匯入獨立打卡地點至 Trace（不新增文章）'}
+      </button>:null}
     </section>:null}
     {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
       <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
