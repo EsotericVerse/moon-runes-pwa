@@ -6,7 +6,7 @@ const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
 // Aggregate one page at a time. Memory scales with the actual stored Keyword
 // hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
-  classUid,treeRows=[],minChars=0,pageSize=200,expectedCount=null,readPage,writeNode,finalize,
+  classUid,treeRows=[],minChars=0,pageSize=1000,expectedCount=null,readPage,writeNode,finalize,
   onProgress=()=>{}
 }={}){
   if(typeof readPage!=='function'||typeof writeNode!=='function'||typeof finalize!=='function')
