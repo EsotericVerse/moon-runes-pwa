@@ -1,3 +1,18 @@
+test('empty site never creates a timestamp pool and social articles use random IDs',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const before=panel.indexOf('const distinctSites=[...new Set(analyzed.valid.map(');
+  const oldRows=panel.indexOf('const oldRows=analyzed.valid.filter(');
+  const incoming=panel.indexOf('const incoming={');
+  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  assert.ok(before>=0&&before<oldRows&&oldRows<incoming&&incoming<match);
+  assert.match(panel,/oldRows\.length\?dedupeIncomingImport\(oldRows\)/);
+  assert.match(panel,/const existingCandidates=deduped\.unique;/);
+  assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt/);
+  assert.match(panel,/remapArchiveArticleUids\(\s*linked\.map\(entry=>entry\.row\),createUid8,issuedArticleUids\)/);
+  assert.doesNotMatch(panel,/facebookBackupImportUid\(row\)/);
+  assert.doesNotMatch(panel,/facebookArchiveUid\(stableThreadsKey\)/);
+});
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
