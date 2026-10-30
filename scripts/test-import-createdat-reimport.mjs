@@ -177,6 +177,18 @@ test('ID-less records without a valid timestamp cannot be matched',async()=>{
   });
   assert.equal(matches.size,0);
 });
+test('an empty site bypasses timestamp matching before any candidate reads',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const siteProbe=panel.indexOf('const distinctSites=[...new Set(unique.map(');
+  const pool=panel.indexOf('const existingCandidates=unique.filter(');
+  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  assert.ok(siteProbe>0&&siteProbe<pool&&pool<match);
+  assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt\(existingCandidates,/);
+  assert.match(panel,/:new Map\(\)/);
+  assert.match(panel,/\.select\('uid'\)\.eq\('site',site\)\.limit\(1\)/);
+  assert.doesNotMatch(panel,/changes\.site_id=record\.site_id/);
+  assert.match(panel,/await updateRows\(galaxy,\{site_id:record\.site_id\}/);
+});
 test('native site_id lookups are grouped by platform before database reads',async()=>{
   const rows=[post('NEW00001','Facebook','same-id'),post('NEW00002','Threads','same-id')];
   const sites=[];
