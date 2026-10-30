@@ -9,6 +9,9 @@ import {facebookBackupPlace,facebookBackupPostText,
 import {detectZipArchiveSource,inspectPrivateArchive}
   from '../app/loc/private-archive-universal.mjs';
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
+import {archiveGalaxyRows} from '../app/loc/archive-caption-rows.mjs';
+import {dedupeIncomingImport,isUnchangedImportBeforeWrite} from '../app/loc/import-duplicate-check.mjs';
+import {prepareImportPlaceAnchors,importedPlaceId} from '../app/loc/import-place-anchors.mjs';
 import {extractFacebookGeoObjects,facebookPostCoordinate} from '../app/loc/archive-geo-objects.mjs';
 import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from '../app/loc/import-batch.mjs';
 import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
@@ -108,6 +111,47 @@ test('photo EXIF GPS alone cannot become a Facebook check-in point',()=>{
  const mapped=archiveGalaxyRow({platform:'facebook',kind:'post',key:'fb:exif-only',
    text:'相片',raw,createdAt:'2024-07-03T09:46:40.000Z'});
  assert.equal(mapped.__importCoordinates,undefined);
+});
+
+test('real Facebook ZIP to Galaxy to exact Trace anchor is repeatable without duplicate writes',async()=>{
+ const point={latitude:25.05338,longitude:121.49086};
+ const rows=[
+   {timestamp:1720000000,data:[{post:'第一篇'}],attachments:[{data:[{
+     place:{name:'原始地點 A',coordinate:point}
+   }]}]},
+   {timestamp:1720000060,data:[{post:'第二篇'}],attachments:[{data:[{
+     place:{name:'原始地點 B',coordinate:point}
+   }]}]},
+   {timestamp:1720000120,data:[{post:'第三篇'}],attachments:[{data:[{
+     place:{name:'不同座標',coordinate:{latitude:25.05339,longitude:121.49086}}
+   }]}]}
+ ];
+ const zipped=zipSync({'your_facebook_activity/posts/your_posts_1.json':strToU8(JSON.stringify(rows))});
+ const articles=[];
+ await inspectPrivateArchive(asFile('fb-reimport.zip',zipped),{
+   onRecord:record=>articles.push(...archiveGalaxyRows(record).map(item=>item.row))
+ });
+ assert.equal(articles.length,3);
+ assert.equal(dedupeIncomingImport(articles).unique.length,3);
+ let inserted=0;
+ const relation=table=>{
+   assert.equal(table,'silver.lo3rwang_trace');
+   return {
+     select:()=>({eq:()=>({order:()=>({range:async()=>({
+       data:[{uid:'AB12',title:'人工整理的名稱',address:[121.49086,25.05338]}],error:null
+     })})})}),
+     insert:()=>{inserted++;throw Error('不得自動新增 Trace 地點');}
+   };
+ };
+ const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation});
+ assert.equal(resolved.reused,1);
+ assert.equal(resolved.unmatchedCoordinates,1);
+ assert.equal(inserted,0);
+ assert.equal(importedPlaceId({incoming:articles[0],byCoordinate:resolved.byCoordinate}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[1],byCoordinate:resolved.byCoordinate}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[2],byCoordinate:resolved.byCoordinate}),null);
+ const saved=new Map(articles.slice(0,2).map(row=>[row.uid,{...row,place_id:'AB12'}]));
+ assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),true);
 });
 
 test('Facebook post coordinates survive without a LOC location string',async()=>{
