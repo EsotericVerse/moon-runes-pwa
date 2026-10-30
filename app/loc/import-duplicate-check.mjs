@@ -4,7 +4,7 @@ import {importGeoKey} from './import-geocoordinates.mjs';
 // UTC creation time AND exact body; a timestamp alone is never an identity.
 export function comparableImportText(value){
   return String(value??'').normalize('NFKC')
-    .replace(/[\\p{P}\\p{S}\\p{Z}\\s\\u200B-\\u200D\\uFEFF\\u2060]/gu,'')
+    .replace(/[\p{P}\p{S}\p{Z}\s\u200B-\u200D\uFEFF\u2060]/gu,'')
     .toLocaleLowerCase('und');
 }
 const importSourceKey=record=>{
@@ -15,7 +15,7 @@ const importSourceKey=record=>{
 const importTimeContentKey=record=>{
   const site=String(record?.site??'').trim().toLocaleLowerCase('und');
   const date=Date.parse(String(record?.createtime??''));
-  const body=String(record?.content??'').normalize('NFC').replace(/\\r\\n?/g,'\\n').trim();
+  const body=String(record?.content??'').normalize('NFC').replace(/\r\n?/g,'\n').trim();
   return site&&Number.isFinite(date)&&body?
     JSON.stringify([site,new Date(date).toISOString(),body]):null;
 };
