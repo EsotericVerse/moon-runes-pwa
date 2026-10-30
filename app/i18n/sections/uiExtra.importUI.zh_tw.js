@@ -14,6 +14,7 @@ export default {
   "refreshMediaSuffix": "；媒體新增 {media} 筆；關聯更新 {linked} 筆。",
   "importTitle": "資料匯入",
   "importProcessingWait": "匯入進行／解析中，請稍後…",
+  "importEstimatedMinutes": "預估匯入時間：約 {min}–{max} 分鐘（依已解析資料量粗估；實際時間受網路與資料庫速度影響）。",
   "zipInspecting": "正在辨識 ZIP 內容…",
   "zipInspected": "ZIP 檢查完成，共 {count} 個項目；尚未匯入任何資料。",
   "zipDetected": "ZIP 備份來源",
