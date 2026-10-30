@@ -128,3 +128,34 @@ test('duplicate Group labels resolve to distinct UID hit lists during reanalysis
  assert.deepEqual(saved.find(row=>row.uid==='GR02').uid_lists,['Ab12Cd34']);
  assert.equal(stats.matchedDocuments,1);
 });
+
+test('server-capped short pages continue until an empty page, not an offset boundary',async()=>{
+ const docs=Array.from({length:7},(_,i)=>({
+   uid:'Ab'+String(i+1).padStart(6,'0'),content:'心情'
+ }));
+ const calls=[],saved=[];
+ const stats=await reanalyzeKeywordClass({
+   classUid:'CL01',treeRows:source,pageSize:10,expectedCount:7,
+   readPage:async({offset,limit})=>{
+     calls.push({offset,limit});
+     return docs.slice(offset,offset+2);
+   },
+   writeNode:async value=>saved.push(value),finalize:async()=>{}
+ });
+ assert.deepEqual(calls.map(call=>call.offset),[0,2,4,6,7]);
+ assert.equal(stats.analyzedDocuments,7);
+ assert.equal(stats.matchedDocuments,7);
+ assert.equal(saved.find(x=>x.uid==='GR01').uid_lists.length,7);
+});
+
+test('incomplete COUNT or changed data never writes partial Keyword results',async()=>{
+ let writes=0,finalized=false;
+ await assert.rejects(reanalyzeKeywordClass({
+   classUid:'CL01',treeRows:source,pageSize:200,expectedCount:3,
+   readPage:async({offset})=>offset?[]:[{uid:'Ab000001',content:'心情'}],
+   writeNode:async()=>{writes++},
+   finalize:async()=>{finalized=true}
+ }),/Galaxy 分頁筆數不一致/);
+ assert.equal(writes,0);
+ assert.equal(finalized,false);
+});
