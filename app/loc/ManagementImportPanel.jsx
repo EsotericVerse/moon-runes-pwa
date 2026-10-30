@@ -836,7 +836,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <option value="month">近一月</option>
       </select>
     </label>
-    <p className="scope-status">第一次匯入完整舊資料可選「全部的時間」；後續定期更新建議使用預設「近一年」，或更短區間，縮小比對池與寫入量。比對先限定同一網站，再使用發文時間；site_id 有值就保存，沒有也能匯入。超出範圍的文章不會寫入，限時匯入也不寫入無日期的文章與未關聯媒體。</p>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
@@ -906,7 +905,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     {missingSiteIdCount>0?<p className="scope-status" role="status">
        Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
-     {timeWindow?<p className="scope-status" role="status">已設定時間範圍：{timeWindow.start.slice(0,10)} 至 {timeWindow.end.slice(0,10)}（UTC）。來源文章／媒體排除 {analyzed.skippedByRange.toLocaleString()} 筆，其中 {analyzed.undatedByRange.toLocaleString()} 筆沒有可辨識的發文時間；排除項目不會寫入。只比對同網站、區間內的既有文章。</p>:null}
      {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
       <div>
         <h3>{t('uiExtra.importUI.saveSection')}</h3>
