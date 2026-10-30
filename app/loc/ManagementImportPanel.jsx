@@ -20,7 +20,7 @@ import {createUid8} from './uid';
 import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp,facebookBackupImportUid} from './facebook-backup-place.mjs';
 import {archiveGalaxyRow} from './archive-galaxy-row.mjs';
 import {facebookArchiveUid} from './facebook-backup-place.mjs';
-import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,matchMissingSiteImports,insertImportBatches} from './import-duplicate-check.mjs';
+import {comparableImportText,dedupeIncomingImport,matchExistingImportByCreatedAt,matchExistingWithoutCreatedAt,insertImportBatches} from './import-duplicate-check.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId} from './import-place-anchors.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
@@ -440,40 +440,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
-        readSeconds:async(source,seconds)=>{
-          const or=seconds.map(second=>{
-            const from=new Date(second*1000).toISOString();
-            const to=new Date((second+1)*1000).toISOString();
-            return 'and(createtime.gte.'+from+',createtime.lt.'+to+')';
-          }).join(',');
+        readTimestamps:async timestamps=>{
           const collected=[];
-          for(let start=0;;){
-            const relation=dbAuthRelation(galaxy)
-              .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'})
-              .ilike('site',source);
-            // PostgREST executes one bounded OR query for 24 exact seconds.
-            // Local adapters without .or use one bounded second at a time.
-            if(typeof relation.or!=='function'){
-              for(const second of seconds){
-                for(let offset=0;;){
-                  const from=new Date(second*1000).toISOString();
-                  const to=new Date((second+1)*1000).toISOString();
-                  const {data,error,count}=await dbAuthRelation(galaxy)
-                    .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'}).ilike('site',source)
-                    .gte('createtime',from).lt('createtime',to).range(offset,offset+MAX_ROWS-1);
-                  if(error)throw new Error('重複文章比對失敗：'+error.message);
-                  collected.push(...(data||[]));
-                  offset+=(data||[]).length;
-                  if(!(data||[]).length||(count!=null&&offset>=Number(count)))break;
-                }
-              }
-              return collected;
+          // TIMESTAMPTZ equality, not a time range or a site query.
+          for(const batch of urlSafeInBatches(timestamps.map(ms=>new Date(ms).toISOString()),'createtime')){
+            for(let offset=0;;){
+              const {data,error}=await dbAuthRelation(galaxy)
+                .select('uid,site,createtime,content,title,location,place_id,url')
+                .in('createtime',batch).order('uid',{ascending:true})
+                .range(offset,offset+MAX_ROWS-1);
+              if(error)throw new Error('重複文章比對失敗：'+error.message);
+              const page=data||[];
+              collected.push(...page);
+              offset+=page.length;
+              if(page.length<MAX_ROWS)break;
             }
-            const {data,error,count}=await relation.or(or).order('uid',{ascending:true}).range(start,start+MAX_ROWS-1);
-            if(error)throw new Error('重複文章比對失敗：'+error.message);
-            collected.push(...(data||[]));
-            start+=(data||[]).length;
-            if(!(data||[]).length||(count!=null&&start>=Number(count)))break;
           }
           return collected;
         }
@@ -483,10 +464,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // metadata, not blindly INSERT another null-time copy.
       const missingTime=unique.filter(record=>!existingByCreatedAt.has(record.uid)&&
         (record.createtime==null||record.createtime==='')&&
-        String(record.site||'').trim()&&String(record.content||'').trim());
+        String(record.content||'').trim());
       if(missingTime.length){
         const matched=await matchExistingWithoutCreatedAt(missingTime,{
-          readContents:async(source,contents)=>{
+          readContents:async contents=>{
             const collected=[];
             // Bound GET URLs. An exceptionally long text is still importable,
             // even when its exact-content lookup exceeds REST URL limits.
@@ -498,7 +479,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
               for(let offset=0;;){
                 const {data,error,count}=await dbAuthRelation(galaxy)
                   .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date',{count:'exact'})
-                  .ilike('site',source).in('content',batch)
+                  .in('content',batch)
                   .order('uid',{ascending:true}).range(offset,offset+MAX_ROWS-1);
                 if(error)throw new Error('無時間文章比對失敗：'+error.message);
                 const rows=data||[];
@@ -511,37 +492,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         });
         for(const [newUid,existing] of matched)existingByCreatedAt.set(newUid,existing);
-      }
-      // Older imports sometimes have no site. Timestamp alone is not enough
-      // to infer an author/platform: require identical normalized content and
-      // an unambiguous matching row before repairing that missing site.
-      const unmatchedWithTime=unique.filter(record=>!existingByCreatedAt.has(record.uid)&&
-        String(record.site||'').trim()&&record.createtime&&Number.isFinite(Date.parse(record.createtime)));
-      if(unmatchedWithTime.length){
-        let earliest=Infinity,latest=-Infinity;
-        for(const record of unmatchedWithTime){
-          const ms=Date.parse(record.createtime);
-          earliest=Math.min(earliest,ms);latest=Math.max(latest,ms);
-        }
-        const from=new Date(Math.floor(earliest/1000)*1000).toISOString();
-        const through=new Date((Math.floor(latest/1000)+1)*1000).toISOString();
-        const unknownSiteRows=[];
-        for(const [method,term] of [['is',null],['eq','']]){
-          for(let offset=0;;){
-            const {data,error,count}=await dbAuthRelation(galaxy)
-              .select('uid,site,createtime,content,title,location,place_id,url',{count:'exact'})
-              .gte('createtime',from).lt('createtime',through)
-              [method]('site',term).order('uid',{ascending:true})
-              .range(offset,offset+MAX_ROWS-1);
-            if(error)throw new Error('補寫空白 site 的比對失敗：'+error.message);
-            const page=data||[];
-            unknownSiteRows.push(...page);
-            offset+=page.length;
-            if(!page.length||(count!=null&&offset>=Number(count))||page.length<MAX_ROWS)break;
-          }
-        }
-        const missingSiteMatches=matchMissingSiteImports(unmatchedWithTime,unknownSiteRows,existingByCreatedAt);
-        for(const [newUid,existing] of missingSiteMatches)existingByCreatedAt.set(newUid,existing);
       }
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
