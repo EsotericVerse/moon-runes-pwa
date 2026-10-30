@@ -218,7 +218,7 @@ BEGIN
          jsonb_build_object(current_keyword_class_uid::text,true))
      WHERE id=$1 AND keyword_class_share_enabled IS TRUE
        AND current_keyword_class_uid IS NOT NULL
-       AND NOT (coalesce(keyword_meta,'{}'::jsonb)->'class_shares' ? current_keyword_class_uid)
+       AND NOT (coalesce(keyword_meta->'class_shares','{}'::jsonb) ? current_keyword_class_uid)
    $query$,config_relation) USING rec.id;
  END LOOP;
 END
