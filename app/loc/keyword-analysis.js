@@ -165,11 +165,9 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       if(error||data?.length!==1)throw new Error('Keywords.uid_lists 儲存失敗：'+uid+' '+(error?.message||''));
     },
     finalize:async counts=>{
-      const classes=Object.fromEntries(catalog.groups.map(group=>[group.uid,group.name]));
-      const items=Object.fromEntries(catalog.groups.flatMap(group=>group.items.map(item=>[item.uid,item.name])));
-      const meta={class_uid:classUid,class_name:catalog.name,classes,items,
-        analyzedDocuments:counts.analyzedDocuments,matchedDocuments:counts.matchedDocuments,
-        itemMatches:counts.itemMatches,occurrences:counts.occurrences,fingerprint};
+      // Per-Class completion is the only public-config state. Labels, hit counts
+      // and matching details are read from Class-authorized tree RPCs instead.
+      const meta={class_uid:classUid};
       const now=new Date().toISOString();
       const {data:latest,error:readError}=await dbAuthRelation(scope.config)
         .select('keyword_meta,current_keyword_class_uid').eq('id',id).limit(1);
@@ -179,7 +177,7 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       const saved=completeKeywordClass(latest[0].keyword_meta,classUid,meta,now);
       const {data,error}=await dbAuthRelation(scope.config)
         .update({
-          keyword_meta:isActiveNow?{...saved,...meta}:saved,
+          keyword_meta:saved,
           ...(isActiveNow?{staticstime:now}:{}),updated_at:now
         })
         .eq('id',id).select('id');
@@ -268,15 +266,26 @@ export async function selectKeywordAnalysisSummary({scopeId='lo3rwang',classUid=
     const {config}=await scopeAndConfig(id,{publicRead:true});
     const selectedClass=String(classUid||config.current_keyword_class_uid||'');
     const state=keywordClassState(config,selectedClass);
+    const {readKeywordTreeSummary,readKeywordTreeCatalog}=await import('./db-client.mjs');
+    // A private Class must not expose even its completion timestamp through
+    // the public statistics helper. The catalog RPC enforces Class sharing.
+    const directory=await readKeywordTreeCatalog(id,{classUid:selectedClass});
+    if(directory.class_uid!==selectedClass)
+      return emptyStored({...config,staticstime:null,keyword_meta:{}});
     const scopedConfig={...config,staticstime:state?.completedAt||null,keyword_meta:state||{}};
     if(!state)return emptyStored(scopedConfig);
     if(category&&!source)
       throw new Error('關鍵詞來源分類需要指定原始來源名稱');
-    const {readKeywordTreeSummary}=await import('./db-client.mjs');
+    const tree=keywordTreeCatalog(directory.rows,selectedClass);
+    const {groups}=tree;
+    const displayed={
+      ...state,class_uid:selectedClass,class_name:tree.name,
+      classes:Object.fromEntries(groups.map(group=>[group.uid,group.name])),
+      items:Object.fromEntries(groups.flatMap(group=>group.items.map(item=>[item.uid,item.name])))
+    };
     const rows=await readKeywordTreeSummary(id,{classUid:selectedClass,startDate,endDate,source});
     const agg=aggregateSummaryRpcRows(rows.filter(row=>row.kind!=='item_day'));
-    const globalCount=Number(state.matchedDocuments)||0;
-    return storedSummary(agg,scopedConfig,globalCount);
+    return storedSummary(agg,{...scopedConfig,keyword_meta:displayed},agg.eligible);
   })();
 }
 
