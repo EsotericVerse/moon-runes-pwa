@@ -399,7 +399,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           // Separate Facebook visit records remain review candidates, not Galaxy articles.
           const key=importGeoKey(place.__importCoordinates);
           if(key){if(geoKeys.has(key))return;geoKeys.add(key);}
-          if(geoPlaces.length<5000)geoPlaces.push(place);
+          if(geoPlaces.length>=100000)
+            throw Error('Facebook 不同地點候選超過 100,000 組，未開始匯入；請分批處理。');
+          geoPlaces.push(place);
         },onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
@@ -834,7 +836,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <li key={index}>{place.location||'未提供地名'} · {place.__importCoordinates?
           place.__importCoordinates.latitude+', '+place.__importCoordinates.longitude:'未提供經緯度'}
           {place.placeUrl?' · '+place.placeUrl:''}</li>)}</ul>:null}
-      {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">候選資料超過預覽上限，僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
+      {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">來源地點事件多於不重複座標候選；預覽僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
     </section>:null}
     {canRestoreAnchors?<section className="scope-import-preview" aria-label="Facebook 原始座標地點重建">
       <label><input type="checkbox" checked={createMissingAnchors} disabled={busy}
