@@ -57,9 +57,8 @@ test('import UI exposes range choices and filters both lookup and writes',()=>{
     assert.match(panel,new RegExp('<option value="'+value+'">'));
   assert.match(panel,/filterImportAnalysisByTime\(rawAnalysis,timeWindow\)/);
   assert.match(panel,/oldRows.length\?dedupeIncomingImport\(oldRows\)/);
-  assert.match(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
-  assert.match(panel,/\.gte\('createtime',timeWindow.start\)/);
-  assert.match(panel,/\.lte\('createtime',timeWindow.end\)/);
+  assert.match(panel,/const oldRows=analyzed\.valid\.filter\(/);
+  assert.match(panel,/\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
   assert.match(panel,/prepareArchiveMedia\(\s*eligibleArchiveEvidence,/);
   assert.match(panel,/const geoAnchorRecords=timeWindow\?\[\]:geoPlaceCandidates/);
   assert.match(panel,/disabled=\{busy\|\|!analysisCurrent\|\|\(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length\)\}/);
