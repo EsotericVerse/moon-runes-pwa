@@ -634,9 +634,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const existingCandidates=deduped.unique;
       const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
-        readTimestamps:(times,consumePage,site)=>readImportCandidatesByTimeWindows(times,{
+        readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
-          readRowsByUid,consumePage,windowSize:MAX_ROWS
+          readRowsByUid,consumePage,windowSize:MAX_ROWS,onWindowDone:report
         })
       }):new Map();
       const existingBySiteId=existingByTime;

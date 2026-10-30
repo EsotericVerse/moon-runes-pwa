@@ -326,3 +326,14 @@ test('the comparison pool is fixed before the first write, so later write batche
   assert.equal(panel.split('readSiteSpan(').length-1,1);
   assert.equal(panel.split('readRowsByUid(').length-1,0);
 });
+test('comparison reports progress after every time window, not only at the end',async()=>{
+  const rows=Array.from({length:5},(_,i)=>({uid:'IN00000'+i,site:'Facebook',site_id:null,
+    createtime:new Date(Date.UTC(2024,0,1+i)).toISOString(),title:'T',content:'c'}));
+  const seen=[];
+  await matchExistingImportByCreatedAt(rows,{
+    onProgress:p=>seen.push(p.completed),
+    readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
+      readWindow:async()=>[],readRowsByUid:async()=>[],consumePage,windowSize:2,onWindowDone:report})
+  });
+  assert.deepEqual(seen,[0,2,4,5,5]);
+});
