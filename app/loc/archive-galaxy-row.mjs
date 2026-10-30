@@ -3,6 +3,7 @@
 import {facebookArchiveGalaxyRow,facebookArchiveUid} from './facebook-backup-place.mjs';
 import {repairMojibakeText} from './content-policy.js';
 import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoordinates.mjs';
+import {facebookPostCoordinate} from './archive-geo-objects.mjs';
 import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
 
 const label={facebook:'Facebook',threads:'Threads',instagram:'Instagram',chatgpt:'ChatGPT',claude:'Claude',
@@ -25,7 +26,7 @@ export function archiveGalaxyRow(record){
   if(platform==='threads'&&!['post','media','story'].includes(String(record.kind||'')))
     return null;
   // Coordinates belong to the source JSON, not to LOC's optional location text.
-  const coordinates=extractImportCoordinates(record.raw);
+  const coordinates=platform==='facebook'?facebookPostCoordinate(record.raw):extractImportCoordinates(record.raw);
   if(platform==='facebook'){
     const row=facebookArchiveGalaxyRow(record);
     if(!row)return null;
