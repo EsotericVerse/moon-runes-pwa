@@ -604,13 +604,17 @@ export default function Culture(){
   const visibleWorkRows=useMemo(()=>{
     const map=new Map();
     periodWorksPages.forEach((page,pageIndex)=>(page.rows||[]).forEach((row,index)=>{
-      map.set(String(row?.key||row?.uid||row?.entry_id||'')||(pageIndex+':'+index),row);
+      const key=String(row?.key||row?.uid||row?.entry_id||'')||(pageIndex+':'+index);
+      // OFFSET windows can overlap if new content arrives between requests.
+      // Keep the first rendered article stable instead of overwriting it
+      // with a later duplicate. The next page only appends unseen UIDs.
+      if(!map.has(key))map.set(key,row);
     }));
     return [...map.values()];
   },[periodWorksPages]);
   const periodWorksPage={
     rows:visibleWorkRows,
-    totalCount:periodWorksPages[periodWorksPages.length-1]?.totalCount,
+    totalCount:periodWorksPages[0]?.totalCount,
     loading:periodWorksQuery.isLoading||periodWorksQuery.isFetchingNextPage,
     error:periodWorksQuery.error,
     hasMore:Boolean(periodWorksQuery.hasNextPage),
