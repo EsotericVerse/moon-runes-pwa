@@ -82,11 +82,8 @@ test('normal import update preserves populated site/location and backfills blank
 });
 
 test('timestamp comparison reports progress before and after the direct query',async()=>{
-  const rows=[0,1,2].map(i=>({
-    uid:'EPOCH00'+i,
-    createtime:new Date(Date.parse('2024-08-01T00:00:00.000Z')+i).toISOString(),
-    content:'text'+i
-  }));
+  const rows=['2024-08-01T00:00:00Z','2024-08-01T00:00:01Z','2024-08-01T00:00:02Z']
+    .map((createtime,i)=>({uid:'EPOCH00'+i,createtime,content:'text'+i}));
   const steps=[];
   await matchExistingImportByCreatedAt(rows,{
     readTimestamps:async()=>[],
