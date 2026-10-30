@@ -364,18 +364,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     const isZip=/\.zip$/i.test(file.name)||(firstBytes[0]===80&&firstBytes[1]===75&&[3,5,7].includes(firstBytes[2]));
     const isThreadsJson=!isZip&&/\.json$/i.test(file.name)&&
       /(?:^|[-_. ])(?:threads|text_post_app_text_posts)(?:$|[-_. ])/i.test(file.name);
+    const isFacebookGeoJson=!isZip&&/(?:^|\/)places_you_have_been_tagged_in\.json$/i.test(file.name);
     setBusy(true);
     if(isZip)setStatus(t('uiExtra.importUI.zipInspecting'));
     try{
-      if(isZip||isThreadsJson){
-        // ZIP and standalone Threads JSON use the same structured scanner;
+      if(isZip||isThreadsJson||isFacebookGeoJson){
+        // ZIP, standalone Threads posts and independent Facebook visit JSON use the scanner;
         // source names are only hints, each record must be a public post.
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=isZip?await zipEntryCount(file):1;
         const result=isZip
           ?await detectZipArchiveSource(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')})
-          :{kind:'threads',sources:['threads'],confidence:1,
-            evidence:[{source:'threads',path:file.name,verified:false}],structure:null,audit:null};
+          :{kind:isFacebookGeoJson?'facebook':'threads',
+            sources:[isFacebookGeoJson?'facebook':'threads'],confidence:1,
+            evidence:[{source:isFacebookGeoJson?'facebook':'threads',path:file.name,verified:false}],
+            structure:null,audit:null};
         setArchiveDetection(result);
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
@@ -430,7 +433,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           mediaUnlinked:mediaPlan.media.filter(item=>!item.__article_uid).length});
         if(!imported.length&&!mediaEvidence.length){
           setSource(result.sources.length===1?canonicalSource(result.sources[0]):'');
-          setStatus((summary.geoPlaceObjects?'ZIP 已讀取，辨識出 '+summary.geoPlaceObjects.toLocaleString()+' 筆 Facebook 地點物件，僅供人工整理 Trace；沒有自動建立地點或文章。':'ZIP 已讀取，但沒有可匯入的文字文章。')+' 已解析 '+summary.totalRows+
+          setStatus((summary.geoPlaceObjects?'檔案已讀取，辨識出 '+summary.geoPlaceObjects.toLocaleString()+' 筆 Facebook 地點物件，僅供人工整理 Trace；沒有自動建立地點或文章。':'檔案已讀取，但沒有可匯入的文字文章。')+' 已解析 '+summary.totalRows+
             ' 筆、略過 '+(summary.rejectedRows+ignored)+' 筆。'+
             (summary.problems.length?' 原因：'+summary.problems.slice(0,3).join('；'):' 請檢查資料格式。'));
           return;
