@@ -531,9 +531,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         }
       });
       // Resolve stable source identities even when the original creation time is absent.
+      const missingTimeOrLinked=unique.filter(record=>
+        !record.createtime||record.source_id||(record.target_id||[]).length);
       const existingByUid=await readExistingByIds(galaxy,
         'uid,createtime,content,title,place_id,url,source_id,target_id,site_id',
-        'uid',unique.map(record=>record.uid),'既有文章 UID 比對失敗');
+        'uid',missingTimeOrLinked.map(record=>record.uid),'既有文章 UID 比對失敗');
       for(const row of existingByUid)existingByCreatedAt.set(String(row.uid),row);
       const finalUid=id=>String(existingByCreatedAt.get(String(id))?.uid||id);
       unique=unique.map(record=>({
