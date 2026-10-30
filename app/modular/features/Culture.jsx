@@ -511,7 +511,7 @@ export default function Culture(){
     queryFn:async()=>{
       const {readKeywordTreeCatalog}=await import('../../loc/db-client.mjs');
       const {keywordTreeCatalog}=await import('../../loc/keyword-tree-report.mjs');
-      const result=await readKeywordTreeCatalog(scopeId);
+      const result=await readKeywordTreeCatalog(scopeId,{classUid:styleQuery.data.keywordMeta.class_uid});
       if(!result.class_uid)return [];
       const catalog=keywordTreeCatalog(result.rows,result.class_uid);
       return (catalog.groups.find(group=>group.uid===keywordDrillGroup)?.items||[])
