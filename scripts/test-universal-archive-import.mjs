@@ -601,3 +601,31 @@ test('Facebook ZIP album parent, photo captions and original media are mapped to
   assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===first.uid));
   assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===second.uid));
 });
+
+test('Facebook album photo keeps both its title and description as its own pic_text',async()=>{
+  const zip=asFile('album-desc.zip',zipSync({
+    'your_facebook_activity/posts/album/5.json':j({
+      name:'相簿',last_modified_timestamp:1760000000,
+      photos:[
+        {uri:'media/albums/a.jpg',title:'標題',description:'補充說明',creation_timestamp:1368248935},
+        {uri:'media/albums/b.jpg',description:'只有說明',creation_timestamp:1368248999},
+        {uri:'media/albums/c.jpg',title:'同樣',description:'同樣',creation_timestamp:1368249000},
+        {uri:'media/albums/d.jpg',creation_timestamp:1368249100}
+      ]
+    }),
+    'media/albums/a.jpg':new Uint8Array([1]),'media/albums/b.jpg':new Uint8Array([2]),
+    'media/albums/c.jpg':new Uint8Array([3]),'media/albums/d.jpg':new Uint8Array([4])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,4,'album + three photos with their own text');
+  const [album,a,b,c]=rows.map(entry=>entry.row);
+  assert.equal(a.content,'標題\n\n補充說明');
+  assert.equal(a.title,'標題');
+  assert.equal(b.content,'只有說明');
+  assert.equal(b.title,'只有說明');
+  assert.equal(c.content,'同樣');
+  assert.deepEqual(album.target_id,[a.uid,b.uid,c.uid]);
+  assert.equal(rows[0].attachments.length,1,'only the photo without text hangs on the album');
+  assert.ok(rows.slice(1).every(entry=>entry.attachments.length===1),'one picture per pic_text');
+});
