@@ -171,7 +171,7 @@ export function archiveMediaUid(scopeId,archiveId,entryPath){
     '-a'+hex.slice(17,20)+'-'+hex.slice(20,32);
   return (BigInt('0x'+uuid.replaceAll('-',''))%(36n**8n)).toString(36).toUpperCase().padStart(8,'0');
 }
-export function prepareArchiveMedia(evidence=[],knownUids=new Set()){
+export function prepareArchiveMedia(evidence=[],knownUids=new Set(),articleTimes=new Map()){
   const media=[],exif=[],mediaLinks=[];
   for(const entry of evidence){
     const id=archiveMediaUid(entry.scope_id,entry.archive_id,entry.entry_path);
