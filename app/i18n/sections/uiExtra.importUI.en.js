@@ -13,6 +13,7 @@ export default {
   "importLinkedComplete": "Added {articles} articles and {media} media records; updated {linked} article-media links; skipped {skipped}.",
   "refreshMediaSuffix": "; added {media} media records; updated {linked} links.",
   "importTitle": "Data import",
+  "importProcessingWait": "Import / processing in progress. Please wait…",
   "zipInspecting": "Identifying ZIP archive contents…",
   "zipInspected": "ZIP inspection complete ({count} entries). No records imported.",
   "zipDetected": "ZIP archive source",

@@ -13,6 +13,7 @@ export default {
   "importLinkedComplete": "文章新增 {articles} 筆、媒體新增 {media} 筆、文章媒體關聯更新 {linked} 筆；略過 {skipped} 筆。",
   "refreshMediaSuffix": "；媒體新增 {media} 筆；關聯更新 {linked} 筆。",
   "importTitle": "資料匯入",
+  "importProcessingWait": "匯入進行／解析中，請稍後…",
   "zipInspecting": "正在辨識 ZIP 內容…",
   "zipInspected": "ZIP 檢查完成，共 {count} 個項目；尚未匯入任何資料。",
   "zipDetected": "ZIP 備份來源",
