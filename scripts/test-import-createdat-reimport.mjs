@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
-import {dedupeIncomingImport,matchExistingImportByCreatedAt,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportByCreatedAt,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 test('Threads source timestamps are extracted from root and nested media',()=>{
   assert.equal(extractImportCreatedAt({createAt:'2024-08-01T00:00:00Z'}),'2024-08-01T00:00:00.000Z');
@@ -138,4 +138,35 @@ test('pre-write import estimate uses only parsed item counts and rounds to minut
   assert.match(panel,/!busy&&analysisCurrent&&importEstimate/);
   assert.match(panel,/importEstimatedMinutes/);
   assert.ok(panel.indexOf('importEstimatedMinutes')>panel.indexOf('saveHint'));
+});
+
+test('completed identical timestamp match exits without any write phase',async()=>{
+  const record={uid:'IN000001',createtime:'2024-08-01T00:00:00Z',title:'Title',content:'Body',url:'https://example.com/post'};
+  const saved={...record,uid:'OLD00001',place_id:null};
+  const matches=await matchExistingImportByCreatedAt([record],{readTimestamps:async()=>[saved]});
+  assert.equal(isUnchangedImportBeforeWrite([record],matches),true);
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,');
+  assert.ok(guard>panel.indexOf('const existingByCreatedAt=await matchExistingImportByCreatedAt'));
+  assert.ok(guard<panel.indexOf('await prepareImportPlaceAnchors(needsAnchor'));
+  assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
+  assert.match(panel,/setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\)/);
+  assert.match(panel,/setProgress\(null\);\s*setStatus\(t\('uiExtra\.importUI\.importNoChanges'\)\);/);
+});
+
+test('zero-write fast exit must not hide real imports, media or place additions',()=>{
+  const record={uid:'IN000001',createtime:'2024-08-01T00:00:00Z',title:'Original',content:'Text',url:null};
+  const saved={uid:'OLD00001',title:'Original',content:'Text',url:null,place_id:null};
+  const matches=new Map([[record.uid,saved]]);
+  assert.equal(isUnchangedImportBeforeWrite([record],matches),true);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,content:'Changed'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,title:'Changed'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,url:'https://example.com/post'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([record],matches,{hasMedia:true}),false);
+  assert.equal(isUnchangedImportBeforeWrite([record,{...record,uid:'NEW00002'}],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([],matches),false);
+  assert.equal(isUnchangedImportBeforeWrite([record],new Map()),false);
+  assert.equal(isUnchangedImportBeforeWrite([{...record,location:'My home'}],
+    new Map([[record.uid,{...saved,place_id:'Ab12'}]])),true);
 });
