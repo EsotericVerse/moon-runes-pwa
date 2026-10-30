@@ -177,6 +177,12 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set(),articleTimes
     const id=archiveMediaUid(entry.scope_id,entry.archive_id,entry.entry_path);
     const owners=(entry.galaxy_uids||[]).filter(uid=>knownUids.has(uid));
     const type=entry.media_type||archiveMediaType(entry.entry_path);
+    // A ZIP attachment has no independent publish time. If linked, use the
+    // earliest known source article time; never substitute EXIF/local/import time.
+    const linkedTimes=owners.map(uid=>articleTimes.get(uid))
+      .filter(value=>typeof value==='string'&&Number.isFinite(Date.parse(value)))
+      .sort();
+    const articleTime=linkedTimes[0]||null;
     const row={
       uid:id,media_type:type,url:publicUrl(entry.url),
       title:'封存'+({image:'圖片',video:'影片',audio:'音訊'}[type]||'附件')+' · '+String(entry.entry_path||'').split('/').pop().slice(0,120),
