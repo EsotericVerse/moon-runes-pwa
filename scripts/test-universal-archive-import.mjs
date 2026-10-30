@@ -629,3 +629,43 @@ test('Facebook album photo keeps both its title and description as its own pic_t
   assert.equal(rows[0].attachments.length,1,'only the photo without text hangs on the album');
   assert.ok(rows.slice(1).every(entry=>entry.attachments.length===1),'one picture per pic_text');
 });
+
+test('Facebook post with no top-level text but description nested in label_values media becomes its own pic_text',async()=>{
+  const zip=asFile('nested-caption.zip',zipSync({
+    'your_facebook_activity/posts/media_used_for_memories.json':j([{
+      media:[],fbid:'9343802625708141',
+      label_values:[{
+        label:'出現在你已分享的動態回顧貼文中的影音素材',
+        media:[{
+          uri:'your_facebook_activity/posts/media/a/1.jpg',creation_timestamp:1740982113,
+          title:'行動上傳',description:'距離上次有過夜的旅遊，也五年了。'
+        }]
+      }]
+    }]),
+    'your_facebook_activity/posts/media/a/1.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,1,'no post text, no album: one standalone pic_text');
+  const [row]=rows.map(entry=>entry.row);
+  assert.equal(row.content,'距離上次有過夜的旅遊，也五年了。',
+    'the generic Facebook auto-title is not authored text');
+  assert.equal(row.site_id,'9343802625708141:0');
+  assert.equal(row.source_id,undefined,'nothing to attach to: there is no post text');
+  assert.equal(row.createtime,'2025-03-03T06:08:33.000Z');
+  assert.equal(rows[0].attachments.length,1);
+});
+test('a Facebook generic auto-title alone, without a description, creates no pic_text',async()=>{
+  const zip=asFile('nested-no-desc.zip',zipSync({
+    'your_facebook_activity/posts/media_used_for_memories.json':j([{
+      media:[],fbid:'1',
+      label_values:[{label:'x',media:[{
+        uri:'your_facebook_activity/posts/media/a/2.jpg',creation_timestamp:1740982113,title:'行動上傳'
+      }]}]
+    }]),
+    'your_facebook_activity/posts/media/a/2.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,0);
+});
