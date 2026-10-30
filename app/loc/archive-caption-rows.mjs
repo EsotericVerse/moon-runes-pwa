@@ -17,26 +17,35 @@ export function archiveGalaxyRows(record){
     const name=clean(album.name)||'Facebook 相簿';
     const description=clean(album.description);
     const parentUid=facebookArchiveUid('archive:album:'+record.sourcePath);
+    // The album's own creation time when the export has one, otherwise its
+    // earliest photo (stable when photos are added later), then last modified.
+    const photoTimes=album.photos.map(photo=>parseImportCreatedTime(photo?.creation_timestamp))
+      .filter(Boolean).sort();
+    const albumTime=parseImportCreatedTime(album.creation_timestamp??album.created_timestamp??
+      album.create_timestamp)||photoTimes[0]||parseImportCreatedTime(album.last_modified_timestamp)||null;
+    const looseAttachments=[];
     const captions=album.photos.flatMap((photo,index)=>{
       const text=clean(photo?.title);
       const attachments=archiveAttachmentReferences(photo);
-      if(!text||!attachments.length)return [];
+      // A picture without its own text hangs on the album; one with text hangs
+      // only on its own pic_text, so a pic_text always has exactly one picture.
+      if(!text||!attachments.length){looseAttachments.push(...attachments);return [];}
       const uid=facebookArchiveUid('archive:album-caption:'+record.sourcePath+':'+
         String(photo.uri||index));
       return [{
         row:{uid,title:Array.from(text).slice(0,120).join(''),
-          content:text,createtime:parseImportCreatedTime(photo.creation_timestamp)||null,
+          content:text,createtime:parseImportCreatedTime(photo.creation_timestamp)||albumTime,
           site:'Facebook',site_id:null,source_id:parentUid},
         attachments
       }];
     });
     const parent={
-      uid:parentUid,title:name,content:description||name,createtime:null,
+      uid:parentUid,title:name,content:description||name,createtime:albumTime,
       site:'Facebook',site_id:null,
       searchable:Boolean(description),statistics_able:Boolean(description),
       ...(captions.length?{target_id:captions.map(entry=>entry.row.uid)}:{})
     };
-    return [{row:parent,attachments:record.attachments||[]},...captions];
+    return [{row:parent,attachments:looseAttachments},...captions];
   }
   const original=archiveGalaxyRow(record);
   if(!original)return [];

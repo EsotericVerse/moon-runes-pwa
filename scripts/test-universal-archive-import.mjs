@@ -586,14 +586,14 @@ test('Facebook ZIP album parent, photo captions and original media are mapped to
   const [parent,first,second]=mapped;
   assert.equal(parent.content,'記錄旅途');
   assert.equal(parent.site_id,null);
-  assert.equal(parent.createtime,null);
+  assert.equal(parent.createtime,first.createtime,'album time is its earliest photo');
   assert.deepEqual(parent.target_id,[first.uid,second.uid]);
   assert.equal(first.source_id,parent.uid);
   assert.equal(second.source_id,parent.uid);
   assert.equal(first.content,'山景');
   assert.equal(second.content,'日落');
   assert.ok(first.createtime?.startsWith('2013-05-'));
-  assert.equal(second.createtime,null);
+  assert.equal(second.createtime,parent.createtime,'a photo without its own time inherits the album time');
   const mediaPlan=prepareArchiveMedia(collector.rows({
     scopeId:'test',archiveName:'facebook-album.zip',archiveSize:zip.size
   }),new Set(mapped.map(row=>row.uid)));
