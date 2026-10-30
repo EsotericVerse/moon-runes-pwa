@@ -257,10 +257,13 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function readSharedKeywordClasses(scopeId){
     const scope=normalizeScopeId(scopeId);
-    const result=await keywordRead('read_shared_keyword_classes',{p_scope_id:scope},{
-      isEmpty:value=>!Array.isArray(value)||value.length===0
+    // Use the caller's authorization even when some Classes are public.
+    // The RPC itself checks can_manage_scope and returns only allowed Classes.
+    const {data,error}=await authClient.schema('silver').rpc('read_shared_keyword_classes',{
+      p_scope_id:scope
     });
-    return Array.isArray(result)?result:[];
+    if(error)throw new Error(error.message||'Keyword Class directory read failed');
+    return Array.isArray(data)?data:[];
   }
 
   // Database-side statistics: the database counts, the browser receives the exact
