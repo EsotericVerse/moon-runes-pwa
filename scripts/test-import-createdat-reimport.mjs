@@ -72,7 +72,7 @@ test('multiple candidates with identical time do not overwrite unrelated article
 });
 test('normal import update preserves populated site/location and backfills blank fields',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/if\(!String\(existing\.location\|\|''\)\.trim\(\)&&String\(record\.location\|\|''\)\.trim\(\)\)/);
+  assert.match(panel,/if\(record\.__importCoordinates&&!String\(existing\.location\|\|''\)\.trim\(\)&&String\(record\.location\|\|''\)\.trim\(\)\)/);
   assert.match(panel,/if\(!String\(existing\.site\|\|''\)\.trim\(\)&&String\(record\.site\|\|''\)\.trim\(\)\)/);
   assert.match(panel,/\.in\('createtime',batch\)/);
   assert.doesNotMatch(panel,/\.ilike\('site',source\)/);
