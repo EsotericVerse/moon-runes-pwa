@@ -61,9 +61,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const draft=editor?.node||null;
   const classShareEnabled=uid=>{
     if(!uid)return false;
-    const shares=config.keyword_meta?.class_shares||{};
-    if(Object.hasOwn(shares,uid))return shares[uid]===true;
-    return uid===config.current_keyword_class_uid&&config.keyword_class_share_enabled===true;
+    return config.keyword_meta?.class_shares?.[uid]===true;
   };
   const dirty=Boolean(draft&&(
     !tree.index.has(draft.uid)||
