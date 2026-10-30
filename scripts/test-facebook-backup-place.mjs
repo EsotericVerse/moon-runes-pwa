@@ -9,7 +9,7 @@ import {facebookBackupPlace,facebookBackupPostText,
 import {detectZipArchiveSource,inspectPrivateArchive}
   from '../app/loc/private-archive-universal.mjs';
 import {archiveGalaxyRow} from '../app/loc/archive-galaxy-row.mjs';
-import {extractFacebookGeoObjects} from '../app/loc/archive-geo-objects.mjs';
+import {extractFacebookGeoObjects,facebookPostCoordinate} from '../app/loc/archive-geo-objects.mjs';
 import {ARCHIVE_MAX_BYTES,ARCHIVE_JSON_MAX_BYTES,importRowsFromJson} from '../app/loc/import-batch.mjs';
 import {parseUniversalImportFile} from '../app/loc/universal-file-import.mjs';
 const src=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
@@ -83,6 +83,31 @@ test('real Facebook post object keeps media, source text, exact coordinates and 
  }]);
  assert.equal(places[0].placeUrl,placeUrl);
  assert.equal(places[0].sourcePath,'your_facebook_activity/posts/your_posts_1.json');
+});
+
+test('Facebook posts never choose the first of two distinct place coordinates',()=>{
+ const raw={timestamp:1720000000,data:[{post:'今天的旅程'}],attachments:[
+   {data:[{place:{name:'A',coordinate:{latitude:25.05338,longitude:121.49086}}}]},
+   {data:[{place:{name:'B',coordinate:{latitude:25.05,longitude:121.5}}}]}
+ ]};
+ assert.equal(extractFacebookGeoObjects(raw).length,2);
+ assert.equal(facebookPostCoordinate(raw),null);
+ const mapped=archiveGalaxyRow({platform:'facebook',kind:'post',key:'fb:ambiguous',
+   text:'今天的旅程',raw,createdAt:'2024-07-03T09:46:40.000Z'});
+ assert.equal(mapped.__importCoordinates,undefined);
+});
+
+test('photo EXIF GPS alone cannot become a Facebook check-in point',()=>{
+ const raw={timestamp:1720000000,data:[{post:'相片'}],attachments:[
+   {data:[{media:{media_metadata:{photo_metadata:{exif_data:[{
+     latitude:25.05338,longitude:121.49086
+   }]}}}}]}
+ ]};
+ assert.deepEqual(extractFacebookGeoObjects(raw),[]);
+ assert.equal(facebookPostCoordinate(raw),null);
+ const mapped=archiveGalaxyRow({platform:'facebook',kind:'post',key:'fb:exif-only',
+   text:'相片',raw,createdAt:'2024-07-03T09:46:40.000Z'});
+ assert.equal(mapped.__importCoordinates,undefined);
 });
 
 test('Facebook post coordinates survive without a LOC location string',async()=>{
