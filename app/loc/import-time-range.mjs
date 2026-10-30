@@ -27,10 +27,14 @@ export function importWithinTimeRange(row,window){
 export function filterImportAnalysisByTime(analysis,window){
   if(!window)return {...analysis,skippedByRange:0,undatedByRange:0};
   const normalized=analysis.normalized.filter(item=>importWithinTimeRange(item.record,window));
-  const mediaOnly=analysis.mediaOnly.filter(row=>importWithinTimeRange(row,window));
   const valid=normalized.map(item=>item.record);
+  const eligibleUids=new Set(valid.map(row=>String(row.uid)));
+  // Never detach a media-only record from a parent post excluded by the window.
+  const mediaOnly=analysis.mediaOnly.filter(row=>importWithinTimeRange(row,window)&&
+    (!row.__article_uid||eligibleUids.has(String(row.__article_uid))));
+  const keptMedia=new Set(mediaOnly);
   const excluded=[...analysis.valid.filter(row=>!importWithinTimeRange(row,window)),
-    ...analysis.mediaOnly.filter(row=>!importWithinTimeRange(row,window))];
+    ...analysis.mediaOnly.filter(row=>!keptMedia.has(row))];
   return {
     ...analysis,valid,normalized,mediaOnly,
     skippedByRange:excluded.length,
