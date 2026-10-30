@@ -6,8 +6,9 @@ import {extractImportCoordinates,importMapUrlCoordinates} from './import-geocoor
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {isArchiveMediaUrl} from './archive-media-evidence.mjs';
 
-const label={facebook:'Facebook',threads:'Threads',instagram:'Instagram',chatgpt:'ChatGPT',claude:'Claude',
+export const platformLabel={facebook:'Facebook',threads:'Threads',instagram:'Instagram',chatgpt:'ChatGPT',claude:'Claude',
   messenger:'Messenger',x:'X',document:'Document',meta:'Archive'};
+const label=platformLabel;
 const urlOf=value=>{
   if(typeof value!=='string')return '';
   try{

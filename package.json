@@ -40,6 +40,7 @@
     "@supabase/supabase-js": "2.117.2",
     "fflate": "0.8.3",
     "immer": "11.1.18",
+    "jsonpath-plus": "^11.2.2",
     "karaul": "0.1.0",
     "kysely": "0.29.6",
     "maplibre-gl": "^6.15.0",
@@ -67,8 +68,8 @@
     "glob": "10.5.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.5.3",
     "@babel/parser": "7.29.9",
+    "@capacitor/cli": "8.5.3",
     "@opennextjs/cloudflare": "1.20.13",
     "wrangler": "4.153.0"
   }

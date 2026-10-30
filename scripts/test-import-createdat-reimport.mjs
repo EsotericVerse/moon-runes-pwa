@@ -88,7 +88,7 @@ test('source ID lookup reports progress without timestamps',async()=>{
 test('database lookup limits site and time before matching, preserving curated site and location',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.doesNotMatch(panel,/matchExistingImportBySiteId\(unique,/);
-  assert.match(panel,/\.select\('uid,createtime'\)\s*\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
+  assert.match(panel,/\.select\('uid,createtime,site_id'\)\s*\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
   assert.match(panel,/\.order\('createtime',\{ascending:true\}\)\.order\('uid',\{ascending:true\}\)/);
   assert.match(panel,/urlSafeInBatches\(uids,'uid'\)/);
   assert.doesNotMatch(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
@@ -336,4 +336,20 @@ test('comparison reports progress after every time window, not only at the end',
       readWindow:async()=>[],readRowsByUid:async()=>[],consumePage,windowSize:2,onWindowDone:report})
   });
   assert.deepEqual(seen,[0,2,4,5,5]);
+});
+
+test('an album compares with albums only, even at the same second as its first photo text',async()=>{
+  const time='2013-05-11T05:08:55.000Z';
+  const album={uid:'NEWALBUM',site:'Facebook',site_id:'album:'+time,createtime:time,title:'相簿',content:'相簿'};
+  const photo={uid:'NEWPHOTO',site:'Facebook',site_id:null,createtime:time,title:'山景',content:'山景'};
+  const savedAlbum={...album,uid:'OLDALBUM'},savedPhoto={...photo,uid:'OLDPHOTO'};
+  const matches=await matchExistingImportByCreatedAt([album,photo],{
+    readTimestamps:async(times,consumePage)=>consumePage([savedPhoto,savedAlbum])
+  });
+  assert.equal(matches.get('NEWALBUM').uid,'OLDALBUM');
+  assert.equal(matches.get('NEWPHOTO').uid,'OLDPHOTO');
+  const onlyPhoto=await matchExistingImportByCreatedAt([album],{
+    readTimestamps:async(times,consumePage)=>consumePage([savedPhoto])
+  });
+  assert.equal(onlyPhoto.size,0,'a saved article is never taken for the album');
 });

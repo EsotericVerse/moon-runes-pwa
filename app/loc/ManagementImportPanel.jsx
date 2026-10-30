@@ -618,7 +618,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const readSiteSpan=async(site,start,end)=>{
         const pageSize=MAX_ROWS,rows=[];
         for(let offset=0;;){
-          const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime')
+          const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime,site_id')
             .ilike('site',site).gte('createtime',start).lte('createtime',end)
             .order('createtime',{ascending:true}).order('uid',{ascending:true})
             .range(offset,offset+pageSize-1);

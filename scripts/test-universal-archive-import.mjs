@@ -585,19 +585,143 @@ test('Facebook ZIP album parent, photo captions and original media are mapped to
   assert.equal(mapped.length,3);
   const [parent,first,second]=mapped;
   assert.equal(parent.content,'記錄旅途');
-  assert.equal(parent.site_id,null);
-  assert.equal(parent.createtime,null);
+  assert.equal(parent.site_id,'album:'+first.createtime,'albums are marked so they compare with albums only');
+  assert.equal(parent.createtime,first.createtime,'album time is its earliest photo');
   assert.deepEqual(parent.target_id,[first.uid,second.uid]);
   assert.equal(first.source_id,parent.uid);
   assert.equal(second.source_id,parent.uid);
   assert.equal(first.content,'山景');
   assert.equal(second.content,'日落');
   assert.ok(first.createtime?.startsWith('2013-05-'));
-  assert.equal(second.createtime,null);
+  assert.equal(second.createtime,parent.createtime,'a photo without its own time inherits the album time');
   const mediaPlan=prepareArchiveMedia(collector.rows({
     scopeId:'test',archiveName:'facebook-album.zip',archiveSize:zip.size
   }),new Set(mapped.map(row=>row.uid)));
   assert.equal(mediaPlan.media.length,2);
   assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===first.uid));
   assert.ok(mediaPlan.mediaLinks.some(link=>link.uid===second.uid));
+});
+
+test('Facebook album photo keeps both its title and description as its own pic_text',async()=>{
+  const zip=asFile('album-desc.zip',zipSync({
+    'your_facebook_activity/posts/album/5.json':j({
+      name:'相簿',last_modified_timestamp:1760000000,
+      photos:[
+        {uri:'media/albums/a.jpg',title:'標題',description:'補充說明',creation_timestamp:1368248935},
+        {uri:'media/albums/b.jpg',description:'只有說明',creation_timestamp:1368248999},
+        {uri:'media/albums/c.jpg',title:'同樣',description:'同樣',creation_timestamp:1368249000},
+        {uri:'media/albums/d.jpg',creation_timestamp:1368249100}
+      ]
+    }),
+    'media/albums/a.jpg':new Uint8Array([1]),'media/albums/b.jpg':new Uint8Array([2]),
+    'media/albums/c.jpg':new Uint8Array([3]),'media/albums/d.jpg':new Uint8Array([4])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,4,'album + three photos with their own text');
+  const [album,a,b,c]=rows.map(entry=>entry.row);
+  assert.equal(a.content,'標題\n\n補充說明');
+  assert.equal(a.title,'標題');
+  assert.equal(b.content,'只有說明');
+  assert.equal(b.title,'只有說明');
+  assert.equal(c.content,'同樣');
+  assert.deepEqual(album.target_id,[a.uid,b.uid,c.uid]);
+  assert.equal(rows[0].attachments.length,1,'only the photo without text hangs on the album');
+  assert.ok(rows.slice(1).every(entry=>entry.attachments.length===1),'one picture per pic_text');
+});
+
+test('Facebook post with no top-level text but description nested in label_values media becomes its own pic_text',async()=>{
+  const zip=asFile('nested-caption.zip',zipSync({
+    'your_facebook_activity/posts/media_used_for_memories.json':j([{
+      media:[],fbid:'9343802625708141',
+      label_values:[{
+        label:'出現在你已分享的動態回顧貼文中的影音素材',
+        media:[{
+          uri:'your_facebook_activity/posts/media/a/1.jpg',creation_timestamp:1740982113,
+          title:'行動上傳',description:'距離上次有過夜的旅遊，也五年了。'
+        }]
+      }]
+    }]),
+    'your_facebook_activity/posts/media/a/1.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,1,'no post text, no album: one standalone pic_text');
+  const [row]=rows.map(entry=>entry.row);
+  assert.equal(row.content,'距離上次有過夜的旅遊，也五年了。',
+    'the generic Facebook auto-title is not authored text');
+  assert.equal(row.site_id,'9343802625708141:0');
+  assert.equal(row.source_id,undefined,'nothing to attach to: there is no post text');
+  assert.equal(row.createtime,'2025-03-03T06:08:33.000Z');
+  assert.equal(rows[0].attachments.length,1);
+});
+test('a Facebook generic auto-title alone, without a description, creates no pic_text',async()=>{
+  const zip=asFile('nested-no-desc.zip',zipSync({
+    'your_facebook_activity/posts/media_used_for_memories.json':j([{
+      media:[],fbid:'1',
+      label_values:[{label:'x',media:[{
+        uri:'your_facebook_activity/posts/media/a/2.jpg',creation_timestamp:1740982113,title:'行動上傳'
+      }]}]
+    }]),
+    'your_facebook_activity/posts/media/a/2.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,0);
+});
+
+test('nested caption media is found at any depth, not just label_values[].media[]',async()=>{
+  const zip=asFile('deep-nested.zip',zipSync({
+    'your_facebook_activity/posts/your_uncategorized_photos.json':j([{
+      media:[],fbid:'555',
+      attachments:[{data:[{media:[{
+        uri:'your_facebook_activity/posts/media/your_posts/474008376020988.jpg',
+        creation_timestamp:1372008872,
+        description:'深層巢狀的說明文字'
+      }]}]}]
+    }]),
+    'your_facebook_activity/posts/media/your_posts/474008376020988.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].row.content,'深層巢狀的說明文字');
+  assert.equal(rows[0].attachments.length,1);
+});
+test('a media leaf with only an EXIF upload_ip and no title/description creates no pic_text',async()=>{
+  const zip=asFile('exif-only.zip',zipSync({
+    'your_facebook_activity/posts/your_uncategorized_photos.json':j([{
+      media:[],fbid:'556',
+      label_values:[{label:'x',media:[{
+        uri:'your_facebook_activity/posts/media/your_posts/555.jpg',
+        creation_timestamp:1372008872,
+        media_metadata:{photo_metadata:{exif_data:[{upload_ip:'111.250.216.14'}]}}
+      }]}]
+    }]),
+    'your_facebook_activity/posts/media/your_posts/555.jpg':new Uint8Array([1])
+  }));
+  const rows=[];
+  await inspectPrivateArchive(zip,{onRecord:record=>{for(const entry of archiveGalaxyRows(record))rows.push(entry);}});
+  assert.equal(rows.length,0,'no authored text anywhere, so nothing to write as a Galaxy article');
+});
+test('nested caption discovery is platform-agnostic: an X/Twitter post with no top text but a photo caption buried in extended_entities also becomes a pic_text, with site label X',async()=>{
+  // Twitter/X exports are .js files wrapping JSON (window.YTD.tweet.part0 = [...]);
+  // that wrapper is already stripped before this record exists, so record.raw here
+  // is the same shape as any other parsed JSON — this is purely the intra-JSON
+  // nested-text search, unrelated to how the source file was unwrapped.
+  const record={
+    platform:'x',kind:'post',key:'x:tweet:1',sourcePath:'data/tweets.js',createdAt:null,siteId:null,
+    raw:{
+      tweet:{id_str:'1',full_text:'',
+        extended_entities:{media:[{
+          media_url_https:'https://pbs.twimg.com/media/example.jpg',
+          type:'photo',description:'推文裡藏的照片說明文字'
+        }]}}
+    }
+  };
+  const rows=[];
+  for(const entry of archiveGalaxyRows(record))rows.push(entry);
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].row.content,'推文裡藏的照片說明文字');
+  assert.equal(rows[0].row.site,'X');
 });
