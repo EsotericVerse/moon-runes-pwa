@@ -232,7 +232,7 @@ export function Rune66Summary({analysis,range={},scopeId=''}){
     queryFn:async()=>{
       const {readKeywordTreeCatalog}=await import('../../../loc/db-client.mjs');
       const {keywordTreeCatalog}=await import('../../../loc/keyword-tree-report.mjs');
-      const result=await readKeywordTreeCatalog(scopeId);
+      const result=await readKeywordTreeCatalog(scopeId,{classUid:meta.class_uid});
       if(!result.class_uid)return [];
       const tree=keywordTreeCatalog(result.rows,result.class_uid);
       return tree.groups.flatMap(group=>group.items.map(item=>({
