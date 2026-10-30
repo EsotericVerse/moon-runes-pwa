@@ -6,29 +6,34 @@ import {dedupeIncomingImport,matchExistingImportBySiteId,insertImportBatches} fr
 const original={uid:'OLD00001',site:'Threads',site_id:'threads-1',
   createtime:'2026-10-27T07:48:32.000Z',title:'A',content:'original'};
 
-test('same platform and site_id collapse even when timestamps differ',()=>{
+test('site_id is metadata, not a source-level duplicate identity',()=>{
   const rows=[original,
     {...original,uid:'DUP00001',createtime:'2027-01-01T00:00:00Z'},
     {...original,uid:'FACEBOOK',site:'Facebook'},
     {...original,uid:'DISTINCT',site_id:'threads-2'},
-    {...original,uid:'NEXT0001',site_id:'threads-3'}];
+    {...original,uid:'NEXT0001',site_id:'threads-3'},
+    {...original}];
   const result=dedupeIncomingImport(rows);
-  assert.deepEqual(result.unique.map(row=>row.uid),['OLD00001','FACEBOOK','DISTINCT','NEXT0001']);
-  assert.equal(result.aliases.get('DUP00001'),'OLD00001');
+  assert.deepEqual(result.unique.map(row=>row.uid),
+    ['OLD00001','DUP00001','FACEBOOK','DISTINCT','NEXT0001']);
   assert.equal(result.duplicates,1);
 });
 test('different IDs do not collapse even with identical timestamps and content',()=>{
   const rows=[original,{...original,uid:'SECOND01',site_id:'threads-2'}];
   assert.equal(dedupeIncomingImport(rows).unique.length,2);
 });
-test('same platform and ID with different content aborts instead of dropping a post',()=>{
-  assert.throws(()=>dedupeIncomingImport([original,{...original,uid:'NEW00001',content:'different'}]),
-    /文章識別對應不同內容/);
+test('same site_id with different UID and body stays separate',()=>{
+  const result=dedupeIncomingImport([original,{...original,uid:'NEW00001',content:'different'}]);
+  assert.equal(result.unique.length,2);
 });
-test('ID-less source collisions cannot silently collapse different UIDs',()=>{
+test('same UID with different content is rejected',()=>{
+  assert.throws(()=>dedupeIncomingImport([original,{...original,content:'different'}]),
+    /相同 UID 對應不同來源文章/);
+});
+test('same timestamp without site_id does not collapse separate source UIDs',()=>{
   const rows=[{...original,site_id:null},
     {...original,site_id:null,uid:'NEW00001'}];
-  assert.throws(()=>dedupeIncomingImport(rows),/無法安全辨識/);
+  assert.equal(dedupeIncomingImport(rows).unique.length,2);
 });
 test('site_id matching preserves leading zeros and case',async()=>{
   const input=[{...original,uid:'NEW00001',site_id:'001Ab'}];
