@@ -835,6 +835,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <option value="halfYear">近半年</option>
         <option value="month">近一月</option>
       </select>
+      <small className="scope-import-range-hint">{timeWindow?timeWindow.start.slice(0,10)+' 至 '+timeWindow.end.slice(0,10):'不限日期'}</small>
     </label>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
