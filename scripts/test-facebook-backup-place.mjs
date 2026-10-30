@@ -262,6 +262,22 @@ test('Facebook nested visited-place ZIP retains explicit visit time and location
  assert.equal(places[0].timestamp,1720000000);
 });
 
+test('independent Facebook tagged visit with explicit coordinates stays out of Galaxy',async()=>{
+ const visit={fbid:'visit-with-geo',place:{name:'獨立打卡地點',coordinate:{
+   latitude:25.05338,longitude:121.49086
+ }},label_values:[{label:'造訪時間',timestamp_value:1720000000}]};
+ const file=asFile('places_you_have_been_tagged_in.json',strToU8(JSON.stringify([visit])));
+ const records=[],places=[];
+ const summary=await inspectPrivateArchive(file,{
+   onRecord:row=>records.push(row),onGeoPlace:place=>places.push(place)
+ });
+ assert.equal(summary.geoPlaceObjects,1);
+ assert.equal(records.length,0);
+ assert.deepEqual(places[0].__importCoordinates,{latitude:25.05338,longitude:121.49086});
+ assert.equal(places[0].location,'獨立打卡地點');
+ assert.equal(places[0].timestamp,1720000000);
+});
+
 test('standalone Facebook tagged-visit JSON stays outside Galaxy posts',async()=>{
  const visit={label_values:[
    {label:'造訪時間',timestamp_value:1720000000},
