@@ -41,12 +41,8 @@ BEGIN
     v_ready:=v_old_ready;
   END IF;
   IF v_ready IS NULL THEN RETURN; END IF;
-  IF NOT silver.can_manage_scope(v_scope) THEN
-    IF v_class_uid IS DISTINCT FROM v_current THEN RETURN; END IF;
-    EXECUTE format('SELECT keyword_class_share_enabled FROM %s WHERE id=$1',v_config)
-      INTO v_public USING v_scope;
-    IF v_public IS NOT TRUE THEN RETURN; END IF;
-  END IF;
+  IF NOT silver.can_manage_scope(v_scope) AND
+    NOT silver.keyword_class_is_shared(v_scope,v_class_uid) THEN RETURN; END IF;
   RETURN QUERY EXECUTE format($query$
     WITH cl AS (
       SELECT uid,lists FROM %1$s WHERE type='class' AND uid=$1
