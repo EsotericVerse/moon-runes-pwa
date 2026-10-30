@@ -428,7 +428,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }
     catch(error){setStatus(String(error?.message||error));return;}
     setBusy(true);setStatus(t('uiExtra.importUI.checkingCreatedAt'));
-    setProgress({completed:0,total:analyzed.valid.length+analyzed.mediaOnly.length,percent:0});
+    const showProgress=(stage,completed=0,total=0)=>{
+      setProgress({stage,completed,total,
+        percent:total>0?Math.round(100*completed/total):null});
+    };
+    showProgress('準備匯入文章');
     try{
       const scope=nativeLocal?defaultScopeData('local'):account.scopeDataFor(scopeId);
       const galaxy=scope?.galaxy,galaxyMedia=scope?.galaxyMedia;
@@ -440,6 +444,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       const existingByCreatedAt=await matchExistingImportByCreatedAt(unique,{
+        onProgress:p=>showProgress('精確比對發文時間',p.completed,p.total),
         readTimestamps:async timestamps=>{
           const collected=[];
           // TIMESTAMPTZ equality, not a time range or a site query.
@@ -466,27 +471,32 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         (record.createtime==null||record.createtime==='')&&
         String(record.content||'').trim());
       if(missingTime.length){
+        showProgress('核對缺少時間的文章');
         const matched=await matchExistingWithoutCreatedAt(missingTime,{
           readContents:async contents=>{
             const collected=[];
+            let checked=0;
             // Bound GET URLs. An exceptionally long text is still importable,
             // even when its exact-content lookup exceeds REST URL limits.
             const safeContents=contents.filter(value=>{
               try{return encodeURIComponent(value).length<=5000;}
               catch{return false;}
             });
+            showProgress('核對缺少時間的文章',0,safeContents.length);
             for(const batch of urlSafeInBatches(safeContents,'content')){
               for(let offset=0;;){
-                const {data,error,count}=await dbAuthRelation(galaxy)
-                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date',{count:'exact'})
+                const {data,error}=await dbAuthRelation(galaxy)
+                  .select('uid,site,createtime,title,content,location,place_id,url,source_id,target_id,ref_id,media_link,searchable,statistics_able,date')
                   .in('content',batch)
                   .order('uid',{ascending:true}).range(offset,offset+MAX_ROWS-1);
                 if(error)throw new Error('無時間文章比對失敗：'+error.message);
                 const rows=data||[];
                 collected.push(...rows);
                 offset+=rows.length;
-                if(!rows.length||(count!=null&&offset>=Number(count))||rows.length<MAX_ROWS)break;
+                if(rows.length<MAX_ROWS)break;
               }
+              checked+=batch.length;
+              showProgress('核對缺少時間的文章',checked,safeContents.length);
             }
             return collected;
           }
@@ -495,11 +505,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
+      showProgress('準備空間定錨');
       const placeAnchors=await prepareImportPlaceAnchors(unique,{
-        scopeId,relation:dbAuthRelation,allowMissing:true
+        scopeId,relation:dbAuthRelation,allowMissing:true,
+        onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
-      let updated=0;
+      let updated=0,checkedExisting=0;
+      const existingCount=unique.filter(record=>existingByCreatedAt.has(record.uid)).length;
+      if(existingCount)showProgress('更新既有文章',0,existingCount);
       for(const record of unique){
         const existing=existingByCreatedAt.get(record.uid);
         if(!existing){knownArticleIds.set(record.uid,record.uid);continue;}
@@ -524,6 +538,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           await updateRows(galaxy,changes,{filters:[{column:'uid',operator:'eq',value:existing.uid}]});
           updated++;
         }
+        checkedExisting++;
+        if(checkedExisting%25===0||checkedExisting===existingCount)
+          showProgress('更新既有文章',checkedExisting,existingCount);
       }
       for(const record of analyzed.valid){
         const canonical=incoming.aliases.get(record.uid)||record.uid;
@@ -534,13 +551,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const {__importCoordinates:unusedCoordinates,...article}=record;
         return placeUid?{...article,place_id:placeUid}:article;
       });
+      if(payload.length)showProgress('新增文章',0,payload.length);
       const result=await insertImportBatches(payload,{
         batchSize:MAX_ROWS,
         writeBatch:batch=>insertRows(galaxy,batch),
-        onProgress:p=>setProgress({completed:p.completed,total:payload.length+analyzed.mediaOnly.length,
-          percent:Math.round(100*p.completed/Math.max(1,payload.length+analyzed.mediaOnly.length))})
+        onProgress:p=>showProgress('新增文章',p.completed,p.total)
       });
       duplicateCount+=result.conflicts;
+      showProgress('整理媒體資料');
       const archivePlan=prepareArchiveMedia(archiveEvidence,new Set(knownArticleIds.keys()));
       const canonicalArchiveMedia=archivePlan.media.map(record=>({
         ...record,__article_uid:knownArticleIds.get(String(record.__article_uid||''))||record.__article_uid
@@ -549,9 +567,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         normalized:analyzed.normalized,
         mediaOnly:[...analyzed.mediaOnly,...canonicalArchiveMedia],
         extraLinks:archivePlan.mediaLinks,
-        knownArticleIds,galaxy,galaxyMedia,t
+        knownArticleIds,galaxy,galaxyMedia,t,
+        onProgress:p=>showProgress(p.stage,p.completed,p.total||0)
       });
       let exifSaved=0;
+      if(archivePlan.exif.length)showProgress('保存媒體 EXIF',0,archivePlan.exif.length);
       for(let offset=0;offset<archivePlan.exif.length;offset+=MAX_ROWS){
         const chunk=archivePlan.exif.slice(offset,offset+MAX_ROWS).map(row=>({
           ...row,media_uid:mediaSummary.resolvedIds.get(row.media_uid)||row.media_uid
@@ -563,14 +583,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         if(Number(data)!==chunk.length)
           throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
         exifSaved+=chunk.length;
+        showProgress('保存媒體 EXIF',exifSaved,archivePlan.exif.length);
       }
       const skipped=analyzed.invalid.length+duplicateCount;
-      setProgress({completed:result.inserted+updated+mediaSummary.created,total:result.inserted+updated+mediaSummary.created,percent:100});
+      showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         '；已更新既有文章 '+updated.toLocaleString()+' 筆，新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，沿用定錨點 '+placeAnchors.reused.toLocaleString()+' 筆。'+(archiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
       setRows([]);setArchiveEvidence([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
-    }catch(error){setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'))}
+    }catch(error){
+      setProgress(null);
+      setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'));
+    }
     finally{setBusy(false);}
   }
   async function chooseImportLocale(event){
@@ -677,11 +701,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
     {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!archiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
-    {busy&&progress?.percent===100?<p className="scope-status" role="status">文章寫入已達 100%，仍在整理媒體與文章關聯；完成後才會解除處理中狀態。</p>:null}
-    {progress?<div role="status" className="scope-import-progress">
-      <progress value={progress.percent||0} max="100"/>
-      <p><UiText id="uiExtra.importUI.writtenProgress" params={{completed:Number(progress.completed||0).toLocaleString(),total:Number(progress.total||0).toLocaleString(),percent:progress.percent||0}}/></p>
-      {progress.total>0?<p className="scope-status">共 {Number(progress.total).toLocaleString()} 筆，每 MaxRows（{MAX_ROWS.toLocaleString()}）筆回報一次（第 {Math.max(1,Math.ceil(Number(progress.completed||0)/MAX_ROWS))} / {Math.max(1,Math.ceil(Number(progress.total)/MAX_ROWS))} 批）</p>:null}
+    {progress?<div role="status" aria-live="polite" className="scope-import-progress">
+      <p><strong>{progress.stage}</strong></p>
+      {progress.percent===null?<progress max="100" aria-label={progress.stage+'，處理中'}/>:
+        <progress value={progress.percent} max="100" aria-label={progress.stage+'，已完成 '+progress.percent+'%'}/>}
+      {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
+        <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
     </div>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
     {status?<p className="scope-status" role="status">{status}</p>:null}
