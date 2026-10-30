@@ -1,9 +1,11 @@
 import {importGeoKey} from './import-geocoordinates.mjs';
 
-// Trace identity is the exact numeric [longitude, latitude] pair. Names are
-// never identity keys. New anchors require an explicit source place name and
-// a separate, opt-in createMissing action.
+// Trace identity is the exact numeric [longitude, latitude] pair. When no anchor
+// has those coordinates, an existing anchor with the same place name is the same
+// place. New anchors require an explicit source place name and a separate,
+// opt-in createMissing action.
 const VALID_UID=/^[A-Za-z0-9]{4}$/;
+const nameKey=value=>String(value??'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('und');
 const safeTitle=value=>{
   const title=String(value??'').trim();
   return title&&title.length<=120&&!/[\u0000-\u001f]/u.test(title)?title:'';
@@ -32,7 +34,7 @@ export async function prepareImportPlaceAnchors(records,{
     return unavailable();
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('空間定錨 Scope 無效');
   if(typeof relation!=='function')throw Error('空間定錨資料庫不存在');
-  const table='silver.'+scopeId+'_trace',existing=new Map();
+  const table='silver.'+scopeId+'_trace',existing=new Map(),existingByName=new Map();
   onProgress?.({phase:'讀取現有空間定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
     const {data,error}=await relation(table)
@@ -47,16 +49,24 @@ export async function prepareImportPlaceAnchors(records,{
       const key=importGeoKey(anchor?.address);
       if(key&&VALID_UID.test(String(anchor?.uid||''))&&!existing.has(key))
         existing.set(key,String(anchor.uid));
+      const name=nameKey(anchor?.title);
+      if(name&&VALID_UID.test(String(anchor?.uid||''))&&!existingByName.has(name))
+        existingByName.set(name,String(anchor.uid));
     }
     onProgress?.({phase:'讀取現有空間定錨',completed:offset+(data||[]).length,total:0});
     if((data||[]).length<pageSize)break;
   }
   let reused=0,created=0;
-  const pending=[];
+  const pending=[],pendingByName=new Map(),sameNameKeys=new Map();
   for(const [key,place] of coordinates){
-    const uid=existing.get(key);
-    if(uid){byCoordinate.set(key,uid);reused++;}
-    else if(createMissing&&place.title)pending.push([key,place]);
+    // Same coordinates first; otherwise the same place name is the same place.
+    const uid=existing.get(key)||existingByName.get(nameKey(place.title));
+    if(uid){byCoordinate.set(key,uid);reused++;continue;}
+    if(!createMissing||!place.title)continue;
+    const name=nameKey(place.title);
+    if(pendingByName.has(name)){sameNameKeys.get(name).push(key);continue;}
+    pendingByName.set(name,key);sameNameKeys.set(name,[]);
+    pending.push([key,place]);
   }
   for(let offset=0;offset<pending.length;offset+=80){
     const chunk=pending.slice(offset,offset+80);
@@ -77,6 +87,12 @@ export async function prepareImportPlaceAnchors(records,{
         throw Error('新增空間定錨座標或 UID 不符；請重新核對');
       byCoordinate.set(key,uid);
       created++;
+    }
+    for(const [key,place] of chunk){
+      const uid=byCoordinate.get(key);
+      for(const other of sameNameKeys.get(nameKey(place.title))||[]){
+        byCoordinate.set(other,uid);reused++;
+      }
     }
     onProgress?.({phase:'建立原始座標定錨',completed:offset+chunk.length,total:pending.length});
   }
