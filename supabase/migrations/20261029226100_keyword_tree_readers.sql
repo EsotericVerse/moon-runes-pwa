@@ -7,21 +7,15 @@ AS $fn$
 DECLARE
  v_scope text:=lower(btrim(coalesce(p_scope_id,'')));
  v_config regclass;
- v_current text;
- v_global boolean;
  v_meta jsonb;
 BEGIN
  IF v_scope !~ '^[a-z][a-z0-9]{0,14}$'
     OR p_class_uid !~ '^[A-Za-z0-9]{4}$' THEN RETURN false; END IF;
  v_config:=to_regclass(format('silver.%I',v_scope));
  IF v_config IS NULL THEN RETURN false; END IF;
- EXECUTE format('SELECT current_keyword_class_uid,keyword_class_share_enabled,keyword_meta FROM %s WHERE id=$1',v_config)
-   INTO v_current,v_global,v_meta USING v_scope;
- IF (coalesce(v_meta,'{}'::jsonb)->'class_shares') ? p_class_uid THEN
-   RETURN (v_meta->'class_shares'->p_class_uid)='true'::jsonb;
- END IF;
- -- Preserve the existing public active Class until its own setting is saved.
- RETURN p_class_uid=v_current AND coalesce(v_global,false);
+ EXECUTE format('SELECT keyword_meta FROM %s WHERE id=$1',v_config)
+   INTO v_meta USING v_scope;
+ RETURN coalesce((v_meta->'class_shares'->>p_class_uid)::boolean,false);
 END
 $fn$;
 REVOKE ALL ON FUNCTION silver.keyword_class_is_shared(text,text) FROM PUBLIC;
@@ -203,3 +197,27 @@ END
 $fn$;
 REVOKE ALL ON FUNCTION silver.read_shared_keyword_classes(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION silver.read_shared_keyword_classes(text) TO anon,authenticated;
+
+-- Promote the old Scope-wide share flag once, onto the previously active Class.
+-- Only the existing Scope configuration is updated; no Keywords or Galaxy rows.
+DO $migration$
+DECLARE
+ rec record;
+ config_relation regclass;
+BEGIN
+ FOR rec IN SELECT id FROM silver.manage WHERE manage_role='scope' AND active LOOP
+   config_relation:=to_regclass(format('silver.%I',rec.id));
+   IF config_relation IS NULL THEN CONTINUE; END IF;
+   IF NOT EXISTS(SELECT 1 FROM information_schema.columns
+     WHERE table_schema='silver' AND table_name=rec.id AND column_name='keyword_meta')
+     THEN CONTINUE; END IF;
+   EXECUTE format($query$
+     UPDATE %s SET keyword_meta=jsonb_set(coalesce(keyword_meta,'{}'::jsonb),
+       ARRAY['class_shares',current_keyword_class_uid::text],'true'::jsonb,true)
+     WHERE id=$1 AND keyword_class_share_enabled IS TRUE
+       AND current_keyword_class_uid IS NOT NULL
+       AND NOT (coalesce(keyword_meta,'{}'::jsonb)->'class_shares' ? current_keyword_class_uid)
+   $query$,config_relation) USING rec.id;
+ END LOOP;
+END
+$migration$;
