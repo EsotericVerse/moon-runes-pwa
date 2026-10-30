@@ -60,6 +60,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
   const managementWrite=withWriteNotice(managementWriteUnchecked);
   const insertRows=withWriteNotice(insertRowsUnchecked);
+  // Import batch retries handle UID conflicts themselves. Keep auth checks and
+  // failures, but do not flash a global notice for every bisected retry.
+  const insertImportRows=insertRowsUnchecked;
   const updateRows=withWriteNotice(updateRowsUnchecked);
   const deleteRows=withWriteNotice(deleteRowsUnchecked);
   const updateImportRows=withWriteNotice(updateImportRowsUnchecked);
@@ -93,7 +96,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let count=0;
     for(let offset=0;offset<list.length;offset+=batchSize){
       const batch=list.slice(offset,offset+batchSize);
-      const result=await managementWrite({
+      const result=await managementWriteUnchecked({
         p_table:table,
         p_operation:'insert',
         p_rows:batch,
@@ -528,7 +531,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(error)throw new Error(error.message||'Account sign-out failed');
   }
 
-  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,updateRows,deleteRows,updateImportRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,readSharedKeywordClasses,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
+  return {publicClient,authClient,dbAuthRelation,selectAuthRow,insertRows,insertImportRows,updateRows,deleteRows,updateImportRows,resetKeywordClassification,readKeywordClass,readScopeStatistics,readScopeCategoryTotals,readScopeOverview,readScopeEarliest,readLocStatistics,findGalaxyDuplicates,readKeywordTreeSummary,readKeywordTreeCatalog,readSharedKeywordClasses,writeKeywordLibraryItem,copyKeywordLibraryClass,copyRune66KeywordClass,isCurrentEmailBlocklisted,deleteScope,moveScopeBlock,provisionScope,manageScopeRegistry,getAccountSession,signInWithGoogle,signOutAccount};
 }
 
 // One universal hard ceiling for all database read adapters and selected columns.
