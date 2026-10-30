@@ -524,6 +524,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           }
         }
       });
+      // No-op reimports must stop before anchor creation, article writes, or media writes.
+      if(isUnchangedImportBeforeWrite(unique,existingByCreatedAt,{
+        hasMedia:Boolean(analyzed.mediaOnly.length||archiveEvidence.length||
+          analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
+            (item.mediaRefs?.length||0)))
+      })){
+        setProgress(null);
+        setStatus(t('uiExtra.importUI.importNoChanges'));
+        setRows([]);
+        setArchiveEvidence([]);
+        return;
+      }
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
