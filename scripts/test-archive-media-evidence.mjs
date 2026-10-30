@@ -129,3 +129,41 @@ test('Media-only Threads post keeps verified ZIP image even without a Galaxy art
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,0);
 });
+
+
+test('ZIP media imports use linked article createtime when the media has no own timestamp',()=>{
+  const c=createArchiveEvidenceCollector();
+  c.onRecord({platform:'facebook',attachments:[{uri:'photos/dated.jpg'}]},'ART00001');
+  c.onMediaEntry({path:'photos/dated.jpg'});
+  const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:12});
+  const plan=prepareArchiveMedia(source,new Set(['ART00001']),
+    new Map([['ART00001','2023-08-11T05:06:07.000Z']]));
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].createtime,'2023-08-11T05:06:07.000Z');
+});
+
+test('ZIP time fallback never invents a date from EXIF or an unrelated article',()=>{
+  const c=createArchiveEvidenceCollector();
+  c.onRecord({platform:'facebook',attachments:[{uri:'photos/old.jpg'}]},'ART00002');
+  c.onMediaEntry({path:'photos/old.jpg'});
+  c.onExif({path:'photos/old.jpg',metadata:{cameraLocalTime:'2021:01:01 09:15:00'}});
+  const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:13});
+  const plan=prepareArchiveMedia(source,new Set(['ART00002']),
+    new Map([['WRONG003','2022-01-02T03:04:05.000Z']]));
+  assert.equal(plan.media[0].createtime,null);
+  assert.equal(plan.exif[0].camera_local_time,'2021:01:01 09:15:00');
+});
+
+test('Media linked by multiple articles uses the earliest available article timestamp',()=>{
+  const c=createArchiveEvidenceCollector();
+  for(const uid of ['ART00003','ART00004'])
+    c.onRecord({platform:'facebook',attachments:[{uri:'photos/shared.jpg'}]},uid);
+  c.onMediaEntry({path:'photos/shared.jpg'});
+  const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:17});
+  const plan=prepareArchiveMedia(source,new Set(['ART00003','ART00004']),new Map([
+    ['ART00003','2024-08-01T02:00:00.000Z'],
+    ['ART00004','2024-07-01T02:00:00.000Z']
+  ]));
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].createtime,'2024-07-01T02:00:00.000Z');
+});
