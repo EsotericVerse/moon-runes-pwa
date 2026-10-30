@@ -6,6 +6,7 @@ export const UNIVERSAL_IMPORT_ACCEPT='.zip,.json,.csv,.tsv,.xlsx,.ods,.docx,.ppt
 export {MAX_ARCHIVE_BYTES as ARCHIVE_MAX_BYTES,MAX_JSON_BYTES as ARCHIVE_JSON_MAX_BYTES};
 export const IMPORT_FIELD_ALIASES=Object.freeze({
   uid:['uid'],
+  site_id:['site_id','post_id','id_str'],
   content:['content','body','text','message','description'],
   title:['title','name','subject'],
   createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','createAt','published_at','publishedAt','date'],
