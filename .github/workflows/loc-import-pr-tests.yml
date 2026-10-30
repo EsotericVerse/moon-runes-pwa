@@ -1,5 +1,5 @@
 name: LOC import regression (PR)
-# Lightweight, read-only parser tests. No Next build, deploy, or database access.
+# Read-only PR regressions. No deployment, production build, or database access.
 on:
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,3 +34,5 @@ jobs:
             scripts/test-archive-import-pipeline.mjs \
             scripts/test-archive-media-evidence.mjs \
             scripts/test-private-archive-safety.mjs
+      - name: Full app bootstrap and admin regressions
+        run: npm run test:bootstrap
