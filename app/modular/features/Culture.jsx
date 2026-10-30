@@ -446,7 +446,7 @@ export default function Culture(){
     queryKey:['scope-active-keyword-class-name',scopeId],
     // Opening/focusing the style selector is the first reason to look up
     // the active Class. Ordinary Time River viewing performs no keyword SQL.
-    enabled:keywordOptionsScope===scopeId&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
+    enabled:(keywordOptionsScope===scopeId||styleFilter==='rune66')&&!isAggregateScope&&!isLrunesDaily&&!isLocItemView,
     queryFn:async()=>{
       const {selectAvailableKeywordClasses}=await import('../../loc/keyword-analysis');
       return selectAvailableKeywordClasses(scopeId);
