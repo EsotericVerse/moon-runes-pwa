@@ -15,6 +15,7 @@ export default {
   "importTitle": "Data import",
   "importProcessingWait": "Import / processing in progress. Please wait…",
   "importEstimatedMinutes": "Estimated import time: about {min}–{max} minutes (rough estimate from parsed data; actual time depends on network and database speed).",
+  "importNoChanges": "Comparison complete: nothing to import (0 items). Finished without writing any data.",
   "zipInspecting": "Identifying ZIP archive contents…",
   "zipInspected": "ZIP inspection complete ({count} entries). No records imported.",
   "zipDetected": "ZIP archive source",

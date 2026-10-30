@@ -45,6 +45,23 @@ export function dedupeIncomingImport(records=[]){
   return {unique,aliases,duplicates};
 }
 
+// After timestamp matching, exit before writes when every imported article is
+// already identical and no location/media follow-up can be required.
+export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}){
+  if(hasMedia||!Array.isArray(records)||!records.length||!(matches instanceof Map))return false;
+  return records.every(record=>{
+    const saved=matches.get(record.uid);
+    if(!saved)return false;
+    if(String(saved.title||'')!==String(record.title||'')||
+       String(saved.content||'')!==String(record.content||''))return false;
+    const incomingUrl=String(record.url||'').trim();
+    if(incomingUrl&&incomingUrl!==String(saved.url||'').trim())return false;
+    // A missing place_id may still be completed from an imported location.
+    if(!String(saved.place_id||'').trim()&&String(record.location||'').trim())return false;
+    return true;
+  });
+}
+
 // PostgreSQL performs native TIMESTAMPTZ equality; returned UTC timestamps
 // are associated by their existing second component without JS date parsing.
 export async function matchExistingImportByCreatedAt(records,{readTimestamps,onProgress}={}){
