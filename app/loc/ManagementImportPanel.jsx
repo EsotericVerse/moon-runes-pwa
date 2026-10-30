@@ -10,7 +10,7 @@ registerDefaultSection('uiExtra.importUI',importUIZh);
 
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import ScopeSourceCorrection from './ScopeSourceCorrection';
-import {insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
+import {insertRows,insertImportRows,dbAuthRelation,dbAuthClient,updateRows,updateImportRows} from './db-client.mjs';
 import {useAccount} from './use-account';
 import {useAsyncResource} from './use-async-resource';
 import {canonicalImportSourceName,inferImportSourceFromFilename} from './source-name.mjs';
