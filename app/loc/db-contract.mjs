@@ -401,13 +401,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return data===true;
   }
 
-  async function copyRune66KeywordClassUnchecked(scopeId){
+  async function copyRune66KeywordClassUnchecked(scopeId,sourceClassUid){
     const {generateKeywordClassUid}=await import('./keyword-uidlist.mjs');
     const uid=generateKeywordClassUid();
-    const data=await readOwnedKeywordNodes('silver.'+normalizeScopeId(scopeId)+'_keywords');
-    const source=data.find(row=>row.type==='class'&&row.name==='符文66');
-    if(!source)throw new Error('找不到符文66關鍵字群組');
-    return copyKeywordLibraryClass(scopeId,source.uid,'符文66副本-'+uid);
+    return copyKeywordLibraryClass(scopeId,sourceClassUid,'符文66副本-'+uid);
   }
 
   async function moveScopeBlockUnchecked(scopeId,pageName,uid,direction){
