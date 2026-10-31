@@ -34,6 +34,7 @@ export default function DatabaseTarget({scopeGroup}){
   const [saving,setSaving]=useState(false);
   const [backupHealth,setBackupHealth]=useState({state:'idle'});
   const [authOverview,setAuthOverview]=useState(()=>readonlyAuthStatus({
+    identityProvider:process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER||'',
     neonAuthUrl:process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL||'',
     neonDataApiUrl:process.env.NEXT_PUBLIC_LOC_NEON_DATA_API_URL||''
   }));
@@ -43,7 +44,8 @@ export default function DatabaseTarget({scopeGroup}){
     // No provider probe or OAuth sign-in. This only reads local routing and public recovery metadata.
     setAuthOverview(readonlyAuthStatus({
       primaryId:preferredDatabasePrimary(),
-      neonAuthUrl:process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL||'',
+      identityProvider:process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER||'',
+    neonAuthUrl:process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL||'',
       neonDataApiUrl:process.env.NEXT_PUBLIC_LOC_NEON_DATA_API_URL||''
     }));
     let active=true;

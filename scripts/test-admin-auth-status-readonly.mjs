@@ -8,6 +8,9 @@ test('Database OAuth source follows existing primary route, not selected UI row'
   assert.equal(defaultStatus.primaryOAuth,'Supabase Auth');
   assert.equal(defaultStatus.supabaseSupported,true);
   assert.equal(defaultStatus.neonSupported,false);
+  assert.equal(readonlyAuthStatus({identityProvider:'clerk'}).primaryOAuth,'Clerk');
+  assert.equal(readonlyAuthStatus({identityProvider:'clerk',primaryId:'neon-current'}).primaryOAuth,'Clerk');
+  assert.equal(readonlyAuthStatus({identityProvider:'unsupported'}).primaryOAuth,'Supabase Auth');
   const neon=readonlyAuthStatus({primaryId:'neon-current',
     neonAuthUrl:'https://ep-example.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth',
     neonDataApiUrl:'https://ep-example.apirest.c-4.ap-southeast-1.aws.neon.tech/neondb/rest/v1'});
