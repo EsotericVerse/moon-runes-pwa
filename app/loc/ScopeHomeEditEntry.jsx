@@ -37,16 +37,16 @@ export default function ScopeHomeEditEntry(){
         editDock?.begin('local');
         return;
       }
-      const result=await account.refresh();
+      const result=await account.refresh({forceVerify:true});
       if(!result?.user){
-        setMessage('uiExtra.editBlocks.signInToEnterEditMode');
+        setMessage({key:'uiExtra.editBlocks.signInToEnterEditMode',showLogin:true});
         return;
       }
       const allowed=scopeId==='loc'
         ?result.authorizer?.canManageGroupSync('loc')
         :result.authorizer?.canManageScopeSync(scopeId);
       if(!allowed){
-        setMessage('uiExtra.editBlocks.editPermissionDenied');
+        setMessage({key:'uiExtra.editBlocks.editPermissionDenied'});
         return;
       }
       // A new verified edit entry starts a fresh 30-minute idle / 2-hour
@@ -58,7 +58,7 @@ export default function ScopeHomeEditEntry(){
       // This also preserves the dynamic Scope shell's existing scopeid query.
       editDock?.begin(scopeId);
     }catch(error){
-      setMessage(String(error?.message||'uiExtra.editBlocks.editPermissionCheckFailed'));
+      setMessage({error:String(error?.message||'編輯權限查詢失敗，請檢查登入或資料庫連線。')});
     }finally{
       setBusy(false);
     }
@@ -68,6 +68,9 @@ export default function ScopeHomeEditEntry(){
   return <div className="scope-home-edit-entry">
     <button type="button" className="loc-button" disabled={busy}
       onClick={enter}><UiText id={busy?'uiExtra.editBlocks.checkingEditPermission':'uiExtra.editBlocks.enterEditMode'}/></button>
-    {message?<p className="scope-status" role="status"><UiText id={message}/></p>:null}
+    {message?<div className="scope-status" role="status">
+      <p>{message.error||<UiText id={message.key}/>}</p>
+      {message.showLogin?<p><a href="/local/settings/">前往設定首頁登入 Google 帳號</a></p>:null}
+    </div>:null}
   </div>;
 }

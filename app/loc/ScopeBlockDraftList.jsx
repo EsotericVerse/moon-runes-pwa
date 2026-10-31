@@ -18,6 +18,7 @@ import {isHomeFrameFor} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
 import {invalidateScopeBlockPage} from './scope-data';
+import {planHomeBlockWrites} from './home-block-draft-plan.mjs';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -157,8 +158,10 @@ export default function ScopeBlockDraftList({
     if(busy)return false;
     setBusy(true);setMessage('');
     if(inDock)editDock?.setNotice('');
-    const visible=drafts.filter(draft=>!draft._deleted);
-    for(const draft of visible){
+    const plan=planHomeBlockWrites(drafts,JSON.parse(initialDrafts.current||'[]'),{preserveOrder});
+    const {changed}=plan;
+    for(const {draft,modified} of changed){
+      if(!modified)continue;
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft)){
         setBusy(false);report(t('uiExtra.editBlocks.emptyContent'));return false;
       }
@@ -185,11 +188,15 @@ export default function ScopeBlockDraftList({
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
         ?HomeBlock.stripLocHomeEditorPlaceholders(value)
         :String(value??'');
-      for(const draft of drafts.filter(draft=>draft._deleted&&draft.stored)){
+      for(const draft of plan.deleted){
         await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
       }
       const savedDrafts=[];
-      for(const [index,draft] of visible.entries()){
+      for(const {index,draft,modified,order} of changed){
+        if(!modified){
+          savedDrafts.push(draft);
+          continue;
+        }
         const isHomeFrame=isHomeFrameFor(scopeId,pageName,draft.order);
         const values={
           page_name:pageName,
@@ -198,7 +205,7 @@ export default function ScopeBlockDraftList({
           block_subtitle:HomeBlock.plainBlockLine(draft.subtitle),
           ...(isHomeFrame?{block_image:draft.image?.source==='custom'&&!String(draft.image.url||'').trim()?{...draft.image,source:'default',url:''}:(draft.image||null)}:{}),
           block_text:normalizeSavedHtml(draft.text),
-          block_order:preserveOrder?Number(draft.order)||index+1:index+1,
+          block_order:order,
           block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},entityIndex)=>({
             uid,
             title:String(title||'').trim(),
@@ -211,10 +218,16 @@ export default function ScopeBlockDraftList({
         else await insertRows(table,[{uid,...values}]);
         savedDrafts.push({...draft,uid,stored:true,order:values.block_order,_deleted:false});
       }
-      await refreshBlockQueries();
+      // SQL writes have already succeeded. Failure to refresh SWR must never
+      // be presented as an unsuccessful write (which invites duplicate retries).
+      let refreshWarning='';
+      if(plan.hasWrites){
+        try{await refreshBlockQueries();}
+        catch{refreshWarning='資料已儲存，但畫面重新載入失敗，重新整理頁面即可。';}
+      }
       setDrafts(savedDrafts);
       initialDrafts.current=JSON.stringify(savedDrafts);
-      onDone(t('uiExtra.editBlocks.saved'),{switching});
+      onDone(refreshWarning||t('uiExtra.editBlocks.saved'),{switching});
       return true;
     }catch(error){
       report(t('uiExtra.editBlocks.saveFailedPrefix')+String(error?.message||error||t('uiExtra.editBlocks.unknown')));
