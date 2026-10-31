@@ -122,7 +122,7 @@ async function verifyIdentityToken(request,env){
     key=await clerkPublicKey(env.LOC_CLERK_ISSUER,header.kid);
   }else{
     const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
-    const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\\s/g,'');
+    const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,'');
     if(!body)throw fail('Recovery signing key unavailable',503);
     try{
       key=await crypto.subtle.importKey('spki',b64bytes(body),
