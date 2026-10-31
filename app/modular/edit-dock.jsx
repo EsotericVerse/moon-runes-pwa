@@ -120,10 +120,14 @@ export function EditDockProvider({children}){
       const userId=String(session?.user?.id||'');
       const email=String(session?.user?.email||'').trim().toLowerCase();
       const identity=userId+'|'+email;
-      const identityChanged=lastIdentity!==null&&lastIdentity!==identity;
-      lastIdentity=identity;
+      const identityChanged=Boolean(userId)&&lastIdentity!==null&&lastIdentity!==identity;
+      // An initial unverified/empty SDK event on a fresh HTML page is not a
+      // sign-out from an active editor. Avoid clearing the cross-page editor
+      // entry marker before the first Clerk verification can finish.
+      if(userId)lastIdentity=identity;
+      else if(event==='SIGNED_OUT')lastIdentity=null;
       const invalidated=event==='SIGNED_OUT'||identityChanged;
-      if(!invalidated)return;
+      if(!invalidated||!activeScope.current)return;
       if(activeScope.current==='local'&&Capacitor.isNativePlatform())return;
       try{clearEditorSession(window.sessionStorage);}catch{}
       end();
