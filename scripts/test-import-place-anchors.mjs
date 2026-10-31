@@ -57,7 +57,7 @@ test('creation makes a hidden anchor per new name, with optional confirmed coord
   assert.equal(result.unmatchedCoordinates,0);
   const cafe=db.rows.find(row=>row.title==='咖啡 店');
   assert.equal(cafe.title,'咖啡 店');
-  assert.deepEqual(cafe.address,[121.6,25.1]);
+  assert.equal(cafe.address,null,'同名地點有不同座標時不任選其中一個');
   assert.equal(cafe.hidden_depth,0);
   assert.equal(importedPlaceId({incoming:station,byName:result.byName}),'AAAA');
   const cafeUid=importedPlaceId({incoming:cafeA,byName:result.byName});
