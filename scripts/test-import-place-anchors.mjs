@@ -97,7 +97,7 @@ test('local import and missing Trace table do not block article import',async()=
     data:null,error:{code:'42P01',message:'missing'}
   })})})})});
   const missing=await prepareImportPlaceAnchors([named('地點',25,121)],{
-    scopeId:'lo3rwang',relation,allowMissing:true
+    scopeId:'lo3rwang',relation,allowMissing:true,createMissing:false
   });
   assert.equal(missing.skipped,1);
   assert.equal(missing.unmatchedCoordinates,1);
