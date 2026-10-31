@@ -25,6 +25,7 @@ import {facebookPostPlace} from './archive-geo-objects.mjs';
 import {dedupeIncomingImport,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from './import-place-anchors.mjs';
+import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
@@ -388,7 +389,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [archiveSummary,setArchiveSummary]=useState(null);
   const [archiveEvidence,setArchiveEvidence]=useState([]);
   const [geoPlaceCandidates,setGeoPlaceCandidates]=useState([]);
-  const [createMissingAnchors,setCreateMissingAnchors]=useState(false);
   const [rows,setRows]=useState([]);
   const [queue,setQueue]=useState([]);
   const [queueIndex,setQueueIndex]=useState(0);
@@ -443,10 +443,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       timeWindow?eligibleArchiveEvidence.length:(archiveSummary?.mediaImportable||0));
     return estimateImportMinutes({articles:analyzed.valid.length,media});
   },[analyzed,archiveSummary?.mediaImportable,timeWindow,eligibleArchiveEvidence]);
+  const eligibleGeoRecords=useMemo(()=>geoPlaceCandidates.map(place=>({
+    ...place,__importPlaceName:place.location,__importPlaceAddress:place.address,
+    __importVisitTimes:(place.__importVisitTimes||[]).filter(time=>
+      !timeWindow||(time>=timeWindow.start&&time<=timeWindow.end))
+  })).filter(place=>place.__importPlaceName&&
+    (!timeWindow||place.__importVisitTimes.length>0)),[geoPlaceCandidates,timeWindow]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
-    setFileName(file.name);setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);setCreateMissingAnchors(false);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
+    setFileName(file.name);setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);setArchiveDetection(null);setArchiveSummary(null);setProgress(null);setStatus('');
     if(file.size>ARCHIVE_MAX_BYTES){
       setStatus(t('uiExtra.importUI.zipTooLarge'));
       return;
@@ -479,19 +485,23 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
           // Separate Facebook visit records remain review candidates, not Galaxy articles.
-          const key=importGeoKey(place.__importCoordinates);
-          if(key&&geoKeys.has(key)){
+          const key=String(place.location||'').normalize('NFKC').trim().toLocaleLowerCase('und')+
+            '|'+importGeoKey(place.__importCoordinates);
+          const time=parseImportCreatedTime(place.timestamp);
+          if(geoKeys.has(key)){
             const index=geoKeys.get(key),previous=geoPlaces[index];
             geoPlaces[index]={...previous,
               location:previous.location||place.location,
               address:previous.address||place.address,
-              placeUrl:previous.placeUrl||place.placeUrl};
+              placeUrl:previous.placeUrl||place.placeUrl,
+              __importVisitTimes:time?[...(previous.__importVisitTimes||[]),time]:
+                previous.__importVisitTimes||[]};
             return;
           }
           if(geoPlaces.length>=100000)
             throw Error('Facebook 不同地點候選超過 100,000 組，未開始匯入；請分批處理。');
-          if(key)geoKeys.set(key,geoPlaces.length);
-          geoPlaces.push(place);
+          geoKeys.set(key,geoPlaces.length);
+          geoPlaces.push({...place,__importVisitTimes:time?[time]:[]});
         },onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
@@ -587,16 +597,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     await loadQueuedFile(queue[next],next,queue.length);
   }
   const canRestoreAnchors=scopeId!=='local'&&scopeId!=='loc'&&(
-    (!timeWindow&&geoPlaceCandidates.some(place=>Boolean(importGeoKey(place.__importCoordinates)&&place.location)))||
-    analyzed.valid.some(record=>Boolean(importGeoKey(record.__importCoordinates)&&record.__importPlaceName))
+    eligibleGeoRecords.length>0||
+    analyzed.valid.some(record=>Boolean(record.location||record.__importPlaceName))
   );
   async function saveGeoPlaces(){
-    if(busy||timeWindow||!createMissingAnchors||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
-    const candidates=geoPlaceCandidates.map(place=>({
-      ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
-    }));
+    if(busy||!canRestoreAnchors||rows.length||archiveEvidence.length)return;
+    const candidates=eligibleGeoRecords;
     if(!candidates.length)return;
-    if(!window.confirm('只依 Facebook 原始地名與完全相同的經緯度建立缺少的 Trace 定錨點（預設隱藏）；不新增 Galaxy 文章。確定執行？'))return;
+    if(!window.confirm('將原始打卡地名及日期匯入空間與時間定錨（已存在的沿用；不新增文章）。確定執行？'))return;
     setBusy(true);setStatus('');setProgress({stage:'核對原始打卡地點',completed:0,total:0,percent:null});
     try{
       const result=await prepareImportPlaceAnchors(candidates,{
@@ -604,9 +612,23 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
-      setStatus('獨立 Facebook 地點已核對：沿用既有定錨點 '+result.reused.toLocaleString()+
-        ' 筆、新增 '+result.created.toLocaleString()+' 筆、未匹配 '+result.unmatchedCoordinates.toLocaleString()+
-        ' 組。沒有新增 Galaxy 文章；沒有座標的造訪紀錄未推測地點。');
+      const dates=await prepareImportTimeAnchors(candidates,{
+        scopeId,relation:dbAuthRelation,
+        onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
+          percent:p.total?Math.round(100*p.completed/p.total):null})
+      });
+      const visits=candidates.flatMap(place=>{
+        const uid=importedPlaceId({incoming:place,byName:result.byName});
+        return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
+      });
+      const saved=await recordImportPlaceVisits(visits,{
+        relation:dbAuthRelation,table:result.table,timesByUid:result.timesByUid
+      });
+      setStatus('獨立 Facebook 打卡已匯入：空間定錨新增 '+result.created.toLocaleString()+
+        '、沿用 '+result.reused.toLocaleString()+'；日期定錨新增 '+
+        dates.created.toLocaleString()+'、沿用 '+dates.reused.toLocaleString()+
+        '；地點打卡時間新增 '+saved.added.toLocaleString()+
+        '。沒有新增 Galaxy 文章；缺少原始座標的地點不會捏造座標。');
     }catch(error){setStatus('Trace 地點儲存失敗：'+String(error?.message||error));}
     finally{setBusy(false);setProgress(null);}
   }
@@ -623,7 +645,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       }else assertStandaloneImportDestination({nativeLocal,fileName,rows,source});
     }
     catch(error){setStatus(String(error?.message||error));return;}
-    if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
+    // Original check-in names and calendar dates are part of the import, not an optional follow-up.
     setBusy(true);setStatus('');
     const showProgress=(stage,completed=0,total=0)=>{
       // A long read-only comparison phase never calls the database write path,
@@ -725,13 +747,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         source_id:record.source_id?finalUid(record.source_id):null,
         target_id:(record.target_id||[]).map(finalUid)
       }));
-      // No-op reimports must stop before anchor creation, article writes, or media writes.
+      // Articles with check-ins still need a spatial/date backfill on repeat imports.
       if(isUnchangedImportBeforeWrite(unique,existingBySiteId,{
         hasMedia:Boolean(analyzed.mediaOnly.length||eligibleArchiveEvidence.length||
-          (createMissingAnchors&&!timeWindow&&geoPlaceCandidates.length)||
+          eligibleGeoRecords.length||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
-      })){
+      })&&!unique.some(record=>record.location||record.__importPlaceName)){
         setProgress(null);
         setStatus(t('uiExtra.importUI.importNoChanges'));
         setRows([]);
@@ -741,19 +763,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // Importing an original check-in also restores its spatial anchor.
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
-      // Only new articles get a place_id; existing articles are never touched
-      // here, so their coordinates must not read or create anchors either.
-      const needsAnchor=unique.filter(record=>!existingBySiteId.has(record.uid));
-      const geoAnchorRecords=timeWindow?[]:geoPlaceCandidates.map(place=>({
-        ...place,__importPlaceName:place.location,__importPlaceAddress:place.address
-      }));
-      const placeAnchors=await prepareImportPlaceAnchors([...needsAnchor,...geoAnchorRecords],{
-        scopeId,relation:dbAuthRelation,allowMissing:!createMissingAnchors,
-        createMissing:createMissingAnchors,
+      const geoAnchorRecords=eligibleGeoRecords;
+      const placeAnchors=await prepareImportPlaceAnchors([...unique,...geoAnchorRecords],{
+        scopeId,relation:dbAuthRelation,createMissing:true,
+        onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
+      });
+      const timeAnchors=await prepareImportTimeAnchors([...unique,...geoAnchorRecords],{
+        scopeId,relation:dbAuthRelation,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
       let updated=0,checkedExisting=0;
+      const placeVisits=[];
       const updateSizer=createImportBatchSizer();
       let updateQueue=[];
       const existingCount=existingBySiteId.size;
@@ -773,8 +794,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        // Existing articles only ever get their title and content updated.
-        // site_id, relations, URL and place are written on INSERT and left alone here.
+        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName});
+        if(restoredPlace)changes.place_id=restoredPlace;
+        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        const visitUid=restoredPlace||(
+          matchedPlace===String(existing.place_id||'').trim()?matchedPlace:null);
+        if(visitUid&&record.createtime)placeVisits.push({uid:visitUid,time:record.createtime});
         if(Object.keys(changes).length){
           updateQueue.push({uid:String(existing.uid),...changes});
           if(updateQueue.length>=updateSizer.size)await flushUpdates();
@@ -789,7 +814,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const result={inserted:0,conflicts:0,insertedUids:new Set(),conflictedUids:new Set()};
       const insertSizer=createImportBatchSizer();
       let payload=[],newArticleProcessed=0;
-      const placeVisits=[];
+      const newArticleVisits=[];
       const flushNewArticles=async()=>{
         if(!payload.length)return;
         const count=payload.length,started=Date.now();
@@ -814,17 +839,26 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
           ...article}=record;
-        if(placeUid)placeVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
+        if(placeUid)newArticleVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
         payload.push(placeUid?{...article,place_id:placeUid}:article);
         if(payload.length>=insertSizer.size)await flushNewArticles();
       }
       await flushNewArticles();
-      const savedVisits=placeVisits.filter(visit=>result.insertedUids.has(visit.articleUid));
+      const savedVisits=[
+        ...placeVisits,
+        ...newArticleVisits.filter(visit=>result.insertedUids.has(visit.articleUid)),
+        ...geoAnchorRecords.flatMap(place=>{
+          const uid=importedPlaceId({incoming:place,byName:placeAnchors.byName});
+          return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
+        })
+      ];
+      let recordedVisits=0;
       if(savedVisits.length){
         showProgress('記錄定錨打卡時間');
-        await recordImportPlaceVisits(savedVisits,{
+        const visitResult=await recordImportPlaceVisits(savedVisits,{
           relation:dbAuthRelation,table:placeAnchors.table,timesByUid:placeAnchors.timesByUid
         });
+        recordedVisits=visitResult.added;
       }
       duplicateCount+=result.conflicts;
       for(const uid of result.insertedUids)knownArticleIds.set(uid,uid);
@@ -873,7 +907,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':'')+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':'')+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
@@ -999,22 +1033,18 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </p>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
     {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
-      <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。經緯度僅以完全相同的數值判別；可明確選擇是否用 Facebook 原始地名建立缺少的 Trace 定錨點，日後再整理名稱。獨立打卡不會轉成 Galaxy 文章。</p>
+      <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。匯入時會按原始地名建立缺少的空間定錨與日期定錨；已有的沿用，經緯度不足時不推測。獨立打卡不會轉成 Galaxy 文章。</p>
       {geoPlaceCandidates.length?<ul>{geoPlaceCandidates.slice(0,12).map((place,index)=>
         <li key={index}>{place.location||'未提供地名'} · {place.__importCoordinates?
           place.__importCoordinates.latitude+', '+place.__importCoordinates.longitude:'未提供經緯度'}
           {place.placeUrl?' · '+place.placeUrl:''}</li>)}</ul>:null}
-      {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">來源地點事件多於不重複座標候選；預覽僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
+      {archiveSummary.geoPlaceObjects>geoPlaceCandidates.length?<p className="scope-status">來源地點事件多於合併後的地點候選；預覽僅顯示前 {geoPlaceCandidates.length.toLocaleString()} 筆。</p>:null}
     </section>:null}
-    {canRestoreAnchors?<section className="scope-import-preview" aria-label="Facebook 原始座標地點重建">
-      <label><input type="checkbox" checked={createMissingAnchors} disabled={busy}
-        onChange={event=>setCreateMissingAnchors(event.target.checked)}/>
-        依 Facebook 原始 place.name 和精確經緯度，建立尚不存在的 Trace 定錨點（預設隱藏；需要明確確認；不以 LOC location 名稱推測）
-      </label>
-      <p className="scope-status">不勾選只沿用既有座標相同的定錨點；沒有原始地名或經緯度的紀錄不會自動建立。</p>
+    {canRestoreAnchors?<section className="scope-import-preview" aria-label="打卡定錨匯入">
+      <p className="scope-status">將自動建立缺少的空間定錨與日期定錨；已有日期沿用。缺少經緯度仍保留原始地名，不推測座標。</p>
       {!rows.length&&!archiveEvidence.length?<button type="button" className="loc-button primary"
-        disabled={busy||!createMissingAnchors} onClick={saveGeoPlaces}>
-        {busy?'正在核對 Trace 地點…':'只匯入獨立打卡地點至 Trace（不新增文章）'}
+        disabled={busy||!eligibleGeoRecords.length} onClick={saveGeoPlaces}>
+        {busy?'正在核對打卡定錨…':'匯入獨立打卡至空間與時間（不新增文章）'}
       </button>:null}
     </section>:null}
     {missingSiteIdCount>0?<p className="scope-status" role="status">

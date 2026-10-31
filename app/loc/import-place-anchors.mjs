@@ -23,12 +23,15 @@ function incomingLocations(records){
     const postal=String(record?.__importPlaceAddress??'').trim().slice(0,320);
     const previous=names.get(name);
     if(!previous)names.set(name,{title,postal,address:key?JSON.parse(key):null});
-    else if(!previous.address&&key)names.set(name,{title:previous.title,postal:previous.postal||postal,address:JSON.parse(key)});
+    else if(key&&previous.address&&JSON.stringify(previous.address)!==key)
+      names.set(name,{...previous,address:null,ambiguous:true});
+    else if(!previous.address&&key&&!previous.ambiguous)
+      names.set(name,{title:previous.title,postal:previous.postal||postal,address:JSON.parse(key)});
   }
   return {names,missing};
 }
 export async function prepareImportPlaceAnchors(records,{
-  scopeId,relation,pageSize=750,allowMissing=false,createMissing=false,onProgress
+  scopeId,relation,pageSize=750,allowMissing=false,createMissing=true,onProgress
 }={}){
   const {names,missing}=incomingLocations(records);
   const byCoordinate=new Map(),byName=new Map();
@@ -64,7 +67,7 @@ export async function prepareImportPlaceAnchors(records,{
   for(const [name,place] of names){
     const uid=existingByName.get(name);
     if(uid){byName.set(name,uid);reused++;continue;}
-    if(createMissing&&place.address)pending.push([name,place]);
+    if(createMissing)pending.push([name,place]);
   }
   for(let offset=0;offset<pending.length;offset+=80){
     const chunk=pending.slice(offset,offset+80);
