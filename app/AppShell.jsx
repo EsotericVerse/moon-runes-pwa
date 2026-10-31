@@ -29,7 +29,7 @@ import {EditDockProvider,useEditDock} from './modular/edit-dock';
 const ScopeHomeEditEntry=dynamic(()=>import('./loc/ScopeHomeEditEntry'),{loading:()=>null});
 const HomeEditModeRestore=dynamic(()=>import('./loc/HomeEditModeRestore'),{loading:()=>null});
 import ScrollableScopeNav from './modular/ScrollableScopeNav';
-import ScopeLink from './modular/ScopeLink';
+import ScopeLink,{isManagementHref} from './modular/ScopeLink';
 
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
 
@@ -339,8 +339,13 @@ function AppShellInner({children}){
   const editDock=useEditDock();
   const [restoreHomeEdit,setRestoreHomeEdit]=useState(false);
   useEffect(()=>{
-    try{setRestoreHomeEdit(Boolean(window.sessionStorage.getItem('loc-home-edit-entry-v1')));}
-    catch{setRestoreHomeEdit(false);}
+    try{
+      // Protected management routes already verify Clerk + Scope once via
+      // ManagementAccess. Running HomeEditModeRestore there concurrently
+      // repeats the RPC and can overwrite the live SWR management snapshot.
+      setRestoreHomeEdit(!isManagementHref(pathname)&&
+        Boolean(window.sessionStorage.getItem('loc-home-edit-entry-v1')));
+    }catch{setRestoreHomeEdit(false);}
   },[pathname,scopeId]);
   useEffect(()=>{
     // Next can catch a failed lazy import before React reports the error.
