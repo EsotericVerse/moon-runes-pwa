@@ -2,7 +2,7 @@
 
 import {dbPublicClient,dbAuthClient} from './db-client.mjs';
 
-const relation=client=>client.schema('silver').from('loc_runtime_config');
+const relation=client=>client.schema('silver').from('loc');
 const COLUMNS='id,cache_mode,cache_provider,isr_domains,io_limits,updated_at';
 
 export async function readLocRuntimeConfig(){
