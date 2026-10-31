@@ -35,26 +35,26 @@ export function convertLegacyTimeRows(legacy=[]){
     if(refs.length<1||refs.length>2)throw new Error('舊時間痕跡定錨點數量異常：'+row.resource_id);
     const uid=allocate(),anchor_ids=encodeTimeSegment(refs[0],refs[1]||'');
     periodBaselines.set(String(row.record_id),uid);
-    rows.push({uid,type:'time_period',title:String(row.label||'')+'｜原定錨範圍',
+    rows.push({uid,type:'period',title:String(row.label||'')+'｜原定錨範圍',
       description:'原時間痕跡錨點關係；動態引用真正的定錨日期。',
       address:null,anchor_ids,status:'legacy_boundary'});
   }
   for(const [i,row] of source.entries()){
     if(row.record_type==='style_comment')continue;
-    const type={anchor:'anchor',event:'time_period',period:'time_trace'}[row.record_type];
+    const type={anchor:'anchor',event:'period',period:'era'}[row.record_type];
     if(!type)throw new Error('未知時間紀錄種類：'+row.record_type);
     const uid=migrated[i],refs=row.record_type==='anchor'?[]:
       arrayOf(row.anchor_ids).map(mapAnchor).filter(Boolean);
     let anchor_ids=null;
-    if(type==='time_trace'){
+    if(type==='era'){
       const baseline=periodBaselines.get(String(row.record_id));
       if(!baseline)throw new Error('找不到歷史時間痕跡對照：'+row.resource_id);
       anchor_ids=[baseline];
-    }else if(type==='time_period'){
+    }else if(type==='period'){
       if(!refs.length)throw new Error('歷史事件缺少定錨點：'+row.resource_id);
       anchor_ids=encodeTimeSegment(refs[0],refs[1]||'');
       for(let j=2;j<refs.length;j++){
-        rows.push({uid:allocate(),type:'time_period',
+        rows.push({uid:allocate(),type:'period',
           title:String(row.label||'')+'｜分段 '+j,
           description:String(row.note||'')||null,address:null,
           anchor_ids:encodeTimeSegment(refs[j-1],refs[j]),status:'legacy_split'});
