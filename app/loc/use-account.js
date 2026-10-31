@@ -68,11 +68,18 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
   const obsolete=()=>startedAt!==authRevision;
   let verifiedIdentity=null;
   try{
-    const session=await getAccountSession();
+    // Both endpoints independently verify the current signed Clerk JWT.
+    // Start them together instead of spending an extra network round trip
+    // between Authority identity and the protected Scope permissions RPC.
+    const [sessionRead,permissionRead]=await Promise.allSettled([
+      getAccountSession(),
+      dbAuthClient.schema('silver').rpc('get_my_scope_management')
+    ]);
+    if(sessionRead.status==='rejected')throw sessionRead.reason;
+    const session=sessionRead.value;
     const user=session?.user||null;
     if(obsolete())return signedOutState;
     if(!user){
-      // A verified absence of a login invalidates previously cached grants.
       clearAuthorization();
       scopeMetadata=[];
       authUserId='';
@@ -80,12 +87,10 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
       void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return signedOutState;
     }
-    // A failed permission read does not sign out this verified Clerk user.
-    // Never carry management grants across a failed verification.
+    // Only grant editor access AFTER BOTH independent checks succeed.
     verifiedIdentity={user,email:normalizeAuthEmail(session.oauth?.email||user.email),oauth:session.oauth};
-    // Exactly one authenticated RPC on first access. The database RPC already
-    // includes the blacklist predicate; a second blacklist query is redundant.
-    const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
+    if(permissionRead.status==='rejected')throw permissionRead.reason;
+    const {data,error}=permissionRead.value;
     if(error)throw new Error(error.message||'Management permission read failed');
     if(obsolete())return signedOutState;
     const permissions=Array.isArray(data)?data:[];
