@@ -148,7 +148,7 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
   return <div className="scope-stat-source-works">
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem'}}>
-      <p className="scope-status">{group?'此來源的文章列表':'全部作品列表（含多媒體）'} · {startDate} ～ {endDate}</p>
+      <p className="scope-status">{group?'此來源的文章列表':'全部文章列表'} · {startDate} ～ {endDate}</p>
       <ArticleSortSelect value={articleSort} onChange={setArticleSort}/>
     </div>
     {worksQuery.isPending?<p className="scope-status" role="status">Loading...</p>:null}
