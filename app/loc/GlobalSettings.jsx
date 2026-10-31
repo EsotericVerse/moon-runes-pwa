@@ -145,7 +145,7 @@ export default function GlobalSettings({initialSection='home'}={}){
           {!accountWaiting&&!account.user?<button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>:null}
           {account.user||prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
           {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
-          {process.env.NEXT_PUBLIC_LOC_CONTROL_URL?<p className="scope-status"><a href="/recovery/">獨立資料庫復原控制（Clerk 管理員專用）</a></p>:null}
+          {process.env.NEXT_PUBLIC_LOC_CONTROL_URL?<p className="scope-status"><a href="/recovery/index.html">獨立資料庫復原控制（Clerk 管理員專用）</a></p>:null}
         </section>
         <section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>
