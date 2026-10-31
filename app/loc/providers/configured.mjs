@@ -2,8 +2,14 @@ import {createSupabaseAdapter} from './supabase.mjs';
 import {createBackupPublicAdapter} from './neon-public.mjs';
 import {runtimeDatabaseRouting} from './routing-state.mjs';
 import {createNeonPrimaryAdapter} from './neon-primary.mjs';
+import {createClerkGatewayAdapter} from './clerk-gateway.mjs';
 
 export function createConfiguredAdapter(){
+  // Dedicated portable cutover: all reads/writes and login use LOC-owned
+  // Cloudflare services, never database-hosted Auth. The gateway makes the
+  // selected SQL provider an internal implementation detail.
+  if(process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER==='clerk')
+    return createClerkGatewayAdapter();
   const routing=runtimeDatabaseRouting();
   if(routing.provider==='neon')return createNeonPrimaryAdapter();
   const primary=createSupabaseAdapter();
