@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {verifyManagementEntry} from '../app/loc/auth/management-entry-verification.mjs';
+
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+
+test('a valid management check returns one verified user and authorizer',async()=>{
+  const user={id:'user_ABC123',email:'owner@example.org'};
+  let calls=0;
+  const result=await verifyManagementEntry(async()=>{
+    calls++;
+    return {user,authorizer:{canManageScopeSync:()=>true}};
+  });
+  assert.equal(calls,1);
+  assert.equal(result.user,user);
+  assert.equal(result.authorizer.canManageScopeSync('lo3rwang'),true);
+});
+
+test('not signed in settles as null instead of a permanent loading state',async()=>{
+  assert.equal(await verifyManagementEntry(async()=>null),null);
+});
+
+test('permission failure rejects and is surfaced by the management gate',async()=>{
+  await assert.rejects(()=>verifyManagementEntry(async()=>{
+    throw Error('Permission RPC forbidden');
+  }),/Permission RPC forbidden/);
+});
+
+test('a stalled Clerk or SQL call reaches an explicit timeout',async()=>{
+  await assert.rejects(()=>verifyManagementEntry(()=>new Promise(()=>{}),
+    {timeoutMs:5}),/管理權限核驗逾時/);
+});
+
+test('management gate uses a single direct verified entry, no automatic competing SWR fetch',()=>{
+  const gate=read('app/loc/ManagementAccess.jsx');
+  assert.match(gate,/useAccount\(\{enabled:false\}\)/);
+  assert.match(gate,/verifyManagementEntry\(check\)/);
+  assert.match(gate,/account\.refresh\(\{forceVerify:true\}\)/);
+  assert.match(gate,/setVerification\(\{loading:false,user:result\?\.user/);
+  assert.match(gate,/管理權限核驗失敗/);
+  assert.match(gate,/重新確認管理權限/);
+  assert.doesNotMatch(gate,/const ready=!account\.loading/);
+});
+
+test('UI gate only enters the editor after checked Scope authorization',()=>{
+  const gate=read('app/loc/ManagementAccess.jsx');
+  assert.match(gate,/granted\(verification\.authorizer,scopeId,level\)/);
+  assert.match(gate,/if\(!allowed\|\|entered\)return/);
+  assert.match(gate,/dock\?\.begin\(scopeId\)/);
+  assert.match(gate,/dbAuthEvents\.onAuthStateChange/);
+  assert.match(gate,/event==='SIGNED_OUT'/);
+});

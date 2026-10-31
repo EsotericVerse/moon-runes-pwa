@@ -82,7 +82,7 @@ test('all management pages restore editor access through one verified entry',()=
   assert.match(app,/managementRoute\?<ManagementAccess/);
   assert.match(entry,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
   assert.match(entry,/dock\?\.begin\(scopeId\)/);
-  assert.match(entry,/granted\(account\.authorizer,scopeId,level\)/);
+  assert.match(entry,/granted\(verification\.authorizer,scopeId,level\)/);
   assert.doesNotMatch(manager,/renewEditorSession|sessionExpired|get_my_scope_management/);
 });
 test('expired unified entry verifies identity and fresh scope grant before clearing the lock',()=>{
@@ -90,7 +90,7 @@ test('expired unified entry verifies identity and fresh scope grant before clear
   const ttl=read('app/loc/edit-session-ttl.mjs');
   const auth=read('app/loc/db-contract.mjs');
   assert.match(entry,/async function renew\(\)/);
-  assert.match(entry,/const verified=await getAccountSession\(\)/);
+  assert.match(entry,/const verified=await verifyManagementEntry\(\(\)=>getAccountSession\(\)\)/);
   assert.match(entry,/get_my_scope_management/);
   assert.match(entry,/setAuthorization\(verified.user,Array.isArray\(data\)\?data:\[\]\)/);
   assert.match(entry,/granted\(createScopeAuthorizer\(verified.user\),scopeId,level\)/);

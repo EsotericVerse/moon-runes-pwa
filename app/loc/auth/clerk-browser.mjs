@@ -88,8 +88,15 @@ export function createClerkAccountAdapter({authorityOrigin,
     onAuthStateChange(callback){
       let disposed=false;let off=()=>{};
       const emit=async event=>{
+        // An SDK listener can briefly report signedOut while the verified
+        // session is still present (or while Clerk is initializing). Never
+        // revoke editing on a stale event that contradicts the identity
+        // returned by the signed Authority verification.
         const verified=await session();
-        if(!disposed)callback(event,verified?.session||null);
+        if(disposed)return;
+        if(event==='SIGNED_OUT'&&verified?.session)return;
+        if(event==='SIGNED_IN'&&!verified?.session)return;
+        callback(event,verified?.session||null);
       };
       void identity.onChange(signedIn=>{
         if(!disposed)void emit(signedIn?'SIGNED_IN':'SIGNED_OUT').catch(()=>{});
