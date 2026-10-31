@@ -1680,7 +1680,7 @@ export default function Culture(){
                       relatedSpace={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_space:null}
                       relatedStatistics={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_statistics:null}
                       articleScopeId={work.scope_id||classificationScope}
-                      articleDate={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.date:''}
+                      articleDate={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.article_day||fullDetail.date:''}
                       tracePlace={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.trace_place:null}
                       traceHref={fullTextKey===workKey&&fullDetail?.trace_place
                         ?featureNavigationHref(work.scope_id||classificationScope,'trace',{place:fullDetail.trace_place.uid}):''}
