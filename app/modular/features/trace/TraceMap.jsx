@@ -192,7 +192,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         ...(spatialData?.anchors||[]),...(spatialData?.maps||[])
       ],{scopeId:selectedMap.source_scope||selectedMap.scope_id})
       :null);
-  },[spatialData,selectedRouteUid]);
+  },[ready,spatialData,selectedRouteUid]);
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
