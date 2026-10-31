@@ -50,14 +50,14 @@ test('one event can be reused under two traces without merging separated interva
   const data=buildTimeTraceRiver(source,['trace:example:T001','trace:example:T002']);
   assert.equal(data.items.filter(x=>x.entry_type==='anchor'&&x.uid==='A003').length,4,
     'an anchor appears in both expanded traces and their two child event rows');
-  assert.equal(data.items.filter(x=>x.entry_type==='event'&&x.time_trace_uid==='T001').length,2);
-  assert.equal(data.items.filter(x=>x.time_trace_uid==='T001'&&x.start_date==='2026-01-01'
+  assert.equal(data.items.filter(x=>x.entry_type==='event'&&x.era_uid==='T001').length,2);
+  assert.equal(data.items.filter(x=>x.era_uid==='T001'&&x.start_date==='2026-01-01'
     &&x.end_date==='2026-02-06').length,0,'gap must not be filled');
 });
 test('invalid event UID keeps trace group and broken link label without fake anchor',()=>{
   const data=buildTimeTraceRiver(source,['trace:example:T001']);
   assert.ok(data.groups.find(x=>x.label==='期間｜失效連線 GONE'));
-  assert.ok(!data.items.some(x=>x.time_period_uid==='GONE'));
+  assert.ok(!data.items.some(x=>x.period_uid==='GONE'));
 });
 test('empty trace still appears and can be expanded',()=>{
   const data=buildTimeTraceRiver([row('T003','period','空痕跡',null,null,{anchor_ids:[]})]);
