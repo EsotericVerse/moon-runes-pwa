@@ -22,14 +22,14 @@ function allowedOrigin(request,env){
   if(origin&&origin!==configured)throw fail('Origin not allowed',403);
   return origin;
 }
-// Clerk's JWKS endpoint is public. Its origin is pinned to the configured
-// Clerk issuer; never resolve an arbitrary URL from an untrusted JWT header.
+// Clerk's JWKS origin is pinned to the trusted deployment issuer, not JWT data.
+// The deployment can use accounts.dev or its custom Production HTTPS domain.
 function isClerkIssuer(value){
   try{
     const url=new URL(String(value||''));
     return url.protocol==='https:'&&!url.username&&!url.password&&!url.search&&!url.hash&&
       ['','/'].includes(url.pathname)&&Boolean(url.hostname)&&
-      (url.hostname.endsWith('.clerk.accounts.dev')||url.hostname.endsWith('.clerk.accounts.com'));
+      !url.hostname.endsWith('.local');
   }catch{return false;}
 }
 const jwksCache=new Map();
@@ -39,7 +39,7 @@ async function clerkPublicKey(issuer,kid){
   const key=issuer+'#'+kid;
   const cached=jwksCache.get(key);
   if(cached&&cached.expires>Date.now())return cached.key;
-  const response=await fetch(String(issuer).replace(/\\/$/,'')+'/.well-known/jwks.json',{
+  const response=await fetch((String(issuer).endsWith('/')?String(issuer).slice(0,-1):String(issuer))+'/.well-known/jwks.json',{
     method:'GET',redirect:'error',signal:AbortSignal.timeout(6000),
     headers:{accept:'application/json'}
   });
