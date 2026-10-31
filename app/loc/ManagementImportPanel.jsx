@@ -705,7 +705,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const rows=[];
         for(const batch of urlSafeInBatches(uids,'uid')){
           const {data,error}=await dbAuthRelation(galaxy)
-            .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+            .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
             .in('uid',batch);
           if(error)throw Error('uid 比對失敗：'+error.message);
           for(const row of data||[])rows.push(row);
@@ -721,19 +721,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         readSiteIds:async(ids,consumePage,site)=>{
           for(const idsPage of urlSafeInBatches(ids,'site_id')){
             const {data,error}=await dbAuthRelation(galaxy)
-              .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+              .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
               .ilike('site',site).in('site_id',idsPage);
             if(error)throw Error('site_id 比對失敗：'+error.message);
             consumePage(data||[]);
           }
         }
       }):new Map();
+      const reservedSavedUids=new Set([...matchesById.values()].map(row=>String(row.uid)));
       const remaining=existingCandidates.filter(row=>!matchesById.has(String(row.uid)));
       const existingByTime=remaining.length?await matchExistingImportByCreatedAt(remaining,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
-          readRowsByUid,consumePage,windowSize:MAX_ROWS,onWindowDone:report
+          readRowsByUid,consumePage:rows=>consumePage(rows.filter(row=>
+            !reservedSavedUids.has(String(row.uid)))),windowSize:MAX_ROWS,onWindowDone:report
         })
       }):new Map();
       const existingBySiteId=new Map([...existingByTime,...matchesById]);
@@ -804,6 +806,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
+        // Enrich missing source metadata; preserve curated existing values.
+        if(!String(existing.location||'').trim()&&String(record.location||'').trim())changes.location=record.location;
+        if(!String(existing.site_id||'').trim()&&String(record.site_id||'').trim())changes.site_id=record.site_id;
+        if(!String(existing.url||'').trim()&&String(record.url||'').trim())changes.url=record.url;
+        if(!String(existing.ref_id||'').trim()&&String(record.ref_id||'').trim())changes.ref_id=record.ref_id;
+        if(!String(existing.source_id||'').trim()&&String(record.source_id||'').trim())changes.source_id=record.source_id;
+        if(!(Array.isArray(existing.target_id)&&existing.target_id.length)&&record.target_id?.length)
+          changes.target_id=record.target_id;
         const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         if(restoredPlace)changes.place_id=restoredPlace;
         const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
