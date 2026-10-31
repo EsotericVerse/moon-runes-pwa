@@ -24,7 +24,7 @@ const importTimeKey=record=>{
 // Keep separate source rows even when they share a timestamp; an exact UID
 // repeated in the same file is the only safe input-level duplicate.
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byUid=new Map(),byContentTime=new Map();
+  const unique=[],aliases=new Map(),byUid=new Map(),byContentTime=new Map(),byNativeId=new Map();
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
@@ -41,8 +41,13 @@ export function dedupeIncomingImport(records=[]){
       duplicates++;aliases.set(uid,uid);continue;
     }
     byUid.set(uid,row);
-    // For posts with no genuine platform ID, same site + instant + cleaned
-    // content is the user's duplicate rule. Distinct native IDs remain distinct.
+    // The native source ID represents the same source post even if the export
+    // accidentally contains multiple copies. Retain one canonical Galaxy UID.
+    const source=importSourceKey(row);
+    const sourceUid=source?byNativeId.get(source):null;
+    if(sourceUid){duplicates++;aliases.set(uid,sourceUid);continue;}
+    if(source)byNativeId.set(source,uid);
+    // For posts without a native ID, compare exact time and normalized text.
     const time=importTimeKey(row),text=comparableImportText(row.content);
     const semantic=!importSourceKey(row)&&time&&text?JSON.stringify([time,text]):null;
     const seen=semantic?byContentTime.get(semantic):null;
@@ -218,6 +223,12 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
     if(!importTimeKey(record)||importTimeKey(record)!==importTimeKey(saved))return false;
     if(String(saved.title||'')!==String(record.title||'')||
        String(saved.content||'')!==String(record.content||''))return false;
+    // Equal text does not mean the import is a no-op when earlier rows lack
+    // actual source metadata. Reimports should restore missing relationships.
+    for(const field of ['site_id','location','url','ref_id','source_id'])
+      if(!String(saved[field]||'').trim()&&String(record[field]||'').trim())return false;
+    if(!(Array.isArray(saved.target_id)&&saved.target_id.length)&&
+       Array.isArray(record.target_id)&&record.target_id.length)return false;
     return true;
   });
 }
