@@ -10,7 +10,7 @@ function validEndpoint(value,suffix){
 export function readonlyAuthStatus({primaryId='supabase-current',
   identityProvider='',neonAuthUrl='',neonDataApiUrl=''}={}){
   return Object.freeze({
-    primaryOAuth:identityProvider==='clerk'?'Clerk':primaryId==='neon-current'?'Neon Auth':'Supabase Auth',
+    primaryOAuth:'Clerk',
     // Supabase Auth SDK is bundled in the current LOC adapter.
     supabaseSupported:true,
     // Neon Auth adapter requires both independently configured endpoints.
@@ -25,7 +25,7 @@ export function recoveryOAuthLabel(settings){
   const environment=String(settings.publishableKey).startsWith('pk_test_')
     ?'Development':String(settings.publishableKey).startsWith('pk_live_')
       ?'Production':'未識別環境';
-  return 'Clerk（'+environment+'，獨立復原）';
+  return 'Clerk（'+environment+'）';
 }
 function validEndpointOrigin(value){
   try{
