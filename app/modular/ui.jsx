@@ -142,6 +142,40 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
+function ArticleRelationNavigation({links=[]}){
+  const groups=[
+    {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
+    {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
+    {id:'reference',heading:'原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
+  ];
+  const other=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
+  if(other.length)groups.push({id:'other',heading:'其他關聯',items:other});
+  const relationCard=(link,index,kind)=>{
+    const title=String(link.title||'').trim();
+    const label=kind==='target'?('下筆 '+(index+1)):String(link.label||'相關文章');
+    return <a key={link.id||link.href||index} href={link.href} className="scope-article-relation-card">
+      <span className="scope-article-relation-kind">{label}</span>
+      <strong>{title||'查看相關文章'}</strong>
+      <span className="scope-article-relation-open">閱讀文章 <span aria-hidden="true">↗</span></span>
+    </a>;
+  };
+  return <nav className="scope-article-reading-relations" aria-label="文章脈絡">
+    <h2>文章脈絡</h2>
+    {groups.filter(group=>group.items.length).map(group=><section className="scope-article-relation-group" key={group.id}>
+      <h3>{group.heading} <span>{group.items.length} 篇</span></h3>
+      <div className="scope-article-relation-grid">
+        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id))}
+      </div>
+      {group.items.length>4?<details className="scope-article-relation-more">
+        <summary>查看其餘 {group.items.length-4} 篇</summary>
+        <div className="scope-article-relation-grid">
+          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id))}
+        </div>
+      </details>:null}
+    </section>)}
+  </nav>;
+}
+
 export function WorkSummaryCard({
   title=null,
   titleEditor=null,
@@ -154,6 +188,7 @@ export function WorkSummaryCard({
   body='',
   hidden=false,
   relationLinks=[],
+  detailReading=false,
   links=[],
   destinations=[],
   showSource=true,
@@ -181,7 +216,7 @@ export function WorkSummaryCard({
     </header>
     {hidden?<p className="scope-status">{copy.work.hidden}</p>:null}
     {body?<p className="scope-culture-work-meta-description">{body}</p>:null}
-    {safeRelations.length?<div className="scope-result-links scope-work-relations">
+    {!detailReading&&safeRelations.length?<div className="scope-result-links scope-work-relations">
       {safeRelations.map((link,index)=><ScopeLink key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</ScopeLink>)}
     </div>:null}
     {showLinks&&safeLinks.length?<div className="scope-result-links">
@@ -191,6 +226,7 @@ export function WorkSummaryCard({
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
+    {detailReading&&safeRelations.length?<ArticleRelationNavigation links={safeRelations}/>:null}
   </article>;
 }
 

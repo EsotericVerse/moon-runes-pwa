@@ -75,7 +75,7 @@ export default function Article({uid,title,articleHref='',detailReading=false,so
   const visibleLinks=mediaEditLinks.length?links.filter(link=>!String(link?.id||'').startsWith('media:')):links;
   const visibleRelations=mediaEditLinks.length?[...relationLinks,...mediaEditLinks]:relationLinks;
   return <WorkSummaryCard title={title} titleHref={articleHref} titleEditor={titleEditor} kicker={styleTag?styleTagKicker:null} source={source} scopeId={scopeId} date={editingReady?'':date} actions={editorActions}
-    body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={visibleRelations} links={visibleLinks}
+    body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={visibleRelations} detailReading={detailReading} links={visibleLinks}
     destinations={destinations} className={[styleTag?'scope-article-style-tag-hit':'',detailReading?'scope-article-detail':''].filter(Boolean).join(' ')} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
     {richBody&&!editingReady?<DeferredArticleBody html={body}/>:null}
