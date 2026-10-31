@@ -1,6 +1,6 @@
 // Canonical three-level Time graph:
-// anchor.address DATE -> time_period.anchor_ids [startUID, optional endUID]
-// -> time_trace.anchor_ids [time_period UID, ...].
+// anchor.address DATE -> period.anchor_ids [startUID, optional endUID]
+// -> era.anchor_ids [period UID, ...].
 // A missing endpoint leaves a genuine surviving point; no '0' or now() anchor.
 const UID=/^[0-9A-F]{4}$/;
 const dateOf=value=>{
@@ -71,12 +71,12 @@ export function resolveTimeTrace(periodUids,events){
   const invalidLinks=[],ranges=[];
   for(const [position,raw] of entries.entries()){
     const uid=String(raw||''),event=known.get(uid);
-    if(!event||event.type!=='time_period'){
+    if(!event||event.type!=='period'){
       invalidLinks.push(uid);
       continue;
     }
     for(const range of event.ranges||[]){
-      ranges.push({...range,index:ranges.length,time_period_uid:uid,segment_order:position});
+      ranges.push({...range,index:ranges.length,period_uid:uid,segment_order:position});
     }
   }
   return {ranges,invalidLinks};
