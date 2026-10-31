@@ -61,7 +61,7 @@ test('article date filters use indexed date; no timestamp conversion in lists',(
 test('Trace panel only projects three Galaxy list columns; media type filters use bounded UID overlap',()=>{
   const trace=read('app/modular/features/Trace.jsx');
   const result=read('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(trace,/queryFn:()=>readTraceMapIndex\(scopeId\)/);
+  assert.match(trace,/queryFn:\(\)=>readTraceMapIndex\(scopeId\)/);
   assert.match(trace,/enabled:supported&&routeListOpen/);
   assert.match(trace,/\[reportTab,setReportTab\]=useState\(null\)/);
   assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
