@@ -75,7 +75,11 @@ export function createNewKeywordDiscovery(rows=[]){
   }
   function finish({limit=60,minDocuments=3}={}){
     const minimum=withContent<100?2:minDocuments;
-    const rank=(a,b)=>b.documents-a.documents||b.occurrences-a.occurrences
+    // A repeatedly used compound is often a better addition than a generic
+    // two-character fragment. Keep document coverage as the primary signal.
+    const score=term=>term.documents*(1+(HAN.test(term.word)
+      ?Math.min(Math.max([...term.word].length-2,0),4)*0.18:0));
+    const rank=(a,b)=>score(b)-score(a)||b.documents-a.documents||b.occurrences-a.occurrences
       ||b.word.length-a.word.length||a.word.localeCompare(b.word);
     const all=[...totals.values()].filter(term=>term.documents>=minimum);
     const chinese=all.filter(term=>HAN.test(term.word)).sort(rank);
