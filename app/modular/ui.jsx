@@ -142,7 +142,60 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleRelationNavigation({links=[],externalLinks=[]}){
+function ArticleLazyMediaLinks({ids=[],table='',authenticated=false}){
+  const [opened,setOpened]=useState(false);
+  const mediaIds=[...new Set((Array.isArray(ids)?ids:[]).map(id=>String(id||'').trim()).filter(Boolean))];
+  const mediaQuery=useAsyncResource({
+    queryKey:['article-media-urls',table,authenticated,mediaIds.join('|')],
+    enabled:opened&&Boolean(table)&&mediaIds.length>0,
+    queryFn:async()=>{
+      const {selectRows}=await import('../loc/db-query.mjs');
+      const rows=[];
+      // Query only this article's media UIDs, not the media catalog.
+      // Media titles, meta_tags, type and content are never read.
+      for(let index=0;index<mediaIds.length;index+=40){
+        const batch=mediaIds.slice(index,index+40);
+        const page=await selectRows(table,{
+          columns:'uid,url',
+          filters:[{column:'uid',operator:'in',value:batch}],
+          limit:batch.length,maxLimit:batch.length,authenticated
+        });
+        rows.push(...(page.rows||[]));
+      }
+      const byId=new Map(rows.map(row=>[String(row.uid),row]));
+      return mediaIds.map(id=>byId.get(id)).filter(Boolean);
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  if(!mediaIds.length)return null;
+  return <section className="scope-article-relation-group" aria-label="多媒體">
+    <h3>多媒體 <span>{mediaIds.length} 筆</span></h3>
+    <button type="button" className="scope-article-media-toggle" aria-expanded={opened}
+      onClick={()=>setOpened(value=>!value)}>
+      {opened?'收合多媒體連結':'顯示多媒體連結'}
+    </button>
+    {opened&&mediaQuery.isPending?<p role="status">讀取多媒體網址中…</p>:null}
+    {opened&&mediaQuery.error?<p role="alert" className="scope-error">{String(mediaQuery.error.message||mediaQuery.error)}</p>:null}
+    {opened&&!mediaQuery.isPending&&!mediaQuery.error?<>
+      <div className="scope-article-relation-grid">
+        {(mediaQuery.data||[]).map((item,index)=>{
+          const href=externalLink({href:item.url});
+          return href?<a key={item.uid} href={href} target="_blank" rel="noopener noreferrer" className="scope-article-relation-card">
+            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
+            <strong className="scope-article-relation-url">{href}</strong>
+            <span className="scope-article-relation-open">開啟媒體 <span aria-hidden="true">↗</span></span>
+          </a>:<div key={item.uid} className="scope-article-relation-card">
+            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
+            <strong>未提供有效網址</strong>
+          </div>;
+        })}
+      </div>
+      {!mediaQuery.data?.length?<p>沒有可顯示的媒體網址。</p>:null}
+    </>:null}
+  </section>;
+}
+
+function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaTable='',mediaAuthenticated=false}){
   const articleGroups=[
     {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
     {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
@@ -150,14 +203,12 @@ function ArticleRelationNavigation({links=[],externalLinks=[]}){
   ];
   const otherArticles=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
   if(otherArticles.length)articleGroups.push({id:'other',heading:'其他文章關聯',items:otherArticles});
-  const media=externalLinks.filter(link=>String(link.id||'').startsWith('media:'));
   const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
   const groups=[
     ...articleGroups.map(group=>({...group,external:false})),
-    {id:'media',heading:'媒體連結',items:media,external:true},
-    {id:'external',heading:'原始來源連結',items:sources,external:true}
+    {id:'external',heading:'原始來源網址',items:sources,external:true}
   ].filter(group=>group.items.length);
-  if(!groups.length)return null;
+  if(!groups.length&&!mediaIds.length)return null;
   const relationCard=(link,index,kind,external)=>{
     const title=String(link.title||'').trim();
     const label=external
@@ -186,6 +237,7 @@ function ArticleRelationNavigation({links=[],externalLinks=[]}){
         </div>
       </details>:null}
     </section>)}
+    <ArticleLazyMediaLinks ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
   </nav>;
 }
 
@@ -202,6 +254,9 @@ export function WorkSummaryCard({
   hidden=false,
   relationLinks=[],
   detailReading=false,
+  mediaIds=[],
+  mediaTable='',
+  mediaAuthenticated=false,
   links=[],
   destinations=[],
   showSource=true,
@@ -239,7 +294,7 @@ export function WorkSummaryCard({
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
-    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]}/>:null}
+    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]} mediaIds={mediaIds} mediaTable={mediaTable} mediaAuthenticated={mediaAuthenticated}/>:null}
   </article>;
 }
 
