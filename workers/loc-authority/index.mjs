@@ -58,9 +58,11 @@ async function clerkPublicKey(issuer,kid){
   // Do not allow JWKS metadata to change the pinned RS256 algorithm.
   if(jwk.key_ops&&(!Array.isArray(jwk.key_ops)||!jwk.key_ops.includes('verify')))
     throw fail('Clerk signing key is not usable for verification',503);
-  if(!/^[A-Za-z0-9_-]+$/.test(jwk.n)||!/^[A-Za-z0-9_-]+$/.test(jwk.e)||
-      b64bytes(jwk.n).byteLength<256)
+  if(!/^[A-Za-z0-9_-]+$/.test(jwk.n)||!/^[A-Za-z0-9_-]+$/.test(jwk.e))
     throw fail('Clerk signing key format is invalid',503);
+  try{
+    if(b64bytes(jwk.n).byteLength<256)throw Error('RSA key shorter than 2048 bits');
+  }catch{throw fail('Clerk signing key format is invalid',503);}
   let cryptoKey;
   try{
     cryptoKey=await crypto.subtle.importKey('jwk',
