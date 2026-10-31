@@ -1239,7 +1239,9 @@ export default function Search({managementMode=false}){
           managerMode={managementMode}
           uid={editTarget.editResourceId}
           title={row.title}
-          articleHref={row.resourceType==='galaxy'?galaxyIdentityHref(row.scopeId,row.resourceId):''}
+          articleHref={row.resourceType==='galaxy'
+            ?(managementMode?scopeHref(row.scopeId,'manage/search')+'?identity='+encodeURIComponent(row.resourceId):galaxyIdentityHref(row.scopeId,row.resourceId))
+            :''}
           source={managementMode||searchParams?.get('identity')?row.styleTagMatch?'':row.source:''}
           scopeId={managementMode?row.scopeId:''}
           date={managementMode||searchParams?.get('identity')?row.date:''}
@@ -1269,6 +1271,13 @@ export default function Search({managementMode=false}){
           styleIntroText={row.styleIntroText}
         >
           {managementMode&&editable&&editingKey!==row.key?<div className="scope-work-fulltext-row">
+            {searchParams?.get('identity')&&row.resourceType==='galaxy'?<WorkFullText
+              open={fullTextKey===row.key}
+              loading={fullTextLoading&&fullTextKey===row.key}
+              error={fullTextKey===row.key?fullTextError:''}
+              content={fullTextKey===row.key?fullText:''}
+              showToggle={false}
+            />:null}
             <button type="button" className="loc-button scope-work-edit-button" onClick={()=>startEditing(editTarget)}>
               {row.resourceType==='galaxy'?'展開內文並編輯':'編輯媒體連結'}
             </button>
