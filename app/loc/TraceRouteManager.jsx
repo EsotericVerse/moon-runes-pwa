@@ -34,7 +34,7 @@ export default function TraceRouteManager({scopeId}){
   const [invisible,setInvisible]=useState(false);
   const [routeUids,setRouteUids]=useState([]);
   const [bulkSelected,setBulkSelected]=useState([]);
-  const [bulkVisibilityMode,setBulkVisibilityMode]=useState('self');
+  const [bulkVisibilityMode,setBulkVisibilityMode]=useState('routes');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [filter,setFilter]=useState('');
