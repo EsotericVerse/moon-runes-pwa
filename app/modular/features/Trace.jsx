@@ -145,9 +145,12 @@ export default function Trace({scopeId='loc'}){
     if(!twoPointDemo){choosePlace(anchor);return;}
     setDemoStopIds(ids=>pickTraceDemoStop(ids,anchor,periodScopeId));
   };
-  const selectedAvailable=selectedPlace&&(selectedPlace.uid===deepLinkedPlace.data?.uid||selectedPlace.trace_type!=='space_anchor'
-    ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
-    :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
+  const selectedAvailable=selectedPlace&&(
+    selectedPlace.uid===deepLinkedPlace.data?.uid
+    ||(selectedPlace.trace_type!=='space_anchor'
+      ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
+      :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope))
+  );
   const reportPlace=twoPointDemo?null:(selectedAvailable?selectedPlace:null);
 
   const floatingControls=<>
