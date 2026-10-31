@@ -7,6 +7,7 @@ import {sourceTaxonomyFromArrays} from './source-classification.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
+import {timePeriodContainsDate} from './time-anchor-ranges.mjs';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
@@ -258,14 +259,22 @@ function shiftedDay(day,shift){
   d.setUTCDate(d.getUTCDate()+shift);
   return d.toISOString().slice(0,10);
 }
+// A selected article only needs the lightweight Time graph. Share the
+// canonical Culture range resolution among article reads for a short TTL.
+const articleTimeCache=new Map();
+async function articleTimeRows(scope){
+  const key=String(scope.id),now=Date.now();
+  const cached=articleTimeCache.get(key);
+  if(cached&&cached.expires>now)return cached.promise;
+  const promise=import('./culture-query').then(({selectCultureTimeRows})=>selectCultureTimeRows(scope));
+  articleTimeCache.set(key,{expires:now+60_000,promise});
+  promise.catch(()=>{if(articleTimeCache.get(key)?.promise===promise)articleTimeCache.delete(key);});
+  return promise;
+}
 async function articleTimeContext(scope,day){
   if(!day||!scope.time||scope.id==='local')return {anchors:[],periods:[],eras:[]};
-  const {selectCultureTimeRows}=await import('./culture-query');
-  const rows=await selectCultureTimeRows(scope);
-  const matches=record=>(record.ranges||[]).some(range=>{
-    const start=articleDate(range.start_date),end=articleDate(range.end_date||range.start_date);
-    return start&&end&&(!range.invalid||range.point)&&start<=day&&day<=end;
-  });
+  const rows=await articleTimeRows(scope);
+  const matches=row=>timePeriodContainsDate(row,day);
   const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
   return {
     anchors:labels(rows.filter(row=>row.entry_type==='anchor'&&articleDate(row.address)===day)),
