@@ -40,7 +40,8 @@ test('ISR server route checks global mode, validates scope and is safe for disab
   const guard=read('app/api/loc/_numeric-failover.mjs');
   const publicServer=read('app/api/loc/_server.js');
   assert.match(guard,/cache_mode!=='isr'/);
-  assert.match(guard,/db\.from\('loc_runtime_config'\)/);
+  assert.match(guard,/decodeLocCache/);
+  assert.match(guard,/db\.from\('loc'\)/);
   assert.match(guard,/isAvailabilityFailure/);
   assert.match(source,/readIsrSummary\(db,\{origin:url\.origin,name,args\}\)/);
   assert.match(source,/tryPublicSources\(publicNumericSources\(\)/);

@@ -337,7 +337,7 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
-  assert.ok(route.includes("from('loc_runtime_config')"));
+  assert.ok(route.includes("from('loc')"));
   assert.ok(route.includes("mode!=='isr'"));
   assert.ok(route.includes('no-store'));
   assert.ok(route.includes('read_scope_statistics'));
