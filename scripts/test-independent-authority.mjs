@@ -148,6 +148,6 @@ test('static recovery page cannot mount AppShell, run home Auth hooks or depend 
   const settings=JSON.parse(readFileSync(new URL('../public/recovery/config.json',import.meta.url),'utf8'));
   assert.match(page,/\bclerk\.load\(/);
   assert.match(page,/<title>LOC · 獨立復原控制<\/title>/);
-  assert.doesNotMatch(page,/AppShell|supabase-js|neon-auth|NEXT_PUBLIC_/);
+  assert.doesNotMatch(page,/<script[^>]+src=|supabase-js|neon-auth|NEXT_PUBLIC_/);
   assert.deepEqual(Object.keys(settings).sort(),['controlUrl','frontendApiUrl','publishableKey']);
 });
