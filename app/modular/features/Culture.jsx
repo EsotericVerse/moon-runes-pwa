@@ -1666,9 +1666,6 @@ export default function Culture(){
                       uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
                       articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||classificationScope,work.uid):''}
-                      source={work.site||work.group_label||''}
-                      scopeId={work.scope_id||classificationScope}
-                      date={work.display_date||CultureTimelineModel.formatCultureDateTime(work.createtime||work.created_at)}
                       links={work.links||[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
