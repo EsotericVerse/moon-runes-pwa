@@ -5,12 +5,15 @@ import gateway from '../workers/loc-gateway/index.mjs';
 const origin='https://loc.example.test';
 const supa='https://primary.example.test/rest/v1';
 const neon='https://backup.example.test/rest/v1';
+const neonAuth='https://backup-auth.example.test/auth';
+const base='https://g.example.test/rest/v1';
 const envFor=(primary_id='supabase-current')=>({
   LOC_PUBLIC_ORIGIN:origin,
   LOC_AUTHORITY_ORIGIN:'https://authority.example.test',
   LOC_SUPABASE_DATA_API_URL:supa,
   LOC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test',
   LOC_NEON_DATA_API_URL:neon,
+  LOC_NEON_AUTH_URL:neonAuth,
   LOC_AUTHORITY_STATE:{
     idFromName:()=>({}),
     get:()=>({listState:async()=>({primary_id})})
@@ -37,13 +40,16 @@ test('Supabase 503 failover performs an independent Neon public SELECT',async()=
   await mockFetch(async(url,init)=>{
     calls.push(String(url));
     if(String(url).startsWith(supa))return new Response('unavailable',{status:503});
+    if(String(url)===neonAuth+'/token/anonymous')
+      return Response.json({token:'header.payload.testanonymous'});
+    assert.equal(new Headers(init.headers).get('authorization'),'Bearer header.payload.testanonymous');
     return new Response('[{"uid":"TEST1234"}]',{status:200,headers:{'content-type':'application/json','location':supa}});
   },async()=>{
     const reply=await gateway.fetch(req('/rest/v1/lo3rwang_galaxy?select=uid'),envFor());
     assert.equal(reply.status,200);
     assert.deepEqual(await reply.json(),[{uid:'TEST1234'}]);
     assert.equal(reply.headers.get('location'),null);
-    assert.deepEqual(calls.map(url=>url.startsWith(supa)?'supabase':'neon'),['supabase','neon']);
+    assert.deepEqual(calls.map(url=>url.startsWith(supa)?'supabase':url.startsWith(neonAuth)?'neon-auth':'neon'),['supabase','neon-auth','neon']);
   });
 });
 test('manual Neon primary sends writes to Neon only with a verified Clerk token',async()=>{
