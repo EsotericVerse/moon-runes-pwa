@@ -1,3 +1,5 @@
+import {decodeLocCache} from '../../loc/runtime-cache-fields.mjs';
+
 // Public summaries retry only availability failures: never turn an
 // authorization, invalid-parameter or disabled-ISR response into a failover.
 export function isAvailabilityFailure(result){
@@ -26,9 +28,9 @@ export async function tryPublicSources(sources,run){
 
 export async function readIsrSummary(db,{origin,name,args}){
   const setting=await db.from('loc')
-    .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
+    .select('cache').eq('id','loc').single();
   if(setting.error)return {retryable:isAvailabilityFailure(setting),error:'Public ISR settings unavailable'};
-  const runtime=setting.data;
+  const runtime=decodeLocCache(setting.data?.cache);
   const chosen=Array.isArray(runtime?.isr_domains)
     ?runtime.isr_domains.find(item=>item.origin===runtime.cache_provider||item.id===runtime.cache_provider):null;
   if(runtime?.cache_mode!=='isr'||String(chosen?.origin||'').trim()!==origin)
