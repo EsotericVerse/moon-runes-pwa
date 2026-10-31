@@ -1,5 +1,5 @@
 {
-  "publishableKey": "",
-  "frontendApiUrl": "",
+  "publishableKey": "pk_test_cHJlY2lzZS1ncmFja2xlLTMzNzEuY2xlcmsuYWNjb3VudHMuZGV2JA",
+  "frontendApiUrl": "https://precise-grackle-3371.clerk.accounts.dev",
   "controlUrl": ""
 }
