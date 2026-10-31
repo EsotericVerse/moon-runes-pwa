@@ -66,8 +66,6 @@ async function verifyIdentityToken(request,env){
     verified=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,b64bytes(pieces[2]),new TextEncoder().encode(pieces[0]+'.'+pieces[1]));
   }catch{throw fail('Token verification failed',401)}
   if(!verified)throw fail('Token signature invalid',401);
-  const roots=String(clerk?env.LOC_RECOVERY_ROOT_CLERK_IDS:env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS).split(/[\s,;]+/).filter(Boolean);
-  if(!roots.includes(claims.sub))throw fail('Recovery administrator required',403);
   return {provider:clerk?'clerk':'secondary',subject:claims.sub,session:clerk?claims.sid:'verified'};
 }
 function validateTarget(input,id){
@@ -171,6 +169,11 @@ export class LocAuthorityState extends DurableObject {
     const grant=await this.ctx.storage.get(key);
     return Boolean(grant&&grant.expires_at>Date.now()&&grant.actions.includes(action));
   }
+  async getPrimaryProfileForGateway(){
+    const id=await this.ctx.storage.get('primary_id');
+    if(!id)return null;
+    return this.getProfileForGateway(id);
+  }
   // Cloudflare DO RPC: only a separately bound trusted SQL gateway can call this.
   // No HTTP handler exposes the credential or returns decrypted profiles to a browser.
   async getProfileForGateway(id){
@@ -197,6 +200,12 @@ export default {
       const principal=await verifyIdentityToken(request,env);
       const url=new URL(request.url);
       if(!url.pathname.startsWith('/v1/'))throw fail('Not found',404);
+      // Identity endpoint is only a verified principal lookup. It grants no
+      // data access or management capabilities; the gateway must call mayAccess.
+      if(request.method==='GET'&&url.pathname==='/v1/identity')return json(principal,200,origin);
+      const roots=String(principal.provider==='clerk'?env.LOC_RECOVERY_ROOT_CLERK_IDS:env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS)
+        .split(/[\s,;]+/).filter(Boolean);
+      if(!roots.includes(principal.subject))throw fail('Recovery administrator required',403);
       const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
       if(request.method==='GET'&&url.pathname==='/v1/me')return json(principal,200,origin);
       if(request.method==='GET'&&url.pathname==='/v1/state')return json(await stub.listState(),200,origin);
