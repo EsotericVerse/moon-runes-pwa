@@ -79,13 +79,22 @@ export async function prepareImportPlaceAnchors(records,{
   // Locate exact known coordinates first. Name-only visits can reuse a single
   // unambiguous named anchor, but never choose between different coordinates.
   const ordered=[...names.values()].sort((a,b)=>Number(Boolean(b.coordinates))-Number(Boolean(a.coordinates)));
+  const nameOnlyAliases=[];
   for(const place of ordered){
     const candidates=existingByName.get(place.name)||[];
     const matched=place.coordinates
       ?existingBySpatialKey.get(spatialKey(place.name,place.coordinates))
       :candidates.length===1?candidates[0]:null;
     if(matched){register(place,matched.uid);reused++;continue;}
-    if(!place.coordinates&&candidates.length>1)continue;
+    if(!place.coordinates){
+      if(candidates.length>1)continue;
+      const peers=ordered.filter(p=>p.name===place.name&&p.coordinates);
+      if(!candidates.length&&peers.length===1){
+        nameOnlyAliases.push({name:place.name,coordinates:peers[0].coordinates});
+        continue;
+      }
+      if(peers.length>1)continue;
+    }
     if(createMissing)pending.push(place);
   }
   // A single ZIP can contain several genuinely different places with the
@@ -113,6 +122,10 @@ export async function prepareImportPlaceAnchors(records,{
       created++;
     }
     onProgress?.({phase:'建立原始座標定錨',completed:offset+chunk.length,total:pending.length});
+  }
+  for(const alias of nameOnlyAliases){
+    const uid=byCoordinate.get(spatialKey(alias.name,alias.coordinates));
+    if(uid){register(alias,uid);reused++;}
   }
   const unmatchedCoordinates=names.size-reused-created;
   return {byCoordinate,byName,created,reused,timesByUid,table,
