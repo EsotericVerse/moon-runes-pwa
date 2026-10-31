@@ -27,10 +27,11 @@ export function resolveHomeImage(slot,scopeId='loc'){
   const preset=imageFor(slot,scopeId);
   const config=slot?.image&&typeof slot.image==='object'?slot.image:null;
   const embedded=BlockNoteContent.image.firstFrameImageUrl(slot);
-  const picked=['default','custom','none'].includes(config?.source)
-    ?config.source:(embedded?'custom':preset?'default':'none');
-  const source=picked;
-  const customUrl=BlockNoteContent.image.normalizeImageSource(config?.url||embedded);
+  const rawCustom=String(config?.url||embedded||'').trim();
+  const customUrl=BlockNoteContent.image.normalizeImageSource(rawCustom)||
+    (/^\/pics\/[A-Za-z0-9_./%()\-]+$/i.test(rawCustom)?rawCustom:'');
+  const source=['default','custom','none'].includes(config?.source)
+    ?config.source:(customUrl?'custom':preset?'default':'none');
   const src=source==='none'?'':source==='default'?preset?.src?.src||'':customUrl;
   const position=Number(slot?.order)===1?'right':['left','right','top','bottom','only'].includes(config?.position)
     ?config.position:(preset?.position||'right');
