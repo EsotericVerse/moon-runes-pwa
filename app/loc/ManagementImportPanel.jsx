@@ -443,6 +443,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       timeWindow?eligibleArchiveEvidence.length:(archiveSummary?.mediaImportable||0));
     return estimateImportMinutes({articles:analyzed.valid.length,media});
   },[analyzed,archiveSummary?.mediaImportable,timeWindow,eligibleArchiveEvidence]);
+  const eligibleGeoRecords=useMemo(()=>geoPlaceCandidates.map(place=>({
+    ...place,__importPlaceName:place.location,__importPlaceAddress:place.address,
+    __importVisitTimes:(place.__importVisitTimes||[]).filter(time=>
+      !timeWindow||(time>=timeWindow.start&&time<=timeWindow.end))
+  })).filter(place=>place.__importPlaceName&&
+    (!timeWindow||place.__importVisitTimes.length>0)),[geoPlaceCandidates,timeWindow]);
   if(!nativeLocal&&!account.canManageScopeSync(scopeId))return null;
 
   async function loadQueuedFile(file,index,total,language=importLocale,recordPath=format.recordPath){
@@ -590,12 +596,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     setQueueIndex(next);
     await loadQueuedFile(queue[next],next,queue.length);
   }
-  const eligibleGeoRecords=useMemo(()=>geoPlaceCandidates.map(place=>({
-    ...place,__importPlaceName:place.location,__importPlaceAddress:place.address,
-    __importVisitTimes:(place.__importVisitTimes||[]).filter(time=>
-      !timeWindow||(time>=timeWindow.start&&time<=timeWindow.end))
-  })).filter(place=>place.__importPlaceName&&
-    (!timeWindow||place.__importVisitTimes.length>0)),[geoPlaceCandidates,timeWindow]);
   const canRestoreAnchors=scopeId!=='local'&&scopeId!=='loc'&&(
     eligibleGeoRecords.length>0||
     analyzed.valid.some(record=>Boolean(record.location||record.__importPlaceName))
