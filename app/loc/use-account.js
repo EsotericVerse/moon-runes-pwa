@@ -6,6 +6,7 @@ import {getAccountSession,dbAuthEvents,dbAuthClient,signInWithGoogle,signOutAcco
 import {readAuthorization,setAuthorization,clearAuthorization,createScopeAuthorizer} from './authorization-runtime.mjs';
 import {defaultScopeData,scopeDataFromManageRows} from './scope-data';
 import {useAsyncResource} from './use-async-resource';
+import {shouldInvalidateManagementForAuthEvent} from './auth/account-event-guard.mjs';
 
 const normalizeAuthEmail=value=>String(value||'').trim().toLowerCase();
 const normalizeScopeId=value=>String(value||'').trim().toLowerCase();
@@ -201,8 +202,14 @@ export function usePassiveSessionAccount(){
       const user=session?.user||null;
       const nextUserId=String(user?.id||'');
       const nextEmail=normalizeAuthEmail(user?.email);
-      const identityChanged=authUserId!==nextUserId||authEmail!==nextEmail;
-      if(identityChanged||event==='SIGNED_OUT'){
+      // On a fresh static management page the verified Clerk session can
+      // arrive while the management RPC is still in flight. Hydration is
+      // NOT a sign-out or replacement of an existing authorized identity.
+      const invalidate=shouldInvalidateManagementForAuthEvent({
+        event,previousUserId:authUserId,previousEmail:authEmail,
+        nextUserId,nextEmail,hasAuthorization:Boolean(readAuthorization())
+      });
+      if(invalidate){
         authRevision+=1;
         clearAuthorization();
         scopeMetadata=[];
@@ -214,12 +221,11 @@ export function usePassiveSessionAccount(){
       void mutate(SESSION_KEY,nextUserId
         ?{...signedOutState,user:{id:nextUserId}}
         :signedOutState,{revalidate:false});
-      if(identityChanged||event==='SIGNED_OUT'){
-        // Never put the unverified SDK event user into the verified OAuth cache.
+      if(invalidate){
+        // Never put an unverified SDK event user into the verified OAuth cache.
         void mutate(VERIFIED_SESSION_KEY,undefined,{revalidate:Boolean(user)});
-      }
-      if(identityChanged||event==='SIGNED_OUT'){
-        // Clear the old role without launching a permission query from React.
+        // Real sign-out or account replacement revokes old management grants.
+        // Do not invalidate the active RPC on INITIAL_SESSION hydration.
         void mutate(MANAGEMENT_KEY,undefined,{revalidate:false});
       }
     });
