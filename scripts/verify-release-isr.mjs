@@ -27,8 +27,9 @@ const guards=read('app/api/loc/_numeric-failover.mjs');
 const publicServer=read('app/api/loc/_server.js');
 if(!numericSource.includes('readIsrSummary(')||
    !numericSource.includes('tryPublicSources(publicNumericSources()')||
-   !guards.includes("db.from('loc_runtime_config')")||
+   !guards.includes("db.from('loc')")||
    !guards.includes("cache_mode!=='isr'")||
+   !guards.includes(".select('cache')")||
    !guards.includes('origin')||
    !numericSource.includes('no-store')||!invalidateSource.includes('status:410'))
 
