@@ -5,7 +5,7 @@
 ## 目前已有的可操作元件
 
 - `public/recovery/index.html`：完整獨立靜態管理入口，**不使用 Next.js AppShell、公開 Bootstrap、Supabase SDK、Neon SDK**。固定網址 `/recovery/index.html`。從一般設定頁僅提供文字入口，不在首頁載入 Authority。
-- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。目前為空值，不含私鑰；待 Clerk 申請後填入。該檔是靜態設定，不能當成機密儲存。
+- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。**已設定 Clerk Development 的前兩項；`controlUrl` 尚未設定。** 此檔不含私鑰，不能當成機密儲存。獨立復原頁現在可先載入 Clerk、註冊／登入並顯示 Clerk User ID，但在控制 Worker 未設定時不會開放資料庫或 Scope 管理操作。
 - `workers/loc-authority/index.mjs`：獨立 Cloudflare Worker，使用 RSA 簽章、Issuer、Audience/Authorized Party、有效期限及 Root 主體白名單驗證管理員；沒有業務資料庫呼叫。
 - `workers/loc-authority/wrangler.jsonc`：控制服務專用 Worker，採 SQLite-backed Durable Object。絕不將其綁到目前 `loc-isr` 的儲存或部署週期。
 - 管理員可建立／編輯 PostgreSQL、MySQL、SQL Server 連線目標；密碼用 AES-256-GCM 加密，回傳的清單不包含密碼。更新時留空可沿用原密碼。
@@ -13,13 +13,13 @@
 - 根管理權限從 Cloudflare Secrets 的明確使用者 ID 清單判定；**不接受使用者自報角色／郵件**。
 - `workers/loc-authority/sql-authorization.mjs`：SQL 引擎無關的 Scope／資源分類與 fail-closed 授權判斷；公開參照表只開放讀取，其他須有對應 Scope 的有效授權。此模組本身不會執行 SQL。
 
-## Clerk 申請完成後設定（尚未執行）
+## Clerk 開發環境已建立，後續控制服務設定（尚未執行）
 
-1. Clerk 建立應用程式、啟用 Google 登入及適當的 MFA。取得 Publishable Key、Frontend API HTTPS URL、JWT 公鑰及實際管理員的 Clerk `user_` ID。
-2. 在 `public/recovery/config.json` 寫入三個**可公開**的值並部署靜態資源：
-   - `publishableKey`：Clerk Publishable Key；
-   - `frontendApiUrl`：Clerk Frontend API 的 HTTPS origin；
-   - `controlUrl`：獨立 `loc-authority-control` Worker 的 HTTPS origin。
+1. Clerk Development 應用程式、Publishable Key 與 Frontend API URL 已準備並寫入。仍須核對登入方式與 MFA、取得 JWT 公鑰，以及管理員實際登入後的 Clerk `user_` ID；不能用未驗證的 Email 取代 User ID。
+2. `public/recovery/config.json` 前兩項已配置。控制 Worker 建立後，才填入第三項並部署靜態資源：
+   - `publishableKey`：已配置 Clerk Development Publishable Key；
+   - `frontendApiUrl`：已配置 `https://precise-grackle-3371.clerk.accounts.dev`；
+   - `controlUrl`：尚待獨立 `loc-authority-control` Worker 的 HTTPS origin。
 3. 在 **獨立控制 Worker Secrets**（不得放 `NEXT_PUBLIC_` 或 Git）設定：
    - `LOC_CLERK_ISSUER`：簽章 Token 的 Issuer；
    - `LOC_CLERK_JWT_PUBLIC_KEY`：對應的 RSA Public Key PEM；
@@ -49,3 +49,7 @@
 - `node --test scripts/test-portable-sql-authority.mjs`：測試跨 SQL 引擎權限分類與未授權資料隔離。
 
 上述是測試**指令**，不是已執行完成的證明；正式交付前應在裝妥依賴的 workspace 執行。Clerk／Cloudflare 的真實整合驗收需等平台設定完成。
+
+## Development 與 Production
+
+目前為 Clerk `pk_test_` Development instance，適合測試登入與確認 `user_` ID，**不得當成正式 Production 身分服務**。正式上線前必須切換 Clerk Production instance 的 Publishable Key／Frontend API 網域、合法設定憑證與 HTTPS Domain，重新配置 Control Worker JWT issuer／公鑰和受信任管理員 ID；不能把 Development 的帳號／權限自動認為 Production 已驗證。

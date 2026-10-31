@@ -152,3 +152,18 @@ test('static recovery page cannot mount AppShell, run home Auth hooks or depend 
   assert.doesNotMatch(page,/<script[^>]+src=|supabase-js|neon-auth|NEXT_PUBLIC_/);
   assert.deepEqual(Object.keys(settings).sort(),['controlUrl','frontendApiUrl','publishableKey']);
 });
+
+test('Clerk development configuration matches its Frontend API and static login works before control setup',()=>{
+  const cfg=JSON.parse(readFileSync(new URL('../public/recovery/config.json',import.meta.url),'utf8'));
+  assert.ok(cfg.publishableKey.startsWith('pk_test_'));
+  assert.equal(Buffer.from(cfg.publishableKey.slice('pk_test_'.length),'base64url').toString('utf8'),
+    new URL(cfg.frontendApiUrl).hostname+'$');
+  assert.equal(cfg.controlUrl,'');
+  const page=readFileSync(new URL('../public/recovery/index.html',import.meta.url),'utf8');
+  const moduleScript=page.split('<script type="module">')[1]?.split('</script>')[0];
+  assert.ok(moduleScript);
+  new Function(moduleScript);
+  assert.ok(moduleScript.includes('if(settings.controlUrl)verifiedHttpsOrigin(settings.controlUrl)'));
+  assert.ok(moduleScript.includes("clerk.mountSignIn(byId('login-root'))"));
+  assert.ok(moduleScript.includes('clerk.user?.id'));
+});
