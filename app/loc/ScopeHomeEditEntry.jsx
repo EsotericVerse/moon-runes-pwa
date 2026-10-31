@@ -11,6 +11,7 @@ import {useEditDock} from '../modular/edit-dock';
 import {useAccount} from './use-account';
 import {Capacitor} from '@capacitor/core';
 import {grantHomeEditorAccess} from './home-edit-access.mjs';
+import {clearEditorSession} from './edit-session-ttl.mjs';
 
 // This control is shown only at the bottom of an individual Scope homepage.
 // No identity or management query runs until the visitor selects it.
@@ -31,6 +32,7 @@ export default function ScopeHomeEditEntry(){
       // Native device-local edits never require a cloud login; only the
       // local SQLite adapter may receive writes for this hidden Scope.
       if(scopeId==='local'&&Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='ios'){
+        clearEditorSession(window.sessionStorage);
         grantHomeEditorAccess(window.sessionStorage,'local','local-device');
         editDock?.begin('local');
         return;
@@ -47,6 +49,9 @@ export default function ScopeHomeEditEntry(){
         setMessage('uiExtra.editBlocks.editPermissionDenied');
         return;
       }
+      // A new verified edit entry starts a fresh 30-minute idle / 2-hour
+      // edit session; otherwise a previously locked session can never reopen.
+      clearEditorSession(window.sessionStorage);
       grantHomeEditorAccess(window.sessionStorage,scopeId,result.user.id);
       // The homepage editor is mounted on this same Scope homepage.
       // Only switch its authorized UI state; never navigate to a new URL.
