@@ -282,7 +282,19 @@ export function buildAllowlistedRpcQuery(input){
   if(Object.keys(args).some(arg=>!names.includes(arg)))throw new Error('Unexpected RPC argument');
   if((RPC_REQUIRED_ARGUMENTS[key]||[]).some(arg=>!Object.hasOwn(args,arg)))throw new Error('Missing required RPC argument');
   const supplied=names.filter(name=>Object.hasOwn(args,name));const id=sql.id(schema,name);
-  const params=supplied.map(name=>sql`${sql.id(name)} => ${sql.val(args[name])}`);
+  // management_write accepts JSONB payloads. pg encodes native JS arrays
+  // as PostgreSQL array literals, which are invalid JSONB (SQLSTATE 22P02).
+  // Serialize only these declared JSONB arguments; other RPCs can legitimately
+  // accept PostgreSQL arrays. Keep null as SQL NULL, not JSONB 'null'.
+  const jsonbArgs=key==='silver.management_write'
+    ?new Set(['p_rows','p_values','p_filters']):null;
+  const params=supplied.map(name=>{
+    const value=args[name];
+    const parameter=jsonbArgs?.has(name)
+      ?sql`${sql.val(value==null?null:JSON.stringify(value))}::jsonb`
+      :sql.val(value);
+    return sql`${sql.id(name)} => ${parameter}`;
+  });
   const returnsRows=key==='silver.read_scope_page_copy'||key==='silver.get_my_scope_management';
   return {query:returnsRows?sql`select * from ${id}(${sql.join(params)})`:sql`select ${id}(${sql.join(params)}) as result`,returnsRows};
 }
