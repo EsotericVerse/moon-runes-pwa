@@ -17,7 +17,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
-import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -1665,11 +1665,7 @@ export default function Culture(){
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                       uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
-                      source={work.site||work.group_label||''}
-                      scopeId={work.scope_id||classificationScope}
-                      date={work.display_date||CultureTimelineModel.formatCultureDateTime(work.createtime||work.created_at)}
-                      body={editingWorkKey===workKey&&editDraft?'':work.description||work.media_metadata_text||''}
-                      relationLinks={galaxyRelationLinks(classificationScope,work)}
+                      articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||classificationScope,work.uid):''}
                       links={work.links||[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
@@ -1683,7 +1679,7 @@ export default function Culture(){
                       editError={editError}
                       showHidden
                     >
-                      {work.uid&&editingWorkKey!==workKey?<div className="scope-work-fulltext-row">
+                      {work.entry_type==='work'&&work.uid&&editingWorkKey!==workKey?<div className="scope-work-fulltext-row">
                         <WorkFullText
                           open={fullTextKey===workKey}
                           loading={fullTextLoading&&fullTextKey===workKey}

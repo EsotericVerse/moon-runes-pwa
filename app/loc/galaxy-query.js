@@ -604,7 +604,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
-      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,site,media_link',
+      columns:'uid,title,createtime,url,site',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
       authenticated:privateScopes.has(scope.id),

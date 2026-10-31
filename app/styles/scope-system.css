@@ -65,6 +65,9 @@
   .scope-ranking>div{align-items:flex-start;flex-direction:column}
 }
 
+.scope-article-title-link{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em}
+.scope-article-title-link:hover{text-decoration-thickness:2px}
+.scope-article-title-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 .scope-result-links{display:flex;gap:.55rem;flex-wrap:wrap;}
 .scope-result-links a{padding:.3rem .55rem;border:var(--scope-border);border-radius:999px;font-size:.85rem;text-decoration:none;}
 .scope-period-timeline .vis-item.scope-period-timeline-focus{background:var(--loc-accent);border-color:var(--loc-accent);color:var(--loc-panel);font-weight:700;}

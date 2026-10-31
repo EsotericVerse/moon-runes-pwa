@@ -9,6 +9,7 @@ import {defaultScopeData} from '../../../loc/scope-data';
 import {dbPublicClient} from '../../../loc/db-client.mjs';
 import {traceArticleIds,traceArticleLabels} from './trace-article-ids.mjs';
 import Article from '../../Article';
+import {galaxyIdentityHref} from '../../feature-navigation';
 import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
 
 const CultureTimeline=dynamic(()=>import('../../modules/culture-timeline/CultureTimeline'),{loading:()=> <p className="scope-status">正在開啟時間長河…</p>});
@@ -31,9 +32,9 @@ function TraceWork({row,scope}){
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   return <Article uid={row.uid} title={row.title||'未命名文章'}
-    date={String(row.createtime||'').slice(0,10)}
-    source={row.site||''}
-    scopeId={scope?.id} editOnCardClick={false}>
+    articleHref={galaxyIdentityHref(scope?.id,row.uid)}
+    links={row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'source:'+row.uid,href:row.url,label:'外部連結'}]:[]}
+    editOnCardClick={false}>
     <WorkFullText open={opened} loading={opened&&body.isPending}
       error={body.error?String(body.error.message||body.error):''}
       content={body.data||''} showToggle={false}/>
@@ -93,7 +94,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
     queryFn:async()=>{
       const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,site,place_id,statistics_able,media_link',
+        columns:'uid,title,createtime,site,place_id,url,statistics_able,media_link',
         filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
       });
       if(!articles.length)return [];

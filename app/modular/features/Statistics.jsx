@@ -24,7 +24,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
-import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
@@ -167,13 +167,9 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         key={work.key||work.uid||work.entry_id||index}
         uid={work.uid}
         title={workDisplayHeading(work,{media:false,limit:80})}
-        source={work.site||work.group_label||''}
-        scopeId={work.scope_id||scope.id}
-        date={work.display_date||String(work.createtime||'').slice(0,10)}
-        body={work.description||work.media_metadata_text||''}
-        relationLinks={galaxyRelationLinks(scope.id,work)}
+        articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||scope.id,work.uid):''}
         links={work.links||[]}
-      >{work.uid?<WorkFullText
+      >{work.entry_type==='work'&&work.uid?<WorkFullText
         open={selectedUid===String(work.uid)}
         loading={selectedUid===String(work.uid)&&bodyQuery.isPending}
         error={selectedUid===String(work.uid)&&bodyQuery.error?featureDataErrorMessage(bodyQuery.error):''}

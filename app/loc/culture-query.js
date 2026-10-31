@@ -4,7 +4,7 @@
 
 import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
 import {workDisplayText} from '../modular/work-display-model';
-import {resolveGalaxyExternalLinks,selectScopeDailyCounts} from './galaxy-query';
+import {selectScopeDailyCounts} from './galaxy-query';
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
@@ -717,24 +717,21 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
 
   const [galaxyResult,mediaResult]=await Promise.all([
     galaxyIds.length?selectRows(scope.galaxy,{
-      columns:'uid,site,createtime,title,url,source_id,target_id,media_link',
+      columns:'uid,site,createtime,title,url',
       filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
       limit:galaxyIds.length
     }):Promise.resolve({rows:[]}),
     mediaIds.length?selectRows(scope.galaxyMedia,{
-      columns:'uid,media_type,title,url,meta_tags,createtime',
+      columns:'uid,media_type,title,url,createtime',
       filters:[{column:'uid',operator:'in',value:mediaIds}],
       limit:mediaIds.length
     }):Promise.resolve({rows:[]})
   ]);
 
-  const resolvedGalaxy=await resolveGalaxyExternalLinks(scope,galaxyResult.rows||[]);
-  const galaxyById=new Map(resolvedGalaxy.map(row=>[String(row.uid),{
+  const galaxyById=new Map((galaxyResult.rows||[]).map(row=>[String(row.uid),{
     key:'galaxy:'+row.uid,
     uid:row.uid,
     site:String(row.site||''),
-    source_id:row.source_id||null,
-    target_id:row.target_id||null,
     title:workDisplayText(row.title||'').trim(),
     description:'',
     createtime:row.createtime,
@@ -745,10 +742,11 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     entry_type:'work',
     group_label:String(row.site||''),
     scope_id:scopeId,
-    links:Array.isArray(row.resolved_links)?row.resolved_links:[]
+    links:row.url&&/^https?:\/\//i.test(String(row.url))
+      ?[{id:'url:'+String(row.uid),href:row.url,label:'外部連結'}]
+      :[]
   }]));
   const mediaById=new Map((mediaResult.rows||[]).map(row=>{
-    const metadataDescription=mediaMetadataDescription(row);
     return [String(row.uid),{
     ...row,
     key:'media:'+row.uid,
@@ -760,8 +758,8 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     date:row.createtime,
     display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
     title:CultureTimelineModel.decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
-    description:metadataDescription,
-    media_metadata_text:metadataDescription,
+    description:'',
+    media_metadata_text:'',
     group_label:String(row.media_type||''),
     scope_id:scopeId,
     links:row.url&&/^https?:\/\//i.test(String(row.url))
