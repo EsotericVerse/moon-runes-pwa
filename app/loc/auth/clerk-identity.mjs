@@ -42,35 +42,49 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
     if(!jwt||typeof jwt!=='string')throw new Error('Clerk did not provide a session token');
     return jwt;
   }
+  // Multiple listeners and the protected editor can request the same
+  // signed identity simultaneously. One in-flight Authority verification per
+  // exact Clerk JWT avoids redundant remote calls without caching any grant.
+  let pendingIdentity=null,pendingIdentityToken='';
   async function verifiedIdentity(){
     const clerk=await client();
     const jwt=await token();
     if(!jwt)return null;
-    const response=await fetchImpl(authority+'/v1/identity',{
-      method:'GET',cache:'no-store',credentials:'omit',
-      headers:{authorization:'Bearer '+jwt,accept:'application/json'}
-    });
-    if(!response.ok){
-      // Authority returns a concise error code/message, never raw token data.
-      // Keep the underlying reason visible so the same 401 is diagnosable.
-      let reason='';
-      try{
-        const data=await response.json();
-        if(typeof data?.error==='string')reason=data.error.slice(0,160);
-      }catch{}
-      throw new Error('LOC Authority rejected Clerk identity (HTTP '+response.status+
-        (reason?'：'+reason:'')+')');
+    if(pendingIdentity&&pendingIdentityToken===jwt)return pendingIdentity;
+    const pending=(async()=>{
+      const response=await fetchImpl(authority+'/v1/identity',{
+        method:'GET',cache:'no-store',credentials:'omit',
+        headers:{authorization:'Bearer '+jwt,accept:'application/json'}
+      });
+      if(!response.ok){
+        let reason='';
+        try{
+          const data=await response.json();
+          if(typeof data?.error==='string')reason=data.error.slice(0,160);
+        }catch{}
+        throw new Error('LOC Authority rejected Clerk identity (HTTP '+response.status+
+          (reason?'：'+reason:'')+')');
+      }
+      const identity=await response.json();
+      if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id||
+        typeof identity.session!=='string'||!identity.session.startsWith('sess_'))
+        throw new Error('Clerk identity mismatch');
+      const email=String(identity.email||'').trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        throw new Error('Clerk token requires a verified signed email claim for LOC management');
+      return Object.freeze({
+        provider:'clerk',subject:identity.subject,session:identity.session,email
+      });
+    })();
+    pendingIdentityToken=jwt;
+    pendingIdentity=pending;
+    try{return await pending;}
+    finally{
+      if(pendingIdentity===pending){
+        pendingIdentity=null;
+        pendingIdentityToken='';
+      }
     }
-    const identity=await response.json();
-    if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id||
-      typeof identity.session!=='string'||!identity.session.startsWith('sess_'))
-      throw new Error('Clerk identity mismatch');
-    const email=String(identity.email||'').trim().toLowerCase();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      throw new Error('Clerk token requires a verified signed email claim for LOC management');
-    return Object.freeze({
-      provider:'clerk',subject:identity.subject,session:identity.session,email
-    });
   }
   async function getAccessToken(){
     const jwt=await token();
