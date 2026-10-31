@@ -504,6 +504,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function getAccountSession(){
+    // In independent mode, LOC Authority verifies Clerk, never the selected DB.
+    if(typeof auth.getVerifiedSession==='function')return auth.getVerifiedSession();
     const {data,error}=await auth.getSession();
     if(error)throw new Error(error.message||'Account session failed');
     const session=data?.session||null;
@@ -520,14 +522,15 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function signInWithGoogle(callbackURL){
-    // All LOC account entry points must use the independent Clerk flow.
-    // Never invoke the database adapter's OAuth provider (Supabase or Neon).
-    if(typeof window==='undefined')throw new Error('OAuth requires a browser');
     const target=String(callbackURL||'').trim();
-    const returnTo=new URL(target||'/local/settings/',window.location.origin);
-    if(returnTo.origin!==window.location.origin)throw new Error('Login return URL must stay on LOC');
-    const next='/login/index.html?return_to='+encodeURIComponent(returnTo.pathname+returnTo.search+returnTo.hash);
-    window.location.assign(next);
+    if(!target)throw new Error('Google sign-in callback URL is required');
+    // The enabled Clerk Adapter owns Google OAuth; the selected database is
+    // not an identity provider. Legacy installations preserve their path until
+    // LOC Gateway / Authority are configured and the cutover is activated.
+    const {error}=await auth.signInWithOAuth({
+      provider:'google',options:{redirectTo:target,queryParams:{prompt:'select_account'}}
+    });
+    if(error)throw new Error(error.message||'Google sign-in failed');
   }
 
   async function signOutAccount(){
