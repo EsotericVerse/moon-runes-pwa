@@ -9,10 +9,11 @@ const controlUrl=(process.env.NEXT_PUBLIC_LOC_CONTROL_URL||'').replace(/\/$/,'')
 const engines=[['postgres','PostgreSQL'],['mysql','MySQL / MariaDB'],['mssql','SQL Server / Azure SQL']];
 const emptyTarget={id:'',label:'',engine:'postgres',host:'',port:'5432',database:'',username:'',password:''};
 
-function loadScript(url){
+function loadScript(url,{publishableKey=''}={}){
   return new Promise((resolve,reject)=>{
     const script=document.createElement('script');
     script.src=url;script.async=true;script.crossOrigin='anonymous';
+    if(publishableKey)script.setAttribute('data-clerk-publishable-key',publishableKey);
     script.onload=resolve;script.onerror=()=>reject(new Error('Clerk 介面載入失敗'));
     document.head.appendChild(script);
   });
@@ -29,16 +30,19 @@ async function openClerk(){
   if(!publishableKey)throw new Error('尚未設定 Clerk Publishable Key');
   const base=clerkBase();
   if(!window.__internal_ClerkUICtor)await loadScript(base+'/npm/@clerk/ui@1/dist/ui.browser.js');
-  if(!window.Clerk)await loadScript(base+'/npm/@clerk/clerk-js@6/dist/clerk.browser.js');
+  if(!window.Clerk)await loadScript(base+'/npm/@clerk/clerk-js@6/dist/clerk.browser.js',{publishableKey});
   await window.Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});
   return window.Clerk;
 }
 export default function RecoveryConsole(){
   const [clerk,setClerk]=useState(null);
+  const [identityRevision,setIdentityRevision]=useState(0);
   const [checking,setChecking]=useState(true);
   const [status,setStatus]=useState('');
   const [authorized,setAuthorized]=useState(false);
   const [targets,setTargets]=useState([]);
+  const [grants,setGrants]=useState([]);
+  const [grantForm,setGrantForm]=useState({provider:'clerk',subject:'',scope:'',actions:['read'],days:30});
   const [primary,setPrimary]=useState('');
   const [form,setForm]=useState(emptyTarget);
   const [busy,setBusy]=useState(false);
@@ -53,6 +57,14 @@ export default function RecoveryConsole(){
     if(!clerk||clerk.isSignedIn||!loginSlot.current)return;
     clerk.mountSignIn(loginSlot.current);
     return()=>{try{clerk.unmountSignIn(loginSlot.current)}catch{}};
+  },[clerk]);
+  useEffect(()=>{
+    if(!clerk)return;
+    const unsubscribe=clerk.addListener(({user,session})=>{
+      setIdentityRevision(value=>value+1);
+      if(!user||!session){setAuthorized(false);setTargets([]);setGrants([]);}
+    });
+    return()=>unsubscribe();
   },[clerk]);
   async function request(path,{method='GET',body}={}){
     if(!controlUrl||new URL(controlUrl).protocol!=='https:')
@@ -72,8 +84,8 @@ export default function RecoveryConsole(){
     setBusy(true);setStatus('');
     try{
       await request('/v1/me');
-      const data=await request('/v1/state');
-      setAuthorized(true);setTargets(data.targets||[]);
+      const [data,grantsData]=await Promise.all([request('/v1/state'),request('/v1/grants')]);
+      setAuthorized(true);setTargets(data.targets||[]);setGrants(grantsData.grants||[]);
       setPrimary(data.primary_id||'');
       setStatus('LOC 獨立管理身分已驗證，設定來自控制層，不依賴業務資料庫。');
     }catch(error){setAuthorized(false);setStatus(error.message);}
@@ -92,6 +104,31 @@ export default function RecoveryConsole(){
       const data=await request('/v1/state');
       setTargets(data.targets||[]);setForm({...form,password:''});
       setStatus('資料庫連線設定已獨立加密儲存；尚未對正式資料庫執行切換。');
+    }catch(error){setStatus(error.message);}
+    finally{setBusy(false);}
+  }
+  async function saveGrant(event){
+    event.preventDefault();setBusy(true);setStatus('');
+    try{
+      const days=Number(grantForm.days);
+      if(!Number.isSafeInteger(days)||days<1||days>365)throw new Error('有效期限限 1–365 天');
+      await request('/v1/grants',{method:'PUT',body:{
+        provider:grantForm.provider,subject:grantForm.subject,scope:grantForm.scope,
+        actions:grantForm.actions,expires_at:Date.now()+days*86400000
+      }});
+      const result=await request('/v1/grants');
+      setGrants(result.grants||[]);
+      setStatus('Scope 授權已儲存於獨立 Authority，非業務資料庫。');
+    }catch(error){setStatus(error.message);}
+    finally{setBusy(false);}
+  }
+  async function revokeGrant(key){
+    if(!window.confirm('確定立即撤銷這筆授權？'))return;
+    setBusy(true);setStatus('');
+    try{
+      await request('/v1/revoke',{method:'POST',body:{key}});
+      const result=await request('/v1/grants');
+      setGrants(result.grants||[]);setStatus('權限已撤銷。');
     }catch(error){setStatus(error.message);}
     finally{setBusy(false);}
   }
@@ -141,6 +178,29 @@ export default function RecoveryConsole(){
         <button className="loc-button primary" type="submit" disabled={busy}>加密儲存連線設定</button>
       </form>
       <p className="scope-status">此控制面板不直接執行 SQL。獨立 SQL Gateway 尚未啟用前，修改設定不會變更網站當前資料來源。</p>
+    </section>:null}
+    {authorized?<section className="loc-card" style={{marginTop:20}}>
+      <h2>LOC Authority · Scope 授權</h2>
+      <p className="scope-status">此權限獨立於所有業務 SQL 資料庫；不會因 Scope Tree 關係自行繼承。過期或撤銷後立即拒絕。</p>
+      {grants.map(grant=><div key={grant.key} style={{display:'flex',justifyContent:'space-between',gap:12,marginBottom:8}}>
+        <span>{grant.provider} · {grant.subject} · {grant.scope} · {grant.actions.join('/')} · {new Date(grant.expires_at).toLocaleDateString()}</span>
+        <button type="button" className="loc-button" disabled={busy} onClick={()=>revokeGrant(grant.key)}>撤銷</button>
+      </div>)}
+      <form onSubmit={saveGrant} className="scope-management-fields">
+        <h3>新增／更新授權</h3>
+        <label>身分提供者<select value={grantForm.provider} onChange={event=>setGrantForm({...grantForm,provider:event.target.value})}>
+          <option value="clerk">Clerk</option><option value="secondary">Secondary OIDC</option>
+        </select></label>
+        <label>已驗證的使用者 ID<input required value={grantForm.subject} onChange={event=>setGrantForm({...grantForm,subject:event.target.value})}/></label>
+        <label>Scope ID<input required value={grantForm.scope} onChange={event=>setGrantForm({...grantForm,scope:event.target.value})}/></label>
+        <fieldset><legend>允許的操作</legend>
+          {['read','write','manage','configure'].map(action=><label key={action} style={{marginRight:14}}>
+            <input type="checkbox" checked={grantForm.actions.includes(action)} onChange={event=>setGrantForm({...grantForm,actions:event.target.checked?[...grantForm.actions,action]:grantForm.actions.filter(item=>item!==action)})}/>{action}
+          </label>)}
+        </fieldset>
+        <label>有效天數（1–365）<input required type="number" min="1" max="365" value={grantForm.days} onChange={event=>setGrantForm({...grantForm,days:event.target.value})}/></label>
+        <button className="loc-button primary" type="submit" disabled={busy||!grantForm.actions.length}>儲存 Scope 授權</button>
+      </form>
     </section>:null}
   </main>;
 }
