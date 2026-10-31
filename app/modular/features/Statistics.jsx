@@ -335,8 +335,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     :periods.find(row=>String(row.period||row.era_id||row.uid)===selectedPeriodKey)||null;
   // LOC aggregates member Scopes, but has no mandatory aggregate Period row.
   // An empty or non-period Scope must not request a nonexistent Period index.
-  const periodNavigationReady=isLrunesDaily||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
+  const requestedStart=dateKey(navigation.from),requestedEnd=dateKey(navigation.to);
+  const hasRequestedWindow=Boolean(requestedStart&&requestedEnd&&requestedStart<=requestedEnd);
+  const periodNavigationReady=hasRequestedWindow||isLrunesDaily||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
   const queryRange=useMemo(()=>{
+    if(hasRequestedWindow){
+      const days=Math.round((Date.parse(requestedEnd+'T00:00:00Z')-Date.parse(requestedStart+'T00:00:00Z'))/86_400_000);
+      return {...customQueryRange,startDate:requestedStart,endDate:requestedEnd,
+        bucket:days>180?'month':days>31?'week':'day',
+        fullHistory:false,canZoomOut:false,canZoomIn:false};
+    }
     if(!selectedPeriod)return customQueryRange;
     const startDate=String(selectedPeriod.start_date).slice(0,10);
     const endDate=String(selectedPeriod.end_date||queryEndDate).slice(0,10);
@@ -344,7 +352,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const days=Math.round((Date.parse(endDate+'T00:00:00Z')-Date.parse(startDate+'T00:00:00Z'))/86_400_000);
     return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
       fullHistory:false,canZoomOut:false,canZoomIn:false};
-  },[selectedPeriod,customQueryRange,queryEndDate]);
+  },[selectedPeriod,customQueryRange,queryEndDate,hasRequestedWindow,requestedStart,requestedEnd]);
   // Both editors store flat names. Show one direct source choice, not a group tree.
   const activeSourceSelection=styleFilter==='rune66'?keywordSource:rankingType==='source'?sourceGroup:'';
   const sourceChart=!isLrunesDaily&&!mediaDimension&&rankingType!=='place'&&Boolean(targetScopes.length)&&Boolean(rankingType);
