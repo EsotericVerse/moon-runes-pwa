@@ -192,27 +192,56 @@ const importIsoTime=value=>{
 // Requested timestamps are sorted and cut into disjoint windows, so a saved row
 // is scanned at most once. A window reads only uid + createtime; full rows are
 // read by UID for the timestamps that really matched.
+// Process disjoint source-time windows in exactly three bounded SELECT lanes.
+// A timestamp belongs to only one lane. Each lane filters and fetches its own
+// candidate UIDs; the shared comparison spool receives the completed results.
 export async function readImportCandidatesByTimeWindows(times,
-    {readWindow,readRowsByUid,consumePage,windowSize=5000,onWindowDone}={}){
+    {readWindow,readRowsByUid,consumePage,windowSize=5000,concurrency=3,onWindowDone}={}){
   if(typeof readWindow!=='function'||typeof readRowsByUid!=='function'||
       typeof consumePage!=='function')throw Error('缺少時間區間查詢');
-  if(!Number.isSafeInteger(windowSize)||windowSize<1)throw Error('無效的比對區間大小');
+  if(!Number.isSafeInteger(windowSize)||windowSize<1||windowSize>10000)
+    throw Error('無效的比對區間大小');
+  if(!Number.isSafeInteger(concurrency)||concurrency<1||concurrency>3)
+    throw Error('比對 SELECT 最多只能同時執行三路');
   const sorted=[...new Set((times||[]).map(importIsoTime).filter(Boolean))].sort();
-  for(let index=0;index<sorted.length;index+=windowSize){
-    const part=sorted.slice(index,index+windowSize);
-    const wanted=new Set(part);
-    const saved=await readWindow(part[0],part[part.length-1]);
-    if(!Array.isArray(saved))throw Error('時間區間查詢結果無效');
-    const uids=[];
-    for(const row of saved)
-      if(wanted.has(importIsoTime(row?.createtime)))uids.push(String(row.uid));
-    if(uids.length){
-      const full=await readRowsByUid(uids);
-      if(!Array.isArray(full))throw Error('UID 查詢結果無效');
-      consumePage(full);
+  if(!sorted.length)return;
+  // Even a file with fewer than windowSize unique timestamps can use three
+  // workers. Never split equal timestamps across two windows.
+  const chunkSize=Math.max(1,Math.min(windowSize,Math.ceil(sorted.length/concurrency)));
+  const windows=[];
+  for(let index=0;index<sorted.length;index+=chunkSize)
+    windows.push(sorted.slice(index,index+chunkSize));
+  let next=0,completed=0;
+  const work=async()=>{
+    for(;;){
+      const index=next++;
+      if(index>=windows.length)return;
+      const part=windows[index],wanted=new Set(part);
+      // The SQL where-range and the local timestamp filter must agree.
+      // This keeps each lane from consuming records belonging to other lanes.
+      const saved=await readWindow(part[0],part[part.length-1]);
+      if(!Array.isArray(saved))throw Error('時間區間查詢結果無效');
+      const uids=new Set();
+      for(const row of saved)
+        if(wanted.has(importIsoTime(row?.createtime)))uids.add(String(row.uid));
+      if(uids.size){
+        const full=await readRowsByUid([...uids]);
+        if(!Array.isArray(full))throw Error('UID 查詢結果無效');
+        // A lane can only deposit records matched inside its own window.
+        const requested=new Set(uids);
+        consumePage(full.filter(row=>requested.has(String(row.uid))&&
+          wanted.has(importIsoTime(row.createtime))));
+      }
+      completed+=part.length;
+      onWindowDone?.(completed);
     }
-    onWindowDone?.(index+part.length);
-  }
+  };
+  // Settle all in-flight reads even if one fails, so a failed compare never
+  // leaves detached read tasks racing the next import attempt.
+  const workers=await Promise.allSettled(Array.from(
+    {length:Math.min(concurrency,windows.length)},()=>work()));
+  const failure=workers.find(worker=>worker.status==='rejected');
+  if(failure)throw failure.reason;
 }
 
 export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}){
