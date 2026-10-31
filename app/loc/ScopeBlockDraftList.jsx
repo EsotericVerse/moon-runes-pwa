@@ -158,7 +158,6 @@ export default function ScopeBlockDraftList({
     if(busy)return false;
     setBusy(true);setMessage('');
     if(inDock)editDock?.setNotice('');
-    const visible=drafts.filter(draft=>!draft._deleted);
     const plan=planHomeBlockWrites(drafts,JSON.parse(initialDrafts.current||'[]'),{preserveOrder});
     const {changed}=plan;
     for(const {draft,modified} of changed){
