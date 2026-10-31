@@ -168,9 +168,6 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         uid={work.uid}
         title={workDisplayHeading(work,{media:false,limit:80})}
         articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||scope.id,work.uid):''}
-        source={work.site||work.group_label||''}
-        scopeId={work.scope_id||scope.id}
-        date={work.display_date||String(work.createtime||'').slice(0,10)}
         links={work.links||[]}
       >{work.entry_type==='work'&&work.uid?<WorkFullText
         open={selectedUid===String(work.uid)}
