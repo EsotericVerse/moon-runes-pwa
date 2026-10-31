@@ -103,10 +103,12 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
     if(cached)return cached;
     // If a deliberate recheck fails, show the error rather than pretending
     // the visitor signed out or silently trusting an old management snapshot.
-    if(!forceVerify){
-      clearAuthorization();
-      scopeMetadata=[];
-    }
+    // A failed explicit recheck must not leave stale grants eligible for a later
+    // cached read. Identity remains visible, but management always fails closed.
+    clearAuthorization();
+    scopeMetadata=[];
+    authUserId='';
+    authEmail='';
     return verifiedIdentity
       ?{...signedOutState,...verifiedIdentity,error:String(error?.message||error)}
       :failedState(error);
