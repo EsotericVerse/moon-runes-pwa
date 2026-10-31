@@ -70,6 +70,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     :isFacebook?facebookPlace?.__importCoordinates:extractImportCoordinates(row);
   const importPlaceName=String(row.__importPlaceName||facebookPlace?.location||'').trim();
   const importPlaceAddress=String(row.__importPlaceAddress||facebookPlace?.address||'').trim();
+  const importPlaceUrl=String(row.__importPlaceUrl||facebookPlace?.placeUrl||'').trim();
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
@@ -141,7 +142,8 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     location:sourcePlace||null,
     ...(importedCoordinates?{__importCoordinates:importedCoordinates,
       ...(importPlaceName?{__importPlaceName:importPlaceName}:{}),
-      ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{})}:{}),
+      ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{}),
+      ...(importPlaceUrl?{__importPlaceUrl:importPlaceUrl}:{})}:{}),
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
@@ -858,6 +860,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
+          __importPlaceUrl:unusedPlaceUrl,
           ...article}=record;
         if(placeUid)newArticleVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
         payload.push(placeUid?{...article,place_id:placeUid}:article);
