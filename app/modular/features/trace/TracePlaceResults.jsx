@@ -32,6 +32,11 @@ function TraceWork({row,scope}){
     detailReading={Boolean(article)}
     relationLinks={article?galaxyRelationLinks(scope?.id,article):[]}
     relatedMedia={article?.related_media||[]}
+    relatedTime={article?.related_time||null}
+    relatedSpace={article?.related_space||null}
+    relatedStatistics={article?.related_statistics||null}
+    articleScopeId={scope?.id||''}
+    articleDate={article?.date||''}
     tracePlace={article?.trace_place||null}
     traceHref={article?.trace_place?featureNavigationHref(scope?.id,'trace',{place:article.trace_place.uid}):''}
     locationName={article?.location||''}
