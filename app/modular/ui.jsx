@@ -215,11 +215,17 @@ function ArticleRelationNavigation({
     const label=String(item.title||'').trim()||(isRunes?'抽牌結果':'媒體 '+(index+1));
     const href=externalLink({href:item.url});
     const description=String(item.meta_tags||'').trim();
-    let cards=[];
+    let cards=[],spread='',spreadLayout='';
     if(isRunes&&description.startsWith('{')){
       try{
         const parsed=JSON.parse(description);
-        if(Array.isArray(parsed?.cards))cards=parsed.cards.filter(card=>card&&card.rune);
+        if(Array.isArray(parsed?.cards)){
+          cards=parsed.cards.filter(card=>card&&card.rune);
+          const describe=value=>typeof value==='string'?value
+            :value==null?'':JSON.stringify(value);
+          spread=describe(parsed.spread);
+          spreadLayout=describe(parsed.spread_layout);
+        }
       }catch{/* Plain-text rune descriptions remain valid. */}
     }
     return <span key={item.uid||index} className="scope-article-context-media">
@@ -228,13 +234,21 @@ function ArticleRelationNavigation({
       {isRunes?<a className="scope-article-context-link" href={scopeHref('lrunes')}>符文</a>:null}
       {description?<details className="scope-article-context-description">
         <summary>{isRunes?'抽牌內容':'媒體描述'}</summary>
-        {cards.length?<ol className="scope-article-rune-list">
-          {cards.map((card,position)=><li key={position}>
-            <strong>{String(card.rune||'')}</strong>
-            <span>{String(card.direction||'')}</span>
-            <small>{String(card.position||position+1)}</small>
-          </li>)}
-        </ol>:<p>{description}</p>}
+        {cards.length?<>
+          {spread?<p>牌陣：{spread}</p>:null}
+          {spreadLayout?<p>排列：{spreadLayout}</p>:null}
+          <ol className="scope-article-rune-list">
+            {cards.map((card,position)=><li key={position}>
+              <strong>{String(card.rune||'')}</strong>
+              <span>{String(card.direction||'')}</span>
+              <small>{String(card.position||position+1)}</small>
+            </li>)}
+          </ol>
+          <details className="scope-article-context-raw-runes">
+            <summary>完整抽牌資料</summary>
+            <pre>{description}</pre>
+          </details>
+        </>:<p>{description}</p>}
       </details>:null}
     </span>;
   });
