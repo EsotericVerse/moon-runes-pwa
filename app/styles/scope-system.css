@@ -631,6 +631,31 @@
   overflow-wrap:anywhere;
   line-height:1.6;
 }
+.scope-article-rune-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+  margin:.65rem 0 .3rem;
+  padding:0;
+  list-style:none;
+}
+.scope-article-rune-list>li{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-width:3.1rem;
+  min-height:3.45rem;
+  padding:.4rem .6rem;
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-ui-radius-sm);
+  background:var(--loc-panel);
+  line-height:1.3;
+  gap:.25rem;
+}
+.scope-article-rune-list strong{font-size:1rem}
+.scope-article-rune-list span{font-size:.78rem;color:var(--loc-muted)}
+.scope-article-rune-list small{font-size:.7rem;color:var(--loc-muted)}
 .scope-article-context-stat-preview{
   margin:.3rem 0 0;
   min-width:0;
