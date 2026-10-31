@@ -27,7 +27,7 @@ function AnchorEditor({scopeId,spatial,reload}){
   const ownAnchors=useMemo(()=>(spatial.anchors||[]).filter(row=>row.source_scope===scopeId),
     [spatial.anchors,scopeId]);
   const [editingUid,setEditingUid]=useState('');
-  const [hiddenDepth,setHiddenDepth]=useState(-1);
+  const [invisible,setInvisible]=useState(false);
   const [bulkUids,setBulkUids]=useState([]);
   const [bulkBusy,setBulkBusy]=useState(false);
   const [standardTitles,setStandardTitles]=useState({});
@@ -50,7 +50,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setTitle(row?.title||'');
     setDescription(row?.description||'');
     setPostalAddress(row?.postal_address||'');
-    setHiddenDepth(Number(row?.hidden_depth??-1));
+    setInvisible(Boolean(row?.invisible));
     setLongitude(row?.longitude==null?'':String(row.longitude));
     setLatitude(row?.latitude==null?'':String(row.latitude));
     if(row?.longitude!=null&&row?.latitude!=null)
@@ -64,7 +64,7 @@ function AnchorEditor({scopeId,spatial,reload}){
     setBusy(true);setIsError(false);setNotice('');
     try{
       if(!title.trim())throw Error('請填入空間定錨點標題');
-      const input={scopeId,title,description,address:postalAddress,longitude,latitude,hiddenDepth};
+      const input={scopeId,title,description,address:postalAddress,longitude,latitude,invisible};
       const saved=editingUid
         ?await updateTraceAnchor({...input,uid:editingUid})
         :await addTraceAnchor(input);
@@ -77,7 +77,7 @@ function AnchorEditor({scopeId,spatial,reload}){
         cache.invalidate({queryKey:['trace-current',scopeId]})
       ]);
       setEditingUid('');setTitle('');setDescription('');setPostalAddress('');
-      setLongitude('');setLatitude('');setHiddenDepth(-1);
+      setLongitude('');setLatitude('');setInvisible(false);
       setNotice('定錨點 '+saved.uid+' 已保存。'+(refreshFailed?'重新讀取未完成，請勿重複提交。':''));
       return true;
     }catch(e){setIsError(true);setNotice(String(e.message||e));return false;}
@@ -106,14 +106,14 @@ function AnchorEditor({scopeId,spatial,reload}){
     }catch(e){setIsError(true);setNotice(String(e.message||e));}
     finally{setBusy(false);}
   };
-  const bulkApply=async depth=>{
+  const bulkApply=async invisible=>{
     if(bulkBusy||busy||!bulkUids.length||scopeId==='loc')return;
     if(!window.confirm('確定更新 '+bulkUids.length+' 個空間定錨點的公開設定？'))return;
     setBulkBusy(true);setNotice('');
     try{
       let count=0;
       for(let i=0;i<bulkUids.length;i+=200)
-        count+=await updateTraceVisibilityBulk({scopeId,uids:bulkUids.slice(i,i+200),hiddenDepth:depth});
+        count+=await updateTraceVisibilityBulk({scopeId,uids:bulkUids.slice(i,i+200),invisible});
       setBulkUids([]);await reload();
       setNotice('已更新 '+count+' 個空間定錨點。');
     }catch(e){setIsError(true);setNotice(String(e.message||e));}
@@ -156,8 +156,8 @@ function AnchorEditor({scopeId,spatial,reload}){
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids(ownAnchors.map(row=>row.uid))}>全選所有定錨點</button>
         <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids([])}>清除</button>
-        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(0)}>大量隱藏</button>
-        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(-1)}>大量公開</button>
+        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(true)}>大量隱藏</button>
+        <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(false)}>大量公開</button>
       </div>
       <div style={{maxHeight:'16rem',overflow:'auto'}}>
         {ownAnchors.map(row=><label key={row.uid} style={{display:'block'}}>
@@ -173,8 +173,8 @@ function AnchorEditor({scopeId,spatial,reload}){
       <label>文字地址（非必填）<input maxLength={320} value={postalAddress}
         onChange={e=>setPostalAddress(e.target.value)} disabled={busy}/></label>
       <label>可見性
-        <select className="scope-select" value={hiddenDepth} onChange={e=>setHiddenDepth(Number(e.target.value))} disabled={busy}>
-          <option value={-1}>公開</option><option value={0}>單獨隱藏</option>
+        <select className="scope-select" value={Number(invisible)} onChange={e=>setInvisible(e.target.value==='1')} disabled={busy}>
+          <option value={0}>顯示</option><option value={1}>隱藏</option>
         </select>
       </label>
       <label className="loc-trace-description-field">說明<textarea rows={6} maxLength={2000} value={description}

@@ -38,10 +38,10 @@ export async function selectCultureTimeRows(scope,birthday=''){
     const ranges=type==='anchor'?[{
       index:0,start_date:timeDate(row),end_date:timeDate(row),
       start_anchor_id:id,end_anchor_id:null,anchor_ids:[id],point:true,invalid:false
-    }]:type==='period'
+    }]:type==='era'
       ?resolveTimeTrace(row.anchor_ids,eventMap).ranges
       :resolveTimeSegments(row.anchor_ids,byUid,{period:false});
-    const invalidTraceLinks=type==='period'
+    const invalidTraceLinks=type==='era'
       ?resolveTimeTrace(row.anchor_ids,eventMap).invalidLinks:[];
     const dated=ranges.filter(range=>range.start_date).sort((a,b)=>
       a.start_date.localeCompare(b.start_date)||a.index-b.index);
@@ -54,14 +54,14 @@ export async function selectCultureTimeRows(scope,birthday=''){
     return {...row,scope_id:scopeId,
       entry_key:type+':'+id,entry_type:type,
       title:row.title||id,summary:row.description||'',
-      era_id:type==='period'?id:null,period:type==='period'?id:null,
-      entry_name:type==='period'?String(row.title||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
+      era_id:type==='era'?id:null,period:type==='era'?id:null,
+      entry_name:type==='era'?String(row.title||'').replace(/^P\d+\s*[｜|]\s*/,''):null,
       anchor_id:type==='anchor'?id:null,
       anchor_ids:type==='anchor'?[]:(Array.isArray(row.anchor_ids)?row.anchor_ids:[]),
       ranges,
       start_anchor_id:first?.start_anchor_id||null,
       end_anchor_id:last?.end_anchor_id||null,
-      event_id:type==='event'?id:null,
+      event_id:type==='period'?id:null,
       open_start:false,open_end:openEnd,
       start_date:first?.start_date||null,
       end_date:finalDate,
@@ -71,10 +71,10 @@ export async function selectCultureTimeRows(scope,birthday=''){
       ]};
   };
   const events=rows.filter(row=>row.type==='period')
-    .map(row=>normalize(row,'event',new Map()));
+    .map(row=>normalize(row,'period',new Map()));
   const byEventUid=new Map(events.map(row=>[String(row.uid),row]));
   const periods=rows.filter(row=>row.type==='era')
-    .map(row=>normalize(row,'period',byEventUid));
+    .map(row=>normalize(row,'era',byEventUid));
   return [...anchors.map(row=>normalize(row,'anchor',new Map())),
     ...periods,...events];
 }
@@ -82,7 +82,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
 function openPeriodRangeFromRows(scopeId,rows=[]){
   // Legacy helper name retained for callers. This is a real, closed
   // era chosen by its nearest actual endpoint, NEVER open-ended now.
-  const traces=rows.filter(row=>row.entry_type==='period'&&
+  const traces=rows.filter(row=>row.entry_type==='era'&&
     row.ranges?.some(range=>range.start_date));
   const day=new Date().toISOString().slice(0,10),target=Date.parse(day+'T00:00:00Z');
   const ranked=traces.map(row=>{
@@ -197,13 +197,13 @@ function periodRows(rows){
 function timelineItems(rows,{includeScope=false}={}){
   const all=Array.isArray(rows)?rows:[];
   const anchors=new Map(all.filter(row=>row.entry_type==='anchor').map(row=>[row.scope_id+':'+row.anchor_id,row]));
-  return all.filter(row=>['anchor','event','period'].includes(row.entry_type))
+  return all.filter(row=>['anchor','period','era'].includes(row.entry_type))
     .flatMap(row=>{
       const slices=row.entry_type==='anchor'?[row]:row.ranges?.length?row.ranges:[row];
       return slices.map((range,index)=>{
         const scopeId=scopeIdOf(row.scope_id);
         const start=range.start_date||null,end=range.end_date||null;
-        const kindLabel={anchor:'定錨點',event:'期間',period:'時代'}[row.entry_type];
+        const kindLabel={anchor:'定錨點',period:'期間',era:'時代'}[row.entry_type];
         return {...row,scope_id:scopeId,
           id:scopeId+':'+row.entry_key+':'+index,
           entry_id:scopeId+':'+row.entry_key+':'+index,
@@ -213,10 +213,10 @@ function timelineItems(rows,{includeScope=false}={}){
           display_label:row.title,description:row.summary,
           group_key:includeScope?scopeId+':'+row.entry_type:'kind:'+row.entry_type,
           group_label:includeScope?scopeId+' · '+kindLabel:kindLabel,
-          group_order:{anchor:0,event:1,period:2}[row.entry_type]??99
+          group_order:{anchor:0,period:1,era:2}[row.entry_type]??99
         };
       });
-    }).filter(row=>row.start_date||row.entry_type==='period')
+    }).filter(row=>row.start_date||row.entry_type==='era')
     .sort((a,b)=>String(a.start_date||'9999-12-31').localeCompare(String(b.start_date||'9999-12-31'))||
       String(a.uid||'').localeCompare(String(b.uid||''))||
       a.segment_index-b.segment_index);
@@ -229,13 +229,13 @@ function dateFilters(startDate,endDate,column='createtime'){
 }
 function cultureParts(scopeContext,runtimeId){
   const normalizedContext=(scopeContext||[]).map(row=>({...row,scope_id:runtimeId}));
-  const periods=normalizedContext.filter(row=>row.entry_type==='period');
+  const periods=normalizedContext.filter(row=>row.entry_type==='era');
   const eras=periods.map(row=>({
     ...periodRows([row])[0],
     scope_id:runtimeId,
     group_label:runtimeId+' 時代'
   }));
-  const events=normalizedContext.filter(row=>row.entry_type==='event').map(row=>({
+  const events=normalizedContext.filter(row=>row.entry_type==='period').map(row=>({
     entry_id:row.event_id||row.entry_key,
     event_id:row.event_id||row.entry_key,
     scope_id:runtimeId,
@@ -313,7 +313,7 @@ export async function selectScopeCultureData(scopeId){
     const withWindows=bundles.map(bundle=>({
       bundle,
       windows:timeDateWindows(bundle.context
-        .filter(row=>row.entry_type==='period')
+        .filter(row=>row.entry_type==='era')
         .flatMap(row=>row.ranges||[]))
     })).filter(item=>item.windows.length>0);
     const intersectionWindows=intersectTimeDateWindows(withWindows.map(item=>item.windows));
@@ -333,7 +333,7 @@ export async function selectScopeCultureData(scopeId){
     // The LOC timeline itself shows only shared dates. Clipping the visible
     // per-Scope ranges avoids displaying a union disguised as an intersection.
     const scopeTimeRanges=bundles.flatMap((bundle,scopeIndex)=>
-      bundle.context.filter(row=>row.entry_type==='period').flatMap(row=>
+      bundle.context.filter(row=>row.entry_type==='era').flatMap(row=>
         (row.ranges||[])
           .filter(range=>range.start_date&&(!range.invalid||range.point))
           .flatMap((range,index)=>intersectionWindows.flatMap((shared,sharedIndex)=>{

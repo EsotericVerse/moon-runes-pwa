@@ -102,7 +102,7 @@ export function decodeCultureText(value){
 
 /**
  * Snap native vis-timeline range manipulation back to canonical Time anchors.
- * Period/event dates are derived from anchor_ids[], never stored as independent dates.
+ * Era/period dates are derived from anchor_ids[], never stored as independent dates.
  */
 function dateKey(value){
   const date=value instanceof Date?value:new Date(value);
@@ -125,7 +125,7 @@ function nearestAnchor(target,anchors,mode,periodEndExclusive=false){
   return [...anchors].sort((a,b)=>score(a)-score(b)||a.day.localeCompare(b.day)||a.id.localeCompare(b.id))[0]||null;
 }
 export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
-  if(!['period','event'].includes(row?.entryType))throw new Error('只有時期／事件可以調整範圍。');
+  if(!['era','period'].includes(row?.entryType))throw new Error('只有時期／事件可以調整範圍。');
   const segments=decodeTimeSegments(row?.raw?.anchor_ids);
   // A multi-interval period must be edited as separate intervals, never by
   // dragging one joined envelope across a gap.
@@ -140,13 +140,13 @@ export function snapTimelineRangeToAnchors(item,row,timeRows=[]){
   const requestedStart=dateKey(item?.start),requestedEnd=dateKey(item?.end);
   if(!requestedStart||!requestedEnd)throw new Error('無法解析時間軸的新範圍。');
   const nextStart=requestedStart===oldStart.day?oldStart:nearestAnchor(requestedStart,anchors,'start');
-  const nextEnd=requestedEnd===(row.entryType==='period'?previousDay(oldEnd.day):oldEnd.day)?
-    oldEnd:nearestAnchor(requestedEnd,anchors,'end',row.entryType==='period');
+  const nextEnd=requestedEnd===(row.entryType==='era'?previousDay(oldEnd.day):oldEnd.day)?
+    oldEnd:nearestAnchor(requestedEnd,anchors,'end',row.entryType==='era');
   if(!nextStart||!nextEnd||nextStart.id===nextEnd.id||nextStart.day>=nextEnd.day)
     throw new Error('必須選擇依日期先後的兩個不同定錨點。');
   const token=encodeTimeSegment(nextStart.id,nextEnd.id);
   return {anchor_ids:[token],changed:token!==original.raw,
-    item:{...item,start:nextStart.day,end:row.entryType==='period'?
+    item:{...item,start:nextStart.day,end:row.entryType==='era'?
       previousDay(nextEnd.day):nextEnd.day}};
 }
 

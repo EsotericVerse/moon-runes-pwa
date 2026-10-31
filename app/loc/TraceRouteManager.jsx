@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import PopularSelect from './PopularSelect';
+import {planTraceVisibilityUids} from './trace-visibility-plan.mjs';
 import {useSearchParams} from 'next/navigation';
 import {useAccount} from './use-account';
 import {useEditDockForm} from '../modular/edit-dock';
@@ -30,10 +31,10 @@ export default function TraceRouteManager({scopeId}){
   const [editorOpen,setEditorOpen]=useState(false);
   const [editingUid,setEditingUid]=useState('');
   const [type,setType]=useState('path');
-  const [hiddenDepth,setHiddenDepth]=useState(-1);
+  const [invisible,setInvisible]=useState(false);
   const [routeUids,setRouteUids]=useState([]);
   const [bulkSelected,setBulkSelected]=useState([]);
-  const [bulkDepth,setBulkDepth]=useState(2);
+  const [bulkVisibilityMode,setBulkVisibilityMode]=useState('routes');
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
   const [filter,setFilter]=useState('');
@@ -86,7 +87,7 @@ export default function TraceRouteManager({scopeId}){
   const poolOptions=useMemo(()=>spool.map(uid=>anchorMap.get(uid))
     .filter(Boolean).map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[spool,anchorMap]);
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
-  const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length||routeUids.length||hiddenDepth!==-1);
+  const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length||routeUids.length||invisible);
   const chosenIds=type==='path'?queue:unique(pairs.flat());
   const preview=editorOpen
     ?(chosenIds.length>=2||type==='trace'&&routeUids.length>0
@@ -98,7 +99,7 @@ export default function TraceRouteManager({scopeId}){
   const clear=()=>{
     setEditingUid('');setTitle('');setDescription('');setSpool([]);setQueue([]);setPairs([]);
     setFrom('');setTo('');setMapStart('');setSelectedStop('');setSelectedAnchor(null);setSavedReceipt(null);
-    setHiddenDepth(-1);setRouteUids([]);
+    setInvisible(false);setRouteUids([]);
   };
   const allowLeave=()=>!incomplete||window.confirm('尚未儲存，確定放棄修改？');
   const openNew=kind=>{
@@ -109,7 +110,7 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!allowLeave())return;
     clear();setEditorOpen(true);setEditingUid(row.uid);setType(row.trace_type);
     setTitle(row.title);setDescription(row.description||'');
-    setHiddenDepth(Number(row.hidden_depth??-1));setRouteUids(Array.isArray(row.route_list)?row.route_list:[]);
+    setInvisible(Boolean(row.invisible));setRouteUids(Array.isArray(row.route_list)?row.route_list:[]);
     setQueue(row.trace_type==='path'?[...row.anchor_list]:[]);
     setPairs(row.trace_type==='trace'?row.anchor_list.map(pair=>[...pair]):[]);
     setSpool(traceMemberUids(row));setSelectedUid(row.uid);setShowMap(true);
@@ -181,7 +182,7 @@ export default function TraceRouteManager({scopeId}){
       if(type==='trace'&&(!(pairs.length||routeUids.length)||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
         throw Error('痕跡圖必須至少有一條有效的起點與終點線段');
       if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('候選地點中有尚未載入的地點');
-      const input={scopeId:owner,type,title,description,hiddenDepth,routeUids:type==='trace'?routeUids:[],
+      const input={scopeId:owner,type,title,description,invisible,routeUids:type==='trace'?routeUids:[],
         anchorUids:type==='path'?queue:pairs,anchors:allAnchors};
       let receipt=savedReceipt;
       if(receipt&&(receipt.type!==type||receipt.editingUid!==editingUid))
@@ -196,7 +197,7 @@ export default function TraceRouteManager({scopeId}){
       const saved=(updated||[]).find(row=>row.uid===receipt.uid&&row.source_scope===owner);
       if(!saved||saved.title!==title.trim()||saved.trace_type!==type
         ||JSON.stringify(saved.anchor_list)!==JSON.stringify(input.anchorUids)
-        ||Number(saved.hidden_depth??-1)!==hiddenDepth
+        ||Boolean(saved.invisible)!==invisible
         ||JSON.stringify(saved.route_list||[])!==JSON.stringify(input.routeUids))
         throw Error('資料庫已回應寫入，但重讀尚未一致；保留草稿，按儲存只重新檢查');
       const uid=receipt.uid;
@@ -219,14 +220,16 @@ export default function TraceRouteManager({scopeId}){
       await refresh();setNotice('已刪除連線資料，原始地點保留');
     }catch(e){setError(true);setNotice(String(e.message||e));}finally{setBusy(false);}
   };
-  const applyBulkVisibility=async depth=>{
+  const applyBulkVisibility=async invisible=>{
     if(busy||!own||!bulkSelected.length)return;
-    if(!window.confirm('確定更新 '+bulkSelected.length+' 筆空間紀錄？父層隱藏會連帶影響所屬的下層紀錄。'))return;
-    setBusy(true);setError(false);setNotice('');
     try{
+      const uids=planTraceVisibilityUids({maps:records,selectedUids:bulkSelected,mode:bulkVisibilityMode});
+      if(!window.confirm('確定將 '+uids.length+' 筆空間紀錄設定為'+(invisible?'隱藏':'顯示')+'？'+
+        (bulkVisibilityMode==='self'?'只變更所選項目。':'將同步變更本次選定的關聯項目。')))return;
+      setBusy(true);setError(false);setNotice('');
       let count=0;
-      for(let i=0;i<bulkSelected.length;i+=200)
-        count+=await updateTraceVisibilityBulk({scopeId:owner,uids:bulkSelected.slice(i,i+200),hiddenDepth:depth});
+      for(let i=0;i<uids.length;i+=200)
+        count+=await updateTraceVisibilityBulk({scopeId:owner,uids:uids.slice(i,i+200),invisible});
       setBulkSelected([]);await index.mutate();await refresh();
       setNotice('已更新 '+count+' 筆空間顯示設定。');
     }catch(e){setError(true);setNotice(String(e.message||e));}
@@ -253,15 +256,20 @@ export default function TraceRouteManager({scopeId}){
     {index.isPending?<p className="scope-status">載入列表中…</p>:null}
     {index.error?<p role="alert" className="scope-status scope-error">{String(index.error.message||index.error)}</p>:null}
     <details className="scope-card"><summary>大量隱藏／公開路線圖與痕跡圖</summary>
-      <p className="scope-status">勾選父層就能隱藏其下層。單獨隱藏不影響子項；全部隱藏包含相關定錨點。</p>
+      <p className="scope-status">可只更新所選紀錄，或在這次批次操作中連動所屬路線圖與定錨點；每筆只保存自己的顯示狀態。</p>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={busy} onClick={()=>setBulkSelected(visibleRecords.map(row=>row.uid))}>全選目前列表</button>
         <button type="button" className="loc-button" disabled={busy} onClick={()=>setBulkSelected([])}>清除勾選</button>
-        <select className="scope-select" aria-label="批次隱藏範圍" value={bulkDepth} onChange={e=>setBulkDepth(Number(e.target.value))}>
-          <option value={0}>單獨隱藏</option><option value={1}>隱藏到第二層</option><option value={2}>隱藏全部定錨點</option>
-        </select>
-        <button className="loc-button" type="button" disabled={busy||!bulkSelected.length} onClick={()=>applyBulkVisibility(bulkDepth)}>大量隱藏</button>
-        <button className="loc-button" type="button" disabled={busy||!bulkSelected.length} onClick={()=>applyBulkVisibility(-1)}>大量公開</button>
+        <label>連動範圍
+          <select className="scope-select" aria-label="批次顯示連動範圍" value={bulkVisibilityMode}
+            onChange={event=>setBulkVisibilityMode(event.target.value)} disabled={busy}>
+            <option value="self">只處理所選項目</option>
+            <option value="routes">連動所屬路線圖</option>
+            <option value="all">連動路線圖及定錨點</option>
+          </select>
+        </label>
+        <button className="loc-button" type="button" disabled={busy||!bulkSelected.length} onClick={()=>applyBulkVisibility(true)}>大量隱藏</button>
+        <button className="loc-button" type="button" disabled={busy||!bulkSelected.length} onClick={()=>applyBulkVisibility(false)}>大量公開</button>
       </div>
     </details>
     <div className="loc-trace-saved-maps">
@@ -272,7 +280,7 @@ export default function TraceRouteManager({scopeId}){
           勾選</label>
         <button type="button" className="loc-trace-saved-map-summary"
           onClick={()=>{if(allowLeave()){setSelectedUid(row.uid);setShowMap(true);setEditorOpen(false);clear();}}}>
-          <span>{row.title}{Number(row.hidden_depth??-1)>=0?'（已設定隱藏）':''}</span>
+          <span>{row.title}{Boolean(row.invisible)?'（已設定隱藏）':''}</span>
           <span className="scope-status">{row.trace_type==='path'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
         </button>
         {current?.uid===row.uid?<div className="scope-stat-controls">
@@ -289,10 +297,9 @@ export default function TraceRouteManager({scopeId}){
       <div className="scope-management-fields">
         <label>名稱<input required maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
         <label>說明<textarea rows={2} maxLength={2000} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
-        <label>公開／隱藏範圍
-          <select className="scope-select" value={hiddenDepth} onChange={e=>setHiddenDepth(Number(e.target.value))} disabled={busy}>
-            <option value={-1}>公開</option><option value={0}>單獨隱藏</option>
-            <option value={1}>隱藏到第二層</option><option value={2}>全部隱藏（含定錨點）</option>
+        <label>可見性
+          <select className="scope-select" value={Number(invisible)} onChange={e=>setInvisible(e.target.value==='1')} disabled={busy}>
+            <option value={0}>顯示</option><option value={1}>隱藏</option>
           </select>
         </label>
       </div>
@@ -307,7 +314,7 @@ export default function TraceRouteManager({scopeId}){
         onAnchorSelect={addMapSelectedAnchor}/>:null}
       {type==='trace'?<details className="scope-card">
         <summary>第二層：所屬路線圖（{routeUids.length} 條）</summary>
-        <p className="scope-status">由此指定空間痕跡圖包含哪些路線圖；下層隱藏依這些明確關聯計算，不會根據附近座標猜測。</p>
+        <p className="scope-status">由此指定空間痕跡圖包含哪些路線圖；連線關聯只用來組成痕跡圖，不影響其他紀錄的隱藏設定。</p>
         {records.filter(row=>row.trace_type==='path').map(route=><label key={route.uid}>
           <input type="checkbox" checked={routeUids.includes(route.uid)} disabled={busy}
             onChange={e=>setRouteUids(ids=>e.target.checked?[...ids,route.uid]:ids.filter(id=>id!==route.uid))}/>

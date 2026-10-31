@@ -298,8 +298,8 @@ async function articleTimeContext(scope,day){
   const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
   return {
     anchors:labels(rows.filter(row=>row.entry_type==='anchor'&&articleDate(row.address)===day)),
-    periods:labels(rows.filter(row=>row.entry_type==='event'&&matches(row))),
-    eras:labels(rows.filter(row=>row.entry_type==='period'&&matches(row)))
+    periods:labels(rows.filter(row=>row.entry_type==='period'&&matches(row))),
+    eras:labels(rows.filter(row=>row.entry_type==='era'&&matches(row)))
   };
 }
 async function articleSpaceContext(scope,placeId,{authenticated=false}={}){

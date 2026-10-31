@@ -366,7 +366,7 @@ export default function Search({managementMode=false}){
       // The Culture/Time query module is needed only when advanced time filtering opens.
       const {selectCultureTimeRows}=await import('../../loc/culture-query');
       const rows=await selectCultureTimeRows(periodScope,periodScope?.birthday);
-      return rows.filter(row=>row.entry_type==='period'&&row.start_date)
+      return rows.filter(row=>row.entry_type==='era'&&row.start_date)
         .map(row=>({id:row.entry_key,title:row.title,startDate:row.start_date,endDate:row.end_date||''}));
     },
   });

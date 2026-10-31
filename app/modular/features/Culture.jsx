@@ -25,7 +25,7 @@ const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTim
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {useRiverDensityAnalysis} from '../modules/culture-timeline/use-river-density-analysis';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
-import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
+import {buildEraRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
 import {selectGalaxyIdentity,selectScopeDailyCounts} from '../../loc/galaxy-query';
@@ -234,7 +234,7 @@ export default function Culture(){
 
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
   const [structureWindowKey,setStructureWindowKey]=useState('');
-  const [expandedTimeTraceIds,setExpandedTimeTraceIds]=useState([]);
+  const [expandedEraIds,setExpandedEraIds]=useState([]);
   const periodSelectionScopeRef=useRef('');
   const [selectedCategory,setSelectedCategory]=useState('');
   const [worksOpen,setWorksOpen]=useState(false);
@@ -676,11 +676,11 @@ export default function Culture(){
   const activeStructureKey=structureWindowKey==='all'||!structureWindowKey?'all'
     :primaryPeriods.some(item=>periodKey(item)===structureWindowKey)
       ?structureWindowKey:'all';
-  const traceRiver=useMemo(()=>buildTimeTraceRiver(timelineItems,expandedTimeTraceIds),
-    [timelineItems,expandedTimeTraceIds]);
+  const eraRiver=useMemo(()=>buildEraRiver(timelineItems,expandedEraIds),
+    [timelineItems,expandedEraIds]);
   const toggleTimeTrace=groupId=>{
-    const open=!expandedTimeTraceIds.includes(groupId);
-    setExpandedTimeTraceIds(current=>
+    const open=!expandedEraIds.includes(groupId);
+    setExpandedEraIds(current=>
       current.includes(groupId)?current.filter(id=>id!==groupId):[...current,groupId]);
     if(open&&groupId.startsWith('trace:')){
       const trace=primaryPeriods.find(period=>
@@ -807,7 +807,7 @@ export default function Culture(){
     if(!id)return;
     switchTimelineEditor('edit-'+id,()=>{
       const recordType=String(item?.entryType||item?.raw?.entry_type||'');
-      if(['anchor','period','event'].includes(recordType))setSuggestedRecordType(recordType);
+      if(['anchor','period','era'].includes(recordType))setSuggestedRecordType(recordType);
       setSelectedTimelineInfo(item||null);
       setSelectedTimelineRecordId(id);
       setSelectedTimelineDate('');
@@ -1403,9 +1403,9 @@ export default function Culture(){
                         </select>
                   </label>
                 </div>
-                {traceRiver.groups.length?<CultureTimeline
-                  items={traceRiver.items}
-                  extraGroups={traceRiver.groups}
+                {eraRiver.groups.length?<CultureTimeline
+                  items={eraRiver.items}
+                  extraGroups={eraRiver.groups}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='trace'
