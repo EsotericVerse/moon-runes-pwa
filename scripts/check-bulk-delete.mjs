@@ -27,6 +27,15 @@ function sh(args) {
   return execFileSync('git', args, {encoding: 'utf8'}).trim();
 }
 
+function hasCommit(revision) {
+  try {
+    sh(['cat-file', '-e', `${revision}^{commit}`]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function pushRanges() {
   // Reads "<local ref> <local sha> <remote ref> <remote sha>" lines from
   // stdin, as git feeds a pre-push hook. Falls back to HEAD vs its
@@ -56,12 +65,34 @@ function pushRanges() {
 
 let blocked = false;
 for (const {base, tip} of pushRanges()) {
+  if (!hasCommit(tip)) {
+    blocked = true;
+    console.error(`\nBLOCKED: local push commit ${tip} is unavailable. Refresh the Git repository before pushing.`);
+    continue;
+  }
+  if (base && !hasCommit(base)) {
+    // GitHub Desktop may know the remote SHA from its push handshake while
+    // the corresponding commit object is still missing from the local clone.
+    // Never treat that unknown range as an empty diff or bypass the D/R guard.
+    blocked = true;
+    console.error(`\nBLOCKED: remote commit ${base} is not yet in this local repository.`);
+    console.error('  GitHub Desktop: Fetch origin, then Pull origin (resolve conflicts if prompted), then Push origin.');
+    console.error('  No files were deleted by this check. Do not force-push or bypass the hook.');
+    continue;
+  }
   let status;
-  if (base) {
-    status = sh(['diff', '--name-status', `${base}..${tip}`]);
-  } else {
-    // New branch with no remote base: look at the full history of the tip.
-    status = sh(['diff', '--name-status', sh(['hash-object', '-t', 'tree', '/dev/null']), tip]);
+  try {
+    if (base) {
+      status = sh(['diff', '--name-status', `${base}..${tip}`]);
+    } else {
+      // New branch with no remote base: compare the complete tree to empty.
+      status = sh(['diff', '--name-status', sh(['hash-object', '-t', 'tree', '/dev/null']), tip]);
+    }
+  } catch (error) {
+    blocked = true;
+    console.error(`\nBLOCKED: cannot inspect the push diff (${base || 'empty'}..${tip}).`);
+    console.error('  Fetch/Pull origin in GitHub Desktop and retry. Bulk-deletion protection remains enabled.');
+    continue;
   }
   const touched = status.split('\n').filter((l) => /^[DR]/.test(l));
   if (touched.length <= THRESHOLD) continue;
