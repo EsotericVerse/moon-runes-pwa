@@ -119,7 +119,7 @@ async function upstream(provider,request,env,token){
 }
 // Explicit, root-only diagnostics. These probes never write or change the
 // active route; the management RPC is a read-only SQL function.
-async function probeRead(provider,env,token='',method='GET'){
+async function probeRead(provider,env,token='',method='GET',expectedEmail=''){
   const isManagement=method==='POST';
   const path=isManagement?'/rest/v1/rpc/get_my_scope_management':
     '/rest/v1/lo3rwang_galaxy?select=uid&limit=1';
@@ -136,7 +136,14 @@ async function probeRead(provider,env,token='',method='GET'){
     if(!result.ok)return {ok:false,status:result.status};
     if(!isManagement)return {ok:true,status:result.status};
     const rows=await result.json();
-    return {ok:Array.isArray(rows)&&rows.length>0,status:result.status};
+    // A 200 response is not management permission: a valid signed Clerk
+    // email must match a row returned by the existing authorization RPC.
+    const email=String(expectedEmail||'').trim().toLowerCase();
+    const allowed=Boolean(email&&Array.isArray(rows)&&rows.some(row=>
+      String(row?.email||'').trim().toLowerCase()===email&&
+      ['admin','group','scope'].includes(row?.role)
+    ));
+    return {ok:allowed,status:result.status};
   }catch{return {ok:false,status:0}}
 }
 async function probeReadiness(request,env,principal,origin){
@@ -161,8 +168,8 @@ async function probeReadiness(request,env,principal,origin){
   const [primaryPublic,backupPublic,primaryManagement,backupManagement]=await Promise.all([
     probeRead('supabase',env),
     probeRead('neon',env),
-    probeRead('supabase',env,token,'POST'),
-    probeRead('neon',env,token,'POST')
+    principal.email?probeRead('supabase',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401}),
+    principal.email?probeRead('neon',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401})
   ]);
   const info={
     primary:selected,
