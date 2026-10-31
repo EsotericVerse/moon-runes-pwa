@@ -24,7 +24,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
-import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
@@ -139,10 +139,10 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
     queryKey:['statistics-source-article-body',scope.id,selectedUid],
     enabled:Boolean(selectedUid),
     queryFn:async()=>{
-      const {selectGalaxyContent}=await loadGalaxyStatistics();
-      const result=await selectGalaxyContent(scope,selectedUid);
+      const {selectGalaxyIdentity}=await loadGalaxyStatistics();
+      const result=await selectGalaxyIdentity(scope,selectedUid);
       if(!result)throw new Error('找不到文章內容');
-      return workDisplayText(result.content||'');
+      return result;
     },
   });
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
@@ -168,12 +168,20 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         uid={work.uid}
         title={workDisplayHeading(work,{media:false,limit:80})}
         articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||scope.id,work.uid):''}
-        links={work.links||[]}
+        detailReading={work.entry_type==='work'&&selectedUid===String(work.uid)&&bodyQuery.data?.uid===work.uid}
+        relationLinks={selectedUid===String(work.uid)&&bodyQuery.data?.uid===work.uid
+          ?galaxyRelationLinks(scope.id,bodyQuery.data):[]}
+        relatedMedia={selectedUid===String(work.uid)?bodyQuery.data?.related_media||[]:[]}
+        tracePlace={selectedUid===String(work.uid)?bodyQuery.data?.trace_place:null}
+        traceHref={selectedUid===String(work.uid)&&bodyQuery.data?.trace_place
+          ?featureNavigationHref(scope.id,'trace',{place:bodyQuery.data.trace_place.uid}):''}
+        locationName={selectedUid===String(work.uid)?bodyQuery.data?.location||'':''}
+        links={selectedUid===String(work.uid)?bodyQuery.data?.links||[]:[]}
       >{work.entry_type==='work'&&work.uid?<WorkFullText
         open={selectedUid===String(work.uid)}
         loading={selectedUid===String(work.uid)&&bodyQuery.isPending}
         error={selectedUid===String(work.uid)&&bodyQuery.error?featureDataErrorMessage(bodyQuery.error):''}
-        content={selectedUid===String(work.uid)?bodyQuery.data||'':''}
+        content={selectedUid===String(work.uid)?workDisplayText(bodyQuery.data?.content||''):''}
         onToggle={()=>setSelectedUid(old=>old===String(work.uid)?'':String(work.uid))}
       />:null}</Article>}
     />
