@@ -125,6 +125,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     checkInPlace:'',
     date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:'',scopeId:scope,resourceType,resourceId,
+    linkedMediaIds:resourceType==='galaxy'&&Array.isArray(row.media_link)?row.media_link:[],
     styleTagMatch:Boolean(row.style_keyword_tag),
     styleIntroText:row.style_keyword_tag?workDisplayText(row.style_description||''):'',
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
@@ -1249,7 +1250,10 @@ export default function Search({managementMode=false}){
           date={searchParams?.get('identity')?row.date:''}
           body=""
           hidden={false}
-          relationLinks={row.relationLinks||[]}
+          relationLinks={searchParams?.get('identity')?row.relationLinks||[]:[]}
+          linkedMediaIds={searchParams?.get('identity')?row.linkedMediaIds||[]:[]}
+          linkedMediaTable={rowScopeData?.galaxyMedia||''}
+          linkedMediaAuthenticated={canManageSearchScope(account,row.scopeId)}
           links={row.links||[]}
           destinations={row.destinations}
           editable={editable}

@@ -142,34 +142,99 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleRelationNavigation({links=[]}){
-  const groups=[
+function ArticleLazyMediaLinks({ids=[],table='',authenticated=false}){
+  const [opened,setOpened]=useState(false);
+  const mediaIds=[...new Set((Array.isArray(ids)?ids:[]).map(id=>String(id||'').trim()).filter(Boolean))];
+  const mediaQuery=useAsyncResource({
+    queryKey:['article-media-urls',table,authenticated,mediaIds.join('|')],
+    enabled:opened&&Boolean(table)&&mediaIds.length>0,
+    queryFn:async()=>{
+      const {selectRows}=await import('../loc/db-query.mjs');
+      const rows=[];
+      // Query only this article's media UIDs, not the media catalog.
+      // Media titles, meta_tags, type and content are never read.
+      for(let index=0;index<mediaIds.length;index+=40){
+        const batch=mediaIds.slice(index,index+40);
+        const page=await selectRows(table,{
+          columns:'uid,url',
+          filters:[{column:'uid',operator:'in',value:batch}],
+          limit:batch.length,maxLimit:batch.length,authenticated
+        });
+        rows.push(...(page.rows||[]));
+      }
+      const byId=new Map(rows.map(row=>[String(row.uid),row]));
+      return mediaIds.map(id=>byId.get(id)||{uid:id,url:''});
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  if(!mediaIds.length)return null;
+  return <section className="scope-article-relation-group" aria-label="多媒體">
+    <h3>多媒體 <span>{mediaIds.length} 筆</span></h3>
+    <button type="button" className="scope-article-media-toggle" aria-expanded={opened}
+      onClick={()=>setOpened(value=>!value)}>
+      {opened?'收合多媒體連結':'顯示多媒體連結'}
+    </button>
+    {opened&&mediaQuery.isPending?<p role="status">讀取多媒體網址中…</p>:null}
+    {opened&&mediaQuery.error?<p role="alert" className="scope-error">{String(mediaQuery.error.message||mediaQuery.error)}</p>:null}
+    {opened&&!mediaQuery.isPending&&!mediaQuery.error?<>
+      <div className="scope-article-relation-grid">
+        {(mediaQuery.data||[]).map((item,index)=>{
+          const href=externalLink({href:item.url});
+          return href?<a key={item.uid} href={href} target="_blank" rel="noopener noreferrer" className="scope-article-relation-card">
+            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
+            <strong className="scope-article-relation-url">{href}</strong>
+            <span className="scope-article-relation-open">開啟媒體 <span aria-hidden="true">↗</span></span>
+          </a>:<div key={item.uid} className="scope-article-relation-card">
+            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
+            <strong>未提供有效網址</strong>
+          </div>;
+        })}
+      </div>
+      {!mediaQuery.data?.length?<p>沒有可顯示的媒體網址。</p>:null}
+    </>:null}
+  </section>;
+}
+
+function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaTable='',mediaAuthenticated=false}){
+  const articleGroups=[
     {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
     {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
-    {id:'reference',heading:'原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
+    {id:'reference',heading:'Ref · 原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
   ];
-  const other=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
-  if(other.length)groups.push({id:'other',heading:'其他關聯',items:other});
-  const relationCard=(link,index,kind)=>{
+  const otherArticles=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
+  if(otherArticles.length)articleGroups.push({id:'other',heading:'其他文章關聯',items:otherArticles});
+  const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
+  const groups=[
+    ...articleGroups.map(group=>({...group,external:false})),
+    {id:'media',heading:'多媒體',items:mediaIds,external:true},
+    {id:'external',heading:'文章原始網址',items:sources,external:true}
+  ].filter(group=>group.items.length);
+  if(!groups.length)return null;
+  const relationCard=(link,index,kind,external)=>{
     const title=String(link.title||'').trim();
-    const label=kind==='target'?('下筆 '+(index+1)):String(link.label||'相關文章');
-    return <a key={link.id||link.href||index} href={link.href} className="scope-article-relation-card">
+    const label=external?'文章來源':kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
+    const headline=external?String(link.label||'').trim()||'開啟連結':title||'查看相關文章';
+    return <a key={link.id||link.href||index} href={link.href}
+      {...(external?{target:'_blank',rel:'noopener noreferrer'}:{})}
+      className="scope-article-relation-card">
       <span className="scope-article-relation-kind">{label}</span>
-      <strong>{title||'查看相關文章'}</strong>
-      <span className="scope-article-relation-open">閱讀文章 <span aria-hidden="true">↗</span></span>
+      <strong>{headline}</strong>
+      <span className="scope-article-relation-open">{external?'開啟連結':'閱讀文章'} <span aria-hidden="true">↗</span></span>
     </a>;
   };
-  return <nav className="scope-article-reading-relations" aria-label="文章脈絡">
-    <h2>文章脈絡</h2>
-    {groups.filter(group=>group.items.length).map(group=><section className="scope-article-relation-group" key={group.id}>
-      <h3>{group.heading} <span>{group.items.length} 篇</span></h3>
+  return <nav className="scope-article-reading-relations" aria-label="文章關聯與連結">
+    <h2>文章關聯與連結</h2>
+    {groups.map(group=>group.id==='media'
+      ?<ArticleLazyMediaLinks key="media" ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
+      :<section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
+      <h3>{group.heading} <span>{group.items.length} 筆</span></h3>
       <div className="scope-article-relation-grid">
-        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id))}
+        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id,group.external))}
       </div>
       {group.items.length>4?<details className="scope-article-relation-more">
-        <summary>查看其餘 {group.items.length-4} 篇</summary>
+        <summary>展開另外 {group.items.length-4} 筆{group.heading}</summary>
         <div className="scope-article-relation-grid">
-          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id))}
+          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id,group.external))}
         </div>
       </details>:null}
     </section>)}
@@ -189,6 +254,9 @@ export function WorkSummaryCard({
   hidden=false,
   relationLinks=[],
   detailReading=false,
+  mediaIds=[],
+  mediaTable='',
+  mediaAuthenticated=false,
   links=[],
   destinations=[],
   showSource=true,
@@ -219,14 +287,14 @@ export function WorkSummaryCard({
     {!detailReading&&safeRelations.length?<div className="scope-result-links scope-work-relations">
       {safeRelations.map((link,index)=><ScopeLink key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</ScopeLink>)}
     </div>:null}
-    {showLinks&&safeLinks.length?<div className="scope-result-links">
+    {!detailReading&&showLinks&&safeLinks.length?<div className="scope-result-links">
       {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||copy.format.link(index+1)}</a>)}
     </div>:null}
     {destinations?.length?<div className="scope-result-links">
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
-    {detailReading&&safeRelations.length?<ArticleRelationNavigation links={safeRelations}/>:null}
+    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]} mediaIds={mediaIds} mediaTable={mediaTable} mediaAuthenticated={mediaAuthenticated}/>:null}
   </article>;
 }
 
