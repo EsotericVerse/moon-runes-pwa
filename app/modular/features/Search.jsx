@@ -101,7 +101,7 @@ function toResult(row,source,scopeId,copy=UI_COPY){
   const isMedia=Boolean(row.uid&&(row.record_type==='galaxy_media'||
     String(row.__table||'').endsWith('_media')||
     (row.media_type&&!Object.prototype.hasOwnProperty.call(row,'content'))));
-  const isGalaxy=Boolean(row.uid)&&!isMedia&&!['anchor','time_period','time_trace'].includes(String(row.type||''));
+  const isGalaxy=Boolean(row.uid)&&!isMedia&&!['anchor','period','era'].includes(String(row.type||''));
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
   const title=(isGalaxy||isMedia)
