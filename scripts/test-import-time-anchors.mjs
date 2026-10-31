@@ -27,9 +27,10 @@ test('check-in dates are daily and deduplicated; missing names and dates are ign
     {location:'台北車站',createtime:'2024-02-01T20:00:00.000Z'},
     {__importPlaceName:'咖啡廳',__importVisitTimes:['2024-02-02T13:00:00.000Z','2024-02-03T00:00:00.000Z']},
     {__importPlaceName:'咖啡廳',__importVisitTimes:['2024-02-02T13:00:00.000Z']},
+    {location:'深夜打卡',createtime:'2024-02-03T20:30:00.000Z'},
     {location:'地名但沒有日期'},
     {createtime:'2024-02-04T00:00:00.000Z'}
-  ]),['2024-02-01','2024-02-02','2024-02-03']);
+  ]),['2024-02-01','2024-02-02','2024-02-03','2024-02-04']);
 });
 
 test('Time import reuses existing dates, respects all occupied UIDs, and is idempotent',async()=>{
