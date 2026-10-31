@@ -9,9 +9,47 @@ const JOIN_BREAK=new Set('的 了 與 和 及 在 對 從 讓 把 是 就 能 �
 const HAN=/^\p{Script=Han}+$/u;
 const LATIN=/^[\p{Script=Latin}][\p{Script=Latin}\d+#-]*$/u;
 const MAX_TERMS=85000;
+const SOURCE_MARKUP_TERMS=new Set('div span html head body main section article header footer nav button input textarea form label select option fieldset iframe script style svg path g circle rect line ul ol li p br hr a img picture source link meta noscript canvas table thead tbody tr th td h1 h2 h3 h4 h5 h6 class classname href src alt rel target onclick onload xmlns width height data aria const let var function return import export default async await props state useeffect usestate usememo null undefined true false json jsonb jsx tsx css js javascript typescript html5 markdown field column key value object array boolean'.split(/\s+/u));
+const TEXT_FIELDS=new Set(['text','content','body','paragraph','paragraphs','message','description','lyric','lyrics','story','article']);
+export function readableKeywordContent(raw){
+  if(raw==null)return '';
+  let source=String(raw);
+  const trimmed=source.trim();
+  if((trimmed.startsWith('{')&&trimmed.endsWith('}'))
+    ||(trimmed.startsWith('[')&&trimmed.endsWith(']'))){
+    try{
+      const parsed=JSON.parse(trimmed);
+      const texts=[];
+      const walk=(item,allowText=false,depth=0)=>{
+        if(depth>8||texts.length>=1000)return;
+        if(typeof item==='string'){if(allowText)texts.push(item);return;}
+        if(Array.isArray(item)){for(const val of item)walk(val,allowText,depth+1);return;}
+        if(!item||typeof item!=='object')return;
+        for(const [key,value] of Object.entries(item)){
+          if(TEXT_FIELDS.has(key.toLowerCase()))walk(value,true,depth+1);
+          else if(value&&typeof value==='object')walk(value,false,depth+1);
+        }
+      };
+      walk(parsed);
+      source=texts.join(' ');
+    }catch{source='';}
+  }
+  return source
+    .replace(/&lt;/giu,'<').replace(/&gt;/giu,'>')
+    .replace(/<!--[\s\S]*?-->/gu,' ')
+    .replace(/<(script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/\1\s*>/giu,' ')
+    .replace(/\x60{3}[\s\S]*?\x60{3}/gu,' ')
+    .replace(/<[^>]*>/gu,' ')
+    .replace(/\x60[^\x60]*\x60/gu,' ')
+    .replace(/!?\[([^\]]+)\]\(https?:\/\/[^)]+\)/giu,'$1')
+    .replace(/https?:\/\/[^\s\]<>]+/giu,' ')
+    .replace(/&(?:[a-z]{2,10}|#\d+);/giu,' ');
+}
+
 const normalize=value=>String(value??'').normalize('NFKC').trim().toLocaleLowerCase();
 function admissible(token){
   const value=normalize(token);
+  if(SOURCE_MARKUP_TERMS.has(value))return false;
   if(HAN.test(value))return [...value].length>=2&&[...value].length<=8&&!IGNORE_ZH.has(value)&&!/(.)\1{2,}/u.test(value);
   if(LATIN.test(value))return value.length>=3&&value.length<=30&&!IGNORE_EN.has(value);
   return false;
@@ -64,7 +102,7 @@ export function createNewKeywordDiscovery(rows=[]){
   function consume(batch=[]){
     for(const row of batch){
       read++;
-      const body=String(row?.content||'');
+      const body=readableKeywordContent(row?.content);
       if(!body.trim())continue;
       withContent++;
       const seen=new Set();
