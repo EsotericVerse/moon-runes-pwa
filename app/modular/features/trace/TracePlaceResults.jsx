@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-resource';
 import {selectRows} from '../../../loc/db-query.mjs';
-import {traceArticleIdFilters,groupedTraceDays,traceMediaMatches} from './trace-panel-filters.mjs';
+import {traceArticleIdFilters,groupedTraceDays} from './trace-panel-filters.mjs';
 import {defaultScopeData} from '../../../loc/scope-data';
 import {dbPublicClient} from '../../../loc/db-client.mjs';
 import {traceArticleIds,traceArticleLabels} from './trace-article-ids.mjs';
@@ -91,41 +91,51 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     }
   });
 
-  // Only an explicitly selected media filter loads joined media metadata.
-  // Match media IDs from each article's media_link without reverse dependencies.
+  // Media filtering is an explicitly requested, bounded two-stage lookup:
+  // one page of media UIDs by type, then one page of Galaxy article headers.
+  // Crucially, NO article list SELECT projects media_link or article content.
   const mediaFiltered=useAsyncInfiniteResource({
-    queryKey:['trace-media-filter-v2',targetScope,placesKey,startDate,endDate,
+    queryKey:['trace-media-filter-v3',targetScope,placesKey,startDate,endDate,
       sourceFilter,selectedMediaType,sort],
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
-    initialPageParam:0,
-    getNextPageParam:page=>page.hasMore?page.nextOffset:undefined,
+    initialPageParam:{mediaOffset:0,articleOffset:0},
+    getNextPageParam:page=>page.nextCursor||undefined,
     queryFn:async({pageParam})=>{
-      const offset=Number(pageParam)||0;
-      // Each explicit page requests only its own article media IDs.
-      const {rows:articles}=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,date,place_id,statistics_able,media_link',
-        filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter}),
-        orders:[{column:'date',ascending:sort==='asc'},{column:'uid',ascending:true}],
-        limit:PAGE_SIZE,maxLimit:PAGE_SIZE,offset
+      const mediaOffset=Number(pageParam?.mediaOffset)||0;
+      const articleOffset=Number(pageParam?.articleOffset)||0;
+      const mediaLimit=80;
+      const {rows:mediaPage}=await selectRows(scope.galaxyMedia,{
+        columns:'uid',
+        filters:[{column:'media_type',operator:'eq',value:selectedMediaType}],
+        orders:[{column:'uid',ascending:true}],
+        limit:mediaLimit,maxLimit:mediaLimit,offset:mediaOffset
       });
-      const ids=[...new Set(articles.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
-      const matching=[];
-      for(let i=0;i<ids.length;i+=120){
-        const batch=ids.slice(i,i+120);
-        const {rows}=await selectRows(scope.galaxyMedia,{
-          columns:'uid,media_type',
-          filters:[{column:'uid',operator:'in',value:batch},
-            {column:'media_type',operator:'eq',value:selectedMediaType}],
-          limit:batch.length,maxLimit:batch.length
-        });
-        matching.push(...rows);
-      }
-      const rows=traceMediaMatches(articles,matching);
-      return {rows,nextOffset:offset+articles.length,hasMore:articles.length===PAGE_SIZE};
+      const mediaIds=mediaPage.map(row=>String(row.uid||'').trim()).filter(Boolean);
+      if(!mediaIds.length)return {rows:[],nextCursor:null};
+      const {rows}=await selectRows(scope.galaxy,{
+        columns:'uid,title,createtime',
+        filters:[
+          ...traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter}),
+          {column:'media_link',operator:'overlaps',value:mediaIds}
+        ],
+        orders:[{column:'date',ascending:sort==='asc'},{column:'uid',ascending:true}],
+        limit:PAGE_SIZE,maxLimit:PAGE_SIZE,offset:articleOffset
+      });
+      const moreInMediaPage=rows.length===PAGE_SIZE;
+      const nextCursor=moreInMediaPage
+        ?{mediaOffset,articleOffset:articleOffset+rows.length}
+        :(mediaPage.length===mediaLimit?{mediaOffset:mediaOffset+mediaLimit,articleOffset:0}:null);
+      return {rows,nextCursor};
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const mediaRows=(mediaFiltered.data?.pages||[]).flatMap(page=>page.rows||[]);
+  const mediaRows=useMemo(()=>{
+    const byUid=new Map();
+    for(const page of mediaFiltered.data?.pages||[]){
+      for(const row of page.rows||[])byUid.set(String(row.uid),row);
+    }
+    return [...byUid.values()];
+  },[mediaFiltered.data]);
 
   // Place density is computed on indexed place_id inside Postgres.
   // Never fetch a Scope-wide Galaxy metadata list just to draw a chart.
@@ -179,18 +189,31 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const mediaSummary=useMemo(()=>mediaFiltered.data
-    ?{rows:groupedTraceDays(mediaRows.filter(row=>row.statistics_able===true),{key:'place_id'})}
-    :undefined,[mediaFiltered.data]);
+  const mediaSummary=useAsyncResource({
+    queryKey:['trace-filtered-media-summary-v3',targetScope,mediaRows.map(row=>row.uid).join('|')],
+    enabled:needsSummary&&Boolean(selectedMediaType)&&mediaRows.length>0,
+    queryFn:async()=>{
+      const entries=[];
+      for(let offset=0;offset<mediaRows.length;offset+=80){
+        const batch=mediaRows.slice(offset,offset+80).map(row=>String(row.uid));
+        const {rows}=await selectRows(scope.galaxy,{
+          columns:'uid,date,place_id,statistics_able',
+          filters:[{column:'uid',operator:'in',value:batch}],
+          limit:batch.length,maxLimit:batch.length
+        });
+        entries.push(...rows);
+      }
+      return {rows:groupedTraceDays(entries.filter(row=>row.statistics_able===true),{key:'place_id'})};
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
   const summary=selectedMediaType
-    ?{data:mediaSummary,isPending:mediaFiltered.isPending,error:mediaFiltered.error}
+    ?mediaRows.length?mediaSummary:{data:{rows:[]},isPending:false,error:mediaFiltered.error}
     :numeric;
   const rows=useMemo(()=>{
-    if(selectedMediaType)return mediaRows.slice().sort((a,b)=>sort==='asc'
-        ?String(a.date||'').localeCompare(String(b.date||''))
-        :String(b.date||'').localeCompare(String(a.date||'')));
+    if(selectedMediaType)return mediaRows;
     return (list.data?.pages||[]).flatMap(p=>p.rows||[]);
-  },[list.data,selectedMediaType,mediaFiltered.data,sort]);
+  },[list.data,selectedMediaType,mediaRows]);
   const verified=useMemo(()=>{
     const wanted=new Set(placeIds),months=new Map(),places=new Map();
     for(const row of summary.data?.rows||[]){
