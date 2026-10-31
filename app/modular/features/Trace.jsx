@@ -105,7 +105,7 @@ export default function Trace({scopeId='loc'}){
     if(value==='all'){setCurrentTraceChoice('all');return;}
     if(setDefaultTraceRoute(scopeId,value))setCurrentTraceChoice(value);
   };
-  const showingAll=!isLoc&&(currentTraceChoice==='all'||(!currentMap&&!maps.length));
+  const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
   const linkedRoutes=useMemo(()=>currentMap?.trace_type==='space_trace'
     ?allMaps.filter(row=>row.source_scope===currentMap.source_scope&&row.trace_type==='space_period'
       &&(currentMap.route_list||[]).includes(row.uid))
@@ -195,7 +195,7 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
-    {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
+    {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess?<p className="scope-status">
       {anchorsQuery.data?.length
         ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
         :'尚未建立路線圖或痕跡圖，也沒有已儲存的空間定錨點。'}
