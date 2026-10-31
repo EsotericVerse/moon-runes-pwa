@@ -52,6 +52,7 @@ test('redirect cannot escape LOC origin or leak OAuth through database provider'
   await adapter.signIn('//malicious.example');
   assert.equal(navigations[1],'/login/index.html?return_to=%2Flocal%2Fsettings%2F');
   assert.equal(clerkReturnPath('/admin?area=db',siteOrigin),'/admin?area=db');
+  assert.equal(clerkReturnPath('https://loc.example.org/local/settings/?tab=db',siteOrigin),'/local/settings/?tab=db');
   assert.equal(clerkReturnPath('https://malicious.example/x',siteOrigin),'/local/settings/');
 });
 test('logout and listener are Clerk-only',async()=>{
