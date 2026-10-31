@@ -267,7 +267,7 @@ function shiftedDay(day,shift){
 // canonical Culture range resolution among article reads for a short TTL.
 const articleTimeCache=new Map();
 async function articleTimeRows(scope){
-  const key=String(scope.id),now=Date.now();
+  const key=String(scope.id)+'|'+String(scope.time),now=Date.now();
   const cached=articleTimeCache.get(key);
   if(cached&&cached.expires>now)return cached.promise;
   const promise=import('./culture-query').then(({selectCultureTimeRows})=>selectCultureTimeRows(scope));
