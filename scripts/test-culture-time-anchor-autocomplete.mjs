@@ -13,14 +13,14 @@ test('time records use React Select and period anchors retain autocomplete',()=>
   assert.match(editor,/options=\{anchorOptions\.filter\(option=>option\.value!==segment\.start\)\}/);
 });
 
-test('time_trace accepts either picking existing events or connecting anchors directly',()=>{
+test('era accepts either picking existing events or connecting anchors directly',()=>{
   assert.match(editor,/const \[tracePairs,setTracePairs\]=useState\(\[\]\)/);
   assert.match(editor,/const addPair=\(\)=>\{/);
   assert.match(editor,/const removePair=index=>setTracePairs/);
-  assert.match(editor,/draft\.type==='time_trace'&&!segments\.length&&!tracePairs\.length/);
+  assert.match(editor,/draft\.type==='era'&&!segments\.length&&!tracePairs\.length/);
 });
 
-test('anchor pairs reuse an existing time_period by anchor-id set instead of duplicating it',()=>{
+test('anchor pairs reuse an existing period by anchor-id set instead of duplicating it',()=>{
   assert.match(editor,/const periodKeyOf=ids=>\[\.\.\.ids\]\.sort\(\)\.join\(','\)/);
   assert.match(editor,/const existingPeriodByPair=useMemo\(\(\)=>\{/);
   assert.match(editor,/existingPeriodByPair\.get\(periodKeyOf\(pair\)\)/);
@@ -33,9 +33,9 @@ test('new periods created from connected pairs use the canonical allocator and s
   assert.match(editor,/if\(extraPeriodRows\.length\)await insertRows\(timeTable,extraPeriodRows\)/);
 });
 
-test('time_trace anchor_ids still mixes picked-period uids with pair-derived period uids, point-line-plane intact',()=>{
+test('era anchor_ids still mixes picked-period uids with pair-derived period uids, point-line-plane intact',()=>{
   assert.match(editor,
-    /payload\.anchor_ids=draft\.type==='time_trace'\s*\n\s*\?\[\.\.\.segments\.map\(segment=>segment\.start\),\.\.\.pairPeriodUids\]/);
+    /payload\.anchor_ids=draft\.type==='era'\s*\n\s*\?\[\.\.\.segments\.map\(segment=>segment\.start\),\.\.\.pairPeriodUids\]/);
 });
 
 test('invalid/stale anchors in a connected pair are rejected before save, not silently dropped',()=>{
@@ -43,9 +43,9 @@ test('invalid/stale anchors in a connected pair are rejected before save, not si
   assert.match(editor,/throw new Error\('連線的定錨點有已失效的，請移除'\)/);
 });
 
-test('the display labels map time_trace to 時代 and time_period to 期間',()=>{
-  assert.match(editor,/time_trace:'時代'/);
-  assert.match(editor,/time_period:'期間'/);
+test('the display labels map era to 時代 and period to 期間',()=>{
+  assert.match(editor,/era:'時代'/);
+  assert.match(editor,/period:'期間'/);
   assert.doesNotMatch(editor,/時期/);
 });
 
