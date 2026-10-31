@@ -271,7 +271,7 @@ async function articleTimeRows(scope){
   const cached=articleTimeCache.get(key);
   if(cached&&cached.expires>now)return cached.promise;
   const promise=import('./culture-query').then(({selectCultureTimeRows})=>selectCultureTimeRows(scope));
-  articleTimeCache.set(key,{expires:now+60_000,promise});
+  articleTimeCache.set(key,{expires:now+5_000,promise});
   promise.catch(()=>{if(articleTimeCache.get(key)?.promise===promise)articleTimeCache.delete(key);});
   return promise;
 }
