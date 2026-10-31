@@ -22,10 +22,15 @@ function incomingLocations(records){
     const coordinates=importGeoKey(record?.__importCoordinates);
     const key=spatialKey(name,coordinates);
     const postal=String(record?.__importPlaceAddress??'').trim().slice(0,320);
+    const rawUrl=String(record?.__importPlaceUrl||record?.placeUrl||'').trim();
+    let placeUrl=null;
+    try{const uri=new URL(rawUrl);if(['https:','http:'].includes(uri.protocol))placeUrl=uri.href;}
+    catch{}
     const previous=names.get(key);
-    if(!previous)names.set(key,{name,title,postal,coordinates,
+    if(!previous)names.set(key,{name,title,postal,placeUrl,coordinates,
       address:coordinates?JSON.parse(coordinates):null});
-    else if(!previous.postal&&postal)previous.postal=postal;
+    else if(previous){if(!previous.postal&&postal)previous.postal=postal;
+      if(!previous.placeUrl&&placeUrl)previous.placeUrl=placeUrl;}
   }
   return {names,missing};
 }
@@ -103,7 +108,7 @@ export async function prepareImportPlaceAnchors(records,{
     const chunk=pending.slice(offset,offset+80);
     const rows=chunk.map(place=>({
       trace_type:'space_anchor',title:place.title,
-      description:{text:'',address:place.postal||null},
+      description:{text:'',address:place.postal||null,...(place.placeUrl?{url:place.placeUrl}:{})},
       address:place.address,times:[],anchor_list:[],hidden_depth:0
     }));
     const {data,error}=await relation(table).insert(rows).select('uid,title,address');
