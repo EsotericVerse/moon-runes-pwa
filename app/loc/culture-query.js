@@ -634,7 +634,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
   const hasCursorCounts=Number.isSafeInteger(cursor?.galaxyCount)&&Number.isSafeInteger(cursor?.mediaCount);
   const [galaxyResult,mediaResult]=await Promise.all([
     includeGalaxy?selectRows(scope.galaxy,{
-      columns:'uid,createtime',
+      columns:'uid,title,createtime',
       filters:galaxyFilters,
       orders:[{column:'createtime',ascending},{column:'uid',ascending}],
       limit:pageSize,
@@ -665,6 +665,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     entry_type:'work',
     entry_id:String(row.uid||''),
     uid:String(row.uid||''),
+    title:String(row.title||''),
     createtime:row.createtime
   })).filter(row=>row.entry_id);
   const mediaRows=(mediaResult.rows||[]).map(row=>({
@@ -712,26 +713,18 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   if(!scopeId)throw new Error('scopeId is required');
   const source=Array.isArray(items)?items:[];
   if(!source.length)return {rows:[],hasMore:false};
-  const galaxyIds=[...new Set(source.filter(row=>row?.entry_type==='work').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
-  const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata').map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
-
-  const [galaxyResult,mediaResult]=await Promise.all([
-    galaxyIds.length?selectRows(scope.galaxy,{
-      columns:'uid,site,createtime,title,url',
-      filters:publicContentFilters([{column:'uid',operator:'in',value:galaxyIds}]),
-      limit:galaxyIds.length
-    }):Promise.resolve({rows:[]}),
-    mediaIds.length?selectRows(scope.galaxyMedia,{
-      columns:'uid,media_type,title,url,createtime',
-      filters:[{column:'uid',operator:'in',value:mediaIds}],
-      limit:mediaIds.length
-    }):Promise.resolve({rows:[]})
-  ]);
-
-  const galaxyById=new Map((galaxyResult.rows||[]).map(row=>[String(row.uid),{
+  // The article rows already came from the time-filtered, bounded index page.
+  // Do not SELECT those article UIDs again just to obtain the title.
+  const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata')
+    .map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
+  const mediaResult=mediaIds.length?await selectRows(scope.galaxyMedia,{
+    columns:'uid,media_type,title,url,createtime',
+    filters:[{column:'uid',operator:'in',value:mediaIds}],
+    limit:mediaIds.length
+  }):{rows:[]};
+  const galaxyById=new Map(source.filter(row=>row.entry_type==='work').map(row=>[String(row.uid),{
     key:'galaxy:'+row.uid,
     uid:row.uid,
-    site:String(row.site||''),
     title:workDisplayText(row.title||'').trim(),
     description:'',
     createtime:row.createtime,
@@ -740,11 +733,8 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
     entry_id:row.uid,
     entry_type:'work',
-    group_label:String(row.site||''),
     scope_id:scopeId,
-    links:row.url&&/^https?:\/\//i.test(String(row.url))
-      ?[{id:'url:'+String(row.uid),href:row.url,label:'外部連結'}]
-      :[]
+    links:[]
   }]));
   const mediaById=new Map((mediaResult.rows||[]).map(row=>{
     return [String(row.uid),{
