@@ -6,7 +6,7 @@ import {dedupeIncomingImport,matchExistingImportBySiteId,insertImportBatches} fr
 const original={uid:'OLD00001',site:'Threads',site_id:'threads-1',
   createtime:'2026-10-27T07:48:32.000Z',title:'A',content:'original'};
 
-test('site_id is metadata, not a source-level duplicate identity',()=>{
+test('a repeated genuine source ID is the same article even if the import UID changes',()=>{
   const rows=[original,
     {...original,uid:'DUP00001',createtime:'2027-01-01T00:00:00Z'},
     {...original,uid:'FACEBOOK',site:'Facebook'},
@@ -15,25 +15,29 @@ test('site_id is metadata, not a source-level duplicate identity',()=>{
     {...original}];
   const result=dedupeIncomingImport(rows);
   assert.deepEqual(result.unique.map(row=>row.uid),
-    ['OLD00001','DUP00001','FACEBOOK','DISTINCT','NEXT0001']);
-  assert.equal(result.duplicates,1);
+    ['OLD00001','FACEBOOK','DISTINCT','NEXT0001']);
+  assert.equal(result.duplicates,2);
+  assert.equal(result.aliases.get('DUP00001'),'OLD00001');
 });
 test('different IDs do not collapse even with identical timestamps and content',()=>{
   const rows=[original,{...original,uid:'SECOND01',site_id:'threads-2'}];
   assert.equal(dedupeIncomingImport(rows).unique.length,2);
 });
-test('same site_id with different UID and body stays separate',()=>{
+test('same native source ID uses one canonical UID even with revised text',()=>{
   const result=dedupeIncomingImport([original,{...original,uid:'NEW00001',content:'different'}]);
-  assert.equal(result.unique.length,2);
+  assert.equal(result.unique.length,1);
+  assert.equal(result.aliases.get('NEW00001'),'OLD00001');
 });
 test('same UID with different content is rejected',()=>{
   assert.throws(()=>dedupeIncomingImport([original,{...original,content:'different'}]),
     /相同 UID 對應不同來源文章/);
 });
-test('same timestamp without site_id does not collapse separate source UIDs',()=>{
+test('same site, timestamp and normalized text without a source ID is deduplicated',()=>{
   const rows=[{...original,site_id:null},
-    {...original,site_id:null,uid:'NEW00001'}];
-  assert.equal(dedupeIncomingImport(rows).unique.length,2);
+    {...original,site_id:null,uid:'NEW00001',content:'original!'}];
+  const result=dedupeIncomingImport(rows);
+  assert.equal(result.unique.length,1);
+  assert.equal(result.aliases.get('NEW00001'),'OLD00001');
 });
 test('site_id matching preserves leading zeros and case',async()=>{
   const input=[{...original,uid:'NEW00001',site_id:'001Ab'}];
@@ -93,4 +97,20 @@ test('import preview shows web addresses as links, not raw URL text',()=>{
   assert.match(panel,/<LinkedImportText text=\{record\.title\|\|record\.uid\}\/>/);
   assert.match(panel,/<LinkedImportText text=\{record\.content\} limit=\{180\}\/>/);
   assert.match(panel,/rel="noopener noreferrer">連結<\/a>/);
+});
+
+
+test('same file name is only a display label; repeat parsing uses source identity not random import UID',async()=>{
+  // Two parses of the same source can use different random Galaxy UIDs.
+  const first={...original,uid:'FIRST001',site_id:'fb-1',site:'Facebook'};
+  const second={...first,uid:'REPEAT02'};
+  const {matchExistingImportBySiteId}=await import('../app/loc/import-duplicate-check.mjs');
+  const matches=await matchExistingImportBySiteId([second],{
+    readSiteIds:async()=>[first]
+  });
+  assert.equal(matches.get(second.uid)?.uid,first.uid);
+  assert.equal(dedupeIncomingImport([second]).unique.length,1);
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/const incoming=dedupeIncomingImport\(analyzed\.valid\);/);
+  assert.match(panel,/const matchesById=existingCandidates\.length\?await matchExistingImportBySiteId\(/);
 });
