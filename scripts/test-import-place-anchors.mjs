@@ -43,7 +43,7 @@ test('the article location text is the name when no source place name exists',as
   assert.equal(importedPlaceId({incoming:record,byName:result.byName}),'AB12');
 });
 
-test('opt-in creation makes one hidden anchor per new name, with the first coordinates',async()=>{
+test('creation makes a hidden anchor per new name, with optional confirmed coordinates',async()=>{
   const db=memoryTrace([{uid:'AAAA',title:'台北車站',address:[121.5170,25.0478]}]);
   const station=named('台北車站',25.05,121.52);
   const cafeA=named(' 咖啡 店',25.1,121.6);
@@ -52,10 +52,10 @@ test('opt-in creation makes one hidden anchor per new name, with the first coord
   const result=await prepareImportPlaceAnchors([station,cafeA,cafeB,nameOnly],{
     scopeId:'lo3rwang',relation:db.relation,createMissing:true
   });
-  assert.equal(db.inserts,1);
-  assert.equal(result.created,1);
-  assert.equal(result.unmatchedCoordinates,1);
-  const cafe=db.rows.at(-1);
+  assert.equal(db.inserts,2);
+  assert.equal(result.created,2);
+  assert.equal(result.unmatchedCoordinates,0);
+  const cafe=db.rows.find(row=>row.title==='咖啡 店');
   assert.equal(cafe.title,'咖啡 店');
   assert.deepEqual(cafe.address,[121.6,25.1]);
   assert.equal(cafe.hidden_depth,0);
@@ -63,20 +63,21 @@ test('opt-in creation makes one hidden anchor per new name, with the first coord
   const cafeUid=importedPlaceId({incoming:cafeA,byName:result.byName});
   assert.ok(cafeUid);
   assert.equal(importedPlaceId({incoming:cafeB,byName:result.byName}),cafeUid);
-  assert.equal(importedPlaceId({incoming:nameOnly,byName:result.byName}),null);
+  assert.ok(importedPlaceId({incoming:nameOnly,byName:result.byName}));
   const again=await prepareImportPlaceAnchors([cafeA],{scopeId:'lo3rwang',relation:db.relation,createMissing:true});
   assert.equal(again.created,0);
-  assert.equal(db.inserts,1);
+  assert.equal(db.inserts,2);
 });
 
-test('a new name without coordinates is never created and never guessed',async()=>{
+test('a new named place without coordinates is created with a null address',async()=>{
   const db=memoryTrace();
   const result=await prepareImportPlaceAnchors([named('新地點',null,null)],{
     scopeId:'lo3rwang',relation:db.relation,createMissing:true
   });
-  assert.equal(result.created,0);
-  assert.equal(db.inserts,0);
-  assert.equal(result.unmatchedCoordinates,1);
+  assert.equal(result.created,1);
+  assert.equal(db.inserts,1);
+  assert.equal(result.unmatchedCoordinates,0);
+  assert.equal(db.rows[0].address,null);
 });
 
 test('an existing article place_id is never overwritten',async()=>{
@@ -115,10 +116,12 @@ test('anchor import reports a read-only scan without inserting rows',async()=>{
   assert.equal(db.inserts,0);
 });
 
-test('anchors are prepared for new articles only',async()=>{
+test('reimports reconcile both existing and new article anchors',async()=>{
   const {readFileSync}=await import('node:fs');
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/const needsAnchor=unique\.filter\(record=>!existingBySiteId\.has\(record\.uid\)\)/);
+  assert.match(panel,/prepareImportPlaceAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/if\(restoredPlace\)changes\.place_id=restoredPlace/);
+  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
 });
 
 test('check-in times are merged into the anchor times array: sorted, no duplicates, no empty writes',async()=>{
@@ -151,10 +154,11 @@ test('check-in times are merged into the anchor times array: sorted, no duplicat
   }),/寫入定錨打卡時間失敗/);
 });
 
-test('the panel writes check-in times only for articles that were really inserted',async()=>{
+test('the panel records existing and imported check-in times without double-adding old articles',async()=>{
   const {readFileSync}=await import('node:fs');
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/placeVisits\.filter\(visit=>result\.insertedUids\.has\(visit\.articleUid\)\)/);
+  assert.match(panel,/\.\.\.placeVisits,/);
+  assert.match(panel,/newArticleVisits\.filter\(visit=>result\.insertedUids\.has\(visit\.articleUid\)\)/);
   assert.match(panel,/recordImportPlaceVisits\(savedVisits,\{/);
   assert.ok(panel.indexOf('recordImportPlaceVisits(savedVisits')>panel.indexOf('await flushNewArticles();\n      const savedVisits'));
 });
