@@ -79,3 +79,29 @@ test('full importer passes article dates to ZIP and linked media-only records',(
   assert.match(panel,/archiveEvidence,new Set\(knownArticleIds\.keys\(\)\),articleTimes/);
   assert.match(panel,/createtime:record\.createtime\|\|articleTimes\.get\(owner\)\|\|null/);
 });
+
+
+test('rune draw is a Galaxy media subtype with meta_tags text, not a separate article',()=>{
+  const result=normalizeImportMedia([{
+    media_type:'runes',title:'抽牌結果',
+    meta_tags:'{"cards":[{"rune":"月","direction":"正位","position":1}]}'
+  }],{article_uid:'ART00001'});
+  assert.equal(result.records.length,1);
+  assert.equal(result.records[0].media_type,'runes');
+  assert.equal(result.records[0].title,'抽牌結果');
+  assert.equal(result.records[0].url,null);
+  assert.match(result.records[0].meta_tags,/"rune":"月"/);
+  assert.equal(result.records[0].__article_uid,'ART00001');
+  assert.equal(result.references.length,0);
+});
+
+test('image description stays on galaxy_media.meta_tags and preserves its own URL',()=>{
+  const result=normalizeImportMedia([{
+    media_type:'image',title:'旅行照片',url:'https://example.test/image.jpg',
+    description:'傍晚的橋面'
+  }],{article_uid:'ART00001'});
+  assert.equal(result.records.length,1);
+  assert.equal(result.records[0].meta_tags,'傍晚的橋面');
+  assert.equal(result.records[0].url,'https://example.test/image.jpg');
+  assert.equal(result.records[0].__article_uid,'ART00001');
+});
