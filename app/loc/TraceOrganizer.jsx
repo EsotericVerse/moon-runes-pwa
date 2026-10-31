@@ -52,7 +52,7 @@ export default function TraceOrganizer({scopeId,spatial,reload}){
   const place=anchors.find(item=>item.uid===selectedUid);
   useEffect(()=>{
     let live=true;
-    if(!selectedUid){setAliases([]);return;}
+    if(!selectedUid||scopeId==='loc'){setAliases([]);return;}
     dbAuthClient.schema('silver').from(scopeId+'_place')
       .select('name_lists').eq('uid',selectedUid).maybeSingle()
       .then(({data,error:loadError})=>{
