@@ -132,15 +132,24 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     else if(returned!==undefined&&returned!==null)
       throw Error('createtime 查詢沒有回傳有效文章');
   }
+  // An ambiguous group (same site + same createtime, on either side) is never
+  // silently inserted as new: that is exactly the duplicate this comparison
+  // exists to catch. It is also never allowed to abort every other record in
+  // the batch. Skip just this group — the caller excludes it from the run
+  // entirely and reports it for manual review — and keep matching the rest.
+  const ambiguous=[];
   for(const [key,state] of requested){
     const candidate=candidates.get(key);
     if(!candidate)continue;
-    if(state.count>1||candidate.count>1)
-      throw Error('同一網站、同一發文時間有多篇文章，無法唯一比對：'+
-        String(state.only.site)+' / '+String(state.only.createtime));
+    if(state.count>1||candidate.count>1){
+      ambiguous.push({site:String(state.only.site),createtime:String(state.only.createtime),
+        uid:String(state.only.uid)});
+      continue;
+    }
     matches.set(String(state.only.uid),candidate.only);
   }
   onProgress?.({completed:total,total,matched:matches.size});
+  matches.ambiguous=ambiguous;
   return matches;
 }
 
