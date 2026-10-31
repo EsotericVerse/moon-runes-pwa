@@ -127,6 +127,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function updateImportRowsUnchecked(table,rows){
+    // Preserve the database update_batch boundary: only Galaxy article tables.
+    if(!/^silver\.[a-z][a-z0-9_]*_galaxy$/.test(String(table||'')))
+      throw Error('文章批次更新資料表無效');
     const list=Array.isArray(rows)?rows:[];
     // Keep the existing update_batch RPC contract: it intentionally accepts
     // only these five fields. Source metadata already belongs to Galaxy,
