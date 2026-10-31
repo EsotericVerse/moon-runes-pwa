@@ -8,7 +8,7 @@ test('portable public reads are narrowly restricted and never imply public write
   for(const table of ['loc_theme','runes','runes_etc','runes_group']){
     assert.equal(classifyPortableSqlRequest(query(table)).public,true);
     assert.equal((await assertPortableSqlAuthority(query(table))).public,true);
-    await assert.rejects(assertPortableSqlAuthority(query(table,'update')),/Verified identity|not permitted/);
+    await assert.rejects(assertPortableSqlAuthority(query(table,'update')),/Unmapped resource|Verified identity|not permitted/);
   }
 });
 test('private writes require verified identity and exact scope grant independent of SQL engine',async()=>{
