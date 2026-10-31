@@ -18,7 +18,7 @@ export default function HomeEditModeRestore({scopeId}){
       dock?.begin('local');return undefined;
     }
     let active=true;
-    void account.refresh().then(result=>{
+    void account.refresh({forceVerify:true}).then(result=>{
       if(!active)return;
       const allowed=marker.userId===result?.user?.id&&(
         scopeId==='loc'?result.authorizer?.canManageGroupSync('loc'):
