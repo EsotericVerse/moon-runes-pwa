@@ -18,7 +18,7 @@ test('unsigned, other-origin and unverified claims are never promoted',()=>{
   for(const payload of [{...principal,email_verified:false},
     {...principal,azp:'https://attacker.example'},
     {...principal,sub:'bad'},{...principal,iss:'https://fake.example'},
-    {...principal,email:'owner@example.org.evil'},
+    {...principal,email:'owner@example.org invalid'},
     {...principal,email:''},{...principal,sid:'not-a-session'}]){
     assert.throws(()=>clerkSqlClaims(payload,{issuer,origin}));
   }
