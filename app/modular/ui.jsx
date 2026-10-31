@@ -173,7 +173,7 @@ export function WorkSummaryCard({
         {kicker?<p className="loc-eyebrow scope-card-kicker">{kicker}</p>:null}
         {(scopeId||showSource&&source)?<p className="loc-eyebrow">{[scopeId,showSource?source:''].filter(Boolean).join(' · ')}</p>:null}
         {titleEditor||(titleHref
-          ?<ScopeLink href={titleHref} prefetch={false} className="scope-article-title-link"><strong>{title??copy.work.untitled}</strong></ScopeLink>
+          ?<a href={titleHref} className="scope-article-title-link"><strong>{title??copy.work.untitled}</strong></a>
           :<strong>{title??copy.work.untitled}</strong>)}
         {checkIn?<p className="scope-work-checkin">{checkIn}</p>:null}
       </div>
