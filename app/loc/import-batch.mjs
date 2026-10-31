@@ -62,8 +62,9 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
       continue;
     }
     const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
-    if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)continue;
-    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type||(source.image_url?'image':source.video_url?'video':''));
+    if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description&&source.rune_references==null)continue;
+    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type||
+      (source.image_url?'image':source.video_url?'video':source.rune_references!=null?'runes':''));
     const record={
       ...(explicitId?{uid:explicitId}:{}),
       __article_uid:article_uid||null,
@@ -71,7 +72,12 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
       url:external,
-      meta_tags:String(source.meta_tags||source.description||'').trim()||null,
+      meta_tags:(()=>{
+        const description=source.meta_tags??source.description;
+        if(description===undefined||description===null)return null;
+        const normalized=typeof description==='string'?description.trim():JSON.stringify(description);
+        return normalized||null;
+      })(),
       // Prefer the media's own timestamp; use its article time only as a fallback.
       createtime:parseImportCreatedTime(source.createtime??source.created_at??
         source.creation_timestamp??source.taken_at??source.timestamp)||

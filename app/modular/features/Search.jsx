@@ -32,7 +32,7 @@ import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {parseSearchQuery} from '../../loc/search-query.mjs';
-import {searchGalaxyRows,hydrateGalaxySearchRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSourceTaxonomy} from '../../loc/galaxy-query';
+import {searchGalaxyRows,selectGalaxyContent,selectGalaxyIdentity,selectStyleKeywordMatches,selectSourceTaxonomy} from '../../loc/galaxy-query';
 import {defaultScopeData,selectLocSearchScopes,selectScopeRegistry,revalidateServerMetadata} from '../../loc/scope-data';
 
 import {MEDIA_FALLBACK_TITLE,WORK_FALLBACK_TITLE,workDisplayHeading,workDisplayText} from '../work-display-model';
@@ -45,9 +45,9 @@ const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{l
 const TraceBlocks=dynamic(()=>import('./TraceBlocks'),{loading:()=>null});
 
 
-const MEDIA_EDITOR_COLUMNS='uid,location,media_type,title,url,meta_tags,createtime,rune_references';
-const MEDIA_ATTR_ORDER=['uid','location','media_type','url','meta_tags','createtime','rune_references'];
-const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':key==='rune_references'?'multiline':'text'}));
+const MEDIA_EDITOR_COLUMNS='uid,location,media_type,title,url,meta_tags,createtime';
+const MEDIA_ATTR_ORDER=['uid','location','media_type','url','meta_tags','createtime'];
+const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,site,media_link,statistics_able';
 
@@ -125,7 +125,12 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     checkInPlace:'',
     date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:'',scopeId:scope,resourceType,resourceId,
-    linkedMediaIds:resourceType==='galaxy'&&Array.isArray(row.media_link)?row.media_link:[],
+    relatedMedia:Array.isArray(row.related_media)?row.related_media:[],
+    relatedTime:row.related_time||null,
+    relatedSpace:row.related_space||null,
+    relatedStatistics:row.related_statistics||null,
+    tracePlace:row.trace_place||null,
+    locationName:String(row.location||'').trim(),
     styleTagMatch:Boolean(row.style_keyword_tag),
     styleIntroText:row.style_keyword_tag?workDisplayText(row.style_description||''):'',
     editableTable,editableIdColumn,editResourceId,editableField,isScopeCard,href,
@@ -368,7 +373,7 @@ export default function Search({managementMode=false}){
     const scopeData=scopeById.get(result.scopeId);
     if(!scopeData)throw new Error(UI_COPY.search.fullTextNotFound);
     const id=result.editResourceId||result.resourceId;
-    return selectGalaxyContent(scopeData,id,{authenticated:canManageSearchScope(account,result.scopeId)});
+    return selectGalaxyIdentity(scopeData,id,{includeHidden:canManageSearchScope(account,result.scopeId)});
   }
 
   async function executeSearch(rawQuery,cursor=null,{append=false,browse=false,overrideOptions=null}={}){
@@ -467,7 +472,7 @@ export default function Search({managementMode=false}){
       const styleTagMatches=styleResult.rows;
       if(id!==searchId.current)return;
 
-      const searchRows=await hydrateGalaxySearchRows(search.rows||[],searchScopes,managementMode?searchScopes.map(item=>item.id):[],{signal});
+      const searchRows=search.rows||[];
       if(id!==searchId.current)return;
 
 
@@ -634,7 +639,7 @@ export default function Search({managementMode=false}){
       const fullRow=await loadGalaxyDetail(result);
       if(!fullRow)throw new Error(UI_COPY.search.fullTextNotFound);
       setFullText(workDisplayText(fullRow.content||''));
-      setFullTextRow(null);
+      setFullTextRow(fullRow);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||UI_COPY.search.fullTextFailed));
     }finally{
@@ -1226,6 +1231,14 @@ export default function Search({managementMode=false}){
           ||(canOfferEdit&&authorizedEditingKey===row.key)
         );
         const draft=editingKey===row.key?editDraft:null;
+        const selectedDetail=fullTextKey===row.key&&!fullTextLoading?fullTextRow:null;
+        const identityReader=Boolean(searchParams?.get('identity'))&&row.resourceType==='galaxy';
+        const expandedReader=Boolean(selectedDetail)&&row.resourceType==='galaxy';
+        const readerRow=selectedDetail||null;
+        const tracePlace=readerRow?.trace_place||row.tracePlace;
+        const locationName=String(readerRow?.location||row.locationName||'').trim();
+        const readingLinks=readerRow?galaxyRelationLinks(row.scopeId,readerRow):row.relationLinks||[];
+        const relatedMedia=readerRow?.related_media||row.relatedMedia||[];
         return <Fragment key={row.key}>
           {managementMode&&row.resourceType==='galaxy'&&canManageSearchScope(account,row.scopeId)?
             <label className="loc-search-bulk-article-choice">
@@ -1245,16 +1258,22 @@ export default function Search({managementMode=false}){
           articleHref={row.resourceType==='galaxy'
             ?(managementMode?scopeHref(scopeId,'search/manage')+'?identity='+encodeURIComponent(row.resourceId)+'&scope='+encodeURIComponent(row.scopeId):galaxyIdentityHref(row.scopeId,row.resourceId))
             :''}
-          detailReading={Boolean(searchParams?.get('identity'))&&row.resourceType==='galaxy'}
+          detailReading={identityReader||expandedReader}
           source={searchParams?.get('identity')?row.styleTagMatch?'':row.source:''}
           date={searchParams?.get('identity')?row.date:''}
           body=""
           hidden={false}
-          relationLinks={searchParams?.get('identity')?row.relationLinks||[]:[]}
-          linkedMediaIds={searchParams?.get('identity')?row.linkedMediaIds||[]:[]}
-          linkedMediaTable={rowScopeData?.galaxyMedia||''}
-          linkedMediaAuthenticated={canManageSearchScope(account,row.scopeId)}
-          links={row.links||[]}
+          relationLinks={identityReader||expandedReader?readingLinks:[]}
+          relatedMedia={identityReader||expandedReader?relatedMedia:[]}
+          relatedTime={identityReader||expandedReader?readerRow?.related_time||row.relatedTime:null}
+          relatedSpace={identityReader||expandedReader?readerRow?.related_space||row.relatedSpace:null}
+          relatedStatistics={identityReader||expandedReader?readerRow?.related_statistics||row.relatedStatistics:null}
+          articleScopeId={row.scopeId}
+          articleDate={identityReader||expandedReader?readerRow?.article_day||readerRow?.date||row.articleDay||row.date:''}
+          tracePlace={identityReader||expandedReader?tracePlace:null}
+          traceHref={tracePlace?featureNavigationHref(row.scopeId,'trace',{place:tracePlace.uid}):''}
+          locationName={identityReader||expandedReader?locationName:''}
+          links={identityReader||expandedReader?readerRow?.links||row.links||[]:[]}
           destinations={row.destinations}
           editable={editable}
           editing={editingKey===row.key}

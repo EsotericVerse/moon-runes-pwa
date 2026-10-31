@@ -3,7 +3,7 @@ import {featureHref} from './scope-registry';
 import {normalizeRelationIds} from '../loc/content-policy';
 
 const NAVIGATION_FIELDS=Object.freeze([
-  'q','place','identity','media','source','period','anchor','from','to','rankingType','statTab'
+  'q','place','map','identity','media','source','period','anchor','from','to','rankingType','statTab'
 ]);
 
 const NavigationValue=z.string().trim().min(1).max(240);
@@ -12,6 +12,7 @@ const StatisticsTab=z.enum(['ranking','keywords','styles','media','charts']);
 const FeatureNavigationSchema=z.object({
   q:NavigationValue.optional(),
   place:NavigationValue.optional(),
+  map:NavigationValue.optional(),
   identity:NavigationValue.optional(),
   media:NavigationValue.optional(),
   source:NavigationValue.optional(),

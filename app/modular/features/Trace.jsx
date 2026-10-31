@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {FeaturePage} from '../ui';
 import {useAsyncResource} from '../../loc/use-async-resource';
@@ -29,6 +30,9 @@ const TracePlaceResults=dynamic(()=>import('./trace/TracePlaceResults'),{
 export default function Trace({scopeId='loc'}){
   const supported=TRACE_SCOPES.includes(scopeId);
   const [selectedPlace,setSelectedPlace]=useState(null);
+  const routeParams=useSearchParams();
+  const selectedPlaceUid=String(routeParams?.get('place')||'').trim();
+  const selectedMapUid=String(routeParams?.get('map')||'').trim();
   const [twoPointDemo,setTwoPointDemo]=useState(false);
   const [demoStopIds,setDemoStopIds]=useState([]);
   // LOC shows the cross-Scope union of published Trace groups; routes are children.
@@ -68,6 +72,17 @@ export default function Trace({scopeId='loc'}){
     :chooseDefaultTraceRoute(maps,scopeId,currentTraceChoice),
     [allMaps,scopeId,currentTraceChoice,isLoc]);
   const periodScopeId=isLoc?(currentMap?.source_scope||'loc'):scopeId;
+  const deepLinkedPlace=useAsyncResource({
+    queryKey:['trace-open-place',periodScopeId,selectedPlaceUid],
+    enabled:supported&&Boolean(selectedPlaceUid)&&['lo3rwang','lrunes'].includes(periodScopeId),
+    queryFn:async()=>(await readCurrentTraceAnchors(periodScopeId,[selectedPlaceUid]))[0]||null,
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  useEffect(()=>{
+    if(!deepLinkedPlace.data?.uid)return;
+    setSelectedPlace(deepLinkedPlace.data);
+    setReportTab('articles');
+  },[deepLinkedPlace.data?.uid]);
   // Reuse the route preference from the existing management editor. "All"
   // is a temporary view, not a persisted default or a second preference key.
   useEffect(()=>{
@@ -79,6 +94,11 @@ export default function Trace({scopeId='loc'}){
     if(!isLoc)window.addEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
     return()=>window.removeEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
   },[scopeId,isLoc]);
+  useEffect(()=>{
+    if(!selectedMapUid||!allMaps.length)return;
+    const found=maps.find(row=>String(row.uid)===selectedMapUid);
+    if(found)setCurrentTraceChoice(isLoc?found.source_scope+':'+found.uid:found.uid);
+  },[selectedMapUid,allMaps,scopeId,isLoc]);
   const chooseCurrentTrace=value=>{
     setSelectedPlace(null);
     if(isLoc){setCurrentTraceChoice(value);return;}
@@ -119,16 +139,24 @@ export default function Trace({scopeId='loc'}){
 
   const demoRoute=useMemo(()=>traceDemoRoute(demoStopIds,spatialData?.anchors||[],periodScopeId),
     [demoStopIds,spatialData?.anchors,periodScopeId]);
-  const demoSpatialData=useMemo(()=>twoPointDemo&&spatialData
-    ?{anchors:spatialData.anchors,maps:demoRoute?[demoRoute]:[]}
-    :spatialData,[twoPointDemo,spatialData,demoRoute]);
+  const linkedSpatialData=useMemo(()=>{
+    const anchor=deepLinkedPlace.data;
+    if(!spatialData||!anchor?.uid||spatialData.anchors.some(item=>item.uid===anchor.uid))return spatialData;
+    return {...spatialData,anchors:[...spatialData.anchors,anchor]};
+  },[spatialData,deepLinkedPlace.data]);
+  const demoSpatialData=useMemo(()=>twoPointDemo&&linkedSpatialData
+    ?{anchors:linkedSpatialData.anchors,maps:demoRoute?[demoRoute]:[]}
+    :linkedSpatialData,[twoPointDemo,linkedSpatialData,demoRoute]);
   const chooseMapAnchor=anchor=>{
     if(!twoPointDemo){choosePlace(anchor);return;}
     setDemoStopIds(ids=>pickTraceDemoStop(ids,anchor,periodScopeId));
   };
-  const selectedAvailable=selectedPlace&&(selectedPlace.trace_type!=='space_anchor'
-    ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
-    :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope));
+  const selectedAvailable=selectedPlace&&(
+    selectedPlace.uid===deepLinkedPlace.data?.uid
+    ||(selectedPlace.trace_type!=='space_anchor'
+      ?spatialData?.maps.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope)
+      :spatialData?.anchors.some(row=>row.uid===selectedPlace.uid&&row.source_scope===selectedPlace.source_scope))
+  );
   const reportPlace=twoPointDemo?null:(selectedAvailable?selectedPlace:null);
 
   const floatingControls=<>
@@ -232,6 +260,7 @@ export default function Trace({scopeId='loc'}){
             <option value="音樂">音樂</option>
             <option value="圖片">圖片</option>
             <option value="影片">影片</option>
+            <option value="runes">抽牌結果（runes）</option>
           </select>
         </label>
         <p className="scope-status">來源對應作品的 site（例如 Threads）；媒體類型對應 galaxy_media.media_type。兩者可交叉篩選，三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>

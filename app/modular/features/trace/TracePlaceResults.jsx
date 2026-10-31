@@ -3,13 +3,14 @@
 import {useEffect,useMemo,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-resource';
-import {selectRows,selectAllRows} from '../../../loc/db-query.mjs';
-import {traceArticleIdFilters,groupedTraceDays,traceMediaMatches} from './trace-panel-filters.mjs';
+import {selectRows} from '../../../loc/db-query.mjs';
+import {traceArticleIdFilters,groupedTraceDays} from './trace-panel-filters.mjs';
 import {defaultScopeData} from '../../../loc/scope-data';
 import {dbPublicClient} from '../../../loc/db-client.mjs';
 import {traceArticleIds,traceArticleLabels} from './trace-article-ids.mjs';
 import Article from '../../Article';
-import {galaxyIdentityHref} from '../../feature-navigation';
+import {galaxyIdentityHref,galaxyRelationLinks,featureNavigationHref} from '../../feature-navigation';
+import {selectGalaxyIdentity} from '../../../loc/galaxy-query';
 import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
 
 const CultureTimeline=dynamic(()=>import('../../modules/culture-timeline/CultureTimeline'),{loading:()=> <p className="scope-status">正在開啟時間長河…</p>});
@@ -19,27 +20,33 @@ const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
 
 function TraceWork({row,scope}){
   const [opened,setOpened]=useState(false);
-  const body=useAsyncResource({
-    queryKey:['trace-work-content',scope?.id,row.uid],
+  const detail=useAsyncResource({
+    queryKey:['trace-work-uid',scope?.id,row.uid],
     enabled:opened&&Boolean(scope?.galaxy&&row.uid),
-    queryFn:async()=>{
-      const {rows}=await selectRows(scope.galaxy,{
-        columns:'uid,content',filters:[{column:'uid',operator:'eq',value:row.uid},
-          {column:'searchable',operator:'eq',value:true}],limit:1
-      });
-      return String(rows[0]?.content||'');
-    },
+    queryFn:()=>selectGalaxyIdentity(scope,row.uid),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
+  const article=opened?detail.data:null;
   return <Article uid={row.uid} title={row.title||'未命名文章'}
     articleHref={galaxyIdentityHref(scope?.id,row.uid)}
-    links={row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'source:'+row.uid,href:row.url,label:'外部連結'}]:[]}
+    detailReading={Boolean(article)}
+    relationLinks={article?galaxyRelationLinks(scope?.id,article):[]}
+    relatedMedia={article?.related_media||[]}
+    relatedTime={article?.related_time||null}
+    relatedSpace={article?.related_space||null}
+    relatedStatistics={article?.related_statistics||null}
+    articleScopeId={scope?.id||''}
+    articleDate={article?.article_day||article?.date||''}
+    tracePlace={article?.trace_place||null}
+    traceHref={article?.trace_place?featureNavigationHref(scope?.id,'trace',{place:article.trace_place.uid}):''}
+    locationName={article?.location||''}
+    links={article?.links||[]}
     editOnCardClick={false}>
-    <WorkFullText open={opened} loading={opened&&body.isPending}
-      error={body.error?String(body.error.message||body.error):''}
-      content={body.data||''} showToggle={false}/>
+    <WorkFullText open={opened} loading={opened&&detail.isPending}
+      error={detail.error?String(detail.error.message||detail.error):''}
+      content={String(article?.content||'')} showToggle={false}/>
     <button type="button" className="loc-button" aria-expanded={opened}
-      onClick={()=>setOpened(x=>!x)}>{opened?'收合文章':'閱讀文章'}</button>
+      onClick={()=>setOpened(value=>!value)}>{opened?'收合文章':'閱讀文章'}</button>
   </Article>;
 }
 
@@ -48,7 +55,6 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   const [sort,setSort]=useState('desc');
   const [chartType,setChartType]=useState('bar');
   const [showAllVisits,setShowAllVisits]=useState(false);
-  const [visibleCount,setVisibleCount]=useState(PAGE_SIZE);
   const name=String(place?.title||'').trim();
   const isMap=place?.trace_type==='space_period'||place?.trace_type==='space_trace';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
@@ -62,7 +68,6 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     :validDate(period?.end_date)?String(period.end_date).slice(0,10):'';
   const sourceFilter=String(sourceName||'').trim();
   const selectedMediaType=String(mediaType||'').trim();
-  useEffect(()=>{setVisibleCount(PAGE_SIZE);},[place?.uid,sourceFilter,selectedMediaType,startDate,endDate]);
   const enabled=Boolean(name&&placeIds.length&&scope?.galaxy&&targetScope===scopeId);
 
   // One selected resource and one small page at a time. No eager Galaxy scan.
@@ -75,8 +80,8 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,site,place_id,url',
-        filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
+        columns:'uid,title,createtime',
+        filters,orders:[{column:'date',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
       const rows=result.rows||[];
@@ -86,32 +91,51 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     }
   });
 
-  // Only an explicitly selected media filter loads joined media metadata.
-  // Match media IDs from each article's media_link without reverse dependencies.
-  const mediaFiltered=useAsyncResource({
-    queryKey:['trace-media-filter-v1',targetScope,placesKey,startDate,endDate,
-      sourceFilter,selectedMediaType],
+  // Media filtering is an explicitly requested, bounded two-stage lookup:
+  // one page of media UIDs by type, then one page of Galaxy article headers.
+  // Crucially, NO article list SELECT projects media_link or article content.
+  const mediaFiltered=useAsyncInfiniteResource({
+    queryKey:['trace-media-filter-v3',targetScope,placesKey,startDate,endDate,
+      sourceFilter,selectedMediaType,sort],
     enabled:enabled&&Boolean(selectedMediaType)&&Boolean(scope?.galaxyMedia),
-    queryFn:async()=>{
-      const {rows:articles}=await selectAllRows(scope.galaxy,{
-        columns:'uid,title,createtime,site,place_id,url,statistics_able,media_link',
-        filters:traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter})
+    initialPageParam:{mediaOffset:0,articleOffset:0},
+    getNextPageParam:page=>page.nextCursor||undefined,
+    queryFn:async({pageParam})=>{
+      const mediaOffset=Number(pageParam?.mediaOffset)||0;
+      const articleOffset=Number(pageParam?.articleOffset)||0;
+      const mediaLimit=80;
+      const {rows:mediaPage}=await selectRows(scope.galaxyMedia,{
+        columns:'uid',
+        filters:[{column:'media_type',operator:'eq',value:selectedMediaType}],
+        orders:[{column:'uid',ascending:true}],
+        limit:mediaLimit,maxLimit:mediaLimit,offset:mediaOffset
       });
-      if(!articles.length)return [];
-      const ids=[...new Set(articles.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
-      const matching=[];
-      for(let i=0;i<ids.length;i+=120){
-        const {rows}=await selectAllRows(scope.galaxyMedia,{
-          columns:'uid,media_type',
-          filters:[{column:'uid',operator:'in',value:ids.slice(i,i+120)},
-            {column:'media_type',operator:'eq',value:selectedMediaType}]
-        });
-        matching.push(...rows);
-      }
-      return traceMediaMatches(articles,matching);
+      const mediaIds=mediaPage.map(row=>String(row.uid||'').trim()).filter(Boolean);
+      if(!mediaIds.length)return {rows:[],nextCursor:null};
+      const {rows}=await selectRows(scope.galaxy,{
+        columns:'uid,title,createtime',
+        filters:[
+          ...traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter}),
+          {column:'media_link',operator:'overlaps',value:mediaIds}
+        ],
+        orders:[{column:'date',ascending:sort==='asc'},{column:'uid',ascending:true}],
+        limit:PAGE_SIZE,maxLimit:PAGE_SIZE,offset:articleOffset
+      });
+      const moreInMediaPage=rows.length===PAGE_SIZE;
+      const nextCursor=moreInMediaPage
+        ?{mediaOffset,articleOffset:articleOffset+rows.length}
+        :(mediaPage.length===mediaLimit?{mediaOffset:mediaOffset+mediaLimit,articleOffset:0}:null);
+      return {rows,nextCursor};
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
+  const mediaRows=useMemo(()=>{
+    const byUid=new Map();
+    for(const page of mediaFiltered.data?.pages||[]){
+      for(const row of page.rows||[])byUid.set(String(row.uid),row);
+    }
+    return [...byUid.values()];
+  },[mediaFiltered.data]);
 
   // Place density is computed on indexed place_id inside Postgres.
   // Never fetch a Scope-wide Galaxy metadata list just to draw a chart.
@@ -165,20 +189,31 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  const mediaSummary=useMemo(()=>mediaFiltered.data
-    ?{rows:groupedTraceDays(mediaFiltered.data.filter(row=>row.statistics_able===true),{key:'place_id'})}
-    :undefined,[mediaFiltered.data]);
+  const mediaSummary=useAsyncResource({
+    queryKey:['trace-filtered-media-summary-v3',targetScope,mediaRows.map(row=>row.uid).join('|')],
+    enabled:needsSummary&&Boolean(selectedMediaType)&&mediaRows.length>0,
+    queryFn:async()=>{
+      const entries=[];
+      for(let offset=0;offset<mediaRows.length;offset+=80){
+        const batch=mediaRows.slice(offset,offset+80).map(row=>String(row.uid));
+        const {rows}=await selectRows(scope.galaxy,{
+          columns:'uid,date,place_id,statistics_able',
+          filters:[{column:'uid',operator:'in',value:batch}],
+          limit:batch.length,maxLimit:batch.length
+        });
+        entries.push(...rows);
+      }
+      return {rows:groupedTraceDays(entries.filter(row=>row.statistics_able===true),{key:'place_id'})};
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
   const summary=selectedMediaType
-    ?{data:mediaSummary,isPending:mediaFiltered.isPending,error:mediaFiltered.error}
+    ?mediaRows.length?mediaSummary:{data:{rows:[]},isPending:false,error:mediaFiltered.error}
     :numeric;
   const rows=useMemo(()=>{
-    if(selectedMediaType)return (mediaFiltered.data||[])
-      .slice().sort((a,b)=>sort==='asc'
-        ?String(a.createtime||'').localeCompare(String(b.createtime||''))
-        :String(b.createtime||'').localeCompare(String(a.createtime||'')))
-      .slice(0,visibleCount);
+    if(selectedMediaType)return mediaRows;
     return (list.data?.pages||[]).flatMap(p=>p.rows||[]);
-  },[list.data,selectedMediaType,mediaFiltered.data,sort,visibleCount]);
+  },[list.data,selectedMediaType,mediaRows]);
   const verified=useMemo(()=>{
     const wanted=new Set(placeIds),months=new Map(),places=new Map();
     for(const row of summary.data?.rows||[]){
@@ -225,7 +260,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     group_order:0,start_date:visit.when,
     title:visit.title+' · '+visit.label
   })),[visibleVisits]);
-  const listTotal=selectedMediaType?mediaFiltered.data?.length:list.data?.pages?.[0]?.total;
+  const listTotal=selectedMediaType?(mediaFiltered.data?mediaRows.length:null):list.data?.pages?.[0]?.total;
   // Present the same vis-timeline river used by Culture. Aggregate by month
   // so a 20-year personal history remains navigable without thousands of
   // individual glyphs. Each range is article density, NOT an inferred visit.
@@ -261,7 +296,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       <div><p className="loc-eyebrow">文章報表</p><h2>文章列表／時間長河／統計圖</h2></div>
       <span className="scope-status">{isMap?(place.trace_type==='space_trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):''}
         {!enabled?'沒有可對應的打卡地點'
-          :tab==='articles'?(listTotal==null?'按需載入中…':listTotal+' 篇文章')
+          :tab==='articles'?(listTotal==null?'按需載入中…':selectedMediaType?'已載入 '+listTotal+' 篇符合條件的文章':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}
       </span>
     </header>
@@ -286,19 +321,28 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     {!enabled?<p className="scope-status" role="status">此地點目前沒有可對應的文章紀錄，仍可繼續查看地圖。</p>:null}
     {loading?<p role="status" className="scope-status">正在按需讀取目前時間與地點的內容…</p>:null}
     {error?<p role="alert" className="scope-status scope-error">{String(error.message||error)}</p>:null}
-    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">目前沒有 place_id 屬於此 Spool 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。</p>:null}
+    {tab==='articles'&&!loading&&!error&&!rows.length?<p className="scope-status">
+      {selectedMediaType?'已查閱的文章頁面尚無此媒體類型；可繼續搜尋下一頁。':'目前沒有 place_id 屬於此 Spool 的文章；既有文章可在「整理空間定錨點」建立 place_id 對應。'}
+    </p>:null}
+    {tab==='articles'&&selectedMediaType&&!rows.length&&mediaFiltered.hasNextPage?
+      <button type="button" className="loc-button" onClick={()=>mediaFiltered.fetchNextPage()}
+        disabled={mediaFiltered.isFetchingNextPage}>繼續篩選下一頁</button>:null}
     {tab==='articles'&&rows.length?<IncrementalList
       items={rows}
       batchSize={PAGE_SIZE}
       resetKey={[targetScope,place?.uid,placesKey,startDate,endDate,sourceFilter,selectedMediaType,sort].join('|')}
       className="loc-trace-works-list"
-      externalHasMore={selectedMediaType
-        ?(mediaFiltered.data?.length||0)>visibleCount:Boolean(list.hasNextPage)}
-      loading={selectedMediaType?mediaFiltered.isPending:Boolean(list.isPending||list.isFetchingNextPage)}
+      externalHasMore={selectedMediaType?Boolean(mediaFiltered.hasNextPage):Boolean(list.hasNextPage)}
+      loading={selectedMediaType?Boolean(mediaFiltered.isFetchingNextPage):Boolean(list.isPending||list.isFetchingNextPage)}
       error={error}
-      onLoadMore={selectedMediaType?()=>setVisibleCount(n=>n+PAGE_SIZE):list.fetchNextPage}
+      onLoadMore={selectedMediaType?()=>mediaFiltered.fetchNextPage():list.fetchNextPage}
       renderItem={row=><TraceWork key={targetScope+':'+row.uid} row={row} scope={scope}/>}
     />:null}
+    {selectedMediaType&&mediaFiltered.hasNextPage&&tab!=='articles'?<p className="scope-status">
+      媒體篩選的圖表只呈現已按需載入的頁面，並非整個區間的總量。
+      <button type="button" className="loc-button" onClick={()=>mediaFiltered.fetchNextPage()}
+        disabled={mediaFiltered.isFetchingNextPage}>繼續讀取下一頁</button>
+    </p>:null}
     {tab==='timeline'&&(summary.data||(!sourceFilter&&!selectedMediaType&&visibleVisits.length>0))?<div className="loc-trace-works-timeline" aria-label="按真實造訪時間排列的時間長河">
       {riverItems.length?<CultureTimeline items={riverItems}
         extraGroups={[

@@ -4,11 +4,11 @@ import {isAbortError} from './db-query.mjs';
 
 import {StatisticsFacets} from './statistics-facets';
 import {sourceTaxonomyFromArrays} from './source-classification.mjs';
-import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
-import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,forEachAllRowsPage,selectAllRows,selectCount,selectRows} from './db-query.mjs';
+import {timePeriodContainsDate} from './time-anchor-ranges.mjs';
+import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
 import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
@@ -27,7 +27,8 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+(isDate?'':'T23:59:59.999+08:00')});
   return filters;
 }
-const dayColumn=table=>/^silver\.(lo3rwang|lrunes)_galaxy$/.test(String(table||''))?'date':'createtime';
+const dayColumn=table=>String(table||'')==='silver.local_galaxy'?'createtime':
+  /^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''))?'date':'createtime';
 async function selectRowById(table,{idColumn,id,columns,authenticated=false}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1,authenticated});
   return page.rows[0]||null;
@@ -57,18 +58,6 @@ function dailyKeyOf(row,column,{includeEmpty=false,includeUndated=false}={}){
   const day=String(row?.date||row?.createtime||'').slice(0,10);
   if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
   return day+'\u0000'+category;
-}
-// Streams one table page by page and keeps only the counters, never the rows.
-async function countStreamed(table,{columns,filters=[]},keyOf){
-  const counts=new Map();
-  await forEachAllRowsPage(table,{columns,filters},rows=>{
-    for(const row of rows){
-      const key=keyOf(row);
-      if(key===null||key===undefined)continue;
-      counts.set(key,(counts.get(key)||0)+1);
-    }
-  });
-  return counts;
 }
 function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}){
   const counts=countBy(rows,row=>dailyKeyOf(row,column,{includeEmpty,includeUndated}),{includeEmpty:true});
@@ -111,10 +100,7 @@ async function scopeDailyCounts(current,range){
       counted.filter(row=>row.kind==='media'&&row.category).map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
     ];
   }
-  return Promise.all([
-    selectSourceDaily(current,range),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',range)
-  ]);
+  throw new Error('Culture statistics aggregate unavailable; full-row fallback is disabled');
 }
 
 // Per-Scope daily category counts for text works and media, computed by the
@@ -129,17 +115,9 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
       .map(row=>({day:row.day,category:row.category,item_count:Number(row.item_count)||0})).sort(order);
     return {text:pick('source'),media:pick('media')};
   }
-  // Culture must not silently download every Galaxy/Media timestamp when the
-  // aggregate RPC is unavailable; that can turn one chart into 1000s of rows.
-  if(requireAggregate)throw new Error('Culture requires silver.read_scope_statistics; full Galaxy fallback is disabled');
-  const [text,media]=await Promise.all([
-    selectDailyCategoryCounts(current.galaxy,'site',{
-      startDate,endDate,filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-      includeEmpty:true,includeUndated
-    }),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate,includeEmpty:includeEmptyMedia,includeUndated})
-  ]);
-  return {text,media};
+  // Both public Culture and Statistics must rely on the grouped DB reader.
+  // Never silently stream all Galaxy/media rows in a browser fallback.
+  throw new Error('Culture requires a database-side date aggregate; full-row fallback disabled');
 }
 
 // One number per source/media category for a window, no per-day grouping
@@ -167,21 +145,13 @@ export async function selectSourceTaxonomy(){
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
-  const filters=publicContentFilters([
-    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true}
-  ]);
+  const rows=await readScopeCategoryTotals(current.id,{
+    startDate:dateOnly(startDate),endDate:dateOnly(endDate)
+  });
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const rows=(await selectAllRows(current.galaxy,{
-    columns:'site',
-    filters
-  })).rows;
-  const counts=await countStreamed(current.galaxy,{columns:'site',filters},row=>String(row?.site||'').trim());
-  const normalized=termCountRows(counts,{limit:safeLimit,includeEmpty:true}).map(row=>({
-    scope_id:current.id,
-    site:row.term,
-    item_count:row.item_count
-  }));
+  const normalized=rows.filter(row=>row.kind==='source').map(row=>({
+    scope_id:current.id,site:String(row.category||''),item_count:Number(row.item_count)||0
+  })).sort((a,b)=>b.item_count-a.item_count||a.site.localeCompare(b.site)).slice(0,safeLimit);
   return {rows:normalized,totalCount:normalized.length};
 }
 
@@ -196,56 +166,41 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
       item_count:row.item_count
     }));
   }
-  const filters=publicContentFilters([
-    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true}
-  ]);
-  const counts=await countStreamed(current.galaxy,{columns:'site,'+dayColumn(current.galaxy),filters},
-    row=>dailyKeyOf(row,'site',{includeEmpty:true}));
-  return dailyRowsFromCounts(counts).map(row=>({
-    scope_id:current.id,
-    site:row.category,
-    day:row.day,
-    item_count:row.item_count
-  }));
+  throw new Error('Source daily statistics aggregate unavailable; full-row fallback disabled');
 }
 
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
-  const resolved=[
-    ...filters,
-    ...timeFilters(dayColumn(table),startDate,endDate),
-    ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
-  ];
-  const counts=await countStreamed(table,{columns:`${categoryColumn},${dayColumn(table)}`,filters:resolved},
-    row=>dailyKeyOf(row,categoryColumn,{includeEmpty,includeUndated}));
-  return dailyRowsFromCounts(counts);
-}
-
-async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
-  const resolved=[
-    ...filters,
-    ...timeFilters(dayColumn(table),startDate,endDate),
-    {column:categoryColumn,operator:'neq',value:''}
-  ];
-  const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const counts=await countStreamed(table,{columns:categoryColumn,filters:resolved},
-    row=>String(row?.[categoryColumn]||'').trim());
-  return termCountRows(counts,{limit:safeLimit});
+  const match=String(table||'').match(/^(?:silver\.)?([a-z][a-z0-9]*)_galaxy(_media)?$/);
+  const kind=match?.[2]?'media':'source';
+  if(!match||categoryColumn!==(kind==='media'?'media_type':'site')||filters.length)
+    throw new Error('Unsupported daily category request; row-streaming fallback is disabled');
+  const rows=await readScopeStatistics(match[1],{
+    startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated
+  });
+  return rows.filter(item=>item.kind===kind&&(includeEmpty||item.category))
+    .map(item=>({day:String(item.day||''),category:String(item.category||''),
+      item_count:Number(item.item_count)||0}))
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
 }
 
 function mediaIdsOf(value){
   return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
 }
-async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
+async function mediaRowsFor(scope,mediaIds=[],{signal=null,includeLegacyRuneRefs=false}={}){
   const current=scopeOf(scope);
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
-  return (await selectRows(current.galaxyMedia,{
-    columns:'uid,title,url,media_type',
-    filters:[{column:'uid',operator:'in',value:ids}],
-    limit:ids.length,
-    signal
-  })).rows;
+  const result=[];
+  for(let i=0;i<ids.length;i+=40){
+    const batch=ids.slice(i,i+40);
+    const page=await selectRows(current.galaxyMedia,{
+      columns:includeLegacyRuneRefs?'uid,title,url,media_type,meta_tags,rune_references':'uid,title,url,media_type,meta_tags',
+      filters:[{column:'uid',operator:'in',value:batch}],
+      limit:batch.length,maxLimit:batch.length,signal
+    });
+    result.push(...page.rows);
+  }
+  return result;
 }
 function resolvedLinks(row,mediaById){
   const links=[];
@@ -285,10 +240,8 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
   const pages=await Promise.all(batches.map(async batch=>{
     const {rows=[]}=await selectRows(scope.galaxy,{
       columns:'uid,title',
-      filters:[
-        {column:'uid',operator:'in',value:batch},
-        ...(!includeHidden?[{column:'searchable',operator:'eq',value:true}]:[])
-      ],
+      filters:[{column:'uid',operator:'in',value:batch}],
+      orFilter:includeHidden?'':'searchable.is.null,searchable.eq.true',
       limit:batch.length,
       authenticated:includeHidden
     });
@@ -297,25 +250,124 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
   return Object.fromEntries(pages.flat().map(item=>[String(item.uid),String(item.title||'').trim()]));
 }
 
+
+function articleDate(value){
+  const day=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day)?day:'';
+}
+function localArticleDate(value){
+  const instant=Date.parse(String(value||''));
+  return Number.isFinite(instant)?new Date(instant+8*3_600_000).toISOString().slice(0,10):articleDate(value);
+}
+function shiftedDay(day,shift){
+  const d=new Date(day+'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate()+shift);
+  return d.toISOString().slice(0,10);
+}
+// A selected article only needs the lightweight Time graph. Share the
+// canonical Culture range resolution among article reads for a short TTL.
+const articleTimeCache=new Map();
+async function articleTimeRows(scope){
+  const key=String(scope.id)+'|'+String(scope.time),now=Date.now();
+  const cached=articleTimeCache.get(key);
+  if(cached&&cached.expires>now)return cached.promise;
+  const promise=import('./culture-query').then(({selectCultureTimeRows})=>selectCultureTimeRows(scope));
+  articleTimeCache.set(key,{expires:now+5_000,promise});
+  promise.catch(()=>{if(articleTimeCache.get(key)?.promise===promise)articleTimeCache.delete(key);});
+  return promise;
+}
+async function articleTimeContext(scope,day){
+  if(!day||!scope.time)return {anchors:[],periods:[],eras:[]};
+  const rows=await articleTimeRows(scope);
+  const matches=row=>timePeriodContainsDate(row,day);
+  const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
+  return {
+    anchors:labels(rows.filter(row=>row.entry_type==='anchor'&&articleDate(row.address)===day)),
+    periods:labels(rows.filter(row=>row.entry_type==='event'&&matches(row))),
+    eras:labels(rows.filter(row=>row.entry_type==='period'&&matches(row)))
+  };
+}
+async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
+  if(!/^[A-Za-z0-9]{4}$/.test(placeId)||!['lo3rwang','lrunes'].includes(scope.id))
+    return {place:null,routes:[],traces:[]};
+  const table='silver.'+scope.id+'_trace';
+  const [anchor,routesPage]=await Promise.all([
+    selectRows(table,{columns:'uid,title',filters:[
+      {column:'uid',operator:'eq',value:placeId},
+      {column:'trace_type',operator:'eq',value:'space_anchor'}
+    ],limit:1,authenticated}),
+    selectRows(table,{columns:'uid,title',filters:[
+      {column:'trace_type',operator:'eq',value:'space_period'},
+      {column:'anchor_list',operator:'contains',value:[placeId]}
+    ],limit:100,maxLimit:100,authenticated})
+  ]);
+  const routes=routesPage.rows||[],routeIds=routes.map(row=>String(row.uid)).filter(Boolean);
+  const clauses=['anchor_list.cs.{'+placeId+'}',...routeIds.map(uid=>'route_list.cs.{'+uid+'}')];
+  const traces=await selectRows(table,{columns:'uid,title',filters:[
+    {column:'trace_type',operator:'eq',value:'space_trace'}
+  ],orFilter:clauses.join(','),limit:100,maxLimit:100,authenticated});
+  return {place:anchor.rows[0]||null,routes,traces:traces.rows||[]};
+}
+function articleStatisticsContext(scope,day){
+  if(!day)return null;
+  const weekday=(new Date(day+'T00:00:00Z').getUTCDay()+6)%7;
+  const weekStart=shiftedDay(day,-weekday),weekEnd=shiftedDay(weekStart,6);
+  const yearStart=day.slice(0,4)+'-01-01',yearEnd=day.slice(0,4)+'-12-31';
+  // Statistics receives only the derived date window and runs its own
+  // existing grouped reader when the user follows the link.
+  return {week:{start:weekStart,end:weekEnd},
+    year:{start:yearStart,end:yearEnd}};
+}
+
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
-  const row=await selectRowById(current.galaxy,{
-    idColumn:'uid',
-    id,
-    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable',
-    authenticated:includeHidden
+  // One exact UID SELECT loads the selected article. The list never reads
+  // content, linked media, references or Trace data.
+  const local=current.id==='local';
+  const {rows:articleRows}=await selectRows(current.galaxy,{
+    columns:local
+      ?'uid,title,createtime,content,site,url,source_id,target_id,ref_id,media_link,location,searchable'
+      :'uid,title,date,createtime,content,site,url,source_id,target_id,ref_id,media_link,place_id,location,searchable',
+    filters:[{column:'uid',operator:'eq',value:id}],
+    orFilter:includeHidden?'':'searchable.is.null,searchable.eq.true',
+    limit:1,authenticated:includeHidden
   });
+  const row=articleRows[0]||null;
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const [contentRow,relationTitles]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
-    relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({}))
+  const mediaIds=mediaIdsOf(row.media_link);
+  const placeId=String(row.place_id||'').trim();
+  const day=local?localArticleDate(row.createtime):articleDate(row.date);
+  const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
+    relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
+    mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
+    articleSpaceContext(current,placeId,{authenticated:includeHidden}).catch(()=>({place:null,routes:[],traces:[]})),
+    articleTimeContext(current,day).catch(()=>({anchors:[],periods:[],eras:[]})),
+    articleStatisticsContext(current,day)
   ]);
-  // Media URLs belong to their own expandable reader section; loading this
-  // article must not SELECT related media titles, tags, or URLs.
+  const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
+  const orderedMedia=mediaIds.map(mediaId=>mediaById.get(mediaId)).filter(Boolean);
+  // Existing 2026 records sometimes stored card spreads on non-rune media.
+  // Expose them as a read-only rune media view until the verified data backfill;
+  // do not modify or duplicate any Galaxy article in a read request.
+  const legacyRunes=orderedMedia.flatMap(media=>{
+    const refs=media.rune_references;
+    if(refs==null||refs===''||JSON.stringify(refs)==='{}'||JSON.stringify(refs)==='[]')return [];
+    const description=typeof refs==='string'?refs:JSON.stringify(refs);
+    const alreadyStored=orderedMedia.some(item=>String(item.media_type||'').toLowerCase()==='runes'
+      &&String(item.meta_tags||'')===description);
+    return alreadyStored?[]:[{
+      uid:String(media.uid)+':legacy-runes',media_type:'runes',
+      title:'抽牌結果',url:null,meta_tags:description
+    }];
+  });
+  // Keep media and original article URLs as distinct associations.
   return {...row,scope_id:current.id,__table:current.galaxy,
-    content:contentRow?.content||'',links:resolvedLinks(row,new Map()),relation_titles:relationTitles};
+    links:resolvedLinks(row,new Map()),relation_titles:relationTitles,
+    related_media:[...orderedMedia,...legacyRunes],trace_place:space.place,
+    related_space:space,related_time:time,related_statistics:statistics,
+    article_day:day};
 }
 
 function literalPattern(value){
@@ -457,7 +509,7 @@ function managementArticleProviders(scope,{contentType='',sourceFilter='',source
   ];
   const base={
     table:current.galaxy,source:current.id+' 文章',scope:current,idColumn:'uid',
-    columns:['uid'],dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
+    columns:['uid','title','createtime'],dateColumn:dayColumn(current.galaxy),filters,sourceClause:sourceNameClause(selection),
     authenticated:true
   };
   if(placeOnly)return [makeProvider({
@@ -492,31 +544,31 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // Article content is a search predicate, not a list payload. Fetch it only
   // when the result is explicitly opened or edited.
   // Match with narrow, bounded UID-only pages; hydrate display fields later.
-  const textColumns=['uid'];
+  const textColumns=['uid','title','createtime'];
   // Existing LOC search provider, narrowed to Galaxy's check-in field only.
   // No article body is fetched by this search stage.
   if(placeOnly)return [makeProvider({
     id:current.id+':source-place',table:current.galaxy,source:current.id+' 打卡地點',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['location'],dateColumn:'createtime',
+    columns:textColumns,searchFields:['location'],dateColumn:dayColumn(current.galaxy),
     sortTitle:false,filters:textFilters,authenticated:includeHiddenText
   })];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
+    columns:textColumns,searchFields:['title'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
   });
   const title=makeProvider({
     id:current.id+':text-title',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['title'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['title'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const contentExact=makeProvider({
     id:current.id+':text-content-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['content'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'content'
+    columns:textColumns,searchFields:['content'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'content'
   });
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content'],dateColumn:'createtime',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['content'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
@@ -806,9 +858,9 @@ export async function selectFirstScopeStatisticsDate(scope){
   const current=scopeOf(scope);
   const [text,media]=await Promise.all([
     selectRows(current.galaxy,{
-      columns:'createtime',
+      columns:dayColumn(current.galaxy),
       filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
+      orders:[{column:dayColumn(current.galaxy),ascending:true,nullsFirst:false}],
       limit:1
     }),
     selectRows(current.galaxyMedia,{
@@ -817,8 +869,10 @@ export async function selectFirstScopeStatisticsDate(scope){
       limit:1
     })
   ]);
-  const dates=[...(text.rows||[]),...(media.rows||[])].map(row=>String(row.createtime||'').slice(0,10))
-    .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
+  const dates=[
+    ...(text.rows||[]).map(row=>String(row[dayColumn(current.galaxy)]||'').slice(0,10)),
+    ...(media.rows||[]).map(row=>String(row.createtime||'').slice(0,10))
+  ].filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
   return dates[0]||'';
 }
 
@@ -895,20 +949,9 @@ export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate
   const current=scopeOf(scope);
   const counted=await scopeStatisticsRows(current,{startDate,endDate});
   if(counted)return counted;
-  const [texts,media]=await Promise.all([
-    selectAllRows(current.galaxy,{
-      columns:'site,createtime',
-      filters:publicContentFilters([
-        ...timeFilters('createtime',startDate,endDate),
-        {column:'statistics_able',operator:'eq',value:true}
-      ])
-    }),
-    selectAllRows(current.galaxyMedia,{
-      columns:'media_type,createtime',
-      filters:timeFilters('createtime',startDate,endDate)
-    })
-  ]);
-  return aggregateOwnScopeStatistics(texts.rows,media.rows);
+  // Statistics must never fetch all article/media rows into the browser
+  // to recreate a daily aggregate. An unavailable DB aggregate is an error.
+  throw new Error('Scope statistics aggregate unavailable; full-row fallback disabled');
 }
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){

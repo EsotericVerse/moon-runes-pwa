@@ -15,6 +15,8 @@ import {heroImageUrl as heroImageUrlOf} from '../loc/hero-image.mjs';
 
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
+import {featureNavigationHref} from './feature-navigation';
+import {scopeHref} from './scope-registry';
 // Shared display stays light: mount the editor only on pages that need it.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 
@@ -142,103 +144,176 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleLazyMediaLinks({ids=[],table='',authenticated=false}){
-  const [opened,setOpened]=useState(false);
-  const mediaIds=[...new Set((Array.isArray(ids)?ids:[]).map(id=>String(id||'').trim()).filter(Boolean))];
-  const mediaQuery=useAsyncResource({
-    queryKey:['article-media-urls',table,authenticated,mediaIds.join('|')],
-    enabled:opened&&Boolean(table)&&mediaIds.length>0,
+const ArticleContextStatisticsChart=dynamic(()=>import('./modules/statistics/StatisticsMultiChart'),{
+  ssr:false,loading:()=> <p className="scope-status">正在準備統計圖…</p>
+});
+function ArticleStatisticsPreview({scopeId='',statistics=null}){
+  const [open,setOpen]=useState(false);
+  const [range,setRange]=useState('week');
+  const selection=statistics?.[range];
+  const query=useAsyncResource({
+    queryKey:['article-date-stat-chart',scopeId,range,selection?.start,selection?.end],
+    enabled:open&&Boolean(scopeId&&selection?.start&&selection?.end),
     queryFn:async()=>{
-      const {selectRows}=await import('../loc/db-query.mjs');
-      const rows=[];
-      // Query only this article's media UIDs, not the media catalog.
-      // Media titles, meta_tags, type and content are never read.
-      for(let index=0;index<mediaIds.length;index+=40){
-        const batch=mediaIds.slice(index,index+40);
-        const page=await selectRows(table,{
-          columns:'uid,url',
-          filters:[{column:'uid',operator:'in',value:batch}],
-          limit:batch.length,maxLimit:batch.length,authenticated
-        });
-        rows.push(...(page.rows||[]));
-      }
-      const byId=new Map(rows.map(row=>[String(row.uid),row]));
-      return mediaIds.map(id=>byId.get(id)||{uid:id,url:''});
+      const {readScopeStatistics}=await import('../loc/db-client.mjs');
+      return readScopeStatistics(scopeId,{startDate:selection.start,endDate:selection.end});
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
-  if(!mediaIds.length)return null;
-  return <section className="scope-article-relation-group" aria-label="多媒體">
-    <h3>多媒體 <span>{mediaIds.length} 筆</span></h3>
-    <button type="button" className="scope-article-media-toggle" aria-expanded={opened}
-      onClick={()=>setOpened(value=>!value)}>
-      {opened?'收合多媒體連結':'顯示多媒體連結'}
-    </button>
-    {opened&&mediaQuery.isPending?<p role="status">讀取多媒體網址中…</p>:null}
-    {opened&&mediaQuery.error?<p role="alert" className="scope-error">{String(mediaQuery.error.message||mediaQuery.error)}</p>:null}
-    {opened&&!mediaQuery.isPending&&!mediaQuery.error?<>
-      <div className="scope-article-relation-grid">
-        {(mediaQuery.data||[]).map((item,index)=>{
-          const href=externalLink({href:item.url});
-          return href?<a key={item.uid} href={href} target="_blank" rel="noopener noreferrer" className="scope-article-relation-card">
-            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
-            <strong className="scope-article-relation-url">{href}</strong>
-            <span className="scope-article-relation-open">開啟媒體 <span aria-hidden="true">↗</span></span>
-          </a>:<div key={item.uid} className="scope-article-relation-card">
-            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
-            <strong>未提供有效網址</strong>
-          </div>;
-        })}
-      </div>
-      {!mediaQuery.data?.length?<p>沒有可顯示的媒體網址。</p>:null}
-    </>:null}
-  </section>;
+  if(!statistics?.week||!statistics?.year)return null;
+  const sourceRows=(query.data||[]).filter(item=>item.kind==='total'&&item.category==='文字作品');
+  const totals=new Map();
+  for(const item of sourceRows){
+    const day=String(item.day||'').slice(0,10);
+    if(day)totals.set(day,(totals.get(day)||0)+(Number(item.item_count)||0));
+  }
+  const rows=[...totals].sort(([a],[b])=>a.localeCompare(b))
+    .map(([day,count])=>({period:day.slice(5).replace('-','/'),start_date:day,value:count}));
+  return <details className="scope-article-context-stat-preview" onToggle={event=>setOpen(event.currentTarget.open)}>
+    <summary>展開相關統計圖</summary>
+    {open?<div className="scope-article-context-stat-body">
+      <label>統計範圍
+        <select value={range} className="scope-select" onChange={event=>setRange(event.target.value)}>
+          <option value="week">當週</option><option value="year">當年</option>
+        </select>
+      </label>
+      {query.isPending?<p className="scope-status" role="status">正在載入時間統計…</p>:null}
+      {query.error?<p className="scope-status scope-error" role="alert">{String(query.error?.message||query.error)}</p>:null}
+      {query.isSuccess?(rows.length?<ArticleContextStatisticsChart
+        type="line" rows={rows} series={[{key:'value',label:'文章篇數'}]}
+        height={230}/>:<p className="scope-status">這段時間沒有符合條件的文字統計。</p>):null}
+    </div>:null}
+  </details>;
 }
 
-function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaTable='',mediaAuthenticated=false}){
-  const articleGroups=[
-    {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
-    {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
-    {id:'reference',heading:'Ref · 原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
-  ];
-  const otherArticles=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
-  if(otherArticles.length)articleGroups.push({id:'other',heading:'其他文章關聯',items:otherArticles});
-  const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
-  const groups=[
-    ...articleGroups.map(group=>({...group,external:false})),
-    {id:'media',heading:'多媒體',items:mediaIds,external:true},
-    {id:'external',heading:'文章原始網址',items:sources,external:true}
-  ].filter(group=>group.items.length);
-  if(!groups.length)return null;
-  const relationCard=(link,index,kind,external)=>{
-    const title=String(link.title||'').trim();
-    const label=external?'文章來源':kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
-    const headline=external?String(link.label||'').trim()||'開啟連結':title||'查看相關文章';
-    return <a key={link.id||link.href||index} href={link.href}
-      {...(external?{target:'_blank',rel:'noopener noreferrer'}:{})}
-      className="scope-article-relation-card">
-      <span className="scope-article-relation-kind">{label}</span>
-      <strong>{headline}</strong>
-      <span className="scope-article-relation-open">{external?'開啟連結':'閱讀文章'} <span aria-hidden="true">↗</span></span>
-    </a>;
-  };
-  return <nav className="scope-article-reading-relations" aria-label="文章關聯與連結">
-    <h2>文章關聯與連結</h2>
-    {groups.map(group=>group.id==='media'
-      ?<ArticleLazyMediaLinks key="media" ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
-      :<section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
-      <h3>{group.heading} <span>{group.items.length} 筆</span></h3>
-      <div className="scope-article-relation-grid">
-        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id,group.external))}
-      </div>
-      {group.items.length>4?<details className="scope-article-relation-more">
-        <summary>展開另外 {group.items.length-4} 筆{group.heading}</summary>
-        <div className="scope-article-relation-grid">
-          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id,group.external))}
-        </div>
+function ArticleRelationNavigation({
+  links=[],externalLinks=[],relatedMedia=[],relatedTime=null,
+  relatedSpace=null,relatedStatistics=null,tracePlace=null,traceHref='',
+  locationName='',articleScopeId='',articleDate=''
+}){
+  const refs=links.filter(link=>String(link.id||'').startsWith('reference:'));
+  const above=links.filter(link=>String(link.id||'').startsWith('source:'));
+  const below=links.filter(link=>String(link.id||'').startsWith('target:'));
+  const originals=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
+  const scope=articleScopeId||'lo3rwang';
+  const day=String(articleDate||'').slice(0,10);
+  const timeHref=(item,kind)=>featureNavigationHref(scope,'culture',{
+    from:day,to:day,...(kind==='anchor'?{anchor:item.uid}:{period:item.uid})
+  });
+  const traceLink=(item,kind)=>featureNavigationHref(scope,'trace',
+    kind==='place'?{place:item.uid}:{map:item.uid});
+  const articles=items=>items.map((item,index)=><a key={item.id||item.href||index}
+    className="scope-article-context-link" href={item.href}>{item.title||item.label||'閱讀文章'}</a>);
+  const named=(items,href)=>Array.isArray(items)?items.map((item,index)=><a
+    key={item.uid||index} href={href(item)} className="scope-article-context-link">
+    {item.title||item.uid}</a>):[];
+  const row=(label,children)=><div className="scope-article-context-row" key={label}>
+    <strong>{label}：</strong><div className="scope-article-context-items">{children}</div>
+  </div>;
+  const mediaItems=relatedMedia.map((item,index)=>{
+    const isRunes=String(item.media_type||'').toLowerCase()==='runes';
+    const label=String(item.title||'').trim()||(isRunes?'抽牌結果':'媒體 '+(index+1));
+    const href=externalLink({href:item.url});
+    const description=String(item.meta_tags||'').trim();
+    let cards=[],spread='',spreadLayout='';
+    if(isRunes&&description.startsWith('{')){
+      try{
+        const parsed=JSON.parse(description);
+        if(Array.isArray(parsed?.cards)){
+          cards=parsed.cards.filter(card=>card&&card.rune);
+          const describe=value=>typeof value==='string'?value
+            :value==null?'':JSON.stringify(value);
+          spread=describe(parsed.spread);
+          spreadLayout=describe(parsed.spread_layout);
+        }
+      }catch{/* Plain-text rune descriptions remain valid. */}
+    }
+    return <div key={item.uid||index} className="scope-article-context-media">
+      {href?<a href={href} target="_blank" rel="noopener noreferrer"
+        className="scope-article-context-link">{label}</a>:<strong>{label}</strong>}
+      {isRunes?<a className="scope-article-context-link" href={scopeHref('lrunes')}>符文</a>:null}
+      {description?<details className="scope-article-context-description">
+        <summary>{isRunes?'抽牌內容':'媒體描述'}</summary>
+        {cards.length?<>
+          {spread?<p>牌陣：{spread}</p>:null}
+          {spreadLayout?<p>排列：{spreadLayout}</p>:null}
+          <ol className="scope-article-rune-list">
+            {cards.map((card,position)=><li key={position}>
+              <strong>{String(card.rune||'')}</strong>
+              <span>{String(card.direction||'')}</span>
+              <small>{String(card.position||position+1)}</small>
+            </li>)}
+          </ol>
+          <details className="scope-article-context-raw-runes">
+            <summary>完整抽牌資料</summary>
+            <pre>{description}</pre>
+          </details>
+        </>:<p>{description}</p>}
       </details>:null}
-    </section>)}
-  </nav>;
+    </div>;
+  });
+  const ordinaryMedia=mediaItems.filter((_,index)=>
+    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&externalLink({href:relatedMedia[index]?.url}));
+  const mediaDetails=mediaItems.filter((_,index)=>
+    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&!externalLink({href:relatedMedia[index]?.url}));
+  const runeMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()==='runes');
+  const time=relatedTime||{},space=relatedSpace||{};
+  const dateValid=/^\d{4}-\d{2}-\d{2}$/.test(day);
+  const statistics=relatedStatistics;
+  const statsItems=statistics?[
+    {name:'當週統計',data:statistics.week},
+    {name:'當年統計',data:statistics.year}
+  ].filter(item=>item.data).map(item=><a key={item.name}
+      href={featureNavigationHref(scope,'statics',{from:item.data.start,to:item.data.end,statTab:'charts'})}
+      className="scope-article-context-link">{item.name}</a>):[];
+  const timeAnchors=named(time.anchors,item=>timeHref(item,'anchor'));
+  const periods=named(time.periods,item=>timeHref(item,'period'));
+  const eras=named(time.eras,item=>timeHref(item,'period'));
+  const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
+  const places=named(locations,item=>traceLink(item,'place'));
+  const routes=named(space.routes,item=>traceLink(item,'map'));
+  const traces=named(space.traces,item=>traceLink(item,'map'));
+  return <section className="scope-article-context" aria-label="文章整合脈絡">
+    {ordinaryMedia.length?row('相關媒體外部連結',ordinaryMedia):null}
+    {mediaDetails.length?row('相關媒體資料',mediaDetails):null}
+    {runeMedia.length?row('抽牌結果（多媒體）',runeMedia):null}
+    {refs.length?row('參考',articles(refs)):null}
+    {above.length?row('上',articles(above)):null}
+    {below.length?<div className="scope-article-context-row">
+      <strong>下：</strong><details className="scope-article-context-down">
+        <summary>展開 {below.length} 筆下筆文章</summary>
+        <div className="scope-article-context-items">{articles(below)}</div>
+      </details>
+    </div>:null}
+    <div className="scope-article-context-group">
+      <h3>時間</h3>
+      {row('重要日',timeAnchors.length?timeAnchors:dateValid?'—':'文章尚未設定日期')}
+      {row('間隔',periods.length?periods:'—')}
+      {row('時代',eras.length?eras:'—')}
+      {row('周年紀念',<span className="scope-status">尚未建立</span>)}
+    </div>
+    <div className="scope-article-context-group">
+      <h3>空間</h3>
+      {row('地點',places.length?places:locationName||'尚未定錨')}
+      {row('路線',routes.length?routes:'—')}
+      {row('痕跡圖',traces.length?traces:'—')}
+    </div>
+    <div className="scope-article-context-group">
+      <h3>統計</h3>
+      {row('時間統計',dateValid
+        ?statsItems.length?statsItems:<a className="scope-article-context-link"
+          href={featureNavigationHref(scope,'statics',{from:day,to:day})}>查看時間統計</a>
+        :'需要文章日期')}
+      {row('關鍵詞統計',dateValid?<a className="scope-article-context-link"
+        href={featureNavigationHref(scope,'statics',{statTab:'keywords',from:day,to:day})}>查看關鍵詞統計</a>
+        :'需要文章日期')}
+      <ArticleStatisticsPreview scopeId={scope} statistics={statistics}/>
+    </div>
+    {row('關鍵詞組別',<span className="scope-status">待建立關鍵詞對應</span>)}
+    {originals.length?row('文章原始網址',originals.map((item,index)=><a
+      key={item.id||index} className="scope-article-context-link" href={externalLink(item)}
+      target="_blank" rel="noopener noreferrer">{externalLink(item)}</a>)):null}
+  </section>;
 }
 
 export function WorkSummaryCard({
@@ -254,9 +329,15 @@ export function WorkSummaryCard({
   hidden=false,
   relationLinks=[],
   detailReading=false,
-  mediaIds=[],
-  mediaTable='',
-  mediaAuthenticated=false,
+  relatedMedia=[],
+  relatedTime=null,
+  relatedSpace=null,
+  relatedStatistics=null,
+  articleScopeId='',
+  articleDate='',
+  tracePlace=null,
+  traceHref='',
+  locationName='',
   links=[],
   destinations=[],
   showSource=true,
@@ -294,7 +375,10 @@ export function WorkSummaryCard({
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
-    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]} mediaIds={mediaIds} mediaTable={mediaTable} mediaAuthenticated={mediaAuthenticated}/>:null}
+    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]}
+      relatedMedia={relatedMedia} relatedTime={relatedTime} relatedSpace={relatedSpace}
+      relatedStatistics={relatedStatistics} articleScopeId={articleScopeId} articleDate={articleDate}
+      tracePlace={tracePlace} traceHref={traceHref} locationName={locationName}/>:null}
   </article>;
 }
 

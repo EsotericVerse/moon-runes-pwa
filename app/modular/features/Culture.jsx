@@ -17,7 +17,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
-import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -28,7 +28,7 @@ import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs
 import {buildTimeTraceRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
 
-import {selectGalaxyContent,selectScopeDailyCounts} from '../../loc/galaxy-query';
+import {selectGalaxyIdentity,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
 
 import {deleteRows,insertRows,updateRows} from '../../loc/db-client.mjs';
@@ -261,6 +261,7 @@ export default function Culture(){
   const workScrollRef=useRef(null);
   const [fullTextKey,setFullTextKey]=useState('');
   const [fullText,setFullText]=useState('');
+  const [fullDetail,setFullDetail]=useState(null);
   const [fullTextLoading,setFullTextLoading]=useState(false);
   const [fullTextError,setFullTextError]=useState('');
   const [editingWorkKey,setEditingWorkKey]=useState('');
@@ -375,6 +376,7 @@ export default function Culture(){
     ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.timeTrace;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
+  const requestedPeriodUid=String(navigation.period||'').trim();
   const appliedDateNavigationRef=useRef('');
   useEffect(()=>{
     if(!requestedWindowStart){
@@ -382,9 +384,11 @@ export default function Culture(){
       return;
     }
     if(isAggregateScope||!primaryPeriods.length)return;
-    const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd].join('|');
+    const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd,requestedPeriodUid].join('|');
     if(appliedDateNavigationRef.current===navigationKey)return;
-    const matched=primaryPeriods.find(item=>{
+    const exactPeriod=requestedPeriodUid?primaryPeriods.find(item=>
+      String(item.uid||'')===requestedPeriodUid||periodKey(item)===requestedPeriodUid):null;
+    const matched=exactPeriod||primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
       // Never select a disconnected time trace merely because the clicked
@@ -398,7 +402,7 @@ export default function Culture(){
       setStructureWindowKey(periodKey(matched));
       setKeywordPeriodKey(periodKey(matched));
     }
-  },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
+  },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,requestedPeriodUid,primaryPeriods]);
 
   // A published flat classification is a JS value, not an async database
   // resource. Culture and Statistics use the exact same public source catalog.
@@ -1221,12 +1225,14 @@ export default function Culture(){
     setFullTextKey(key);
     setFullText('');
     setFullTextError('');
+    setFullDetail(null);
     setFullTextLoading(true);
     try{
       if(!scopeData)throw new Error(l.sourceUnresolved);
-      const row=await selectGalaxyContent(scopeData,uid);
+      const row=await selectGalaxyIdentity(scopeData,uid);
       if(!row)throw new Error(l.workNotFound);
       setFullText(workDisplayText(row.content||''));
+      setFullDetail(row);
     }catch(exception){
       setFullTextError(String(exception?.message||exception||l.fullTextFailed));
     }finally{
@@ -1666,7 +1672,20 @@ export default function Culture(){
                       uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
                       articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||classificationScope,work.uid):''}
-                      links={work.links||[]}
+                      detailReading={work.entry_type==='work'&&fullTextKey===workKey&&fullDetail?.uid===work.uid}
+                      relationLinks={work.entry_type==='work'&&fullTextKey===workKey&&fullDetail?.uid===work.uid
+                        ?galaxyRelationLinks(work.scope_id||classificationScope,fullDetail):[]}
+                      relatedMedia={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_media||[]:[]}
+                      relatedTime={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_time:null}
+                      relatedSpace={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_space:null}
+                      relatedStatistics={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.related_statistics:null}
+                      articleScopeId={work.scope_id||classificationScope}
+                      articleDate={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.article_day||fullDetail.date:''}
+                      tracePlace={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.trace_place:null}
+                      traceHref={fullTextKey===workKey&&fullDetail?.trace_place
+                        ?featureNavigationHref(work.scope_id||classificationScope,'trace',{place:fullDetail.trace_place.uid}):''}
+                      locationName={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.location||'':''}
+                      links={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.links||[]:[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
                       onEdit={uid=>startEditingWork({...work,uid})}

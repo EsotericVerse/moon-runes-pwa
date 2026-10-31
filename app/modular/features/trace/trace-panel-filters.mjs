@@ -30,14 +30,14 @@ export function traceArticleFilters(places,{startDate='',endDate='',sourceName='
       value:names.length===1?names[0]:names},
     {column:'searchable',operator:'eq',value:true},
     ...(sourceName.trim()?[{column:'site',operator:'ilike',value:sourceName.trim()}]:[]),
-    ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
-    ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+    ...(startDate?[{column:'date',operator:'gte',value:startDate}]:[]),
+    ...(endDate?[{column:'date',operator:'lte',value:endDate}]:[])
   ];
 }
 export function groupedTraceDays(rows=[],{key='location'}={}){
   const group=new Map();
   for(const row of rows){
-    const day=String(row.createtime||'').slice(0,10);
+    const day=String(row.date||row.createtime||'').slice(0,10);
     const category=String(row[key]||'').trim();
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!category)continue;
     const groupKey=day+'|'+category;
@@ -49,7 +49,7 @@ export function groupedTraceDays(rows=[],{key='location'}={}){
   });
 }
 
-export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片']);
+export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片','runes']);
 export function traceMediaMatches(articles=[],media=[]){
   const matchingIds=new Set(media.map(row=>String(row.uid||'').trim()).filter(Boolean));
   return articles.filter(row=>Array.isArray(row.media_link)&&row.media_link.some(id=>matchingIds.has(String(id))));
@@ -65,7 +65,7 @@ export function traceArticleIdFilters(placeIds,{startDate='',endDate='',sourceNa
     {column:'place_id',operator:ids.length===1?'eq':'in',value:ids.length===1?ids[0]:ids},
     {column:'searchable',operator:'eq',value:true},
     ...(sourceName.trim()?[{column:'site',operator:'ilike',value:sourceName.trim()}]:[]),
-    ...(startDate?[{column:'createtime',operator:'gte',value:startDate+'T00:00:00+08:00'}]:[]),
-    ...(endDate?[{column:'createtime',operator:'lte',value:endDate+'T23:59:59.999+08:00'}]:[])
+    ...(startDate?[{column:'date',operator:'gte',value:startDate}]:[]),
+    ...(endDate?[{column:'date',operator:'lte',value:endDate}]:[])
   ];
 }

@@ -54,7 +54,9 @@ test('Trace report queries indexed place_id in all views, not a place-text OR',(
   const s=read('app/modular/features/trace/TracePlaceResults.jsx');
   assert.ok(s.includes('traceArticleIdFilters(placeIds'));
   assert.ok(s.includes('read_trace_place_density'));
-  assert.ok(s.includes("columns:'uid,title,createtime,site,location,place_id,url'"));
+  assert.ok(s.includes("columns:'uid,title,createtime'"));
+  assert.ok(s.includes("column:'media_link',operator:'overlaps'"));
+  assert.ok(!s.includes("columns:'uid,title,createtime,site,location,place_id,url'"));
   assert.ok(!s.includes('traceArticlePlaces('));
   assert.ok(!s.includes('traceArticleFilters(sourcePlaces'));
 });

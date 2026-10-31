@@ -79,3 +79,65 @@ test('full importer passes article dates to ZIP and linked media-only records',(
   assert.match(panel,/archiveEvidence,new Set\(knownArticleIds\.keys\(\)\),articleTimes/);
   assert.match(panel,/createtime:record\.createtime\|\|articleTimes\.get\(owner\)\|\|null/);
 });
+
+
+test('rune draw is a Galaxy media subtype with meta_tags text, not a separate article',()=>{
+  const result=normalizeImportMedia([{
+    media_type:'runes',title:'抽牌結果',
+    meta_tags:'{"cards":[{"rune":"月","direction":"正位","position":1}]}'
+  }],{article_uid:'ART00001'});
+  assert.equal(result.records.length,1);
+  assert.equal(result.records[0].media_type,'runes');
+  assert.equal(result.records[0].title,'抽牌結果');
+  assert.equal(result.records[0].url,null);
+  assert.match(result.records[0].meta_tags,/"rune":"月"/);
+  assert.equal(result.records[0].__article_uid,'ART00001');
+  assert.equal(result.references.length,0);
+});
+
+test('image description stays on galaxy_media.meta_tags and preserves its own URL',()=>{
+  const result=normalizeImportMedia([{
+    media_type:'image',title:'旅行照片',url:'https://example.test/image.jpg',
+    description:'傍晚的橋面'
+  }],{article_uid:'ART00001'});
+  assert.equal(result.records.length,1);
+  assert.equal(result.records[0].meta_tags,'傍晚的橋面');
+  assert.equal(result.records[0].url,'https://example.test/image.jpg');
+  assert.equal(result.records[0].__article_uid,'ART00001');
+});
+
+
+test('legacy rune_references are interpreted as rune media without a Galaxy article',()=>{
+  const legacy={cards:[{rune:'土',direction:'半逆',position:1}]};
+  const normalized=normalizeImportMedia([{rune_references:legacy}],{article_uid:'ART00001'});
+  assert.equal(normalized.records.length,1);
+  assert.equal(normalized.records[0].media_type,'runes');
+  assert.deepEqual(normalized.records[0].rune_references,legacy);
+  assert.equal(normalized.records[0].__article_uid,'ART00001');
+  const importer=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(importer,/const \{rune_references,\.\.\.record\}=source/);
+  assert.match(importer,/media_type:'runes',title:'抽牌結果'/);
+  assert.match(importer,/existingRuneByArticle/);
+  assert.doesNotMatch(importer,/writeBatch:batch=>insertRows\(galaxyMedia,batch\.map\(record=>\(\{/);
+});
+
+
+test('top-level rune references attach to existing text articles or stand alone as media',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.ok(panel.includes("if(content&&runeResultText)mediaRecords.push({"));
+  assert.ok(panel.includes("media_type:'runes',title:'抽牌結果'"));
+  assert.ok(panel.includes("const type=String(value('media_type')||(runeResultText?'runes':'')).trim();"));
+  assert.ok(panel.includes("media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null)"));
+  assert.ok(panel.includes("existingRuneByArticle"));
+});
+
+
+test('nested media descriptions preserve JSON rather than object-to-string corruption',()=>{
+  const tags={alt:'台北夜景',camera:'mobile'};
+  const image=normalizeImportMedia([{media_type:'image',url:'https://example.test/night.jpg',meta_tags:tags}],{article_uid:'ART00001'});
+  assert.equal(image.records[0].meta_tags,JSON.stringify(tags));
+  const spread={cards:[{rune:'月',direction:'正位'}]};
+  const rune=normalizeImportMedia([{media_type:'runes',meta_tags:spread}],{article_uid:'ART00001'});
+  assert.equal(rune.records[0].meta_tags,JSON.stringify(spread));
+  assert.equal(rune.records.length,1);
+});

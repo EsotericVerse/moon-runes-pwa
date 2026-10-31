@@ -24,7 +24,7 @@ import {selectRows} from '../../loc/db-query.mjs';
 
 
 import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
-import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
@@ -139,16 +139,16 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
     queryKey:['statistics-source-article-body',scope.id,selectedUid],
     enabled:Boolean(selectedUid),
     queryFn:async()=>{
-      const {selectGalaxyContent}=await loadGalaxyStatistics();
-      const result=await selectGalaxyContent(scope,selectedUid);
+      const {selectGalaxyIdentity}=await loadGalaxyStatistics();
+      const result=await selectGalaxyIdentity(scope,selectedUid);
       if(!result)throw new Error('找不到文章內容');
-      return workDisplayText(result.content||'');
+      return result;
     },
   });
   const works=(worksQuery.data?.pages||[]).flatMap(page=>page.rows||[]);
   return <div className="scope-stat-source-works">
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem'}}>
-      <p className="scope-status">{group?'此來源的文章列表':'全部作品列表（含多媒體）'} · {startDate} ～ {endDate}</p>
+      <p className="scope-status">{group?'此來源的文章列表':'全部文章列表'} · {startDate} ～ {endDate}</p>
       <ArticleSortSelect value={articleSort} onChange={setArticleSort}/>
     </div>
     {worksQuery.isPending?<p className="scope-status" role="status">Loading...</p>:null}
@@ -168,12 +168,25 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         uid={work.uid}
         title={workDisplayHeading(work,{media:false,limit:80})}
         articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||scope.id,work.uid):''}
-        links={work.links||[]}
+        detailReading={work.entry_type==='work'&&selectedUid===String(work.uid)&&bodyQuery.data?.uid===work.uid}
+        relationLinks={selectedUid===String(work.uid)&&bodyQuery.data?.uid===work.uid
+          ?galaxyRelationLinks(scope.id,bodyQuery.data):[]}
+        relatedMedia={selectedUid===String(work.uid)?bodyQuery.data?.related_media||[]:[]}
+        relatedTime={selectedUid===String(work.uid)?bodyQuery.data?.related_time:null}
+        relatedSpace={selectedUid===String(work.uid)?bodyQuery.data?.related_space:null}
+        relatedStatistics={selectedUid===String(work.uid)?bodyQuery.data?.related_statistics:null}
+        articleScopeId={work.scope_id||scope.id}
+        articleDate={selectedUid===String(work.uid)?bodyQuery.data?.article_day||bodyQuery.data?.date:''}
+        tracePlace={selectedUid===String(work.uid)?bodyQuery.data?.trace_place:null}
+        traceHref={selectedUid===String(work.uid)&&bodyQuery.data?.trace_place
+          ?featureNavigationHref(scope.id,'trace',{place:bodyQuery.data.trace_place.uid}):''}
+        locationName={selectedUid===String(work.uid)?bodyQuery.data?.location||'':''}
+        links={selectedUid===String(work.uid)?bodyQuery.data?.links||[]:[]}
       >{work.entry_type==='work'&&work.uid?<WorkFullText
         open={selectedUid===String(work.uid)}
         loading={selectedUid===String(work.uid)&&bodyQuery.isPending}
         error={selectedUid===String(work.uid)&&bodyQuery.error?featureDataErrorMessage(bodyQuery.error):''}
-        content={selectedUid===String(work.uid)?bodyQuery.data||'':''}
+        content={selectedUid===String(work.uid)?workDisplayText(bodyQuery.data?.content||''):''}
         onToggle={()=>setSelectedUid(old=>old===String(work.uid)?'':String(work.uid))}
       />:null}</Article>}
     />
@@ -278,16 +291,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [zoomLevel,setZoomLevel]=useState(0);
   const [foldBlank,setFoldBlank]=useState(true);
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
-  const [styleFilter,setStyleFilter]=useState('none');
+  const [styleFilter,setStyleFilter]=useState(navigation.statTab==='keywords'?'rune66':'none');
   const [keywordSource,setKeywordSource]=useState('');
   const [selectedKeywordClassUid,setSelectedKeywordClassUid]=useState('');
   const [sourceGroup,setSourceGroup]=useState('');
     useEffect(()=>{
-    setStyleFilter('none');
+    setStyleFilter(navigation.statTab==='keywords'?'rune66':'none');
     setKeywordSource('');
     setSelectedKeywordClassUid('');
     setSourceGroup('');
-  },[scopeId]);
+  },[scopeId,navigation.statTab]);
   // Period is the primary Statistics navigation. Default to the latest
   // saved Period, not an unnecessary preliminary one-year statistics fetch.
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('latest');
@@ -322,8 +335,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     :periods.find(row=>String(row.period||row.era_id||row.uid)===selectedPeriodKey)||null;
   // LOC aggregates member Scopes, but has no mandatory aggregate Period row.
   // An empty or non-period Scope must not request a nonexistent Period index.
-  const periodNavigationReady=isLrunesDaily||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
+  const requestedStart=dateKey(navigation.from),requestedEnd=dateKey(navigation.to);
+  const hasRequestedWindow=Boolean(requestedStart&&requestedEnd&&requestedStart<=requestedEnd);
+  const periodNavigationReady=hasRequestedWindow||isLrunesDaily||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
   const queryRange=useMemo(()=>{
+    if(hasRequestedWindow){
+      const days=Math.round((Date.parse(requestedEnd+'T00:00:00Z')-Date.parse(requestedStart+'T00:00:00Z'))/86_400_000);
+      return {...customQueryRange,startDate:requestedStart,endDate:requestedEnd,
+        bucket:days>180?'month':days>31?'week':'day',
+        fullHistory:false,canZoomOut:false,canZoomIn:false};
+    }
     if(!selectedPeriod)return customQueryRange;
     const startDate=String(selectedPeriod.start_date).slice(0,10);
     const endDate=String(selectedPeriod.end_date||queryEndDate).slice(0,10);
@@ -331,7 +352,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const days=Math.round((Date.parse(endDate+'T00:00:00Z')-Date.parse(startDate+'T00:00:00Z'))/86_400_000);
     return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
       fullHistory:false,canZoomOut:false,canZoomIn:false};
-  },[selectedPeriod,customQueryRange,queryEndDate]);
+  },[selectedPeriod,customQueryRange,queryEndDate,hasRequestedWindow,requestedStart,requestedEnd]);
   // Both editors store flat names. Show one direct source choice, not a group tree.
   const activeSourceSelection=styleFilter==='rune66'?keywordSource:rankingType==='source'?sourceGroup:'';
   const sourceChart=!isLrunesDaily&&!mediaDimension&&rankingType!=='place'&&Boolean(targetScopes.length)&&Boolean(rankingType);
