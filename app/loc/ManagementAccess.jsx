@@ -1,24 +1,68 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useCallback,useEffect,useState} from 'react';
 import {useAccount} from './use-account';
 import {useEditDock} from '../modular/edit-dock';
 import {FeaturePage} from '../modular/ui';
 import {editorSessionStatus,clearEditorSession,touchEditorSession} from './edit-session-ttl.mjs';
-import {getAccountSession,dbAuthClient} from './db-client.mjs';
+import {getAccountSession,dbAuthClient,dbAuthEvents} from './db-client.mjs';
 import {setAuthorization,createScopeAuthorizer} from './authorization-runtime.mjs';
+import {verifyManagementEntry} from './auth/management-entry-verification.mjs';
 
 const granted=(grants,id,level)=>level==='global'
   ?Boolean(grants?.canManageGlobalSync())
   :level==='group'?Boolean(grants?.canManageGroupSync(id))
   :Boolean(grants?.canManageScopeSync(id));
+const pending=()=>({loading:true,user:null,authorizer:null,error:''});
 
+// The static management entry has exactly one explicit verification. It does
+// not subscribe to the SWR management key during the request: an initial Clerk
+// auth event can invalidate that key independently of the verified RPC result.
+// The same checked result populates the shared cache for mounted editors.
 export default function ManagementAccess({scopeId,level='scope',featureId='manage',children}){
-  const account=useAccount(),dock=useEditDock();
+  const account=useAccount({enabled:false}),dock=useEditDock();
+  const [verification,setVerification]=useState(pending);
+  const [retry,setRetry]=useState(0);
   const [locked,setLocked]=useState(false);
   const [renewing,setRenewing]=useState(false);
   const [error,setError]=useState('');
-  const ready=!account.loading&&!account.permissionLoading;
-  const allowed=Boolean(ready&&account.user&&granted(account.authorizer,scopeId,level));
+  const check=useCallback(()=>account.refresh({forceVerify:true}),[account.refresh]);
+
+  useEffect(()=>{
+    let active=true;
+    setVerification(pending());
+    void verifyManagementEntry(check).then(result=>{
+      if(!active)return;
+      setVerification({loading:false,user:result?.user||null,
+        authorizer:result?.authorizer||null,error:''});
+    }).catch(cause=>{
+      if(!active)return;
+      setVerification({loading:false,user:null,authorizer:null,
+        error:String(cause?.message||cause||'管理權限查詢失敗')});
+    });
+    return ()=>{active=false;};
+  },[check,scopeId,level,retry]);
+
+  // An actual sign-out/account change must revoke this independently-held
+  // UI grant; a first empty Clerk hydration event is not a real sign-out.
+  useEffect(()=>{
+    if(!verification.user)return undefined;
+    let active=true;
+    const currentId=String(verification.user.id);
+    const observer=dbAuthEvents.onAuthStateChange((event,session)=>{
+      if(!active)return;
+      const otherId=String(session?.user?.id||'');
+      if(event==='SIGNED_OUT'||(otherId&&otherId!==currentId)){
+        setVerification({loading:false,user:null,authorizer:null,
+          error:'Clerk 登入身分已變更，管理權限已解除。'});
+        dock?.end();
+      }
+    });
+    return ()=>{active=false;observer.data.subscription.unsubscribe();};
+  },[verification.user?.id,dock?.end]);
+
+  const ready=!verification.loading;
+  const allowed=Boolean(ready&&verification.user&&
+    granted(verification.authorizer,scopeId,level));
   const entered=Boolean(dock?.active&&dock.scopeId===scopeId);
   useEffect(()=>{
     if(!allowed||entered)return;
@@ -26,15 +70,18 @@ export default function ManagementAccess({scopeId,level='scope',featureId='manag
     setLocked(false);
     dock?.begin(scopeId);
   },[allowed,entered,scopeId,dock?.begin]);
+
   async function renew(){
     if(renewing||!allowed||entered||!locked)return;
     setRenewing(true);setError('');
     try{
-      const verified=await getAccountSession();
-      if(!verified?.user||String(verified.user.id)!==String(account.user.id)||
-        String(verified.user.email||'').toLowerCase()!==String(account.email||'').toLowerCase())
-        throw Error('登入身分已變更，請重新登入。');
-      const {data,error:permissionError}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
+      const verified=await verifyManagementEntry(()=>getAccountSession());
+      if(!verified?.user||String(verified.user.id)!==String(verification.user.id)||
+        String(verified.user.email||'').toLowerCase()!==
+          String(verification.user.email||'').toLowerCase())
+        throw Error('登入身分已變更，請重新驗證管理權限。');
+      const {data,error:permissionError}=await verifyManagementEntry(()=>
+        dbAuthClient.schema('silver').rpc('get_my_scope_management'));
       if(permissionError)throw Error('管理權限重新驗證失敗：'+permissionError.message);
       setAuthorization(verified.user,Array.isArray(data)?data:[]);
       if(!granted(createScopeAuthorizer(verified.user),scopeId,level))
@@ -46,18 +93,19 @@ export default function ManagementAccess({scopeId,level='scope',featureId='manag
     }catch(cause){setError(String(cause?.message||cause));}
     finally{setRenewing(false);}
   }
-  if(!ready||!account.user||!allowed||!entered)return <FeaturePage featureId={featureId}>
+  if(!ready||!verification.user||!allowed||!entered)return <FeaturePage featureId={featureId}>
     <section className="loc-card scope-feature-card">
       {!ready?<p role="status">正在確認管理權限…</p>
-        :!account.user?<p>{account.error?'Clerk Session 驗證失敗，請重新登入。':'請先使用 Clerk 登入才能進入管理。'}</p>
-        :!allowed?<p role="alert">{account.error?'管理權限確認失敗，暫時無法編輯。':<>沒有此 {level==='group'?'Scope Group':level==='global'?'系統':'Scope'} 的管理權限。</>}</p>
+        :verification.error?<p role="alert">管理權限核驗失敗，暫時無法編輯。</p>
+        :!verification.user?<p>請先使用 Clerk 登入才能進入管理。</p>
+        :!allowed?<p role="alert">沒有此 {level==='group'?'Scope Group':level==='global'?'系統':'Scope'} 的管理權限。</p>
         :locked?<><p role="status">編輯 Session 已鎖定，請重新驗證後進入管理。</p>
           <button className="loc-button" type="button" disabled={renewing} onClick={renew}>
             {renewing?'正在重新驗證…':'重新驗證並進入管理'}
           </button></>:<p role="status">正在啟用管理介面…</p>}
-      {account.error?<p className="scope-status scope-error" role="alert">{account.error}</p>:null}
-      {!allowed&&account.user&&account.error?<button className="loc-button" type="button"
-        onClick={()=>void account.refresh({forceVerify:true}).catch(()=>{})}>重新確認管理權限</button>:null}
+      {verification.error?<p className="scope-status scope-error" role="alert">{verification.error}</p>:null}
+      {ready&&!allowed?<button className="loc-button" type="button"
+        onClick={()=>{setError('');setRetry(value=>value+1);}}>重新確認管理權限</button>:null}
       {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     </section>
   </FeaturePage>;
