@@ -27,7 +27,9 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
   if(typeof loadClerk!=='function')throw new Error('Clerk loader is required');
   if(typeof fetchImpl!=='function')throw new Error('HTTPS fetch is required');
   const authority=exactOrigin(authorityOrigin);
-  const origin=exactOrigin(siteOrigin,{allowLocalhost:true});
+  // Static export may instantiate clients during SSR, without location.
+  // Resolve the browser origin only for an actual interactive login.
+  const origin=siteOrigin?exactOrigin(siteOrigin,{allowLocalhost:true}):null;
   let currentPromise=null;
   const client=()=>currentPromise??=Promise.resolve().then(loadClerk).catch(error=>{
     currentPromise=null;
@@ -66,6 +68,8 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
     return jwt;
   }
   async function signIn(returnTo='/local/settings/'){
+    if(!origin||typeof globalThis.location==='undefined')
+      throw new Error('Clerk sign-in requires a browser');
     const destination='/login/index.html?return_to='+
       encodeURIComponent(clerkReturnPath(returnTo,origin));
     navigate(destination);
