@@ -158,3 +158,14 @@ test('the panel writes check-in times only for articles that were really inserte
   assert.match(panel,/recordImportPlaceVisits\(savedVisits,\{/);
   assert.ok(panel.indexOf('recordImportPlaceVisits(savedVisits')>panel.indexOf('await flushNewArticles();\n      const savedVisits'));
 });
+
+test('import progress touches the edit Session, so a long read-only comparison phase cannot idle-lock mid-import',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/import \{touchEditorSession\} from '\.\/edit-session-ttl\.mjs';/);
+  assert.match(panel,/if\(!nativeLocal\)try\{touchEditorSession\(window\.sessionStorage\);\}catch\{\}/);
+  // The touch must live inside showProgress itself, not only at one call site,
+  // since the comparison phase's only hook into run() is its onProgress callback.
+  assert.ok(panel.indexOf('touchEditorSession(window.sessionStorage)')>panel.indexOf('const showProgress='));
+  assert.ok(panel.indexOf('touchEditorSession(window.sessionStorage)')<panel.indexOf('setProgress({stage,completed,total,'));
+});

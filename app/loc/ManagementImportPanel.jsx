@@ -31,6 +31,7 @@ import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} fr
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
+import {touchEditorSession} from './edit-session-ttl.mjs';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
   activity:'activity',media:'media',table:'table','structured-records':'records',document:'document'
@@ -573,6 +574,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     if(createMissingAnchors&&!window.confirm('將依 Facebook 原始 place.name 與精確經緯度建立缺少的 Trace 定錨點（預設隱藏）。確定繼續重匯？'))return;
     setBusy(true);setStatus('');
     const showProgress=(stage,completed=0,total=0)=>{
+      // A long read-only comparison phase never calls the database write path,
+      // so without this the edit Session's idle timer can expire mid-import
+      // even though the browser is actively working the whole time.
+      if(!nativeLocal)try{touchEditorSession(window.sessionStorage);}catch{}
       setProgress({stage,completed,total,
         percent:total>0?Math.round(100*completed/total):null});
     };
