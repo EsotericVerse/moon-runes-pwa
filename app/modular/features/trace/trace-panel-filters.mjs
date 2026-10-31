@@ -49,7 +49,7 @@ export function groupedTraceDays(rows=[],{key='location'}={}){
   });
 }
 
-export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片']);
+export const TRACE_MEDIA_TYPES=Object.freeze(['音樂','圖片','影片','runes']);
 export function traceMediaMatches(articles=[],media=[]){
   const matchingIds=new Set(media.map(row=>String(row.uid||'').trim()).filter(Boolean));
   return articles.filter(row=>Array.isArray(row.media_link)&&row.media_link.some(id=>matchingIds.has(String(id))));
