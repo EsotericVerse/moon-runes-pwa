@@ -120,3 +120,13 @@ test('legacy rune_references are interpreted as rune media without a Galaxy arti
   assert.match(importer,/existingRuneByArticle/);
   assert.doesNotMatch(importer,/writeBatch:batch=>insertRows\(galaxyMedia,batch\.map\(record=>\(\{/);
 });
+
+
+test('top-level rune references attach to existing text articles or stand alone as media',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.ok(panel.includes("if(content&&runeResultText)mediaRecords.push({"));
+  assert.ok(panel.includes("media_type:'runes',title:'抽牌結果'"));
+  assert.ok(panel.includes("const type=String(value('media_type')||(runeResultText?'runes':'')).trim();"));
+  assert.ok(panel.includes("media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null)"));
+  assert.ok(panel.includes("existingRuneByArticle"));
+});
