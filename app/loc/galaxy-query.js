@@ -469,7 +469,7 @@ function managementArticleProviders(scope,{contentType='',sourceFilter='',source
   ];
   const base={
     table:current.galaxy,source:current.id+' 文章',scope:current,idColumn:'uid',
-    columns:['uid','title','createtime'],dateColumn:'date',filters,sourceClause:sourceNameClause(selection),
+    columns:['uid','title','createtime'],dateColumn:dayColumn(current.galaxy),filters,sourceClause:sourceNameClause(selection),
     authenticated:true
   };
   if(placeOnly)return [makeProvider({
@@ -509,26 +509,26 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // No article body is fetched by this search stage.
   if(placeOnly)return [makeProvider({
     id:current.id+':source-place',table:current.galaxy,source:current.id+' 打卡地點',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['location'],dateColumn:'date',
+    columns:textColumns,searchFields:['location'],dateColumn:dayColumn(current.galaxy),
     sortTitle:false,filters:textFilters,authenticated:includeHiddenText
   })];
   const titleExact=makeProvider({
     id:current.id+':text-title-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['title'],dateColumn:'date',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
+    columns:textColumns,searchFields:['title'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'title'
   });
   const title=makeProvider({
     id:current.id+':text-title',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['title'],dateColumn:'date',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['title'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const contentExact=makeProvider({
     id:current.id+':text-content-exact',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
-    columns:textColumns,searchFields:['content'],dateColumn:'date',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'content'
+    columns:textColumns,searchFields:['content'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText,exactColumn:'content'
   });
   const content=makeProvider({
     id:current.id+':text-content',table:current.galaxy,source:current.id+' 文字',scope:current,idColumn:'uid',
     columns:textColumns,
-    searchFields:['content'],dateColumn:'date',sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
+    searchFields:['content'],dateColumn:dayColumn(current.galaxy),sortTitle:true,filters:textFilters,sourceClause,authenticated:includeHiddenText
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
