@@ -619,7 +619,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
 
   const galaxyFilters=publicContentFilters([
     {column:'statistics_able',operator:'eq',value:true},
-    ...dateFilters(startDate,endDate,'date'),
+    ...dateFilters(startDate,endDate,scope.id==='local'?'createtime':'date'),
     ...(rawSources.length?[{column:'site',operator:'in',value:rawSources}]:[])
   ]);
   const mediaFilters=[
@@ -636,7 +636,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     includeGalaxy?selectRows(scope.galaxy,{
       columns:'uid,title,createtime',
       filters:galaxyFilters,
-      orders:[{column:'createtime',ascending},{column:'uid',ascending}],
+      orders:[...(scope.id==='local'?[]:[{column:'date',ascending}]),{column:'createtime',ascending},{column:'uid',ascending}],
       limit:pageSize,
       offset:galaxyOffset,
       maxLimit:pageSize,
