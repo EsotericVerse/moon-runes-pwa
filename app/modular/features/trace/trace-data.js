@@ -100,7 +100,7 @@ export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=
     .map(uid=>String(uid||'').trim()).filter(uid=>VALID_ID.test(uid)))];
   if(!ids.length)return [];
   if(ids.length>800)throw Error('地點數量超過上限');
-  let query=(includeHidden?dbAuthClient:dbPublicClient).schema('silver').from(id+'_trace')
+  let query=dbAuthClient.schema('silver').from(id+'_trace')
     .select(CORE_COLUMNS+(id==='loc'?',scope_id':''))
     .eq('trace_type','space_anchor').in('uid',ids).limit(900);
   if(id==='loc'&&nativeOnly)query=query.eq('scope_id','loc');
@@ -121,7 +121,7 @@ export async function readAllTraceAnchors(scopeId,{nativeOnly=false,includeHidde
 export async function readTraceAnchorSuggestions(scopeId,term,limit=8){
   const id=idScope(scopeId),q=textValue(term).slice(0,100);
   if(id==='loc'||!q)return [];
-  const data=checked(await dbPublicClient.schema('silver').rpc('search_scope_trace_place_names',{
+  const data=checked(await dbAuthClient.schema('silver').rpc('search_scope_trace_place_names',{
     p_scope_id:id,p_term:q,p_limit:Math.max(1,Math.min(Number(limit)||8,100))
   }),'搜尋地點標題')||[];
   if(!data.length)return [];
