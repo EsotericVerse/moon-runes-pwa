@@ -142,103 +142,51 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleLazyMediaLinks({ids=[],table='',authenticated=false}){
-  const [opened,setOpened]=useState(false);
-  const mediaIds=[...new Set((Array.isArray(ids)?ids:[]).map(id=>String(id||'').trim()).filter(Boolean))];
-  const mediaQuery=useAsyncResource({
-    queryKey:['article-media-urls',table,authenticated,mediaIds.join('|')],
-    enabled:opened&&Boolean(table)&&mediaIds.length>0,
-    queryFn:async()=>{
-      const {selectRows}=await import('../loc/db-query.mjs');
-      const rows=[];
-      // Query only this article's media UIDs, not the media catalog.
-      // Media titles, meta_tags, type and content are never read.
-      for(let index=0;index<mediaIds.length;index+=40){
-        const batch=mediaIds.slice(index,index+40);
-        const page=await selectRows(table,{
-          columns:'uid,url',
-          filters:[{column:'uid',operator:'in',value:batch}],
-          limit:batch.length,maxLimit:batch.length,authenticated
-        });
-        rows.push(...(page.rows||[]));
-      }
-      const byId=new Map(rows.map(row=>[String(row.uid),row]));
-      return mediaIds.map(id=>byId.get(id)||{uid:id,url:''});
-    },
-    revalidateOnFocus:false,revalidateOnReconnect:false
-  });
-  if(!mediaIds.length)return null;
-  return <section className="scope-article-relation-group" aria-label="多媒體">
-    <h3>多媒體 <span>{mediaIds.length} 筆</span></h3>
-    <button type="button" className="scope-article-media-toggle" aria-expanded={opened}
-      onClick={()=>setOpened(value=>!value)}>
-      {opened?'收合多媒體連結':'顯示多媒體連結'}
-    </button>
-    {opened&&mediaQuery.isPending?<p role="status">讀取多媒體網址中…</p>:null}
-    {opened&&mediaQuery.error?<p role="alert" className="scope-error">{String(mediaQuery.error.message||mediaQuery.error)}</p>:null}
-    {opened&&!mediaQuery.isPending&&!mediaQuery.error?<>
-      <div className="scope-article-relation-grid">
-        {(mediaQuery.data||[]).map((item,index)=>{
-          const href=externalLink({href:item.url});
-          return href?<a key={item.uid} href={href} target="_blank" rel="noopener noreferrer" className="scope-article-relation-card">
-            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
-            <strong className="scope-article-relation-url">{href}</strong>
-            <span className="scope-article-relation-open">開啟媒體 <span aria-hidden="true">↗</span></span>
-          </a>:<div key={item.uid} className="scope-article-relation-card">
-            <span className="scope-article-relation-kind">多媒體 {index+1}</span>
-            <strong>未提供有效網址</strong>
-          </div>;
-        })}
-      </div>
-      {!mediaQuery.data?.length?<p>沒有可顯示的媒體網址。</p>:null}
-    </>:null}
-  </section>;
-}
-
-function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaTable='',mediaAuthenticated=false}){
-  const articleGroups=[
-    {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
-    {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
-    {id:'reference',heading:'Ref · 原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
-  ];
-  const otherArticles=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
-  if(otherArticles.length)articleGroups.push({id:'other',heading:'其他文章關聯',items:otherArticles});
+function ArticleRelationNavigation({links=[],externalLinks=[],relatedMedia=[],tracePlace=null,traceHref='',locationName=''}) {
+  const relation=prefix=>links.filter(link=>String(link.id||'').startsWith(prefix));
+  const refs=relation('reference:'),previous=relation('source:'),following=relation('target:');
   const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
-  const groups=[
-    ...articleGroups.map(group=>({...group,external:false})),
-    {id:'media',heading:'多媒體',items:mediaIds,external:true},
-    {id:'external',heading:'文章原始網址',items:sources,external:true}
-  ].filter(group=>group.items.length);
-  if(!groups.length)return null;
-  const relationCard=(link,index,kind,external)=>{
-    const title=String(link.title||'').trim();
-    const label=external?'文章來源':kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
-    const headline=external?String(link.label||'').trim()||'開啟連結':title||'查看相關文章';
-    return <a key={link.id||link.href||index} href={link.href}
-      {...(external?{target:'_blank',rel:'noopener noreferrer'}:{})}
-      className="scope-article-relation-card">
-      <span className="scope-article-relation-kind">{label}</span>
-      <strong>{headline}</strong>
-      <span className="scope-article-relation-open">{external?'開啟連結':'閱讀文章'} <span aria-hidden="true">↗</span></span>
-    </a>;
-  };
-  return <nav className="scope-article-reading-relations" aria-label="文章關聯與連結">
-    <h2>文章關聯與連結</h2>
-    {groups.map(group=>group.id==='media'
-      ?<ArticleLazyMediaLinks key="media" ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
-      :<section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
-      <h3>{group.heading} <span>{group.items.length} 筆</span></h3>
-      <div className="scope-article-relation-grid">
-        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id,group.external))}
+  const articleLinks=(items)=>items.map((link,index)=><a key={link.id||link.href||index}
+    href={link.href} className="scope-article-context-link">{link.title||link.label||'閱讀文章'}</a>);
+  const mediaLinks=relatedMedia.map((item,index)=>{
+    const title=String(item.title||'').trim()||('媒體 '+(index+1));
+    const href=externalLink({href:item.url});
+    return href?<a key={item.uid||index} href={href} target="_blank" rel="noopener noreferrer"
+      className="scope-article-context-link">{title}</a>
+      :<span key={item.uid||index}>{title}（無網址）</span>;
+  });
+  const hasPlace=Boolean(tracePlace?.uid||locationName);
+  if(!mediaLinks.length&&!refs.length&&!previous.length&&!following.length&&!hasPlace&&!sources.length)return null;
+  return <section className="scope-article-context" aria-label="文章關聯">
+    {mediaLinks.length?<div className="scope-article-context-row">
+      <strong>相關媒體外部連結：</strong><div className="scope-article-context-items">{mediaLinks}</div>
+    </div>:null}
+    {refs.length?<div className="scope-article-context-row">
+      <strong>參考：</strong><div className="scope-article-context-items">{articleLinks(refs)}</div>
+    </div>:null}
+    {previous.length?<div className="scope-article-context-row">
+      <strong>上：</strong><div className="scope-article-context-items">{articleLinks(previous)}</div>
+    </div>:null}
+    {following.length?<div className="scope-article-context-row">
+      <strong>下：</strong><details className="scope-article-context-down">
+        <summary>展開 {following.length} 筆下筆文章</summary>
+        <div className="scope-article-context-items">{articleLinks(following)}</div>
+      </details>
+    </div>:null}
+    {hasPlace?<div className="scope-article-context-row">
+      <strong>地點：</strong><div className="scope-article-context-items">
+        {tracePlace?.uid&&traceHref
+          ?<a href={traceHref} className="scope-article-context-link">{tracePlace.title||locationName||'查看痕跡圖'}</a>
+          :<span>{locationName||tracePlace?.title||'未設定地點'}</span>}
       </div>
-      {group.items.length>4?<details className="scope-article-relation-more">
-        <summary>展開另外 {group.items.length-4} 筆{group.heading}</summary>
-        <div className="scope-article-relation-grid">
-          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id,group.external))}
-        </div>
-      </details>:null}
-    </section>)}
-  </nav>;
+    </div>:null}
+    {sources.length?<div className="scope-article-context-row">
+      <strong>文章原始網址：</strong><div className="scope-article-context-items">
+        {sources.map((link,index)=><a key={link.id||index} href={externalLink(link)} target="_blank"
+          rel="noopener noreferrer" className="scope-article-context-link">{externalLink(link)}</a>)}
+      </div>
+    </div>:null}
+  </section>;
 }
 
 export function WorkSummaryCard({
@@ -254,9 +202,10 @@ export function WorkSummaryCard({
   hidden=false,
   relationLinks=[],
   detailReading=false,
-  mediaIds=[],
-  mediaTable='',
-  mediaAuthenticated=false,
+  relatedMedia=[],
+  tracePlace=null,
+  traceHref='',
+  locationName='',
   links=[],
   destinations=[],
   showSource=true,
@@ -294,7 +243,8 @@ export function WorkSummaryCard({
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
-    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]} mediaIds={mediaIds} mediaTable={mediaTable} mediaAuthenticated={mediaAuthenticated}/>:null}
+    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]}
+      relatedMedia={relatedMedia} tracePlace={tracePlace} traceHref={traceHref} locationName={locationName}/>:null}
   </article>;
 }
 
