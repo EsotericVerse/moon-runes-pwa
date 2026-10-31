@@ -117,13 +117,13 @@ test('a new named place without coordinates is created with a null address',asyn
 
 test('old control characters in location normalize only the Trace label, not Galaxy text',async()=>{
   const db=memoryTrace();
-  const raw={location:'台北\\u001F車站'};
+  const raw={location:'台北\u001F車站'};
   const result=await prepareImportPlaceAnchors([raw],{
     scopeId:'lo3rwang',relation:db.relation,createMissing:true
   });
   assert.equal(result.created,1);
   assert.equal(db.rows[0].title,'台北 車站');
-  assert.equal(raw.location,'台北\\u001F車站');
+  assert.equal(raw.location,'台北\u001F車站');
   assert.ok(importedPlaceId({incoming:raw,byName:result.byName}));
 });
 
