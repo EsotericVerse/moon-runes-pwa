@@ -543,6 +543,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   }
 
   async function getAccountSession(){
+    // Independent Clerk Authority supplies a cryptographically verified user.
+    // Never treat a database SDK session as valid in independent mode.
+    if(typeof auth.getVerifiedSession==='function')return auth.getVerifiedSession();
     const {data,error}=await auth.getSession();
     if(error)throw new Error(error.message||'Account session failed');
     const session=data?.session||null;
@@ -561,7 +564,11 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function signInWithGoogle(callbackURL){
     const target=String(callbackURL||'').trim();
     if(!target)throw new Error('Google sign-in callback URL is required');
-    const {error}=await auth.signInWithOAuth({provider:'google',options:{redirectTo:target,queryParams:{prompt:'select_account'}}});
+    // The active adapter owns its own OAuth. Legacy deployments keep their
+    // existing route; Clerk-enabled deployments never contact DB Auth.
+    const {error}=await auth.signInWithOAuth({
+      provider:'google',options:{redirectTo:target,queryParams:{prompt:'select_account'}}
+    });
     if(error)throw new Error(error.message||'Google sign-in failed');
   }
 
