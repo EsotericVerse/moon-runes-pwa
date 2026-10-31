@@ -40,3 +40,15 @@ test('Cache never writes counts, examples, or more than 120 terms',()=>{
   assert.equal(value.length,120);
   assert.ok(value.every(word=>typeof word==='string'&&!word.includes('隱藏')));
 });
+
+test('Serialized HTML fragments never enter or survive TEXT[] cache',()=>{
+  const stored=encodeKeywordSuggestionCache({
+    candidates:[
+      {word:'div'},{word:'</div>'},{word:'<div'},
+      {word:'span'},{word:'class'},{word:'星辰共鳴'}
+    ]
+  });
+  assert.deepEqual([...stored],['星辰共鳴']);
+  const loaded=decodeKeywordSuggestionCache(['<div','</div>','div','都市牢籠']);
+  assert.deepEqual(loaded.candidates.map(row=>row.word),['都市牢籠']);
+});
