@@ -1679,7 +1679,7 @@ export default function Culture(){
                       editError={editError}
                       showHidden
                     >
-                      {work.uid&&editingWorkKey!==workKey?<div className="scope-work-fulltext-row">
+                      {work.entry_type==='work'&&work.uid&&editingWorkKey!==workKey?<div className="scope-work-fulltext-row">
                         <WorkFullText
                           open={fullTextKey===workKey}
                           loading={fullTextLoading&&fullTextKey===workKey}
