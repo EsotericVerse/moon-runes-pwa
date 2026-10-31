@@ -483,11 +483,12 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <button className="loc-button" type="button" onClick={()=>discoveryAbort.current?.abort()}>停止掃描</button>
       </div>:null}
       {discovery&&!discoveryBusy?<div>
-        <p className="scope-status" role="status">
-          {discovery.scannedAt?'暫存時間：'+new Date(discovery.scannedAt).toLocaleString('zh-TW')+' · ':''}
+        {discovery.cachedOnly?<p className="scope-status" role="status">
+          已載入先前儲存的 {suggestedCandidates.length} 個新詞候選；只有詞語列表，重新掃描才會取得即時篇數與趨勢。
+        </p>:<p className="scope-status" role="status">
           已掃描 {Number(discovery.read||0).toLocaleString()} 篇；有內文 {Number(discovery.withContent||0).toLocaleString()} 篇；
           目前 {suggestedCandidates.length} 個未收錄候選。
-        </p>
+        </p>}
         {discovery.dense?<p className="scope-status">
           新詞密集段：{discovery.dense.start} 至 {discovery.dense.end} · 平均每篇 {discovery.dense.novelPerArticle.toFixed(2)} 次候選命中
           {discovery.dense.detectedByPelt?'（PELT 變點）':'（目前未偵測到明顯變點）'}
@@ -503,11 +504,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <ol className="scope-keyword-discovery-results" start={(currentSuggestionPage-1)*suggestionPageSize+1}>
             {visibleSuggestions.map(term=><li key={term.word}>
               <strong>{term.word}</strong>
-              <span className="scope-status"> · {term.documents.toLocaleString()} 篇文章
+              {!discovery.cachedOnly?<span className="scope-status"> · {Number(term.documents||0).toLocaleString()} 篇文章
                 {term.denseDocuments>0?' · 密集段 '+term.denseDocuments+' 篇':''}
-                · {term.occurrences.toLocaleString()} 次出現
+                · {Number(term.occurrences||0).toLocaleString()} 次出現
                 {term.trendChanges>0?' · PELT 趨勢變化':''}
-              </span>
+              </span>:null}
               {term.sample?<p className="scope-status">{term.sample}</p>:null}
             </li>)}
           </ol>
