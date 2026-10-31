@@ -439,6 +439,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const missingSiteIdCount=useMemo(()=>analyzed.valid.filter(row=>
     ['facebook','threads','instagram'].includes(String(row.site||'').trim().toLowerCase())&&
     !String(row.site_id||'').trim()).length,[analyzed.valid]);
+  const unidentifiedUndatedCount=useMemo(()=>analyzed.valid.filter(row=>
+    !String(row.site_id||'').trim()&&
+    !Number.isFinite(Date.parse(String(row.createtime||'')))).length,[analyzed.valid]);
   const importEstimate=useMemo(()=>{
     const attachedMedia=analyzed.normalized.reduce((count,item)=>count+(item.mediaRecords?.length||0),0);
     const media=Math.max(analyzed.mediaOnly.length+attachedMedia,
@@ -1064,7 +1067,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
        Facebook／Threads／Instagram 有 {missingSiteIdCount.toLocaleString()} 筆沒有原始 site_id；仍按相同網站與發文時間比對，site_id 不必填寫。
      </p>:null}
      {rows.length?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.preview')}>
-      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/></p>
+      <p className="scope-status"><UiText id="uiExtra.importUI.validSkipped" params={{valid:analyzed.valid.length.toLocaleString(),skipped:analyzed.invalid.length.toLocaleString()}}/> 此處為檔案解析結果，不代表本次會新增相同篇數；每次選取檔案都會重新解析，實際新增／更新／略過請以資料庫比對後的匯入結果為準。</p>
+      {unidentifiedUndatedCount>0?<p className="scope-status" role="status">
+        有 {unidentifiedUndatedCount.toLocaleString()} 筆同時缺少來源文章 ID 與原始發文時間。無法以目前的來源 ID／時間比對保證重匯去重；即使檔名相同也可能再次新增，請核對來源資料。
+      </p>:null}
       <div className="scope-management-records">
         {analyzed.valid.slice(0,5).map(record=><article className="loc-bubble" key={record.uid}>
           <strong><LinkedImportText text={record.title||record.uid}/></strong>
