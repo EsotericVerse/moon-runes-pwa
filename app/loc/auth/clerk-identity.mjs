@@ -68,8 +68,7 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
     return jwt;
   }
   async function signIn(returnTo='/local/settings/'){
-    if(!origin||typeof globalThis.location==='undefined')
-      throw new Error('Clerk sign-in requires a browser');
+    if(!origin)throw new Error('Clerk sign-in requires a browser origin');
     const destination='/login/index.html?return_to='+
       encodeURIComponent(clerkReturnPath(returnTo,origin));
     navigate(destination);
