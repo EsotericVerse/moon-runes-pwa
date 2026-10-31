@@ -544,7 +544,9 @@ export default function Search({managementMode=false}){
     try{
       let detail=null;
       let detailScope=scopeId;
-      for(const scopeData of targetScopes){
+      const identityScope=managementMode?String(searchParams?.get('scope')||'').trim():'';
+      const detailScopes=identityScope?availableScopes.filter(scope=>scope.id===identityScope):targetScopes;
+      for(const scopeData of detailScopes){
         detail=await selectGalaxyIdentity(scopeData,identity,{includeHidden:canManageSearchScope(account,scopeData.id)});
         if(detail){detailScope=scopeData.id;break;}
       }
@@ -1240,7 +1242,7 @@ export default function Search({managementMode=false}){
           uid={editTarget.editResourceId}
           title={row.title}
           articleHref={row.resourceType==='galaxy'
-            ?(managementMode?scopeHref(row.scopeId,'manage/search')+'?identity='+encodeURIComponent(row.resourceId):galaxyIdentityHref(row.scopeId,row.resourceId))
+            ?(managementMode?scopeHref(scopeId,'search/manage')+'?identity='+encodeURIComponent(row.resourceId)+'&scope='+encodeURIComponent(row.scopeId):galaxyIdentityHref(row.scopeId,row.resourceId))
             :''}
           source={managementMode||searchParams?.get('identity')?row.styleTagMatch?'':row.source:''}
           scopeId={managementMode?row.scopeId:''}
