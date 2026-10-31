@@ -13,6 +13,7 @@ function fakeStorage(){
   return {
     async get(key){return map.get(key)},
     async put(key,value){map.set(key,value)},
+    async delete(key){return map.delete(key)},
     async list({prefix}){return new Map([...map].filter(([key])=>key.startsWith(prefix)))}
   };
 }
