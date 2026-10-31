@@ -14,13 +14,13 @@ const uniqueByUid=rows=>{
   }
   return [...byUid.values()];
 };
-export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
-  const traces=uniqueByUid(source.filter(row=>row?.entry_type==='period'));
-  const events=new Map(uniqueByUid(source.filter(row=>row?.entry_type==='event'))
+export function buildEraRiver(source=[],expandedEraIds=[]){
+  const traces=uniqueByUid(source.filter(row=>row?.entry_type==='era'));
+  const events=new Map(uniqueByUid(source.filter(row=>row?.entry_type==='period'))
     .map(row=>[text(row.scope_id)+':'+text(row.uid),row]));
   const anchors=new Map(uniqueByUid(source.filter(row=>row?.entry_type==='anchor'))
     .map(row=>[text(row.scope_id)+':'+text(row.uid),row]));
-  const expanded=new Set(list(expandedTraceIds).map(text));
+  const expanded=new Set(list(expandedEraIds).map(text));
   const items=[],groups=[];
   const datedAnchors=[...anchors.values()]
     .filter(anchor=>validDate(anchor.start_date))
@@ -83,7 +83,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
         // Main trace lane uses only the true event interval, never an
         // envelope spanning different events and never a fake now endpoint.
         items.push({id:groupId+':'+eventId+':'+segment+':period',
-          uid:event.uid,scope_id:scope,entry_type:'event',
+          uid:event.uid,scope_id:scope,entry_type:'period',
           group_key:eventGroup,group_label:event.title||eventId,
           start_date:from,...(validEnd?{end_date:until}:{}),
           display_label:event.title||eventId,title:event.title||eventId,
