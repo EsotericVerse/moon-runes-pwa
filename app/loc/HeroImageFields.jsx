@@ -13,7 +13,7 @@ export function HeroImageFieldset({draft,image,onChange,allowImageOnly=false}){
     </div>
     <div className="scope-frame-image-fields">
       <label className="scope-frame-image-url"><span>{t('uiExtra.frameEditor.imageUrl')}</span>
-        <input type="url" value={image?.source==='default'?absoluteImageUrl(image.preset?.stable||image.src):image?.source==='custom'?(draft.image?.url||''):''}
+        <input type="url" value={image?.source==='default'?absoluteImageUrl(image.preset?.stable||image.src):image?.source==='custom'?(draft.image?.url||image.customUrl||''):''}
           placeholder="https://"
           onChange={event=>{
             const url=event.target.value;
