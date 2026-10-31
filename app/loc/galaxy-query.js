@@ -254,6 +254,10 @@ function articleDate(value){
   const day=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(day)?day:'';
 }
+function localArticleDate(value){
+  const instant=Date.parse(String(value||''));
+  return Number.isFinite(instant)?new Date(instant+8*3_600_000).toISOString().slice(0,10):articleDate(value);
+}
 function shiftedDay(day,shift){
   const d=new Date(day+'T00:00:00Z');
   d.setUTCDate(d.getUTCDate()+shift);
@@ -333,7 +337,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const mediaIds=mediaIdsOf(row.media_link);
   const placeId=String(row.place_id||'').trim();
-  const day=articleDate(local?row.createtime:row.date);
+  const day=local?localArticleDate(row.createtime):articleDate(row.date);
   const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
     mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
