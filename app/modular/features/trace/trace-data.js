@@ -12,8 +12,7 @@ export const traceAllAnchorsKey=(scopeId,{nativeOnly=false,includeHidden=false}=
   ['trace-all-anchors',scopeId,...(nativeOnly?['native']:[]),...(includeHidden?['manager']:[])];
 const VALID_ID=/^[A-Za-z0-9]{4}$/;
 const TRACE_TYPES=['space_anchor','path','trace'];
-const CORE_COLUMNS='uid,trace_type,title,description,anchor_list,route_list,hidden_depth,times,address';
-const visibleDepth=value=>{const number=Number(value);if(![-1,0,1,2].includes(number))throw Error('隱藏範圍不正確');return number;};
+const CORE_COLUMNS='uid,trace_type,title,description,anchor_list,route_list,times,address';
 const idScope=value=>{
   const id=String(value||'').toLowerCase().trim();
   if(!TRACE_SCOPES.includes(id))throw Error('無效的空間 Scope');
@@ -46,7 +45,6 @@ export const validCoordinates=(longitude,latitude)=>
   ||(longitude!=null&&latitude!=null&&String(longitude).trim()!==''&&String(latitude).trim()!==''
     &&Number.isFinite(Number(longitude))&&Number.isFinite(Number(latitude))
     &&Math.abs(Number(longitude))<=180&&Math.abs(Number(latitude))<=90);
-export const validRadius=value=>Number.isInteger(Number(value))&&Number(value)>=10&&Number(value)<=20000000;
 const coordinateArray=(longitude,latitude)=>{
   if(!validCoordinates(longitude,latitude))throw Error('經緯度需同時輸入有效數值，或同時留空');
   if(longitude==null||String(longitude).trim()==='')return null;
@@ -88,7 +86,7 @@ export async function readTraceMapIndex(scopeId,{nativeOnly=false,includeHidden=
   const id=idScope(scopeId);
   if(id==='loc')return Promise.all(['lo3rwang','lrunes'].map(source=>readTraceMapIndex(source,{includeHidden})))
     .then(groups=>groups.flat());
-  return readPages(id,{columns:'uid,trace_type,title,description,anchor_list,route_list,hidden_depth',nativeOnly,includeHidden})
+  return readPages(id,{columns:'uid,trace_type,title,description,anchor_list,route_list',nativeOnly,includeHidden})
     .then(rows=>rows.filter(row=>row.trace_type==='path'||row.trace_type==='trace'));
 }
 export const traceMemberUids=record=>[...new Set((record?.anchor_list||[])
@@ -145,21 +143,21 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
     anchors.filter(row=>row.uid!==excludeUid));
   return {reuse:null,matches}; // Never merge spatial identities without explicit approval.
 }
-export async function addTraceAnchor({scopeId,title,description='',address='',longitude,latitude,times=[],hiddenDepth=-1}){
+export async function addTraceAnchor({scopeId,title,description='',address='',longitude,latitude,times=[]}){
   const id=writableScope(scopeId);
   const record={trace_type:'space_anchor',title:nonempty(title,'地點標題'),
     description:descriptionObject(description,address),
-    address:coordinateArray(longitude,latitude),hidden_depth:visibleDepth(hiddenDepth),
+    address:coordinateArray(longitude,latitude),
     times:Array.isArray(times)?times:[],anchor_list:[]};
   let query=dbAuthRelation(relation(id)).insert(record).select('uid').single();
   return checked(await query,'新增空間定錨點');
 }
-export async function updateTraceAnchor({scopeId,uid,title,description='',address='',longitude,latitude,hiddenDepth=-1}){
+export async function updateTraceAnchor({scopeId,uid,title,description='',address='',longitude,latitude}){
   const id=writableScope(scopeId),selected=textValue(uid);
   if(!VALID_ID.test(selected))throw Error('地點 UID 必須是四碼');
   const record={title:nonempty(title,'地點標題'),
     description:descriptionObject(description,address),
-    address:coordinateArray(longitude,latitude),hidden_depth:visibleDepth(hiddenDepth)};
+    address:coordinateArray(longitude,latitude)};
   let query=dbAuthRelation(relation(id)).update(record).eq('uid',selected).eq('trace_type','space_anchor');
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'更新空間定錨點');
@@ -235,33 +233,25 @@ async function validatedRouteList(scopeId,type,routeUids=[]){
   return ids;
 }
 const validUid=value=>VALID_ID.test(textValue(value));
-export async function addTraceMap({scopeId,title,description='',type='path',anchorUids=[],anchors=[],routeUids=[],hiddenDepth=-1}){
+export async function addTraceMap({scopeId,title,description='',type='path',anchorUids=[],anchors=[],routeUids=[]}){
   const id=writableScope(scopeId),route_list=await validatedRouteList(id,type,routeUids);
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   return checked(await dbAuthRelation(relation(id)).insert({
     trace_type:type,title:nonempty(title,'名稱'),description:descriptionObject(description),
-    anchor_list,route_list,hidden_depth:visibleDepth(hiddenDepth)
+    anchor_list,route_list
   }).select('uid').single(),'儲存路線或痕跡圖');
 }
-export async function updateTraceMap({scopeId,uid,title,description='',type='path',anchorUids=[],anchors=[],routeUids=[],hiddenDepth=-1}){
+export async function updateTraceMap({scopeId,uid,title,description='',type='path',anchorUids=[],anchors=[],routeUids=[]}){
   const id=writableScope(scopeId),key=textValue(uid);
   if(!validUid(key))throw Error('無效 UID');
   const route_list=await validatedRouteList(id,type,routeUids);
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   let query=dbAuthRelation(relation(id)).update({
     title:nonempty(title,'名稱'),description:descriptionObject(description),anchor_list,route_list,
-    hidden_depth:visibleDepth(hiddenDepth)
+    
   }).eq('uid',key).eq('trace_type',type);
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'更新路線或痕跡圖');
-}
-export async function updateTraceVisibilityBulk({scopeId,uids=[],hiddenDepth=-1}){
-  const id=writableScope(scopeId),ids=[...new Set(uids.map(textValue))];
-  if(!ids.length||ids.length>200||ids.some(uid=>!VALID_ID.test(uid)))throw Error('請選擇 1 至 200 筆有效項目');
-  const rows=checked(await dbAuthRelation(relation(id)).update({hidden_depth:visibleDepth(hiddenDepth)})
-    .in('uid',ids).select('uid'),'大量設定空間隱藏')||[];
-  if(rows.length!==ids.length)throw Error('部分地點權限未更新，請重新讀取');
-  return rows.length;
 }
 export async function deleteTraceMap({scopeId,uid,type='path'}){
   const id=writableScope(scopeId);
