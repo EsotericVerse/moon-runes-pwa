@@ -20,6 +20,7 @@ export function decodeKeywordSuggestionCache(value){
     scannedAt:String(header.scannedAt||''),
     dense:header.dense||null,
     sparse:header.sparse||null,
+    overallExistingRatio:Number(header.overallExistingRatio)||0,
     candidates:items.filter(item=>
       item&&item.kind==='suggestion'&&typeof item.word==='string'
     ).slice(0,MAX_CACHE_ROWS).map(({kind,...item})=>item)
@@ -30,7 +31,8 @@ export function encodeKeywordSuggestionCache(result,now=new Date().toISOString()
     {kind:'summary',version:1,scannedAt:now,
       read:Number(result.read)||0,withContent:Number(result.withContent)||0,
       limited:Boolean(result.limited),dense:result.dense||null,
-      sparse:result.sparse||null},
+      sparse:result.sparse||null,
+      overallExistingRatio:Number(result.overallExistingRatio)||0},
     ...(Array.isArray(result.candidates)?result.candidates:[])
       .slice(0,MAX_CACHE_ROWS)
       .map(item=>({kind:'suggestion',
