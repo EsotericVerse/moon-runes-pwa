@@ -65,6 +65,7 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
   if(cached)return cached;
   const startedAt=authRevision;
   const obsolete=()=>startedAt!==authRevision;
+  let verifiedIdentity=null;
   try{
     const session=await getAccountSession();
     const user=session?.user||null;
@@ -78,6 +79,9 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
       void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return signedOutState;
     }
+    // A database permission outage does not mean this verified user signed out.
+    // Retain identity only; never retain management grants on a failed read.
+    verifiedIdentity={user,email:normalizeAuthEmail(session.oauth?.email||user.email),oauth:session.oauth};
     // Exactly one authenticated RPC on first access. The database RPC already
     // includes the blacklist predicate; a second blacklist query is redundant.
     const {data,error}=await dbAuthClient.schema('silver').rpc('get_my_scope_management');
@@ -103,7 +107,9 @@ async function loadManagementAccount(mutate,{forceVerify=false}={}){
       clearAuthorization();
       scopeMetadata=[];
     }
-    return failedState(error);
+    return verifiedIdentity
+      ?{...signedOutState,...verifiedIdentity,error:String(error?.message||error)}
+      :failedState(error);
   }
 }
 
