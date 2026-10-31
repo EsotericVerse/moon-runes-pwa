@@ -70,7 +70,7 @@ test('new distinct named coordinates create separate Trace anchors without losin
   const cafes=db.rows.filter(row=>row.title==='咖啡 店');
   assert.equal(cafes.length,2);
   assert.deepEqual(cafes.map(row=>row.address),[[121.6,25.1],[121.7,25.2]]);
-  assert.equal(cafes[0].hidden_depth,0);
+  assert.equal(cafes[0].invisible,false);
   const stationUid=importedPlaceId({incoming:station,byName:result.byName,byCoordinate:result.byCoordinate});
   assert.ok(stationUid&&stationUid!=='AAAA');
   const cafeUid=importedPlaceId({incoming:cafeA,byName:result.byName,byCoordinate:result.byCoordinate});
