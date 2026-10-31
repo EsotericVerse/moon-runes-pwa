@@ -627,8 +627,10 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
     ...(rawMedia.length?[{column:'media_type',operator:'in',value:rawMedia}]:[])
   ];
 
-  const includeGalaxy=!sourceName||rawSources.length>0;
-  const includeMedia=!sourceName||rawMedia.length>0;
+  // A normal work list is a Galaxy article list, never a merged media feed.
+  // Only an explicitly selected media type opens the separate media lane.
+  const includeGalaxy=rawSources.length>0||rawMedia.length===0&&(!sourceName||rawSources.length>0);
+  const includeMedia=rawMedia.length>0;
   // The first bounded page can return exact counts with its own SELECT.
   // Keep both totals in the cursor so subsequent pages never repeat COUNTs.
   const hasCursorCounts=Number.isSafeInteger(cursor?.galaxyCount)&&Number.isSafeInteger(cursor?.mediaCount);
