@@ -181,7 +181,8 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         traceHref={selectedUid===String(work.uid)&&bodyQuery.data?.trace_place
           ?featureNavigationHref(scope.id,'trace',{place:bodyQuery.data.trace_place.uid}):''}
         locationName={selectedUid===String(work.uid)?bodyQuery.data?.location||'':''}
-        links={selectedUid===String(work.uid)?bodyQuery.data?.links||[]:[]}
+        links={work.entry_type==='media_metadata'?work.links||[]:
+          selectedUid===String(work.uid)?bodyQuery.data?.links||[]:[]}
       >{work.entry_type==='work'&&work.uid?<WorkFullText
         open={selectedUid===String(work.uid)}
         loading={selectedUid===String(work.uid)&&bodyQuery.isPending}

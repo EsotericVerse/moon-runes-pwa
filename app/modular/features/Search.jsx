@@ -662,10 +662,9 @@ export default function Search({managementMode=false}){
         }
         setAuthorizedEditingKey(result.key);
       }
-      const cached=result.resourceType==='galaxy'&&fullTextKey===result.key&&fullTextRow?.uid
-        ?fullTextRow
-        :null;
-      const fullRow=cached||await selectPublicEditableRow(
+      // A reading UID fetch intentionally omits editor-only attributes.
+      // Query the complete, authorized editor projection only on Edit.
+      const fullRow=await selectPublicEditableRow(
         result.editableTable,
         result.editableIdColumn,
         result.editResourceId||result.resourceId,

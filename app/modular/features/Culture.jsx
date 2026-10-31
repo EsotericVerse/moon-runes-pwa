@@ -1685,7 +1685,8 @@ export default function Culture(){
                       traceHref={fullTextKey===workKey&&fullDetail?.trace_place
                         ?featureNavigationHref(work.scope_id||classificationScope,'trace',{place:fullDetail.trace_place.uid}):''}
                       locationName={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.location||'':''}
-                      links={fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.links||[]:[]}
+                      links={work.entry_type==='media_metadata'?work.links||[]:
+                        fullTextKey===workKey&&fullDetail?.uid===work.uid?fullDetail.links||[]:[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
                       onEdit={uid=>startEditingWork({...work,uid})}

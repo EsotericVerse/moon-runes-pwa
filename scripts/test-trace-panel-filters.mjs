@@ -118,3 +118,18 @@ test('SQLite local Galaxy uses createtime because it has no date column',()=>{
   assert.match(query,/String\(table\|\|''\)==='silver\.local_galaxy'\?'createtime'/);
   assert.match(query,/dateColumn:dayColumn\(current\.galaxy\)/);
 });
+
+
+test('editing an expanded UID fetches all attributes instead of reusing a thin reader row',()=>{
+  const search=read('app/modular/features/Search.jsx');
+  assert.match(search,/const fullRow=await selectPublicEditableRow\(/);
+  assert.doesNotMatch(search,/const cached=result\.resourceType==='galaxy'/);
+  assert.match(search,/GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,searchable,UpdateTime/);
+  assert.match(search,/media_link,statistics_able'/);
+});
+test('explicit Culture/Statistics media lanes keep their external media links',()=>{
+  for(const path of ['app/modular/features/Culture.jsx','app/modular/features/Statistics.jsx']){
+    const content=read(path);
+    assert.match(content,/links=\{work\.entry_type==='media_metadata'\?work\.links\|\|\[\]:/);
+  }
+});
