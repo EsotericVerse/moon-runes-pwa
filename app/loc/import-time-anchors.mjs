@@ -82,7 +82,7 @@ export async function prepareImportTimeAnchors(records,{
     const chunk=missing.slice(offset,offset+80);
     const rows=chunk.map(date=>({
       uid:nextUid(),type:'anchor',title:date,description:'',
-      address:date,anchor_ids:[],hidden_depth:0
+      address:date,anchor_ids:[],invisible:false
     }));
     const {data,error}=await relation(table).insert(rows).select('uid,address');
     if(error)throw Error('新增日期定錨失敗：'+(error.message||error));
