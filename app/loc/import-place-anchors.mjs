@@ -74,7 +74,7 @@ export async function prepareImportPlaceAnchors(records,{
     const rows=chunk.map(([,place])=>({
       trace_type:'space_anchor',title:place.title,
       description:{text:'',address:place.postal||null},
-      address:place.address,times:[],anchor_list:[],hidden_depth:0
+      address:place.address,times:[],anchor_list:[]
     }));
     const {data,error}=await relation(table).insert(rows).select('uid,title');
     if(error)throw Error('新增空間定錨失敗：'+(error.message||error));
