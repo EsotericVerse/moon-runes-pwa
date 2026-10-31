@@ -172,6 +172,11 @@ function SourceArticleList({scope,startDate,endDate,sourceNames=null}){
         relationLinks={selectedUid===String(work.uid)&&bodyQuery.data?.uid===work.uid
           ?galaxyRelationLinks(scope.id,bodyQuery.data):[]}
         relatedMedia={selectedUid===String(work.uid)?bodyQuery.data?.related_media||[]:[]}
+        relatedTime={selectedUid===String(work.uid)?bodyQuery.data?.related_time:null}
+        relatedSpace={selectedUid===String(work.uid)?bodyQuery.data?.related_space:null}
+        relatedStatistics={selectedUid===String(work.uid)?bodyQuery.data?.related_statistics:null}
+        articleScopeId={work.scope_id||scope.id}
+        articleDate={selectedUid===String(work.uid)?bodyQuery.data?.date:''}
         tracePlace={selectedUid===String(work.uid)?bodyQuery.data?.trace_place:null}
         traceHref={selectedUid===String(work.uid)&&bodyQuery.data?.trace_place
           ?featureNavigationHref(scope.id,'trace',{place:bodyQuery.data.trace_place.uid}):''}
