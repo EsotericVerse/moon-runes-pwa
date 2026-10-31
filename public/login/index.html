@@ -22,9 +22,9 @@ a{color:#9fd1ff}#status{overflow-wrap:anywhere;white-space:pre-wrap}
 <main class="card">
   <div id="login-root"></div>
   <div id="signed-in" hidden>
-    <h2>已登入 LOC</h2>
+    <h2>Clerk 已登入</h2>
     <p id="user"></p>
-    <p>身分登入與資料管理權限分開驗證；是否可編輯由 LOC Authority 決定。</p>
+    <p>登入只是第一步；LOC Authority 尚須驗證目前的 Session。管理與寫入權限不會由這個頁面直接授予。</p>
     <div class="actions">
       <button id="return" type="button">返回 LOC</button>
       <button id="signout" type="button">登出</button>
@@ -34,7 +34,7 @@ a{color:#9fd1ff}#status{overflow-wrap:anywhere;white-space:pre-wrap}
 </main>
 <script type="module">
 const byId=id=>document.getElementById(id);
-let clerk=null;
+let clerk=null,controlUrl='',checkGeneration=0;
 function validReturnPath(){
   const value=new URLSearchParams(location.search).get('return_to')||'/local/settings/';
   if(!value.startsWith('/')||value.startsWith('//')||value.includes('\\')||value.includes('\\r')||value.includes('\\n'))return '/local/settings/';
@@ -52,12 +52,38 @@ async function script(url,attributes={}){
     document.head.appendChild(tag);
   });
 }
+async function verify(){
+  const generation=++checkGeneration;
+  if(!clerk?.isSignedIn||!clerk.session)return;
+  byId('status').textContent='Clerk 已登入，正在核驗 LOC 身分…';
+  try{
+    if(!controlUrl)throw new Error('獨立認證服務尚未設定');
+    const token=await clerk.session.getToken();
+    if(!token)throw new Error('無法取得 Clerk Session');
+    const response=await fetch(controlUrl+'/v1/identity',{
+      method:'GET',cache:'no-store',credentials:'omit',
+      headers:{authorization:'Bearer '+token,accept:'application/json'}
+    });
+    if(!response.ok)throw new Error('LOC 身分核驗失敗（HTTP '+response.status+'）');
+    const identity=await response.json();
+    if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id)
+      throw new Error('LOC 回傳身分不一致');
+    if(generation!==checkGeneration||!clerk.isSignedIn)return;
+    byId('status').textContent=identity.email
+      ?'LOC 身分已核驗。可用的管理權限仍須個別確認。'
+      :'LOC 身分已核驗，但尚無已驗證的 Email 宣告，不能進行一般管理編輯。';
+  }catch(error){
+    if(generation===checkGeneration&&clerk?.isSignedIn)
+      byId('status').textContent=String(error.message||error);
+  }
+}
 function update(){
   const signedIn=Boolean(clerk?.isSignedIn&&clerk?.session);
   byId('signed-in').hidden=!signedIn;
   byId('login-root').hidden=signedIn;
-  byId('user').textContent=signedIn?clerk.user?.primaryEmailAddress?.emailAddress||'已完成身分驗證':'';
-  byId('status').textContent=signedIn?'Clerk 身分驗證成功。':'請使用 Google 等已啟用的方式登入 LOC。';
+  byId('user').textContent=signedIn?clerk.user?.primaryEmailAddress?.emailAddress||'Clerk Session 已建立':'';
+  byId('status').textContent=signedIn?'Clerk Session 已建立；尚未通過 LOC Authority 核驗。':'請使用 Google 等已啟用的方式登入 LOC。';
+  if(signedIn)void verify();
 }
 byId('return').onclick=()=>location.assign(validReturnPath());
 byId('signout').onclick=async()=>{
@@ -69,6 +95,12 @@ async function start(){
   if(!response.ok)throw new Error('無法讀取 LOC 登入設定');
   const config=await response.json();
   if(!config.publishableKey||!config.frontendApiUrl)throw new Error('LOC Clerk 尚未設定');
+  if(config.controlUrl){
+    const target=new URL(config.controlUrl);
+    if(target.protocol!=='https:'||target.username||target.password||target.search||target.hash||
+      target.pathname!=='/')throw new Error('LOC Authority 連線設定無效');
+    controlUrl=target.origin;
+  }
   const domain=new URL(config.frontendApiUrl);
   if(domain.protocol!=='https:'||domain.pathname!=='/'||domain.search||domain.hash)
     throw new Error('登入服務網域無效');
