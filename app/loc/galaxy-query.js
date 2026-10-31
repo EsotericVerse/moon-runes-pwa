@@ -7,7 +7,7 @@ import {sourceTaxonomyFromArrays} from './source-classification.mjs';
 import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
-import {publicContentFilters} from './content-policy';
+import {normalizeRelationIds,publicContentFilters} from './content-policy';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,forEachAllRowsPage,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
@@ -276,6 +276,27 @@ export async function selectGalaxyContent(scope,uid,{authenticated=false}={}){
   return selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated});
 }
 
+async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
+  const ids=[...new Set([row.source_id,row.ref_id,...(normalizeRelationIds(row.target_id)||[])]
+    .map(value=>String(value||'').trim()).filter(Boolean))];
+  if(!ids.length)return {};
+  const batches=[];
+  for(let i=0;i<ids.length;i+=50)batches.push(ids.slice(i,i+50));
+  const pages=await Promise.all(batches.map(async batch=>{
+    const {rows=[]}=await selectRows(scope.galaxy,{
+      columns:'uid,title',
+      filters:[
+        {column:'uid',operator:'in',value:batch},
+        ...(!includeHidden?[{column:'searchable',operator:'eq',value:true}]:[])
+      ],
+      limit:batch.length,
+      authenticated:includeHidden
+    });
+    return rows;
+  }));
+  return Object.fromEntries(pages.flat().map(item=>[String(item.uid),String(item.title||'').trim()]));
+}
+
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
@@ -287,12 +308,14 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const [contentRow,mediaRows]=await Promise.all([
+  const [contentRow,mediaRows,relationTitles]=await Promise.all([
     selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
-    mediaRowsFor(current,mediaIdsOf(row.media_link))
+    mediaRowsFor(current,mediaIdsOf(row.media_link)),
+    relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({}))
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
-  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
+  return {...row,scope_id:current.id,__table:current.galaxy,
+    content:contentRow?.content||'',links:resolvedLinks(row,mediaById),relation_titles:relationTitles};
 }
 
 function literalPattern(value){
