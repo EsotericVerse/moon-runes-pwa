@@ -613,12 +613,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
       const dates=await prepareImportTimeAnchors(candidates,{
-        scopeId,relation:dbAuthRelation,
+        scopeId,timeTable:account.scopeDataFor(scopeId)?.time,relation:dbAuthRelation,
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
       const visits=candidates.flatMap(place=>{
-        const uid=importedPlaceId({incoming:place,byName:result.byName});
+        const uid=importedPlaceId({incoming:place,byName:result.byName,byCoordinate:result.byCoordinate});
         return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
       });
       const saved=await recordImportPlaceVisits(visits,{
@@ -769,7 +769,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const timeAnchors=await prepareImportTimeAnchors([...unique,...geoAnchorRecords],{
-        scopeId,relation:dbAuthRelation,
+        scopeId,timeTable:scope?.time,relation:dbAuthRelation,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
@@ -794,9 +794,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName});
+        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         if(restoredPlace)changes.place_id=restoredPlace;
-        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const visitUid=restoredPlace||(
           matchedPlace===String(existing.place_id||'').trim()?matchedPlace:null);
         if(visitUid&&record.createtime)placeVisits.push({uid:visitUid,time:record.createtime});
@@ -835,7 +835,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       };
       for(const record of unique){
         if(existingBySiteId.has(record.uid))continue;
-        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
           ...article}=record;
@@ -848,7 +848,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         ...placeVisits,
         ...newArticleVisits.filter(visit=>result.insertedUids.has(visit.articleUid)),
         ...geoAnchorRecords.flatMap(place=>{
-          const uid=importedPlaceId({incoming:place,byName:placeAnchors.byName});
+          const uid=importedPlaceId({incoming:place,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
           return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
         })
       ];
@@ -888,26 +888,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         knownArticleIds,galaxy,galaxyMedia,t,
         onProgress:p=>showProgress(p.stage,p.completed,p.total||0)
       });
-      let exifSaved=0;
-      if(archivePlan.exif.length)showProgress('保存媒體 EXIF',0,archivePlan.exif.length);
-      for(let offset=0;offset<archivePlan.exif.length;offset+=MAX_ROWS){
-        const chunk=archivePlan.exif.slice(offset,offset+MAX_ROWS).map(row=>({
-          ...row,media_uid:mediaSummary.resolvedIds.get(row.media_uid)||row.media_uid
-        }));
-        const {data,error}=await dbAuthClient.schema('silver').rpc('save_archive_media_exif',{
-          p_scope_id:scopeId,p_rows:chunk
-        });
-        if(error)throw new Error('媒體已儲存，但 EXIF 私人座標保存失敗：'+(error.message||error));
-        if(Number(data)!==chunk.length)
-          throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
-        exifSaved+=chunk.length;
-        showProgress('保存媒體 EXIF',exifSaved,archivePlan.exif.length);
-      }
+      // The legacy private archive EXIF table was retired. A ZIP image's
+      // private GPS/time cannot be written to public Galaxy or Trace merely
+      // to work around the missing private destination. Keep importing the
+      // articles and media, and explicitly report unsaved private evidence.
+      const exifNotSaved=archivePlan.exif.length;
       const skipped=analyzed.invalid.length+analyzed.skippedByRange+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':'')+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(exifNotSaved?'；私人 EXIF '+exifNotSaved.toLocaleString()+' 筆因原儲存表已移除而未寫入，沒有混入公開文章／地點。':'')+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
