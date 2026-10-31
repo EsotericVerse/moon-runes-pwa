@@ -56,7 +56,7 @@ export function createNewKeywordDiscovery(rows=[]){
       withContent++;
       const seen=new Set();
       const month=String(row?.createtime||'').slice(0,7);
-      let prev=null;
+      let prev=null,prev2=null;
       for(const piece of segmenter.segment(body)){
         const token=String(piece.segment||'').trim();
         const isHan=HAN.test(token);
@@ -66,9 +66,17 @@ export function createNewKeywordDiscovery(rows=[]){
           if(prev&&prev.end===piece.index&&prev.han&&isHan){
             const combined=prev.token+token;
             if([...combined].length>=3&&[...combined].length<=8)add(combined,seen,month,sample);
+            // Chinese word segmentation sometimes splits a phrase into 1+1+2.
+            if(prev2&&prev2.han&&prev2.end===prev.start){
+              const triple=prev2.token+combined;
+              if([...triple].length>=4&&[...triple].length<=8)add(triple,seen,month,sample);
+            }
           }
+          prev2=prev;
+          prev={token,start:piece.index,end:piece.index+piece.segment.length,han:isHan};
+        }else{
+          prev=null;prev2=null;
         }
-        prev=piece.isWordLike?{token,end:piece.index+piece.segment.length,han:isHan}:null;
       }
     }
     return {read,withContent,limited};
