@@ -26,7 +26,8 @@ a{color:#9fd1ff}#status{overflow-wrap:anywhere;white-space:pre-wrap}
     <p id="user"></p>
     <p>登入只是第一步；LOC Authority 尚須驗證目前的 Session。管理與寫入權限不會由這個頁面直接授予。</p>
     <div class="actions">
-      <button id="return" type="button">返回 LOC</button>
+      <button id="return" type="button" disabled>核驗後返回 LOC</button>
+      <button id="legacy" type="button">使用原本登入</button>
       <button id="signout" type="button">登出</button>
     </div>
   </div>
@@ -34,7 +35,7 @@ a{color:#9fd1ff}#status{overflow-wrap:anywhere;white-space:pre-wrap}
 </main>
 <script type="module">
 const byId=id=>document.getElementById(id);
-let clerk=null,controlUrl='',checkGeneration=0;
+let clerk=null,controlUrl='',checkGeneration=0,verifiedForEditor=false;
 function validReturnPath(){
   const value=new URLSearchParams(location.search).get('return_to')||'/local/settings/';
   if(!value.startsWith('/')||value.startsWith('//')||value.includes('\\')||value.includes('\\r')||value.includes('\\n'))return '/local/settings/';
@@ -69,9 +70,16 @@ async function verify(){
     if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id)
       throw new Error('LOC 回傳身分不一致');
     if(generation!==checkGeneration||!clerk.isSignedIn)return;
-    byId('status').textContent=identity.email
-      ?'LOC 身分已核驗。可用的管理權限仍須個別確認。'
-      :'LOC 身分已核驗，但尚無已驗證的 Email 宣告，不能進行一般管理編輯。';
+    verifiedForEditor=Boolean(identity.email);
+    byId('return').disabled=!verifiedForEditor;
+    if(verifiedForEditor){
+      // Only a signed, verified identity can opt this browser into Clerk
+      // editing. The server-side SQL RLS must independently authorize writes.
+      window.localStorage.setItem('loc-auth-provider','clerk');
+    }
+    byId('status').textContent=verifiedForEditor
+      ?'Clerk 身分已核驗。進入 LOC 後將再檢查管理權限。'
+      :'Clerk Session 尚未提供已驗證的 Email 宣告，無法進入編輯。可使用原本登入。';
   }catch(error){
     if(generation===checkGeneration&&clerk?.isSignedIn)
       byId('status').textContent=String(error.message||error);
@@ -79,14 +87,20 @@ async function verify(){
 }
 function update(){
   const signedIn=Boolean(clerk?.isSignedIn&&clerk?.session);
+  if(!signedIn){verifiedForEditor=false;byId('return').disabled=true;}
   byId('signed-in').hidden=!signedIn;
   byId('login-root').hidden=signedIn;
   byId('user').textContent=signedIn?clerk.user?.primaryEmailAddress?.emailAddress||'Clerk Session 已建立':'';
   byId('status').textContent=signedIn?'Clerk Session 已建立；尚未通過 LOC Authority 核驗。':'請使用 Google 等已啟用的方式登入 LOC。';
   if(signedIn)void verify();
 }
-byId('return').onclick=()=>location.assign(validReturnPath());
+byId('return').onclick=()=>{if(verifiedForEditor)location.assign(validReturnPath());};
+byId('legacy').onclick=()=>{
+  window.localStorage.removeItem('loc-auth-provider');
+  location.assign(validReturnPath());
+};
 byId('signout').onclick=async()=>{
+  window.localStorage.removeItem('loc-auth-provider');
   await clerk?.signOut();
   location.reload();
 };
