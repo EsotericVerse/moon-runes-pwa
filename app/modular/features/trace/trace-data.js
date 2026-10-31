@@ -65,7 +65,9 @@ async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false,i
   if(id==='loc')return [];
   const union=false,rows=[],size=750;
   for(let offset=0;;offset+=size){
-    let query=(includeHidden?dbAuthClient:dbPublicClient).schema('silver').from(id+'_trace')
+    // Authenticated reads use the viewer's session and preserve Scope RLS;
+    // public guests still see only records allowed by the public policy.
+    let query=dbAuthClient.schema('silver').from(id+'_trace')
       .select(columns+(union?',scope_id':'')).order('uid',{ascending:true})
       .range(offset,offset+size-1);
     if(filter)query=query.eq('trace_type',filter);
@@ -107,7 +109,14 @@ export async function readCurrentTraceAnchors(scopeId,anchorUids=[],{nativeOnly=
   return ids.map(uid=>byId.get(uid)).filter(Boolean);
 }
 export async function readAllTraceAnchors(scopeId,{nativeOnly=false,includeHidden=false}={}){
-  return readPages(idScope(scopeId),{filter:'space_anchor',nativeOnly,includeHidden});
+  const id=idScope(scopeId);
+  if(id==='loc'){
+    // No LOC materialized Trace table: keep source Scope ownership and RLS intact.
+    const sources=await Promise.all(['lo3rwang','lrunes'].map(source=>
+      readPages(source,{filter:'space_anchor',includeHidden})));
+    return sources.flat();
+  }
+  return readPages(id,{filter:'space_anchor',nativeOnly,includeHidden});
 }
 export async function readTraceAnchorSuggestions(scopeId,term,limit=8){
   const id=idScope(scopeId),q=textValue(term).slice(0,100);
