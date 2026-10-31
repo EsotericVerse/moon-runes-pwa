@@ -10,10 +10,14 @@ function exactOrigin(value){
 export function clerkReturnPath(value,origin){
   const site=new URL(origin);
   const candidate=String(value||'/local/settings/');
-  if(!candidate.startsWith('/')||candidate.startsWith('//')||candidate.includes('\\'))
-    return '/local/settings/';
-  const parsed=new URL(candidate,site);
-  return parsed.origin===site.origin?parsed.pathname+parsed.search+parsed.hash:'/local/settings/';
+  if(candidate.includes('\\')||candidate.startsWith('//'))return '/local/settings/';
+  const relative=candidate.startsWith('/');
+  const absolute=candidate.startsWith('https://');
+  if(!relative&&!absolute)return '/local/settings/';
+  try{
+    const parsed=new URL(candidate,site);
+    return parsed.origin===site.origin?parsed.pathname+parsed.search+parsed.hash:'/local/settings/';
+  }catch{return '/local/settings/';}
 }
 export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
   fetchImpl=globalThis.fetch,navigate=path=>globalThis.location.assign(path),
