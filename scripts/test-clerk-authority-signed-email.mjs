@@ -26,11 +26,11 @@ const env={
   LOC_CONTROL_ENCRYPTION_KEY:Buffer.alloc(32).toString('base64'),
   LOC_AUTHORITY_STATE:{idFromName:()=>({}),get:()=>({})}
 };
-async function verified(token){
+async function verified(token,{publicKey=jwk}={}){
   const previous=globalThis.fetch;
   globalThis.fetch=async value=>{
     assert.equal(String(value),issuer+'/.well-known/jwks.json');
-    return new Response(JSON.stringify({keys:[jwk]}),{status:200});
+    return new Response(JSON.stringify({keys:[publicKey]}),{status:200});
   };
   try{
     const request=new Request('https://authority.example.org/v1/identity',{
@@ -72,4 +72,27 @@ test('present azp from another origin is still rejected with a useful reason',as
   const response=await verified(jwt({azp:'https://wrong.example.org'}));
   assert.equal(response.status,401);
   assert.match((await response.json()).error,/authorized party/i);
+});
+
+test('Clerk signed JWT verifies against public RSA modulus/exponent despite extra JWK metadata',async()=>{
+  const response=await verified(jwt(),{publicKey:{...jwk,
+    key_ops:['verify'],x5c:['non-signing metadata'],x5t:'extra-metadata',
+    ext:false}});
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).subject,'user_TEST123');
+});
+
+test('unsupported Clerk JWKS key permissions fail closed with a server-side key error',async()=>{
+  const response=await verified(jwt(),{publicKey:{...jwk,key_ops:['sign']}});
+  assert.equal(response.status,503);
+  assert.match((await response.json()).error,/not usable for verification/);
+});
+
+test('a false JWT signature remains HTTP 401, not a key import error',async()=>{
+  const token=jwt();
+  const parts=token.split('.');
+  const changed=parts[1].slice(0,-2)+'AA';
+  const response=await verified([parts[0],changed,parts[2]].join('.'));
+  assert.equal(response.status,401);
+  assert.match((await response.json()).error,/signature invalid|Invalid token/);
 });
