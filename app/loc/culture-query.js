@@ -27,7 +27,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
   if(!scopeId||!table)throw new Error('Scope data 未解析');
   const {rows}=await selectRows(table,{
     columns:TIME_COLUMNS,
-    filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}],
+    filters:[{column:'type',operator:'in',value:['anchor','period','era']}],
     orders:[{column:'uid',ascending:true}],
     limit:DB_QUERY_BATCH_SIZE,offset:0
   });
@@ -70,10 +70,10 @@ export async function selectCultureTimeRows(scope,birthday=''){
         ...ranges.filter(range=>range.invalid).flatMap(range=>range.missing_anchor_ids||[])
       ]};
   };
-  const events=rows.filter(row=>row.type==='time_period')
+  const events=rows.filter(row=>row.type==='period')
     .map(row=>normalize(row,'event',new Map()));
   const byEventUid=new Map(events.map(row=>[String(row.uid),row]));
-  const periods=rows.filter(row=>row.type==='time_trace')
+  const periods=rows.filter(row=>row.type==='era')
     .map(row=>normalize(row,'period',byEventUid));
   return [...anchors.map(row=>normalize(row,'anchor',new Map())),
     ...periods,...events];
@@ -81,7 +81,7 @@ export async function selectCultureTimeRows(scope,birthday=''){
 
 function openPeriodRangeFromRows(scopeId,rows=[]){
   // Legacy helper name retained for callers. This is a real, closed
-  // time_trace chosen by its nearest actual endpoint, NEVER open-ended now.
+  // era chosen by its nearest actual endpoint, NEVER open-ended now.
   const traces=rows.filter(row=>row.entry_type==='period'&&
     row.ranges?.some(range=>range.start_date));
   const day=new Date().toISOString().slice(0,10),target=Date.parse(day+'T00:00:00Z');
@@ -98,7 +98,7 @@ function openPeriodRangeFromRows(scopeId,rows=[]){
   if(!closest||!Number.isFinite(closest.distance))return null;
   return {...closest,scope_id:scopeId,
     display_label:closest.title||'時代',
-    derived_from:'time_trace period UID collection of actual anchor dates'};
+    derived_from:'era period UID collection of actual anchor dates'};
 }
 
 const LOC_SOURCE_ORDER=Object.freeze(['Facebook','Threads','IG','Others']);
@@ -307,7 +307,7 @@ export async function selectScopeCultureData(scopeId){
       return {scope,runtimeId:scope.id,context};
     }));
 
-    // Every saved time_trace contributes its actual time_period intervals.
+    // Every saved era contributes its actual period intervals.
     // Merge within each Scope, then intersect the resulting sets across all
     // Scopes that have defined periods. Never use the nearest trace.
     const withWindows=bundles.map(bundle=>({
