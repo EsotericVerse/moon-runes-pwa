@@ -41,7 +41,7 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
     if(signal&&typeof countQuery.abortSignal==='function')countQuery=countQuery.abortSignal(signal);
     const {count,error:countError}=await countQuery;
     if(signal?.aborted)throw aborted();
-    if(countError||!Number.isSafeInteger(Number(count)))throw new Error(countError?.message||'無法取得完整文章筆數');
+    if(countError||count===null||count===undefined||!Number.isSafeInteger(Number(count)))throw new Error(countError?.message||'無法取得完整文章筆數');
     const total=Number(count);
     let offset=0;
     onProgress({completed:0,total});
