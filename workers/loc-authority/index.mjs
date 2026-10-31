@@ -116,7 +116,7 @@ async function verifyIdentityToken(request,env){
   // cryptographically signed identity claim. Never promote SDK/local input.
   const email=String(claims.email||'').trim().toLowerCase();
   const verifiedEmail=claims.email_verified===true&&
-    /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)?email:'';
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?email:'';
   return {provider:clerk?'clerk':'secondary',subject:claims.sub,
     session:clerk?claims.sid:'verified',email:verifiedEmail};
 }
