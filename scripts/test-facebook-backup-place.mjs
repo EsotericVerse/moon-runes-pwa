@@ -151,8 +151,8 @@ test('real Facebook ZIP to Galaxy to Trace anchor by place name is repeatable wi
  assert.equal(resolved.unmatchedCoordinates,2);
  assert.equal(inserted,0);
  assert.equal(importedPlaceId({incoming:articles[0],byName:resolved.byName,byCoordinate:resolved.byCoordinate}),'AB12');
- assert.equal(importedPlaceId({incoming:articles[1],byName:resolved.byName}),null,
-   'same coordinates but a different name is a different place');
+ assert.equal(importedPlaceId({incoming:articles[1],byName:resolved.byName,byCoordinate:resolved.byCoordinate}),'AB12',
+   'same coordinates reuse the existing Trace UID regardless of source name');
  assert.equal(importedPlaceId({incoming:articles[2],byName:resolved.byName}),null);
  const saved=new Map(articles.slice(0,2).map(row=>[row.uid,{...row,place_id:'AB12'}]));
  assert.equal(isUnchangedImportBeforeWrite(articles.slice(0,2),saved),true,
