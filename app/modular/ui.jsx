@@ -188,7 +188,7 @@ function ArticleRelationNavigation({
     {name:'當年統計',data:statistics.year}
   ].filter(item=>item.data).map(item=><a key={item.name}
       href={featureNavigationHref(scope,'statics',{from:item.data.start,to:item.data.end,statTab:'charts'})}
-      className="scope-article-context-link">{item.name}（{item.data.count} 篇）</a>):[];
+      className="scope-article-context-link">{item.name}</a>):[];
   const timeAnchors=named(time.anchors,timeHref);
   const periods=named(time.periods,timeHref);
   const eras=named(time.eras,timeHref);
