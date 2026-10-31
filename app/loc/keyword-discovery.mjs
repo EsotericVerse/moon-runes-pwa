@@ -40,6 +40,9 @@ export function readableKeywordContent(raw){
     .replace(/<(script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/\1\s*>/giu,' ')
     .replace(/\x60{3}[\s\S]*?\x60{3}/gu,' ')
     .replace(/<[^>]*>/gu,' ')
+    // A truncated opening/closing tag (e.g. '<div' or '<div class="x"')
+    // must be removed BEFORE word segmentation, not counted as prose.
+    .replace(/<\/?\s*(?:div|span|script|style|section|article|header|footer|main|nav|p|br|hr|a|img|ul|ol|li|table|thead|tbody|tr|td|th|h[1-6]|button|input|textarea|form|label|select|option|svg|path|iframe|link|meta)\b[^<>\r\n]*/giu,' ')
     .replace(/\x60[^\x60]*\x60/gu,' ')
     .replace(/!?\[([^\]]+)\]\(https?:\/\/[^)]+\)/giu,'$1')
     .replace(/https?:\/\/[^\s\]<>]+/giu,' ')
