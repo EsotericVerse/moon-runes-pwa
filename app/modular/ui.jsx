@@ -206,14 +206,13 @@ function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaT
   const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
   const groups=[
     ...articleGroups.map(group=>({...group,external:false})),
-    {id:'external',heading:'原始來源網址',items:sources,external:true}
+    {id:'media',heading:'多媒體',items:mediaIds,external:true},
+    {id:'external',heading:'文章原始網址',items:sources,external:true}
   ].filter(group=>group.items.length);
-  if(!groups.length&&!mediaIds.length)return null;
+  if(!groups.length)return null;
   const relationCard=(link,index,kind,external)=>{
     const title=String(link.title||'').trim();
-    const label=external
-      ?(kind==='media'?String(link.mediaType||'媒體').trim():'外部來源')
-      :kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
+    const label=external?'文章來源':kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
     const headline=external?String(link.label||'').trim()||'開啟連結':title||'查看相關文章';
     return <a key={link.id||link.href||index} href={link.href}
       {...(external?{target:'_blank',rel:'noopener noreferrer'}:{})}
@@ -225,7 +224,9 @@ function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaT
   };
   return <nav className="scope-article-reading-relations" aria-label="文章關聯與連結">
     <h2>文章關聯與連結</h2>
-    {groups.map(group=><section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
+    {groups.map(group=>group.id==='media'
+      ?<ArticleLazyMediaLinks key="media" ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
+      :<section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
       <h3>{group.heading} <span>{group.items.length} 筆</span></h3>
       <div className="scope-article-relation-grid">
         {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id,group.external))}
@@ -237,7 +238,6 @@ function ArticleRelationNavigation({links=[],externalLinks=[],mediaIds=[],mediaT
         </div>
       </details>:null}
     </section>)}
-    <ArticleLazyMediaLinks ids={mediaIds} table={mediaTable} authenticated={mediaAuthenticated}/>
   </nav>;
 }
 
