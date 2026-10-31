@@ -40,7 +40,9 @@ async function clerkPublicKey(issuer,kid){
   const cached=jwksCache.get(key);
   if(cached&&cached.expires>Date.now())return cached.key;
   const response=await fetch((String(issuer).endsWith('/')?String(issuer).slice(0,-1):String(issuer))+'/.well-known/jwks.json',{
-    method:'GET',redirect:'error',signal:AbortSignal.timeout(6000),
+    // Cloudflare Workers does not implement Fetch redirect:'error'; it throws
+    // a TypeError before issuing the JWKS request. Default follow is supported.
+    method:'GET',redirect:'follow',signal:AbortSignal.timeout(6000),
     headers:{accept:'application/json'}
   });
   if(!response.ok)throw fail('Clerk signing keys are unavailable',503);
