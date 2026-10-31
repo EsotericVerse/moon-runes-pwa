@@ -5,6 +5,12 @@ import {dbAuthClient,dbAuthRelation} from './db-client.mjs';
 const CACHE_SCOPE='lo3rwang';
 const CACHE_COLUMN='keyword_suggestions';
 const MAX_CACHE_ROWS=120;
+const REJECT_STRUCTURE=new Set('div span html script style class classname svg path section article header footer li ul ol table tr td th iframe href src meta link css js json jsonb'.split(/\s+/u));
+export function isKeywordSuggestionText(value){
+  const text=String(value||'').trim();
+  return Boolean(text)&&!/[<>\[\]{}]/u.test(text)
+    &&!REJECT_STRUCTURE.has(text.toLowerCase());
+}
 
 // Exactly one text[] column; never store counts, excerpts or summaries
 // alongside user-visible candidate keyword strings.
@@ -13,7 +19,7 @@ export function encodeKeywordSuggestionCache(result){
   const seen=new Set(),words=[];
   for(const item of items){
     const word=String(item?.word??item??'').normalize('NFKC').trim();
-    if(!word||seen.has(word.toLocaleLowerCase()))continue;
+    if(!isKeywordSuggestionText(word)||seen.has(word.toLocaleLowerCase()))continue;
     seen.add(word.toLocaleLowerCase());
     words.push(word);
     if(words.length>=MAX_CACHE_ROWS)break;
@@ -22,7 +28,7 @@ export function encodeKeywordSuggestionCache(result){
 }
 export function decodeKeywordSuggestionCache(value){
   if(!Array.isArray(value))return null;
-  return {cachedOnly:true,candidates:value.filter(word=>typeof word==='string'&&word.trim())
+  return {cachedOnly:true,candidates:value.filter(word=>typeof word==='string'&&isKeywordSuggestionText(word))
     .slice(0,MAX_CACHE_ROWS).map(word=>({word:word.trim()}))};
 }
 export async function readKeywordSuggestionCache(scopeId){
