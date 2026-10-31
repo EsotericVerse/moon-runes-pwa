@@ -36,7 +36,7 @@ function TraceWork({row,scope}){
     relatedSpace={article?.related_space||null}
     relatedStatistics={article?.related_statistics||null}
     articleScopeId={scope?.id||''}
-    articleDate={article?.date||''}
+    articleDate={article?.article_day||article?.date||''}
     tracePlace={article?.trace_place||null}
     traceHref={article?.trace_place?featureNavigationHref(scope?.id,'trace',{place:article.trace_place.uid}):''}
     locationName={article?.location||''}
