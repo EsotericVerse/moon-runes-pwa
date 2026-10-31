@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  traceWindow,traceArticleFilters,groupedTraceDays,traceMediaMatches,
+  traceWindow,traceArticleFilters,traceArticleIdFilters,groupedTraceDays,traceMediaMatches,
   TRACE_MEDIA_TYPES
 } from '../app/modular/features/trace/trace-panel-filters.mjs';
 import {readFileSync} from 'node:fs';
@@ -21,13 +21,13 @@ test('Threads is an exact case-insensitive source filter, not a media subtype',(
   });
   assert.ok(filters.some(f=>f.column==='location'&&f.operator==='eq'&&f.value==='板橋車站'));
   assert.ok(filters.some(f=>f.column==='site'&&f.operator==='ilike'&&f.value==='Threads'));
-  assert.ok(filters.some(f=>f.column==='createtime'&&f.operator==='gte'));
-  assert.ok(filters.some(f=>f.column==='createtime'&&f.operator==='lte'));
+  assert.ok(filters.some(f=>f.column==='date'&&f.operator==='gte'&&f.value==='2026-07-26'));
+  assert.ok(filters.some(f=>f.column==='date'&&f.operator==='lte'&&f.value==='2026-10-26'));
   assert.ok(!filters.some(f=>f.column==='media_type'));
 });
 
 test('media choices follow article media_link without reverse dependencies',()=>{
-  assert.deepEqual([...TRACE_MEDIA_TYPES],['音樂','圖片','影片']);
+  assert.deepEqual([...TRACE_MEDIA_TYPES],['音樂','圖片','影片','runes']);
   const articles=[{uid:'AAAAAAAA',title:'Threads image',media_link:['MEDIA001','MEDIA002']},
     {uid:'BBBBBBBB',title:'unrelated',media_link:[]}];
   assert.deepEqual(traceMediaMatches(articles,[{uid:'MEDIA001',media_type:'圖片'}]),
@@ -46,23 +46,35 @@ test('count groups only from selected metadata; never invent dates',()=>{
   ]);
 });
 
-test('UI loads only the Frame index on entry; selected sites and report stay gated',()=>{
+test('article date filters use indexed date; no timestamp conversion in lists',()=>{
+  const filters=traceArticleIdFilters(['0001'],{
+    startDate:'2026-01-01',endDate:'2026-10-31'
+  });
+  assert.ok(filters.some(f=>f.column==='date'&&f.operator==='gte'&&f.value==='2026-01-01'));
+  assert.ok(filters.some(f=>f.column==='date'&&f.operator==='lte'&&f.value==='2026-10-31'));
+  assert.ok(!filters.some(f=>f.column==='createtime'));
+  assert.deepEqual(groupedTraceDays([{place_id:'0001',date:'2026-10-31',
+    createtime:'2026-10-30T16:00:00Z'}],{key:'place_id'}),
+    [{day:'2026-10-31',category:'0001',item_count:1}]);
+});
+
+test('Trace panel only projects three Galaxy list columns; media type filters use bounded UID overlap',()=>{
   const trace=read('app/modular/features/Trace.jsx');
   const result=read('app/modular/features/trace/TracePlaceResults.jsx');
-  assert.match(trace,/\[routeListOpen\]=useState\(true\)/);
-  assert.match(trace,/queryFn:\(\)=>readTraceMapIndex\(periodScopeId\)/);
+  assert.match(trace,/queryFn:()=>readTraceMapIndex\(scopeId\)/);
   assert.match(trace,/enabled:supported&&routeListOpen/);
-  assert.match(trace,/\[reportTab,setReportTab\]=useState\('articles'\)/);
-  // An historical Frame intentionally starts with its complete time range.
+  assert.match(trace,/\[reportTab,setReportTab\]=useState\(null\)/);
   assert.match(trace,/\[timeWindow,setTimeWindow\]=useState\('all'\)/);
-  assert.match(trace,/enabled:supported&&routeListOpen&&traceIndex\.data!==undefined&&\(Boolean\(currentMap\)\|\|showingAll\)/);
-  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,currentMap\.anchor_list\)/);
-  assert.match(trace,/!mapOnly&&reportPlace\?<TracePlaceResults/);
+  assert.match(trace,/readCurrentTraceAnchors\(periodScopeId,members,/);
+  assert.match(trace,/\{reportTab\?<TracePlaceResults/);
   assert.match(trace,/sourceName=\{sourceName\} mediaType=\{mediaType\}/);
-  assert.match(result,/mediaFiltered=useAsyncResource/);
-  assert.match(result,/uid,media_type/);
-  assert.match(result,/sourceFilter/);
-  assert.match(result,/filteredDaily/);
-  assert.match(result,/summary.data/);
-  assert.doesNotMatch(trace,/readAllTraceAnchors\(periodScopeId\)[\s\S]*?enabled:supported,queryFn/);
+  assert.match(result,/mediaFiltered=useAsyncInfiniteResource/);
+  assert.match(result,/columns:'uid,title,createtime'/);
+  assert.match(result,/columns:'uid'/);
+  assert.match(result,/operator:'overlaps'/);
+  assert.match(result,/limit:PAGE_SIZE,maxLimit:PAGE_SIZE,offset:articleOffset/);
+  assert.match(result,/enabled:enabled&&Boolean\(selectedMediaType\)/);
+  assert.doesNotMatch(result,/selectAllRows\(/);
+  assert.doesNotMatch(result,/columns:'uid,title,createtime,[^']*media_link/);
+  assert.match(trace,/<option value="runes">抽牌結果（runes）<\/option>/);
 });
