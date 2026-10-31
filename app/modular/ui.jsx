@@ -163,7 +163,7 @@ function ArticleLazyMediaLinks({ids=[],table='',authenticated=false}){
         rows.push(...(page.rows||[]));
       }
       const byId=new Map(rows.map(row=>[String(row.uid),row]));
-      return mediaIds.map(id=>byId.get(id)).filter(Boolean);
+      return mediaIds.map(id=>byId.get(id)||{uid:id,url:''});
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
