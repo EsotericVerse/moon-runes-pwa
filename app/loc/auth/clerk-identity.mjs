@@ -1,10 +1,12 @@
 // Independent LOC identity boundary. No Supabase, Neon or SQL imports.
 // Verification is performed by a trusted LOC Authority endpoint, never by
 // trusting a browser's user email, cached user object or a decoded JWT.
-function exactOrigin(value){
+function exactOrigin(value,{allowLocalhost=false}={}){
   const url=new URL(String(value||''));
-  if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||
-    !['','/'].includes(url.pathname))throw new Error('Authority endpoint must be an HTTPS origin');
+  const localhost=allowLocalhost&&['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+  if(!(url.protocol==='https:'||(localhost&&url.protocol==='http:'))||
+    url.username||url.password||url.search||url.hash||
+    !['','/'].includes(url.pathname))throw new Error('Invalid LOC HTTPS origin');
   return url.origin;
 }
 export function clerkReturnPath(value,origin){
@@ -25,7 +27,7 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
   if(typeof loadClerk!=='function')throw new Error('Clerk loader is required');
   if(typeof fetchImpl!=='function')throw new Error('HTTPS fetch is required');
   const authority=exactOrigin(authorityOrigin);
-  const origin=exactOrigin(siteOrigin);
+  const origin=exactOrigin(siteOrigin,{allowLocalhost:true});
   let currentPromise=null;
   const client=()=>currentPromise??=Promise.resolve().then(loadClerk).catch(error=>{
     currentPromise=null;
