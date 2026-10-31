@@ -112,7 +112,13 @@ async function verifyIdentityToken(request,env){
     throw fail('Token verification failed',401);
   }
   if(!verified)throw fail('Token signature invalid',401);
-  return {provider:clerk?'clerk':'secondary',subject:claims.sub,session:clerk?claims.sid:'verified'};
+  // Email is usable for legacy management grants only when it is a VERIFIED,
+  // cryptographically signed identity claim. Never promote SDK/local input.
+  const email=String(claims.email||'').trim().toLowerCase();
+  const verifiedEmail=claims.email_verified===true&&
+    /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)?email:'';
+  return {provider:clerk?'clerk':'secondary',subject:claims.sub,
+    session:clerk?claims.sid:'verified',email:verifiedEmail};
 }
 function validateTarget(input,id){
   if(!ID.test(id)||!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid target');
