@@ -23,11 +23,14 @@ function allowedOrigin(request,env){
   return origin;
 }
 function requireSetup(env){
-  if(!env.LOC_CLERK_ISSUER||!env.LOC_CLERK_JWT_PUBLIC_KEY||!env.LOC_CONTROL_ORIGIN||
-    !env.LOC_CONTROL_ENCRYPTION_KEY||!env.LOC_RECOVERY_ROOT_CLERK_IDS||
-    !env.LOC_AUTHORITY_STATE)throw fail('Recovery control is not configured',503);
+  const hasClerk=Boolean(env.LOC_CLERK_ISSUER&&env.LOC_CLERK_JWT_PUBLIC_KEY&&env.LOC_RECOVERY_ROOT_CLERK_IDS);
+  const hasAlternative=Boolean(env.LOC_SECONDARY_ISSUER&&env.LOC_SECONDARY_JWT_PUBLIC_KEY&&
+    env.LOC_SECONDARY_AUDIENCE&&env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS);
+  if((!hasClerk&&!hasAlternative)||!env.LOC_CONTROL_ORIGIN||
+    !env.LOC_CONTROL_ENCRYPTION_KEY||!env.LOC_AUTHORITY_STATE)
+    throw fail('Recovery control is not configured',503);
 }
-async function verifyClerkToken(request,env){
+async function verifyIdentityToken(request,env){
   const match=/^Bearer ([A-Za-z0-9_\-.]+)$/.exec(request.headers.get('authorization')||'');
   if(!match||match[1].length>8192)throw fail('Authentication required',401);
   const pieces=match[1].split('.');
@@ -38,15 +41,23 @@ async function verifyClerkToken(request,env){
     claims=JSON.parse(new TextDecoder().decode(b64bytes(pieces[1])));
   }catch{throw fail('Invalid token',401)}
   if(header?.alg!=='RS256'||!claims||typeof claims!=='object')throw fail('Invalid token algorithm',401);
-  const issuer=String(env.LOC_CLERK_ISSUER).replace(/\/$/,'');
   const origin=String(env.LOC_CONTROL_ORIGIN).replace(/\/$/,'');
+  const issuer=String(claims.iss||'').replace(/\/$/,'');
+  const clerk=Boolean(env.LOC_CLERK_ISSUER&&issuer===String(env.LOC_CLERK_ISSUER).replace(/\/$/,''));
+  const secondary=Boolean(env.LOC_SECONDARY_ISSUER&&issuer===String(env.LOC_SECONDARY_ISSUER).replace(/\/$/,''));
+  if(!clerk&&!secondary)throw fail('Unknown identity issuer',401);
   const now=Math.floor(Date.now()/1000);
-  if(claims.iss!==issuer||claims.azp!==origin||typeof claims.sub!=='string'||
-    !/^user_[A-Za-z0-9]+$/.test(claims.sub)||typeof claims.sid!=='string'||!claims.sid.startsWith('sess_')||
+  if(typeof claims.sub!=='string'||!claims.sub||claims.sub.length>128||
     !Number.isInteger(claims.exp)||claims.exp<=now||
     !Number.isInteger(claims.iat)||claims.iat>now+5||
-    !Number.isInteger(claims.nbf)||claims.nbf>now+5)throw fail('Session is not valid',401);
-  const pem=String(env.LOC_CLERK_JWT_PUBLIC_KEY);
+    !Number.isInteger(claims.nbf)||claims.nbf>now+5||
+    claims.sts==='pending'||claims.act)throw fail('Session is not valid',401);
+  if(clerk&&(claims.azp!==origin||!/^user_[A-Za-z0-9]+$/.test(claims.sub)||
+    typeof claims.sid!=='string'||!claims.sid.startsWith('sess_')))throw fail('Clerk session is not valid',401);
+  if(secondary&&(!env.LOC_SECONDARY_AUDIENCE||
+    !(Array.isArray(claims.aud)?claims.aud.includes(env.LOC_SECONDARY_AUDIENCE):claims.aud===env.LOC_SECONDARY_AUDIENCE)))
+    throw fail('Invalid token audience',401);
+  const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
   const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,'');
   if(!body)throw fail('Recovery signing key unavailable',503);
   let verified=false;
@@ -55,9 +66,9 @@ async function verifyClerkToken(request,env){
     verified=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,b64bytes(pieces[2]),new TextEncoder().encode(pieces[0]+'.'+pieces[1]));
   }catch{throw fail('Token verification failed',401)}
   if(!verified)throw fail('Token signature invalid',401);
-  const roots=String(env.LOC_RECOVERY_ROOT_CLERK_IDS).split(/[\s,;]+/).filter(Boolean);
+  const roots=String(clerk?env.LOC_RECOVERY_ROOT_CLERK_IDS:env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS).split(/[\s,;]+/).filter(Boolean);
   if(!roots.includes(claims.sub))throw fail('Recovery administrator required',403);
-  return {provider:'clerk',subject:claims.sub,session:claims.sid};
+  return {provider:clerk?'clerk':'secondary',subject:claims.sub,session:clerk?claims.sid:'verified'};
 }
 function validateTarget(input,id){
   if(!ID.test(id)||!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid target');
@@ -183,7 +194,7 @@ export default {
       }
       if(!origin&&request.headers.get('sec-fetch-site')==='cross-site')throw fail('Cross-origin request rejected',403);
       if(!['GET','PUT','POST'].includes(request.method))throw fail('Method not allowed',405);
-      const principal=await verifyClerkToken(request,env);
+      const principal=await verifyIdentityToken(request,env);
       const url=new URL(request.url);
       if(!url.pathname.startsWith('/v1/'))throw fail('Not found',404);
       const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
