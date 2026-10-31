@@ -65,7 +65,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   const insertImportRows=insertRowsUnchecked;
   const updateRows=withWriteNotice(updateRowsUnchecked);
   const deleteRows=withWriteNotice(deleteRowsUnchecked);
-  const updateImportRows=withWriteNotice(updateImportRowsUnchecked);
+  // Import can have already committed earlier batches. Preserve the actual
+  // error and partial-write diagnostics rather than claiming nothing was saved.
+  const updateImportRows=updateImportRowsUnchecked;
   const copyRune66KeywordClass=withWriteNotice(copyRune66KeywordClassUnchecked);
   const moveScopeBlock=withWriteNotice(moveScopeBlockUnchecked);
   const deleteScope=withWriteNotice(deleteScopeUnchecked);
@@ -126,21 +128,55 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function updateImportRowsUnchecked(table,rows){
     const list=Array.isArray(rows)?rows:[];
+    // Keep the existing update_batch RPC contract: it intentionally accepts
+    // only these five fields. Source metadata already belongs to Galaxy,
+    // but must use the existing, authorized single-row update operation.
+    const batchFields=new Set(['title','content','place_id','url','media_link']);
+    const allowedFields=new Set([...batchFields,'location','site_id','ref_id','source_id','target_id']);
+    const bulk=[],metadata=[],seen=new Set();
     for(const row of list){
-      const keys=Object.keys(row||{});
-      if(!/^[A-Za-z0-9]{8}$/.test(String(row?.uid||''))||
-         keys.some(key=>!['uid','title','content','place_id','url','media_link'].includes(key))||
-         !keys.some(key=>key!=='uid'))throw Error('無效文章更新資料');
+      const uid=String(row?.uid||'');
+      const keys=Object.keys(row||{}).filter(key=>key!=='uid');
+      if(!/^[A-Za-z0-9]{8}$/.test(uid)||!keys.length||
+          keys.some(key=>!allowedFields.has(key))||seen.has(uid))
+        throw Error('無效文章更新資料');
+      seen.add(uid);
       validateGalaxyWrite(table,row);
+      if(keys.some(key=>!batchFields.has(key)))metadata.push(row);
+      else bulk.push(row);
     }
     let count=0;
-    for(let start=0;start<list.length;start+=MAX_ROWS){
-      const batch=list.slice(start,start+MAX_ROWS);
-      const result=await managementWrite({
-        p_table:table,p_operation:'update_batch',
-        p_rows:batch,p_values:null,p_filters:[]
-      });
-      count+=Number(result?.count||0);
+    try{
+      for(let start=0;start<bulk.length;start+=MAX_ROWS){
+        const batch=bulk.slice(start,start+MAX_ROWS);
+        const result=await managementWriteUnchecked({
+          p_table:table,p_operation:'update_batch',
+          p_rows:batch,p_values:null,p_filters:[]
+        });
+        count+=Number(result?.count||0);
+      }
+      // An existing per-row 'update' RPC handles additional Galaxy fields
+      // without a new table, column, index or RPC. Concurrency is bounded to
+      // avoid overwhelming the database during large reimports.
+      for(let start=0;start<metadata.length;start+=6){
+        const group=metadata.slice(start,start+6);
+        const results=await Promise.all(group.map(async row=>{
+          const {uid,...values}=row;
+          const result=await managementWriteUnchecked({
+            p_table:table,p_operation:'update',
+            p_rows:null,p_values:values,
+            p_filters:[{column:'uid',operator:'eq',value:uid}]
+          });
+          return Number(result?.count||0);
+        }));
+        for(const affected of results){
+          if(affected!==1)throw Error('既有文章更新筆數不符：'+affected);
+          count+=affected;
+        }
+      }
+    }catch(error){
+      throw new Error('文章重匯更新失敗；已確認成功 '+count+' 筆，其他批次可能部分寫入。原始錯誤：'+
+        String(error?.message||error));
     }
     return {count};
   }
