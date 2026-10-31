@@ -27,7 +27,8 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+(isDate?'':'T23:59:59.999+08:00')});
   return filters;
 }
-const dayColumn=table=>/^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''))?'date':'createtime';
+const dayColumn=table=>String(table||'')==='silver.local_galaxy'?'createtime':
+  /^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''))?'date':'createtime';
 async function selectRowById(table,{idColumn,id,columns,authenticated=false}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1,authenticated});
   return page.rows[0]||null;
