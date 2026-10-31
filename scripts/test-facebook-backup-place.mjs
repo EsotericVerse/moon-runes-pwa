@@ -145,7 +145,7 @@ test('real Facebook ZIP to Galaxy to Trace anchor by place name is repeatable wi
      insert:()=>{inserted++;throw Error('不得自動新增 Trace 地點');}
    };
  };
- const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation});
+ const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation,createMissing:false});
  assert.equal(resolved.reused,1);
  assert.equal(resolved.unmatchedCoordinates,2);
  assert.equal(inserted,0);
