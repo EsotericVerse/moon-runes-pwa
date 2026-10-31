@@ -11,9 +11,18 @@ import {databaseProviderChoices,normalizeDatabaseLocation} from '../../providers
 import {dbAuthRelation,dbAuthClient} from '../../db-client.mjs';
 import {resolveDatabaseRouting} from '../../providers/routing-config.mjs';
 import {scopedDatabaseListRelation} from '../../providers/database-list-relation.mjs';
+import {preferredDatabasePrimary} from '../../providers/emergency-primary.mjs';
+import {readonlyAuthStatus,recoveryOAuthLabel} from '../../providers/auth-status-readonly.mjs';
 import {useEditDockForm} from '../../../modular/edit-dock';
 registerDefaultSection('uiExtra.adminView',adminViewZh);
 const STATIC_ROUTING=resolveDatabaseRouting();
+
+function AuthStatusLight({label,enabled}){
+  return <span role="status" aria-label={label+'：'+(enabled?'已配置支援':'尚未配置')}>
+    <span aria-hidden="true" style={{color:enabled?'#198754':'#c53030',marginRight:6}}>●</span>
+    {label}：{enabled?'已配置支援':'尚未配置'}
+  </span>;
+}
 
 export default function DatabaseTarget({scopeGroup}){
   const listRelation=scopedDatabaseListRelation(scopeGroup);
@@ -24,7 +33,26 @@ export default function DatabaseTarget({scopeGroup}){
   const [revision,setRevision]=useState(0);
   const [saving,setSaving]=useState(false);
   const [backupHealth,setBackupHealth]=useState({state:'idle'});
+  const [authOverview,setAuthOverview]=useState(()=>readonlyAuthStatus({
+    neonAuthUrl:process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL||'',
+    neonDataApiUrl:process.env.NEXT_PUBLIC_LOC_NEON_DATA_API_URL||''
+  }));
+  const [recoveryOAuth,setRecoveryOAuth]=useState('讀取中…');
   const original=useRef({rows:[]});
+  useEffect(()=>{
+    // No provider probe or OAuth sign-in. This only reads local routing and public recovery metadata.
+    setAuthOverview(readonlyAuthStatus({
+      primaryId:preferredDatabasePrimary(),
+      neonAuthUrl:process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL||'',
+      neonDataApiUrl:process.env.NEXT_PUBLIC_LOC_NEON_DATA_API_URL||''
+    }));
+    let active=true;
+    fetch('/recovery/config.json',{cache:'no-store'})
+      .then(response=>{if(!response.ok)throw Error('No recovery config');return response.json();})
+      .then(config=>{if(active)setRecoveryOAuth(recoveryOAuthLabel(config));})
+      .catch(()=>{if(active)setRecoveryOAuth('未設定／無法讀取');});
+    return()=>{active=false};
+  },[]);
   useEffect(()=>{
     let active=true;
     (async()=>{
@@ -162,6 +190,17 @@ export default function DatabaseTarget({scopeGroup}){
       {backupHealth.state!=='absent'?<button type="button" className="loc-button"
         disabled={saving} onClick={()=>setRevision(value=>value+1)}>重新檢查</button>:null}
     </p>
+    {/* Authentication status: display only, no credentials or control actions. */}
+    <div className="scope-management-wide-field" aria-label="OAuth 與 Auth 狀態（唯讀）">
+      <h3 className="admin-workspace-section-heading">OAuth 來源（唯讀）</h3>
+      <p className="scope-status">LOC 一般登入：{authOverview.primaryOAuth}（依目前資料庫路由）</p>
+      <p className="scope-status">獨立復原登入：{recoveryOAuth}</p>
+      <div className="scope-status" style={{display:'flex',gap:16,flexWrap:'wrap'}}>
+        <AuthStatusLight label="Supabase Auth" enabled={authOverview.supabaseSupported}/>
+        <AuthStatusLight label="Neon Auth" enabled={authOverview.neonSupported}/>
+      </div>
+      <p className="scope-status">燈號只表示程式有對應 Auth 支援且必要設定已提供，不代表服務在線、已啟用或已通過實際登入。此處不能編輯認證，也不會修改 Database Link 或切換路由。</p>
+    </div>
     <h3><UiText id="uiExtra.adminView.savedDatabaseConnections"/></h3>
     <div className="admin-inline-select">
       <div>
