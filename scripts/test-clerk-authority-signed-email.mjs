@@ -26,7 +26,7 @@ const env={
   LOC_CONTROL_ENCRYPTION_KEY:Buffer.alloc(32).toString('base64'),
   LOC_AUTHORITY_STATE:{idFromName:()=>({}),get:()=>({})}
 };
-async function verified(token,{publicKey=jwk}={}){
+async function verified(token,{publicKey=jwk,rootEmail=''}={}){
   const previous=globalThis.fetch;
   globalThis.fetch=async(value,init)=>{
     assert.equal(String(value),issuer+'/.well-known/jwks.json');
@@ -41,7 +41,7 @@ async function verified(token,{publicKey=jwk}={}){
     const request=new Request('https://authority.example.org/v1/identity',{
       headers:{authorization:'Bearer '+token,origin}
     });
-    return await worker.fetch(request,env);
+    return await worker.fetch(request,{...env,LOC_ROOT_MANAGEMENT_EMAIL:rootEmail});
   }finally{globalThis.fetch=previous}
 }
 test('Clerk RS256 verified email is accepted only after matching issuer, signature and origin',async()=>{
@@ -102,4 +102,27 @@ test('a false JWT signature remains HTTP 401, not a key import error',async()=>{
   const response=await verified([parts[0],changed,parts[2]].join('.'));
   assert.equal(response.status,401);
   assert.match((await response.json()).error,/signature invalid|Invalid token/);
+});
+
+test('single configured root maps verified Clerk subject to trusted management email',async()=>{
+  const response=await verified(jwt({email:undefined,email_verified:undefined}),
+    {rootEmail:'owner@example.org'});
+  assert.equal(response.status,200);
+  const identity=await response.json();
+  assert.equal(identity.subject,'user_TEST123');
+  assert.equal(identity.email,'owner@example.org');
+});
+
+test('non-root cannot gain management email by presenting another valid Clerk subject',async()=>{
+  const response=await verified(jwt({sub:'user_OTHER',email:undefined,email_verified:undefined}),
+    {rootEmail:'owner@example.org'});
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).email,'');
+});
+
+test('an invalid or missing configured root email is never promoted to a management email',async()=>{
+  const response=await verified(jwt({email:undefined,email_verified:undefined}),
+    {rootEmail:'not-an-email'});
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).email,'');
 });
