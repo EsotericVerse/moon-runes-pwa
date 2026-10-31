@@ -228,7 +228,7 @@ function ArticleRelationNavigation({
         }
       }catch{/* Plain-text rune descriptions remain valid. */}
     }
-    return <span key={item.uid||index} className="scope-article-context-media">
+    return <div key={item.uid||index} className="scope-article-context-media">
       {href?<a href={href} target="_blank" rel="noopener noreferrer"
         className="scope-article-context-link">{label}</a>:<strong>{label}</strong>}
       {isRunes?<a className="scope-article-context-link" href={scopeHref('lrunes')}>符文</a>:null}
@@ -250,7 +250,7 @@ function ArticleRelationNavigation({
           </details>
         </>:<p>{description}</p>}
       </details>:null}
-    </span>;
+    </div>;
   });
   const ordinaryMedia=mediaItems.filter((_,index)=>
     String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&externalLink({href:relatedMedia[index]?.url}));
