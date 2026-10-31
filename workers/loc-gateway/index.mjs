@@ -5,6 +5,17 @@
 const EXPOSED=['content-type','content-range','etag','cache-control','x-request-id'];
 const METHODS=new Set(['GET','HEAD','POST','PATCH','DELETE','OPTIONS']);
 const RESOURCE=/^\/(?:[a-z][a-z0-9_]{0,62}|rpc\/[a-z][a-z0-9_]{0,62})$/;
+// These RPCs are read-only and must additionally be granted to the remote
+// anonymous Postgres role. All unlisted functions require verified identity.
+const PUBLIC_READ_RPCS=new Set([
+  'read_app_bootstrap','read_scope_statistics','read_scope_category_totals',
+  'read_scope_overview','read_scope_earliest','read_loc_statistics',
+  'read_scope_place_statistics','read_scope_keyword_suggestions',
+  'read_keyword_tree_summary','read_keyword_tree_catalog',
+  'read_shared_keyword_classes','read_music_style_tree',
+  'search_scope_trace_place_names','read_trace_place_density',
+  'read_trace_keyword_group_totals'
+]);
 const VALID_ORIGINS=/^https:\/\/[^/?#]+$/;
 function response(message,status,origin=''){
   return new Response(JSON.stringify({message}),{
@@ -98,7 +109,9 @@ export default {
         throw Object.assign(Error('Independent identity verification failed'),{status:401});
       // All unauthenticated writes, including RPC POST, fail closed. Guest
       // reads may use only GET/HEAD to avoid opening unknown mutating RPCs.
-      if(!principal&&!['GET','HEAD'].includes(request.method))
+      const publicReadRpc=request.method==='POST'&&path.startsWith('/rpc/')&&
+        PUBLIC_READ_RPCS.has(path.slice('/rpc/'.length));
+      if(!principal&&!['GET','HEAD'].includes(request.method)&&!publicReadRpc)
         throw Object.assign(Error('Clerk login required'),{status:401});
       // The trusted Clerk JWT is passed unchanged: provider-side RLS must
       // independently validate its JWKS/issuer/role/email before any write.
