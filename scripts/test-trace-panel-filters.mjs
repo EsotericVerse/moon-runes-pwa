@@ -97,3 +97,17 @@ test('Culture and Statistics article lists never fetch Galaxy Media without a me
   assert.match(stat,/全部文章列表/);
   assert.doesNotMatch(stat,/全部作品列表（含多媒體）/);
 });
+
+
+test('article detail separates original links, linked media, rune data and structural sections',()=>{
+  const reader=read('app/modular/ui.jsx');
+  assert.match(reader,/<div key=\{item\.uid\|\|index\} className="scope-article-context-media">/);
+  assert.doesNotMatch(reader,/<span key=\{item\.uid\|\|index\} className="scope-article-context-media">/);
+  assert.match(reader,/row\('相關媒體外部連結',ordinaryMedia\)/);
+  assert.match(reader,/row\('相關媒體資料',mediaDetails\)/);
+  assert.match(reader,/row\('抽牌結果（多媒體）',runeMedia\)/);
+  assert.match(reader,/row\('文章原始網址'/);
+  for(const group of ['時間','空間','統計'])
+    assert.ok(reader.includes('<h3>'+group+'</h3>'));
+  assert.match(reader,/row\('關鍵詞組別'/);
+});
