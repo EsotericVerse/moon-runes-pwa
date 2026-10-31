@@ -28,8 +28,13 @@ const env={
 };
 async function verified(token,{publicKey=jwk}={}){
   const previous=globalThis.fetch;
-  globalThis.fetch=async value=>{
+  globalThis.fetch=async(value,init)=>{
     assert.equal(String(value),issuer+'/.well-known/jwks.json');
+    // Cloudflare Workers throws TypeError for redirect:'error'.
+    // The mock reproduces that Worker restriction instead of silently
+    // accepting a setting that a Node fetch might permit.
+    if(init?.redirect==='error')throw new TypeError('Unsupported redirect mode in Cloudflare Workers');
+    assert.equal(init?.redirect,'follow');
     return new Response(JSON.stringify({keys:[publicKey]}),{status:200});
   };
   try{
