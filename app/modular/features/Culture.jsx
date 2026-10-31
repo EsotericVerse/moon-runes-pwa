@@ -376,6 +376,7 @@ export default function Culture(){
     ?l.customPeriod:keywordPeriod?localizedLabelOf(keywordPeriod,0):l.timeTrace;
   const requestedWindowStart=String(navigation.from||'').slice(0,10);
   const requestedWindowEnd=String(navigation.to||'').slice(0,10);
+  const requestedPeriodUid=String(navigation.period||'').trim();
   const appliedDateNavigationRef=useRef('');
   useEffect(()=>{
     if(!requestedWindowStart){
@@ -383,9 +384,11 @@ export default function Culture(){
       return;
     }
     if(isAggregateScope||!primaryPeriods.length)return;
-    const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd].join('|');
+    const navigationKey=[scopeId,requestedWindowStart,requestedWindowEnd,requestedPeriodUid].join('|');
     if(appliedDateNavigationRef.current===navigationKey)return;
-    const matched=primaryPeriods.find(item=>{
+    const exactPeriod=requestedPeriodUid?primaryPeriods.find(item=>
+      String(item.uid||'')===requestedPeriodUid||periodKey(item)===requestedPeriodUid):null;
+    const matched=exactPeriod||primaryPeriods.find(item=>{
       const start=String(item?.start_date||'').slice(0,10);
       const end=String(item?.end_date||'9999-12-31').slice(0,10);
       // Never select a disconnected time trace merely because the clicked
@@ -399,7 +402,7 @@ export default function Culture(){
       setStructureWindowKey(periodKey(matched));
       setKeywordPeriodKey(periodKey(matched));
     }
-  },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,primaryPeriods]);
+  },[scopeId,isAggregateScope,requestedWindowStart,requestedWindowEnd,requestedPeriodUid,primaryPeriods]);
 
   // A published flat classification is a JS value, not an async database
   // resource. Culture and Statistics use the exact same public source catalog.
