@@ -1,3 +1,4 @@
+import { DurableObject } from 'cloudflare:workers';
 // LOC independent recovery control plane. Never imports a database client or Supabase Auth.
 // The separate Worker is provisioned only when Clerk + root identity + encryption secrets exist.
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'};
@@ -91,8 +92,8 @@ async function decryptProfile(value,secret){
   const bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64bytes(parts[0])},await encryptionKey(secret),b64bytes(parts[1]));
   return JSON.parse(new TextDecoder().decode(bytes));
 }
-export class LocAuthorityState {
-  constructor(ctx,env){this.ctx=ctx;this.env=env;}
+export class LocAuthorityState extends DurableObject {
+  constructor(ctx,env){super(ctx,env);}
   async listState(){
     const saved=await this.ctx.storage.list({prefix:'target:'});
     const targets=[];
