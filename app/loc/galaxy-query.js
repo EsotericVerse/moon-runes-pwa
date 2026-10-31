@@ -7,7 +7,7 @@ import {sourceTaxonomyFromArrays} from './source-classification.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
-import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,forEachAllRowsPage,selectAllRows,selectCount,selectRows} from './db-query.mjs';
+import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
 import {readNumericIsr,usesNumericIsr} from './numeric-isr-client';
@@ -57,18 +57,6 @@ function dailyKeyOf(row,column,{includeEmpty=false,includeUndated=false}={}){
   if((!includeEmpty&&!category)||(!includeUndated&&!day))return null;
   return day+'\u0000'+category;
 }
-// Streams one table page by page and keeps only the counters, never the rows.
-async function countStreamed(table,{columns,filters=[]},keyOf){
-  const counts=new Map();
-  await forEachAllRowsPage(table,{columns,filters},rows=>{
-    for(const row of rows){
-      const key=keyOf(row);
-      if(key===null||key===undefined)continue;
-      counts.set(key,(counts.get(key)||0)+1);
-    }
-  });
-  return counts;
-}
 function dailyCountRows(rows,column,{includeEmpty=false,includeUndated=false}={}){
   const counts=countBy(rows,row=>dailyKeyOf(row,column,{includeEmpty,includeUndated}),{includeEmpty:true});
   return dailyRowsFromCounts(counts);
@@ -110,10 +98,7 @@ async function scopeDailyCounts(current,range){
       counted.filter(row=>row.kind==='media'&&row.category).map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
     ];
   }
-  return Promise.all([
-    selectSourceDaily(current,range),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',range)
-  ]);
+  throw new Error('Culture statistics aggregate unavailable; full-row fallback is disabled');
 }
 
 // Per-Scope daily category counts for text works and media, computed by the
@@ -128,17 +113,9 @@ export async function selectScopeDailyCounts(scope,{startDate='',endDate='',incl
       .map(row=>({day:row.day,category:row.category,item_count:Number(row.item_count)||0})).sort(order);
     return {text:pick('source'),media:pick('media')};
   }
-  // Culture must not silently download every Galaxy/Media timestamp when the
-  // aggregate RPC is unavailable; that can turn one chart into 1000s of rows.
-  if(requireAggregate)throw new Error('Culture requires silver.read_scope_statistics; full Galaxy fallback is disabled');
-  const [text,media]=await Promise.all([
-    selectDailyCategoryCounts(current.galaxy,'site',{
-      startDate,endDate,filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-      includeEmpty:true,includeUndated
-    }),
-    selectDailyCategoryCounts(current.galaxyMedia,'media_type',{startDate,endDate,includeEmpty:includeEmptyMedia,includeUndated})
-  ]);
-  return {text,media};
+  // Both public Culture and Statistics must rely on the grouped DB reader.
+  // Never silently stream all Galaxy/media rows in a browser fallback.
+  throw new Error('Culture requires a database-side date aggregate; full-row fallback disabled');
 }
 
 // One number per source/media category for a window, no per-day grouping
@@ -166,17 +143,13 @@ export async function selectSourceTaxonomy(){
 
 export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=20}={}){
   const current=scopeOf(scope);
-  const filters=publicContentFilters([
-    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true}
-  ]);
+  const rows=await readScopeCategoryTotals(current.id,{
+    startDate:dateOnly(startDate),endDate:dateOnly(endDate)
+  });
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const counts=await countStreamed(current.galaxy,{columns:'site',filters},row=>String(row?.site||'').trim());
-  const normalized=termCountRows(counts,{limit:safeLimit,includeEmpty:true}).map(row=>({
-    scope_id:current.id,
-    site:row.term,
-    item_count:row.item_count
-  }));
+  const normalized=rows.filter(row=>row.kind==='source').map(row=>({
+    scope_id:current.id,site:String(row.category||''),item_count:Number(row.item_count)||0
+  })).sort((a,b)=>b.item_count-a.item_count||a.site.localeCompare(b.site)).slice(0,safeLimit);
   return {rows:normalized,totalCount:normalized.length};
 }
 
@@ -191,41 +164,21 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
       item_count:row.item_count
     }));
   }
-  const filters=publicContentFilters([
-    ...timeFilters(dayColumn(current.galaxy),startDate,endDate),
-    {column:'statistics_able',operator:'eq',value:true}
-  ]);
-  const counts=await countStreamed(current.galaxy,{columns:'site,'+dayColumn(current.galaxy),filters},
-    row=>dailyKeyOf(row,'site',{includeEmpty:true}));
-  return dailyRowsFromCounts(counts).map(row=>({
-    scope_id:current.id,
-    site:row.category,
-    day:row.day,
-    item_count:row.item_count
-  }));
+  throw new Error('Source daily statistics aggregate unavailable; full-row fallback disabled');
 }
 
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
-  const resolved=[
-    ...filters,
-    ...timeFilters(dayColumn(table),startDate,endDate),
-    ...(!includeEmpty?[{column:categoryColumn,operator:'neq',value:''}]:[])
-  ];
-  const counts=await countStreamed(table,{columns:`${categoryColumn},${dayColumn(table)}`,filters:resolved},
-    row=>dailyKeyOf(row,categoryColumn,{includeEmpty,includeUndated}));
-  return dailyRowsFromCounts(counts);
-}
-
-async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
-  const resolved=[
-    ...filters,
-    ...timeFilters(dayColumn(table),startDate,endDate),
-    {column:categoryColumn,operator:'neq',value:''}
-  ];
-  const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const counts=await countStreamed(table,{columns:categoryColumn,filters:resolved},
-    row=>String(row?.[categoryColumn]||'').trim());
-  return termCountRows(counts,{limit:safeLimit});
+  const match=String(table||'').match(/^(?:silver\.)?([a-z][a-z0-9]*)_galaxy(_media)?$/);
+  const kind=match?.[2]?'media':'source';
+  if(!match||categoryColumn!==(kind==='media'?'media_type':'site')||filters.length)
+    throw new Error('Unsupported daily category request; row-streaming fallback is disabled');
+  const rows=await readScopeStatistics(match[1],{
+    startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated
+  });
+  return rows.filter(item=>item.kind===kind&&(includeEmpty||item.category))
+    .map(item=>({day:String(item.day||''),category:String(item.category||''),
+      item_count:Number(item.item_count)||0}))
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
 }
 
 function mediaIdsOf(value){
