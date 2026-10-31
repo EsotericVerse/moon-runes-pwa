@@ -34,6 +34,17 @@ export function createNewKeywordDiscovery(rows=[]){
   const existing=existingKeywordSet(rows);
   const segmenter=new Intl.Segmenter('zh',{granularity:'word'});
   const totals=new Map();
+  const months=new Map();
+  // Coverage is read-only literal evidence, NOT a rewrite/reclassification
+  // of existing Keyword records. Single Han characters are too ambiguous
+  // for this estimated ratio, so use terms with >=2 characters.
+  const known=[...existing].filter(term=>[...term].length>=2)
+    .sort((a,b)=>b.length-a.length);
+  const escapeRegex=term=>term.replace(/[.*+?^${}()|[\]\\]/g,'\\  const totals=new Map();
+  let read=0,withContent=0,limited=false;');
+  const knownMatchers=[];
+  for(let offset=0;offset<known.length;offset+=100)
+    knownMatchers.push(new RegExp(known.slice(offset,offset+100).map(escapeRegex).join('|'),'u'));
   let read=0,withContent=0,limited=false;
   function add(term,seen,month,excerpt){
     const key=normalize(term);
@@ -58,6 +69,12 @@ export function createNewKeywordDiscovery(rows=[]){
       withContent++;
       const seen=new Set();
       const month=String(row?.createtime||'').slice(0,7);
+      if(/^\\d{4}-\\d{2}$/.test(month)){
+        const item=months.get(month)||{month,documents:0,existingCovered:0};
+        item.documents++;
+        if(knownMatchers.some(re=>re.test(normalize(body))))item.existingCovered++;
+        months.set(month,item);
+      }
       let prev=null,prev2=null;
       for(const piece of segmenter.segment(body)){
         const token=String(piece.segment||'').trim();
@@ -86,7 +103,7 @@ export function createNewKeywordDiscovery(rows=[]){
     }
     return {read,withContent,limited};
   }
-  function finish({limit=60,minDocuments=3}={}){
+  function finish({limit=120,minDocuments=3}={}){
     const minimum=withContent<100?2:minDocuments;
     // A repeatedly used compound is often a better addition than a generic
     // two-character fragment. Keep document coverage as the primary signal.
@@ -97,7 +114,7 @@ export function createNewKeywordDiscovery(rows=[]){
     const all=[...totals.values()].filter(term=>term.documents>=minimum);
     const chinese=all.filter(term=>HAN.test(term.word)).sort(rank);
     const other=all.filter(term=>!HAN.test(term.word)).sort(rank);
-    const maximum=Math.max(1,Math.min(100,limit));
+    const maximum=Math.max(1,Math.min(120,limit));
     // Keep English music-production wording from crowding out every Chinese
     // candidate. These are display lanes, NOT Keyword Classes or Groups.
     const primary=chinese.slice(0,Math.ceil(maximum*0.7));
@@ -110,7 +127,9 @@ export function createNewKeywordDiscovery(rows=[]){
     }
     result=result.map(term=>({...term,language:HAN.test(term.word)?'zh':'other',
       months:[...term.months.entries()].sort(([a],[b])=>a.localeCompare(b))}));
-    return {read,withContent,limited,existingCount:existing.size,candidates:result};
+    return {read,withContent,limited,existingCount:existing.size,
+      monthCoverage:[...months.values()].sort((a,b)=>a.month.localeCompare(b.month)),
+      candidates:result};
   }
   return {consume,finish};
 }
