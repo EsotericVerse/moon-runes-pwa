@@ -71,6 +71,27 @@ test('new distinct named coordinates create separate Trace anchors without losin
   assert.equal(db.inserts,4);
 });
 
+test('reversed insert response still maps the correct Trace UID to each coordinate',async()=>{
+  const db=memoryTrace();
+  const relation=table=>{
+    const api=db.relation(table);
+    return {...api,insert:rows=>({select:async()=>{
+      const result=await api.insert(rows).select('uid,title,address');
+      return {...result,data:[...result.data].reverse()};
+    }})};
+  };
+  const a=named('重名地點',25.1,121.1),b=named('重名地點',25.2,121.2);
+  const resolved=await prepareImportPlaceAnchors([a,b],{
+    scopeId:'lo3rwang',relation,createMissing:true
+  });
+  const uidA=importedPlaceId({incoming:a,byName:resolved.byName,byCoordinate:resolved.byCoordinate});
+  const uidB=importedPlaceId({incoming:b,byName:resolved.byName,byCoordinate:resolved.byCoordinate});
+  assert.equal(resolved.created,2);
+  assert.ok(uidA&&uidB&&uidA!==uidB);
+  assert.deepEqual(db.rows.find(x=>x.uid===uidA).address,[121.1,25.1]);
+  assert.deepEqual(db.rows.find(x=>x.uid===uidB).address,[121.2,25.2]);
+});
+
 test('a new named place without coordinates is created with a null address',async()=>{
   const db=memoryTrace();
   const result=await prepareImportPlaceAnchors([named('新地點',null,null)],{
