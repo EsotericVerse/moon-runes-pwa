@@ -60,7 +60,11 @@ export function createKyselyEdgeClient({url,publishableKey,auth,role='authentica
     if(role==='authenticated'&&!token)
       throw new Error('Authenticated database request requires a verified session');
     const headers={'content-type':'application/json'};
-    if(!external)headers.apikey=publishableKey;
+    // A same-project Edge endpoint (e.g. the isolated Clerk SQL function)
+    // still requires Supabase's public API key. A genuinely independent
+    // Gateway does not receive this provider-specific header.
+    if(!external||(url&&new URL(external).origin===new URL(url).origin))
+      headers.apikey=publishableKey;
     if(token)headers.authorization='Bearer '+token;
     const request={method:'POST',headers,credentials:'omit',
       body:JSON.stringify({...body,target})};
