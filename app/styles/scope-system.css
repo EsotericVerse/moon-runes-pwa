@@ -538,6 +538,37 @@
 .scope-work-summary-actions{display:flex;align-items:center;justify-content:flex-end;gap:.6rem;flex-wrap:wrap}
 .scope-work-fulltext-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 
+/* An opened UID is a reading page, not an inline result preview. */
+.scope-article-detail .scope-culture-work-heading .scope-article-title-link,
+.scope-article-detail .scope-culture-work-heading > div > strong{
+  display:inline-block;
+  font-size:clamp(1.45rem,1.15rem + 1.35vw,2.05rem);
+  font-weight:800;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.scope-article-detail > .scope-work-fulltext-row{
+  display:block;
+  width:100%;
+  min-width:0;
+}
+.scope-article-detail .scope-work-fulltext,
+.scope-article-detail .scope-article-block-display,
+.scope-article-detail .scope-blocknote,
+.scope-article-detail .scope-blocknote .bn-container,
+.scope-article-detail .scope-blocknote .bn-editor{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+.scope-article-detail .scope-article-block-display{
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+
 .scope-data-source-details{min-width:0;width:100%}
 .scope-data-source-details>summary{width:max-content;max-width:100%;min-height:32px;display:flex;align-items:center;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--loc-muted)}
 .scope-data-source-details>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px;border-radius:3px}

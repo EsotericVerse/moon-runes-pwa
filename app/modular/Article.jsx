@@ -47,7 +47,7 @@ function DeferredArticleBody({html}){
 }
 
 // Shared article(uid) list module for Search and Culture.
-export default function Article({uid,title,articleHref='',source='',scopeId='',date='',checkInPlace='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId='',editOnCardClick=true,managerMode=false,showInlineEditorActions=true}){
+export default function Article({uid,title,articleHref='',detailReading=false,source='',scopeId='',date='',checkInPlace='',body='',hidden=false,relationLinks=[],links=[],destinations=[],editable=false,editing=false,onEdit,editorDraft=null,onDraftChange,onSave,onDelete,onCancel,editBusy=false,editError='',showHidden=false,attributeFields=null,styleTag=false,styleTagKicker=null,styleIntroText='',children=null,showBodyEditor=true,attributeTitle='',mediaScopeId='',editOnCardClick=true,managerMode=false,showInlineEditorActions=true}){
   useUiSection('uiExtra.searchUI');
   useUiSection('uiExtra.editBlocks');
   const t=useUiText();
@@ -76,7 +76,7 @@ export default function Article({uid,title,articleHref='',source='',scopeId='',d
   const visibleRelations=mediaEditLinks.length?[...relationLinks,...mediaEditLinks]:relationLinks;
   return <WorkSummaryCard title={title} titleHref={articleHref} titleEditor={titleEditor} kicker={styleTag?styleTagKicker:null} source={source} scopeId={scopeId} date={editingReady?'':date} actions={editorActions}
     body={editingReady||richBody||styleTag?'':body} hidden={hidden} relationLinks={visibleRelations} links={visibleLinks}
-    destinations={destinations} className={styleTag?'scope-article-style-tag-hit':''} onClickCapture={onClickCapture}>
+    destinations={destinations} className={[styleTag?'scope-article-style-tag-hit':'',detailReading?'scope-article-detail':''].filter(Boolean).join(' ')} onClickCapture={onClickCapture}>
     {styleTag&&!editingReady&&styleIntroText?<div className="scope-style-tag-search-intro">{styleIntroText}</div>:null}
     {richBody&&!editingReady?<DeferredArticleBody html={body}/>:null}
     {editingReady?<ObjectEditor mode="article" draft={editorDraft} onChange={onDraftChange} showHidden={showHidden} attributeFields={attributeFields} showBodyEditor={showBodyEditor} attributeTitle={attributeTitle} mediaHref={mediaScopeId?mediaEditHref:null}/>:null}

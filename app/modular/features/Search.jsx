@@ -1244,6 +1244,7 @@ export default function Search({managementMode=false}){
           articleHref={row.resourceType==='galaxy'
             ?(managementMode?scopeHref(scopeId,'search/manage')+'?identity='+encodeURIComponent(row.resourceId)+'&scope='+encodeURIComponent(row.scopeId):galaxyIdentityHref(row.scopeId,row.resourceId))
             :''}
+          detailReading={Boolean(searchParams?.get('identity'))&&row.resourceType==='galaxy'}
           source={searchParams?.get('identity')?row.styleTagMatch?'':row.source:''}
           date={searchParams?.get('identity')?row.date:''}
           body=""
