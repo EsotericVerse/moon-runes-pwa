@@ -111,3 +111,10 @@ test('article detail separates original links, linked media, rune data and struc
     assert.ok(reader.includes('<h3>'+group+'</h3>'));
   assert.match(reader,/row\('關鍵詞組別'/);
 });
+
+
+test('SQLite local Galaxy uses createtime because it has no date column',()=>{
+  const query=read('app/loc/galaxy-query.js');
+  assert.match(query,/String\(table\|\|''\)==='silver\.local_galaxy'\?'createtime'/);
+  assert.match(query,/dateColumn:dayColumn\(current\.galaxy\)/);
+});
