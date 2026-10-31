@@ -5,7 +5,7 @@ const IGNORE_ZH=new Set('我們 你們 他們 這個 那個 這些 那些 自己
 for(const word of '我的 你的 他的 她的 自己的 我想 我們的 你們的 不同 不必 正式 原始 大綱 曲名 文字稿 段落 寫作 版本 作品 歌詞 這首 這首歌 一首歌 寫一首歌 先前 這次 再次 一片 還在 站在 落在 做到 看來 留下 大部分 開頭 結尾 每次 本來 然而 同時 必須 總是 這種 那種 一直 反而 已有 不同於 另外 如同 作為 來自 多數 各種 透過 相關的 文字的 說明 資料庫 目前的 都可以 沒辦法 這樣的 這樣子 不一樣'.split(/\s+/u))IGNORE_ZH.add(word);
 const IGNORE_EN=new Set('the and for that this with from have has had are was were you your they them their our his her what why how when where which just also can could would should not all one two into about there here then than more less some any out use used using via http https www com org net facebook threads instagram posted share post photo photos image images video media title text content article link links'.split(/\s+/u));
 // Do not join across grammatical connectors or common filler words.
-const JOIN_BREAK=new Set('的 了 與 和 及 在 對 從 讓 把 是 就 能 也 都 更 才 卻 但 而 被 向 過 其 我 你 他 她 它 此 那 這 為 會 應 可 不 沒 有 要 到 去 來 將 再 又 若 或 之 於 啊 嗎 呢 吧 耶 啦 哦 一 個 很 多 少 真 太 最 還 只 又 仍 已 且 以 因 故 所 者 也 已經 可以 因為 所以 但是 可是 以及 而且 或者 我想 這個 那個 一個 很多 許多 那些 這些'.split(/\s+/u));
+const JOIN_BREAK=new Set('的 了 與 和 及 在 對 從 讓 把 是 就 能 也 都 更 才 卻 但 而 被 向 過 其 我 你 他 她 它 此 那 這 為 會 應 可 不 沒 有 要 到 去 來 將 再 又 若 或 之 於 啊 嗎 呢 吧 耶 啦 哦 一 個 很 多 少 真 太 最 還 只 又 仍 已 且 以 因 故 所 者 也 已經 可以 因為 所以 但是 可是 以及 而且 或者 我想 這個 那個 一個 很多 許多 那些 這些 要用 同樣 寫 編寫 製作 撰寫 請用 請以 依照 按照 幫我 把它 再寫 改成 改寫 寫成 產生 生成 使用'.split(/\s+/u));
 const HAN=/^\p{Script=Han}+$/u;
 const LATIN=/^[\p{Script=Latin}][\p{Script=Latin}\d+#-]*$/u;
 const MAX_TERMS=85000;
