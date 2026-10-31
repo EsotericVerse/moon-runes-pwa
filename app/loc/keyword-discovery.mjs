@@ -73,11 +73,24 @@ export function createNewKeywordDiscovery(rows=[]){
   }
   function finish({limit=60,minDocuments=3}={}){
     const minimum=withContent<100?2:minDocuments;
-    const result=[...totals.values()]
-      .filter(term=>term.documents>=minimum)
-      .sort((a,b)=>b.documents-a.documents||b.occurrences-a.occurrences||a.word.localeCompare(b.word))
-      .slice(0,Math.max(1,Math.min(100,limit)))
-      .map(term=>({...term,months:[...term.months.entries()].sort(([a],[b])=>a.localeCompare(b))}));
+    const rank=(a,b)=>b.documents-a.documents||b.occurrences-a.occurrences
+      ||b.word.length-a.word.length||a.word.localeCompare(b.word);
+    const all=[...totals.values()].filter(term=>term.documents>=minimum);
+    const chinese=all.filter(term=>HAN.test(term.word)).sort(rank);
+    const other=all.filter(term=>!HAN.test(term.word)).sort(rank);
+    const maximum=Math.max(1,Math.min(100,limit));
+    // Keep English music-production wording from crowding out every Chinese
+    // candidate. These are display lanes, NOT Keyword Classes or Groups.
+    const primary=chinese.slice(0,Math.ceil(maximum*0.7));
+    const secondary=other.slice(0,Math.floor(maximum*0.3));
+    let result=[...primary,...secondary];
+    if(result.length<maximum){
+      const used=new Set(result.map(term=>term.word));
+      const extra=all.filter(term=>!used.has(term.word)).sort(rank);
+      result.push(...extra.slice(0,maximum-result.length));
+    }
+    result=result.map(term=>({...term,language:HAN.test(term.word)?'zh':'other',
+      months:[...term.months.entries()].sort(([a],[b])=>a.localeCompare(b))}));
     return {read,withContent,limited,existingCount:existing.size,candidates:result};
   }
   return {consume,finish};
