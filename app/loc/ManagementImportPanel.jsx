@@ -85,6 +85,9 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     ...(isArchiveMediaUrl(rawUrl)?[rawUrl]:[])]
     .filter(item=>item!==''&&item!==undefined&&item!==null);
   let mediaRecords=[],mediaRefs=[];
+  const importedRuneReferences=value('rune_references');
+  const runeResultText=importedRuneReferences==null||importedRuneReferences===''
+    ?'':typeof importedRuneReferences==='string'?importedRuneReferences:JSON.stringify(importedRuneReferences);
   try{
     for(const item of mediaCandidates){
       const media=normalizeImportMedia(item,{title:rawTitle,createtime:createdAt,location:sourcePlace,article_uid:uid});
@@ -99,9 +102,15 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
       seenMediaKeys.add(key);return true;
     });
     mediaRefs=[...new Set(mediaRefs)];
+    // A text article may carry a top-level card draw, even when the import
+    // did not provide a nested media array. Attach one media record to its UID.
+    if(content&&runeResultText)mediaRecords.push({
+      __article_uid:uid,media_type:'runes',title:'抽牌結果',
+      url:null,meta_tags:runeResultText,createtime:createdAt,location:sourcePlace||null
+    });
   }catch(error){return {record:null,error:String(error.message||error)}}
   if(!content){
-    const type=String(value('media_type')||'').trim();
+    const type=String(value('media_type')||(runeResultText?'runes':'')).trim();
     const url=String(value('url')||'').trim();
     if(type){
       const rawId=String(row.uid||'').trim();
@@ -110,10 +119,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
         ...(rawId?{uid:rawId}:{}),
         __article_uid:String(value('galaxy_link')||'').trim()||null,
         location:sourcePlace||null,
-        media_type:type,title:rawTitle||null,url:url||null,
-        meta_tags:String(value('meta_tags')||'').trim()||null,
+        media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null),url:url||null,
+        meta_tags:String(value('meta_tags')||'').trim()||(type==='runes'?runeResultText:null),
         createtime:createdAt,
-        ...(value('rune_references')?{rune_references:value('rune_references')}:{} )
+        ...(type!=='runes'&&runeResultText?{rune_references:importedRuneReferences}:{})
       }};
     }
     return {record:null,error:t('uiExtra.importUI.invalidNoBody')};
