@@ -49,12 +49,15 @@ export default function ManagementAccess({scopeId,level='scope',featureId='manag
   if(!ready||!account.user||!allowed||!entered)return <FeaturePage featureId={featureId}>
     <section className="loc-card scope-feature-card">
       {!ready?<p role="status">正在確認管理權限…</p>
-        :!account.user?<p>請先登入才能進入管理。</p>
-        :!allowed?<p role="alert">沒有此 {level==='group'?'Scope Group':level==='global'?'系統':'Scope'} 的管理權限。</p>
+        :!account.user?<p>{account.error?'Clerk Session 驗證失敗，請重新登入。':'請先使用 Clerk 登入才能進入管理。'}</p>
+        :!allowed?<p role="alert">{account.error?'管理權限確認失敗，暫時無法編輯。':<>沒有此 {level==='group'?'Scope Group':level==='global'?'系統':'Scope'} 的管理權限。</>}</p>
         :locked?<><p role="status">編輯 Session 已鎖定，請重新驗證後進入管理。</p>
           <button className="loc-button" type="button" disabled={renewing} onClick={renew}>
             {renewing?'正在重新驗證…':'重新驗證並進入管理'}
           </button></>:<p role="status">正在啟用管理介面…</p>}
+      {account.error?<p className="scope-status scope-error" role="alert">{account.error}</p>:null}
+      {!allowed&&account.user&&account.error?<button className="loc-button" type="button"
+        onClick={()=>void account.refresh({forceVerify:true}).catch(()=>{})}>重新確認管理權限</button>:null}
       {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     </section>
   </FeaturePage>;

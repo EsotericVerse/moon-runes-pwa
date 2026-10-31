@@ -1,11 +1,14 @@
 # LOC 獨立 Authority 與資料庫復原控制層
 
+> **2026-11-01 RC3 註記：** LOC 一般登入現已統一使用 Clerk；舊 Supabase Auth 登入切換與獨立資料庫復原管理頁面已從網站移除。保留 `public/recovery/config.json` 供 Clerk 登入讀取公開設定，並保留 Authority Worker 供 Session 簽章驗證；它們不是額外的帳號功能。Neon Schema／Auth 暫緩，無任何改動。以下其他復原 API 規格為既有技術記錄，**不是現行使用者介面**。
+
+
 此版本提供一套 **與 Supabase／Neon 等業務 SQL 資料庫無關**的管理入口及權限儲存。目前獨立 Cloudflare 控制 Worker 已部署；主站全部 CRUD、Realtime、第三方 JWT／RLS、Neon Data API 及無停機切庫仍未完成端對端驗收，不能聲稱 Supabase 中斷時整站正常。Clerk 是可選的登入提供者（優先使用）；也可另外配置第二個 OIDC 身分提供者。資料庫故障不會阻止復原頁本身開啟，但未部署、未配置身分服務時不能假裝已通過登入。
 
 ## 目前已有的可操作元件
 
-- `public/recovery/index.html`：完整獨立靜態管理入口，**不使用 Next.js AppShell、公開 Bootstrap、Supabase SDK、Neon SDK**。固定網址 `/recovery/index.html`。從一般設定頁僅提供文字入口，不在首頁載入 Authority。
-- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。**Clerk Development 與獨立 Authority Worker HTTPS URL 均已配置。** 此檔不含私鑰，不能當成機密儲存。獨立復原頁可載入 Clerk、登入與顯示 User ID；Authority 已部署於 Cloudflare Worker，實際 JWT／管理員權限仍須透過使用者瀏覽器執行端對端驗證。
+- `public/login/index.html`：單一 Clerk 登入入口；原本的 `/recovery/index.html` 管理頁已移除，不再顯示操作入口。
+- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。**Clerk Development 與獨立 Authority Worker HTTPS URL 均已配置。** 此檔不含私鑰，不能當成機密儲存。Clerk 登入頁可載入 Clerk、登入與驗證身分；Authority 已部署於 Cloudflare Worker，實際 JWT／管理員權限仍須透過使用者瀏覽器執行端對端驗證。
 - `workers/loc-authority/index.mjs`：獨立 Cloudflare Worker，使用 RSA 簽章、Issuer、Audience/Authorized Party、有效期限及 Root 主體白名單驗證管理員；沒有業務資料庫呼叫。
 - `workers/loc-authority/wrangler.jsonc`：控制服務專用 Worker，採 SQLite-backed Durable Object。絕不將其綁到目前 `loc-isr` 的儲存或部署週期。
 - 管理員可建立／編輯 PostgreSQL、MySQL、SQL Server 連線目標；密碼用 AES-256-GCM 加密，回傳的清單不包含密碼。更新時留空可沿用原密碼。

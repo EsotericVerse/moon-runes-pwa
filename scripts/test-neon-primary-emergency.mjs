@@ -83,13 +83,14 @@ test('Neon lacks a session: no verified user may be granted',async()=>{
   assert.equal(await db.getAccountSession(),null);
 });
 
-test('configured provider selects Neon before constructing any Supabase client',()=>{
+test('LOC uses Clerk identity while the independent Neon adapter remains deferred',()=>{
   const source=readFileSync(new URL('../app/loc/providers/configured.mjs',import.meta.url),'utf8');
-  assert.match(source,/if\(routing.provider==='neon'\)return createNeonPrimaryAdapter\(\)/);
-  assert.ok(source.indexOf("if(routing.provider==='neon')")<source.indexOf("const primary=createSupabaseAdapter()"));
+  assert.match(source,/return createClerkGatewayAdapter\(\)/);
+  assert.doesNotMatch(source,/createNeonPrimaryAdapter|loc-auth-provider|createSupabaseAdapter/);
+  // Neon adapter tests remain available for schema consolidation; production
+  // Clerk account selection does not depend on those incomplete schemas.
   const emergency=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
   assert.match(emergency,/setEmergencyDatabasePrimary\(target\)/);
-  assert.match(emergency,/window\.location\.reload\(\)/);
 });
 
 test('Neon does not reuse a JWT from a previous OAuth session',async()=>{

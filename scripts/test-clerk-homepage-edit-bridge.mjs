@@ -42,3 +42,12 @@ test('independent Clerk editor never writes to Neon',()=>{
   assert.match(source,/loc-kysely-clerk/);
   assert.doesNotMatch(source,/createNeonPrimaryAdapter|createBackupPublicAdapter/);
 });
+
+test('production LOC routes every account login via Clerk, with no per-device toggle',()=>{
+  const configured=readFileSync(new URL('../app/loc/providers/configured.mjs',import.meta.url),'utf8');
+  const client=readFileSync(new URL('../app/loc/providers/clerk-gateway.mjs',import.meta.url),'utf8');
+  assert.match(configured,/return createClerkGatewayAdapter\(\)/);
+  assert.doesNotMatch(configured,/loc-auth-provider|NEXT_PUBLIC_LOC_IDENTITY_PROVIDER|createNeonPrimaryAdapter/);
+  assert.doesNotMatch(client,/createSupabaseAdapter|autoRefreshToken:true|persistSession:true/);
+  assert.match(client,/loc-kysely-clerk/);
+});

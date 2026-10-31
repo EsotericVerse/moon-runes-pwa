@@ -45,12 +45,7 @@ export default function GlobalSettings({initialSection='home'}={}){
 
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
-  const [authProvider,setAuthProvider]=useState('supabase');
-  useEffect(()=>{
-    try{setAuthProvider(window.localStorage.getItem('loc-auth-provider')==='clerk'?'clerk':'supabase');}
-    catch{setAuthProvider('supabase');}
-  },[]);
-  // Settings home is the sole Google OAuth entry; protected sections keep their own authorization.
+  // Clerk exclusively handles login; management permissions are still checked by SQL.
   const verifiedGoogleAccount=useAccount({enabled:section==='home',sessionOnly:true});
   const account=section==='home'?verifiedGoogleAccount:prefs.account;
 
@@ -135,13 +130,6 @@ export default function GlobalSettings({initialSection='home'}={}){
     void account.signIn(new URL('/local/settings/',window.location.href).href)
       .catch(error=>setStatus(String(error?.message||error)));
   }
-  function loginWithClerk(){
-    window.location.assign('/login/index.html?return_to=%2Flocal%2Fsettings%2F');
-  }
-  function restoreOriginalLogin(){
-    window.localStorage.removeItem('loc-auth-provider');
-    window.location.assign('/local/settings/');
-  }
 
   return <FeaturePage featureId="setting">
     <div className="scope-settings-options management-workspace">
@@ -153,17 +141,10 @@ export default function GlobalSettings({initialSection='home'}={}){
       {activeSection==='home'?<div className="loc-settings-panel-group">
         <section className="loc-card">
           <h2><UiText id="uiExtra.globalSettings.account"/></h2>
-          {accountWaiting?<p role="status">正在核驗登入身分…</p>:account.user?<p>{authProvider==='clerk'?'Clerk':'Google OAuth'}（已驗證）：{account.email}</p>:null}
-          {!accountWaiting&&!account.user?<div className="scope-stat-controls">
-            {authProvider==='clerk'
-              ?<button type="button" className="loc-button primary" disabled={busy} onClick={login}><UiText id="uiExtra.globalSettings.login"/></button>
-              :<button type="button" className="loc-button primary" disabled={busy} onClick={loginWithClerk}>使用 Clerk Google 登入</button>}
-            {authProvider!=='clerk'?<button type="button" className="loc-button" disabled={busy} onClick={login}>原本登入方式</button>:null}
-          </div>:null}
+          {accountWaiting?<p role="status">正在核驗 Clerk 登入身分…</p>:account.user?<p>Clerk Google（已驗證）：{account.email}</p>:null}
+          {!accountWaiting&&!account.user?<button type="button" className="loc-button primary" disabled={busy} onClick={login}>使用 Clerk Google 登入</button>:null}
           {account.user||prefs.account.user?<button type="button" className="loc-button" disabled={busy} onClick={logout}><UiText id="uiExtra.globalSettings.logout"/></button>:null}
-          {authProvider==='clerk'?<button type="button" className="loc-button" disabled={busy} onClick={restoreOriginalLogin}>恢復原本登入</button>:null}
           {account.error?<p role="alert" className="scope-status scope-error">{account.error}</p>:null}
-          <p className="scope-status"><a href="/recovery/index.html">獨立資料庫復原控制（Clerk 管理員專用）</a></p>
         </section>
         <section className="loc-card">
         <h2><UiText id="uiExtra.globalSettings.homeSettings"/></h2>

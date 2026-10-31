@@ -195,8 +195,8 @@ export default function DatabaseTarget({scopeGroup}){
     {/* Authentication status: display only, no credentials or control actions. */}
     <div className="scope-management-wide-field" aria-label="OAuth 與 Auth 狀態（唯讀）">
       <h3 className="admin-workspace-section-heading">OAuth 來源（唯讀）</h3>
-      <p className="scope-status">LOC 一般登入：{authOverview.primaryOAuth}（依目前資料庫路由）</p>
-      <p className="scope-status">獨立復原登入：{recoveryOAuth}</p>
+      <p className="scope-status">LOC 登入：{authOverview.primaryOAuth}</p>
+      <p className="scope-status">Clerk 環境：{recoveryOAuth}</p>
       <div className="scope-status" style={{display:'flex',gap:16,flexWrap:'wrap'}}>
         <AuthStatusLight label="Supabase Auth" enabled={authOverview.supabaseSupported}/>
         <AuthStatusLight label="Neon Auth" enabled={authOverview.neonSupported}/>
