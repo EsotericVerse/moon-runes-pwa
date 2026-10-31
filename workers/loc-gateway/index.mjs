@@ -70,6 +70,27 @@ async function verifyClerk(request,env){
   return identity?.provider==='clerk'&&String(identity.subject||'').startsWith('user_')
     ?identity:null;
 }
+let anonTokenCache=null;
+let anonTokenPending=null;
+async function neonAnonymousToken(env){
+  const base=String(env.LOC_NEON_AUTH_URL||'').replace(/\/+$/,'');
+  if(!base.endsWith('/auth'))throw Error('Neon anonymous token endpoint is not configured');
+  if(anonTokenCache&&anonTokenCache.expires>Date.now())return anonTokenCache.value;
+  if(!anonTokenPending)anonTokenPending=(async()=>{
+    const result=await fetch(base+'/token/anonymous',{
+      method:'GET',headers:{accept:'application/json'},redirect:'error',
+      signal:AbortSignal.timeout(6000)
+    });
+    if(!result.ok)throw Error('Neon anonymous token service unavailable');
+    const data=await result.json();
+    const value=data?.token||data?.data?.token||data?.access_token;
+    if(typeof value!=='string'||value.split('.').length!==3)
+      throw Error('Neon anonymous token is invalid');
+    anonTokenCache={value,expires:Date.now()+3*60*1000};
+    return value;
+  })().finally(()=>{anonTokenPending=null});
+  return anonTokenPending;
+}
 function outboundHeaders(request,{token,provider,env}){
   const input=request.headers,headers=new Headers();
   for(const name of ['accept','accept-profile','content-profile','prefer','range','content-type','if-none-match']){
@@ -90,7 +111,8 @@ async function upstream(provider,request,env,token){
     throw Error('Supabase publishable key is unavailable');
   const url=new URL(request.url), path=url.pathname.slice('/rest/v1'.length);
   const destination=endpoint+path+url.search;
-  const headers=outboundHeaders(request,{token,provider,env});
+  const neonToken=provider==='neon'&&!token?await neonAnonymousToken(env):'';
+  const headers=outboundHeaders(request,{token:token||(neonToken?'Bearer '+neonToken:''),provider,env});
   return fetch(destination,{method:request.method,headers,
     ...(request.method==='GET'||request.method==='HEAD'?{}:{body:request.body,duplex:'half'}),
     redirect:'error',signal:AbortSignal.timeout(9000)});
