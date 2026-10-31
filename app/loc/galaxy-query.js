@@ -283,13 +283,16 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable,content',
+    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable',
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const mediaRows=await mediaRowsFor(current,mediaIdsOf(row.media_link));
+  const [contentRow,mediaRows]=await Promise.all([
+    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
+    mediaRowsFor(current,mediaIdsOf(row.media_link))
+  ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
-  return {...row,scope_id:current.id,__table:current.galaxy,links:resolvedLinks(row,mediaById)};
+  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
 }
 
 function literalPattern(value){
