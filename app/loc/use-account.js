@@ -60,8 +60,8 @@ function cachedManagementAccount(){
     role:authorizer.role,authorizer,scopes:scopeMetadata};
 }
 
-async function loadManagementAccount(mutate){
-  const cached=cachedManagementAccount();
+async function loadManagementAccount(mutate,{forceVerify=false}={}){
+  const cached=forceVerify?null:cachedManagementAccount();
   if(cached)return cached;
   const startedAt=authRevision;
   const obsolete=()=>startedAt!==authRevision;
@@ -70,6 +70,11 @@ async function loadManagementAccount(mutate){
     const user=session?.user||null;
     if(obsolete())return signedOutState;
     if(!user){
+      // A verified absence of a login invalidates previously cached grants.
+      clearAuthorization();
+      scopeMetadata=[];
+      authUserId='';
+      authEmail='';
       void mutate(SESSION_KEY,signedOutState,{revalidate:false});
       return signedOutState;
     }
@@ -90,10 +95,14 @@ async function loadManagementAccount(mutate){
     if(obsolete())return signedOutState;
     // A failed permission read (e.g. database blocked) must not erase verified
     // grants already cached for this user; keep the last known authorization.
-    const cached=cachedManagementAccount();
+    const cached=forceVerify?null:cachedManagementAccount();
     if(cached)return cached;
-    clearAuthorization();
-    scopeMetadata=[];
+    // If a deliberate recheck fails, show the error rather than pretending
+    // the visitor signed out or silently trusting an old management snapshot.
+    if(!forceVerify){
+      clearAuthorization();
+      scopeMetadata=[];
+    }
     return failedState(error);
   }
 }
@@ -120,12 +129,16 @@ export function useAccount({enabled=true,sessionOnly=false}={}){
 
   // An explicit action checks current JS variables on every click. Only a
   // missing/invalidated snapshot loads one server-verified permission set.
-  const refresh=useCallback(async()=>{
-    if(!sessionOnly){
+  const refresh=useCallback(async({forceVerify=false}={})=>{
+    if(!sessionOnly&&!forceVerify){
       const cached=cachedManagementAccount();
       if(cached)return {user:cached.user,authorizer:cached.authorizer};
     }
-    const result=await mutate(queryKey,()=>queryFn(),{revalidate:false});
+    const fetcher=forceVerify&&!sessionOnly
+      ?()=>loadManagementAccount(mutate,{forceVerify:true}):queryFn;
+    const result=await mutate(queryKey,fetcher,{revalidate:false});
+    // A permission RPC failure is not proof that the user logged out.
+    if(result?.error)throw new Error(result.error);
     if(sessionOnly)return result?.user||null;
     return result?.user&&result.authorizer?{user:result.user,authorizer:result.authorizer}:null;
   },[mutate,queryKey,queryFn,sessionOnly]);
