@@ -126,11 +126,11 @@ async function loadState(){
   for(const target of info.targets||[]){
     const row=node('div','');row.className='row';row.append(node('span',itemText(target)));
     const actions=node('div','');actions.className='actions';
-    actions.append(button('編輯',()=>fillForm(target)));
+    if(!target.managed)actions.append(button('編輯',()=>fillForm(target)));
     const select=button('設為復原目標',()=>run(async()=>{
       const chosen=await api('/v1/primary',{method:'POST',body:{id:target.id}});
       byId('active-target').textContent=chosen.primary_id;
-      status('復原目標已保存；目前主站 SQL Gateway 尚未切換。');
+      status('復原主要來源已保存。正式站必須啟用獨立 Gateway 後才會依此路由。');
     }));
     select.disabled=target.id===info.primary_id;actions.append(select);row.append(actions);
     byId('target-list').append(row);
