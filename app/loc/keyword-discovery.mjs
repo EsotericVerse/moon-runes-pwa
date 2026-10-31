@@ -40,8 +40,7 @@ export function createNewKeywordDiscovery(rows=[]){
   // for this estimated ratio, so use terms with >=2 characters.
   const known=[...existing].filter(term=>[...term].length>=2)
     .sort((a,b)=>b.length-a.length);
-  const escapeRegex=term=>term.replace(/[.*+?^${}()|[\]\\]/g,'\\  const totals=new Map();
-  let read=0,withContent=0,limited=false;');
+  const escapeRegex=term=>[...term].map(char=>/^[\p{L}\p{N}]$/u.test(char)?char:'\\'+char).join('');
   const knownMatchers=[];
   for(let offset=0;offset<known.length;offset+=100)
     knownMatchers.push(new RegExp(known.slice(offset,offset+100).map(escapeRegex).join('|'),'u'));
