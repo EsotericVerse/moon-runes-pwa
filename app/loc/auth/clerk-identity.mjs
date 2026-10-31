@@ -50,7 +50,17 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
       method:'GET',cache:'no-store',credentials:'omit',
       headers:{authorization:'Bearer '+jwt,accept:'application/json'}
     });
-    if(!response.ok)throw new Error('LOC Authority rejected Clerk identity (HTTP '+response.status+')');
+    if(!response.ok){
+      // Authority returns a concise error code/message, never raw token data.
+      // Keep the underlying reason visible so the same 401 is diagnosable.
+      let reason='';
+      try{
+        const data=await response.json();
+        if(typeof data?.error==='string')reason=data.error.slice(0,160);
+      }catch{}
+      throw new Error('LOC Authority rejected Clerk identity (HTTP '+response.status+
+        (reason?'：'+reason:'')+')');
+    }
     const identity=await response.json();
     if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id||
       typeof identity.session!=='string'||!identity.session.startsWith('sess_'))

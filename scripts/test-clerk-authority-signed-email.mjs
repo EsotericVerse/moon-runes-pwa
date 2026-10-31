@@ -62,3 +62,14 @@ test('mismatched Google/Clerk origin cannot enter management session',async()=>{
   const response=await verified(jwt({azp:'https://malicious.example'}));
   assert.equal(response.status,401);
 });
+
+test('Clerk may omit azp but must still pass signed issuer, session and origin checks',async()=>{
+  const response=await verified(jwt({azp:undefined}));
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).subject,'user_TEST123');
+});
+test('present azp from another origin is still rejected with a useful reason',async()=>{
+  const response=await verified(jwt({azp:'https://wrong.example.org'}));
+  assert.equal(response.status,401);
+  assert.match((await response.json()).error,/authorized party/i);
+});

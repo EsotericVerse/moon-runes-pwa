@@ -90,8 +90,14 @@ async function verifyIdentityToken(request,env){
     !Number.isInteger(claims.iat)||claims.iat>now+5||
     !Number.isInteger(claims.nbf)||claims.nbf>now+5||
     claims.sts==='pending'||claims.act)throw fail('Session is not valid',401);
-  if(clerk&&(claims.azp!==origin||!/^user_[A-Za-z0-9]+$/.test(claims.sub)||
-    typeof claims.sid!=='string'||!claims.sid.startsWith('sess_')))throw fail('Clerk session is not valid',401);
+  // Clerk may omit azp when the Frontend API request had no Origin.
+  // If present, azp must still match the single configured LOC origin.
+  // The request's own Origin is separately restricted in allowedOrigin().
+  if(clerk&&claims.azp!=null&&claims.azp!==''&&claims.azp!==origin)
+    throw fail('Clerk authorized party does not match LOC',401);
+  if(clerk&&(!/^user_[A-Za-z0-9]+$/.test(claims.sub)||
+    typeof claims.sid!=='string'||!claims.sid.startsWith('sess_')))
+    throw fail('Clerk session subject or ID is invalid',401);
   if(secondary&&(!env.LOC_SECONDARY_AUDIENCE||
     !(Array.isArray(claims.aud)?claims.aud.includes(env.LOC_SECONDARY_AUDIENCE):claims.aud===env.LOC_SECONDARY_AUDIENCE)))
     throw fail('Invalid token audience',401);
