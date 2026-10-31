@@ -197,7 +197,9 @@ function ArticleRelationNavigation({
   const originals=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
   const scope=articleScopeId||'lo3rwang';
   const day=String(articleDate||'').slice(0,10);
-  const timeHref=()=>featureNavigationHref(scope,'culture',{from:day,to:day});
+  const timeHref=(item,kind)=>featureNavigationHref(scope,'culture',{
+    from:day,to:day,...(kind==='anchor'?{anchor:item.uid}:{period:item.uid})
+  });
   const traceLink=(item,kind)=>featureNavigationHref(scope,'trace',
     kind==='place'?{place:item.uid}:{map:item.uid});
   const articles=items=>items.map((item,index)=><a key={item.id||item.href||index}
@@ -247,9 +249,9 @@ function ArticleRelationNavigation({
   ].filter(item=>item.data).map(item=><a key={item.name}
       href={featureNavigationHref(scope,'statics',{from:item.data.start,to:item.data.end,statTab:'charts'})}
       className="scope-article-context-link">{item.name}</a>):[];
-  const timeAnchors=named(time.anchors,timeHref);
-  const periods=named(time.periods,timeHref);
-  const eras=named(time.eras,timeHref);
+  const timeAnchors=named(time.anchors,item=>timeHref(item,'anchor'));
+  const periods=named(time.periods,item=>timeHref(item,'period'));
+  const eras=named(time.eras,item=>timeHref(item,'period'));
   const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
   const places=named(locations,item=>traceLink(item,'place'));
   const routes=named(space.routes,item=>traceLink(item,'map'));
