@@ -22,7 +22,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 
-import {dedupeIncomingImport,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from './import-place-anchors.mjs';
 import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
@@ -678,17 +678,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         await siteHasArticles(distinctSites[index]);
         showProgress('確認網站既有文章',index+1,distinctSites.length);
       }
-      const oldRows=analyzed.valid.filter(row=>siteAvailability.get(String(row.site||'').trim()));
-      const deduped=oldRows.length?dedupeIncomingImport(oldRows):
-        {unique:[],aliases:new Map(),duplicates:0};
-      const existingIdentity=new Set(deduped.unique.map(row=>String(row.uid)));
-      const incoming={
-        unique:analyzed.valid.filter(row=>!siteAvailability.get(String(row.site||'').trim())||
-          existingIdentity.has(String(row.uid))),
-        aliases:new Map([...analyzed.valid.map(row=>[String(row.uid),String(row.uid)]),
-          ...deduped.aliases]),
-        duplicates:deduped.duplicates
-      };
+      // Deduplicate the entire imported file, not only sites populated
+      // before this import. Preserve the canonical UID for media references.
+      const incoming=dedupeIncomingImport(analyzed.valid);
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       // The pool is this site's saved rows inside the incoming time span, which
@@ -720,16 +712,31 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         }
         return rows;
       };
-      // Only sites populated BEFORE this run are eligible for comparisons.
-      const existingCandidates=deduped.unique;
-      const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
+      // The genuine platform post ID is authoritative; look it up before
+      // timestamp comparison so edits in export time cannot create duplicates.
+      const existingCandidates=unique.filter(row=>
+        siteAvailability.get(String(row.site||'').trim()));
+      const matchesById=existingCandidates.length?await matchExistingImportBySiteId(existingCandidates,{
+        onProgress:p=>showProgress('依來源文章 ID 比對',p.completed,p.total),
+        readSiteIds:async(ids,consumePage,site)=>{
+          for(const idsPage of urlSafeInBatches(ids,'site_id')){
+            const {data,error}=await dbAuthRelation(galaxy)
+              .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+              .ilike('site',site).in('site_id',idsPage);
+            if(error)throw Error('site_id 比對失敗：'+error.message);
+            consumePage(data||[]);
+          }
+        }
+      }):new Map();
+      const remaining=existingCandidates.filter(row=>!matchesById.has(String(row.uid)));
+      const existingByTime=remaining.length?await matchExistingImportByCreatedAt(remaining,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
           readRowsByUid,consumePage,windowSize:MAX_ROWS,onWindowDone:report
         })
       }):new Map();
-      const existingBySiteId=existingByTime;
+      const existingBySiteId=new Map([...existingByTime,...matchesById]);
       // A same-site/same-createtime group that can't be matched to exactly one
       // existing article is never inserted as new (that risks the duplicate
       // this comparison exists to catch) and never allowed to abort the rest
@@ -741,7 +748,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         unique=unique.filter(record=>!ambiguousUids.has(String(record.uid)));
       }
 
-      const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
+      const finalUid=id=>{
+        const canonical=incoming.aliases.get(String(id))||String(id);
+        return String(existingBySiteId.get(canonical)?.uid||canonical);
+      };
       unique=unique.map(record=>({
         ...record,
         source_id:record.source_id?finalUid(record.source_id):null,
