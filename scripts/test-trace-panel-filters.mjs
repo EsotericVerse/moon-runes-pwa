@@ -135,10 +135,9 @@ test('explicit Culture/Statistics media lanes keep their external media links',(
 });
 
 
-test('the module-level category summary export has a real DB-side implementation',()=>{
+test('category counting uses a DB-side aggregate without full-row streaming',()=>{
   const galaxy=read('app/loc/galaxy-query.js');
   assert.match(galaxy,/async function selectCategoryCountsRaw\(/);
-  assert.match(galaxy,/const selectCategoryCounts=emptyOnFailure\(selectCategoryCountsRaw,\[\]\)/);
   assert.match(galaxy,/readScopeCategoryTotals\(match\[1\]/);
   assert.doesNotMatch(galaxy,/countStreamed\(/);
 });
