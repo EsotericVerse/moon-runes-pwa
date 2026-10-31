@@ -51,3 +51,22 @@ test('production LOC routes every account login via Clerk, with no per-device to
   assert.doesNotMatch(client,/createSupabaseAdapter|autoRefreshToken:true|persistSession:true/);
   assert.match(client,/loc-kysely-clerk/);
 });
+
+test('verified Clerk subject can be mapped to a trusted root email by server, not browser',()=>{
+  const missing={...principal,email:undefined,email_verified:undefined,azp:undefined};
+  assert.throws(()=>clerkSqlClaims(missing,{issuer,origin}),/trusted root mapping/);
+  const mapped=clerkSqlClaims(missing,{issuer,origin,trustedEmail:'OWNER@example.org'});
+  assert.equal(mapped.email,'owner@example.org');
+  assert.equal(mapped.sub,'user_ABC123');
+  assert.equal(mapped.role,'authenticated');
+  assert.throws(()=>clerkSqlClaims(missing,{issuer,origin,trustedEmail:'invalid'}));
+  assert.throws(()=>clerkSqlClaims({...missing,azp:'https://evil.example'},
+    {issuer,origin,trustedEmail:'owner@example.org'}));
+});
+test('Clerk SQL gateway obtains root email from Authority, never unsigned request email',()=>{
+  const edge=readFileSync(new URL('../supabase/functions/loc-kysely/index.ts',import.meta.url),'utf8');
+  assert.match(edge,/LOC Authority could not verify Clerk root identity/);
+  assert.match(edge,/identity.subject!==payload.sub/);
+  assert.match(edge,/identity.session!==payload.sid/);
+  assert.match(edge,/trustedEmail/);
+});
