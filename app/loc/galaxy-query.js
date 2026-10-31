@@ -308,11 +308,13 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   if(!id)return null;
   // One exact UID SELECT loads the selected article. The list never reads
   // content, linked media, references or Trace data.
-  const row=await selectRowById(current.galaxy,{
-    idColumn:'uid',id,
+  const {rows:articleRows}=await selectRows(current.galaxy,{
     columns:'uid,title,createtime,content,site,url,source_id,target_id,ref_id,media_link,place_id,location,searchable',
-    authenticated:includeHidden
+    filters:[{column:'uid',operator:'eq',value:id},
+      ...(!includeHidden?[{column:'searchable',operator:'eq',value:true}]:[])],
+    limit:1,authenticated:includeHidden
   });
+  const row=articleRows[0]||null;
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const mediaIds=mediaIdsOf(row.media_link);
   const placeId=String(row.place_id||'').trim();
