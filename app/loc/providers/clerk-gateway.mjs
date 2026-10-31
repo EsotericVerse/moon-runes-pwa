@@ -1,42 +1,36 @@
-// A database provider independent runtime for LOC's static site.
-// Only the LOC Gateway URL enters browser code. Supabase/Neon endpoints,
-// credentials and active primary belong exclusively to the trusted Gateway.
-import {PostgrestClient} from '@supabase/postgrest-js';
+// Clerk is the sole interactive identity in this opt-in mode. Existing
+// Supabase SQL remains the primary data source until Neon schema is ready.
+// All private writes go through Kysely with verified Clerk JWT and DB RLS.
 import {createClerkAccountAdapter} from '../auth/clerk-browser.mjs';
+import {createKyselyEdgeClient} from './kysely-edge.mjs';
+import {createSupabaseAdapter} from './supabase.mjs';
 
-export function createClerkGatewayAdapter({gatewayUrl=
-  process.env.NEXT_PUBLIC_LOC_SQL_GATEWAY_URL||'',
-  authorityUrl=process.env.NEXT_PUBLIC_LOC_CONTROL_URL||'',
-  fetchImpl=globalThis.fetch}={}){
-  if(!gatewayUrl||!authorityUrl)
-    throw new Error('Independent LOC Gateway and Authority origins must be configured');
-  const gateway=new URL(gatewayUrl);
-  if(gateway.protocol!=='https:'||gateway.username||gateway.password||gateway.search||
-    gateway.hash||!['','/'].includes(gateway.pathname))
-    throw new Error('Invalid independent Gateway origin');
-  const {auth,getAccessToken}=createClerkAccountAdapter({authorityOrigin:authorityUrl,fetchImpl});
-  const api=gateway.origin+'/rest/v1';
-  // The independent Gateway authenticates and routes; never instantiate the
-  // Supabase/Neon Auth clients, even if it selects either database as primary.
-  const publicClient=new PostgrestClient(api,{schema:'silver',fetch:fetchImpl});
-  const privateClient=new PostgrestClient(api,{schema:'silver',fetch:async(input,init={})=>{
-    const token=await getAccessToken();
-    const headers=new Headers(init.headers);
-    headers.set('authorization','Bearer '+token);
-    return fetchImpl(input,{...init,headers,credentials:'omit'});
-  }});
+const FALLBACK_AUTHORITY='https://loc-authority-control.sopa2306.workers.dev';
+const DEFAULT_SUPABASE_URL='https://qlouywsdiiyiyzpoxyqy.supabase.co';
+const DEFAULT_PUBLISHABLE_KEY='sb_publishable_qPn0vAzozVyXKllRuEKf2Q_fvG-pLVV';
+
+export function createClerkGatewayAdapter({
+  authorityUrl=process.env.NEXT_PUBLIC_LOC_CONTROL_URL||FALLBACK_AUTHORITY,
+  url=process.env.NEXT_PUBLIC_SUPABASE_URL||DEFAULT_SUPABASE_URL,
+  publishableKey=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||DEFAULT_PUBLISHABLE_KEY,
+  fetchImpl=globalThis.fetch
+}={}){
+  const {auth,getAccessToken}=createClerkAccountAdapter({
+    authorityOrigin:authorityUrl,fetchImpl
+  });
+  const legacy=createSupabaseAdapter({url,publishableKey,fetchImpl});
+  const edge=createKyselyEdgeClient({
+    url,publishableKey,role:'authenticated',target:'configured',
+    gatewayUrl:String(url).replace(/\/+$/,'')+'/functions/v1/loc-kysely-clerk',
+    getAccessToken,fetch:fetchImpl
+  });
   return {
-    publicClient,
-    authClient:{
-      schema:name=>privateClient.schema(name),
-      rpc:(name,args={},options={})=>privateClient.schema(options.schema||'silver').rpc(name,args),
-      auth
-    },
-    auth,
-    configuredPublicClient:publicClient,
+    publicClient:legacy.publicClient,
+    authClient:edge,auth,
+    configuredPublicClient:legacy.configuredPublicClient,
     backupPublicClient:null,
-    realtimeClient:null,
-    primarySourceLabel:'LOC Gateway',
+    realtimeClient:legacy.realtimeClient,
+    primarySourceLabel:'Supabase SQL · Clerk 身分',
     backupSourceLabel:''
   };
 }

@@ -7,7 +7,15 @@ import {createClerkGatewayAdapter} from './clerk-gateway.mjs';
 export function createConfiguredAdapter(){
   // Opt-in only: legacy production login remains unchanged until Authority,
   // Neon JWT/RLS and the full Gateway have passed live write validation.
-  if(process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER==='clerk')
+  // The optional Clerk entry is selected only after an actual signed
+  // Authority identity check on the standalone login page. Existing users
+  // retain their current Supabase session until they choose this path.
+  let deviceClerk=false;
+  if(typeof window!=='undefined'){
+    try{deviceClerk=window.localStorage.getItem('loc-auth-provider')==='clerk';}
+    catch{}
+  }
+  if(process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER==='clerk'||deviceClerk)
     return createClerkGatewayAdapter();
   const routing=runtimeDatabaseRouting();
   if(routing.provider==='neon')return createNeonPrimaryAdapter();
