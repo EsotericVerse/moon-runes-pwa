@@ -50,10 +50,10 @@ jobs:
             echo '## Bootstrap / Admin diagnostics (non-blocking)'
             echo 'The full suite was executed but some assertions failed. This is **not** a passing test result.'
             echo 'The separate security, syntax, game, static-export and artifact checks remain mandatory.'
-            echo '\`\`\`text'
+            echo '```text'
             grep -E '^# (tests|pass|fail) ' /tmp/bootstrap-test.log || true
             grep '^not ok ' /tmp/bootstrap-test.log | head -n 30 || true
-            echo '\`\`\`'
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Build Next static export for GitHub Pages
         # shell: bash enables pipefail; without it `| tee` hides a failed build.
