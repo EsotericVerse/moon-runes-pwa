@@ -78,3 +78,12 @@ test('Trace panel only projects three Galaxy list columns; media type filters us
   assert.doesNotMatch(result,/columns:'uid,title,createtime,[^']*media_link/);
   assert.match(trace,/<option value="runes">抽牌結果（runes）<\/option>/);
 });
+
+
+test('selected article integrates synchronous date statistics without a promise crash',()=>{
+  const query=read('app/loc/galaxy-query.js');
+  assert.match(query,/function articleStatisticsContext\(scope,day\)/);
+  assert.match(query,/articleStatisticsContext\(current,day\)/);
+  assert.doesNotMatch(query,/articleStatisticsContext\(current,day\)\.catch\(/);
+  assert.match(query,/related_space:space,related_time:time,related_statistics:statistics/);
+});
