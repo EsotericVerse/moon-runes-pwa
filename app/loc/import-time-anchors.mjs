@@ -1,4 +1,5 @@
 import {parseImportCreatedTime} from './import-batch.mjs';
+import {resolveTimeSegments,timeSegmentContainsDate} from './time-anchor-ranges.mjs';
 
 // Importing a known check-in creates its calendar-day Time anchor independently
 // from the spatial anchor's full-precision visit timestamps.
@@ -8,6 +9,9 @@ const HEX=/^[0-9A-F]{4}$/;
 export function importCheckinDates(records=[]){
   const dates=new Set();
   for(const record of records){
+    // A location in a normal article is not by itself a check-in.
+    if(record?.__importCheckin!==true&&
+       !(Array.isArray(record?.__importVisitTimes)&&record.__importVisitTimes.length))continue;
     const name=String(record?.__importPlaceName||record?.location||'').trim();
     if(!name||name.length>NAME_LIMIT)continue;
     const instants=Array.isArray(record?.__importVisitTimes)
@@ -40,22 +44,31 @@ export async function prepareImportTimeAnchors(records,{
   const table=String(timeTable||'').trim();
   if(!/^silver\.[a-z][a-z0-9_]*$/.test(table)||!table.startsWith('silver.'+scopeId+'_'))
     throw Error('日期定錨尚未解析正確的 Scope Time 資料表');
-  const occupied=new Set(),existingDays=new Set();
+  const occupied=new Set(),existingDays=new Set(),anchors=new Map(),periods=[];
   onProgress?.({phase:'核對既有日期定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
-    const {data,error}=await relation(table).select('uid,type,address')
+    const {data,error}=await relation(table).select('uid,type,address,anchor_ids')
       .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
     if(error)throw Error('讀取日期定錨失敗：'+(error.message||error));
     const rows=data||[];
     for(const row of rows){
       occupied.add(String(row.uid||''));
-      if(row.type==='anchor'&&row.address)
+      if(row.type==='anchor'&&row.address){
         existingDays.add(String(row.address).slice(0,10));
+        anchors.set(String(row.uid||''),row);
+      }
+      if(row.type==='period')periods.push(row);
     }
     onProgress?.({phase:'核對既有日期定錨',completed:offset+rows.length,total:0});
     if(rows.length<pageSize)break;
   }
-  const missing=dates.filter(date=>!existingDays.has(date));
+  // The canonical Time graph defines a period through its anchor endpoints.
+  // A covered check-in day reuses the established interval; never create a
+  // new daily anchor merely because that day lacks its own endpoint row.
+  const ranges=periods.flatMap(period=>resolveTimeSegments(period.anchor_ids,anchors))
+    .filter(range=>range.start_date&&(!range.invalid||range.point));
+  const missing=dates.filter(date=>!existingDays.has(date)&&
+    !ranges.some(range=>timeSegmentContainsDate(range,date)));
   let reused=dates.length-missing.length,created=0,cursor=1;
   const nextUid=()=>{
     while(cursor<=65535){

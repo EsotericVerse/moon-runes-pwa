@@ -20,7 +20,7 @@ function memoryTrace(initial=[]){
   return {relation,rows,get inserts(){return inserts;}};
 }
 
-test('exact named coordinates identify the place; same name elsewhere cannot reuse it',async()=>{
+test('Trace reuses exact coordinates even with different names; distant same names remain distinct',async()=>{
   const db=memoryTrace([{uid:'AB12',title:'人工整理地點',address:[121.49086,25.05338]}]);
   const far=named('人工整理地點',25.9,121.9);
   const spaced=named('  人工整理地點 ',null,null);
@@ -28,12 +28,24 @@ test('exact named coordinates identify the place; same name elsewhere cannot reu
   const result=await prepareImportPlaceAnchors([far,spaced,otherNameSameCoords],{
     scopeId:'lo3rwang',relation:db.relation,createMissing:false
   });
-  assert.equal(result.reused,1);
+  assert.equal(result.reused,2);
   assert.equal(result.created,0);
   assert.equal(db.inserts,0);
   assert.equal(importedPlaceId({incoming:far,byName:result.byName,byCoordinate:result.byCoordinate}),null);
   assert.equal(importedPlaceId({incoming:spaced,byName:result.byName}),'AB12');
-  assert.equal(importedPlaceId({incoming:otherNameSameCoords,byName:result.byName,byCoordinate:result.byCoordinate}),null);
+  assert.equal(importedPlaceId({incoming:otherNameSameCoords,byName:result.byName,byCoordinate:result.byCoordinate}),'AB12');
+});
+
+test('different source names with the identical GPS pair share one new Trace anchor',async()=>{
+  const db=memoryTrace();
+  const a=named('舊地名',25.02,121.55),b=named('新地名',25.02,121.55);
+  const result=await prepareImportPlaceAnchors([a,b],{
+    scopeId:'lo3rwang',relation:db.relation,createMissing:true
+  });
+  assert.equal(result.created,1);
+  assert.equal(db.inserts,1);
+  assert.equal(importedPlaceId({incoming:a,byName:result.byName,byCoordinate:result.byCoordinate}),
+    importedPlaceId({incoming:b,byName:result.byName,byCoordinate:result.byCoordinate}));
 });
 
 test('the article location text is the name when no source place name exists',async()=>{

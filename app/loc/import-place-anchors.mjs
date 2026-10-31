@@ -1,8 +1,7 @@
 import {importGeoKey} from './import-geocoordinates.mjs';
 
-// A place is identified by its explicit name AND, when supplied, its exact
-// coordinate pair. Same-named places at different coordinates must never be
-// merged; coordinates are stored only in Trace.address, never in Galaxy.
+// An exact coordinate identifies an existing Trace location even if the
+// original place label differs. Without GPS, only unambiguous names are used.
 const VALID_UID=/^[A-Za-z0-9]{4}$/;
 const nameKey=value=>String(value??'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('und');
 const safeTitle=value=>{
@@ -10,7 +9,7 @@ const safeTitle=value=>{
   return title&&title.length<=120&&!/[\u0000-\u001f]/u.test(title)?title:'';
 };
 const recordPlaceName=record=>safeTitle(record?.__importPlaceName||record?.location);
-const spatialKey=(name,coordinates)=>JSON.stringify([name,coordinates]);
+const spatialKey=(name,coordinates)=>coordinates?'coordinate:'+coordinates:'name:'+name;
 export const importPlaceNameKey=nameKey;
 
 function incomingLocations(records){
@@ -46,7 +45,7 @@ export async function prepareImportPlaceAnchors(records,{
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('空間定錨 Scope 無效');
   if(typeof relation!=='function')throw Error('空間定錨資料庫不存在');
   const table='silver.'+scopeId+'_trace';
-  const existingBySpatialKey=new Map(),existingByName=new Map(),timesByUid=new Map();
+  const existingByCoordinate=new Map(),existingByName=new Map(),timesByUid=new Map();
   onProgress?.({phase:'讀取現有空間定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
     const {data,error}=await relation(table)
@@ -65,8 +64,8 @@ export async function prepareImportPlaceAnchors(records,{
       const saved={uid,coordinates};
       if(!existingByName.has(name))existingByName.set(name,[]);
       existingByName.get(name).push(saved);
-      if(coordinates&&!existingBySpatialKey.has(spatialKey(name,coordinates)))
-        existingBySpatialKey.set(spatialKey(name,coordinates),saved);
+      if(coordinates&&!existingByCoordinate.has(coordinates))
+        existingByCoordinate.set(coordinates,saved);
       timesByUid.set(uid,Array.isArray(anchor.times)?anchor.times:[]);
     }
     onProgress?.({phase:'讀取現有空間定錨',completed:offset+(data||[]).length,total:0});
@@ -75,7 +74,7 @@ export async function prepareImportPlaceAnchors(records,{
   let reused=0,created=0;
   const pending=[],ambiguousNames=new Set();
   const register=(place,uid)=>{
-    if(place.coordinates)byCoordinate.set(spatialKey(place.name,place.coordinates),uid);
+    if(place.coordinates)byCoordinate.set(place.coordinates,uid);
     if(ambiguousNames.has(place.name))return;
     const prior=byName.get(place.name);
     if(prior&&prior!==uid){byName.delete(place.name);ambiguousNames.add(place.name);}
@@ -88,7 +87,7 @@ export async function prepareImportPlaceAnchors(records,{
   for(const place of ordered){
     const candidates=existingByName.get(place.name)||[];
     const matched=place.coordinates
-      ?existingBySpatialKey.get(spatialKey(place.name,place.coordinates))
+      ?existingByCoordinate.get(place.coordinates)
       :candidates.length===1?candidates[0]:null;
     if(matched){register(place,matched.uid);reused++;continue;}
     if(!place.coordinates){
@@ -134,7 +133,7 @@ export async function prepareImportPlaceAnchors(records,{
     onProgress?.({phase:'建立原始座標定錨',completed:offset+chunk.length,total:pending.length});
   }
   for(const alias of nameOnlyAliases){
-    const uid=byCoordinate.get(spatialKey(alias.name,alias.coordinates));
+    const uid=byCoordinate.get(alias.coordinates);
     if(uid){register(alias,uid);reused++;}
   }
   const unmatchedCoordinates=names.size-reused-created;
@@ -146,7 +145,7 @@ export function importedPlaceId({incoming,existing,byName,byCoordinate}={}){
   const name=nameKey(recordPlaceName(incoming));
   if(!name)return null;
   const coordinates=importGeoKey(incoming?.__importCoordinates);
-  const uid=coordinates?byCoordinate?.get(spatialKey(name,coordinates)):byName?.get(name);
+  const uid=coordinates?byCoordinate?.get(coordinates):byName?.get(name);
   return VALID_UID.test(String(uid||''))?uid:null;
 }
 
