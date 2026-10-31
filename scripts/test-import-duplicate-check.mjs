@@ -104,7 +104,7 @@ test('same file name is only a display label; repeat parsing uses source identit
   // Two parses of the same source can use different random Galaxy UIDs.
   const first={...original,uid:'FIRST001',site_id:'fb-1',site:'Facebook'};
   const second={...first,uid:'REPEAT02'};
-  const {matchExistingImportBySiteId}=await import('../app/loc/import-duplicate-check.mjs');
+  // Re-parsing generates a new local UID; matching is against the saved source ID.
   const matches=await matchExistingImportBySiteId([second],{
     readSiteIds:async()=>[first]
   });
