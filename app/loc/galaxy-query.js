@@ -183,6 +183,21 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
     .sort((a,b)=>a.day.localeCompare(b.day)||a.category.localeCompare(b.category));
 }
 
+async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDate='',filters=[],limit=20}={}){
+  // Use the installed DB-side category aggregate; never stream every article.
+  const match=String(table||'').match(/^silver\.([a-z][a-z0-9]*)_galaxy(_media)?$/);
+  const media=Boolean(match?.[2]);
+  if(!match||categoryColumn!==(media?'media_type':'site')||filters.length)
+    return [];
+  const rows=await readScopeCategoryTotals(match[1],{
+    startDate:dateOnly(startDate),endDate:dateOnly(endDate)
+  });
+  const cap=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
+  return rows.filter(row=>row.kind===(media?'media':'source')&&String(row.category||'').trim())
+    .map(row=>({term:String(row.category).trim(),item_count:Number(row.item_count)||0}))
+    .sort((a,b)=>b.item_count-a.item_count||a.term.localeCompare(b.term)).slice(0,cap);
+}
+
 function mediaIdsOf(value){
   return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
 }
