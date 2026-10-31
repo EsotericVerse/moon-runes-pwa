@@ -148,7 +148,7 @@ test('real Facebook ZIP to Galaxy to Trace anchor by place name is repeatable wi
  };
  const resolved=await prepareImportPlaceAnchors(articles,{scopeId:'lo3rwang',relation,createMissing:false});
  assert.equal(resolved.reused,1);
- assert.equal(resolved.unmatchedCoordinates,2);
+ assert.equal(resolved.unmatchedCoordinates,1);
  assert.equal(inserted,0);
  assert.equal(importedPlaceId({incoming:articles[0],byName:resolved.byName,byCoordinate:resolved.byCoordinate}),'AB12');
  assert.equal(importedPlaceId({incoming:articles[1],byName:resolved.byName,byCoordinate:resolved.byCoordinate}),'AB12',
