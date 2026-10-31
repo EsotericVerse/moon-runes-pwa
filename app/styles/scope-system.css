@@ -588,6 +588,49 @@
   font-size:.95rem;
   line-height:1.65;
 }
+.scope-article-context-group{
+  display:grid;
+  gap:.45rem;
+  min-width:0;
+  padding:.8rem 1rem;
+  background:var(--loc-panel);
+  border:1px solid var(--loc-line);
+  border-radius:var(--loc-ui-radius-md);
+}
+.scope-article-context-group>h3{
+  margin:0 0 .25rem;
+  font-size:1rem;
+  font-weight:750;
+  letter-spacing:.02em;
+}
+.scope-article-context-media{
+  display:inline-flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:.3rem .65rem;
+  max-width:100%;
+}
+.scope-article-context-description{
+  display:inline-block;
+  max-width:100%;
+}
+.scope-article-context-description>summary{
+  cursor:pointer;
+  color:var(--loc-muted);
+  font-size:.87rem;
+}
+.scope-article-context-description>summary:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:2px;
+}
+.scope-article-context-description>p{
+  margin:.35rem 0 .5rem;
+  padding:.6rem .8rem;
+  border-left:2px solid var(--loc-accent);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  line-height:1.6;
+}
 .scope-article-context-row>strong{flex:none;font-weight:700}
 .scope-article-context-items{
   display:flex;
