@@ -178,12 +178,16 @@ test('native site_id never blocks timestamp matching',async()=>{
   });
   assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
 });
-test('multiple persisted articles at the same source timestamp are ambiguous',async()=>{
+test('multiple persisted articles at the same source timestamp are ambiguous: skipped, not thrown, so the rest of the batch is unaffected',async()=>{
   const incoming=post('NEW00001','Facebook',null,'same text');
-  await assert.rejects(()=>matchExistingImportByCreatedAt([incoming],{
+  const matches=await matchExistingImportByCreatedAt([incoming],{
     readTimestamps:async()=>[post('OLD00001','Facebook',null,'same text'),
       post('OLD00002','Facebook',null,'different text')]
-  }),/無法唯一比對/);
+  });
+  assert.equal(matches.size,0);
+  assert.equal(matches.ambiguous.length,1);
+  assert.equal(matches.ambiguous[0].site,'Facebook');
+  assert.equal(matches.ambiguous[0].uid,'NEW00001');
 });
 test('ID-less records without a valid timestamp cannot be matched',async()=>{
   const incoming={...post('NEW00001','Facebook',null),createtime:null};
@@ -226,12 +230,14 @@ test('native site_id lookups are grouped by platform before database reads',asyn
   }});
   assert.deepEqual(sites,[['Facebook',['same-id']],['Threads',['same-id']]]);
 });
-test('multiple incoming posts at same second remain distinct and cannot overwrite one saved row',async()=>{
+test('multiple incoming posts at same second remain distinct and cannot overwrite one saved row: skipped, not thrown',async()=>{
   const incoming=[post('A0000001','Facebook',null),post('B0000002','Facebook',null)];
   assert.equal(dedupeIncomingImport(incoming).unique.length,2);
-  await assert.rejects(()=>matchExistingImportByCreatedAt(incoming,{
+  const matches=await matchExistingImportByCreatedAt(incoming,{
     readTimestamps:async()=>[post('OLD00001','Facebook',null)]
-  }),/無法唯一比對/);
+  });
+  assert.equal(matches.size,0);
+  assert.equal(matches.ambiguous.length,1);
 });
 test('primary-key conflicts do not become site_id matches',async()=>{
   const inserted=[];
@@ -305,16 +311,28 @@ test('a 25,000-post archive needs one span query per window and fetches each mat
   assert.equal(matches.size,total);
   assert.equal(matches.get('N24999')?.uid,'S24999');
 });
-test('two saved rows at one requested second still stop the import instead of overwriting',async()=>{
+test('two saved rows at one requested second are skipped, not inserted as new and not overwriting either',async()=>{
   const incoming=post('NEW00001','Facebook',null);
   const savedRows=[post('OLD00001','Facebook',null),post('OLD00002','Facebook',null)];
-  await assert.rejects(()=>matchExistingImportByCreatedAt([incoming],{
+  const matches=await matchExistingImportByCreatedAt([incoming],{
     readTimestamps:(times,consumePage)=>readImportCandidatesByTimeWindows(times,{
       consumePage,
       readWindow:async()=>savedRows.map(({uid,createtime})=>({uid,createtime})),
       readRowsByUid:async()=>savedRows
     })
-  }),/無法唯一比對/);
+  });
+  assert.equal(matches.size,0);
+  assert.equal(matches.ambiguous.length,1);
+});
+test('the panel excludes ambiguous groups from the run entirely and reports the skipped count, instead of aborting the whole import',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  const exclude=panel.indexOf('const ambiguousGroups=existingByTime.ambiguous||[];');
+  const unique=panel.indexOf('unique=unique.filter(record=>!ambiguousUids.has(String(record.uid)));');
+  const summary=panel.indexOf("ambiguousGroups.length?'；同一網站同一發文時間有多篇文章");
+  assert.ok(match>0&&match<exclude&&exclude<unique);
+  assert.ok(unique<summary);
+  assert.doesNotMatch(panel,/throw Error\('同一網站、同一發文時間有多篇文章/);
 });
 test('the comparison pool is fixed before the first write, so later write batches never compare again',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');

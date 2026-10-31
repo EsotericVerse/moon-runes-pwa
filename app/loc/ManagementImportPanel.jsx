@@ -656,6 +656,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         })
       }):new Map();
       const existingBySiteId=existingByTime;
+      // A same-site/same-createtime group that can't be matched to exactly one
+      // existing article is never inserted as new (that risks the duplicate
+      // this comparison exists to catch) and never allowed to abort the rest
+      // of the batch — it is excluded from this run and reported for manual
+      // review instead.
+      const ambiguousGroups=existingByTime.ambiguous||[];
+      if(ambiguousGroups.length){
+        const ambiguousUids=new Set(ambiguousGroups.map(group=>group.uid));
+        unique=unique.filter(record=>!ambiguousUids.has(String(record.uid)));
+      }
 
       const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
       unique=unique.map(record=>({
@@ -811,7 +821,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':''));
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用既有座標定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，依原始地點資料新增定錨點 '+placeAnchors.created.toLocaleString()+' 筆，尚未匹配座標 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':'')+
+        (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
+          ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
@@ -884,6 +896,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
         <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
     </div>:null}
+    {/* Rendered right under the import button/progress area, not after every
+        intermediate ZIP/archive detail section below — the user is watching
+        here, and a result (success, "no changes", or an error like the
+        ambiguous-duplicate abort) buried past a long ZIP summary goes unseen. */}
+    {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
         <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
@@ -963,7 +980,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {analyzed.invalid.length?<p className="scope-status"><UiText id="uiExtra.importUI.skippedReasons"/>{analyzed.invalid.slice(0,5).map(item=>item.error).join('、')}</p>:null}
     </section>:null}
     {pending&&!rows.length?<div className="scope-tabs"><button type="button" disabled={busy} onClick={nextFile}><UiText id="uiExtra.importUI.nextJson"/></button></div>:null}
-    {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
   </div>;
 }
 
