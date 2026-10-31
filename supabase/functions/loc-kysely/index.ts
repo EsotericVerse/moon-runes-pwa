@@ -1,5 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { sql } from "npm:kysely@0.29.6";
+import {createRemoteJWKSet,jwtVerify} from "npm:jose@5.9.6";
+import {clerkSqlClaims} from "../../../app/loc/auth/clerk-sql-claims.mjs";
 import {databaseForTarget,resolveConnectionProfile} from "./drivers.ts";
 import {makeConnectionProfile,readVaultConnection,saveVaultConnection} from "./database-connections.ts";
 import {normalizeDatabaseLocation} from "../../../app/loc/providers/database-link.mjs";
@@ -17,6 +19,22 @@ const corsHeaders = {
   "access-control-max-age": "86400",
 };
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const clerkIssuer=(Deno.env.get("LOC_CLERK_ISSUER")||
+  "https://precise-grackle-3371.clerk.accounts.dev").replace(/\/$/,"");
+const clerkOrigin=(Deno.env.get("LOC_CONTROL_ORIGIN")||
+  "https://loc.lo3rwang.cc").replace(/\/$/,"");
+if(new URL(clerkIssuer).protocol!=="https:"||
+  new URL(clerkIssuer).pathname!=="/"||
+  new URL(clerkOrigin).protocol!=="https:"||
+  new URL(clerkOrigin).pathname!=="/")
+  throw new Error("Clerk issuer and LOC origin must be HTTPS origins");
+const clerkKeys=createRemoteJWKSet(new URL(clerkIssuer+"/.well-known/jwks.json"));
+async function verifyClerkForSql(token:string){
+  const {payload}=await jwtVerify(token,clerkKeys,{
+    issuer:clerkIssuer,algorithms:["RS256"]
+  });
+  return clerkSqlClaims(payload,{issuer:clerkIssuer,origin:clerkOrigin});
+}
 function configuredPublishableKeys() {
   const keys = [Deno.env.get("LOC_KYSELY_PUBLISHABLE_KEY"), Deno.env.get("SUPABASE_PUBLISHABLE_KEY"), Deno.env.get("SUPABASE_ANON_KEY")].filter((value): value is string => Boolean(value));
   try {
@@ -185,13 +203,31 @@ Deno.serve(async (request) => {
     const match = authorization.match(/^Bearer\s+(.+)$/i);
     if (!match) return json({ error: { message: "Invalid authorization header" } }, 401);
     const token = match[1];
-    const authClient = createClient(supabaseUrl, apiKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data, error } = await authClient.auth.getUser(token);
-    if (error || !data.user) return json({ error: { message: "Invalid or expired session" } }, 401);
-    claims = tokenPayload(token);
-    if (claims.sub !== data.user.id) return json({ error: { message: "Session subject mismatch" } }, 401);
+    let untrusted:Record<string,unknown>;
+    try{untrusted=tokenPayload(token);}
+    catch{return json({error:{message:"Invalid session token"}},401);}
+    if(untrusted.iss===clerkIssuer){
+      // The untrusted issuer selects a verifier, never authorizes a user.
+      // This JWT must pass Clerk JWKS signature, expiry, issuer, authorized
+      // party AND verified-email checks before PostgreSQL sees any claims.
+      try{
+        claims=await verifyClerkForSql(token);
+      }catch(error){
+        const missingEmail=error instanceof Error&&
+          error.message.startsWith("Verified Clerk email claim");
+        return json({error:{message:missingEmail
+          ?"Clerk session is missing verified email claims"
+          :"Invalid or expired Clerk session"}},missingEmail?403:401);
+      }
+    }else{
+      const authClient = createClient(supabaseUrl, apiKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await authClient.auth.getUser(token);
+      if (error || !data.user) return json({ error: { message: "Invalid or expired session" } }, 401);
+      claims = untrusted;
+      if (claims.sub !== data.user.id) return json({ error: { message: "Session subject mismatch" } }, 401);
+      claims.role = "authenticated";
+    }
     role = "authenticated";
-    claims.role = role;
   }
 
   let resolvingTarget = false;
