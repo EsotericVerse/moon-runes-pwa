@@ -9,7 +9,8 @@ import {defaultScopeData} from '../../../loc/scope-data';
 import {dbPublicClient} from '../../../loc/db-client.mjs';
 import {traceArticleIds,traceArticleLabels} from './trace-article-ids.mjs';
 import Article from '../../Article';
-import {galaxyIdentityHref} from '../../feature-navigation';
+import {galaxyIdentityHref,galaxyRelationLinks,featureNavigationHref} from '../../feature-navigation';
+import {selectGalaxyIdentity} from '../../../loc/galaxy-query';
 import {ArticleSortSelect,IncrementalList,WorkFullText} from '../../ui';
 
 const CultureTimeline=dynamic(()=>import('../../modules/culture-timeline/CultureTimeline'),{loading:()=> <p className="scope-status">正在開啟時間長河…</p>});
@@ -19,27 +20,28 @@ const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
 
 function TraceWork({row,scope}){
   const [opened,setOpened]=useState(false);
-  const body=useAsyncResource({
-    queryKey:['trace-work-content',scope?.id,row.uid],
+  const detail=useAsyncResource({
+    queryKey:['trace-work-uid',scope?.id,row.uid],
     enabled:opened&&Boolean(scope?.galaxy&&row.uid),
-    queryFn:async()=>{
-      const {rows}=await selectRows(scope.galaxy,{
-        columns:'uid,content',filters:[{column:'uid',operator:'eq',value:row.uid},
-          {column:'searchable',operator:'eq',value:true}],limit:1
-      });
-      return String(rows[0]?.content||'');
-    },
+    queryFn:()=>selectGalaxyIdentity(scope,row.uid),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
+  const article=opened?detail.data:null;
   return <Article uid={row.uid} title={row.title||'未命名文章'}
     articleHref={galaxyIdentityHref(scope?.id,row.uid)}
-    links={row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'source:'+row.uid,href:row.url,label:'外部連結'}]:[]}
+    detailReading={Boolean(article)}
+    relationLinks={article?galaxyRelationLinks(scope?.id,article):[]}
+    relatedMedia={article?.related_media||[]}
+    tracePlace={article?.trace_place||null}
+    traceHref={article?.trace_place?featureNavigationHref(scope?.id,'trace',{place:article.trace_place.uid}):''}
+    locationName={article?.location||''}
+    links={article?.links||[]}
     editOnCardClick={false}>
-    <WorkFullText open={opened} loading={opened&&body.isPending}
-      error={body.error?String(body.error.message||body.error):''}
-      content={body.data||''} showToggle={false}/>
+    <WorkFullText open={opened} loading={opened&&detail.isPending}
+      error={detail.error?String(detail.error.message||detail.error):''}
+      content={String(article?.content||'')} showToggle={false}/>
     <button type="button" className="loc-button" aria-expanded={opened}
-      onClick={()=>setOpened(x=>!x)}>{opened?'收合文章':'閱讀文章'}</button>
+      onClick={()=>setOpened(value=>!value)}>{opened?'收合文章':'閱讀文章'}</button>
   </Article>;
 }
 
@@ -75,7 +77,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const filters=traceArticleIdFilters(placeIds,{startDate,endDate,sourceName:sourceFilter});
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
-        columns:'uid,title,createtime,site,place_id,url',
+        columns:'uid,title,createtime',
         filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
