@@ -239,7 +239,7 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
   for(let i=0;i<ids.length;i+=40){
     const batch=ids.slice(i,i+40);
     const page=await selectRows(current.galaxyMedia,{
-      columns:'uid,title,url',
+      columns:'uid,title,url,media_type,meta_tags',
       filters:[{column:'uid',operator:'in',value:batch}],
       limit:batch.length,maxLimit:batch.length,signal
     });
@@ -295,6 +295,66 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
   return Object.fromEntries(pages.flat().map(item=>[String(item.uid),String(item.title||'').trim()]));
 }
 
+
+function articleDate(value){
+  const day=String(value||'').slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day)?day:'';
+}
+function shiftedDay(day,shift){
+  const d=new Date(day+'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate()+shift);
+  return d.toISOString().slice(0,10);
+}
+async function articleTimeContext(scope,day){
+  if(!day||!scope.time||scope.id==='local')return {anchors:[],periods:[],eras:[]};
+  const {selectCultureTimeRows}=await import('./culture-query');
+  const rows=await selectCultureTimeRows(scope);
+  const matches=record=>(record.ranges||[]).some(range=>{
+    const start=articleDate(range.start_date),end=articleDate(range.end_date||range.start_date);
+    return start&&end&&(!range.invalid||range.point)&&start<=day&&day<=end;
+  });
+  const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
+  return {
+    anchors:labels(rows.filter(row=>row.entry_type==='anchor'&&articleDate(row.address)===day)),
+    periods:labels(rows.filter(row=>row.entry_type==='event'&&matches(row))),
+    eras:labels(rows.filter(row=>row.entry_type==='period'&&matches(row)))
+  };
+}
+async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
+  if(!/^[A-Za-z0-9]{4}$/.test(placeId)||!['lo3rwang','lrunes'].includes(scope.id))
+    return {place:null,routes:[],traces:[]};
+  const table='silver.'+scope.id+'_trace';
+  const [anchor,routesPage]=await Promise.all([
+    selectRows(table,{columns:'uid,title',filters:[
+      {column:'uid',operator:'eq',value:placeId},
+      {column:'trace_type',operator:'eq',value:'space_anchor'}
+    ],limit:1,authenticated}),
+    selectRows(table,{columns:'uid,title',filters:[
+      {column:'trace_type',operator:'eq',value:'space_period'},
+      {column:'anchor_list',operator:'contains',value:[placeId]}
+    ],limit:100,maxLimit:100,authenticated})
+  ]);
+  const routes=routesPage.rows||[],routeIds=routes.map(row=>String(row.uid)).filter(Boolean);
+  const clauses=['anchor_list.cs.{'+placeId+'}',...routeIds.map(uid=>'route_list.cs.{'+uid+'}')];
+  const traces=await selectRows(table,{columns:'uid,title',filters:[
+    {column:'trace_type',operator:'eq',value:'space_trace'}
+  ],orFilter:clauses.join(','),limit:100,maxLimit:100,authenticated});
+  return {place:anchor.rows[0]||null,routes,traces:traces.rows||[]};
+}
+async function articleStatisticsContext(scope,day){
+  if(!day||scope.id==='local')return null;
+  const weekday=(new Date(day+'T00:00:00Z').getUTCDay()+6)%7;
+  const weekStart=shiftedDay(day,-weekday),weekEnd=shiftedDay(weekStart,6);
+  const yearStart=day.slice(0,4)+'-01-01',yearEnd=day.slice(0,4)+'-12-31';
+  const count=async(from,to)=>selectCount(scope.galaxy,{idColumn:'uid',filters:publicContentFilters([
+    {column:'statistics_able',operator:'eq',value:true},
+    ...timeFilters(dayColumn(scope.galaxy),from,to)
+  ])});
+  const [weekCount,yearCount]=await Promise.all([count(weekStart,weekEnd),count(yearStart,yearEnd)]);
+  return {week:{start:weekStart,end:weekEnd,count:weekCount},
+    year:{start:yearStart,end:yearEnd,count:yearCount}};
+}
+
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
@@ -311,23 +371,21 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const mediaIds=mediaIdsOf(row.media_link);
   const placeId=String(row.place_id||'').trim();
-  const [relationTitles,mediaRows,placeRows]=await Promise.all([
+  const day=articleDate(row.date);
+  const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
     mediaRowsFor(current,mediaIds).catch(()=>[]),
-    /^[A-Za-z0-9]{4}$/.test(placeId)&&['lo3rwang','lrunes'].includes(current.id)
-      ?selectRows('silver.'+current.id+'_trace',{
-        columns:'uid,title',
-        filters:[{column:'uid',operator:'eq',value:placeId},{column:'trace_type',operator:'eq',value:'space_anchor'}],
-        limit:1,authenticated:includeHidden
-      }).then(page=>page.rows||[]).catch(()=>[])
-      :Promise.resolve([])
+    articleSpaceContext(current,placeId,{authenticated:includeHidden}).catch(()=>({place:null,routes:[],traces:[]})),
+    articleTimeContext(current,day).catch(()=>({anchors:[],periods:[],eras:[]})),
+    articleStatisticsContext(current,day).catch(()=>null)
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
   const orderedMedia=mediaIds.map(mediaId=>mediaById.get(mediaId)).filter(Boolean);
+  // Keep media and original article URLs as distinct associations.
   return {...row,scope_id:current.id,__table:current.galaxy,
-    links:resolvedLinks(row,mediaById),relation_titles:relationTitles,
-    related_media:orderedMedia,
-    trace_place:placeRows[0]||null};
+    links:resolvedLinks(row,new Map()),relation_titles:relationTitles,
+    related_media:orderedMedia,trace_place:space.place,
+    related_space:space,related_time:time,related_statistics:statistics};
 }
 
 function literalPattern(value){
