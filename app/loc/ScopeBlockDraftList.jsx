@@ -18,6 +18,7 @@ import {isHomeFrameFor} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
 import {invalidateScopeBlockPage} from './scope-data';
+import {planHomeBlockWrites} from './home-block-draft-plan.mjs';
 
 const BlockNoteEditor=dynamic(()=>import('./BlockNoteEditor'),{loading:()=>null});
 const ObjectEditor=dynamic(()=>import('./BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
@@ -158,18 +159,8 @@ export default function ScopeBlockDraftList({
     setBusy(true);setMessage('');
     if(inDock)editDock?.setNotice('');
     const visible=drafts.filter(draft=>!draft._deleted);
-    const originalDrafts=JSON.parse(initialDrafts.current||'[]');
-    const originalByUid=new Map(originalDrafts.filter(row=>row.stored).map(row=>[row.uid,row]));
-    const originalByOrder=new Map(originalDrafts.filter(row=>!row.stored).map(row=>[row.order,row]));
-    // Unchanged homepage blocks and untouched empty placeholders are not
-    // revalidated or rewritten when editing a completely different block.
-    const changed=visible.map((draft,index)=>{
-      const previous=draft.stored?originalByUid.get(draft.uid):originalByOrder.get(draft.order);
-      const order=preserveOrder?Number(draft.order)||index+1:index+1;
-      const modified=!previous||JSON.stringify(draft)!==JSON.stringify(previous)||
-        Number(previous.order)!==order;
-      return {draft,index,modified,order};
-    });
+    const plan=planHomeBlockWrites(drafts,JSON.parse(initialDrafts.current||'[]'),{preserveOrder});
+    const {changed}=plan;
     for(const {draft,modified} of changed){
       if(!modified)continue;
       if(!BlockNoteContent.text.hasBlockNoteFrameContent(draft)){
@@ -198,7 +189,7 @@ export default function ScopeBlockDraftList({
       const normalizeSavedHtml=value=>scopeId==='loc'&&pageName==='index'
         ?HomeBlock.stripLocHomeEditorPlaceholders(value)
         :String(value??'');
-      for(const draft of drafts.filter(draft=>draft._deleted&&draft.stored)){
+      for(const draft of plan.deleted){
         await deleteRows(table,{filters:[{column:'uid',operator:'eq',value:draft.uid}]});
       }
       const savedDrafts=[];
@@ -231,7 +222,7 @@ export default function ScopeBlockDraftList({
       // SQL writes have already succeeded. Failure to refresh SWR must never
       // be presented as an unsuccessful write (which invites duplicate retries).
       let refreshWarning='';
-      if(changed.some(item=>item.modified)||drafts.some(item=>item._deleted&&item.stored)){
+      if(plan.hasWrites){
         try{await refreshBlockQueries();}
         catch{refreshWarning='資料已儲存，但畫面重新載入失敗，重新整理頁面即可。';}
       }
