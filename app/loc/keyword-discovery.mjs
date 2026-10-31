@@ -1,6 +1,8 @@
 // On-demand, read-only discovery of new literal Keywords from Galaxy content.
 // Existing Keywords are used ONLY as an exclusion set; no classifications are changed.
 const IGNORE_ZH=new Set('我們 你們 他們 這個 那個 這些 那些 自己 可以 可能 沒有 不是 什麼 怎麼 為什麼 因為 所以 如果 然後 但是 不過 已經 還是 真的 覺得 知道 一個 一些 一種 一樣 這樣 那樣 現在 今天 昨天 明天 時候 事情 問題 東西 地方 目前 之後 之前 以及 其中 其他 以上 以下 只是 就是 還有 而且 需要 進行 使用 發現 看到 發生 成為 只有 不能 不會 也許 其實 開始 結果 最後 大家 例如 例如說 文章 內容 發表 動態 分享 連結 標題 時間 日期 發文 網站 網頁 作者 資料 資訊 文字 檢查 進去 出來 回來 什麼樣 都是 也是 這是 那是 這裡 那裡 但是 因此 方法 方式 主要 相關 包含 包括 應該 這麼 那麼 或者 以及 之間 時間點 今天晚上 現在目前'.split(/\s+/u));
+// Eliminate boilerplate and connective fragments, not actual thematic words.
+for(const word of '我的 你的 他的 她的 自己的 我想 我們的 你們的 不同 不必 正式 原始 大綱 曲名 文字稿 段落 寫作 版本 作品 歌詞 這首 這首歌 一首歌 寫一首歌 先前 這次 再次 一片 還在 站在 落在 做到 看來 留下 大部分 開頭 結尾 每次 本來 然而 同時 必須 總是 這種 那種 一直 反而 已有 不同於 另外 如同 作為 來自 多數 各種 透過 相關的 文字的 說明 資料庫 目前的 都可以 沒辦法 這樣的 這樣子 不一樣'.split(/\\s+/u))IGNORE_ZH.add(word);
 const IGNORE_EN=new Set('the and for that this with from have has had are was were you your they them their our his her what why how when where which just also can could would should not all one two into about there here then than more less some any out use used using via http https www com org net facebook threads instagram posted share post photo photos image images video media title text content article link links'.split(/\s+/u));
 const HAN=/^\p{Script=Han}+$/u;
 const LATIN=/^[\p{Script=Latin}][\p{Script=Latin}\d+#-]*$/u;
