@@ -93,14 +93,14 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   function savedRoutePoints(route=selectedSavedRoute){
     if(!Array.isArray(route?.anchor_list))return [];
     const byId=new globalThis.Map(savedAnchors.filter(isValidSavedAnchor).map(row=>[String(row.uid),row]));
-    const ids=route.trace_type==='space_trace'
+    const ids=route.trace_type==='trace'
       ?[...new Set(route.anchor_list.flat(Infinity))]:route.anchor_list;
     return ids.map(uid=>byId.get(String(uid))||null);
   }
   function savedRouteData(route=selectedSavedRoute){
     if(selectedSavedGraph)return selectedSavedGraph;
     // A trace is a collection of unrelated pairs; no temporary Queue bridges.
-    if(route?.trace_type==='space_trace')return emptyRoute();
+    if(route?.trace_type==='trace')return emptyRoute();
     const points=savedRoutePoints(route);
     const features=[];
     points.forEach((place,index)=>{
@@ -122,7 +122,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     if(loaded)map.getSource('loc-trace-user-routes')?.setData(savedRouteData());
   }
   function setSavedRoute(route){
-    const next=['space_period','space_trace'].includes(route?.trace_type)?route:null;
+    const next=['path','trace'].includes(route?.trace_type)?route:null;
     const changed=(selectedSavedRoute?.source_scope||'')!==(next?.source_scope||'')
       ||(selectedSavedRoute?.uid||'')!==(next?.uid||'');
     selectedSavedRoute=next;
