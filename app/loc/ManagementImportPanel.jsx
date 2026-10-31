@@ -292,7 +292,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         if(!createMedia.length)return;
         const count=createMedia.length,started=Date.now();
         await writeImportBatches(createMedia,{
-          writeBatch:batch=>insertRows(galaxyMedia,batch),
+          writeBatch:batch=>insertImportRows(galaxyMedia,batch),
           onProgress:p=>onProgress?.({stage:'新增媒體紀錄',completed:created+p.completed,total:created+count})
         });
         created+=count;
@@ -652,7 +652,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     catch(error){setStatus(String(error?.message||error));return;}
     // Original check-in names and calendar dates are part of the import, not an optional follow-up.
     setBusy(true);setStatus('');
+    let lastImportStage='準備匯入文章';
     const showProgress=(stage,completed=0,total=0)=>{
+      lastImportStage=stage;
       // A long read-only comparison phase never calls the database write path,
       // so without this the edit Session's idle timer can expire mid-import
       // even though the browser is actively working the whole time.
@@ -930,7 +932,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       if(nativeLocal)window.dispatchEvent(new Event('loc-local-data-changed'));
     }catch(error){
       setProgress(null);
-      setStatus(String(error?.message||error||t('uiExtra.importUI.importFailed'))+t('uiExtra.importUI.importRetry'));
+      setStatus('匯入在「'+lastImportStage+'」階段失敗；之前成功的批次可能已寫入。原始錯誤：'+
+        String(error?.message||error||t('uiExtra.importUI.importFailed'))+
+        t('uiExtra.importUI.importRetry'));
     }
     finally{setBusy(false);}
   }
