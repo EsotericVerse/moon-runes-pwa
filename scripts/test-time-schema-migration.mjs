@@ -21,7 +21,7 @@ test('unique four-character UIDs and backed-up old records',()=>{
 test('old periods become traces collecting events with real one/two anchor arrays',()=>{
  const {rows}=convertLegacyTimeRows(legacy);
  const [a,b,c]=rows.filter(row=>row.type==='anchor');
- const traces=rows.filter(row=>row.type==='time_trace');
+ const traces=rows.filter(row=>row.type==='era');
  const boundaries=rows.filter(row=>row.status==='legacy_boundary');
  assert.equal(boundaries.length,2);
  assert.deepEqual(traces.map(row=>row.anchor_ids),boundaries.map(row=>[row.uid]));
@@ -37,7 +37,7 @@ test('legacy triple-anchor event is split into two real pairs',()=>{
  const split=rows.find(row=>row.status==='legacy_split');
  assert.deepEqual(original.anchor_ids,[a.uid,b.uid]);
  assert.deepEqual(split.anchor_ids,[b.uid,c.uid]);
- assert.ok(rows.filter(row=>row.type==='time_period')
+ assert.ok(rows.filter(row=>row.type==='period')
    .every(row=>row.anchor_ids.length>=1&&row.anchor_ids.length<=2));
 });
 test('historical style notes remain in private archive, not live Time',()=>{
