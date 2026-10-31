@@ -25,7 +25,7 @@ export async function tryPublicSources(sources,run){
 }
 
 export async function readIsrSummary(db,{origin,name,args}){
-  const setting=await db.from('loc_runtime_config')
+  const setting=await db.from('loc')
     .select('cache_mode,cache_provider,isr_domains').eq('id','loc').single();
   if(setting.error)return {retryable:isAvailabilityFailure(setting),error:'Public ISR settings unavailable'};
   const runtime=setting.data;
