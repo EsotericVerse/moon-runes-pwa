@@ -184,7 +184,7 @@ export async function selectDailyCategoryCounts(table,categoryColumn,{startDate=
 function mediaIdsOf(value){
   return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||'').trim()).filter(Boolean))];
 }
-async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
+async function mediaRowsFor(scope,mediaIds=[],{signal=null,includeLegacyRuneRefs=false}={}){
   const current=scopeOf(scope);
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
@@ -192,7 +192,7 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
   for(let i=0;i<ids.length;i+=40){
     const batch=ids.slice(i,i+40);
     const page=await selectRows(current.galaxyMedia,{
-      columns:'uid,title,url,media_type,meta_tags',
+      columns:includeLegacyRuneRefs?'uid,title,url,media_type,meta_tags,rune_references':'uid,title,url,media_type',
       filters:[{column:'uid',operator:'in',value:batch}],
       limit:batch.length,maxLimit:batch.length,signal
     });
@@ -327,17 +327,31 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const day=articleDate(row.date);
   const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
-    mediaRowsFor(current,mediaIds).catch(()=>[]),
+    mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
     articleSpaceContext(current,placeId,{authenticated:includeHidden}).catch(()=>({place:null,routes:[],traces:[]})),
     articleTimeContext(current,day).catch(()=>({anchors:[],periods:[],eras:[]})),
     articleStatisticsContext(current,day).catch(()=>null)
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
   const orderedMedia=mediaIds.map(mediaId=>mediaById.get(mediaId)).filter(Boolean);
+  // Existing 2026 records sometimes stored card spreads on non-rune media.
+  // Expose them as a read-only rune media view until the verified data backfill;
+  // do not modify or duplicate any Galaxy article in a read request.
+  const legacyRunes=orderedMedia.flatMap(media=>{
+    const refs=media.rune_references;
+    if(refs==null||refs===''||JSON.stringify(refs)==='{}'||JSON.stringify(refs)==='[]')return [];
+    const description=typeof refs==='string'?refs:JSON.stringify(refs);
+    const alreadyStored=orderedMedia.some(item=>String(item.media_type||'').toLowerCase()==='runes'
+      &&String(item.meta_tags||'')===description);
+    return alreadyStored?[]:[{
+      uid:String(media.uid)+':legacy-runes',media_type:'runes',
+      title:'抽牌結果',url:null,meta_tags:description
+    }];
+  });
   // Keep media and original article URLs as distinct associations.
   return {...row,scope_id:current.id,__table:current.galaxy,
     links:resolvedLinks(row,new Map()),relation_titles:relationTitles,
-    related_media:orderedMedia,trace_place:space.place,
+    related_media:[...orderedMedia,...legacyRunes],trace_place:space.place,
     related_space:space,related_time:time,related_statistics:statistics};
 }
 
