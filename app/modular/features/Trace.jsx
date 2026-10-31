@@ -260,6 +260,7 @@ export default function Trace({scopeId='loc'}){
             <option value="音樂">音樂</option>
             <option value="圖片">圖片</option>
             <option value="影片">影片</option>
+            <option value="runes">抽牌結果（runes）</option>
           </select>
         </label>
         <p className="scope-status">來源對應作品的 site（例如 Threads）；媒體類型對應 galaxy_media.media_type。兩者可交叉篩選，三種模式共用 {timeWindow==='3m'?'最近三個月':timeWindow==='all'?'全部時間':'目前設定時間'}。</p>
