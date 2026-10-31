@@ -265,25 +265,42 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
       const byId=new Map(existingMedia.map(row=>[String(row.uid),row]));
-      // Only when this import includes newly created rune media, inspect the
-      // exact owners' stored media_link arrays to make reimports idempotent.
-      const pendingRuneOwners=[...new Set(plans.filter(item=>item.media_type==='runes'&&
-        !item.uid&&!item.url&&item.__article_uid&&item.meta_tags)
+      // URL-less media are reused only when attached to this exact article
+      // with a complete, matching source evidence identity.
+      const mediaEvidenceKey=(item,owner)=>{
+        const type=String(item?.media_type||'').trim();
+        const metadata=String(item?.meta_tags||'').trim();
+        const title=String(item?.title||'').trim();
+        const stamp=Date.parse(String(item?.createtime||''));
+        if(!owner||!type||!metadata||!title||!Number.isFinite(stamp))return '';
+        return JSON.stringify([owner,type,title,metadata,new Date(stamp).toISOString(),
+          String(item?.location||'').trim()]);
+      };
+      const pendingOwners=[...new Set(plans.filter(item=>
+        !item.uid&&!item.url&&item.__article_uid&&
+        (item.media_type==='runes'&&item.meta_tags||
+          mediaEvidenceKey(item,String(item.__article_uid))))
         .map(item=>String(item.__article_uid)))];
-      const existingRuneByArticle=new Map();
-      if(pendingRuneOwners.length){
-        const ownerRows=await readExistingByIds(galaxy,'uid,media_link','uid',pendingRuneOwners,
+      const existingRuneByArticle=new Map(),existingOwnerMediaByKey=new Map();
+      if(pendingOwners.length){
+        const ownerRows=await readExistingByIds(galaxy,'uid,media_link','uid',pendingOwners,
           t('uiExtra.importUI.mediaLinkReadFailed'));
         const linkedUids=[...new Set(ownerRows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
-        const previousRunes=linkedUids.length?await readExistingByIds(
-          galaxyMedia,'uid,media_type,meta_tags','uid',linkedUids,
+        const linkedMedia=linkedUids.length?await readExistingByIds(
+          galaxyMedia,'uid,media_type,meta_tags,title,createtime,location,url','uid',linkedUids,
           t('uiExtra.importUI.mediaIdCompareFailed')):[];
-        const runeMetaByUid=new Map(previousRunes.filter(row=>row.media_type==='runes')
-          .map(row=>[String(row.uid),String(row.meta_tags||'')]));
-        for(const row of ownerRows){
-          for(const mediaUid of row.media_link||[]){
-            const meta=runeMetaByUid.get(String(mediaUid));
-            if(meta)existingRuneByArticle.set(JSON.stringify([String(row.uid),meta]),String(mediaUid));
+        const savedMediaByUid=new Map(linkedMedia.map(row=>[String(row.uid),row]));
+        for(const article of ownerRows){
+          for(const mediaUid of article.media_link||[]){
+            const stored=savedMediaByUid.get(String(mediaUid));
+            if(!stored)continue;
+            const owner=String(article.uid),uid=String(mediaUid);
+            if(stored.media_type==='runes'&&stored.meta_tags)
+              existingRuneByArticle.set(JSON.stringify([owner,String(stored.meta_tags)]),uid);
+            if(!stored.url){
+              const key=mediaEvidenceKey(stored,owner);
+              if(key&&!existingOwnerMediaByKey.has(key))existingOwnerMediaByKey.set(key,uid);
+            }
           }
         }
       }
@@ -321,6 +338,9 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
           ?JSON.stringify([owner,String(record.meta_tags)]):'';
         const existingRuneUid=runeDedupKey?existingRuneByArticle.get(runeDedupKey):null;
         if(existingRuneUid){attach(owner,existingRuneUid);continue;}
+        const evidenceKey=!record.uid&&!record.url?mediaEvidenceKey(record,owner):'';
+        const storedEvidenceUid=evidenceKey?existingOwnerMediaByKey.get(evidenceKey):null;
+        if(storedEvidenceUid){attach(owner,storedEvidenceUid);continue;}
         const key=mediaKey(record);
         const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
         if(known){
@@ -338,6 +358,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
         record.uid=mediaId;
         if(runeDedupKey)existingRuneByArticle.set(runeDedupKey,String(mediaId));
+        if(evidenceKey)existingOwnerMediaByKey.set(evidenceKey,String(mediaId));
         createMedia.push(record);pendingMediaUids.add(String(mediaId));
         if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
