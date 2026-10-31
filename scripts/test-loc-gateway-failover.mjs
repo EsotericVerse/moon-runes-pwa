@@ -3,7 +3,6 @@ import {test} from 'node:test';
 import gateway from '../workers/loc-gateway/index.mjs';
 
 const origin='https://loc.example.test';
-const base='https://g.example.test/rest/v1';
 const supa='https://primary.example.test/rest/v1';
 const neon='https://backup.example.test/rest/v1';
 const envFor=(primary_id='supabase-current')=>({
@@ -15,6 +14,13 @@ const envFor=(primary_id='supabase-current')=>({
   LOC_AUTHORITY_STATE:{
     idFromName:()=>({}),
     get:()=>({listState:async()=>({primary_id})})
+  },
+  LOC_AUTHORITY_SERVICE:{
+    fetch:async request=>{
+      assert.equal(new URL(request.url).pathname,'/v1/identity');
+      assert.equal(request.headers.get('origin'),origin);
+      return Response.json({provider:'clerk',subject:'user_test',email:'verified@example.test'});
+    }
   }
 });
 const req=(path,method='GET',token='')=>new Request('https://g.example.test'+path,{
@@ -44,14 +50,12 @@ test('manual Neon primary sends writes to Neon only with a verified Clerk token'
   const calls=[];
   await mockFetch(async(url,init)=>{
     calls.push(String(url));
-    if(String(url).startsWith('https://authority.example.test'))
-      return Response.json({provider:'clerk',subject:'user_test',email:'verified@example.test'});
     return new Response('{"count":1}',{status:200,headers:{'content-type':'application/json'}});
   },async()=>{
     const reply=await gateway.fetch(req('/rest/v1/rpc/management_write','POST','header.payload.signature'),envFor('neon-current'));
     assert.equal(reply.status,200);
-    assert.equal(calls.length,2);
-    assert.equal(calls[1].startsWith(neon),true);
+    assert.equal(calls.length,1);
+    assert.equal(calls[0].startsWith(neon),true);
   });
 });
 test('anonymous mutation and unknown RPC cannot pass through Gateway',async()=>{
