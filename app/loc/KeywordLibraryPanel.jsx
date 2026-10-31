@@ -495,6 +495,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         {discovery.sparse?<p className="scope-status">
           新詞稀疏段：{discovery.sparse.start} 至 {discovery.sparse.end} ·
           既有關鍵詞字面涵蓋率 {(discovery.sparse.existingRatio*100).toFixed(1)}%
+        </p>:discovery.dense?<p className="scope-status">
+          尚無可辨識的密／空分段；全期既有關鍵詞字面涵蓋率 {(Number(discovery.overallExistingRatio||0)*100).toFixed(1)}%
         </p>:null}
         {discovery.limited?<p className="scope-status scope-error">不重複候選詞過多，已達分析記憶體上限；列表可能不完整。</p>:null}
         {suggestedCandidates.length?<div>
