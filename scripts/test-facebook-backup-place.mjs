@@ -80,6 +80,7 @@ test('real Facebook post object keeps media, source text, exact coordinates and 
  assert.deepEqual(article.__importCoordinates,{latitude:25.05338,longitude:121.49086});
  assert.equal(article.__importPlaceName,'測試地點');
  assert.equal(article.__importPlaceAddress,'測試地址');
+ assert.equal(article.__importPlaceUrl,placeUrl,'來源地點 URL 不得變成文章網址');
  assert.equal(article.createtime,new Date(1656652590*1000).toISOString());
  assert.equal(article.url,undefined,'place URL is not a post permalink');
  assert.deepEqual(extractFacebookGeoObjects(post),[{
