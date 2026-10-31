@@ -15,6 +15,8 @@ import {heroImageUrl as heroImageUrlOf} from '../loc/hero-image.mjs';
 
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
+import {featureNavigationHref} from './feature-navigation';
+import {scopeHref} from './scope-registry';
 // Shared display stays light: mount the editor only on pages that need it.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
 
@@ -142,50 +144,97 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleRelationNavigation({links=[],externalLinks=[],relatedMedia=[],tracePlace=null,traceHref='',locationName=''}) {
-  const relation=prefix=>links.filter(link=>String(link.id||'').startsWith(prefix));
-  const refs=relation('reference:'),previous=relation('source:'),following=relation('target:');
-  const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
-  const articleLinks=(items)=>items.map((link,index)=><a key={link.id||link.href||index}
-    href={link.href} className="scope-article-context-link">{link.title||link.label||'閱讀文章'}</a>);
-  const mediaLinks=relatedMedia.map((item,index)=>{
-    const title=String(item.title||'').trim()||('媒體 '+(index+1));
+function ArticleRelationNavigation({
+  links=[],externalLinks=[],relatedMedia=[],relatedTime=null,
+  relatedSpace=null,relatedStatistics=null,tracePlace=null,traceHref='',
+  locationName='',articleScopeId='',articleDate=''
+}){
+  const refs=links.filter(link=>String(link.id||'').startsWith('reference:'));
+  const above=links.filter(link=>String(link.id||'').startsWith('source:'));
+  const below=links.filter(link=>String(link.id||'').startsWith('target:'));
+  const originals=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
+  const scope=articleScopeId||'lo3rwang';
+  const day=String(articleDate||'').slice(0,10);
+  const timeHref=()=>featureNavigationHref(scope,'culture',{from:day,to:day});
+  const traceLink=(item,kind)=>featureNavigationHref(scope,'trace',
+    kind==='place'?{place:item.uid}:{map:item.uid});
+  const articles=items=>items.map((item,index)=><a key={item.id||item.href||index}
+    className="scope-article-context-link" href={item.href}>{item.title||item.label||'閱讀文章'}</a>);
+  const named=(items,href)=>Array.isArray(items)?items.map((item,index)=><a
+    key={item.uid||index} href={href(item)} className="scope-article-context-link">
+    {item.title||item.uid}</a>):[];
+  const row=(label,children)=><div className="scope-article-context-row" key={label}>
+    <strong>{label}：</strong><div className="scope-article-context-items">{children}</div>
+  </div>;
+  const mediaItems=relatedMedia.map((item,index)=>{
+    const isRunes=String(item.media_type||'').toLowerCase()==='runes';
+    const label=String(item.title||'').trim()||(isRunes?'抽牌結果':'媒體 '+(index+1));
     const href=externalLink({href:item.url});
-    return href?<a key={item.uid||index} href={href} target="_blank" rel="noopener noreferrer"
-      className="scope-article-context-link">{title}</a>
-      :<span key={item.uid||index}>{title}（無網址）</span>;
+    const description=String(item.meta_tags||'').trim();
+    return <span key={item.uid||index} className="scope-article-context-media">
+      {href?<a href={href} target="_blank" rel="noopener noreferrer"
+        className="scope-article-context-link">{label}</a>:<strong>{label}</strong>}
+      {isRunes?<a className="scope-article-context-link" href={scopeHref('lrunes')}>符文</a>:null}
+      {description?<details className="scope-article-context-description">
+        <summary>{isRunes?'抽牌內容':'媒體描述'}</summary><p>{description}</p>
+      </details>:null}
+    </span>;
   });
-  const hasPlace=Boolean(tracePlace?.uid||locationName);
-  if(!mediaLinks.length&&!refs.length&&!previous.length&&!following.length&&!hasPlace&&!sources.length)return null;
-  return <section className="scope-article-context" aria-label="文章關聯">
-    {mediaLinks.length?<div className="scope-article-context-row">
-      <strong>相關媒體外部連結：</strong><div className="scope-article-context-items">{mediaLinks}</div>
-    </div>:null}
-    {refs.length?<div className="scope-article-context-row">
-      <strong>參考：</strong><div className="scope-article-context-items">{articleLinks(refs)}</div>
-    </div>:null}
-    {previous.length?<div className="scope-article-context-row">
-      <strong>上：</strong><div className="scope-article-context-items">{articleLinks(previous)}</div>
-    </div>:null}
-    {following.length?<div className="scope-article-context-row">
+  const time=relatedTime||{},space=relatedSpace||{};
+  const dateValid=/^\d{4}-\d{2}-\d{2}$/.test(day);
+  const statistics=relatedStatistics;
+  const statsItems=statistics?[
+    {name:'當週統計',data:statistics.week},
+    {name:'當年統計',data:statistics.year}
+  ].filter(item=>item.data).map(item=><a key={item.name}
+      href={featureNavigationHref(scope,'statics',{from:item.data.start,to:item.data.end,statTab:'charts'})}
+      className="scope-article-context-link">{item.name}（{item.data.count} 篇）</a>):[];
+  const timeAnchors=named(time.anchors,timeHref);
+  const periods=named(time.periods,timeHref);
+  const eras=named(time.eras,timeHref);
+  const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
+  const places=named(locations,item=>traceLink(item,'place'));
+  const routes=named(space.routes,item=>traceLink(item,'map'));
+  const traces=named(space.traces,item=>traceLink(item,'map'));
+  const noContext=!mediaItems.length&&!refs.length&&!above.length&&!below.length
+    &&!timeAnchors.length&&!periods.length&&!eras.length&&!places.length
+    &&!routes.length&&!traces.length&&!locationName&&!statsItems.length&&!originals.length;
+  if(noContext)return <section className="scope-article-context" aria-label="文章整合脈絡">
+    {row('關鍵詞組別',<span className="scope-status">待建立關鍵詞對應</span>)}
+  </section>;
+  return <section className="scope-article-context" aria-label="文章整合脈絡">
+    {mediaItems.length?row('相關媒體外部連結',mediaItems):null}
+    {refs.length?row('參考',articles(refs)):null}
+    {above.length?row('上',articles(above)):null}
+    {below.length?<div className="scope-article-context-row">
       <strong>下：</strong><details className="scope-article-context-down">
-        <summary>展開 {following.length} 筆下筆文章</summary>
-        <div className="scope-article-context-items">{articleLinks(following)}</div>
+        <summary>展開 {below.length} 筆下筆文章</summary>
+        <div className="scope-article-context-items">{articles(below)}</div>
       </details>
     </div>:null}
-    {hasPlace?<div className="scope-article-context-row">
-      <strong>地點：</strong><div className="scope-article-context-items">
-        {tracePlace?.uid&&traceHref
-          ?<a href={traceHref} className="scope-article-context-link">{tracePlace.title||locationName||'查看痕跡圖'}</a>
-          :<span>{locationName||tracePlace?.title||'未設定地點'}</span>}
-      </div>
+    {dateValid?<div className="scope-article-context-group">
+      <h3>時間</h3>
+      {row('重要日',timeAnchors.length?timeAnchors:'—')}
+      {row('間隔',periods.length?periods:'—')}
+      {row('時代',eras.length?eras:'—')}
     </div>:null}
-    {sources.length?<div className="scope-article-context-row">
-      <strong>文章原始網址：</strong><div className="scope-article-context-items">
-        {sources.map((link,index)=><a key={link.id||index} href={externalLink(link)} target="_blank"
-          rel="noopener noreferrer" className="scope-article-context-link">{externalLink(link)}</a>)}
-      </div>
+    {locations.length||locationName||routes.length||traces.length?<div className="scope-article-context-group">
+      <h3>空間</h3>
+      {row('地點',places.length?places:locationName||'—')}
+      {row('路線',routes.length?routes:'—')}
+      {row('痕跡圖',traces.length?traces:'—')}
     </div>:null}
+    {dateValid?<div className="scope-article-context-group">
+      <h3>統計</h3>
+      {row('時間統計',statsItems.length?statsItems:<a className="scope-article-context-link"
+        href={featureNavigationHref(scope,'statics',{from:day,to:day})}>查看時間統計</a>)}
+      {row('關鍵詞統計',<a className="scope-article-context-link"
+        href={featureNavigationHref(scope,'statics',{statTab:'keywords',from:day,to:day})}>查看關鍵詞統計</a>)}
+    </div>:null}
+    {row('關鍵詞組別',<span className="scope-status">待建立關鍵詞對應</span>)}
+    {originals.length?row('文章原始網址',originals.map((item,index)=><a
+      key={item.id||index} className="scope-article-context-link" href={externalLink(item)}
+      target="_blank" rel="noopener noreferrer">{externalLink(item)}</a>)):null}
   </section>;
 }
 
@@ -203,6 +252,11 @@ export function WorkSummaryCard({
   relationLinks=[],
   detailReading=false,
   relatedMedia=[],
+  relatedTime=null,
+  relatedSpace=null,
+  relatedStatistics=null,
+  articleScopeId='',
+  articleDate='',
   tracePlace=null,
   traceHref='',
   locationName='',
@@ -244,7 +298,9 @@ export function WorkSummaryCard({
     </div>:null}
     {children}
     {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]}
-      relatedMedia={relatedMedia} tracePlace={tracePlace} traceHref={traceHref} locationName={locationName}/>:null}
+      relatedMedia={relatedMedia} relatedTime={relatedTime} relatedSpace={relatedSpace}
+      relatedStatistics={relatedStatistics} articleScopeId={articleScopeId} articleDate={articleDate}
+      tracePlace={tracePlace} traceHref={traceHref} locationName={locationName}/>:null}
   </article>;
 }
 
