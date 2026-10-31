@@ -62,8 +62,7 @@ function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
     uid:String(row.uid||''), title:String(row.title||''),
     location:String(row.location||''),media_type:String(row.media_type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
-    createtime:datetimeLocalValue(row.createtime),
-    rune_references:row.rune_references==null?'':JSON.stringify(row.rune_references,null,2)
+    createtime:datetimeLocalValue(row.createtime)
   };
   return {title:String(row.title??fallbackTitle??''),originalTitle:String(row.title??fallbackTitle??''),
     body:'',bodyHtml:'',bodyBlocks:plainTextToBlocks(''),editorKey:String(row.uid||''),
@@ -76,11 +75,6 @@ function changedMediaAttributes(draft,t){
   }
   if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
   if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
-  if(current.rune_references!==initial.rune_references){
-    const value=String(current.rune_references||'').trim();
-    if(!value)changed.rune_references=null;
-    else {try{changed.rune_references=JSON.parse(value)}catch{throw new Error(t('uiExtra.searchUI.runeReferencesInvalid'))}}
-  }
   return changed;
 }
 function changedGalaxyAttributes(draft,t){
