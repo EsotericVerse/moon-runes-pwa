@@ -32,6 +32,12 @@ fieldset{border:1px solid #526478;border-radius:9px}.options{display:flex;flex-w
 <div id="session-actions" class="actions" hidden><button id="refresh" class="primary">驗證並載入控制設定</button><button id="signout">登出</button></div>
 <p id="status" role="status" aria-live="polite">讀取獨立設定…</p>
 </section>
+<section id="readiness" class="card" hidden>
+<h2>備援可用性檢查（唯讀）</h2>
+<p>手動檢查獨立 Clerk 身分、Supabase／Neon 公開讀取及管理權限讀取。不會修改資料庫或切換來源。寫入能力與資料是否完整須另外驗證。</p>
+<button id="check-readiness" type="button">檢查備援狀態</button>
+<div id="readiness-results" role="status" aria-live="polite"></div>
+</section>
 <section id="targets" class="card" hidden>
 <h2>資料庫連線目標</h2>
 <p>復原目標：<strong id="active-target">未設定</strong>。儲存連線設定和正式切換是兩件事；網站 SQL Gateway 尚未接通前不會切換主站資料庫。</p>
@@ -109,6 +115,36 @@ async function api(path,{method='GET',body}={}){
   if(!response.ok)throw new Error(result?.error||'控制服務 HTTP '+response.status);
   return result;
 }
+async function gatewayReadiness(){
+  if(!settings.gatewayUrl)throw new Error('尚未配置獨立 SQL Gateway');
+  const gateway=verifiedHttpsOrigin(settings.gatewayUrl);
+  const token=await clerk?.session?.getToken();
+  if(!token)throw new Error('Clerk Session 無效');
+  const response=await fetch(gateway+'/v1/readiness',{
+    method:'GET',credentials:'omit',cache:'no-store',
+    headers:{authorization:'Bearer '+token,accept:'application/json'}
+  });
+  const result=await response.json().catch(()=>null);
+  if(!response.ok)throw new Error(result?.message||'備援狀態檢查失敗 HTTP '+response.status);
+  return result;
+}
+function showReadiness(result){
+  const output=byId('readiness-results');
+  output.replaceChildren();
+  const row=(label,ok)=>{
+    const line=node('p', (ok?'● 綠燈：':'● 紅燈：')+label);
+    line.style.color=ok?'#88d9ad':'#f7a3a3';
+    output.append(line);
+  };
+  row('Clerk 身分驗證',result.clerk?.verified===true);
+  row('Clerk 已驗證 Email',result.clerk?.verifiedEmail===true);
+  row('Supabase 公開讀取',result.supabase?.publicRead===true);
+  row('Supabase Clerk 管理權限讀取',result.supabase?.clerkManagementRead===true);
+  row('Neon 公開讀取',result.neon?.publicRead===true);
+  row('Neon Clerk 管理權限讀取',result.neon?.clerkManagementRead===true);
+  output.append(node('p','目前主要來源：'+(result.primary||'未設定')+
+    '。這個檢查不測試寫入或資料完整性，不表示可以安全切換正式編輯。'));
+}
 function itemText(target){return [target.label||target.id,target.engine,target.host+':'+target.port].join(' · ')}
 function node(tag,text){const el=document.createElement(tag);el.textContent=text;return el}
 function button(label,onClick){const el=node('button',label);el.type='button';el.addEventListener('click',onClick);return el}
@@ -120,7 +156,7 @@ function fillForm(target){
 }
 async function loadState(){
   const [info,grants]=await Promise.all([api('/v1/state'),api('/v1/grants')]);
-  approved=true;show('targets',true);show('grants',true);
+  approved=true;show('targets',true);show('grants',true);show('readiness',Boolean(settings.gatewayUrl));
   byId('active-target').textContent=info.primary_id||'未設定';
   clear('target-list');
   for(const target of info.targets||[]){
@@ -175,6 +211,11 @@ byId('grant-form').addEventListener('submit',event=>{
   });
 });
 byId('refresh').addEventListener('click',()=>run(async()=>{await api('/v1/me');await loadState();status('獨立管理權限驗證成功。')}));
+byId('check-readiness').addEventListener('click',()=>run(async()=>{
+  const result=await gatewayReadiness();
+  showReadiness(result);
+  status('備援檢查完成。管理寫入與跨資料庫資料一致性仍須獨立驗證。');
+}));
 byId('signout').addEventListener('click',()=>run(async()=>{await clerk.signOut();location.reload()}));
 async function start(){
   const response=await fetch('./config.json',{cache:'no-store'});
@@ -184,6 +225,7 @@ async function start(){
     throw new Error('Clerk 公開金鑰或 Frontend API 尚未設定。');
   const apiOrigin=verifiedHttpsOrigin(settings.frontendApiUrl);
   if(settings.controlUrl)verifiedHttpsOrigin(settings.controlUrl);
+  if(settings.gatewayUrl)verifiedHttpsOrigin(settings.gatewayUrl);
   byId('refresh').hidden=!settings.controlUrl;
   await script(apiOrigin+'/npm/@clerk/ui@1/dist/ui.browser.js');
   await script(apiOrigin+'/npm/@clerk/clerk-js@6/dist/clerk.browser.js',{
@@ -198,7 +240,7 @@ async function start(){
     show('login-root',!signedIn);
     byId('clerk-session').textContent=signedIn&&clerk.user?.id
       ?'Clerk User ID：'+clerk.user.id:'';
-    if(!signedIn){approved=false;show('targets',false);show('grants',false);}
+    if(!signedIn){approved=false;show('targets',false);show('grants',false);show('readiness',false);clear('readiness-results');}
     status(signedIn
       ?settings.controlUrl
         ?'Clerk 登入成功。請按「驗證並載入控制設定」。'
