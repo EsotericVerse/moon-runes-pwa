@@ -1,7 +1,7 @@
 export const SPACE_ANCHOR='space_anchor';
-export const SPACE_PERIOD='space_period';
+export const SPACE_PERIOD='path';
 export const SPACE_ROAD=SPACE_PERIOD; // Historical JS alias only; no space_road database writes.
-export const SPACE_TRACE='space_trace';
+export const SPACE_TRACE='trace';
 export const BASE62_FOUR=/^[A-Za-z0-9]{4}$/;
 export function spaceType(row){
   const type=String(row?.type||row?.trace_type||'');
