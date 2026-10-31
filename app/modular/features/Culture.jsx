@@ -17,7 +17,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
-import {featureNavigationHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
+import {featureNavigationHref,galaxyIdentityHref,readFeatureNavigation} from '../feature-navigation';
 import ScopeLink from '../ScopeLink';
 import {useEditDock} from '../edit-dock';
 import {featureDataErrorMessage} from '../feature-data-state';
@@ -1665,11 +1665,10 @@ export default function Culture(){
                       key={work.key||work.uid||work.entry_id||String(work.createtime||work.created_at)+'-'+index}
                       uid={work.uid}
                       title={workDisplayHeading(work,{media:false,limit:80})}
+                      articleHref={work.entry_type==='work'?galaxyIdentityHref(work.scope_id||classificationScope,work.uid):''}
                       source={work.site||work.group_label||''}
                       scopeId={work.scope_id||classificationScope}
                       date={work.display_date||CultureTimelineModel.formatCultureDateTime(work.createtime||work.created_at)}
-                      body={editingWorkKey===workKey&&editDraft?'':work.description||work.media_metadata_text||''}
-                      relationLinks={galaxyRelationLinks(classificationScope,work)}
                       links={work.links||[]}
                       editable={canEditWork}
                       editing={editingWorkKey===workKey}
