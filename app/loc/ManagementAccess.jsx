@@ -58,6 +58,10 @@ export default function ManagementAccess({scopeId,level='scope',featureId='manag
       {account.error?<p className="scope-status scope-error" role="alert">{account.error}</p>:null}
       {!allowed&&account.user&&account.error?<button className="loc-button" type="button"
         onClick={()=>void account.refresh({forceVerify:true}).catch(()=>{})}>重新確認管理權限</button>:null}
+      {ready&&!allowed?<button className="loc-button" type="button" onClick={()=>{
+        try{window.localStorage.removeItem('loc-auth-provider');}catch{}
+        window.location.assign('/local/settings/');
+      }}>改用原本登入方式</button>:null}
       {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     </section>
   </FeaturePage>;
