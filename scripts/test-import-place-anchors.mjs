@@ -115,6 +115,18 @@ test('a new named place without coordinates is created with a null address',asyn
   assert.equal(db.rows[0].address,null);
 });
 
+test('old control characters in location normalize only the Trace label, not Galaxy text',async()=>{
+  const db=memoryTrace();
+  const raw={location:'台北\\u001F車站'};
+  const result=await prepareImportPlaceAnchors([raw],{
+    scopeId:'lo3rwang',relation:db.relation,createMissing:true
+  });
+  assert.equal(result.created,1);
+  assert.equal(db.rows[0].title,'台北 車站');
+  assert.equal(raw.location,'台北\\u001F車站');
+  assert.ok(importedPlaceId({incoming:raw,byName:result.byName}));
+});
+
 test('an existing article place_id is never overwritten',async()=>{
   const db=memoryTrace([{uid:'AB12',title:'existing',address:[121.5,25.04]}]);
   const record=named('existing',25.04,121.5);
@@ -156,7 +168,7 @@ test('reimports reconcile both existing and new article anchors',async()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/prepareImportPlaceAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
   assert.match(panel,/if\(restoredPlace\)changes\.place_id=restoredPlace/);
-  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
 });
 
 test('check-in times are merged into the anchor times array: sorted, no duplicates, no empty writes',async()=>{
