@@ -214,11 +214,29 @@ async function readExistingByIds(table,columns,column,values,message,onPage){
 async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],knownArticleIds=new Map(),galaxy,galaxyMedia,t,onProgress}={}){
       // Media-only imports and embedded media use the same Galaxy Media table.
       // Attach only to article UIDs established by the import plan.
-      const plans=normalized.flatMap(item=>{
+      const originalPlans=normalized.flatMap(item=>{
         const sourceUid=item.record?.uid;
         const owner=knownArticleIds.get(sourceUid);
         return (owner?(item.mediaRecords||[]):[]).map(record=>({...record,__article_uid:owner}));
       }).concat(mediaOnly);
+      // One legacy rune_references field becomes its own runes media record.
+      // Keep the original media record, URL, title and description unchanged.
+      // Never duplicate the article in Galaxy just to store a card spread.
+      const plans=originalPlans.flatMap(source=>{
+        const {rune_references,...record}=source;
+        if(rune_references==null||rune_references===''||
+            JSON.stringify(rune_references)==='[]'||JSON.stringify(rune_references)==='{}')
+          return [record];
+        const content=typeof rune_references==='string'?rune_references:JSON.stringify(rune_references);
+        if(record.media_type==='runes'){
+          return [{...record,title:record.title||'抽牌結果',meta_tags:record.meta_tags||content}];
+        }
+        if(!record.__article_uid)throw new Error('抽牌結果必須對應 Galaxy 文章 UID');
+        return [record,{
+          __article_uid:record.__article_uid,media_type:'runes',title:'抽牌結果',
+          url:null,meta_tags:content,createtime:record.createtime,location:record.location
+        }];
+      });
       onProgress?.({stage:'核對既有媒體',completed:0,total:0});
       const existingMedia=[];
       const explicitIds=[...new Set([...plans.map(record=>record.uid).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
@@ -233,6 +251,28 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
       const byId=new Map(existingMedia.map(row=>[String(row.uid),row]));
+      // Only when this import includes newly created rune media, inspect the
+      // exact owners' stored media_link arrays to make reimports idempotent.
+      const pendingRuneOwners=[...new Set(plans.filter(item=>item.media_type==='runes'&&
+        !item.uid&&!item.url&&item.__article_uid&&item.meta_tags)
+        .map(item=>String(item.__article_uid)))];
+      const existingRuneByArticle=new Map();
+      if(pendingRuneOwners.length){
+        const ownerRows=await readExistingByIds(galaxy,'uid,media_link','uid',pendingRuneOwners,
+          t('uiExtra.importUI.mediaLinkReadFailed'));
+        const linkedUids=[...new Set(ownerRows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
+        const previousRunes=linkedUids.length?await readExistingByIds(
+          galaxyMedia,'uid,media_type,meta_tags','uid',linkedUids,
+          t('uiExtra.importUI.mediaIdCompareFailed')):[];
+        const runeMetaByUid=new Map(previousRunes.filter(row=>row.media_type==='runes')
+          .map(row=>[String(row.uid),String(row.meta_tags||'')]));
+        for(const row of ownerRows){
+          for(const mediaUid of row.media_link||[]){
+            const meta=runeMetaByUid.get(String(mediaUid));
+            if(meta)existingRuneByArticle.set(JSON.stringify([String(row.uid),meta]),String(mediaUid));
+          }
+        }
+      }
       const createMedia=[],pendingMediaUids=new Set(),related=new Map(),seenMedia=new Set(),resolvedIds=new Map();
       const mediaSizer=createImportBatchSizer();
       let created=0;
@@ -240,9 +280,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         if(!createMedia.length)return;
         const count=createMedia.length,started=Date.now();
         await writeImportBatches(createMedia,{
-          writeBatch:batch=>insertRows(galaxyMedia,batch.map(record=>({
-            ...record,rune_references:record.rune_references??null
-          }))),
+          writeBatch:batch=>insertRows(galaxyMedia,batch),
           onProgress:p=>onProgress?.({stage:'新增媒體紀錄',completed:created+p.completed,total:created+count})
         });
         created+=count;
@@ -265,6 +303,10 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       for(const raw of plans){
         const owner=String(raw.__article_uid||'').trim();
         const record={...raw};delete record.__article_uid;
+        const runeDedupKey=record.media_type==='runes'&&!record.uid&&!record.url&&owner&&record.meta_tags
+          ?JSON.stringify([owner,String(record.meta_tags)]):'';
+        const existingRuneUid=runeDedupKey?existingRuneByArticle.get(runeDedupKey):null;
+        if(existingRuneUid){attach(owner,existingRuneUid);continue;}
         const key=mediaKey(record);
         const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
         if(known){
@@ -281,6 +323,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         const mediaId=record.uid||createUid8();
         if(!mediaId)throw new Error(t('uiExtra.importUI.mediaUuidUnavailable'));
         record.uid=mediaId;
+        if(runeDedupKey)existingRuneByArticle.set(runeDedupKey,String(mediaId));
         createMedia.push(record);pendingMediaUids.add(String(mediaId));
         if(key)byKey.set(key,record);byId.set(mediaId,record);
         attach(owner,mediaId);
