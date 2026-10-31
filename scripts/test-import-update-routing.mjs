@@ -75,6 +75,9 @@ test('unknown columns and duplicate UIDs fail before any write',async()=>{
   await assert.rejects(()=>db.updateImportRows('silver.lo3rwang_galaxy',[
     {uid:'AAA00001',arbitrary_new_column:'not permitted'}
   ]),/無效文章更新資料/);
+  await assert.rejects(()=>db.updateImportRows('silver.loc',[
+    {uid:'AAA00001',title:'unauthorized target'}
+  ]),/文章批次更新資料表無效/);
   assert.equal(calls.length,0);
 });
 
