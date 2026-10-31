@@ -283,16 +283,13 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const row=await selectRowById(current.galaxy,{
     idColumn:'uid',
     id,
-    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable',
+    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable,content',
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const [contentRow,mediaRows]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
-    mediaRowsFor(current,mediaIdsOf(row.media_link))
-  ]);
+  const mediaRows=await mediaRowsFor(current,mediaIdsOf(row.media_link));
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
-  return {...row,scope_id:current.id,__table:current.galaxy,content:contentRow?.content||'',links:resolvedLinks(row,mediaById)};
+  return {...row,scope_id:current.id,__table:current.galaxy,links:resolvedLinks(row,mediaById)};
 }
 
 function literalPattern(value){
@@ -604,7 +601,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
-      columns:'uid,title,createtime,UpdateTime,url,source_id,target_id,ref_id,site,media_link',
+      columns:'uid,title,createtime,url,site',
       filters:[{column:'uid',operator:'in',value:keys}],
       limit:keys.length,
       authenticated:privateScopes.has(scope.id),
