@@ -53,7 +53,7 @@ test('management page does not run concurrent HomeEditModeRestore RPC',()=>{
   const shell=read('app/AppShell.jsx');
   const access=read('app/loc/ManagementAccess.jsx');
   assert.match(shell,/!isManagementHref\(pathname\)/);
-  assert.match(access,/const account=useAccount\(\)/);
+  assert.match(access,/const account=useAccount\(\{enabled:false\}\)/);
   assert.match(access,/granted\(account\.authorizer,scopeId,level\)/);
 });
 
