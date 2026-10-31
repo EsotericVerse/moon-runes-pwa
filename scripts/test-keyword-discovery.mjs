@@ -66,3 +66,18 @@ test('empty content produces an empty proposal list without writes',()=>{
   assert.equal(result.withContent,0);
   assert.deepEqual(result.candidates,[]);
 });
+
+test('word joins stop at Chinese connectors and writing-instruction phrases',()=>{
+  const scanner=createNewKeywordDiscovery([]);
+  for(let i=0;i<3;i++)scanner.consume([{
+    content:'都市牢籠與混沌風暴。要用同樣風格寫一首歌。',
+    createtime:'2026-10-01'
+  }]);
+  const terms=new Set(scanner.finish().candidates.map(item=>item.word));
+  assert.ok(terms.has('都市牢籠'));
+  assert.ok(terms.has('混沌風暴'));
+  assert.ok(!terms.has('牢籠與混沌'));
+  assert.ok(!terms.has('與混沌風暴'));
+  assert.ok(!terms.has('要用同樣風格'));
+  assert.ok(!terms.has('同樣風格寫'));
+});
