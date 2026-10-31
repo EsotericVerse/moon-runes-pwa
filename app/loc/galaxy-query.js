@@ -312,14 +312,14 @@ async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
       {column:'trace_type',operator:'eq',value:'space_anchor'}
     ],limit:1,authenticated}),
     selectRows(table,{columns:'uid,title',filters:[
-      {column:'trace_type',operator:'eq',value:'space_period'},
+      {column:'trace_type',operator:'eq',value:'path'},
       {column:'anchor_list',operator:'contains',value:[placeId]}
     ],limit:100,maxLimit:100,authenticated})
   ]);
   const routes=routesPage.rows||[],routeIds=routes.map(row=>String(row.uid)).filter(Boolean);
   const clauses=['anchor_list.cs.{'+placeId+'}',...routeIds.map(uid=>'route_list.cs.{'+uid+'}')];
   const traces=await selectRows(table,{columns:'uid,title',filters:[
-    {column:'trace_type',operator:'eq',value:'space_trace'}
+    {column:'trace_type',operator:'eq',value:'trace'}
   ],orFilter:clauses.join(','),limit:100,maxLimit:100,authenticated});
   return {place:anchor.rows[0]||null,routes,traces:traces.rows||[]};
 }
@@ -595,7 +595,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
     id:current.id+':timeline',table:current.time,source:current.id+' 時期',scope:current,idColumn:'uid',
     columns:['uid','type','title','description','address','anchor_ids','status'],
     searchFields:['title','description','status'],dateColumn:'address',
-    filters:[{column:'type',operator:'in',value:['anchor','time_period','time_trace']}]
+    filters:[{column:'type',operator:'in',value:['anchor','period','era']}]
   });
   // The basic public/guest search is intentionally limited to title/content.
   // Advanced media and timeline searches keep their explicit providers.
