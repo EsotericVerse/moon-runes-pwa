@@ -143,10 +143,17 @@ async function verifyIdentityToken(request,env){
   // Email is usable for legacy management grants only when it is a VERIFIED,
   // cryptographically signed identity claim. Never promote SDK/local input.
   const email=String(claims.email||'').trim().toLowerCase();
-  const verifiedEmail=claims.email_verified===true&&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?email:'';
+  const emailFormat=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  const verifiedEmail=claims.email_verified===true&&emailFormat.test(email)?email:'';
+  // Default Clerk session JWTs contain sub/sid but usually NO signed email.
+  // This deployment's sole root has an independent trusted server-side
+  // management-email binding. Never use an email supplied by the browser.
+  const roots=String(env.LOC_RECOVERY_ROOT_CLERK_IDS||'').split(/[\\s,;]+/).filter(Boolean);
+  const rootEmail=String(env.LOC_ROOT_MANAGEMENT_EMAIL||'').trim().toLowerCase();
+  const mappedEmail=clerk&&roots.length===1&&roots[0]===claims.sub&&
+    emailFormat.test(rootEmail)?rootEmail:'';
   return {provider:clerk?'clerk':'secondary',subject:claims.sub,
-    session:clerk?claims.sid:'verified',email:verifiedEmail};
+    session:clerk?claims.sid:'verified',email:verifiedEmail||mappedEmail};
 }
 function validateTarget(input,id){
   if(!ID.test(id)||!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid target');
