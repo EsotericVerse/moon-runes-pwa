@@ -27,7 +27,6 @@ a{color:#9fd1ff}#status{overflow-wrap:anywhere;white-space:pre-wrap}
     <p>登入只是第一步；LOC Authority 尚須驗證目前的 Session。管理與寫入權限不會由這個頁面直接授予。</p>
     <div class="actions">
       <button id="return" type="button" disabled>核驗後返回 LOC</button>
-      <button id="legacy" type="button">使用原本登入</button>
       <button id="signout" type="button">登出</button>
     </div>
   </div>
@@ -72,14 +71,9 @@ async function verify(){
     if(generation!==checkGeneration||!clerk.isSignedIn)return;
     verifiedForEditor=Boolean(identity.email);
     byId('return').disabled=!verifiedForEditor;
-    if(verifiedForEditor){
-      // Only a signed, verified identity can opt this browser into Clerk
-      // editing. The server-side SQL RLS must independently authorize writes.
-      window.localStorage.setItem('loc-auth-provider','clerk');
-    }
     byId('status').textContent=verifiedForEditor
       ?'Clerk 身分已核驗。進入 LOC 後將再檢查管理權限。'
-      :'Clerk Session 尚未提供已驗證的 Email 宣告，無法進入編輯。可使用原本登入。';
+      :'Clerk Session 尚未提供已驗證的 Email 宣告，無法進入編輯。';
   }catch(error){
     if(generation===checkGeneration&&clerk?.isSignedIn)
       byId('status').textContent=String(error.message||error);
@@ -95,12 +89,7 @@ function update(){
   if(signedIn)void verify();
 }
 byId('return').onclick=()=>{if(verifiedForEditor)location.assign(validReturnPath());};
-byId('legacy').onclick=()=>{
-  window.localStorage.removeItem('loc-auth-provider');
-  location.assign(validReturnPath());
-};
 byId('signout').onclick=async()=>{
-  window.localStorage.removeItem('loc-auth-provider');
   await clerk?.signOut();
   location.reload();
 };
