@@ -569,6 +569,52 @@
   box-shadow:none;
 }
 
+/* Only the opened article shows compact relationship metadata. */
+.scope-article-context{
+  width:100%;
+  min-width:0;
+  margin-top:1.2rem;
+  padding-top:1rem;
+  border-top:1px solid var(--loc-line);
+  display:grid;
+  gap:.7rem;
+}
+.scope-article-context-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:.35rem .75rem;
+  min-width:0;
+  font-size:.95rem;
+  line-height:1.65;
+}
+.scope-article-context-row>strong{flex:none;font-weight:700}
+.scope-article-context-items{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:.35rem 1rem;
+  min-width:0;
+}
+.scope-article-context-link{
+  color:var(--loc-accent);
+  text-decoration:underline;
+  text-underline-offset:.18em;
+  overflow-wrap:anywhere;
+}
+.scope-article-context-link:focus-visible,
+.scope-article-context-down>summary:focus-visible{
+  outline:2px solid var(--loc-accent);
+  outline-offset:3px;
+}
+.scope-article-context-down{min-width:0;flex:1 1 12rem}
+.scope-article-context-down>summary{cursor:pointer;list-style:revert}
+.scope-article-context-down[open]>.scope-article-context-items{
+  margin:.65rem 0 .25rem;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
 .scope-article-reading-relations{
   margin-top:clamp(1.4rem,3vw,2.5rem);
   padding-top:1.35rem;
