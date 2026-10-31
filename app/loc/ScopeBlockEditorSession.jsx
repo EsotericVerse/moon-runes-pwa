@@ -15,7 +15,7 @@ registerDefaultSection('uiExtra.frameEditor',frameEditorZh);
 import {HomeBlock} from './home-block-model';
 import {BlockNoteContent} from './blocknote-content.mjs';
 import {resolveHomeImage} from './LocHomeBlockDisplay';
-import {isHomeFrameFor} from './hero-image.mjs';
+import {isHomeFrameFor,savedFrameImage} from './hero-image.mjs';
 import {HeroImageFieldset} from './HeroImageFields';
 import {appBootstrapKey} from './app-bootstrap';
 import {invalidateScopeBlockPage} from './scope-data';
@@ -153,7 +153,7 @@ export default function ScopeBlockEditorSession({
         block_eyebrow:subtitleValue(draft.eyebrow),
         block_title:subtitleValue(draft.title),
         block_subtitle:subtitleValue(draft.subtitle),
-        ...(isHomeFrame?{block_image:draft.image?.source==='custom'&&!String(draft.image.url||'').trim()?{...draft.image,source:'default',url:''}:(draft.image||null)}:{}),
+        ...(isHomeFrame?{block_image:savedFrameImage(draft.image,BlockNoteContent.image.firstFrameImageUrl(draft))}:{}),
         block_text:normalizeSavedHtml(draft.text),
         block_order:Number(draft.order)||1,
         block_entity:HomeBlock.normalizeEntities(draft.entities).map(({uid,title,text,image_mode},index)=>({
