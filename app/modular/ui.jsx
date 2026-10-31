@@ -213,15 +213,31 @@ function ArticleRelationNavigation({
     const label=String(item.title||'').trim()||(isRunes?'抽牌結果':'媒體 '+(index+1));
     const href=externalLink({href:item.url});
     const description=String(item.meta_tags||'').trim();
+    let cards=[];
+    if(isRunes&&description.startsWith('{')){
+      try{
+        const parsed=JSON.parse(description);
+        if(Array.isArray(parsed?.cards))cards=parsed.cards.filter(card=>card&&card.rune);
+      }catch{/* Plain-text rune descriptions remain valid. */}
+    }
     return <span key={item.uid||index} className="scope-article-context-media">
       {href?<a href={href} target="_blank" rel="noopener noreferrer"
         className="scope-article-context-link">{label}</a>:<strong>{label}</strong>}
       {isRunes?<a className="scope-article-context-link" href={scopeHref('lrunes')}>符文</a>:null}
       {description?<details className="scope-article-context-description">
-        <summary>{isRunes?'抽牌內容':'媒體描述'}</summary><p>{description}</p>
+        <summary>{isRunes?'抽牌內容':'媒體描述'}</summary>
+        {cards.length?<ol className="scope-article-rune-list">
+          {cards.map((card,position)=><li key={position}>
+            <strong>{String(card.rune||'')}</strong>
+            <span>{String(card.direction||'')}</span>
+            <small>{String(card.position||position+1)}</small>
+          </li>)}
+        </ol>:<p>{description}</p>}
       </details>:null}
     </span>;
   });
+  const ordinaryMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes');
+  const runeMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()==='runes');
   const time=relatedTime||{},space=relatedSpace||{};
   const dateValid=/^\d{4}-\d{2}-\d{2}$/.test(day);
   const statistics=relatedStatistics;
@@ -245,7 +261,8 @@ function ArticleRelationNavigation({
     {row('關鍵詞組別',<span className="scope-status">待建立關鍵詞對應</span>)}
   </section>;
   return <section className="scope-article-context" aria-label="文章整合脈絡">
-    {mediaItems.length?row('相關媒體外部連結',mediaItems):null}
+    {ordinaryMedia.length?row('相關媒體外部連結',ordinaryMedia):null}
+    {runeMedia.length?row('抽牌結果（多媒體）',runeMedia):null}
     {refs.length?row('參考',articles(refs)):null}
     {above.length?row('上',articles(above)):null}
     {below.length?<div className="scope-article-context-row">
