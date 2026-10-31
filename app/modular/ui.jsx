@@ -217,6 +217,7 @@ function ArticleRelationNavigation({
       {row('重要日',timeAnchors.length?timeAnchors:'—')}
       {row('間隔',periods.length?periods:'—')}
       {row('時代',eras.length?eras:'—')}
+      {row('周年紀念',<span className="scope-status">尚未建立</span>)}
     </div>:null}
     {locations.length||locationName||routes.length||traces.length?<div className="scope-article-context-group">
       <h3>空間</h3>
