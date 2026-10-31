@@ -67,3 +67,11 @@ test('initial Clerk event does not invalidate active management query in useAcco
   assert.match(listener,/if\(invalidate\)\{[\s\S]*mutate\(MANAGEMENT_KEY,undefined,\{revalidate:false\}\)/);
   assert.doesNotMatch(listener,/if\(identityChanged\|\|event==='SIGNED_OUT'\)/);
 });
+
+test('initial unauthenticated Clerk event cannot erase cross-page edit marker before verification',()=>{
+  const dock=read('app/modular/edit-dock.jsx');
+  assert.match(dock,/if\(!invalidated\|\|!activeScope\.current\)return/);
+  assert.match(dock,/if\(userId\)lastIdentity=identity/);
+  assert.match(dock,/if\(activeScope\.current==='local'&&Capacitor\.isNativePlatform\(\)\)return/);
+  assert.match(dock,/const invalidated=event==='SIGNED_OUT'\|\|identityChanged/);
+});
