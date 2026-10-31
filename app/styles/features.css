@@ -788,6 +788,17 @@
 .scope-search-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .scope-search-date-fields label{display:grid;gap:.45rem}
 .scope-search-date-fields .scope-search-period-field{grid-column:1/-1}
+.scope-search-total-bubble{
+  display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 1rem;
+  width:fit-content;max-width:100%;min-width:0;
+  padding:.7rem 1rem;
+  border:1px solid var(--loc-ui-hairline);border-radius:1.25rem;
+  background:var(--loc-ui-panel-soft);color:var(--loc-text);
+}
+.scope-search-total-copy{margin:0;line-height:1.65;overflow-wrap:anywhere}
+.scope-search-total-bubble>.loc-button{flex:0 0 auto;min-height:2.5rem;padding:.4rem .9rem}
+.scope-search-total-bubble>small{flex-basis:100%;color:var(--loc-muted)}
+.scope-search-total-bubble>small.scope-error{color:var(--loc-error,var(--loc-text))}
 .scope-search-reference-editor{min-width:0;display:block}
 .scope-search-reference-editor>h2{padding:.5rem 0;font-weight:600}
 .scope-search-reference-editor>.scope-search-reference-grid{margin-top:.85rem}

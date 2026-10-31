@@ -1,4 +1,13 @@
 export default {
+  "summaryText": "現在、データベースには{articles}件の記事、合計{chars}文字があります。期間：{first}～{last}。",
+  "summaryEmpty": "現在、記事は0件、文字数は0文字です。記事の日付はありません。",
+  "summaryLoading": "記事統計を読み込んでいます…",
+  "summaryMissing": "記事統計のスナップショットはまだありません。",
+  "summaryFailed": "記事統計を読み込めません。",
+  "summaryRefresh": "再集計",
+  "summaryRefreshing": "再集計中…",
+  "summaryRefreshed": "統計を更新しました。",
+  "summaryRefreshFailed": "更新に失敗しました：{error}",
   "mediaTypeRequired": "media_type は必須です。",
   "mediaLinkUidInvalid": "galaxy_link は8文字の記事 UID である必要があります。",
   "runeReferencesInvalid": "rune_references には有効な JSON を入力してください。",

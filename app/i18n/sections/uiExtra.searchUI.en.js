@@ -1,4 +1,13 @@
 export default {
+  "summaryText": "This database currently contains {articles} articles and {chars} characters, from {first} to {last}.",
+  "summaryEmpty": "There are currently 0 articles and 0 characters, with no article dates.",
+  "summaryLoading": "Loading article statistics…",
+  "summaryMissing": "No article statistics snapshot is available yet.",
+  "summaryFailed": "Article statistics are currently unavailable.",
+  "summaryRefresh": "Refresh",
+  "summaryRefreshing": "Refreshing…",
+  "summaryRefreshed": "Statistics refreshed.",
+  "summaryRefreshFailed": "Refresh failed: {error}",
   "mediaTypeRequired": "media_type cannot be empty.",
   "mediaLinkUidInvalid": "galaxy_link must be an eight-character article UID.",
   "runeReferencesInvalid": "rune_references must contain valid JSON.",

@@ -24,6 +24,7 @@ import {dbAuthClient,deleteRows,updateRows} from '../../loc/db-client.mjs';
 import {useAccount} from '../../loc/use-account';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import ScopeLink from '../ScopeLink';
+import SearchSummary from '../../loc/SearchSummary';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
@@ -320,6 +321,7 @@ export default function Search({managementMode=false}){
     ?availableScopes.filter(item=>item.id===scopeFilter)
     :availableScopes,[scopeId,managementMode,scopeFilter,availableScopes]);
   const scopeById=useMemo(()=>new Map(availableScopes.map(item=>[item.id,item])),[availableScopes]);
+  const summaryScopeIds=targetScopes.map(item=>item.id);
   const scopeLabel=id=>{
     const item=scopeById.get(id);
     // A result may show its published source name, never an inventory of IDs.
@@ -977,6 +979,7 @@ export default function Search({managementMode=false}){
   const pageContent=<>
     {managementMode?<section className="scope-search-workspace" aria-label="管理搜尋">
       <h2>管理搜尋</h2>
+      <SearchSummary scopeIds={summaryScopeIds} managementMode />
       <form className="scope-search-form" onSubmit={runSearch}>
         <label htmlFor="scope-management-search-query">文章 UID、標題、正文或來源</label>
         <input id="scope-management-search-query" value={query}
@@ -1147,6 +1150,7 @@ export default function Search({managementMode=false}){
           </div>:null}
         </div>:null}
       </div>
+    {!managementMode?<SearchSummary scopeIds={summaryScopeIds}/>:null}
     {!managementMode?<section className="scope-search-reference-editor" aria-label="搜尋建議">
       <h2>搜尋建議</h2>
       <ScopeEditableBlocks
