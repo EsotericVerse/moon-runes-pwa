@@ -53,8 +53,11 @@ export function createIndependentClerkIdentity({loadClerk,authorityOrigin,
     if(identity?.provider!=='clerk'||identity.subject!==clerk.user?.id||
       typeof identity.session!=='string'||!identity.session.startsWith('sess_'))
       throw new Error('Clerk identity mismatch');
+    const email=String(identity.email||'').trim().toLowerCase();
+    if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))
+      throw new Error('Clerk token requires a verified signed email claim for LOC management');
     return Object.freeze({
-      provider:'clerk',subject:identity.subject,session:identity.session
+      provider:'clerk',subject:identity.subject,session:identity.session,email
     });
   }
   async function getAccessToken(){
