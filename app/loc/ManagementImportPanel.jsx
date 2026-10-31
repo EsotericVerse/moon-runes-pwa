@@ -57,6 +57,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
   const placeText=typeof mappedPlace==='string'?mappedPlace:
     (isFacebook?facebookBackupPlace(row):'');
   const place=repairMojibakeText(placeText).trim();
+  const explicitCheckin=isFacebook&&Boolean(facebookBackupPlace(row)||row.__importCheckin===true);
   const facebookText=isFacebook?facebookBackupPostText(row):'';
   const threadsText=isThreads?(row.media?.find?.(item=>typeof item?.title==='string')?.title||
     row.string_list_data?.find?.(item=>typeof item?.value==='string')?.value||''):'';
@@ -140,6 +141,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     content,
     createtime:createdAt,
     location:sourcePlace||null,
+    ...(explicitCheckin?{__importCheckin:true}:{}),
     ...(importedCoordinates?{__importCoordinates:importedCoordinates,
       ...(importPlaceName?{__importPlaceName:importPlaceName}:{}),
       ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{}),
@@ -865,7 +867,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
-          __importPlaceUrl:unusedPlaceUrl,
+          __importPlaceUrl:unusedPlaceUrl,__importCheckin:unusedCheckin,
           ...article}=record;
         if(placeUid)newArticleVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
         payload.push(placeUid?{...article,place_id:placeUid}:article);
