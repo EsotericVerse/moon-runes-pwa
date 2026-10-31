@@ -56,3 +56,20 @@ test('expired editor locks editing without signing out the Google/Supabase accou
   assert.match(ttl,/重新驗證編輯權限後再寫入/);
   assert.match(auth,/async function signOutAccount\(\)/);
 });
+
+test('explicit verified homepage edit entry clears an expired edit lock before restarting',()=>{
+  const code=readFileSync(new URL('../app/loc/ScopeHomeEditEntry.jsx',import.meta.url),'utf8');
+  const authenticated=code.indexOf('const result=await account.refresh()');
+  const authorized=code.indexOf('if(!allowed)');
+  const reset=code.indexOf('clearEditorSession(window.sessionStorage);',authenticated);
+  const granted=code.indexOf('grantHomeEditorAccess(window.sessionStorage,scopeId,result.user.id)');
+  const restarted=code.indexOf('editDock?.begin(scopeId)');
+  assert.ok(authenticated>=0&&authorized>authenticated&&reset>authorized&&granted>reset&&restarted>granted,
+    'edit-lock reset must happen only after verifying user and management permission');
+  const storage=store();
+  const start=10000000;
+  touchEditorSession(storage,start);
+  assert.equal(touchEditorSession(storage,start+EDIT_IDLE_TTL_MS+1),false);
+  clearEditorSession(storage);
+  assert.equal(touchEditorSession(storage,start+EDIT_IDLE_TTL_MS+2),true);
+});
