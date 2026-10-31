@@ -68,7 +68,7 @@ export function createNewKeywordDiscovery(rows=[]){
       withContent++;
       const seen=new Set();
       const month=String(row?.createtime||'').slice(0,7);
-      if(/^\\d{4}-\\d{2}$/.test(month)){
+      if(/^\d{4}-\d{2}$/.test(month)){
         const item=months.get(month)||{month,documents:0,existingCovered:0};
         item.documents++;
         if(knownMatchers.some(re=>re.test(normalize(body))))item.existingCovered++;
