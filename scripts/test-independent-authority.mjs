@@ -158,7 +158,10 @@ test('Clerk development configuration matches its Frontend API and static login 
   assert.ok(cfg.publishableKey.startsWith('pk_test_'));
   assert.equal(Buffer.from(cfg.publishableKey.slice('pk_test_'.length),'base64url').toString('utf8'),
     new URL(cfg.frontendApiUrl).hostname+'$');
-  assert.equal(cfg.controlUrl,'');
+  // A fresh optional install can leave the Worker disconnected. Production
+  // LOC may have a separately deployed Authority control endpoint.
+  assert.ok(cfg.controlUrl===''||new URL(cfg.controlUrl).protocol==='https:');
+  if(cfg.controlUrl)assert.match(cfg.controlUrl,/^https:\\/\\/[^/]+$/);
   const page=readFileSync(new URL('../public/recovery/index.html',import.meta.url),'utf8');
   const moduleScript=page.split('<script type="module">')[1]?.split('</script>')[0];
   assert.ok(moduleScript);
