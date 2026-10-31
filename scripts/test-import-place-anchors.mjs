@@ -20,20 +20,20 @@ function memoryTrace(initial=[]){
   return {relation,rows,get inserts(){return inserts;}};
 }
 
-test('the place name is the identity: an existing anchor with the same name is reused, coordinates ignored',async()=>{
+test('exact named coordinates identify the place; same name elsewhere cannot reuse it',async()=>{
   const db=memoryTrace([{uid:'AB12',title:'人工整理地點',address:[121.49086,25.05338]}]);
   const far=named('人工整理地點',25.9,121.9);
   const spaced=named('  人工整理地點 ',null,null);
   const otherNameSameCoords=named('其他名稱',25.05338,121.49086);
   const result=await prepareImportPlaceAnchors([far,spaced,otherNameSameCoords],{
-    scopeId:'lo3rwang',relation:db.relation
+    scopeId:'lo3rwang',relation:db.relation,createMissing:false
   });
   assert.equal(result.reused,1);
   assert.equal(result.created,0);
   assert.equal(db.inserts,0);
-  assert.equal(importedPlaceId({incoming:far,byName:result.byName}),'AB12');
+  assert.equal(importedPlaceId({incoming:far,byName:result.byName,byCoordinate:result.byCoordinate}),null);
   assert.equal(importedPlaceId({incoming:spaced,byName:result.byName}),'AB12');
-  assert.equal(importedPlaceId({incoming:otherNameSameCoords,byName:result.byName}),null);
+  assert.equal(importedPlaceId({incoming:otherNameSameCoords,byName:result.byName,byCoordinate:result.byCoordinate}),null);
 });
 
 test('the article location text is the name when no source place name exists',async()=>{
@@ -43,7 +43,7 @@ test('the article location text is the name when no source place name exists',as
   assert.equal(importedPlaceId({incoming:record,byName:result.byName}),'AB12');
 });
 
-test('creation makes a hidden anchor per new name, with optional confirmed coordinates',async()=>{
+test('new distinct named coordinates create separate Trace anchors without losing GPS',async()=>{
   const db=memoryTrace([{uid:'AAAA',title:'台北車站',address:[121.5170,25.0478]}]);
   const station=named('台北車站',25.05,121.52);
   const cafeA=named(' 咖啡 店',25.1,121.6);
@@ -52,21 +52,23 @@ test('creation makes a hidden anchor per new name, with optional confirmed coord
   const result=await prepareImportPlaceAnchors([station,cafeA,cafeB,nameOnly],{
     scopeId:'lo3rwang',relation:db.relation,createMissing:true
   });
-  assert.equal(db.inserts,2);
-  assert.equal(result.created,2);
+  assert.equal(db.inserts,4);
+  assert.equal(result.created,4);
   assert.equal(result.unmatchedCoordinates,0);
-  const cafe=db.rows.find(row=>row.title==='咖啡 店');
-  assert.equal(cafe.title,'咖啡 店');
-  assert.equal(cafe.address,null,'同名地點有不同座標時不任選其中一個');
-  assert.equal(cafe.hidden_depth,0);
-  assert.equal(importedPlaceId({incoming:station,byName:result.byName}),'AAAA');
-  const cafeUid=importedPlaceId({incoming:cafeA,byName:result.byName});
+  const cafes=db.rows.filter(row=>row.title==='咖啡 店');
+  assert.equal(cafes.length,2);
+  assert.deepEqual(cafes.map(row=>row.address),[[121.6,25.1],[121.7,25.2]]);
+  assert.equal(cafes[0].hidden_depth,0);
+  const stationUid=importedPlaceId({incoming:station,byName:result.byName,byCoordinate:result.byCoordinate});
+  assert.ok(stationUid&&stationUid!=='AAAA');
+  const cafeUid=importedPlaceId({incoming:cafeA,byName:result.byName,byCoordinate:result.byCoordinate});
   assert.ok(cafeUid);
-  assert.equal(importedPlaceId({incoming:cafeB,byName:result.byName}),cafeUid);
+  const cafeOther=importedPlaceId({incoming:cafeB,byName:result.byName,byCoordinate:result.byCoordinate});
+  assert.ok(cafeOther&&cafeOther!==cafeUid);
   assert.ok(importedPlaceId({incoming:nameOnly,byName:result.byName}));
   const again=await prepareImportPlaceAnchors([cafeA],{scopeId:'lo3rwang',relation:db.relation,createMissing:true});
   assert.equal(again.created,0);
-  assert.equal(db.inserts,2);
+  assert.equal(db.inserts,4);
 });
 
 test('a new named place without coordinates is created with a null address',async()=>{
@@ -85,7 +87,7 @@ test('an existing article place_id is never overwritten',async()=>{
   const record=named('existing',25.04,121.5);
   const result=await prepareImportPlaceAnchors([record],{scopeId:'lo3rwang',relation:db.relation});
   assert.equal(importedPlaceId({incoming:record,existing:{place_id:'AB13'},byName:result.byName}),null);
-  assert.equal(importedPlaceId({incoming:record,existing:{place_id:null},byName:result.byName}),'AB12');
+  assert.equal(importedPlaceId({incoming:record,existing:{place_id:null},byName:result.byName,byCoordinate:result.byCoordinate}),'AB12');
 });
 
 test('local import and missing Trace table do not block article import',async()=>{
@@ -107,7 +109,7 @@ test('anchor import reports a read-only scan without inserting rows',async()=>{
   const db=memoryTrace();
   const states=[];
   await prepareImportPlaceAnchors([named('地點',25.05,121.6)],{
-    scopeId:'lo3rwang',relation:db.relation,onProgress:state=>states.push(state)
+    scopeId:'lo3rwang',relation:db.relation,createMissing:false,onProgress:state=>states.push(state)
   });
   assert.deepEqual(states.map(p=>[p.phase,p.completed,p.total]),[
     ['讀取現有空間定錨',0,0],
