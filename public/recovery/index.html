@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>LOC · 獨立復原控制</title>
+<style>
+:root{color-scheme:dark;font:16px/1.6 system-ui,-apple-system,sans-serif;background:#10141c;color:#f3f4f7}
+*{box-sizing:border-box}body{margin:0 auto;max-width:920px;padding:28px 16px 72px}
+header{margin-bottom:24px}h1{font-size:1.65rem;margin:0 0 8px}h2{font-size:1.2rem;margin:0 0 12px}
+p{color:#bec5d2}.card{padding:22px;border:1px solid #424e5e;background:#19212c;border-radius:14px;margin:0 0 18px}
+label{display:block;margin:12px 0;font-weight:600}input,select{display:block;margin-top:5px;min-height:42px;width:100%;font:inherit;color:inherit;background:#0e1620;border:1px solid #64748b;padding:8px;border-radius:8px}
+button{border:1px solid #a2bad4;border-radius:8px;background:#26374b;color:#fff;padding:9px 16px;font:inherit;cursor:pointer}
+button.primary{background:#345d91}button:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.row{padding:12px 0;border-top:1px solid #45566b;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;overflow-wrap:anywhere}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 18px}
+fieldset{border:1px solid #526478;border-radius:9px}.options{display:flex;flex-wrap:wrap;gap:14px}.options label{display:inline-flex;align-items:center;gap:6px;margin:0}.options input{width:auto;min-height:unset;margin:0}
+#status{color:#e6d69d;white-space:pre-wrap}#login-root{min-height:30px}a{color:#a8d3ff}
+[hidden]{display:none!important}@media(max-width:600px){body{padding:16px 10px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<header><h1>LOC · 獨立復原控制</h1>
+<p>Clerk 或另一個已設定的 OIDC 可確認管理員身分；Scope Authority 與資料庫連線設定不儲存在 Supabase／Neon。此頁是獨立靜態資源，不載入 LOC AppShell。</p></header>
+<section class="card">
+<h2>管理員登入</h2>
+<div id="login-root"></div>
+<div id="session-actions" class="actions" hidden><button id="refresh" class="primary">驗證並載入控制設定</button><button id="signout">登出</button></div>
+<p id="status" role="status" aria-live="polite">讀取獨立設定…</p>
+</section>
+<section id="targets" class="card" hidden>
+<h2>資料庫連線目標</h2>
+<p>復原目標：<strong id="active-target">未設定</strong>。儲存連線設定和正式切換是兩件事；網站 SQL Gateway 尚未接通前不會切換主站資料庫。</p>
+<div id="target-list"></div>
+<form id="target-form">
+<h3>新增或更新連線設定</h3>
+<div class="form-grid">
+<label>目標代號<input name="id" pattern="[a-z][a-z0-9_-]{0,63}" required maxlength="64"></label>
+<label>名稱<input name="label" required maxlength="120"></label>
+<label>SQL 引擎<select name="engine"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL / MariaDB</option><option value="mssql">SQL Server / Azure SQL</option></select></label>
+<label>主機<input name="host" required maxlength="253" autocomplete="off"></label>
+<label>Port<input name="port" required type="number" min="1" max="65535" value="5432"></label>
+<label>資料庫<input name="database" required maxlength="120"></label>
+<label>帳號<input name="username" required maxlength="120" autocomplete="off"></label>
+<label>密碼（編輯時留空則保留）<input name="password" type="password" autocomplete="new-password" maxlength="4096"></label>
+</div>
+<button class="primary" type="submit">加密儲存資料庫設定</button>
+</form>
+</section>
+<section id="grants" class="card" hidden>
+<h2>LOC Authority · Scope 授權</h2>
+<p>由獨立控制層儲存與撤銷；Scope 無隱含繼承，權限過期即失效。</p>
+<div id="grant-list"></div>
+<form id="grant-form">
+<h3>授權指定身分</h3>
+<div class="form-grid">
+<label>登入提供者<select name="provider"><option value="clerk">Clerk</option><option value="secondary">Secondary OIDC</option></select></label>
+<label>使用者主體 ID<input name="subject" required maxlength="128"></label>
+<label>Scope ID<input name="scope" required pattern="[a-z][a-z0-9]{0,14}"></label>
+<label>授權天數<input name="days" type="number" min="1" max="365" value="30" required></label>
+</div>
+<fieldset><legend>允許的操作</legend><div class="options">
+<label><input type="checkbox" name="action" value="read" checked>read</label>
+<label><input type="checkbox" name="action" value="write">write</label>
+<label><input type="checkbox" name="action" value="manage">manage</label>
+<label><input type="checkbox" name="action" value="configure">configure</label>
+</div></fieldset>
+<p><button class="primary" type="submit">儲存 Scope 授權</button></p>
+</form>
+</section>
+<script type="module">
+const byId=id=>document.getElementById(id);
+const status=message=>{byId('status').textContent=message};
+const show=(id,visible)=>{byId(id).hidden=!visible};
+let settings=null,clerk=null,approved=false,busy=false;
+function disableBusy(next){
+  busy=next;
+  document.querySelectorAll('button').forEach(button=>button.disabled=busy);
+}
+function script(src,attrs={}){
+  return new Promise((resolve,reject)=>{
+    const node=document.createElement('script');
+    node.src=src;node.async=true;node.crossOrigin='anonymous';
+    for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);
+    node.onload=resolve;node.onerror=()=>reject(new Error('無法載入 Clerk Script'));
+    document.head.appendChild(node);
+  });
+}
+function verifiedHttpsOrigin(value){
+  const parsed=new URL(value);
+  if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.search||parsed.hash||
+    parsed.pathname!=='/')throw new Error('必須設定有效的 HTTPS 網域');
+  return parsed.origin;
+}
+async function api(path,{method='GET',body}={}){
+  if(!clerk?.session)throw new Error('尚未登入 Clerk');
+  const token=await clerk.session.getToken();
+  if(!token)throw new Error('Clerk Session 無效');
+  const response=await fetch(verifiedHttpsOrigin(settings.controlUrl)+path,{
+    method,cache:'no-store',credentials:'omit',
+    headers:{authorization:'Bearer '+token,...(body?{'content-type':'application/json'}:{})},
+    ...(body?{body:JSON.stringify(body)}:{})
+  });
+  const result=await response.json().catch(()=>null);
+  if(!response.ok)throw new Error(result?.error||'控制服務 HTTP '+response.status);
+  return result;
+}
+function itemText(target){return [target.label||target.id,target.engine,target.host+':'+target.port].join(' · ')}
+function node(tag,text){const el=document.createElement(tag);el.textContent=text;return el}
+function button(label,onClick){const el=node('button',label);el.type='button';el.addEventListener('click',onClick);return el}
+function clear(id){byId(id).replaceChildren()}
+function fillForm(target){
+  const form=byId('target-form');
+  for(const key of ['id','label','engine','host','port','database','username'])form.elements.namedItem(key).value=target[key]??'';
+  form.elements.namedItem('password').value='';
+}
+async function loadState(){
+  const [info,grants]=await Promise.all([api('/v1/state'),api('/v1/grants')]);
+  approved=true;show('targets',true);show('grants',true);
+  byId('active-target').textContent=info.primary_id||'未設定';
+  clear('target-list');
+  for(const target of info.targets||[]){
+    const row=node('div','');row.className='row';row.append(node('span',itemText(target)));
+    const actions=node('div','');actions.className='actions';
+    actions.append(button('編輯',()=>fillForm(target)));
+    const select=button('設為復原目標',()=>run(async()=>{
+      const chosen=await api('/v1/primary',{method:'POST',body:{id:target.id}});
+      byId('active-target').textContent=chosen.primary_id;
+      status('復原目標已保存；目前主站 SQL Gateway 尚未切換。');
+    }));
+    select.disabled=target.id===info.primary_id;actions.append(select);row.append(actions);
+    byId('target-list').append(row);
+  }
+  clear('grant-list');
+  for(const grant of grants.grants||[]){
+    const row=node('div','');row.className='row';
+    row.append(node('span',[grant.provider,grant.subject,grant.scope,grant.actions.join('/'),new Date(grant.expires_at).toLocaleDateString()].join(' · ')));
+    row.append(button('撤銷',()=>{
+      if(!confirm('確定撤銷這筆授權？'))return;
+      run(async()=>{await api('/v1/revoke',{method:'POST',body:{key:grant.key}});await loadState();status('授權已撤銷。')});
+    }));
+    byId('grant-list').append(row);
+  }
+}
+async function run(operation){
+  if(busy)return;disableBusy(true);
+  try{await operation()}catch(error){status(String(error.message||error))}
+  finally{disableBusy(false)}
+}
+byId('target-form').addEventListener('submit',event=>{
+  event.preventDefault();void run(async()=>{
+    const values=Object.fromEntries(new FormData(event.currentTarget));
+    const id=String(values.id||'');
+    if(!/^[a-z][a-z0-9_-]{0,63}$/.test(id))throw new Error('目標代號格式不符');
+    await api('/v1/targets/'+id,{method:'PUT',body:{...values,port:Number(values.port)}});
+    event.currentTarget.elements.namedItem('password').value='';
+    await loadState();status('連線設定已加密保存於獨立控制層。');
+  });
+});
+byId('grant-form').addEventListener('submit',event=>{
+  event.preventDefault();void run(async()=>{
+    const form=event.currentTarget,values=new FormData(form);
+    const days=Number(values.get('days'));
+    if(!Number.isInteger(days)||days<1||days>365)throw new Error('期限限 1 至 365 天');
+    const actions=values.getAll('action');
+    await api('/v1/grants',{method:'PUT',body:{
+      provider:values.get('provider'),subject:values.get('subject'),scope:values.get('scope'),
+      actions,expires_at:Date.now()+days*86400000
+    }});
+    await loadState();status('獨立 Scope 授權已保存。');
+  });
+});
+byId('refresh').addEventListener('click',()=>run(async()=>{await api('/v1/me');await loadState();status('獨立管理權限驗證成功。')}));
+byId('signout').addEventListener('click',()=>run(async()=>{await clerk.signOut();location.reload()}));
+async function start(){
+  const response=await fetch('./config.json',{cache:'no-store'});
+  if(!response.ok)throw new Error('找不到獨立管理設定');
+  settings=await response.json();
+  if(!settings.publishableKey||!settings.frontendApiUrl||!settings.controlUrl)
+    throw new Error('管理端尚未啟用，待完成 Clerk 註冊與公開端點設定。');
+  const apiOrigin=verifiedHttpsOrigin(settings.frontendApiUrl);
+  verifiedHttpsOrigin(settings.controlUrl);
+  await script(apiOrigin+'/npm/@clerk/ui@1/dist/ui.browser.js');
+  await script(apiOrigin+'/npm/@clerk/clerk-js@6/dist/clerk.browser.js',{
+    'data-clerk-publishable-key':settings.publishableKey
+  });
+  clerk=window.Clerk;
+  if(!clerk)throw new Error('Clerk 尚未初始化');
+  await clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});
+  const render=()=>{
+    show('session-actions',Boolean(clerk.isSignedIn));
+    if(!clerk.isSignedIn){approved=false;show('targets',false);show('grants',false);}
+  };
+  clerk.addListener(render);
+  render();
+  if(!clerk.isSignedIn)clerk.mountSignIn(byId('login-root'));
+  else status('已登入 Clerk。請按「驗證並載入控制設定」。');
+}
+start().catch(error=>status(String(error.message||error)));
+</script>
+</body>
+</html>

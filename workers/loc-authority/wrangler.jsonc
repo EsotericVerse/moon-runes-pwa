@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "loc-authority-control",
+  "main": "./index.mjs",
+  "compatibility_date": "2026-10-31",
+  "durable_objects": {
+    "bindings": [
+      {"name": "LOC_AUTHORITY_STATE", "class_name": "LocAuthorityState"}
+    ]
+  },
+  "migrations": [
+    {"tag": "v1", "new_sqlite_classes": ["LocAuthorityState"]}
+  ],
+  "observability": {"enabled": true}
+}
