@@ -1,4 +1,13 @@
 export default {
+  "summaryText": "目前資料庫內有總{articles}筆文章，共{chars}字。從{first}到{last}。",
+  "summaryEmpty": "目前資料庫內有0筆文章，共0字，尚無文章日期。",
+  "summaryLoading": "正在讀取文章統計…",
+  "summaryMissing": "目前尚未建立文章統計快照。",
+  "summaryFailed": "目前無法讀取文章統計。",
+  "summaryRefresh": "重新整理",
+  "summaryRefreshing": "重新整理中…",
+  "summaryRefreshed": "統計已重新整理。",
+  "summaryRefreshFailed": "重新整理失敗：{error}",
   "mediaTypeRequired": "media_type 不可為空。",
   "mediaLinkUidInvalid": "galaxy_link 必須是八位文章 UID。",
   "runeReferencesInvalid": "rune_references 必須是有效的 JSON。",
