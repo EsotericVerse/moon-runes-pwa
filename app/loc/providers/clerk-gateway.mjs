@@ -21,6 +21,7 @@ export function createClerkGatewayAdapter({
   const legacy=createSupabaseAdapter({url,publishableKey,fetchImpl});
   const edge=createKyselyEdgeClient({
     url,publishableKey,role:'authenticated',target:'configured',
+    gatewayUrl:String(url).replace(/\/+$/,'')+'/functions/v1/loc-kysely-clerk',
     getAccessToken,fetch:fetchImpl
   });
   return {
