@@ -291,16 +291,16 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const [zoomLevel,setZoomLevel]=useState(0);
   const [foldBlank,setFoldBlank]=useState(true);
   // Leave potentially expensive keyword aggregation OFF until explicitly chosen.
-  const [styleFilter,setStyleFilter]=useState('none');
+  const [styleFilter,setStyleFilter]=useState(navigation.statTab==='keywords'?'rune66':'none');
   const [keywordSource,setKeywordSource]=useState('');
   const [selectedKeywordClassUid,setSelectedKeywordClassUid]=useState('');
   const [sourceGroup,setSourceGroup]=useState('');
     useEffect(()=>{
-    setStyleFilter('none');
+    setStyleFilter(navigation.statTab==='keywords'?'rune66':'none');
     setKeywordSource('');
     setSelectedKeywordClassUid('');
     setSourceGroup('');
-  },[scopeId]);
+  },[scopeId,navigation.statTab]);
   // Period is the primary Statistics navigation. Default to the latest
   // saved Period, not an unnecessary preliminary one-year statistics fetch.
   const [selectedPeriodKey,setSelectedPeriodKey]=useState('latest');
