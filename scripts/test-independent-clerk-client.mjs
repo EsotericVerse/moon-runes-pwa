@@ -19,7 +19,7 @@ function fixture({id='user_test',status=200,subject=id,token='signed.jwt.token'}
     navigate:path=>navigations.push(path),
     fetchImpl:async(url,init)=>{
       requests.push({url,init});
-      return {ok:status===200,status,json:async()=>({
+      return {ok:status===200,status,json:async()=>status!==200?{error:'Clerk authorized party does not match LOC'}:({
         provider:'clerk',subject,session:'sess_verified',email:'owner@example.com'
       })};
     }
@@ -70,4 +70,9 @@ test('no database adapter or legacy OAuth is imported by independent identity',(
   const source=readFileSync(new URL('../app/loc/auth/clerk-identity.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(source,/supabase-js|neon-primary|get_my_scope_management|signInWithOAuth|auth\/v1/);
   assert.match(source,/\/v1\/identity/);
+});
+
+test('author edit displays the safe Authority rejection reason rather than only HTTP 401',async()=>{
+  await assert.rejects(fixture({status:401}).adapter.verifiedIdentity(),
+    /HTTP 401：Clerk authorized party does not match LOC/);
 });
