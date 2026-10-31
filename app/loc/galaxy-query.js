@@ -308,14 +308,14 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const [contentRow,mediaRows,relationTitles]=await Promise.all([
+  const [contentRow,relationTitles]=await Promise.all([
     selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
-    mediaRowsFor(current,mediaIdsOf(row.media_link)),
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({}))
   ]);
-  const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
+  // Media URLs belong to their own expandable reader section; loading this
+  // article must not SELECT related media titles, tags, or URLs.
   return {...row,scope_id:current.id,__table:current.galaxy,
-    content:contentRow?.content||'',links:resolvedLinks(row,mediaById),relation_titles:relationTitles};
+    content:contentRow?.content||'',links:resolvedLinks(row,new Map()),relation_titles:relationTitles};
 }
 
 function literalPattern(value){
