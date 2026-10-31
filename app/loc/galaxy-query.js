@@ -193,7 +193,7 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null,includeLegacyRuneRefs
   for(let i=0;i<ids.length;i+=40){
     const batch=ids.slice(i,i+40);
     const page=await selectRows(current.galaxyMedia,{
-      columns:includeLegacyRuneRefs?'uid,title,url,media_type,meta_tags,rune_references':'uid,title,url,media_type',
+      columns:includeLegacyRuneRefs?'uid,title,url,media_type,meta_tags,rune_references':'uid,title,url,media_type,meta_tags',
       filters:[{column:'uid',operator:'in',value:batch}],
       limit:batch.length,maxLimit:batch.length,signal
     });
