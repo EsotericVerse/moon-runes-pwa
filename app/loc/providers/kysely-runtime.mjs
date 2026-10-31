@@ -8,6 +8,7 @@ const operators={eq:'=',neq:'!=',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'like',ili
 // Existing application RPCs only. Keep SQL identifiers fixed and bind all values.
 export const RPC_ALLOWLIST={
   'silver.management_write':['p_table','p_operation','p_rows','p_values','p_filters'],
+  'silver.get_my_scope_management':[],
   'silver.read_music_style_tree':[],
   'silver.read_shared_keyword_classes':['p_scope_id'],
   'silver.read_keyword_tree_catalog':['p_scope_id','p_class_uid'],
@@ -282,7 +283,7 @@ export function buildAllowlistedRpcQuery(input){
   if((RPC_REQUIRED_ARGUMENTS[key]||[]).some(arg=>!Object.hasOwn(args,arg)))throw new Error('Missing required RPC argument');
   const supplied=names.filter(name=>Object.hasOwn(args,name));const id=sql.id(schema,name);
   const params=supplied.map(name=>sql`${sql.id(name)} => ${sql.val(args[name])}`);
-  const returnsRows=key==='silver.read_scope_page_copy';
+  const returnsRows=key==='silver.read_scope_page_copy'||key==='silver.get_my_scope_management';
   return {query:returnsRows?sql`select * from ${id}(${sql.join(params)})`:sql`select ${id}(${sql.join(params)}) as result`,returnsRows};
 }
 
