@@ -2,8 +2,13 @@ import {createSupabaseAdapter} from './supabase.mjs';
 import {createBackupPublicAdapter} from './neon-public.mjs';
 import {runtimeDatabaseRouting} from './routing-state.mjs';
 import {createNeonPrimaryAdapter} from './neon-primary.mjs';
+import {createClerkGatewayAdapter} from './clerk-gateway.mjs';
 
 export function createConfiguredAdapter(){
+  // Opt-in only: legacy production login remains unchanged until Authority,
+  // Neon JWT/RLS and the full Gateway have passed live write validation.
+  if(process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER==='clerk')
+    return createClerkGatewayAdapter();
   const routing=runtimeDatabaseRouting();
   if(routing.provider==='neon')return createNeonPrimaryAdapter();
   const primary=createSupabaseAdapter();
