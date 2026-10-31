@@ -11,12 +11,12 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,hidden_depth';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,invisible';
 const TYPES=['anchor','period','era'];
 const TYPE_TABS=[...TYPES].reverse();
-const normalizeType=value=>({period:'era',event:'period'}[value]||value);
+const normalizeType=value=>({event:'period'}[value]||value);
 const displayType={anchor:'定錨點',period:'期間',era:'時代'};
-const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],hidden_depth:-1});
+const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],invisible:false});
 const day=value=>value?String(value).slice(0,10):'';
 function nextTimeUid(rows){
   const taken=new Set(rows.map(row=>String(row.uid||'')));
@@ -51,7 +51,6 @@ export default function CultureTimelineEditor({
   const [browseType,setBrowseType]=useState(defaultType);
   const [busy,setBusy]=useState(false);
   const [visibilitySelection,setVisibilitySelection]=useState([]);
-  const [visibilityDepth,setVisibilityDepth]=useState(2);
   const [visibilityBusy,setVisibilityBusy]=useState(false);
   const [message,setMessage]=useState('');
   const [tracePairs,setTracePairs]=useState([]);
@@ -224,7 +223,7 @@ export default function CultureTimelineEditor({
       const type=String(draft.type||'');
       if(!TYPES.includes(type))throw new Error('不支援的時間紀錄類型');
       const payload={type,title,description:String(draft.description||'').trim()||null,
-        address:null,anchor_ids:null,hidden_depth:Number(draft.hidden_depth??-1)};
+        address:null,anchor_ids:null,invisible:Boolean(draft.invisible)};
       let extraPeriodRows=[];
       if(type==='anchor'){
         const timeDate=day(draft.address);
@@ -295,16 +294,16 @@ export default function CultureTimelineEditor({
     }catch(error){setMessage(error?.message||'刪除失敗');}
     finally{setBusy(false);}
   };
-  const bulkSetVisibility=async depth=>{
+  const bulkSetVisibility=async invisible=>{
     if(!['lo3rwang','lrunes'].includes(dataScope)||visibilityBusy||!visibilitySelection.length)return;
-    if(!window.confirm('確定批次設定 '+visibilitySelection.length+' 筆時間紀錄？父層隱藏會影響其所屬期間與定錨點。'))return;
+    if(!window.confirm('確定批次設定 '+visibilitySelection.length+' 筆時間紀錄的顯示或隱藏？'))return;
     setVisibilityBusy(true);setMessage('');
     try{
       let count=0;
       for(let i=0;i<visibilitySelection.length;i+=150){
         const ids=visibilitySelection.slice(i,i+150);
         const {data,error}=await dbAuthClient.schema('silver').from(dataScope+'_time')
-          .update({hidden_depth:depth}).in('uid',ids).select('uid');
+          .update({invisible}).in('uid',ids).select('uid');
         if(error)throw error;
         if(data.length!==ids.length)throw Error('部分時間紀錄未成功寫入');
         count+=data.length;
@@ -350,12 +349,9 @@ export default function CultureTimelineEditor({
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection(rows.filter(row=>row.type===browseType).map(row=>row.uid))}>全部勾選</button>
         <button type="button" className="loc-button" disabled={visibilityBusy} onClick={()=>setVisibilitySelection([])}>清除勾選</button>
-        <select className="scope-select" aria-label="批次時間隱藏層級" value={visibilityDepth}
-          onChange={e=>setVisibilityDepth(Number(e.target.value))}>
-          <option value={0}>單獨隱藏</option><option value={1}>隱藏到第二層</option><option value={2}>全部隱藏（含時間定錨點）</option>
-        </select>
-        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(visibilityDepth)}>大量隱藏</button>
-        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(-1)}>大量公開</button>
+
+        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(true)}>大量隱藏</button>
+        <button type="button" className="loc-button" disabled={visibilityBusy||!visibilitySelection.length} onClick={()=>bulkSetVisibility(false)}>大量公開</button>
       </div>
       <div style={{maxHeight:'16rem',overflow:'auto'}}>
         {rows.filter(row=>row.type===browseType).map(row=><label key={row.uid} style={{display:'block'}}>
@@ -372,10 +368,8 @@ export default function CultureTimelineEditor({
             onChange={event=>change('title',event.target.value)}/>
         </label>
         <label>可見性
-          <select className="scope-select" value={draft.hidden_depth??-1} onChange={e=>change('hidden_depth',Number(e.target.value))}>
-            <option value={-1}>公開</option><option value={0}>單獨隱藏</option>
-            {draft.type!=='anchor'?<option value={1}>隱藏到第二層</option>:null}
-            {draft.type==='era'?<option value={2}>全部隱藏（含時間定錨點）</option>:null}
+          <select className="scope-select" value={Number(Boolean(draft.invisible))} onChange={e=>change('invisible',e.target.value==='1')}>
+            <option value={0}>顯示</option><option value={1}>隱藏</option>
           </select>
         </label>
         {draft.type==='anchor'?<label>定錨日期
