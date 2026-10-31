@@ -20,7 +20,7 @@ function fixture({id='user_test',status=200,subject=id,token='signed.jwt.token'}
     fetchImpl:async(url,init)=>{
       requests.push({url,init});
       return {ok:status===200,status,json:async()=>({
-        provider:'clerk',subject,session:'sess_verified'
+        provider:'clerk',subject,session:'sess_verified',email:'owner@example.com'
       })};
     }
   });
@@ -31,6 +31,7 @@ test('independent Identity uses only Clerk and a trusted LOC Authority identity 
   const identity=await adapter.verifiedIdentity();
   assert.equal(identity.subject,'user_test');
   assert.equal(identity.provider,'clerk');
+  assert.equal(identity.email,'owner@example.com');
   assert.equal(Object.isFrozen(identity),true);
   assert.equal(requests.length,1);
   assert.equal(requests[0].url,authorityOrigin+'/v1/identity');
