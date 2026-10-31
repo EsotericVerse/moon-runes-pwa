@@ -119,6 +119,47 @@ export class LocAuthorityState extends DurableObject {
     await this.ctx.storage.put('primary_id',id);
     return {primary_id:id};
   }
+  // LOC Authority is stored outside *every* business SQL database.
+  // Scope inheritance is never implicit: a rule applies to its exact Scope.
+  async listGrants(){
+    const saved=await this.ctx.storage.list({prefix:'grant:'});
+    return [...saved].map(([key,grant])=>({key:key.slice(6),...grant}))
+      .sort((a,b)=>a.key.localeCompare(b.key));
+  }
+  async putGrant(input){
+    if(!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid grant');
+    const provider=String(input.provider||'').trim();
+    const subject=String(input.subject||'').trim();
+    const scope=String(input.scope||'').trim().toLowerCase();
+    const actions=input.actions;
+    const expires=Number(input.expires_at);
+    if(!/^[a-z][a-z0-9_-]{0,31}$/.test(provider)||
+      !/^[a-zA-Z0-9_:-]{1,128}$/.test(subject)||
+      !/^[a-z][a-z0-9]{0,14}$/.test(scope)||
+      !Array.isArray(actions)||!actions.length||actions.length>16||
+      actions.some(action=>!['read','write','manage','configure'].includes(action))||
+      !Number.isSafeInteger(expires)||expires<=Date.now()||expires>Date.now()+366*24*60*60*1000)
+      throw fail('Invalid Authority grant');
+    const unique=[...new Set(actions)].sort();
+    const key=provider+':'+subject+':'+scope;
+    await this.ctx.storage.put('grant:'+key,{provider,subject,scope,actions:unique,expires_at:expires});
+    return {key,provider,subject,scope,actions:unique,expires_at:expires};
+  }
+  async revokeGrant(key){
+    if(!/^[a-z][a-z0-9_-]{0,31}:[a-zA-Z0-9_:-]{1,128}:[a-z][a-z0-9]{0,14}$/.test(String(key)))
+      throw fail('Invalid grant key');
+    await this.ctx.storage.delete('grant:'+key);
+    return {revoked:true,key};
+  }
+  // Internal RPC for a trusted SQL gateway. The external provider's JWT must
+  // be VERIFIED by the gateway before passing provider + subject here.
+  async mayAccess({provider,subject,scope,action}={}){
+    if(!['read','write','manage','configure'].includes(action))return false;
+    if(!/^[a-z][a-z0-9]{0,14}$/.test(String(scope||'')))return false;
+    const key='grant:'+provider+':'+subject+':'+scope;
+    const grant=await this.ctx.storage.get(key);
+    return Boolean(grant&&grant.expires_at>Date.now()&&grant.actions.includes(action));
+  }
   // Cloudflare DO RPC: only a separately bound trusted SQL gateway can call this.
   // No HTTP handler exposes the credential or returns decrypted profiles to a browser.
   async getProfileForGateway(id){
@@ -148,6 +189,17 @@ export default {
       const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
       if(request.method==='GET'&&url.pathname==='/v1/me')return json(principal,200,origin);
       if(request.method==='GET'&&url.pathname==='/v1/state')return json(await stub.listState(),200,origin);
+      if(request.method==='GET'&&url.pathname==='/v1/grants')return json({grants:await stub.listGrants()},200,origin);
+      if(request.method==='PUT'&&url.pathname==='/v1/grants'){
+        const raw=await request.text();if(raw.length>3000)throw fail('Request too large',413);
+        let input;try{input=JSON.parse(raw)}catch{throw fail('Invalid JSON')}
+        return json(await stub.putGrant(input),200,origin);
+      }
+      if(request.method==='POST'&&url.pathname==='/v1/revoke'){
+        const raw=await request.text();if(raw.length>1000)throw fail('Request too large',413);
+        let input;try{input=JSON.parse(raw)}catch{throw fail('Invalid JSON')}
+        return json(await stub.revokeGrant(input?.key),200,origin);
+      }
       const match=/^\/v1\/targets\/([a-z][a-z0-9_-]{0,63})$/.exec(url.pathname);
       if(request.method==='PUT'&&match){
         const raw=await request.text();
