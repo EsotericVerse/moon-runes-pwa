@@ -343,7 +343,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
     mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
     articleSpaceContext(current,placeId,{authenticated:includeHidden}).catch(()=>({place:null,routes:[],traces:[]})),
     articleTimeContext(current,day).catch(()=>({anchors:[],periods:[],eras:[]})),
-    articleStatisticsContext(current,day).catch(()=>null)
+    articleStatisticsContext(current,day)
   ]);
   const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
   const orderedMedia=mediaIds.map(mediaId=>mediaById.get(mediaId)).filter(Boolean);
