@@ -87,3 +87,13 @@ test('selected article integrates synchronous date statistics without a promise 
   assert.doesNotMatch(query,/articleStatisticsContext\(current,day\)\.catch\(/);
   assert.match(query,/related_space:space,related_time:time,related_statistics:statistics/);
 });
+
+
+test('Culture and Statistics article lists never fetch Galaxy Media without a media selection',()=>{
+  const culture=read('app/loc/culture-query.js');
+  const stat=read('app/modular/features/Statistics.jsx');
+  assert.match(culture,/const includeMedia=rawMedia\.length>0;/);
+  assert.match(culture,/columns:'uid,title,createtime'/);
+  assert.match(stat,/全部文章列表/);
+  assert.doesNotMatch(stat,/全部作品列表（含多媒體）/);
+});
