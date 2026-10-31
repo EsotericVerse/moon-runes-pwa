@@ -56,7 +56,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   const [chartType,setChartType]=useState('bar');
   const [showAllVisits,setShowAllVisits]=useState(false);
   const name=String(place?.title||'').trim();
-  const isMap=place?.trace_type==='space_period'||place?.trace_type==='space_trace';
+  const isMap=place?.trace_type==='path'||place?.trace_type==='trace';
   const targetScope=String(place?.source_scope||scopeId||'').trim();
   const scope=useMemo(()=>defaultScopeData(targetScope),[targetScope]);
   const placeIds=useMemo(()=>traceArticleIds(place,[...anchors,...maps]),[place,anchors,maps]);
@@ -294,7 +294,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   return <section className="loc-card loc-trace-works" aria-label="文章報表">
     <header className="loc-trace-works-title">
       <div><p className="loc-eyebrow">文章報表</p><h2>文章列表／時間長河／統計圖</h2></div>
-      <span className="scope-status">{isMap?(place.trace_type==='space_trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):''}
+      <span className="scope-status">{isMap?(place.trace_type==='trace'?'痕跡線段 '+place.anchor_list.length+' 段 · ':'路線 '+place.anchor_list.length+' 站 · '):''}
         {!enabled?'沒有可對應的打卡地點'
           :tab==='articles'?(listTotal==null?'按需載入中…':selectedMediaType?'已載入 '+listTotal+' 篇符合條件的文章':listTotal+' 篇文章')
           :(summary.data?verified.total+' 篇符合條件的打卡文章':'數值圖表')}
