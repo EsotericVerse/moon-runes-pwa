@@ -41,29 +41,48 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
     if(signal&&typeof countQuery.abortSignal==='function')countQuery=countQuery.abortSignal(signal);
     const {count,error:countError}=await countQuery;
     if(signal?.aborted)throw aborted();
-    if(countError||count===null||count===undefined||!Number.isSafeInteger(Number(count)))throw new Error(countError?.message||'無法取得完整文章筆數');
+    if(countError||count===null||count===undefined||!Number.isSafeInteger(Number(count)))
+      throw new Error(countError?.message||'無法取得完整文章筆數');
     const total=Number(count);
-    let offset=0;
-    onProgress({completed:0,total});
-    for(;;){
-      if(signal?.aborted)throw aborted();
-      let query=dbAuthRelation(galaxy)
-        .select('uid,content,createtime')
-        .order('uid',{ascending:true})
-        .range(offset,offset+PAGE_SIZE-1);
-      if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
-      const {data,error}=await query;
-      if(signal?.aborted)throw aborted();
-      if(error)throw new Error(error.message||'無法讀取文章內文');
-      const page=Array.isArray(data)?data:[];
-      if(!page.length)break;
-      const reply=await send({type:'batch',rows:page});
-      if(reply.type!=='progress')throw new Error('關鍵詞背景分析回應異常');
-      offset+=page.length;
-      onProgress({completed:offset,total,withContent:reply.withContent});
-      if(page.length<PAGE_SIZE)break;
-    }
-    if(offset!==total)throw new Error('文章數量在掃描期間變動，未產生不完整建議，請重新執行');
+    let completed=0;
+    let serialized=Promise.resolve();
+    const pushBatch=rows=>{
+      // Three read lanes share one Worker aggregator without overwriting
+      // its message handlers or duplicating whole-article buffers in memory.
+      const next=serialized.then(()=>send({type:'batch',rows}));
+      serialized=next.catch(()=>{});
+      return next;
+    };
+    onProgress({completed:0,total,lanes:3});
+    const limits=[0,Math.floor(total/3),Math.floor(total*2/3),total];
+    await Promise.all([0,1,2].map(async lane=>{
+      let offset=limits[lane];
+      const end=limits[lane+1];
+      while(offset<end){
+        if(signal?.aborted)throw aborted();
+        const length=Math.min(PAGE_SIZE,end-offset);
+        // Time-ranked offsets partition the corpus into three disjoint,
+        // bounded streams. A stable UID tie-break orders identical timestamps.
+        let query=dbAuthRelation(galaxy)
+          .select('uid,content,createtime')
+          .order('createtime',{ascending:true,nullsFirst:false})
+          .order('uid',{ascending:true})
+          .range(offset,offset+length-1);
+        if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
+        const {data,error}=await query;
+        if(signal?.aborted)throw aborted();
+        if(error)throw new Error(error.message||'無法讀取文章內文');
+        const page=Array.isArray(data)?data:[];
+        if(page.length!==length)throw new Error('文章分頁筆數不完整，未覆寫先前暫存');
+        const reply=await pushBatch(page);
+        if(reply.type!=='progress')throw new Error('關鍵詞背景分析回應異常');
+        offset+=page.length;
+        completed+=page.length;
+        onProgress({completed,total,withContent:reply.withContent,lanes:3});
+      }
+    }));
+    if(completed!==total)throw new Error('文章數量在掃描期間變動，未覆寫先前暫存');
+    await serialized;
     const done=await send({type:'finish'});
     if(done.type!=='finished'||!done.result)throw new Error('新關鍵詞結果無效');
     return done.result;
