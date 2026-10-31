@@ -142,34 +142,47 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
-function ArticleRelationNavigation({links=[]}){
-  const groups=[
+function ArticleRelationNavigation({links=[],externalLinks=[]}){
+  const articleGroups=[
     {id:'source',heading:'上筆',items:links.filter(link=>String(link.id||'').startsWith('source:'))},
     {id:'target',heading:'下筆',items:links.filter(link=>String(link.id||'').startsWith('target:'))},
-    {id:'reference',heading:'原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
+    {id:'reference',heading:'Ref · 原始大綱／參考資料',items:links.filter(link=>String(link.id||'').startsWith('reference:'))}
   ];
-  const other=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
-  if(other.length)groups.push({id:'other',heading:'其他關聯',items:other});
-  const relationCard=(link,index,kind)=>{
+  const otherArticles=links.filter(link=>!['source:','target:','reference:'].some(prefix=>String(link.id||'').startsWith(prefix)));
+  if(otherArticles.length)articleGroups.push({id:'other',heading:'其他文章關聯',items:otherArticles});
+  const media=externalLinks.filter(link=>String(link.id||'').startsWith('media:'));
+  const sources=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
+  const groups=[
+    ...articleGroups.map(group=>({...group,external:false})),
+    {id:'media',heading:'媒體連結',items:media,external:true},
+    {id:'external',heading:'原始來源連結',items:sources,external:true}
+  ].filter(group=>group.items.length);
+  if(!groups.length)return null;
+  const relationCard=(link,index,kind,external)=>{
     const title=String(link.title||'').trim();
-    const label=kind==='target'?('下筆 '+(index+1)):String(link.label||'相關文章');
-    return <a key={link.id||link.href||index} href={link.href} className="scope-article-relation-card">
+    const label=external
+      ?(kind==='media'?String(link.mediaType||'媒體').trim():'外部來源')
+      :kind==='target'?'下筆 '+(index+1):String(link.label||'相關文章');
+    const headline=external?String(link.label||'').trim()||'開啟連結':title||'查看相關文章';
+    return <a key={link.id||link.href||index} href={link.href}
+      {...(external?{target:'_blank',rel:'noopener noreferrer'}:{})}
+      className="scope-article-relation-card">
       <span className="scope-article-relation-kind">{label}</span>
-      <strong>{title||'查看相關文章'}</strong>
-      <span className="scope-article-relation-open">閱讀文章 <span aria-hidden="true">↗</span></span>
+      <strong>{headline}</strong>
+      <span className="scope-article-relation-open">{external?'開啟連結':'閱讀文章'} <span aria-hidden="true">↗</span></span>
     </a>;
   };
-  return <nav className="scope-article-reading-relations" aria-label="文章脈絡">
-    <h2>文章脈絡</h2>
-    {groups.filter(group=>group.items.length).map(group=><section className="scope-article-relation-group" key={group.id}>
-      <h3>{group.heading} <span>{group.items.length} 篇</span></h3>
+  return <nav className="scope-article-reading-relations" aria-label="文章關聯與連結">
+    <h2>文章關聯與連結</h2>
+    {groups.map(group=><section className="scope-article-relation-group" key={group.id} aria-label={group.heading}>
+      <h3>{group.heading} <span>{group.items.length} 筆</span></h3>
       <div className="scope-article-relation-grid">
-        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id))}
+        {group.items.slice(0,4).map((link,index)=>relationCard(link,index,group.id,group.external))}
       </div>
       {group.items.length>4?<details className="scope-article-relation-more">
-        <summary>查看其餘 {group.items.length-4} 篇</summary>
+        <summary>展開另外 {group.items.length-4} 筆{group.heading}</summary>
         <div className="scope-article-relation-grid">
-          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id))}
+          {group.items.slice(4).map((link,index)=>relationCard(link,index+4,group.id,group.external))}
         </div>
       </details>:null}
     </section>)}
@@ -219,14 +232,14 @@ export function WorkSummaryCard({
     {!detailReading&&safeRelations.length?<div className="scope-result-links scope-work-relations">
       {safeRelations.map((link,index)=><ScopeLink key={link.id||link.href||index} href={String(link.href||'').trim()}>{link.label||copy.format.relatedText(index+1)}</ScopeLink>)}
     </div>:null}
-    {showLinks&&safeLinks.length?<div className="scope-result-links">
+    {!detailReading&&showLinks&&safeLinks.length?<div className="scope-result-links">
       {safeLinks.map((link,index)=><a key={link.id||link.href||index} href={externalLink(link)} target="_blank" rel="noreferrer">{link.label||copy.format.link(index+1)}</a>)}
     </div>:null}
     {destinations?.length?<div className="scope-result-links">
       {destinations.map(destination=><ScopeLink key={destination.id||destination.href} href={destination.href}>{destination.label}</ScopeLink>)}
     </div>:null}
     {children}
-    {detailReading&&safeRelations.length?<ArticleRelationNavigation links={safeRelations}/>:null}
+    {detailReading?<ArticleRelationNavigation links={safeRelations} externalLinks={showLinks?safeLinks:[]}/>:null}
   </article>;
 }
 
