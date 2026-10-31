@@ -82,7 +82,7 @@ test('all management pages restore editor access through one verified entry',()=
   assert.match(app,/managementRoute\?<ManagementAccess/);
   assert.match(entry,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
   assert.match(entry,/dock\?\.begin\(scopeId\)/);
-  assert.match(entry,/granted\(account\.authorizer,scopeId,level\)/);
+  assert.match(entry,/granted\(verification\.authorizer,scopeId,level\)/);
   assert.doesNotMatch(manager,/renewEditorSession|sessionExpired|get_my_scope_management/);
 });
 test('expired unified entry verifies identity and fresh scope grant before clearing the lock',()=>{
