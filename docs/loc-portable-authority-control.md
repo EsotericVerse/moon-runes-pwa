@@ -1,11 +1,11 @@
 # LOC 獨立 Authority 與資料庫復原控制層
 
-此版本提供一套 **與 Supabase／Neon 等業務 SQL 資料庫無關**的管理入口及權限儲存。Clerk 是可選的登入提供者（優先使用）；也可另外配置第二個 OIDC 身分提供者。資料庫故障不會阻止復原頁本身開啟，但未部署、未配置身分服務時不能假裝已通過登入。
+此版本提供一套 **與 Supabase／Neon 等業務 SQL 資料庫無關**的管理入口及權限儲存。目前獨立 Cloudflare 控制 Worker 已部署；主站全部 CRUD、Realtime、第三方 JWT／RLS、Neon Data API 及無停機切庫仍未完成端對端驗收，不能聲稱 Supabase 中斷時整站正常。Clerk 是可選的登入提供者（優先使用）；也可另外配置第二個 OIDC 身分提供者。資料庫故障不會阻止復原頁本身開啟，但未部署、未配置身分服務時不能假裝已通過登入。
 
 ## 目前已有的可操作元件
 
 - `public/recovery/index.html`：完整獨立靜態管理入口，**不使用 Next.js AppShell、公開 Bootstrap、Supabase SDK、Neon SDK**。固定網址 `/recovery/index.html`。從一般設定頁僅提供文字入口，不在首頁載入 Authority。
-- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。**已設定 Clerk Development 的前兩項；`controlUrl` 尚未設定。** 此檔不含私鑰，不能當成機密儲存。獨立復原頁現在可先載入 Clerk、註冊／登入並顯示 Clerk User ID，但在控制 Worker 未設定時不會開放資料庫或 Scope 管理操作。
+- `public/recovery/config.json`：三個**公開**設定值 `publishableKey`、`frontendApiUrl`、`controlUrl`。**Clerk Development 與獨立 Authority Worker HTTPS URL 均已配置。** 此檔不含私鑰，不能當成機密儲存。獨立復原頁可載入 Clerk、登入與顯示 User ID；Authority 已部署於 Cloudflare Worker，實際 JWT／管理員權限仍須透過使用者瀏覽器執行端對端驗證。
 - `workers/loc-authority/index.mjs`：獨立 Cloudflare Worker，使用 RSA 簽章、Issuer、Audience/Authorized Party、有效期限及 Root 主體白名單驗證管理員；沒有業務資料庫呼叫。
 - `workers/loc-authority/wrangler.jsonc`：控制服務專用 Worker，採 SQLite-backed Durable Object。絕不將其綁到目前 `loc-isr` 的儲存或部署週期。
 - 管理員可建立／編輯 PostgreSQL、MySQL、SQL Server 連線目標；密碼用 AES-256-GCM 加密，回傳的清單不包含密碼。更新時留空可沿用原密碼。
@@ -13,20 +13,20 @@
 - 根管理權限從 Cloudflare Secrets 的明確使用者 ID 清單判定；**不接受使用者自報角色／郵件**。
 - `workers/loc-authority/sql-authorization.mjs`：SQL 引擎無關的 Scope／資源分類與 fail-closed 授權判斷；公開參照表只開放讀取，其他須有對應 Scope 的有效授權。此模組本身不會執行 SQL。
 
-## Clerk 開發環境已建立，後續控制服務設定（尚未執行）
+## Clerk Development 與獨立控制 Worker（部署完成；正式站切庫未接通）
 
 1. Clerk Development 應用程式、Publishable Key 與 Frontend API URL 已準備並寫入。仍須核對登入方式與 MFA、取得 JWT 公鑰，以及管理員實際登入後的 Clerk `user_` ID；不能用未驗證的 Email 取代 User ID。
 2. `public/recovery/config.json` 前兩項已配置。控制 Worker 建立後，才填入第三項並部署靜態資源：
    - `publishableKey`：已配置 Clerk Development Publishable Key；
    - `frontendApiUrl`：已配置 `https://precise-grackle-3371.clerk.accounts.dev`；
-   - `controlUrl`：尚待獨立 `loc-authority-control` Worker 的 HTTPS origin。
+   - `controlUrl`：已設定 `https://loc-authority-control.sopa2306.workers.dev`。
 3. 在 **獨立控制 Worker Secrets**（不得放 `NEXT_PUBLIC_` 或 Git）設定：
    - `LOC_CLERK_ISSUER`：簽章 Token 的 Issuer；
    - `LOC_CLERK_JWT_PUBLIC_KEY`：對應的 RSA Public Key PEM；
    - `LOC_RECOVERY_ROOT_CLERK_IDS`：允許管理復原的 Clerk 使用者 ID，多人以逗號隔開；
    - `LOC_CONTROL_ORIGIN`：網站的精確 HTTPS origin；
    - `LOC_CONTROL_ENCRYPTION_KEY`：32 位元組隨機密鑰的 Base64；**必須安全備份**，否則已加密的連線設定無法解開。
-4. 使用 `workers/loc-authority/wrangler.jsonc` 獨立部署控制 Worker。需要管理員實際登入後，才可以執行連線／Authority 管理驗收。**不需遷移文章或停用現有 Supabase／Neon。**
+4. 獨立 `loc-authority-control` Worker 已部署並啟用；根管理員 subject allowlist 與 AES-GCM 加密 Secret 已存放 Cloudflare Worker Secrets。需要實際 Clerk JWT 驗證，才可完成管理驗收。**不需遷移文章或停用現有 Supabase／Neon。**
 
 ### 可選第二登入來源（不強制安裝）
 
