@@ -981,7 +981,6 @@ function emptyOnFailure(fn,fallback){
     }
   };
 }
-export const selectCategoryCounts=emptyOnFailure(selectCategoryCountsRaw,[]);
 export const selectMediaStatisticsFacetRows=emptyOnFailure(selectMediaStatisticsFacetRowsRaw,[]);
 export const selectScopeDensityRows=emptyOnFailure(selectScopeDensityRowsRaw,[]);
 export const selectScopeOverview=emptyOnFailure(selectScopeOverviewRaw,{earliest:'',rows:[],categories:[],aliases:[]});
