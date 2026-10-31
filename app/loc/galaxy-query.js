@@ -290,10 +290,8 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
   const pages=await Promise.all(batches.map(async batch=>{
     const {rows=[]}=await selectRows(scope.galaxy,{
       columns:'uid,title',
-      filters:[
-        {column:'uid',operator:'in',value:batch},
-        ...(!includeHidden?[{column:'searchable',operator:'eq',value:true}]:[])
-      ],
+      filters:[{column:'uid',operator:'in',value:batch}],
+      orFilter:includeHidden?'':'searchable.is.null,searchable.eq.true',
       limit:batch.length,
       authenticated:includeHidden
     });
