@@ -25,6 +25,22 @@ const importTimeKey=record=>{
 // repeated in the same file is the only safe input-level duplicate.
 export function dedupeIncomingImport(records=[]){
   const unique=[],aliases=new Map(),byUid=new Map(),byContentTime=new Map(),byNativeId=new Map();
+  const indexByUid=new Map();
+  const inheritLocation=(uid,row)=>{
+    const index=indexByUid.get(uid);
+    if(index===undefined)return;
+    const saved=unique[index],changes={};
+    // Platform exports may duplicate the same post with partial metadata.
+    // Keep a nonempty check-in from either copy without overwriting a
+    // different existing place on the canonical post.
+    for(const field of ['location','__importPlaceName','__importPlaceAddress',
+      '__importPlaceUrl','__importCoordinates','date']){
+      if((saved[field]==null||saved[field]==='')&&row[field]!=null&&row[field]!=='')
+        changes[field]=row[field];
+    }
+    if(row.__importCheckin===true)changes.__importCheckin=true;
+    if(Object.keys(changes).length)unique[index]={...saved,...changes};
+  };
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
@@ -38,21 +54,22 @@ export function dedupeIncomingImport(records=[]){
           String(prior.title??'')!==String(row.title??'')||
           String(prior.site_id??'')!==String(row.site_id??''))
         throw Error('相同 UID 對應不同來源文章，停止匯入：'+uid);
-      duplicates++;aliases.set(uid,uid);continue;
+      duplicates++;aliases.set(uid,uid);inheritLocation(uid,row);continue;
     }
     byUid.set(uid,row);
     // The native source ID represents the same source post even if the export
     // accidentally contains multiple copies. Retain one canonical Galaxy UID.
     const source=importSourceKey(row);
     const sourceUid=source?byNativeId.get(source):null;
-    if(sourceUid){duplicates++;aliases.set(uid,sourceUid);continue;}
+    if(sourceUid){duplicates++;aliases.set(uid,sourceUid);inheritLocation(sourceUid,row);continue;}
     if(source)byNativeId.set(source,uid);
     // For posts without a native ID, compare exact time and normalized text.
     const time=importTimeKey(row),text=comparableImportText(row.content);
     const semantic=!importSourceKey(row)&&time&&text?JSON.stringify([time,text]):null;
     const seen=semantic?byContentTime.get(semantic):null;
-    if(seen){duplicates++;aliases.set(uid,seen);continue;}
+    if(seen){duplicates++;aliases.set(uid,seen);inheritLocation(seen,row);continue;}
     if(semantic)byContentTime.set(semantic,uid);
+    indexByUid.set(uid,unique.length);
     unique.push(row);aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
