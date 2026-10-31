@@ -24,6 +24,18 @@ export function absoluteImageUrl(src){
   try{return src?new URL(src,window.location.origin).href:'';}catch{return src||'';}
 }
 
+// Adopt a valid legacy <img> URL into the frame setting when a block is
+// saved. Preserve image placement/width and never override intentional "none"
+// or "default" selections. The source HTML remains intact for compatibility.
+export function savedFrameImage(image,embeddedUrl=''){
+  const source=image&&typeof image==='object'&&!Array.isArray(image)?image:{};
+  if(source.source==='none'||source.source==='default')return Object.keys(source).length?source:null;
+  const url=String(source.url||embeddedUrl||'').trim();
+  if(url)return {...source,source:'custom',url};
+  if(source.source==='custom')return {...source,source:'default',url:''};
+  return Object.keys(source).length?source:null;
+}
+
 // Blocks whose image is edited as a frame image: LOC/Author home blocks and
 // the LunaRunes hero/game heroes.
 export function isHomeFrameFor(scopeId,pageName,order){
