@@ -40,11 +40,11 @@ test('real ISR summary pipeline uses mirrored config and RPC without Supabase',a
   const called=[],origin='https://loc-isr.example';
   const sources=['supabase','neon'].map(id=>({id,schema:()=>({
     from(table){
-      assert.equal(table,'loc_runtime_config');
+      assert.equal(table,'loc');
       return {select:()=>({eq:()=>({single:async()=>{
         called.push(id+':config');
         if(id==='supabase')return {error:{message:'fetch failed'},status:0};
-        return {data:{cache_mode:'isr',cache_provider:origin,isr_domains:[{origin}]}};
+        return {data:{cache:['isr',origin,JSON.stringify([{origin}]),'{}']}};
       }})})};
     },
     rpc:async(name,args)=>{
@@ -64,7 +64,7 @@ test('real ISR summary pipeline uses mirrored config and RPC without Supabase',a
 test('healthy primary with ISR disabled cannot be bypassed through Neon',async()=>{
   const called=[];
   const source={id:'supabase',schema:()=>({from:()=>({select:()=>({eq:()=>({single:async()=>({
-    data:{cache_mode:'off',cache_provider:'',isr_domains:[]}
+    data:{cache:['off','','[]','{}']}
   })})})})})};
   const backup={id:'neon',schema:()=>{called.push('neon');throw Error('Must not use backup')}};
   const result=await tryPublicSources([source,backup],db=>readIsrSummary(db,{
