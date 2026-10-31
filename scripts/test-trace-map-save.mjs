@@ -32,11 +32,11 @@ function saveHarness({writeFails=false,readMiss=false}={}){
  const written=[],notice=[],receipt={current:null};
  let reads=0,cleared=0;
  const row={uid:'R001',source_scope:'lo3rwang',trace_type:'path',
-   title:'旅程',anchor_list:['A001','B002'],route_list:[],hidden_depth:-1};
+   title:'旅程',anchor_list:['A001','B002'],route_list:[],invisible:false};
  const args={
   busy:false,own:true,editorOpen:true,setBusy:()=>{},setNotice:v=>notice.push(v),setError:()=>{},
   title:'旅程',type:'path',queue:['A001','B002'],MAX_ROAD:80,
-  hiddenDepth:-1,routeUids:[],
+  invisible:false,routeUids:[],
   pairs:[],MAX_LINES:400,validPair:()=>true,chosenIds:['A001','B002'],
   anchorMap:new Map([['A001',{}],['B002',{}]]),owner:'lo3rwang',description:'',
   allAnchors:[{uid:'A001',source_scope:'lo3rwang'},{uid:'B002',source_scope:'lo3rwang'}],
