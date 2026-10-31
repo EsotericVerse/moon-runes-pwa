@@ -366,7 +366,7 @@ test('Culture upper era selector stays independent; lower river selects only act
   const timeline=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
   assert.match(timeline,/instance\.fit\(\{animation:false\}\)/,
     'unselected first-river window must fit loaded timeline rows');
-  assert.match(source,/buildTimeTraceRiver\(timelineItems,expandedTimeTraceIds\)/);
+  assert.match(source,/buildEraRiver\(timelineItems,expandedEraIds\)/);
   assert.match(source,/structureWindowKey==='all'\|\|!structureWindowKey\?'all'/);
   assert.match(source,/onGroupToggle=\{toggleTimeTrace\}/);
   assert.match(source,/windowStart=\{currentStructureStart\}/);
@@ -588,6 +588,7 @@ test('Culture Time management uses one editor with anchor, event and trace types
   assert.match(culture,/onTimeClick=\{date=>beginTimelineCreation\('anchor',date\)\}/);
   assert.match(culture,/defaultRecordType='anchor'/);
   assert.match(editor,/const TYPES=\['anchor','period','era'\]/);
+  assert.match(editor,/const normalizeType=value=>\(\{event:'period'\}\[value\]\|\|value\)/);
   assert.match(editor,/const TYPE_TABS=\[\.\.\.TYPES\]\.reverse\(\)/);
    assert.match(editor,/\{TYPE_TABS\.map\(type=><button/);
    assert.match(editor,/aria-pressed=\{browseType===type\}/);
