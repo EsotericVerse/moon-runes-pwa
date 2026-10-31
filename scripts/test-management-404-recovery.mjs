@@ -90,7 +90,7 @@ test('expired unified entry verifies identity and fresh scope grant before clear
   const ttl=read('app/loc/edit-session-ttl.mjs');
   const auth=read('app/loc/db-contract.mjs');
   assert.match(entry,/async function renew\(\)/);
-  assert.match(entry,/const verified=await getAccountSession\(\)/);
+  assert.match(entry,/const verified=await verifyManagementEntry\(\(\)=>getAccountSession\(\)\)/);
   assert.match(entry,/get_my_scope_management/);
   assert.match(entry,/setAuthorization\(verified.user,Array.isArray\(data\)\?data:\[\]\)/);
   assert.match(entry,/granted\(createScopeAuthorizer\(verified.user\),scopeId,level\)/);
