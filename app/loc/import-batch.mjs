@@ -62,8 +62,9 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
       continue;
     }
     const external=/^https?:\/\//i.test(rawUrl)?rawUrl:null;
-    if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description)continue;
-    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type||(source.image_url?'image':source.video_url?'video':''));
+    if(!external&&!rawUrl&&!source.media_type&&!source.type&&!source.mime_type&&!source.title&&!source.name&&!source.meta_tags&&!source.description&&source.rune_references==null)continue;
+    const media_type=importMediaType(rawUrl,source.media_type||source.type||source.mime_type||
+      (source.image_url?'image':source.video_url?'video':source.rune_references!=null?'runes':''));
     const record={
       ...(explicitId?{uid:explicitId}:{}),
       __article_uid:article_uid||null,
