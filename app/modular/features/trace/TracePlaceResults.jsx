@@ -34,9 +34,7 @@ function TraceWork({row,scope}){
   return <Article uid={row.uid} title={row.title||'未命名文章'}
     articleHref={galaxyIdentityHref(scope?.id,row.uid)}
     links={row.url&&/^https?:\/\//i.test(String(row.url))?[{id:'source:'+row.uid,href:row.url,label:'外部連結'}]:[]}
-    date={String(row.createtime||'').slice(0,10)}
-    source={row.site||''}
-    scopeId={scope?.id} editOnCardClick={false}>
+    editOnCardClick={false}>
     <WorkFullText open={opened} loading={opened&&body.isPending}
       error={body.error?String(body.error.message||body.error):''}
       content={body.data||''} showToggle={false}/>
