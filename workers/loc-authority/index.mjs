@@ -159,8 +159,15 @@ export class LocAuthorityState extends DurableObject {
     const saved=await this.ctx.storage.list({prefix:'target:'});
     const targets=[];
     for(const [key,item] of saved)targets.push({id:key.slice(7),...item.public});
+    // Built-in routable providers are managed by the independent Gateway and
+    // require no user-entered DB password or modification of the existing Link.
+    for(const [id,label] of [['supabase-current','Supabase'],['neon-current','Neon']]){
+      if(!targets.some(target=>target.id===id))targets.push({
+        id,label,engine:'postgres',managed:true
+      });
+    }
     targets.sort((a,b)=>a.id.localeCompare(b.id));
-    return {primary_id:await this.ctx.storage.get('primary_id')||null,targets};
+    return {primary_id:await this.ctx.storage.get('primary_id')||'supabase-current',targets};
   }
   async putTarget(id,input){
     const validated=validateTarget(input,id);
@@ -175,7 +182,8 @@ export class LocAuthorityState extends DurableObject {
     return publicFields;
   }
   async selectPrimary(id){
-    const target=await this.ctx.storage.get('target:'+id);
+    const builtin=id==='supabase-current'||id==='neon-current';
+    const target=builtin?{id}:await this.ctx.storage.get('target:'+id);
     if(!target)throw fail('Unknown primary target');
     await this.ctx.storage.put('primary_id',id);
     return {primary_id:id};
