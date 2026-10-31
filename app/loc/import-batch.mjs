@@ -72,7 +72,12 @@ export function normalizeImportMedia(value,{title='',createtime=null,location=''
       media_type,
       title:String(source.title||source.name||title||'').trim()||null,
       url:external,
-      meta_tags:String(source.meta_tags||source.description||'').trim()||null,
+      meta_tags:(()=>{
+        const description=source.meta_tags??source.description;
+        if(description===undefined||description===null)return null;
+        const normalized=typeof description==='string'?description.trim():JSON.stringify(description);
+        return normalized||null;
+      })(),
       // Prefer the media's own timestamp; use its article time only as a fallback.
       createtime:parseImportCreatedTime(source.createtime??source.created_at??
         source.creation_timestamp??source.taken_at??source.timestamp)||
