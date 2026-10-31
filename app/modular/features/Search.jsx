@@ -126,6 +126,9 @@ function toResult(row,source,scopeId,copy=UI_COPY){
     date:row.date||row.createtime||row.address||row.record_date||row.UpdateTime||row.updated_at||'',
     snippet:'',scopeId:scope,resourceType,resourceId,
     relatedMedia:Array.isArray(row.related_media)?row.related_media:[],
+    relatedTime:row.related_time||null,
+    relatedSpace:row.related_space||null,
+    relatedStatistics:row.related_statistics||null,
     tracePlace:row.trace_place||null,
     locationName:String(row.location||'').trim(),
     styleTagMatch:Boolean(row.style_keyword_tag),
@@ -1262,6 +1265,11 @@ export default function Search({managementMode=false}){
           hidden={false}
           relationLinks={identityReader||expandedReader?readingLinks:[]}
           relatedMedia={identityReader||expandedReader?relatedMedia:[]}
+          relatedTime={identityReader||expandedReader?readerRow?.related_time||row.relatedTime:null}
+          relatedSpace={identityReader||expandedReader?readerRow?.related_space||row.relatedSpace:null}
+          relatedStatistics={identityReader||expandedReader?readerRow?.related_statistics||row.relatedStatistics:null}
+          articleScopeId={row.scopeId}
+          articleDate={identityReader||expandedReader?readerRow?.date||row.date:''}
           tracePlace={identityReader||expandedReader?tracePlace:null}
           traceHref={tracePlace?featureNavigationHref(row.scopeId,'trace',{place:tracePlace.uid}):''}
           locationName={identityReader||expandedReader?locationName:''}
