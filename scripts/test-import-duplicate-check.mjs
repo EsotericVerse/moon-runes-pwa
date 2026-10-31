@@ -19,6 +19,26 @@ test('a repeated genuine source ID is the same article even if the import UID ch
   assert.equal(result.duplicates,2);
   assert.equal(result.aliases.get('DUP00001'),'OLD00001');
 });
+test('duplicate source copies retain a missing check-in on the canonical article',()=>{
+  const rows=[
+    {...original,location:null},
+    {...original,uid:'NEW00001',location:'台北車站',date:'2026-10-27',
+      __importCheckin:true,__importCoordinates:{latitude:25,longitude:121}}
+  ];
+  const result=dedupeIncomingImport(rows);
+  assert.equal(result.unique.length,1);
+  assert.equal(result.unique[0].location,'台北車站');
+  assert.equal(result.unique[0].date,'2026-10-27');
+  assert.equal(result.unique[0].__importCheckin,true);
+  assert.deepEqual(result.unique[0].__importCoordinates,{latitude:25,longitude:121});
+});
+test('a duplicate cannot overwrite an existing explicit location',()=>{
+  const result=dedupeIncomingImport([
+    {...original,location:'第一地點'},
+    {...original,uid:'NEW00001',location:'第二地點'}
+  ]);
+  assert.equal(result.unique[0].location,'第一地點');
+});
 test('different IDs do not collapse even with identical timestamps and content',()=>{
   const rows=[original,{...original,uid:'SECOND01',site_id:'threads-2'}];
   assert.equal(dedupeIncomingImport(rows).unique.length,2);
