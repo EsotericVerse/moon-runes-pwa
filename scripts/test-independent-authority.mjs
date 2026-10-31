@@ -144,29 +144,24 @@ test('optional secondary OIDC recovers admin access without Clerk being configur
   const bad=await bearer(pair,{iss:'https://oidc.example.test',sub:'operator_1',aud:'untrusted'});
   assert.equal((await worker.fetch(request('/v1/me',bad),env)).status,401);
 });
-test('static recovery page cannot mount AppShell, run home Auth hooks or depend on Next build env',()=>{
-  const page=readFileSync(new URL('../public/recovery/index.html',import.meta.url),'utf8');
+test('public sign-in is Clerk-only and the recovery console is no longer offered',()=>{
+  const page=readFileSync(new URL('../public/login/index.html',import.meta.url),'utf8');
   const settings=JSON.parse(readFileSync(new URL('../public/recovery/config.json',import.meta.url),'utf8'));
-  assert.match(page,/\bclerk\.load\(/);
-  assert.match(page,/<title>LOC · 獨立復原控制<\/title>/);
-  assert.doesNotMatch(page,/<script[^>]+src=|supabase-js|neon-auth|NEXT_PUBLIC_/);
+  const account=readFileSync(new URL('../app/loc/GlobalSettings.jsx',import.meta.url),'utf8');
+  assert.match(page,/<title>LOC · 登入<\/title>/);
+  assert.match(page,/clerk\.mountSignIn/);
+  assert.doesNotMatch(page,/id="legacy"|loc-auth-provider|使用原本登入/);
+  assert.doesNotMatch(account,/原本登入方式|恢復原本登入|獨立資料庫復原控制/);
   assert.deepEqual(Object.keys(settings).sort(),['controlUrl','frontendApiUrl','publishableKey']);
 });
-
-test('Clerk development configuration matches its Frontend API and static login works before control setup',()=>{
+test('Clerk login JavaScript parses and the public identity configuration matches its domain',()=>{
   const cfg=JSON.parse(readFileSync(new URL('../public/recovery/config.json',import.meta.url),'utf8'));
-  assert.ok(cfg.publishableKey.startsWith('pk_test_'));
-  assert.equal(Buffer.from(cfg.publishableKey.slice('pk_test_'.length),'base64url').toString('utf8'),
+  assert.match(cfg.publishableKey,/^pk_(test|live)_/);
+  assert.equal(Buffer.from(cfg.publishableKey.replace(/^pk_(test|live)_/,''),'base64url').toString('utf8'),
     new URL(cfg.frontendApiUrl).hostname+'$');
-  // A fresh optional install can leave the Worker disconnected. Production
-  // LOC may have a separately deployed Authority control endpoint.
-  assert.ok(cfg.controlUrl===''||new URL(cfg.controlUrl).protocol==='https:');
-  if(cfg.controlUrl)assert.equal(new URL(cfg.controlUrl).origin,cfg.controlUrl);
-  const page=readFileSync(new URL('../public/recovery/index.html',import.meta.url),'utf8');
-  const moduleScript=page.split('<script type="module">')[1]?.split('</script>')[0];
-  assert.ok(moduleScript);
-  new Function(moduleScript);
-  assert.ok(moduleScript.includes('if(settings.controlUrl)verifiedHttpsOrigin(settings.controlUrl)'));
-  assert.ok(moduleScript.includes("clerk.mountSignIn(byId('login-root'))"));
-  assert.ok(moduleScript.includes('clerk.user?.id'));
+  const login=readFileSync(new URL('../public/login/index.html',import.meta.url),'utf8');
+  const script=login.split('<script type="module">')[1]?.split('</script>')[0];
+  assert.ok(script);
+  new Function(script);
+  assert.match(script,/clerk\.mountSignIn/);
 });
