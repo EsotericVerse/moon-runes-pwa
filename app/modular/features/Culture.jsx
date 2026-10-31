@@ -696,7 +696,7 @@ export default function Culture(){
   const savedTraceEnd=String(currentStructurePeriod?.end_date||'').slice(0,10);
   const currentStructureEnd=activeStructureKey==='all'?''
     :structureWindowKey===''&&lastAnchorDate>savedTraceEnd?lastAnchorDate:savedTraceEnd;
-  // Keep the first river grouped by time_trace UID. A selected trace changes
+  // Keep the first river grouped by era UID. A selected trace changes
   // only the camera viewport, never the saved anchor/event/trace graph.
   const anchorRecords=useMemo(()=>timelineItems
     .filter(item=>item.entry_type==='anchor'&&item.uid)
