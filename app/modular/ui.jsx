@@ -252,7 +252,10 @@ function ArticleRelationNavigation({
       </details>:null}
     </span>;
   });
-  const ordinaryMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes');
+  const ordinaryMedia=mediaItems.filter((_,index)=>
+    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&externalLink({href:relatedMedia[index]?.url}));
+  const mediaDetails=mediaItems.filter((_,index)=>
+    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&!externalLink({href:relatedMedia[index]?.url}));
   const runeMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()==='runes');
   const time=relatedTime||{},space=relatedSpace||{};
   const dateValid=/^\d{4}-\d{2}-\d{2}$/.test(day);
@@ -272,6 +275,7 @@ function ArticleRelationNavigation({
   const traces=named(space.traces,item=>traceLink(item,'map'));
   return <section className="scope-article-context" aria-label="文章整合脈絡">
     {ordinaryMedia.length?row('相關媒體外部連結',ordinaryMedia):null}
+    {mediaDetails.length?row('相關媒體資料',mediaDetails):null}
     {runeMedia.length?row('抽牌結果（多媒體）',runeMedia):null}
     {refs.length?row('參考',articles(refs)):null}
     {above.length?row('上',articles(above)):null}
