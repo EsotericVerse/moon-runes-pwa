@@ -22,8 +22,46 @@ function allowedOrigin(request,env){
   if(origin&&origin!==configured)throw fail('Origin not allowed',403);
   return origin;
 }
+// Clerk's JWKS endpoint is public. Its origin is pinned to the configured
+// Clerk issuer; never resolve an arbitrary URL from an untrusted JWT header.
+function isClerkIssuer(value){
+  try{
+    const url=new URL(String(value||''));
+    return url.protocol==='https:'&&!url.username&&!url.password&&!url.search&&!url.hash&&
+      ['','/'].includes(url.pathname)&&Boolean(url.hostname)&&
+      (url.hostname.endsWith('.clerk.accounts.dev')||url.hostname.endsWith('.clerk.accounts.com'));
+  }catch{return false;}
+}
+const jwksCache=new Map();
+async function clerkPublicKey(issuer,kid){
+  if(!isClerkIssuer(issuer))throw fail('Clerk issuer is not trusted',503);
+  if(!/^[A-Za-z0-9._-]{1,256}$/.test(String(kid||'')))throw fail('Invalid signing key ID',401);
+  const key=issuer+'#'+kid;
+  const cached=jwksCache.get(key);
+  if(cached&&cached.expires>Date.now())return cached.key;
+  const response=await fetch(String(issuer).replace(/\\/$/,'')+'/.well-known/jwks.json',{
+    method:'GET',redirect:'error',signal:AbortSignal.timeout(6000),
+    headers:{accept:'application/json'}
+  });
+  if(!response.ok)throw fail('Clerk signing keys are unavailable',503);
+  const body=await response.text();
+  if(body.length>120000)throw fail('Clerk signing key response too large',503);
+  let keys;try{keys=JSON.parse(body).keys}catch{throw fail('Invalid Clerk signing keys',503)}
+  if(!Array.isArray(keys))throw fail('Invalid Clerk signing keys',503);
+  const jwk=keys.find(value=>value?.kid===kid&&value.kty==='RSA'&&
+    (!value.alg||value.alg==='RS256')&&
+    (!value.use||value.use==='sig')&&typeof value.n==='string'&&
+    typeof value.e==='string');
+  if(!jwk)throw fail('Clerk signing key is not recognized',401);
+  const cryptoKey=await crypto.subtle.importKey('jwk',jwk,
+    {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+  jwksCache.set(key,{key:cryptoKey,expires:Date.now()+5*60*1000});
+  if(jwksCache.size>16)jwksCache.delete(jwksCache.keys().next().value);
+  return cryptoKey;
+}
 function requireSetup(env){
-  const hasClerk=Boolean(env.LOC_CLERK_ISSUER&&env.LOC_CLERK_JWT_PUBLIC_KEY&&env.LOC_RECOVERY_ROOT_CLERK_IDS);
+  const hasClerk=Boolean(env.LOC_CLERK_ISSUER&&env.LOC_RECOVERY_ROOT_CLERK_IDS&&
+    (env.LOC_CLERK_JWT_PUBLIC_KEY||isClerkIssuer(env.LOC_CLERK_ISSUER)));
   const hasAlternative=Boolean(env.LOC_SECONDARY_ISSUER&&env.LOC_SECONDARY_JWT_PUBLIC_KEY&&
     env.LOC_SECONDARY_AUDIENCE&&env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS);
   if((!hasClerk&&!hasAlternative)||!env.LOC_CONTROL_ORIGIN||
@@ -57,14 +95,22 @@ async function verifyIdentityToken(request,env){
   if(secondary&&(!env.LOC_SECONDARY_AUDIENCE||
     !(Array.isArray(claims.aud)?claims.aud.includes(env.LOC_SECONDARY_AUDIENCE):claims.aud===env.LOC_SECONDARY_AUDIENCE)))
     throw fail('Invalid token audience',401);
-  const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
-  const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,'');
-  if(!body)throw fail('Recovery signing key unavailable',503);
   let verified=false;
   try{
-    const key=await crypto.subtle.importKey('spki',b64bytes(body),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+    let key;
+    if(clerk&&!env.LOC_CLERK_JWT_PUBLIC_KEY){
+      key=await clerkPublicKey(env.LOC_CLERK_ISSUER,header.kid);
+    }else{
+      const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
+      const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,'');
+      if(!body)throw fail('Recovery signing key unavailable',503);
+      key=await crypto.subtle.importKey('spki',b64bytes(body),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+    }
     verified=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,b64bytes(pieces[2]),new TextEncoder().encode(pieces[0]+'.'+pieces[1]));
-  }catch{throw fail('Token verification failed',401)}
+  }catch(error){
+    if(error?.status)throw error;
+    throw fail('Token verification failed',401);
+  }
   if(!verified)throw fail('Token signature invalid',401);
   return {provider:clerk?'clerk':'secondary',subject:claims.sub,session:clerk?claims.sid:'verified'};
 }
