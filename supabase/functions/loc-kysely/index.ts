@@ -33,7 +33,23 @@ async function verifyClerkForSql(token:string){
   const {payload}=await jwtVerify(token,clerkKeys,{
     issuer:clerkIssuer,algorithms:["RS256"]
   });
-  return clerkSqlClaims(payload,{issuer:clerkIssuer,origin:clerkOrigin});
+  // Normal Clerk session tokens do not promise signed email claims.
+  // Only the independent Authority may bind this signed sub/sid to its
+  // single, preconfigured root management identity.
+  let trustedEmail='';
+  if(payload.email_verified!==true||typeof payload.email!=='string'){
+    const reply=await fetch('https://loc-authority-control.sopa2306.workers.dev/v1/identity',{
+      method:'GET',headers:{authorization:'Bearer '+token,origin:clerkOrigin,accept:'application/json'},
+      signal:AbortSignal.timeout(8000)
+    });
+    if(!reply.ok)throw new Error('LOC Authority could not verify Clerk root identity');
+    const identity=await reply.json();
+    if(identity?.provider!=='clerk'||identity.subject!==payload.sub||
+        identity.session!==payload.sid)
+      throw new Error('LOC Authority Clerk identity mismatch');
+    trustedEmail=String(identity.email||'');
+  }
+  return clerkSqlClaims(payload,{issuer:clerkIssuer,origin:clerkOrigin,trustedEmail});
 }
 function configuredPublishableKeys() {
   const keys = [Deno.env.get("LOC_KYSELY_PUBLISHABLE_KEY"), Deno.env.get("SUPABASE_PUBLISHABLE_KEY"), Deno.env.get("SUPABASE_ANON_KEY")].filter((value): value is string => Boolean(value));
