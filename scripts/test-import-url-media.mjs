@@ -130,3 +130,14 @@ test('top-level rune references attach to existing text articles or stand alone 
   assert.ok(panel.includes("media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null)"));
   assert.ok(panel.includes("existingRuneByArticle"));
 });
+
+
+test('nested media descriptions preserve JSON rather than object-to-string corruption',()=>{
+  const tags={alt:'台北夜景',camera:'mobile'};
+  const image=normalizeImportMedia([{media_type:'image',url:'https://example.test/night.jpg',meta_tags:tags}],{article_uid:'ART00001'});
+  assert.equal(image.records[0].meta_tags,JSON.stringify(tags));
+  const spread={cards:[{rune:'月',direction:'正位'}]};
+  const rune=normalizeImportMedia([{media_type:'runes',meta_tags:spread}],{article_uid:'ART00001'});
+  assert.equal(rune.records[0].meta_tags,JSON.stringify(spread));
+  assert.equal(rune.records.length,1);
+});
