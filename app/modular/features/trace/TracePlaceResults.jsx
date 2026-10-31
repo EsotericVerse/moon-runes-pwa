@@ -81,7 +81,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const offset=Number(pageParam)||0;
       const result=await selectRows(scope.galaxy,{
         columns:'uid,title,createtime',
-        filters,orders:[{column:'createtime',ascending:sort==='asc'},{column:'uid',ascending:true}],
+        filters,orders:[{column:'date',ascending:sort==='asc'},{column:'uid',ascending:true}],
         limit:PAGE_SIZE,offset,count:offset===0?'exact':null
       });
       const rows=result.rows||[];
