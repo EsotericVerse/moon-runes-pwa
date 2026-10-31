@@ -16,7 +16,10 @@ function denseAndSparse(result){
     for(const [month,count] of item.months||[])
       novelByMonth.set(month,(novelByMonth.get(month)||0)+count);
   }
-  const series=months.map(row=>novelByMonth.get(row.month)||0);
+  // Analyze density *per article*, not raw writing volume. A busy month
+  // should not count as a new-term burst solely because it has more posts.
+  const series=months.map(row=>
+    Math.round((novelByMonth.get(row.month)||0)/Math.max(1,row.documents)*10));
   const changes=changePoints(series);
   const boundaries=[0,...changes,months.length];
   const segments=[];
@@ -37,7 +40,12 @@ function denseAndSparse(result){
   }
   const byDense=[...segments].sort((a,b)=>b.novelPerArticle-a.novelPerArticle||b.documents-a.documents);
   const bySparse=[...segments].sort((a,b)=>a.novelPerArticle-b.novelPerArticle||b.documents-a.documents);
-  const dense=byDense[0]||null,sparse=bySparse[0]||null;
+  const dense=byDense[0]||null;
+  // Without a statistically detected boundary there are not two opposing
+  // periods. Do not invent an "empty" side from the same segment.
+  const sparse=segments.length>1?bySparse[0]:null;
+  const overallExistingRatio=months.reduce((s,row)=>s+row.existingCovered,0)/
+    Math.max(1,months.reduce((s,row)=>s+row.documents,0));
   if(dense){
     for(const item of result.candidates){
       item.denseDocuments=(item.months||[]).reduce((sum,[month,count])=>
@@ -49,7 +57,7 @@ function denseAndSparse(result){
       b.denseDocuments-a.denseDocuments||b.documents-a.documents
       ||b.occurrences-a.occurrences||a.word.localeCompare(b.word));
   }
-  return {...result,dense,sparse};
+  return {...result,dense,sparse,overallExistingRatio};
 }
 function annotateTrend(result){
   result=denseAndSparse(result);
