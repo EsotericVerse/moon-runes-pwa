@@ -24,7 +24,7 @@ const importTimeKey=record=>{
 // Keep separate source rows even when they share a timestamp; an exact UID
 // repeated in the same file is the only safe input-level duplicate.
 export function dedupeIncomingImport(records=[]){
-  const unique=[],aliases=new Map(),byUid=new Map();
+  const unique=[],aliases=new Map(),byUid=new Map(),byContentTime=new Map(),byNativeId=new Map();
   let duplicates=0;
   for(const row of records){
     const uid=String(row?.uid||'').trim();
@@ -38,13 +38,22 @@ export function dedupeIncomingImport(records=[]){
           String(prior.title??'')!==String(row.title??'')||
           String(prior.site_id??'')!==String(row.site_id??''))
         throw Error('相同 UID 對應不同來源文章，停止匯入：'+uid);
-      duplicates++;
-      aliases.set(uid,uid);
-      continue;
+      duplicates++;aliases.set(uid,uid);continue;
     }
     byUid.set(uid,row);
-    unique.push(row);
-    aliases.set(uid,uid);
+    // The native source ID represents the same source post even if the export
+    // accidentally contains multiple copies. Retain one canonical Galaxy UID.
+    const source=importSourceKey(row);
+    const sourceUid=source?byNativeId.get(source):null;
+    if(sourceUid){duplicates++;aliases.set(uid,sourceUid);continue;}
+    if(source)byNativeId.set(source,uid);
+    // For posts without a native ID, compare exact time and normalized text.
+    const time=importTimeKey(row),text=comparableImportText(row.content);
+    const semantic=!importSourceKey(row)&&time&&text?JSON.stringify([time,text]):null;
+    const seen=semantic?byContentTime.get(semantic):null;
+    if(seen){duplicates++;aliases.set(uid,seen);continue;}
+    if(semantic)byContentTime.set(semantic,uid);
+    unique.push(row);aliases.set(uid,uid);
   }
   return {unique,aliases,duplicates};
 }
@@ -101,15 +110,14 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
   for(const record of records||[]){
     const key=importTimeKey(record);
     if(!key)continue;
-    const prior=requested.get(key);
-    if(prior)prior.count++;
-    else requested.set(key,{count:1,only:record});
+    if(!requested.has(key))requested.set(key,[]);
+    requested.get(key).push(record);
     const site=String(record.site).trim();
     if(!groups.has(site))groups.set(site,new Set());
     groups.get(site).add(new Date(Date.parse(record.createtime)).toISOString());
   }
   const total=[...groups.values()].reduce((sum,times)=>sum+times.size,0);
-  const matches=new Map(),candidates=new Map();
+  const matches=new Map(),candidates=new Map(),ambiguous=[];
   onProgress?.({completed:0,total,matched:0});
   if(!total)return matches;
   const consumePage=page=>{
@@ -117,36 +125,59 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     for(const row of page){
       const key=importTimeKey(row);
       if(!key||!requested.has(key))continue;
-      const state=candidates.get(key)||{count:0,only:null};
-      state.count++;
-      state.only=state.count===1?row:null;
-      candidates.set(key,state);
+      if(!candidates.has(key))candidates.set(key,new Map());
+      candidates.get(key).set(String(row.uid),row);
     }
   };
   let base=0;
   for(const [site,times] of groups){
-    const report=done=>onProgress?.({completed:Math.min(total,base+done),total,matched:candidates.size});
+    const report=done=>onProgress?.({completed:Math.min(total,base+done),
+      total,matched:candidates.size});
     const returned=await readTimestamps([...times],consumePage,site,report);
     base+=times.size;
     if(Array.isArray(returned))consumePage(returned);
     else if(returned!==undefined&&returned!==null)
       throw Error('createtime 查詢沒有回傳有效文章');
   }
-  // An ambiguous group (same site + same createtime, on either side) is never
-  // silently inserted as new: that is exactly the duplicate this comparison
-  // exists to catch. It is also never allowed to abort every other record in
-  // the batch. Skip just this group — the caller excludes it from the run
-  // entirely and reports it for manual review — and keep matching the rest.
-  const ambiguous=[];
-  for(const [key,state] of requested){
-    const candidate=candidates.get(key);
-    if(!candidate)continue;
-    if(state.count>1||candidate.count>1){
-      ambiguous.push({site:String(state.only.site),createtime:String(state.only.createtime),
-        uid:String(state.only.uid)});
-      continue;
+  for(const [key,recordsAtTime] of requested){
+    const saved=[...(candidates.get(key)?.values()||[])];
+    if(!saved.length)continue;
+    const used=new Set(),unresolved=[];
+    const eligible=(record,rows)=>rows.filter(row=>{
+      if(used.has(String(row.uid)))return false;
+      const incomingId=String(record.site_id||'').trim();
+      const storedId=String(row.site_id||'').trim();
+      // Two different genuine platform IDs are different posts.
+      return !incomingId||!storedId||incomingId===storedId;
+    });
+    const assign=(record,row)=>{
+      matches.set(String(record.uid),row);used.add(String(row.uid));
+    };
+    // A source identifier is definitive even when multiple posts share time.
+    for(const record of recordsAtTime){
+      const id=String(record.site_id||'').trim();
+      const equal=id?saved.filter(row=>!used.has(String(row.uid))&&
+        String(row.site_id||'').trim()===id):[];
+      if(equal.length===1)assign(record,equal[0]);
+      else if(equal.length>1)ambiguous.push({uid:String(record.uid),site:record.site,createtime:record.createtime});
+      else unresolved.push(record);
     }
-    matches.set(String(state.only.uid),candidate.only);
+    for(const record of unresolved){
+      const sameContent=eligible(record,saved).filter(row=>
+        comparableImportText(row.content)===comparableImportText(record.content));
+      if(sameContent.length===1){assign(record,sameContent[0]);continue;}
+      if(sameContent.length>1){
+        ambiguous.push({uid:String(record.uid),site:record.site,createtime:record.createtime});
+        continue;
+      }
+      // A single timestamp on each side also supports an edited article.
+      // Never guess when several different posts share the timestamp.
+      const options=eligible(record,saved);
+      if(recordsAtTime.length===1&&saved.length===1&&options.length===1)
+        assign(record,options[0]);
+      // No matching saved content: this is a distinct post, not a reason
+      // to silently drop it from a bulk import.
+    }
   }
   onProgress?.({completed:total,total,matched:matches.size});
   matches.ambiguous=ambiguous;
@@ -192,6 +223,12 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
     if(!importTimeKey(record)||importTimeKey(record)!==importTimeKey(saved))return false;
     if(String(saved.title||'')!==String(record.title||'')||
        String(saved.content||'')!==String(record.content||''))return false;
+    // Equal text does not mean the import is a no-op when earlier rows lack
+    // actual source metadata. Reimports should restore missing relationships.
+    for(const field of ['site_id','location','url','ref_id','source_id'])
+      if(!String(saved[field]||'').trim()&&String(record[field]||'').trim())return false;
+    if(!(Array.isArray(saved.target_id)&&saved.target_id.length)&&
+       Array.isArray(record.target_id)&&record.target_id.length)return false;
     return true;
   });
 }

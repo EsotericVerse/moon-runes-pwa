@@ -29,14 +29,17 @@ export function importCheckinDates(records=[]){
 }
 
 export async function prepareImportTimeAnchors(records,{
-  scopeId,relation,pageSize=750,onProgress
+  scopeId,timeTable,relation,pageSize=750,onProgress
 }={}){
   const dates=importCheckinDates(records);
   const empty={created:0,reused:0,skipped:dates.length};
   if(!dates.length||!scopeId||scopeId==='local'||scopeId==='loc')return empty;
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('日期定錨 Scope 無效');
   if(typeof relation!=='function')throw Error('日期定錨資料庫不存在');
-  const table='silver.'+scopeId+'_time';
+  // The scope registry owns the physical Time relation; never guess its suffix.
+  const table=String(timeTable||'').trim();
+  if(!/^silver\.[a-z][a-z0-9_]*$/.test(table)||!table.startsWith('silver.'+scopeId+'_'))
+    throw Error('日期定錨尚未解析正確的 Scope Time 資料表');
   const occupied=new Set(),existingDays=new Set();
   onProgress?.({phase:'核對既有日期定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){

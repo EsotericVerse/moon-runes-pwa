@@ -1,26 +1,14 @@
-test('empty site never creates a timestamp pool and social articles use random IDs',()=>{
+
+test('empty sites do not enter matching pools, but every input row is deduplicated before inserting',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  const before=panel.indexOf('const distinctSites=[...new Set(analyzed.valid.map(');
-  const oldRows=panel.indexOf('const oldRows=analyzed.valid.filter(');
-  const incoming=panel.indexOf('const incoming={');
-  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
-  assert.ok(before>=0&&before<oldRows&&oldRows<incoming&&incoming<match);
-  assert.match(panel,/oldRows\.length\?dedupeIncomingImport\(oldRows\)/);
-  assert.match(panel,/const existingCandidates=deduped\.unique;/);
-  assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt/);
+  const site=panel.indexOf('const distinctSites=[...new Set(analyzed.valid.map(');
+  const dedup=panel.indexOf('const incoming=dedupeIncomingImport(analyzed.valid);');
+  const candidate=panel.indexOf('const existingCandidates=unique.filter(row=>');
+  const compare=panel.indexOf('await matchExistingImportBySiteId(existingCandidates,');
+  assert.ok(site>=0&&site<dedup&&dedup<candidate&&candidate<compare);
+  assert.match(panel,/siteAvailability.get\(String\(row.site\|\|''\).trim\(\)\)/);
   assert.match(panel,/remapArchiveArticleUids\(\s*linked\.map\(entry=>entry\.row\),createUid8,issuedArticleUids\)/);
   assert.doesNotMatch(panel,/facebookBackupImportUid\(row\)/);
-  assert.doesNotMatch(panel,/facebookArchiveUid\(stableThreadsKey\)/);
-});
-
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {extractImportCreatedAt,createImportBatchSizer,estimateImportMinutes} from '../app/loc/import-batch.mjs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
-
-const post=(uid,site='Threads',site_id='post-100',content='original')=>({
-  uid,site,site_id,createtime:'2024-08-01T00:00:00Z',title:'Title',content,url:null
 });
 test('timestamps are preserved as article metadata and available for fallback',()=>{
   assert.equal(extractImportCreatedAt({createAt:'2024-08-01T00:00:00Z'}),'2024-08-01T00:00:00.000Z');
@@ -85,19 +73,22 @@ test('source ID lookup reports progress without timestamps',async()=>{
   });
   assert.deepEqual(progress,[[0,2],[2,2]]);
 });
-test('database lookup limits site and time before matching, preserving curated site and location',()=>{
+
+test('import compares site IDs before time and fills only missing metadata',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.doesNotMatch(panel,/matchExistingImportBySiteId\(unique,/);
+  assert.match(panel,/\.ilike\('site',site\)\.in\('site_id',idsPage\)/);
   assert.match(panel,/\.select\('uid,createtime,site_id'\)\s*\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
   assert.match(panel,/\.order\('createtime',\{ascending:true\}\)\.order\('uid',\{ascending:true\}\)/);
   assert.match(panel,/urlSafeInBatches\(uids,'uid'\)/);
-  assert.doesNotMatch(panel,/\.ilike\('site',site\)\.in\(column,batch\)/);
-  assert.match(panel,/matchExistingImportByCreatedAt\(existingCandidates,/);
+  assert.match(panel,/matchExistingImportBySiteId\(existingCandidates,/);
+  assert.match(panel,/matchExistingImportByCreatedAt\(remaining,/);
   assert.match(panel,/readImportCandidatesByTimeWindows\(times,\{/);
   assert.match(panel,/if\(!page\.length\)break/);
   assert.match(panel,/await updateImportRows\(galaxy,updateQueue\)/);
-  assert.doesNotMatch(panel,/importTaipeiDate|existingByUid/);
-  assert.doesNotMatch(panel,/changes\.location=|changes\.site=|changes\.site_id=/);
+  assert.match(panel,/if\(!String\(existing.location\|\|''\).trim\(\).*changes.location=record.location/);
+  assert.match(panel,/changes.site_id=record.site_id/);
+  assert.match(panel,/changes.url=record.url/);
+  assert.doesNotMatch(panel,/changes.site=record.site/);
 });
 test('import progress displays source ID and fallback time matching',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
@@ -123,14 +114,15 @@ test('pre-write import estimate uses only parsed counts',()=>{
   const withMedia=estimateImportMinutes({articles:35795,media:1000});
   assert.ok(withMedia.min>=8&&withMedia.max>32);
 });
-test('unchanged site_id match exits before anchor and article writes',async()=>{
+
+test('unchanged native ID match can exit before article or anchor writes',async()=>{
   const record=post('IN000001','Facebook','fb-1');
   const saved={...record,uid:'OLD00001',place_id:null};
   const matches=await matchExistingImportBySiteId([record],{readSiteIds:async()=>[saved]});
   assert.equal(isUnchangedImportBeforeWrite([record],matches),true);
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const guard=panel.indexOf('if(isUnchangedImportBeforeWrite(unique,existingBySiteId,');
-  assert.ok(guard>panel.indexOf('const existingBySiteId=await matchExistingImportBySiteId'));
+  assert.ok(guard>panel.indexOf('const existingBySiteId=new Map('));
   assert.ok(guard<panel.indexOf('const placeAnchors=await prepareImportPlaceAnchors('));
   assert.ok(guard<panel.indexOf('await updateImportRows(galaxy,updateQueue)'));
 });
@@ -171,23 +163,24 @@ test('same source and timestamp match regardless of body and optional site_id',a
   assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
   assert.equal(isUnchangedImportBeforeWrite([incoming],matches),false);
 });
-test('native site_id never blocks timestamp matching',async()=>{
+
+test('different native site IDs never collapse at the same timestamp',async()=>{
   const incoming=post('NEW00001','Facebook','fb-123','original');
   const matches=await matchExistingImportByCreatedAt([incoming],{
     readTimestamps:async()=>[post('OLD00001','Facebook','fb-999','original')]
   });
-  assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(matches.size,0);
+  assert.deepEqual(matches.ambiguous,[]);
 });
-test('multiple persisted articles at the same source timestamp are ambiguous: skipped, not thrown, so the rest of the batch is unaffected',async()=>{
+
+test('identical content selects the right saved post even when other saved posts share time',async()=>{
   const incoming=post('NEW00001','Facebook',null,'same text');
   const matches=await matchExistingImportByCreatedAt([incoming],{
     readTimestamps:async()=>[post('OLD00001','Facebook',null,'same text'),
       post('OLD00002','Facebook',null,'different text')]
   });
-  assert.equal(matches.size,0);
-  assert.equal(matches.ambiguous.length,1);
-  assert.equal(matches.ambiguous[0].site,'Facebook');
-  assert.equal(matches.ambiguous[0].uid,'NEW00001');
+  assert.equal(matches.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(matches.ambiguous.length,0);
 });
 test('ID-less records without a valid timestamp cannot be matched',async()=>{
   const incoming={...post('NEW00001','Facebook',null),createtime:null};
@@ -209,18 +202,18 @@ test('import retry uses non-notifying insert but keeps database permission gate'
   assert.match(contract,/preflightWrite\(payload\?\.p_table\)/);
   assert.match(client,/insertRows,insertImportRows,updateRows/);
 });
-test('an empty site bypasses timestamp matching before any candidate reads',()=>{
+
+test('only pre-existing source sites enter the match pool; other sites insert directly',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const siteProbe=panel.indexOf('const distinctSites=[...new Set(analyzed.valid.map(');
-  const pool=panel.indexOf('const existingCandidates=deduped.unique;');
-  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  const pool=panel.indexOf('const existingCandidates=unique.filter(row=>');
+  const match=panel.indexOf('await matchExistingImportBySiteId(existingCandidates,');
   assert.ok(siteProbe>0&&siteProbe<pool&&pool<match);
-  assert.match(panel,/existingCandidates\.length\?await matchExistingImportByCreatedAt\(existingCandidates,/);
-  assert.match(panel,/:new Map\(\)/);
+  assert.match(panel,/existingCandidates.length\?await matchExistingImportBySiteId\(existingCandidates,/);
   assert.match(panel,/\.select\('uid'\)\.ilike\('site',site\)\.limit\(1\)/);
-  assert.doesNotMatch(panel,/changes\.site_id=record\.site_id/);
-  assert.doesNotMatch(panel,/updateRows\(galaxy,\{site_id/);
-  assert.doesNotMatch(panel,/changes\.(source_id|target_id|url|place_id)=/);
+  assert.match(panel,/changes.site_id=record.site_id/);
+  assert.match(panel,/changes.source_id=record.source_id/);
+  assert.match(panel,/changes.target_id=record.target_id/);
 });
 test('native site_id lookups are grouped by platform before database reads',async()=>{
   const rows=[post('NEW00001','Facebook','same-id'),post('NEW00002','Threads','same-id')];
@@ -230,14 +223,17 @@ test('native site_id lookups are grouped by platform before database reads',asyn
   }});
   assert.deepEqual(sites,[['Facebook',['same-id']],['Threads',['same-id']]]);
 });
-test('multiple incoming posts at same second remain distinct and cannot overwrite one saved row: skipped, not thrown',async()=>{
-  const incoming=[post('A0000001','Facebook',null),post('B0000002','Facebook',null)];
+
+test('distinct posts from one second survive and only matching content is reused',async()=>{
+  const incoming=[post('A0000001','Facebook',null,'original'),
+    post('B0000002','Facebook',null,'different article')];
   assert.equal(dedupeIncomingImport(incoming).unique.length,2);
   const matches=await matchExistingImportByCreatedAt(incoming,{
-    readTimestamps:async()=>[post('OLD00001','Facebook',null)]
+    readTimestamps:async()=>[post('OLD00001','Facebook',null,'original')]
   });
-  assert.equal(matches.size,0);
-  assert.equal(matches.ambiguous.length,1);
+  assert.equal(matches.get('A0000001')?.uid,'OLD00001');
+  assert.equal(matches.has('B0000002'),false);
+  assert.equal(matches.ambiguous.length,0);
 });
 test('primary-key conflicts do not become site_id matches',async()=>{
   const inserted=[];
@@ -324,23 +320,26 @@ test('two saved rows at one requested second are skipped, not inserted as new an
   assert.equal(matches.size,0);
   assert.equal(matches.ambiguous.length,1);
 });
-test('the panel excludes ambiguous groups from the run entirely and reports the skipped count, instead of aborting the whole import',()=>{
+
+test('only genuinely indistinguishable records are held for review without blocking others',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  const match=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
+  const match=panel.indexOf('await matchExistingImportByCreatedAt(remaining,');
   const exclude=panel.indexOf('const ambiguousGroups=existingByTime.ambiguous||[];');
   const unique=panel.indexOf('unique=unique.filter(record=>!ambiguousUids.has(String(record.uid)));');
   const summary=panel.indexOf("ambiguousGroups.length?'；同一網站同一發文時間有多篇文章");
-  assert.ok(match>0&&match<exclude&&exclude<unique);
-  assert.ok(unique<summary);
+  assert.ok(match>0&&match<exclude&&exclude<unique&&unique<summary);
   assert.doesNotMatch(panel,/throw Error\('同一網站、同一發文時間有多篇文章/);
 });
-test('the comparison pool is fixed before the first write, so later write batches never compare again',()=>{
+
+test('all ID and time comparisons finish before writing any article',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  const pool=panel.indexOf('await matchExistingImportByCreatedAt(existingCandidates,');
-  assert.ok(pool>0);
+  const id=panel.indexOf('await matchExistingImportBySiteId(existingCandidates,');
+  const time=panel.indexOf('await matchExistingImportByCreatedAt(remaining,');
+  assert.ok(id>0&&time>id);
+  assert.ok(time<panel.indexOf('const updateSizer=createImportBatchSizer()'));
+  assert.ok(time<panel.indexOf('const insertSizer=createImportBatchSizer()'));
+  assert.equal(panel.split('await matchExistingImportBySiteId(').length-1,1);
   assert.equal(panel.split('await matchExistingImportByCreatedAt(').length-1,1);
-  assert.ok(pool<panel.indexOf('const updateSizer=createImportBatchSizer()'));
-  assert.ok(pool<panel.indexOf('const insertSizer=createImportBatchSizer()'));
   assert.equal(panel.split('readSiteSpan(').length-1,1);
   assert.equal(panel.split('readRowsByUid(').length-1,0);
 });
@@ -370,4 +369,29 @@ test('an album compares with albums only, even at the same second as its first p
     readTimestamps:async(times,consumePage)=>consumePage([savedPhoto])
   });
   assert.equal(onlyPhoto.size,0,'a saved article is never taken for the album');
+});
+
+
+test('same-source same-time normalized text is deduplicated only without native IDs',()=>{
+  const a=post('N0000001','Threads',null,'你好！世界');
+  const b=post('N0000002','Threads',null,'你好 世界。');
+  const result=dedupeIncomingImport([a,b]);
+  assert.equal(result.duplicates,1);
+  assert.equal(result.unique.length,1);
+  assert.equal(result.aliases.get('N0000002'),'N0000001');
+  const identified=dedupeIncomingImport([
+    {...a,site_id:'th-1'}, {...b,site_id:'th-2'}
+  ]);
+  assert.equal(identified.unique.length,2);
+});
+
+test('same-time records with two exact saved copies remain review-only, not overwritten',async()=>{
+  const input=post('NEW00001','Facebook',null,'same');
+  const saved=[post('OLD00001','Facebook',null,'same'),
+    post('OLD00002','Facebook',null,'same')];
+  const matches=await matchExistingImportByCreatedAt([input],{
+    readTimestamps:async()=>saved
+  });
+  assert.equal(matches.size,0);
+  assert.equal(matches.ambiguous[0].uid,'NEW00001');
 });

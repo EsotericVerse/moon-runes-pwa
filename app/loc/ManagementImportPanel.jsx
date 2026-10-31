@@ -22,7 +22,7 @@ import {facebookBackupPlace,facebookBackupPostText,facebookBackupTimestamp} from
 import {archiveGalaxyRows} from './archive-caption-rows.mjs';
 import {facebookPostPlace} from './archive-geo-objects.mjs';
 
-import {dedupeIncomingImport,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,readImportCandidatesByTimeWindows,isUnchangedImportBeforeWrite,insertImportBatches} from './import-duplicate-check.mjs';
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from './import-place-anchors.mjs';
 import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
@@ -70,6 +70,7 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     :isFacebook?facebookPlace?.__importCoordinates:extractImportCoordinates(row);
   const importPlaceName=String(row.__importPlaceName||facebookPlace?.location||'').trim();
   const importPlaceAddress=String(row.__importPlaceAddress||facebookPlace?.address||'').trim();
+  const importPlaceUrl=String(row.__importPlaceUrl||facebookPlace?.placeUrl||'').trim();
   const rawDate=value('createtime')||
     (isThreads?row.media?.find?.(item=>item?.creation_timestamp)?.creation_timestamp:null)||
     (isFacebook?facebookBackupTimestamp(row):null);
@@ -141,7 +142,8 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     location:sourcePlace||null,
     ...(importedCoordinates?{__importCoordinates:importedCoordinates,
       ...(importPlaceName?{__importPlaceName:importPlaceName}:{}),
-      ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{})}:{}),
+      ...(importPlaceAddress?{__importPlaceAddress:importPlaceAddress}:{}),
+      ...(importPlaceUrl?{__importPlaceUrl:importPlaceUrl}:{})}:{}),
     searchable,
     statistics_able:value('statistics_able')===false||String(value('statistics_able')).toLowerCase()==='false'||!searchable?false:!isPureUrlContent(content),
     source_id:String(value('source_id')||'').trim()||null,
@@ -613,12 +615,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
       const dates=await prepareImportTimeAnchors(candidates,{
-        scopeId,relation:dbAuthRelation,
+        scopeId,timeTable:account.scopeDataFor(scopeId)?.time,relation:dbAuthRelation,
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
       const visits=candidates.flatMap(place=>{
-        const uid=importedPlaceId({incoming:place,byName:result.byName});
+        const uid=importedPlaceId({incoming:place,byName:result.byName,byCoordinate:result.byCoordinate});
         return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
       });
       const saved=await recordImportPlaceVisits(visits,{
@@ -678,17 +680,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         await siteHasArticles(distinctSites[index]);
         showProgress('確認網站既有文章',index+1,distinctSites.length);
       }
-      const oldRows=analyzed.valid.filter(row=>siteAvailability.get(String(row.site||'').trim()));
-      const deduped=oldRows.length?dedupeIncomingImport(oldRows):
-        {unique:[],aliases:new Map(),duplicates:0};
-      const existingIdentity=new Set(deduped.unique.map(row=>String(row.uid)));
-      const incoming={
-        unique:analyzed.valid.filter(row=>!siteAvailability.get(String(row.site||'').trim())||
-          existingIdentity.has(String(row.uid))),
-        aliases:new Map([...analyzed.valid.map(row=>[String(row.uid),String(row.uid)]),
-          ...deduped.aliases]),
-        duplicates:deduped.duplicates
-      };
+      // Deduplicate the entire imported file, not only sites populated
+      // before this import. Preserve the canonical UID for media references.
+      const incoming=dedupeIncomingImport(analyzed.valid);
       let unique=incoming.unique;
       let duplicateCount=incoming.duplicates;
       // The pool is this site's saved rows inside the incoming time span, which
@@ -713,23 +707,40 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const rows=[];
         for(const batch of urlSafeInBatches(uids,'uid')){
           const {data,error}=await dbAuthRelation(galaxy)
-            .select('uid,createtime,content,title,place_id,url,site,site_id,source_id,target_id')
+            .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
             .in('uid',batch);
           if(error)throw Error('uid 比對失敗：'+error.message);
           for(const row of data||[])rows.push(row);
         }
         return rows;
       };
-      // Only sites populated BEFORE this run are eligible for comparisons.
-      const existingCandidates=deduped.unique;
-      const existingByTime=existingCandidates.length?await matchExistingImportByCreatedAt(existingCandidates,{
+      // The genuine platform post ID is authoritative; look it up before
+      // timestamp comparison so edits in export time cannot create duplicates.
+      const existingCandidates=unique.filter(row=>
+        siteAvailability.get(String(row.site||'').trim()));
+      const matchesById=existingCandidates.length?await matchExistingImportBySiteId(existingCandidates,{
+        onProgress:p=>showProgress('依來源文章 ID 比對',p.completed,p.total),
+        readSiteIds:async(ids,consumePage,site)=>{
+          for(const idsPage of urlSafeInBatches(ids,'site_id')){
+            const {data,error}=await dbAuthRelation(galaxy)
+              .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
+              .ilike('site',site).in('site_id',idsPage);
+            if(error)throw Error('site_id 比對失敗：'+error.message);
+            consumePage(data||[]);
+          }
+        }
+      }):new Map();
+      const reservedSavedUids=new Set([...matchesById.values()].map(row=>String(row.uid)));
+      const remaining=existingCandidates.filter(row=>!matchesById.has(String(row.uid)));
+      const existingByTime=remaining.length?await matchExistingImportByCreatedAt(remaining,{
         onProgress:p=>showProgress('依網站與發文時間比對',p.completed,p.total),
         readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
-          readRowsByUid,consumePage,windowSize:MAX_ROWS,onWindowDone:report
+          readRowsByUid,consumePage:rows=>consumePage(rows.filter(row=>
+            !reservedSavedUids.has(String(row.uid)))),windowSize:MAX_ROWS,onWindowDone:report
         })
       }):new Map();
-      const existingBySiteId=existingByTime;
+      const existingBySiteId=new Map([...existingByTime,...matchesById]);
       // A same-site/same-createtime group that can't be matched to exactly one
       // existing article is never inserted as new (that risks the duplicate
       // this comparison exists to catch) and never allowed to abort the rest
@@ -741,7 +752,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         unique=unique.filter(record=>!ambiguousUids.has(String(record.uid)));
       }
 
-      const finalUid=id=>String(existingBySiteId.get(String(id))?.uid||id);
+      const finalUid=id=>{
+        const canonical=incoming.aliases.get(String(id))||String(id);
+        return String(existingBySiteId.get(canonical)?.uid||canonical);
+      };
       unique=unique.map(record=>({
         ...record,
         source_id:record.source_id?finalUid(record.source_id):null,
@@ -769,7 +783,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const timeAnchors=await prepareImportTimeAnchors([...unique,...geoAnchorRecords],{
-        scopeId,relation:dbAuthRelation,
+        scopeId,timeTable:scope?.time,relation:dbAuthRelation,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
@@ -794,9 +808,17 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const changes={};
         if(String(existing.title||'')!==String(record.title||''))changes.title=record.title;
         if(String(existing.content||'')!==String(record.content||''))changes.content=record.content;
-        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName});
+        // Enrich missing source metadata; preserve curated existing values.
+        if(!String(existing.location||'').trim()&&String(record.location||'').trim())changes.location=record.location;
+        if(!String(existing.site_id||'').trim()&&String(record.site_id||'').trim())changes.site_id=record.site_id;
+        if(!String(existing.url||'').trim()&&String(record.url||'').trim())changes.url=record.url;
+        if(!String(existing.ref_id||'').trim()&&String(record.ref_id||'').trim())changes.ref_id=record.ref_id;
+        if(!String(existing.source_id||'').trim()&&String(record.source_id||'').trim())changes.source_id=record.source_id;
+        if(!(Array.isArray(existing.target_id)&&existing.target_id.length)&&record.target_id?.length)
+          changes.target_id=record.target_id;
+        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         if(restoredPlace)changes.place_id=restoredPlace;
-        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const visitUid=restoredPlace||(
           matchedPlace===String(existing.place_id||'').trim()?matchedPlace:null);
         if(visitUid&&record.createtime)placeVisits.push({uid:visitUid,time:record.createtime});
@@ -835,9 +857,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       };
       for(const record of unique){
         if(existingBySiteId.has(record.uid))continue;
-        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName});
+        const placeUid=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const {__importCoordinates:unusedCoordinates,
           __importPlaceName:unusedPlaceName,__importPlaceAddress:unusedPlaceAddress,
+          __importPlaceUrl:unusedPlaceUrl,
           ...article}=record;
         if(placeUid)newArticleVisits.push({articleUid:String(record.uid),uid:placeUid,time:record.createtime});
         payload.push(placeUid?{...article,place_id:placeUid}:article);
@@ -848,7 +871,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         ...placeVisits,
         ...newArticleVisits.filter(visit=>result.insertedUids.has(visit.articleUid)),
         ...geoAnchorRecords.flatMap(place=>{
-          const uid=importedPlaceId({incoming:place,byName:placeAnchors.byName});
+          const uid=importedPlaceId({incoming:place,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
           return uid?(place.__importVisitTimes||[]).map(time=>({uid,time})):[];
         })
       ];
@@ -888,26 +911,16 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         knownArticleIds,galaxy,galaxyMedia,t,
         onProgress:p=>showProgress(p.stage,p.completed,p.total||0)
       });
-      let exifSaved=0;
-      if(archivePlan.exif.length)showProgress('保存媒體 EXIF',0,archivePlan.exif.length);
-      for(let offset=0;offset<archivePlan.exif.length;offset+=MAX_ROWS){
-        const chunk=archivePlan.exif.slice(offset,offset+MAX_ROWS).map(row=>({
-          ...row,media_uid:mediaSummary.resolvedIds.get(row.media_uid)||row.media_uid
-        }));
-        const {data,error}=await dbAuthClient.schema('silver').rpc('save_archive_media_exif',{
-          p_scope_id:scopeId,p_rows:chunk
-        });
-        if(error)throw new Error('媒體已儲存，但 EXIF 私人座標保存失敗：'+(error.message||error));
-        if(Number(data)!==chunk.length)
-          throw new Error('EXIF 資料庫寫入不完整：'+Number(data)+' / '+chunk.length);
-        exifSaved+=chunk.length;
-        showProgress('保存媒體 EXIF',exifSaved,archivePlan.exif.length);
-      }
+      // The legacy private archive EXIF table was retired. A ZIP image's
+      // private GPS/time cannot be written to public Galaxy or Trace merely
+      // to work around the missing private destination. Keep importing the
+      // articles and media, and explicitly report unsaved private evidence.
+      const exifNotSaved=archivePlan.exif.length;
       const skipped=analyzed.invalid.length+analyzed.skippedByRange+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(eligibleArchiveEvidence.length?'；EXIF 私人證據已儲存 '+exifSaved.toLocaleString()+' 筆。':'')+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(exifNotSaved?'；私人 EXIF '+exifNotSaved.toLocaleString()+' 筆因原儲存表已移除而未寫入，沒有混入公開文章／地點。':'')+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);

@@ -80,6 +80,7 @@ test('real Facebook post object keeps media, source text, exact coordinates and 
  assert.deepEqual(article.__importCoordinates,{latitude:25.05338,longitude:121.49086});
  assert.equal(article.__importPlaceName,'測試地點');
  assert.equal(article.__importPlaceAddress,'測試地址');
+ assert.equal(article.__importPlaceUrl,placeUrl,'來源地點 URL 不得變成文章網址');
  assert.equal(article.createtime,new Date(1656652590*1000).toISOString());
  assert.equal(article.url,undefined,'place URL is not a post permalink');
  assert.deepEqual(extractFacebookGeoObjects(post),[{
@@ -149,7 +150,7 @@ test('real Facebook ZIP to Galaxy to Trace anchor by place name is repeatable wi
  assert.equal(resolved.reused,1);
  assert.equal(resolved.unmatchedCoordinates,2);
  assert.equal(inserted,0);
- assert.equal(importedPlaceId({incoming:articles[0],byName:resolved.byName}),'AB12');
+ assert.equal(importedPlaceId({incoming:articles[0],byName:resolved.byName,byCoordinate:resolved.byCoordinate}),'AB12');
  assert.equal(importedPlaceId({incoming:articles[1],byName:resolved.byName}),null,
    'same coordinates but a different name is a different place');
  assert.equal(importedPlaceId({incoming:articles[2],byName:resolved.byName}),null);

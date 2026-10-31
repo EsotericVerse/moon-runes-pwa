@@ -141,3 +141,15 @@ test('nested media descriptions preserve JSON rather than object-to-string corru
   assert.equal(rune.records[0].meta_tags,JSON.stringify(spread));
   assert.equal(rune.records.length,1);
 });
+
+
+test('retired EXIF private storage never causes a partial article/media import',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(panel,/\.rpc\('save_archive_media_exif'/);
+  assert.match(panel,/const exifNotSaved=archivePlan\.exif\.length/);
+  assert.match(panel,/私人 EXIF .*未寫入/);
+  // No private coordinates or camera time are redirected into public text.
+  assert.doesNotMatch(panel,/meta_tags:.*archivePlan\.exif/);
+  assert.match(panel,/prepareArchiveMedia\(/);
+  assert.match(panel,/syncImportedMedia\(/);
+});

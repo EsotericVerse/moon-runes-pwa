@@ -35,7 +35,8 @@ export function archiveGalaxyRow(record){
     const url=urlOf(record.url);
     return {...row,site:'Facebook',...(record.siteId?{site_id:record.siteId}:{}),...(url?{url}:{}),...(coordinates?{__importCoordinates:coordinates,
       ...(facebookPlace?.location?{__importPlaceName:facebookPlace.location}:{}),
-      ...(facebookPlace?.address?{__importPlaceAddress:facebookPlace.address}:{})}:{} )};
+      ...(facebookPlace?.address?{__importPlaceAddress:facebookPlace.address}:{}),
+      ...(facebookPlace?.placeUrl?{__importPlaceUrl:facebookPlace.placeUrl}:{})}:{} )};
   }
   const content=repairMojibakeText(String(record.text||'').trim());
   if(!content)return null;

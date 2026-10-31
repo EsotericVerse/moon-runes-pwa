@@ -44,14 +44,14 @@ test('Time import reuses existing dates, respects all occupied UIDs, and is idem
     {location:'另一個地點',createtime:'2024-02-03T09:00:00.000Z'},
     {location:'同一天',createtime:'2024-02-03T10:00:00.000Z'}
   ];
-  const first=await prepareImportTimeAnchors(records,{scopeId:'lo3rwang',relation:db.relation});
+  const first=await prepareImportTimeAnchors(records,{scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation});
   assert.equal(first.created,2);
   assert.equal(first.reused,1);
   assert.deepEqual(db.rows.slice(2).map(row=>[row.uid,row.address,row.type,row.hidden_depth]),[
     ['0003','2024-02-02','anchor',0],
     ['0004','2024-02-03','anchor',0]
   ]);
-  const again=await prepareImportTimeAnchors(records,{scopeId:'lo3rwang',relation:db.relation});
+  const again=await prepareImportTimeAnchors(records,{scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation});
   assert.equal(again.created,0);
   assert.equal(again.reused,3);
   assert.equal(db.calls.length,1);
@@ -60,7 +60,7 @@ test('Time import reuses existing dates, respects all occupied UIDs, and is idem
 test('an empty or local date import never writes to remote relations',async()=>{
   const fail=()=>{throw Error('Should not query remote DB');};
   assert.equal((await prepareImportTimeAnchors([{location:'X'}],{
-    scopeId:'lo3rwang',relation:fail
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:fail
   })).created,0);
   assert.equal((await prepareImportTimeAnchors([{location:'X',createtime:'2023-01-01'}],{
     scopeId:'local',relation:fail
@@ -74,4 +74,21 @@ test('standalone visit importer keeps original per-visit timestamps and writes T
   assert.match(panel,/const dates=await prepareImportTimeAnchors\(candidates,/);
   assert.match(panel,/recordImportPlaceVisits\(visits,\{/);
   assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
+});
+
+test('the physical Time relation is supplied by Scope registry and is never guessed',async()=>{
+  const calls=[];
+  const relation=table=>{
+    calls.push(table);
+    return {select:()=>({order:()=>({range:async()=>({data:[],error:null})})}),
+      insert:rows=>({select:async()=>({data:rows.map(({uid,address})=>({uid,address})),error:null})})};
+  };
+  const inputs=[{location:'已打卡',createtime:'2025-07-01T08:00:00Z'}];
+  await prepareImportTimeAnchors(inputs,{
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time_archive',relation
+  });
+  assert.deepEqual(calls,['silver.lo3rwang_time_archive','silver.lo3rwang_time_archive']);
+  await assert.rejects(()=>prepareImportTimeAnchors(inputs,{
+    scopeId:'lo3rwang',relation
+  }),/尚未解析正確的 Scope Time 資料表/);
 });
