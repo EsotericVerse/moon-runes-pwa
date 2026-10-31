@@ -4,7 +4,6 @@ import {isAbortError} from './db-query.mjs';
 
 import {StatisticsFacets} from './statistics-facets';
 import {sourceTaxonomyFromArrays} from './source-classification.mjs';
-import {aggregateOwnScopeStatistics} from './statistics-source-intersection.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
@@ -172,10 +171,6 @@ export async function selectSourceCatalog(scope,{startDate='',endDate='',limit=2
     {column:'statistics_able',operator:'eq',value:true}
   ]);
   const safeLimit=Math.max(1,Math.min(DB_QUERY_BATCH_SIZE,Math.floor(Number(limit)||20)));
-  const rows=(await selectAllRows(current.galaxy,{
-    columns:'site',
-    filters
-  })).rows;
   const counts=await countStreamed(current.galaxy,{columns:'site',filters},row=>String(row?.site||'').trim());
   const normalized=termCountRows(counts,{limit:safeLimit,includeEmpty:true}).map(row=>({
     scope_id:current.id,
@@ -823,9 +818,9 @@ export async function selectFirstScopeStatisticsDate(scope){
   const current=scopeOf(scope);
   const [text,media]=await Promise.all([
     selectRows(current.galaxy,{
-      columns:'createtime',
+      columns:dayColumn(current.galaxy),
       filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
+      orders:[{column:dayColumn(current.galaxy),ascending:true,nullsFirst:false}],
       limit:1
     }),
     selectRows(current.galaxyMedia,{
@@ -834,8 +829,10 @@ export async function selectFirstScopeStatisticsDate(scope){
       limit:1
     })
   ]);
-  const dates=[...(text.rows||[]),...(media.rows||[])].map(row=>String(row.createtime||'').slice(0,10))
-    .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
+  const dates=[
+    ...(text.rows||[]).map(row=>String(row[dayColumn(current.galaxy)]||'').slice(0,10)),
+    ...(media.rows||[]).map(row=>String(row.createtime||'').slice(0,10))
+  ].filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
   return dates[0]||'';
 }
 
@@ -912,20 +909,9 @@ export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate
   const current=scopeOf(scope);
   const counted=await scopeStatisticsRows(current,{startDate,endDate});
   if(counted)return counted;
-  const [texts,media]=await Promise.all([
-    selectAllRows(current.galaxy,{
-      columns:'site,createtime',
-      filters:publicContentFilters([
-        ...timeFilters('createtime',startDate,endDate),
-        {column:'statistics_able',operator:'eq',value:true}
-      ])
-    }),
-    selectAllRows(current.galaxyMedia,{
-      columns:'media_type,createtime',
-      filters:timeFilters('createtime',startDate,endDate)
-    })
-  ]);
-  return aggregateOwnScopeStatistics(texts.rows,media.rows);
+  // Statistics must never fetch all article/media rows into the browser
+  // to recreate a daily aggregate. An unavailable DB aggregate is an error.
+  throw new Error('Scope statistics aggregate unavailable; full-row fallback disabled');
 }
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){
