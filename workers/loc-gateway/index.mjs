@@ -117,6 +117,73 @@ async function upstream(provider,request,env,token){
     ...(request.method==='GET'||request.method==='HEAD'?{}:{body:request.body,duplex:'half'}),
     redirect:'error',signal:AbortSignal.timeout(9000)});
 }
+// Explicit, root-only diagnostics. These probes never write or change the
+// active route; the management RPC is a read-only SQL function.
+async function probeRead(provider,env,token='',method='GET',expectedEmail=''){
+  const isManagement=method==='POST';
+  const path=isManagement?'/rest/v1/rpc/get_my_scope_management':
+    '/rest/v1/lo3rwang_galaxy?select=uid&limit=1';
+  try{
+    const request=new Request('https://loc-gateway-internal'+path,{
+      method,headers:{
+        'accept':'application/json',
+        ...(isManagement?{'content-type':'application/json','content-profile':'silver'}:
+          {'accept-profile':'silver'})
+      },
+      ...(isManagement?{body:'{}'}:{})
+    });
+    const result=await upstream(provider,request,env,token);
+    if(!result.ok)return {ok:false,status:result.status};
+    if(!isManagement)return {ok:true,status:result.status};
+    const rows=await result.json();
+    // A 200 response is not management permission: a valid signed Clerk
+    // email must match a row returned by the existing authorization RPC.
+    const email=String(expectedEmail||'').trim().toLowerCase();
+    const allowed=Boolean(email&&Array.isArray(rows)&&rows.some(row=>
+      String(row?.email||'').trim().toLowerCase()===email&&
+      ['admin','group','scope'].includes(row?.role)
+    ));
+    return {ok:allowed,status:result.status};
+  }catch{return {ok:false,status:0}}
+}
+async function probeReadiness(request,env,principal,origin){
+  const token=request.headers.get('authorization');
+  if(!token||!principal)
+    throw Object.assign(Error('Clerk login required'),{status:401});
+  if(!env.LOC_AUTHORITY_SERVICE?.fetch)
+    throw Error('Authority is unavailable');
+  // Only a configured independent recovery root may query cross-provider
+  // management readiness. A valid Clerk identity alone is NOT root access.
+  const admin=await env.LOC_AUTHORITY_SERVICE.fetch(
+    new Request('https://loc-authority-internal/v1/me',{
+      method:'GET',headers:{
+        authorization:token,origin:env.LOC_PUBLIC_ORIGIN,
+        accept:'application/json'
+      },signal:AbortSignal.timeout(6500)
+    })
+  );
+  if(!admin.ok)
+    throw Object.assign(Error('Recovery administrator required'),{status:403});
+  const selected=activeTarget(await activeState(env));
+  const [primaryPublic,backupPublic,primaryManagement,backupManagement]=await Promise.all([
+    probeRead('supabase',env),
+    probeRead('neon',env),
+    principal.email?probeRead('supabase',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401}),
+    principal.email?probeRead('neon',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401})
+  ]);
+  const info={
+    primary:selected,
+    clerk:{verified:true,verifiedEmail:Boolean(principal.email)},
+    supabase:{publicRead:primaryPublic.ok,clerkManagementRead:primaryManagement.ok},
+    neon:{publicRead:backupPublic.ok,clerkManagementRead:backupManagement.ok},
+    writingTested:false,
+    dataParityTested:false
+  };
+  return new Response(JSON.stringify(info),{
+    status:200,headers:{...cors(origin),'content-type':'application/json',
+      'cache-control':'no-store','x-content-type-options':'nosniff'}
+  });
+}
 export default {
   async fetch(request,env){
     const origin=request.headers.get('origin')||'';
@@ -127,6 +194,12 @@ export default {
       if(!METHODS.has(request.method))throw Object.assign(Error('Method not allowed'),{status:405});
       if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors(origin)});
       const url=new URL(request.url);
+      if(url.pathname==='/v1/readiness'){
+        if(request.method!=='GET')
+          throw Object.assign(Error('Method not allowed'),{status:405});
+        const principal=await verifyClerk(request,env);
+        return await probeReadiness(request,env,principal,origin);
+      }
       if(!url.pathname.startsWith('/rest/v1/'))
         throw Object.assign(Error('Unknown Gateway path'),{status:404});
       const path=url.pathname.slice('/rest/v1'.length);
