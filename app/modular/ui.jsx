@@ -144,6 +144,48 @@ function safeRelationLinksOf(items=[],defaultLabel=''){
     });
 }
 
+const ArticleContextStatisticsChart=dynamic(()=>import('./modules/statistics/StatisticsMultiChart'),{
+  ssr:false,loading:()=> <p className="scope-status">正在準備統計圖…</p>
+});
+function ArticleStatisticsPreview({scopeId='',statistics=null}){
+  const [open,setOpen]=useState(false);
+  const [range,setRange]=useState('week');
+  const selection=statistics?.[range];
+  const query=useAsyncResource({
+    queryKey:['article-date-stat-chart',scopeId,range,selection?.start,selection?.end],
+    enabled:open&&Boolean(scopeId&&selection?.start&&selection?.end),
+    queryFn:async()=>{
+      const {readScopeStatistics}=await import('../loc/db-client.mjs');
+      return readScopeStatistics(scopeId,{startDate:selection.start,endDate:selection.end});
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  if(!statistics?.week||!statistics?.year)return null;
+  const sourceRows=(query.data||[]).filter(item=>item.kind==='total'&&item.category==='文字作品');
+  const totals=new Map();
+  for(const item of sourceRows){
+    const day=String(item.day||'').slice(0,10);
+    if(day)totals.set(day,(totals.get(day)||0)+(Number(item.item_count)||0));
+  }
+  const rows=[...totals].sort(([a],[b])=>a.localeCompare(b))
+    .map(([day,count])=>({period:day.slice(5).replace('-','/'),start_date:day,value:count}));
+  return <details className="scope-article-context-stat-preview" onToggle={event=>setOpen(event.currentTarget.open)}>
+    <summary>展開相關統計圖</summary>
+    {open?<div className="scope-article-context-stat-body">
+      <label>統計範圍
+        <select value={range} className="scope-select" onChange={event=>setRange(event.target.value)}>
+          <option value="week">當週</option><option value="year">當年</option>
+        </select>
+      </label>
+      {query.isPending?<p className="scope-status" role="status">正在載入時間統計…</p>:null}
+      {query.error?<p className="scope-status scope-error" role="alert">{String(query.error?.message||query.error)}</p>:null}
+      {query.isSuccess?(rows.length?<ArticleContextStatisticsChart
+        type="line" rows={rows} series={[{key:'value',label:'文章篇數'}]}
+        height={230}/>:<p className="scope-status">這段時間沒有符合條件的文字統計。</p>):null}
+    </div>:null}
+  </details>;
+}
+
 function ArticleRelationNavigation({
   links=[],externalLinks=[],relatedMedia=[],relatedTime=null,
   relatedSpace=null,relatedStatistics=null,tracePlace=null,traceHref='',
@@ -231,6 +273,7 @@ function ArticleRelationNavigation({
         href={featureNavigationHref(scope,'statics',{from:day,to:day})}>查看時間統計</a>)}
       {row('關鍵詞統計',<a className="scope-article-context-link"
         href={featureNavigationHref(scope,'statics',{statTab:'keywords',from:day,to:day})}>查看關鍵詞統計</a>)}
+      <ArticleStatisticsPreview scopeId={scope} statistics={statistics}/>
     </div>:null}
     {row('關鍵詞組別',<span className="scope-status">待建立關鍵詞對應</span>)}
     {originals.length?row('文章原始網址',originals.map((item,index)=><a
