@@ -2,26 +2,74 @@ import {detectChangepoints,PoissonCost} from 'karaul';
 import {createNewKeywordDiscovery} from './keyword-discovery.mjs';
 
 let discovery=null;
+function changePoints(values){
+  if(values.length<4)return [];
+  try{return detectChangepoints(values,new PoissonCost())
+    .filter(index=>Number.isInteger(index)&&index>0&&index<values.length);}
+  catch{return [];}
+}
+function denseAndSparse(result){
+  const months=result.monthCoverage||[];
+  if(!months.length)return {...result,dense:null,sparse:null};
+  const novelByMonth=new Map();
+  for(const item of result.candidates){
+    for(const [month,count] of item.months||[])
+      novelByMonth.set(month,(novelByMonth.get(month)||0)+count);
+  }
+  const series=months.map(row=>novelByMonth.get(row.month)||0);
+  const changes=changePoints(series);
+  const boundaries=[0,...changes,months.length];
+  const segments=[];
+  for(let i=0;i<boundaries.length-1;i++){
+    const from=boundaries[i],to=boundaries[i+1];
+    const source=months.slice(from,to);
+    const documents=source.reduce((sum,x)=>sum+x.documents,0);
+    const existingCovered=source.reduce((sum,x)=>sum+x.existingCovered,0);
+    const novelHits=series.slice(from,to).reduce((sum,x)=>sum+x,0);
+    if(documents<=0)continue;
+    segments.push({
+      start:source[0].month,end:source.at(-1).month,
+      documents,novelHits,existingCovered,
+      novelPerArticle:novelHits/documents,
+      existingRatio:existingCovered/documents,
+      detectedByPelt:changes.length>0
+    });
+  }
+  const byDense=[...segments].sort((a,b)=>b.novelPerArticle-a.novelPerArticle||b.documents-a.documents);
+  const bySparse=[...segments].sort((a,b)=>a.novelPerArticle-b.novelPerArticle||b.documents-a.documents);
+  const dense=byDense[0]||null,sparse=bySparse[0]||null;
+  if(dense){
+    for(const item of result.candidates){
+      item.denseDocuments=(item.months||[]).reduce((sum,[month,count])=>
+        sum+(month>=dense.start&&month<=dense.end?count:0),0);
+    }
+    // New terms from the PELT-dense side rank first, but a constant,
+    // long-running new word must never be excluded solely for no changepoint.
+    result.candidates.sort((a,b)=>
+      b.denseDocuments-a.denseDocuments||b.documents-a.documents
+      ||b.occurrences-a.occurrences||a.word.localeCompare(b.word));
+  }
+  return {...result,dense,sparse};
+}
 function annotateTrend(result){
+  result=denseAndSparse(result);
   for(const item of result.candidates){
     const rows=item.months;
     if(rows.length<4){item.trendChanges=0;delete item.months;continue;}
     const first=rows[0][0],last=rows.at(-1)[0];
     const monthValue=s=>Number(s.slice(0,4))*12+Number(s.slice(5,7));
     const counts=new Map(rows),start=monthValue(first),end=monthValue(last);
-    // PELT is a secondary signal, not a prerequisite for a new keyword.
     if(end-start>360){item.trendChanges=0;delete item.months;continue;}
     const series=[];
     for(let i=start;i<=end;i++){
       const y=Math.floor((i-1)/12),m=(i-1)%12+1;
       series.push(counts.get(String(y)+'-'+String(m).padStart(2,'0'))||0);
     }
-    try{
-      item.trendChanges=detectChangepoints(series,new PoissonCost())
-        .filter(i=>Number.isInteger(i)&&i>0&&i<series.length).length;
-    }catch{item.trendChanges=0;}
+    item.trendChanges=changePoints(series).length;
     delete item.months;
   }
+  delete result.monthCoverage;
+  result.candidates=result.candidates.slice(0,120);
   return result;
 }
 self.onmessage=event=>{
