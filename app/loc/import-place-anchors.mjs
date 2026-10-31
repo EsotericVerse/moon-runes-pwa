@@ -110,17 +110,22 @@ export async function prepareImportPlaceAnchors(records,{
     if(error)throw Error('新增空間定錨失敗：'+(error.message||error));
     if(!Array.isArray(data)||data.length!==rows.length)
       throw Error('新增空間定錨回傳筆數不符；請重新核對再重試');
-    // The insert returns rows in the same order for the database gateway.
-    for(let i=0;i<chunk.length;i++){
-      const anchor=data[i],place=chunk[i];
-      const uid=String(anchor?.uid||'');
-      if(!VALID_UID.test(uid)||nameKey(anchor?.title)!==place.name||
-          importGeoKey(anchor?.address)!==place.coordinates)
+    // A database is not required to return multi-insert rows in input order.
+    // Match each returned UID to the exact name/coordinate identity instead.
+    const expected=new Map(chunk.map(place=>[spatialKey(place.name,place.coordinates),place]));
+    const seen=new Set();
+    for(const anchor of data){
+      const name=nameKey(anchor?.title),coordinates=importGeoKey(anchor?.address);
+      const key=spatialKey(name,coordinates);
+      const place=expected.get(key),uid=String(anchor?.uid||'');
+      if(!place||seen.has(key)||!VALID_UID.test(uid))
         throw Error('新增空間定錨名稱、座標或 UID 不符；請重新核對');
+      seen.add(key);
       register(place,uid);
       timesByUid.set(uid,[]);
       created++;
     }
+    if(seen.size!==chunk.length)throw Error('新增空間定錨回傳缺少部分座標');
     onProgress?.({phase:'建立原始座標定錨',completed:offset+chunk.length,total:pending.length});
   }
   for(const alias of nameOnlyAliases){
