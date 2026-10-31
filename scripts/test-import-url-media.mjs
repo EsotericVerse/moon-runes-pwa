@@ -153,3 +153,14 @@ test('retired EXIF private storage never causes a partial article/media import',
   assert.match(panel,/prepareArchiveMedia\(/);
   assert.match(panel,/syncImportedMedia\(/);
 });
+
+
+test('no-URL media may reuse an exact owner-linked record, never title alone',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/const mediaEvidenceKey=\(item,owner\)=>/);
+  assert.match(panel,/!owner\|\|!type\|\|!metadata\|\|!title\|\|!Number\.isFinite\(stamp\)/);
+  assert.match(panel,/const existingOwnerMediaByKey=new Map\(\)/);
+  assert.match(panel,/const storedEvidenceUid=evidenceKey\?existingOwnerMediaByKey\.get\(evidenceKey\):null/);
+  assert.match(panel,/if\(storedEvidenceUid\)\{attach\(owner,storedEvidenceUid\);continue;\}/);
+  assert.match(panel,/if\(evidenceKey\)existingOwnerMediaByKey\.set\(evidenceKey,String\(mediaId\)\)/);
+});
