@@ -46,6 +46,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [sharingBusy,setSharingBusy]=useState(false);
   const [progress,setProgress]=useState(null);
   const [discovery,setDiscovery]=useState(null);
+  const [discoveryPage,setDiscoveryPage]=useState(1);
   const [discoveryProgress,setDiscoveryProgress]=useState(null);
   const [discoveryBusy,setDiscoveryBusy]=useState(false);
   const discoveryAbort=useRef(null);
@@ -124,6 +125,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   useEffect(()=>{
     discoveryAbort.current?.abort();
     setDiscovery(null);
+    setDiscoveryPage(1);
     setDiscoveryProgress(null);
   },[scopeId]);
   useEffect(()=>()=>discoveryAbort.current?.abort(),[]);
@@ -282,14 +284,26 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     if(discoveryBusy||busy||loading)return;
     const controller=new AbortController();
     discoveryAbort.current=controller;
-    setWorkspace('suggest');setDiscovery(null);setDiscoveryProgress(null);
+    setWorkspace('suggest');setDiscovery(null);setDiscoveryPage(1);setDiscoveryProgress(null);
     setDiscoveryBusy(true);setError('');setNotice('');
     try{
       const {suggestNewKeywords}=await import('./keyword-discovery-runner.mjs');
       const result=await suggestNewKeywords({
         galaxy:scope.galaxy,existingRows:rows,onProgress:setDiscoveryProgress,signal:controller.signal
       });
-      if(!controller.signal.aborted)setDiscovery(result);
+      if(!controller.signal.aborted){
+        setDiscovery(result);
+        setDiscoveryPage(1);
+        if(scopeId==='lo3rwang'){
+          try{
+            const {writeKeywordSuggestionCache}=await import('./keyword-discovery-cache.mjs');
+            await writeKeywordSuggestionCache(scopeId,configTable,result);
+            setNotice('已完成掃描，建議列表已暫存。');
+          }catch(cacheError){
+            setNotice('已顯示本次建議，但暫存失敗：'+String(cacheError.message||cacheError));
+          }
+        }
+      }
     }catch(e){
       if(controller.signal.aborted)setNotice('已停止新關鍵詞掃描，未修改任何資料。');
       else setError(String(e.message||e));
@@ -299,6 +313,26 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         setDiscoveryBusy(false);
       }
     }
+  };
+  const openSuggestedTerms=async()=>{
+    if(discoveryBusy||busy||loading)return;
+    setWorkspace('suggest');setEditor(null);setError('');
+    if(discovery)return;
+    if(scopeId==='lo3rwang'){
+      setDiscoveryBusy(true);
+      try{
+        const {readKeywordSuggestionCache}=await import('./keyword-discovery-cache.mjs');
+        const cached=await readKeywordSuggestionCache(scopeId);
+        if(cached){
+          setDiscovery(cached);setDiscoveryPage(1);
+          setNotice('已載入上次掃描的暫存列表；如需更新，按「重新掃描」。');
+          return;
+        }
+      }catch(e){
+        setNotice('無法讀取暫存：'+String(e.message||e)+'。可重新掃描。');
+      }finally{setDiscoveryBusy(false);}
+    }
+    await discoverNewTerms();
   };
   const copyClass=async()=>{
     const from=activeClass?.uid,to=copyName.trim();
@@ -330,6 +364,16 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   if(!canEdit)return null;
   const selectedClass=activeClass;
   const allClassNodes=[...tree.index.values()].filter(x=>x.type==='class');
+  const knownTerms=new Set(rows.filter(item=>item.type==='item').flatMap(item=>[
+    item.name,...(Array.isArray(item.lists)?item.lists:[])
+  ]).map(value=>String(value||'').normalize('NFKC').trim().toLocaleLowerCase()));
+  const suggestedCandidates=(discovery?.candidates||[]).filter(item=>
+    !knownTerms.has(String(item.word||'').normalize('NFKC').trim().toLocaleLowerCase()));
+  const suggestionPageSize=20;
+  const suggestionPages=Math.max(1,Math.ceil(suggestedCandidates.length/suggestionPageSize));
+  const currentSuggestionPage=Math.min(discoveryPage,suggestionPages);
+  const visibleSuggestions=suggestedCandidates.slice(
+    (currentSuggestionPage-1)*suggestionPageSize,currentSuggestionPage*suggestionPageSize);
   const graphItems=selectedClass?descendantsOfKeyword(rows,selectedClass.uid,{type:'item'}).map(node=>{
     const group=parentOf(tree,node.uid);
     return {keyword_id:node.uid,item_name:node.name,keywords:node.lists,
@@ -343,7 +387,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           {label}
         </button>)}
       <button type="button" className="loc-button primary" disabled={loading||busy||discoveryBusy}
-        aria-pressed={workspace==='suggest'} onClick={discoverNewTerms}>
+        aria-pressed={workspace==='suggest'} onClick={openSuggestedTerms}>
         {discoveryBusy?'正在掃描內文…':'建議新增關鍵詞'}
       </button>
     </div>
@@ -439,15 +483,43 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <button className="loc-button" type="button" onClick={()=>discoveryAbort.current?.abort()}>停止掃描</button>
       </div>:null}
       {discovery&&!discoveryBusy?<div>
-        <p className="scope-status" role="status">已掃描 {discovery.read.toLocaleString()} 篇；有內文 {discovery.withContent.toLocaleString()} 篇；提出 {discovery.candidates.length} 個新詞候選。</p>
+        {discovery.cachedOnly?<p className="scope-status" role="status">
+          已載入先前儲存的 {suggestedCandidates.length} 個新詞候選；只有詞語列表，重新掃描才會取得即時篇數與趨勢。
+        </p>:<p className="scope-status" role="status">
+          已掃描 {Number(discovery.read||0).toLocaleString()} 篇；有內文 {Number(discovery.withContent||0).toLocaleString()} 篇；
+          目前 {suggestedCandidates.length} 個未收錄候選。
+        </p>}
+        {discovery.dense?<p className="scope-status">
+          新詞密集段：{discovery.dense.start} 至 {discovery.dense.end} · 平均每篇 {discovery.dense.novelPerArticle.toFixed(2)} 次候選命中
+          {discovery.dense.detectedByPelt?'（PELT 變點）':'（目前未偵測到明顯變點）'}
+        </p>:null}
+        {discovery.sparse?<p className="scope-status">
+          新詞稀疏段：{discovery.sparse.start} 至 {discovery.sparse.end} ·
+          既有關鍵詞字面涵蓋率 {(discovery.sparse.existingRatio*100).toFixed(1)}%
+        </p>:discovery.dense?<p className="scope-status">
+          尚無可辨識的密／空分段；全期既有關鍵詞字面涵蓋率 {(Number(discovery.overallExistingRatio||0)*100).toFixed(1)}%
+        </p>:null}
         {discovery.limited?<p className="scope-status scope-error">不重複候選詞過多，已達分析記憶體上限；列表可能不完整。</p>:null}
-        {discovery.candidates.length?<ol className="scope-keyword-discovery-results">
-          {discovery.candidates.map(term=><li key={term.word}>
-            <strong>{term.word}</strong>
-            <span className="scope-status"> · {term.documents.toLocaleString()} 篇文章 · {term.occurrences.toLocaleString()} 次出現{term.trendChanges>0?' · PELT 偵測到趨勢變化':''}</span>
-            {term.sample?<p className="scope-status">{term.sample}</p>:null}
-          </li>)}
-        </ol>:<p className="scope-status">沒有找到符合基本出現篇數門檻、且尚未收錄的新詞。</p>}
+        {suggestedCandidates.length?<div>
+          <ol className="scope-keyword-discovery-results" start={(currentSuggestionPage-1)*suggestionPageSize+1}>
+            {visibleSuggestions.map(term=><li key={term.word}>
+              <strong>{term.word}</strong>
+              {!discovery.cachedOnly?<span className="scope-status"> · {Number(term.documents||0).toLocaleString()} 篇文章
+                {term.denseDocuments>0?' · 密集段 '+term.denseDocuments+' 篇':''}
+                · {Number(term.occurrences||0).toLocaleString()} 次出現
+                {term.trendChanges>0?' · PELT 趨勢變化':''}
+              </span>:null}
+              {term.sample?<p className="scope-status">{term.sample}</p>:null}
+            </li>)}
+          </ol>
+          {suggestionPages>1?<div className="scope-preview-links" role="navigation" aria-label="建議關鍵詞分頁">
+            <button type="button" className="loc-button" disabled={currentSuggestionPage===1}
+              onClick={()=>setDiscoveryPage(page=>Math.max(1,page-1))}>上一頁</button>
+            <span className="scope-status">第 {currentSuggestionPage} / {suggestionPages} 頁 · 每頁 {suggestionPageSize} 筆</span>
+            <button type="button" className="loc-button" disabled={currentSuggestionPage===suggestionPages}
+              onClick={()=>setDiscoveryPage(page=>Math.min(suggestionPages,page+1))}>下一頁</button>
+          </div>:null}
+        </div>:<p className="scope-status">沒有符合基本出現篇數門檻、且尚未收錄的新詞。</p>}
       </div>:null}
       {!discoveryBusy&&discovery?<button type="button" className="loc-button" onClick={discoverNewTerms}>重新掃描內文</button>:null}
     </section>:null}

@@ -9,9 +9,50 @@ const JOIN_BREAK=new Set('的 了 與 和 及 在 對 從 讓 把 是 就 能 �
 const HAN=/^\p{Script=Han}+$/u;
 const LATIN=/^[\p{Script=Latin}][\p{Script=Latin}\d+#-]*$/u;
 const MAX_TERMS=85000;
+const SOURCE_MARKUP_TERMS=new Set('div span html head body main section article header footer nav button input textarea form label select option fieldset iframe script style svg path g circle rect line ul ol li p br hr a img picture source link meta noscript canvas table thead tbody tr th td h1 h2 h3 h4 h5 h6 class classname href src alt rel target onclick onload xmlns width height data aria const let var function return import export default async await props state useeffect usestate usememo null undefined true false json jsonb jsx tsx css js javascript typescript html5 markdown field column key value object array boolean'.split(/\s+/u));
+const TEXT_FIELDS=new Set(['text','content','body','paragraph','paragraphs','message','description','lyric','lyrics','story','article']);
+export function readableKeywordContent(raw){
+  if(raw==null)return '';
+  let source=String(raw);
+  const trimmed=source.trim();
+  if((trimmed.startsWith('{')&&trimmed.endsWith('}'))
+    ||(trimmed.startsWith('[')&&trimmed.endsWith(']'))){
+    try{
+      const parsed=JSON.parse(trimmed);
+      const texts=[];
+      const walk=(item,allowText=false,depth=0)=>{
+        if(depth>8||texts.length>=1000)return;
+        if(typeof item==='string'){if(allowText)texts.push(item);return;}
+        if(Array.isArray(item)){for(const val of item)walk(val,allowText,depth+1);return;}
+        if(!item||typeof item!=='object')return;
+        for(const [key,value] of Object.entries(item)){
+          if(TEXT_FIELDS.has(key.toLowerCase()))walk(value,true,depth+1);
+          else if(value&&typeof value==='object')walk(value,false,depth+1);
+        }
+      };
+      walk(parsed);
+      source=texts.join(' ');
+    }catch{source='';}
+  }
+  return source
+    .replace(/&lt;/giu,'<').replace(/&gt;/giu,'>')
+    .replace(/<!--[\s\S]*?-->/gu,' ')
+    .replace(/<(script|style|noscript|iframe)\b[^>]*>[\s\S]*?<\/\1\s*>/giu,' ')
+    .replace(/\x60{3}[\s\S]*?\x60{3}/gu,' ')
+    .replace(/<[^>]*>/gu,' ')
+    // A truncated opening/closing tag (e.g. '<div' or '<div class="x"')
+    // must be removed BEFORE word segmentation, not counted as prose.
+    .replace(/<\/?\s*(?:div|span|script|style|section|article|header|footer|main|nav|p|br|hr|a|img|ul|ol|li|table|thead|tbody|tr|td|th|h[1-6]|button|input|textarea|form|label|select|option|svg|path|iframe|link|meta)\b[^<>\r\n]*/giu,' ')
+    .replace(/\x60[^\x60]*\x60/gu,' ')
+    .replace(/!?\[([^\]]+)\]\(https?:\/\/[^)]+\)/giu,'$1')
+    .replace(/https?:\/\/[^\s\]<>]+/giu,' ')
+    .replace(/&(?:[a-z]{2,10}|#\d+);/giu,' ');
+}
+
 const normalize=value=>String(value??'').normalize('NFKC').trim().toLocaleLowerCase();
 function admissible(token){
   const value=normalize(token);
+  if(SOURCE_MARKUP_TERMS.has(value))return false;
   if(HAN.test(value))return [...value].length>=2&&[...value].length<=8&&!IGNORE_ZH.has(value)&&!/(.)\1{2,}/u.test(value);
   if(LATIN.test(value))return value.length>=3&&value.length<=30&&!IGNORE_EN.has(value);
   return false;
@@ -34,6 +75,17 @@ export function createNewKeywordDiscovery(rows=[]){
   const existing=existingKeywordSet(rows);
   const segmenter=new Intl.Segmenter('zh',{granularity:'word'});
   const totals=new Map();
+  const months=new Map();
+  // Coverage is read-only literal evidence, NOT a rewrite/reclassification
+  // of existing Keyword records. Single Han characters are too ambiguous
+  // for this estimated ratio, so use terms with >=2 characters.
+  const known=[...existing].filter(term=>[...term].length>=2)
+    .sort((a,b)=>b.length-a.length);
+  const regexMeta=new Set(['\\','.','*','+','?','^','$','{','}','(',')','|','[',']']);
+  const escapeRegex=term=>[...term].map(char=>regexMeta.has(char)?'\\'+char:char).join('');
+  const knownMatchers=[];
+  for(let offset=0;offset<known.length;offset+=100)
+    knownMatchers.push(new RegExp(known.slice(offset,offset+100).map(escapeRegex).join('|'),'u'));
   let read=0,withContent=0,limited=false;
   function add(term,seen,month,excerpt){
     const key=normalize(term);
@@ -53,11 +105,17 @@ export function createNewKeywordDiscovery(rows=[]){
   function consume(batch=[]){
     for(const row of batch){
       read++;
-      const body=String(row?.content||'');
+      const body=readableKeywordContent(row?.content);
       if(!body.trim())continue;
       withContent++;
       const seen=new Set();
       const month=String(row?.createtime||'').slice(0,7);
+      if(/^\d{4}-\d{2}$/.test(month)){
+        const item=months.get(month)||{month,documents:0,existingCovered:0};
+        item.documents++;
+        if(knownMatchers.some(re=>re.test(normalize(body))))item.existingCovered++;
+        months.set(month,item);
+      }
       let prev=null,prev2=null;
       for(const piece of segmenter.segment(body)){
         const token=String(piece.segment||'').trim();
@@ -86,7 +144,7 @@ export function createNewKeywordDiscovery(rows=[]){
     }
     return {read,withContent,limited};
   }
-  function finish({limit=60,minDocuments=3}={}){
+  function finish({limit=240,minDocuments=3}={}){
     const minimum=withContent<100?2:minDocuments;
     // A repeatedly used compound is often a better addition than a generic
     // two-character fragment. Keep document coverage as the primary signal.
@@ -97,7 +155,7 @@ export function createNewKeywordDiscovery(rows=[]){
     const all=[...totals.values()].filter(term=>term.documents>=minimum);
     const chinese=all.filter(term=>HAN.test(term.word)).sort(rank);
     const other=all.filter(term=>!HAN.test(term.word)).sort(rank);
-    const maximum=Math.max(1,Math.min(100,limit));
+    const maximum=Math.max(1,Math.min(240,limit));
     // Keep English music-production wording from crowding out every Chinese
     // candidate. These are display lanes, NOT Keyword Classes or Groups.
     const primary=chinese.slice(0,Math.ceil(maximum*0.7));
@@ -110,7 +168,9 @@ export function createNewKeywordDiscovery(rows=[]){
     }
     result=result.map(term=>({...term,language:HAN.test(term.word)?'zh':'other',
       months:[...term.months.entries()].sort(([a],[b])=>a.localeCompare(b))}));
-    return {read,withContent,limited,existingCount:existing.size,candidates:result};
+    return {read,withContent,limited,existingCount:existing.size,
+      monthCoverage:[...months.values()].sort((a,b)=>a.month.localeCompare(b.month)),
+      candidates:result};
   }
   return {consume,finish};
 }

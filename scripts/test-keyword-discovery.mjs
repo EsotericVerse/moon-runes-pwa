@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createNewKeywordDiscovery,existingKeywordSet} from '../app/loc/keyword-discovery.mjs';
+import {createNewKeywordDiscovery,existingKeywordSet,readableKeywordContent} from '../app/loc/keyword-discovery.mjs';
 
 test('discovery only excludes existing Item names and literal Keywords, without mutating them',()=>{
   const rows=[
@@ -80,4 +80,41 @@ test('word joins stop at Chinese connectors and writing-instruction phrases',()=
   assert.ok(!terms.has('與混沌風暴'));
   assert.ok(!terms.has('要用同樣風格'));
   assert.ok(!terms.has('同樣風格寫'));
+});
+
+test('All complete, broken and HTML-escaped div tags disappear before counting',()=>{
+  const raw=[
+    '<div class="entry"><span>都市牢籠</span></div>',
+    '&lt;div&gt;混沌風暴&lt;/div&gt;',
+    '城市記憶 <div',
+    '夢想旅程 </div>',
+    '<div class="intro"',
+    '</div> 混沌風暴'
+  ];
+  const cleaned=raw.map(readableKeywordContent);
+  assert.ok(cleaned.every(text=>!text.includes('<')&&!text.includes('div')));
+  const analyzer=createNewKeywordDiscovery([]);
+  for(let i=0;i<3;i++){
+    analyzer.consume([{content:raw.join(' '),createtime:'2026-10-01'}]);
+  }
+  const words=analyzer.finish().candidates.map(item=>item.word);
+  for(const bad of ['div','span','class','script'])assert.ok(!words.includes(bad));
+  assert.ok(words.includes('都市牢籠'));
+});
+
+test('Code blocks and serialized JSON metadata are not analyzed as ordinary prose',()=>{
+  const samples=[
+    '{"type":"div","class":"span","ref":"uid123","content":"城市記憶 <div>幸福頻段</div>"}',
+    '文章開始 \`\`\`html\\n<div class="template">CSS layout</div>\\n\`\`\` 城市記憶',
+    '<style>.myclass{display:block}</style>混沌風暴'
+  ];
+  const cleaned=samples.map(readableKeywordContent);
+  assert.ok(cleaned[0].includes('城市記憶'));
+  assert.ok(!cleaned[0].includes('"type"')&&!cleaned[0].includes('"class"'));
+  assert.ok(!cleaned[1].includes('template'));
+  assert.ok(!cleaned[2].includes('display'));
+  const analyzer=createNewKeywordDiscovery([]);
+  for(let i=0;i<3;i++)analyzer.consume(samples.map(content=>({content,createtime:'2026-09-01'})));
+  const words=analyzer.finish().candidates.map(item=>item.word);
+  for(const bad of ['div','span','template','display','myclass'])assert.ok(!words.includes(bad));
 });
