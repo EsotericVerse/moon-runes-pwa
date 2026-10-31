@@ -1240,9 +1240,9 @@ export default function Search({managementMode=false}){
           uid={editTarget.editResourceId}
           title={row.title}
           articleHref={row.resourceType==='galaxy'?galaxyIdentityHref(row.scopeId,row.resourceId):''}
-          source={row.styleTagMatch?'':row.source}
-          scopeId={locPublicSearch?'':row.scopeId}
-          date={row.date}
+          source={managementMode||searchParams?.get('identity')?row.styleTagMatch?'':row.source:''}
+          scopeId={managementMode?row.scopeId:''}
+          date={managementMode||searchParams?.get('identity')?row.date:''}
           body=""
           hidden={false}
           relationLinks={row.relationLinks||[]}
