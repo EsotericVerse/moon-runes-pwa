@@ -26,7 +26,7 @@ function timeFilters(column,startDate,endDate){
   if(endDate)filters.push({column,operator:'lte',value:String(endDate).slice(0,10)+(isDate?'':'T23:59:59.999+08:00')});
   return filters;
 }
-const dayColumn=table=>/^silver\.(lo3rwang|lrunes)_galaxy$/.test(String(table||''))?'date':'createtime';
+const dayColumn=table=>/^silver\.[a-z][a-z0-9]*_galaxy$/.test(String(table||''))?'date':'createtime';
 async function selectRowById(table,{idColumn,id,columns,authenticated=false}={}){
   const page=await selectRows(table,{columns,filters:[{column:idColumn,operator:'eq',value:String(id)}],limit:1,authenticated});
   return page.rows[0]||null;
@@ -341,18 +341,15 @@ async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
   ],orFilter:clauses.join(','),limit:100,maxLimit:100,authenticated});
   return {place:anchor.rows[0]||null,routes,traces:traces.rows||[]};
 }
-async function articleStatisticsContext(scope,day){
+function articleStatisticsContext(scope,day){
   if(!day||scope.id==='local')return null;
   const weekday=(new Date(day+'T00:00:00Z').getUTCDay()+6)%7;
   const weekStart=shiftedDay(day,-weekday),weekEnd=shiftedDay(weekStart,6);
   const yearStart=day.slice(0,4)+'-01-01',yearEnd=day.slice(0,4)+'-12-31';
-  const count=async(from,to)=>selectCount(scope.galaxy,{idColumn:'uid',filters:publicContentFilters([
-    {column:'statistics_able',operator:'eq',value:true},
-    ...timeFilters(dayColumn(scope.galaxy),from,to)
-  ])});
-  const [weekCount,yearCount]=await Promise.all([count(weekStart,weekEnd),count(yearStart,yearEnd)]);
-  return {week:{start:weekStart,end:weekEnd,count:weekCount},
-    year:{start:yearStart,end:yearEnd,count:yearCount}};
+  // Statistics receives only the derived date window and runs its own
+  // existing grouped reader when the user follows the link.
+  return {week:{start:weekStart,end:weekEnd},
+    year:{start:yearStart,end:yearEnd}};
 }
 
 export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
