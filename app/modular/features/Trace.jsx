@@ -68,7 +68,7 @@ export default function Trace({scopeId='loc'}){
   const maps=publicTraceMapChoices(allMaps,scopeId);
   const mapChoiceKey=row=>isLoc?row.source_scope+':'+row.uid:row.uid;
   const currentMap=useMemo(()=>isLoc
-    ?maps.find(row=>row.source_scope+':'+row.uid===currentTraceChoice)||maps.find(row=>row.trace_type==='space_trace')||maps[0]||null
+    ?maps.find(row=>row.source_scope+':'+row.uid===currentTraceChoice)||maps.find(row=>row.trace_type==='trace')||maps[0]||null
     :chooseDefaultTraceRoute(maps,scopeId,currentTraceChoice),
     [allMaps,scopeId,currentTraceChoice,isLoc]);
   const periodScopeId=isLoc?(currentMap?.source_scope||'loc'):scopeId;
@@ -105,9 +105,9 @@ export default function Trace({scopeId='loc'}){
     if(value==='all'){setCurrentTraceChoice('all');return;}
     if(setDefaultTraceRoute(scopeId,value))setCurrentTraceChoice(value);
   };
-  const showingAll=!isLoc&&(currentTraceChoice==='all'||(!currentMap&&!maps.length));
-  const linkedRoutes=useMemo(()=>currentMap?.trace_type==='space_trace'
-    ?allMaps.filter(row=>row.source_scope===currentMap.source_scope&&row.trace_type==='space_period'
+  const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
+  const linkedRoutes=useMemo(()=>currentMap?.trace_type==='trace'
+    ?allMaps.filter(row=>row.source_scope===currentMap.source_scope&&row.trace_type==='path'
       &&(currentMap.route_list||[]).includes(row.uid))
     :[],[currentMap,allMaps]);
   const members=useMemo(()=>currentMap
@@ -172,7 +172,7 @@ export default function Trace({scopeId='loc'}){
               {map.source_scope==='lrunes'?'月之符文':'作者作品'} · {map.title}
             </option>):<option value="">目前沒有可顯示的痕跡圖</option>)
             :maps.map(map=><option key={mapChoiceKey(map)} value={mapChoiceKey(map)}>
-              {map.title}（{map.trace_type==='space_trace'?'痕跡圖':'路線圖'}）
+              {map.title}（{map.trace_type==='trace'?'痕跡圖':'路線圖'}）
             </option>)}
 
         </select>
@@ -195,7 +195,7 @@ export default function Trace({scopeId='loc'}){
     {supported&&anchorsQuery.error?<p className="scope-status scope-error" role="alert">
       痕跡錨點讀取失敗：{String(anchorsQuery.error.message||anchorsQuery.error)}
     </p>:null}
-    {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess&&periodScopeId!=='loc'?<p className="scope-status">
+    {supported&&!traceIndex.isPending&&!traceIndex.error&&!maps.length&&anchorsQuery.isSuccess?<p className="scope-status">
       {anchorsQuery.data?.length
         ?'尚未建立路線圖或痕跡圖，目前自動顯示全部 '+anchorsQuery.data.length+' 個空間定錨點。'
         :'尚未建立路線圖或痕跡圖，也沒有已儲存的空間定錨點。'}

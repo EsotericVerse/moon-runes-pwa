@@ -9,7 +9,7 @@ const anchors=new Map([
  ['A003',{uid:'A003',address:'2000-04-01'}],
  ['A004',{uid:'A004',address:'2000-04-08'}]
 ]);
-test('time_period contains one or two actual anchor UIDs only',()=>{
+test('period contains one or two actual anchor UIDs only',()=>{
  assert.deepEqual(encodeTimeSegment('A001'),['A001']);
  assert.deepEqual(encodeTimeSegment('A001','A002'),['A001','A002']);
  assert.throws(()=>encodeTimeSegment('A001','0'),/只能引用/);
@@ -46,9 +46,9 @@ test('two deleted anchors preserve the event record without dates',()=>{
  assert.equal(r.end_date,null);
  assert.equal(r.invalid,true);
 });
-test('time_trace uses separate events without filling disconnected gaps',()=>{
- const event1={uid:'E001',type:'time_period',ranges:resolveTimeSegments(['A001','A002'],anchors)};
- const event2={uid:'E002',type:'time_period',ranges:resolveTimeSegments(['A003','A004'],anchors)};
+test('era uses separate events without filling disconnected gaps',()=>{
+ const event1={uid:'E001',type:'period',ranges:resolveTimeSegments(['A001','A002'],anchors)};
+ const event2={uid:'E002',type:'period',ranges:resolveTimeSegments(['A003','A004'],anchors)};
  const trace=resolveTimeTrace(['E001','E002'],[event1,event2]);
  assert.equal(timePeriodContainsDate({ranges:trace.ranges},'2000-02-03'),false);
  assert.deepEqual(timeDateWindows(trace.ranges),[
@@ -57,8 +57,8 @@ test('time_trace uses separate events without filling disconnected gaps',()=>{
  ]);
 });
 test('overlapping events merge query windows; broken refs remain explicit',()=>{
- const e1={uid:'E001',type:'time_period',ranges:resolveTimeSegments(['A001','A002'],anchors)};
- const e2={uid:'E002',type:'time_period',ranges:resolveTimeSegments(['A001','A003'],anchors)};
+ const e1={uid:'E001',type:'period',ranges:resolveTimeSegments(['A001','A002'],anchors)};
+ const e2={uid:'E002',type:'period',ranges:resolveTimeSegments(['A001','A003'],anchors)};
  const trace=resolveTimeTrace(['E001','DEAD','E002'],[e1,e2]);
  assert.deepEqual(trace.invalidLinks,['DEAD']);
  assert.deepEqual(timeDateWindows(trace.ranges),[{startDate:'2000-01-01',endDate:'2000-04-01'}]);
@@ -69,8 +69,8 @@ test('moving a real anchor changes event windows without updating the trace',()=
  assert.equal(revisedWindows[0].endDate,'2000-01-09');
 });
 
-test('a time_trace consisting of one time_period with a single anchor is a real point',()=>{
- const event={uid:'E003',type:'time_period',ranges:resolveTimeSegments(['A003'],anchors)};
+test('a era consisting of one period with a single anchor is a real point',()=>{
+ const event={uid:'E003',type:'period',ranges:resolveTimeSegments(['A003'],anchors)};
  const trace=resolveTimeTrace(['E003'],[event]);
  assert.deepEqual(timeDateWindows(trace.ranges),[{startDate:'2000-04-01',endDate:'2000-04-01'}]);
  assert.deepEqual(intersectTimeDateWindows([

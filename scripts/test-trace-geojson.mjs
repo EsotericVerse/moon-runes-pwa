@@ -7,10 +7,10 @@ const place=(uid,coordinates=null)=>({uid,source_scope:scope,trace_type:'anchor'
   title:uid,...(coordinates?{address:coordinates}:{})});
 const a=place('A001',[121,25]),b=place('B002',[120,24]),
   missing=place('C003'),d=place('D004',[119,23]);
-const route=(uid,ids)=>({uid,source_scope:scope,type:'space_period',anchor_list:ids});
+const route=(uid,ids)=>({uid,source_scope:scope,type:'path',anchor_list:ids});
 const r1=route('R001',['A001','B002','C003']);
 const r2=route('R002',['D004','A001']);
-const trace={uid:'T001',source_scope:scope,type:'space_trace',anchor_list:['R001','R002']};
+const trace={uid:'T001',source_scope:scope,type:'trace',anchor_list:['R001','R002']};
 const records=[a,b,missing,d,r1,r2,trace];
 const ofType=(geo,type)=>geo.features.filter(x=>x.geometry.type===type);
 

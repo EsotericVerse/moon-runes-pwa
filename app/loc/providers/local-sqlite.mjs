@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS local_archive_media_exif (
 );
 CREATE TABLE IF NOT EXISTS local_time (
   uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),
-  type TEXT NOT NULL CHECK(type IN ('anchor','time_period','time_trace')),
+  type TEXT NOT NULL CHECK(type IN ('anchor','period','era')),
   title TEXT,
   description TEXT,
   address TEXT,

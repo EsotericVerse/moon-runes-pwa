@@ -29,7 +29,7 @@ export default function TraceRouteManager({scopeId}){
   const [selectedUid,setSelectedUid]=useState('');
   const [editorOpen,setEditorOpen]=useState(false);
   const [editingUid,setEditingUid]=useState('');
-  const [type,setType]=useState('space_period');
+  const [type,setType]=useState('path');
   const [hiddenDepth,setHiddenDepth]=useState(-1);
   const [routeUids,setRouteUids]=useState([]);
   const [bulkSelected,setBulkSelected]=useState([]);
@@ -62,8 +62,8 @@ export default function TraceRouteManager({scopeId}){
   const visibleRecords=records.filter(row=>row.title.toLocaleLowerCase().includes(filter.trim().toLocaleLowerCase()));
   const current=records.find(row=>row.uid===selectedUid)
     ||chooseDefaultTraceRoute(records,owner,readDefaultTraceRoute(owner));
-  const currentRouteMembers=current?.trace_type==='space_trace'
-    ?records.filter(row=>row.trace_type==='space_period'&&(current.route_list||[]).includes(row.uid))
+  const currentRouteMembers=current?.trace_type==='trace'
+    ?records.filter(row=>row.trace_type==='path'&&(current.route_list||[]).includes(row.uid))
     :[];
   const currentMemberUids=current
     ?[...new Set([...traceMemberUids(current),...currentRouteMembers.flatMap(traceMemberUids)])]
@@ -87,11 +87,11 @@ export default function TraceRouteManager({scopeId}){
     .filter(Boolean).map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[spool,anchorMap]);
   const availableRoadOptions=poolOptions.filter(item=>!queue.includes(item.value));
   const incomplete=editorOpen&&Boolean(editingUid||title||description||spool.length||queue.length||pairs.length||routeUids.length||hiddenDepth!==-1);
-  const chosenIds=type==='space_period'?queue:unique(pairs.flat());
+  const chosenIds=type==='path'?queue:unique(pairs.flat());
   const preview=editorOpen
-    ?(chosenIds.length>=2||type==='space_trace'&&routeUids.length>0
+    ?(chosenIds.length>=2||type==='trace'&&routeUids.length>0
       ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
-        title:title||'地圖預覽',anchor_list:type==='space_period'?queue:pairs,route_list:routeUids}
+        title:title||'地圖預覽',anchor_list:type==='path'?queue:pairs,route_list:routeUids}
       :null)
     :current;
   const previewAnchors=currentAnchors.data||[];
@@ -110,8 +110,8 @@ export default function TraceRouteManager({scopeId}){
     clear();setEditorOpen(true);setEditingUid(row.uid);setType(row.trace_type);
     setTitle(row.title);setDescription(row.description||'');
     setHiddenDepth(Number(row.hidden_depth??-1));setRouteUids(Array.isArray(row.route_list)?row.route_list:[]);
-    setQueue(row.trace_type==='space_period'?[...row.anchor_list]:[]);
-    setPairs(row.trace_type==='space_trace'?row.anchor_list.map(pair=>[...pair]):[]);
+    setQueue(row.trace_type==='path'?[...row.anchor_list]:[]);
+    setPairs(row.trace_type==='trace'?row.anchor_list.map(pair=>[...pair]):[]);
     setSpool(traceMemberUids(row));setSelectedUid(row.uid);setShowMap(true);
   };
   useEffect(()=>{
@@ -155,7 +155,7 @@ export default function TraceRouteManager({scopeId}){
     const uid=String(anchor?.uid||'');
     if(busy||!own||!editorOpen||!anchorMap.has(uid))return;
     setSpool(items=>items.includes(uid)?items:[...items,uid]);
-    if(type==='space_period'){
+    if(type==='path'){
       setQueue(items=>items.includes(uid)||items.length>=MAX_ROAD?items:[...items,uid]);
     }else if(!mapStart){
       setMapStart(uid);
@@ -176,13 +176,13 @@ export default function TraceRouteManager({scopeId}){
     setBusy(true);setNotice('');setError(false);
     try{
       if(!title.trim())throw Error('請輸入名稱');
-      if(type==='space_period'&&(queue.length<2||queue.length>MAX_ROAD))
+      if(type==='path'&&(queue.length<2||queue.length>MAX_ROAD))
         throw Error('路線至少兩站，依先後順序建立');
-      if(type==='space_trace'&&(!(pairs.length||routeUids.length)||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
+      if(type==='trace'&&(!(pairs.length||routeUids.length)||pairs.length>MAX_LINES||pairs.some(pair=>!validPair(pair))))
         throw Error('痕跡圖必須至少有一條有效的起點與終點線段');
       if(chosenIds.some(uid=>!anchorMap.has(uid)))throw Error('候選地點中有尚未載入的地點');
-      const input={scopeId:owner,type,title,description,hiddenDepth,routeUids:type==='space_trace'?routeUids:[],
-        anchorUids:type==='space_period'?queue:pairs,anchors:allAnchors};
+      const input={scopeId:owner,type,title,description,hiddenDepth,routeUids:type==='trace'?routeUids:[],
+        anchorUids:type==='path'?queue:pairs,anchors:allAnchors};
       let receipt=savedReceipt;
       if(receipt&&(receipt.type!==type||receipt.editingUid!==editingUid))
         throw Error('上一筆儲存尚未確認，不會再次新增');
@@ -202,7 +202,7 @@ export default function TraceRouteManager({scopeId}){
       const uid=receipt.uid;
       clear();setSelectedUid(uid);setEditorOpen(false);setShowMap(true);
       await refresh();
-      setNotice('已儲存並重讀確認：'+(type==='space_period'?'路線圖':'痕跡圖'));
+      setNotice('已儲存並重讀確認：'+(type==='path'?'路線圖':'痕跡圖'));
       return true;
     }catch(e){setError(true);setNotice(String(e.message||e));return false;}
     finally{setBusy(false);}
@@ -238,8 +238,8 @@ export default function TraceRouteManager({scopeId}){
       <div><h3>路線圖／痕跡圖管理</h3>
       </div>
       <div className="scope-stat-controls">
-        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_period')}>新增路線圖</button>
-        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('space_trace')}>新增痕跡圖</button>
+        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('path')}>新增路線圖</button>
+        <button type="button" className="loc-button" disabled={busy||!own} onClick={()=>openNew('trace')}>新增痕跡圖</button>
       </div>
     </header>
     {scopeId==='loc'?<label>作品範圍
@@ -273,7 +273,7 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-trace-saved-map-summary"
           onClick={()=>{if(allowLeave()){setSelectedUid(row.uid);setShowMap(true);setEditorOpen(false);clear();}}}>
           <span>{row.title}{Number(row.hidden_depth??-1)>=0?'（已設定隱藏）':''}</span>
-          <span className="scope-status">{row.trace_type==='space_period'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
+          <span className="scope-status">{row.trace_type==='path'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
         </button>
         {current?.uid===row.uid?<div className="scope-stat-controls">
           <button type="button" className="loc-button" disabled={!own||busy} onClick={()=>openEdit(row)}>編輯</button>
@@ -285,7 +285,7 @@ export default function TraceRouteManager({scopeId}){
       </div>)}
     </div>
     {editorOpen?<form className="loc-trace-route-composer" onSubmit={save}>
-      <h4>{editingUid?'編輯':'新增'}{type==='space_period'?'路線圖':'痕跡圖'}</h4>
+      <h4>{editingUid?'編輯':'新增'}{type==='path'?'路線圖':'痕跡圖'}</h4>
       <div className="scope-management-fields">
         <label>名稱<input required maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} disabled={busy}/></label>
         <label>說明<textarea rows={2} maxLength={2000} value={description} onChange={e=>setDescription(e.target.value)} disabled={busy}/></label>
@@ -300,15 +300,15 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-button" disabled={busy} onClick={()=>setShowMap(value=>!value)}>
           {showMap?'收起地圖選點':'展開地圖選點'}
         </button>
-        <span className="scope-status">{type==='space_period'?'點選地圖上的地點，依序加入路線。':'先點起點，再點終點，即建立一段痕跡連線。'}{mapStart?' 已選起點：'+(anchorMap.get(mapStart)?.title||mapStart):''}</span>
+        <span className="scope-status">{type==='path'?'點選地圖上的地點，依序加入路線。':'先點起點，再點終點，即建立一段痕跡連線。'}{mapStart?' 已選起點：'+(anchorMap.get(mapStart)?.title||mapStart):''}</span>
       </div>
       {showMap?<TraceMap spatialData={{anchors:allAnchors,maps:preview?[preview,...records.filter(row=>routeUids.includes(row.uid))]:[]}}
         selectedRouteUid={preview?.uid||''} hideRoutePicker
         onAnchorSelect={addMapSelectedAnchor}/>:null}
-      {type==='space_trace'?<details className="scope-card">
+      {type==='trace'?<details className="scope-card">
         <summary>第二層：所屬路線圖（{routeUids.length} 條）</summary>
         <p className="scope-status">由此指定空間痕跡圖包含哪些路線圖；下層隱藏依這些明確關聯計算，不會根據附近座標猜測。</p>
-        {records.filter(row=>row.trace_type==='space_period').map(route=><label key={route.uid}>
+        {records.filter(row=>row.trace_type==='path').map(route=><label key={route.uid}>
           <input type="checkbox" checked={routeUids.includes(route.uid)} disabled={busy}
             onChange={e=>setRouteUids(ids=>e.target.checked?[...ids,route.uid]:ids.filter(id=>id!==route.uid))}/>
           {route.title}（{route.uid}）
@@ -335,8 +335,8 @@ export default function TraceRouteManager({scopeId}){
           <button type="button" className="loc-button" disabled={busy} onClick={()=>removeFromSpool(uid)}>移除</button>
         </div>)}
       </div>
-      <h4>{type==='space_period'?'安排路線站點順序':'安排痕跡線段'}</h4>
-      {type==='space_period'?<>
+      <h4>{type==='path'?'安排路線站點順序':'安排痕跡線段'}</h4>
+      {type==='path'?<>
         <div className="loc-trace-route-pickers">
           <PopularSelect scopeId={owner} kind="space" inputId="trace-queue-stop" instanceId="trace-queue-stop"
             options={availableRoadOptions} value={availableRoadOptions.find(x=>x.value===selectedStop)||null}
@@ -379,8 +379,8 @@ export default function TraceRouteManager({scopeId}){
       </>}
       <div className="scope-stat-controls">
         <button className="loc-button primary" type="submit" disabled={busy||!own||anchorIndex.isPending||Boolean(anchorIndex.error)||!title.trim()||
-          (type==='space_period'?queue.length<2:!(pairs.length||routeUids.length))}>
-          {busy?'儲存中…':'儲存'+(type==='space_period'?'路線圖':'痕跡圖')}
+          (type==='path'?queue.length<2:!(pairs.length||routeUids.length))}>
+          {busy?'儲存中…':'儲存'+(type==='path'?'路線圖':'痕跡圖')}
         </button>
         <button type="button" className="loc-button" disabled={busy}
           onClick={()=>{if(allowLeave()){clear();setEditorOpen(false);}}}>取消</button>

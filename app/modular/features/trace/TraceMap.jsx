@@ -192,7 +192,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
         ...(spatialData?.anchors||[]),...(spatialData?.maps||[])
       ],{scopeId:selectedMap.source_scope||selectedMap.scope_id})
       :null);
-  },[spatialData,selectedRouteUid]);
+  },[ready,spatialData,selectedRouteUid]);
   useEffect(()=>{
     if(ready&&focusLocation)mapRef.current?.focusCoordinates(focusLocation);
   },[ready,focusLocation]);
@@ -306,7 +306,7 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
           }}>
           <option value="">不顯示路線</option>
           {savedMaps.map(route=><option key={route.uid} value={route.uid}>
-            {route.title}（{route.trace_type==='space_trace'?'痕跡 '+route.anchor_list.length+' 段':'路線 '+route.anchor_list.length+' 站'}）</option>)}
+            {route.title}（{route.trace_type==='trace'?'痕跡 '+route.anchor_list.length+' 段':'路線 '+route.anchor_list.length+' 站'}）</option>)}
         </select>
       </label>
       <p className="scope-status">路線依 Queue 順序連線；痕跡各段獨立顯示，不要求連續，也不代表實際道路。</p>

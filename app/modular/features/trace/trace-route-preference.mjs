@@ -22,7 +22,7 @@ export function clearDefaultTraceRoute(scope,uid=''){
 }
 export function chooseDefaultTraceRoute(rows,scope,preferredUid=''){
   const matches=(Array.isArray(rows)?rows:[]).filter(row=>
-    ['space_period','space_trace'].includes(row?.trace_type)
+    ['path','trace'].includes(row?.trace_type)
     &&row.source_scope===scope&&validUid(row.uid));
   return matches.find(row=>row.uid===preferredUid)||matches[0]||null;
 }

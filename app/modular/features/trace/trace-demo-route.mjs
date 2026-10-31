@@ -14,6 +14,6 @@ export function traceDemoRoute(ids,anchors,scopeId){
   const selected=ids.map(uid=>(anchors||[]).find(anchor=>
     anchor.uid===uid&&anchor.source_scope===scopeId&&anchor.trace_type==='space_anchor'));
   if(selected.some(row=>!row||!spaceCoordinates(row)))return null;
-  return {uid:'DEMO',trace_type:'space_period',source_scope:scopeId,
+  return {uid:'DEMO',trace_type:'path',source_scope:scopeId,
     title:'兩點路線試玩（不儲存）',anchor_list:[...ids]};
 }

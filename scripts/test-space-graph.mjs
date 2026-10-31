@@ -27,7 +27,7 @@ test('Base62 IDs remain case-sensitive; location arrays accept real coords but n
   assert.equal(spaceCoordinates({address:[999,35]}),null);
   assert.equal(spaceType({trace_type:'anchor'}),SPACE_ANCHOR);
   assert.equal(spaceType({trace_type:'map'}),SPACE_PERIOD);
-  assert.equal(spaceType({trace_type:'space_period'}),SPACE_PERIOD);
+  assert.equal(spaceType({trace_type:'path'}),SPACE_PERIOD);
 });
 
 test('selecting multiple places creates only points, no guessed lines',()=>{

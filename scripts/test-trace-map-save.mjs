@@ -4,11 +4,11 @@ import {readFileSync} from 'node:fs';
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const manager=()=>read('app/loc/TraceRouteManager.jsx');
 
-test('route selector uses canonical space_period and space_trace, not retired road type',()=>{
+test('route selector uses canonical path and trace, not retired road type',()=>{
  const page=manager(),db=read('app/modular/features/trace/trace-data.js');
- assert.match(page,/openNew\('space_period'\)/);
- assert.match(page,/openNew\('space_trace'\)/);
- assert.match(db,/type='space_period'/);
+ assert.match(page,/openNew\('path'\)/);
+ assert.match(page,/openNew\('trace'\)/);
+ assert.match(db,/type='path'/);
  assert.match(db,/validatedConnections/);
  for(const source of [page,db])assert.doesNotMatch(source,/['"]space_road['"]/);
 });
@@ -31,11 +31,11 @@ function saveHarness({writeFails=false,readMiss=false}={}){
  const code=page.slice(start,end).trim().replace(/^const save=/,'').replace(/;\s*$/,'');
  const written=[],notice=[],receipt={current:null};
  let reads=0,cleared=0;
- const row={uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',
+ const row={uid:'R001',source_scope:'lo3rwang',trace_type:'path',
    title:'旅程',anchor_list:['A001','B002'],route_list:[],hidden_depth:-1};
  const args={
   busy:false,own:true,editorOpen:true,setBusy:()=>{},setNotice:v=>notice.push(v),setError:()=>{},
-  title:'旅程',type:'space_period',queue:['A001','B002'],MAX_ROAD:80,
+  title:'旅程',type:'path',queue:['A001','B002'],MAX_ROAD:80,
   hiddenDepth:-1,routeUids:[],
   pairs:[],MAX_LINES:400,validPair:()=>true,chosenIds:['A001','B002'],
   anchorMap:new Map([['A001',{}],['B002',{}]]),owner:'lo3rwang',description:'',
@@ -56,7 +56,7 @@ test('actual save handler writes ordered Queue and waits for readback',async()=>
  const h=saveHarness();
  assert.equal(await h.execute(),true);
  assert.deepEqual(h.written[0].anchorUids,['A001','B002']);
- assert.equal(h.written[0].type,'space_period');
+ assert.equal(h.written[0].type,'path');
  assert.equal(h.reads,1);assert.equal(h.cleared,1);
 });
 test('failed readback preserves draft and does not insert a duplicate',async()=>{
@@ -95,7 +95,7 @@ test('route owner can click visible map anchors to append the ordered Queue',()=
    .replace(/;\s*$/,'');
  const state={queue:[],spool:[]},args={
    busy:false,own:true,editorOpen:true,anchorMap:new Map([['A001',{}],['B002',{}],['C003',{}]]),
-   type:'space_period',MAX_ROAD:80,MAX_LINES:400,mapStart:'',
+   type:'path',MAX_ROAD:80,MAX_LINES:400,mapStart:'',
    setSpool(fn){state.spool=fn(state.spool);},
    setQueue(fn){state.queue=fn(state.queue);},
    setMapStart(){},setPairs(){}

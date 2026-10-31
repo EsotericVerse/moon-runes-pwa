@@ -354,7 +354,7 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
-test('Culture upper time_trace selector stays independent; lower river selects only actual trace ranges',()=>{
+test('Culture upper era selector stays independent; lower river selects only actual trace ranges',()=>{
   const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   assert.match(source,/aria-label='第一條河道時代選擇'/);
   assert.match(source,/const \[structureWindowKey,setStructureWindowKey\]=useState\(''\)/);
@@ -587,12 +587,12 @@ test('Culture Time management uses one editor with anchor, event and trace types
   assert.match(culture,/onSelect=\{item=>beginTimelineRecordEdit\(item\)\}/);
   assert.match(culture,/onTimeClick=\{date=>beginTimelineCreation\('anchor',date\)\}/);
   assert.match(culture,/defaultRecordType='anchor'/);
-  assert.match(editor,/const TYPES=\['anchor','time_period','time_trace'\]/);
+  assert.match(editor,/const TYPES=\['anchor','period','era'\]/);
   assert.match(editor,/const TYPE_TABS=\[\.\.\.TYPES\]\.reverse\(\)/);
    assert.match(editor,/\{TYPE_TABS\.map\(type=><button/);
    assert.match(editor,/aria-pressed=\{browseType===type\}/);
    assert.match(editor,/onChange=\{option=>option\?selectRow\(option\.value\):beginNew\(\)\}/);
-  assert.match(editor,/payload\.anchor_ids=draft\.type==='time_trace'/);
+  assert.match(editor,/payload\.anchor_ids=draft\.type==='era'/);
   assert.match(editor,/updateRows\(timeTable,payload/);
   assert.match(editor,/insertRows\(timeTable,/);
   assert.match(editor,/deleteRows\(timeTable,/);

@@ -118,7 +118,7 @@ test('Frame Queue uses existing selected UIDs with no county prerequisite',()=>{
  assert.match(ui,/onClick=\{addRoadStop\}/);
  assert.match(ui,/readAllTraceAnchors\(owner/);
  assert.doesNotMatch(ui,/countyOptions|readTraceAddressReferences|createReferenceAnchor/);
- assert.match(db,/space_period/);
+ assert.match(db,/path/);
 });
 
 test('Public Trace presents on-demand selected-place articles / Culture / Statistics',()=>{
@@ -261,7 +261,7 @@ test('public guest can preview exactly two map points without any mutation API',
  assert.deepEqual(pickTraceDemoStop(selected,b,'lo3rwang'),selected);
  const preview=traceDemoRoute(selected,[a,b,c],'lo3rwang');
  assert.equal(preview.uid,'DEMO');
- assert.equal(preview.trace_type,'space_period');
+ assert.equal(preview.trace_type,'path');
  assert.deepEqual(preview.anchor_list,['A001','B002']);
  assert.equal(traceDemoRoute(['A001','C003'],[a,b],'lo3rwang'),null);
  assert.deepEqual(pickTraceDemoStop([],row('X001','跨 Scope','lrunes'),'lo3rwang'),[]);

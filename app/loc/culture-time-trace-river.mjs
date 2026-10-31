@@ -1,5 +1,5 @@
 // View model for the first Culture Time river.
-// Y axis: time_trace, expanded time_period children.
+// Y axis: era, expanded period children.
 // X axis: actual anchor.address dates only. Trace rows show separate
 // event intervals; expanded child rows show the real endpoint anchor points.
 // Neither a single anchor nor multiple disjoint events imply an open range.
@@ -88,7 +88,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
           start_date:from,...(validEnd?{end_date:until}:{}),
           display_label:event.title||eventId,title:event.title||eventId,
           description:event.summary||event.description||'',
-          time_trace_uid:id,time_period_uid:eventId,
+          era_uid:id,period_uid:eventId,
           invalid_anchor_links:range.missing_anchor_ids||[],
           group_order:traceIndex*10000+position+2,
           ...(range.invalid?{class_name:'scope-time-trace-broken'}:{})});
@@ -107,7 +107,7 @@ export function buildTimeTraceRiver(source=[],expandedTraceIds=[]){
             start_date:date,display_label:anchor.title||anchorId,
             title:anchor.title||anchorId,
             description:anchor.summary||anchor.description||'',
-            time_trace_uid:id,time_period_uid:eventId,
+            era_uid:id,period_uid:eventId,
             group_order:traceIndex*10000+position+2});
         }
       }

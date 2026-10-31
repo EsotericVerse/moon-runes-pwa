@@ -63,7 +63,7 @@ const anchors=[
 ];
 test('saved route plots all numbered stops and preserves segment order',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',anchor_list:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'path',anchor_list:anchors.map(a=>a.uid)});
   const features=map.sources['loc-trace-user-routes'].data.features;
   assert.deepEqual(features.filter(f=>f.geometry.type==='Point')
     .map(f=>f.properties.order),[1,2,3]);
@@ -73,7 +73,7 @@ test('saved route plots all numbered stops and preserves segment order',()=>{
 });
 test('clearing route removes line and no saved anchors never shows sample markers',()=>{
   const {instance,map}=setup({anchors});
-  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',anchor_list:anchors.map(a=>a.uid)});
+  instance.setSavedRoute({uid:'R001',source_scope:'lo3rwang',trace_type:'path',anchor_list:anchors.map(a=>a.uid)});
   instance.setSavedRoute(null);
   assert.deepEqual(map.sources['loc-trace-user-routes'].data.features,[]);
   assert.equal(map.sources['loc-trace-extrusions'],undefined);
@@ -118,7 +118,7 @@ test('clicking a far saved pin recenters only once; its original data reaches th
 test('numbered route stops are also clickable even when they overlap source pin',()=>{
   let selected=null;
   const {instance,map}=setup({anchors,onAnchorSelect:anchor=>{selected=anchor;}});
-  const route={uid:'R001',source_scope:'lo3rwang',trace_type:'space_period',
+  const route={uid:'R001',source_scope:'lo3rwang',trace_type:'path',
     anchor_list:anchors.map(row=>row.uid)};
   instance.setSavedRoute(route);
   map.callbacks['click|loc-trace-user-route-stops']({
@@ -131,7 +131,7 @@ test('numbered route stops are also clickable even when they overlap source pin'
 
 test('trace-only union keeps its saved lines on initial map load and frames all endpoints',()=>{
   const {instance,map}=setup({anchors,load:false});
-  const union={uid:'LOC_UNION',source_scope:'lo3rwang',trace_type:'space_trace',
+  const union={uid:'LOC_UNION',source_scope:'lo3rwang',trace_type:'trace',
     anchor_list:[],route_list:['R001']};
   const graph={type:'FeatureCollection',features:[{
     type:'Feature',properties:{kind:'saved-trace-segment'},
