@@ -457,7 +457,7 @@ function managementArticleProviders(scope,{contentType='',sourceFilter='',source
   ];
   const base={
     table:current.galaxy,source:current.id+' 文章',scope:current,idColumn:'uid',
-    columns:['uid'],dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
+    columns:['uid','title','createtime'],dateColumn:'createtime',filters,sourceClause:sourceNameClause(selection),
     authenticated:true
   };
   if(placeOnly)return [makeProvider({
@@ -492,7 +492,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   // Article content is a search predicate, not a list payload. Fetch it only
   // when the result is explicitly opened or edited.
   // Match with narrow, bounded UID-only pages; hydrate display fields later.
-  const textColumns=['uid'];
+  const textColumns=['uid','title','createtime'];
   // Existing LOC search provider, narrowed to Galaxy's check-in field only.
   // No article body is fetched by this search stage.
   if(placeOnly)return [makeProvider({
