@@ -11,9 +11,9 @@ const jwk={...publicKey.export({format:'jwk'}),kid:'clerk-test-kid',alg:'RS256',
 const b64=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
 const b64bytes=value=>Buffer.from(value).toString('base64url');
 const issuer='https://clerk-test.example.org',origin='https://loc.example.org';
-function jwt(overrides={}){
+function jwt(overrides={},headerKid=jwk.kid){
   const now=Math.floor(Date.now()/1000);
-  const head=b64({alg:'RS256',kid:jwk.kid,typ:'JWT'});
+  const head=b64({alg:'RS256',kid:headerKid,typ:'JWT'});
   const payload=b64({iss:issuer,azp:origin,sub:'user_TEST123',
     sid:'sess_TEST123',iat:now,nbf:now-5,exp:now+300,
     email:'owner@example.org',email_verified:true,...overrides});
@@ -75,7 +75,8 @@ test('present azp from another origin is still rejected with a useful reason',as
 });
 
 test('Clerk signed JWT verifies against public RSA modulus/exponent despite extra JWK metadata',async()=>{
-  const response=await verified(jwt(),{publicKey:{...jwk,
+  const kid='clerk-metadata-example';
+  const response=await verified(jwt({},kid),{publicKey:{...jwk,kid,
     key_ops:['verify'],x5c:['non-signing metadata'],x5t:'extra-metadata',
     ext:false}});
   assert.equal(response.status,200);
@@ -83,7 +84,8 @@ test('Clerk signed JWT verifies against public RSA modulus/exponent despite extr
 });
 
 test('unsupported Clerk JWKS key permissions fail closed with a server-side key error',async()=>{
-  const response=await verified(jwt(),{publicKey:{...jwk,key_ops:['sign']}});
+  const kid='clerk-sign-only-example';
+  const response=await verified(jwt({},kid),{publicKey:{...jwk,kid,key_ops:['sign']}});
   assert.equal(response.status,503);
   assert.match((await response.json()).error,/not usable for verification/);
 });
