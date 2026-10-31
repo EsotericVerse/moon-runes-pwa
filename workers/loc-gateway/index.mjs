@@ -54,10 +54,17 @@ async function verifyClerk(request,env){
   const token=request.headers.get('authorization');
   if(!token)return null;
   if(!/^Bearer [A-Za-z0-9._-]{24,8192}$/.test(token))return null;
-  const reply=await fetch(env.LOC_AUTHORITY_ORIGIN+'/v1/identity',{
-    method:'GET',headers:{authorization:token,accept:'application/json'},
-    redirect:'error',signal:AbortSignal.timeout(6500)
-  });
+  // Use a Cloudflare Service Binding, not a workers.dev-to-workers.dev
+  // network hop. No external host is involved in verified identity checks.
+  if(!env.LOC_AUTHORITY_SERVICE?.fetch)return null;
+  const reply=await env.LOC_AUTHORITY_SERVICE.fetch(
+    new Request('https://loc-authority-internal/v1/identity',{
+      method:'GET',headers:{
+        authorization:token,accept:'application/json',
+        origin:env.LOC_PUBLIC_ORIGIN
+      },signal:AbortSignal.timeout(6500)
+    })
+  );
   if(!reply.ok)return null;
   const identity=await reply.json();
   return identity?.provider==='clerk'&&String(identity.subject||'').startsWith('user_')
