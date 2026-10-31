@@ -104,3 +104,50 @@ test('fails closed if Clerk or independent control service is unconfigured',asyn
   assert.equal(response.status,503);
   assert.equal((await response.json()).error,'Recovery control unavailable');
 });
+
+test('verified non-root identity has no Authority grants until explicitly assigned',async()=>{
+  const {pair,pem}=await makeKeys(),env=envFor(pem),control=makeControl(env);
+  const token=await bearer(pair,{sub:'user_NONROOT'});
+  const identity=await worker.fetch(request('/v1/identity',token),env);
+  assert.equal(identity.status,200);
+  assert.equal((await identity.json()).subject,'user_NONROOT');
+  assert.equal((await worker.fetch(request('/v1/state',token),env)).status,403);
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',action:'write'}),false);
+  const root=await bearer(pair);
+  const grant={provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',actions:['read','write'],expires_at:Date.now()+3600000};
+  assert.equal((await worker.fetch(request('/v1/grants',root,'PUT',grant),env)).status,200);
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',action:'write'}),true);
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lrunes',action:'write'}),false);
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',action:'configure'}),false);
+  const id='clerk:user_NONROOT:lo3rwang';
+  assert.equal((await worker.fetch(request('/v1/revoke',root,'POST',{key:id}),env)).status,200);
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',action:'write'}),false);
+  const expired=await control.putGrant({...grant,expires_at:Date.now()+50});
+  assert.equal(expired.scope,'lo3rwang');
+  await new Promise(resolve=>setTimeout(resolve,70));
+  assert.equal(await control.mayAccess({provider:'clerk',subject:'user_NONROOT',scope:'lo3rwang',action:'write'}),false);
+});
+test('optional secondary OIDC recovers admin access without Clerk being configured',async()=>{
+  const {pair,pem}=await makeKeys();
+  const env={
+    LOC_SECONDARY_ISSUER:'https://oidc.example.test',
+    LOC_SECONDARY_JWT_PUBLIC_KEY:pem,
+    LOC_SECONDARY_AUDIENCE:'loc-recovery',
+    LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS:'operator_1',
+    LOC_CONTROL_ORIGIN:'https://loc.example.test',
+    LOC_CONTROL_ENCRYPTION_KEY:Buffer.alloc(32,33).toString('base64')
+  };
+  makeControl(env);
+  const token=await bearer(pair,{iss:'https://oidc.example.test',sub:'operator_1',aud:'loc-recovery'});
+  assert.equal((await worker.fetch(request('/v1/me',token),env)).status,200);
+  const bad=await bearer(pair,{iss:'https://oidc.example.test',sub:'operator_1',aud:'untrusted'});
+  assert.equal((await worker.fetch(request('/v1/me',bad),env)).status,401);
+});
+test('static recovery page cannot mount AppShell, run home Auth hooks or depend on Next build env',()=>{
+  const page=readFileSync(new URL('../public/recovery/index.html',import.meta.url),'utf8');
+  const settings=JSON.parse(readFileSync(new URL('../public/recovery/config.json',import.meta.url),'utf8'));
+  assert.match(page,/\bclerk\.load\(/);
+  assert.match(page,/index\.html/); // exact standalone entry
+  assert.doesNotMatch(page,/AppShell|supabase-js|neon-auth|NEXT_PUBLIC_/);
+  assert.deepEqual(Object.keys(settings).sort(),['controlUrl','frontendApiUrl','publishableKey']);
+});
