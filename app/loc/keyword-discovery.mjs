@@ -102,7 +102,7 @@ export function createNewKeywordDiscovery(rows=[]){
     }
     return {read,withContent,limited};
   }
-  function finish({limit=120,minDocuments=3}={}){
+  function finish({limit=240,minDocuments=3}={}){
     const minimum=withContent<100?2:minDocuments;
     // A repeatedly used compound is often a better addition than a generic
     // two-character fragment. Keep document coverage as the primary signal.
@@ -113,7 +113,7 @@ export function createNewKeywordDiscovery(rows=[]){
     const all=[...totals.values()].filter(term=>term.documents>=minimum);
     const chinese=all.filter(term=>HAN.test(term.word)).sort(rank);
     const other=all.filter(term=>!HAN.test(term.word)).sort(rank);
-    const maximum=Math.max(1,Math.min(120,limit));
+    const maximum=Math.max(1,Math.min(240,limit));
     // Keep English music-production wording from crowding out every Chinese
     // candidate. These are display lanes, NOT Keyword Classes or Groups.
     const primary=chinese.slice(0,Math.ceil(maximum*0.7));
