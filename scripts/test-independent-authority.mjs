@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {LocAuthorityState,default as worker} from '../workers/loc-authority/index.mjs';
+import {readFileSync} from 'node:fs';
+// Node has no cloudflare:workers runtime. Substitute only the DO base constructor;
+// the actual Worker source, crypto, URL validation and fetch handler are tested.
+const source=readFileSync(new URL('../workers/loc-authority/index.mjs',import.meta.url),'utf8')
+  .replace("import { DurableObject } from 'cloudflare:workers';",
+    "class DurableObject { constructor(ctx,env){this.ctx=ctx;this.env=env;} }");
+const {LocAuthorityState,default:worker}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 
 function fakeStorage(){
   const map=new Map();
