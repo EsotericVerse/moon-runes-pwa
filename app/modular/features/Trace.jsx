@@ -32,6 +32,7 @@ export default function Trace({scopeId='loc'}){
   const [selectedPlace,setSelectedPlace]=useState(null);
   const routeParams=useSearchParams();
   const selectedPlaceUid=String(routeParams?.get('place')||'').trim();
+  const selectedMapUid=String(routeParams?.get('map')||'').trim();
   const [twoPointDemo,setTwoPointDemo]=useState(false);
   const [demoStopIds,setDemoStopIds]=useState([]);
   // LOC shows the cross-Scope union of published Trace groups; routes are children.
@@ -93,6 +94,11 @@ export default function Trace({scopeId='loc'}){
     if(!isLoc)window.addEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
     return()=>window.removeEventListener(TRACE_DEFAULT_ROUTE_CHANGED,reloadDefault);
   },[scopeId,isLoc]);
+  useEffect(()=>{
+    if(!selectedMapUid||!allMaps.length)return;
+    const found=maps.find(row=>String(row.uid)===selectedMapUid);
+    if(found)setCurrentTraceChoice(isLoc?found.source_scope+':'+found.uid:found.uid);
+  },[selectedMapUid,allMaps,scopeId,isLoc]);
   const chooseCurrentTrace=value=>{
     setSelectedPlace(null);
     if(isLoc){setCurrentTraceChoice(value);return;}
