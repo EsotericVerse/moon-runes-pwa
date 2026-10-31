@@ -310,8 +310,8 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   // content, linked media, references or Trace data.
   const {rows:articleRows}=await selectRows(current.galaxy,{
     columns:'uid,title,createtime,content,site,url,source_id,target_id,ref_id,media_link,place_id,location,searchable',
-    filters:[{column:'uid',operator:'eq',value:id},
-      ...(!includeHidden?[{column:'searchable',operator:'eq',value:true}]:[])],
+    filters:[{column:'uid',operator:'eq',value:id}],
+    orFilter:includeHidden?'':'searchable.is.null,searchable.eq.true',
     limit:1,authenticated:includeHidden
   });
   const row=articleRows[0]||null;
