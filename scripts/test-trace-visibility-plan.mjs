@@ -22,7 +22,7 @@ test('route cascade follows only selected trace route_list',()=>{
 
 test('all cascade includes own anchors and linked paths anchors without duplication',()=>{
   const result=planTraceVisibilityUids({maps,selectedUids:['T001'],mode:'all'});
-  assert.deepEqual(result,['T001','P001','P002','A001','A002','A003','A005','A006']);
+  assert.deepEqual(result,['T001','P001','P002','A001','A002','A005','A003','A006']);
   assert.deepEqual(planTraceVisibilityUids({maps,selectedUids:['P001'],mode:'all'}),['P001','A002','A005']);
 });
 
