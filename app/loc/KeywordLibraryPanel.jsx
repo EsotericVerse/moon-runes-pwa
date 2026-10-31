@@ -121,6 +121,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   },[canEdit,table,configTable,scopeId]);
 
   useEffect(()=>{load();},[load]);
+  useEffect(()=>{
+    discoveryAbort.current?.abort();
+    setDiscovery(null);
+    setDiscoveryProgress(null);
+  },[scopeId]);
   useEffect(()=>()=>discoveryAbort.current?.abort(),[]);
   const choose=(type,uid)=>{
     const next={...chosen,[type]:uid};
@@ -289,8 +294,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       if(controller.signal.aborted)setNotice('已停止新關鍵詞掃描，未修改任何資料。');
       else setError(String(e.message||e));
     }finally{
-      if(discoveryAbort.current===controller)discoveryAbort.current=null;
-      setDiscoveryBusy(false);
+      if(discoveryAbort.current===controller){
+        discoveryAbort.current=null;
+        setDiscoveryBusy(false);
+      }
     }
   };
   const copyClass=async()=>{
@@ -305,8 +312,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     finally{setBusy(false);}
   };
   dockActions.current={
-    save:()=>workspace==='analysis'?saveConfig():saveNode(),
-    isDirty:()=>workspace==='analysis'
+    save:()=>workspace==='suggest'?undefined:workspace==='analysis'?saveConfig():saveNode(),
+    isDirty:()=>workspace==='suggest'?false:workspace==='analysis'
       ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents']
         .some(key=>String(config[key]??'')!==String(savedConfig[key]??''))
       :dirty,
