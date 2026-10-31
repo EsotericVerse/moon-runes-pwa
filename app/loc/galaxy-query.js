@@ -272,7 +272,7 @@ async function articleTimeRows(scope){
   return promise;
 }
 async function articleTimeContext(scope,day){
-  if(!day||!scope.time||scope.id==='local')return {anchors:[],periods:[],eras:[]};
+  if(!day||!scope.time)return {anchors:[],periods:[],eras:[]};
   const rows=await articleTimeRows(scope);
   const matches=row=>timePeriodContainsDate(row,day);
   const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
@@ -304,7 +304,7 @@ async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
   return {place:anchor.rows[0]||null,routes,traces:traces.rows||[]};
 }
 function articleStatisticsContext(scope,day){
-  if(!day||scope.id==='local')return null;
+  if(!day)return null;
   const weekday=(new Date(day+'T00:00:00Z').getUTCDay()+6)%7;
   const weekStart=shiftedDay(day,-weekday),weekEnd=shiftedDay(weekStart,6);
   const yearStart=day.slice(0,4)+'-01-01',yearEnd=day.slice(0,4)+'-12-31';
@@ -333,7 +333,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   if(!row||(!includeHidden&&row.searchable===false))return null;
   const mediaIds=mediaIdsOf(row.media_link);
   const placeId=String(row.place_id||'').trim();
-  const day=articleDate(row.date);
+  const day=articleDate(local?row.createtime:row.date);
   const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
     mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
@@ -361,7 +361,8 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   return {...row,scope_id:current.id,__table:current.galaxy,
     links:resolvedLinks(row,new Map()),relation_titles:relationTitles,
     related_media:[...orderedMedia,...legacyRunes],trace_place:space.place,
-    related_space:space,related_time:time,related_statistics:statistics};
+    related_space:space,related_time:time,related_statistics:statistics,
+    article_day:day};
 }
 
 function literalPattern(value){
