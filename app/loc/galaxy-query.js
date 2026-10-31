@@ -240,12 +240,17 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null}={}){
   const current=scopeOf(scope);
   const ids=[...new Set(mediaIds.map(String).filter(Boolean))];
   if(!ids.length)return [];
-  return (await selectRows(current.galaxyMedia,{
-    columns:'uid,title,url,media_type',
-    filters:[{column:'uid',operator:'in',value:ids}],
-    limit:ids.length,
-    signal
-  })).rows;
+  const result=[];
+  for(let i=0;i<ids.length;i+=40){
+    const batch=ids.slice(i,i+40);
+    const page=await selectRows(current.galaxyMedia,{
+      columns:'uid,title,url',
+      filters:[{column:'uid',operator:'in',value:batch}],
+      limit:batch.length,maxLimit:batch.length,signal
+    });
+    result.push(...page.rows);
+  }
+  return result;
 }
 function resolvedLinks(row,mediaById){
   const links=[];
@@ -301,21 +306,33 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const current=scopeOf(scope);
   const id=String(uid||'').trim();
   if(!id)return null;
+  // One exact UID SELECT loads the selected article. The list never reads
+  // content, linked media, references or Trace data.
   const row=await selectRowById(current.galaxy,{
-    idColumn:'uid',
-    id,
-    columns:'uid,title,site,createtime,url,source_id,target_id,ref_id,media_link,searchable',
+    idColumn:'uid',id,
+    columns:'uid,title,createtime,content,site,url,source_id,target_id,ref_id,media_link,place_id,location,searchable',
     authenticated:includeHidden
   });
   if(!row||(!includeHidden&&row.searchable===false))return null;
-  const [contentRow,relationTitles]=await Promise.all([
-    selectRowById(current.galaxy,{idColumn:'uid',id,columns:'uid,content',authenticated:includeHidden}),
-    relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({}))
+  const mediaIds=mediaIdsOf(row.media_link);
+  const placeId=String(row.place_id||'').trim();
+  const [relationTitles,mediaRows,placeRows]=await Promise.all([
+    relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
+    mediaRowsFor(current,mediaIds).catch(()=>[]),
+    /^[A-Za-z0-9]{4}$/.test(placeId)&&['lo3rwang','lrunes'].includes(current.id)
+      ?selectRows('silver.'+current.id+'_trace',{
+        columns:'uid,title',
+        filters:[{column:'uid',operator:'eq',value:placeId},{column:'trace_type',operator:'eq',value:'space_anchor'}],
+        limit:1,authenticated:includeHidden
+      }).then(page=>page.rows||[]).catch(()=>[])
+      :Promise.resolve([])
   ]);
-  // Media URLs belong to their own expandable reader section; loading this
-  // article must not SELECT related media titles, tags, or URLs.
+  const mediaById=new Map(mediaRows.map(item=>[String(item.uid),item]));
+  const orderedMedia=mediaIds.map(mediaId=>mediaById.get(mediaId)).filter(Boolean);
   return {...row,scope_id:current.id,__table:current.galaxy,
-    content:contentRow?.content||'',links:resolvedLinks(row,new Map()),relation_titles:relationTitles};
+    links:resolvedLinks(row,mediaById),relation_titles:relationTitles,
+    related_media:orderedMedia,
+    trace_place:placeRows[0]||null};
 }
 
 function literalPattern(value){
