@@ -45,6 +45,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [copyName,setCopyName]=useState('');
   const [sharingBusy,setSharingBusy]=useState(false);
   const [progress,setProgress]=useState(null);
+  const [discovery,setDiscovery]=useState(null);
+  const [discoveryProgress,setDiscoveryProgress]=useState(null);
+  const [discoveryBusy,setDiscoveryBusy]=useState(false);
+  const discoveryAbort=useRef(null);
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
   const [error,setError]=useState(''),[notice,setNotice]=useState('');
   const tree=useMemo(()=>{
@@ -117,6 +121,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   },[canEdit,table,configTable,scopeId]);
 
   useEffect(()=>{load();},[load]);
+  useEffect(()=>()=>discoveryAbort.current?.abort(),[]);
   const choose=(type,uid)=>{
     const next={...chosen,[type]:uid};
     if(type==='category'){next.class='';next.group='';next.item='';}
@@ -268,6 +273,26 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }catch(e){setError(String(e.message||e));}
     finally{setBusy(false);}
   };
+  const discoverNewTerms=async()=>{
+    if(discoveryBusy||busy||loading)return;
+    const controller=new AbortController();
+    discoveryAbort.current=controller;
+    setWorkspace('suggest');setDiscovery(null);setDiscoveryProgress(null);
+    setDiscoveryBusy(true);setError('');setNotice('');
+    try{
+      const {suggestNewKeywords}=await import('./keyword-discovery-runner.mjs');
+      const result=await suggestNewKeywords({
+        galaxy:scope.galaxy,existingRows:rows,onProgress:setDiscoveryProgress,signal:controller.signal
+      });
+      if(!controller.signal.aborted)setDiscovery(result);
+    }catch(e){
+      if(controller.signal.aborted)setNotice('已停止新關鍵詞掃描，未修改任何資料。');
+      else setError(String(e.message||e));
+    }finally{
+      if(discoveryAbort.current===controller)discoveryAbort.current=null;
+      setDiscoveryBusy(false);
+    }
+  };
   const copyClass=async()=>{
     const from=activeClass?.uid,to=copyName.trim();
     if(!from||!to)return;
@@ -285,7 +310,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       ?['current_keyword_class_uid','keyword_min_chars','keyword_min_documents']
         .some(key=>String(config[key]??'')!==String(savedConfig[key]??''))
       :dirty,
-    isBusy:()=>busy||loading||sharingBusy
+    isBusy:()=>busy||loading||sharingBusy||discoveryBusy
   };
   useEffect(()=>{
     if(!dock?.active||dock.scopeId!==scopeId||!canEdit)return;
@@ -310,6 +335,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           aria-pressed={workspace===key} onClick={()=>{setWorkspace(key);setEditor(null);}}>
           {label}
         </button>)}
+      <button type="button" className="loc-button primary" disabled={loading||busy||discoveryBusy}
+        aria-pressed={workspace==='suggest'} onClick={discoverNewTerms}>
+        {discoveryBusy?'正在掃描內文…':'建議新增關鍵詞'}
+      </button>
     </div>
     {loading?<p className="scope-status" role="status">讀取關鍵字資料中…</p>:null}
     {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
@@ -394,6 +423,26 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       </div>
       {progress?<p role="status" className="scope-status">{progress.label||progress.phase}
         {progress.total?' · '+progress.completed+' / '+progress.total:''}</p>:null}
+    </section>:null}
+    {!loading&&workspace==='suggest'?<section className="loc-card scope-feature-card">
+      <h2>建議新增關鍵詞</h2>
+      <p className="scope-status">僅從目前 Scope 的文章內文找出尚未收錄的詞與詞組；既有關鍵詞不分析、不更改，也不會自動新增。</p>
+      {discoveryBusy?<div className="scope-preview-links">
+        <p className="scope-status" role="status">分析中：{Number(discoveryProgress?.completed||0).toLocaleString()} / {Number(discoveryProgress?.total||0).toLocaleString()} 篇</p>
+        <button className="loc-button" type="button" onClick={()=>discoveryAbort.current?.abort()}>停止掃描</button>
+      </div>:null}
+      {discovery&&!discoveryBusy?<div>
+        <p className="scope-status" role="status">已掃描 {discovery.read.toLocaleString()} 篇；有內文 {discovery.withContent.toLocaleString()} 篇；提出 {discovery.candidates.length} 個新詞候選。</p>
+        {discovery.limited?<p className="scope-status scope-error">不重複候選詞過多，已達分析記憶體上限；列表可能不完整。</p>:null}
+        {discovery.candidates.length?<ol className="scope-keyword-discovery-results">
+          {discovery.candidates.map(term=><li key={term.word}>
+            <strong>{term.word}</strong>
+            <span className="scope-status"> · {term.documents.toLocaleString()} 篇文章 · {term.occurrences.toLocaleString()} 次出現{term.trendChanges>0?' · PELT 偵測到趨勢變化':''}</span>
+            {term.sample?<p className="scope-status">{term.sample}</p>:null}
+          </li>)}
+        </ol>:<p className="scope-status">沒有找到符合基本出現篇數門檻、且尚未收錄的新詞。</p>}
+      </div>:null}
+      {!discoveryBusy&&discovery?<button type="button" className="loc-button" onClick={discoverNewTerms}>重新掃描內文</button>:null}
     </section>:null}
     {!loading&&workspace==='network'?<section className="loc-card scope-feature-card">
       <h2>關聯圖</h2>
