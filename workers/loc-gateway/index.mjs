@@ -165,17 +165,19 @@ async function probeReadiness(request,env,principal,origin){
   if(!admin.ok)
     throw Object.assign(Error('Recovery administrator required'),{status:403});
   const selected=activeTarget(await activeState(env));
-  const [primaryPublic,backupPublic,primaryManagement,backupManagement]=await Promise.all([
+  // RC3 schema-migration freeze: do not probe Neon at all. Its Data API,
+  // Auth and schema will be evaluated only after the owner completes merge.
+  // Keep existing independent Gateway routing unchanged; only diagnostics
+  // are suppressed, with an explicit neutral "deferred" state (not red).
+  const [primaryPublic,primaryManagement]=await Promise.all([
     probeRead('supabase',env),
-    probeRead('neon',env),
-    principal.email?probeRead('supabase',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401}),
-    principal.email?probeRead('neon',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401})
+    principal.email?probeRead('supabase',env,token,'POST',principal.email):Promise.resolve({ok:false,status:401})
   ]);
   const info={
     primary:selected,
     clerk:{verified:true,verifiedEmail:Boolean(principal.email)},
     supabase:{publicRead:primaryPublic.ok,clerkManagementRead:primaryManagement.ok},
-    neon:{publicRead:backupPublic.ok,clerkManagementRead:backupManagement.ok},
+    neon:{status:'deferred',reason:'schema-merge-pending'},
     writingTested:false,
     dataParityTested:false
   };

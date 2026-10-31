@@ -34,7 +34,7 @@ fieldset{border:1px solid #526478;border-radius:9px}.options{display:flex;flex-w
 </section>
 <section id="readiness" class="card" hidden>
 <h2>備援可用性檢查（唯讀）</h2>
-<p>手動檢查獨立 Clerk 身分、Supabase／Neon 公開讀取及管理權限讀取。不會修改資料庫或切換來源。寫入能力與資料是否完整須另外驗證。</p>
+<p>手動檢查 Clerk 身分、Supabase 公開讀取與管理權限讀取。Neon Schema 尚在整併，所有 Neon 檢查暫緩。不會修改資料庫或切換來源；寫入能力須另外驗證。</p>
 <button id="check-readiness" type="button">檢查備援狀態</button>
 <div id="readiness-results" role="status" aria-live="polite"></div>
 </section>
@@ -140,8 +140,9 @@ function showReadiness(result){
   row('Clerk 已驗證 Email',result.clerk?.verifiedEmail===true);
   row('Supabase 公開讀取',result.supabase?.publicRead===true);
   row('Supabase Clerk 管理權限讀取',result.supabase?.clerkManagementRead===true);
-  row('Neon 公開讀取',result.neon?.publicRead===true);
-  row('Neon Clerk 管理權限讀取',result.neon?.clerkManagementRead===true);
+  const pending=node('p','Neon：暫緩（Schema 整併中；不進行查詢或驗證）');
+  pending.style.color='#d6cdb0';
+  output.append(pending);
   output.append(node('p','目前主要來源：'+(result.primary||'未設定')+
     '。這個檢查不測試寫入或資料完整性，不表示可以安全切換正式編輯。'));
 }

@@ -66,9 +66,10 @@ test('ready status requires matching verified email returned by management RPC',
     const body=await r.json();
     assert.equal(body.clerk.verifiedEmail,true);
     assert.equal(body.supabase.publicRead,true);
-    assert.equal(body.neon.publicRead,true);
+    assert.equal(body.neon.status,'deferred');
+    assert.equal(body.neon.reason,'schema-merge-pending');
     assert.equal(body.supabase.clerkManagementRead,true);
-    assert.equal(body.neon.clerkManagementRead,true);
+    assert.equal(f.calls.some(url=>url.startsWith(neon)||url.startsWith(neonAuth)),false);
     assert.equal(body.primary,'neon');
     assert.equal(body.writingTested,false);
     assert.equal(body.dataParityTested,false);
@@ -81,7 +82,7 @@ test('a different email in SQL grants is never reported as authorized',async()=>
   await withinFetch(f.fakeFetch,async()=>{
     const body=await (await gateway.fetch(f.req(),f.env)).json();
     assert.equal(body.supabase.clerkManagementRead,false);
-    assert.equal(body.neon.clerkManagementRead,false);
+    assert.equal(body.neon.status,'deferred');
     assert.equal(body.clerk.verifiedEmail,true);
   });
 });
@@ -91,17 +92,18 @@ test('missing signed Clerk email denies management readiness without RPC calls',
     const body=await (await gateway.fetch(f.req(),f.env)).json();
     assert.equal(body.clerk.verifiedEmail,false);
     assert.equal(body.supabase.clerkManagementRead,false);
-    assert.equal(body.neon.clerkManagementRead,false);
+    assert.equal(body.neon.status,'deferred');
     assert.equal(f.calls.some(url=>url.includes('/rpc/')),false);
   });
 });
-test('Neon 503 marks backup red without claiming whole site is ready',async()=>{
+test('Neon is deferred and never probed while its schema is still being consolidated',async()=>{
   const f=fixture({neonStatus:503});
   await withinFetch(f.fakeFetch,async()=>{
     const body=await (await gateway.fetch(f.req(),f.env)).json();
     assert.equal(body.supabase.publicRead,true);
-    assert.equal(body.neon.publicRead,false);
-    assert.equal(body.neon.clerkManagementRead,false);
+    assert.equal(body.neon.status,'deferred');
+    assert.equal(body.neon.reason,'schema-merge-pending');
+    assert.equal(f.calls.some(url=>url.startsWith(neon)||url.startsWith(neonAuth)),false);
     assert.equal(body.writingTested,false);
   });
 });
