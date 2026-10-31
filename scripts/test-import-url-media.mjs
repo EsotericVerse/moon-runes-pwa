@@ -105,3 +105,18 @@ test('image description stays on galaxy_media.meta_tags and preserves its own UR
   assert.equal(result.records[0].url,'https://example.test/image.jpg');
   assert.equal(result.records[0].__article_uid,'ART00001');
 });
+
+
+test('legacy rune_references are interpreted as rune media without a Galaxy article',()=>{
+  const legacy={cards:[{rune:'土',direction:'半逆',position:1}]};
+  const normalized=normalizeImportMedia([{rune_references:legacy}],{article_uid:'ART00001'});
+  assert.equal(normalized.records.length,1);
+  assert.equal(normalized.records[0].media_type,'runes');
+  assert.deepEqual(normalized.records[0].rune_references,legacy);
+  assert.equal(normalized.records[0].__article_uid,'ART00001');
+  const importer=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(importer,/const \{rune_references,\.\.\.record\}=source/);
+  assert.match(importer,/media_type:'runes',title:'抽牌結果'/);
+  assert.match(importer,/existingRuneByArticle/);
+  assert.doesNotMatch(importer,/writeBatch:batch=>insertRows\(galaxyMedia,batch\.map\(record=>\(\{/);
+});
