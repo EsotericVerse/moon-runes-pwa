@@ -3,7 +3,7 @@ const toDay=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||'').slice(0,10))
   ?String(value).slice(0,10):'';
 const toMs=day=>Date.parse(day+'T00:00:00Z');
 const keyOf=row=>String(row?.period||row?.era_id||row?.uid||row?.id||'').trim();
-// Select the closest real time_trace by distance from the *calendar today*.
+// Select the closest real era by distance from the *calendar today*.
 // Today is a query/selection reference, NEVER a Time anchor or a trace end.
 // Ranges may be disconnected, overlapping or singleton points.
 export function structurePeriodPreference(periods=[],items=[],referenceDay=''){
