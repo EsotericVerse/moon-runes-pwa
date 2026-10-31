@@ -53,8 +53,22 @@ async function clerkPublicKey(issuer,kid){
     (!value.use||value.use==='sig')&&typeof value.n==='string'&&
     typeof value.e==='string');
   if(!jwk)throw fail('Clerk signing key is not recognized',401);
-  const cryptoKey=await crypto.subtle.importKey('jwk',jwk,
-    {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+  // Clerk JWKS may contain additional metadata; the trusted RSA
+  // modulus and exponent are enough to construct a verification-only key.
+  // Do not allow JWKS metadata to change the pinned RS256 algorithm.
+  if(jwk.key_ops&&(!Array.isArray(jwk.key_ops)||!jwk.key_ops.includes('verify')))
+    throw fail('Clerk signing key is not usable for verification',503);
+  if(!/^[A-Za-z0-9_-]+$/.test(jwk.n)||!/^[A-Za-z0-9_-]+$/.test(jwk.e)||
+      b64bytes(jwk.n).byteLength<256)
+    throw fail('Clerk signing key format is invalid',503);
+  let cryptoKey;
+  try{
+    cryptoKey=await crypto.subtle.importKey('jwk',
+      {kty:'RSA',n:jwk.n,e:jwk.e,alg:'RS256',use:'sig'},
+      {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+  }catch{
+    throw fail('Clerk signing key import failed',503);
+  }
   jwksCache.set(key,{key:cryptoKey,expires:Date.now()+5*60*1000});
   if(jwksCache.size>16)jwksCache.delete(jwksCache.keys().next().value);
   return cryptoKey;
@@ -101,21 +115,25 @@ async function verifyIdentityToken(request,env){
   if(secondary&&(!env.LOC_SECONDARY_AUDIENCE||
     !(Array.isArray(claims.aud)?claims.aud.includes(env.LOC_SECONDARY_AUDIENCE):claims.aud===env.LOC_SECONDARY_AUDIENCE)))
     throw fail('Invalid token audience',401);
+  let key;
+  if(clerk&&!env.LOC_CLERK_JWT_PUBLIC_KEY){
+    key=await clerkPublicKey(env.LOC_CLERK_ISSUER,header.kid);
+  }else{
+    const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
+    const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\\s/g,'');
+    if(!body)throw fail('Recovery signing key unavailable',503);
+    try{
+      key=await crypto.subtle.importKey('spki',b64bytes(body),
+        {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+    }catch{throw fail('Signing key import failed',503);}
+  }
   let verified=false;
   try{
-    let key;
-    if(clerk&&!env.LOC_CLERK_JWT_PUBLIC_KEY){
-      key=await clerkPublicKey(env.LOC_CLERK_ISSUER,header.kid);
-    }else{
-      const pem=String(clerk?env.LOC_CLERK_JWT_PUBLIC_KEY:env.LOC_SECONDARY_JWT_PUBLIC_KEY);
-      const body=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,'');
-      if(!body)throw fail('Recovery signing key unavailable',503);
-      key=await crypto.subtle.importKey('spki',b64bytes(body),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
-    }
-    verified=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,b64bytes(pieces[2]),new TextEncoder().encode(pieces[0]+'.'+pieces[1]));
+    verified=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,
+      b64bytes(pieces[2]),new TextEncoder().encode(pieces[0]+'.'+pieces[1]));
   }catch(error){
     if(error?.status)throw error;
-    throw fail('Token verification failed',401);
+    throw fail('Signature verification operation failed',503);
   }
   if(!verified)throw fail('Token signature invalid',401);
   // Email is usable for legacy management grants only when it is a VERIFIED,
