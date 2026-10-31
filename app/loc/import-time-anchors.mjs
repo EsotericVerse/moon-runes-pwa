@@ -14,8 +14,15 @@ export function importCheckinDates(records=[]){
       ?record.__importVisitTimes
       :[record?.date||record?.createtime||record?.timestamp];
     for(const value of instants){
+      const explicitDay=String(value||'').trim();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(explicitDay)){
+        dates.add(explicitDay);
+        continue;
+      }
       const instant=parseImportCreatedTime(value);
-      if(instant)dates.add(instant.slice(0,10));
+      if(instant)dates.add(new Intl.DateTimeFormat('sv-SE',{
+        timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+      }).format(new Date(instant)));
     }
   }
   return [...dates].sort();
