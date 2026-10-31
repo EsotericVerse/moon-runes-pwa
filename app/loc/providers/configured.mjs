@@ -1,39 +1,8 @@
-import {createSupabaseAdapter} from './supabase.mjs';
-import {createBackupPublicAdapter} from './neon-public.mjs';
-import {runtimeDatabaseRouting} from './routing-state.mjs';
-import {createNeonPrimaryAdapter} from './neon-primary.mjs';
+// Clerk exclusively owns LOC interactive identity. Existing Supabase reads
+// remain available; private edits use the Clerk-verified SQL RPC/RLS path.
+// The device-only local SQLite scope is composed separately in db-client.mjs.
 import {createClerkGatewayAdapter} from './clerk-gateway.mjs';
 
 export function createConfiguredAdapter(){
-  // Opt-in only: legacy production login remains unchanged until Authority,
-  // Neon JWT/RLS and the full Gateway have passed live write validation.
-  // The optional Clerk entry is selected only after an actual signed
-  // Authority identity check on the standalone login page. Existing users
-  // retain their current Supabase session until they choose this path.
-  let deviceClerk=false;
-  if(typeof window!=='undefined'){
-    try{deviceClerk=window.localStorage.getItem('loc-auth-provider')==='clerk';}
-    catch{}
-  }
-  if(process.env.NEXT_PUBLIC_LOC_IDENTITY_PROVIDER==='clerk'||deviceClerk)
-    return createClerkGatewayAdapter();
-  const routing=runtimeDatabaseRouting();
-  if(routing.provider==='neon')return createNeonPrimaryAdapter();
-  const primary=createSupabaseAdapter();
-  // A missing backup must not instantiate a client or affect primary reads.
-  // Keep the same synchronous PostgREST-like schema interface.
-  let backupPublicClient=null;
-  const neonConfigured=Boolean(process.env.NEXT_PUBLIC_LOC_NEON_DATA_API_URL&&process.env.NEXT_PUBLIC_LOC_NEON_AUTH_URL);
-  const backup=routing.backupId&&neonConfigured?{
-    schema(name){
-      backupPublicClient??=createBackupPublicAdapter().publicClient;
-      return backupPublicClient.schema(name);
-    }
-  }:null;
-  return {
-    ...primary,
-    backupPublicClient:backup,
-    primarySourceLabel:'Supabase',
-    backupSourceLabel:backup?'Neon':''
-  };
+  return createClerkGatewayAdapter();
 }
