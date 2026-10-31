@@ -154,7 +154,7 @@ test('anchor import reports a read-only scan without inserting rows',async()=>{
 test('reimports reconcile both existing and new article anchors',async()=>{
   const {readFileSync}=await import('node:fs');
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(panel,/prepareImportPlaceAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/prepareImportPlaceAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
   assert.match(panel,/if\(restoredPlace\)changes\.place_id=restoredPlace/);
   assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
 });
