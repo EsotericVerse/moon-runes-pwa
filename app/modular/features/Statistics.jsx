@@ -54,17 +54,17 @@ import StatisticsDetails from '../modules/statistics/StatisticsDetails';
 import {statisticsZoomWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 
 const CHART_TYPES=STAT_VISUAL_TYPES;
-const STAT_TYPES=['total','source','place','type','media_platform','media_style'];
+const STAT_TYPES=['total','source','place','media_type','media_platform','media_style'];
 const STAT_TYPE_KEYS=Object.freeze({
   daily_rune:'uiExtra.statisticsUI.dailyRune',
   total:'statistics.totalSource',
   source:'uiExtra.statisticsUI.sourceGroup',
   place:'uiExtra.statisticsUI.place',
-  type:'uiExtra.statisticsUI.mediaType',
+  media_type:'uiExtra.statisticsUI.mediaType',
   media_platform:'uiExtra.statisticsUI.mediaPlatform',
   media_style:'uiExtra.statisticsUI.mediaStyle'
 });
-const MEDIA_STAT_TYPES=new Set(['type','media_platform','media_style']);
+const MEDIA_STAT_TYPES=new Set(['media_type','media_platform','media_style']);
 const STYLE_FILTERS=Object.freeze([{value:'none',textKey:'uiExtra.statisticsUI.notApplied'},{value:'rune66',textKey:'uiExtra.statisticsUI.keywordClass'}]);
 function dateKey(value){
   const key=String(value||'').slice(0,10);
