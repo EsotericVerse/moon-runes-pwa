@@ -826,3 +826,17 @@ test('Facebook archive with only ZIP uri and source post id does not invent URL'
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].url,undefined);
 });
+
+
+test('Facebook mojibake Meta label name is repaired before URL classification',async()=>{
+  const original='https://www.facebook.com/posts/67890';
+  const garbled=Buffer.from('貼文連結','utf8').toString('latin1');
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      timestamp:1720000000,data:[{post:'文字貼文'}],
+      string_map_data:{[garbled]:{value:original}}
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,original);
+});
