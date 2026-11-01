@@ -479,6 +479,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const category=categoryUid?tree.index.get(categoryUid):null;
     const descendants=descendantsOfKeyword(data,original.uid);
     const occupied=[...tree.index.keys()],mapping=new Map();
+    if(scope==='lo3rwang'){
+      // Shared PK means 4-character class UIDs must not collide with
+      // Time or Trace nodes. Read only UIDs, and only during copy.
+      for(let offset=0;;offset+=500){
+        const {data,error}=await dbAuthRelation('silver.lo3rwang_anchor')
+          .select('uid').order('uid',{ascending:true}).range(offset,offset+499);
+        if(error)throw Error('無法核對統一定錨 UID：'+(error.message||error));
+        for(const row of data||[])occupied.push(String(row.uid));
+        if((data||[]).length<500)break;
+      }
+    }
     for(const node of descendants){
       const uid=generateKeywordClassUid(occupied);
       occupied.push(uid);mapping.set(node.uid,uid);
