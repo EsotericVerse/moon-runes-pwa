@@ -4,15 +4,6 @@
 // No SQL, DDL, table creation, migration or old-data synchronization here.
 const legacyName=/^([a-z][a-z0-9]{0,14})_(time|trace|keywords|galaxy_media)$/;
 const physicalColumns=['uid','type','title','description','label','invisible','links','attrs'];
-const aliases={
-  time:{address:'label',anchor_ids:'links',range:'attrs'},
-  trace:{trace_type:'type',anchor_list:'links',times:'attrs',address:'label',route_list:'attrs'},
-  keywords:{name:'title',desc:'description',lists:'links',uid_lists:'attrs'},
-  galaxy_media:{url:'label',meta_tags:'description'}
-};
-const attrColumns=new Set(['range','times','route_list','uid_lists']);
-// The existing type field alone identifies all four categories. Without a
-// duplicate discriminator column, this does not introduce a second taxonomy.
 const scopedTypes={
   time:['date','period','era'],
   trace:['point','path','trace'],
@@ -28,26 +19,33 @@ const oldTypeByLegacy={
   trace:{point:'space_anchor',path:'path',trace:'trace'},
   galaxy_media:{Suno:'音樂',playlist:'播放清單'}
 };
-const toStoredType=value=>legacyToType[value]||value;
-const toLegacyType=(spec,value)=>oldTypeByLegacy[spec.legacy]?.[value]||value;
-const formatKeywordList=value=>value==null?null:JSON.stringify(value);
-const parseKeywordList=value=>{
-  if(value==null)return [];
-  try{const parsed=JSON.parse(value);return Array.isArray(parsed)?parsed:[]}
+const toStoredType=v=>legacyToType[String(v??'')]||v;
+const toLegacyType=(spec,v)=>oldTypeByLegacy[spec.legacy]?.[v]||v;
+const aliasByLegacy={
+  time:{address:'label',anchor_ids:'label',range:'attrs'},
+  trace:{trace_type:'type',anchor_list:'label',times:'attrs',address:'label',route_list:'attrs'},
+  keywords:{name:'title',desc:'description',lists:'label',uid_lists:'attrs'},
+  galaxy_media:{url:'label',meta_tags:'description'}
+};
+const attrKeys=new Set(['range','times','route_list','uid_lists']);
+const encodeList=v=>v==null?null:JSON.stringify(v);
+const decodeList=v=>{
+  if(v==null||v==='')return [];
+  if(Array.isArray(v))return v;
+  try{const decoded=JSON.parse(v);return Array.isArray(decoded)?decoded:[]}
   catch{return []}
 };
-const encodeLabel=(spec,key,value)=>{
-  if(spec.legacy==='trace'&&key==='address'&&value!=null)
-    return typeof value==='string'?value:JSON.stringify(value);
-  if(spec.legacy==='time'&&key==='address'&&value!=null)
-    return String(value).slice(0,10);
-  return value;
+const encodeLabel=(spec,key,v)=>{
+  if(v==null)return null;
+  if(spec.legacy==='trace'&&key==='address')return typeof v==='string'?v:JSON.stringify(v);
+  if(spec.legacy==='time'&&key==='address')return String(v).slice(0,10);
+  if(['anchor_ids','anchor_list','lists'].includes(key))return encodeList(v);
+  return v;
 };
-const decodeLabel=(spec,value)=>{
-  if(spec.legacy==='trace'&&typeof value==='string'){
-    try{return JSON.parse(value)}catch{return value}
-  }
-  return value;
+const decodeLabel=(spec,v)=>{
+  if(v==null)return null;
+  if(spec.legacy==='trace'){try{return JSON.parse(v)}catch{return v}}
+  return v;
 };
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
@@ -100,7 +98,7 @@ function prepareAnchorInsert(spec,row,assigned){
   }
   if(spec.legacy==='keywords'&&value.uid_lists==null)value.uid_lists={};
   const mapped=toAnchorRow(spec,value);
-  if(spec.legacy==='galaxy_media')mapped.attrs={};
+  if(!mapped.attrs)mapped.attrs={};
   return mapped;
 }
 export function unifiedAnchorSpec(schema,table){
@@ -109,69 +107,90 @@ export function unifiedAnchorSpec(schema,table){
   return {table:matched[1]+'_anchor',legacy:matched[2]};
 }
 export function toAnchorRow(spec,row){
-  if(!row||typeof row!=='object')throw Error('Invalid unified anchor row');
-  const result={},attrs={};
-  const type=toStoredType(row.trace_type??row.type);
+  if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Invalid unified anchor row');
+  const result={},attrs={},type=toStoredType(row.trace_type??row.type);
+  // Browser/editor compatibility is deliberately confined to this adapter.
+  // The database never receives the old type values.
   for(const [key,value] of Object.entries(row)){
-    if(key==='kind'||key==='createtime'||key==='location'||key==='date')continue;
-    // The Item keyword judgement list occupies label; the other levels
-    // continue using links to store their child UID relationships.
-    if(spec.legacy==='keywords'&&key==='lists'&&type==='item'){
-      result.label=formatKeywordList(value);
+    if(['kind','createtime','date','location'].includes(key))continue;
+    if(key==='attrs'){
+      if(value&&typeof value==='object'&&!Array.isArray(value))
+        Object.assign(attrs,value);
       continue;
     }
-    const target=aliases[spec.legacy][key]||key;
-    if(attrColumns.has(key)&&target==='attrs')attrs[key]=value;
-    else if(physicalColumns.includes(target)&&target!=='attrs'){
-      result[target]=target==='type'?toStoredType(value):
-        spec.legacy==='trace'&&key==='description'&&value&&typeof value==='object'
-          ?JSON.stringify(value):encodeLabel(spec,key,value);
-    }else throw Error('Unsupported legacy anchor column: '+key);
+    if(key==='type'||key==='trace_type'){result.type=toStoredType(value);continue}
+    const mapped=aliasByLegacy[spec.legacy][key]||key;
+    if(attrKeys.has(key)&&mapped==='attrs'){attrs[key]=value;continue}
+    if(!physicalColumns.includes(mapped)||mapped==='attrs')
+      throw Error('Unsupported legacy anchor column: '+key);
+    // One label for date/GPS/link URL/list, depending on the type.
+    if(mapped==='label'){
+      const primary=(spec.legacy==='time'?(type==='date'?'address':'anchor_ids'):
+        spec.legacy==='trace'?(type==='point'?'address':'anchor_list'):
+        spec.legacy==='keywords'?'lists':'url');
+      if(key===primary)result.label=encodeLabel(spec,key,value);
+      continue;
+    }
+    result[mapped]=spec.legacy==='trace'&&key==='description'&&value&&typeof value==='object'
+      ?JSON.stringify(value):value;
   }
   if(Object.keys(attrs).length)result.attrs=attrs;
   return result;
 }
 export function fromAnchorRow(spec,row){
   if(!row)return row;
-  const result={},reverse=Object.fromEntries(
-    Object.entries(aliases[spec.legacy]).filter(([key,value])=>value!=='attrs')
-      .map(([key,value])=>[value,key])
-  );
+  const type=String(row.type||''),result={};
   for(const [key,value] of Object.entries(row)){
     if(key==='attrs'){
-      for(const field of Object.keys(aliases[spec.legacy]).filter(k=>aliases[spec.legacy][k]==='attrs'))
+      for(const field of Object.keys(aliasByLegacy[spec.legacy]).filter(k=>aliasByLegacy[spec.legacy][k]==='attrs'))
         result[field]=value?.[field]??null;
     }else if(key==='label'){
-      if(spec.legacy==='time'||spec.legacy==='trace')result.address=decodeLabel(spec,value);
-      if(spec.legacy==='galaxy_media')result.url=value;
-      if(spec.legacy==='keywords'&&row.type==='item')result.lists=parseKeywordList(value);
-    }else if(key==='links'&&spec.legacy==='keywords'){
-      if(row.type!=='item')result.lists=value;
+      if(spec.legacy==='time'){
+        if(type==='date')result.address=value;
+        else result.anchor_ids=decodeList(value);
+      }else if(spec.legacy==='trace'){
+        if(type==='point')result.address=decodeLabel(spec,value);
+        else result.anchor_list=decodeList(value);
+      }else if(spec.legacy==='keywords')result.lists=decodeList(value);
+      else result.url=value;
     }else if(key==='type'){
       result[spec.legacy==='trace'?'trace_type':'type']=toLegacyType(spec,value);
+    }else if(key==='title'&&spec.legacy==='keywords')result.name=value;
+    else if(key==='description'&&spec.legacy==='keywords')result.desc=value;
+    else if(key==='description'&&spec.legacy==='galaxy_media'){
+      result.meta_tags=value;result.description=value;
     }else if(key==='description'&&spec.legacy==='trace'&&typeof value==='string'&&value.startsWith('{')){
-      let structured=null;
-      try{structured=JSON.parse(value)}catch{}
-      result.description=structured&&typeof structured==='object'&&!Array.isArray(structured)?structured:value;
-    }else if(key==='description'&&spec.legacy==='galaxy_media'){
-      result.description=value;result.meta_tags=value;
-    }else result[reverse[key]||key]=value;
+      let parsed=null;try{parsed=JSON.parse(value)}catch{}
+      result.description=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)?parsed:value;
+    }else if(key==='links'){
+      // Keep non-list relation links independently available to consumers.
+      if(spec.legacy!=='keywords'&&spec.legacy!=='time'&&spec.legacy!=='trace')
+        result.links=value;
+    }else result[key]=value;
   }
-  // Preserve legacy Media consumers during staged physical schema migration.
-  if(spec.legacy==='galaxy_media'&&!Object.hasOwn(result,'createtime'))result.createtime=null;
+  if(spec.legacy==='time'){
+    if(type==='date'&&!Object.hasOwn(result,'anchor_ids'))result.anchor_ids=[];
+    if(type!=='date'&&!Object.hasOwn(result,'address'))result.address=null;
+  }
+  if(spec.legacy==='trace'){
+    if(type==='point'&&!Object.hasOwn(result,'anchor_list'))result.anchor_list=[];
+    if(type!=='point'&&!Object.hasOwn(result,'address'))result.address=null;
+  }
+  if(spec.legacy==='keywords'&&!Object.hasOwn(result,'lists'))result.lists=[];
+  if(spec.legacy==='galaxy_media')result.createtime=null;
   return result;
 }
-const readColumn=(spec,name)=>aliases[spec.legacy][name]||name;
+const readColumn=(spec,name)=>aliasByLegacy[spec.legacy][name]||name;
 function fieldsForSelect(spec,columns){
   if(!columns||columns==='*')return physicalColumns.join(',');
-  const fields=new Set(['uid']);
+  const fields=new Set(['uid','type']);
   for(const raw of String(columns).split(',')){
     const name=raw.trim().split(':').at(-1).trim();
+    // A removed media timestamp is intentionally not stored in attrs.
+    if(spec.legacy==='galaxy_media'&&name==='createtime')continue;
     const mapped=readColumn(spec,name);
     if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
     fields.add(mapped);
-    if(spec.legacy==='keywords'&&name==='lists')fields.add('label');
-    if(spec.legacy==='galaxy_media'&&name==='description')fields.add('description');
   }
   return [...fields].join(',');
 }
@@ -267,18 +286,24 @@ class UnifiedQuery{
     const spec=this.spec;
     const jsonFilters=[];
     for(const filter of this.filters){
+      if(spec.legacy==='galaxy_media'&&filter.column==='createtime'){
+        // Media no longer stores a publication timestamp. Treat reads as
+        // undated rather than inventing an unrelated JSONB attribute.
+        if(filter.method==='is'&&filter.value===null)continue;
+        throw Error('Media createtime filter is unavailable in unified schema');
+      }
       const mapped=readColumn(spec,filter.column);
       if(mapped==='attrs'){jsonFilters.push(filter);continue}
       if(!physicalColumns.includes(mapped))throw Error('Unmapped anchor filter: '+filter.column);
-      physical=applyFilter(physical,{...filter,column:mapped,
-        value:mapped==='type'?(Array.isArray(filter.value)
-          ?filter.value.map(toStoredType):toStoredType(filter.value)):
-          mapped==='label'&&spec.legacy==='trace'&&filter.column==='address'
-            ?encodeLabel(spec,'address',filter.value):filter.value});
+      const value=mapped==='type'
+        ?(Array.isArray(filter.value)?filter.value.map(toStoredType):toStoredType(filter.value))
+        :mapped==='label'&&filter.column==='address'&&spec.legacy==='trace'
+          ?encodeLabel(spec,'address',filter.value)
+          :mapped==='label'&&['anchor_ids','anchor_list','lists'].includes(filter.column)
+            ?encodeList(filter.value):filter.value;
+      physical=applyFilter(physical,{...filter,column:mapped,value});
     }
-    // Shared type column is the only category discriminator. Media has a
-    // mandatory eight-character UID; the other categories use four.
-    // Every filter remains server-side, including caller-supplied OR.
+    // Media uses eight-character UID; all other domains use four.
     physical=spec.legacy==='galaxy_media'
       ?physical.like('uid','________')
       :physical.in('type',scopedTypes[spec.legacy]);
