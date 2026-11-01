@@ -224,3 +224,58 @@ test('same-place duplicate enriches missing coordinate',()=>{
   ]);
   assert.deepEqual(unique[0].__importCoordinates,{latitude:25,longitude:121});
 });
+
+
+test('PostgreSQL 23505 returned as generic Kysely error bisects and verifies UID',async()=>{
+  const written=[];
+  let checked=0;
+  const result=await insertImportBatches([
+    {uid:'AA000001'},{uid:'UMG95VT1'},{uid:'AA000003'}
+  ],{
+    writeBatch:async rows=>{
+      if(rows.some(row=>row.uid==='UMG95VT1')){
+        const error=new Error('Database request failed');
+        error.code='23505';
+        error.status=500;
+        throw error;
+      }
+      written.push(...rows.map(row=>row.uid));
+      return {count:rows.length};
+    },
+    verifyUidConflict:async uid=>{
+      checked++;
+      return uid==='UMG95VT1';
+    }
+  });
+  assert.deepEqual(written,['AA000001','AA000003']);
+  assert.deepEqual([...result.conflictedUids],['UMG95VT1']);
+  assert.equal(result.inserted,2);
+  assert.equal(result.conflicts,1);
+  assert.equal(checked,1);
+});
+
+test('PostgreSQL 23505 with no existing UID is never silently skipped',async()=>{
+  await assert.rejects(()=>insertImportBatches([{uid:'AB000001'}],{
+    writeBatch:async()=>{
+      const error=new Error('Database request failed');error.code='23505';throw error;
+    },
+    verifyUidConflict:async()=>false
+  }),/Database request failed/);
+});
+
+test('PostgreSQL 23505 for a different named constraint is never treated as UID collision',async()=>{
+  await assert.rejects(()=>insertImportBatches([{uid:'AB000001'}],{
+    writeBatch:async()=>{
+      const error=new Error('Database request failed');
+      error.code='23505';error.constraint='other_unique_constraint';throw error;
+    },
+    verifyUidConflict:async()=>true
+  }),/Database request failed/);
+});
+
+test('unknown HTTP 500 SQL errors are not reclassified as UID conflicts',async()=>{
+  await assert.rejects(()=>insertImportBatches([{uid:'AB000001'}],{
+    writeBatch:async()=>{const error=new Error('Database request failed');error.status=500;throw error},
+    verifyUidConflict:async()=>true
+  }),/Database request failed/);
+});

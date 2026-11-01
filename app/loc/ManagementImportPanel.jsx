@@ -950,6 +950,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const count=payload.length,started=Date.now();
         const outcome=await insertImportBatches(payload,{
           batchSize:insertSizer.size,
+          // The Gateway reports SQLSTATE 23505 without naming its constraint.
+          // Verify the UID really exists before treating it as an article collision.
+          verifyUidConflict:async uid=>(await readRowsByUid([uid]))
+            .some(row=>String(row.uid)===uid),
           writeBatch:batch=>insertImportRows(galaxy,batch.map(record=>({
             ...record,place_id:record.place_id??null,media_link:record.media_link??null
           })))
