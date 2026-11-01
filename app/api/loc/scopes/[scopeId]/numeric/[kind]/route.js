@@ -23,18 +23,17 @@ export async function GET(request,{params}){
   const start=url.searchParams.get('startDate')||'',end=url.searchParams.get('endDate')||'';
   if((start&&!day(start))||(end&&!day(end))||start&&end&&start>end)
     return reply(request,{error:'Invalid date range'},400);
-  let name,args;
-  if(kind==='culture'){
-    name='read_scope_statistics';args={p_scope_id:scopeId,p_start:day(start),p_end:day(end),
-      p_include_undated:url.searchParams.get('includeUndated')==='true'};
-  }else if(kind==='statistics'){
-    name='read_scope_overview';args={p_scope_id:scopeId,p_start:day(start),p_end:day(end)};
-  }else if(kind==='earliest'){
-    name='read_scope_earliest';args={p_scope_id:scopeId};
-  }else{
-    if(scopeId!=='loc')return reply(request,{error:'Unsupported LOC statistics scope'},404);
-    name='read_loc_statistics';args={p_start:day(start),p_end:day(end)};
-  }
+  // All numerical views share the same SQL entrypoint; the selected view
+  // is still computed lazily inside Postgres, never loaded in the browser.
+  const name='read_scope_analytics';
+  const view={culture:'daily',statistics:'overview',earliest:'earliest',
+    'loc-statistics':'loc'}[kind];
+  if(view==='loc'&&scopeId!=='loc')
+    return reply(request,{error:'Unsupported LOC statistics scope'},404);
+  const args={
+    p_scope_id:scopeId,p_view:view,p_start:day(start),p_end:day(end),
+    p_options:view==='daily'?{includeUndated:url.searchParams.get('includeUndated')==='true'}:{}
+  };
   // Normal request: Supabase only. If Supabase is unavailable, a configured
   // Neon Data API provides the same PostgreSQL RPC and mirrored ISR settings.
   // No admin cookies, API keys or service secrets enter this public path.
