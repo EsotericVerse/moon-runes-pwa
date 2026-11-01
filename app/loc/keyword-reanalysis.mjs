@@ -3,6 +3,17 @@ import {keywordClassCatalog,indexKeywordTree} from './keyword-tree.mjs';
 
 const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
 
+// Count only as far as the eligibility threshold, without allocating a
+// code-point array for the entire article. For non-whitespace Unicode
+// codepoints this matches Array.from(content.replace(/\s/gu,'')) exactly.
+export function hasKeywordMinimumContent(content,minChars=0){
+  let visible=0;
+  for(const char of String(content??'')){
+    if(!/\s/u.test(char)&&++visible>minChars)return true;
+  }
+  return false;
+}
+
 // Aggregate one page at a time. Memory scales with the actual stored Keyword
 // hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
@@ -37,7 +48,7 @@ export async function reanalyzeKeywordClass({
       seen.add(row.uid);
     }
     const docs=page.filter(row=>row.searchable!==false&&
-      Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
+      hasKeywordMinimumContent(row.content,minChars));
     const data=classify(docs);
     for(const result of data.classifications||[]){
       if(!ARTICLE_UID.test(result.uid)||!seen.has(result.uid))
