@@ -214,3 +214,38 @@ test('Meta candidate URL without a ZIP-local path is still a real media URL',()=
     media:[{image_versions2:{candidates:[{url}]}}]
   }),[{uri:url,mediaType:'image',url}]);
 });
+
+
+test('URI-only Meta ZIP image never produces a persisted media row or article media link',()=>{
+  const collector=createArchiveEvidenceCollector();
+  collector.onRecord({
+    platform:'facebook',sourcePath:'your_posts_1.json',
+    attachments:[{uri:'photos/only-local.jpg',mediaType:'image',url:null}]
+  },'POST0001');
+  collector.onMediaEntry({path:'photos/only-local.jpg'});
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:200});
+  const plan=prepareArchiveMedia(evidence,new Set(['POST0001']));
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
+});
+
+test('JSON media URL persists without reading ZIP image bytes and keeps article link',()=>{
+  const url='https://cdn.example.test/media?token=123';
+  const collector=createArchiveEvidenceCollector();
+  const attachments=archiveAttachmentReferences({media:[{
+    uri:'photos/image.jpg',image_versions2:{candidates:[{url}]}
+  }]});
+  collector.onRecord({platform:'instagram',attachments},'POST0002');
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:200});
+  const plan=prepareArchiveMedia(evidence,new Set(['POST0002']));
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,url);
+  assert.equal(plan.mediaLinks.length,1);
+});
+
+test('LOC production import only reads JSON, never invokes ZIP image or EXIF processors',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(panel,/onMediaMetadata\s*:/);
+  assert.doesNotMatch(panel,/onMediaEntry\s*:/);
+  assert.doesNotMatch(panel,/嘗試讀取 EXIF/);
+});
