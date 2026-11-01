@@ -43,7 +43,7 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
     if(signal&&typeof countQuery.abortSignal==='function')countQuery=countQuery.abortSignal(signal);
     const {count,error:countError}=await countQuery;
     if(signal?.aborted)throw aborted();
-    if(countError||count===null||count===undefined||!Number.isSafeInteger(Number(count)))
+    if(countError||count===null||count===undefined||(count==null||!Number.isSafeInteger(Number(count))))
       throw new Error(countError?.message||'無法取得完整文章筆數');
     const total=Number(count);
     // The existing Galaxy.date B-tree supports a bounded, ascending cursor.
@@ -86,7 +86,7 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
       const page=Array.isArray(data)?data:[];
       if(!page.length)break;
       const boundary=page[page.length-1]?.date;
-      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(boundary||''))||
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(String(boundary||''))||
         page.some(row=>!row?.date||String(row.date)>String(boundary)))
         throw new Error('Galaxy 日期分頁資料不完整');
       // Always fetch the entire last-day peer group: PostgreSQL may return
@@ -95,7 +95,7 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
       const {data:peers,count}=await readPage(relation=>relation
         .select(ARTICLE_COLUMNS,{count:'exact'}).eq('date',boundary)
         .limit(MAX_SAME_DAY_ROWS));
-      if(!Array.isArray(peers)||!Number.isSafeInteger(Number(count))||
+      if(!Array.isArray(peers)||(count==null||!Number.isSafeInteger(Number(count)))||
         Number(count)>=MAX_SAME_DAY_ROWS||peers.length!==Number(count))
         throw new Error('Galaxy 同日文章超過掃描上限或資料不完整，未覆寫先前暫存');
       await consumePage(prefix);
@@ -105,7 +105,7 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
     const {data:undated,count:undatedCount}=await readPage(relation=>relation
       .select(ARTICLE_COLUMNS,{count:'exact'}).is('date',null)
       .limit(MAX_SAME_DAY_ROWS));
-    if(!Array.isArray(undated)||!Number.isSafeInteger(Number(undatedCount))||
+    if(!Array.isArray(undated)||(undatedCount==null||!Number.isSafeInteger(Number(undatedCount)))||
       Number(undatedCount)>=MAX_SAME_DAY_ROWS||undated.length!==Number(undatedCount))
       throw new Error('Galaxy 無日期文章超過掃描上限或資料不完整，未覆寫先前暫存');
     await consumePage(undated);
