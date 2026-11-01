@@ -100,7 +100,7 @@ function highlightSearchText(text='',query=''){
 function toResult(row,source,scopeId,copy=UI_COPY){
   const isMedia=Boolean(row.uid&&(row.record_type==='galaxy_media'||
     String(row.__table||'').endsWith('_media')||
-    (row.type&&!Object.prototype.hasOwnProperty.call(row,'content'))));
+    Object.prototype.hasOwnProperty.call(row,'meta_tags')));
   const isGalaxy=Boolean(row.uid)&&!isMedia&&!['anchor','period','era'].includes(String(row.type||''));
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
