@@ -21,9 +21,10 @@ test('a repeated genuine source ID is the same article even if the import UID ch
 });
 test('duplicate source copies retain a missing check-in on the canonical article',()=>{
   const rows=[
-    {...original,location:null},
+    {...original,location:null,__importVisitTimes:['2026-10-26T06:00:00Z']},
     {...original,uid:'NEW00001',location:'台北車站',date:'2026-10-27',
-      __importCheckin:true,__importCoordinates:{latitude:25,longitude:121}}
+      __importCheckin:true,__importCoordinates:{latitude:25,longitude:121},
+      __importVisitTimes:['2026-10-27T06:00:00Z']}
   ];
   const result=dedupeIncomingImport(rows);
   assert.equal(result.unique.length,1);
@@ -31,6 +32,7 @@ test('duplicate source copies retain a missing check-in on the canonical article
   assert.equal(result.unique[0].date,'2026-10-27');
   assert.equal(result.unique[0].__importCheckin,true);
   assert.deepEqual(result.unique[0].__importCoordinates,{latitude:25,longitude:121});
+  assert.deepEqual(result.unique[0].__importVisitTimes,['2026-10-26T06:00:00Z','2026-10-27T06:00:00Z']);
 });
 test('a duplicate cannot overwrite an existing explicit location',()=>{
   const result=dedupeIncomingImport([
