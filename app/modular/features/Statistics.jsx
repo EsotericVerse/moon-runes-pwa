@@ -482,8 +482,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     startDate:queryRange.startDate||'',
     endDate:queryRange.endDate||''
   }),[queryRange.startDate,queryRange.endDate]);
+  // Separate the guest/shared directory from the owner's private catalog.
+  // Never reuse a one-Class anonymous cache after an authorized sign-in.
+  const keywordAccount=useAccount({enabled:!isLrunesDaily&&styleFilter==='keywords'});
   const keywordClassQuery=useAsyncResource({
-    queryKey:['scope-active-keyword-class-name',scopeId],
+    queryKey:['scope-active-keyword-class-name',scopeId,keywordAccount.user?.id||'guest'],
     // The keyword class is optional; the ordinary Statistics view never queries it.
     enabled:!isLrunesDaily&&styleFilter==='keywords',
     queryFn:async()=>{
