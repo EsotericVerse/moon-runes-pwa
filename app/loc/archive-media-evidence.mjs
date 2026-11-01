@@ -2,7 +2,7 @@
 const MAX_MEDIA_PER_RECORD=200;
 const URI_KEYS=['uri','src','media_uri','mediaUri','path','relative_path','relativePath'];
 const URL_KEYS=['media_url','mediaUrl','image_url','video_url','download_url','downloadUrl','media_url_https','url','display_url'];
-const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','array','label_values','image_versions2','image','video','photo'];
+const CHILD_KEYS=['photos','videos','audio_files','attachments','media','data','items','array','label_values','image_versions2','image','video','photo','candidates','video_versions','thumbnail_resources','carousel_media','children','images','thumbnail'];
 const HTTP=/^https?:\/\/[^/\s]+/i;
 const MEDIA_EXT=/\.(?:jpe?g|png|gif|webp|heic|avif|tiff?|mp4|mov|mkv|webm|mp3|m4a|wav|ogg|flac)(?:[?#]|$)/i;
 const rawPath=value=>String(value||'').trim().replace(/\\/g,'/');
@@ -74,18 +74,18 @@ export function archiveAttachmentReferences(record){
          .some(isArchiveMediaUrl)||
        [record.media_url,record.mediaUrl,record.image_url,record.video_url,record.media_url_https]
          .some(value=>typeof value==='string'&&Boolean(publicUrl(value))))roots.push(record);
-  const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
+  const queue=roots.filter(Boolean).map(value=>({value,depth:0,hint:'',originUri:''}));
   const visited=new WeakSet(),found=new Map();
   // Cursor-based breadth-first traversal avoids shifting every pending node
   // (and preserves discovery order and the 3000-node safety ceiling).
   let examined=0,cursor=0;
   while(cursor<queue.length&&examined<3000&&found.size<MAX_MEDIA_PER_RECORD){
-    const {value,depth}=queue[cursor++];examined++;
+    const {value,depth,hint:parentHint,originUri}=queue[cursor++];examined++;
     if(!value||typeof value!=='object')continue;
     if(visited.has(value))continue;
     visited.add(value);
-    if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth});continue;}
-    const hint=String(value.media_type||value.type||value.mime_type||(value.image_url?'image':value.video_url?'video':''));
+    if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth,hint:parentHint,originUri});continue;}
+    const hint=String(value.media_type||value.type||value.mime_type||(value.image_url?'image':value.video_url?'video':parentHint));
     // No temporary map/filter arrays for every object in a large export.
     const paths=[],allUrls=[];
     for(const key of URI_KEYS){
@@ -109,14 +109,17 @@ export function archiveAttachmentReferences(record){
         urls.find(v=>!/(?:instagram\.com\/(?:p|reel|stories)\/|threads\.net\/.*\/post\/|facebook\.com\/(?:posts|permalink\.php))/i.test(v)):null);
     const directUrl=publicUrl(mediaUrl)||genericUrl||paths.find(v=>HTTP.test(v))||null;
     const relative=paths.filter(v=>!HTTP.test(v));
-    for(const uri of relative.length?relative:directUrl?[directUrl]:[]){
+    for(const uri of relative.length?relative:directUrl?[originUri||directUrl]:[]){
       const mediaType=archiveMediaType(uri,hint);
       const existing=found.get(uri);
       if(!existing||(!existing.url&&directUrl))
         found.set(uri,{uri,mediaType,url:publicUrl(directUrl)});
     }
-    if(depth<6)for(const key of CHILD_KEYS)if(value[key]!=null)
-      queue.push({value:value[key],depth:depth+1});
+    if(depth<6)for(const key of CHILD_KEYS)if(value[key]!=null){
+      const childHint=/^(?:image_versions2|image|photo|photos|images|thumbnail|thumbnail_resources)$/i.test(key)?'image':
+        /^(?:video_versions|video|videos)$/i.test(key)?'video':hint;
+      queue.push({value:value[key],depth:depth+1,hint:childHint,originUri:relative[0]||originUri});
+    }
   }
   return [...found.values()];
 }
