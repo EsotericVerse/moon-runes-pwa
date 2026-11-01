@@ -356,9 +356,10 @@ async function articleTimeContext(scope,day){
   const anchors=labels(selectedDay.rows||[]);
   // A fixed year/date suggestion is relevant only if this article does not
   // already have an exact Time anchor. The candidate is not persisted.
-  const anniversarySuggestions=anchors.length?[]:anniversarySuggestionsForDate(
-    day,await articleAnniversarySources(scope),{birthday:scope.birthday}
-  );
+  const anniversarySuggestions=anchors.length?[]:await articleAnniversarySources(scope)
+    .then(sources=>anniversarySuggestionsForDate(day,sources,{birthday:scope.birthday}))
+    .catch(()=>[]);
+  // An optional hint failure must never hide the actual Time/Trace data.
   return {
     anchors,
     periods:labels(ranges.filter(row=>row.entry_type==='period'&&matches(row))),
