@@ -198,7 +198,7 @@ test('check-in times are merged into the anchor times array: sorted, no duplicat
   await assert.rejects(()=>recordImportPlaceVisits([{uid:'AB12',time:'2025-01-01T00:00:00Z'}],{
     relation:()=>({update:()=>({eq:()=>({eq:async()=>({error:{message:'denied'}})})})}),
     table:'silver.lo3rwang_trace',timesByUid
-  }),/寫入定錨打卡時間失敗/);
+  }),/補齊打卡時間中斷.*denied/);
 });
 
 test('the panel records existing and imported check-in times without double-adding old articles',async()=>{
@@ -221,6 +221,12 @@ test('import progress touches the edit Session, so a long read-only comparison p
   const progressTouch=panel.indexOf('touchEditorSession(window.sessionStorage)',progressStart);
   assert.ok(progressTouch>progressStart);
   assert.ok(progressTouch<panel.indexOf('setProgress({stage,completed,total,',progressStart));
+});
+
+test('reconciliation keeps current main Galaxy title for meaningful Time-anchor summaries',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const reconcile=readFileSync(new URL('../app/loc/reconcile-import-anchors.mjs',import.meta.url),'utf8');
+  assert.match(reconcile,/\.select\('uid,title,location,place_id,date,createtime'\)/);
 });
 
 test('visit repairs use at most six concurrent writes and show final-stage progress',async()=>{
