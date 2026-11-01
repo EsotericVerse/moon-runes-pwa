@@ -10,7 +10,7 @@ test('time-anchor action lives in the shared article detail Time section',()=>{
   assert.match(ui,/const ArticleTimeAnchorAction=dynamic\(/);
   assert.match(ui,/\{detailReading\?<ArticleRelationNavigation/);
   assert.match(ui,/<h3>時間<\/h3>/);
-  assert.match(ui,/row\('重要日',<>/);
+  assert.match(ui,/row\('定錨',<>/);
   assert.match(ui,/<ArticleTimeAnchorAction\s+scopeId=\{scope\} date=\{day\}/);
   assert.match(ui,/const day=String\(articleDate\|\|''\)\.slice\(0,10\)/);
 });
