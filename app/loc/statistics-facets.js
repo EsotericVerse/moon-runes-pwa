@@ -61,7 +61,7 @@ export function mediaFacetDaily(rows=[],dimension='media_platform'){
     const day=mediaDay(row?.createtime);
     if(!day)continue;
     let categories=[];
-    if(dimension==='type')categories=[plainText(row.type)||'未分類'];
+    if(dimension==='media_type')categories=[plainText(row.type)||'未分類'];
     else if(dimension==='media_style')categories=mediaStyleTags(row.meta_tags);
     else if(dimension==='media_platform')categories=[mediaPlatform(row)];
     else throw new Error('Unsupported media statistics dimension: '+dimension);
