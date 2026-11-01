@@ -941,7 +941,7 @@ async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
     try{
       const snapshot=await readNumericIsr(current.id,'statistics',{startDate,endDate});
       // Older ISR snapshots have no linked-media total. Do not display a false zero.
-      if(Number.isFinite(Number(snapshot?.mediaCount)))return snapshot;
+      if(snapshot?.mediaCount!=null&&Number.isFinite(Number(snapshot.mediaCount)))return snapshot;
     }catch{ /* Optional ISR failure: existing overview RPC. */ }
   }
   try{
@@ -954,7 +954,7 @@ async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
     selectScopeSourceBreakdownRows(current,{startDate,endDate}),
     selectSourceTaxonomy()
   ]);
-  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases,mediaCount:0};
+  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases,mediaCount:null};
 }
 async function selectScopeEarliestRaw(scope){
   const current=scopeOf(scope);
