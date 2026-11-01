@@ -8,12 +8,9 @@ const operators={eq:'=',neq:'!=',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'like',ili
 // Existing application RPCs only. Keep SQL identifiers fixed and bind all values.
 export const RPC_ALLOWLIST={
   'silver.management_write':['p_table','p_operation','p_rows','p_values','p_filters'],
+  'silver.read_scope_analytics':['p_scope_id','p_view','p_start','p_end','p_options'],
   'silver.get_my_scope_management':[],
   'silver.read_music_style_tree':[],
-  'silver.read_shared_keyword_classes':['p_scope_id'],
-  'silver.read_keyword_tree_catalog':['p_scope_id','p_class_uid'],
-  'silver.read_keyword_tree_summary':['p_scope_id','p_start','p_end','p_source','p_class_uid'],
-  'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids','p_start','p_end','p_source','p_class_uid'],
   // These existing scope procedures perform database-side permission checks,
   // atomic multi-row writes, or bounded indexed lookups. Do not recreate
   // transactions as multiple browser requests.
@@ -32,10 +29,7 @@ export const RPC_ALLOWLIST={
 };
 const RPC_REQUIRED_ARGUMENTS={
   'silver.management_write':['p_table','p_operation'],
-  'silver.read_shared_keyword_classes':['p_scope_id'],
-  'silver.read_keyword_tree_catalog':['p_scope_id'],
-  'silver.read_keyword_tree_summary':['p_scope_id'],
-  'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids'],
+  'silver.read_scope_analytics':['p_scope_id','p_view'],
   'silver.import_shared_keyword_class':['p_target_scope','p_source_scope','p_class_uid'],
   'silver.save_scope_trace_place_names':['p_scope_id','p_uid','p_names'],
   'silver.preview_timeline_place_page_json':['p_scope_id','p_windows'],
@@ -303,6 +297,7 @@ export function buildAllowlistedRpcQuery(input){
   // accept JSONB arrays, whereas name lists and place UID lists are SQL arrays.
   const jsonbArgsByRpc={
     'silver.management_write':new Set(['p_rows','p_values','p_filters']),
+    'silver.read_scope_analytics':new Set(['p_options']),
     'silver.preview_timeline_place_page_json':new Set(['p_windows']),
     'silver.apply_timeline_place_ids':new Set(['p_updates'])
   };
