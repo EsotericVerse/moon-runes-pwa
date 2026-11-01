@@ -15,8 +15,8 @@ export function keywordUidListData(type,value){
   const raw=typeof value==='string'?(()=>{try{return JSON.parse(value)}catch{return value}})():value;
   if(Array.isArray(raw))return raw; // Existing local-file or import documents.
   if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
-    if(type==='group')return array(raw.articles??[]);
-    if(type==='item')return array(raw.hits??[]);
+    if(type==='group'&&Array.isArray(raw.articles))return [...raw.articles];
+    if(type==='item'&&Array.isArray(raw.hits))return [...raw.hits];
     if(['category','class'].includes(type)&&Object.keys(raw).length===0)return [];
   }
   throw new Error('Invalid structured Keywords uid_lists for '+type);
