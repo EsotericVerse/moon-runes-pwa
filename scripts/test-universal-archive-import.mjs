@@ -765,3 +765,28 @@ test('nested caption discovery is platform-agnostic: an X/Twitter post with no t
   assert.equal(rows[0].row.content,'推文裡藏的照片說明文字');
   assert.equal(rows[0].row.site,'X');
 });
+
+
+test('Facebook shared external URL is not incorrectly imported as its original permalink',async()=>{
+  const a=await parsed('facebook-external.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      id:'fb-external',timestamp:1720000000,
+      data:[{post:'分享外部新聞',url:'https://news.example.test/story'}],
+      attachments:[{data:[{external_context:{url:'https://news.example.test/story'}}]}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url??null,null);
+});
+
+test('Facebook same-platform post URL inside data is imported as original article URL',async()=>{
+  const url='https://www.facebook.com/posts/real-abc123';
+  const a=await parsed('facebook-post.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      id:'fb-original',timestamp:1720000000,
+      data:[{post:'原始文章',url}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,url);
+});
