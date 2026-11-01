@@ -171,14 +171,15 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     const saved=[...(candidates.get(key)?.values()||[])];
     if(!saved.length)continue;
     const used=new Set(),unresolved=[];
-    // Same-second groups can contain many posts. Normalize each saved body
-    // only once instead of once per incoming candidate comparison.
-    const textByUid=new Map();
-    const savedText=row=>{
-      const uid=String(row.uid);
-      if(!textByUid.has(uid))textByUid.set(uid,comparableImportText(row.content));
-      return textByUid.get(uid);
-    };
+    // Index one same-second group once. Native IDs and normalized bodies
+    // should not trigger a full scan for each imported post.
+    const bySiteId=new Map();
+    for(const row of saved){
+      const id=String(row.site_id||'').trim();
+      if(!id)continue;
+      if(!bySiteId.has(id))bySiteId.set(id,[]);
+      bySiteId.get(id).push(row);
+    }
     const eligible=(record,rows)=>rows.filter(row=>{
       if(used.has(String(row.uid)))return false;
       const incomingId=String(record.site_id||'').trim();
@@ -192,15 +193,21 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     // A source identifier is definitive even when multiple posts share time.
     for(const record of recordsAtTime){
       const id=String(record.site_id||'').trim();
-      const equal=id?saved.filter(row=>!used.has(String(row.uid))&&
-        String(row.site_id||'').trim()===id):[];
+      const equal=id?(bySiteId.get(id)||[]).filter(row=>!used.has(String(row.uid))):[];
       if(equal.length===1)assign(record,equal[0]);
       else if(equal.length>1)ambiguous.push({uid:String(record.uid),site:record.site,createtime:record.createtime});
       else unresolved.push(record);
     }
+    // Build text groups only when native-ID matching left work to do.
+    const byContent=new Map();
+    if(unresolved.length)for(const row of saved){
+      const text=comparableImportText(row.content);
+      if(!byContent.has(text))byContent.set(text,[]);
+      byContent.get(text).push(row);
+    }
     for(const record of unresolved){
       const incomingText=comparableImportText(record.content);
-      const sameContent=eligible(record,saved).filter(row=>savedText(row)===incomingText);
+      const sameContent=eligible(record,byContent.get(incomingText)||[]);
       if(sameContent.length===1){assign(record,sameContent[0]);continue;}
       if(sameContent.length>1){
         ambiguous.push({uid:String(record.uid),site:record.site,createtime:record.createtime});
