@@ -12,7 +12,7 @@ test('only content-scope legacy relations use the physical unified Anchor',()=>{
 });
 test('type, label and attr replace kind, links, date, url and extra media timestamp',()=>{
  assert.deepEqual(toAnchorRow(spec('time'),{uid:'0001',type:'anchor',address:'2026-11-02',range:{version:1}}),{
-   uid:'0001',type:'date',label:'2026-11-02',attr:{range:{version:1}}
+   uid:'0001',type:'date',label:'2026-11-02'
  });
  assert.deepEqual(toAnchorRow(spec('trace'),{uid:'T001',trace_type:'space_anchor',address:[121,25],times:[]}),{
    uid:'T001',type:'point',label:'[121,25]',attr:{times:[]}
@@ -70,7 +70,7 @@ test('UID pool is shared across content types only',async()=>{
  assert.deepEqual(rows,[{uid:'0001'},{uid:'AAAA'}]);
  assert.deepEqual(await readUnifiedAnchorUids('silver.lrunes_time',()=>{throw Error('should not read')}),[]);
 });
-test('new time node allocates range and persists into typed Anchor fields',async()=>{
+test('new date node persists only date label, not duplicate range attrs',async()=>{
  const saved=[];
  const schema={from:table=>({
    insert:rows=>({select:async()=>{assert.equal(table,'lo3rwang_anchor');saved.push(...(Array.isArray(rows)?rows:[rows]));return {data:[...saved],error:null};}})
@@ -79,7 +79,7 @@ test('new time node allocates range and persists into typed Anchor fields',async
    .insert({uid:'A001',type:'anchor',title:'打卡日期',address:'2026-11-02',invisible:false}).select('uid,address,range');
  assert.equal(saved[0].type,'date');
  assert.equal(saved[0].label,'2026-11-02');
- assert.deepEqual(saved[0].attr.range.segments[0].anchor_ids,['A001']);
+ assert.equal(saved[0].attr,undefined);
  assert.equal(r.data[0].address,'2026-11-02');
 });
 
@@ -111,4 +111,16 @@ test('removed media timestamp is not an indexed date filter',async()=>{
      .gte('createtime','2026-01-01').limit(1),
    /requires article Galaxy.date\/media_link/
  );
+});
+
+test('period and era flat range projections read correctly; a date needs no range',()=>{
+ const range={version:1,segments:[{start_date:'2026-01-01',end_date:'2026-02-01'}],invalid_period_uids:[]};
+ const period=fromAnchorRow(spec('time'),{uid:'A002',type:'period',label:'["A001"]',attr:range});
+ assert.deepEqual(period.range,range);
+ const era=fromAnchorRow(spec('time'),{uid:'A003',type:'era',label:'["A002"]',attr:{range}});
+ assert.deepEqual(era.range,range);
+ const date=fromAnchorRow(spec('time'),{uid:'A001',type:'date',label:'2026-01-01',attr:range});
+ assert.equal(date.range,null);
+ assert.deepEqual(toAnchorRow(spec('time'),{uid:'A002',type:'period',anchor_ids:['A001'],range}).attr,range);
+ assert.equal(toAnchorRow(spec('time'),{uid:'A001',type:'date',address:'2026-01-01',range}).attr,undefined);
 });
