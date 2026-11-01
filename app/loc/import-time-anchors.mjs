@@ -100,10 +100,11 @@ export async function prepareImportTimeAnchors(records,{
     const old=existingDays.get(day),entry=entryByDate.get(day);
     if(!old||old.title!==day||String(old.description||'').trim()||!entry||entry.title===day)
       continue;
-    const {data,error}=await relation(table)
-      .update({title:entry.title,description:entry.description})
-      .eq('uid',old.uid).eq('type','anchor').eq('address',day)
-      .eq('title',day).eq('description','').select('uid');
+    const update=relation(table).update({title:entry.title,description:entry.description})
+      .eq('uid',old.uid).eq('type','anchor').eq('address',day).eq('title',day);
+    const expected=old.description==null?update.is('description',null)
+      :update.eq('description',old.description);
+    const {data,error}=await expected.select('uid');
     if(error)throw Error('補齊日期定錨標題失敗：'+(error.message||error));
     if(!Array.isArray(data)||data.length!==1)
       throw Error('日期定錨已被其他操作修改，請重新載入再補齊');
