@@ -115,8 +115,8 @@ test('legacy rune_references are interpreted as rune media without a Galaxy arti
   assert.deepEqual(normalized.records[0].rune_references,legacy);
   assert.equal(normalized.records[0].__article_uid,'ART00001');
   const importer=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.match(importer,/const \{rune_references,\.\.\.record\}=source/);
-  assert.match(importer,/media_type:'runes',title:'抽牌結果'/);
+  assert.match(importer,/const \{rune_references,media_type:legacyType,\.\.\.rest\}=source/);
+  assert.match(importer,/type:'rune',title:'抽牌結果'/);
   assert.match(importer,/existingRuneByArticle/);
   assert.doesNotMatch(importer,/writeBatch:batch=>insertRows\(galaxyMedia,batch\.map\(record=>\(\{/);
 });
@@ -125,9 +125,9 @@ test('legacy rune_references are interpreted as rune media without a Galaxy arti
 test('top-level rune references attach to existing text articles or stand alone as media',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.ok(panel.includes("if(content&&runeResultText)mediaRecords.push({"));
-  assert.ok(panel.includes("media_type:'runes',title:'抽牌結果'"));
-  assert.ok(panel.includes("const type=String(value('media_type')||(runeResultText?'runes':'')).trim();"));
-  assert.ok(panel.includes("media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null)"));
+  assert.ok(panel.includes("media_type:'rune',title:'抽牌結果'"));
+  assert.ok(panel.includes("const type=String(value('media_type')||(runeResultText?'rune':'')).trim();"));
+  assert.ok(panel.includes("media_type:type,title:rawTitle||(type==='rune'?'抽牌結果':null)"));
   assert.ok(panel.includes("existingRuneByArticle"));
 });
 
