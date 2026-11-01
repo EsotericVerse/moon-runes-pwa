@@ -1083,6 +1083,21 @@ async function saveArchiveMediaExifLocal({p_scope_id,p_rows}={}){
 
 export async function rpcLocal(name,args={}){
   switch(name){
+    case 'read_scope_analytics':{
+      const options=args.p_options||{},params={
+        p_scope_id:args.p_scope_id,p_start:args.p_start,p_end:args.p_end
+      };
+      switch(args.p_view){
+        case 'daily':return readScopeStatisticsLocal({...params,p_include_undated:Boolean(options.includeUndated)});
+        case 'totals':return readScopeCategoryTotalsLocal(params);
+        case 'overview':return readScopeOverviewLocal(params);
+        case 'earliest':return readScopeEarliestLocal(params);
+        case 'keyword_summary':return readKeywordTreeSummaryLocal({...params,p_class_uid:options.classUid,p_source:options.source});
+        case 'keyword_catalog':return readKeywordTreeCatalogLocal({p_class_uid:options.classUid});
+        case 'shared_classes':return readSharedKeywordClassesLocal(params);
+        default:return {data:null,error:{message:'Unsupported local analytics view'}};
+      }
+    }
     case 'management_write':return managementWriteLocal(args);
     case 'save_archive_media_exif':return saveArchiveMediaExifLocal(args);
     case 'read_scope_statistics':return readScopeStatisticsLocal(args);
