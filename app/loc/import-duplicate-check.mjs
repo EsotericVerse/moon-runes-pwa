@@ -41,8 +41,10 @@ export function dedupeIncomingImport(records=[]){
       incomingNames.some(name=>!savedNames.includes(name)));
     const savedCoord=importGeoKey(saved.__importCoordinates);
     const incomingCoord=importGeoKey(row.__importCoordinates);
-    const samePlace=!conflictingName&&
-      (!savedCoord||!incomingCoord||savedCoord===incomingCoord);
+    // Exact GPS identity wins even when social exports rename the place.
+    // Different coordinates must never be merged, regardless of the label.
+    const samePlace=Boolean(savedCoord&&incomingCoord&&savedCoord===incomingCoord)||
+      (!conflictingName&&(!savedCoord||!incomingCoord||savedCoord===incomingCoord));
     if(samePlace){
       for(const field of ['location','__importPlaceName','__importPlaceAddress',
         '__importPlaceUrl','__importCoordinates']){
