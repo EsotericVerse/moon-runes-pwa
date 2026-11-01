@@ -8,11 +8,11 @@ import {selectScopeDailyCounts} from './galaxy-query';
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
 import {publicContentFilters} from './content-policy';
 import {selectManagedScope,selectManagedScopes} from './scope-data';
-import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate,intersectTimeDateWindows} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate,intersectTimeDateWindows,storedTimeRange} from './time-anchor-ranges.mjs';
 
 
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,range';
 function scopeIdOf(value){return String(value||'').trim();}
 function timeDate(row){return row?.address?String(row.address).slice(0,10):null;}
 function previousDay(value){
@@ -35,13 +35,14 @@ export async function selectCultureTimeRows(scope,birthday=''){
   const byUid=new Map(anchors.map(row=>[String(row.uid),row]));
   const normalize=(row,type,eventMap)=>{
     const id=String(row.uid||'');
-    const ranges=type==='anchor'?[{
+    const projected=storedTimeRange(row.range);
+    const ranges=projected?projected.ranges:type==='anchor'?[{
       index:0,start_date:timeDate(row),end_date:timeDate(row),
       start_anchor_id:id,end_anchor_id:null,anchor_ids:[id],point:true,invalid:false
     }]:type==='era'
       ?resolveTimeTrace(row.anchor_ids,eventMap).ranges
       :resolveTimeSegments(row.anchor_ids,byUid,{period:false});
-    const invalidTraceLinks=type==='era'
+    const invalidTraceLinks=projected?projected.invalidPeriodUids:type==='era'
       ?resolveTimeTrace(row.anchor_ids,eventMap).invalidLinks:[];
     const dated=ranges.filter(range=>range.start_date).sort((a,b)=>
       a.start_date.localeCompare(b.start_date)||a.index-b.index);
