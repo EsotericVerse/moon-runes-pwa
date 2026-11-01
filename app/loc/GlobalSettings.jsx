@@ -16,6 +16,7 @@ import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSe
 import PanelLoading from './PanelLoading';
 // The home/account Settings screens never download import or management editors.
 const PrivateLocalFiles=dynamic(()=>import('./PrivateLocalFiles'),{loading:PanelLoading});
+const ClerkScopeConnections=dynamic(()=>import('./ClerkScopeConnections'),{loading:PanelLoading});
 const LocalDatabaseImport=dynamic(()=>import('./LocalDatabaseImport'),{loading:PanelLoading});
 // 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
 // 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
@@ -36,6 +37,7 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [home,setHome]=useState('loc');
   const sections=[
     option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription'),uiT('uiExtra.globalSettings.tabHome')),
+    option('mcp',uiT('uiExtra.globalSettings.mcpSelfServiceTitle'),uiT('uiExtra.globalSettings.mcpSelfServiceIntro'),uiT('uiExtra.globalSettings.mcpTab')),
     ...(native?[option('manage',uiT('uiExtra.globalSettings.manageMenu'),uiT('uiExtra.globalSettings.manageMenuDescription'),uiT('uiExtra.globalSettings.tabManage'))]:[]),
     ...(native||prefs.account.user?[option('dailyRune',uiT('uiExtra.globalSettings.dailyRune'),uiT('uiExtra.globalSettings.dailyRuneDescription'),uiT('uiExtra.globalSettings.tabDailyRune'))]:[]),
     ...(native&&Capacitor.getPlatform()==='ios'?[option('files',uiT('uiExtra.globalSettings.documentImport'),uiT('uiExtra.globalSettings.documentImportDescription'),uiT('uiExtra.globalSettings.tabDocumentImport'))]:[])
@@ -165,6 +167,8 @@ export default function GlobalSettings({initialSection='home'}={}){
         </div>
       </section>
       </div>:null}
+
+      {activeSection==='mcp'?<ClerkScopeConnections availableScopes={choices}/>:null}
 
       {/* iOS-only document import; cloud Scope imports remain in Scope management. */}
       {native&&Capacitor.getPlatform()==='ios'&&activeSection==='files'?<LocalDatabaseImport/>:null}

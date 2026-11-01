@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useUiText} from '../i18n/UiText';
-import {getAccountSession} from './db-client.mjs';
+import {mcpClerkSession} from './mcp/clerk-access.mjs';
 import {scopeConfigRequest} from './mcp/scope-config-client.mjs';
 
 const EMPTY={endpoint:'',schema:'public',table:''};
@@ -14,6 +14,7 @@ export default function ScopeDatabasePanel({scopeId}){
   const [values,setValues]=useState(EMPTY);
   const [apiKey,setApiKey]=useState('');
   const [configured,setConfigured]=useState(false);
+  const [loadFailed,setLoadFailed]=useState(false);
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
   const [status,setStatus]=useState('');
@@ -21,19 +22,18 @@ export default function ScopeDatabasePanel({scopeId}){
 
   useEffect(()=>{
     let active=true;
-    setValues(EMPTY);setApiKey('');setConfigured(false);
+    setValues(EMPTY);setApiKey('');setConfigured(false);setLoadFailed(false);
     setLoading(true);setStatus('');
     (async()=>{
-      const session=await getAccountSession();
-      const token=session?.session?.access_token;
+      const {token}=await mcpClerkSession();
       const data=await scopeConfigRequest({scopeid:scopeId,token});
       if(!active)return;
       setConfigured(Boolean(data.configured));
       setValues({endpoint:String(data.endpoint||''),
         schema:String(data.schema||'public'),table:String(data.table||'')});
     })().catch(error=>{
-      if(active)setStatus(error.message==='Scope Group authorization required'
-        ?label('databaseDenied'):label('databaseLoadFailed'));
+      if(active){setLoadFailed(true);setStatus(error.message==='Scope Group authorization required'
+        ?label('databaseDenied'):label('databaseLoadFailed'));}
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[scopeId]);
@@ -46,9 +46,9 @@ export default function ScopeDatabasePanel({scopeId}){
     }
     setSaving(true);setStatus('');
     try{
-      const session=await getAccountSession();
+      const {token}=await mcpClerkSession();
       const next=await scopeConfigRequest({scopeid:scopeId,
-        token:session?.session?.access_token,values:{...values,api_key:apiKey}});
+        token,values:{...values,api_key:apiKey}});
       setConfigured(Boolean(next.configured));
       setValues({endpoint:next.endpoint||'',schema:next.schema||'public',table:next.table||''});
       setApiKey('');
@@ -63,7 +63,7 @@ export default function ScopeDatabasePanel({scopeId}){
     <h2>{label('databaseTitle')}</h2>
     <p className="scope-status">{label('databaseDesc')}</p>
     {loading?<p role="status" className="scope-status">{label('databaseLoading')}</p>:
-      <form className="scope-management-fields" onSubmit={save} autoComplete="off">
+      loadFailed?null:<form className="scope-management-fields" onSubmit={save} autoComplete="off">
         <p className="scope-status" role="status">
           {configured?label('databaseStored'):label('databaseNotStored')}
         </p>
