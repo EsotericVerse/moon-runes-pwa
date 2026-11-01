@@ -113,3 +113,28 @@ test('authorized owner sees all existing category/Class choices, guest only shar
   assert.equal(owner.find(row=>row.classUid==='IeG0').classUid,'IeG0');
   assert.deepEqual(keywordClassDirectory([],[],'lo3rwang'),[]);
 });
+
+test('Scope editor hides Category, publishes the exact four-letter Class UID and imports Class only',()=>{
+  const editor=source('app/loc/KeywordLibraryPanel.jsx');
+  const graph=source('app/loc/KeywordNetworkEditor.jsx');
+  assert.match(editor,/const TYPES=\['class','group','item'\]/);
+  assert.match(editor,/class:'關鍵字群組科目',group:'關鍵字分類群組',item:'關鍵詞分類'/);
+  assert.match(editor,/判斷詞列表（一行一個）/);
+  assert.match(editor,/公開群組科目 UID：<code>\{activeClass\.uid\}<\/code>/);
+  assert.match(editor,/dbPublicClient\.schema\('silver'\)\.rpc\('read_shared_keyword_classes'/);
+  assert.match(editor,/\.find\(item=>item\.classUid===uid\)/);
+  assert.match(editor,/dbAuthClient\.schema\('silver'\)\.rpc\('import_shared_keyword_class'/);
+  assert.match(graph,/關鍵字群組科目 → 關鍵字分類群組 → 關鍵詞分類 → 判斷詞列表/);
+  assert.doesNotMatch(editor,/TYPES=\['category'/);
+});
+
+test('Group Category stores scopeid-Class-hash separately, not a Scope-editable tree node',async()=>{
+  const {validateKeywordCategoryEntry,hashKeywordCategory}=await import('../workers/loc-authority/keyword-categories.mjs');
+  assert.deepEqual(validateKeywordCategoryEntry('loc','lo3rwang','Ab1Z',['lo3rwang']),{scopeid:'lo3rwang',class:'Ab1Z'});
+  assert.throws(()=>validateKeywordCategoryEntry('loc','lo3rwang','abc',['lo3rwang']),/Invalid keyword/);
+  assert.throws(()=>validateKeywordCategoryEntry('loc','lo3rwang','Ab1Z',[]),/not a Group member/);
+  const sha=await hashKeywordCategory('lo3rwang','Ab1Z');
+  assert.match(sha,/^[a-f0-9]{64}$/);
+  assert.equal(sha,await hashKeywordCategory('lo3rwang','Ab1Z'));
+  assert.notEqual(sha,await hashKeywordCategory('lo3rwang','Ab1z'));
+});

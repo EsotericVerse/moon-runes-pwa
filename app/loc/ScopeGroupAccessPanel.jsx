@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import {useUiText} from '../i18n/UiText';
 import {mcpClerkSession} from './mcp/clerk-access.mjs';
 import {scopeGroupRequest} from './mcp/scope-group-client.mjs';
+import {dbPublicClient} from './db-client.mjs';
 
 const ACTIONS=['read','write','configure','manage'];
 export default function ScopeGroupAccessPanel({groupId}){
@@ -12,6 +13,7 @@ export default function ScopeGroupAccessPanel({groupId}){
   const [subject,setSubject]=useState('');
   const [scope,setScope]=useState('');
   const [newScope,setNewScope]=useState('');
+  const [categoryUid,setCategoryUid]=useState('');
   const [selected,setSelected]=useState(['read']);
   const [days,setDays]=useState(365);
   const [loading,setLoading]=useState(true);
@@ -45,6 +47,26 @@ export default function ScopeGroupAccessPanel({groupId}){
   };
   const toggle=action=>setSelected(previous=>previous.includes(action)?
     previous.filter(x=>x!==action):[...previous,action]);
+  const updateCategory=async(kind,scopeid,classUid)=>{
+    if(busy||!scopeid||!/^[A-Za-z0-9]{4}$/.test(classUid))return;
+    setBusy(true);setStatus('');
+    try{
+      if(kind==='categoryAdd'){
+        // Validate against the public Class-only directory; no Group or Item
+        // and no private Class may be browsed from this Group UI.
+        const {data:shared,error}=await dbPublicClient.schema('silver')
+          .rpc('read_shared_keyword_classes',{p_scope_id:scopeid});
+        if(error)throw new Error(error.message||'無法核對公開科目');
+        if(!(Array.isArray(shared)?shared:[]).some(row=>row.classUid===classUid))
+          throw new Error('僅能加入此 Scope 已公開的群組科目（四碼 Class UID）');
+      }
+      await call(kind,{scopeid,classUid});
+      await reload();
+      if(kind==='categoryAdd')setCategoryUid('');
+      setStatus(kind==='categoryAdd'?'已加入關鍵字目錄。':'已移除關鍵字目錄項目。');
+    }catch(error){setStatus(error.message||'無法更新關鍵字目錄');}
+    finally{setBusy(false);}
+  };
   return <section className="loc-card scope-feature-card" aria-label={t('groupTitle')}>
     <h2>{t('groupTitle')}</h2>
     <p className="scope-status">{t('groupIntro')}</p>
@@ -94,6 +116,29 @@ export default function ScopeGroupAccessPanel({groupId}){
               }}>{t('groupRevoke')}</button>
           </div>)}
         </div>}
+      <h3>關鍵字目錄（Scope Group 管理）</h3>
+      <p className="scope-status">每筆記錄：Scope ID／四碼群組科目 UID／SHA。只允許已公開的 Class，不能選擇 Group 或 Item。</p>
+      <div className="scope-management-fields">
+        <label><span>四碼群組科目 UID</span>
+          <input value={categoryUid} maxLength={4} autoCapitalize="off" spellCheck={false}
+            onChange={event=>setCategoryUid(event.target.value)} placeholder="A1b2"/></label>
+        <div className="scope-management-wide-field">
+          <button type="button" className="loc-button"
+            disabled={busy||!scope||scope===groupId||!/^[A-Za-z0-9]{4}$/.test(categoryUid)}
+            onClick={()=>updateCategory('categoryAdd',scope,categoryUid)}>加入公開群組科目</button>
+        </div>
+      </div>
+      {(data.categories||[]).length
+        ?<div className="scope-management-fields">
+          {data.categories.map(entry=><div className="scope-management-wide-field" key={entry.sha}
+            style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:10}}>
+            <span><strong>{entry.scopeid}</strong>／<code>{entry.class}</code></span>
+            <span className="scope-status" title={entry.sha}>SHA：<code>{entry.sha.slice(0,12)}…</code></span>
+            <button type="button" className="loc-button" disabled={busy}
+              onClick={()=>updateCategory('categoryRemove',entry.scopeid,entry.class)}>移除</button>
+          </div>)}
+        </div>
+        :<p className="scope-status">尚未建立關鍵字目錄項目。</p>}
       <h3>{t('groupLinkTitle')}</h3>
       <p className="scope-status">{t('groupLinkIntro')}</p>
       <div className="scope-management-fields">
