@@ -200,34 +200,41 @@ test('a shared timezone formatter preserves Taipei midnight and date literal pre
   ];
   assert.deepEqual(importCheckinDates(records),['2024-01-15','2024-02-01','2024-02-02']);
 });
-test('ordinary imported articles auto-create birthday and annual Time anchors without a location',async()=>{
+test('ordinary article dates never generate birthday or anniversary Time anchors',async()=>{
   const db=memoryTime([
     {uid:'0001',type:'anchor',title:'初次事件',address:'2020-10-16',
-      description:'人工編輯'},
-    {uid:'0002',type:'period',title:'時代',address:null}
+      description:'人工編輯'}
   ]);
-  const records=[
+  const ordinary=[
     {uid:'aaa',date:'2026-10-16',title:'多年後',location:null},
     {uid:'bbb',date:'2026-06-23',title:'生日這篇',location:null},
     {uid:'ccc',date:'2026-12-01',title:'普通日',location:null},
     {uid:'ddd',date:'2026-06-23',title:'同日第二篇',location:null}
   ];
-  const options={scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',
-    relation:db.relation,anniversaryRecords:records,birthday:'1980-06-23'};
-  const first=await prepareImportTimeAnchors([],
-    options);
-  assert.equal(first.created,2);
-  assert.equal(first.anniversaries,2);
-  assert.deepEqual(db.rows.slice(2).map(item=>item.address),[
-    '2026-06-23','2026-10-16'
-  ]);
-  assert.equal(db.rows[2].title,'生日 · 46 歲');
-  assert.equal(db.rows[3].title,'初次事件 · 6 週年');
+  const result=await prepareImportTimeAnchors(ordinary,{
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',
+    relation:db.relation,anniversaryRecords:ordinary,birthday:'1980-06-23'
+  });
+  assert.equal(result.created,0);
+  assert.equal(result.anniversaries,0);
+  assert.equal(db.rows.length,1);
   assert.equal(db.rows[0].description,'人工編輯');
-  const again=await prepareImportTimeAnchors([],options);
-  assert.equal(again.created,0);
-  assert.equal(db.calls.length,1);
+  assert.equal(db.calls.length,0);
 });
+test('check-in date matching an anniversary is only reused or created as a check-in',async()=>{
+  const db=memoryTime([{uid:'0001',type:'anchor',title:'原始事件',address:'2020-10-16'}]);
+  const checkins=[{title:'同日打卡',location:'咖啡店',date:'2026-10-16'}];
+  const result=await prepareImportTimeAnchors(checkins,{
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation,
+    anniversaryRecords:checkins,birthday:'1980-06-23'
+  });
+  assert.equal(result.created,1);
+  assert.equal(result.anniversaries,0);
+  assert.equal(db.rows[1].title,'同日打卡');
+  assert.equal(db.rows[1].address,'2026-10-16');
+  assert.doesNotMatch(db.rows[1].description,/週年紀念/);
+});
+
 test('existing calendar anchors always win even when imported check-ins are anniversaries',async()=>{
   const db=memoryTime([
     {uid:'0001',type:'anchor',title:'原始日',address:'2020-06-23'},
