@@ -113,3 +113,21 @@ test('Scope Group membership is explicit beyond its existing built-in Scopes',as
     ['lo3rwang','lrunes','thirdscope']);
   await assert.rejects(authority.addGroupScope('loc','loc'),/own group/);
 });
+
+test('Group grant listing exposes only active Clerk grants of that Group members',async()=>{
+  const {do:authority,saved}=state();
+  const expiry=Date.now()+86400000;
+  const grant=(scope,subject)=>authority.putGrant({provider:'clerk',subject,scope,
+    actions:['read','configure'],expires_at:expiry});
+  await grant('lrunes','user_A');
+  await grant('outsidescope','user_B');
+  await grant('loc','user_GroupAdmin');
+  await authority.putGrant({provider:'secondary',subject:'external-user',scope:'lo3rwang',
+    actions:['read'],expires_at:expiry});
+  saved.set('grant:clerk:user_Expired:lo3rwang',{provider:'clerk',
+    subject:'user_Expired',scope:'lo3rwang',actions:['read'],expires_at:Date.now()-1000});
+  const result=await authority.mcpGroupGrants('loc');
+  assert.deepEqual(result.members,['loc','lo3rwang','lrunes']);
+  assert.deepEqual(result.grants.map(x=>x.subject).sort(),['user_A','user_GroupAdmin']);
+  assert.equal((await authority.mcpGroupGrants('othergroup')).grants.length,0);
+});
