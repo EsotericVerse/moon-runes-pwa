@@ -40,4 +40,8 @@ test('unified Anchor operations retain only authorized transactional RPC gateway
       'Missing existing RPC gateway entry: '+name);
   }
   assert.equal(gateway.includes("'silver.merge_scope_trace_place_names':["),false);
+  assert.match(gateway,/jsonbArgsByRpc/);
+  assert.match(gateway,/'silver\\.preview_timeline_place_page_json':new Set\\(\\['p_windows'\\]\\)/);
+  assert.match(gateway,/'silver\\.apply_timeline_place_ids':new Set\\(\\['p_updates'\\]\\)/);
+  assert.match(gateway,/jsonbArgs\\?\\.has\\(name\\)/);
 });
