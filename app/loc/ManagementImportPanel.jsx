@@ -219,6 +219,7 @@ async function readExistingByIds(table,columns,column,values,message,onPage){
       if(onPage)await onPage(rows);
       else records.push(...rows);
       offset+=rows.length;
+      if(rows.length<pageSize)break;
     }
   }
   return records;
