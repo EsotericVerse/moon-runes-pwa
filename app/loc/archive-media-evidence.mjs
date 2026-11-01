@@ -22,6 +22,46 @@ export function archiveMediaType(uri,hint=''){
     /\.(?:mp4|mov|mkv|webm)$/.test(path)?'video':
     /\.(?:mp3|m4a|wav|ogg|flac)$/.test(path)?'audio':'attachment';
 }
+// Count literal nested "url" attributes by the parent object's role.
+// An attachment or a place URL must never become the original post URL.
+export function auditArchiveUrlAttributes(raw,{maxNodes=1800}={}){
+  const counts={total:0,article:0,media:0,place:0,other:0,truncated:false};
+  if(!raw||typeof raw!=='object')return counts;
+  const queue=[{node:raw,kind:'article',depth:0}],seen=new WeakSet();
+  const mediaKeys=new Set(['attachments','media','photos','videos','audio_files','image','video','photo',
+    'image_versions2','extended_entities','media_items']);
+  const placeKeys=new Set(['place','places','location','checkin','check_in','venue','geo']);
+  const postKeys=new Set(['post','post_data','thread','status','tweet','noteTweet','core']);
+  let examined=0;
+  for(let cursor=0;cursor<queue.length;cursor++){
+    if(examined++>=maxNodes){counts.truncated=true;break;}
+    const {node,kind,depth}=queue[cursor];
+    if(!node||typeof node!=='object'||seen.has(node)||depth>12)continue;
+    seen.add(node);
+    if(Array.isArray(node)){
+      for(const child of node)if(child&&typeof child==='object')
+        queue.push({node:child,kind,depth:depth+1});
+      continue;
+    }
+    const ownKind=kind==='place'?'place':
+      /^(image|photo|video|audio)/i.test(String(node.media_type||node.type||''))||
+      typeof node.uri==='string'&&MEDIA_EXT.test(node.uri)?'media':kind;
+    if(Object.prototype.hasOwnProperty.call(node,'url')){
+      counts.total++;
+      counts[ownKind]++;
+    }
+    for(const [key,child] of Object.entries(node)){
+      if(!child||typeof child!=='object')continue;
+      const nextKind=placeKeys.has(key)?'place':
+        mediaKeys.has(key)?'media':
+        postKeys.has(key)?'article':
+        key==='data'||key==='array'||key==='items'||key==='label_values'||key==='dict'
+          ?ownKind:'other';
+      queue.push({node:child,kind:nextKind,depth:depth+1});
+    }
+  }
+  return counts;
+}
 // Return only actual media references. Do not confuse post permalinks with image URLs.
 export function archiveAttachmentReferences(record){
   if(!record||typeof record!=='object')return [];
