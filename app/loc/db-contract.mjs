@@ -1,3 +1,4 @@
+import {scopeConfigRelation} from './scope-table-routing.mjs';
 import {flashMessage} from './flash-message.js';
 import {assertPlainGalaxyAttributes} from './content-policy.js';
 import {DB_QUERY_BATCH_SIZE,MAX_ROWS} from './query-batch-size.mjs';
@@ -220,7 +221,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
-    const config=await selectAuthRow('silver.'+scope,{
+    const config=await selectAuthRow(scopeConfigRelation(scope),{
       idColumn:'id',id:scope,
       columns:'current_keyword_class_uid,keyword_meta,staticstime'
     });
@@ -232,7 +233,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       .filter(node=>node.type==='group'||node.type==='item');
     const {invalidateKeywordClass}=await import('./keyword-class-state.mjs');
     const isCurrent=classUid===String(config?.current_keyword_class_uid||'');
-    const {data:staled,error:staleError}=await dbAuthRelation('silver.'+scope)
+    const {data:staled,error:staleError}=await dbAuthRelation(scopeConfigRelation(scope))
       .update({keyword_meta:invalidateKeywordClass(config?.keyword_meta,classUid),
         ...(isCurrent?{staticstime:null}:{})})
       .eq('id',scope).select('id');
