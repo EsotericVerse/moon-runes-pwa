@@ -4,7 +4,6 @@
 // No SQL, DDL, table creation, migration or old-data synchronization here.
 const legacyName=/^([a-z][a-z0-9]{0,14})_(time|trace|keywords|galaxy_media)$/;
 const physicalColumns=['uid','type','title','description','label','invisible','links','attrs'];
-const legacyKinds={time:'time',trace:'trace',keywords:'keywords',galaxy_media:'media'};
 const aliases={
   time:{address:'label',anchor_ids:'links',range:'attrs'},
   trace:{trace_type:'type',anchor_list:'links',times:'attrs',address:'label',route_list:'attrs'},
@@ -12,22 +11,22 @@ const aliases={
   galaxy_media:{url:'label',meta_tags:'description',createtime:'attrs'}
 };
 const attrColumns=new Set(['range','times','route_list','uid_lists','createtime']);
-// The existing type field alone identifies all four categories. Unlike a
-// duplicate kind column, this does not introduce a second taxonomy.
+// The existing type field alone identifies all four categories. Without a
+// duplicate discriminator column, this does not introduce a second taxonomy.
 const scopedTypes={
   time:['anchor','period','era','time_period','time_era'],
   trace:['space_anchor','path','trace','space_path','space_trace','route'],
   keywords:['category','class','group','item']
 };
 const encodeLabel=(spec,key,value)=>{
-  if(spec.kind==='trace'&&key==='address'&&value!=null)
+  if(spec.legacy==='trace'&&key==='address'&&value!=null)
     return typeof value==='string'?value:JSON.stringify(value);
-  if(spec.kind==='time'&&key==='address'&&value!=null)
+  if(spec.legacy==='time'&&key==='address'&&value!=null)
     return String(value).slice(0,10);
   return value;
 };
 const decodeLabel=(spec,value)=>{
-  if(spec.kind==='trace'&&typeof value==='string'){
+  if(spec.legacy==='trace'&&typeof value==='string'){
     try{return JSON.parse(value)}catch{return value}
   }
   return value;
@@ -65,9 +64,9 @@ function defaultTimeRange(row){
 function prepareAnchorInsert(spec,row,assigned){
   if(!row||typeof row!=='object'||Array.isArray(row))
     throw Error('Invalid unified insert row');
-  const value={...row},length=spec.kind==='media'?8:4;
+  const value={...row},length=spec.legacy==='galaxy_media'?8:4;
   if(value.uid==null||value.uid===''){
-    if(spec.kind!=='trace'&&spec.kind!=='media')
+    if(spec.legacy!=='trace'&&spec.legacy!=='galaxy_media')
       throw Error('Time and Keywords require an allocated UID');
     value.uid=newAnchorUid(length,assigned);
   }
@@ -75,21 +74,21 @@ function prepareAnchorInsert(spec,row,assigned){
     throw Error('Invalid unified anchor UID');
   if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
   assigned.add(value.uid);
-  if(spec.kind==='time'&&value.range==null)value.range=defaultTimeRange(value);
-  if(spec.kind==='trace'){
+  if(spec.legacy==='time'&&value.range==null)value.range=defaultTimeRange(value);
+  if(spec.legacy==='trace'){
     if(!hasOwn(value,'address'))value.address=null;
     if(!hasOwn(value,'times'))value.times=[];
     if(!hasOwn(value,'route_list'))value.route_list=[];
   }
-  if(spec.kind==='keywords'&&value.uid_lists==null)value.uid_lists={};
+  if(spec.legacy==='keywords'&&value.uid_lists==null)value.uid_lists={};
   const mapped=toAnchorRow(spec,value);
-  if(spec.kind==='media'&&!mapped.attrs)mapped.attrs={};
+  if(spec.legacy==='galaxy_media'&&!mapped.attrs)mapped.attrs={};
   return mapped;
 }
 export function unifiedAnchorSpec(schema,table){
   const matched=String(table||'').match(legacyName);
   if(schema!=='silver'||!matched||matched[1]!=='lo3rwang')return null;
-  return {table:matched[1]+'_anchor',kind:legacyKinds[matched[2]],legacy:matched[2]};
+  return {table:matched[1]+'_anchor',legacy:matched[2]};
 }
 export function toAnchorRow(spec,row){
   if(!row||typeof row!=='object')throw Error('Invalid unified anchor row');
@@ -97,9 +96,9 @@ export function toAnchorRow(spec,row){
   for(const [key,value] of Object.entries(row)){
     const target=aliases[spec.legacy][key]||key;
     if(attrColumns.has(key)&&target==='attrs')
-      attrs[key==='createtime'?'published_at':key]=value==null?null:String(value)&&key==='createtime'?String(value):value;
+      attrs[key==='createtime'?'published_at':key]=key==='createtime'&&value!=null?String(value):value;
     else if(physicalColumns.includes(target)&&target!=='attrs')
-      result[target]=spec.kind==='trace'&&key==='description'&&value&&typeof value==='object'
+      result[target]=spec.legacy==='trace'&&key==='description'&&value&&typeof value==='object'
         ?JSON.stringify(value):encodeLabel(spec,key,value);
     else throw Error('Unsupported legacy anchor column: '+key);
   }
@@ -117,9 +116,9 @@ export function fromAnchorRow(spec,row){
       for(const field of Object.keys(aliases[spec.legacy]).filter(k=>aliases[spec.legacy][k]==='attrs'))
         result[field]=value?.[field==='createtime'?'published_at':field]??null;
     }else if(key==='label'){
-      const old=spec.kind==='time'||spec.kind==='trace'?'address':'url';
-      if(spec.kind!=='keywords')result[old]=decodeLabel(spec,value);
-    }else if(key==='description'&&spec.kind==='trace'&&typeof value==='string'&&value.startsWith('{')){
+      const old=spec.legacy==='time'||spec.legacy==='trace'?'address':'url';
+      if(spec.legacy!=='keywords')result[old]=decodeLabel(spec,value);
+    }else if(key==='description'&&spec.legacy==='trace'&&typeof value==='string'&&value.startsWith('{')){
       let structured=null;
       try{structured=JSON.parse(value)}catch{}
       result.description=structured&&typeof structured==='object'&&!Array.isArray(structured)?structured:value;
@@ -183,7 +182,7 @@ const normalizeResult=(spec,result,columns,one)=>{
   return {...result,data:Array.isArray(result?.data)?result.data.map(project):result?.data};
 };
 // One builder implements the subset used by db-query and feature reads/writes.
-// Filters, ordering and ranges run on the physical table, with mandatory kind.
+// Filters, ordering and ranges run on the physical table, with mandatory type scope.
 // attrs (JSONB legacy fields) are merged on writes, never overwritten blindly.
 export function unifiedAnchorRelation(schema,spec){
   return new UnifiedQuery(schema,spec);
@@ -239,9 +238,9 @@ class UnifiedQuery{
     // Shared type column is the only category discriminator. Media has a
     // mandatory eight-character UID; the other categories use four.
     // Every filter remains server-side, including caller-supplied OR.
-    physical=spec.kind==='media'
+    physical=spec.legacy==='galaxy_media'
       ?physical.like('uid','________')
-      :physical.in('type',scopedTypes[spec.kind]);
+      :physical.in('type',scopedTypes[spec.legacy]);
     for(const expression of this.orFilters){
       if(/\b(address|times|route_list|uid_lists|range)\b/.test(expression))
         throw Error('JSONB OR filters require a native unified query');
@@ -321,7 +320,10 @@ class UnifiedQuery{
       if(attrs){
         const uid=this.filters.find(f=>f.column==='uid'&&f.method==='eq')?.value;
         if(!uid||this.orFilters.length)throw Error('Unified JSONB updates require exact UID');
-        const read=await this.schema.from(spec.table).select('uid,attrs').eq('uid',uid).eq('kind',spec.kind).maybeSingle();
+        const readQuery=this.schema.from(spec.table).select('uid,attrs').eq('uid',uid);
+        const read=await (spec.legacy==='galaxy_media'
+          ?readQuery.like('uid','________')
+          :readQuery.in('type',scopedTypes[spec.legacy])).maybeSingle();
         if(read.error)return read;
         if(!read.data)return {data:[],error:null,count:0};
         const mapped=toAnchorRow(spec,this.values);
