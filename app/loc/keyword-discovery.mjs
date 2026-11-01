@@ -87,13 +87,17 @@ export function createNewKeywordDiscovery(rows=[]){
   for(let offset=0;offset<known.length;offset+=100)
     knownMatchers.push(new RegExp(known.slice(offset,offset+100).map(escapeRegex).join('|'),'u'));
   let read=0,withContent=0,limited=false;
-  function add(term,seen,month,excerpt){
+  function add(term,seen,month,body,position,length){
     const key=normalize(term);
     if(!admissible(key)||existing.has(key))return;
     let record=totals.get(key);
     if(!record){
       if(totals.size>=MAX_TERMS){limited=true;return;}
-      record={word:key,documents:0,occurrences:0,months:new Map(),sample:excerpt};
+      // Excerpts are retained once per distinct candidate, not allocated
+      // for each segment across tens of thousands of documents.
+      const sample=body.slice(Math.max(0,position-28),
+        Math.min(body.length,position+length+32)).replace(/\s+/gu,' ').trim();
+      record={word:key,documents:0,occurrences:0,months:new Map(),sample};
       totals.set(key,record);
     }
     record.occurrences++;
@@ -113,7 +117,8 @@ export function createNewKeywordDiscovery(rows=[]){
       if(/^\d{4}-\d{2}$/.test(month)){
         const item=months.get(month)||{month,documents:0,existingCovered:0};
         item.documents++;
-        if(knownMatchers.some(re=>re.test(normalize(body))))item.existingCovered++;
+        const normalized=normalize(body);
+        if(knownMatchers.some(re=>re.test(normalized)))item.existingCovered++;
         months.set(month,item);
       }
       let prev=null,prev2=null;
@@ -121,18 +126,19 @@ export function createNewKeywordDiscovery(rows=[]){
         const token=String(piece.segment||'').trim();
         const isHan=HAN.test(token);
         if(piece.isWordLike){
-          const sample=body.slice(Math.max(0,piece.index-28),Math.min(body.length,piece.index+token.length+32)).replace(/\s+/gu,' ').trim();
-          add(token,seen,month,sample);
+          add(token,seen,month,body,piece.index,token.length);
           if(prev&&prev.end===piece.index&&prev.han&&isHan
             &&!JOIN_BREAK.has(token)&&!JOIN_BREAK.has(prev.token)
             &&!IGNORE_ZH.has(token)&&!IGNORE_ZH.has(prev.token)){
             const combined=prev.token+token;
-            if([...combined].length>=3&&[...combined].length<=8)add(combined,seen,month,sample);
+            if([...combined].length>=3&&[...combined].length<=8)
+              add(combined,seen,month,body,prev.start,combined.length);
             // Chinese word segmentation sometimes splits a phrase into 1+1+2.
             if(prev2&&prev2.han&&prev2.end===prev.start
               &&!JOIN_BREAK.has(prev2.token)&&!IGNORE_ZH.has(prev2.token)){
               const triple=prev2.token+combined;
-              if([...triple].length>=4&&[...triple].length<=8)add(triple,seen,month,sample);
+              if([...triple].length>=4&&[...triple].length<=8)
+                add(triple,seen,month,body,prev2.start,triple.length);
             }
           }
           prev2=prev;
