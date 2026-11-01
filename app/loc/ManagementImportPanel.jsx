@@ -872,11 +872,14 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         };
       });
       const placeRecordByUid=new Map(anchorRecords.map(row=>[String(row.uid),row]));
+      // Only an article with a location may contribute its date to Time anchors.
+      const checkinAnchorRecords=anchorRecords.filter(record=>
+        Boolean(String(record.location||record.__importPlaceName||'').trim()));
       const placeAnchors=await prepareImportPlaceAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,relation:dbAuthRelation,createMissing:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
-      const timeAnchors=await prepareImportTimeAnchors([...anchorRecords,...geoAnchorRecords],{
+      const timeAnchors=await prepareImportTimeAnchors([...checkinAnchorRecords,...geoAnchorRecords],{
         scopeId,timeTable:scope?.time,relation:dbAuthRelation,
         includeUnifiedUidPool:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
@@ -1015,7 +1018,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆（週年／生日符合 '+Number(timeAnchors.anniversaries||0).toLocaleString()+' 日），沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
