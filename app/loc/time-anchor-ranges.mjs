@@ -7,6 +7,15 @@ const dateOf=value=>{
   const date=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
 };
+// The persisted Time range is a derived projection, never a replacement for anchor_ids.
+export function storedTimeRange(value){
+  let doc=value;
+  if(typeof doc==='string'){try{doc=JSON.parse(doc)}catch{return null}}
+  if(!doc||typeof doc!=='object'||Array.isArray(doc)||doc.version!==1||!Array.isArray(doc.segments))return null;
+  if(!doc.segments.every(part=>part&&typeof part==='object'&&!Array.isArray(part)&&
+    (part.start_date==null||dateOf(part.start_date))&&(part.end_date==null||dateOf(part.end_date))))return null;
+  return {ranges:doc.segments,invalidPeriodUids:Array.isArray(doc.invalid_period_uids)?doc.invalid_period_uids:[]};
+}
 export function isTimeUid(value){return UID.test(String(value||''));}
 export function allocateTimeUid(rows=[]){
   const occupied=new Set((Array.isArray(rows)?rows:[]).map(row=>String(row?.uid||'')));
