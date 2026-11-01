@@ -5,8 +5,8 @@ import {unifiedAnchorSpec,toAnchorRow,fromAnchorRow,unifiedAnchorRelation} from 
 import {readUnifiedAnchorUids} from '../app/loc/unified-anchor-uids.mjs';
 
 test('only lo3rwang content maps to unified anchor; Suno, Rune and local are untouched',()=>{
- for(const [suffix,kind] of Object.entries({time:'time',trace:'trace',keywords:'keywords',galaxy_media:'media'})){
-   assert.deepEqual(unifiedAnchorSpec('silver','lo3rwang_'+suffix),{table:'lo3rwang_anchor',kind,legacy:suffix});
+ for(const suffix of ['time','trace','keywords','galaxy_media']){
+   assert.deepEqual(unifiedAnchorSpec('silver','lo3rwang_'+suffix),{table:'lo3rwang_anchor',legacy:suffix});
  }
  for(const table of ['lrunes_time','suno_galaxy_media','local_time','runes_keywords','lo3rwang_galaxy'])
    assert.equal(unifiedAnchorSpec('silver',table),null);
@@ -16,27 +16,39 @@ test('four categories map their old columns into the unified physical shape and 
  const trace=unifiedAnchorSpec('silver','lo3rwang_trace');
  const keywords=unifiedAnchorSpec('silver','lo3rwang_keywords');
  const media=unifiedAnchorSpec('silver','lo3rwang_galaxy_media');
- assert.deepEqual(toAnchorRow(time,{uid:'0001',type:'anchor',address:'2026-11-02',range:{version:1},anchor_ids:[]}),{uid:'0001',type:'anchor',date:'2026-11-02',links:[],attrs:{range:{version:1}},kind:'time'});
- assert.deepEqual(toAnchorRow(trace,{uid:'T001',trace_type:'space_anchor',address:[121,25],times:['2026-11-02T00:00Z']}),{uid:'T001',type:'space_anchor',attrs:{address:[121,25],times:['2026-11-02T00:00Z']},kind:'trace'});
- assert.deepEqual(toAnchorRow(keywords,{uid:'K001',name:'靈',desc:'分類',lists:['L001'],uid_lists:{hits:[]}}),{uid:'K001',title:'靈',description:'分類',links:['L001'],attrs:{uid_lists:{hits:[]}},kind:'keywords'});
- assert.deepEqual(toAnchorRow(media,{uid:'M001',title:'歌',url:'https://suno.com/song/1'}),{uid:'M001',title:'歌',url:'https://suno.com/song/1',kind:'media'});
- assert.equal(fromAnchorRow(time,{uid:'0001',date:'2026-11-02',kind:'time'}).address,'2026-11-02');
- assert.equal(fromAnchorRow(keywords,{uid:'K001',kind:'keywords',title:'靈'}).name,'靈');
+ assert.deepEqual(toAnchorRow(time,{uid:'0001',type:'anchor',address:'2026-11-02',range:{version:1},anchor_ids:[]}),{uid:'0001',type:'anchor',label:'2026-11-02',links:[],attrs:{range:{version:1}}});
+ assert.deepEqual(toAnchorRow(trace,{uid:'T001',trace_type:'space_anchor',address:[121,25],times:['2026-11-02T00:00Z']}),{uid:'T001',type:'space_anchor',label:'[121,25]',attrs:{times:['2026-11-02T00:00Z']}});
+ assert.deepEqual(toAnchorRow(keywords,{uid:'K001',name:'靈',desc:'分類',lists:['L001'],uid_lists:{hits:[]}}),{uid:'K001',title:'靈',description:'分類',links:['L001'],attrs:{uid_lists:{hits:[]}}});
+ assert.deepEqual(toAnchorRow(media,{uid:'M001',title:'歌',url:'https://suno.com/song/1'}),{uid:'M001',title:'歌',label:'https://suno.com/song/1'});
+ assert.equal(fromAnchorRow(time,{uid:'0001',label:'2026-11-02',type:'anchor'}).address,'2026-11-02');
+ assert.equal(fromAnchorRow(keywords,{uid:'K001',type:'class',title:'靈'}).name,'靈');
 });
-test('reader scopes every select to the corresponding kind',async()=>{
- const calls=[],rows=[{uid:'0001',kind:'time',type:'anchor',title:'生日',date:'2026-11-02'},
- {uid:'0002',kind:'media',title:'音樂'}];
+test('reader scopes by existing type, never duplicate kind',async()=>{
+ const calls=[],rows=[
+   {uid:'0001',type:'anchor',title:'生日',label:'2026-11-02',attrs:{range:{}}},
+   {uid:'0002',type:'space_anchor',title:'地點',label:'[121,25]',attrs:{address:[121,25]}},
+   {uid:'0003',type:'class',title:'類別',attrs:{uid_lists:{}}},
+   {uid:'12345678',type:'音樂',title:'音樂',label:'https://example.com'}
+ ];
  const schema={from:table=>{
    assert.equal(table,'lo3rwang_anchor');
    const conditions=[];
-   const q={select(){return q},eq(column,value){conditions.push([column,value]);return q},
-     range(){calls.push(conditions);return Promise.resolve({data:rows.filter(r=>conditions.every(([k,v])=>r[k]===v)),error:null})}};
+   const q={select(){return q},
+     eq(column,value){conditions.push(row=>row[column]===value);return q},
+     in(column,values){conditions.push(row=>values.includes(row[column]));return q},
+     like(column,pattern){const re=new RegExp('^'+pattern.replace(/_/g,'.')+'$');conditions.push(row=>re.test(row[column]||''));return q},
+     range(){calls.push(conditions.length);return Promise.resolve({data:rows.filter(r=>conditions.every(fn=>fn(r))),error:null})}};
    return q;
  }};
- const r=await unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_time'))
+ const time=await unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_time'))
    .select('uid,title,address').eq('type','anchor').range(0,10);
- assert.deepEqual(r.data,[{uid:'0001',title:'生日',address:'2026-11-02'}]);
- assert.equal(calls[0].some(([k,v])=>k==='kind'&&v==='time'),true);
+ assert.deepEqual(time.data,[{uid:'0001',title:'生日',address:'2026-11-02'}]);
+ const trace=await unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_trace'))
+   .select('uid,address').range(0,10);
+ assert.deepEqual(trace.data,[{uid:'0002',address:[121,25]}]);
+ const media=await unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_galaxy_media'))
+   .select('uid,url').range(0,10);
+ assert.deepEqual(media.data,[{uid:'12345678',url:'https://example.com'}]);
 });
 test('UID pool spans Time, Trace, Keywords and Media on creation only',async()=>{
  const rows=await readUnifiedAnchorUids('silver.lo3rwang_time',async (table,offset,limit)=>{
@@ -66,15 +78,21 @@ function physicalInsertHarness(){
       const rows=Array.isArray(records)?records:[records];
       for(const row of rows){
         assert.match(row.uid,/^[A-Za-z0-9]+$/);
-        assert.equal(row.uid.length,row.kind==='media'?8:4);
+        assert.equal(row.uid.length, ['video','rune','音樂','播放清單'].includes(row.type)?8:4);
         assert.equal(typeof row.type,'string');
         assert.equal(typeof row.attrs,'object');
         assert.ok(!Array.isArray(row.attrs));
-        if(row.kind==='time')assert.ok(Object.hasOwn(row.attrs,'range'));
-        if(row.kind==='trace')for(const key of ['address','times','route_list'])
+        if(row.type==='anchor')assert.ok(Object.hasOwn(row.attrs,'range'));
+        assert.ok(!Object.hasOwn(row,'kind'));
+        assert.ok(!Object.hasOwn(row,'date'));
+        assert.ok(!Object.hasOwn(row,'url'));
+        assert.ok(!Object.hasOwn(row,'meta_tags'));
+        assert.ok(!Object.hasOwn(row,'createtime'));
+        if(row.type==='space_anchor')for(const key of ['times','route_list'])
           assert.ok(Object.hasOwn(row.attrs,key),'missing Trace '+key);
-        if(row.kind==='keywords')assert.ok(Object.hasOwn(row.attrs,'uid_lists'));
-        if(row.kind==='media')assert.deepEqual(row.attrs,{});
+        if(row.type==='class')assert.ok(Object.hasOwn(row.attrs,'uid_lists'));
+        if(row.type==='space_anchor')assert.equal(typeof row.label,'string');
+        if(row.type==='video')assert.deepEqual(row.attrs,{});
       }
       saved.push(...rows);
       return {data:rows,error:null};
@@ -120,14 +138,14 @@ test('Trace structured description survives conversion on updates too',()=>{
   const value={text:'路線',address:'板橋',url:'https://example.com'};
   const stored=toAnchorRow(spec,{description:value});
   assert.equal(typeof stored.description,'string');
-  assert.deepEqual(fromAnchorRow(spec,{kind:'trace',description:stored.description}).description,value);
+  assert.deepEqual(fromAnchorRow(spec,{type:'space_anchor',description:stored.description}).description,value);
 });
 
 
 test('Trace check-in timestamp write is compatible with Kysely builder lacking abortSignal',async()=>{
   const {recordImportPlaceVisits}=await import('../app/loc/import-place-anchors.mjs');
   const uid='A0b1',previous='2026-10-01T00:00:00.000Z',fresh='2026-11-01T04:30:00.000Z';
-  const row={uid,kind:'trace',type:'space_anchor',attrs:{
+  const row={uid,type:'space_anchor',attrs:{
     times:[previous],address:[121.5,25.0],route_list:['R001'],other:'preserved'
   }};
   const writes=[];
@@ -144,7 +162,8 @@ test('Trace check-in timestamp write is compatible with Kysely builder lacking a
         const q={
           eq(column,value){filters.push([column,value]);return q},
           select:async()=>{
-            assert.deepEqual(filters,[['uid',uid],['type','space_anchor'],['kind','trace']]);
+            assert.equal(filters.some(([key])=>key==='kind'),false);
+            assert.deepEqual(filters,[['uid',uid],['type','space_anchor']]);
             writes.push(values);
             row.attrs={...values.attrs};
             return {data:[{...row}],error:null};
@@ -182,7 +201,7 @@ test('unified Trace forwards an abort signal only to physical builders that supp
       const q={
         eq(){return q},
         abortSignal(value){received=value;return q},
-        select:async()=>{updates++;return {data:[{uid,kind:'trace',type:'space_anchor',attrs:values.attrs}],error:null}}
+        select:async()=>{updates++;return {data:[{uid,type:'space_anchor',attrs:values.attrs}],error:null}}
       };
       return q;
     }
@@ -193,4 +212,25 @@ test('unified Trace forwards an abort signal only to physical builders that supp
   assert.equal(result.error,null);
   assert.equal(received,signal);
   assert.equal(updates,1);
+});
+
+test('media metadata moves into description; original timestamp survives only in attrs',()=>{
+ const media=unifiedAnchorSpec('silver','lo3rwang_galaxy_media');
+ const mapped=toAnchorRow(media,{uid:'abcd1234',type:'音樂',title:'曲目',
+   url:'https://suno.com/song/example',meta_tags:'Bossa, Dark Jazz',
+   createtime:'2026-11-02T03:04:05+08:00'});
+ assert.deepEqual(mapped,{uid:'abcd1234',type:'音樂',title:'曲目',
+   label:'https://suno.com/song/example',description:'Bossa, Dark Jazz',
+   attrs:{published_at:'2026-11-02T03:04:05+08:00'}});
+ assert.deepEqual(fromAnchorRow(media,{...mapped}).meta_tags,'Bossa, Dark Jazz');
+ assert.equal(fromAnchorRow(media,{...mapped}).createtime,'2026-11-02T03:04:05+08:00');
+});
+test('trace GPS leaves attrs and roundtrips as a coordinate array in label',()=>{
+ const spec=unifiedAnchorSpec('silver','lo3rwang_trace');
+ const original={uid:'Ab12',trace_type:'space_anchor',address:[121.49086,25.05338],
+    times:[],route_list:[]};
+ const mapped=toAnchorRow(spec,original);
+ assert.equal(mapped.label,'[121.49086,25.05338]');
+ assert.equal(Object.hasOwn(mapped.attrs,'address'),false);
+ assert.deepEqual(fromAnchorRow(spec,mapped).address,original.address);
 });
