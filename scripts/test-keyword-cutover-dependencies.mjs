@@ -36,11 +36,8 @@ test('unified Anchor operations retain only authorized transactional RPC gateway
     search_scope_trace_place_names:['p_scope_id','p_term','p_limit']
   };
   for(const [name,args] of Object.entries(expected)){
-    const expression=new RegExp("'silver\\\\."+name+"':\\\\[([^\\\\]]*)\\\\]");
-    const found=gateway.match(expression);
-    assert.ok(found,'Missing existing RPC gateway entry: '+name);
-    for(const argument of args)assert.ok(found[1].includes("'"+argument+"'"),
-      name+' must bind '+argument);
+    assert.ok(gateway.includes("'silver."+name+"':["+args.map(a=>"'"+a+"'").join(',')+"]"),
+      'Missing existing RPC gateway entry: '+name);
   }
-  assert.doesNotMatch(gateway,/'silver\\.merge_scope_trace_place_names':\\[/);
+  assert.equal(gateway.includes("'silver.merge_scope_trace_place_names':["),false);
 });
