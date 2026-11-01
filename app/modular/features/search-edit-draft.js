@@ -60,7 +60,7 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
 function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
   const attrs={
     uid:String(row.uid||''), title:String(row.title||''),
-    location:String(row.location||''),media_type:String(row.media_type||''),
+    location:String(row.location||''),type:String(row.type||''),
     url:String(row.url||''),meta_tags:String(row.meta_tags||''),
     createtime:datetimeLocalValue(row.createtime)
   };
@@ -70,10 +70,10 @@ function mediaDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
 }
 function changedMediaAttributes(draft,t){
   const current=draft?.attrs||{},initial=draft?.originalAttrs||{},changed={};
-  for(const key of ['location','media_type','url','meta_tags']){
+  for(const key of ['location','type','url','meta_tags']){
     if(current[key]!==initial[key])changed[key]=nullableText(current[key]);
   }
-  if(Object.hasOwn(changed,'media_type')&&!changed.media_type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
+  if(Object.hasOwn(changed,'type')&&!changed.type)throw new Error(t('uiExtra.searchUI.mediaTypeRequired'));
   if(current.createtime!==initial.createtime)changed.createtime=isoOrNull(current.createtime,t);
   return changed;
 }
