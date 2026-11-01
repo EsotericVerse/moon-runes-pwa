@@ -104,3 +104,34 @@ test('100 simultaneous identical reads share one request per SWR provider',async
   assert.equal(values.length,100);
   assert.ok(values.every(value=>value==='first'));
 });
+
+test('invalidation supersedes pending reads without restoring stale cache data',async()=>{
+  const h=await resourceHarness(),provider=h.createProvider();
+  h.use(provider);
+  const cache=h.api.useResourceCache();
+  let finishOld,oldCalls=0,newCalls=0;
+  const oldData=new Promise(resolve=>{finishOld=resolve;});
+  const oldRead=cache.getOrLoad({queryKey:['works','scope-a'],queryFn:()=>{oldCalls++;return oldData;}});
+  await Promise.resolve();
+  assert.equal(oldCalls,1);
+  await cache.invalidate({queryKey:['works']});
+  const fresh=await cache.getOrLoad({queryKey:['works','scope-a'],queryFn:async()=>{newCalls++;return 'fresh';}});
+  assert.equal(fresh,'fresh');
+  assert.equal(newCalls,1);
+  finishOld('obsolete');
+  await oldRead;
+  assert.equal(cache.get(['works','scope-a']),'fresh');
+});
+
+test('clearing a resource prevents an obsolete read from repopulating SWR cache',async()=>{
+  const h=await resourceHarness(),provider=h.createProvider();
+  h.use(provider);
+  const cache=h.api.useResourceCache();
+  let resolve;
+  const started=cache.getOrLoad({queryKey:['works','scope-a'],queryFn:()=>new Promise(r=>{resolve=r;})});
+  await Promise.resolve();
+  await cache.clear({queryKey:['works']});
+  resolve('obsolete');
+  await started;
+  assert.equal(cache.get(['works','scope-a']),undefined);
+});
