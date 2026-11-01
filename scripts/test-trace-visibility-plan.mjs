@@ -4,10 +4,10 @@ import {readFileSync} from 'node:fs';
 import {planTraceVisibilityUids} from '../app/loc/trace-visibility-plan.mjs';
 
 const maps=[
-  {uid:'T001',trace_type:'trace',anchor_list:[['A001','A002']],route_list:['P001','P002']},
-  {uid:'T002',trace_type:'trace',anchor_list:[['A003','A004']],route_list:['P002']},
-  {uid:'P001',trace_type:'path',anchor_list:['A002','A005'],route_list:[]},
-  {uid:'P002',trace_type:'path',anchor_list:['A003','A006'],route_list:[]}
+  {uid:'T001',trace_type:'trace',anchor_list:['A001','A002'],route_list:{routes:['P001','P002'],segments:[['A001','A002']]}},
+  {uid:'T002',trace_type:'trace',anchor_list:['A003','A004'],route_list:{routes:['P002'],segments:[['A003','A004']]}},
+  {uid:'P001',trace_type:'path',anchor_list:['A002','A005'],route_list:{routes:[],segments:[]}},
+  {uid:'P002',trace_type:'path',anchor_list:['A003','A006'],route_list:{routes:[],segments:[]}}
 ];
 
 test('only selected Trace or Path is updated with self option',()=>{
