@@ -6,7 +6,7 @@ const runner=code.slice(code.indexOf('export async function runKeywordAnalysisBa
 const summary=code.slice(code.indexOf('export async function selectKeywordAnalysisSummary('),
  code.indexOf('\nexport function clearKeywordAnalysisCache('));
 test('analysis reads Galaxy articles but never updates Galaxy classification columns',()=>{
- assert.match(runner,/articleColumns='uid,createtime,content,searchable'/);
+ assert.match(runner,/articleColumns='uid,date,createtime,content,searchable'/);
  assert.match(runner,/dbAuthRelation\(scope\.galaxy\)/);
  assert.match(runner,/reanalyzeKeywordClass/);
  assert.match(runner,/update\(\{uid_lists\}\)/);
@@ -35,8 +35,9 @@ test('COUNT uses owner visibility and chronological 1000-row batches before writ
  assert.doesNotMatch(countFunction,/selectCount\(/);
  assert.ok(code.includes('KEYWORD_ANALYSIS_READ_PAGE_SIZE=1000'));
  assert.ok(runner.includes('expectedCount:eligibleCount'));
- assert.ok(runner.includes('createChronologicalKeywordReader'));
- assert.ok(runner.includes(".order('createtime',{ascending:true})"));
+ assert.ok(runner.includes('createIndexedDateKeywordReader'));
+ assert.ok(runner.includes(".order('date',{ascending:true})"));
+ assert.doesNotMatch(runner,/\.order\('createtime'/);
  const articleReader=runner.slice(runner.indexOf('const articleColumns='),runner.indexOf('writeNode:async'));
  assert.doesNotMatch(articleReader,/\.order\('uid'/);
 });
