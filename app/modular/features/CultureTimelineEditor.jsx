@@ -10,6 +10,7 @@ import {dbAuthClient,deleteRows,insertRows,updateRows} from '../../loc/db-client
 import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
+import {anniversarySuggestionsForDate} from '../../loc/anniversary.mjs';
 
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,range,invisible';
 const TYPES=['anchor','period','era'];
@@ -80,6 +81,10 @@ export default function CultureTimelineEditor({
   const anchorChoices=useMemo(()=>[...anchors.values()]
     .sort((a,b)=>day(a.address).localeCompare(day(b.address))||
       String(a.uid).localeCompare(String(b.uid))),[anchors]);
+  const anniversarySuggestions=useMemo(()=>
+    !selectedId&&draft.type==='anchor'
+      ?anniversarySuggestionsForDate(day(draft.address),anchorChoices)
+      :[],[selectedId,draft.type,draft.address,anchorChoices]);
   const anchorOptions=useMemo(()=>anchorChoices.map(row=>
     ({value:row.uid,label:(day(row.address)?day(row.address)+'｜':'')+row.title})),[anchorChoices]);
   const anchorOptionOf=uid=>anchorOptions.find(option=>option.value===uid)
@@ -377,6 +382,15 @@ export default function CultureTimelineEditor({
             onChange={event=>change('address',event.target.value)}/>
         </label>:null}
       </div>
+      {!selectedId&&draft.type==='anchor'&&anniversarySuggestions.length
+        ?<div className="scope-status" role="group" aria-label="週年紀念虛擬定錨建議">
+          <strong>週年紀念建議（虛擬定錨，尚未儲存）</strong>
+          {anniversarySuggestions.map(item=><div key={item.sourceUid+':'+item.date}>
+            <span>{item.title}｜原始定錨 {item.sourceDate}</span>
+            <button type="button" className="loc-button" disabled={busy}
+              onClick={()=>change('title',item.title)}>套用建議</button>
+          </div>)}
+        </div>:null}
       {draft.type!=='anchor'?<div className="scope-culture-quick-anchors">
         {draft.type==='period'&&!anchorChoices.length
           ?<p className="scope-status scope-error">請先建立時間定錨點，才能新增期間。</p>:null}

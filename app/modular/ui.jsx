@@ -292,15 +292,15 @@ function ArticleRelationNavigation({
     </div>:null}
     <div className="scope-article-context-group">
       <h3>時間</h3>
-      {row('重要日',<>
+      {row('定錨',<>
         {timeAnchors.length?timeAnchors:dateValid?'—':'文章尚未設定日期'}
         {dateValid&&scope!=='loc'&&scope!=='local'?<ArticleTimeAnchorAction
           scopeId={scope} date={day}
           onCreated={anchor=>setAddedAnchor({scope,day,anchor})}/>:null}
       </>)}
-      {row('間隔',periods.length?periods:'—')}
+      {row('期間',periods.length?periods:'—')}
       {row('時代',eras.length?eras:'—')}
-      {row('周年紀念',<span className="scope-status">尚未建立</span>)}
+
     </div>
     <div className="scope-article-context-group">
       <h3>空間</h3>
