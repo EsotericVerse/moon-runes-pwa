@@ -136,3 +136,14 @@ test('same file name is only a display label; repeat parsing uses source identit
   assert.match(panel,/const incoming=dedupeIncomingImport\(analyzed\.valid\);/);
   assert.match(panel,/const matchesById=existingCandidates\.length\?await matchExistingImportBySiteId\(/);
 });
+
+test('native post IDs do not require expensive body normalization for deduplication',()=>{
+  const row={...original,uid:'SINGLE01'};
+  Object.defineProperty(row,'content',{get(){throw Error('unexpected content normalization');}});
+  assert.equal(dedupeIncomingImport([row]).unique.length,1);
+});
+
+test('archive selection does not count ZIP entries in an unused extra scan',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(panel,/zipEntryCount\(file\)/);
+});
