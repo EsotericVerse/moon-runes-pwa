@@ -46,9 +46,18 @@ export function archiveAttachmentReferences(record){
     visited.add(value);
     if(Array.isArray(value)){for(const item of value)queue.push({value:item,depth});continue;}
     const hint=String(value.media_type||value.type||value.mime_type||(value.image_url?'image':value.video_url?'video':''));
-    const paths=URI_KEYS.map(key=>value[key]).filter(v=>typeof v==='string')
-      .map(pathValue).filter(validRef);
-    const allUrls=URL_KEYS.map(key=>value[key]).filter(v=>typeof v==='string').map(rawPath);
+    // No temporary map/filter arrays for every object in a large export.
+    const paths=[],allUrls=[];
+    for(const key of URI_KEYS){
+      const valueAtKey=value[key];
+      if(typeof valueAtKey!=='string')continue;
+      const path=pathValue(valueAtKey);
+      if(validRef(path))paths.push(path);
+    }
+    for(const key of URL_KEYS){
+      const valueAtKey=value[key];
+      if(typeof valueAtKey==='string')allUrls.push(rawPath(valueAtKey));
+    }
     for(const maybePath of allUrls)if(!HTTP.test(maybePath)&&MEDIA_EXT.test(maybePath)&&
         validRef(maybePath))paths.push(maybePath);
     const urls=allUrls.filter(v=>publicUrl(v));
