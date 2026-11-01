@@ -413,7 +413,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const data=await analyticsRead(normalizeScopeId(scopeId),'overview',{startDate,endDate});
     return {
       earliest:dayOrNull(data?.earliest)||'',
-      mediaCount:Number(data?.media_count)||0,
+      mediaCount:data?.media_count==null?null:Number(data.media_count),
       rows:Array.isArray(data?.rows)?data.rows:[],
       categories:Array.isArray(data?.categories)?data.categories:[],
       aliases:Array.isArray(data?.aliases)?data.aliases:[]
