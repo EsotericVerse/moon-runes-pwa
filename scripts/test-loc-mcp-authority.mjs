@@ -122,7 +122,7 @@ test('Group grant listing exposes only active Clerk grants of that Group members
   await grant('lrunes','user_A');
   await grant('outsidescope','user_B');
   await grant('loc','user_GroupAdmin');
-  await authority.putGrant({provider:'secondary',subject:'external-user',scope:'lo3rwang',
+  await authority.putGrant({provider:'secondary',subject:'external_user',scope:'lo3rwang',
     actions:['read'],expires_at:expiry});
   saved.set('grant:clerk:user_Expired:lo3rwang',{provider:'clerk',
     subject:'user_Expired',scope:'lo3rwang',actions:['read'],expires_at:Date.now()-1000});
