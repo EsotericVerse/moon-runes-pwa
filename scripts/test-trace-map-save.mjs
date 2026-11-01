@@ -32,7 +32,7 @@ function saveHarness({writeFails=false,readMiss=false}={}){
  const written=[],notice=[],receipt={current:null};
  let reads=0,cleared=0;
  const row={uid:'R001',source_scope:'lo3rwang',trace_type:'path',
-   title:'旅程',anchor_list:['A001','B002'],route_list:[],invisible:false};
+   title:'旅程',anchor_list:['A001','B002'],route_list:{routes:[],segments:[]},invisible:false};
  const args={
   busy:false,own:true,editorOpen:true,setBusy:()=>{},setNotice:v=>notice.push(v),setError:()=>{},
   title:'旅程',type:'path',queue:['A001','B002'],MAX_ROAD:80,
