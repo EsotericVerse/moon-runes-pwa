@@ -45,3 +45,17 @@ test('unified Anchor operations retain only authorized transactional RPC gateway
   assert.ok(gateway.includes("'silver.apply_timeline_place_ids':new Set(['p_updates'])"));
   assert.ok(gateway.includes("jsonbArgs?.has(name)"));
 });
+
+test('Culture, Keywords, Trace and ISR share one parameterized statistics RPC',()=>{
+  const contract=readFileSync(new URL('../app/loc/db-contract.mjs',import.meta.url),'utf8');
+  const trace=readFileSync(new URL('../app/modular/features/trace/TracePlaceResults.jsx',import.meta.url),'utf8');
+  const isr=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
+  const local=readFileSync(new URL('../app/loc/providers/local-sqlite.mjs',import.meta.url),'utf8');
+  assert.match(contract,/rpc\\('read_scope_analytics'/);
+  assert.match(trace,/rpc\\('read_scope_analytics'/);
+  assert.match(isr,/name='read_scope_analytics'/);
+  assert.match(local,/case 'read_scope_analytics'/);
+  for(const name of ['read_scope_category_totals','read_scope_statistics','read_scope_overview','read_scope_earliest','read_loc_statistics','read_keyword_tree_summary','read_keyword_tree_catalog'])
+    assert.doesNotMatch(contract,new RegExp("rpc\\\\('"+name+"'"));
+  assert.doesNotMatch(trace,/rpc\\('read_trace_(?:place_density|keyword_group_totals)'/);
+});
