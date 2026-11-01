@@ -317,7 +317,7 @@ async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
     ],limit:100,maxLimit:100,authenticated})
   ]);
   const routes=routesPage.rows||[],routeIds=routes.map(row=>String(row.uid)).filter(Boolean);
-  const clauses=['anchor_list.cs.{'+placeId+'}',...routeIds.map(uid=>'route_list.cs.{'+uid+'}')];
+  const clauses=['anchor_list.cs.{'+placeId+'}',...routeIds.map(uid=>'route_list.cs.'+JSON.stringify({routes:[uid]}))];
   const traces=await selectRows(table,{columns:'uid,title',filters:[
     {column:'trace_type',operator:'eq',value:'trace'}
   ],orFilter:clauses.join(','),limit:100,maxLimit:100,authenticated});
