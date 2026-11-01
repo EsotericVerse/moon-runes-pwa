@@ -9,6 +9,7 @@ import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
 import {storedTimeRange,timePeriodContainsDate} from './time-anchor-ranges.mjs';
+import {anniversarySuggestionsForDate} from './anniversary.mjs';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
@@ -283,6 +284,34 @@ function shiftedDay(day,shift){
 // A selected article only needs the lightweight Time graph. Share the
 // canonical Culture range resolution among article reads for a short TTL.
 const articleTimeCache=new Map();
+const articleAnniversaryCache=new Map();
+// A single lightweight date/title catalog per Scope serves article suggestions.
+// No article content scans and no query per candidate calendar year.
+async function articleAnniversarySources(scope){
+  const key=String(scope.id)+'|'+String(scope.time),now=Date.now();
+  const cached=articleAnniversaryCache.get(key);
+  if(cached&&cached.expires>now)return cached.promise;
+  const promise=(async()=>{
+    const items=[],batchSize=500;
+    for(let offset=0;;offset+=batchSize){
+      const result=await selectRows(scope.time,{
+        columns:'uid,type,title,address',
+        filters:[{column:'type',operator:'eq',value:'anchor'}],
+        orders:[{column:'uid',ascending:true}],limit:batchSize,offset
+      });
+      items.push(...result.rows);
+      if(result.rows.length<batchSize)break;
+    }
+    return items;
+  })();
+  articleAnniversaryCache.set(key,{expires:now+120_000,promise});
+  promise.catch(()=>{
+    if(articleAnniversaryCache.get(key)?.promise===promise)articleAnniversaryCache.delete(key);
+  });
+  if(articleAnniversaryCache.size>20)
+    articleAnniversaryCache.delete(articleAnniversaryCache.keys().next().value);
+  return promise;
+}
 async function articleTimeRows(scope){
   const key=String(scope.id)+'|'+String(scope.time),now=Date.now();
   const cached=articleTimeCache.get(key);
@@ -324,10 +353,17 @@ async function articleTimeContext(scope,day){
   ]);
   const matches=row=>timePeriodContainsDate(row,day);
   const labels=rows=>rows.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
+  const anchors=labels(selectedDay.rows||[]);
+  // A fixed year/date suggestion is relevant only if this article does not
+  // already have an exact Time anchor. The candidate is not persisted.
+  const anniversarySuggestions=anchors.length?[]:anniversarySuggestionsForDate(
+    day,await articleAnniversarySources(scope),{birthday:scope.birthday}
+  );
   return {
-    anchors:labels(selectedDay.rows||[]),
+    anchors,
     periods:labels(ranges.filter(row=>row.entry_type==='period'&&matches(row))),
-    eras:labels(ranges.filter(row=>row.entry_type==='era'&&matches(row)))
+    eras:labels(ranges.filter(row=>row.entry_type==='era'&&matches(row))),
+    anniversarySuggestions
   };
 }
 async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
