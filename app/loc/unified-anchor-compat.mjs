@@ -28,6 +28,28 @@ const parseLabelList=value=>{
 };
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
+const uniqueArticleIds=list=>[...new Set((Array.isArray(list)?list:[])
+ .map(uid=>String(uid||'')).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))].sort();
+function compactKeywordAnalysis(type,value){
+ if(type!=='group'&&type!=='item')return {};
+ const input=value&&typeof value==='object'?value:{};
+ if(Array.isArray(input.uidlists)){
+   const list=uniqueArticleIds(input.uidlists),n=Number(input.total);
+   return {total:Number.isSafeInteger(n)&&n>=0?n:list.length,uidlists:list};
+ }
+ if(type==='group'){
+   const list=uniqueArticleIds(Array.isArray(input)?input:input.articles);
+   return {total:list.length,uidlists:list};
+ }
+ const hits=Array.isArray(input)?input:Array.isArray(input.hits)?input.hits:[];
+ const byUid=new Map();
+ for(const hit of hits){
+   const uid=String(hit?.uid||''),times=Number(hit?.times);
+   if(!/^[A-Za-z0-9]{8}$/.test(uid)||!Number.isSafeInteger(times)||times<0)continue;
+   byUid.set(uid,Math.max(byUid.get(uid)||0,times));
+ }
+ return {total:[...byUid.values()].reduce((a,b)=>a+b,0),uidlists:[...byUid.keys()].sort()};
+}
 
 // Four kinds share one case-sensitive UID key. Trace/Media used to depend
 // on database-generated UIDs; the unified Anchor table has no such default.
@@ -47,15 +69,6 @@ function newAnchorUid(length,assigned){
   }
   throw Error('Cannot allocate a unique unified anchor UID');
 }
-function defaultTimeRange(row){
-  const date=String(row.address||'').slice(0,10);
-  const point=['anchor','date'].includes(row.type)&&/^\d{4}-\d\d-\d\d$/.test(date);
-  return {version:1,segments:point?[{
-    index:0,point:true,invalid:false,start_date:date,end_date:date,
-    open_end:false,anchor_ids:[row.uid],start_anchor_id:row.uid,
-    end_anchor_id:null,missing_anchor_ids:[]
-  }]:[],invalid_period_uids:[]};
-}
 function prepareAnchorInsert(spec,row,assigned){
   if(!row||typeof row!=='object'||Array.isArray(row))
     throw Error('Invalid unified insert row');
@@ -69,13 +82,7 @@ function prepareAnchorInsert(spec,row,assigned){
     throw Error('Invalid unified anchor UID');
   if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
   assigned.add(value.uid);
-  if(spec.kind==='time'&&!['date','anchor'].includes(value.type)&&value.range==null)value.range=defaultTimeRange(value);
-  if(spec.kind==='trace'){
-    if(!hasOwn(value,'address'))value.address=null;
-    if(!hasOwn(value,'times'))value.times=[];
-    if(!hasOwn(value,'route_list'))value.route_list=[];
-  }
-  if(spec.kind==='keywords'&&value.uid_lists==null)value.uid_lists={};
+  if(spec.kind==='trace'&&!hasOwn(value,'address'))value.address=null;
   const mapped=toAnchorRow(spec,value);
   return mapped;
 }
@@ -100,15 +107,23 @@ export function toAnchorRow(spec,row){
  if(spec.kind==='time'){
    if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   if(type!=='date'&&Object.hasOwn(data,'range'))out.attr={range:data.range};
+   // Date is a single label; period/era labels retain their chosen UID links.
  }else if(spec.kind==='trace'){
    if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
-   const extra={};for(const key of ['times','route_list'])if(Object.hasOwn(data,key))extra[key]=data[key];
+   const extra={};
+   if(Array.isArray(data.times)&&data.times.length)extra.times=data.times;
+   if(data.route_list&&typeof data.route_list==='object'){
+     const route={};
+     if(Array.isArray(data.route_list.routes)&&data.route_list.routes.length)route.routes=data.route_list.routes;
+     if(Array.isArray(data.route_list.segments)&&data.route_list.segments.length)route.segments=data.route_list.segments;
+     if(String(data.route_list.postal_address||'').trim())route.postal_address=data.route_list.postal_address;
+     if(Object.keys(route).length)extra.route_list=route;
+   }
    if(Object.keys(extra).length)out.attr=extra;
  }else if(spec.kind==='keywords'){
    if(Object.hasOwn(data,'lists'))out.label=labelList(data.lists);
-   if(Object.hasOwn(data,'uid_lists'))out.attr={uid_lists:data.uid_lists};
+   if(Object.hasOwn(data,'uid_lists'))out.attr=compactKeywordAnalysis(type,data.uid_lists);
  }else if(spec.kind==='media'){
    if(Object.hasOwn(data,'url'))out.label=data.url;
    if(Object.hasOwn(data,'meta_tags'))out.description=data.meta_tags;
@@ -117,8 +132,14 @@ export function toAnchorRow(spec,row){
  if(Object.hasOwn(data,'label'))out.label=data.label;
  if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
  if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
- // A fixed Date is exactly one label. Never store interval snapshots in attr.
- if(spec.kind==='time'&&(type==='date'||(!type&&Object.hasOwn(data,'address'))))out.attr={};
+ // Time never stores derived interval snapshots. A Keyword node owns only
+ // its compact numeric total and unique article UIDs; no per-document times.
+ if(spec.kind==='time')out.attr={};
+ if(spec.kind==='keywords'){
+   if(type==='group'||type==='item'){
+     if(hasOwn(out,'attr'))out.attr=compactKeywordAnalysis(type,out.attr.uid_lists??out.attr);
+   }else if(type==='class'||type==='category')out.attr={};
+ }
  for(const key of Object.keys(data)){
    if(['uid','type','trace_type','title','name','invisible','description','desc',
      'address','anchor_ids','range','anchor_list','times','route_list','lists',
@@ -135,7 +156,7 @@ export function fromAnchorRow(spec,row){
  if(spec.kind==='time'){
    out.address=row.type==='date'?(row.label??null):null;
    out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
-   out.range=row.attr?.range??null;
+   out.range=null;
  }else if(spec.kind==='trace'){
    out.trace_type=legacyType(row.type);
    out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
@@ -147,7 +168,7 @@ export function fromAnchorRow(spec,row){
    }
  }else if(spec.kind==='keywords'){
    out.name=row.title;out.desc=row.description;out.lists=parseLabelList(row.label);
-   out.uid_lists=row.attr?.uid_lists??{};
+   out.uid_lists=row.attr?.uid_lists??(row.attr?.uidlists?row.attr:{});
  }else if(spec.kind==='media'){
    out.url=row.label??null;out.meta_tags=row.description??null;
    out.createtime=null;out.location=null;
@@ -164,6 +185,7 @@ function fieldsForSelect(spec,columns){
    // A few old media readers still request these removed fields. They are
    // nullable compatibility projections, not aliases to UID or other data.
    if(spec.kind==='media'&&['createtime','location'].includes(name))continue;
+   if(spec.kind==='time'&&name==='range')continue;
    if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
    fields.add(mapped);
  }
@@ -355,13 +377,13 @@ class UnifiedQuery{
       if(attrs){
         const uid=this.filters.find(f=>f.column==='uid'&&f.method==='eq')?.value;
         if(!uid||this.orFilters.length)throw Error('Unified JSONB updates require exact UID');
-        const read=await this.schema.from(spec.table).select('uid,attr').eq('uid',uid).in('type',scopeTypes[spec.kind]).maybeSingle();
+        const read=await this.schema.from(spec.table).select('uid,type,attr').eq('uid',uid).in('type',scopeTypes[spec.kind]).maybeSingle();
         if(read.error)return read;
         if(!read.data)return {data:[],error:null,count:0};
-        const mapped=toAnchorRow(spec,this.values);
-        // Date attributes must be empty even when legacy writes supply range.
-        if(mapped.type!=='date'&&!(!mapped.type&&Object.hasOwn(this.values,'address')))
-          mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
+        const mapped=toAnchorRow(spec,{type:read.data.type,...this.values});
+        // Trace may have independent optional attributes. Never merge stale
+        // Time/Keywords JSON, or cleanup would be undone on the next save.
+        if(spec.kind==='trace')mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
         let q=this.schema.from(spec.table).update(mapped);
         const {physical}=this.build(q,false);
         const res=await physical.select(fieldsForSelect(spec,this.fields));
