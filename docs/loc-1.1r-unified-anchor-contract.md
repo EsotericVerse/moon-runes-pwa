@@ -17,7 +17,7 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 | `title` | 名稱／標題 |
 | `label` | 隨 `type` 代表日期、空間地址、媒體網址或關鍵詞組 |
 | `description` | 說明；Media 原 `meta_tags` 的內容移至此欄 |
-| `attr` | `jsonb`，保存結構化關聯及計算結果；不放單純 UID、日期或判斷詞清單 |
+| `attr` | `jsonb`，僅放各 type 真正必要的結構化資料；Time 與普通 Media 必須是空物件。Keyword 分析遵循下節精簡格式 |
 | `invisible` | 沿用既有顯示／隱藏設定，不因整併擅改 |
 
 **同名欄位 `label` 的值需依 `type` 解讀；不能因為部分舊資料是日期、地址陣列或 URL，就再次增加 `date`、`address`、`location`、`url` 欄位。** 地址／座標等需要結構化處理時，應遵循最終 Schema 的 `label` 格式與 `attrs` 定義；不得以推測格式毀損原始值。
@@ -58,6 +58,16 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 - 舊 Media `meta_tags` 遷入 `description` 時必須先核對既有值，**不得以空值覆寫**；任何舊表刪除都須在資料對帳與權限程序完成後另行處理。
 - 媒體日期不在統一表保存；每日媒體統計已取消。數量以 `galaxy.date` 篩選文章、`galaxy.media_link` 去重並比對存在的媒體 UID。
 - **`label` 是 `text`**：單值直接存文字，多值使用可解析的 JSON 陣列文字（例如 `["2009-05-01","2010-06-12"]`）。`links`、`kind`、`date`、`createtime`、`url` 與 `meta_tags` 不在統一表保留。
+
+## 四、Anchor `attr` 最小儲存契約（2026-11-02 核實）
+
+- **`date`、`period`、`era`：`attr={}`。** `date.label` 是唯一日曆日期；`period.label` 是選定的 1～2 個日期定錨 UID；`era.label` 是任意選定的 Period UID 陣列，**不代表連續期間**。日期區間由程式依 UID 關聯即時計算；不得儲存 `version`、`segments`、起訖日期快照或無效清單。
+- **`category`、`class`、`rune`：`attr={}`。** Keyword 的階層 UID／判斷詞全部在各自 `label`；Rune 的必要內容沿用媒體描述，不重複塞進 JSONB。
+- **`item`、`group`：`attr={"total": 整數, "uidlists": ["8碼文章UID",...]}`。** `total` 是分析一次完成的總數；Item 為總命中次數，Group 為不重複所屬文章數。每個 Item／Group 的文章 UID 在自身清單裡只儲存一次；不儲存每篇的 `times` 或 `{"uid","times"}` 物件。依日期、來源、地點篩選時可從 UID 與文章原欄位求符合的篇數，**不能從簡化清單還原區間內逐篇出現次數**。Group 的 `label` 仍為 Item UID 列表，不得混淆。
+- **`point`、`path`、`trace`：** `point.label` 保存位置座標；`path.label` 保存點 UID 列表；`trace.label` 保存點 UID 列表。只有真正有值的附加資料才用 `attr`：例如文字地址 `route_list.postal_address`、痕跡圖參考的 `route_list.routes` 或分段連線 `route_list.segments`，及確有使用的時間資料。空陣列、空 `route_list` 不寫入。正式內容 Scope 當前無 Trace 紀錄，不能以想像的舊資料填入。
+- **`image`、`video`、`suno`：** `label` 放真實 URL，`description` 放原始 `meta_tags`。通常 `attr={}`；現有一筆 Suno 播放清單為辨別歌曲／清單，暫留 `{"media_kind":"playlist"}`，不能直接刪除導致分類失真。
+- **防回寫：** 統一 Anchor 寫入程式不得復活舊 `uid_lists.articles`、`uid_lists.hits`、`range.segments` 等巢狀物件；資料庫的 CHECK 約束拒絕 Time／Keyword 舊格式。原始 `_time`、`_trace`、`_galaxy_media`、`_keywords` 表不在這次清理範圍，亦不動 Neon。
+- **讀取函式：** Keyword／Trace 統計 RPC 必須辨識精簡 UID 陣列；全量 Item 命中統計採保存的 `total`；條件篩選回傳符合的文章數而不是已無法還原的逐篇命中數。
 
 ## 四、匯入的時間定錨規則
 
