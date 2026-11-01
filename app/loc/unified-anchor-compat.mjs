@@ -18,7 +18,7 @@ const aliases={
 const attrColumns=new Set(['range','times','route_list','uid_lists']);
 const realTypes={anchor:'date',space_anchor:'point','音樂':'suno','播放清單':'suno',runes:'rune'};
 const physicalType=value=>realTypes[String(value)]||String(value);
-const legacyType=value=>({date:'anchor',point:'space_anchor',suno:'音樂'})[value]||value;
+const legacyType=value=>({date:'anchor',point:'space_anchor'})[value]||value;
 const labelList=value=>Array.isArray(value)?JSON.stringify(value):value==null?null:
  typeof value==='string'?value:JSON.stringify(value);
 const parseLabelList=value=>{
@@ -49,7 +49,7 @@ function newAnchorUid(length,assigned){
 }
 function defaultTimeRange(row){
   const date=String(row.address||'').slice(0,10);
-  const point=row.type==='anchor'&&/^\d{4}-\d\d-\d\d$/.test(date);
+  const point=['anchor','date'].includes(row.type)&&/^\d{4}-\d\d-\d\d$/.test(date);
   return {version:1,segments:point?[{
     index:0,point:true,invalid:false,start_date:date,end_date:date,
     open_end:false,anchor_ids:[row.uid],start_anchor_id:row.uid,
@@ -98,11 +98,11 @@ export function toAnchorRow(spec,row){
      ?JSON.stringify(data.description):data.description;
  if(Object.hasOwn(data,'desc'))out.description=data.desc;
  if(spec.kind==='time'){
-   if(Object.hasOwn(data,'address')&&type==='date')out.label=data.address==null?null:String(data.address).slice(0,10);
+   if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
    if(Object.hasOwn(data,'range'))out.attr={range:data.range};
  }else if(spec.kind==='trace'){
-   if(Object.hasOwn(data,'address')&&type==='point')out.label=labelList(data.address);
+   if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
    const extra={};for(const key of ['times','route_list'])if(Object.hasOwn(data,key))extra[key]=data[key];
    if(Object.keys(extra).length)out.attr=extra;
