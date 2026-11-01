@@ -73,18 +73,17 @@ test('failed SELECT settles all in-flight lanes before rejecting',async()=>{
   assert.deepEqual(done,[instant(2),instant(4)]);
 });
 
-test('time-window import uses indexed UID keyset instead of timestamp offsets',()=>{
+test('time candidate pages sort by timestamp AND UID to preserve tied timestamps',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const timeRead=panel.slice(panel.indexOf('const readSiteSpan=async('),
     panel.indexOf('const readRowsByUid=async'));
-  assert.match(timeRead,/\.order\('uid',\{ascending:true\}\)/);
-  assert.match(timeRead,/\.gt\('uid',afterUid\)/);
-  assert.match(timeRead,/\.range\(0,pageSize-1\)/);
-  assert.doesNotMatch(timeRead,/\.order\('createtime'/);
-  assert.match(panel,/windowSize:Math\.min\(MAX_ROWS,1000\),concurrency:3/);
+  assert.match(timeRead,/\.order\('createtime',\{ascending:true\}\)\.order\('uid',\{ascending:true\}\)/);
+  assert.match(timeRead,/\.range\(offset,offset\+pageSize-1\)/);
+  assert.doesNotMatch(timeRead,/\.gt\('uid'/);
+  assert.match(panel,/windowSize:Math\.min\(MAX_ROWS,10000\),concurrency:times\.length>=3000\?3:1/);
 });
 
-test('equal timestamps crossing page boundaries are all read exactly once',async()=>{
+test('equal timestamps crossing deterministic pages are all read exactly once',async()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const section=panel.slice(panel.indexOf('const readSiteSpan=async('),
     panel.indexOf('const readRowsByUid=async'));
@@ -96,15 +95,10 @@ test('equal timestamps crossing page boundaries are all read exactly once',async
     {uid:'CC000003',createtime:instant(1)},
     {uid:'DD000004',createtime:instant(2)}
   ];
-  const cursors=[],ranges=[];
+  const columns=[],ranges=[];
   const query={
-    gt:(key,value)=>{assert.equal(key,'uid');cursors.push(value);return query;},
-    order:()=>query,
-    range:async(start,end)=>{
-      ranges.push([start,end]);
-      return {data:rows.filter(row=>!cursors.length||
-        row.uid>cursors.at(-1)).slice(start,end+1),error:null};
-    }
+    order:column=>{columns.push(column);return query;},
+    range:async(start,end)=>{ranges.push([start,end]);return {data:rows.slice(start,end+1),error:null};}
   };
   const relation=()=>({
     select:()=>({ilike:()=>({gte:()=>({lte:()=>query})})})
@@ -112,17 +106,17 @@ test('equal timestamps crossing page boundaries are all read exactly once',async
   const read=factory(relation,'silver.lo3rwang_galaxy',2);
   const result=await read('Facebook',instant(1),instant(2));
   assert.deepEqual(result,rows);
-  assert.deepEqual(cursors,['BB000002','DD000004']);
-  assert.deepEqual(ranges,[[0,1],[0,1],[0,1]]);
+  assert.deepEqual(columns,['createtime','uid','createtime','uid','createtime','uid']);
+  assert.deepEqual(ranges,[[0,1],[2,3],[4,5]]);
 });
 
-test('duplicate rows in successive cursor pages are rejected instead of silently matching',async()=>{
+test('duplicate rows in successive timestamp pages reject the import',async()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const section=panel.slice(panel.indexOf('const readSiteSpan=async('),
     panel.indexOf('const readRowsByUid=async'));
   let pages=0;
   const chain={
-    select:()=>chain,ilike:()=>chain,gte:()=>chain,lte:()=>chain,gt:()=>chain,
+    select:()=>chain,ilike:()=>chain,gte:()=>chain,lte:()=>chain,
     order:()=>chain,range:async()=>({data:pages++?[
       {uid:'AA000001',createtime:instant(1)}
     ]:[
