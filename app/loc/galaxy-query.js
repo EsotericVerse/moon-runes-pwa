@@ -882,18 +882,14 @@ function sourceBucket(value=''){
 }
 async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const [textDaily,mediaDaily]=await scopeDailyCounts(current,{startDate,endDate});
+  const [textDaily]=await scopeDailyCounts(current,{startDate,endDate});
   const combined=new Map();
   for(const row of textDaily){
     const day=dateOnly(row.day); if(!day)continue;
     const bucket=sourceBucket(row.site),key=day+'|'+bucket;
     combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
   }
-  for(const row of mediaDaily){
-    const day=dateOnly(row.day); if(!day)continue;
-    const bucket=sourceBucket(row.category),key=day+'|'+bucket;
-    combined.set(key,(combined.get(key)||0)+(Number(row.item_count)||0));
-  }
+
   return [...combined.entries()].map(([key,item_count])=>{
     const split=key.indexOf('|');
     return {day:key.slice(0,split),source:key.slice(split+1),item_count:Number(item_count)||0};
@@ -902,9 +898,9 @@ async function scopeSourceTrendRows(scope,{startDate='',endDate=''}={}){
 
 async function scopeDensityRows(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  const [textDaily,mediaDaily]=await scopeDailyCounts(current,{startDate,endDate});
+  const [textDaily]=await scopeDailyCounts(current,{startDate,endDate});
   const daily=new Map();
-  for(const row of [...textDaily,...mediaDaily]){
+  for(const row of textDaily){
     const day=dateOnly(row.day);
     if(!day)continue;
     daily.set(day,(daily.get(day)||0)+(Number(row.item_count)||0));

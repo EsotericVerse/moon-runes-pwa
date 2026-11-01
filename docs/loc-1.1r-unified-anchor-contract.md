@@ -1,12 +1,12 @@
 # LOC 1.1R｜四表合一 Anchor 統一規格
 
-> **規格日期：2026-11-02（Asia/Taipei）**。本文件記錄使用者已明確決定的資料語意與命名，取代舊文件中相衝突的欄位／型別描述。**規格確立不代表程式、正式 Schema、資料回填或部署已完成。**
+> **規格日期：2026-11-02（Asia/Taipei）**。本文件記錄使用者已明確決定的資料語意與命名，取代舊文件中相衝突的欄位／型別描述。**`silver.lo3rwang_anchor` 已按此 Schema 清空重匯；程式部署仍以正式 PR/Cloudflare 結果為準。**
 >
-> **責任分工：**Schema 由另一工作線調整；匯入工作線按最終 Schema 對接。本文件本身不授權 DDL、舊表刪除、資料清理或 Neon 同步。
+> **邊界：**只有 `silver.lo3rwang_anchor` 進行 Schema 轉換；三張來源表保留，Neon 不動。匯入程式由另一工作線修正。
 
 ## 一、整合邊界
 
-Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，不是將四張舊表所有欄位直接聯集。**分類只使用原有 `type`；不得額外引入 `kind` 當作第二套分類**。個別資料特性以共用欄位和 `attrs`（JSONB）表達，不因某類舊表曾有獨立欄位，就往統一表再加同義欄位。
+Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，不是將四張舊表所有欄位直接聯集。**分類只使用原有 `type`；不得額外引入 `kind` 當作第二套分類**。個別資料特性以共用欄位和 `attr`（JSONB）表達，不因某類舊表曾有獨立欄位，就往統一表再加同義欄位。
 
 ### 統一欄位的語意
 
@@ -17,8 +17,7 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 | `title` | 名稱／標題 |
 | `label` | 隨 `type` 代表日期、空間地址、媒體網址或關鍵詞組 |
 | `description` | 說明；Media 原 `meta_tags` 的內容移至此欄 |
-| `links` | `text[]`，按該類型語意保存列表或關聯；**不是網址欄位** |
-| `attrs` | `jsonb`，保存需要結構化的各類附屬資訊；不是另一張表或臨時表 |
+| `attr` | `jsonb`，保存結構化關聯及計算結果；不放單純 UID、日期或判斷詞清單 |
 | `invisible` | 沿用既有顯示／隱藏設定，不因整併擅改 |
 
 **同名欄位 `label` 的值需依 `type` 解讀；不能因為部分舊資料是日期、地址陣列或 URL，就再次增加 `date`、`address`、`location`、`url` 欄位。** 地址／座標等需要結構化處理時，應遵循最終 Schema 的 `label` 格式與 `attrs` 定義；不得以推測格式毀損原始值。
@@ -42,7 +41,7 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 | 關鍵詞 | 群組 | `group` |
 | 關鍵詞 | 關鍵詞分類 | `item` |
 
-「關鍵詞／判斷詞列表」屬於關鍵詞分類的列表內容，**不額外建立一個 `type`**。詞表與下層 UID 清單依既有 `links`／`attrs` 結構的語意管理，不增設新的表或類別。**Suno 型別使用英文 `suno`，不使用 `音樂`。**
+「關鍵詞／判斷詞列表」屬於關鍵詞分類的列表內容，**不額外建立一個 `type`**。詞表與下層 UID 清單存成 `label` 的文字清單，文章關聯與命中統計的結構存 `attr`，不增設新的表或類別。**Suno 型別使用英文 `suno`，不使用 `音樂`。**
 
 ## 三、舊資料到統一 `label`／`description` 的對應
 
@@ -57,8 +56,8 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 - 統一 Anchor **不再保留獨立 `location`／`date`／`url`／`meta_tags` 欄位**；舊 `meta_tag` 同樣不得保留為另一個平行欄位。
 - `label` 的值必須由原始資料正確轉換，不得將 ZIP 內的 `uri`／檔案路徑當成媒體 `url`，更不能用檔名推導不存在的 URL。
 - 舊 Media `meta_tags` 遷入 `description` 時必須先核對既有值，**不得以空值覆寫**；任何舊表刪除都須在資料對帳與權限程序完成後另行處理。
-- 舊 Media `createtime` 不是新增統一表實體欄位的理由；若需保留具有實際意義的精確時間，使用 `attrs` 中合適的結構化資料，且先訂明來源、精度、格式與讀寫相容性，**不可直接丟失既有時間資料**。這項是保全原則，不表示已決定 `attrs` 的確切鍵名。
-- `links` 是 `text[]`；`attrs` 是 `jsonb`。兩者不能混為同一欄，也不能用 `links` 存外部 URL 取代 `label`。
+- 媒體日期不在統一表保存；每日媒體統計已取消。數量以 `galaxy.date` 篩選文章、`galaxy.media_link` 去重並比對存在的媒體 UID。
+- **`label` 是 `text`**：單值直接存文字，多值使用可解析的 JSON 陣列文字（例如 `["2009-05-01","2010-06-12"]`）。`links`、`kind`、`date`、`createtime`、`url` 與 `meta_tags` 不在統一表保留。
 
 ## 四、匯入的時間定錨規則
 
@@ -71,11 +70,11 @@ Time、Trace、Media、Keywords 四類使用**同一個 Anchor 資料模型**，
 ## 五、驗收與相容性
 
 1. 核對正式統一表的實際欄位、資料型別、RLS／約束、四類讀寫介面；**不能因本文件寫了規格便宣稱 Schema 已切換**。
-2. 對照仍保留的四張原表與統一 Anchor，逐筆核對 UID、`type`、`label`、`description`、`links`、`attrs`；完整保全尚未遷入的 Media／時間資料。
+2. 對照仍保留的四張原表與統一 Anchor，逐筆核對 UID、`type`、`label`、`description`、`attr`；完整保全尚未遷入的 Media／時間資料。
 3. 停用舊 `kind`、`anchor`、`space_anchor`、`音樂` 等只屬於舊資料模型的寫入值；更新程式轉接、搜尋、文化／統計、地圖、匯入及管理畫面後才切換。
 4. 以真實打卡和普通文章混合的 ZIP 驗證「只有打卡建日錨、同日沿用」、URL 寫入、媒體關聯、失敗續跑及重匯去重。
-5. 原四表與既有正式資料**不得僅因新規格存在便刪除、清空或覆蓋**。Schema 與程式由不同工作線處理時，合併前核對最新 `main`，避免互相覆寫。
+5. 原四表與既有正式資料**此次明確授權清空重匯的對象僅限 `_anchor`**。Schema 與程式由不同工作線處理時，合併前核對最新 `main`，避免互相覆寫。
 
 ## 六、舊文件的使用方式
 
-本文件是 **2026-11-02 的現行命名／欄位契約**。較早的設計紀錄與 RC 發版說明保留為歷史證據；若舊文寫到 `source_place`、`address`、`anchor_ids`、`kind`、`meta_tags` 或舊三層關鍵詞樹，**不應將其當成現行統一 Anchor 規格**。正式資料庫、程式及 UI 是否已跟上，需另行驗收。
+本文件是 **2026-11-02 的現行命名／欄位契約**。較早的設計紀錄與 RC 發版說明保留為歷史證據；若舊文寫到 `source_place`、`address`、`anchor_ids`、`kind`、`meta_tags` 或舊三層關鍵詞樹，**不應將其當成現行統一 Anchor 規格**。目前正式 `_anchor` 含 1,152 筆：Time 88、Keywords 166、Suno 877、Rune 21；舊封存 Facebook 影片與舊 Trace 定錨不回填。程式及 UI 是否已跟上，需另行驗收。
