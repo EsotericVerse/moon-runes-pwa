@@ -47,7 +47,9 @@ export default function ScopeGroupAccessPanel({groupId}){
     setClassesLoading(true);setClassesError('');setCategoryUid('');
     // SQL only returns published type=class nodes from the selected Scope's
     // own Keywords table. Group/Item identifiers are never included.
-    dbPublicClient.schema('silver').rpc('read_shared_keyword_classes',{p_scope_id:scope})
+    dbPublicClient.schema('silver').rpc('read_scope_analytics',{
+      p_scope_id:scope,p_view:'shared_classes',p_start:null,p_end:null,p_options:{}
+    })
       .then(({data:rows,error})=>{
         if(!active)return;
         if(error)throw error;
