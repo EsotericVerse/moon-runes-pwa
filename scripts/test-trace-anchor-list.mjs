@@ -31,3 +31,14 @@ test('Trace Frame, map and reporting code use anchor_list only',()=>{
    assert.ok(!content.includes('anchor_uids'),path+' must not depend on old queue');
  }
 });
+
+test('batch Trace anchors follow the text + JSONB relation contract',()=>{
+ const code=read('app/modular/features/trace/trace-data.js');
+ const from=code.indexOf('export async function addTraceAnchorsBatch(');
+ const to=code.indexOf('function validatedConnections(',from);
+ assert.ok(from>=0&&to>from);
+ const section=code.slice(from,to);
+ assert.match(section,/description:descriptionText\(place\.description\|\|''\)/);
+ assert.match(section,/route_list:\{routes:\[\],segments:\[\],postal_address:postalText\(place\.address\|\|''\)\}/);
+ assert.doesNotMatch(section,/descriptionObject\(/);
+});
