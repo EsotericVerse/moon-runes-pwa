@@ -85,5 +85,5 @@ test('reject unknown columns, fabricated keyword IDs and invalid preferences',()
   assert.throws(()=>h.validateLocUserField('owner_id','other'),/不允許/);
   assert.throws(()=>h.validateLocUserField('culture',{time:'invalid'}),/不符合/);
   assert.throws(()=>h.validateLocUserField('keyword','xxx:<script>'),/四碼/);
-  assert.equal(h.validateLocUserField('keyword','myscope:Ab3z'),'myScope:Ab3z');
+  assert.equal(h.validateLocUserField('keyword','myscope:Ab3z'),'myscope:Ab3z');
 });
