@@ -19,6 +19,7 @@ import {featureNavigationHref} from './feature-navigation';
 import {scopeHref} from './scope-registry';
 // Shared display stays light: mount the editor only on pages that need it.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
+const ArticleTimeAnchorAction=dynamic(()=>import('./ArticleTimeAnchorAction'),{loading:()=>null});
 
 function FeatureHeroContent({eyebrow='',title,subtitle='',description='',rich=false,scopeId=''}){
   const sign=HomeBlock.heroExtraFor(scopeId);
@@ -197,6 +198,7 @@ function ArticleRelationNavigation({
   const originals=externalLinks.filter(link=>!String(link.id||'').startsWith('media:'));
   const scope=articleScopeId||'lo3rwang';
   const day=String(articleDate||'').slice(0,10);
+  const [addedAnchor,setAddedAnchor]=useState(null);
   const timeHref=(item,kind)=>featureNavigationHref(scope,'culture',{
     from:day,to:day,...(kind==='anchor'?{anchor:item.uid}:{period:item.uid})
   });
@@ -266,7 +268,10 @@ function ArticleRelationNavigation({
   ].filter(item=>item.data).map(item=><a key={item.name}
       href={featureNavigationHref(scope,'statics',{from:item.data.start,to:item.data.end,statTab:'charts'})}
       className="scope-article-context-link">{item.name}</a>):[];
-  const timeAnchors=named(time.anchors,item=>timeHref(item,'anchor'));
+  const activeAnchors=Array.isArray(time.anchors)?[...time.anchors]:[];
+  if(addedAnchor?.scope===scope&&addedAnchor?.day===day&&
+    !activeAnchors.some(item=>item.uid===addedAnchor.anchor.uid))activeAnchors.push(addedAnchor.anchor);
+  const timeAnchors=named(activeAnchors,item=>timeHref(item,'anchor'));
   const periods=named(time.periods,item=>timeHref(item,'period'));
   const eras=named(time.eras,item=>timeHref(item,'period'));
   const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
@@ -287,7 +292,12 @@ function ArticleRelationNavigation({
     </div>:null}
     <div className="scope-article-context-group">
       <h3>時間</h3>
-      {row('重要日',timeAnchors.length?timeAnchors:dateValid?'—':'文章尚未設定日期')}
+      {row('重要日',<>
+        {timeAnchors.length?timeAnchors:dateValid?'—':'文章尚未設定日期'}
+        {dateValid&&scope!=='loc'&&scope!=='local'?<ArticleTimeAnchorAction
+          scopeId={scope} date={day}
+          onCreated={anchor=>setAddedAnchor({scope,day,anchor})}/>:null}
+      </>)}
       {row('間隔',periods.length?periods:'—')}
       {row('時代',eras.length?eras:'—')}
       {row('周年紀念',<span className="scope-status">尚未建立</span>)}
