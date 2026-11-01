@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {encodeTimeSegment,decodeTimeSegments,resolveTimeSegments,
-  timePeriodContainsDate,resolveTimeTrace,timeDateWindows,intersectTimeDateWindows
+  timePeriodContainsDate,resolveTimeTrace,timeDateWindows,intersectTimeDateWindows,storedTimeRange
 } from '../app/loc/time-anchor-ranges.mjs';
 const anchors=new Map([
  ['A001',{uid:'A001',address:'2000-01-01'}],
@@ -101,4 +101,17 @@ test('intersection of all saved intervals preserves disjoint overlaps and never 
  ]);
  assert.deepEqual(intersectTimeDateWindows([a,[]]),[]);
  assert.deepEqual(intersectTimeDateWindows([]),[]);
+});
+
+test('stored versioned Time ranges retain disjoint period segments and invalid references',()=>{
+ const doc={version:1,segments:[{
+   index:0,start_date:'2000-01-01',end_date:'2000-01-05',point:false,invalid:false,
+   start_anchor_id:'A001',end_anchor_id:'A002',anchor_ids:['A001','A002']
+ }],invalid_period_uids:['DEAD']};
+ const projection=storedTimeRange(doc);
+ assert.deepEqual(projection.invalidPeriodUids,['DEAD']);
+ assert.deepEqual(timeDateWindows(projection.ranges),[{startDate:'2000-01-01',endDate:'2000-01-05'}]);
+ assert.deepEqual(storedTimeRange(JSON.stringify(doc)),projection);
+ assert.equal(storedTimeRange({}),null);
+ assert.equal(storedTimeRange({version:1,segments:[{start_date:'yesterday'}]}),null);
 });
