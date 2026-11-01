@@ -36,3 +36,22 @@ test('articles show actual Time/Trace links, NOT fake persisted anniversaries',(
   assert.match(galaxy,/column:'address',operator:'eq',value:day/);
   assert.match(galaxy,/articleSpaceContext\(current,placeId/);
 });
+test('Scope birthday is suggested without an existing birthday Time row',()=>{
+  const matches=anniversarySuggestionsForDate('2026-06-23',anchors,{birthday:'1980-06-23'});
+  assert.equal(matches.length,1);
+  assert.equal(matches[0].title,'生日 · 46 歲');
+  assert.equal(matches[0].sourceUid,'birthday');
+  assert.deepEqual(anniversarySuggestionsForDate('2026-06-24',anchors,{birthday:'1980-06-23'}),[]);
+});
+test('existing exact anchors suppress birthday and annual duplicates',()=>{
+  assert.deepEqual(anniversarySuggestionsForDate('2026-06-23',[
+    ...anchors,{uid:'F00A',type:'anchor',title:'已建立',address:'2026-06-23'}
+  ],{birthday:'1980-06-23'}),[]);
+});
+test('lookup handles many records once and does not suggest a fictitious leap day',async()=>{
+  const {createAnniversaryLookup}=await import('../app/loc/anniversary.mjs');
+  const lookup=createAnniversaryLookup(anchors,{birthday:'1980-02-29'});
+  assert.equal(lookup('2028-02-29')[0].sourceUid,'birthday');
+  assert.deepEqual(lookup('2027-02-29'),[]);
+  assert.deepEqual(lookup('2019-10-16'),[]);
+});
