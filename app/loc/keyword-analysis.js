@@ -7,6 +7,7 @@ import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
 import {createIndexedDateKeywordReader} from './keyword-article-reader.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
+import {keywordClassDirectory} from './keyword-class-directory.mjs';
 
 const KEYWORD_ANALYSIS_READ_PAGE_SIZE=1000;
 
@@ -71,15 +72,28 @@ export async function selectActiveKeywordClassName(scopeId=''){
 export async function selectAvailableKeywordClasses(scopeId='lo3rwang'){
   const id=normalizeScopeId(scopeId),scope=defaultScopeData(id);
   if(!scope)return {classes:[],currentClassUid:''};
-  const [{readSharedKeywordClasses},{rows}]=await Promise.all([
+  const [{readSharedKeywordClasses,dbAuthRelation},{rows}]=await Promise.all([
     import('./db-client.mjs'),
     selectRows(scope.config,{
       columns:'current_keyword_class_uid',
       filters:[{column:'id',operator:'eq',value:id}],limit:1
     })
   ]);
-  const classes=await readSharedKeywordClasses(id);
-  return {classes,currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
+  // Guest: public/shared classes only. Owner: the existing authenticated
+  // Keywords table's RLS (silver.can_manage_scope) permits the full tree.
+  // Never expose private Class identities through a public/anonymous query.
+  const shared=await readSharedKeywordClasses(id);
+  let authorizedRows=[];
+  try{
+    const {data,error}=await dbAuthRelation(scope.keywords)
+      .select('uid,type,name,lists')
+      .in('type',['category','class']).limit(500);
+    if(!error&&Array.isArray(data))authorizedRows=data;
+  }catch{
+    // Guest/RLS denial: only use Classes returned by the public shared reader.
+  }
+  return {classes:keywordClassDirectory(shared,authorizedRows,id),
+    currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
 }
 async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const id=normalizeScopeId(scopeId);
