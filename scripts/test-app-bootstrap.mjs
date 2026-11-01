@@ -619,3 +619,32 @@ test('mobile UI keeps safe-area navigation, accessible rune dialog and low-churn
   assert.match(runeCss,/max-height:min\(85dvh/);
   assert.match(shell,/document\.documentElement\.lang=activeLocale/);
 });
+
+test('one device default time unit changes presentation, never article URLs or SQL',async()=>{
+  const {timeUnitBucket,normalizeDefaultTimeUnit}=await import('../app/loc/default-time-unit.mjs');
+  assert.equal(normalizeDefaultTimeUnit('unexpected'),'auto');
+  assert.deepEqual(timeUnitBucket('2026-11-01','week'),{
+    key:'2026-10-26',startDate:'2026-10-26',endDate:'2026-11-01',endExclusive:'2026-11-02'
+  });
+  assert.deepEqual(timeUnitBucket('2026-11-02','week'),{
+    key:'2026-11-02',startDate:'2026-11-02',endDate:'2026-11-08',endExclusive:'2026-11-09'
+  });
+  assert.equal(timeUnitBucket('2024-02-15','month').endDate,'2024-02-29');
+  assert.equal(timeUnitBucket('2026-11-02','year').endDate,'2026-12-31');
+  assert.equal(timeUnitBucket('2026-02-30','week'),null);
+  const file=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+  const settings=file('app/loc/GlobalSettings.jsx');
+  const culture=file('app/modular/modules/culture-timeline/CultureTimeline.jsx');
+  const statistics=file('app/modular/features/Statistics.jsx');
+  const trace=file('app/modular/features/trace/TracePlaceResults.jsx');
+  const search=file('app/modular/features/Search.jsx');
+  assert.match(settings,/saveDefaultTimeUnit\(event\.target\.value\)/);
+  assert.match(culture,/timeAxis:\{scale:defaultTimeUnit,step:1\}/);
+  assert.match(statistics,/defaultTimeUnit==='auto'/);
+  assert.match(trace,/timeUnitBucket\(row\.day,viewUnit\)/);
+  assert.match(search,/timeUnitBucket\(localTodayKey\(\),defaultTimeUnit/);
+  assert.match(search,/onClick=\{applyDefaultTimeWindow\}/);
+  assert.match(trace,/start_date:startDate,end_date:endExclusive/);
+  // Zero new API endpoints, migrations, automatic search filters or URL changes.
+  assert.doesNotMatch(settings,/dbAuthRelation\(.*DEFAULT_TIME_UNIT_KEY/);
+});

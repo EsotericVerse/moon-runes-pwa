@@ -1,4 +1,9 @@
 export default {
+  "applyDefaultTimeWindow": "选取本期（{unit}）",
+  "defaultUnitDay": "每日",
+  "defaultUnitWeek": "每周",
+  "defaultUnitMonth": "每月",
+  "defaultUnitYear": "每年",
   "fieldLabels": {
     "uid": "识别码",
     "title": "标题",

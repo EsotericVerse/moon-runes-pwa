@@ -183,7 +183,7 @@ function keywordGroupTrend(classifications=[],groups=[],bucket='month'){
     const id=String(row?.group_uid??'');
     const count=Number(row?.count)||0;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!known.has(id)||count<=0)continue;
-    const key=bucket==='day'?day:bucket==='week'
+    const key=bucket==='day'?day:bucket==='year'?day.slice(0,4):bucket==='week'
       ?(()=>{const d=new Date(day+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);})()
       :day.slice(0,7);
     if(!dates.has(key))dates.set(key,{period:key});

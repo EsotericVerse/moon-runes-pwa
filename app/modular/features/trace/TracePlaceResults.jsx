@@ -1,6 +1,8 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
+import useDefaultTimeUnit from '../../../loc/use-default-time-unit';
+import {timeUnitBucket} from '../../../loc/default-time-unit.mjs';
 import dynamic from 'next/dynamic';
 import {useAsyncInfiniteResource,useAsyncResource} from '../../../loc/use-async-resource';
 import {selectRows} from '../../../loc/db-query.mjs';
@@ -54,6 +56,8 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
   tab='articles',sourceName='',mediaType='',dateRange=null}){
   const [sort,setSort]=useState('desc');
   const [chartType,setChartType]=useState('bar');
+  const defaultTimeUnit=useDefaultTimeUnit();
+  const viewUnit=defaultTimeUnit==='auto'?'month':defaultTimeUnit;
   const [showAllVisits,setShowAllVisits]=useState(false);
   const name=String(place?.title||'').trim();
   const isMap=place?.trace_type==='path'||place?.trace_type==='trace';
@@ -215,18 +219,21 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     return (list.data?.pages||[]).flatMap(p=>p.rows||[]);
   },[list.data,selectedMediaType,mediaRows]);
   const verified=useMemo(()=>{
-    const wanted=new Set(placeIds),months=new Map(),places=new Map();
+    const wanted=new Set(placeIds),periods=new Map(),places=new Map();
     for(const row of summary.data?.rows||[]){
       if(!wanted.has(row.category)||!validDate(String(row.day||'')))continue;
-      const count=Number(row.item_count)||0,month=String(row.day).slice(0,7);
-      months.set(month,(months.get(month)||0)+count);
+      const count=Number(row.item_count)||0;
+      const bucket=timeUnitBucket(row.day,viewUnit);
+      if(!bucket)continue;
+      const previous=periods.get(bucket.key);
+      periods.set(bucket.key,{...bucket,count:(previous?.count||0)+count});
       const display=placeLabels.get(row.category)||row.category;
       places.set(display,(places.get(display)||0)+count);
     }
-    return {months:[...months].sort(([a],[b])=>a.localeCompare(b)),
+    return {periods:[...periods.values()].sort((a,b)=>a.key.localeCompare(b.key)),
       places:[...places].sort((a,b)=>b[1]-a[1]),
       total:[...places.values()].reduce((total,n)=>total+n,0)};
-  },[summary.data,placesKey,placeLabels]);
+  },[summary.data,placesKey,placeLabels,viewUnit]);
   // Each spatial anchor has its own times[]; a multi-day route does not mean
   // each stop was visited continuously throughout that route.
   // Use saved times, never inferred timestamps from the route or article period.
@@ -261,26 +268,22 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     title:visit.title+' · '+visit.label
   })),[visibleVisits]);
   const listTotal=selectedMediaType?(mediaFiltered.data?mediaRows.length:null):list.data?.pages?.[0]?.total;
-  // Present the same vis-timeline river used by Culture. Aggregate by month
-  // so a 20-year personal history remains navigable without thousands of
-  // individual glyphs. Each range is article density, NOT an inferred visit.
+  // Only client-side aggregation changes. Original article and visit dates stay exact.
   const riverRows=useMemo(()=>{
-    const peak=Math.max(1,...verified.months.map(([,count])=>count));
-    return verified.months.map(([month,count])=>{
-      const after=new Date(month+'-01T00:00:00Z');
-      after.setUTCMonth(after.getUTCMonth()+1);
-      return {id:'trace-month:'+month,entry_id:'trace-month:'+month,
-        entry_type:'place_density',group_key:'trace-density',group_label:name,
-        group_order:0,start_date:month+'-01',end_date:after.toISOString().slice(0,10),
-        item_count:count,density_ratio:count/peak,
-        title:month+' · '+count+' 篇有打卡地點的文章'};
-    });
-  },[verified.months,name]);
+    const peak=Math.max(1,...verified.periods.map(row=>row.count));
+    return verified.periods.map(({key,count,startDate,endExclusive})=>({
+      id:'trace-density:'+viewUnit+':'+key,entry_id:'trace-density:'+viewUnit+':'+key,
+      entry_type:'place_density',group_key:'trace-density',group_label:name,
+      group_order:0,start_date:startDate,end_date:endExclusive,
+      item_count:count,density_ratio:count/peak,
+      title:key+' · '+count+' 篇有打卡地點的文章'
+    }));
+  },[verified.periods,name,viewUnit]);
   const riverItems=useMemo(()=>[...(sourceFilter||selectedMediaType?[]:visitRiver),...riverRows],
     [sourceFilter,selectedMediaType,visitRiver,riverRows]);
-  const chartRows=useMemo(()=>verified.months.map(([month,count])=>({
-    period:month.replace('-', '/'),start_date:month+'-01',value:count
-  })),[verified.months]);
+  const chartRows=useMemo(()=>verified.periods.map(row=>({
+    period:row.key.replace('-', '/'),start_date:row.startDate,value:row.count
+  })),[verified.periods]);
   const chartDistribution=useMemo(()=>verified.places.map(([placeName,count])=>({
     name:placeName,value:count
   })),[verified.places]);
@@ -377,7 +380,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       </label>
       <StatisticsMultiChart type={chartType} rows={chartRows}
         series={[{key:'value',label:'文章篇數'}]}
-        distribution={chartDistribution.length>1?chartDistribution:verified.months.map(([month,count])=>({name:month,value:count}))}
+        distribution={chartDistribution.length>1?chartDistribution:verified.periods.map(row=>({name:row.key,value:row.count}))}
         height={400}/></>:<p className="scope-status">這個時期沒有已確認的打卡紀錄。</p>}
     </div>:null}
   </section>;

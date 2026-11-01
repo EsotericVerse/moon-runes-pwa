@@ -1,4 +1,9 @@
 export default {
+  "applyDefaultTimeWindow": "Select current period ({unit})",
+  "defaultUnitDay": "daily",
+  "defaultUnitWeek": "weekly",
+  "defaultUnitMonth": "monthly",
+  "defaultUnitYear": "yearly",
   "fieldLabels": {
     "uid": "Identifier",
     "title": "Title",

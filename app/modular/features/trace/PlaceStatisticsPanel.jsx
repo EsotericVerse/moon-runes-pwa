@@ -5,10 +5,12 @@ import dynamic from 'next/dynamic';
 import {useAsyncResource} from '../../../loc/use-async-resource';
 import {readPlaceSummary} from '../../../loc/place-summary-client';
 import {summarizePlaceStatistics} from '../../../loc/place-statistics.mjs';
+import useDefaultTimeUnit from '../../../loc/use-default-time-unit';
 
 const StatisticsMultiChart=dynamic(()=>import('../../modules/statistics/StatisticsMultiChart'),{loading:()=>null});
 export default function PlaceStatisticsPanel({scopeId,range={}}){
   const [chartType,setChartType]=useState('bar');
+  const defaultTimeUnit=useDefaultTimeUnit();
   const startDate=String(range.startDate||''),endDate=String(range.endDate||'');
   const query=useAsyncResource({
     queryKey:['loc-place-summary',scopeId,startDate,endDate],
@@ -18,8 +20,8 @@ export default function PlaceStatisticsPanel({scopeId,range={}}){
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const model=useMemo(()=>summarizePlaceStatistics(query.data||{},{
-    bucket:['day','week','month'].includes(range.bucket)?range.bucket:'month',limit:10
-  }),[query.data,range.bucket]);
+    bucket:defaultTimeUnit==='auto'?(['day','week','month','year'].includes(range.bucket)?range.bucket:'month'):defaultTimeUnit,limit:10
+  }),[query.data,range.bucket,defaultTimeUnit]);
   return <section aria-label="地點統計" className="scope-stat-place">
     {query.isPending?<p className="scope-status" role="status">正在取得 ISR 地點統計…</p>:null}
     {query.error?<p className="scope-status scope-error" role="alert">

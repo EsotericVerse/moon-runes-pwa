@@ -57,6 +57,10 @@ const dateOnly=v=>String(v||'').slice(0,10);
 function canonicalBucket(day,unit){
   const date=new Date(day+'T00:00:00Z');
   if(Number.isNaN(date.getTime()))return null;
+  if(unit==='year'){
+    const year=date.getUTCFullYear();
+    return {key:String(year),from:year+'-01-01',to:year+'-12-31'};
+  }
   if(unit==='month'){
     const a=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),1));
     const b=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+1,0));
@@ -258,7 +262,7 @@ export default function ScopeSelfIntersection({scope,range,classUid='',zoomLevel
       return readKeywordTreeSummary(scope.id,{classUid:keywords.data?.keywordMeta?.class_uid||classUid,startDate:start,endDate:end});
     }
   });
-  const unit=['month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
+  const unit=['year','month','week','day'].includes(range?.bucket)?range.bucket:(Date.parse(end)-Date.parse(start))/DAY_MS>180?'month':(Date.parse(end)-Date.parse(start))/DAY_MS>60?'week':'day';
   const calculated=useMemo(()=>{
     if(!valid||!categories.length)return {chart:[],days:[],totals:[]};
     const counts=new Map(), activeDays=new Map();

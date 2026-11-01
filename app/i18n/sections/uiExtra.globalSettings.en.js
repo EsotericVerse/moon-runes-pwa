@@ -1,4 +1,13 @@
 export default {
+  "timeFilterTitle": "Default time filter",
+  "timeFilterLabel": "Time display unit",
+  "timeFilterHint": "Culture, Statistics and Trace charts use this default unit. Search can apply the current period on demand. This device preference does not alter article dates, links or search results.",
+  "timeFilterSaveFailed": "Could not save the default time filter on this device.",
+  "timeUnitAuto": "Automatic (current behavior)",
+  "timeUnitDay": "Daily",
+  "timeUnitWeek": "Weekly (Mon–Sun)",
+  "timeUnitMonth": "Monthly",
+  "timeUnitYear": "Yearly",
   "authorHome": "Author homepage",
   "locHome": "LOC homepage",
   "myPhone": "My phone",

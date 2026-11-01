@@ -23,6 +23,8 @@ const LocalDatabaseImport=dynamic(()=>import('./LocalDatabaseImport'),{loading:P
 const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:PanelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
+import useDefaultTimeUnit from './use-default-time-unit';
+import {saveDefaultTimeUnit,DEFAULT_TIME_UNITS} from './default-time-unit.mjs';
 import {NavigationPreferences} from '../modular/navigation-preferences';
 import {getScope} from '../modular/scope-registry';
 const {account:accountNavigation,device:deviceNavigation}=NavigationPreferences;
@@ -35,6 +37,8 @@ export default function GlobalSettings({initialSection='home'}={}){
   const [native,setNative]=useState(false);
   const [urlResolved,setUrlResolved]=useState(false);
   const [home,setHome]=useState('loc');
+  const timeUnit=useDefaultTimeUnit();
+  const [timeUnitError,setTimeUnitError]=useState(false);
   const sections=[
     option('home',uiT('uiExtra.globalSettings.homeSettings'),uiT('uiExtra.globalSettings.homeSettingsDescription'),uiT('uiExtra.globalSettings.tabHome')),
     option('mcp',uiT('uiExtra.globalSettings.mcpSelfServiceTitle'),uiT('uiExtra.globalSettings.mcpSelfServiceIntro'),uiT('uiExtra.globalSettings.mcpTab')),
@@ -165,6 +169,21 @@ export default function GlobalSettings({initialSection='home'}={}){
             {favoriteItems.map(item=><span key={item.id} className="scope-settings-favorite-item">{item.label}</span>)}
           </div>
         </div>
+      </section>
+      <section className="loc-card">
+        <h2>{uiT('uiExtra.globalSettings.timeFilterTitle')}</h2>
+        <label className="scope-stat-controls">
+          <span>{uiT('uiExtra.globalSettings.timeFilterLabel')}</span>
+          <select className="scope-select" value={timeUnit} onChange={event=>{
+            setTimeUnitError(!saveDefaultTimeUnit(event.target.value));
+          }}>
+            {DEFAULT_TIME_UNITS.map(unit=><option value={unit} key={unit}>
+              {uiT('uiExtra.globalSettings.timeUnit'+unit[0].toUpperCase()+unit.slice(1))}
+            </option>)}
+          </select>
+        </label>
+        <p className="scope-status">{uiT('uiExtra.globalSettings.timeFilterHint')}</p>
+        {timeUnitError?<p role="alert" className="scope-status scope-error">{uiT('uiExtra.globalSettings.timeFilterSaveFailed')}</p>:null}
       </section>
       </div>:null}
 
