@@ -56,3 +56,25 @@ test('upstream errors are surfaced, never converted to empty search results',asy
   await assert.rejects(searchMemory({query:'LP26'}, {},async()=>new Response('unavailable',{status:503})),/HTTP 503/);
   await assert.rejects(readMemory({uid:'30D7AFD7'}, {},async()=>Response.json({error:'invalid'})),/invalid response/);
 });
+
+test('lrunes reads and searches only its existing public Galaxy table',async()=>{
+  const p=fakeFetch([{uid:'Aa12BCd3',title:'Runes',content:'符文內文'}]);
+  const found=await searchMemory({query:'符文',scopeid:'lrunes'}, {},p.fetch);
+  assert.equal(found.scopeid,'lrunes');
+  assert.equal(p.history[0].uri.pathname,'/rest/v1/lrunes_galaxy');
+  const article=await readMemory({uid:'Aa12BCd3',scopeid:'lrunes'}, {},p.fetch);
+  assert.equal(article.scopeid,'lrunes');
+  assert.equal(article.content,'符文內文');
+  assert.equal(p.history[1].uri.pathname,'/rest/v1/lrunes_galaxy');
+  assert.equal(p.history[1].uri.searchParams.get('uid'),'eq.Aa12BCd3');
+  assert.equal(p.history.length,2);
+  assert.ok(p.history.every(entry=>entry.options.headers.authorization===undefined));
+});
+test('unlisted Scope and group aggregate access are denied before fetch',async()=>{
+  const p=fakeFetch([]);
+  for(const scopeid of ['loc','admin','unknown']){
+    await assert.rejects(searchMemory({query:'LP26',scopeid}, {},p.fetch),/public Galaxy/);
+    await assert.rejects(readMemory({uid:'30D7AFD7',scopeid}, {},p.fetch),/public Galaxy/);
+  }
+  assert.equal(p.history.length,0);
+});
