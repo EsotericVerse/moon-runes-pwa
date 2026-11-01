@@ -14,6 +14,7 @@ export default function ScopeDatabasePanel({scopeId}){
   const [values,setValues]=useState(EMPTY);
   const [apiKey,setApiKey]=useState('');
   const [configured,setConfigured]=useState(false);
+  const [loadFailed,setLoadFailed]=useState(false);
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
   const [status,setStatus]=useState('');
@@ -21,7 +22,7 @@ export default function ScopeDatabasePanel({scopeId}){
 
   useEffect(()=>{
     let active=true;
-    setValues(EMPTY);setApiKey('');setConfigured(false);
+    setValues(EMPTY);setApiKey('');setConfigured(false);setLoadFailed(false);
     setLoading(true);setStatus('');
     (async()=>{
       const {token}=await mcpClerkSession();
@@ -31,8 +32,8 @@ export default function ScopeDatabasePanel({scopeId}){
       setValues({endpoint:String(data.endpoint||''),
         schema:String(data.schema||'public'),table:String(data.table||'')});
     })().catch(error=>{
-      if(active)setStatus(error.message==='Scope Group authorization required'
-        ?label('databaseDenied'):label('databaseLoadFailed'));
+      if(active){setLoadFailed(true);setStatus(error.message==='Scope Group authorization required'
+        ?label('databaseDenied'):label('databaseLoadFailed'));}
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[scopeId]);
@@ -62,7 +63,7 @@ export default function ScopeDatabasePanel({scopeId}){
     <h2>{label('databaseTitle')}</h2>
     <p className="scope-status">{label('databaseDesc')}</p>
     {loading?<p role="status" className="scope-status">{label('databaseLoading')}</p>:
-      <form className="scope-management-fields" onSubmit={save} autoComplete="off">
+      loadFailed?null:<form className="scope-management-fields" onSubmit={save} autoComplete="off">
         <p className="scope-status" role="status">
           {configured?label('databaseStored'):label('databaseNotStored')}
         </p>
