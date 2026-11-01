@@ -160,7 +160,7 @@ test('ID-based media lookup stops after a short page instead of making an empty 
     }
   })})})});
   const reader=new Function('dbAuthRelation','MAX_ROWS','urlSafeInBatches',
-    section+'\\nreturn readExistingByIds;')(relation,500,function*(values){yield values;});
+    section+'\nreturn readExistingByIds;')(relation,500,function*(values){yield values;});
   assert.equal((await reader('galaxy','uid','uid',['A'],'failed')).length,1);
   assert.equal(requests,1);
 });
