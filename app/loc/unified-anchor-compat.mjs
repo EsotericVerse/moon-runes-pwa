@@ -69,7 +69,7 @@ function prepareAnchorInsert(spec,row,assigned){
     throw Error('Invalid unified anchor UID');
   if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
   assigned.add(value.uid);
-  if(spec.kind==='time'&&value.range==null)value.range=defaultTimeRange(value);
+  if(spec.kind==='time'&&!['date','anchor'].includes(value.type)&&value.range==null)value.range=defaultTimeRange(value);
   if(spec.kind==='trace'){
     if(!hasOwn(value,'address'))value.address=null;
     if(!hasOwn(value,'times'))value.times=[];
@@ -100,7 +100,7 @@ export function toAnchorRow(spec,row){
  if(spec.kind==='time'){
    if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   if(Object.hasOwn(data,'range'))out.attr={range:data.range};
+   if(type!=='date'&&Object.hasOwn(data,'range'))out.attr={range:data.range};
  }else if(spec.kind==='trace'){
    if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
@@ -117,6 +117,8 @@ export function toAnchorRow(spec,row){
  if(Object.hasOwn(data,'label'))out.label=data.label;
  if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
  if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
+ // A fixed Date is exactly one label. Never store interval snapshots in attr.
+ if(spec.kind==='time'&&(type==='date'||(!type&&Object.hasOwn(data,'address'))))out.attr={};
  for(const key of Object.keys(data)){
    if(['uid','type','trace_type','title','name','invisible','description','desc',
      'address','anchor_ids','range','anchor_list','times','route_list','lists',
@@ -357,7 +359,9 @@ class UnifiedQuery{
         if(read.error)return read;
         if(!read.data)return {data:[],error:null,count:0};
         const mapped=toAnchorRow(spec,this.values);
-        mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
+        // Date attributes must be empty even when legacy writes supply range.
+        if(mapped.type!=='date'&&!(!mapped.type&&Object.hasOwn(this.values,'address')))
+          mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
         let q=this.schema.from(spec.table).update(mapped);
         const {physical}=this.build(q,false);
         const res=await physical.select(fieldsForSelect(spec,this.fields));
