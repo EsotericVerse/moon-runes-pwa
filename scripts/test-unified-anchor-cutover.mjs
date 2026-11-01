@@ -122,3 +122,75 @@ test('Trace structured description survives conversion on updates too',()=>{
   assert.equal(typeof stored.description,'string');
   assert.deepEqual(fromAnchorRow(spec,{kind:'trace',description:stored.description}).description,value);
 });
+
+
+test('Trace check-in timestamp write is compatible with Kysely builder lacking abortSignal',async()=>{
+  const {recordImportPlaceVisits}=await import('../app/loc/import-place-anchors.mjs');
+  const uid='A0b1',previous='2026-10-01T00:00:00.000Z',fresh='2026-11-01T04:30:00.000Z';
+  const row={uid,kind:'trace',type:'space_anchor',attrs:{
+    times:[previous],address:[121.5,25.0],route_list:['R001'],other:'preserved'
+  }};
+  const writes=[];
+  // KyselyEdge's physical builder deliberately has no .abortSignal() method.
+  const schema={from:table=>{
+    assert.equal(table,'lo3rwang_anchor');
+    return {
+      select:()=>({
+        eq(){return this},
+        maybeSingle:async()=>({data:{uid:row.uid,attrs:row.attrs},error:null})
+      }),
+      update:values=>{
+        const filters=[];
+        const q={
+          eq(column,value){filters.push([column,value]);return q},
+          select:async()=>{
+            assert.deepEqual(filters,[['uid',uid],['type','space_anchor'],['kind','trace']]);
+            writes.push(values);
+            row.attrs={...values.attrs};
+            return {data:[{...row}],error:null};
+          }
+        };
+        return q;
+      }
+    };
+  }};
+  const relation=()=>unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_trace'));
+  const timesByUid=new Map([[uid,[previous]]]);
+  const first=await recordImportPlaceVisits([{uid,time:fresh}],{
+    relation,table:'silver.lo3rwang_trace',timesByUid
+  });
+  assert.deepEqual(first,{updated:1,added:1});
+  assert.equal(writes.length,1);
+  assert.deepEqual(row.attrs.times,[previous,fresh]);
+  assert.equal(row.attrs.other,'preserved');
+  assert.deepEqual(row.attrs.route_list,['R001']);
+  assert.deepEqual(await recordImportPlaceVisits([{uid,time:fresh}],{
+    relation,table:'silver.lo3rwang_trace',timesByUid
+  }),{updated:0,added:0});
+  assert.equal(writes.length,1,'reimport must not double-write already persisted times');
+});
+
+test('unified Trace forwards an abort signal only to physical builders that support it',async()=>{
+  const uid='A0b2',signal=AbortSignal.timeout(45000);
+  let received=null,updates=0;
+  const schema={from:()=>({
+    select:()=>({
+      eq(){return this},
+      maybeSingle:async()=>({data:{uid,attrs:{times:[],tag:'keep'}},error:null})
+    }),
+    update:values=>{
+      const q={
+        eq(){return q},
+        abortSignal(value){received=value;return q},
+        select:async()=>{updates++;return {data:[{uid,kind:'trace',type:'space_anchor',attrs:values.attrs}],error:null}}
+      };
+      return q;
+    }
+  })};
+  const result=await unifiedAnchorRelation(schema,unifiedAnchorSpec('silver','lo3rwang_trace'))
+    .update({times:['2026-11-01T00:00:00.000Z']})
+    .eq('uid',uid).eq('trace_type','space_anchor').abortSignal(signal);
+  assert.equal(result.error,null);
+  assert.equal(received,signal);
+  assert.equal(updates,1);
+});
