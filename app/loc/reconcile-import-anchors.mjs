@@ -31,7 +31,8 @@ export async function reconcileExistingImportAnchors({
     scopeId:scope,relation,createMissing:true,onProgress
   });
   const dates=await prepareImportTimeAnchors(candidates,{
-    scopeId:scope,timeTable,relation,onProgress
+    scopeId:scope,timeTable,relation,
+    includeUnifiedUidPool:scope==='lo3rwang',onProgress
   });
   let linked=0,unmatched=0,updates=[];
   const visits=[];
