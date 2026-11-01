@@ -89,7 +89,7 @@ export default function SunoImportPanel({scopeId,dockScopeId=scopeId,globalAdmin
       }
       await insertRows(galaxyMedia,[{
         uid:mediaUid,
-        media_type:'suno',
+        type:'suno',
         title,url:draft.url.trim()||null,
         meta_tags:metaTags||null,createtime
       }]);
