@@ -198,7 +198,8 @@ export async function addTraceAnchorsBatch({scopeId,places=[]}){
     if(seen.has(key)){skipped++;continue;}
     seen.add(key);
     inserts.push({trace_type:'space_anchor',title,
-      description:descriptionObject(place.description||'',place.address||''),
+      description:descriptionText(place.description||''),
+      route_list:{routes:[],segments:[],postal_address:postalText(place.address||'')},
       address,anchor_list:[],times:Array.isArray(place.times)?place.times:[]});
   }
   let count=0;
