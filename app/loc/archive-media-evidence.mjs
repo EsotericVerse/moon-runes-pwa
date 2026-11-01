@@ -36,9 +36,11 @@ export function archiveAttachmentReferences(record){
          .some(value=>typeof value==='string'&&Boolean(publicUrl(value))))roots.push(record);
   const queue=roots.filter(Boolean).map(value=>({value,depth:0}));
   const visited=new WeakSet(),found=new Map();
-  let examined=0;
-  while(queue.length&&examined<3000&&found.size<MAX_MEDIA_PER_RECORD){
-    const {value,depth}=queue.shift();examined++;
+  // Cursor-based breadth-first traversal avoids shifting every pending node
+  // (and preserves discovery order and the 3000-node safety ceiling).
+  let examined=0,cursor=0;
+  while(cursor<queue.length&&examined<3000&&found.size<MAX_MEDIA_PER_RECORD){
+    const {value,depth}=queue[cursor++];examined++;
     if(!value||typeof value!=='object')continue;
     if(visited.has(value))continue;
     visited.add(value);
