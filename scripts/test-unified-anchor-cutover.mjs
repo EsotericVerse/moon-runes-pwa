@@ -18,7 +18,7 @@ test('type, label and attr replace kind, links, date, url and extra media timest
    uid:'T001',type:'point',label:'[121,25]',attr:{times:[]}
  });
  assert.deepEqual(toAnchorRow(spec('keywords'),{uid:'K001',type:'item',name:'靈',lists:['心','靈'],uid_lists:{hits:[]}}),{
-   uid:'K001',type:'item',title:'靈',label:'["心","靈"]',attr:{uid_lists:{hits:[]}}
+   uid:'K001',type:'item',title:'靈',label:'["心","靈"]',attr:{total:0,uidlists:[]}
  });
  assert.deepEqual(toAnchorRow(spec('galaxy_media'),{
    uid:'AAAAAAAA',type:'音樂',url:'https://suno.com/song/1',meta_tags:'Music, Vocals',createtime:'2026-01-01T01:00Z'
@@ -121,4 +121,38 @@ test('fixed date ignores accidental interval snapshots, including partial update
  assert.deepEqual(toAnchorRow(specTime,{address:'2026-09-23',...payload}).attr,{});
  const period=toAnchorRow(specTime,{uid:'006E',type:'period',anchor_ids:['006D'],...payload});
  assert.deepEqual(period.attr,{range:payload.range});
+});
+
+test('Time has no cached attr for date, period, era; Era retains selected period UIDs',()=>{
+ const t=spec('time'),range={version:1,segments:[{start_date:'2025-01-01'}]};
+ for(const type of ['anchor','period','era']){
+  const row={uid:type==='anchor'?'A001':'A002',type,range,attr:{invalid_period_uids:['x']}};
+  if(type==='anchor')row.address='2026-09-23';
+  else row.anchor_ids=type==='period'?['A001','A005']:['A002','A003'];
+  const saved=toAnchorRow(t,row);
+  assert.deepEqual(saved.attr,{});
+  assert.equal(fromAnchorRow(t,saved).range,null);
+  if(type==='era')assert.deepEqual(fromAnchorRow(t,saved).anchor_ids,['A002','A003']);
+ }
+});
+test('Keywords compact each UID only once and preserve one aggregate total',()=>{
+ const k=spec('keywords');
+ const item=toAnchorRow(k,{uid:'I001',type:'item',name:'靈',lists:['精神'],
+  uid_lists:{hits:[{uid:'Ab12Cd34',times:3},{uid:'aB12Cd34',times:2}]}});
+ assert.deepEqual(item.attr,{total:5,uidlists:['Ab12Cd34','aB12Cd34']});
+ assert.deepEqual(fromAnchorRow(k,item).uid_lists,item.attr);
+ const group=toAnchorRow(k,{uid:'G001',type:'group',lists:['I001'],
+  uid_lists:{articles:['aB12Cd34','Ab12Cd34','aB12Cd34']}});
+ assert.deepEqual(group.attr,{total:2,uidlists:['Ab12Cd34','aB12Cd34']});
+ assert.deepEqual(toAnchorRow(k,{uid:'C001',type:'class',lists:['G001'],uid_lists:{}}).attr,{});
+});
+test('Trace omits only empty JSON, retaining meaningful map relationships',()=>{
+ const t=spec('trace');
+ const point=toAnchorRow(t,{uid:'P001',trace_type:'space_anchor',address:[121,25],route_list:{routes:[],segments:[],postal_address:''},times:[]});
+ assert.equal(point.attr,undefined);
+ const postal=toAnchorRow(t,{uid:'P002',trace_type:'space_anchor',address:[121,25],route_list:{routes:[],segments:[],postal_address:'中山路'}});
+ assert.deepEqual(postal.attr,{route_list:{postal_address:'中山路'}});
+ const trace=toAnchorRow(t,{uid:'T001',trace_type:'trace',anchor_list:['P001','P002'],
+  route_list:{routes:['R001'],segments:[['P001','P002']]}});
+ assert.deepEqual(trace.attr,{route_list:{routes:['R001'],segments:[['P001','P002']]}});
 });
