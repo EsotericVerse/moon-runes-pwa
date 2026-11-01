@@ -22,7 +22,7 @@ export function traceArticlePlaces(selection,anchors=[]){
   if(!selection?.uid)return [];
   const source=selection.source_scope;
   const selected=selection.trace_type==='map'
-    ?(selection.anchor_list||[])
+    ?(selection.route_list?.segments||selection.anchor_list||[])
       .map(uid=>anchors.find(a=>a.uid===uid&&a.source_scope===source)).filter(Boolean)
     :[selection];
   return [...new Set(selected.flatMap(anchorNames))].slice(0,200);
