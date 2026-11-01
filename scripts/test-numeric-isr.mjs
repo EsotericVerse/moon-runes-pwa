@@ -47,9 +47,9 @@ test('ISR server route checks global mode, validates scope and is safe for disab
   assert.match(source,/tryPublicSources\(publicNumericSources\(\)/);
   assert.match(publicServer,/createBackupPublicAdapter/);
   assert.match(source,/status===200\?CACHE_HEADERS:NO_CACHE/);
-  assert.match(source,/read_scope_statistics/);
-  assert.match(source,/read_scope_overview/);
-  assert.match(source,/read_loc_statistics/);
+  assert.match(source,/read_scope_analytics/);
+  assert.match(source,/read_scope_analytics/);
+  assert.match(source,/read_scope_analytics/);
   assert.match(source,/no-store/);
   assert.doesNotMatch(source,/service_role|SUPABASE_SERVICE_ROLE_KEY|createClient\([^,]+,[^,]+\s*\)/);
 });
@@ -76,7 +76,7 @@ test('Culture, Statistics, Periods, Daily Runes and Trace have direct data provi
   assert.match(culture,/selectScopePeriodSourceSnapshot/);
   assert.match(stats,/selectScopeCultureData\(scopeId\)/);
   assert.match(daily,/selectDailyRuneRange\(range\)/);
-  assert.match(traces,/rpc\('read_trace_place_density'/);
+  assert.ok(traces.includes("rpc('read_scope_analytics'"));
   assert.match(places,/read_scope_place_statistics/);
   assert.match(places,/Capacitor\.isNativePlatform/);
 });
