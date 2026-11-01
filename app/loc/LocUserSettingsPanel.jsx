@@ -39,8 +39,8 @@ function SettingChoices({group,field,value,onChange,disabled}){
   </fieldset>;
 }
 
-export default function LocUserSettingsPanel(){
-  const {data,loading,error,ready,update}=useLocUser();
+export default function LocUserSettingsPanel({verifiedSubject=''}){
+  const {data,loading,error,ready,update}=useLocUser({verifiedSubject});
   const [draft,setDraft]=useState(null);
   const draftRef=useRef(null);
   const activeUid=useRef('');
