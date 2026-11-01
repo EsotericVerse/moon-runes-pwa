@@ -108,7 +108,7 @@ export default function Trace({scopeId='loc'}){
   const showingAll=currentTraceChoice==='all'||(!currentMap&&!maps.length);
   const linkedRoutes=useMemo(()=>currentMap?.trace_type==='trace'
     ?allMaps.filter(row=>row.source_scope===currentMap.source_scope&&row.trace_type==='path'
-      &&(currentMap.route_list||[]).includes(row.uid))
+      &&(currentMap.route_list?.routes||[]).includes(row.uid))
     :[],[currentMap,allMaps]);
   const members=useMemo(()=>currentMap
     ?[...new Set([...traceMemberUids(currentMap),...linkedRoutes.flatMap(traceMemberUids)])]:[],
