@@ -5,12 +5,15 @@ import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiv
 import {normalizeImportMedia,mappedImportValue} from '../app/loc/import-batch.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from '../app/loc/import-geocoordinates.mjs';
 
-test('standalone JSON imports prefer original post URLs over generic shared links',()=>{
-  const permalink='https://www.facebook.com/posts/original';
-  assert.equal(mappedImportValue({post_url:permalink,url:'https://news.example.test/story'},'url'),permalink);
-  assert.equal(mappedImportValue({permalink_url:permalink,url:'https://news.example.test/story'},'url'),permalink);
-  assert.equal(mappedImportValue({string_map_data:{'貼文連結':{value:permalink}},url:'https://news.example.test/story'},'url'),permalink);
-  assert.equal(mappedImportValue({url:permalink},'url'),permalink);
+test('article url uses the dedicated url field, never content or unrelated links',()=>{
+  const articleUrl='https://www.facebook.com/posts/original';
+  const record={url:articleUrl,post_url:'https://www.facebook.com/posts/other',
+    content:'提到 https://outside.example.test/story 的內文',
+    link:'https://outside.example.test/elsewhere'};
+  assert.equal(mappedImportValue(record,'url'),articleUrl);
+  assert.equal(mappedImportValue({content:record.content,link:record.link},'url'),'');
+  assert.equal(mappedImportValue({content:record.content,url:articleUrl},'content'),record.content);
+  assert.equal(mappedImportValue({content:record.content,url:articleUrl},'url'),articleUrl);
 });
 
 test('Google Maps location URL resolves [latitude,longitude] without external requests',()=>{
