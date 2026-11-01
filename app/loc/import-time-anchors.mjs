@@ -5,37 +5,66 @@ import {parseImportCreatedTime} from './import-batch.mjs';
 const NAME_LIMIT=120;
 const HEX=/^[0-9A-F]{4}$/;
 
-export function importCheckinDates(records=[]){
-  const dates=new Set();
-  for(const record of records){
-    // A persisted location is an explicit place record. Deduplication of its
-    // article must never discard its check-in date.
-    const name=String(record?.__importPlaceName||record?.location||'').trim();
-    if(!name||name.length>NAME_LIMIT)continue;
-    const visits=Array.isArray(record?.__importVisitTimes)?record.__importVisitTimes.filter(Boolean):[];
-    // Existing Galaxy.date is authoritative; only new source rows without a
-    // date fall back to timestamp -> Asia/Taipei calendar-day conversion.
-    const instants=visits.length?visits:
+const DESCRIPTION_LIMIT=4000;
+const placeLabel=record=>String(record?.__importPlaceName||record?.location||'').trim();
+const visibleLabel=value=>String(value||'').replace(/[\u0000-\u001f]/g,' ')
+  .replace(/\s+/g,' ').trim().slice(0,NAME_LIMIT);
+const calendarDay=value=>{
+  const literal=String(value||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(literal))return literal;
+  const instant=parseImportCreatedTime(value);
+  return instant?new Intl.DateTimeFormat('sv-SE',{
+    timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+  }).format(new Date(instant)):'';
+};
+
+// One calendar date is one Time anchor. The first dated article title names
+// that day; a date-only source check-in can use its place name instead.
+export function importCheckinDayEntries(records=[]){
+  const grouped=new Map();
+  for(const [index,record] of (records||[]).entries()){
+    const place=placeLabel(record);
+    if(!place||place.length>NAME_LIMIT)continue;
+    const articleTitle=visibleLabel(record?.title);
+    const fallback=visibleLabel(place);
+    const visits=Array.isArray(record?.__importVisitTimes)
+      ?record.__importVisitTimes.filter(Boolean):[];
+    const moments=visits.length?visits:
       [record?.date||record?.createtime||record?.timestamp];
-    for(const value of instants){
-      const explicitDay=String(value||'').trim();
-      if(/^\d{4}-\d{2}-\d{2}$/.test(explicitDay)){
-        dates.add(explicitDay);
-        continue;
-      }
-      const instant=parseImportCreatedTime(value);
-      if(instant)dates.add(new Intl.DateTimeFormat('sv-SE',{
-        timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
-      }).format(new Date(instant)));
+    for(const moment of moments){
+      const day=calendarDay(moment);
+      if(!day)continue;
+      if(!grouped.has(day))grouped.set(day,[]);
+      const millis=Date.parse(String(record?.createtime||moment||''));
+      grouped.get(day).push({title:articleTitle||fallback,
+        article:Boolean(articleTitle),position:index,
+        at:Number.isFinite(millis)?millis:Number.MAX_SAFE_INTEGER});
     }
   }
-  return [...dates].sort();
+  return [...grouped].sort(([a],[b])=>a.localeCompare(b)).map(([date,items])=>{
+    items.sort((a,b)=>Number(b.article)-Number(a.article)||a.at-b.at||a.position-b.position);
+    const titles=[...new Set(items.map(item=>item.title).filter(Boolean))];
+    const articleTitles=[...new Set(items.filter(item=>item.article).map(item=>item.title))];
+    // The primary article title is already visible; only list multiple
+    // article headlines in the description, never fill it with bare dates.
+    const description=(articleTitles.length>1?articleTitles:[]).reduce((lines,title)=>{
+      if((lines.join('\n').length+title.length+1)>DESCRIPTION_LIMIT)return lines;
+      lines.push(title);return lines;
+    },[]).join('\n');
+    return {date,title:titles[0]||date,description};
+  });
+}
+
+export function importCheckinDates(records=[]){
+  return importCheckinDayEntries(records).map(item=>item.date);
 }
 
 export async function prepareImportTimeAnchors(records,{
   scopeId,timeTable,relation,pageSize=750,onProgress
 }={}){
-  const dates=importCheckinDates(records);
+  const entries=importCheckinDayEntries(records);
+  const dates=entries.map(item=>item.date);
+  const entryByDate=new Map(entries.map(item=>[item.date,item]));
   const empty={created:0,reused:0,skipped:dates.length};
   if(!dates.length||!scopeId||scopeId==='local'||scopeId==='loc')return empty;
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('日期定錨 Scope 無效');
@@ -44,17 +73,17 @@ export async function prepareImportTimeAnchors(records,{
   const table=String(timeTable||'').trim();
   if(!/^silver\.[a-z][a-z0-9_]*$/.test(table)||!table.startsWith('silver.'+scopeId+'_'))
     throw Error('日期定錨尚未解析正確的 Scope Time 資料表');
-  const occupied=new Set(),existingDays=new Set();
+  const occupied=new Set(),existingDays=new Map();
   onProgress?.({phase:'核對既有日期定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
-    const {data,error}=await relation(table).select('uid,type,address,anchor_ids')
+    const {data,error}=await relation(table).select('uid,type,title,description,address,anchor_ids')
       .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
     if(error)throw Error('讀取日期定錨失敗：'+(error.message||error));
     const rows=data||[];
     for(const row of rows){
       occupied.add(String(row.uid||''));
       if(row.type==='anchor'&&row.address)
-        existingDays.add(String(row.address).slice(0,10));
+        existingDays.set(String(row.address).slice(0,10),row);
     }
     onProgress?.({phase:'核對既有日期定錨',completed:offset+rows.length,total:0});
     if(rows.length<pageSize)break;
@@ -62,7 +91,23 @@ export async function prepareImportTimeAnchors(records,{
   // Period membership is NOT an existing calendar-day anchor. Preserve the
   // existing period/era graph, while giving each check-in day its own anchor.
   const missing=dates.filter(date=>!existingDays.has(date));
-  let reused=dates.length-missing.length,created=0,cursor=1;
+  let reused=dates.length-missing.length,created=0,repaired=0,cursor=1;
+  // Only repair the old machine-generated placeholders on explicit re-import
+  // or reconciliation; preserve every human-written title or description.
+  for(const day of dates){
+    const old=existingDays.get(day),entry=entryByDate.get(day);
+    if(!old||old.title!==day||String(old.description||'').trim()||!entry||entry.title===day)
+      continue;
+    const {data,error}=await relation(table)
+      .update({title:entry.title,description:entry.description})
+      .eq('uid',old.uid).eq('type','anchor').eq('address',day)
+      .eq('title',day).eq('description','').select('uid');
+    if(error)throw Error('補齊日期定錨標題失敗：'+(error.message||error));
+    if(!Array.isArray(data)||data.length!==1)
+      throw Error('日期定錨已被其他操作修改，請重新載入再補齊');
+    repaired++;
+    onProgress?.({phase:'補齊舊日期定錨標題',completed:repaired,total:dates.length});
+  }
   const nextUid=()=>{
     while(cursor<=65535){
       const uid=cursor.toString(16).toUpperCase().padStart(4,'0');
@@ -74,7 +119,8 @@ export async function prepareImportTimeAnchors(records,{
   for(let offset=0;offset<missing.length;offset+=80){
     const chunk=missing.slice(offset,offset+80);
     const rows=chunk.map(date=>({
-      uid:nextUid(),type:'anchor',title:date,description:'',
+      uid:nextUid(),type:'anchor',title:entryByDate.get(date).title,
+      description:entryByDate.get(date).description,
       address:date,anchor_ids:[],invisible:false
     }));
     const {data,error}=await relation(table).insert(rows).select('uid,address');
@@ -84,5 +130,5 @@ export async function prepareImportTimeAnchors(records,{
     created+=rows.length;
     onProgress?.({phase:'新增缺少的日期定錨',completed:offset+rows.length,total:missing.length});
   }
-  return {created,reused,skipped:0,table};
+  return {created,reused,repaired,skipped:0,table};
 }
