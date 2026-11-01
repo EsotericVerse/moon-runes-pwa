@@ -167,3 +167,22 @@ test('Media linked by multiple articles uses the earliest available article time
   assert.equal(plan.media.length,1);
   assert.equal(plan.media[0].createtime,'2024-07-01T02:00:00.000Z');
 });
+
+test('large nested archive media list preserves its final photo without quadratic traversal',()=>{
+  const fillers=Array.from({length:2800},(_,i)=>({title:'non-media '+i}));
+  const record={media:[...fillers,{uri:'facebook/album/last.jpg',
+    media_url:'https://example.test/album/last.jpg',type:'image'}]};
+  assert.deepEqual(archiveAttachmentReferences(record),[{
+    uri:'facebook/album/last.jpg',mediaType:'image',
+    url:'https://example.test/album/last.jpg'
+  }]);
+});
+
+test('large archive media list deduplicates identical paths and keeps public URL',()=>{
+  const filler=Array.from({length:1800},(_,i)=>({title:'item '+i}));
+  const record={media:[{uri:'threads/images/one.jpg'},...filler,
+    {uri:'threads/images/one.jpg',media_url:'https://example.test/one.jpg'}]};
+  assert.deepEqual(archiveAttachmentReferences(record),[{
+    uri:'threads/images/one.jpg',mediaType:'image',url:'https://example.test/one.jpg'
+  }]);
+});
