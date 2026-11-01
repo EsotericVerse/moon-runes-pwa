@@ -665,6 +665,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const dates=await prepareImportTimeAnchors(candidates,{
         scopeId,timeTable:account.scopeDataFor(scopeId)?.time,relation:dbAuthRelation,
         anniversaryRecords:candidates,birthday:account.scopeDataFor(scopeId)?.birthday,
+        includeUnifiedUidPool:true,
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
@@ -867,7 +868,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           scopeId,timeTable:scope?.time,relation:dbAuthRelation,
           anniversaryRecords:unique.map(record=>({
             ...record,date:existingBySiteId.get(record.uid)?.date||record.date||null
-          })),birthday:scope?.birthday,
+          })),birthday:scope?.birthday,includeUnifiedUidPool:true,
           onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
         });
         setProgress(null);
@@ -899,6 +900,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       const timeAnchors=await prepareImportTimeAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,timeTable:scope?.time,relation:dbAuthRelation,
         anniversaryRecords:anchorRecords,birthday:scope?.birthday,
+        includeUnifiedUidPool:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
