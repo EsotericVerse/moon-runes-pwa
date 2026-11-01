@@ -322,13 +322,18 @@ export function isUnchangedImportBeforeWrite(records,matches,{hasMedia=false}={}
 }
 
 function isUidPrimaryKeyConflict(error){
+  // LOC SQL Gateway hides server errors behind "Database request failed",
+  // but passes through PostgreSQL SQLSTATE 23505 in error.code.
+  const code=String(error?.code||error?.cause?.code||'');
+  const constraint=String(error?.constraint||error?.cause?.constraint||'');
+  if(code==='23505')return !constraint||/_pkey$/i.test(constraint);
   const message=String(error?.message||error||'');
   return /(?:23505|duplicate key|unique constraint|UNIQUE constraint failed)/i.test(message)
     &&/(?:_pkey|PRIMARY KEY|\.uid|uid[^a-z])/i.test(message);
 }
 // Bisect only real primary-key conflicts. Never turn an unrelated SQL error
 // into a silent success. Batch commits stay bounded by the database gateway.
-export async function insertImportBatches(records,{writeBatch,batchSize=200,onProgress}={}){
+export async function insertImportBatches(records,{writeBatch,batchSize=200,onProgress,verifyUidConflict}={}){
   if(!Array.isArray(records)||typeof writeBatch!=='function')throw Error('無效匯入批次');
   if(!Number.isSafeInteger(batchSize)||batchSize<1||batchSize>10000)throw Error('無效批次大小');
   let completed=0,inserted=0,conflicts=0;
@@ -342,7 +347,16 @@ export async function insertImportBatches(records,{writeBatch,batchSize=200,onPr
       for(const row of rows)insertedUids.add(String(row.uid));
     }catch(error){
       if(!isUidPrimaryKeyConflict(error))throw error;
-      if(rows.length===1){conflicts++;conflictedUids.add(String(rows[0].uid));return;}
+      if(rows.length===1){
+        const uid=String(rows[0].uid);
+        const code=String(error?.code||error?.cause?.code||'');
+        // A 23505 without the constraint name might refer to another UNIQUE
+        // index. Require a real UID lookup before skipping this row.
+        if(code==='23505'&&!String(error?.constraint||error?.cause?.constraint||'')){
+          if(typeof verifyUidConflict!=='function'||!await verifyUidConflict(uid))throw error;
+        }
+        conflicts++;conflictedUids.add(uid);return;
+      }
       const middle=Math.floor(rows.length/2);
       await write(rows.slice(0,middle));
       await write(rows.slice(middle));
