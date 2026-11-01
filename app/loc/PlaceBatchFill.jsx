@@ -1,8 +1,7 @@
 'use client';
 
 import {useMemo,useRef,useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {scopeHref} from '../modular/scope-registry';
+import {useEditDockForm} from '../modular/edit-dock';
 import {dbAuthClient} from './db-client.mjs';
 import {defaultScopeData,revalidateServerMetadata} from './scope-data';
 import {selectCultureTimeRows} from './culture-query';
@@ -28,7 +27,6 @@ function sampleRows(preview){
   }).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.uid).localeCompare(String(b.uid)));
 }
 export default function PlaceBatchFill({scopeId,anchors=[]}){
-  const router=useRouter();
   const cache=useResourceCache();
   const [startDate,setStartDate]=useState('');
   const [endDate,setEndDate]=useState('');
@@ -95,9 +93,11 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
     }finally{setBusy(false);}
   }
   async function apply(){
-    if(!isValid||busy||!currentPreview||count===0)return;
+    if(!isValid||busy||!currentPreview||count===0){
+      setNotice('請先預覽符合條件的文章，再使用底部儲存。');return false;
+    }
     const confirmed=window.confirm('確認把 '+count+' 篇原本沒有打卡地點的文章補成「'+place.trim()+'」？\n\n'+startDate+' ～ '+endDate+'\n原有非空白地點不會覆蓋。');
-    if(!confirmed)return;
+    if(!confirmed)return false;
     const token=++revision.current;
     setBusy(true);setNotice('');
     try{
@@ -113,13 +113,16 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
         setNotice('已補寫 '+Number(data?.count||0)+' 篇文章的 location；原本已有地點的文章沒有修改。');
         await suggestions.mutate();
       }
+      return true;
     }catch(error){
       if(token===revision.current){
         setPreview(null);
         setNotice('寫入未完成，請重新預覽：'+String(error.message||error));
       }
+      return false;
     }finally{setBusy(false);}
   }
+  useEditDockForm({save:apply,isDirty:()=>Boolean(currentPreview&&count>0),isBusy:()=>busy});
   return <section className="loc-card scope-feature-card">
     <h3>快速補寫打卡地點</h3>
     <div className="scope-management-fields">
@@ -159,13 +162,7 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
       <button type="button" className="loc-button" onClick={inspect} disabled={!isValid||busy}>
         {busy?'處理中…':'預覽符合條件的文章'}
       </button>
-      <button type="button" className="loc-button" onClick={()=>{
-        const url=new URL(scopeHref('loc','admin/search'));
-        if(place.trim())url.searchParams.set('fill_place',place.trim());
-        if(validDate(startDate))url.searchParams.set('from',startDate);
-        if(validDate(endDate))url.searchParams.set('to',endDate);
-        router.push(url.href);
-      }}>打開 LOC 搜尋文章列表，逐篇勾選補寫</button>
+
     </div>
     {currentPreview?<section className="scope-card" aria-label="快速補寫預覽">
       <h4>預計補寫 {count.toLocaleString()} 篇</h4>
@@ -176,11 +173,7 @@ export default function PlaceBatchFill({scopeId,anchors=[]}){
             {index===2&&omitted>0?<p className="scope-status">中間省略 {omitted.toLocaleString()} 篇</p>:null}
           </li>)}
         </ul>
-        <div className="scope-stat-controls">
-          <button type="button" className="loc-button primary" disabled={busy} onClick={apply}>
-            確認批次補寫 {count.toLocaleString()} 篇
-          </button>
-        </div>
+        <p className="scope-status">請確認預覽內容，使用底部「儲存」補寫 {count.toLocaleString()} 篇文章。</p>
       </>}
     </section>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
