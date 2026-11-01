@@ -138,6 +138,23 @@ function pickUrl(item,platform=''){
       continue;
     }
     const map=node.string_map_data;
+    // Meta labels are localized. Only explicit post-permalink labels may
+    // supply Galaxy.url; location/image/shared links are not post permalinks.
+    const sourcePermalinks=[
+      map?.['貼文連結']?.value,map?.['貼文網址']?.value,
+      map?.['動態連結']?.value,map?.['動態網址']?.value,
+      map?.['Post Link']?.value,map?.['Post URL']?.value,
+      map?.Permalink?.value
+    ];
+    for(const entry of Array.isArray(node.label_values)?node.label_values:[]){
+      const label=String(entry?.label||'').trim();
+      if(/^(?:貼文(?:連結|網址)|動態(?:連結|網址)|原始貼文連結|post (?:url|link)|permalink)$/i.test(label))
+        sourcePermalinks.push(entry?.value,entry?.url,entry?.href);
+    }
+    for(const candidate of sourcePermalinks){
+      const url=valid(candidate);
+      if(url&&sourceHost(url))return url;
+    }
     // Source post permalinks take precedence over a generic shared-link URL.
     for(const candidate of [
       node.post_url,node.postUrl,node.permalink,node.permalink_url,node.permalinkUrl,
