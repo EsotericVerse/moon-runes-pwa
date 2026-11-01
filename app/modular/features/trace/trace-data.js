@@ -36,10 +36,15 @@ const nonempty=(value,label,max=120)=>{
 };
 const textValue=value=>String(value??'').trim();
 const noteValue=value=>typeof value==='string'?value:String(value?.text||'');
-const descriptionObject=(text,postal='')=>{
-  const message=textValue(text),address=textValue(postal);
-  if(message.length>2000||address.length>320)throw Error('說明或文字地址過長');
-  return {text:message,address:address||null};
+const descriptionText=text=>{const message=textValue(text);if(message.length>2000)throw Error('說明文字過長');return message;};
+const postalText=value=>{const text=textValue(value);if(text.length>320)throw Error('文字地址過長');return text;};
+export const traceRouteData=row=>{
+  const value=row?.route_list;
+  if(value&&typeof value==='object'&&!Array.isArray(value))
+    return {routes:Array.isArray(value.routes)?value.routes:[],segments:Array.isArray(value.segments)?value.segments:[],
+      postal_address:String(value.postal_address||'')};
+  return {routes:Array.isArray(value)?value:[],
+    segments:Array.isArray(row?.anchor_list?.[0])?row.anchor_list:[],postal_address:''};
 };
 export const validCoordinates=(longitude,latitude)=>
   (longitude==null||String(longitude).trim()==='')&&(latitude==null||String(latitude).trim()==='')
@@ -53,11 +58,12 @@ const coordinateArray=(longitude,latitude)=>{
   return [Number(longitude),Number(latitude)];
 };
 function readRow(row,scope){
-  const description=row?.description&&typeof row.description==='object'?row.description:{text:noteValue(row?.description)};
+  const description=row?.description;
+  const relations=traceRouteData(row);
   const coordinates=Array.isArray(row?.address)&&row.address.length===2?row.address:null;
-  return {...row,description:noteValue(description),postal_address:String(description.address||''),
+  return {...row,description:noteValue(description),postal_address:relations.postal_address||String(description?.address||''),
     longitude:coordinates?.[0]??null,latitude:coordinates?.[1]??null,
-    source_scope:row.scope_id||scope,anchor_list:Array.isArray(row.anchor_list)?row.anchor_list:[]};
+    source_scope:row.scope_id||scope,anchor_list:Array.isArray(row.anchor_list)?row.anchor_list.flat(Infinity):[],route_list:relations};
 }
 async function readPages(id,{columns=CORE_COLUMNS,filter=null,nativeOnly=false,includeHidden=false}={}){
   // The LOC materialized union was deliberately dropped. Never query it
@@ -148,7 +154,7 @@ export async function inspectTraceAnchorBeforeWrite({scopeId,anchor,excludeUid='
 export async function addTraceAnchor({scopeId,title,description='',address='',longitude,latitude,times=[],invisible=false}){
   const id=writableScope(scopeId);
   const record={trace_type:'space_anchor',title:nonempty(title,'地點標題'),
-    description:descriptionObject(description,address),
+    description:descriptionText(description),route_list:{routes:[],segments:[],postal_address:postalText(address)},
     address:coordinateArray(longitude,latitude),invisible:normalizedInvisible(invisible),
     times:Array.isArray(times)?times:[],anchor_list:[]};
   let query=dbAuthRelation(relation(id)).insert(record).select('uid').single();
@@ -159,7 +165,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   if(!VALID_ID.test(selected))throw Error('地點 UID 必須是四碼');
   const record={title:nonempty(title,'地點標題'),
     description:descriptionObject(description,address),
-    address:coordinateArray(longitude,latitude),invisible:normalizedInvisible(invisible)};
+    address:coordinateArray(longitude,latitude),invisible:normalizedInvisible(invisible),route_list:{routes:[],segments:[],postal_address:postalText(address)}};
   let query=dbAuthRelation(relation(id)).update(record).eq('uid',selected).eq('trace_type','space_anchor');
   if(id==='loc')query=query.eq('scope_id','loc');
   return checked(await query.select('uid').single(),'更新空間定錨點');
@@ -239,8 +245,9 @@ export async function addTraceMap({scopeId,title,description='',type='path',anch
   const id=writableScope(scopeId),route_list=await validatedRouteList(id,type,routeUids);
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   return checked(await dbAuthRelation(relation(id)).insert({
-    trace_type:type,title:nonempty(title,'名稱'),description:descriptionObject(description),
-    anchor_list,route_list,invisible:normalizedInvisible(invisible)
+    trace_type:type,title:nonempty(title,'名稱'),description:descriptionText(description),
+    anchor_list:type==='path'?anchor_list:[...new Set(anchor_list.flat())],
+    route_list:{routes:route_list,segments:type==='trace'?anchor_list:[]},invisible:normalizedInvisible(invisible)
   }).select('uid').single(),'儲存路線或痕跡圖');
 }
 export async function updateTraceMap({scopeId,uid,title,description='',type='path',anchorUids=[],anchors=[],routeUids=[],invisible=false}){
@@ -249,7 +256,9 @@ export async function updateTraceMap({scopeId,uid,title,description='',type='pat
   const route_list=await validatedRouteList(id,type,routeUids);
   const anchor_list=validatedConnections({scopeId:id,type,anchorUids,anchors,hasRoutes:route_list.length>0});
   let query=dbAuthRelation(relation(id)).update({
-    title:nonempty(title,'名稱'),description:descriptionObject(description),anchor_list,route_list,
+    title:nonempty(title,'名稱'),description:descriptionText(description),
+    anchor_list:type==='path'?anchor_list:[...new Set(anchor_list.flat())],
+    route_list:{routes:route_list,segments:type==='trace'?anchor_list:[]},
     invisible:normalizedInvisible(invisible)
   }).eq('uid',key).eq('trace_type',type);
   if(id==='loc')query=query.eq('scope_id','loc');
