@@ -1,5 +1,4 @@
 import {parseImportCreatedTime} from './import-batch.mjs';
-import {createAnniversaryLookup} from './anniversary.mjs';
 import {readUnifiedAnchorUids} from './unified-anchor-uids.mjs';
 
 // Importing a known check-in creates its calendar-day Time anchor independently
@@ -67,15 +66,13 @@ export function importCheckinDates(records=[]){
 
 export async function prepareImportTimeAnchors(records,{
   scopeId,timeTable,relation,pageSize=750,onProgress,
-  anniversaryRecords=[],birthday='',includeUnifiedUidPool=false
+  includeUnifiedUidPool=false
 }={}){
   const entries=importCheckinDayEntries(records);
   const checkinDates=entries.map(item=>item.date);
-  const annualDates=new Set((anniversaryRecords||[])
-    .map(item=>calendarDay(item?.date||item?.createtime||item?.timestamp)).filter(Boolean));
   const entryByDate=new Map(entries.map(item=>[item.date,item]));
   const empty={created:0,reused:0,skipped:0,anniversaries:0};
-  if((!checkinDates.length&&!annualDates.size)||!scopeId||
+  if(!checkinDates.length||!scopeId||
       scopeId==='local'||scopeId==='loc')return empty;
   if(!/^[a-z][a-z0-9]{0,14}$/.test(scopeId))throw Error('日期定錨 Scope 無效');
   if(typeof relation!=='function')throw Error('日期定錨資料庫不存在');
@@ -83,7 +80,7 @@ export async function prepareImportTimeAnchors(records,{
   const table=String(timeTable||'').trim();
   if(!/^silver\.[a-z][a-z0-9_]*$/.test(table)||!table.startsWith('silver.'+scopeId+'_'))
     throw Error('日期定錨尚未解析正確的 Scope Time 資料表');
-  const occupied=new Set(),existingDays=new Map(),sourceAnchors=[];
+  const occupied=new Set(),existingDays=new Map();
   onProgress?.({phase:'核對既有日期定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
     const {data,error}=await relation(table).select('uid,type,title,description,address')
@@ -94,7 +91,6 @@ export async function prepareImportTimeAnchors(records,{
       occupied.add(String(row.uid||''));
       if(row.type==='anchor'&&row.address){
         existingDays.set(String(row.address).slice(0,10),row);
-        sourceAnchors.push(row);
       }
     }
     onProgress?.({phase:'核對既有日期定錨',completed:offset+rows.length,total:0});
@@ -108,23 +104,6 @@ export async function prepareImportTimeAnchors(records,{
       return data||[];
     });
     for(const row of shared)occupied.add(row.uid);
-  }
-  // One indexed pass over the existing anchors; no article text scan or
-  // one-request-per-date lookup for large ZIP imports. Birthday comes from
-  // the current Scope registry, not from guessing a person's date of birth.
-  const suggest=createAnniversaryLookup(sourceAnchors,{birthday});
-  let anniversaryMatches=0;
-  for(const date of annualDates){
-    if(existingDays.has(date))continue;
-    const annual=suggest(date)[0];
-    if(!annual)continue;
-    anniversaryMatches++;
-    const previous=entryByDate.get(date);
-    const text='週年紀念：'+annual.title+'（原始日期 '+annual.sourceDate+'）';
-    entryByDate.set(date,{
-      date,title:visibleLabel(annual.title)||date,
-      description:(text+(previous?.description?'｜'+previous.description:'')).slice(0,DESCRIPTION_LIMIT)
-    });
   }
   // Period membership never counts as an existing calendar-day anchor.
   const dates=[...entryByDate.keys()].sort();
@@ -169,5 +148,5 @@ export async function prepareImportTimeAnchors(records,{
     created+=rows.length;
     onProgress?.({phase:'新增缺少的日期定錨',completed:offset+rows.length,total:missing.length});
   }
-  return {created,reused,repaired,skipped:0,anniversaries:anniversaryMatches,table};
+  return {created,reused,repaired,skipped:0,anniversaries:0,table};
 }

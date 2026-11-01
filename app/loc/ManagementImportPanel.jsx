@@ -654,7 +654,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       });
       const dates=await prepareImportTimeAnchors(candidates,{
         scopeId,timeTable:account.scopeDataFor(scopeId)?.time,relation:dbAuthRelation,
-        anniversaryRecords:candidates,birthday:account.scopeDataFor(scopeId)?.birthday,
         includeUnifiedUidPool:true,
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
@@ -852,19 +851,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             (item.mediaRefs?.length||0)))
       })&&!unique.some(record=>record.location||record.__importPlaceName||
         existingBySiteId.get(record.uid)?.location)){
-        // An unchanged source file may still supply a birthday/anniversary
-        // that was not anchored yet. No article rewrite is necessary.
-        const anniversaries=await prepareImportTimeAnchors([],{
-          scopeId,timeTable:scope?.time,relation:dbAuthRelation,
-          anniversaryRecords:unique.map(record=>({
-            ...record,date:existingBySiteId.get(record.uid)?.date||record.date||null
-          })),birthday:scope?.birthday,includeUnifiedUidPool:true,
-          onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
-        });
         setProgress(null);
-        setStatus(anniversaries.created
-          ?'文章沒有變更；已自動新增 '+anniversaries.created.toLocaleString()+' 筆週年／生日時間定錨。'
-          :t('uiExtra.importUI.importNoChanges'));
+        setStatus(t('uiExtra.importUI.importNoChanges'));
         setRows([]);
         setArchiveEvidence([]);
         return;
@@ -889,7 +877,6 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       });
       const timeAnchors=await prepareImportTimeAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,timeTable:scope?.time,relation:dbAuthRelation,
-        anniversaryRecords:anchorRecords,birthday:scope?.birthday,
         includeUnifiedUidPool:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
