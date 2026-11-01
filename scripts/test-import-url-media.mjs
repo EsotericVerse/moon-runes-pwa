@@ -247,3 +247,11 @@ test('LOC production import only reads JSON, never invokes ZIP image or EXIF pro
   assert.doesNotMatch(panel,/onMediaEntry\s*:/);
   assert.doesNotMatch(panel,/嘗試讀取 EXIF/);
 });
+
+
+test('ZIP import preview counts real article permalinks separately from media URLs',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.match(panel,/articleWithUrl:imported\.filter\(item=>Boolean\(item\.raw\?\.url\)\)\.length/);
+  assert.match(panel,/archiveSummary\.articleWithUrl/);
+  assert.match(panel,/文章原始網址/);
+});
