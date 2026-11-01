@@ -106,7 +106,7 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       const mediaLimit=80;
       const {rows:mediaPage}=await selectRows(scope.galaxyMedia,{
         columns:'uid',
-        filters:[{column:'media_type',operator:'eq',value:selectedMediaType}],
+        filters:[{column:'type',operator:'eq',value:selectedMediaType}],
         orders:[{column:'uid',ascending:true}],
         limit:mediaLimit,maxLimit:mediaLimit,offset:mediaOffset
       });
