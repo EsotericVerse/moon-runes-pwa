@@ -290,3 +290,13 @@ test('Trace only loads article content after a map anchor click and displays rep
   assert.match(styles,/\.loc-trace-map-shell\.is-public-trace>\.loc-trace-map-frame/);
   assert.match(styles,/calc\(100dvh - 8rem\)/);
 });
+
+test('mobile Trace keeps selected-place report clear of the map return button',()=>{
+  const css=read('app/styles/responsive.css');
+  assert.match(css,/\.loc-trace-map-shell\.is-public-trace \.loc-trace-floating-content\{/);
+  assert.match(css,/bottom:calc\(3\.65rem \+ env\(safe-area-inset-bottom,0px\)\)/);
+  assert.match(css,/max-height:min\(36dvh,calc\(100% - 15rem\)\)/);
+  assert.match(css,/\.loc-trace-map-shell\.is-public-trace \.loc-trace-origin-button\{/);
+  assert.match(css,/min-height:44px/);
+  assert.match(css,/max-height:min\(42dvh,280px\)/);
+});
