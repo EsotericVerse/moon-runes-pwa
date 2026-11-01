@@ -8,6 +8,13 @@ import {flashMessage} from './flash-message';
 // LOC reads are client-triggered resources: SWR owns request deduplication and
 // the browser-session cache; these hooks expose a small shared status contract.
 const infiniteResourceKeys=new Map();
+// Share in-flight work within the same SWR provider; completed requests are not retained.
+const inFlightByCache=new WeakMap();
+function pendingReads(cache){
+  let reads=inFlightByCache.get(cache);
+  if(!reads){reads=new Map();inFlightByCache.set(cache,reads);}
+  return reads;
+}
 export function useAsyncResource(keyOrOptions,fetcherArg,optionsArg={}){
   const legacy=keyOrOptions&&typeof keyOrOptions==='object'&&!Array.isArray(keyOrOptions);
   const key=legacy?keyOrOptions.queryKey:keyOrOptions;
@@ -72,7 +79,7 @@ function keyStartsWith(key,prefix){
 // no timer or background refetch is introduced here.
 export function useResourceCache(){
   const {mutate,cache}=useSWRConfig();
-  const inFlight=useMemo(()=>new Map(),[]);
+  const inFlight=useMemo(()=>pendingReads(cache),[cache]);
   return useMemo(()=>{
     const matchingInfiniteKeys=queryKey=>[...infiniteResourceKeys]
       .filter(([,resourceKey])=>keyStartsWith(resourceKey,queryKey))

@@ -465,13 +465,15 @@ export default function Search({managementMode=false}){
         ?resourceCache.getOrLoad({
           queryKey:['search-style-keyword',searchScopes.map(scope=>scope.id).join('|'),q.normalize('NFKC').trim()],
           queryFn:()=>selectStyleKeywordMatches(searchScopes,q,{signal}),
-        }).then(rows=>({rows,failed:false}),error=>{
-          if(isAbortError(error)||signal.aborted)throw error;
-          return {rows:[],failed:true};
-        })
+        }).then(rows=>({rows,failed:false}),error=>({
+          rows:[],failed:!isAbortError(error)&&!signal.aborted
+        }))
         :Promise.resolve({rows:[],failed:false});
-      const [styleResult,search]=await Promise.all([stylePromise,searchPromise]);
-      const styleTagMatches=styleResult.rows;
+      // Main article results must not wait for optional style-tag matching.
+      let styleResult=null;
+      void stylePromise.then(value=>{styleResult=value;});
+      const search=await searchPromise;
+      const styleTagMatches=styleResult?.rows||[];
       if(id!==searchId.current)return;
 
       const searchRows=search.rows||[];
@@ -489,12 +491,25 @@ export default function Search({managementMode=false}){
       setResults(current=>append?mergeSummaryResults([...current,...pageResults],UI_COPY):pageResults);
             setHasMore(Boolean(search.hasMore));
       setNextCursor(search.nextCursor??null);
-      const partial=(search.failures?.length||styleResult.failed)?t('uiExtra.searchUI.partialExtendedData'):'';
+      const partial=(search.failures?.length||styleResult?.failed)?t('uiExtra.searchUI.partialExtendedData'):'';
       if(!append){
         setStatus(!pageResults.length&&!search.hasMore
           ?search.failures?.length?UI_COPY.search.failed:UI_COPY.search.empty
           :options.browse?t('uiExtra.searchUI.browsingResults'):UI_COPY.format.searchResult({label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,partial}));
         scrollToResults();
+      }
+      if(wantsStyleTags&&!styleResult){
+        // Append optional matches only while the original query and filters are current.
+        void stylePromise.then(({rows})=>{
+          if(signal.aborted||activeSearchOptionsRef.current!==options||!rows?.length)return;
+          const additional=rows.map(({row,source})=>toResult(row,source,scopeId,UI_COPY)).filter(Boolean);
+          if(!additional.length)return;
+          setResults(current=>prioritizeStyleTagResults(mergeSummaryResults([...additional,...current],UI_COPY)));
+          setStatus(UI_COPY.format.searchResult({
+            label:'「'+searchCollectionLabel+'」',query:q,hasMore:search.hasMore,
+            partial:search.failures?.length?t('uiExtra.searchUI.partialExtendedData'):''
+          }));
+        });
       }
     }catch(exception){
       if(id!==searchId.current||controller.signal.aborted)return;
