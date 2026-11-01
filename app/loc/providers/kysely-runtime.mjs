@@ -299,8 +299,14 @@ export function buildAllowlistedRpcQuery(input){
   // as PostgreSQL array literals, which are invalid JSONB (SQLSTATE 22P02).
   // Serialize only these declared JSONB arguments; other RPCs can legitimately
   // accept PostgreSQL arrays. Keep null as SQL NULL, not JSONB 'null'.
-  const jsonbArgs=key==='silver.management_write'
-    ?new Set(['p_rows','p_values','p_filters']):null;
+  // A JS array is a PostgreSQL array by default. These existing procedures
+  // accept JSONB arrays, whereas name lists and place UID lists are SQL arrays.
+  const jsonbArgsByRpc={
+    'silver.management_write':new Set(['p_rows','p_values','p_filters']),
+    'silver.preview_timeline_place_page_json':new Set(['p_windows']),
+    'silver.apply_timeline_place_ids':new Set(['p_updates'])
+  };
+  const jsonbArgs=jsonbArgsByRpc[key];
   const params=supplied.map(name=>{
     const value=args[name];
     const parameter=jsonbArgs?.has(name)
