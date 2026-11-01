@@ -3,7 +3,7 @@
   position:fixed;z-index:140;left:50%;
   bottom:calc(.55rem + env(safe-area-inset-bottom,0px));
   transform:translateX(-50%);
-  width:min(700px,calc(100vw - 1rem));
+  width:min(700px,calc(100vw - 1rem - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));
   display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
   gap:clamp(.25rem,.75vw,.6rem);
   padding:.4rem;
@@ -28,7 +28,17 @@
   transition:background .16s ease,box-shadow .16s ease,transform .16s ease;
 }
 .scope-feature-dock a svg,.scope-feature-dock button svg{flex:none;width:23px;height:23px;}
-.scope-feature-dock a:hover,.scope-feature-dock a:focus-visible,.scope-feature-dock button:hover:not(:disabled),.scope-feature-dock button:focus-visible{
+.scope-feature-dock :is(a,button)>span{
+  display:block;min-width:0;max-width:100%;text-align:center;
+  line-height:1.25;overflow-wrap:anywhere;
+}
+@media(hover:hover) and (pointer:fine){
+  .scope-feature-dock a:hover,.scope-feature-dock button:hover:not(:disabled){
+    background:color-mix(in srgb,var(--loc-accent) 33%,var(--loc-panel) 67%);
+    box-shadow:0 8px 17px rgb(0 0 0 / .26);
+  }
+}
+.scope-feature-dock :is(a,button):focus-visible{
   background:color-mix(in srgb,var(--loc-accent) 33%,var(--loc-panel) 67%);
   box-shadow:0 8px 17px rgb(0 0 0 / .26);
 }
@@ -64,6 +74,9 @@
   overflow-wrap:anywhere;white-space:normal;pointer-events:auto;
 }
 body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
+body:has(.scope-feature-dock .scope-edit-dock-notice){
+  padding-bottom:calc(11rem + env(safe-area-inset-bottom,0px));
+}
 /* Embedded Daily Rune test surface precedes the ordinary Global Settings cards. */
 .scope-settings-daily-test{display:grid;gap:.7rem;min-width:0;}
 .scope-settings-daily-test>h2{margin:0;font-size:var(--loc-type-section-title);font-weight:var(--loc-weight-section-title);}
@@ -90,6 +103,7 @@ body{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
 
 /* Keep scroll-to-focus targets readable above the fixed feature dock. */
 html{scroll-padding-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));}
+html:has(.scope-edit-dock-notice){scroll-padding-bottom:calc(11rem + env(safe-area-inset-bottom,0px));}
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{
   scroll-margin-bottom:calc(6.5rem + env(safe-area-inset-bottom,0px));
 }

@@ -173,7 +173,7 @@
 .scope-global[data-native="ios"] .scope-nav-loc-home,
 .scope-global[data-native="ios"] .scope-nav-arrow,
 .scope-global[data-native="ios"] .scope-nav-close-folder{
-  min-height:40px;
+  min-height:44px;
   padding-block:.25rem;
 }
 .scope-global[data-native="ios"] .scope-nav-subrow{

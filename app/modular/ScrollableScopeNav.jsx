@@ -16,11 +16,13 @@ export default function ScrollableScopeNav({children,resetKey='',label='導覽�
     const node=viewport.current;
     if(!node)return;
     const limit=node.scrollWidth-node.clientWidth;
-    setPosition({
+    const next={
       overflow:limit>2,
       left:node.scrollLeft>2,
       right:limit-node.scrollLeft>2
-    });
+    };
+    setPosition(previous=>previous.overflow===next.overflow
+      &&previous.left===next.left&&previous.right===next.right?previous:next);
   },[]);
   useEffect(()=>{
     const node=viewport.current;
@@ -37,16 +39,16 @@ export default function ScrollableScopeNav({children,resetKey='',label='導覽�
     const node=viewport.current;
     if(!node)return;
     const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    node.scrollBy({left:direction*Math.max(node.clientWidth*.75,120),behavior:reduce?'instant':'smooth'});
+    node.scrollBy({left:direction*Math.max(node.clientWidth*.75,120),behavior:reduce?'auto':'smooth'});
   };
   return <div className="scope-nav-rail">
     {position.overflow?<button type="button" className="scope-nav-arrow"
-      aria-label={localizedLabel+' '+text('向左捲動')} disabled={!position.left} onClick={()=>move(-1)}>{'<<'}</button>:null}
+      aria-label={localizedLabel+' '+text('向左捲動')} disabled={!position.left} onClick={()=>move(-1)}><span aria-hidden="true">‹</span></button>:null}
     <div ref={viewport} className="scope-nav-viewport" role="group" aria-label={localizedLabel}
       onScroll={measure} tabIndex={position.overflow?0:undefined}>
       <div className="scope-nav-items">{children}</div>
     </div>
     {position.overflow?<button type="button" className="scope-nav-arrow"
-      aria-label={localizedLabel+' '+text('向右捲動')} disabled={!position.right} onClick={()=>move(1)}>{'>>'}</button>:null}
+      aria-label={localizedLabel+' '+text('向右捲動')} disabled={!position.right} onClick={()=>move(1)}><span aria-hidden="true">›</span></button>:null}
   </div>;
 }

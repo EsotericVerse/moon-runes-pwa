@@ -420,6 +420,7 @@ function AppShellInner({children}){
   const activeLocale=manualLocale?.scopeId===scopeId?manualLocale.locale:configuredLocale;
   const localeReady=useLoadedUiLocale(activeLocale);
   const copy=useMemo(()=>uiCopy(activeLocale),[activeLocale,localeReady]);
+  useEffect(()=>{document.documentElement.lang=activeLocale;},[activeLocale]);
   const [,refreshFieldLabels]=useState(0);
   useEffect(()=>{
     if(isSectionLoaded(activeLocale,'fields'))return undefined;
