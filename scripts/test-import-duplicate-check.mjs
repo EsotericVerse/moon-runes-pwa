@@ -179,3 +179,26 @@ test('many articles sharing one timestamp normalize saved and incoming content o
   for(const uid of ['OLD00001','OLD00002','NEW00001','NEW00002'])
     assert.equal(readings.get(uid),1,uid+' content normalized more than once');
 });
+
+test('1200 same-second archived posts retain one-to-one identities and changed native-ID text',async()=>{
+  const total=1200;
+  const base={site:'Facebook',createtime:'2024-01-01T00:00:00.000Z',title:'Post'};
+  const incoming=Array.from({length:total},(_,index)=>({
+    ...base,uid:'I'+String(index).padStart(7,'0'),
+    site_id:index%4===0?'fb-'+index:null,
+    content:'Unique archive post '+index
+  }));
+  const saved=incoming.map((row,index)=>({
+    ...row,uid:'S'+String(index).padStart(7,'0'),
+    // The original platform ID takes precedence when exported text changes.
+    content:index===0?'Old version':row.content
+  }));
+  const result=await matchExistingImportByCreatedAt(incoming,{
+    readTimestamps:async()=>saved
+  });
+  assert.equal(result.size,total);
+  assert.equal(result.ambiguous.length,0);
+  for(let index=0;index<total;index++)
+    assert.equal(result.get('I'+String(index).padStart(7,'0'))?.uid,
+      'S'+String(index).padStart(7,'0'));
+});
