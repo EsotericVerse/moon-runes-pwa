@@ -578,6 +578,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         setArchiveEvidence(mediaEvidence);
         setGeoPlaceCandidates(geoPlaces);
         setArchiveSummary({...summary,urlAudit,
+          articleWithUrl:imported.filter(item=>Boolean(item.raw?.url)).length,
           mediaEvidenceCount:mediaEvidence.length,
           mediaImportable:mediaPlan.media.length,
           mediaWithUrl:mediaPlan.media.filter(item=>Boolean(item.url)).length,
@@ -1162,6 +1163,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       這是來源欄位出現次數，不等於已保存的公開 URL。
       {archiveSummary.urlAudit.truncated?' 有 '+archiveSummary.urlAudit.truncated.toLocaleString()+' 筆超過掃描上限；數量為下限。':''}
     </p>:null}
+    {archiveSummary?<p className="scope-status" role="status">文章原始網址 {Number(archiveSummary.articleWithUrl||0).toLocaleString()}／{rows.length.toLocaleString()} 篇；未取得網址的文章不會以 ZIP uri、媒體連結或來源 ID 偽造文章 URL。</p>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。不會解壓或解析 ZIP 內圖片；只從 JSON 匯入真正的媒體 URL。沒有公開網址的附件不建立媒體資料。</p>:null}
     {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
       <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。匯入時會按原始地名建立缺少的空間定錨與日期定錨；已有的沿用，經緯度不足時不推測。獨立打卡不會轉成 Galaxy 文章。</p>

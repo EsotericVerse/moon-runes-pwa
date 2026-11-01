@@ -788,3 +788,55 @@ test('Facebook same-platform post URL inside data is imported as original articl
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].url,url);
 });
+
+
+test('Facebook Meta string_map_data translated post permalink is preserved as Galaxy.url',async()=>{
+  const original='https://www.facebook.com/permalink.php?story_fbid=12345&id=67890';
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      timestamp:1720000000,data:[{post:'含有原始連結的文章'}],
+      string_map_data:{'貼文連結':{value:original}}
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,original);
+});
+test('Facebook Meta label_values post URL is not confused with location or image URL',async()=>{
+  const original='https://www.facebook.com/posts/12345';
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      timestamp:1720000000,data:[{post:'文字文章'}],
+      label_values:[
+        {label:'貼文網址',value:original},
+        {label:'地點連結',value:'https://www.facebook.com/pages/place/123'}
+      ],
+      attachments:[{data:[{media:{uri:'photos/file.jpg',url:'https://cdn.example.test/a.jpg'}}]}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,original);
+});
+test('Facebook archive with only ZIP uri and source post id does not invent URL',async()=>{
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      post_id:'12345',timestamp:1720000000,data:[{post:'真實文章'}],
+      attachments:[{data:[{media:{uri:'facebook/photos/file.jpg'}}]}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,undefined);
+});
+
+
+test('Facebook mojibake Meta label name is repaired before URL classification',async()=>{
+  const original='https://www.facebook.com/posts/67890';
+  const garbled=Buffer.from('貼文連結','utf8').toString('latin1');
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      timestamp:1720000000,data:[{post:'文字貼文'}],
+      string_map_data:{[garbled]:{value:original}}
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,original);
+});
