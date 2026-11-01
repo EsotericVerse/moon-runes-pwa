@@ -21,6 +21,7 @@ const LocalDatabaseImport=dynamic(()=>import('./LocalDatabaseImport'),{loading:P
 // 每日符文紀錄：沿用既有的獨立頁面元件（/daily/log/），同一份邏輯透過它自己
 // 既有的 embedded 模式嵌入這裡，不複製任何讀寫邏輯。
 const DailyLogClient=dynamic(()=>import('../daily/log/DailyLogClient'),{loading:PanelLoading});
+const LocUserSettingsPanel=dynamic(()=>import('./LocUserSettingsPanel'),{loading:PanelLoading});
 import {selectScopeRegistry} from './scope-data';
 import {putSetting} from './user-storage';
 import useDefaultTimeUnit from './use-default-time-unit';
@@ -185,6 +186,7 @@ export default function GlobalSettings({initialSection='home'}={}){
         <p className="scope-status">{uiT('uiExtra.globalSettings.timeFilterHint')}</p>
         {timeUnitError?<p role="alert" className="scope-status scope-error">{uiT('uiExtra.globalSettings.timeFilterSaveFailed')}</p>:null}
       </section>
+      {!accountWaiting&&account.user?<LocUserSettingsPanel key={account.user.id} verifiedSubject={account.user.id}/>:null}
       </div>:null}
 
       {activeSection==='mcp'?<ClerkScopeConnections availableScopes={choices}/>:null}
