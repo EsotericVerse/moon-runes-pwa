@@ -164,7 +164,7 @@ export async function updateTraceAnchor({scopeId,uid,title,description='',addres
   const id=writableScope(scopeId),selected=textValue(uid);
   if(!VALID_ID.test(selected))throw Error('地點 UID 必須是四碼');
   const record={title:nonempty(title,'地點標題'),
-    description:descriptionObject(description,address),
+    description:descriptionText(description),
     address:coordinateArray(longitude,latitude),invisible:normalizedInvisible(invisible),route_list:{routes:[],segments:[],postal_address:postalText(address)}};
   let query=dbAuthRelation(relation(id)).update(record).eq('uid',selected).eq('trace_type','space_anchor');
   if(id==='loc')query=query.eq('scope_id','loc');
