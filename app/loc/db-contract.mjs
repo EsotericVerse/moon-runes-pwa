@@ -301,9 +301,48 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return privateResult.data;
   }
 
+  async function readUnifiedKeywordCatalog(scope,requestedUid){
+    // Owner-only shortcut: current Keywords content is in the shared Anchor
+    // relation, not in the legacy Keywords table read by the older RPC.
+    // Guests keep the verified public/shared RPC (which redacts private data).
+    if(scope!=='lo3rwang'||!await verifiedKeywordOwner())return null;
+    let uid=String(requestedUid||'');
+    if(!uid){
+      const config=await selectAuthRow('silver.'+scope,{
+        idColumn:'id',id:scope,columns:'current_keyword_class_uid'
+      });
+      uid=String(config?.current_keyword_class_uid||'');
+    }
+    if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
+    const table='silver.'+scope+'_keywords';
+    const {data:classes,error:classError}=await dbAuthRelation(table)
+      .select('uid,type,name,desc,lists').eq('uid',uid).eq('type','class').limit(1);
+    if(classError)throw Error(classError.message||'Unified Class read failed');
+    const klass=classes?.[0];
+    if(!klass)return null; // Not the Scope owner: use public shared RPC.
+    const fetchNodes=async (ids,type)=>{
+      if(!ids.length)return [];
+      const {data,error}=await dbAuthRelation(table)
+        .select('uid,type,name,desc,lists').eq('type',type).in('uid',ids).limit(ids.length);
+      if(error)throw Error(error.message||'Unified Keyword nodes read failed');
+      const byUid=new Map((data||[]).map(row=>[row.uid,row]));
+      return ids.map(id=>byUid.get(id)).filter(Boolean);
+    };
+    const groups=await fetchNodes(klass.lists||[],'group');
+    const items=await fetchNodes([...new Set(groups.flatMap(row=>row.lists||[]))],'item');
+    // The legacy read contract intentionally redacts Item descriptions and
+    // judgement lists. Keep exactly the same response on the new backing table.
+    const view=row=>({uid:row.uid,type:row.type,name:row.name,
+      desc:row.type==='item'?'':String(row.desc||''),
+      lists:row.type==='item'?[]:[...(row.lists||[])],uid_lists:[]});
+    return {class_uid:uid,rows:[klass,...groups,...items].map(view)};
+  }
+
   async function readKeywordClass(scopeId,classUid){
     const scope=normalizeScopeId(scopeId),uid=String(classUid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
+    const direct=await readUnifiedKeywordCatalog(scope,uid);
+    if(direct)return direct;
     const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope,p_class_uid:uid},{
       isEmpty:result=>!result?.class_uid||!Array.isArray(result.rows)||result.rows.length===0
     });
@@ -322,6 +361,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function readKeywordTreeCatalog(scopeId,{classUid=''}={}){
     const scope=normalizeScopeId(scopeId);
+    const direct=await readUnifiedKeywordCatalog(scope,classUid);
+    if(direct)return direct;
     const data=await keywordRead('read_keyword_tree_catalog',{
       p_scope_id:scope,p_class_uid:classUid||null
     },{
@@ -332,6 +373,14 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function readSharedKeywordClasses(scopeId){
     const scope=normalizeScopeId(scopeId);
+    if(scope==='lo3rwang'&&await verifiedKeywordOwner()){
+      const {data,error}=await dbAuthRelation('silver.lo3rwang_keywords')
+        .select('uid,type,name').eq('type','class').order('uid',{ascending:true}).limit(500);
+      if(error)throw Error(error.message||'Unified Class directory read failed');
+      if(data?.length)return data.map(row=>({
+        scopeId:scope,classUid:row.uid,name:row.name,category:row.uid
+      }));
+    }
     // An authenticated caller sees its authorized Classes; guests use the
     // public reader without requiring a login just to see shared Classes.
     const client=await verifiedKeywordOwner()?authClient:publicClient;
