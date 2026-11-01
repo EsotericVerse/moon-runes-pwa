@@ -751,28 +751,27 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // read for the span; full rows are read by UID for real timestamp matches.
       const readSiteSpan=async(site,start,end)=>{
         const pageSize=MAX_ROWS,rows=[],seenUids=new Set();
-        let previousPageLastTime=null;
-        for(let offset=0;;){
-          const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime,site_id')
-            .ilike('site',site).gte('createtime',start).lte('createtime',end)
-            .order('createtime',{ascending:true})
-            .range(offset,offset+pageSize-1);
+        // UID keyset uses the existing primary key; timestamps are not unique,
+        // so time-only offset pagination may split an entire same-second group.
+        // No new index is required and subsequent pages never rescan an offset.
+        let afterUid=null;
+        for(;;){
+          let query=dbAuthRelation(galaxy).select('uid,createtime,site_id')
+            .ilike('site',site).gte('createtime',start).lte('createtime',end);
+          if(afterUid!==null)query=query.gt('uid',afterUid);
+          const {data,error}=await query.order('uid',{ascending:true})
+            .range(0,pageSize-1);
           if(error)throw Error('createtime 比對失敗：'+error.message);
           const page=data||[];
           if(!page.length)break;
-          const firstTime=Date.parse(String(page[0].createtime||''));
-          const lastTime=Date.parse(String(page.at(-1).createtime||''));
-          if(!Number.isFinite(firstTime)||!Number.isFinite(lastTime)||
-              previousPageLastTime!==null&&firstTime<=previousPageLastTime)
-            throw Error('同秒資料跨越 createtime 分頁邊界，無法確保比對完整；本次未進行文章寫入');
           for(const row of page){
-            const uid=String(row.uid);
-            if(seenUids.has(uid))throw Error('時間區間 SELECT 出現重複文章，已停止匯入以避免漏比對');
+            const uid=String(row.uid||'');
+            if(!uid||seenUids.has(uid))
+              throw Error('時間區間 SELECT 出現重複或無效文章 UID，已停止匯入以避免漏比對');
             seenUids.add(uid);
             rows.push(row);
           }
-          previousPageLastTime=lastTime;
-          offset+=page.length;
+          afterUid=String(page.at(-1).uid);
           if(page.length<pageSize)break;
         }
         return rows;
