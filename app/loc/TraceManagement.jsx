@@ -30,6 +30,8 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [invisible,setInvisible]=useState(false);
   const [bulkUids,setBulkUids]=useState([]);
   const [bulkBusy,setBulkBusy]=useState(false);
+  const [pendingRenames,setPendingRenames]=useState({});
+  const [pendingVisibility,setPendingVisibility]=useState(null);
   const [standardTitles,setStandardTitles]=useState({});
   const [title,setTitle]=useState('');
   const [description,setDescription]=useState('');
@@ -43,7 +45,8 @@ function AnchorEditor({scopeId,spatial,reload}){
   const [isError,setIsError]=useState(false);
   const options=useMemo(()=>ownAnchors.map(row=>({value:row.uid,label:row.title+(row.postal_address?' · '+row.postal_address:'')})),[ownAnchors]);
   const renameGroups=useMemo(()=>reviewReorderedCoordinateNames(ownAnchors),[ownAnchors]);
-  const dirty=Boolean(editingUid||title||description||postalAddress||longitude||latitude);
+  const formDirty=Boolean(editingUid||title||description||postalAddress||longitude||latitude);
+  const dirty=formDirty||Object.keys(pendingRenames).length>0||Boolean(pendingVisibility);
   const pickExisting=uid=>{
     const row=ownAnchors.find(item=>item.uid===uid);
     setEditingUid(row?.uid||'');
@@ -60,66 +63,79 @@ function AnchorEditor({scopeId,spatial,reload}){
     if(scopeId==='loc'){
       setIsError(true);setNotice('LOC 空間聚合已暫停；請先在來源 Scope 編輯。');return false;
     }
-    if(busy)return false;
+    if(busy||bulkBusy)return false;
+    if(!dirty){setIsError(true);setNotice('目前沒有待儲存的地點變更。');return false;}
+    const visibility=pendingVisibility;
+    if(visibility&&!window.confirm('確定將 '+visibility.uids.length+' 個空間定錨點設定為'+
+      (visibility.invisible?'隱藏':'公開')+'？'))return false;
     setBusy(true);setIsError(false);setNotice('');
+    let savedUid='';
     try{
-      if(!title.trim())throw Error('請填入空間定錨點標題');
-      const input={scopeId,title,description,address:postalAddress,longitude,latitude,invisible};
-      const saved=editingUid
-        ?await updateTraceAnchor({...input,uid:editingUid})
-        :await addTraceAnchor(input);
+      // Apply queued title updates before the main editor so the explicitly
+      // chosen primary title always wins when both touch the same anchor.
+      let renamed=0,visibilityCount=0;
+      for(const [key,task] of Object.entries(pendingRenames)){
+        for(let i=0;i<task.uids.length;i+=100)
+          renamed+=await renameTraceAnchorTitles({
+            scopeId,uids:task.uids.slice(i,i+100),title:task.title
+          });
+        setPendingRenames(current=>{
+          const next={...current};delete next[key];return next;
+        });
+      }
+      if(formDirty){
+        if(!title.trim())throw Error('請填入空間定錨點標題');
+        const input={scopeId,title,description,address:postalAddress,longitude,latitude,invisible};
+        const saved=editingUid
+          ?await updateTraceAnchor({...input,uid:editingUid})
+          :await addTraceAnchor(input);
+        savedUid=saved.uid;
+        setEditingUid('');setTitle('');setDescription('');setPostalAddress('');
+        setLongitude('');setLatitude('');setInvisible(false);
+      }
+      if(visibility){
+        for(let i=0;i<visibility.uids.length;i+=200)
+          visibilityCount+=await updateTraceVisibilityBulk({
+            scopeId,uids:visibility.uids.slice(i,i+200),invisible:visibility.invisible
+          });
+        setPendingVisibility(null);setBulkUids([]);
+      }
       let refreshFailed=false;
       try{await reload();}catch{refreshFailed=true;}
       try{await revalidateServerMetadata();}catch{refreshFailed=true;}
       await Promise.allSettled([
         cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
+        cache.invalidate({queryKey:traceKey(scopeId)}),
         cache.invalidate({queryKey:['trace-map-index',scopeId]}),
         cache.invalidate({queryKey:['trace-current',scopeId]})
       ]);
-      setEditingUid('');setTitle('');setDescription('');setPostalAddress('');
-      setLongitude('');setLatitude('');setInvisible(false);
-      setNotice('定錨點 '+saved.uid+' 已保存。'+(refreshFailed?'重新讀取未完成，請勿重複提交。':''));
+      setNotice([
+        savedUid?'定錨點 '+savedUid+' 已保存':'',
+        renamed?'已統一 '+renamed+' 筆地點名稱':'',
+        visibilityCount?'已更新 '+visibilityCount+' 個可見性設定':''
+      ].filter(Boolean).join('；')+'。'+
+        (refreshFailed?'重新讀取未完成，請勿重複提交。':''));
       return true;
     }catch(e){setIsError(true);setNotice(String(e.message||e));return false;}
     finally{setBusy(false);}
   };
-  const quickRename=async group=>{
-    if(busy||scopeId==='loc')return;
+  const quickRename=group=>{
+    if(busy||bulkBusy||scopeId==='loc')return;
     const canonicalTitle=standardTitles[group.key]||group.items[0]?.title||'';
     const change=group.items.filter(item=>item.title!==canonicalTitle);
     if(!change.length){setIsError(false);setNotice('這組地點名稱已相同，不需更新。');return;}
-    setBusy(true);setIsError(false);setNotice('');
-    try{
-      const count=await renameTraceAnchorTitles({
-        scopeId,uids:change.map(item=>item.uid),title:canonicalTitle
-      });
-      if(change.some(item=>item.uid===editingUid))setTitle(canonicalTitle);
-      let refreshFailed=false;
-      try{await reload();}catch{refreshFailed=true;}
-      await Promise.allSettled([
-        cache.invalidate({queryKey:traceAllAnchorsKey(scopeId)}),
-        cache.invalidate({queryKey:traceKey(scopeId)}),
-        cache.invalidate({queryKey:['trace-map-index',scopeId]})
-      ]);
-      setNotice('已快速更新 '+count+' 筆地點名稱，全部 UID、座標與原始紀錄保留。'
-        +(refreshFailed?' 重新讀取未完成，請勿重複提交。':''));
-    }catch(e){setIsError(true);setNotice(String(e.message||e));}
-    finally{setBusy(false);}
+    setPendingRenames(current=>({...current,[group.key]:{
+      uids:change.map(item=>item.uid),title:canonicalTitle
+    }}));
+    setIsError(false);setNotice('已將 '+change.length+' 筆名稱變更加入待儲存清單；按底部「儲存」才會寫入。');
   };
-  const bulkApply=async invisible=>{
+  const bulkApply=invisible=>{
     if(bulkBusy||busy||!bulkUids.length||scopeId==='loc')return;
-    if(!window.confirm('確定更新 '+bulkUids.length+' 個空間定錨點的公開設定？'))return;
-    setBulkBusy(true);setNotice('');
-    try{
-      let count=0;
-      for(let i=0;i<bulkUids.length;i+=200)
-        count+=await updateTraceVisibilityBulk({scopeId,uids:bulkUids.slice(i,i+200),invisible});
-      setBulkUids([]);await reload();
-      setNotice('已更新 '+count+' 個空間定錨點。');
-    }catch(e){setIsError(true);setNotice(String(e.message||e));}
-    finally{setBulkBusy(false);}
+    setPendingVisibility({uids:[...bulkUids],invisible});
+    setIsError(false);setNotice('已將 '+bulkUids.length+' 個定錨點的'+
+      (invisible?'隱藏':'公開')+'設定加入待儲存清單；按底部「儲存」才會寫入。');
   };
-  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy});
+  useEditDockForm({save,isDirty:()=>dirty,isBusy:()=>busy||bulkBusy});
   return <section className="loc-card scope-feature-card loc-trace-anchor-editor">
     <h3>{editingUid?'編輯空間定錨點':'新增空間定錨點'}</h3>
     <label>編輯既有地點（直接搜尋標題）
@@ -146,16 +162,16 @@ function AnchorEditor({scopeId,spatial,reload}){
             </select>
           </label>
           <button type="button" className="loc-button primary" disabled={busy||!updateCount||scopeId==='loc'}
-            onClick={()=>quickRename(group)}>{busy?'更新中…':'快速更新 '+updateCount+' 筆名稱'}</button>
+            onClick={()=>quickRename(group)}>{pendingRenames[group.key]?'已加入待儲存':'選取 '+updateCount+' 筆名稱變更'}</button>
         </div>;
       })}
       {renameGroups.length>80?<p className="scope-status">目前顯示前 80 組，整理後會載入下一批。</p>:null}
     </details>
     <details className="scope-card">
-      <summary>大量設定空間定錨點隱藏（已選 {bulkUids.length} 筆）</summary>
+      <summary>大量設定空間定錨點（已選 {bulkUids.length} 筆）</summary>
       <div className="scope-stat-controls">
         <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids(ownAnchors.map(row=>row.uid))}>全選所有定錨點</button>
-        <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>setBulkUids([])}>清除</button>
+        <button type="button" className="loc-button" disabled={bulkBusy} onClick={()=>{setBulkUids([]);setPendingVisibility(null);}}>清除</button>
         <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(true)}>大量隱藏</button>
         <button type="button" className="loc-button" disabled={bulkBusy||!bulkUids.length} onClick={()=>bulkApply(false)}>大量公開</button>
       </div>
@@ -166,6 +182,7 @@ function AnchorEditor({scopeId,spatial,reload}){
           {row.title} · {row.uid}
         </label>)}
       </div>
+      {pendingVisibility?<p className="scope-status">待儲存：{pendingVisibility.uids.length} 個地點將設定為{pendingVisibility.invisible?'隱藏':'公開'}。</p>:null}
     </details>
     <div className="scope-management-fields">
       <label>地點標題<input maxLength={120} value={title} onChange={e=>setTitle(e.target.value)}
@@ -183,9 +200,7 @@ function AnchorEditor({scopeId,spatial,reload}){
         value={longitude} onChange={e=>setLongitude(e.target.value)} disabled={busy}/></label>
       <label>緯度（可留空）<input type="number" min={-90} max={90} step="any"
         value={latitude} onChange={e=>setLatitude(e.target.value)} disabled={busy}/></label>
-      <button className="loc-button primary" type="button" disabled={busy||!title.trim()} onClick={save}>
-        {busy?'儲存中…':'儲存地點'}
-      </button>
+      <p className="scope-status">新增、修改、統一名稱及大量可見性設定，請使用底部六大功能按鍵的「儲存」。</p>
     </div>
     {notice?<p role={isError?'alert':'status'} className={'scope-status'+(isError?' scope-error':'')}>{notice}</p>:null}
     <button className="loc-button" type="button" aria-expanded={mapOpen}
