@@ -145,12 +145,12 @@ test('nested media descriptions preserve JSON rather than object-to-string corru
 
 test('production archive import uses JSON URLs only; EXIF never enters media or articles',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.doesNotMatch(panel,/onMediaMetadata\\s*:/);
-  assert.doesNotMatch(panel,/onMediaEntry\\s*:/);
-  assert.doesNotMatch(panel,/\\.rpc\\('save_archive_media_exif'/);
-  assert.doesNotMatch(panel,/meta_tags:.*archivePlan\\.exif/);
-  assert.match(panel,/prepareArchiveMedia\\(/);
-  assert.match(panel,/syncImportedMedia\\(/);
+  assert.doesNotMatch(panel,/onMediaMetadata\s*:/);
+  assert.doesNotMatch(panel,/onMediaEntry\s*:/);
+  assert.doesNotMatch(panel,/\.rpc\('save_archive_media_exif'/);
+  assert.doesNotMatch(panel,/meta_tags:.*archivePlan\.exif/);
+  assert.match(panel,/prepareArchiveMedia\(/);
+  assert.match(panel,/syncImportedMedia\(/);
 });
 
 test('no-URL media may reuse an exact owner-linked record, never title alone',()=>{
