@@ -2,6 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
+import {resolveScopeRelations} from './scope-table-routing.mjs';
 import {dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
 import {SCOPE_ROUTE_INDEX} from '../modular/scope-route-index.js';
@@ -21,32 +22,17 @@ const MANAGE_COLUMNS='id,role:manage_role,galaxy:galaxy_table,time:time_table,bi
 const MANAGE_ROLE_COLUMN='manage_role';
 
 const SCOPE_ID_PATTERN=/^[a-z][a-z0-9]{0,14}$/;
-const TABLE_TOKEN_PATTERN=/^[a-z][a-z0-9_]*$/;
-
-// No remote ISR address is permitted, including when an old build
-// environment variable still contains one.
+// No DB lookup in the resolver. Legacy tables stay active until the managed Scope is switched.
 export function locPublicIsrUrl(path){return path;}
 
-function requiredToken(value,label){
-  const token=String(value||'').trim()||label;
-  if(!TABLE_TOKEN_PATTERN.test(token))throw new Error('silver.loc '+label+' 設定無效');
-  return token;
-}
-
 function buildScopeData(row,id){
-  const galaxySuffix=requiredToken(row?.galaxy,'galaxy');
-  const timeSuffix=requiredToken(row?.time,'time');
-  const galaxy=`silver.${id}_${galaxySuffix}`;
+  const tables=resolveScopeRelations(id,row);
   return {
     id,
     config:`silver.${id}`,
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
-    galaxy,
-    galaxyMedia:galaxy+'_media',
-    // The real silver.<scope>_time table now uses uid/type/address.
-    time:`silver.${id}_${timeSuffix}`,
-    keywords:`silver.${id}_keywords`,
+    ...tables,
     blocks:`silver.${id}_blocks`
   };
 }
