@@ -1,34 +1,38 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {anniversaryForDay} from '../app/loc/anniversary.mjs';
+import {anniversarySuggestionsForDate} from '../app/loc/anniversary.mjs';
 import {readFileSync} from 'node:fs';
 
-test('annual date retains month/day and counts from original year',()=>{
-  assert.deepEqual(anniversaryForDay('2020-10-16','2026-11-01'),{
-    nextDate:'2027-10-16',years:7,monthDay:'10-16',originalDate:'2020-10-16'
-  });
-  assert.equal(anniversaryForDay('2025-10-16','2026-10-16').years,1);
+const anchors=[
+  {uid:'AB12',type:'anchor',title:'重要日',address:'2020-10-16'},
+  {uid:'AB13',type:'anchor',title:'不相關',address:'2024-11-16'},
+  {uid:'AB14',type:'anchor',title:'閏年日',address:'2024-02-29'}
+];
+test('anniversary is a virtual suggestion for NEW anchor creation, not an automatic saved event',()=>{
+  assert.deepEqual(anniversarySuggestionsForDate('2026-10-16',anchors),[
+    {date:'2026-10-16',years:6,sourceUid:'AB12',sourceDate:'2020-10-16',
+      sourceTitle:'重要日',title:'重要日 · 6 週年'}
+  ]);
+  assert.deepEqual(anniversarySuggestionsForDate('2020-10-16',anchors),[]);
 });
-test('Feb 29 stays on a true leap year, never shifts to Feb 28',()=>{
-  assert.equal(anniversaryForDay('2024-02-29','2026-11-01').nextDate,'2028-02-29');
-  assert.equal(anniversaryForDay('2023-02-29','2026-11-01'),null);
+test('existing dates do not suggest duplicate anchors',()=>{
+  assert.deepEqual(anniversarySuggestionsForDate('2020-10-16',anchors),[]);
 });
-test('future dates and invalid dates do not generate imaginary anniversaries',()=>{
-  assert.equal(anniversaryForDay('2027-01-01','2026-11-01'),null);
-  assert.equal(anniversaryForDay('2026-02-30','2026-11-01'),null);
+test('leap day is suggested only in real leap years',()=>{
+  assert.equal(anniversarySuggestionsForDate('2028-02-29',anchors)[0].years,4);
+  assert.deepEqual(anniversarySuggestionsForDate('2027-02-29',anchors),[]);
 });
-test('article detail links Time, Trace and anniversary without loading all time anchors',()=>{
-  const galaxy=readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
+test('articles show actual Time/Trace links, NOT fake persisted anniversaries',()=>{
   const ui=readFileSync(new URL('../app/modular/ui.jsx',import.meta.url),'utf8');
-  assert.match(galaxy,/columns:'uid,title,address'/);
-  assert.match(galaxy,/column:'address',operator:'eq',value:day/);
-  assert.match(galaxy,/columns:'uid,type,title,range'/);
-  assert.match(galaxy,/storedTimeRange/);
-  assert.match(galaxy,/articleSpaceContext\(current,placeId/);
+  const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
+  const galaxy=readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
   assert.match(ui,/row\('定錨'/);
   assert.match(ui,/row\('期間'/);
   assert.match(ui,/row\('時代'/);
-  assert.match(ui,/row\('週年紀念'/);
-  assert.match(ui,/anniversaryForDay\(day\)/);
-  assert.match(ui,/white-space:pre-wrap|scope-culture-work-meta-description/);
+  assert.doesNotMatch(ui,/row\('週年紀念'/);
+  assert.match(editor,/anniversarySuggestionsForDate/);
+  assert.match(editor,/套用建議/);
+  assert.match(galaxy,/columns:'uid,title,address'/);
+  assert.match(galaxy,/column:'address',operator:'eq',value:day/);
+  assert.match(galaxy,/articleSpaceContext\(current,placeId/);
 });
