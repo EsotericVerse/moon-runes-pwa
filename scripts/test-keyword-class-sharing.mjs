@@ -79,6 +79,8 @@ test('music genres belong to selectable Keyword Classes, not fixed Statistics di
   assert.match(stats,/setSelectedKeywordClassUid\(event\.target\.value\)/);
   assert.match(stats,/classUid:resolvedKeywordClassUid/);
   assert.doesNotMatch(stats,/STYLE_FILTERS[^\n]*rune66/);
+  assert.match(stats,/keywordAccount\.user\?\.id\|\|'guest'/);
+  assert.doesNotMatch(stats,/read_music_style_tree/);
 });
 
 test('private Keyword Class directory is read only through existing owner RLS',()=>{
