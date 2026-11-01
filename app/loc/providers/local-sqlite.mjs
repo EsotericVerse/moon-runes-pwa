@@ -68,13 +68,12 @@ CREATE TABLE IF NOT EXISTS local_galaxy (
 );
 CREATE TABLE IF NOT EXISTS local_galaxy_media (
   uid TEXT PRIMARY KEY NOT NULL,
-  media_type TEXT NOT NULL,
+  type TEXT NOT NULL,
   title TEXT,
   url TEXT,
   meta_tags TEXT,
   createtime TEXT,
-  location TEXT,
-  rune_references TEXT
+  location TEXT
 );
 CREATE TABLE IF NOT EXISTS local_archive_media_exif (
   archive_id TEXT NOT NULL,
@@ -215,7 +214,7 @@ async function upgradeNativeLocalArchiveExif(conn){
 
 
 const LOCAL_MEDIA_TABLE_CREATE=SCHEMA.match(/CREATE TABLE IF NOT EXISTS local_galaxy_media \([\s\S]*?\);/)[0];
-const LOCAL_MEDIA_COLUMNS=['uid','media_type','title','url','meta_tags','createtime','location','rune_references'];
+const LOCAL_MEDIA_COLUMNS=['uid','type','title','url','meta_tags','createtime','location'];
 function legacyMediaUid(value){
   const raw=String(value||'').trim();
   if(/^[A-Za-z0-9]{8}$/.test(raw))return raw;
@@ -769,7 +768,7 @@ function queryBuilder(table){
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
 const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
-  'target_id','media_link','anchor_ids','lists','uid_lists','runeslist','rune_references']);
+  'target_id','media_link','anchor_ids','lists','uid_lists','runeslist']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
 function decodeRow(row){
@@ -858,7 +857,7 @@ async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
       'source' AS kind, coalesce(site,'') AS category, count(*) AS item_count
       FROM local_galaxy WHERE ${articleWhere} GROUP BY day,category ORDER BY day`,params),
     selectLocal(`SELECT date(createtime, '+8 hours') AS day,
-      'media' AS kind, coalesce(media_type,'') AS category, count(*) AS item_count
+      'media' AS kind, coalesce(type,'') AS category, count(*) AS item_count
       FROM local_galaxy_media${mediaWhere} GROUP BY day,category ORDER BY day`,params)
   ]);
   const rows=[...text,...media].map(row=>({
@@ -888,7 +887,7 @@ async function readScopeCategoryTotalsLocal({p_start,p_end}={}){
     selectLocal(`SELECT 'source' AS kind, trim(coalesce(site,'')) AS category,
       count(*) AS item_count FROM local_galaxy
       WHERE statistics_able=1 AND content<>''${range} GROUP BY category`,params),
-    selectLocal(`SELECT 'media' AS kind, trim(coalesce(media_type,'')) AS category,
+    selectLocal(`SELECT 'media' AS kind, trim(coalesce(type,'')) AS category,
       count(*) AS item_count FROM local_galaxy_media${mediaRange} GROUP BY category`,params)
   ]);
   return {data:[...articles,...media].map(row=>({...row,item_count:Number(row.item_count)||0})),error:null};
