@@ -60,7 +60,7 @@ export async function reconcileExistingImportAnchors({
   }
   await flush();
   const recorded=await recordImportPlaceVisits(visits,{
-    relation,table:places.table,timesByUid:places.timesByUid
+    relation,table:places.table,timesByUid:places.timesByUid,onProgress
   });
   return {scanned:candidates.length,linked,unmatched,
     places:{created:places.created,reused:places.reused},
