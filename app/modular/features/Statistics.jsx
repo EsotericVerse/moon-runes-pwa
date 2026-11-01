@@ -35,7 +35,6 @@ import {assignedSource} from '../../loc/member-intersection-model.mjs';
 import {publishedSourceCategoryCatalog} from '../published-source-taxonomy.js';
 import {administrativeSourceTrend} from '../../loc/statistics-admin-source.mjs';
 import {useAccount} from '../../loc/use-account';
-import {dbPublicClient} from '../../loc/db-client.mjs';
 import {StatisticsFacets} from '../../loc/statistics-facets';
 import {scopeHref} from '../scope-registry';
 import ScopeLink from '../ScopeLink';
@@ -45,7 +44,6 @@ const StatisticsMultiChart=dynamic(()=>import('../modules/statistics/StatisticsM
 const PlaceStatisticsPanel=dynamic(()=>import('./trace/PlaceStatisticsPanel'),{loading:()=>null});
 const Rune66Summary=dynamic(()=>import('../modules/statistics/StatisticsMultiChart').then(m=>m.Rune66Summary),{loading:()=>null});
 const ScopeSelfIntersection=dynamic(()=>import('../modules/statistics/ScopeSelfIntersection'),{loading:()=>null});
-const MediaCrossTagStatistics=dynamic(()=>import('../modules/statistics/MediaCrossTagStatistics'),{loading:()=>null});
 const MediaFacetStatistics=dynamic(()=>import('../modules/statistics/MediaFacetStatistics'),{loading:()=>null});
 const ScopeGroupStatistics=dynamic(()=>import('../modules/statistics/ScopeGroupStatistics'),{loading:()=>null});
 const ScopeGroupOverview=dynamic(()=>import('../../loc/ScopeGroupOverview'),{loading:()=>null});
@@ -387,8 +385,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     const found=overview.data?.earliest||earliestQuery.data||'';
     if(found&&found!==knownEarliest)setKnownEarliest(found);
   },[overview.data,earliestQuery.data,knownEarliest]);
-  const [crossTagRequested,setCrossTagRequested]=useState(false);
-  useEffect(()=>setCrossTagRequested(false),[scopeId,rankingType]);
   const mediaQuery=useAsyncResource({
     queryKey:['statistics-media-facet',scopeId,rankingType,queryRange.startDate,queryRange.endDate],
     queryFn:async()=>{
@@ -398,23 +394,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     enabled:mediaDimension&&periodNavigationReady&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate),
   });
   const refreshGate=useRefreshCooldown(mediaQuery.dataUpdatedAt);
-  const crossTagQuery=useAsyncResource({
-    queryKey:['statistics-media-cross-tags',scopeId,queryRange.startDate,queryRange.endDate],
-    queryFn:async()=>{
-      const {selectMediaCrossTagRows}=await loadGalaxyStatistics();
-      return selectMediaCrossTagRows(targetScopes[0],queryRange);
-    },
-    enabled:rankingType==='media_style'&&crossTagRequested&&Boolean(targetScopes[0])&&Boolean(queryRange.startDate&&queryRange.endDate),
-  });
-  const styleTreeQuery=useAsyncResource({
-    queryKey:['music-style-tree',scopeId],
-    queryFn:async()=>{
-      const {data,error}=await dbPublicClient.schema('silver').rpc('read_music_style_tree');
-      if(error)throw new Error(error.message||'Music Style Tree read failed');
-      return Array.isArray(data)?data:[];
-    },
-    enabled:scopeId==='lo3rwang'&&rankingType==='media_style',
-  });
   const sourceRows={isPending:overview.isPending&&sourceChart,isSuccess:overview.isSuccess,error:overview.error,
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
   // Public Scopes have a published JS category snapshot. Reuse it in Culture
@@ -519,9 +498,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     ||availableKeywordClasses.find(item=>item.classUid===keywordClassQuery.data?.currentClassUid)
     ||availableKeywordClasses[0];
   const resolvedKeywordClassUid=String(selectedKeywordClass?.classUid||'');
-  const keywordClassLabel=selectedKeywordClass
-    ?'關鍵詞組：'+selectedKeywordClass.name
-    :keywordClassQuery.isPending?'關鍵詞組（讀取中）':'關鍵詞組（尚未開放）';
   const keywordSourcesQuery=sourceCatalog;
   const configuredSources=useMemo(()=>
     (keywordSourcesQuery.data?.categories||[]).filter(row=>row.enabled!==false),
@@ -560,8 +536,8 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         </select>
       </label>:null}
       {styleFilter==='keywords'?<label>
-        <span>關鍵字選擇（分類／詞組）</span>
-        <select className="scope-select" aria-label="關鍵字選擇" value={resolvedKeywordClassUid}
+        <span>關鍵字群組</span>
+        <select className="scope-select" aria-label="關鍵字群組" value={resolvedKeywordClassUid}
           disabled={keywordClassQuery.isPending||!availableKeywordClasses.length}
           onChange={event=>setSelectedKeywordClassUid(event.target.value)}>
           {!availableKeywordClasses.length?<option value="">沒有可存取的關鍵字詞組</option>:null}
@@ -640,23 +616,15 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
         scope={targetScopes[0]} range={queryRange} filteredSource={Boolean(activeSourceSelection)}/>}</StatisticsDetails>
     </>:null}
     {mediaDimension&&Boolean(targetScopes.length)&&Boolean(queryRange.startDate&&queryRange.endDate)?<div className="scope-stat-controls">
-      <button type="button" className="loc-button" onClick={()=>{mediaQuery.refetch();if(rankingType==='media_style'&&crossTagRequested)crossTagQuery.refetch();}} disabled={mediaFetching||refreshGate.cooling}>
+      <button type="button" className="loc-button" onClick={()=>mediaQuery.refetch()} disabled={mediaFetching||refreshGate.cooling}>
         {mediaFetching?t('uiExtra.statisticsUI.refreshing'):t('uiExtra.statisticsUI.refresh')}
       </button>
       <StatsFreshness updatedAt={mediaQuery.dataUpdatedAt} remainingMs={refreshGate.remainingMs}/>
     </div>:null}
-    {rankingType==='media_style'&&styleTreeQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(styleTreeQuery.error,UI_COPY)}</p>:null}
-    {rankingType==='media_style'&&crossTagRequested&&crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>:null}
-    {rankingType==='media_style'&&crossTagRequested&&crossTagQuery.isPending?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>:null}
     {mediaDimension&&!mediaLoading&&!mediaError?<MediaFacetStatistics
       key={rankingType}
       rankingType={rankingType}
       rows={mediaRows}
-      mediaRows={crossTagQuery.data||[]}
-      treeRows={styleTreeQuery.data||[]}
-      onRequestRawStyles={()=>setCrossTagRequested(true)}
-      rawStyleLoading={crossTagRequested&&crossTagQuery.isPending}
-      rawStyleError={crossTagQuery.error}
       chartType={chartType}
       onChartTypeChange={setChartType}
       range={queryRange}
@@ -668,22 +636,6 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       facetTotals={facetTotals}
       facetTrend={facetTrend}
     />:null}
-    {rankingType==='media_style'?<StatisticsDetails
-      summary={<UiText id="uiExtra.statisticsView.crossAdvancedTitle"/>}
-      onOpen={()=>setCrossTagRequested(true)}>
-      {()=>crossTagQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(crossTagQuery.error,UI_COPY)}</p>
-        :crossTagQuery.isPending||!crossTagQuery.data
-          ?<p className="scope-status"><UiText id="uiExtra.statisticsUI.loadingMediaTags"/></p>
-          :<MediaCrossTagStatistics
-            scope={targetScopes[0]}
-            rows={crossTagQuery.data}
-            range={queryRange}
-            zoomLevel={zoomLevel}
-            onZoomLevelChange={setZoomLevel}
-            facetTrend={facetTrend}
-            loadGalaxyStatistics={loadGalaxyStatistics}
-          />}
-    </StatisticsDetails>:null}
     {rankingType!=='place'&&styleFilter==='keywords'?<>
       {keywordSourcesQuery.error?<p className="scope-status scope-error">{featureDataErrorMessage(keywordSourcesQuery.error,UI_COPY)}</p>:null}
       {keywordClassQuery.isPending?<p className="scope-status">正在讀取關鍵詞組設定…</p>:null}
