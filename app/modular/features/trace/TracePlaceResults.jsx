@@ -152,9 +152,10 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
       // The stored procedure accepts at most 80 place IDs per query.
       // A large disconnected trace may have hundreds of unique spool points.
       for(let i=0;i<placeIds.length;i+=80){
-        const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_place_density',{
-          p_scope_id:targetScope,p_place_ids:placeIds.slice(i,i+80),
-          p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
+        const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_analytics',{
+          p_scope_id:targetScope,p_view:'trace_daily',
+          p_start:startDate||null,p_end:endDate||null,
+          p_options:{placeIds:placeIds.slice(i,i+80),source:sourceFilter||null}
         });
         if(error)throw error;
         if(!Array.isArray(data))throw new Error('Invalid Trace place_id density response');
@@ -173,9 +174,10 @@ export default function TracePlaceResults({place=null,anchors=[],maps=[],scopeId
     queryFn:async()=>{
       const results=[];
       for(let i=0;i<placeIds.length;i+=80){
-        const {data,error}=await dbPublicClient.schema('silver').rpc('read_trace_keyword_group_totals',{
-          p_scope_id:targetScope,p_place_ids:placeIds.slice(i,i+80),
-          p_start:startDate||null,p_end:endDate||null,p_source:sourceFilter||null
+        const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_analytics',{
+          p_scope_id:targetScope,p_view:'trace_keywords',
+          p_start:startDate||null,p_end:endDate||null,
+          p_options:{placeIds:placeIds.slice(i,i+80),source:sourceFilter||null}
         });
         if(error)throw error;
         if(!Array.isArray(data))throw new Error('Invalid Keywords Group summary');
