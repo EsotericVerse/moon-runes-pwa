@@ -20,7 +20,7 @@ export function mediaDay(value){
 }
 function isHost(host,domain){return host===domain||host.endsWith('.'+domain);}
 // A check-in place is not a publishing platform. Classify media only from
-// its URL host/path; neither media_type nor location can prove a platform.
+// its URL host/path; neither type nor location can prove a platform.
 const UNKNOWN_MEDIA_PLATFORM='其他／無法辨識';
 export function mediaPlatform(row={}){
   const raw=plainText(row.url);
@@ -61,7 +61,7 @@ export function mediaFacetDaily(rows=[],dimension='media_platform'){
     const day=mediaDay(row?.createtime);
     if(!day)continue;
     let categories=[];
-    if(dimension==='media_type')categories=[plainText(row.media_type)||'未分類'];
+    if(dimension==='type')categories=[plainText(row.type)||'未分類'];
     else if(dimension==='media_style')categories=mediaStyleTags(row.meta_tags);
     else if(dimension==='media_platform')categories=[mediaPlatform(row)];
     else throw new Error('Unsupported media statistics dimension: '+dimension);
