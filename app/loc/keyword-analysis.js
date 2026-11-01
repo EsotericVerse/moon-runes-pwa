@@ -7,6 +7,7 @@ import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
 import {createIndexedDateKeywordReader} from './keyword-article-reader.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
+import {keywordClassDirectory} from './keyword-class-directory.mjs';
 
 const KEYWORD_ANALYSIS_READ_PAGE_SIZE=1000;
 
@@ -82,34 +83,16 @@ export async function selectAvailableKeywordClasses(scopeId='lo3rwang'){
   // Keywords table's RLS (silver.can_manage_scope) permits the full tree.
   // Never expose private Class identities through a public/anonymous query.
   const shared=await readSharedKeywordClasses(id);
-  const classes=new Map((shared||[]).filter(row=>row.classUid)
-    .map(row=>[String(row.classUid),{...row,categoryName:''}]));
+  let authorizedRows=[];
   try{
     const {data,error}=await dbAuthRelation(scope.keywords)
       .select('uid,type,name,lists')
       .in('type',['category','class']).limit(500);
-    if(!error&&Array.isArray(data)&&data.length){
-      const categories=data.filter(row=>row.type==='category');
-      const categoryOf=new Map(categories.flatMap(row=>
-        (Array.isArray(row.lists)?row.lists:[]).map(uid=>[String(uid),String(row.name||'')])));
-      for(const row of data.filter(row=>row.type==='class')){
-        const uid=String(row.uid||'');
-        if(!uid)continue;
-        classes.set(uid,{...classes.get(uid),scopeId:id,classUid:uid,
-          name:String(row.name||uid),categoryName:categoryOf.get(uid)||''});
-      }
-      for(const [uid,row] of classes){
-        if(!row.categoryName&&categoryOf.has(uid))
-          classes.set(uid,{...row,categoryName:categoryOf.get(uid)});
-      }
-    }
+    if(!error&&Array.isArray(data))authorizedRows=data;
   }catch{
-    // Browsing public statistics does not require a login. A failed private
-    // read is not permission to enumerate the hidden Class names.
+    // Guest/RLS denial: only use Classes returned by the public shared reader.
   }
-  return {classes:[...classes.values()].sort((a,b)=>
-    String(a.categoryName||'').localeCompare(String(b.categoryName||''),'zh-Hant')
-    ||String(a.name||'').localeCompare(String(b.name||''),'zh-Hant')),
+  return {classes:keywordClassDirectory(shared,authorizedRows,id),
     currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
 }
 async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){

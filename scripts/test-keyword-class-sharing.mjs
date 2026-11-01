@@ -84,9 +84,30 @@ test('music genres belong to selectable Keyword Classes, not fixed Statistics di
 test('private Keyword Class directory is read only through existing owner RLS',()=>{
   assert.match(analysis,/dbAuthRelation\(scope\.keywords\)/);
   assert.match(analysis,/\.in\('type',\['category','class'\]\)/);
-  assert.match(analysis,/row\.type==='category'/);
-  assert.match(analysis,/row\.type==='class'/);
-  assert.match(analysis,/classUid:uid/);
+  const directory=source('app/loc/keyword-class-directory.mjs');
+  assert.match(directory,/row\.type==='category'/);
+  assert.match(directory,/row\.type==='class'/);
+  assert.match(directory,/classUid:uid/);
+  assert.match(analysis,/keywordClassDirectory\(shared,authorizedRows,id\)/);
   assert.match(analysis,/const shared=await readSharedKeywordClasses\(id\)/);
   assert.doesNotMatch(analysis,/dbPublicRelation\(scope\.keywords\)/);
+});
+
+test('authorized owner sees all existing category/Class choices, guest only shared ones',async()=>{
+  const {keywordClassDirectory}=await import('../app/loc/keyword-class-directory.mjs');
+  const shared=[{classUid:'eeCc',name:'符文66'}];
+  const tree=[
+    {uid:'ALmS',type:'category',name:'音樂',lists:['9jlA','IeG0']},
+    {uid:'9U3L',type:'category',name:'符文',lists:['eeCc']},
+    {uid:'9jlA',type:'class',name:'Electronic'},
+    {uid:'IeG0',type:'class',name:'Pop'},
+    {uid:'eeCc',type:'class',name:'符文66'},
+  ];
+  assert.deepEqual(keywordClassDirectory(shared,[],'lo3rwang').map(row=>row.classUid),['eeCc']);
+  const owner=keywordClassDirectory(shared,tree,'lo3rwang');
+  assert.equal(owner.length,3);
+  assert.deepEqual(owner.filter(row=>row.categoryName==='音樂').map(row=>row.name).sort(),['Electronic','Pop']);
+  assert.equal(owner.find(row=>row.classUid==='eeCc').categoryName,'符文');
+  assert.equal(owner.find(row=>row.classUid==='IeG0').classUid,'IeG0');
+  assert.deepEqual(keywordClassDirectory([],[],'lo3rwang'),[]);
 });
