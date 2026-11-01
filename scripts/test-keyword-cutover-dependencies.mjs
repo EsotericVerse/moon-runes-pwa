@@ -25,3 +25,22 @@ test('portable Postgres/Kysely RPC allowlist follows the six-column cutover',()=
     'copy_rune66_keyword_class'
   ])assert.doesNotMatch(code,new RegExp("'silver\\."+name+"'"));
 });
+
+test('unified Anchor operations retain only authorized transactional RPC gateways',()=>{
+  const gateway=readFileSync(new URL('../app/loc/providers/kysely-runtime.mjs',import.meta.url),'utf8');
+  const expected={
+    import_shared_keyword_class:['p_target_scope','p_source_scope','p_class_uid'],
+    save_scope_trace_place_names:['p_scope_id','p_uid','p_names'],
+    preview_timeline_place_page_json:['p_scope_id','p_windows','p_limit','p_offset'],
+    apply_timeline_place_ids:['p_scope_id','p_updates'],
+    search_scope_trace_place_names:['p_scope_id','p_term','p_limit']
+  };
+  for(const [name,args] of Object.entries(expected)){
+    const expression=new RegExp("'silver\\\\."+name+"':\\\\[([^\\\\]]*)\\\\]");
+    const found=gateway.match(expression);
+    assert.ok(found,'Missing existing RPC gateway entry: '+name);
+    for(const argument of args)assert.ok(found[1].includes("'"+argument+"'"),
+      name+' must bind '+argument);
+  }
+  assert.doesNotMatch(gateway,/'silver\\.merge_scope_trace_place_names':\\[/);
+});
