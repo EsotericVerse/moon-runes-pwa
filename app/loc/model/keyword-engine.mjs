@@ -194,9 +194,18 @@ function specialRuneKeywordTexts(normalizedTexts,runes,rune){
   });
 }
 
+// Reanalysis keeps one immutable compiled Class for every article page.
+// Public one-off calls retain the existing API and identical scoring behavior.
+export function createKeywordDocumentClassifier(catalogRows=[]){
+  const prepared=compileCatalog(catalogRows);
+  return documents=>classifyKeywordDocumentsWithCompiled(documents,prepared);
+}
 export function classifyKeywordDocuments(documents=[],catalogRows=[]){
+  return classifyKeywordDocumentsWithCompiled(documents,compileCatalog(catalogRows));
+}
+function classifyKeywordDocumentsWithCompiled(documents=[],prepared){
   const source=Array.isArray(documents)?documents:[];
-  const {runes,nameToRune,groupOrder,fallbackGroup}=compileCatalog(catalogRows);
+  const {runes,nameToRune,groupOrder,fallbackGroup}=prepared;
   if(!source.length||!runes.length)return {
     documentCount:source.length,
     classifiedCount:0,
