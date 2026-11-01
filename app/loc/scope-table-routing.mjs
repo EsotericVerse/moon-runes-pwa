@@ -22,3 +22,8 @@ export function resolveScopeRelations(scope,row={}){
     anchor:fullAnchor?anchor:null,unified:fullAnchor
   };
 }
+
+export function scopeConfigRelation(scope){
+  if(!/^[a-z][a-z0-9]{0,14}$/.test(scope))throw new Error('Invalid scope');
+  return scope==='lo3rwang'||scope==='loc'?'silver.loc':'silver.'+scope;
+}
