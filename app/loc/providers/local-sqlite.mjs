@@ -875,33 +875,21 @@ async function managementWriteLocal(payload){
 // Local equivalent of silver.read_scope_statistics: same output shape
 // ({day,kind,category,item_count} rows) computed over local_galaxy instead
 // of the dynamic cross-table Postgres aggregation.
-async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}){
+async function readScopeStatisticsLocal({p_start,p_end,p_include_undated}) {
   const where=[],params=[];
   if(p_start){where.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
   if(p_end){where.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
   if(!p_include_undated)where.push('createtime IS NOT NULL');
   const articleWhere=['statistics_able=1',...where].join(' AND ');
-  const mediaWhere=where.length?' WHERE '+where.join(' AND '):'';
-  const [text,media]=await Promise.all([
-    selectLocal(`SELECT date(createtime, '+8 hours') AS day,
-      'source' AS kind, coalesce(site,'') AS category, count(*) AS item_count
-      FROM local_galaxy WHERE ${articleWhere} GROUP BY day,category ORDER BY day`,params),
-    selectLocal(`SELECT date(createtime, '+8 hours') AS day,
-      'media' AS kind, coalesce(type,'') AS category, count(*) AS item_count
-      FROM local_galaxy_media${mediaWhere} GROUP BY day,category ORDER BY day`,params)
-  ]);
-  const rows=[...text,...media].map(row=>({
-    day:row.day||'',kind:row.kind,category:row.category||'',item_count:Number(row.item_count)||0
+  const text=await selectLocal(`SELECT date(createtime, '+8 hours') AS day,
+    'source' AS kind, coalesce(site,'') AS category, count(*) AS item_count
+    FROM local_galaxy WHERE ${articleWhere} GROUP BY day,category ORDER BY day`,params);
+  const rows=text.map(row=>({
+    day:row.day||'',kind:'source',category:row.category||'',item_count:Number(row.item_count)||0
   }));
   const daily=new Map();
-  for(const row of rows){
-    const key=row.day+'|'+(row.kind==='media'?'多媒體':'文字作品');
-    daily.set(key,(daily.get(key)||0)+row.item_count);
-  }
-  for(const [key,count] of daily){
-    const mark=key.indexOf('|');
-    rows.push({day:key.slice(0,mark),kind:'total',category:key.slice(mark+1),item_count:count});
-  }
+  for(const row of rows)daily.set(row.day,(daily.get(row.day)||0)+row.item_count);
+  for(const [day,item_count] of daily)rows.push({day,kind:'total',category:'文字作品',item_count});
   return {data:rows,error:null};
 }
 // Collapse a Culture lane without downloading a full per-day histogram.
@@ -912,15 +900,10 @@ async function readScopeCategoryTotalsLocal({p_start,p_end}={}){
   if(p_start){clauses.push("date(createtime, '+8 hours')>=?");params.push(p_start);}
   if(p_end){clauses.push("date(createtime, '+8 hours')<=?");params.push(p_end);}
   const range=clauses.length?' AND '+clauses.join(' AND '):'';
-  const mediaRange=clauses.length?' WHERE '+clauses.join(' AND '):'';
-  const [articles,media]=await Promise.all([
-    selectLocal(`SELECT 'source' AS kind, trim(coalesce(site,'')) AS category,
-      count(*) AS item_count FROM local_galaxy
-      WHERE statistics_able=1 AND content<>''${range} GROUP BY category`,params),
-    selectLocal(`SELECT 'media' AS kind, trim(coalesce(type,'')) AS category,
-      count(*) AS item_count FROM local_galaxy_media${mediaRange} GROUP BY category`,params)
-  ]);
-  return {data:[...articles,...media].map(row=>({...row,item_count:Number(row.item_count)||0})),error:null};
+  const articles=await selectLocal(`SELECT 'source' AS kind, trim(coalesce(site,'')) AS category,
+    count(*) AS item_count FROM local_galaxy
+    WHERE statistics_able=1 AND content<>''${range} GROUP BY category`,params);
+  return {data:articles.map(row=>({...row,item_count:Number(row.item_count)||0})),error:null};
 }
 async function readScopeEarliestLocal(){
   const rows=await selectLocal("SELECT min(date(createtime, '+8 hours')) AS earliest FROM local_galaxy WHERE createtime IS NOT NULL");
