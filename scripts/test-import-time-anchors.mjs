@@ -191,3 +191,12 @@ test('an existing period does not conceal a missing exact date anchor',async()=>
   assert.equal(next.created,0);
   assert.equal(next.reused,3);
 });
+
+test('a shared timezone formatter preserves Taipei midnight and date literal precedence',()=>{
+  const records=[
+    {location:'午夜',createtime:'2024-02-01T15:59:59.000Z'},
+    {location:'午夜',createtime:'2024-02-01T16:00:00.000Z'},
+    {location:'已有日期',date:'2024-01-15',createtime:'2024-02-01T16:00:00.000Z'}
+  ];
+  assert.deepEqual(importCheckinDates(records),['2024-01-15','2024-02-01','2024-02-02']);
+});
