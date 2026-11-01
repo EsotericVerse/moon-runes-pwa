@@ -110,7 +110,18 @@ const txt=value=>typeof value==='string'?value:null;
 // A ZIP post can wrap its own URL beneath data.array[] while its media and
 // check-in URLs live in *different* nested branches. Only traverse article
 // wrappers: never treat a caption hyperlink, photo, or place as the post URL.
-function pickUrl(item){
+function pickUrl(item,platform=''){
+  // Post permalinks and external shared links are distinct JSON attributes.
+  const sourceHost=url=>{
+    if(!['facebook','instagram','threads'].includes(platform))return true;
+    const match=/^https?:\/\/([^/?#:\s]+)/i.exec(url);
+    if(!match)return false;
+    const host=match[1].toLowerCase();
+    const belongs=domain=>host===domain||host.endsWith('.'+domain);
+    if(platform==='facebook')return belongs('facebook.com')||belongs('fb.com')||host==='fb.watch';
+    if(platform==='instagram')return belongs('instagram.com')||belongs('instagr.am');
+    return belongs('threads.net')||belongs('threads.com');
+  };
   const valid=value=>{
     if(typeof value!=='string')return '';
     const url=value.trim();
@@ -133,13 +144,13 @@ function pickUrl(item){
       map?.Permalink?.value,map?.['Post URL']?.value
     ]){
       const url=valid(candidate);
-      if(url)return url;
+      if(url&&sourceHost(url))return url;
     }
     if(!fallback)for(const candidate of [
       node.url,node.link,map?.URL?.value,map?.Link?.value
     ]){
       const url=valid(candidate);
-      if(url){fallback=url;break;}
+      if(url&&sourceHost(url)){fallback=url;break;}
     }
     // These hold the SAME post, unlike attachments/media/place/location.
     for(const key of ['data','array','post','entry','core','thread','status','post_data']){
@@ -224,7 +235,7 @@ function normalize(row,{platform,kind,path,index,conversation}){
   return {
     key:platform+':'+finalKind+':'+encodeURIComponent(group)+':'+stable,
     platform,kind:finalKind,nativeId:stable,siteId:siteId==null?null:String(siteId),text:visibleText,sourcePlace,
-    title:txt(item.title)||'',url:pickUrl(item),
+    title:txt(item.title)||'',url:pickUrl(item,platform),
     sender,conversationId:actualKind==='message'?conv:null,attachments,
     createdAt,originalTimestamp,
     sourcePath:cleanPath(path),
