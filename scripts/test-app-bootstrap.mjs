@@ -598,3 +598,24 @@ test('Culture Time management uses one editor with anchor, event and trace types
   assert.match(editor,/insertRows\(timeTable,/);
   assert.match(editor,/deleteRows\(timeTable,/);
 });
+
+
+test('mobile UI keeps safe-area navigation, accessible rune dialog and low-churn scrolling',()=>{
+  const nav=readFileSync(new URL('../app/modular/ScrollableScopeNav.jsx',import.meta.url),'utf8');
+  const dock=readFileSync(new URL('../app/styles/bottom-navigation.css',import.meta.url),'utf8');
+  const nativeNav=readFileSync(new URL('../app/styles/nav.css',import.meta.url),'utf8');
+  const runes=readFileSync(new URL('../app/lrunes/Rune3DPreview.jsx',import.meta.url),'utf8');
+  const runeCss=readFileSync(new URL('../app/lrunes/effekseer/effekseer-stage.css',import.meta.url),'utf8');
+  const shell=readFileSync(new URL('../app/AppShell.jsx',import.meta.url),'utf8');
+  assert.match(nav,/setPosition\(previous=>previous\.overflow===next\.overflow/);
+  assert.match(nav,/behavior:reduce\?'auto':'smooth'/);
+  assert.match(dock,/\.scope-feature-dock :is\(a,button\)>span/);
+  assert.match(dock,/body:has\(\.scope-feature-dock \.scope-edit-dock-notice\)/);
+  assert.match(dock,/env\(safe-area-inset-left,0px\)/);
+  assert.match(nativeNav,/\.scope-global\[data-native="ios"\][\s\S]*?min-height:44px;/);
+  assert.match(runes,/document\.addEventListener\('keydown',handleKey\)/);
+  assert.match(runes,/document\.body\.style\.overflow='hidden'/);
+  assert.match(runes,/previousFocus\.isConnected\)previousFocus\.focus\(\)/);
+  assert.match(runeCss,/max-height:min\(85dvh/);
+  assert.match(shell,/document\.documentElement\.lang=activeLocale/);
+});

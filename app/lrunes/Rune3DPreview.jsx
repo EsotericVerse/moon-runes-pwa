@@ -24,20 +24,55 @@ const GROUP_NAMES=['靈魂','連結','生命','自然','礦物','元素','秩序
 const MODES=[['duel','抽牌'],['daily','每日符文'],['list','符文圖鑑']];
 
 function ResultDialog({title,children,onClose}){
+  const dialogRef=useRef(null);
+  const closeRef=useRef(onClose);
+  closeRef.current=onClose;
   useEffect(()=>{
-    const close=event=>{if(event.key==='Escape')onClose();};
-    window.addEventListener('keydown',close);
-    return()=>window.removeEventListener('keydown',close);
-  },[onClose]);
+    const previousFocus=document.activeElement;
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    dialogRef.current?.querySelector('button')?.focus();
+    const handleKey=event=>{
+      if(event.key==='Escape'){
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if(event.key!=='Tab'||!dialogRef.current)return;
+      const dialog=dialogRef.current;
+      const focusable=Array.from(dialog.querySelectorAll(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      )).filter(element=>element.getClientRects().length>0);
+      if(!focusable.length){
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){
+        event.preventDefault();
+        last.focus();
+      }else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown',handleKey);
+    return()=>{
+      document.removeEventListener('keydown',handleKey);
+      document.body.style.overflow=previousOverflow;
+      if(previousFocus instanceof HTMLElement&&previousFocus.isConnected)previousFocus.focus();
+    };
+  },[]);
   // The canonical LOC content frame owns .loc-panel p theme colors.
   // Overlay dialogs must portal out of that frame to retain their dedicated
   // dark-surface text contrast (as the original-art rune dialogs already do).
   if(typeof document==='undefined')return null;
   return createPortal(<div className="rune-3d-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-3d-modal" role="dialog" aria-modal="true" aria-label={title} onClick={event=>event.stopPropagation()}>
+    <section ref={dialogRef} tabIndex={-1} className="rune-3d-modal" role="dialog" aria-modal="true" aria-label={title} onClick={event=>event.stopPropagation()}>
       <header className="rune-3d-modal-head">
         <h2>{title}</h2>
-        <button type="button" className="rune-skin-btn" autoFocus onClick={onClose}>× 關閉</button>
+        <button type="button" className="rune-skin-btn" onClick={onClose}>× 關閉</button>
       </header>
       <div className="rune-3d-daily-modal-fields">{children}</div>
     </section>
