@@ -19,6 +19,15 @@ export default {
     "meta_tags": "媒体标签"
   },
 
+  "summaryText": "目前数据库共有{articles}篇文章、{chars}字，时间范围从{first}至{last}。",
+  "summaryEmpty": "目前数据库共有0篇文章、0字，尚无文章日期。",
+  "summaryLoading": "正在读取文章统计…",
+  "summaryMissing": "目前尚未建立文章统计快照。",
+  "summaryFailed": "目前无法读取文章统计。",
+  "summaryRefresh": "重新整理",
+  "summaryRefreshing": "正在重新整理…",
+  "summaryRefreshed": "统计已重新整理。",
+  "summaryRefreshFailed": "重新整理失败：{error}",
   "mediaTypeRequired": "请选择媒体类型。",
   "mediaLinkUidInvalid": "关联文章代码必须为 8 位。",
   "runeReferencesInvalid": "符文参照资料必须是有效的 JSON。",
