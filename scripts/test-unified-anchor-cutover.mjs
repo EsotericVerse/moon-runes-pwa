@@ -118,9 +118,9 @@ test('imported range caches stay derived from labels; a date needs no range',()=
  const period=fromAnchorRow(spec('time'),{uid:'A002',type:'period',label:'["A001"]',attr:range});
  assert.equal(period.range,null);
  const era=fromAnchorRow(spec('time'),{uid:'A003',type:'era',label:'["A002"]',attr:{range}});
- assert.deepEqual(era.range,range);
+ assert.equal(era.range,null);
  const date=fromAnchorRow(spec('time'),{uid:'A001',type:'date',label:'2026-01-01',attr:range});
  assert.equal(date.range,null);
- assert.deepEqual(toAnchorRow(spec('time'),{uid:'A002',type:'period',anchor_ids:['A001'],range}).attr,{range});
+ assert.equal(toAnchorRow(spec('time'),{uid:'A002',type:'period',anchor_ids:['A001'],range}).attr,undefined);
  assert.equal(toAnchorRow(spec('time'),{uid:'A001',type:'date',address:'2026-01-01',range}).attr,undefined);
 });
