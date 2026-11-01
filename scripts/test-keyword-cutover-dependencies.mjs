@@ -15,10 +15,11 @@ test('six-column migration preserves Scope delete and music tree readers',()=>{
 
 test('portable Postgres/Kysely RPC allowlist follows the six-column cutover',()=>{
   const code=readFileSync(new URL('../app/loc/providers/kysely-runtime.mjs',import.meta.url),'utf8');
-  assert.match(code,/'silver\.read_keyword_tree_catalog':\[/);
-  assert.match(code,/'silver\.read_keyword_tree_summary':\[/);
-  assert.match(code,/'silver\.read_trace_keyword_group_totals':\[/);
+  assert.doesNotMatch(code,/'silver\.read_keyword_tree_catalog':\[/);
+  assert.doesNotMatch(code,/'silver\.read_keyword_tree_summary':\[/);
+  assert.doesNotMatch(code,/'silver\.read_trace_keyword_group_totals':\[/);
   assert.match(code,/'silver\.read_music_style_tree':\[\]/);
+  assert.ok(code.includes("'silver.read_scope_analytics':['p_scope_id','p_view','p_start','p_end','p_options']"));
   for(const name of [
     'apply_keyword_classification','read_keyword_class_by_uid',
     'read_keyword_uidlist_summary','read_keyword_item_catalog',
@@ -51,11 +52,12 @@ test('Culture, Keywords, Trace and ISR share one parameterized statistics RPC',(
   const trace=readFileSync(new URL('../app/modular/features/trace/TracePlaceResults.jsx',import.meta.url),'utf8');
   const isr=readFileSync(new URL('../app/api/loc/scopes/[scopeId]/numeric/[kind]/route.js',import.meta.url),'utf8');
   const local=readFileSync(new URL('../app/loc/providers/local-sqlite.mjs',import.meta.url),'utf8');
-  assert.match(contract,/rpc\\('read_scope_analytics'/);
-  assert.match(trace,/rpc\\('read_scope_analytics'/);
-  assert.match(isr,/name='read_scope_analytics'/);
-  assert.match(local,/case 'read_scope_analytics'/);
+  assert.ok(contract.includes("rpc('read_scope_analytics'"));
+  assert.ok(trace.includes("rpc('read_scope_analytics'"));
+  assert.ok(isr.includes("name='read_scope_analytics'"));
+  assert.ok(local.includes("case 'read_scope_analytics'"));
   for(const name of ['read_scope_category_totals','read_scope_statistics','read_scope_overview','read_scope_earliest','read_loc_statistics','read_keyword_tree_summary','read_keyword_tree_catalog'])
-    assert.doesNotMatch(contract,new RegExp("rpc\\\\('"+name+"'"));
-  assert.doesNotMatch(trace,/rpc\\('read_trace_(?:place_density|keyword_group_totals)'/);
+    assert.ok(!contract.includes("rpc('"+name+"'"),'Old domain RPC still used: '+name);
+  assert.ok(!trace.includes("rpc('read_trace_place_density'"));
+  assert.ok(!trace.includes("rpc('read_trace_keyword_group_totals'"));
 });
