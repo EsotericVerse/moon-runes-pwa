@@ -309,3 +309,10 @@ test('many independent name-only locations and GPS aliases keep exact matching s
     importedPlaceId({incoming:named('唯一同名點',25.05,121.51),
       byName:resolved.byName,byCoordinate:resolved.byCoordinate}));
 });
+
+test('empty visit batches return without needing a Trace write table',async()=>{
+  const states=[];
+  assert.deepEqual(await recordImportPlaceVisits([],{onProgress:state=>states.push(state)}),
+    {updated:0,added:0});
+  assert.deepEqual(states,[{phase:'補齊定錨打卡時間',completed:0,total:0}]);
+});
