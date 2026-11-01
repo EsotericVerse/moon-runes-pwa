@@ -40,6 +40,8 @@ import {publishedSourceTaxonomy} from '../published-source-taxonomy.js';
 import {buildCultureRiverRootPayload,selectCultureRiverChildren} from '../../loc/culture-river-roots.mjs';
 import {mediaDay} from '../../loc/statistics-facets';
 import {useAccount} from '../../loc/use-account';
+import useFeaturePreferences from '../../loc/use-feature-preferences';
+import {selectedKeywordForScope} from '../../loc/feature-preferences.mjs';
 import {useScopeRuntime} from '../use-scope-runtime';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 // Article cards/editing are requested only when results actually render.
@@ -209,6 +211,7 @@ export default function Culture(){
   const localizedLabelOf=useMemo(()=> (item,index)=>labelOf(item,index,UI_COPY.format.period(index+1)),[UI_COPY]);
   const {locale}=useUiLocale();
   const {scopeId,scope}=useScopeRuntime();
+  const featurePrefs=useFeaturePreferences();
   const searchParams=useSearchParams();
   const editDock=useEditDock();
   const canUseScopeEditor=Boolean(editDock?.active&&editDock.scopeId===scopeId);
@@ -292,6 +295,14 @@ export default function Culture(){
     setStructureWindowKey('');
   },[scopeId]);
 
+  useEffect(()=>{
+    if(!featurePrefs.ready)return;
+    const configuredClass=selectedKeywordForScope(featurePrefs.values,scopeId);
+    setSelectedKeywordClassUid(configuredClass);
+    setStyleFilter(featurePrefs.values.cultureDisplay==='keywords'&&configuredClass?'rune66':'none');
+  },[featurePrefs.ready,featurePrefs.values.keywordChoice,featurePrefs.values.cultureDisplay,scopeId]);
+  useEffect(()=>{if(featurePrefs.ready)setArticleSort(featurePrefs.values.cultureSort);},
+    [featurePrefs.ready,featurePrefs.values.cultureSort]);
   const isAggregateScope=Boolean(scope?.aggregateChildren);
   // LOC's first Time River never queries per-day article/media density.
   // On-demand second-river data stays in the regular SWR request cache.
@@ -702,6 +713,27 @@ export default function Culture(){
   const anchorRecords=useMemo(()=>timelineItems
     .filter(item=>item.entry_type==='anchor'&&item.uid)
     .sort((a,b)=>String(a.start_date||'').localeCompare(String(b.start_date||''))||String(a.display_label||'').localeCompare(String(b.display_label||''))),[timelineItems]);
+  const structureDisplay=useMemo(()=>{
+    const chosen=featurePrefs.values.cultureTime;
+    if(chosen==='era')return eraRiver;
+    const source=chosen==='anchor'?anchorRecords:
+      timelineItems.filter(row=>row.entry_type==='period');
+    const typeName=chosen==='anchor'?'定錨點':'期間';
+    const groupKey='culture-preference-'+chosen;
+    const items=source.flatMap((row,index)=>{
+      const periods=chosen==='period'&&Array.isArray(row.ranges)&&row.ranges.length
+        ?row.ranges:[row];
+      return periods.flatMap((period,segment)=>{
+        const start=String(period.start_date||row.start_date||'').slice(0,10);
+        const end=String(period.end_date||row.end_date||'').slice(0,10);
+        if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(start))return [];
+        return [{...row,id:row.uid+':'+index+':'+segment,
+          start_date:start,...(end>start?{end_date:end}:{}),
+          group_key:groupKey,group_label:typeName,group_order:0}];
+      });
+    });
+    return {items,groups:items.length?[{id:groupKey,label:typeName,order:0}]:[]};
+  },[featurePrefs.values.cultureTime,eraRiver,anchorRecords,timelineItems]);
   const locScopeIntervalItems=useMemo(()=>query.data?.scopeTimeRanges||[],[query.data]);
   const locSourceRiverItems=useMemo(()=>locDensityOpen?locDensityQuery.data?.sourceRiverItems||[]:[],[locDensityQuery.data,locDensityOpen]);
   const locSourceGroups=useMemo(()=>locDensityOpen?locDensityQuery.data?.sourceGroups||[]:[],[locDensityQuery.data,locDensityOpen]);
@@ -1271,7 +1303,7 @@ export default function Culture(){
             {query.error?<p className='scope-status scope-error' role='alert'>{featureDataErrorMessage(query.error,UI_COPY)}</p>:null}
             {!query.isPending&&!query.error&&!timelineItems.length
               ?<p className='scope-status'>目前尚未建立此類時間紀錄，可直接在下方新增。</p>:null}
-            {!query.isPending&&!query.error&&timelineItems.length>0?<CultureTimeline
+            {!query.isPending&&!query.error&&timelineItems.length>0?<CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
               key={'time-editor-unified'}
               items={timelineItems}
               labelOf={localizedLabelOf}
@@ -1340,7 +1372,7 @@ export default function Culture(){
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
                 <h3>各 Scope 時間區間</h3>
-                {locScopeIntervalItems.length?<CultureTimeline
+                {locScopeIntervalItems.length?<CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
                   items={locScopeIntervalItems}
                   labelOf={emptyRiverLabel}
                   focus={EMPTY_RIVER_FOCUS}
@@ -1363,7 +1395,7 @@ export default function Culture(){
                     {locDensityQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(locDensityQuery.error,UI_COPY)}</p>:null}
                 {locScopeRiverItems.length?<section className='scope-culture-interval-density'>
                   <h4>{UI_COPY.culture.intersectionRiver}</h4>
-                  <CultureTimeline
+                  <CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
                     items={locScopeRiverItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
@@ -1378,7 +1410,7 @@ export default function Culture(){
                 {locCombinedSourceRiverItems.length?<section className='scope-culture-combined-source-river'>
                   <p className='loc-eyebrow'>{UI_COPY.culture.combinedSources}</p>
                   <h4>{UI_COPY.culture.combinedRiver}</h4>
-                  <CultureTimeline
+                  <CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
                     items={locCombinedSourceRiverItems}
                     labelOf={emptyRiverLabel}
                     focus={EMPTY_RIVER_FOCUS}
@@ -1411,13 +1443,13 @@ export default function Culture(){
                         </select>
                   </label>
                 </div>
-                {eraRiver.groups.length?<CultureTimeline
-                  items={eraRiver.items}
-                  extraGroups={eraRiver.groups}
+                {structureDisplay.groups.length?<CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
+                  items={structureDisplay.items}
+                  extraGroups={structureDisplay.groups}
                   labelOf={localizedLabelOf}
                   focus={navigation}
                   mode='trace'
-                  onGroupToggle={toggleTimeTrace}
+                  onGroupToggle={featurePrefs.values.cultureTime==='era'?toggleTimeTrace:undefined}
                   windowStart={currentStructureStart}
                   windowEnd={currentStructureEnd}
                   onSelect={item=>setSelectedTimelineInfo(item||null)}
@@ -1589,7 +1621,7 @@ export default function Culture(){
                       windowEnd={classificationWindowEnd}
                       onGroupToggle={toggleCultureRiverGroup}
                       onGroupSelect={selectCultureRiverGroup}
-                    />:<CultureTimeline
+                    />:<CultureTimeline unitOverride={featurePrefs.values.cultureUnit}
                     items={cultureRiver.items}
                     extraGroups={cultureRiver.groups}
                     onGroupToggle={toggleCultureRiverGroup}
