@@ -14,6 +14,58 @@ const aliases={
 const attrColumns=new Set(['range','times','address','route_list','uid_lists']);
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
+
+// Four kinds share one case-sensitive UID key. Trace/Media used to depend
+// on database-generated UIDs; the unified Anchor table has no such default.
+const UID_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function newAnchorUid(length,assigned){
+  const random=globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+  if(!random)throw Error('Secure UID generator unavailable');
+  for(let attempt=0;attempt<128;attempt++){
+    const bytes=random(new Uint8Array(length*2));
+    let id='';
+    for(const byte of bytes){
+      if(byte>=248)continue;
+      id+=UID_ALPHABET[byte%62];
+      if(id.length===length)break;
+    }
+    if(id.length===length&&!assigned.has(id))return id;
+  }
+  throw Error('Cannot allocate a unique unified anchor UID');
+}
+function defaultTimeRange(row){
+  const date=String(row.address||'').slice(0,10);
+  const point=row.type==='anchor'&&/^\d{4}-\d\d-\d\d$/.test(date);
+  return {version:1,segments:point?[{
+    index:0,point:true,invalid:false,start_date:date,end_date:date,
+    open_end:false,anchor_ids:[row.uid],start_anchor_id:row.uid,
+    end_anchor_id:null,missing_anchor_ids:[]
+  }]:[],invalid_period_uids:[]};
+}
+function prepareAnchorInsert(spec,row,assigned){
+  if(!row||typeof row!=='object'||Array.isArray(row))
+    throw Error('Invalid unified insert row');
+  const value={...row},length=spec.kind==='media'?8:4;
+  if(value.uid==null||value.uid===''){
+    if(spec.kind!=='trace'&&spec.kind!=='media')
+      throw Error('Time and Keywords require an allocated UID');
+    value.uid=newAnchorUid(length,assigned);
+  }
+  if(typeof value.uid!=='string'||!new RegExp('^[A-Za-z0-9]{'+length+'}$').test(value.uid))
+    throw Error('Invalid unified anchor UID');
+  if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
+  assigned.add(value.uid);
+  if(spec.kind==='time'&&value.range==null)value.range=defaultTimeRange(value);
+  if(spec.kind==='trace'){
+    if(!hasOwn(value,'address'))value.address=null;
+    if(!hasOwn(value,'times'))value.times=[];
+    if(!hasOwn(value,'route_list'))value.route_list=[];
+  }
+  if(spec.kind==='keywords'&&value.uid_lists==null)value.uid_lists={};
+  const mapped=toAnchorRow(spec,value);
+  if(spec.kind==='media')mapped.attrs={};
+  return mapped;
+}
 export function unifiedAnchorSpec(schema,table){
   const matched=String(table||'').match(legacyName);
   if(schema!=='silver'||!matched||matched[1]!=='lo3rwang')return null;
@@ -25,7 +77,9 @@ export function toAnchorRow(spec,row){
   for(const [key,value] of Object.entries(row)){
     const target=aliases[spec.legacy][key]||key;
     if(attrColumns.has(key)&&target==='attrs')attrs[key]=value;
-    else if(physicalColumns.includes(target)&&target!=='kind'&&target!=='attrs')result[target]=value;
+    else if(physicalColumns.includes(target)&&target!=='kind'&&target!=='attrs')
+      result[target]=spec.kind==='trace'&&key==='description'&&value&&typeof value==='object'
+        ?JSON.stringify(value):value;
     else throw Error('Unsupported legacy anchor column: '+key);
   }
   if(Object.keys(attrs).length)result.attrs=attrs;
@@ -43,6 +97,10 @@ export function fromAnchorRow(spec,row){
     if(key==='attrs'){
       for(const field of Object.keys(aliases[spec.legacy]).filter(k=>aliases[spec.legacy][k]==='attrs'))
         result[field]=value?.[field]??null;
+     }else if(spec.kind==='trace'&&key==='description'&&typeof value==='string'&&value.startsWith('{')){
+      let structured=null;
+      try{structured=JSON.parse(value)}catch{}
+      result.description=structured&&typeof structured==='object'&&!Array.isArray(structured)?structured:value;
     }else result[reverse[key]||key]=value;
   }
   return result;
@@ -212,13 +270,21 @@ class UnifiedQuery{
     }
     if(this.operation==='insert'||this.operation==='upsert'){
       const rows=Array.isArray(this.values)?this.values:[this.values];
-      const mapped=rows.map(row=>toAnchorRow(spec,row));
+      if(!rows.length)throw Error('Empty unified anchor insert');
+      const auto=rows.some(row=>row?.uid==null||row.uid==='');
+      if(this.operation==='upsert'&&auto)
+        throw Error('Unified anchor upsert requires an explicit UID');
       const options=this.operation==='upsert'?{...this.conflict,onConflict:'uid'}:undefined;
-      let q=this.operation==='upsert'?this.schema.from(spec.table).upsert(mapped,options):
-        this.schema.from(spec.table).insert(mapped);
-      if(this.fields!=='*')q=q.select(fieldsForSelect(spec,this.fields));
-      const result=await q;
-      return normalizeResult(spec,result,this.fields);
+      for(let attempt=0;attempt<(auto?4:1);attempt++){
+        const assigned=new Set();
+        const mapped=rows.map(row=>prepareAnchorInsert(spec,row,assigned));
+        let q=this.operation==='upsert'?this.schema.from(spec.table).upsert(mapped,options):
+          this.schema.from(spec.table).insert(mapped);
+        if(this.fields!=='*')q=q.select(fieldsForSelect(spec,this.fields));
+        const result=await q;
+        if(result.error?.code==='23505'&&auto&&attempt<3)continue;
+        return normalizeResult(spec,result,this.fields);
+      }
     }
     if(this.operation==='update'){
       if(!this.filters.length&&!this.orFilters.length)throw Error('Unsafe unified anchor update');
