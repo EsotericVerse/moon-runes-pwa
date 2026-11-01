@@ -498,8 +498,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       if(isZip||isThreadsJson||isFacebookGeoJson){
         // ZIP, standalone Threads posts and independent Facebook visit JSON use the scanner;
         // source names are only hints, each record must be a public post.
-        const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
-        const totalEntries=isZip?await zipEntryCount(file):1;
+        const {detectZipArchiveSource,inspectPrivateArchive}=await import('./private-archive-universal.mjs');
         const result=isZip
           ?await detectZipArchiveSource(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setProgress({stage:'正在辨識 ZIP 檔案',completed:Number(p.filesSeen||0),total:0,percent:null})})
           :{kind:isFacebookGeoJson?'facebook':'threads',
