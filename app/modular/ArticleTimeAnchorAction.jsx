@@ -33,7 +33,9 @@ async function allocateScopedTimeUid(table){
   return allocateTimeUid(occupied);
 }
 
-export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=null}){
+export default function ArticleTimeAnchorAction({
+  scopeId='',date='',onCreated=null,suggestions=[],label='新增時間定錨'
+}){
   const account=useAccount({enabled:false});
   const dialogRef=useRef(null);
   const titleId=useId();
@@ -88,12 +90,14 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
         return;
       }
       setTable(target.time);
-      setDescription('');
+      const provided=Array.isArray(suggestions)?suggestions.filter(item=>item?.date===date):[];
+      setDescription(provided[0]?.title||'');
+      setAnnualSuggestions(provided);
       setOpen(true);
       // Only check other anniversaries after the user explicitly opens
       // CREATE. Never preload all Time anchors on article detail read.
       // Suggestions are ephemeral; writes happen only on Submit.
-      try{
+      if(!provided.length)try{
         const existingAnchors=[];
         for(let offset=0;;offset+=DB_QUERY_BATCH_SIZE){
           const result=await selectRows(target.time,{
@@ -105,7 +109,11 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
           existingAnchors.push(...result.rows);
           if(result.rows.length<DB_QUERY_BATCH_SIZE)break;
         }
-        setAnnualSuggestions(anniversarySuggestionsForDate(date,existingAnchors));
+        const suggested=anniversarySuggestionsForDate(date,existingAnchors,{
+          birthday:target.birthday
+        });
+        setAnnualSuggestions(suggested);
+        if(suggested.length)setDescription(suggested[0].title);
       }catch{setAnnualSuggestions([]);}
 
     }catch(cause){
@@ -140,7 +148,8 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
         setNotice('此日期已有時間定錨，已沿用原有紀錄。');
       }else{
         const uid=await allocateScopedTimeUid(table);
-        const record={uid,type:'anchor',title:date,description:details,
+        const chosen=annualSuggestions.find(item=>item.title===details);
+        const record={uid,type:'anchor',title:chosen?.title||date,description:details,
           address:date,anchor_ids:null,invisible:false};
         const result=await insertRows(table,[record]);
         if(result?.count!==1)throw new Error('新增時間定錨未確認成功。');
@@ -159,7 +168,7 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
 
   return <>
     <button type="button" className="loc-button" disabled={checking||saving}
-      onClick={begin}>{checking?'正在確認權限…':'新增時間定錨'}</button>
+      onClick={begin}>{checking?'正在確認權限…':label}</button>
     {notice?<span className="scope-status" role="status">{notice}</span>:null}
     {!open&&error?<span className="scope-status scope-error" role="alert">{error}</span>:null}
     {open?<dialog ref={dialogRef} className="scope-edit-switch-dialog"
