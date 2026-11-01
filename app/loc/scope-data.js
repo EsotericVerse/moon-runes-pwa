@@ -2,7 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
-import {resolveScopeRelations} from './scope-table-routing.mjs';
+import {resolveScopeRelations,scopeConfigRelation} from './scope-table-routing.mjs';
 import {dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
 import {SCOPE_ROUTE_INDEX} from '../modular/scope-route-index.js';
@@ -29,7 +29,7 @@ function buildScopeData(row,id){
   const tables=resolveScopeRelations(id,row);
   return {
     id,
-    config:`silver.${id}`,
+    config:scopeConfigRelation(id),
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
     ...tables,
