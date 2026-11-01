@@ -3,15 +3,35 @@
 // providers and other Scopes until their own anchor store exists.
 // No SQL, DDL, table creation, migration or old-data synchronization here.
 const legacyName=/^([a-z][a-z0-9]{0,14})_(time|trace|keywords|galaxy_media)$/;
-const physicalColumns=['uid','kind','type','title','description','url','meta_tags','createtime','date','location','invisible','links','attrs'];
+const physicalColumns=['uid','type','title','description','label','invisible','links','attrs'];
 const legacyKinds={time:'time',trace:'trace',keywords:'keywords',galaxy_media:'media'};
 const aliases={
-  time:{address:'date',anchor_ids:'links',range:'attrs'},
-  trace:{trace_type:'type',anchor_list:'links',times:'attrs',address:'attrs',route_list:'attrs'},
+  time:{address:'label',anchor_ids:'links',range:'attrs'},
+  trace:{trace_type:'type',anchor_list:'links',times:'attrs',address:'label',route_list:'attrs'},
   keywords:{name:'title',desc:'description',lists:'links',uid_lists:'attrs'},
-  galaxy_media:{}
+  galaxy_media:{url:'label',meta_tags:'description',createtime:'attrs'}
 };
-const attrColumns=new Set(['range','times','address','route_list','uid_lists']);
+const attrColumns=new Set(['range','times','route_list','uid_lists','createtime']);
+// The existing type field alone identifies all four categories. Unlike a
+// duplicate kind column, this does not introduce a second taxonomy.
+const scopedTypes={
+  time:['anchor','period','era','time_period','time_era'],
+  trace:['space_anchor','path','trace','space_path','space_trace','route'],
+  keywords:['category','class','group','item']
+};
+const encodeLabel=(spec,key,value)=>{
+  if(spec.kind==='trace'&&key==='address'&&value!=null)
+    return typeof value==='string'?value:JSON.stringify(value);
+  if(spec.kind==='time'&&key==='address'&&value!=null)
+    return String(value).slice(0,10);
+  return value;
+};
+const decodeLabel=(spec,value)=>{
+  if(spec.kind==='trace'&&typeof value==='string'){
+    try{return JSON.parse(value)}catch{return value}
+  }
+  return value;
+};
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
 
@@ -63,7 +83,7 @@ function prepareAnchorInsert(spec,row,assigned){
   }
   if(spec.kind==='keywords'&&value.uid_lists==null)value.uid_lists={};
   const mapped=toAnchorRow(spec,value);
-  if(spec.kind==='media')mapped.attrs={};
+  if(spec.kind==='media'&&!mapped.attrs)mapped.attrs={};
   return mapped;
 }
 export function unifiedAnchorSpec(schema,table){
@@ -76,14 +96,14 @@ export function toAnchorRow(spec,row){
   const result={},attrs={};
   for(const [key,value] of Object.entries(row)){
     const target=aliases[spec.legacy][key]||key;
-    if(attrColumns.has(key)&&target==='attrs')attrs[key]=value;
-    else if(physicalColumns.includes(target)&&target!=='kind'&&target!=='attrs')
+    if(attrColumns.has(key)&&target==='attrs')
+      attrs[key==='createtime'?'published_at':key]=value==null?null:String(value)&&key==='createtime'?String(value):value;
+    else if(physicalColumns.includes(target)&&target!=='attrs')
       result[target]=spec.kind==='trace'&&key==='description'&&value&&typeof value==='object'
-        ?JSON.stringify(value):value;
+        ?JSON.stringify(value):encodeLabel(spec,key,value);
     else throw Error('Unsupported legacy anchor column: '+key);
   }
   if(Object.keys(attrs).length)result.attrs=attrs;
-  result.kind=spec.kind;
   return result;
 }
 export function fromAnchorRow(spec,row){
@@ -93,11 +113,13 @@ export function fromAnchorRow(spec,row){
       .map(([key,value])=>[value,key])
   );
   for(const [key,value] of Object.entries(row)){
-    if(key==='kind')continue;
     if(key==='attrs'){
       for(const field of Object.keys(aliases[spec.legacy]).filter(k=>aliases[spec.legacy][k]==='attrs'))
-        result[field]=value?.[field]??null;
-     }else if(spec.kind==='trace'&&key==='description'&&typeof value==='string'&&value.startsWith('{')){
+        result[field]=value?.[field==='createtime'?'published_at':field]??null;
+    }else if(key==='label'){
+      const old=spec.kind==='time'||spec.kind==='trace'?'address':'url';
+      if(spec.kind!=='keywords')result[old]=decodeLabel(spec,value);
+    }else if(key==='description'&&spec.kind==='trace'&&typeof value==='string'&&value.startsWith('{')){
       let structured=null;
       try{structured=JSON.parse(value)}catch{}
       result.description=structured&&typeof structured==='object'&&!Array.isArray(structured)?structured:value;
@@ -214,9 +236,12 @@ class UnifiedQuery{
       if(!physicalColumns.includes(mapped))throw Error('Unmapped anchor filter: '+filter.column);
       physical=applyFilter(physical,{...filter,column:mapped});
     }
-    // The physical kind predicate cannot be overridden by caller-controlled
-    // filters, including OR expressions.
-    physical=physical.eq('kind',spec.kind);
+    // Shared type column is the only category discriminator. Media has a
+    // mandatory eight-character UID; the other categories use four.
+    // Every filter remains server-side, including caller-supplied OR.
+    physical=spec.kind==='media'
+      ?physical.like('uid','________')
+      :physical.in('type',scopedTypes[spec.kind]);
     for(const expression of this.orFilters){
       if(/\b(address|times|route_list|uid_lists|range)\b/.test(expression))
         throw Error('JSONB OR filters require a native unified query');
