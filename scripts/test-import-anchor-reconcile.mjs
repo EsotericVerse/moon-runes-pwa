@@ -87,3 +87,25 @@ test('backfills only location articles, persists exact Galaxy.date and is idempo
   assert.equal(db.trace.length,1);
   assert.equal(db.time.length,4);
 });
+
+test('valid saved Trace IDs restore visits when place names are ambiguous',async()=>{
+  const db=mockDatabase();
+  db.trace.push(
+    {uid:'AB12',trace_type:'space_anchor',title:'台北車站',address:[121.5,25],times:[]},
+    {uid:'CD34',trace_type:'space_anchor',title:'台北車站',address:[121.6,25],times:[]}
+  );
+  db.galaxy[0].place_id='AB12';
+  db.galaxy[1].place_id='CD34';
+  const result=await reconcileExistingImportAnchors({
+    scopeId:'lo3rwang',galaxy:'silver.lo3rwang_galaxy',
+    timeTable:'silver.lo3rwang_time',relation:db.relation,
+    updateImportRows:db.updateImportRows
+  });
+  assert.equal(result.linked,0);
+  assert.equal(result.unmatched,0);
+  assert.equal(result.places.created,0);
+  assert.equal(result.visits,2);
+  assert.equal(db.trace.length,2);
+  assert.deepEqual(db.trace[0].times,['2024-04-04T18:00:00.000Z']);
+  assert.deepEqual(db.trace[1].times,['2024-04-05T08:00:00.000Z']);
+});
