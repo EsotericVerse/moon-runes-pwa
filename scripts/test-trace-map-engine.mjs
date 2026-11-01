@@ -132,7 +132,7 @@ test('numbered route stops are also clickable even when they overlap source pin'
 test('trace-only union keeps its saved lines on initial map load and frames all endpoints',()=>{
   const {instance,map}=setup({anchors,load:false});
   const union={uid:'LOC_UNION',source_scope:'lo3rwang',trace_type:'trace',
-    anchor_list:[],route_list:['R001']};
+    anchor_list:[],route_list:{routes:['R001'],segments:[]}};
   const graph={type:'FeatureCollection',features:[{
     type:'Feature',properties:{kind:'saved-trace-segment'},
     geometry:{type:'LineString',coordinates:[[120.2,22.8],[121.5,25.1]]}

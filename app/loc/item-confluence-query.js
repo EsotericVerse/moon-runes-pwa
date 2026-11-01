@@ -53,7 +53,7 @@ export async function selectLocItemDailySeries({scope,lane,startDate,endDate,kno
         {column:'content',operator:'neq',value:''}
       ]),
       ...(spec.source==='galaxy:exact'?[{column:'site',operator:'eq',value:spec.exact}]:[]),
-      ...(spec.source==='media:exact'?[{column:'media_type',operator:'eq',value:spec.exact}]:[])
+      ...(spec.source==='media:exact'?[{column:'type',operator:'eq',value:spec.exact}]:[])
     ];
     const orFilter=PLATFORM_FILTERS[spec.source]||'';
     let offset=0;

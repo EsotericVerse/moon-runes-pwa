@@ -23,7 +23,7 @@ test('local Culture totals SQL executes against SQLite with mixed-case Base62 ke
   const SQL=await initSqlJs();
   const db=new SQL.Database();
   db.run("CREATE TABLE local_galaxy(uid TEXT PRIMARY KEY,site TEXT,content TEXT,statistics_able INTEGER,createtime TEXT)");
-  db.run("CREATE TABLE local_galaxy_media(uid TEXT PRIMARY KEY,media_type TEXT,createtime TEXT)");
+  db.run("CREATE TABLE local_galaxy_media(uid TEXT PRIMARY KEY,type TEXT,createtime TEXT)");
   const statements=[
     ["INSERT INTO local_galaxy VALUES (?,?,?,?,?)",['aB12cD34','Threads','text',1,'2026-10-28T01:00:00Z']],
     ["INSERT INTO local_galaxy VALUES (?,?,?,?,?)",['AB12CD34','Threads','text',1,'2026-10-28T01:00:00Z']],

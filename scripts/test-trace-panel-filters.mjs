@@ -23,14 +23,14 @@ test('Threads is an exact case-insensitive source filter, not a media subtype',(
   assert.ok(filters.some(f=>f.column==='site'&&f.operator==='ilike'&&f.value==='Threads'));
   assert.ok(filters.some(f=>f.column==='date'&&f.operator==='gte'&&f.value==='2026-07-26'));
   assert.ok(filters.some(f=>f.column==='date'&&f.operator==='lte'&&f.value==='2026-10-26'));
-  assert.ok(!filters.some(f=>f.column==='media_type'));
+  assert.ok(!filters.some(f=>f.column==='type'));
 });
 
 test('media choices follow article media_link without reverse dependencies',()=>{
-  assert.deepEqual([...TRACE_MEDIA_TYPES],['音樂','圖片','影片','runes']);
+  assert.deepEqual([...TRACE_MEDIA_TYPES],['音樂','圖片','影片','rune']);
   const articles=[{uid:'AAAAAAAA',title:'Threads image',media_link:['MEDIA001','MEDIA002']},
     {uid:'BBBBBBBB',title:'unrelated',media_link:[]}];
-  assert.deepEqual(traceMediaMatches(articles,[{uid:'MEDIA001',media_type:'圖片'}]),
+  assert.deepEqual(traceMediaMatches(articles,[{uid:'MEDIA001',type:'圖片'}]),
     [articles[0]]);
 });
 
@@ -76,7 +76,7 @@ test('Trace panel only projects three Galaxy list columns; media type filters us
   assert.match(result,/enabled:enabled&&Boolean\(selectedMediaType\)/);
   assert.doesNotMatch(result,/selectAllRows\(/);
   assert.doesNotMatch(result,/columns:'uid,title,createtime,[^']*media_link/);
-  assert.match(trace,/<option value="runes">抽牌結果（runes）<\/option>/);
+  assert.match(trace,/<option value="rune">抽牌結果（runes）<\/option>/);
 });
 
 

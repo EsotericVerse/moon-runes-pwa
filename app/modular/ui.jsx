@@ -213,7 +213,7 @@ function ArticleRelationNavigation({
     <strong>{label}：</strong><div className="scope-article-context-items">{children}</div>
   </div>;
   const mediaItems=relatedMedia.map((item,index)=>{
-    const isRunes=String(item.media_type||'').toLowerCase()==='runes';
+    const isRunes=String(item.type||'').toLowerCase()==='rune';
     const label=String(item.title||'').trim()||(isRunes?'抽牌結果':'媒體 '+(index+1));
     const href=externalLink({href:item.url});
     const description=String(item.meta_tags||'').trim();
@@ -255,10 +255,10 @@ function ArticleRelationNavigation({
     </div>;
   });
   const ordinaryMedia=mediaItems.filter((_,index)=>
-    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&externalLink({href:relatedMedia[index]?.url}));
+    String(relatedMedia[index]?.type||'').toLowerCase()!=='rune'&&externalLink({href:relatedMedia[index]?.url}));
   const mediaDetails=mediaItems.filter((_,index)=>
-    String(relatedMedia[index]?.media_type||'').toLowerCase()!=='runes'&&!externalLink({href:relatedMedia[index]?.url}));
-  const runeMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.media_type||'').toLowerCase()==='runes');
+    String(relatedMedia[index]?.type||'').toLowerCase()!=='rune'&&!externalLink({href:relatedMedia[index]?.url}));
+  const runeMedia=mediaItems.filter((_,index)=>String(relatedMedia[index]?.type||'').toLowerCase()==='rune');
   const time=relatedTime||{},space=relatedSpace||{};
   const dateValid=/^\d{4}-\d{2}-\d{2}$/.test(day);
   const statistics=relatedStatistics;

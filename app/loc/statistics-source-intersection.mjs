@@ -35,7 +35,7 @@ export function aggregateOwnScopeStatistics(textRows=[],mediaRows=[]){
   for(const row of Array.isArray(mediaRows)?mediaRows:[]){
     const day=String(row?.createtime||'').slice(0,10);
     if(!DAY_RE.test(day))continue;
-    add(day,'media',String(row?.media_type||'').trim());
+    add(day,'media',String(row?.type||'').trim());
     add(day,'total','多媒體');
   }
   return [...result.entries()].map(([token,item_count])=>{

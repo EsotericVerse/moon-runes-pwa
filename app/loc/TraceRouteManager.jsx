@@ -64,7 +64,7 @@ export default function TraceRouteManager({scopeId}){
   const current=records.find(row=>row.uid===selectedUid)
     ||chooseDefaultTraceRoute(records,owner,readDefaultTraceRoute(owner));
   const currentRouteMembers=current?.trace_type==='trace'
-    ?records.filter(row=>row.trace_type==='path'&&(current.route_list||[]).includes(row.uid))
+    ?records.filter(row=>row.trace_type==='path'&&(current.route_list?.routes||[]).includes(row.uid))
     :[];
   const currentMemberUids=current
     ?[...new Set([...traceMemberUids(current),...currentRouteMembers.flatMap(traceMemberUids)])]
@@ -92,7 +92,7 @@ export default function TraceRouteManager({scopeId}){
   const preview=editorOpen
     ?(chosenIds.length>=2||type==='trace'&&routeUids.length>0
       ?{uid:editingUid||'EDIT',trace_type:type,source_scope:owner,
-        title:title||'地圖預覽',anchor_list:type==='path'?queue:pairs,route_list:routeUids}
+        title:title||'地圖預覽',anchor_list:type==='path'?queue:unique(pairs.flat()),route_list:{routes:routeUids,segments:type==='trace'?pairs:[]}}
       :null)
     :current;
   const previewAnchors=currentAnchors.data||[];
@@ -110,9 +110,9 @@ export default function TraceRouteManager({scopeId}){
     if(busy||!allowLeave())return;
     clear();setEditorOpen(true);setEditingUid(row.uid);setType(row.trace_type);
     setTitle(row.title);setDescription(row.description||'');
-    setInvisible(Boolean(row.invisible));setRouteUids(Array.isArray(row.route_list)?row.route_list:[]);
+    setInvisible(Boolean(row.invisible));setRouteUids(row.route_list?.routes||[]);
     setQueue(row.trace_type==='path'?[...row.anchor_list]:[]);
-    setPairs(row.trace_type==='trace'?row.anchor_list.map(pair=>[...pair]):[]);
+    setPairs(row.trace_type==='trace'?(row.route_list?.segments||[]).map(pair=>[...pair]):[]);
     setSpool(traceMemberUids(row));setSelectedUid(row.uid);setShowMap(true);
   };
   useEffect(()=>{
@@ -196,9 +196,10 @@ export default function TraceRouteManager({scopeId}){
       const updated=await index.mutate();
       const saved=(updated||[]).find(row=>row.uid===receipt.uid&&row.source_scope===owner);
       if(!saved||saved.title!==title.trim()||saved.trace_type!==type
-        ||JSON.stringify(saved.anchor_list)!==JSON.stringify(input.anchorUids)
+        ||JSON.stringify(saved.anchor_list)!==JSON.stringify(type==='path'?input.anchorUids:unique(input.anchorUids.flat()))
         ||Boolean(saved.invisible)!==invisible
-        ||JSON.stringify(saved.route_list||[])!==JSON.stringify(input.routeUids))
+        ||JSON.stringify(saved.route_list?.routes||[])!==JSON.stringify(input.routeUids)
+        ||JSON.stringify(saved.route_list?.segments||[])!==JSON.stringify(type==='trace'?input.anchorUids:[]))
         throw Error('資料庫已回應寫入，但重讀尚未一致；保留草稿，按儲存只重新檢查');
       const uid=receipt.uid;
       clear();setSelectedUid(uid);setEditorOpen(false);setShowMap(true);
@@ -281,7 +282,7 @@ export default function TraceRouteManager({scopeId}){
         <button type="button" className="loc-trace-saved-map-summary"
           onClick={()=>{if(allowLeave()){setSelectedUid(row.uid);setShowMap(true);setEditorOpen(false);clear();}}}>
           <span>{row.title}{Boolean(row.invisible)?'（已設定隱藏）':''}</span>
-          <span className="scope-status">{row.trace_type==='path'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+row.anchor_list.length+' 段'}</span>
+          <span className="scope-status">{row.trace_type==='path'?'路線 · '+row.anchor_list.length+' 站':'痕跡 · '+(row.route_list?.segments?.length||0)+' 段'}</span>
         </button>
         {current?.uid===row.uid?<div className="scope-stat-controls">
           <button type="button" className="loc-button" disabled={!own||busy} onClick={()=>openEdit(row)}>編輯</button>

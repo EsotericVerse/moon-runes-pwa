@@ -20,7 +20,7 @@ export function planTraceVisibilityUids({maps=[],selectedUids=[],mode='self'}={}
     for(const uid of selected){
       const row=byId.get(uid);
       if(row.trace_type!=='trace')continue;
-      for(const routeUid of normalizeIds(row.route_list)){
+      for(const routeUid of normalizeIds(row.route_list?.routes)){
         const route=byId.get(routeUid);
         if(!route||route.trace_type!=='path')
           throw Error('痕跡圖關聯的路線圖未載入，請重新整理後操作');

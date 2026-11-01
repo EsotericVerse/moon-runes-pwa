@@ -546,7 +546,7 @@ export async function selectScopePeriodSourceSnapshot(scope,{startDate='',endDat
 }
 
 function mediaMetadataDescription(row){
-  const fields=[['標題',row.title],['類型',row.media_type],['Meta Tag',row.meta_tags]];
+  const fields=[['標題',row.title],['類型',row.type],['Meta Tag',row.meta_tags]];
   return fields.map(([label,value])=>{const text=CultureTimelineModel.decodeCultureText(value||'').trim();return text?`${label}：${text}`:'';}).filter(Boolean).join(' · ')||'沒有可讀的 metadata 文字';
 }
 
@@ -624,7 +624,7 @@ export async function selectScopePeriodWorkIndex(scope,{startDate='',endDate=nul
   ]);
   const mediaFilters=[
     ...dateFilters(startDate,endDate),
-    ...(rawMedia.length?[{column:'media_type',operator:'in',value:rawMedia}]:[])
+    ...(rawMedia.length?[{column:'type',operator:'in',value:rawMedia}]:[])
   ];
 
   // A normal work list is a Galaxy article list, never a merged media feed.
@@ -720,7 +720,7 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
   const mediaIds=[...new Set(source.filter(row=>row?.entry_type==='media_metadata')
     .map(row=>String(row?.uid||row?.entry_id||'').trim()).filter(Boolean))];
   const mediaResult=mediaIds.length?await selectRows(scope.galaxyMedia,{
-    columns:'uid,media_type,title,url,createtime',
+    columns:'uid,type,title,url,createtime',
     filters:[{column:'uid',operator:'in',value:mediaIds}],
     limit:mediaIds.length
   }):{rows:[]};
@@ -743,16 +743,16 @@ export async function selectScopePeriodWorkDetails(scope,{items=[]}={}){
     ...row,
     key:'media:'+row.uid,
     record_type:'galaxy_media',
-    site:String(row.media_type||''),
+    site:String(row.type||''),
     entry_id:row.uid,
     entry_type:'media_metadata',
     start_date:row.createtime,
     date:row.createtime,
     display_date:CultureTimelineModel.formatCultureDateTime(row.createtime),
-    title:CultureTimelineModel.decodeCultureText(row.title||'').trim()||row.media_type||'多媒體',
+    title:CultureTimelineModel.decodeCultureText(row.title||'').trim()||row.type||'多媒體',
     description:'',
     media_metadata_text:'',
-    group_label:String(row.media_type||''),
+    group_label:String(row.type||''),
     scope_id:scopeId,
     links:row.url&&/^https?:\/\//i.test(String(row.url))
       ?[{id:'media:'+String(row.uid),href:row.url,label:'媒體連結'}]

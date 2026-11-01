@@ -109,12 +109,12 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
     // A text article may carry a top-level card draw, even when the import
     // did not provide a nested media array. Attach one media record to its UID.
     if(content&&runeResultText)mediaRecords.push({
-      __article_uid:uid,media_type:'runes',title:'抽牌結果',
+      __article_uid:uid,media_type:'rune',title:'抽牌結果',
       url:null,meta_tags:runeResultText,createtime:createdAt,location:sourcePlace||null
     });
   }catch(error){return {record:null,error:String(error.message||error)}}
   if(!content){
-    const type=String(value('media_type')||(runeResultText?'runes':'')).trim();
+    const type=String(value('media_type')||(runeResultText?'rune':'')).trim();
     const url=String(value('url')||'').trim();
     if(type){
       const rawId=String(row.uid||'').trim();
@@ -123,10 +123,10 @@ function normalizeJsonImportEntry(entry,source,fieldMap={},t){
         ...(rawId?{uid:rawId}:{}),
         __article_uid:String(value('galaxy_link')||'').trim()||null,
         location:sourcePlace||null,
-        media_type:type,title:rawTitle||(type==='runes'?'抽牌結果':null),url:url||null,
-        meta_tags:String(value('meta_tags')||'').trim()||(type==='runes'?runeResultText:null),
+        media_type:type,title:rawTitle||(type==='rune'?'抽牌結果':null),url:url||null,
+        meta_tags:String(value('meta_tags')||'').trim()||(type==='rune'?runeResultText:null),
         createtime:createdAt,
-        ...(type!=='runes'&&runeResultText?{rune_references:importedRuneReferences}:{})
+        ...(type!=='rune'&&runeResultText?{rune_references:importedRuneReferences}:{})
       }};
     }
     return {record:null,error:t('uiExtra.importUI.invalidNoBody')};
@@ -238,30 +238,31 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       // Keep the original media record, URL, title and description unchanged.
       // Never duplicate the article in Galaxy just to store a card spread.
       const plans=originalPlans.flatMap(source=>{
-        const {rune_references,...record}=source;
+        const {rune_references,media_type:legacyType,...rest}=source;
+        const record={...rest,type:['rune','runes'].includes(source.type||legacyType)?'rune':(source.type||legacyType)};
         if(rune_references==null||rune_references===''||
             JSON.stringify(rune_references)==='[]'||JSON.stringify(rune_references)==='{}')
           return [record];
         const content=typeof rune_references==='string'?rune_references:JSON.stringify(rune_references);
-        if(record.media_type==='runes'){
+        if(record.type==='rune'){
           return [{...record,title:record.title||'抽牌結果',meta_tags:record.meta_tags||content}];
         }
         if(!record.__article_uid)throw new Error('抽牌結果必須對應 Galaxy 文章 UID');
         return [record,{
-          __article_uid:record.__article_uid,media_type:'runes',title:'抽牌結果',
+          __article_uid:record.__article_uid,type:'rune',title:'抽牌結果',
           url:null,meta_tags:content,createtime:record.createtime,location:record.location
         }];
       });
       onProgress?.({stage:'核對既有媒體',completed:0,total:0});
       const existingMedia=[];
       const explicitIds=[...new Set([...plans.map(record=>record.uid).filter(Boolean),...normalized.flatMap(item=>item.mediaRefs||[])])];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,media_type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,type','uid',explicitIds,t('uiExtra.importUI.mediaIdCompareFailed')));
       // Reuse matching media URLs across articles without duplicating media rows.
       const candidateUrls=[...new Set(plans.map(row=>row.url).filter(Boolean))];
-      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,media_type','url',candidateUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
+      existingMedia.push(...await readExistingByIds(galaxyMedia,'uid,url,type','url',candidateUrls,t('uiExtra.importUI.mediaUrlCompareFailed')));
       const mediaKey=row=>{
         const url=String(row.url||'').trim();
-        return url?JSON.stringify([url,String(row.media_type||'').trim()])
+        return url?JSON.stringify([url,String(row.type||'').trim()])
           :(row.uid?'id:'+row.uid:null);
       };
       const byKey=new Map(existingMedia.map(row=>[mediaKey(row),row]).filter(([key])=>key));
@@ -269,7 +270,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       // URL-less media are reused only when attached to this exact article
       // with a complete, matching source evidence identity.
       const mediaEvidenceKey=(item,owner)=>{
-        const type=String(item?.media_type||'').trim();
+        const type=String(item?.type||'').trim();
         const metadata=String(item?.meta_tags||'').trim();
         const title=String(item?.title||'').trim();
         const stamp=Date.parse(String(item?.createtime||''));
@@ -279,7 +280,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       };
       const pendingOwners=[...new Set(plans.filter(item=>
         !item.uid&&!item.url&&item.__article_uid&&
-        (item.media_type==='runes'&&item.meta_tags||
+        (item.type==='rune'&&item.meta_tags||
           mediaEvidenceKey(item,String(item.__article_uid))))
         .map(item=>String(item.__article_uid)))];
       const existingRuneByArticle=new Map(),existingOwnerMediaByKey=new Map();
@@ -288,7 +289,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
           t('uiExtra.importUI.mediaLinkReadFailed'));
         const linkedUids=[...new Set(ownerRows.flatMap(row=>Array.isArray(row.media_link)?row.media_link:[]))];
         const linkedMedia=linkedUids.length?await readExistingByIds(
-          galaxyMedia,'uid,media_type,meta_tags,title,createtime,location,url','uid',linkedUids,
+          galaxyMedia,'uid,type,meta_tags,title,createtime,location,url','uid',linkedUids,
           t('uiExtra.importUI.mediaIdCompareFailed')):[];
         const savedMediaByUid=new Map(linkedMedia.map(row=>[String(row.uid),row]));
         for(const article of ownerRows){
@@ -296,7 +297,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
             const stored=savedMediaByUid.get(String(mediaUid));
             if(!stored)continue;
             const owner=String(article.uid),uid=String(mediaUid);
-            if(stored.media_type==='runes'&&stored.meta_tags)
+            if(stored.type==='rune'&&stored.meta_tags)
               existingRuneByArticle.set(JSON.stringify([owner,String(stored.meta_tags)]),uid);
             if(!stored.url){
               const key=mediaEvidenceKey(stored,owner);
@@ -335,7 +336,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
       for(const raw of plans){
         const owner=String(raw.__article_uid||'').trim();
         const record={...raw};delete record.__article_uid;
-        const runeDedupKey=record.media_type==='runes'&&!record.uid&&!record.url&&owner&&record.meta_tags
+        const runeDedupKey=record.type==='rune'&&!record.uid&&!record.url&&owner&&record.meta_tags
           ?JSON.stringify([owner,String(record.meta_tags)]):'';
         const existingRuneUid=runeDedupKey?existingRuneByArticle.get(runeDedupKey):null;
         if(existingRuneUid){attach(owner,existingRuneUid);continue;}
@@ -345,7 +346,7 @@ async function syncImportedMedia({normalized=[],mediaOnly=[],extraLinks=[],known
         const key=mediaKey(record);
         const known=(record.uid?byId.get(String(record.uid)):null)||(key?byKey.get(key):null);
         if(known){
-          if(record.uid&&String(known.media_type||'')!==String(record.media_type||''))
+          if(record.uid&&String(known.type||'')!==String(record.type||''))
             throw new Error('媒體 UID 已存在，但媒體類型不同：'+record.uid);
           if(record.uid&&known.url&&record.url&&String(known.url)!==String(record.url))
             throw new Error('媒體 UID 已存在，但網址不同：'+record.uid);

@@ -9,7 +9,7 @@ export const ITEM_LANE_OPTIONS=Object.freeze([
   {value:'galaxy:all',label:'文字 · 全部來源'},
   {value:'galaxy:exact',label:'文字 · 指定 site'},
   {value:'media:all',label:'媒體 · 全部類型'},
-  {value:'media:exact',label:'媒體 · 指定 media_type'},
+  {value:'media:exact',label:'媒體 · 指定類型'},
   {value:'daily:rune',label:'每日符文（僅符韻）'}
 ]);
 export function itemConfluenceDate(value){
