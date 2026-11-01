@@ -82,7 +82,7 @@ test('indexed reader handles an upstream short page without lost articles',async
 });
 test('indexed reader orders distinct timestamps within a common date',async()=>{
   const input=[
-    {uid:'Ab000002',date:'2026-01-01',createtime:'2026-01-01T20:00:00Z'},
+    {uid:'Ab000002',date:'2026-01-01',createtime:'2026-01-01T12:00:00Z'},
     {uid:'Ab000001',date:'2026-01-01',createtime:'2026-01-01T02:00:00Z'},
     {uid:'Ab000003',date:'2026-01-02',createtime:'2026-01-02T02:00:00Z'}
   ];
