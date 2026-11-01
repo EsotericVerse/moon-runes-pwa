@@ -19,7 +19,7 @@ export function summarizePlaceStatistics(payload={},{bucket='month',limit=12}={}
     const amount=safeCount(row?.item_count);
     if(!day||!name||!amount)continue;
     places.set(name,(places.get(name)||0)+amount);
-    const key=bucket==='day'?day:bucket==='week'
+    const key=bucket==='day'?day:bucket==='year'?day.slice(0,4):bucket==='week'
       ?(()=>{const monday=new Date(day+'T00:00:00Z');const weekday=monday.getUTCDay();
         monday.setUTCDate(monday.getUTCDate()-(weekday===0?6:weekday-1));
         return monday.toISOString().slice(0,10);})()

@@ -1,4 +1,13 @@
 export default {
+  "timeFilterTitle": "默认时间滤镜",
+  "timeFilterLabel": "时间显示单位",
+  "timeFilterHint": "文化、统计、痕迹的时间图表默认使用此单位；搜索可手动选取当期。仅更改本设备显示，不影响文章日期、链接或搜索范围。",
+  "timeFilterSaveFailed": "无法保存此设备的时间滤镜设置。",
+  "timeUnitAuto": "自动（保持现状）",
+  "timeUnitDay": "每日",
+  "timeUnitWeek": "每周（周一至周日）",
+  "timeUnitMonth": "每月",
+  "timeUnitYear": "每年",
   "authorHome": "作者首页",
   "locHome": "月典首页",
   "myPhone": "我的手机",

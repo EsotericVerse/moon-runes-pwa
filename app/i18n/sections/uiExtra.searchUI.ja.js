@@ -1,4 +1,9 @@
 export default {
+  "applyDefaultTimeWindow": "現在の期間を選択（{unit}）",
+  "defaultUnitDay": "日別",
+  "defaultUnitWeek": "週別",
+  "defaultUnitMonth": "月別",
+  "defaultUnitYear": "年別",
   "fieldLabels": {
     "uid": "識別コード",
     "title": "タイトル",

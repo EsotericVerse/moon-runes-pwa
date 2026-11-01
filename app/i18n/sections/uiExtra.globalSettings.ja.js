@@ -1,4 +1,13 @@
 export default {
+  "timeFilterTitle": "既定の時間フィルター",
+  "timeFilterLabel": "時間表示の単位",
+  "timeFilterHint": "文化・統計・痕跡の時間図表で既定の単位を使用します。検索では現在の期間を選択できます。この端末の設定は記事の日付、リンク、検索範囲を変更しません。",
+  "timeFilterSaveFailed": "この端末に時間フィルターを保存できませんでした。",
+  "timeUnitAuto": "自動（現在の動作）",
+  "timeUnitDay": "日別",
+  "timeUnitWeek": "週別（月〜日）",
+  "timeUnitMonth": "月別",
+  "timeUnitYear": "年別",
   "authorHome": "作者ホーム",
   "locHome": "LOC ホーム",
   "myPhone": "マイフォン",

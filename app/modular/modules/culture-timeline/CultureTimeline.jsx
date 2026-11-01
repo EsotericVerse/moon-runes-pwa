@@ -8,6 +8,7 @@ registerDefaultSection('uiExtra.cultureTimeline',cultureTimelineZh);
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {DataSet,Timeline} from 'vis-timeline/standalone';
 import {CultureTimelineModel} from './culture-timeline-model';
+import useDefaultTimeUnit from '../../../loc/use-default-time-unit';
 
 // Stable defaults matter: an inline [] or {} used as a hook dependency
 // would destroy and recreate vis-timeline after setReady() on each render.
@@ -175,6 +176,7 @@ export default function CultureTimeline({
 }){
   useUiSection('uiExtra.cultureTimeline');
   const {locale,copy}=useUiLocale();
+  const defaultTimeUnit=useDefaultTimeUnit();
   const labels=copy.uiExtra.cultureTimeline;
   const timelineLocale=locale==='zh-Hans'?'zh-cn':locale==='zh-Hant'?'zh-tw':locale;
   const t=text=>translateUiField(locale,text);
@@ -277,6 +279,7 @@ export default function CultureTimeline({
       const priorWindow=heightVariant==='double'&&doubleRiverWindowRef.current?.key===windowKey
         ?doubleRiverWindowRef.current.range:null;
       instance=new Timeline(containerRef.current,data,groups,{
+        ...(defaultTimeUnit==='auto'?{}:{timeAxis:{scale:defaultTimeUnit,step:1}}),
         ...(hasSelectedWindow?{start:priorWindow?.start||windowStart,end:priorWindow?.end||windowEnd}:{}),
         autoResize:true,
         minHeight:timelineMinHeight+'px',
@@ -398,7 +401,7 @@ export default function CultureTimeline({
     preserveTimelineInstance?null:timelineMaxHeight,
     Boolean(rows.length||editable||extraGroups.length),
     heightVariant,mode,windowStart,windowEnd,boundaryStart,boundaryEnd,fixedMin,fixedMax,
-    preserveTimelineInstance?null:hiddenDates,editable,locale,labels,timelineLocale]);
+    preserveTimelineInstance?null:hiddenDates,editable,locale,labels,timelineLocale,defaultTimeUnit]);
 
   // When a group opens, mutate existing datasets instead of destroying and
   // recreating vis-timeline. Preserve camera zoom, pan and touch scroll.

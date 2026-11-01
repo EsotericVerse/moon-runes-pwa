@@ -1,4 +1,13 @@
 export default {
+  "timeFilterTitle": "預設時間濾鏡",
+  "timeFilterLabel": "時間顯示單位",
+  "timeFilterHint": "文化、統計、痕跡的時間圖預設採用此單位；搜尋可一鍵選取當期。僅更改本裝置的預設顯示，不改文章日期、連結或搜尋範圍。",
+  "timeFilterSaveFailed": "無法儲存此裝置的時間濾鏡設定。",
+  "timeUnitAuto": "自動（維持現況）",
+  "timeUnitDay": "每日",
+  "timeUnitWeek": "每週（週一至週日）",
+  "timeUnitMonth": "每月",
+  "timeUnitYear": "每年",
   "authorHome": "作者首頁",
   "locHome": "月典首頁",
   "myPhone": "我的手機",

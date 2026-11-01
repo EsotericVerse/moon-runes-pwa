@@ -28,6 +28,8 @@ import SearchSummary from '../../loc/SearchSummary';
 // Article cards/editing are requested only when results actually render.
 const Article=dynamic(()=>import('../Article'),{loading:()=>null});
 import {useScopeRuntime} from '../use-scope-runtime';
+import useDefaultTimeUnit from '../../loc/use-default-time-unit';
+import {timeUnitBucket,localTodayKey} from '../../loc/default-time-unit.mjs';
 import {useEditDock} from '../edit-dock';
 import {scopeHref} from '../scope-registry';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks} from '../feature-navigation';
@@ -216,6 +218,7 @@ export default function Search({managementMode=false}){
   useUiSection('uiExtra.pagination');
   const UI_COPY=useUiCopy();
   const t=useUiText();
+  const defaultTimeUnit=useDefaultTimeUnit();
   const {scopeId,scope}=useScopeRuntime();
   const editDock=useEditDock();
   const publicScopeEditing=Boolean(editDock?.active&&editDock.scopeId===scopeId&&scopeId!=='loc');
@@ -991,6 +994,16 @@ export default function Search({managementMode=false}){
     router.push(href,{scroll:false});
   }
 
+  function applyDefaultTimeWindow(){
+    const range=timeUnitBucket(localTodayKey(),defaultTimeUnit==='auto'?'day':defaultTimeUnit);
+    if(!range)return;
+    setSelectedPeriod('');
+    setStartDate(range.startDate);
+    setEndDate(range.endDate);
+    resetSearchState();
+  }
+  const defaultTimeName=t('uiExtra.searchUI.defaultUnit'+(defaultTimeUnit==='auto'
+    ?'Day':defaultTimeUnit[0].toUpperCase()+defaultTimeUnit.slice(1)));
   const pageContent=<>
     {managementMode?<section className="scope-search-workspace" aria-label="管理搜尋">
       <h2>管理搜尋</h2>
@@ -1026,6 +1039,9 @@ export default function Search({managementMode=false}){
           onClick={()=>updateSearchFilter(setPlaceOnly,true)}>查打卡地點</button>
       </div>
       <div className="scope-search-filter-body scope-search-date-fields">
+        <button type="button" className="loc-button" onClick={applyDefaultTimeWindow}>
+          {t('uiExtra.searchUI.applyDefaultTimeWindow',{unit:defaultTimeName})}
+        </button>
         <label htmlFor="scope-management-search-start">起始日期
           <input id="scope-management-search-start" type="date" value={startDate}
             onChange={event=>updateSearchFilter(setStartDate,event.target.value)}/></label>
@@ -1146,6 +1162,9 @@ export default function Search({managementMode=false}){
             </p>:null}
           </div>:null}
           {advancedTab==='time'?<div className="scope-search-filter-body scope-search-date-fields">
+            <button type="button" className="loc-button" onClick={applyDefaultTimeWindow}>
+              {t('uiExtra.searchUI.applyDefaultTimeWindow',{unit:defaultTimeName})}
+            </button>
             <label htmlFor="scope-search-start-date">{t('uiExtra.searchUI.startDate')}
               <input id="scope-search-start-date" type="date" value={startDate} onChange={event=>{setSelectedPeriod('');updateSearchFilter(setStartDate,event.target.value);}}/></label>
             <label htmlFor="scope-search-end-date">{t('uiExtra.searchUI.endDate')}

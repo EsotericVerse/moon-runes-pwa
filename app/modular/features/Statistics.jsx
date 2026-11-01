@@ -27,6 +27,7 @@ import {selectScopeRegistry,defaultScopeData} from '../../loc/scope-data';
 import {featureNavigationHref,galaxyIdentityHref,galaxyRelationLinks,readFeatureNavigation} from '../feature-navigation';
 import {featureDataErrorMessage} from '../feature-data-state';
 import {useScopeRuntime} from '../use-scope-runtime';
+import useDefaultTimeUnit from '../../loc/use-default-time-unit';
 import {ArticleSortSelect,FeaturePage,IncrementalList,WorkFullText} from '../ui';
 import {workDisplayHeading,workDisplayText} from '../work-display-model';
 import {DEFAULT_LIST_BATCH_SIZE} from '../../loc/db-contract.mjs';
@@ -90,6 +91,9 @@ function trendBucket(value,unit){
   const date=new Date(key+'T00:00:00Z');
   const year=date.getUTCFullYear();
   const month=date.getUTCMonth();
+  if(unit==='year'){
+    return {key:String(year),label:String(year),start:year+'-01-01',end:year+'-12-31'};
+  }
   if(unit==='month'){
     const monthText=String(month+1).padStart(2,'0');
     const end=new Date(Date.UTC(year,month+1,0)).toISOString().slice(0,10);
@@ -106,7 +110,7 @@ function trendBucket(value,unit){
 }
 function rowsInWindow(rows=[],range={}){
   const startDate=dateKey(range.startDate),endDate=dateKey(range.endDate);
-  const bucket=['month','week','day'].includes(range.bucket)?range.bucket:'day';
+  const bucket=['year','month','week','day'].includes(range.bucket)?range.bucket:'day';
   if(!startDate||!endDate||startDate>endDate)return {rows:[],startDate:'',endDate:'',bucket};
   return {rows:rows.filter(row=>{
     const day=dateKey(row.day);
@@ -288,6 +292,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const rankingType=types.includes(requested)?requested:(types[0]||'');
   const mediaDimension=MEDIA_STAT_TYPES.has(rankingType);
   const isLrunesDaily=scopeId==='lrunes'&&rankingType==='daily_rune';
+  const defaultTimeUnit=useDefaultTimeUnit();
   const [chartType,setChartType]=useState('line');
   const [zoomLevel,setZoomLevel]=useState(0);
   const [foldBlank,setFoldBlank]=useState(true);
@@ -343,17 +348,18 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     if(hasRequestedWindow){
       const days=Math.round((Date.parse(requestedEnd+'T00:00:00Z')-Date.parse(requestedStart+'T00:00:00Z'))/86_400_000);
       return {...customQueryRange,startDate:requestedStart,endDate:requestedEnd,
-        bucket:days>180?'month':days>31?'week':'day',
+        bucket:defaultTimeUnit==='auto'?(days>180?'month':days>31?'week':'day'):defaultTimeUnit,
         fullHistory:false,canZoomOut:false,canZoomIn:false};
     }
-    if(!selectedPeriod)return customQueryRange;
+    if(!selectedPeriod)return defaultTimeUnit==='auto'?customQueryRange:{...customQueryRange,bucket:defaultTimeUnit};
     const startDate=String(selectedPeriod.start_date).slice(0,10);
     const endDate=String(selectedPeriod.end_date||queryEndDate).slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||!/^\d{4}-\d{2}-\d{2}$/.test(endDate)||startDate>endDate)return customQueryRange;
     const days=Math.round((Date.parse(endDate+'T00:00:00Z')-Date.parse(startDate+'T00:00:00Z'))/86_400_000);
-    return {...customQueryRange,startDate,endDate,bucket:days>180?'month':days>31?'week':'day',
+    return {...customQueryRange,startDate,endDate,
+      bucket:defaultTimeUnit==='auto'?(days>180?'month':days>31?'week':'day'):defaultTimeUnit,
       fullHistory:false,canZoomOut:false,canZoomIn:false};
-  },[selectedPeriod,customQueryRange,queryEndDate,hasRequestedWindow,requestedStart,requestedEnd]);
+  },[selectedPeriod,customQueryRange,queryEndDate,hasRequestedWindow,requestedStart,requestedEnd,defaultTimeUnit]);
   // Both editors store flat names. Show one direct source choice, not a group tree.
   const activeSourceSelection=styleFilter==='rune66'?keywordSource:rankingType==='source'?sourceGroup:'';
   const sourceChart=!isLrunesDaily&&!mediaDimension&&rankingType!=='place'&&Boolean(targetScopes.length)&&Boolean(rankingType);
