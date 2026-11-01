@@ -17,7 +17,7 @@ export function hasKeywordMinimumContent(content,minChars=0){
 // Aggregate one page at a time. Memory scales with the actual stored Keyword
 // hits, never with a second full copy of per-article classification records.
 export async function reanalyzeKeywordClass({
-  classUid,treeRows=[],minChars=0,pageSize=1000,expectedCount=null,readPage,writeNode,finalize,
+  classUid,treeRows=[],minChars=0,pageSize=1000,expectedCount=null,readPage,writeNode,finalize,compactResults=false,
   onProgress=()=>{}
 }={}){
   if(typeof readPage!=='function'||typeof writeNode!=='function'||typeof finalize!=='function')
@@ -85,17 +85,21 @@ export async function reanalyzeKeywordClass({
   }
   const changes=[
     ...root.lists.map(uid=>({
-      uid,type:'group',uid_lists:[...groupResults.get(uid)].sort()
+      uid,type:'group',uid_lists:compactResults
+        ?{total:groupResults.get(uid).size,uidlists:[...groupResults.get(uid)].sort()}
+        :[...groupResults.get(uid)].sort()
     })),
     ...catalog.map(item=>({
       uid:item.uid,type:'item',
-      uid_lists:[...itemResults.get(item.uid)].sort(([a],[b])=>a.localeCompare(b))
-        .map(([uid,times])=>({uid,times}))
+      uid_lists:compactResults
+        ?{total:[...itemResults.get(item.uid).values()].reduce((a,b)=>a+b,0),uidlists:[...itemResults.get(item.uid).keys()].sort()}
+        :[...itemResults.get(item.uid)].sort(([a],[b])=>a.localeCompare(b))
+          .map(([uid,times])=>({uid,times}))
     }))
   ];
   const matched=new Set();
   for(const group of changes.filter(row=>row.type==='group'))
-    for(const uid of group.uid_lists){
+    for(const uid of (compactResults?group.uid_lists.uidlists:group.uid_lists)){
       if(matched.has(uid))throw new Error('Multiple winning Groups for one article');
       matched.add(uid);
     }
