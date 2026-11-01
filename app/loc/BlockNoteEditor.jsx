@@ -128,17 +128,18 @@ export function ObjectEditor({
       <h3 className="scope-search-attr-heading">{resolvedAttributeTitle}</h3>
       <div className="scope-search-attr-grid">
         {attributeFields.map(({key,kind='text',readOnly=false})=>{
+          const fieldLabel=t('uiExtra.searchUI.fieldLabels.'+key);
           const current=key==='title'?draft.title:draft.attrs?.[key];
           const editValue=key==='content'?t('uiExtra.searchUI.attrShown'):current;
           const setValue=value=>onChange?.(previous=>key==='title'?{...previous,title:value}:{...previous,attrs:{...(previous.attrs||{}),[key]:value}});
           return <label className={'scope-search-attr-item'+(!readOnly?' is-editable':'')} key={key}>
-            <span className="scope-search-attr-name">{key}</span>
+            <span className="scope-search-attr-name">{fieldLabel}</span>
             {readOnly?<span className="scope-search-attr-value">{String(editValue??'')}</span>
               :kind==='boolean'?<span className="scope-search-attr-boolean">
                 <input type="checkbox" checked={current===true} onChange={event=>setValue(event.target.checked)}/>
                 <span>{current===true?'true':'false'}</span>
               </span>
-              :kind==='array'||kind==='multiline'?<textarea rows={2} aria-label={key}
+              :kind==='array'||kind==='multiline'?<textarea rows={2} aria-label={fieldLabel}
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>
               :<input aria-label={key} type={kind==='date'?'datetime-local':kind==='number'?'number':'text'}
                 value={String(current??'')} onChange={event=>setValue(event.target.value)}/>}

@@ -68,3 +68,24 @@ test('Nondefault core UI packs are imported on demand, not statically bundled',(
     assert.ok(code.includes("import('./"+name+".js')"),name+' needs a dynamic loader');
   assert.ok(!code.includes("value==='ja'?['en','ja']"),'Japanese must not prefetch English');
 });
+
+test('Article attribute names use localized labels instead of raw database keys',async()=>{
+  const attributeKeys=[
+    'uid','title','content','createtime','location','place_id','searchable',
+    'UpdateTime','url','source_id','target_id','ref_id','site','media_link',
+    'statistics_able','type','meta_tags'
+  ];
+  const dictionaries=await Promise.all(LOCALES.map(locale=>
+    dictionary('sections/uiExtra.searchUI.'+locale+'.js')));
+  for(let index=0;index<dictionaries.length;index++){
+    const labels=dictionaries[index].fieldLabels;
+    for(const key of attributeKeys){
+      assert.equal(typeof labels?.[key],'string',LOCALES[index]+' missing '+key);
+      assert.ok(labels[key].trim()&&labels[key]!==key,LOCALES[index]+' exposes '+key);
+    }
+  }
+  const editor=readFileSync(new URL('../loc/BlockNoteEditor.jsx',ROOT),'utf8');
+  assert.match(editor,/const fieldLabel=t\('uiExtra\.searchUI\.fieldLabels\.'\+key\)/);
+  assert.match(editor,/<span className="scope-search-attr-name">\{fieldLabel\}<\/span>/);
+  assert.doesNotMatch(editor,/<span className="scope-search-attr-name">\{key\}<\/span>/);
+});
