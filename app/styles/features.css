@@ -1579,3 +1579,25 @@
  .loc-trace-floating-content{left:.4rem;bottom:.4rem;width:calc(100% - .8rem);max-height:58dvh}
  .loc-trace-float-map-status{max-width:52%}
 }
+
+/* Data import: primary steps stay visible; existing-record repair is secondary. */
+.scope-import-options-row{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;gap:.75rem;min-width:0;
+}
+.scope-import-options-row>.scope-import-source-choice{max-width:none}
+.scope-import-options-row :is(input,select){width:100%;min-width:0;min-height:44px;box-sizing:border-box}
+.scope-import-save-summary{display:grid;gap:.25rem}
+.scope-import-save-summary .scope-import-ready-counts{font-weight:650;color:var(--loc-text)}
+.scope-import-stage-estimate{font-weight:650;color:var(--loc-heading)}
+.scope-import-maintenance{border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-md);min-width:0}
+.scope-import-maintenance>summary{
+  min-height:44px;display:flex;align-items:center;padding:.6rem .8rem;
+  cursor:pointer;font-weight:650;color:var(--loc-text)
+}
+.scope-import-maintenance>summary:focus-visible{outline:2px solid var(--loc-accent);outline-offset:2px}
+.scope-import-maintenance-content{display:grid;gap:.65rem;padding:.65rem .8rem .85rem}
+.scope-import-maintenance-content p{margin:0}
+@media(max-width:700px){
+  .scope-import-options-row{grid-template-columns:minmax(0,1fr)}
+}
